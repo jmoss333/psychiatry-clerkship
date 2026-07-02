@@ -28,10 +28,11 @@ node_modules/
 
 # ---- Large binary assets (originals; use Git LFS or external storage if you need them versioned) ----
 # Audio / video
-*.mp3
-*.m4a
+# NOTE: mp3/m4a/wav are Git LFS-tracked (site deploy assets) — see .gitattributes + GIT_AND_DEPLOY_PLAN.md §6.
+# *.mp3   -> LFS
+# *.m4a   -> LFS
+# *.wav   -> LFS
 *.m4v
-*.wav
 *.aac
 *.flac
 *.mp4
