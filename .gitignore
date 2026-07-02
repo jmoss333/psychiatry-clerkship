@@ -49,6 +49,9 @@ node_modules/
 13_Faculty_Resources/APA_Downloads_2026-06-29/files/
 00_START_HERE/_audit-census-codex/data/
 
+# ---- Netlify CLI local state (never commit; per-site config lives in the Netlify UI) ----
+.netlify/
+
 # ---- Scratch ----
 *.tmp
 *.bak
