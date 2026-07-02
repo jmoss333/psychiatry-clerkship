@@ -74,5 +74,25 @@ netlify deploy --prod --dir=~/mmc-resident-deploy       # Resident
 ```
 > Note: the deployed sites currently carry ~10 pages beyond this build script's list (added by a parallel session: t_sleep, t_somatic, ect_neuromodulation, etc.). Reconcile those into the build scripts' `md[]`/nav before a clean rebuild, or a from-scratch build will omit them. (A `git`-tracked source makes this reconciliation a normal diff.)
 
+## 6. ⚠️ AUDIO — handle before relying on build-on-push
+The sites embed **100 audio files (~328 MB)** — landmark-trial overviews (`07_Evidence_and_Reading/Landmark_Trials/audio/`) and NotebookLM briefs (`…/openevidence_notebooklm_brief_audio_2026-06-30/`). These are currently **gitignored**, so a git-CI build would deploy both sites **without audio** (silent regression). The manual `netlify deploy --dir` flow doesn't hit this because it copies audio from local disk.
+
+**Fix — track the audio with Git LFS** (`.gitattributes` already added for `*.mp3/*.m4a/*.wav`). Run natively:
+```bash
+cd ~/Psychiatry-Clerkship-Library
+git lfs install
+# stop ignoring the audio types so LFS can track them (keep decks/PDFs ignored):
+sed -i '' '/^\*\.mp3$/d;/^\*\.m4a$/d;/^\*\.wav$/d' .gitignore
+git add .gitattributes .gitignore
+git add 07_Evidence_and_Reading/Landmark_Trials/audio \
+        13_Faculty_Resources/Handoffs/openevidence_notebooklm_brief_audio_2026-06-30
+git lfs ls-files | head        # verify the 100 files are LFS-tracked (not regular blobs)
+git commit -m "chore: track site audio via Git LFS (landmark + NotebookLM briefs)"
+git push
+```
+**Quota note:** 328 MB fits GitHub LFS free storage (1 GB), but LFS **bandwidth** is 1 GB/mo free and each full CI build pulls the objects (~328 MB) → budget a **$5/mo 50 GB data pack** if you build often. Also confirm the **first Netlify build actually checks out LFS objects** (Netlify supports Git LFS; verify `/audio` and `/audio_oe` are populated on the deployed site).
+
+**Sequencing:** linking the repos (§3) is harmless, but **don't treat build-on-push as your deploy mechanism until the first CI build is verified to include audio.** Until then, keep the manual `netlify deploy --dir` flow (§5), which includes audio from disk. If a first CI build ships audio-less, roll back with one manual deploy.
+
 ---
-*Prepared 2026-07-01. Baseline commit `a7793cc`. Build scripts are session-portable and CI-ready.*
+*Prepared 2026-07-01; audio/LFS section added same day. Baseline commit `a7793cc`. Build scripts are session-portable and CI-ready; audio must be LFS-tracked before deploy-on-push.*
