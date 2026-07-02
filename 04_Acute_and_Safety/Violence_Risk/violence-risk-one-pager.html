@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [RC-META] tool="Violence Risk — One-Pager (FRST)" version="2.0" built="2026-06-26" category="acute-safety" audience="trainee,ms3" settings="inpatient,ED" time="10min" summary="Inpatient violence-risk teaching one-pager: static vs dynamic factors, an interactive imminent warning-signs checklist, the Fordham Risk Screening Tool (FRST) used at MaineHealth, and management/documentation. Educational; fictional composites only." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Violence Risk — One-Pager (FRST)</title>
+<meta name="description" content="A teaching one-pager on inpatient violence risk: static and dynamic factors, an interactive imminent warning-signs checklist, the Fordham Risk Screening Tool (FRST) used at MaineHealth, and management and documentation guidance.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+    --success:#357160; --success-light:#e7f1ed;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --danger:#a34132; --danger-light:#fbece9;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(900px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) var(--sp5)}
+  h1,h2,h3{font-family:var(--font-head);line-height:1.25;margin:0 0 var(--sp3)}
+  h1{font-size:2.1rem;color:var(--primary)} h2{font-size:1.3rem;margin-top:var(--sp4)} h3{font-size:1.05rem}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .sub{color:var(--text-mid);max-width:64ch;margin:0 0 var(--sp3)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp3)}
+  @media(max-width:640px){.twocol{grid-template-columns:1fr}}
+  .col{border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--sp3);background:var(--surface)}
+  .col.static{border-top:4px solid var(--info)} .col.dynamic{border-top:4px solid var(--accent)}
+  .col h3{margin-top:0} .col ul{margin:0;padding-left:1.1em} .col li{margin-bottom:5px;font-size:.92rem}
+  .tag{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700;padding:2px 8px;border-radius:var(--radius-pill)}
+  .tag.info{background:var(--info-light);color:var(--info)} .tag.acc{background:var(--accent-light);color:var(--accent-dark)}
+  .frst{background:var(--info-light);border:1px solid var(--info);border-radius:var(--radius-md);padding:var(--sp3)}
+  .frst h3{color:var(--info);margin-top:0}
+  .frst .cite{font-size:.82rem;color:var(--text-mid);margin-top:var(--sp2)}
+  .check{display:flex;gap:var(--sp2);align-items:center;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer}
+  .check:last-child{border-bottom:none}
+  .box{width:22px;height:22px;border:2px solid var(--accent);border-radius:5px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+  .box.on{background:var(--accent)}
+  .alertbox{padding:var(--sp2) var(--sp3);border-radius:var(--radius-md);font-weight:700;text-align:center;margin-top:var(--sp2)}
+  .alertbox.calm{background:var(--success-light);color:var(--success);border:1px solid var(--success)}
+  .alertbox.act{background:var(--danger-light);color:var(--danger);border:1px solid var(--danger)}
+  .btn{border:none;border-radius:var(--radius-sm);padding:8px 14px;font-weight:600;cursor:pointer;font-family:inherit;background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .step{display:flex;gap:var(--sp2);align-items:flex-start;margin-bottom:var(--sp2)}
+  .step .n{width:24px;height:24px;border-radius:var(--radius-pill);background:var(--primary-dark);color:#fff;font-weight:700;font-size:.8rem;display:inline-flex;align-items:center;justify-content:center;flex:none}
+  .pearl{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);font-size:.9rem;margin-top:var(--sp3)}
+  .pearl b{color:var(--warning)}
+  .disclaimer{background:var(--bg-alt);border:1px dashed var(--border);border-radius:var(--radius-md);padding:var(--sp3);font-size:.82rem;color:var(--text-mid);margin-top:var(--sp4)}
+  footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light);text-align:center}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+var e=React.createElement; var useState=React.useState;
+var SIGNS=[
+  {k:'restless','b':'Escalating motor restlessness / pacing'},
+  {k:'clench','b':'Clenched fists or jaw, muscle tension'},
+  {k:'space','b':'Invading personal space; will not sit'},
+  {k:'speech','b':'Loud, rapid, or threatening speech'},
+  {k:'stare','b':'Prolonged or hostile staring'},
+  {k:'threat','b':'Direct verbal threats or target-directed anger'},
+  {k:'objects','b':'Banging / throwing / striking objects'},
+  {k:'prior','b':'Assault or near-miss already this admission'}
+];
+function App(){
+  var sel=useState({}); var setSel=sel[1]; sel=sel[0];
+  function toggle(k){var n=Object.assign({},sel);n[k]=!n[k];setSel(n);}
+  var count=SIGNS.reduce(function(a,i){return a+(sel[i.k]?1:0);},0);
+  return e('div',{className:'shell'},
+    e('div',{className:'kicker'},'Acute & Safety · 04'),
+    e('h1',null,'Violence Risk on the Inpatient Unit'),
+    e('p',{className:'sub'},'Risk assessment is structured judgment, not prediction. Combine history (what rarely changes) with the current state (what you can change), watch for imminent signs, and document your reasoning — not a false certainty.'),
+
+    e('div',{className:'card'},
+      e('h2',{style:{marginTop:0}},'Two kinds of risk factors'),
+      e('div',{className:'twocol'},
+        e('div',{className:'col static'},
+          e('span',{className:'tag info'},'Static · historical'),
+          e('h3',{style:{marginTop:'8px'}},'What rarely changes'),
+          e('ul',null,
+            e('li',null,e('b',null,'Prior violence'),' — the single strongest predictor.'),
+            e('li',null,'History of weapon use or arrests for violence.'),
+            e('li',null,'Younger age; early-life exposure to violence/victimization.'),
+            e('li',null,'Antisocial traits; prior treatment nonadherence.'),
+            e('li',null,'Childhood conduct problems.'))),
+        e('div',{className:'col dynamic'},
+          e('span',{className:'tag acc'},'Dynamic · modifiable'),
+          e('h3',{style:{marginTop:'8px'}},'What you can act on'),
+          e('ul',null,
+            e('li',null,e('b',null,'Active psychosis'),' — persecutory delusions, command hallucinations, threat/control-override.'),
+            e('li',null,'Agitation; intoxication or withdrawal.'),
+            e('li',null,'Access to means/weapons.'),
+            e('li',null,'Acute stressors, perceived provocation, limit-setting.'),
+            e('li',null,'Untreated pain, delirium, sleep loss.')))),
+      e('div',{className:'pearl'}, e('b',null,'Teaching point: '),'Static factors set the baseline; dynamic factors are where treatment changes the risk. Your job is to find and modify the dynamic ones.')
+    ),
+
+    e('div',{className:'card'},
+      e('h2',{style:{marginTop:0}},'The screening tool used at MaineHealth: FRST'),
+      e('div',{className:'frst'},
+        e('h3',null,'Fordham Risk Screening Tool (FRST)'),
+        e('div',null,'At Maine Medical Center, patients admitted to inpatient psychiatry are screened for violence risk with the **Fordham Risk Screening Tool (FRST)**, completed in the **Emergency Department at intake**. It is a brief structured screen that returns a positive/negative result and flags who needs heightened observation and proactive de-escalation on arrival to the unit. Complete and read the FRST in the EHR/admission workflow — use the official version for the exact items.'),
+        e('div',{className:'cite'},'MMC validation: Racine, Strout, Johnston, Quigley, Wolfrum & Guido (2025), Community Mental Health Journal — an FRST-positive screen was associated with markedly more inpatient violent incidents (≈33% vs 8% for negative screens) in a consecutive ED-to-inpatient cohort. The authors caution against standalone use, however — sensitivity was limited (~33%), so a negative screen does not rule out risk; the FRST supports structured clinical judgment, it does not predict violence.')
+      ),
+      e('div',{className:'pearl'}, e('b',null,'How to use it as a student: '),'note the FRST result on admission, and let a positive screen raise your index of suspicion and your monitoring — then keep reassessing the dynamic factors and warning signs below, because risk changes hour to hour.')
+    ),
+
+    e('div',{className:'card'},
+      e('h2',{style:{marginTop:0}},'Imminent warning signs — check what you see now'),
+      e('p',{className:'sub'},'Not a scored instrument — a teaching prompt. Tap each sign you observe. Rising signs over a shift matter as much as any single one.'),
+      SIGNS.map(function(i){
+        return e('div',{className:'check',key:i.k,onClick:function(){toggle(i.k)}},
+          e('span',{className:'box'+(sel[i.k]?' on':'')}, sel[i.k]?'✓':''),
+          e('span',null,i.b));
+      }),
+      e('div',{className:'alertbox '+(count>=1?'act':'calm')},
+        count===0?'No imminent signs checked — continue routine observation and reassess.'
+                 :(count+' sign(s) present → move to de-escalation now; ensure team awareness and your own exit.')),
+      e('button',{className:'btn',style:{marginTop:'12px'},onClick:function(){setSel({})}},'Reset')
+    ),
+
+    e('div',{className:'card'},
+      e('h2',{style:{marginTop:0}},'Management ladder & documentation'),
+      e('div',{className:'step'}, e('span',{className:'n'},1), e('div',null,e('b',null,'Environment & milieu first '),'— reduce stimulation, give space, remove triggers/means, ensure your exit.')),
+      e('div',{className:'step'}, e('span',{className:'n'},2), e('div',null,e('b',null,'Verbal de-escalation '),'— calm tone, validate, offer choices (see the Agitation ladder in 04 · Acute & Safety).')),
+      e('div',{className:'step'}, e('span',{className:'n'},3), e('div',null,e('b',null,'Offer PRN medication '),'collaboratively before it becomes involuntary.')),
+      e('div',{className:'step'}, e('span',{className:'n'},4), e('div',null,e('b',null,'Treat the driver '),'— psychosis, intoxication/withdrawal, delirium, pain.')),
+      e('div',{className:'step'}, e('span',{className:'n'},5), e('div',null,e('b',null,'Restraint/seclusion = last resort '),'per the Restraint checklist; debrief afterward.')),
+      e('div',{className:'pearl'}, e('b',null,'Document the reasoning, not a guarantee: '),'note the FRST result, the static and dynamic factors you weighed, the dynamic ones you’re modifying, the plan, and the monitoring level. Duty-to-protect obligations vary by state — follow institutional and legal policy.')
+    ),
+
+    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. The warning-signs checklist is a learning prompt, not a validated scored instrument; the FRST itself should be completed using your institution’s official version and protocol. Not a substitute for clinical judgment, supervision, or institutional policy. Fictional composites only — no protected health information.'),
+    e('footer',null,'Violence Risk — One-Pager (FRST) · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>

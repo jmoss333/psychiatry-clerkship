@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="icon" href="/favicon.svg">
+<!-- [RC-META] tool="Five Good Minutes — Brief Psychotherapy Coach" version="0.1.0" built="2026-07-02" category="skills-reference" audience="resident,trainee" settings="inpatient" time="5min" reviewCadenceDays="365" status="draft-pending-attestation" summary="Bedside coaching aid: match the mechanism driving today's crisis to one brief, evidence-based technique (steps, example language, evidence, caution, handoff). Routes active suicidality to the team/tools rather than coaching a script. A coaching aid, not a chart entry; no PHI; reflections stay on-device. No runtime CDN." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Five Good Minutes — PREVIEW</title>
+<meta name="description" content="Bedside coaching aid matching the mechanism of today's crisis to one brief, evidence-based psychotherapeutic technique. Educational only; not a chart entry.">
+<script src="./vendor/react.min.js"></script>
+<script src="./vendor/react-dom.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#665a4f;
+    --success:#357160; --success-light:#e7f1ed;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --danger:#a34132; --danger-light:#fbece9;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px;
+  }
+  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(820px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) 84px}
+  h1{font-family:var(--font-head);font-size:1.7rem;color:var(--primary);margin:0 0 2px}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .themebtn{position:fixed;top:12px;right:12px;width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;z-index:30}
+  .disc{border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.83rem;margin-bottom:var(--sp3);background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--accent)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp3) var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .tabs{display:inline-flex;gap:6px;border:1px solid var(--border);border-radius:var(--radius-pill);padding:4px;margin-bottom:var(--sp3);background:var(--bg-alt)}
+  .tabs button{border:none;background:transparent;padding:7px 16px;border-radius:var(--radius-pill);font:inherit;font-size:.85rem;font-weight:700;color:var(--text-mid);cursor:pointer;min-height:40px}
+  .tabs button.on{background:var(--accent);color:var(--on-brand)}
+  .frame{background:var(--primary-light);border-left:3px solid var(--primary);border-radius:0 var(--radius-md) var(--radius-md) 0;padding:12px 15px;margin-bottom:var(--sp3);font-size:.92rem}
+  .frame b{color:var(--primary-dark)}
+  .cuegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .cue{text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-md);padding:13px 14px;cursor:pointer;font:inherit;color:var(--text);min-height:70px}
+  .cue:hover{border-color:var(--accent);background:var(--accent-light)}
+  .cue.safety{border-color:var(--danger);background:var(--danger-light)}
+  .cue .mech{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-light);margin-top:4px}
+  .cue.safety .mech{color:var(--danger)}
+  .mechbadge{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-pill);padding:3px 11px;margin-bottom:8px}
+  .tname{font-family:var(--font-head);font-size:1.35rem;margin:0 0 var(--sp3);color:var(--text)}
+  .step{display:grid;grid-template-columns:26px 1fr;gap:11px;margin:8px 0}
+  .step .sn{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--on-brand);font-weight:700;font-size:.82rem;display:flex;align-items:center;justify-content:center}
+  .lbl{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-light);margin:16px 0 6px}
+  .script{background:var(--bg-alt);border-radius:var(--radius-sm);padding:9px 13px;font-style:italic;color:var(--text-mid);margin:6px 0;font-size:.95rem}
+  .kv{border-radius:var(--radius-sm);padding:9px 13px;margin:6px 0;font-size:.9rem;border:1px solid var(--border)}
+  .kv.ev{background:var(--success-light);border-color:var(--success);color:var(--success)}
+  .kv.ca{background:var(--warning-light);border-color:var(--warning);color:var(--warning)}
+  .kv.ho{background:var(--info-light);border-color:var(--info);color:var(--info)}
+  .localchip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;border:1px dashed var(--warning);color:var(--warning);background:var(--warning-light);border-radius:var(--radius-pill);padding:3px 10px;margin-top:8px}
+  .localchip.set{border-style:solid;border-color:var(--success);color:var(--success);background:var(--success-light)}
+  .planbox{border-top:1px solid var(--border);margin-top:16px;padding-top:14px}
+  .planbox input{width:100%;max-width:340px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font:inherit;background:var(--surface);color:var(--text)}
+  .hint{font-size:.74rem;color:var(--text-light);margin:4px 0 8px}
+  .btn{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-weight:600;cursor:pointer;font:inherit;background:var(--surface);color:var(--accent-dark);min-height:44px}
+  .btn.primary{background:var(--primary-dark);color:var(--on-brand);border-color:var(--primary-dark)}
+  .btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:var(--sp3)}
+  .route{display:flex;align-items:center;gap:10px;border:1px solid var(--danger);background:var(--surface);border-radius:var(--radius-md);padding:12px 14px;margin:8px 0;color:var(--danger);text-decoration:none;font-weight:600}
+  .route:hover{background:var(--danger-light)}
+  .planrow{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 13px;margin:8px 0;flex-wrap:wrap}
+  .planrow .pt{flex:1;min-width:0}
+  .planrow .pt small{color:var(--text-light)}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-pill);overflow:hidden}
+  .seg button{border:none;background:var(--surface);padding:6px 12px;font:inherit;font-size:.78rem;color:var(--text-mid);cursor:pointer}
+  .seg button.on{background:var(--accent);color:var(--on-brand)}
+  .private{font-size:.78rem;color:var(--text-light);margin-top:10px}
+  .foot{position:fixed;left:0;right:0;bottom:0;background:var(--bg-alt);border-top:1px solid var(--border);color:var(--text-light);font-size:.78rem;padding:8px 14px;text-align:center;margin:0;z-index:20}
+  .flag{background:none;border:1px solid var(--border);border-radius:var(--radius-pill);padding:6px 14px;color:var(--text-light);cursor:pointer;font:inherit;font-size:.82rem;min-height:40px}
+  .flag:hover{border-color:var(--danger);color:var(--danger)}
+  details.cites summary{cursor:pointer;font-size:.82rem;color:var(--accent-dark);margin-top:10px}
+  .cite{font-size:.8rem;color:var(--text-light)}
+  :focus-visible{outline:3px solid var(--focus,#155eef);outline-offset:2px}
+  @media(max-width:560px){.cuegrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<button class="themebtn" id="themebtn" aria-label="Toggle light/dark theme">◐</button>
+<main class="shell" id="root"></main>
+<div class="foot" role="note">A coaching aid — <b>not a chart entry, not a diagnosis or treatment plan for the record</b>. Reflections stay on this device.</div>
+<div id="live" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)" aria-live="polite"></div>
+<script>
+(function(){
+  "use strict";
+  var PACK_INLINE = {
+  "schemaVersion": "1.0",
+  "tool": "brief-psych-coach",
+  "version": "0.1.0",
+  "built": "2026-07-02",
+  "evidenceThrough": "2026-06-30",
+  "reviewCadenceDays": 365,
+  "status": "draft-pending-attestation",
+  "_incorporationChecklist": {
+    "source": "content/brief_psychotherapy.md (attested, Joshua Moss MD) + OpenEvidence 'Brief Psychotherapeutic Interventions on Adult Inpatient Psychiatry Units' review (staging).",
+    "claimExtraction": "Mechanism→technique mapping, steps, example language, evidence/caution/handoff. No agents/doses. Effect sizes quoted from source md.",
+    "facultyReview": "PENDING — attest before adding to reviewed.json.",
+    "noPhi": "Coaching aid only. No patient identifiers; plan labels capped at 30 chars with a no-names hint; reflections stored on-device only.",
+    "publishTarget": "mmc-resident-deploy/tools/rp-brief-psych.html + rp-brief-psych.pack.json"
+  },
+  "citations": [
+    { "id": "uphoff2020", "ref": "Uphoff E, et al. Behavioural activation therapy for depression in adults. Cochrane Database Syst Rev. 2020.", "url": "" },
+    { "id": "linehan2015", "ref": "Linehan MM, et al. Dialectical behavior therapy skills, and outcomes among high-suicide-risk women (dismantling trial). JAMA Psychiatry. 2015.", "url": "" },
+    { "id": "hatcher2011", "ref": "Hatcher S, et al. Problem-solving therapy for people who present to hospital with self-harm. Br J Psychiatry. 2011.", "url": "" },
+    { "id": "xia2011", "ref": "Xia J, Merinder LB, Belgamwar MR. Psychoeducation for schizophrenia. Cochrane Database Syst Rev. 2011.", "url": "" },
+    { "id": "stanley2018", "ref": "Stanley B, et al. Comparison of the Safety Planning Intervention with follow-up vs usual care for suicidal patients. JAMA Psychiatry. 2018.", "url": "" },
+    { "id": "steinjacobo2013", "ref": "Stein MB, Jacobo MC. Brief psychotherapy on the inpatient unit. Psychotherapy. 2013.", "url": "" },
+    { "id": "oeReview2026", "ref": "OpenEvidence. Brief Psychotherapeutic Interventions on Adult Inpatient Psychiatry Units: A Comprehensive Evidence Review. 2026 (staging).", "url": "" }
+  ],
+  "localPolicies": [
+    { "type": "LOCAL_POLICY", "id": "bp.local_groups", "label": "Group programming available on this unit (skills group, psychoed group, activity)", "placeholder": "Confirm local groups/activities", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "bp.outpatient_referral", "label": "Outpatient therapy referral / warm-handoff pathway", "placeholder": "Confirm local referral pathway", "value": null, "verifiedBy": null, "verifiedAt": null }
+  ],
+  "safety": {
+    "cueId": "cue-suicidal",
+    "title": "This is a risk state, not a five-minute technique",
+    "body": "Active suicidality needs your team, not a coached script. Route it, then build a plan collaboratively and supervised.",
+    "routes": [
+      { "label": "Open the Columbia C-SSRS screener", "href": "?tool=cssrs.html" },
+      { "label": "Suicide Risk & Safety pocket guide", "href": "?page=pg_suicide.md" }
+    ],
+    "note": "Safety planning (Stanley-Brown) is collaborative, built with the patient and supervised — never generated here, and never a no-suicide 'contract' (no evidence; false reassurance).",
+    "citationIds": ["stanley2018"]
+  },
+  "content": {
+    "frame": {
+      "title": "The bedside frame — five minutes, not fifty",
+      "lead": "You won't finish a course of therapy here. Read the mechanism driving today's crisis, match one brief technique, and hand the thread to outpatient care. No single school wins — fit beats brand (pooled SMD ~0.24, NNT ~7; CBT ≈ BA ≈ PST).",
+      "scaffold": ["3 assessments: safety, sleep, function", "3 interventions: one skill, one activity, one connection", "3 discharge tasks: appointment, means safety, warning-signs plan"],
+      "citationIds": ["steinjacobo2013", "oeReview2026"]
+    },
+    "cues": [
+      { "id": "cue-shutdown", "label": "Withdrawn, inactive, anhedonic — “nothing matters”", "mechanism": "Behavioral shutdown", "techId": "ba" },
+      { "id": "cue-flooded", "label": "Flooded, escalating, about to act", "mechanism": "Acute emotional dysregulation", "techId": "tipp" },
+      { "id": "cue-selfharm", "label": "Just self-harmed or nearly did", "mechanism": "Behavior serving a function", "techId": "chain" },
+      { "id": "cue-overwhelmed", "label": "Keeps returning in crisis, overwhelmed by problems", "mechanism": "Problem-solving deficit", "techId": "pst" },
+      { "id": "cue-ambivalent", "label": "Ambivalent about meds, treatment, or substance use", "mechanism": "Motivational conflict", "techId": "mi" },
+      { "id": "cue-frightened", "label": "Confused or frightened by the illness itself", "mechanism": "Knowledge / coping gap", "techId": "psychoed" },
+      { "id": "cue-suicidal", "label": "Voicing suicidal thoughts / acute risk", "mechanism": "Acute risk state", "safety": true }
+    ],
+    "techniques": [
+      {
+        "id": "ba", "name": "Behavioral Activation (micro-dose)", "mechanism": "Behavioral shutdown",
+        "steps": [
+          { "n": 1, "t": "Name the pattern out loud: “this looks like behavioral shutdown, not laziness.”" },
+          { "n": 2, "t": "Pick ONE small, valued, doable-today activity with the patient (not a to-do list)." },
+          { "n": 3, "t": "Make it concrete: what, when, with whom — schedule it into today." },
+          { "n": 4, "t": "Close the loop tomorrow: did it happen? how did mood shift? adjust." }
+        ],
+        "scriptLines": [
+          "“Depression makes everything feel pointless before you start — so we act first and let motivation catch up. What’s one small thing that used to matter to you?”",
+          "“Could we put a 10-minute walk after lunch on today’s plan, together?”"
+        ],
+        "evidence": "Superior to usual care for depression (SMD ~ −0.78), on par with CBT, and the lowest cognitive demand — the best inpatient fit for a shut-down patient.",
+        "caution": "Keep it small and valued, not a chore list; failure to complete an over-ambitious plan reinforces hopelessness.",
+        "handoff": "Note the chosen activity + response so outpatient can continue the activation schedule.",
+        "localHookId": "bp.local_groups",
+        "citationIds": ["uphoff2020"]
+      },
+      {
+        "id": "tipp", "name": "DBT distress tolerance — TIPP", "mechanism": "Acute emotional dysregulation",
+        "steps": [
+          { "n": 1, "t": "Validate first, then offer a skill: “this is a lot — want a way to bring the intensity down fast?”" },
+          { "n": 2, "t": "Temperature: cool water on the face / cold pack to shift physiology." },
+          { "n": 3, "t": "Intense exercise (brief), Paced breathing (longer exhale), Paired muscle relaxation." },
+          { "n": 4, "t": "Reassess arousal; once the wave passes, debrief what helped." }
+        ],
+        "scriptLines": [
+          "“Your body is in alarm right now — let’s lower the alarm before we problem-solve.”",
+          "“Breathe out slower than you breathe in — I’ll count with you.”"
+        ],
+        "evidence": "Skills-containing DBT arms outperform for self-injury in dismantling trials.",
+        "caution": "A distress-tolerance skill is for riding out a wave — not a substitute for a safety assessment when risk is present.",
+        "handoff": "Note which skill helped so it can be rehearsed and carried to outpatient DBT.",
+        "localHookId": "bp.local_groups",
+        "citationIds": ["linehan2015"]
+      },
+      {
+        "id": "chain", "name": "Chain analysis (after an incident)", "mechanism": "Behavior serving a function",
+        "steps": [
+          { "n": 1, "t": "Non-punitive stance: “let’s understand what happened, together — not to judge it.”" },
+          { "n": 2, "t": "Walk the sequence: vulnerability → trigger → thoughts/feelings → action → consequences." },
+          { "n": 3, "t": "Find the function the behavior served (escape, communication, relief)." },
+          { "n": 4, "t": "Identify one earlier link where a skill could change the chain next time." }
+        ],
+        "scriptLines": [
+          "“Take me back to right before it happened — what was going on?”",
+          "“What did it do for you in that moment? What did it cost afterward?”"
+        ],
+        "evidence": "Turns an incident into a formulation and a plan; a core DBT move that replaces a punitive response.",
+        "caution": "Do it collaboratively and non-judgmentally; a blaming tone re-traumatizes and shuts down disclosure.",
+        "handoff": "Document the chain + the identified skill-insertion point for the outpatient therapist.",
+        "citationIds": ["linehan2015"]
+      },
+      {
+        "id": "pst", "name": "Problem-Solving Therapy (4-step micro-session)", "mechanism": "Problem-solving deficit",
+        "steps": [
+          { "n": 1, "t": "Define ONE concrete, solvable problem (not the whole life)." },
+          { "n": 2, "t": "Brainstorm options without judging them yet." },
+          { "n": 3, "t": "Choose one workable option together (pros/cons quickly)." },
+          { "n": 4, "t": "Plan the first small step and when it happens." }
+        ],
+        "scriptLines": [
+          "“There’s a lot going on — if we could solve just one piece this week, which would help most?”",
+          "“Let’s list options first; we’ll pick after — no bad ideas yet.”"
+        ],
+        "evidence": "Reduces repeat self-harm re-presentation (13.5% vs 22.1%, NNT 12).",
+        "caution": "Keep the problem bounded; an unbounded problem defeats the method and deepens overwhelm.",
+        "handoff": "Note the defined problem + chosen step so outpatient can continue the format.",
+        "citationIds": ["hatcher2011"]
+      },
+      {
+        "id": "mi", "name": "Motivational Interviewing (brief)", "mechanism": "Motivational conflict",
+        "steps": [
+          { "n": 1, "t": "Roll with resistance — don’t argue the change side; that entrenches it." },
+          { "n": 2, "t": "Ask open questions; reflect and affirm autonomy." },
+          { "n": 3, "t": "Evoke change talk: “what would be different if…?”, importance/confidence rulers (0–10)." },
+          { "n": 4, "t": "Summarize the patient’s own reasons; ask permission before advising." }
+        ],
+        "scriptLines": [
+          "“On a scale of 0–10, how important is cutting back right now? … Why not a lower number?”",
+          "“You get to decide — what do you make of all this?”"
+        ],
+        "evidence": "Improves engagement and substance-use outcomes; pairs with the Motivational Interviewing page.",
+        "caution": "The righting reflex (persuading, warning) predictably increases sustain talk — resist it.",
+        "handoff": "Note the patient’s stated reasons + readiness so outpatient can build on the change talk.",
+        "citationIds": ["oeReview2026"]
+      },
+      {
+        "id": "psychoed", "name": "Psychoeducation (as a conversation)", "mechanism": "Knowledge / coping gap",
+        "steps": [
+          { "n": 1, "t": "Ask what they already understand and fear about the illness." },
+          { "n": 2, "t": "Offer a simple, non-stigmatizing illness model in their words." },
+          { "n": 3, "t": "Build a warning-signs / early-action plan together." },
+          { "n": 4, "t": "Loop in family when possible — with the patient’s permission." }
+        ],
+        "scriptLines": [
+          "“What’s your understanding of what’s been happening to you?”",
+          "“What are the earliest signs, for you, that things are slipping — and what could we do then?”"
+        ],
+        "evidence": "The strongest single inpatient psychological intervention: readmission NNT ~5, relapse NNT ~9.",
+        "caution": "A conversation, not a packet dump; check understanding rather than lecturing.",
+        "handoff": "Share the warning-signs plan + family involvement status with outpatient.",
+        "localHookId": "bp.local_groups",
+        "citationIds": ["xia2011"]
+      }
+    ]
+  }
+}
+;
+  var e=React.createElement, useState=React.useState, useEffect=React.useEffect;
+  var PKEY='rp_bp_v1';
+  function announce(m){try{document.getElementById('live').textContent=m;}catch(e){}}
+  function today(){return new Date().toISOString().slice(0,10);}
+  function loadPlans(){try{return JSON.parse(localStorage.getItem(PKEY)||'{"plans":[]}');}catch(e){return {plans:[]};}}
+  function savePlans(p){try{localStorage.setItem(PKEY,JSON.stringify(p));}catch(e){}}
+  function tokenById(pack,id){var a=(pack.localPolicies||[]).filter(function(t){return t.id===id;});return a[0]||null;}
+  function LocalChip(props){var tok=props.token;if(!tok)return null;var set=tok.value!==null&&tok.value!==undefined;
+    return e('span',{className:'localchip'+(set?' set':''),title:tok.label},set?('Local · '+tok.value):('⚠ '+(tok.placeholder||'Confirm locally')));}
+  function FlagButton(props){function onFlag(){var r=window.prompt('Flag this content — reason + note:');if(r===null)return;
+    try{var a=JSON.parse(localStorage.getItem('rp_flags')||'[]');a.push({tool:'rp-brief-psych',v:'0.1.0',ctx:props.ctx||'',reason:r,at:new Date().toISOString()});localStorage.setItem('rp_flags',JSON.stringify(a));}catch(e){}
+    announce('Flag saved locally.');alert('Flag saved locally.');}
+    return e('button',{className:'flag',onClick:onFlag},'⚑ Flag');}
+
+  function App(){
+    var s0=useState('loading'),phase=s0[0],setPhase=s0[1];
+    var sp=useState(null),pack=sp[0],setPack=sp[1];
+    var sv=useState('coach'),view=sv[0],setView=sv[1]; // coach | plan
+    var st=useState(null),tech=st[0],setTech=st[1];
+    var ssf=useState(false),showSafety=ssf[0],setShowSafety=ssf[1];
+    var sl=useState(''),label=sl[0],setLabel=sl[1];
+    var spl=useState(loadPlans()),plans=spl[0],setPlans=spl[1];
+
+    useEffect(function(){Promise.resolve(PACK_INLINE)
+      .then(function(d){setPack(d);setPhase('cues');}).catch(function(){setPhase('error');});},[]);
+    useEffect(function(){document.getElementById('themebtn').onclick=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('cw_theme',c);}catch(e){}};},[]);
+
+    function openCue(cue){if(cue.safety){setShowSafety(true);setPhase('safety');announce('Safety routing.');return;}
+      var t=pack.content.techniques.filter(function(x){return x.id===cue.techId;})[0];setTech(t);setLabel('');setPhase('tech');announce(t.name);}
+    function addPlan(){var p=loadPlans();p.plans.push({id:'p'+Date.now(),date:today(),techId:tech.id,techName:tech.name,label:(label||'').slice(0,30),status:'planned'});savePlans(p);setPlans(p);setLabel('');announce('Added to today’s plan.');setView('plan');setPhase('cues');}
+    function setStatus(id,st){var p=loadPlans();p.plans.forEach(function(x){if(x.id===id)x.status=st;});savePlans(p);setPlans(p);}
+
+    if(phase==='loading')return e('div',{className:'shell'},e('p',null,'Loading coach…'));
+    if(phase==='error')return e('div',{className:'shell'},e('h1',null,'Five Good Minutes'),
+      e('div',{className:'disc'},'Could not load the content pack. Runs on the site (served); opened from disk the browser blocks the fetch — use the served version or the preview build.'),
+      e('button',{className:'btn primary',onClick:function(){location.reload();}},'Retry'));
+
+    var header=e('div',null,
+      e('div',{className:'kicker'},'Skills & reference · Bedside coaching'),
+      e('h1',null,'Five Good Minutes'),
+      e('div',{className:'disc',role:'note'},'Match the ',e('b',null,'mechanism'),' driving today’s crisis to one brief technique — then hand the thread to outpatient. A coaching aid, not a chart entry; no names, no PHI.'),
+      e('div',{className:'tabs',role:'tablist'},
+        e('button',{role:'tab','aria-selected':view==='coach',className:view==='coach'?'on':'',onClick:function(){setView('coach');setPhase('cues');}},'Coach'),
+        e('button',{role:'tab','aria-selected':view==='plan',className:view==='plan'?'on':'',onClick:function(){setView('plan');setPhase('cues');}},'Today’s plan ('+plans.plans.filter(function(p){return p.date===today();}).length+')')));
+
+    // PLAN view
+    if(view==='plan'){
+      var todays=plans.plans.filter(function(p){return p.date===today();});
+      return e('div',null,header,
+        e('div',{className:'card'},
+          e('div',{className:'lbl'},'Today’s five good minutes'),
+          todays.length?todays.map(function(p){return e('div',{className:'planrow',key:p.id},
+            e('div',{className:'pt'},e('div',null,e('b',null,p.techName)),p.label?e('small',null,p.label):e('small',null,'—')),
+            e('div',{className:'seg'},
+              ['did','tried','didnt'].map(function(sx){return e('button',{key:sx,className:p.status===sx?'on':'',onClick:function(){setStatus(p.id,sx);}}, sx==='did'?'Did it':sx==='tried'?'Tried':'Didn’t');})));
+          }):e('p',{className:'cite'},'Nothing planned yet today. Open the Coach tab, pick a cue, and plan one good five minutes.'),
+          e('div',{className:'private'},'Private — these reflections never leave this device, are not part of the record, and are not visible to supervisors.')),
+        e(FlagButton,{ctx:'plan'}));
+    }
+
+    // SAFETY routing
+    if(phase==='safety'){
+      var sf=pack.safety;
+      return e('div',null,header,
+        e('div',{className:'card',style:{borderColor:'var(--danger)'}},
+          e('div',{className:'mechbadge',style:{color:'var(--danger)',borderColor:'var(--danger)',background:'var(--danger-light)'}},'Acute risk state'),
+          e('div',{className:'tname'},sf.title),
+          e('p',null,sf.body),
+          sf.routes.map(function(r,i){return e('a',{className:'route',key:i,href:r.href,target:'_top'},'→ ',r.label);}),
+          e('div',{className:'kv ca'},sf.note),
+          e('div',{className:'btnrow'},e('button',{className:'btn',onClick:function(){setPhase('cues');}},'← Back to cues'))),
+        e(FlagButton,{ctx:'safety'}));
+    }
+
+    // TECHNIQUE view
+    if(phase==='tech'){
+      var t=tech;var cites=(t.citationIds||[]).map(function(id){return (pack.citations.filter(function(c){return c.id===id;})[0]||{}).ref;}).filter(Boolean);
+      var tok=t.localHookId?tokenById(pack,t.localHookId):null;
+      return e('div',null,header,
+        e('div',{className:'card'},
+          e('div',{className:'mechbadge'},'Mechanism · '+t.mechanism),
+          e('div',{className:'tname'},t.name),
+          e('div',{className:'lbl'},'Do this'),
+          t.steps.map(function(s){return e('div',{className:'step',key:s.n},e('div',{className:'sn'},s.n),e('div',null,s.t));}),
+          e('div',{className:'lbl'},'Example language — make it yours'),
+          t.scriptLines.map(function(x,i){return e('div',{className:'script',key:i},x);}),
+          e('div',{className:'kv ev'},e('b',null,'Evidence — '),t.evidence),
+          e('div',{className:'kv ca'},e('b',null,'Caution — '),t.caution),
+          e('div',{className:'kv ho'},e('b',null,'Handoff — '),t.handoff),
+          tok?e('div',null,e(LocalChip,{token:tok})):null,
+          cites.length?e('details',{className:'cites'},e('summary',null,'Evidence sources'),e('ul',null,cites.map(function(c,i){return e('li',{key:i,className:'cite'},c);}))):null,
+          e('div',{className:'planbox'},
+            e('div',{className:'lbl'},'Plan one good five minutes'),
+            e('div',{className:'hint'},'Optional label — no names or identifiers (e.g., “Room task after lunch”). Max 30 chars, stays on this device.'),
+            e('input',{type:'text',maxLength:30,value:label,placeholder:'e.g., walk after lunch',onChange:function(ev){setLabel(ev.target.value);},'aria-label':'Plan label, no names'}),
+            e('div',{className:'btnrow'},
+              e('button',{className:'btn primary',onClick:addPlan},'Add to today’s plan'),
+              e('button',{className:'btn',onClick:function(){setPhase('cues');}},'← Back to cues')))),
+        e(FlagButton,{ctx:'tech:'+t.id}));
+    }
+
+    // CUES (default)
+    var f=pack.content.frame;
+    return e('div',null,header,
+      e('div',{className:'frame'},e('b',null,'Five minutes, not fifty. '),f.lead),
+      e('div',{className:'card'},
+        e('div',{className:'lbl'},'What are you seeing?'),
+        e('div',{className:'cuegrid'},
+          pack.content.cues.map(function(c){return e('button',{key:c.id,className:'cue'+(c.safety?' safety':''),onClick:function(){openCue(c);}},
+            c.label, e('span',{className:'mech'}, c.safety?'⚑ Route to your team':c.mechanism));}))),
+      e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
+        e('span',{className:'cite'},'Daily scaffold: '+f.scaffold.join(' · ')),
+        e(FlagButton,{ctx:'cues'})));
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+})();
+</script>
+</body>
+</html>

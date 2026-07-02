@@ -1,0 +1,524 @@
+
+
+
+Family Involvement and Family Interventions in Adult Inpatient Psychiatry: A Comprehensive Evidence Review
+
+
+---
+
+1. Scope and Framing
+
+
+This review synthesizes the evidence base for family involvement in adult inpatient psychiatric care, spanning landmark randomized controlled trials, Cochrane reviews, network meta-analyses, and major guideline recommendations. The focus is on schizophrenia spectrum disorders and bipolar disorder — the two conditions with the deepest evidence base for family interventions — though principles apply broadly across serious mental illness (SMI). The review covers family psychoeducation, structured family meetings, relapse prevention, caregiver burden, expressed emotion, confidentiality frameworks, communication strategies, discharge planning, and brief interventions feasible during short admissions. It concludes with practical tools for clinical implementation: a top-20 paper list, a family meeting structure, resident scripts, teaching pearls, and a suggested family handout.
+
+---
+
+2. The Evidence Base: Landmark Trials and Foundational Research
+
+
+2.1 Expressed Emotion — The Theoretical Foundation
+
+
+The entire field of family intervention in psychiatry rests on the expressed emotion (EE) construct, first described by Brown and colleagues in 1962, who demonstrated that the emotional climate of the family environment predicted schizophrenia relapse.[1] The Butzlaff & Hooley (1998) meta-analysis of 27 studies confirmed that EE is a significant and robust predictor of relapse, with the relationship strongest for patients with chronic illness and extending transdiagnostically to mood disorders and eating disorders.[2] A p-curve analysis later verified the integrity of this literature, confirming no evidence of publication bias.[3]
+
+The Bebbington & Kuipers (1994) aggregate analysis of 25 studies (1,346 cases) worldwide found the EE-relapse association was "overwhelming" and maintained regardless of geography, with high contact with a high-EE relative increasing relapse risk while medication and EE operated as independent predictors.[4] An updated 2021 meta-analysis (33 prospective cohort studies, 2,284 patients) quantified the effect: global high-EE predicted early relapse with OR 4.87 (95% CI 3.22–7.36), while higher warmth was protective (OR 0.35, 95% CI 0.15–0.85).[5] Critical comments are the strongest predictor of relapse, associated with higher rehospitalization rates and intensification of positive symptoms over 20-year follow-up.[6]
+
+2.2 Landmark RCTs in Schizophrenia
+
+
+The first generation of family intervention trials in the 1980s established the evidence base that has since been replicated over 100 times worldwide:
+
+Falloon et al. (1982, NEJM) — This landmark RCT (N=36) compared at-home behavioral family therapy (psychoeducation + problem-solving skills training) with clinic-based individual supportive care. At 9 months, 6% of family-treated patients relapsed versus 44% in the individual treatment group, with family-treated patients averaging 0.83 hospital days versus 8.39 days for controls.[7]
+
+Leff et al. (1982) — This RCT (N=24 families) selected high-risk patients in high contact with high-EE relatives. The experimental group received education about schizophrenia, a relatives' group, and family sessions. Relapse rate was 9% in the experimental group versus 50% in controls (P=0.04). In families where therapeutic aims were achieved (73%), no patient relapsed.[8] Two-year follow-up combining data from a subsequent trial showed patients receiving any social intervention had a relapse rate of 40% versus 75% for controls.[9][10]
+
+Anderson, Hogarty & Reiss (1980/1986) — Developed the psychoeducational model aimed at diminishing relapse by de-intensifying the family environment, reflecting the vulnerability-stress framework. The Strachan (1986) review confirmed that this program, along with Falloon, Goldstein, and Leff, all demonstrated "very significant decreases in relapse rates" when combined with neuroleptic medication.[11][12]
+
+Tarrier et al. (1988, Salford Trial) — This RCT allocated high-EE families to behavioral intervention, education only, or routine treatment. Relapse rates over 9 months were significantly lower in the behavioral intervention groups, with reduction of hostility occurring only in those groups.[13]
+
+McFarlane et al. (1995) — Multifamily Groups (MFGs) — This three-way comparison RCT found psychoeducational MFGs averaged 12.5–14% relapse per year and were significantly more effective than single-family format in extending remission.[14] McFarlane's subsequent review summarized that across >100 outcome studies, meta-analyses put relapse rate reduction at 50–60% over treatment as usual, and MFGs were endorsed by SAMHSA/CMHS as one of six evidence-based practices for chronic mental illness.[15][16]
+
+2.3 Bipolar Disorder: Family-Focused Therapy (FFT)
+
+
+Miklowitz et al. (2000) — The first major FFT RCT (N=101) randomized bipolar patients to 21 sessions of FFT (9 months) versus 2-session crisis management, all on mood stabilizers. FFT patients had fewer relapses and longer delays before relapse, with effects most dramatic among patients from high-EE families.[17]
+
+Rea et al. (2003) — N=53 recently hospitalized bipolar manic patients randomized to 9-month FFT versus individually focused treatment. Over 2 years, FFT patients were less likely to be rehospitalized and experienced fewer mood disorder relapses.[18]
+
+Miklowitz et al. (2003, Arch Gen Psychiatry) — Two-year follow-up RCT showing FFT significantly prolonged time to relapse compared with crisis management plus medication.[19]
+
+Miklowitz et al. (2021, JAMA Psychiatry NMA) — This definitive network meta-analysis of 39 RCTs (3,863 participants) found that family or conjoint therapy had the strongest effect on recurrence prevention among all psychotherapies (OR 0.30, 95% CI 0.17–0.53), with the highest SUCRA ranking (95%).[20]
+
+---
+
+3. Cochrane Reviews and Major Meta-Analyses
+
+
+3.1 Cochrane Reviews
+
+
+
+
+[21][22][1][23]
+
+3.2 Network Meta-Analyses
+
+
+The Rodolico et al. (2022, Lancet Psychiatry) network meta-analysis — the first to compare 11 different family intervention models across 90 RCTs (10,340 participants) — represents the most comprehensive evidence synthesis to date. Family psychoeducation alone achieved a 10% relapse rate at 12 months versus 37% with treatment as usual (OR 0.18, 95% CI 0.12–0.27), ranking first in most sensitivity analyses. Critically, interventions comprising ≤2 sessions were ineffective, establishing a minimum dose threshold.[24]
+
+The Bighelli et al. (2021, Lancet Psychiatry) NMA of 72 RCTs (10,364 participants) examining all psychosocial interventions for relapse prevention found family interventions among the most efficacious (OR 0.35, 95% CI 0.24–0.52), but notably only after 12 months — not at 6 months — suggesting these interventions need time to take effect.[25]
+
+For first-episode psychosis, the Camacho-Gomez & Castellví (2020) meta-analysis of 11 RCTs (1,360 patients) found family intervention reduced relapse (RR=0.42, 95% CI 0.29–0.61), hospitalization days (MD=−3.31 days), psychotic symptoms (SMD=−0.68), and increased functionality (SMD=1.36).[26]
+
+---
+
+4. Caregiver Burden
+
+
+4.1 Prevalence and Impact
+
+
+Caregiver burden in SMI is pervasive: approximately 51% of caregivers experience mild-to-moderate burden and 34% experience high or severe burden, with nearly half showing psychological distress.[27] Caregivers of schizophrenia patients report mean Zarit Burden Interview scores of 49.68 (±15.03), indicating moderate-to-severe burden.[28] Approximately 37% of SMI caregivers show post-traumatic stress symptoms, and 15% meet full PTSD diagnostic criteria — compared to 0% among caregivers of patients with chronic medical illness.[29] A systematic review of 28 studies (6,166 caregivers) found that burden and psychological functioning were comparable across schizophrenia and bipolar disorder; symptoms and functional difficulties affected caregivers more than diagnosis per se.[30]
+
+4.2 Interventions That Reduce Caregiver Burden
+
+
+The Chien et al. (2024) Cochrane review found family-based interventions reduced short-term caregiver burden with moderate-certainty evidence (MD −5.84, 95% CI −6.77 to −4.92; 8 studies, 563 participants).[22] The Gleeson et al. (2025) meta-analysis of 36 RCTs in early psychosis found significant effects for carer burden (Hedges g = −0.68), critical comments (g = −0.81), and emotional overinvolvement (g = −0.92).[31] A meta-analysis of psychoeducation for carers (32 RCTs, 2,858 carers) found psychoeducation reduced perceived burden (SMD −0.434) and global morbidities (SMD −0.230).[32]
+
+The figure below from the Perlick et al. (2018) RCT illustrates the trajectory of caregiver depression and mental health functioning scores, showing sustained between-group differences favoring Family-Focused Treatment for Health Promoting Intervention (FFT-HPI) at post-treatment and 6-month follow-up.
+
+Figure 2 Mean caregiver depression and mental health scores over time. CES ‐D, Center for Epidemiologic Studies Depression Scale; SF ‐ MCS , SF ‐36 Mental Component Summary. a Higher scores indicate poorer symptoms/functioning. b Higher scores indicate better health status
+
+4.3 Measurement Tools
+
+
+The Zarit Burden Interview (ZBI) is the most widely used caregiver burden instrument globally, with excellent internal consistency (Cronbach's α = 0.89–0.91).[28][34] The 22-item version uses a 5-point Likert scale (total 0–88), with thresholds of 8–17 (moderate), 18–32 (high), and >32 (severe burden).[35] The Caregiver Burden Inventory (CBI) is a 24-item, five-subscale multidimensional instrument capturing time-dependence, developmental, physical, social, and emotional burden.[36][37]
+
+---
+
+5. Guideline Recommendations
+
+
+5.1 Summary of Major Guidelines
+
+
+
+
+[38][39][40][41][42][43]
+
+5.2 The Implementation Gap
+
+
+Despite this strong evidence base and universal guideline endorsement, family involvement remains dramatically under-implemented, with implementation rates varying from 0% to 53% across settings.[44][38] A scoping review of 46 articles identified key barriers: organizational culture not supportive of family work, clinician uncertainty about confidentiality, absence of standardized procedures, patients declining involvement due to privacy concerns, and staff time constraints.[44] Facilitators include whole-team coordinated effort, training and ongoing supervision, standardization of family involvement practices, and proactively recommending family services as standard care rather than opt-in.[45][46]
+
+---
+
+6. Confidentiality and Consent
+
+
+6.1 HIPAA Framework
+
+
+Under HIPAA, covered entities may disclose limited health information to a relative, friend, or designated person without written authorization, provided the patient is informed in advance and has the opportunity to agree or object. Disclosable information is limited to information directly relevant to the person's involvement in care or payment, or notification of location, general condition, or death.[47] If the patient is incapacitated or in an emergency, the entity may disclose information directly relevant to the person's involvement if it reasonably believes disclosure is in the patient's best interests.[47] Psychotherapy notes receive heightened protection and cannot be disclosed without specific authorization.[48]
+
+6.2 Practical Framework: Listening vs. Disclosing
+
+
+A critical practical distinction: clinicians can receive information from families without violating confidentiality — listening is not disclosing. The distinction between sharing information with families (requires consent or HIPAA exception) and receiving information from families (generally permissible) is the most important practical framework for navigating this tension.[49][50] A scoping review identified four categories of ethical challenges, including the phenomenon of clinicians using confidentiality as a "smokescreen" to avoid the complexity of family involvement.[50] When professionals gained competence in family involvement through training, this led to vital changes in how they interpreted and practiced confidentiality.[49]
+
+---
+
+7. Communication Frameworks
+
+
+7.1 Motivational Interviewing with Families
+
+
+Motivational Interviewing for Loved Ones (MILO) — A pilot RCT (N=40 caregivers of early psychosis patients) tested a brief 5-hour psychoeducational MI training for caregivers, showing large effect sizes (d=1.08–1.43) for caregiver wellbeing, self-efficacy, family conflict, and expressed emotion.[51] Teaching MI to parents of young adults with schizophrenia and cannabis use was feasible, with parents showing significantly greater MI adherence, competence, and empathy expression.[52] The VA/DoD guidelines recommend MI techniques to engage patients in family services by exploring the role they want their family to play in recovery.[40]
+
+7.2 Open Dialogue
+
+
+The Finnish family-oriented crisis intervention approach emphasizing immediate response, social network involvement, and dialogical practice has shown promising observational results. A 19-year register-based cohort study (N=108 OD patients vs. N=1,763 controls) found significantly lower durations of hospital treatment, disability allowances, and neuroleptic use in the OD group, though the observational design limits causal inference.[53] The ODDESSI multi-site cluster RCT in England is currently testing OD versus TAU.[54]
+
+7.3 LEAP (Listen, Empathize, Agree, Partner)
+
+
+The LEAP method by Amador is widely used clinically for engaging patients with anosognosia, building on research showing that 32.7% of schizophrenia patients lack awareness of illness.[55] However, formal RCT evidence specifically evaluating LEAP as a standalone communication intervention was not identified in the literature. It remains a clinical practice framework rather than an evidence-based intervention per se.
+
+The figure below from Schuster et al. (2021) illustrates stakeholder expectations regarding the ideal structure of caregiver involvement across four domains: who should initiate, who should decide, when involvement should occur, and in what setting.
+
+Figure 4 Expectations of the ideal caregiver involvement
+
+---
+
+8. Brief Family Interventions Feasible During Short Admissions
+
+
+Given average inpatient psychiatric stays of 5–7 days, several brief models have evidence supporting feasibility:
+
+Veteran-Centered Brief Family Consultation (VCBFC) — A 1–3 session intervention (maximum 5 sessions) designed to integrate family/chosen supports into the recovery process, endorsed by the VA/DoD 2023 guidelines as a first step in assessment or treatment planning and a bridge to more intensive family therapies.[40]
+
+Short Therapeutic Conversation Intervention (Calgary Model–based) — A controlled before-and-after study (N=136 intervention, N=148 control) found that 2–5 therapeutic conversations delivered by trained nurses during acute psychiatric admission led to significantly higher perceived cognitive and emotional support from nurses.[57]
+
+Brief Family Strengths-Oriented Therapeutic Conversation (FAM-SOTC) — A quasi-experimental study (N=61 dyads) showed this brief intervention for inpatients with schizophrenia and their caregivers produced statistically significant improvements in symptom severity, family coping, and caregiver burden at 1- and 3-month follow-up.[58]
+
+Carer Involvement Intervention (East London) — A feasibility study found structured carer involvement could be delivered within the first week of admission in 53% of consenting patients, facilitating a three-way collaborative approach. Main barriers included staff/carer unavailability, consent withdrawal, and early discharge.[59]
+
+Important caveat: The Cochrane review of brief family intervention for schizophrenia (Okpokoro et al., 2014) found only 4 RCTs (N=163) with very low quality evidence, and results were inconclusive for relapse and hospitalization outcomes.[1] The Rodolico et al. (2022) NMA confirmed that interventions comprising ≤2 sessions were ineffective for relapse prevention.[24] This suggests that inpatient family meetings should be conceptualized as the initiation of a longer-term family intervention rather than a standalone treatment.
+
+---
+
+9. Discharge Planning with Families
+
+
+Family involvement in discharge planning is strongly associated with improved post-discharge outcomes. Haselden et al. (2019) found that any family-staff involvement during psychiatric hospitalization was associated with attending an outpatient appointment within 7 days (OR 2.79, 95% CI 1.28–6.08) and 30 days (OR 3.07, 95% CI 1.29–7.32) after discharge.[60] An earlier study found family involvement more than tripled the odds of successful linkage to outpatient care.[61]
+
+The VA/DoD guidelines recommend the following target areas when collaborating with families for discharge: (1) understanding the diagnosis, (2) setting realistic goals, (3) supporting recovery, and (4) preparing for crisis — including recognizing early symptoms/triggers, developing a Wellness Recovery Action Plan, and planning for mental health emergencies.[41]
+
+A multi-country qualitative study (55 service users, 6 European countries) emphasized that discharge planning should include structured plans, coping strategies, self-monitoring techniques, and close contact with community services, with support from peers and family members considered critical.[62]
+
+---
+
+10. Peer Family Support: NAMI Programs
+
+
+NAMI Family-to-Family (FTF) — A free, 8-session peer-taught educational program designated an evidence-based practice by the National Registry of Evidence-Based Practices.[63] An RCT (N=318) found FTF participants had significantly greater improvements in problem-focused coping, empowerment, and illness knowledge.[64] Earlier studies found reduced subjective burden (p<0.01) and increased empowerment (p<0.01), with benefits sustained at 6-month follow-up.[65][66] The VA/DoD guidelines list NAMI FTF, NAMI Homefront, and the Support and Family Education Model (SAFE) as recommended resources.[41][40]
+
+---
+
+11. Top 20 Papers
+
+
+
+
+[7][8][11][2][4][14][67][21][22][24][25][17][20][31][60][44][68][64][1][49]
+
+---
+
+12. Family Meeting Structure for Inpatient Psychiatry
+
+
+Recommended Structure: The 30-Minute Inpatient Family Meeting
+
+
+Pre-Meeting (5 minutes)
+
+- Review chart for consent status, safety concerns, and contraindications (abuse, trauma, custody disputes, financial exploitation)[40]
+
+- Confirm patient has agreed to family participation and clarify what may/may not be shared
+
+- Identify attendees and their relationship to the patient
+
+- Review the "listening vs. disclosing" framework with the team
+
+Opening Phase (5 minutes)
+
+- Introductions and role clarification
+
+- Set the agenda collaboratively: "We have about 30 minutes. What is most important for us to discuss today?"
+
+- Establish ground rules: one person speaks at a time; the goal is understanding, not blame
+
+Information Gathering Phase (10 minutes)
+
+- Elicit the family's perspective on the current crisis and timeline of events
+
+- Ask about prior episodes, what has helped before, and what has not
+
+- Assess the home environment, stressors, and support systems
+
+- Screen for expressed emotion patterns (criticism, hostility, emotional overinvolvement) without labeling them
+
+Psychoeducation and Planning Phase (10 minutes)
+
+- Provide brief, jargon-free illness education tailored to the family's knowledge level
+
+- Discuss the treatment plan, medications, and expected course
+
+- Introduce relapse prevention concepts: early warning signs, triggers, action plan
+
+- Discuss discharge plan: outpatient appointments, medication management, crisis contacts
+
+- Provide written materials (see handout below)
+
+Closing Phase (5 minutes)
+
+- Summarize key points and action items
+
+- Ask: "What questions do you still have?"
+
+- Provide family resources: NAMI Family-to-Family, NAMI helpline (1-800-950-NAMI), local support groups
+
+- Schedule follow-up meeting if admission continues
+
+- Document the meeting in the chart
+
+---
+
+13. Resident Scripts
+
+
+Script 1: Opening the Family Meeting
+
+
+> "Thank you for coming in today. I'm Dr. [Name], one of the physicians caring for [Patient]. Before we begin, I want to acknowledge that having a loved one in the hospital is stressful, and your perspective is important to us. I'd like to hear from you about what's been happening, share some information about [Patient]'s treatment plan, and talk about next steps together. [Patient] has agreed to this meeting and to our discussing [specify scope]. Is there anything specific you'd like to make sure we cover today?"
+
+Script 2: Navigating Confidentiality
+
+
+> "I want to be transparent about how confidentiality works. [Patient] has given permission for us to discuss [specific topics]. For anything outside that scope, I'm not able to share details — but I want you to know that I can always listen. Anything you want to tell me about what you've observed or what concerns you — I welcome that information, and it helps us provide better care. You don't need anyone's permission to share your observations with us."
+
+Script 3: Addressing Expressed Emotion (Without Labeling)
+
+
+> "Caring for someone with [diagnosis] is incredibly demanding, and it's natural to feel frustrated, worried, or even angry at times. Research shows that the emotional climate at home — how much stress and tension there is — actually affects recovery. That's not about blame; it's about understanding that everyone in the family is affected, and everyone deserves support. Let's talk about what's been hardest for you and what might help."
+
+Script 4: Psychoeducation (Schizophrenia)
+
+
+> "[Diagnosis] is a brain-based illness — it's not caused by bad parenting or personal weakness. It affects how the brain processes information, which is why [Patient] may experience [symptoms]. The good news is that with the right combination of medication and support, most people improve significantly. Research shows that when families are involved in treatment and learn about the illness, relapse rates drop by about half. Your involvement matters enormously."
+
+Script 5: Psychoeducation (Bipolar Disorder)
+
+
+> "Bipolar disorder involves episodes of mood changes — sometimes highs, sometimes lows — that go beyond normal mood variation. It's a medical condition with a strong genetic component. Medication is the foundation of treatment, but research shows that family-focused therapy — where families learn communication skills and problem-solving together — is one of the most effective additions to medication. The strongest evidence we have shows it can reduce the chance of another episode by about 70%."
+
+Script 6: Discharge Planning with Family
+
+
+> "As we prepare for discharge, I want to make sure we have a solid plan together. Let's talk about three things: First, the outpatient appointments and medications. Second, early warning signs to watch for — what would tell you that [Patient] might be heading toward another episode? And third, what to do if that happens — who to call, where to go. Having this plan in place before discharge makes a real difference in preventing rehospitalization."
+
+Script 7: When the Patient Declines Family Involvement
+
+
+> "I understand [Patient] has asked that we not involve family at this time, and we respect that decision. I do want you to know that you can still reach out to us — you can share information or concerns, and we'll listen. I'd also encourage you to seek support for yourself. NAMI's Family-to-Family program is free and peer-led, and many families find it helpful. Here's the number: 1-800-950-NAMI."
+
+---
+
+14. Teaching Pearls
+
+
+1. The NNT=7 pearl: Family intervention for schizophrenia has an NNT of 7 for relapse prevention — comparable to statins for cardiovascular events. This is one of the most effective interventions in all of psychiatry.[21]
+
+2. The 50% rule: Across >100 RCTs, family interventions reduce relapse rates by approximately 50% compared to treatment as usual.[15][67]
+
+3. The dose threshold: Interventions with ≤2 sessions are ineffective. The minimum effective dose appears to be approximately 6–10 sessions over ≥3 months. Simple psychoeducation paradoxically outperforms more complex interventions, possibly because complexity creates barriers to implementation.[24]
+
+4. The 12-month lag: Family interventions typically do not show significant relapse prevention effects at 6 months — only after 12 months. This means the inpatient meeting is planting a seed, not harvesting a crop.[25]
+
+5. Listening is not disclosing: The single most important confidentiality concept. Clinicians can always receive information from families without violating HIPAA. This reframe transforms the confidentiality barrier from a wall into a one-way door.[49][50]
+
+6. EE is modifiable: High expressed emotion is not a fixed trait. Family interventions can shift families from high to low EE (RR 3.90 for shift to low EE with intervention).[22][5]
+
+7. Bipolar FFT is the strongest psychotherapy: In the Miklowitz 2021 NMA, family/conjoint therapy had the highest SUCRA ranking (95%) for recurrence prevention among all psychotherapies for bipolar disorder — stronger than CBT, IPSRT, or psychoeducation alone.[20]
+
+8. Family involvement triples outpatient follow-up: Any family-staff contact during hospitalization is associated with 3× the odds of attending outpatient appointments within 7 and 30 days post-discharge.[60]
+
+9. Caregivers are hidden patients: 37% of SMI caregivers show PTSD symptoms; 15% meet full diagnostic criteria. Caregiver burden is comparable across schizophrenia and bipolar disorder.[29][30]
+
+10. The implementation paradox: Despite being one of the most evidence-based interventions in psychiatry, family involvement rates range from 0–53%. The most common barrier is not patient refusal — it is clinician avoidance, often rationalized through confidentiality concerns.[44][49]
+
+---
+
+15. Suggested Family Handout
+
+
+Understanding Your Loved One's Illness: A Guide for Families
+
+
+What is happening?
+
+Your family member has been admitted to the hospital for treatment of a psychiatric illness. This can be a frightening and confusing time. This handout provides basic information to help you understand what is happening and how you can help.
+
+Key facts about serious mental illness:
+
+- Mental illnesses like schizophrenia and bipolar disorder are brain-based medical conditions — they are not caused by bad parenting, personal weakness, or moral failing
+
+- These conditions are treatable. With the right combination of medication and support, most people improve significantly
+
+- Research consistently shows that family involvement in treatment reduces the chance of relapse by about 50%
+
+- Your involvement matters — it is one of the most powerful factors in your loved one's recovery
+
+What you can do right now:
+
+- ✅ Attend family meetings when offered — ask the treatment team when the next one is scheduled
+
+- ✅ Share your observations with the treatment team — you know your loved one best
+
+- ✅ Ask questions — there are no bad questions
+
+- ✅ Take care of yourself — caregiver stress is real and deserves attention
+
+Warning signs to watch for after discharge:
+
+- Changes in sleep patterns (sleeping much more or much less)
+
+- Social withdrawal or isolation
+
+- Stopping medications
+
+- Increased irritability, suspiciousness, or unusual beliefs
+
+- Neglecting self-care (hygiene, eating)
+
+- Increased substance use
+
+If you notice warning signs:
+
+1. Contact the outpatient treatment team: ___________
+
+2. Call the 988 Suicide & Crisis Lifeline (call or text 988)
+
+3. Go to the nearest emergency department if there is immediate danger
+
+Resources for families:
+
+- NAMI Helpline: 1-800-950-NAMI (6264) — free support, information, and referrals
+
+- NAMI Family-to-Family: Free 8-session course taught by trained family members — ask about local classes
+
+- NAMI Support Groups: Free peer-led groups for family members — find one at nami.org
+
+- Crisis Text Line: Text HOME to 741741
+
+Communication tips:
+
+- Use calm, clear, simple language
+
+- Avoid arguing about delusions or hallucinations — instead, acknowledge the person's feelings
+
+- Express concern without criticism: "I'm worried about you" rather than "You're not taking care of yourself"
+
+- Set realistic expectations — recovery is a process, not an event
+
+- Celebrate small steps forward
+
+Your outpatient appointment: Date: Time: Location: ___
+
+Medications at discharge: ___
+
+Emergency contact: ___
+
+---
+
+Remember: You are not alone. Millions of families navigate these challenges, and support is available.
+
+---
+
+16. Evidence Gaps and Emerging Directions
+
+
+Several important uncertainties remain. Most landmark RCTs initiated family interventions during or shortly after hospitalization but measured outcomes in the community/outpatient phase; evidence specifically designed for 5–7 day inpatient stays is limited.[1][59] The quality of evidence across the field is generally low to moderate, with no studies in the Rodolico NMA having low risk of bias.[24][21] Long-term durability of relapse prevention effects is uncertain — the Chien 2024 Cochrane review found the effect may not extend beyond short-term follow-up.[22] Cultural variation in EE interpretation complicates universal application, with some evidence that high EE may paradoxically be associated with better outcomes in African-American families.[69] The ODDESSI multi-site cluster RCT testing Open Dialogue versus TAU is ongoing and may reshape the evidence landscape for family-oriented acute care.[54]
+
+The most promising emerging direction is the integration of brief family consultation models (such as VCBFC) as standard inpatient practice, serving as a bridge to longer-term family psychoeducation programs — aligning the strong evidence for sustained family intervention with the reality of short hospital stays.[40]
+
+---
+
+Would you like to explore specific implementation strategies for integrating structured family meetings into an inpatient psychiatry residency training curriculum, including competency milestones and assessment tools?
+
+References
+Family Intervention (Brief) for Schizophrenia. Okpokoro U, Adams CE, Sampson S. The Cochrane Database of Systematic Reviews. 2014;(3):CD009802. doi:10.1002/14651858.CD009802.pub2.
+Expressed Emotion and Psychiatric Relapse: A Meta-analysis. Butzlaff RL, Hooley JM. Archives of General Psychiatry. 1998;55(6):547-52. doi:10.1001/archpsyc.55.6.547.
+Integrity of Literature on Expressed Emotion and Relapse in Patients With Schizophrenia Verified by a P-Curve Analysis. Weintraub MJ, Hall DL, Carbonella JY, Weisman de Mamani A, Hooley JM. Family Process. 2017;56(2):436-444. doi:10.1111/famp.12208.
+The Predictive Utility of Expressed Emotion in Schizophrenia: An Aggregate Analysis. Bebbington P, Kuipers L. Psychological Medicine. 1994;24(3):707-18. doi:10.1017/s0033291700027860.
+The Predictive Power of Expressed Emotion and Its Components in Relapse of Schizophrenia: A Meta-Analysis and Meta-Regression. Ma CF, Chan SKW, Chung YL, et al. Psychological Medicine. 2021;51(3):365-375. doi:10.1017/S0033291721000209.
+The Predictive Validity of Expressed Emotions (EE) in Schizophrenia. A 20-Year Prospective Study. Cechnicki A, Bielańska A, Hanuszkiewicz I, Daren A. Journal of Psychiatric Research. 2013;47(2):208-14. doi:10.1016/j.jpsychires.2012.10.004.
+Family Management in the Prevention of Exacerbations of Schizophrenia: A Controlled Study. Falloon IR, Boyd JL, McGill CW, et al. The New England Journal of Medicine. 1982;306(24):1437-40. doi:10.1056/NEJM198206173062401.
+A Controlled Trial of Social Intervention in the Families of Schizophrenic Patients. Leff J, Kuipers L, Berkowitz R, Eberlein-Vries R, Sturgeon D. The British Journal of Psychiatry : The Journal of Mental Science. 1982;141:121-34. doi:10.1192/bjp.141.2.121.
+A Trial of Family Therapy v. A Relatives Group for Schizophrenia. Leff J, Berkowitz R, Shavit N, et al. The British Journal of Psychiatry : The Journal of Mental Science. 1989;154:58-66. doi:10.1192/bjp.154.1.58.
+A Trial of Family Therapy Versus a Relatives' Group for Schizophrenia. Two-Year Follow-Up. Leff J, Berkowitz R, Shavit N, et al. The British Journal of Psychiatry : The Journal of Mental Science. 1990;157:571-7. doi:10.1192/bjp.157.4.571.
+Family Treatment of Adult Schizophrenic Patients: A Psycho-Educational Approach. Anderson CM, Hogarty GE, Reiss DJ. Schizophrenia Bulletin. 1980;6(3):490-505. doi:10.1093/schbul/6.3.490.
+Family Intervention for the Rehabilitation of Schizophrenia: Toward Protection and Coping. Strachan AM. Schizophrenia Bulletin. 1986;12(4):678-98. doi:10.1093/schbul/12.4.678.
+The Community Management of Schizophrenia. A Controlled Trial of a Behavioural Intervention With Families to Reduce Relapse. Tarrier N, Barrowclough C, Vaughn C, et al. The British Journal of Psychiatry : The Journal of Mental Science. 1988;153:532-42. doi:10.1192/bjp.153.4.532.
+Psychoeducational Multiple Family Groups: Four-Year Relapse Outcome in Schizophrenia. McFarlane WR, Link B, Dushay R, Marchal J, Crilly J. Family Process. 1995;34(2):127-44. doi:10.1111/j.1545-5300.1995.00127.x.
+Family Interventions for Schizophrenia and the Psychoses: A Review. McFarlane WR. Family Process. 2016;55(3):460-82. doi:10.1111/famp.12235.
+Partnering With Families: Multiple Family Group Psychoeducation for Schizophrenia. Jewell TC, Downing D, McFarlane WR. Journal of Clinical Psychology. 2009;65(8):868-78. doi:10.1002/jclp.20610.
+Family-Focused Treatment of Bipolar Disorder: 1-Year Effects of a Psychoeducational Program in Conjunction With Pharmacotherapy. Miklowitz DJ, Simoneau TL, George EL, et al. Biological Psychiatry. 2000;48(6):582-92. doi:10.1016/s0006-3223(00)00931-8.
+Family-Focused Treatment Versus Individual Treatment for Bipolar Disorder: Results of a Randomized Clinical Trial. Rea MM, Tompson MC, Miklowitz DJ, et al. Journal of Consulting and Clinical Psychology. 2003;71(3):482-92. doi:10.1037/0022-006x.71.3.482.
+A Randomized Study of Family-Focused Psychoeducation and Pharmacotherapy in the Outpatient Management of Bipolar Disorder. Miklowitz DJ, George EL, Richards JA, Simoneau TL, Suddath RL. Archives of General Psychiatry. 2003;60(9):904-12. doi:10.1001/archpsyc.60.9.904.
+Adjunctive Psychotherapy for Bipolar Disorder: A Systematic Review and Component Network Meta-analysis. Miklowitz DJ, Efthimiou O, Furukawa TA, et al. JAMA Psychiatry. 2021;78(2):141-150. doi:10.1001/jamapsychiatry.2020.2993.
+Family Intervention for Schizophrenia. Pharoah F, Mari J, Rathbone J, Wong W. The Cochrane Database of Systematic Reviews. 2010;(12):CD000088. doi:10.1002/14651858.CD000088.pub2.
+Family-Based Interventions Versus Standard Care for People With Schizophrenia. Chien WT, Ma DCF, Bressington D, Mou H. The Cochrane Database of Systematic Reviews. 2024;10:CD013541. doi:10.1002/14651858.CD013541.pub2.
+Family Interventions for Bipolar Disorder. Justo LP, Soares BG, Calil HM. The Cochrane Database of Systematic Reviews. 2007;(4):CD005167. doi:10.1002/14651858.CD005167.pub2.
+Family Interventions for Relapse Prevention in Schizophrenia: A Systematic Review and Network Meta-Analysis. Rodolico A, Bighelli I, Avanzato C, et al. The Lancet. Psychiatry. 2022;9(3):211-221. doi:10.1016/S2215-0366(21)00437-5.
+Psychosocial and Psychological Interventions for Relapse Prevention in Schizophrenia: A Systematic Review and Network Meta-Analysis. Bighelli I, Rodolico A, García-Mieres H, et al. The Lancet. Psychiatry. 2021;8(11):969-980. doi:10.1016/S2215-0366(21)00243-1.
+Effectiveness of Family Intervention for Preventing Relapse in First-Episode Psychosis Until 24 Months of Follow-Up: A Systematic Review With Meta-Analysis of Randomized Controlled Trials. Camacho-Gomez M, Castellvi P. Schizophrenia Bulletin. 2020;46(1):98-109. doi:10.1093/schbul/sbz038.
+Psychological Distress and Burden of Care Among Family Caregivers of Patients With Mental Illness in a Neuropsychiatric Outpatient Clinic in Nigeria. Udoh EE, Omorere DE, Sunday O, Osasu OS, Amoo BA. PloS One. 2021;16(5):e0250309. doi:10.1371/journal.pone.0250309.
+Empathy and Perceived Burden in Caregivers of Patients With Schizophrenia Spectrum Disorders. Di Lorenzo R, Girone A, Panzera N, et al. BMC Health Services Research. 2021;21(1):250. doi:10.1186/s12913-021-06258-x.
+Posttraumatic Stress Symptoms, Quality of Life, and Stress Burden in Caregivers of Patients With Severe Mental Illness: An Underestimated Health Concern. Rady A, Mouloukheya T, Gamal E. Frontiers in Psychiatry. 2021;12:623499. doi:10.3389/fpsyt.2021.623499.
+A Systematic Review Comparing Caregiver Burden and Psychological Functioning in Caregivers of Individuals With Schizophrenia Spectrum Disorders and Bipolar Disorders. Karambelas GJ, Filia K, Byrne LK, et al. BMC Psychiatry. 2022;22(1):422. doi:10.1186/s12888-022-04069-w.
+Systematic Review and Meta-Analysis of Family-Based Interventions for Early Psychosis: Carer and Patient Outcomes. Gleeson JFM, Ludwig K, Stiles BJ, et al. Schizophrenia Research. 2025;276:57-78. doi:10.1016/j.schres.2025.01.006.
+Effectiveness of Psychoeducational Interventions for Family Carers of People With Psychosis: A Systematic Review and Meta-Analysis. Sin J, Gillard S, Spain D, et al. Clinical Psychology Review. 2017;56:13-24. doi:10.1016/j.cpr.2017.05.002.
+Randomized trial comparing caregiver‐only family‐focused treatment to standard health education on the 6‐month outcome of bipolar disorder. Perlick DA, Jackson C, Grier S, et al. Bipolar Disorders. 2018;20(7):622-633. doi:10.1111/bdi.12621.
+Caregiver Burden and Dementia: A Systematic Review of Self-Report Instruments. Tu JY, Jin G, Chen JH, Chen YC. Journal of Alzheimer's Disease : JAD. 2022;86(4):1527-1543. doi:10.3233/JAD-215082.
+Cognitive Reframing for Carers of People With Dementia. Vernooij-Dassen M, Draskovic I, McCleery J, Downs M. The Cochrane Database of Systematic Reviews. 2011;(11):CD005318. doi:10.1002/14651858.CD005318.pub2.
+Application of a Multidimensional Caregiver Burden Inventory. Novak M, Guest C. The Gerontologist. 1989;29(6):798-803. doi:10.1093/geront/29.6.798.
+Family Assessment in Early Psychosis. McCleery A, Addington J, Addington D. Psychiatry Research. 2007;152(2-3):95-102. doi:10.1016/j.psychres.2006.07.002.
+Family Therapy for Persons With Schizophrenia: Neglected Yet Important. Hahlweg K, Baucom DH. European Archives of Psychiatry and Clinical Neuroscience. 2023;273(4):819-824. doi:10.1007/s00406-022-01393-w.
+The American Psychiatric Association Practice Guideline for the Treatment of Patients With Schizophrenia. Keepers GA, Fochtmann LJ, Anzia JM, et al. The American Journal of Psychiatry. 2020;177(9):868-872. doi:10.1176/appi.ajp.2020.177901.
+Management of First-Episode Psychosis and Schizophrenia (SCZ) (2023). Marlene Arias-Reynoso DNP PMHNP-BC, Jennifer L. Bell MD, Pamela Blueford LICSW, et al. Department of Veterans Affairs.
+Management of Bipolar Disorder (BD) (2023). Thad Abrams MD MS, Jennifer Bell MD, Paulette Cazares MD MPH, et al. Department of Veterans Affairs.
+Consumer and Family Psychoeducation: Assessing the Evidence. Lyman DR, Braude L, George P, et al. Psychiatric Services (Washington, D.C.). 2014;65(4):416-28. doi:10.1176/appi.ps.201300266.
+Face-to-Face Psychoeducation for the Parents of People With Severe Mental Illness. Jimenez Tejero E, Lopez-Alcalde J, Carralero-Montero A, et al. The Cochrane Database of Systematic Reviews. 2026;2:CD014532. doi:10.1002/14651858.CD014532.pub2.
+Family Involvement in Routine Services for Individuals With Severe Mental Illness: Scoping Review of Barriers and Strategies. Tham SS, Solomon P. Psychiatric Services (Washington, D.C.). 2024;75(10):1009-1030. doi:10.1176/appi.ps.20230452.
+Barriers and Facilitators When Implementing Family Involvement for Persons With Psychotic Disorders in Community Mental Health Centres - A Nested Qualitative Study. Hansson KM, Romøren M, Pedersen R, et al. BMC Health Services Research. 2022;22(1):1153. doi:10.1186/s12913-022-08489-y.
+Implementing Family Involvement in the Treatment of Patients With Psychosis: A Systematic Review of Facilitating and Hindering Factors. Eassom E, Giacco D, Dirik A, Priebe S. BMJ Open. 2014;4(10):e006108. doi:10.1136/bmjopen-2014-006108.
+National Health Information Privacy: Regulations Under the Health Insurance Portability and Accountability Act. Gostin LO. JAMA. 2001;285(23):3015-21. doi:10.1001/jama.285.23.3015.
+Psychotherapy notes provision of the Health Insurance Portability and Accountability Act (HIPPA) privacy rule. American Psychiatric Association (2002).
+The Duty of Confidentiality During Family Involvement: Ethical Challenges and Possible Solutions in the Treatment of Persons With Psychotic Disorders. Hansson KM, Romøren M, Weimand B, et al. BMC Psychiatry. 2022;22(1):812. doi:10.1186/s12888-022-04461-6.
+Patients With Severe Mental Illness and the Ethical Challenges Related to Confidentiality During Family Involvement: A Scoping Review. Hem MH, Molewijk B, Weimand B, Pedersen R. Frontiers in Public Health. 2022;10:960815. doi:10.3389/fpubh.2022.960815.
+Motivational Interviewing for Loved Ones: Randomized Controlled Trial of Brief Training for First Episode Psychosis Caregivers. Kline ER, Thibeau H, Davis BJ, et al. Schizophrenia Research. 2022;250:43-49. doi:10.1016/j.schres.2022.10.005.
+Feasibility of Teaching Motivational Interviewing to Parents of Young Adults With Recent-Onset Schizophrenia and Co-Occurring Cannabis Use. Smeerdijk M, Keet R, de Haan L, et al. Journal of Substance Abuse Treatment. 2014;46(3):340-5. doi:10.1016/j.jsat.2013.09.006.
+The Family-Oriented Open Dialogue Approach in the Treatment of First-Episode Psychosis: Nineteen-Year Outcomes. Bergström T, Seikkula J, Alakare B, et al. Psychiatry Research. 2018;270:168-175. doi:10.1016/j.psychres.2018.09.039.
+Open Dialogue Compared to Treatment as Usual for Adults Experiencing a Mental Health Crisis: Protocol for the ODDESSI Multi-Site Cluster Randomised Controlled Trial. Pilling S, Clarke K, Parker G, et al. Contemporary Clinical Trials. 2022;113:106664. doi:10.1016/j.cct.2021.106664.
+The Relationship Between Insight and Symptoms in Schizophrenia. Sevy S, Nathanson K, Visweswaraiah H, Amador X. Comprehensive Psychiatry. 2004 Jan-Feb;45(1):16-9. doi:10.1016/j.comppsych.2003.09.002.
+‘Triadic’ shared decision making in mental health: Experiences and expectations of service users, caregivers and clinicians in Germany. Schuster F, Holzhüter F, Heres S, Hamann J. Health Expectations : An International Journal of Public Participation in Health Care and Health Policy. 2021;24(2):507-515. doi:10.1111/hex.13192.
+What Are the Benefits of a Short Therapeutic Conversation Intervention With Acute Psychiatric Patients and Their Families? A Controlled Before and After Study. Sveinbjarnardottir EK, Svavarsdottir EK, Wright LM. International Journal of Nursing Studies. 2013;50(5):593-602. doi:10.1016/j.ijnurstu.2012.10.009.
+Effectiveness of a Brief Family Strengths-Oriented Therapeutic Conversation Intervention for Patients With Schizophrenia and Their Caregivers. Hsiao CY, Lu HL, Hsieh MH, Tsai YF. Journal of Nursing Scholarship : An Official Publication of Sigma Theta Tau International Honor Society of Nursing. 2022;54(2):213-225. doi:10.1111/jnu.12741.
+"It's a Matter of Building Bridges…" - Feasibility of a Carer Involvement Intervention for Inpatients With Severe Mental Illness. Kaselionyte J, Conneely M, Giacco D. BMC Psychiatry. 2019;19(1):268. doi:10.1186/s12888-019-2257-6.
+Family Involvement in Psychiatric Hospitalizations: Associations With Discharge Planning and Prompt Follow-Up Care. Haselden M, Corbeil T, Tang F, et al. Psychiatric Services (Washington, D.C.). 2019;70(10):860-866. doi:10.1176/appi.ps.201900028.
+Identifying Risk Factors and Key Strategies in Linkage to Outpatient Psychiatric Care. Boyer CA, McAlpine DD, Pottick KJ, Olfson M. The American Journal of Psychiatry. 2000;157(10):1592-8. doi:10.1176/appi.ajp.157.10.1592.
+Discharge Planning, Self-Management, and Community Support: Strategies to Avoid Psychiatric Rehospitalisation From a Service User Perspective. Ådnanes M, Cresswell-Smith J, Melby L, et al. Patient Education and Counseling. 2020;103(5):1033-1040. doi:10.1016/j.pec.2019.12.002.
+Peer Support and Peer-Led Family Support for Persons Living With Schizophrenia. Duckworth K, Halpern L. Current Opinion in Psychiatry. 2014;27(3):216-21. doi:10.1097/YCO.0000000000000051.
+Outcomes of a Randomized Study of a Peer-Taught Family-to-Family Education Program for Mental Illness. Dixon LB, Lucksted A, Medoff DR, et al. Psychiatric Services (Washington, D.C.). 2011;62(6):591-7. doi:10.1176/ps.62.6.pss6206_0591.
+Outcomes of the Peer-Taught 12-Week Family-to-Family Education Program for Severe Mental Illness. Dixon L, Lucksted A, Stewart B, et al. Acta Psychiatrica Scandinavica. 2004;109(3):207-15. doi:10.1046/j.0001-690x.2003.00242.x.
+Pilot Study of the Effectiveness of the Family-to-Family Education Program. Dixon L, Stewart B, Burland J, et al. Psychiatric Services (Washington, D.C.). 2001;52(7):965-7. doi:10.1176/appi.ps.52.7.965.
+The Effect of Family Interventions on Relapse and Rehospitalization in Schizophrenia--a Meta-Analysis. Pitschel-Walz G, Leucht S, Bäuml J, Kissling W, Engel RR. Schizophrenia Bulletin. 2001;27(1):73-92. doi:10.1093/oxfordjournals.schbul.a006861.
+How to Make Carer Involvement in Mental Health Inpatient Units Happen: A Focus Group Study With Patients, Carers and Clinicians. Giacco D, Dirik A, Kaselionyte J, Priebe S. BMC Psychiatry. 2017;17(1):101. doi:10.1186/s12888-017-1259-5.
+Caregiver Expressed Emotion and Psychiatric Symptoms in African-Americans With Schizophrenia: An Attempt to Understand the Paradoxical Relationship. Gurak K, Weisman de Mamani A. Family Process. 2017;56(2):476-486. doi:10.1111/famp.12188.
+
+Cochrane Review | Studies/N | Key Findings | Certainty
+Pharoah et al. (2010) — Family Intervention for Schizophrenia | 53 RCTs, N=2,981 | RR 0.55 for relapse (NNT=7); RR 0.78 for hospitalization (NNT=8); RR 0.60 for medication noncompliance (NNT=6) | Low-moderate; effects may be overestimated
+Chien et al. (2024) — Family-Based Interventions vs. Standard Care | 26 RCTs, N=2,056 caregivers | 34% relapse reduction short-term (RR 0.66); caregiver burden reduced (MD −5.84); shift from high to low EE facilitated | Low-moderate
+Okpokoro et al. (2014) — Brief Family Intervention | 4 RCTs, N=163 | Inconclusive for relapse/hospitalization; may increase family understanding of illness | Very low
+Justo et al. (2007) — Family Interventions for Bipolar | 7 RCTs, N=393 | FFT superior to crisis management for relapse (RR 0.59, NNT=3.1); meta-analysis of primary outcomes not possible due to heterogeneity | Low
+Guideline | Condition | Recommendation | Strength | Key Specifications
+NICE CG178 (2014) | Psychosis/Schizophrenia | Family intervention for all families in close contact | Strong | ≥10 sessions over ≥3 months; psychoeducation, problem-solving, crisis management
+APA (2020) | Schizophrenia | Family-based services as evidence-based psychosocial treatment | GRADE recommendation | Part of comprehensive treatment; references PORT recommendations
+VA/DoD (2023) | Schizophrenia | Psychosocial interventions for family to decrease relapse/hospitalization | Strong for (moderate evidence) | Broad definition of family; consider for frequent relapsers
+VA/DoD (2023) | Bipolar Disorder | Family/conjoint therapy as adjunct to pharmacotherapy | Weak for (very low evidence) | Listed alongside CBT, IPSRT; not ranked among them
+SAMHSA EBP Toolkit | SMI broadly | Family psychoeducation as evidence-based practice | High-level evidence (>100 RCTs) | Multifamily groups especially powerful
+WHO | Psychosis/Bipolar | Family interventions as EBP; psychosocial interventions for carers | Moderate-certainty evidence | Supports individualized treatment and recovery
+# | Citation | Design | Key Contribution
+1 | Falloon et al. (1982) NEJM | RCT (N=36) | Landmark trial: 6% vs. 44% relapse with behavioral family therapy
+2 | Leff et al. (1982) Br J Psychiatry | RCT (N=24) | 9% vs. 50% relapse with social intervention in high-EE families
+3 | Anderson et al. (1980) Schizophr Bull | Conceptual/RCT | Psychoeducational model for family intervention
+4 | Butzlaff & Hooley (1998) Arch Gen Psychiatry | Meta-analysis (27 studies) | Definitive EE-relapse meta-analysis
+5 | Bebbington & Kuipers (1994) Psychol Med | Aggregate analysis (25 studies, N=1,346) | Worldwide confirmation of EE-relapse association
+6 | McFarlane et al. (1995) Fam Process | RCT (3-arm) | Multifamily group superiority; 12.5–14% annual relapse
+7 | Pitschel-Walz et al. (2001) Schizophr Bull | Meta-analysis (25 studies) | 20% relapse reduction when relatives included
+8 | Pharoah et al. (2010) Cochrane | Cochrane review (53 RCTs) | NNT=7 for relapse prevention
+9 | Chien et al. (2024) Cochrane | Updated Cochrane (26 RCTs) | 34% relapse reduction; moderate evidence for caregiver burden reduction
+10 | Rodolico et al. (2022) Lancet Psychiatry | NMA (90 RCTs, N=10,340) | Family psychoeducation ranked first; ≤2 sessions ineffective
+11 | Bighelli et al. (2021) Lancet Psychiatry | NMA (72 RCTs, N=10,364) | Family interventions among most efficacious psychosocial treatments
+12 | Miklowitz et al. (2000) Biol Psychiatry | RCT (N=101) | First major FFT trial for bipolar disorder
+13 | Miklowitz et al. (2021) JAMA Psychiatry | NMA (39 RCTs, N=3,863) | Family therapy strongest effect on bipolar recurrence (OR 0.30)
+14 | Gleeson et al. (2025) Schizophr Res | Meta-analysis (36 RCTs) | Carer burden g=−0.68; EE critical comments g=−0.81
+15 | Haselden et al. (2019) Psychiatr Serv | Observational (N=179) | Family involvement triples odds of outpatient follow-up
+16 | Tham & Solomon (2024) Psychiatr Serv | Scoping review (46 articles) | Comprehensive barrier/facilitator analysis
+17 | Giacco et al. (2017) BMC Psychiatry | Focus groups (N=86) | Carer involvement should begin as soon as possible after admission
+18 | Dixon et al. (2011) Psychiatr Serv | RCT (N=318) | NAMI Family-to-Family evidence base
+19 | Okpokoro et al. (2014) Cochrane | Cochrane (4 RCTs) | Brief family intervention evidence (limited)
+20 | Hansson et al. (2022) BMC Psychiatry | Qualitative (nested in cluster RCT) | Confidentiality as smokescreen; training changes practice

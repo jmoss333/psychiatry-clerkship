@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [RC-META] tool="Withdrawal Scales — CIWA-Ar & COWS" version="1.0" built="2026-06-26" category="core-topics" subcategory="SUD/Withdrawal" audience="trainee,ms3" settings="inpatient" time="10min" summary="Teaching pocket card for alcohol (CIWA-Ar) and opioid (COWS) withdrawal: item lists, interactive tally, severity bands. Educational reference — NOT a dosing calculator. Fictional use only." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdrawal Scales — CIWA-Ar &amp; COWS</title>
+<meta name="description" content="Teaching pocket card for alcohol and opioid withdrawal assessment: the CIWA-Ar and COWS item lists with an interactive tally and severity bands. Educational reference, not a dosing calculator.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+    --success:#357160; --success-light:#e7f1ed;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --danger:#a34132; --danger-light:#fbece9;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(880px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) var(--sp5)}
+  h1,h2,h3{font-family:var(--font-head);line-height:1.25;margin:0 0 var(--sp3)}
+  h1{font-size:2.1rem;color:var(--primary)} h3{font-size:1.05rem}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .sub{color:var(--text-mid);max-width:64ch;margin:0 0 var(--sp3)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .tabs{display:flex;gap:var(--sp1);border-bottom:2px solid var(--border);margin-bottom:var(--sp4);flex-wrap:wrap}
+  .tab{border:none;background:transparent;padding:10px 16px;font-size:.95rem;font-weight:600;color:var(--text-mid);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;font-family:inherit}
+  .tab.on{color:var(--primary-dark);border-bottom-color:var(--primary-dark)}
+  .item{display:grid;grid-template-columns:1fr auto;gap:var(--sp3);align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+  .item:last-child{border-bottom:none}
+  .item b{display:block} .item span{font-size:.84rem;color:var(--text-mid)}
+  select{font-family:inherit;font-size:.95rem;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text)}
+  .score{font-family:var(--font-head);font-size:2.6rem;text-align:center;font-variant-numeric:tabular-nums;margin-top:var(--sp2)}
+  .band{padding:var(--sp2) var(--sp3);border-radius:var(--radius-md);font-weight:700;text-align:center;margin-top:var(--sp2)}
+  .band.low{background:var(--success-light);color:var(--success);border:1px solid var(--success)}
+  .band.mod{background:var(--warning-light);color:var(--warning);border:1px solid var(--warning)}
+  .band.high{background:var(--danger-light);color:var(--danger);border:1px solid var(--danger)}
+  .btn{border:none;border-radius:var(--radius-sm);padding:8px 14px;font-weight:600;cursor:pointer;font-family:inherit;background:transparent;color:var(--accent-dark);border:1px solid var(--border);margin-top:var(--sp3)}
+  .pearl{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);font-size:.9rem;margin-top:var(--sp3)}
+  .pearl b{color:var(--warning)}
+  .danger{background:var(--danger-light);border-left:3px solid var(--danger)} .danger b{color:var(--danger)}
+  .disclaimer{background:var(--bg-alt);border:1px dashed var(--border);border-radius:var(--radius-md);padding:var(--sp3);font-size:.82rem;color:var(--text-mid);margin-top:var(--sp4)}
+  /* Enhancement 1 — live gauge + contribution bars */
+  .scaleWrap{display:grid;grid-template-columns:1fr 320px;gap:var(--sp4);align-items:start}
+  .scaleItems{min-width:0}
+  .item{grid-template-columns:1fr auto 90px 46px}
+  .itemName{min-width:0}
+  .mini{height:7px;background:var(--bg-alt);border-radius:999px;overflow:hidden}
+  .mini i,.dbar i{display:block;height:100%;border-radius:999px;transition:width .2s ease}
+  .mval{font-weight:700;font-variant-numeric:tabular-nums;text-align:right;font-size:.88rem}
+  .readout{position:sticky;top:12px;display:flex;flex-direction:column;gap:var(--sp3)}
+  .gaugeCard,.drivers,.mgmt{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp3);box-shadow:var(--shadow-sm)}
+  .eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.62rem;font-weight:700;color:var(--text-light);margin-bottom:6px}
+  .bigscore{font-family:var(--font-head);font-size:3.4rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+  .bandpill{display:inline-block;margin:6px 0 12px;padding:3px 12px;border-radius:999px;border:1px solid;font-size:.76rem;font-weight:700}
+  .meter{position:relative;display:flex;height:14px;border-radius:999px;overflow:hidden}
+  .meter .seg{height:100%}
+  .needle{position:absolute;top:-5px;width:4px;height:24px;transform:translateX(-50%);background:var(--text);border-radius:2px;box-shadow:0 0 0 3px var(--surface);transition:left .25s ease}
+  .meterlabels{display:flex;justify-content:space-between;margin-top:7px;font-size:.66rem;font-weight:600}
+  .drivers .drow{display:grid;grid-template-columns:76px 1fr 18px;gap:8px;align-items:center;margin:7px 0}
+  .dname{font-size:.78rem;color:var(--text-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dbar{height:8px;background:var(--bg-alt);border-radius:999px;overflow:hidden}
+  .dval{font-size:.8rem;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+  .mgmt{background:var(--accent-light);border-color:var(--accent);font-size:.86rem;line-height:1.42}
+  .tlpill{display:inline-block;margin-top:8px;padding:3px 11px;border-radius:999px;background:var(--surface);border:1px solid var(--accent);color:var(--accent-dark);font-size:.74rem;font-weight:600;text-decoration:none}
+  @media(prefers-reduced-motion:reduce){.needle,.mini i,.dbar i{transition:none}}
+  @media(max-width:720px){.scaleWrap{grid-template-columns:1fr}.readout{position:static}.item{grid-template-columns:1fr auto 66px 42px}}
+  footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light);text-align:center}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+var e=React.createElement; var useState=React.useState;
+
+var CIWA=[
+  {k:'nv',b:'Nausea / vomiting',d:'0 none → 7 constant nausea, frequent vomiting',max:7},
+  {k:'tremor',b:'Tremor',d:'0 none → 7 severe, even with arms not extended',max:7},
+  {k:'sweats',b:'Paroxysmal sweats',d:'0 none → 7 drenching sweats',max:7},
+  {k:'anx',b:'Anxiety',d:'0 at ease → 7 acute panic state',max:7},
+  {k:'agit',b:'Agitation',d:'0 normal → 7 paces or thrashes',max:7},
+  {k:'tact',b:'Tactile disturbances',d:'itching, pins & needles, formication (0 → 7)',max:7},
+  {k:'aud',b:'Auditory disturbances',d:'harshness/ability to frighten → hallucinations (0 → 7)',max:7},
+  {k:'vis',b:'Visual disturbances',d:'light sensitivity → hallucinations (0 → 7)',max:7},
+  {k:'head',b:'Headache / fullness in head',d:'0 none → 7 extremely severe',max:7},
+  {k:'orient',b:'Orientation / sensorium',d:'0 oriented → 4 disoriented to place/person',max:4}
+];
+var COWS=[
+  {k:'pulse',b:'Resting pulse rate',d:'measured after 1 min rest (0 ≤80 → 4 >120)',max:4},
+  {k:'sweat',b:'Sweating',d:'not from room temp/activity (0 → 4)',max:4},
+  {k:'rest',b:'Restlessness',d:'0 sits still → 5 unable to sit',max:5},
+  {k:'pupil',b:'Pupil size',d:'0 normal → 5 so dilated only rim of iris visible',max:5},
+  {k:'aches',b:'Bone / joint aches',d:'attributable to withdrawal (0 → 4)',max:4},
+  {k:'nose',b:'Runny nose / tearing',d:'not from cold/allergies (0 → 4)',max:4},
+  {k:'gi',b:'GI upset',d:'0 none → 5 multiple episodes diarrhea/vomiting',max:5},
+  {k:'tremor',b:'Tremor',d:'observation of outstretched hands (0 → 4)',max:4},
+  {k:'yawn',b:'Yawning',d:'0 none → 4 several times/minute',max:4},
+  {k:'anx',b:'Anxiety / irritability',d:'0 none → 4 so irritable participation difficult',max:4},
+  {k:'goose',b:'Gooseflesh skin',d:'0 smooth → 5 prominent piloerection',max:5}
+];
+var CIWA_GAUGE={
+  track:30,
+  segments:[{flex:8,color:'color-mix(in srgb,var(--success) 30%,transparent)'},{flex:11,color:'color-mix(in srgb,var(--warning) 36%,transparent)'},{flex:11,color:'color-mix(in srgb,var(--danger) 32%,transparent)'}],
+  labels:[{t:'≤8 mild',c:'var(--success)'},{t:'9–19 mod',c:'var(--warning)'},{t:'≥20 severe',c:'var(--danger)'}],
+  info:function(t){
+    if(t<=8) return {tier:'Minimal',color:'var(--success)',bg:'var(--success-light)',pill:'Minimal / absent',action:'Often no medication — monitor and reassess.',timeline:null};
+    if(t<=19) return {tier:'Moderate',color:'var(--warning)',bg:'var(--warning-light)',pill:'Mild–moderate withdrawal',action:'Symptom-triggered benzodiazepine; reassess hourly.',timeline:'24–48 h'};
+    return {tier:'Severe',color:'var(--danger)',bg:'var(--danger-light)',pill:'Severe withdrawal',action:'High seizure / DT risk — escalate urgently per protocol.',timeline:'48–72 h'};
+  }
+};
+var COWS_GAUGE={
+  track:48,
+  segments:[{flex:12,color:'color-mix(in srgb,var(--success) 30%,transparent)'},{flex:12,color:'color-mix(in srgb,var(--warning) 36%,transparent)'},{flex:24,color:'color-mix(in srgb,var(--danger) 32%,transparent)'}],
+  labels:[{t:'≤12 mild',c:'var(--success)'},{t:'13–24 mod',c:'var(--warning)'},{t:'≥25 severe',c:'var(--danger)'}],
+  info:function(t){
+    if(t<=4) return {tier:'Minimal',color:'var(--success)',bg:'var(--success-light)',pill:'None / minimal',action:'No or very early withdrawal — supportive care; reassess.',timeline:null};
+    if(t<=12) return {tier:'Mild',color:'var(--accent-dark)',bg:'var(--accent-light)',pill:'Mild withdrawal',action:'Objective signs emerging — for buprenorphine, generally wait for COWS ≥8–12 to avoid precipitated withdrawal.',timeline:null};
+    if(t<=24) return {tier:'Moderate',color:'var(--warning)',bg:'var(--warning-light)',pill:'Moderate withdrawal',action:'Comfort medications; consider buprenorphine induction per protocol.',timeline:null};
+    return {tier:'Severe',color:'var(--danger)',bg:'var(--danger-light)',pill:'Moderately severe / severe',action:'Significant distress — treat per protocol.',timeline:null};
+  }
+};
+function Scale(props){
+  var items=props.items; var g=props.gauge;
+  var v=useState({}); var setV=v[1]; v=v[0];
+  function set(k,val){var n=Object.assign({},v);n[k]=val;setV(n);}
+  var total=items.reduce(function(a,i){return a+(parseInt(v[i.k]||0,10));},0);
+  var info=g.info(total);
+  var needle=Math.min(100, total/g.track*100);
+  function rc(r){return r<0.4?'var(--accent)':(r<0.7?'var(--warning)':'var(--danger)');}
+  var scored=items.map(function(i){return {b:i.b,val:parseInt(v[i.k]||0,10),max:i.max};}).filter(function(x){return x.val>0;}).sort(function(a,b){return b.val-a.val;}).slice(0,6);
+  return e('div',{className:'scaleWrap'},
+    e('div',{className:'scaleItems'},
+      items.map(function(i){
+        var val=parseInt(v[i.k]||0,10); var r=i.max?val/i.max:0;
+        var opts=[]; for(var s=0;s<=i.max;s++) opts.push(e('option',{key:s,value:s},s));
+        return e('div',{className:'item',key:i.k},
+          e('div',{className:'itemName'},e('b',null,i.b),e('span',null,i.d)),
+          e('select',{value:v[i.k]||0,'aria-label':i.b,onChange:function(ev){set(i.k,ev.target.value)}},opts),
+          e('div',{className:'mini','aria-hidden':'true'},e('i',{style:{width:(r*100)+'%',background:rc(r)}})),
+          e('div',{className:'mval',style:{color:(val===0?'#c9bdae':'var(--text)')}}, val+' / '+i.max));
+      }),
+      e('button',{className:'btn',onClick:function(){setV({})}},'Reset')
+    ),
+    e('div',{className:'readout'},
+      e('div',{className:'gaugeCard'},
+        e('div',{className:'eyebrow'},'Total score'),
+        e('div',{className:'bigscore',style:{color:info.color}}, total),
+        e('div',{className:'bandpill',style:{background:info.bg,color:info.color,borderColor:info.color}}, info.pill),
+        e('div',{className:'meter',role:'img','aria-label':'Score '+total+' of '+g.track+' — '+info.tier},
+          g.segments.map(function(s,idx){return e('div',{key:idx,className:'seg',style:{flex:s.flex,background:s.color}});}),
+          e('div',{className:'needle',style:{left:needle+'%'}})),
+        e('div',{className:'meterlabels'}, g.labels.map(function(l,idx){return e('span',{key:idx,style:{color:l.c}},l.t);}))
+      ),
+      scored.length? e('div',{className:'drivers'},
+        e('div',{className:'eyebrow'},'What’s driving it'),
+        scored.map(function(x,idx){var r=x.max?x.val/x.max:0;return e('div',{className:'drow',key:idx},
+          e('span',{className:'dname',title:x.b},x.b),
+          e('div',{className:'dbar'},e('i',{style:{width:(r*100)+'%',background:rc(r)}})),
+          e('span',{className:'dval'},x.val));})
+      ):null,
+      e('div',{className:'mgmt'},
+        e('div',null, e('b',{style:{color:info.color}}, info.tier+': '), info.action),
+        info.timeline? e('a',{className:'tlpill',href:'../index.html?tool=decision-aids.html'}, 'On the withdrawal timeline · '+info.timeline+' →') : null)
+    )
+  );
+}
+function App(){
+  var tab=useState('ciwa'); var setTab=tab[1]; tab=tab[0];
+  // severity bands now live in CIWA_GAUGE / COWS_GAUGE (Enhancement 1: live gauge)
+  return e('div',{className:'shell'},
+    e('div',{className:'kicker'},'Core Topics · 03 · Substance Use / Withdrawal'),
+    e('h1',null,'Withdrawal Scales: CIWA-Ar & COWS'),
+    e('p',{className:'sub'},'Two structured scales you’ll use on the unit — alcohol (CIWA-Ar) and opioids (COWS). Score the current state, repeat over time, and act per your institution’s protocol. The trend matters as much as the number.'),
+    e('div',{className:'tabs'},
+      e('button',{className:'tab'+(tab==='ciwa'?' on':''),onClick:function(){setTab('ciwa')}},'CIWA-Ar (alcohol)'),
+      e('button',{className:'tab'+(tab==='cows'?' on':''),onClick:function(){setTab('cows')}},'COWS (opioid)')),
+    tab==='ciwa'?
+      e('div',{className:'card'},
+        e('h3',{style:{marginTop:0}},'CIWA-Ar — 10 items (max 67)'),
+        e('div',{className:'pearl danger'}, e('b',null,'Safety: '),'a rising or high CIWA signals risk of withdrawal seizures and delirium tremens. Benzodiazepines are first-line per protocol; treat early. Thiamine before glucose.'),
+        e(Scale,{items:CIWA,gauge:CIWA_GAUGE}),
+        e('div',{className:'pearl'}, e('b',null,'Use it well: '),'symptom-triggered dosing (treat when CIWA ≥ ~8–10) usually beats fixed schedules in appropriate patients. CIWA assumes the patient can communicate — it is unreliable in delirium, intubation, or language barriers; use a protocol like RASS/PAWSS there.')
+      )
+    :
+      e('div',{className:'card'},
+        e('h3',{style:{marginTop:0}},'COWS — 11 items (max 48)'),
+        e(Scale,{items:COWS,gauge:COWS_GAUGE}),
+        e('div',{className:'pearl'}, e('b',null,'Use it well: '),'buprenorphine induction generally requires objective withdrawal (often COWS ≥ ~8–12) to avoid precipitated withdrawal — follow your protocol. COWS guides supportive and agonist treatment; it does not by itself set doses.')
+      ),
+    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. This is a reference and tally — NOT a dosing calculator or a substitute for the validated instrument, supervision, or your institution’s withdrawal protocol and orders. Behavioral anchors are abbreviated; use the full validated form at the bedside. For fictional/practice use only — no protected health information.'),
+    e('footer',null,'Withdrawal Scales — CIWA-Ar & COWS · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>

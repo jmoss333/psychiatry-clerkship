@@ -1,0 +1,13 @@
+# More source files on your computer (not copied: large/media/cloud-only)
+
+- **Aftercare Commercial DorotheaDix** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/DorotheaDix/Aftercare_Resources/Aftercare_Commercial_DorotheaDix.pdf` · PDF (copy skipped: OSError)
+- **Aftercare Commercial EMMC** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/EMMC/Aftercare_Resources/Aftercare_Commercial_EMMC.pdf` · PDF (copy skipped: OSError)
+- **Aftercare Commercial MidCoast** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/MidCoast/Aftercare_Resources/Aftercare_Commercial_MidCoast.pdf` · PDF (copy skipped: OSError)
+- **Aftercare Commercial MMC** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/MMC/Aftercare_Resources/Aftercare_Commercial_MMC.pdf` · PDF (copy skipped: OSError)
+- **Aftercare Commercial PenBay** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/PenBay/Aftercare_Resources/Aftercare_Commercial_PenBay.pdf` · PDF (copy skipped: OSError)
+- **Aftercare Commercial Riverview** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/Riverview/Aftercare_Resources/Aftercare_Commercial_Riverview.pdf` · PDF (copy skipped: OSError)
+- **Aftercare Commercial Sanford** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/Sanford/Aftercare_Resources/Aftercare_Commercial_Sanford.pdf` · PDF (copy skipped: OSError)
+- **Aftercare MaineCare DorotheaDix** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/DorotheaDix/Aftercare_Resources/Aftercare_MaineCare_DorotheaDix.pdf` · PDF (copy skipped: OSError)
+- **Aftercare MaineCare EMMC** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/EMMC/Aftercare_Resources/Aftercare_MaineCare_EMMC.pdf` · PDF (copy skipped: OSError)
+- **Aftercare MaineCare MidCoast** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/MidCoast/Aftercare_Resources/Aftercare_MaineCare_MidCoast.pdf` · PDF (copy skipped: OSError)
+- **Aftercare MaineCare MMC** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/MMC/Aftercare_Resources/Aftercare_MaineCare_MMC.pdf` · PDF (copy skipped: OSError)

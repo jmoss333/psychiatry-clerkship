@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<!-- Family Therapy Approaches with Adults — Interactive Companion
+     Single-file, zero-dependency. Answers persist in this browser only (localStorage).
+     Joshua Moss, MD · Psychiatry Seminars · June 16, 2026 -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Interactive companion for the Family Therapy Approaches with Adults seminar — explore the map, work the cases, keep your answers.">
+<title>Family Therapy Approaches with Adults — Interactive Companion</title>
+<style>
+  :root {
+    --ft-terra: #B85042;
+    --ft-terra-dark: #9C4032;
+    --ft-char: #36454F;
+    --ft-ink: #2B333A;
+    --ft-sand: #F3EDE9;
+    --ft-sand-dark: #E4DAD3;
+    --ft-sage: #6E8B7B;
+    --ft-sage-light: #A7BEAE;
+    --ft-bg: #FBF9F7;
+    --ft-surface: #FFFFFF;
+    --ft-border: #DDD5CE;
+    --ft-grey: #6E747A;
+    --ft-serif: Georgia, 'Times New Roman', serif;
+    --ft-sans: 'Segoe UI', Calibri, -apple-system, Helvetica, Arial, sans-serif;
+    --ft-radius: 12px;
+    --ft-shadow: 0 6px 24px rgba(43, 51, 58, 0.14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--ft-sans);
+    background: var(--ft-bg);
+    color: var(--ft-ink);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  /* ---------- header ---------- */
+  .ft-header {
+    background: var(--ft-char);
+    color: #fff;
+    padding: 14px 22px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .ft-header h1 { font-family: var(--ft-serif); font-size: 1.25rem; font-weight: 700; }
+  .ft-header h1 .ft-chip {
+    display: inline-block; width: 10px; height: 10px;
+    background: var(--ft-terra); margin-right: 10px;
+  }
+  .ft-session { font-size: 0.8rem; color: var(--ft-sage-light); letter-spacing: 0.06em; }
+  .ft-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ft-btn {
+    font-family: var(--ft-sans); font-size: 0.78rem; font-weight: 600;
+    padding: 7px 12px; border-radius: 8px; cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: transparent; color: #fff;
+  }
+  .ft-btn:hover { background: rgba(255, 255, 255, 0.12); }
+  .ft-btn.ft-btn-accent { background: var(--ft-terra); border-color: var(--ft-terra); }
+  .ft-btn.ft-btn-accent:hover { background: var(--ft-terra-dark); }
+
+  /* ---------- map ---------- */
+  .ft-maphint {
+    text-align: center; font-size: 0.85rem; color: var(--ft-grey);
+    padding: 12px 16px 0;
+  }
+  .ft-mapwrap { max-width: 1240px; margin: 0 auto; padding: 4px 12px 8px; }
+  .ft-map { width: 100%; height: auto; display: block; }
+  .ft-node { cursor: pointer; }
+  .ft-node rect { transition: filter 0.15s ease, transform 0.15s ease; }
+  .ft-node:hover rect, .ft-node:focus rect { filter: brightness(1.07); }
+  .ft-node:focus { outline: none; }
+  .ft-node:focus rect { stroke: var(--ft-terra); stroke-width: 3; }
+  .ft-link { fill: none; stroke: var(--ft-sand-dark); stroke-width: 2.5; }
+
+  /* chip nav (mobile + accessibility fallback) */
+  .ft-chips {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    max-width: 1100px; margin: 0 auto; padding: 6px 16px 26px;
+  }
+  .ft-chipbtn {
+    font-size: 0.78rem; font-weight: 600; padding: 7px 12px;
+    border-radius: 999px; border: 1px solid var(--ft-border);
+    background: var(--ft-surface); color: var(--ft-char); cursor: pointer;
+  }
+  .ft-chipbtn:hover { border-color: var(--ft-terra); color: var(--ft-terra); }
+  .ft-chipbtn .ft-dotrow { margin-left: 6px; }
+
+  .ft-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--ft-sand-dark); margin-right: 2px;
+  }
+  .ft-dot.ft-dot-on { background: var(--ft-terra); }
+
+  /* ---------- panel ---------- */
+  .ft-overlay {
+    position: fixed; inset: 0; background: rgba(43, 51, 58, 0.45);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 40;
+  }
+  .ft-overlay.ft-open { opacity: 1; pointer-events: auto; }
+  .ft-panel {
+    position: fixed; top: 0; right: 0; height: 100%;
+    width: min(620px, 100%);
+    background: var(--ft-surface);
+    box-shadow: var(--ft-shadow);
+    transform: translateX(102%);
+    transition: transform 0.25s ease;
+    z-index: 50;
+    display: flex; flex-direction: column;
+  }
+  .ft-panel.ft-open { transform: translateX(0); }
+  .ft-panel-head {
+    padding: 18px 22px 14px;
+    border-bottom: 3px solid var(--ft-sand-dark);
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .ft-panel-head .ft-kicker {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em;
+    color: var(--ft-terra); text-transform: uppercase; margin-bottom: 4px;
+  }
+  .ft-panel-head h2 { font-family: var(--ft-serif); font-size: 1.35rem; color: var(--ft-ink); }
+  .ft-close {
+    margin-left: auto; border: none; background: var(--ft-sand);
+    width: 34px; height: 34px; border-radius: 50%;
+    font-size: 1rem; cursor: pointer; color: var(--ft-char); flex: none;
+  }
+  .ft-close:hover { background: var(--ft-sand-dark); }
+  .ft-panel-body { overflow-y: auto; padding: 20px 22px 28px; flex: 1; }
+  .ft-panel-foot {
+    border-top: 1px solid var(--ft-border);
+    padding: 12px 22px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .ft-navbtn {
+    font-size: 0.8rem; font-weight: 600; padding: 8px 14px;
+    border-radius: 8px; border: 1px solid var(--ft-border);
+    background: var(--ft-surface); cursor: pointer; color: var(--ft-char);
+  }
+  .ft-navbtn:hover { border-color: var(--ft-terra); color: var(--ft-terra); }
+  .ft-savestate { margin-left: auto; font-size: 0.72rem; color: var(--ft-grey); }
+  .ft-savestate.ft-flash { color: var(--ft-sage); font-weight: 700; }
+
+  /* ---------- panel content blocks ---------- */
+  .ft-panel-body h3 {
+    font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ft-char); margin: 22px 0 8px;
+  }
+  .ft-panel-body h3 .ft-beatno { color: var(--ft-terra); margin-right: 8px; }
+  .ft-panel-body p { margin: 0 0 10px; }
+  .ft-panel-body ul { margin: 0 0 12px 20px; }
+  .ft-panel-body li { margin-bottom: 7px; }
+  .ft-muted { color: var(--ft-grey); font-size: 0.88rem; font-style: italic; }
+  .ft-callout {
+    background: var(--ft-sand);
+    border-left: 5px solid var(--ft-terra);
+    border-radius: 0 var(--ft-radius) var(--ft-radius) 0;
+    padding: 12px 16px; margin: 10px 0 14px;
+  }
+  .ft-callout .ft-callout-label {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em;
+    color: var(--ft-terra); text-transform: uppercase; margin-bottom: 5px;
+  }
+  .ft-callout.ft-callout-dark { border-left-color: var(--ft-char); }
+  .ft-callout.ft-callout-dark .ft-callout-label { color: var(--ft-char); }
+  .ft-quote { font-family: var(--ft-serif); font-style: italic; color: #3A444C; }
+  .ft-ask { font-weight: 700; margin: 10px 0 6px; }
+  textarea.ft-field {
+    width: 100%; min-height: 84px; resize: vertical;
+    font-family: var(--ft-sans); font-size: 0.95rem; line-height: 1.5;
+    padding: 10px 12px; color: var(--ft-ink);
+    border: 1px solid var(--ft-border); border-radius: 10px;
+    background: #FFFEFC;
+  }
+  textarea.ft-field:focus {
+    outline: none; border-color: var(--ft-terra);
+    box-shadow: 0 0 0 3px rgba(184, 80, 66, 0.15);
+  }
+  .ft-stepcard {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--ft-sand); border-radius: var(--ft-radius);
+    padding: 12px 14px; margin-bottom: 10px;
+  }
+  .ft-stepno {
+    font-family: var(--ft-serif); font-weight: 700; font-size: 1.3rem;
+    color: var(--ft-terra); flex: none; width: 26px; text-align: center;
+  }
+  .ft-stepcard .ft-phase {
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em;
+    color: var(--ft-sage); text-transform: uppercase;
+  }
+  .ft-stepcard h4 { font-size: 0.95rem; margin: 1px 0 3px; color: var(--ft-ink); }
+  .ft-stepcard p { font-size: 0.86rem; margin: 0; color: #4A555E; }
+  .ft-approw {
+    border: 1px solid var(--ft-border); border-radius: var(--ft-radius);
+    padding: 12px 14px; margin-bottom: 10px; background: var(--ft-surface);
+  }
+  .ft-approw h4 { font-size: 0.95rem; color: var(--ft-terra); margin-bottom: 4px; }
+  .ft-approw p { font-size: 0.86rem; margin-bottom: 4px; }
+  .ft-approw .ft-lbl { font-weight: 700; color: var(--ft-char); }
+  .ft-readitem { margin-bottom: 12px; font-size: 0.88rem; }
+  .ft-readitem a { color: #1F5C8B; font-weight: 600; }
+  .ft-readitem .ft-why { color: var(--ft-grey); font-size: 0.82rem; }
+
+  /* ---------- footer ---------- */
+  .ft-foot {
+    max-width: 900px; margin: 0 auto; padding: 6px 18px 40px;
+    font-size: 0.78rem; color: var(--ft-grey); text-align: center;
+  }
+  .ft-foot .ft-sig { font-style: italic; margin-top: 6px; }
+
+  /* ---------- preview modal ---------- */
+  .ft-preview {
+    position: fixed; inset: 0; z-index: 70;
+    background: rgba(43, 51, 58, 0.55);
+    display: none; align-items: center; justify-content: center; padding: 24px;
+  }
+  .ft-preview.ft-open { display: flex; }
+  .ft-prevsheet {
+    background: var(--ft-bg); border-radius: 14px; box-shadow: var(--ft-shadow);
+    width: min(900px, 100%); height: min(86vh, 100%);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .ft-prevhead {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-bottom: 1px solid var(--ft-border); background: var(--ft-surface);
+  }
+  .ft-prevtab {
+    font-size: 0.8rem; font-weight: 700; padding: 8px 14px; cursor: pointer;
+    border: 1px solid var(--ft-border); background: var(--ft-surface);
+    color: var(--ft-grey); border-radius: 999px;
+  }
+  .ft-prevtab.ft-active { background: var(--ft-char); border-color: var(--ft-char); color: #fff; }
+  .ft-prevhead .ft-close { margin-left: auto; }
+  .ft-prevbody { flex: 1; overflow-y: auto; padding: 22px; }
+  .ft-prevdoc {
+    background: #fff; border: 1px solid var(--ft-border); border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(43, 51, 58, 0.08);
+    max-width: 720px; margin: 0 auto; padding: 36px 42px; font-size: 0.88rem;
+  }
+  .ft-prevdoc h1 { font-family: var(--ft-serif); font-size: 1.35rem; margin-bottom: 2px; }
+  .ft-prevdoc .ft-p-session { color: #555; font-size: 0.78rem; margin-bottom: 16px; }
+  .ft-prevdoc h2 {
+    font-family: var(--ft-serif); font-size: 1.02rem; color: var(--ft-char);
+    border-bottom: 2px solid var(--ft-terra); padding-bottom: 2px; margin: 18px 0 8px;
+  }
+  .ft-prevdoc h3 { font-size: 0.76rem; letter-spacing: 0.1em; margin: 12px 0 4px; }
+  .ft-prevdoc p, .ft-prevdoc li { font-size: 0.84rem; margin-bottom: 5px; }
+  .ft-prevdoc ul { margin: 0 0 8px 18px; }
+  .ft-prevdoc .ft-p-quote {
+    font-family: var(--ft-serif); font-style: italic;
+    background: var(--ft-sand); padding: 7px 10px; margin: 5px 0; border-radius: 4px;
+  }
+  .ft-prevdoc .ft-p-answer {
+    border: 1px solid #BBB; border-radius: 5px; padding: 7px 10px;
+    min-height: 34px; margin: 4px 0 10px; white-space: pre-wrap; font-size: 0.84rem;
+  }
+  .ft-prevdoc .ft-p-answer.ft-p-empty { color: #999; font-style: italic; }
+  pre.ft-prevtxt {
+    background: #fff; border: 1px solid var(--ft-border); border-radius: 6px;
+    max-width: 720px; margin: 0 auto; padding: 24px 28px;
+    font-size: 0.78rem; line-height: 1.55; white-space: pre-wrap; word-wrap: break-word;
+    font-family: 'SF Mono', Menlo, Consolas, monospace; color: var(--ft-ink);
+  }
+  .ft-prevfoot {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 12px 16px; border-top: 1px solid var(--ft-border); background: var(--ft-surface);
+  }
+  .ft-prevnote { font-size: 0.74rem; color: var(--ft-grey); margin-right: auto; }
+  .ft-prevbtn {
+    font-size: 0.8rem; font-weight: 700; padding: 9px 16px; border-radius: 8px;
+    cursor: pointer; border: 1px solid var(--ft-border); background: var(--ft-surface); color: var(--ft-char);
+  }
+  .ft-prevbtn:hover { border-color: var(--ft-char); }
+  .ft-prevbtn.ft-accent { background: var(--ft-terra); border-color: var(--ft-terra); color: #fff; }
+  .ft-prevbtn.ft-accent:hover { background: var(--ft-terra-dark); }
+
+  /* ---------- print ---------- */
+  #ft-print { display: none; }
+  @media print {
+    body > .ft-header, body > .ft-maphint, body > .ft-mapwrap, body > .ft-chips,
+    body > .ft-foot, .ft-panel, .ft-overlay { display: none !important; }
+    #ft-print { display: block; font-family: var(--ft-sans); color: #222; }
+    #ft-print h1 { font-family: var(--ft-serif); font-size: 20pt; margin-bottom: 2pt; }
+    #ft-print .ft-p-session { color: #555; font-size: 10pt; margin-bottom: 14pt; }
+    #ft-print h2 {
+      font-family: var(--ft-serif); font-size: 13pt; color: #36454F;
+      border-bottom: 1.5pt solid #B85042; padding-bottom: 2pt;
+      margin: 16pt 0 8pt; page-break-after: avoid;
+    }
+    #ft-print h3 { font-size: 10pt; letter-spacing: 0.1em; margin: 10pt 0 4pt; }
+    #ft-print p, #ft-print li { font-size: 10pt; margin-bottom: 4pt; }
+    #ft-print ul { margin-left: 16pt; }
+    #ft-print .ft-p-quote { font-family: var(--ft-serif); font-style: italic; background: #F3EDE9; padding: 6pt 9pt; margin: 4pt 0; }
+    #ft-print .ft-p-answer {
+      border: 1pt solid #BBB; border-radius: 4pt; padding: 6pt 9pt;
+      min-height: 30pt; margin: 3pt 0 8pt; white-space: pre-wrap; font-size: 10pt;
+      page-break-inside: avoid;
+    }
+    #ft-print .ft-p-answer.ft-p-empty { color: #999; font-style: italic; }
+  }
+
+  @media (max-width: 720px) {
+    .ft-header h1 { font-size: 1.05rem; }
+    .ft-panel-body { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="ft-header">
+  <div>
+    <h1><span class="ft-chip"></span>Family Therapy Approaches with Adults</h1>
+    <div class="ft-session">PSYCHIATRY SEMINARS · TUE JUNE 16, 2026 · 3:30 PM · McG CLASSROOM · PGY-3 &amp; CAP · DR. J. MOSS</div>
+  </div>
+  <div class="ft-actions">
+    <button class="ft-btn" id="ft-btn-download" aria-label="Download my answers as a text file">Download answers</button>
+    <button class="ft-btn" id="ft-btn-reset" aria-label="Clear all saved answers">Reset</button>
+    <button class="ft-btn ft-btn-accent" id="ft-btn-print" aria-label="Print or save as PDF with my answers">Print / Save PDF</button>
+  </div>
+</header>
+
+<p class="ft-maphint">Click any node to open it. Work the three cases before the seminar or during it — your answers save automatically <strong>on this device only</strong>.</p>
+
+<div class="ft-mapwrap">
+  <svg id="ft-map" class="ft-map" viewBox="0 0 1200 760" role="group" aria-label="Seminar map: click a topic to open it"></svg>
+</div>
+
+<nav class="ft-chips" id="ft-chips" aria-label="All sections"></nav>
+
+<footer class="ft-foot">
+  <div>All cases are de-identified composites — details altered, dynamics real. Teaching material for psychiatry trainees.</div>
+  <div>Your answers are stored only in this browser on this device (nothing is uploaded). Use <strong>Download answers</strong> or <strong>Print / Save PDF</strong> to keep a copy. Please — no names or identifying details in anything you type.</div>
+  <div class="ft-sig">Joshua Moss, MD | Psychiatrist</div>
+</footer>
+
+<div class="ft-overlay" id="ft-overlay"></div>
+<aside class="ft-panel" id="ft-panel" role="dialog" aria-modal="true" aria-labelledby="ft-panel-title">
+  <div class="ft-panel-head">
+    <div>
+      <div class="ft-kicker" id="ft-panel-kicker"></div>
+      <h2 id="ft-panel-title"></h2>
+    </div>
+    <button class="ft-close" id="ft-close" aria-label="Close panel">✕</button>
+  </div>
+  <div class="ft-panel-body" id="ft-panel-body"></div>
+  <div class="ft-panel-foot">
+    <button class="ft-navbtn" id="ft-prev" aria-label="Previous section">← Prev</button>
+    <button class="ft-navbtn" id="ft-next" aria-label="Next section">Next →</button>
+    <span class="ft-savestate" id="ft-savestate">Answers save automatically on this device</span>
+  </div>
+</aside>
+
+<div class="ft-preview" id="ft-preview" role="dialog" aria-modal="true" aria-label="Preview before printing or downloading">
+  <div class="ft-prevsheet">
+    <div class="ft-prevhead">
+      <button class="ft-prevtab" id="ft-tab-print" aria-label="Preview the printed pages">Printed page</button>
+      <button class="ft-prevtab" id="ft-tab-txt" aria-label="Preview the downloadable text file">Text file (.txt)</button>
+      <button class="ft-close" id="ft-prevclose" aria-label="Close preview">✕</button>
+    </div>
+    <div class="ft-prevbody" id="ft-prevbody"></div>
+    <div class="ft-prevfoot">
+      <span class="ft-prevnote" id="ft-prevnote"></span>
+      <button class="ft-prevbtn" id="ft-prev-dodownload" aria-label="Download the text file now">Download .txt</button>
+      <button class="ft-prevbtn ft-accent" id="ft-prev-doprint" aria-label="Open the print dialog now">Print / Save PDF</button>
+    </div>
+  </div>
+</div>
+
+<div id="ft-print" aria-hidden="true"></div>
+
+<noscript><p style="text-align:center;padding:30px;">This companion needs JavaScript. If you opened it inside an email preview, download the attachment and open it in a web browser.</p></noscript>
+
+<script>
+'use strict';
+(function () {
+
+  /* ============================== helpers ============================== */
+
+  /** Create a DOM element with attributes and children. */
+  function el(tag, attrs) {
+    var node = document.createElement(tag);
+    var kids = Array.prototype.slice.call(arguments, 2);
+    if (attrs) {
+      Object.keys(attrs).forEach(function (k) {
+        if (k === 'class') { node.className = attrs[k]; }
+        else if (k === 'html') { node.innerHTML = attrs[k]; }
+        else if (k.indexOf('on') === 0) { node.addEventListener(k.slice(2), attrs[k]); }
+        else { node.setAttribute(k, attrs[k]); }
+      });
+    }
+    kids.forEach(function (kid) {
+      if (kid === null || kid === undefined) { return; }
+      node.appendChild(typeof kid === 'string' ? document.createTextNode(kid) : kid);
+    });
+    return node;
+  }
+
+  function svgEl(tag, attrs) {
+    var node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    var kids = Array.prototype.slice.call(arguments, 2);
+    if (attrs) { Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); }); }
+    kids.forEach(function (kid) {
+      node.appendChild(typeof kid === 'string' ? document.createTextNode(kid) : kid);
+    });
+    return node;
+  }
+
+  /* ============================== storage ============================== */
+
+  var STORE_KEY = 'ftc_v1';
+  var state = (function () {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); }
+    catch (err) { return {}; }
+  })();
+  var saveTimer = null;
+  function persist() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); flashSaved(); } catch (err) { /* private mode */ }
+      refreshDots();
+    }, 350);
+  }
+  function flashSaved() {
+    var s = document.getElementById('ft-savestate');
+    s.textContent = 'Saved ✓ (this device only)';
+    s.className = 'ft-savestate ft-flash';
+    setTimeout(function () {
+      s.textContent = 'Answers save automatically on this device';
+      s.className = 'ft-savestate';
+    }, 1400);
+  }
+
+  /* ============================== content ============================== */
+
+  function field(id, placeholder) { return { type: 'field', id: id, ph: placeholder || 'Write here…' }; }
+  function ask(text) { return { type: 'ask', text: text }; }
+  function para(text) { return { type: 'p', text: text }; }
+  function muted(text) { return { type: 'muted', text: text }; }
+  function beat(no, title) { return { type: 'beat', no: no, title: title }; }
+  function callout(label, quote, dark) { return { type: 'callout', label: label, quote: quote, dark: !!dark }; }
+  function list(items) { return { type: 'list', items: items }; }
+
+  var SECTIONS = [
+    {
+      id: 'start', kicker: 'Start here', title: 'How This Hour Works', short: 'Start Here',
+      blocks: [
+        para('Three cases from an adult inpatient unit. Each runs the same four beats — and in every one of them, you talk first:'),
+        list([
+          '<strong>The chart line</strong> — you formulate from the one-liner the chart gives you.',
+          '<strong>The room</strong> — you name the pattern that actually walks in.',
+          '<strong>Freeze-frames</strong> — you say, out loud, what you would say next.',
+          '<strong>The reveal</strong> — what was actually said, why it worked, and where it came from.'
+        ]),
+        callout('Before we start — have ready', 'One family meeting that stuck with you — good, bad, or haunted. One sentence. You’ll say it out loud in the first ten minutes.'),
+        para('<strong>Two ground rules:</strong> no names, no identifying details — change anything that would make the family recognizable. And passing is allowed.'),
+        muted('The cases here are de-identified composites: details altered, dynamics real. Everything you type stays in this browser.')
+      ]
+    },
+    {
+      id: 'stance', kicker: 'The only theory of the hour', title: 'The Stance', short: 'The Stance',
+      blocks: [
+        callout('The one stance', '“My goal is not to find the truth. This isn’t a courtroom — there are three truths in this room, sometimes five.”'),
+        callout('The one question', '“When that happens — what happens next, for everyone?”'),
+        para('<strong>Translator, not judge.</strong> Render her “concern” into language he can hear; his “control” back into her fear. Translation is the core act.'),
+        para('<strong>Anger is information.</strong> “You can’t feel that level of anger unless you care.” Secondary anger sits on primary fear, grief, and longing.'),
+        para('<strong>Two exceptions, non-negotiable:</strong> where there is coercion or violence, anger is about control, not caring — never use these lines there (that is what the private screen is for). And when anger answers a real violation, honor it before you go under it — some anger is the wound, not the armor.'),
+        muted('A humility note that travels with everything here: “say the feeling out loud” is itself a cultural dialect. Many families show love through acts, presence, food, duty. Ask “how does care get shown in this family?” before prescribing our idiom — then build the task in theirs.')
+      ]
+    },
+    {
+      id: 'steps', kicker: 'The map — we won’t lecture this', title: 'The Six Steps', short: 'Six Steps',
+      blocks: [
+        para('One step before the room, four inside it, one carried home.'),
+        { type: 'steps', items: [
+          ['BEFORE', '1', 'Prepare & align', 'Consent · private IPV screen (both directions) · chart check (safety, custody, orders) · 2–3 goals max · review the genogram/formulation · align the team · prep the patient.'],
+          ['IN THE ROOM', '2', 'Receive every voice', 'Warm join · name the dual purpose (discharge AND how things go at home) · normalize disagreement · hear each person, not just the loudest. “No one listens until they feel heard.”'],
+          ['IN THE ROOM', '3', 'Identify the cycle', 'Name the pattern, not the person: “When ___ happens, ___ does ___, then ___.” The alarm loop: fear → control → withdrawal → fear.'],
+          ['IN THE ROOM', '4', 'Deepen to the emotion', 'Get under the anger to the fear, grief, or longing. “You can’t feel that angry unless you care.”'],
+          ['IN THE ROOM', '5', 'Give it new meaning', 'Reframe and translate between members · “respect lines,” not boundaries · externalize the illness · don’t argue the delusion — validate the feeling · create one real moment of contact.'],
+          ['AFTER', '6', 'Establish & carry it home', 'One small, specific relational task (never “communicate more”) · relational discharge plan · book the 7-day follow-up · offer a second meeting · document and debrief.']
+        ] }
+      ]
+    },
+    {
+      id: 'case1', kicker: 'Case 1 · Major depression · A couple', title: '“The Supportive Husband”', short: 'Case 1', fillable: true,
+      blocks: [
+        callout('The chart line', '45-year-old woman admitted after an overdose on her own clonazepam. Intake note: “supportive husband, no significant stressors.” Married 18 years; two children (14 and 11); recent home renovation; on sertraline.'),
+        beat(1, 'Your formulation'),
+        ask('What do you want to know that the intake note doesn’t tell you?'),
+        field('c1b1'),
+        beat(2, 'Name the dance'),
+        para('In the room: he answers every question addressed to her — lovingly. He has already found her a new psychiatrist, booked a therapist, hired a housekeeper. She is flat, polite, and somewhere else.'),
+        field('c1b2'),
+        beat(3, 'What would you say next?'),
+        callout('Freeze-frame A', 'Mid-meeting, he pulls out his phone: “I found a place in Portland that does ketamine — I can get her in Thursday.” She looks at the floor.'),
+        ask('Your next sentence — to him, without shaming him:'),
+        field('c1ffA'),
+        callout('Freeze-frame B', 'You ask her what she needs. “I’m fine. He’s got it handled. Like always.”'),
+        ask('What’s underneath that sentence — and your next question:'),
+        field('c1ffB'),
+        ask('Before they leave the room: what happens to the clonazepam — and who holds the safety plan?'),
+        field('c1safety'),
+        beat(4, 'Keep it'),
+        ask('The move I’m stealing from this case:'),
+        field('c1steal')
+      ]
+    },
+    {
+      id: 'case2', kicker: 'Case 2 · Recurrent psychosis · Launch failure', title: '“The House With One Front Door”', short: 'Case 2', fillable: true,
+      blocks: [
+        callout('The chart line', 'Man in his early 30s, recurrent psychosis, stabilizing on an antipsychotic. Readmitted after a family blow-up. Lives with mother, father, and adult brother. Recently lost his job. The cycle for years: discharge → a few good weeks → escalating conflict at home → readmission.'),
+        beat(1, 'Your formulation'),
+        ask('His levels are therapeutic. What else gets admitted with him every time?'),
+        field('c2b1'),
+        beat(2, 'Name the loop'),
+        para('At home: parents run on watchfulness — checking rooms, adjusting the thermostat, monitoring. Patient and brother run on autonomy — privacy, the right to say no. Flashpoint: the patient demands his brother wear a cross “for protection”; the brother refuses; the house ignites. The mother has become the household’s designated enforcer.'),
+        field('c2b2'),
+        beat(3, 'What would you say next?'),
+        callout('Freeze-frame A', 'In the meeting, the patient turns to his brother: “If you loved me, you’d wear it.” The brother: “I’m not doing this again.” The room heats.'),
+        ask('Your next sentence — go:'),
+        field('c2ffA'),
+        callout('Freeze-frame B', 'The mother, tearful: “I just want to keep him safe. Is that a crime?”'),
+        ask('Answer her without making her the problem — and without abandoning the brother’s point:'),
+        field('c2ffB'),
+        callout('Freeze-frame C', 'The patient, on the unit: “This place is a complete invasion of privacy.”'),
+        ask('What does that sentence predict about the first week home?'),
+        field('c2ffC'),
+        beat(4, 'Keep it'),
+        ask('The move I’m stealing from this case:'),
+        field('c2steal')
+      ]
+    },
+    {
+      id: 'case3', kicker: 'Case 3 · Borderline personality disorder · Sixth admission', title: '“The Revolving Door”', short: 'Case 3', fillable: true,
+      blocks: [
+        callout('The chart line', '28-year-old woman, sixth admission in twelve months, after a superficial forearm laceration during a fight with her boyfriend. Mother died of cancer when she was 14; left home at 17 after her father remarried. When her name comes up in rounds, somebody exhales through their nose.'),
+        beat(1, 'Start with the team'),
+        ask('Say the countertransference honestly — what does the team feel when this name comes up? And whose story does the team’s coldness repeat?'),
+        muted('(While you’re there: “superficial” describes the wound, not the risk. What still gets assessed fresh on a sixth admission?)'),
+        field('c3b1'),
+        beat(2, 'The cycle — with the hospital inside it'),
+        para('Map the loop: conflict with partner → dysregulation → self-harm → ED → admission → stabilization → reunion honeymoon → conflict. Where does the hospital sit in this system?'),
+        field('c3b2'),
+        beat(3, 'What would you say next?'),
+        callout('Freeze-frame', 'In the family meeting she looks at you: “Everyone gives up on me eventually. You will too.” Her partner stares at his hands.'),
+        ask('What do you say — exactly?'),
+        field('c3ff'),
+        beat(4, 'Keep it'),
+        ask('The move I’m stealing from this case:'),
+        field('c3steal')
+      ]
+    },
+    {
+      id: 'leave', kicker: 'Before you leave', title: 'Say It on the Record', short: 'Commitment', fillable: true,
+      blocks: [
+        callout('Before you leave — say it on the record', 'One move from this hour I will actually use this week:', true),
+        field('commit', 'One sentence. Concrete.'),
+        beat('✎', 'Field notes'),
+        ask('Anything from the discussion you want to keep:'),
+        field('fieldnotes')
+      ]
+    },
+    {
+      id: 'unit', kicker: 'From cases to operations', title: 'How It Runs on a Real Unit', short: 'On the Unit',
+      blocks: [
+        muted('Family work fails operationally before it fails clinically: it is not one task but a stack of tasks wearing one name — consent, collateral, an IPV screen, scheduling, education, safety planning, documentation, follow-up. Friction beats intention. The fix is workflow, not heroism.'),
+        list([
+          '<strong>Plan it every morning.</strong> In treatment-team rounds, every patient gets a family-contact decision for the day: full meeting · 10-minute check-in · phone collateral · or a documented “not yet, because…”',
+          '<strong>Split the stack.</strong> Consent and scheduling → social work. Collateral and the private IPV screen → resident, before the meeting. Education materials → prepped in advance. The meeting itself → 20 minutes, two or three goals, team aligned first.',
+          '<strong>Keep a 10-minute version.</strong> One strength · one update (one good, one hard) · one need (small and specific) · one plan. No family leaves the building unseen because the day collapsed.',
+          '<strong>Carry it home.</strong> Document attendees, dynamics, agreements · debrief the learner · book the 7-day follow-up before discharge · offer a second meeting · send a one-page family summary to the receiving team so engagement transfers instead of restarting.'
+        ]),
+        para('<strong>Run this way — on our unit, with our census — 2–3 family meetings a day is a normal load. The principle transfers even where the number doesn’t.</strong>')
+      ]
+    },
+    {
+      id: 'guardrails', kicker: 'The guardrails', title: 'When NOT to Run a Conjoint Meeting', short: 'When NOT to Meet',
+      blocks: [
+        list([
+          '<strong>Active intimate partner violence</strong> — screen privately, both directions, before any conjoint session.',
+          '<strong>Ongoing abuse or exploitation</strong> — including financial; the meeting can become the abuser’s instrument.',
+          '<strong>The patient declines</strong> — explore once (symptom, shame, or autonomy?), then respect it.',
+          '<strong>Acute paranoia centered on the family member</strong> — work the relational frame separately.',
+          '<strong>A no-contact or protective order, or anyone who arrives intoxicated or threatening</strong> — check the chart first; postpone or restructure. A meeting can be a court-order violation.'
+        ]),
+        muted('Declining the conjoint meeting is not declining family work: safety plan; collateral (you can always listen — sharing back needs consent, or an emergency); separate meetings; the right referrals. The format bends; the lens doesn’t.')
+      ]
+    },
+    {
+      id: 'approaches', kicker: 'Where today’s moves come from', title: 'Approaches at a Glance', short: 'Approaches',
+      blocks: [
+        { type: 'h3', text: 'Demonstrated in today’s cases' },
+        { type: 'approaches', items: [
+          ['Structural (Minuchin)', 'Subsystems, hierarchy, boundaries.', '“Respect lines, not boundaries”; protecting parental and sibling subsystems (Case 2).', 'Enmeshment, chaotic hierarchy, launch failure.'],
+          ['Bowen / intergenerational', 'Differentiation; over/under-functioning reciprocity; cutoff.', 'One spouse over-functions, the other under-functions — one seesaw (Case 1).', 'One partner “carries” the other; patterns repeating across generations.'],
+          ['Milan / systemic', 'Circular questioning — interview the pattern, not the person; hypothesizing, neutrality, curiosity.', '“When that happens, what happens next — for everyone?” (Case 2).', 'Stuck blame narratives; coercion loops.'],
+          ['Emotionally Focused (Johnson)', 'Attachment; secondary anger over primary fear and grief.', '“Under the frustration, what’s the fear?”; the prepared corrective moment (Case 1).', 'Couples; pursuer–withdrawer cycles.'],
+          ['Narrative (White/Epston)', 'Externalize the problem; re-author the story.', '“The psychosis has been making it hard for him to trust his own mind” (Case 2).', 'Psychosis; shame-dominated stories.'],
+          ['Family psychoeducation', 'Illness education lowers expressed emotion and relapse.', 'The film’s evidence base; EE-lowering tasks at discharge.', 'Psychosis and bipolar — the strongest trial evidence in the field.'],
+          ['DBT-informed family work', 'Validation precedes change; limits after validation.', '“Everyone gives up on me eventually” → validate the fear, then hold the frame (Case 3).', 'BPD; self-harm cycles; high-intensity dyads.'],
+          ['CRAFT', 'Family changes its own behavior to invite the user toward treatment.', 'Supporting vs. rescuing; align the money with recovery.', 'Substance use when the patient is ambivalent.']
+        ] },
+        { type: 'h3', text: 'The wider map — worth knowing' },
+        { type: 'approaches', items: [
+          ['Contextual (Boszormenyi-Nagy)', 'Relational ethics: invisible loyalties, ledgers of give-and-take across generations; multidirected partiality — side with everyone in turn.', 'The “three truths / not a courtroom” stance is multidirected partiality in plain clothes.', 'Loyalty binds; estrangement; “owed and owing” narratives; adult children navigating two families.'],
+          ['Strategic / MRI brief (Watzlawick, Haley)', 'The attempted solution maintains the problem; small strategic shifts interrupt more-of-the-same.', 'Tom’s fixing (Case 1) and the parents’ monitoring (Case 2) are textbook attempted solutions feeding the loop.', 'Entrenched loops; families who have “tried everything” — harder.'],
+          ['Solution-Focused (de Shazer, Berg)', 'Exceptions, scaling, the miracle question; build on what already works instead of excavating what doesn’t.', '“If this got better tomorrow, what would each of you do differently?”', 'Demoralized systems; brief contacts; strengths-hungry families.'],
+          ['Mentalization-based family work (Asen & Fonagy — MIST)', 'Conflict runs on confident misreadings of each other’s minds; slow the loop and rebuild curiosity about inner states.', 'Every “what do you imagine she was feeling right then?” prompt.', 'High-conflict families; BPD; whenever members “already know” each other’s motives.'],
+          ['Attachment-Based Family Therapy (G. Diamond)', 'Repair the attachment rupture as the direct treatment for suicidality and depression; formally extended to young adults, including sexual/gender-minority young adults and nonaccepting parents.', 'Case 3’s bridge — Desiree at fourteen, the year her mother died.', 'Suicidal adolescents and young adults; rupture-and-rejection stories.'],
+          ['Open Dialogue (Seikkula)', 'Immediate network meetings, transparency in front of the patient, tolerating uncertainty — “sitting with not knowing.” Honest tag: Finnish cohort results are promising; the large UK trial (ODDESSI) has not reported its main results yet.', 'Hearing every voice; scaffolding over resolution.', 'First-episode crises with an engaged network.'],
+          ['Behavioral couples therapy for SUD (O’Farrell, Fals-Stewart)', 'Daily recovery contract; the relationship rebuilt as the recovery vehicle. Meta-analytically superior to individual treatment for use and relationship outcomes.', 'The natural next step past CRAFT once the patient engages.', 'Partnered adults with alcohol or drug use disorders.']
+        ] },
+        muted('Also worth knowing: experiential family therapy (Satir, Whitaker — the warmth, self-disclosure, and humor in the room descend from here) · psychodynamic/object-relations family therapy (Framo — projective identification) · emotionally focused family therapy (EFFT, the family-format extension of EFT) · multifamily psychoeducation groups (McFarlane — the strongest delivery format of the psychoeducation evidence) · Family Connections (the skills-and-support program for family members of people with BPD) · functional family therapy (FFT — adolescents) · Gottman method couples work.')
+      ]
+    },
+    {
+      id: 'steal', kicker: 'Take it home', title: 'Steal These + Further Reading', short: 'Steal These',
+      blocks: [
+        { type: 'h3', text: 'Questions that interview the pattern' },
+        list([
+          '“When ___ happens, what happens next — for you? For them?”',
+          '“Who notices first when things go badly? What do they do?”',
+          '“What are you afraid would happen if you didn’t step in?”',
+          '“If this got better tomorrow, what would each of you do differently?”'
+        ]),
+        { type: 'h3', text: 'Getting under the anger' },
+        list([
+          '“Under the frustration, what’s the fear?”',
+          '“You can’t feel that level of anger unless you care.”',
+          '“What do you imagine she was feeling right then?”',
+          '<strong>Two exceptions, non-negotiable:</strong> where there is coercion or violence, anger is about control, not caring — never use these lines there. And when anger answers a real violation, honor it before you go under it.'
+        ]),
+        { type: 'h3', text: 'Reframes' },
+        list([
+          '“Manipulation” → an autonomy bid under constraint.',
+          '“Enabling” → love running on an old map.',
+          '“Controlling / hovering” → fear looking for something to do.',
+          '“Boundaries” → respect lines.',
+          '“Non-compliant” → “the meds can feel awful — let’s be honest about that together.”',
+          'Don’t argue the delusion — validate the feeling, not the content: “That sounds terrifying — I’m here.”'
+        ]),
+        { type: 'h3', text: 'Further reading (linked)' },
+        { type: 'reading', items: [
+          ['Rodolico A, et al. (2022). Family interventions for relapse prevention in schizophrenia: systematic review and network meta-analysis. Lancet Psychiatry 9(3):211–221.', 'https://www.thelancet.com/journals/lanpsy/article/PIIS2215-0366(21)00437-5/abstract', 'The headline numbers — 90 trials; family psychoeducation most effective for 12-month relapse (OR 0.18). Read the confidence-of-evidence caveat too.'],
+          ['Pharoah F, et al. (2010). Family intervention for schizophrenia. Cochrane Database Syst Rev, CD000088.', 'https://www.cochrane.org/CD000088/SCHIZ_family-intervention-for-schizophrenia', 'The Cochrane standard: fewer relapses and readmissions, better adherence, lower expressed emotion.'],
+          ['Glick ID, Clarkin JF, et al. (1985). A controlled evaluation of inpatient family intervention. Arch Gen Psychiatry 42(9):882–886.', 'https://pubmed.ncbi.nlm.nih.gov/3899049/', 'The landmark RCT of family work delivered during the hospitalization itself.'],
+          ['Miklowitz DJ, et al. (2003). Family-focused psychoeducation and pharmacotherapy in bipolar disorder. Arch Gen Psychiatry 60(9):904–912.', 'https://pubmed.ncbi.nlm.nih.gov/12963672/', 'Family-focused therapy after an episode reduces relapse over two years.'],
+          ['Diamond GS, et al. (2010). Attachment-based family therapy for adolescents with suicidal ideation: RCT. JAACAP 49(2):122–131.', 'https://pubmed.ncbi.nlm.nih.gov/20215934/', 'Repairing family ruptures rapidly reduces suicidal ideation — the relationship itself is the intervention.'],
+          ['Eassom E, et al. (2014). Implementing family involvement in the treatment of patients with psychosis: systematic review. BMJ Open 4(10):e006108.', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4187461/', 'Why it doesn’t happen: organizational culture and staff factors — not family reluctance — are the main barriers.'],
+          ['Fontanella CA, et al. (2020). Timely outpatient mental health services after psychiatric hospitalization and risk of death by suicide. JAMA Netw Open 3(8):e2012887.', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7420244/', 'Seven-day follow-up associated with lower suicide risk.'],
+          ['Boyer CA, et al. (2000). Identifying risk factors and key strategies in linkage to outpatient psychiatric care. Am J Psychiatry 157(10):1592–1598.', 'https://pubmed.ncbi.nlm.nih.gov/11007712/', 'Family involvement during the admission roughly tripled connection to the first outpatient appointment.'],
+          ['Asen E, Fonagy P. (2021). Mentalization-Based Treatment with Families. New York: Guilford Press.', 'https://www.guilford.com/books/Mentalization-Based-Treatment-with-Families/Asen-Fonagy/9781462546053', 'The systemic–mentalizing integration behind every “what do you imagine they were feeling?” move — the wider-map entry to read first.'],
+          ['Powers MB, Vedel E, Emmelkamp PMG. (2008). Behavioral couples therapy (BCT) for alcohol and drug use disorders: a meta-analysis. Clin Psychol Rev 28(6):952–962.', 'https://pubmed.ncbi.nlm.nih.gov/18374464/', 'BCT beat individual treatment on use frequency and relationship outcomes — the case for treating the couple as the recovery unit.']
+        ] }
+      ]
+    }
+  ];
+
+  /* ============================== mindmap ============================== */
+
+  var NODE_POS = {
+    start:      { x: 600, y: 86,  w: 210, h: 60 },
+    unit:       { x: 352, y: 138, w: 190, h: 58 },
+    guardrails: { x: 848, y: 138, w: 190, h: 58 },
+    stance:     { x: 218, y: 290, w: 195, h: 62 },
+    steps:      { x: 152, y: 452, w: 195, h: 62 },
+    approaches: { x: 260, y: 608, w: 200, h: 62 },
+    steal:      { x: 480, y: 690, w: 230, h: 58 },
+    case1:      { x: 982, y: 290, w: 235, h: 72 },
+    case2:      { x: 1048, y: 452, w: 250, h: 72 },
+    case3:      { x: 940, y: 608, w: 235, h: 72 },
+    leave:      { x: 712, y: 690, w: 210, h: 58 }
+  };
+
+  var CENTER = { x: 600, y: 392, w: 260, h: 96 };
+
+  function nodeFill(sec) {
+    if (sec.fillable) { return '#B85042'; }
+    if (sec.id === 'start') { return '#6E8B7B'; }
+    return '#36454F';
+  }
+
+  function curve(from, to) {
+    var midX = (from.x + to.x) / 2;
+    return 'M ' + from.x + ' ' + from.y + ' C ' + midX + ' ' + from.y + ', ' +
+      midX + ' ' + to.y + ', ' + to.x + ' ' + to.y;
+  }
+
+  function splitLabel(sec) {
+    if (sec.id === 'case1') { return ['CASE 1', 'The Supportive Husband']; }
+    if (sec.id === 'case2') { return ['CASE 2', 'The House With One Front Door']; }
+    if (sec.id === 'case3') { return ['CASE 3', 'The Revolving Door']; }
+    if (sec.id === 'leave') { return ['BEFORE YOU LEAVE', 'My Commitment']; }
+    return [null, sec.short];
+  }
+
+  function fieldsOf(sec) {
+    return sec.blocks.filter(function (blk) { return blk.type === 'field'; });
+  }
+
+  function buildMap() {
+    var svg = document.getElementById('ft-map');
+    while (svg.firstChild) { svg.removeChild(svg.firstChild); }
+
+    SECTIONS.forEach(function (sec) {
+      var pos = NODE_POS[sec.id];
+      svg.appendChild(svgEl('path', { class: 'ft-link', d: curve(CENTER, pos) }));
+    });
+
+    /* center node */
+    var cg = svgEl('g', {});
+    cg.appendChild(svgEl('rect', {
+      x: CENTER.x - CENTER.w / 2, y: CENTER.y - CENTER.h / 2, width: CENTER.w, height: CENTER.h,
+      rx: 18, fill: '#2B333A'
+    }));
+    cg.appendChild(svgEl('text', {
+      x: CENTER.x, y: CENTER.y - 14, 'text-anchor': 'middle',
+      'font-family': 'Georgia, serif', 'font-size': '21', 'font-weight': 'bold', fill: '#FFFFFF'
+    }, 'Family Therapy'));
+    cg.appendChild(svgEl('text', {
+      x: CENTER.x, y: CENTER.y + 12, 'text-anchor': 'middle',
+      'font-family': 'Georgia, serif', 'font-size': '21', 'font-weight': 'bold', fill: '#FFFFFF'
+    }, 'Approaches with Adults'));
+    cg.appendChild(svgEl('text', {
+      x: CENTER.x, y: CENTER.y + 34, 'text-anchor': 'middle',
+      'font-family': 'inherit', 'font-size': '11', fill: '#A7BEAE', 'letter-spacing': '1'
+    }, 'JUNE 16 · 3:30 PM · McG CLASSROOM'));
+    svg.appendChild(cg);
+
+    SECTIONS.forEach(function (sec) {
+      var pos = NODE_POS[sec.id];
+      var lbl = splitLabel(sec);
+      var g = svgEl('g', { class: 'ft-node', tabindex: '0', role: 'button', 'aria-label': 'Open: ' + sec.title });
+      g.appendChild(svgEl('rect', {
+        x: pos.x - pos.w / 2, y: pos.y - pos.h / 2, width: pos.w, height: pos.h,
+        rx: 14, fill: nodeFill(sec)
+      }));
+      var hasKicker = !!lbl[0];
+      if (hasKicker) {
+        g.appendChild(svgEl('text', {
+          x: pos.x, y: pos.y - 12, 'text-anchor': 'middle',
+          'font-size': '10', 'font-weight': 'bold', fill: 'rgba(255,255,255,0.75)', 'letter-spacing': '1.5'
+        }, lbl[0]));
+      }
+      var fsize = lbl[1].length > 24 ? '12.5' : '14';
+      g.appendChild(svgEl('text', {
+        x: pos.x, y: pos.y + (hasKicker ? 7 : 0) + (fieldsOf(sec).length ? 0 : 5),
+        'text-anchor': 'middle', 'font-family': 'Georgia, serif',
+        'font-size': fsize, 'font-weight': 'bold', fill: '#FFFFFF'
+      }, lbl[1]));
+
+      /* completion dots */
+      var fields = fieldsOf(sec);
+      if (fields.length) {
+        var totalW = fields.length * 11 - 4;
+        fields.forEach(function (fld, idx) {
+          g.appendChild(svgEl('circle', {
+            cx: pos.x - totalW / 2 + idx * 11 + 3.5, cy: pos.y + pos.h / 2 - 12, r: 3.5,
+            fill: 'rgba(255,255,255,0.35)', 'data-dot': fld.id
+          }));
+        });
+      }
+      g.addEventListener('click', function () { openSection(sec.id); });
+      g.addEventListener('keydown', function (evt) {
+        if (evt.key === 'Enter' || evt.key === ' ') { evt.preventDefault(); openSection(sec.id); }
+      });
+      svg.appendChild(g);
+    });
+  }
+
+  function buildChips() {
+    var nav = document.getElementById('ft-chips');
+    SECTIONS.forEach(function (sec) {
+      var dots = el('span', { class: 'ft-dotrow' });
+      fieldsOf(sec).forEach(function (fld) {
+        dots.appendChild(el('span', { class: 'ft-dot', 'data-chipdot': fld.id }));
+      });
+      nav.appendChild(el('button', {
+        class: 'ft-chipbtn', 'aria-label': 'Open: ' + sec.title,
+        onclick: function () { openSection(sec.id); }
+      }, sec.short, fieldsOf(sec).length ? dots : null));
+    });
+  }
+
+  function refreshDots() {
+    document.querySelectorAll('[data-dot]').forEach(function (dot) {
+      var on = !!(state[dot.getAttribute('data-dot')] || '').trim();
+      dot.setAttribute('fill', on ? '#FFFFFF' : 'rgba(255,255,255,0.35)');
+    });
+    document.querySelectorAll('[data-chipdot]').forEach(function (dot) {
+      var on = !!(state[dot.getAttribute('data-chipdot')] || '').trim();
+      dot.className = on ? 'ft-dot ft-dot-on' : 'ft-dot';
+    });
+  }
+
+  /* ============================== panel ============================== */
+
+  var currentIdx = -1;
+  var lastFocusNode = null;
+
+  function renderBlock(blk) {
+    switch (blk.type) {
+      case 'p': return el('p', { html: blk.text });
+      case 'muted': return el('p', { class: 'ft-muted', html: blk.text });
+      case 'ask': return el('p', { class: 'ft-ask', html: blk.text });
+      case 'beat':
+        return el('h3', {}, el('span', { class: 'ft-beatno' }, 'BEAT ' + blk.no), blk.title);
+      case 'h3': return el('h3', {}, blk.text);
+      case 'callout':
+        return el('div', { class: 'ft-callout' + (blk.dark ? ' ft-callout-dark' : '') },
+          el('div', { class: 'ft-callout-label' }, blk.label),
+          el('div', { class: 'ft-quote' }, blk.quote));
+      case 'list':
+        var ul = el('ul', {});
+        blk.items.forEach(function (item) { ul.appendChild(el('li', { html: item })); });
+        return ul;
+      case 'field':
+        var ta = el('textarea', {
+          class: 'ft-field', id: 'fld-' + blk.id, placeholder: blk.ph,
+          'aria-label': 'Your answer'
+        });
+        ta.value = state[blk.id] || '';
+        ta.addEventListener('input', function () { state[blk.id] = ta.value; persist(); });
+        return ta;
+      case 'steps':
+        var wrap = el('div', {});
+        blk.items.forEach(function (it) {
+          wrap.appendChild(el('div', { class: 'ft-stepcard' },
+            el('div', { class: 'ft-stepno' }, it[1]),
+            el('div', {},
+              el('div', { class: 'ft-phase' }, it[0]),
+              el('h4', {}, it[2]),
+              el('p', {}, it[3]))));
+        });
+        return wrap;
+      case 'approaches':
+        var aw = el('div', {});
+        blk.items.forEach(function (it) {
+          aw.appendChild(el('div', { class: 'ft-approw' },
+            el('h4', {}, it[0]),
+            el('p', { html: '<span class="ft-lbl">Core idea:</span> ' + it[1] }),
+            el('p', { html: '<span class="ft-lbl">Today:</span> ' + it[2] }),
+            el('p', { html: '<span class="ft-lbl">Reach for it when:</span> ' + it[3] })));
+        });
+        return aw;
+      case 'reading':
+        var rw = el('div', {});
+        blk.items.forEach(function (it) {
+          rw.appendChild(el('div', { class: 'ft-readitem' },
+            el('a', { href: it[1], target: '_blank', rel: 'noopener' }, it[0]),
+            el('div', { class: 'ft-why' }, it[2])));
+        });
+        return rw;
+      default: return el('div', {});
+    }
+  }
+
+  function openSection(id) {
+    var idx = SECTIONS.findIndex(function (sec) { return sec.id === id; });
+    if (idx < 0) { return; }
+    currentIdx = idx;
+    var sec = SECTIONS[idx];
+    lastFocusNode = document.activeElement;
+
+    document.getElementById('ft-panel-kicker').textContent = sec.kicker;
+    document.getElementById('ft-panel-title').textContent = sec.title;
+    var body = document.getElementById('ft-panel-body');
+    body.innerHTML = '';
+    sec.blocks.forEach(function (blk) { body.appendChild(renderBlock(blk)); });
+    body.scrollTop = 0;
+
+    document.getElementById('ft-prev').style.visibility = idx === 0 ? 'hidden' : 'visible';
+    document.getElementById('ft-next').textContent =
+      idx === SECTIONS.length - 1 ? 'Back to map' : 'Next: ' + SECTIONS[idx + 1].short + ' →';
+
+    document.getElementById('ft-overlay').classList.add('ft-open');
+    document.getElementById('ft-panel').classList.add('ft-open');
+    document.getElementById('ft-close').focus();
+  }
+
+  function closePanel() {
+    document.getElementById('ft-overlay').classList.remove('ft-open');
+    document.getElementById('ft-panel').classList.remove('ft-open');
+    if (lastFocusNode && lastFocusNode.focus) { lastFocusNode.focus(); }
+  }
+
+  /* ============================== export & print ============================== */
+
+  function answerText(id) { return (state[id] || '').trim(); }
+
+  function buildPrintDoc() {
+    var root = document.getElementById('ft-print');
+    root.innerHTML = '';
+    root.appendChild(el('h1', {}, 'Family Therapy Approaches with Adults — My Companion'));
+    root.appendChild(el('div', { class: 'ft-p-session' },
+      'Psychiatry Seminars · June 16, 2026 · 3:30 PM · McG Classroom · PGY-3 & CAP · Dr. J. Moss'));
+    SECTIONS.forEach(function (sec) {
+      root.appendChild(el('h2', {}, sec.title));
+      sec.blocks.forEach(function (blk) {
+        if (blk.type === 'field') {
+          var txt = answerText(blk.id);
+          root.appendChild(el('div', { class: 'ft-p-answer' + (txt ? '' : ' ft-p-empty') },
+            txt || '(not answered)'));
+        } else if (blk.type === 'callout') {
+          root.appendChild(el('div', { class: 'ft-p-quote' }, blk.label + ' — ' + blk.quote));
+        } else if (blk.type === 'ask') {
+          root.appendChild(el('p', {}, el('strong', {}, blk.text)));
+        } else if (blk.type === 'beat') {
+          root.appendChild(el('h3', {}, 'BEAT ' + blk.no + ' — ' + blk.title.toUpperCase()));
+        } else if (blk.type === 'h3') {
+          root.appendChild(el('h3', {}, blk.text));
+        } else if (blk.type === 'p' || blk.type === 'muted') {
+          root.appendChild(el('p', { html: blk.text }));
+        } else if (blk.type === 'list') {
+          var ul = el('ul', {});
+          blk.items.forEach(function (item) { ul.appendChild(el('li', { html: item })); });
+          root.appendChild(ul);
+        } else if (blk.type === 'steps') {
+          blk.items.forEach(function (it) {
+            root.appendChild(el('p', { html: '<strong>' + it[1] + ' · ' + it[2] + '</strong> (' + it[0] + ') — ' + it[3] }));
+          });
+        } else if (blk.type === 'approaches') {
+          blk.items.forEach(function (it) {
+            root.appendChild(el('p', { html: '<strong>' + it[0] + ':</strong> ' + it[1] + ' Today: ' + it[2] + ' Reach for it when: ' + it[3] }));
+          });
+        } else if (blk.type === 'reading') {
+          blk.items.forEach(function (it) {
+            root.appendChild(el('p', {}, it[0] + ' — ' + it[1]));
+          });
+        }
+      });
+    });
+  }
+
+  function buildAnswersText() {
+    var out = ['FAMILY THERAPY APPROACHES WITH ADULTS — MY ANSWERS',
+      'June 16, 2026 seminar companion', ''];
+    SECTIONS.forEach(function (sec) {
+      var fields = fieldsOf(sec);
+      if (!fields.length) { return; }
+      out.push('================================');
+      out.push(sec.title.toUpperCase());
+      out.push('================================');
+      var pending = null;
+      sec.blocks.forEach(function (blk) {
+        if (blk.type === 'beat') { pending = 'BEAT ' + blk.no + ' — ' + blk.title; }
+        if (blk.type === 'callout') { pending = blk.quote; }
+        if (blk.type === 'ask') { pending = blk.text.replace(/<[^>]+>/g, ''); }
+        if (blk.type === 'field') {
+          out.push('', '> ' + (pending || 'Notes'));
+          out.push(answerText(blk.id) || '(not answered)');
+          pending = null;
+        }
+      });
+      out.push('');
+    });
+    return out.join('\n');
+  }
+
+  function downloadAnswers() {
+    var blob = new Blob([buildAnswersText()], { type: 'text/plain;charset=utf-8' });
+    var a = el('a', { href: URL.createObjectURL(blob), download: 'family-therapy-seminar-my-answers.txt' });
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+  }
+
+  /* ---------- preview modal ---------- */
+
+  var previewMode = 'print';
+  function renderPreview(mode) {
+    previewMode = mode;
+    document.getElementById('ft-tab-print').className = 'ft-prevtab' + (mode === 'print' ? ' ft-active' : '');
+    document.getElementById('ft-tab-txt').className = 'ft-prevtab' + (mode === 'txt' ? ' ft-active' : '');
+    var body = document.getElementById('ft-prevbody');
+    body.innerHTML = '';
+    if (mode === 'print') {
+      buildPrintDoc();
+      var doc = el('div', { class: 'ft-prevdoc' });
+      doc.innerHTML = document.getElementById('ft-print').innerHTML;
+      body.appendChild(doc);
+      document.getElementById('ft-prevnote').textContent =
+        'This is what Print / Save PDF produces — every section plus your answers, in order.';
+    } else {
+      body.appendChild(el('pre', { class: 'ft-prevtxt' }, buildAnswersText()));
+      document.getElementById('ft-prevnote').textContent =
+        'This is the .txt file Download produces — your answers only, ready to keep or paste anywhere.';
+    }
+    body.scrollTop = 0;
+  }
+  function openPreview(mode) {
+    renderPreview(mode);
+    document.getElementById('ft-preview').classList.add('ft-open');
+    document.getElementById('ft-prevclose').focus();
+  }
+  function closePreview() {
+    document.getElementById('ft-preview').classList.remove('ft-open');
+  }
+
+  /* ============================== wiring ============================== */
+
+  document.getElementById('ft-close').addEventListener('click', closePanel);
+  document.getElementById('ft-overlay').addEventListener('click', closePanel);
+  document.addEventListener('keydown', function (evt) {
+    if (evt.key === 'Escape') {
+      if (document.getElementById('ft-preview').classList.contains('ft-open')) { closePreview(); }
+      else { closePanel(); }
+    }
+  });
+  document.getElementById('ft-prevclose').addEventListener('click', closePreview);
+  document.getElementById('ft-preview').addEventListener('click', function (evt) {
+    if (evt.target === this) { closePreview(); }
+  });
+  document.getElementById('ft-tab-print').addEventListener('click', function () { renderPreview('print'); });
+  document.getElementById('ft-tab-txt').addEventListener('click', function () { renderPreview('txt'); });
+  document.getElementById('ft-prev-doprint').addEventListener('click', function () {
+    buildPrintDoc();
+    window.print();
+  });
+  document.getElementById('ft-prev-dodownload').addEventListener('click', downloadAnswers);
+  document.getElementById('ft-prev').addEventListener('click', function () {
+    if (currentIdx > 0) { openSection(SECTIONS[currentIdx - 1].id); }
+  });
+  document.getElementById('ft-next').addEventListener('click', function () {
+    if (currentIdx >= SECTIONS.length - 1) { closePanel(); }
+    else { openSection(SECTIONS[currentIdx + 1].id); }
+  });
+  document.getElementById('ft-btn-print').addEventListener('click', function () { openPreview('print'); });
+  window.addEventListener('beforeprint', buildPrintDoc);
+  document.getElementById('ft-btn-download').addEventListener('click', function () { openPreview('txt'); });
+  document.getElementById('ft-btn-reset').addEventListener('click', function () {
+    if (window.confirm('Clear all of your saved answers on this device? This cannot be undone.')) {
+      state = {};
+      try { localStorage.removeItem(STORE_KEY); } catch (err) { /* noop */ }
+      refreshDots();
+      if (currentIdx >= 0) { openSection(SECTIONS[currentIdx].id); }
+    }
+  });
+
+  buildMap();
+  buildChips();
+  refreshDots();
+})();
+</script>
+</body>
+</html>

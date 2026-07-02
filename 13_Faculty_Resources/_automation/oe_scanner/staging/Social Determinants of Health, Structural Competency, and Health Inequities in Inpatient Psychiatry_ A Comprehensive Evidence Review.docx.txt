@@ -1,0 +1,540 @@
+
+
+
+Social Determinants of Health, Structural Competency, and Health Inequities in Inpatient Psychiatry: A Comprehensive Evidence Review
+
+
+---
+
+1. Scope and Framing
+
+
+This review synthesizes the evidence on how social determinants of health (SDOH) shape psychiatric inpatient outcomes, how structural competency provides a framework for understanding and addressing these forces, and what interventions can mitigate the resulting inequities. The evidence draws from systematic reviews, meta-analyses, landmark trials, APA resource documents, the DSM-5-TR, VA/DoD guidelines, and major conceptual papers. The scope encompasses twelve SDOH domains and their intersection with five key psychiatric outcomes: readmission, suicide risk, medication adherence, ED boarding, and discharge failure.
+
+---
+
+2. Structural Competency: The Conceptual Foundation
+
+
+From Cultural to Structural Competency
+
+
+Structural competency, introduced by Metzl and Hansen (2014), shifts clinical attention from cross-cultural understanding of individual patients toward the social, economic, and political forces that produce health inequities at levels above the clinical encounter.[1] The framework was explicitly proposed as an evolution beyond cultural competency, which the authors argued relies on static understandings of culture and demonstrates limited effects on health outcomes.[1][2] Structural competency trains clinicians to recognize how upstream determinants — policies, institutions, economic systems, and power structures — shape how symptoms, attitudes, and diseases manifest in patients.[1]
+
+The Five Core Competencies
+
+
+Metzl and Hansen define five skills: (1) recognizing structures that shape clinical interactions, (2) developing an extra-clinical language of structure, (3) rearticulating "cultural" formulations in structural terms, (4) observing and imagining structural interventions, and (5) developing structural humility — recognizing the limits of one's own structural knowledge.[1] The critical reframe is that what clinicians typically attribute to "culture" (e.g., non-adherence, missed appointments, treatment refusal) should be understood as products of structural forces (transportation barriers, insurance gaps, food insecurity).[1]
+
+Related Frameworks
+
+
+Structural vulnerability (Bourgois, Holmes, et al., 2017) operationalizes these concepts for clinical practice through a structured assessment tool that extends the traditional social history to identify patients whose health problems are exacerbated by local hierarchies and power relationships.[3] Structural stigma (Sukhera et al., 2022) provides a four-component educational framework — Recognize, Reflect, Reframe, Respond — for dismantling stigma related to mental health and substance use in clinical learning environments.[4] The APA's DSM-5-TR (2022) formally acknowledges that racism exists at personal, interpersonal, systemic/institutional, and social structural levels, and that structural racism manifests in pervasive inequities in economic resources, power, and privilege.[5]
+
+---
+
+3. SDOH Domains and Their Impact on Psychiatric Outcomes
+
+
+Housing Insecurity
+
+
+Housing instability is the single most consistently replicated SDOH predictor of psychiatric readmission. A 2026 systematic review of 15 studies found housing instability was "repeatedly associated with psychiatric readmission across population-based, hospital-based, and clinical registry studies." Effect sizes are large: homelessness at index admission was associated with aHR 2.04 (95% CI 1.65–2.51) for 30-day readmission in a Vancouver cohort; an urban community hospital found an OR of 29 for early readmission among homeless patients; and homeless patients in England had 2.49 times the rate of emergency readmission versus housed patients.[2][6][7][8] Among homeless adults, mean antipsychotic medication possession ratio over 15 years was only 0.41 — well below the 0.80 threshold for clinical effectiveness — with duration of homelessness significantly associated with lower adherence.[3] The prevalence of lifetime suicide attempt among homeless individuals is 28.9% (95% CI 21.7–37.2%).[9]
+
+Poverty and Socioeconomic Deprivation
+
+
+A Finnish national study found a steep negative income gradient for first psychiatric hospital admissions, with the lowest income decile having incidence rate ratios of 2.94–4.46 compared to the highest decile.[10] Area-level deprivation shows a dose-response relationship with involuntary psychiatric hospitalization.[11] Among patients with schizophrenia, low socioeconomic level independently predicted medication nonadherence (OR 3.68, 95% CI 1.42–9.53).[12] Financial strain disproportionately affects psychiatric medication adherence compared to non-psychiatric medications.[12] Being on income assistance was associated with increased suicide attempt risk in the year after psychiatric discharge (HR 1.17, 95% CI 1.01–1.35).[13]
+
+Cumulative Social Needs: The Dose-Response Relationship
+
+
+Using the 2017 Nationwide Readmissions Database (n=13.2 million), a dose-response relationship was demonstrated: 30-day readmission was 11.5% with no health-related social needs (HRSN), 27.0% with 1 HRSN domain, and 63.5% with all 5 domains (aOR 12.55, 95% CI 9.04–17.43).[14] This compounding effect underscores that SDOH rarely operate in isolation.
+
+The following figure from a VA study illustrates how social risks independently predict readmission and ED use even after clinical adjustment, with food insecurity, legal problems, and neighborhood deprivation showing the strongest associations.[15]
+
+Racism and Structural Discrimination
+
+
+Racial disparities in inpatient psychiatry are pervasive, well-documented, and operate across every stage of the care pathway.
+
+Involuntary commitment: A major international meta-analysis (71 studies, 1,953,135 participants) found Black Caribbean patients had OR 2.53 (95% CI 2.03–3.16) and Black African patients OR 2.27 (1.62–3.19) for compulsory admission compared with White patients.[16] A US prospective cohort found Black patients were significantly more likely to be involuntarily admitted (aOR 1.57, 95% CI 1.26–1.95).[1]
+
+Restraint and seclusion: A large retrospective study (n=29,739) found Black patients were significantly more likely to experience a restraint event (aOR 1.85) and had significantly longer restraint duration.[17] Among patients awaiting psychiatric hospitalization in the ED, Black race was associated with nearly 3-fold higher odds of physical restraint (OR 2.84, 1.03–7.84).[2]
+
+Diagnostic disparities: The overdiagnosis of schizophrenia in Black patients is one of the most persistent disparities in psychiatry. A 2024 JAMA Psychiatry meta-analysis (64 studies, 54,929 people) confirmed Black individuals had a pooled OR of 2.07 (1.64–2.61) for schizophrenia diagnosis compared with White individuals, and structured assessments did not fully mitigate the disparity.[18] Critically, a 2025 national study found that after adjusting for a neighborhood Social Vulnerability Metric, the Black-White difference was attenuated and no longer statistically significant (aOR 2.49, 0.63–9.90), suggesting neighborhood-level social determinants partially explain the disparity.[19]
+
+The forest plot from the van der Ven et al. JAMA Psychiatry meta-analysis illustrates the consistency of elevated schizophrenia diagnosis risk among Black compared with White individuals across studies:
+
+Treatment quality: Black patients received disproportionately more PRN antipsychotics (17.7% vs. 8.2% of White patients) and were 58% more likely to receive antipsychotic PRNs over non-antipsychotic PRNs.[20] Black patients were significantly less likely to receive clozapine (OR 0.40) and more likely to receive haloperidol (OR 1.52).[3] Racial/ethnic minority patients were significantly more likely to be admitted to low-safety inpatient psychiatric facilities.[21]
+
+Pathways to care: Black patients had significantly higher odds of police transport to the ED (aOR 1.64, 95% CI 1.57–1.72).[22] In England, Black Caribbean patients had OR 2.64 for police contact during pathways to psychiatric care, while GP involvement was less likely.[23]
+
+Insurance Barriers
+
+
+Children with government insurance were 18% more likely to be rehospitalized within 90 days than those with private insurance (aOR 1.18, 95% CI 1.04–1.34).[24] Medicaid patients aged 45–64 had the highest adjusted odds of 30-day readmission (aOR 1.67 vs. private insurance).[25] Having health insurance was a strong correlate of mental health treatment use (private insurance aOR 1.63; Medicaid aOR 2.66 for any mental illness), and uninsured individuals were 6.9 percentage points less likely to receive counseling than Medicaid enrollees.[26]
+
+Rural Access Issues
+
+
+More than half of all US counties — all rural — lack a practicing psychiatrist, psychologist, or social worker, and over 85% of federally designated mental health professional shortage areas are in rural communities.[27] Only 1.6% of rural zip codes have an office-based mental health specialist physician, compared to 17.6% of urban zip codes (UOR 13.52).[28] Psychiatry workforce adequacy in non-metropolitan areas is projected at 34.8% in 2026, declining to below 25% in some states by 2038.[29] Rural Medicare beneficiaries had lower rates of follow-up care after psychiatric hospitalization (HR 0.81, p < 0.001) and greater ED use postdischarge.[30]
+
+The following figure displays the geographic distribution of specialty mental health treatment resources across US communities, demonstrating the stark urban-rural divide:
+
+Criminal Legal Involvement
+
+
+Approximately 15–30% of county jail inmates have serious mental illness, compared to ~4% of the general community — there are now more than ten times as many individuals with SMI behind bars as in state psychiatric hospitals.[31][32] A 2025 meta-analysis of 131 publications across 43 countries found pooled prevalence of depression at 12.8% and any psychosis at 4.1% among incarcerated populations.[9] Prior incarceration was associated with significantly worse mental health at age 50 (aOR 1.9 for any mental health history; aOR 2.2 for past-year depression).[33] Justice system involvement was among the SDOH most strongly associated with suicide mortality in a 2025 JAMA Psychiatry umbrella review.[9] Suicide is the leading cause of death in jails, at a rate of 46 per 100,000.[32]
+
+Food Insecurity
+
+
+People with severe mental illness are 2.71 times more likely to report food insecurity than the general population (95% CI 1.72–3.25), with a prevalence of approximately 40%.[34] A systematic review and meta-analysis found food insecurity was the SDOH most consistently associated with lower medication adherence (aOR 0.56, 95% CI 0.42–0.70).[35] Food insecurity is associated with depression (OR 2.74) and anxiety (OR 2.41).[36] State SNAP eligibility expansion policies were associated with reduced rates of major depressive episodes and mental illness at the population level.[37]
+
+Transportation Barriers
+
+
+Twenty-eight percent of patients across three urban EDs delayed medical visits due to transportation issues, and transportation difficulties were associated with poor medication adherence.[38] Patients with schizophrenia spectrum disorders had 27.9% increased odds of treatment adherence when travel time to facilities was ≤30 minutes.[2] Transportation barriers are cited as a major barrier to treatment engagement across racial/ethnic groups, with Black participants particularly noting inability to afford public transportation for appointments and medication pickup.[34]
+
+Digital Access Barriers
+
+
+Approximately 6 million children and adolescents in the US have inadequate in-person and digital availability of child psychiatric services, with 51% of children in rural counties lacking both forms of access.[39] In 2020, 596 US counties (19%) lacked both psychiatrists and broadband coverage, representing 10.5 million residents; these counties had significantly higher rates of drug overdose mortality (40.9 vs. 11.1 per 100,000) and completed suicide (88.1 vs. 11.3 per 100,000).[2] Despite the promise of telehealth, its expansion has not equally benefited all populations — nonmetro respondents were less likely to use virtual mental health care (AOR 0.74), and older adults, those living in poverty, and those without a high school diploma were significantly less likely to use teletherapy.[40][41]
+
+Family Instability and Trauma Exposure
+
+
+The 2025 JAMA Psychiatry umbrella review found childhood maltreatment, sexual assault, foster care experience, and exposure to others' suicide were among the SDOH most strongly associated with suicide-related outcomes.[9] Among hospitalized Veterans, food insecurity, legal problems, and neighborhood deprivation were the strongest social risk predictors of 30-day readmission.[15] Lack of family support was associated with antipsychotic nonadherence (aOR 2.01, 95% CI 1.33–3.04).[1]
+
+---
+
+4. ED Boarding: A Structural Crisis
+
+
+Psychiatric boarding — holding patients in the ED after the decision to admit — represents a structural failure with profound consequences. Psychiatric patients remain in the ED 3.2 times longer than non-psychiatric patients, with average boarding times of 7–11 hours nationally and frequently exceeding 24 hours.[3] A Canadian study found mental health patients' median boarding time was 120% longer than non-mental health patients, and this gap widened over time.[2]
+
+Harms are well-documented: patients boarded >14 hours more frequently required high-observation beds (14% vs. 3.5%), antipsychotics (44% vs. 14%), or sedation (55% vs. 33%).[42] Among older adults, functional decline occurred in 12.6% and restraint episodes in 8.1%, with both events occurring only among those boarding ≥24 hours.[43] ED boarding duration is a direct risk factor for developing delirium or severe agitation during subsequent inpatient admission.[44]
+
+Disparities are stark: Black patients boarded significantly longer than White patients for psychiatric admissions, and Medicaid patients were more than twice as likely to remain in the ED ≥24 hours compared to privately insured patients.[45][46] Boarding ≥24 hours was associated with a significant increase in perceived discrimination, particularly among patients from marginalized racial/ethnic groups.[47]
+
+The following figure illustrates how statewide demand for inpatient psychiatric care correlates with individual boarding outcomes — as more youth board simultaneously, admission rates drop and boarding durations increase substantially:
+
+The following figure displays reasons for patient dissatisfaction during ED boarding stratified by race/ethnicity, showing that non-Hispanic Black patients reported substantially higher rates of not being involved in treatment decisions:
+
+---
+
+5. Post-Discharge Suicide Risk and SDOH
+
+
+The post-discharge period carries extremely elevated suicide risk — pooled estimates show suicide rates of ~2,950 per 100,000 person-years in the first week after psychiatric discharge.[48] SDOH are critical risk factors: the 2024 VA/DoD Clinical Practice Guideline explicitly includes housing instability, homelessness, exposure to abuse/violence, interpersonal conflict, and financial and legal problems in suicide risk assessment.[48]
+
+The following figure from the Na et al. (2025) JAMA Psychiatry umbrella review summarizes effect sizes of SDOH on suicide mortality, with justice system involvement, exposure to suicide, firearm accessibility, and divorced status showing the strongest risk associations:
+
+Outpatient follow-up within 7 days was associated with HR 0.82 for suicide in a Korean population-based study and aRR 0.44 for suicide over 180 days among Medicaid-insured youth.[48] Non-Hispanic Black youth and those with managed care insurance were less likely to receive timely follow-up.[48] SDOH barriers — transportation, insurance, housing — impede the very follow-up that is protective against post-discharge suicide.
+
+---
+
+6. Interventions That Improve Outcomes
+
+
+Housing First
+
+
+Housing First (HF) consistently improves housing stability (SMD 1.24; 95% CI 0.86–1.62) and reduces ED visits (IRR 0.63; 95% CI 0.48–0.82) and hospitalizations (IRR 0.76; 95% CI 0.70–0.83) in meta-analyses of RCTs.[49] Long-term 7-year follow-up of the At Home/Chez Soi trial showed HF with ACT reduced days in hospital (RRR 0.32) and ED visits (RRR 0.57) among high-need participants.[50] However, direct improvements in psychiatric symptom severity are not consistently demonstrated.[49]
+
+Critical Time Intervention (CTI)
+
+
+CTI is a 9-month, 3-stage intervention that develops individualized community linkages during transitions. The original RCT found significantly lower psychiatric rehospitalization at 18 months (OR 0.11).[51] Brief CTI reduced 30-day readmission from 47% to 28% (p < .001).[52] A 2025 meta-analysis confirmed CTI significantly improved quality of life (SMD 0.23), reduced homelessness (SMD −0.20), and improved psychiatric symptoms (SMD −0.16).[53]
+
+Collaborative Care Model (CoCM)
+
+
+CoCM has the strongest evidence base among SDOH-responsive interventions, supported by over 90 RCTs.[53] The landmark IMPACT trial (n=1,801) found 45% of intervention patients achieved ≥50% reduction in depressive symptoms at 12 months vs. 19% of usual care (OR 3.45; 95% CI 2.71–4.38).[53] The SPIRIT trial — the largest mental health trial in rural primary care — demonstrated large, clinically meaningful improvements (Cohen d = 0.79–0.87) using telepsychiatry collaborative care in FQHCs without on-site psychiatrists.[53]
+
+Assertive Community Treatment (ACT)
+
+
+ACT reduces hospitalization, particularly among high utilizers. A systematic review with meta-regression (29 trials, 5,961 participants) found ACT works best when baseline hospital use is high.[54] The ACCESS-II study showed sustained 4-year improvements: hospitalization rates of 9–13%, involuntary admissions dropping from 35% to 8%, and significant improvements in psychopathology (d = 0.79).[55]
+
+Peer Support
+
+
+A 2023 meta-analysis of 28 RCTs found peer support had small but significant effects on clinical recovery (g = 0.19; 95% CI 0.11–0.27) and personal recovery (g = 0.15; 95% CI 0.04–0.27).[56] The Cochrane review found no clear effect on hospital admissions, though one RCT of peer mentors for recurrently hospitalized individuals found participants remained out of hospital significantly longer.[57][58]
+
+SDOH Screening and Referral
+
+
+The CMS Accountable Health Communities Model screened 482,967 participants and found statistically significant reductions in ED visits.[59] However, navigation services did not significantly increase community service connections or needs resolution compared to referral alone — referrals without ensuring receipt of services may be insufficient.[60]
+
+Jail Diversion and Reentry
+
+
+Mental health courts show a small effect on recidivism (d = −0.20) in meta-analysis, with MHC completion associated with greater reductions in jail days.[61] Mental health services access after release was associated with significant reduction in reincarceration risk, with each additional month between release and services access increasing reincarceration risk by 4%.[62] The Sequential Intercept Model provides the dominant conceptual framework for addressing the criminalization of mental illness across five interception points.[63]
+
+Telepsychiatry
+
+
+Multiple meta-analyses demonstrate telepsychiatry achieves clinical outcomes comparable to in-person care, with a 2023 meta-analysis of 32 RCTs finding no significant difference overall (p = 0.248) and superiority for depressive disorders (SMD −0.325).[64] However, telemental health may largely substitute for rather than supplement in-person care, resulting in only modest net increases in total specialty mental health contacts in rural areas.[65]
+
+
+
+---
+
+7. Staff Training and Structural Competency Education
+
+
+Evidence on Training
+
+
+A scoping review identified only 11 articles meeting inclusion criteria for structural competency training interventions, with most using active learning strategies and researcher-developed evaluation instruments.[65] A qualitative evaluation of structural competency training in a family medicine residency found residents reported positive impact on clinical practice but also feeling overwhelmed by increased recognition of structural influences on patient health.[65] At Vanderbilt, MHS majors who received structural competency education identified and analyzed structural factors at higher rates and in deeper ways than comparison groups.[66]
+
+Teaching Frameworks
+
+
+Castillo, Isom, DeBonis et al. (2020) proposed replacing or augmenting the ACGME's "systems-based practice" competency with a new core competency centered on health equity, social responsibility, and structural competency.[67] Hassan and Bui (2022) developed a structural analysis framework for incorporating structural competency into everyday clinical reasoning: (1) develop a prioritized clinical problem list, (2) identify social and structural root causes, (3) construct a prioritized structural problem list, and (4) brainstorm solutions to address structural barriers.[68] Weill Cornell developed the first OSCE designed to assess structural competency, focused on premature discharge scenarios.[69] As of academic year 2023–2024, the LCME requires medical schools to include content on basic principles of structurally competent health care.[69]
+
+---
+
+8. Top 20 Papers
+
+
+
+
+---
+
+9. Resident Teaching Framework
+
+
+The "STRUCTURE" Curriculum Model
+
+
+A comprehensive resident teaching framework for SDOH in inpatient psychiatry, integrating the evidence reviewed above:
+
+S — Screen systematically. Use validated SDOH screening tools (see checklist below) on every admission. Normalize screening as standard clinical practice, not an add-on.
+
+T — Think structurally. Apply the Hassan & Bui structural analysis framework: for every clinical problem, identify the social and structural root causes alongside the biomedical ones.[68] When a patient is "non-adherent," ask what structural barriers prevented adherence before attributing it to the patient.
+
+R — Recognize racism. Understand that racial disparities in diagnosis (schizophrenia overdiagnosis in Black patients, OR 2.07), involuntary commitment (aOR 1.57 for Black patients), restraint use (aOR 1.85 for Black patients), and treatment quality are well-documented and persistent.[18][1][17] Use structured diagnostic instruments. Question diagnostic assumptions.
+
+U — Understand cumulative risk. Teach the dose-response relationship between social needs and outcomes (aOR 12.55 for 5 HRSN domains).[14] A patient with housing insecurity, food insecurity, and transportation barriers faces compounding — not merely additive — risk.
+
+C — Connect to resources. Know the local resource landscape: housing programs, food banks, transportation assistance, legal aid, benefits enrollment. Referral alone is insufficient — ensure receipt of services.[60]
+
+T — Transition with intention. Begin discharge planning on day one. Schedule outpatient follow-up before discharge. Use Critical Time Intervention principles. Ensure 7-day follow-up, which is associated with reduced suicide risk (HR 0.82) and readmission.[48]
+
+U — Use team-based approaches. Integrate social workers, peer specialists, community health workers, and case managers into the treatment team. Structural problems require structural solutions — they cannot be solved by the physician alone.
+
+R — Reflect on power. Practice structural humility.[1] Recognize how institutional power dynamics (involuntary commitment, restraint, discharge decisions) disproportionately affect marginalized patients. Discuss countertransference and implicit bias in team formulation.
+
+E — Engage in advocacy. Move beyond individual patient care to systems-level change. Identify one structural barrier encountered during each rotation and propose a policy or institutional intervention.[67]
+
+Suggested Curriculum Activities
+
+
+
+
+---
+
+10. SDOH Assessment Checklist for Inpatient Psychiatry
+
+
+The following checklist integrates domains from the AHC HRSN Screening Tool, PRAPARE, and the structural vulnerability assessment tool, adapted for inpatient psychiatric settings:[3][70][71]
+
+Admission SDOH Screen
+
+
+Housing
+
+- ☐ Current living situation (own/rent/shelter/street/doubled up/institutional)
+
+- ☐ Housing stability in past 12 months (any moves, evictions, episodes of homelessness)
+
+- ☐ Concerns about losing housing in next 2 months
+
+- ☐ Safety of current housing (violence, structural hazards, environmental exposures)
+
+Food Security
+
+- ☐ "In the past 12 months, did you worry that food would run out before you had money to buy more?" (USDA 2-item screen)
+
+- ☐ "In the past 12 months, did the food you bought not last and you didn't have money to get more?"
+
+- ☐ Access to cooking facilities and food storage
+
+Transportation
+
+- ☐ Reliable transportation to medical appointments
+
+- ☐ Transportation barriers to pharmacy access
+
+- ☐ Distance to nearest outpatient mental health provider
+
+Financial Security
+
+- ☐ Employment status and stability
+
+- ☐ Difficulty paying for basic needs (utilities, phone, medications)
+
+- ☐ Current or recent loss of income
+
+- ☐ Debt or legal financial obligations
+
+Insurance and Healthcare Access
+
+- ☐ Current insurance status and type
+
+- ☐ Gaps in coverage in past 12 months
+
+- ☐ Established outpatient mental health provider (name, contact)
+
+- ☐ Established primary care provider
+
+- ☐ Barriers to accessing outpatient care (cost, wait times, availability)
+
+Legal/Criminal Justice
+
+- ☐ Current or pending legal issues
+
+- ☐ History of incarceration
+
+- ☐ Current probation/parole status and officer contact
+
+- ☐ Outstanding warrants or court dates
+
+- ☐ Immigration status concerns affecting care-seeking
+
+Safety and Violence
+
+- ☐ Current or recent intimate partner violence
+
+- ☐ Community violence exposure
+
+- ☐ History of childhood maltreatment
+
+- ☐ Firearm access in the home (lethal means counseling)
+
+Social Support
+
+- ☐ Emergency contact and relationship quality
+
+- ☐ Family/friend support available after discharge
+
+- ☐ Social isolation (lives alone, limited contacts)
+
+- ☐ Caregiver burden on family members
+
+Digital Access
+
+- ☐ Access to smartphone or computer
+
+- ☐ Reliable internet access at home
+
+- ☐ Comfort with telehealth technology
+
+- ☐ Phone number likely to remain active after discharge
+
+Education and Literacy
+
+- ☐ Highest education level
+
+- ☐ Health literacy concerns (difficulty understanding medication instructions)
+
+- ☐ Primary language and interpreter needs
+
+Discrimination and Structural Vulnerability
+
+- ☐ Experiences of discrimination in healthcare settings
+
+- ☐ Immigration-related fears affecting care-seeking
+
+- ☐ LGBTQ+ identity and related safety concerns
+
+- ☐ Disability status and accommodation needs
+
+Substance Use Context
+
+- ☐ Substance use patterns and relationship to housing/social stability
+
+- ☐ Access to harm reduction services
+
+- ☐ History of overdose and naloxone access
+
+---
+
+11. Discharge Planning Implications
+
+
+Structural Discharge Planning Principles
+
+
+Every discharge plan should address the structural barriers identified on the SDOH screen. The following framework operationalizes this:
+
+Before discharge, confirm:
+
+1. Housing: Patient has a confirmed, safe place to go. If homeless or housing-insecure, connect with Housing First programs, shelters, or transitional housing. Do not discharge to the street.
+
+2. Follow-up: Outpatient appointment scheduled within 7 days (associated with HR 0.82 for suicide and reduced readmission). Confirm the patient can physically get to the appointment (transportation plan).[48]
+
+3. Medications: Prescriptions filled or in hand. Confirm insurance covers medications. If uninsured, connect with patient assistance programs or 340B pharmacy. Ensure medication list is reconciled and communicated to outpatient provider.
+
+4. Food: If food-insecure, provide food bank referrals, SNAP application assistance, and ensure patient has food for the first 48 hours after discharge.
+
+5. Safety plan: Updated with current triggers, coping strategies, crisis contacts, and lethal means counseling. Shared with the patient and at least one support person.
+
+6. Insurance: If uninsured or coverage is lapsing, initiate Medicaid application or connect with benefits enrollment before discharge.
+
+7. Legal: If criminal legal involvement, coordinate with probation/parole officer. Ensure court dates are known. If reentry from jail/prison, use CTI principles.
+
+8. Communication: Outpatient provider notified of discharge with medication changes, safety plan, and SDOH concerns. Transition record transmitted within 24 hours.
+
+9. Digital access: If telehealth follow-up is planned, confirm patient has device, internet, and comfort with technology. If not, arrange in-person follow-up or phone-based care.
+
+10. Family/support: Family or support person educated about the diagnosis, warning signs, crisis plan, and how to access emergency services. Consider Family Connections or psychoeducation referral.
+
+The "Structural Discharge Checklist"
+
+
+
+
+---
+
+12. Summary
+
+
+The evidence is unambiguous: social determinants of health are among the strongest predictors of psychiatric readmission, post-discharge suicide, medication nonadherence, and treatment disengagement, often exceeding the predictive power of clinical variables alone. Housing instability, food insecurity, poverty, racism, insurance barriers, criminal legal involvement, rural isolation, and digital exclusion operate synergistically — the dose-response relationship between cumulative social needs and readmission (aOR 12.55 for 5 domains vs. none) underscores that these are not background factors but central clinical concerns.[14]
+
+Structural competency provides the conceptual framework for understanding these forces, but the evidence base for training outcomes remains limited to learner-level changes — no study has yet linked structural competency education to improved patient outcomes.[65] The most effective interventions — Housing First, Critical Time Intervention, Collaborative Care, ACT — address structural barriers directly, but most show stronger effects on utilization than on psychiatric symptom improvement per se. The critical gap is between screening and service receipt: identifying social needs without ensuring they are resolved is insufficient.[60]
+
+For inpatient psychiatry, the practical imperative is clear: screen every patient for SDOH on admission, incorporate structural barriers into the treatment formulation, address modifiable barriers before discharge, and ensure the transition plan accounts for the structural realities of the patient's life. A discharge plan that ignores housing, food, transportation, and insurance is not a discharge plan — it is a readmission plan.
+
+---
+
+Would you like to explore the evidence on specific interventions for reducing racial disparities in involuntary commitment and restraint use on inpatient psychiatric units?
+
+References
+Treatment of Personality Disorder. Bateman AW, Gunderson J, Mulder R. Lancet (London, England). 2015;385(9969):735-43. doi:10.1016/S0140-6736(14)61394-5.
+Borderline Personality Disorder. Bohus M, Stoffers-Winterling J, Sharp C, et al. Lancet (London, England). 2021;398(10310):1528-1540. doi:10.1016/S0140-6736(21)00476-1.
+Borderline Personality Disorder: A Review. Leichsenring F, Heim N, Leweke F, et al. JAMA. 2023;329(8):670-679. doi:10.1001/jama.2023.0589.
+The Availability of Dialectical Behavior Therapy in Partial Hospitalization and Residential Services for Borderline Personality Disorder: An Exploratory Longitudinal Study of the National Mental Health Services Survey From 2014 to 2021. Spina DS, Levy KN. Journal of Consulting and Clinical Psychology. 2024;92(3):176-186. doi:10.1037/ccp0000870.
+A Goal-Oriented Limited-Duration Approach for Borderline Personality Disorder During Brief Inpatient Hospitalizations. Siefert CJ. Psychotherapy (Chicago, Ill.). 2012;49(4):502-18. doi:10.1037/a0026128.
+A Naturalistic Longitudinal Study of Extended Inpatient Treatment for Adults With Borderline Personality Disorder: An Examination of Treatment Response, Remission and Deterioration. Fowler JC, Clapp JD, Madan A, et al. Journal of Affective Disorders. 2018;235:323-331. doi:10.1016/j.jad.2017.12.054.
+Characteristics and Outcomes of Individuals Screening Positive for Borderline Personality Disorder on an Adult Inpatient Psychiatry Unit: A Cross-Sectional Study. Chen JJ, Mermin SA, Duffy LA, et al. BMC Psychiatry. 2025;25(1):452. doi:10.1186/s12888-025-06928-8.
+Prescribing Practices for Patients With Borderline Personality Disorder During Psychiatric Hospitalizations. Romanowicz M, Schak KM, Vande Voort JL, et al. Journal of Personality Disorders. 2020;34(6):736-749. doi:10.1521/pedi_2019_33_405.
+Pharmacological Interventions for People With Borderline Personality Disorder. Stoffers-Winterling JM, Storebø OJ, Pereira Ribeiro J, et al. The Cochrane Database of Systematic Reviews. 2022;11:CD012956. doi:10.1002/14651858.CD012956.pub2.
+The Experiences of People With Borderline Personality Disorder Admitted to Acute Psychiatric Inpatient Wards: A Meta-Synthesis. Stapleton A, Wright N. Journal of Mental Health (Abingdon, England). 2019;28(4):443-457. doi:10.1080/09638237.2017.1340594.
+A Standardized Crisis Management Model for Self-Harming and Suicidal Individuals With Three or More Diagnostic Criteria of Borderline Personality Disorder: The Brief Admission Skåne Randomized Controlled Trial Protocol (BASRCT). Liljedahl SI, Helleman M, Daukantaité D, Westrin Å, Westling S. BMC Psychiatry. 2017;17(1):220. doi:10.1186/s12888-017-1371-6.
+Crisis Interventions for Adults With Borderline Personality Disorder. Monk-Cunliffe J, Borschmann R, Monk A, et al. The Cochrane Database of Systematic Reviews. 2022;9:CD009353. doi:10.1002/14651858.CD009353.pub3.
+A State-Wide Initiative to Improve Health System Responses to People With Borderline Personality Disorder Symptoms in Crisis: A Retrospective Audit. Bartsch DR, McLeod Everitt C, Bednarz J, Ludbrook C, Cammell P. Journal of Personality Disorders. 2024;38(1):87-108. doi:10.1521/pedi.2024.38.1.87.
+Specialized Short Term Crisis Intervention for Patients With Personality Disorder: Effects on Coercion and Length of Stay. Dinsenbacher LL, Imfeld L, Helfenstein F, et al. The International Journal of Social Psychiatry. 2024;70(8):1516-1524. doi:10.1177/00207640241277161.
+Effectiveness of Outpatient, Day Hospital, and Inpatient Psychotherapeutic Treatment for Patients With Cluster B Personality Disorders. Bartak A, Andrea H, Spreeuwenberg MD, et al. Psychotherapy and Psychosomatics. 2011;80(1):28-38. doi:10.1159/000321999.
+Comparison of 8-vs-12 weeks, Adapted Dialectical Behavioral Therapy (DBT) for Borderline Personality Disorder in Routine Psychiatric Inpatient Treatment-a Naturalistic Study. Kujovic M, Benz D, Riesbeck M, et al. Scientific Reports. 2024;14(1):11264. doi:10.1038/s41598-024-61795-9.
+Implementation of a Case Formulation to Reduce Restrictive Interventions on a Psychiatric Intensive Care Unit: Quasi-Experimental Single Case Evaluation. Cox F, Kellett S. Behavioural and Cognitive Psychotherapy. 2023;51(5):497-501. doi:10.1017/S1352465823000309.
+Borderline Personality Disorder. Gunderson JG. The New England Journal of Medicine. 2011;364(21):2037-42. doi:10.1056/NEJMcp1007358.
+Assessment and Management of Patients at Risk for Suicide: Synopsis of the 2019 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guidelines. Sall J, Brenner L, Millikan Bell AM, Colston MJ. Annals of Internal Medicine. 2019;171(5):343-353. doi:10.7326/M19-0687.
+Assessment and Management of Patients at Risk for Suicide (2024). Nazanin Bahraini PhD, Candice Bodie LCSW, Lisa A. Brenner PhD ABPP, et al. Department of Veterans Affairs.
+Use of Dialectical Behavior Therapy in Inpatient Treatment of Borderline Personality Disorder: A Systematic Review. Bloom JM, Woodward EN, Susmaras T, Pantalone DW. Psychiatric Services (Washington, D.C.). 2012;63(9):881-8. doi:10.1176/appi.ps.201100311.
+Effectiveness of Inpatient Dialectical Behavioral Therapy for Borderline Personality Disorder: A Controlled Trial. Bohus M, Haaf B, Simms T, et al. Behaviour Research and Therapy. 2004;42(5):487-99. doi:10.1016/S0005-7967(03)00174-8.
+Efficacy of Dialectical Behavior Therapy Versus Treatment as Usual for Acute-Care Inpatient Adolescents. Tebbett-Mock AA, Saito E, McGee M, Woloszyn P, Venuti M. Journal of the American Academy of Child and Adolescent Psychiatry. 2020;59(1):149-156. doi:10.1016/j.jaac.2019.01.020.
+Dialectical Behavior Therapy for High Suicide Risk in Individuals With Borderline Personality Disorder: A Randomized Clinical Trial and Component Analysis. Linehan MM, Korslund KE, Harned MS, et al. JAMA Psychiatry. 2015;72(5):475-82. doi:10.1001/jamapsychiatry.2014.3039.
+A randomized trial of brief dialectical behaviour therapy skills training in suicidal patients suffering from borderline disorder. McMain SF, Guimond T, Barnhart R, Habinski L, Streiner DL. Acta Psychiatrica Scandinavica. 2017;135(2):138-148. doi:10.1111/acps.12664.
+Association of Suicide Prevention Interventions With Subsequent Suicide Attempts, Linkage to Follow-up Care, and Depression Symptoms for Acute Care Settings: A Systematic Review and Meta-analysis. Doupnik SK, Rudd B, Schmutte T, et al. JAMA Psychiatry. 2020;77(10):1021-1030. doi:10.1001/jamapsychiatry.2020.1586.
+Suicide and Suicide Risk in Adolescents. Hua LL, Lee J, Rahmandar MH, Sigel EJ. Pediatrics. 2023;:e2023064800. doi:10.1542/peds.2023-064800.
+Impact of a One-Day Training Session on Borderline Personality Disorder on Stigmatising Attitudes and Beliefs of Health Personnel. Estric C, Fougere H, Serrand C, Magnin C. BMC Medical Education. 2026;26(1):997. doi:10.1186/s12909-026-09256-x.
+Enduring Effects of One-Day Training in Good Psychiatric Management on Clinician Attitudes About Borderline Personality Disorder. Masland SR, Price D, MacDonald J, et al. The Journal of Nervous and Mental Disease. 2018;206(11):865-869. doi:10.1097/NMD.0000000000000893.
+Can Negative Attitudes Toward Patients With Borderline Personality Disorder Be Changed? The Effect of Attending a STEPPS Workshop. Shanks C, Pfohl B, Blum N, Black DW. Journal of Personality Disorders. 2011;25(6):806-12. doi:10.1521/pedi.2011.25.6.806.
+Improving Attitudes Towards Personality Disorder: Is Training for Health and Social Care Professionals Effective?. Attwood J, Wilkinson-Tough M, Lambe S, Draper E. Journal of Personality Disorders. 2021;35(3):409-S4. doi:10.1521/pedi_2019_33_458.
+Personality Disorders. Sharp C. The New England Journal of Medicine. 2022;387(10):916-923. doi:10.1056/NEJMra2120164.
+Pharmacological Treatments for Borderline Personality Disorder: A Systematic Review and Meta-Analysis. Gartlehner G, Crotty K, Kennedy S, et al. CNS Drugs. 2021;35(10):1053-1067. doi:10.1007/s40263-021-00855-4.
+Comparative Effectiveness of Pharmacotherapies for the Risk of Attempted or Completed Suicide Among Persons With Borderline Personality Disorder. Lieslehto J, Tiihonen J, Lähteenvuo M, et al. JAMA Network Open. 2023;6(6):e2317130. doi:10.1001/jamanetworkopen.2023.17130.
+Pharmacological Interventions for Borderline Personality Disorder. Stoffers J, Völlm BA, Rücker G, et al. The Cochrane Database of Systematic Reviews. 2010;(6):CD005653. doi:10.1002/14651858.CD005653.pub2.
+Comparison of Low and Moderate Dosages of Extended-Release Quetiapine in Borderline Personality Disorder: A Randomized, Double-Blind, Placebo-Controlled Trial. Black DW, Zanarini MC, Romine A, et al. The American Journal of Psychiatry. 2014;171(11):1174-82. doi:10.1176/appi.ajp.2014.13101348.
+Efficacy and Safety of Pharmacological Treatments in Borderline Personality Disorder: A Systematic Review and Network Meta-Analysis. Gerolymos C, Garosi A, Boyer L, et al. Molecular Psychiatry. 2026;31(6):3216-3228. doi:10.1038/s41380-026-03451-4.
+Association of pharmacological treatments and real‐world outcomes in borderline personality disorder. Lieslehto J, Tiihonen J, Lähteenvuo M, et al. Acta Psychiatrica Scandinavica. 2023;147(6):603-613. doi:10.1111/acps.13564.
+“Skills for pills”: The dialectical‐behavioural therapy skills training reduces polypharmacy in borderline personality disorder. Soler J, Casellas-Pujol E, Fernández-Felipe I, et al. Acta Psychiatrica Scandinavica. 2022;145(4):332-342. doi:10.1111/acps.13403.
+"Family Connections", a Program for Relatives of People With Borderline Personality Disorder: A Randomized Controlled Trial. Guillén V, Fernández-Felipe I, Marco JH, et al. Family Process. 2024;63(4):2195-2214. doi:10.1111/famp.13089.
+Psychoeducational Groups for Close Relatives of Patients With Borderline Personality Disorder. Pitschel-Walz G, Spatzl A, Rentrop M. European Archives of Psychiatry and Clinical Neuroscience. 2023;273(4):853-864. doi:10.1007/s00406-022-01395-8.
+Structural Competency: Theorizing a New Medical Engagement With Stigma and Inequality. Metzl JM, Hansen H. Social Science & Medicine (1982). 2014;103:126-133. doi:10.1016/j.socscimed.2013.06.032.
+Cultural Factors, Social Structures, and Social Determinants of Health: The Need for Clarity in Assessing Psychopathology. Aggarwal NK. Harvard Review of Psychiatry. 2025 Mar-Apr 01;33(2):54-66. doi:10.1097/HRP.0000000000000407.
+Clinical Update: Child and Adolescent Behavioral Health Care in Community Systems of Care. Journal of the American Academy of Child and Adolescent Psychiatry. 2023;62(4):367-384. doi:10.1016/j.jaac.2022.06.001.
+Resource Document on Cultural Psychiatry as a Specific Field of Study Relevant to the Assessment and Care of All Patients. American Psychiatric Association (2013).
+Bringing Structural Competency to the Forefront of Dental Education. Alarcon BO, O'Connor L, Rowan S, et al. Journal of Dental Education. 2022;86(9):1083-1089. doi:10.1002/jdd.13020.
+Structural Vulnerability: Operationalizing the Concept to Address Health Disparities in Clinical Care. Bourgois P, Holmes SM, Sue K, Quesada J. Academic Medicine : Journal of the Association of American Medical Colleges. 2017;92(3):299-307. doi:10.1097/ACM.0000000000001294.
+Resource Document on Advocating for Anti-Racist Mental Health Policies with a Focus on Dismantling Anti-Black Racism. Joshua R. Anthony MD MBA, Amanda Calhoun MD MPH, Enrico G. Castillo MD MSHPM, et al. American Psychiatric Association (2021).
+Diagnostic and Statistical Manual of Mental Disorders. Dilip V. Jeste, Jeffrey A. Lieberman, David Fassler, et al. American Psychiatric Association (2022).
+Dismantling Structural Stigma Related to Mental Health and Substance Use: An Educational Framework. Sukhera J, Knaak S, Ungar T, Rehman M. Academic Medicine : Journal of the Association of American Medical Colleges. 2022;97(2):175-181. doi:10.1097/ACM.0000000000004451.
+Structural Violence Education: A Critical Moment for Psychiatric Training. Anchuri K, Jacox N, Andreychuk T, Brown A. Canadian Journal of Psychiatry. Revue Canadienne De Psychiatrie. 2021;66(9):785-787. doi:10.1177/07067437211016243.
+Reconsidering Systems-Based Practice: Advancing Structural Competency, Health Equity, and Social Responsibility in Graduate Medical Education. Castillo EG, Isom J, DeBonis KL, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2020;95(12):1817-1822. doi:10.1097/ACM.0000000000003559.
+Resource Document on Advocacy Teaching in Psychiatry Residency Training Programs. Katherine G. Kennedy MD, Mary C. Vance MD, Debra A. Pinals MD, Rachel Tally MD. American Psychiatric Association (2018).
+The Structural Analysis: Incorporating Structurally Competent Clinical Reasoning Into Case-Based Presentations. Hassan IF, Bui T. Journal of General Internal Medicine. 2022;37(13):3465-3470. doi:10.1007/s11606-022-07751-7.
+Bringing a Structural Competency Framework to the (Simulated) Bedside: The Premature Discharge Objective Structured Clinical Exam. Ramsdell AK, Hupert N, Abramson E, Safdieh JE, Katz S. Academic Medicine : Journal of the Association of American Medical Colleges. 2024;99(8):857-862. doi:10.1097/ACM.0000000000005756.
+A Structural Competency Curriculum for Primary Care Providers to Address the Opioid Use Disorder, HIV, and Hepatitis C Syndemic. Bagchi AD. Frontiers in Public Health. 2020;8:210. doi:10.3389/fpubh.2020.00210.
+Medical Education as Liberatory Praxis: Experiences From the UCLA "Structural Racism and Health Equity" Curriculum. Baker C, Bueno S, Carrillo L, et al. Social Science & Medicine (1982). 2025;376:118094. doi:10.1016/j.socscimed.2025.118094.
+Structural Competency in Pre-Health and Health Professional Learning: A Scoping Review. Caiola C, Nelson TB, Black KZ, et al. Journal of Interprofessional Care. 2023;37(6):922-931. doi:10.1080/13561820.2022.2124238.
+Teaching Structure: A Qualitative Evaluation of a Structural Competency Training for Resident Physicians. Neff J, Knight KR, Satterwhite S, et al. Journal of General Internal Medicine. 2017;32(4):430-433. doi:10.1007/s11606-016-3924-7.
+Integrating and Assessing Structural Competency in an Innovative Prehealth Curriculum at Vanderbilt University. Metzl JM, Petty J. Academic Medicine : Journal of the Association of American Medical Colleges. 2017;92(3):354-359. doi:10.1097/ACM.0000000000001477.
+Using a Structural Competency Framework to Teach Structural Racism in Pre-Health Education. Metzl JM, Petty J, Olowojoba OV. Social Science & Medicine (1982). 2018;199:189-201. doi:10.1016/j.socscimed.2017.06.029.
+Imagining the 'Structural' in Medical Education and Practice in the United States: A Curricular Investigation. Burson RC, Familusi OO, Clapp JT. Social Science & Medicine (1982). 2022;300:114453. doi:10.1016/j.socscimed.2021.114453.
+Accounting for Agency in Structural Competency. Cahn PS. Advances in Health Sciences Education : Theory and Practice. 2024;29(3):1059-1066. doi:10.1007/s10459-023-10299-8.
+A Concept Analysis of Structural Competency. Melino K, Olson J, Hilario C. ANS. Advances in Nursing Science. 2023 Apr-Jun 01;46(2):188-198. doi:10.1097/ANS.0000000000000442.
+Ethnic Variations in Compulsory Detention Under the Mental Health Act: A Systematic Review and Meta-Analysis of International Data. Barnett P, Mackay E, Matthews H, et al. The Lancet. Psychiatry. 2019;6(4):305-317. doi:10.1016/S2215-0366(19)30027-6.
+Racial and Ethnic Inequities in Inpatient Psychiatric Civil Commitment. Shea T, Dotson S, Tyree G, et al. Psychiatric Services (Washington, D.C.). 2022;73(12):1322-1329. doi:10.1176/appi.ps.202100342.
+Understanding Involuntary Hospitalization Applications Submitted to an Urban Police Department. Simon KM, Savage J, Krebs L, Wegiel T, Morabito MS. Psychiatric Services (Washington, D.C.). 2025;76(2):120-125. doi:10.1176/appi.ps.20230411.
+Social Determinants and Trends in Involuntary Psychiatric Detentions: A Decade of Population-Based Data. Kim S, MacQuarrie E, Oh S, et al. Psychiatric Services (Washington, D.C.). 2026;:appips20250408. doi:10.1176/appi.ps.20250408.
+Clinical and Social Factors Associated With Involuntary Psychiatric Hospitalisation in Children and Adolescents: A Systematic Review, Meta-Analysis, and Narrative Synthesis. Walker S, Barnett P, Srinivasan R, Abrol E, Johnson S. The Lancet. Child & Adolescent Health. 2021;5(7):501-512. doi:10.1016/S2352-4642(21)00089-4.
+Race-Based Disparities in the Frequency and Duration of Restraint Use in a Psychiatric Inpatient Setting. Singal S, Howell D, Hanna L, et al. Psychiatric Services (Washington, D.C.). 2024;75(4):308-315. doi:10.1176/appi.ps.20230057.
+Associations of Restraint and Seclusion With Race and Ethnicity on an Adolescent Inpatient Psychiatry Service. Daniels TE, Victor C, Smith EM, et al. Journal of the American Academy of Child and Adolescent Psychiatry. 2023;62(5):503-506. doi:10.1016/j.jaac.2022.11.012.
+
+Intervention | Evidence Base | Effect on Psychiatric Outcomes | Effect on Utilization | Key Limitation
+Housing First | Multiple RCTs, SRs | Mixed/not consistently demonstrated | Reduced ED (IRR 0.63), hospitalizations (IRR 0.76)[1] | No clear psychiatric symptom improvement
+Critical Time Intervention | RCTs, SR, meta-analysis | Small improvements (BPRS SMD −0.16)[2] | Reduced 30-day readmission (28% vs 47%)[3] | Small effect sizes
+Collaborative Care | 90+ RCTs | Depression response doubled (OR 3.45)[2] | Reduced ED visits 7–14% | Less evidence for SMI
+ACT | 30+ controlled studies | Symptom improvement (d = 0.79)[4] | Reduced hospitalization in high utilizers | Benefits attenuated in well-resourced systems
+Peer Support | 28+ RCTs | Small effects on recovery (g = 0.19)[5] | No clear effect on admissions[6] | Low/very low quality evidence
+SDOH Screening/Referral | AHC Model (large cohort) | Limited direct evidence | Reduced ED visits[7] | Needs resolution is the bottleneck[8]
+Mental Health Courts | Meta-analysis of 17 studies | Limited/mixed psychiatric outcomes | Reduced recidivism (d = −0.20)[9] | Emerging practice; methodological limitations
+Telepsychiatry | 32+ RCTs | Comparable to in-person[10] | May substitute rather than supplement[11] | Digital divide limits reach
+# | Citation | Contribution
+1 | Metzl & Hansen, Soc Sci Med 2014 | Foundational paper defining structural competency and its five core skills
+2 | Bourgois, Holmes, Sue & Quesada, Acad Med 2017 | Structural vulnerability assessment tool for clinical practice
+3 | Na et al., JAMA Psychiatry 2025 | Umbrella review: SDOH and suicide-related outcomes (46 meta-analyses)
+4 | Bensken et al., J Gen Intern Med 2021 | Dose-response: cumulative social needs and readmission (aOR 12.55 for 5 domains)
+5 | Wilder et al., J Gen Intern Med 2021 | Systematic review/meta-analysis: SDOH and medication adherence
+6 | Barnett et al., Lancet Psychiatry 2019 | Meta-analysis: ethnic variations in compulsory detention (71 studies)
+7 | van der Ven et al., JAMA Psychiatry 2024 | Meta-analysis: ethnoracial risk variation across psychosis continuum
+8 | Olbert et al., J Abnorm Psychol 2018 | Meta-analysis: Black vs. White schizophrenia diagnostic disparity
+9 | Unützer et al., JAMA 2002 | IMPACT trial: collaborative care for depression
+10 | Fortney et al., JAMA Psychiatry 2021 | SPIRIT trial: telepsychiatry in rural primary care
+11 | Baxter et al., J Epidemiol Community Health 2019 | Meta-analysis of Housing First RCTs
+12 | Tomita & Herman, Psychiatr Serv 2012 | Critical Time Intervention RCT: rehospitalization reduction
+13 | Fazel & Danesh, Lancet 2002 | Landmark meta-analysis: mental illness in 23,000 prisoners
+14 | Castillo, Isom, DeBonis et al., Acad Med 2020 | Structural competency as GME core competency
+15 | Sukhera et al., Acad Med 2022 | Structural stigma educational framework
+16 | Cummings et al., JAMA Psychiatry 2017 | Geographic access to specialty mental health care
+17 | Nordstrom et al., West J Emerg Med 2019 | APA resource document on psychiatric ED boarding
+18 | Lieslehto et al., JAMA Netw Open 2023 | Swedish cohort: SDOH and suicide risk across pharmacotherapies
+19 | Lowder et al., Psychiatr Serv 2018 | Meta-analysis: mental health court effectiveness
+20 | Anglin et al., Am J Psychiatry 2025 | Neighborhood social vulnerability and racial disparities in psychosis
+Activity | Format | Duration | Learning Objective
+Structural case formulation | Case conference | 1 hour weekly | Apply Hassan & Bui structural analysis to real inpatient cases[1]
+SDOH screening practicum | Supervised clinical | Ongoing | Administer and interpret SDOH screening tools on admission
+Structural competency OSCE | Simulation | 2 hours annually | Assess ability to identify structural barriers in premature discharge scenarios[2]
+Racial disparities journal club | Seminar | 1 hour monthly | Review evidence on diagnostic, treatment, and coercion disparities
+Community resource mapping | Field exercise | Half-day annually | Visit local shelters, food banks, legal aid, reentry programs
+Policy brief exercise | Written assignment | Longitudinal | Identify a structural barrier and draft a policy recommendation
+Lived experience panel | Panel discussion | 1 hour quarterly | Hear from patients/families about structural barriers to care
+Implicit bias training | Workshop | 2 hours annually | IAT testing, discussion of diagnostic and treatment disparities
+ED boarding debrief | Team debrief | 30 min as needed | Analyze structural factors contributing to boarding for specific patients
+Countertransference rounds | Process group | 1 hour biweekly | Discuss emotional reactions to patients affected by structural violence
+Domain | Question | If "No," Action Required
+Housing | Does the patient have a confirmed, safe place to sleep tonight and for the next 7 days? | Housing referral, shelter placement, or extended stay
+Follow-up | Is an outpatient appointment scheduled within 7 days? | Schedule before discharge; confirm transportation
+Medications | Does the patient have medications in hand or a filled prescription? | Bedside delivery, 340B pharmacy, patient assistance
+Food | Does the patient have access to food for the next 48 hours? | Food bank referral, SNAP application, meal delivery
+Transportation | Can the patient get to their follow-up appointment? | Arrange ride, bus pass, medical transport
+Insurance | Does the patient have active insurance coverage? | Medicaid application, marketplace enrollment
+Safety plan | Is the safety plan updated and shared with a support person? | Complete before discharge
+Lethal means | Has lethal means counseling been conducted? | Conduct before discharge
+Legal | Are there pending legal issues that could disrupt follow-up? | Coordinate with probation/parole, legal aid
+Support person | Has at least one family member or friend been contacted? | Attempt contact; document if unable

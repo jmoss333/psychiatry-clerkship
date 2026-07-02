@@ -1,0 +1,51 @@
+# Nutrition & Metabolic Health in Psychiatry
+
+> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+
+**For:** MS3 on the unit. Two clerkship objectives live here — *nutrition in individual psychiatric care* and *nutrition in population mental health (metabolic syndrome prevention)*. Educational; not individualized medical advice.
+
+## Why this is a psychiatry problem, not a side issue
+People with serious mental illness die 10–20 years earlier than the general population, mostly from cardiometabolic disease. Several psychotropics drive weight gain, dyslipidemia, and glucose dysregulation; diet and activity are both a *cause* of that risk and part of the *treatment*. Owning metabolic health is part of owning the psychiatric care.
+
+## Metabolic monitoring you should know cold
+For anyone on an antipsychotic (and many other psychotropics), track at **baseline, ~12 weeks, then annually** (more often if high-risk):
+
+| Measure | Why |
+|---|---|
+| Weight / BMI (and waist circumference) | Earliest, most actionable signal |
+| Blood pressure | Metabolic syndrome criterion |
+| Fasting glucose or HbA1c | Antipsychotic-associated diabetes |
+| Fasting lipid panel | Dyslipidemia, esp. triglycerides |
+| Personal/family cardiometabolic history | Risk stratification |
+
+This is the **ADA/APA consensus monitoring** standard — see the metabolic-monitoring landmark on the Landmark Trials page.
+
+## Drug-specific burden (highest → lowest, roughly)
+- **Highest:** olanzapine, clozapine.
+- **Intermediate:** quetiapine, risperidone, paliperidone.
+- **Lower:** aripiprazole, ziprasidone, lurasidone, cariprazine.
+- Mitigation options: choose a lower-burden agent when feasible; olanzapine/samidorphan; metformin as an evidence-based add-on for antipsychotic weight gain; early lifestyle intervention. *Confirm doses/choices against current guidance and your team.*
+
+## Individual counseling — what actually has evidence
+- **Dietary pattern beats single nutrients.** A Mediterranean-style pattern (vegetables, fruit, legumes, whole grains, fish, olive oil; less ultra-processed food) improved depressive symptoms in a randomized trial (the **SMILES** trial, Jacka 2017) and is the best-supported "food as treatment" signal.
+- **Limit ultra-processed foods and sugar-sweetened beverages** — tied to worse mood and metabolic outcomes.
+- **Protein + fiber, steady glycemic load** help satiety and energy; relevant to fatigue and binge patterns.
+- **Omega-3 (EPA-predominant)** has modest adjunctive evidence in depression — reasonable to mention, not a substitute for first-line care.
+- **Substance-style counseling fits here** — pair with Motivational Interviewing for sustainable change.
+
+## Medication-specific food points to teach
+- **Lithium:** stable sodium and **hydration** matter — dehydration or big salt swings change levels.
+- **MAOIs:** tyramine restriction (aged cheeses, cured meats, tap beer) to avoid hypertensive crisis.
+- **Grapefruit** inhibits CYP3A4 — relevant for several psychotropics.
+- **Caffeine/alcohol:** sleep disruption, anxiety, interactions; worth a specific ask.
+
+## Population / systems lens
+- **Metabolic syndrome prevention** in people on psychotropics is a population-health responsibility, not just a clinic task — screening programs, shared-care with primary care, and access to dietitians.
+- **Food insecurity** is common in serious mental illness and worsens outcomes — screen and connect to resources (a systems-based-practice objective).
+
+## On the unit
+Protect regular meals; treat the dietitian as a team member; flag the patient who isn't eating or who is over-eating in response to medication. A one-line plan ("started olanzapine — baseline metabolic labs sent, dietitian consult, weight tracking") shows you're thinking metabolically.
+
+**Pair with** — the [Psychopharmacology primer](?page=psychopharm_primer.md), the metabolic-monitoring and antipsychotic-metabolic landmarks on the [Landmark Trials](?page=landmark_trials.md) page, and the [Motivational Interviewing guide](?page=motivational_interviewing.md).
+
+*Joshua Moss, MD | Psychiatrist · Educational; evidence-anchored, pending attestation. Confirm drug choices/doses against current guidance. No PHI.*

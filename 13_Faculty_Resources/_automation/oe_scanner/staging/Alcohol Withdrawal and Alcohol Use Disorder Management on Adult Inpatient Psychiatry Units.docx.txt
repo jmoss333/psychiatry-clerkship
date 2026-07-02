@@ -1,0 +1,395 @@
+
+
+
+Alcohol Withdrawal and Alcohol Use Disorder Management on Adult Inpatient Psychiatry Units
+
+
+Scope and Framing
+
+
+This review synthesizes current evidence and guideline recommendations for managing alcohol withdrawal syndrome (AWS) and alcohol use disorder (AUD) on adult inpatient psychiatry units. It covers assessment tools, pharmacotherapy for withdrawal and long-term treatment, special populations, thiamine repletion, and discharge planning. The inpatient psychiatry setting presents unique challenges — psychiatric comorbidity, communication barriers, limited medical monitoring infrastructure compared to ICUs, and the opportunity to initiate long-term AUD treatment during a "reachable moment." Key sources include the ASAM 2020 Clinical Practice Guideline on Alcohol Withdrawal Management, the VA/DoD 2021 SUD Clinical Practice Guideline, the APA 2018 Pharmacotherapy Guideline, and recent systematic reviews and practice-changing studies.
+
+---
+
+1. CIWA-Ar: Utility and Limitations
+
+
+The Clinical Institute Withdrawal Assessment for Alcohol–Revised (CIWA-Ar) is the most widely used withdrawal severity scale, with excellent inter-rater reliability (r > 0.8) in research settings.[1][2] However, several critical limitations are particularly relevant to inpatient psychiatry:
+
+Reliance on patient self-report. Six of 10 CIWA-Ar items require the patient to answer questions (nausea, anxiety, tactile/auditory/visual disturbances, headache).[1][3] This renders the scale unreliable or impossible to administer in patients with delirium, psychosis, severe cognitive impairment, or communication barriers — all common on psychiatry units. The ASAM guideline explicitly recommends not using the CIWA-Ar in patients with delirium.[1]
+
+Confounding by comorbid conditions. Scores can be falsely elevated by fever, concurrent substance withdrawal, or traumatic brain injury, and falsely suppressed by beta-blockers or other sympatholytic medications.[1][3] A Lancet review concluded that no withdrawal scale has been validated in the inpatient setting where comorbidity is prevalent, and that serious comorbidity is "probably better managed without use of a scale".[1]
+
+Protocol misapplication. A retrospective chart review of 118 encounters found that 57% of patients placed on a CIWA-Ar protocol had zero or one documented risk factor for AWS, 20% had no documentation of recent alcohol use, 14% were unable to communicate, and benzodiazepine-associated adverse events occurred in 15%.[1]
+
+Severity thresholds are not empirically derived. The commonly used cutoffs (<10, 10–20, >20) were based on the original authors' clinical experience, not empirical data, and there is wide variation in practice regarding which scores delineate severity categories.[1]
+
+Alternative scales include the mMINDS (does not require patient self-report; preferred by 70% of ICU nurses over CIWA-Ar; r = 0.814 correlation with CIWA-Ar), the BAWS (5 objective items), and the mRASS-AW (observation-based, with no worsening of LOS or complications vs.[3][4] CIWA-Ar in a retrospective comparison of 1,073 patients).[5] For patients with delirium, the ASAM guideline recommends the CAM-ICU, RASS, or Delirium Detection Score.[1]
+
+---
+
+2. Symptom-Triggered vs. Fixed-Dose Benzodiazepine Protocols
+
+
+Symptom-Triggered Therapy (STT)
+
+
+A 2019 systematic review and meta-analysis of 6 RCTs (n = 664) found STT reduced treatment duration by 60.4 hours (95% CI 39.7–81.1; P < .001) and total benzodiazepine dose by 10.5 mg lorazepam-equivalents (95% CI 7.1–13.9; P = .011) compared to fixed-dose regimens, with no significant differences in delirium, seizures, or mortality.[6] A landmark RCT demonstrated that symptom-triggered chlordiazepoxide reduced mean treatment duration from 68 to 9 hours and total dose from 425 to 100 mg.[7]
+
+Critical caveat: The evidence was derived primarily from specialized detoxification settings with low-risk patients; applicability to general hospital and inpatient psychiatry settings was rated as low.[6] There was insufficient evidence to draw conclusions about hard outcomes (mortality, seizures, delirium) in any setting.[6]
+
+Fixed-Dose Therapy
+
+
+Fixed-dose regimens (e.g., chlordiazepoxide 50 mg q6h with taper) are appropriate when STT cannot be reliably implemented — specifically when patients cannot self-report symptoms due to psychiatric comorbidity, cognitive impairment, or communication barriers.[1] The ASAM guideline recommends that when fixed-dose schedules are used, symptoms should still be monitored and additional PRN doses provided.[8]
+
+Front-Loading
+
+
+Front-loading involves administering moderate-to-high doses of long-acting benzodiazepines (typically diazepam 10–20 mg PO every 1–2 hours) to achieve rapid symptom control, then allowing the drug to self-taper. The ASAM guideline specifically recommends front-loading for severe withdrawal (CIWA-Ar ≥ 19), as it reduces treatment duration, seizure incidence, and delirium duration.[8]
+
+Guideline Positions
+
+
+The ASAM 2020 guideline designates STT as the preferred benzodiazepine dosing method (Recommendation V.23), with diazepam or chlordiazepoxide as preferred agents.[8] The VA/DoD 2021 guideline recommends benzodiazepines as first-line for AWS (CIWA-Ar ≥ 10), noting they reduce seizure risk by 84% vs. placebo (RR 0.16; 95% CI 0.04–0.69).[8][1] For mild-to-moderate withdrawal where benzodiazepine risks outweigh benefits, gabapentin, carbamazepine, or valproic acid are suggested alternatives.[9]
+
+---
+
+3. Phenobarbital Protocols
+
+
+Phenobarbital use in US hospitals increased from 6.1% to 18.4% between 2016 and 2020.[10] Its dual mechanism — GABA-A receptor agonism plus direct glutamate antagonism — addresses both pathophysiologic arms of AWS, unlike benzodiazepines which only enhance GABA signaling.[11] Its long half-life (80–120 hours) enables "auto-tapering" after a loading dose.[12]
+
+Evidence Base
+
+
+No large, multicenter RCT comparing phenobarbital monotherapy to benzodiazepines has been published.[13][1] The evidence base consists of two small ED-based RCTs and numerous observational studies. A meta-analysis of 12 studies (n = 1,934) found no differences in intubation (RR 0.70; 95% CI 0.36–1.38), seizures (RR 0.73; 95% CI 0.29–1.89), or length of stay vs. benzodiazepines.[1] The largest comparative study to date — a multicenter propensity-matched analysis (n = 4,712 per cohort) — found phenobarbital monotherapy was associated with significantly lower seizures (RR 0.70; 95% CI 0.58–0.85) and delirium tremens (RR 0.52; 95% CI 0.41–0.65).[14]
+
+A hospital-wide QI study implementing an EHR-based phenobarbital monotherapy order set (10–15 mg/kg IV loading) demonstrated 67% uptake, reduced benzodiazepine use, improved symptom control, and a 2-day reduction in time to discharge with no increase in adverse safety events.[10] On VA general medical wards, serious adverse events occurred in only 0.4% of 244 hospitalizations using phenobarbital.[15]
+
+Dosing Protocols
+
+
+
+
+The American Family Physician review provides a clinical decision algorithm for phenobarbital dosing that branches based on prior benzodiazepine exposure and sedation status, incorporating RASS monitoring.
+
+eFigure A Treatment of alcohol withdrawal syndrome with phenobarbital. Information from Farkas J. Phenobarbital monotherapy for alcohol withdrawal: simplicity and power. October 18, 2015. Accessed January 17, 2023. https://emcrit.org/pulmcrit/phenobarbital-monotherapy-for-alcohol-withdrawal-simplicity-and-power
+
+Guideline Positions
+
+
+The ASAM 2020 guideline positions benzodiazepines as first-line but endorses phenobarbital as an appropriate alternative for moderate-to-severe/complicated withdrawal, as monotherapy when benzodiazepines are contraindicated, or as an adjunct in severe withdrawal.[11][6] Parenteral phenobarbital should only be used in highly supervised settings (ICU/CCU) due to risk of oversedation and respiratory depression.[6] The VA/DoD 2021 guideline does not specifically highlight phenobarbital as a recommended alternative.[9] The SAEM GRACE-4 guideline (2024) recommends adjunctive phenobarbital in the ED but states there is insufficient evidence to recommend any specific dosing protocol.[1]
+
+Safety Considerations for Psychiatry Units
+
+
+Phenobarbital has no reversal agent, a narrow therapeutic window, and requires experienced clinicians.[12][6] Combination with benzodiazepines may carry higher risk than monotherapy with either agent.[18] These factors make phenobarbital loading protocols challenging on most inpatient psychiatry units, which typically lack continuous cardiopulmonary monitoring. If used, fixed-dose regimens with RASS-guided monitoring are preferred over symptom-triggered approaches given phenobarbital's long half-life.[12]
+
+---
+
+4. Special Populations
+
+
+Delirium Tremens
+
+
+Delirium tremens typically presents 72–96 hours after the last drink, carries 1–4% mortality among hospitalized patients, and often necessitates ICU admission.[8][1] Benzodiazepines are first-line, with the goal of achieving light somnolence; IV administration is preferred.[19] Very large doses may be required (>2,000 mg diazepam in the first 2 days in some patients).[19][20] Phenobarbital can be used as an adjunct when DT is not controlled by benzodiazepines alone.[19] Antipsychotics may be used as adjuncts for hallucinations but should not be used as monotherapy.[5] Alpha-2 agonists and beta-blockers should not be used to treat DT.[5]
+
+Seizure History
+
+
+Prior withdrawal seizures and prior DT are among the strongest predictors of severe withdrawal.[21] The kindling effect is well-supported: patients with ≥5 prior detoxifications had a 48% rate of withdrawal seizures vs. 12% in controls.[22] Front-loading with benzodiazepines is specifically recommended for high-risk patients.[1] Following a withdrawal seizure, IV lorazepam or diazepam should be administered immediately.[1] Phenytoin should not be used for alcohol withdrawal seizures unless treating a concomitant underlying seizure disorder.[1]
+
+Hepatic Impairment
+
+
+Lorazepam and oxazepam are preferred in patients with advanced liver disease — both are metabolized by glucuronidation (not hepatic oxidation), lack active metabolites, and lorazepam metabolites are eliminated renally.[19][23][24] The ACG 2024 guideline recommends avoiding diazepam and chlordiazepoxide in patients with decompensated cirrhosis.[23] Phenobarbital is not recommended in liver disease.[19] Benzodiazepines may precipitate or worsen hepatic encephalopathy, requiring careful dose titration.[23]
+
+
+
+Older Adults (≥65 years)
+
+
+Withdrawal onset may be delayed by several days, and confusion rather than tremor and tachycardia is often the predominant sign.[26] No age-specific dosing guidelines exist.[26] Longer-acting benzodiazepines can accumulate and lead to oversedation, with signs (ataxia, confusion) that may be difficult to differentiate from withdrawal-related delirium.[27] A retrospective study of patients ≥70 years found that implementing a symptom-triggered protocol significantly reduced median treatment duration (96→48 hours), cumulative benzodiazepine dose (9→3 mg lorazepam equivalents), and severe AWS complications.[28] Prefer shorter-acting agents (lorazepam, oxazepam) and implement falls precautions.[27]
+
+Polysubstance Use
+
+
+The VA/DoD guideline lists comorbid substance use as an indication for inpatient treatment.[8][1] For concurrent opioid use, the ASAM guideline recommends stabilizing OUD concomitantly (with methadone or buprenorphine) while treating alcohol withdrawal, with close monitoring for respiratory depression.[29] Concurrent withdrawal from alcohol and another sedative-hypnotic is more clinically complicated than withdrawal from a substance with different pharmacologic effects and typically requires a longer taper.[30] Gabapentin, carbamazepine, and valproic acid may be useful alternatives when benzodiazepine risks outweigh benefits (e.g., history of sedative abuse).[9]
+
+---
+
+5. Thiamine Dosing for Wernicke Prevention and Treatment
+
+
+The Evidence Gap
+
+
+The Cochrane systematic review (Day et al., 2013) concluded there is insufficient evidence from RCTs to guide the optimum dose, frequency, route, or duration of thiamine for either prophylaxis or treatment of Wernicke encephalopathy (WE).[31] The only major dose-comparison RCT (Dingwall et al., 2022; N = 520) found no significant differences between parenteral thiamine dose tiers, but the authors acknowledged substantial limitations and recommended patient-specific treatment.[19]
+
+Why Oral Thiamine 100 mg Is Inadequate for High-Risk Patients
+
+
+Chronic alcohol consumption inhibits intestinal thiamine transport via reduced thiamine transporter-1 (THTR-1) expression.[25] Doses of 100–250 mg/day "apparently may not restore vitamin status, improve clinical signs, or prevent death" in patients with established WE.[25] When WE is inappropriately treated with low doses, estimated mortality is ~20%, and ~85% of survivors develop irreversible Korsakoff syndrome.[25] The classic triad (oculomotor dysfunction, ataxia, encephalopathy) is present in less than one-third of cases, making clinical diagnosis unreliable.[32]
+
+Recommended Dosing
+
+
+
+
+Magnesium should be corrected concurrently (cofactor for thiamine-dependent transketolase reactions).[1] Thiamine should be given before or concurrently with IV glucose in thiamine-deficient patients.[25][1] Parenteral thiamine has an excellent safety profile; anaphylaxis is rare.[17]
+
+Practical Recommendation for Inpatient Psychiatry
+
+
+All patients admitted with AUD should receive parenteral thiamine 200–500 mg IV/IM daily for at least 3 days before transitioning to oral supplementation. The standard "banana bag" containing 100 mg thiamine is pharmacokinetically inadequate for CNS repletion.[1] If any signs of WE are present (confusion, ataxia, oculomotor abnormalities — even in isolation), escalate immediately to 500 mg IV TID.
+
+---
+
+6. Pharmacotherapy for Alcohol Use Disorder
+
+
+Initiating MAUD During Hospitalization
+
+
+The ASAM guideline explicitly recommends that AUD treatment, including pharmacotherapy, should be initiated concurrently with withdrawal management as cognitive status permits.[1] A target trial emulation using Medicare data (n = 9,834) found that discharge MAUD initiation was associated with a 42% decreased incidence of the composite outcome of all-cause mortality or return to hospital within 30 days (IRR 0.58; 95% CI 0.45–0.76).[1] The ADOPT trial (RCT, N = 248) demonstrated that both oral and injectable naltrexone initiated at hospital discharge produced substantial reductions in heavy drinking days (66.7%→27.4% for oral; 70.7%→23.8% for injectable at 3 months).[34] Addiction consult services dramatically increase inpatient MAUD initiation (33.0% vs. 0.9%; OR 52.5).[1]
+
+Medication Comparison
+
+
+The 2023 JAMA systematic review and meta-analysis (118 RCTs, 20,976 participants) provides the most comprehensive comparative efficacy data:[35]
+
+Table 1 Summary of Findings and Strength of Evidence From Trials Assessing Efficacy of Medications With at Least Low Strength of Evidence for Benefit for Alcohol Use Disordera
+
+
+
+Guideline Discrepancies
+
+
+The VA/DoD 2021 guideline elevated topiramate to first-line (alongside naltrexone) and downgraded acamprosate and disulfiram to "suggested," based on more stringent evidence criteria.[9] The APA 2018 guideline maintains naltrexone and acamprosate as co-first-line.[40] The COMBINE trial (N = 1,383) found naltrexone effective (80.6% vs. 75.1% days abstinent; P = .009) but no evidence of efficacy for acamprosate in any arm — a finding that has not been replicated in European trials.[40][1]
+
+The AAFP (2024) provides a practical decision tree for medication selection:
+
+Figure 2 Recommended medications for outpatient management of alcohol use disorder.
+
+---
+
+7. Discharge Linkage and Relapse Prevention
+
+
+Up to 75% of patients relapse in the year after treatment, with risk highest during the first 3 months.[42] The ASAM guideline states that the success of withdrawal management is defined not only by acute symptom control but by engagement in continued AUD treatment.[1]
+
+Evidence-Based Discharge Strategies
+
+
+Warm handoffs and addiction consult services. The ASAM guideline recommends proactively connecting patients to treatment services with a warm handoff to treatment providers.[1] The IMPACT addiction consult service increased post-discharge SUD treatment engagement from 23.3% to 38.9% (aOR 2.15; 95% CI 1.29–3.58).[1] A pharmacy-guided AUD discharge workflow produced a 195% increase in MAUD prescriptions, 61% reduction in 90-day total readmissions, and 92% reduction in alcohol-related readmissions.[43]
+
+Mutual aid referral. A 2020 Cochrane review (27 studies, 10,565 participants) found manualized AA/twelve-step facilitation (TSF) produced higher rates of continuous abstinence at 12 months (367 vs. 304 per 1,000; high-certainty evidence) compared to other established treatments like CBT, with benefits persisting to 36 months.[38] The VA/DoD guideline strongly recommends TSF, network support, or peer linkage to promote active involvement in mutual help programs.[44] Peer linkage (3 sessions linking patients with a 12-step peer) produced higher AA attendance and greater reductions in alcohol use severity over 12 months compared to standard referral.[18]
+
+Motivational interviewing. A 2023 Cochrane review found a small-to-moderate benefit vs. no intervention post-intervention (SMD 0.48; 95% CI 0.07–0.89; low certainty), diminishing at follow-up.[1] An RCT in a psychiatric emergency unit found that two MI sessions produced 7.3 fewer days of substance use per month at 2-year follow-up (95% CI 1.9–12.6; P < .01).[44]
+
+Technology-based continuing care. The A-CHESS smartphone app (RCT, n = 349) significantly increased abstinence at 8 and 12 months.[18] A systematic review and meta-analysis (34 RCTs, 6,461 participants) found remote interventions supplementing in-person care reduced relapse odds by 39% (OR 0.61; 95% CI 0.46–0.81).[1] The VA/DoD guideline suggests technology-based interventions and structured telephone-based care as adjuncts.[45]
+
+Follow-up timing. The ASAM quality measure recommends outpatient follow-up within 7 days after withdrawal management.[46] Weekly follow-up for a month after detoxification, with decreasing frequency thereafter, is recommended.[1]
+
+---
+
+8. Resident Algorithm for Alcohol Withdrawal on Inpatient Psychiatry
+
+
+Step 1: Risk Stratification (Admission)
+
+
+- Obtain detailed alcohol use history: quantity, frequency, time of last drink, prior withdrawal severity (seizures, DT)
+
+- Assess for kindling (≥5 prior detoxifications → 48% seizure rate)[22]
+
+- Check vitals, CBC, CMP, Mg²⁺, phosphorus, hepatic panel, BAL, UDS
+
+- High-risk features requiring medical floor/ICU consideration: CIWA-Ar ≥ 20, prior DT or withdrawal seizures, active medical illness, decompensated cirrhosis, age >65 with comorbidities
+
+Step 2: Thiamine Repletion (Day 1)
+
+
+- All patients: Thiamine 200–500 mg IV/IM daily × 3–5 days → 100 mg PO daily[25][29]
+
+- If any WE signs (confusion, ataxia, oculomotor abnormalities): Thiamine 500 mg IV TID × 2–3 days[25]
+
+- Correct magnesium concurrently; give thiamine before IV dextrose[25][1]
+
+Step 3: Withdrawal Management
+
+
+- If patient can reliably self-report and no delirium/psychosis: Symptom-triggered protocol (CIWA-Ar q1–2h; treat if ≥10)[8]
+
+- Lorazepam 2 mg PO/IM q1h PRN (preferred in liver disease, elderly)[19]
+
+- OR Chlordiazepoxide 25–50 mg PO q1h PRN (preferred if no liver disease)[8]
+
+- If patient cannot self-report (delirium, psychosis, cognitive impairment): Fixed-dose protocol with objective monitoring (vitals, RASS)[1]
+
+- Lorazepam 1–2 mg PO/IM q6h scheduled × 3 days with taper + PRN
+
+- If severe withdrawal (CIWA-Ar ≥ 19) or high-risk: Front-loading[8]
+
+- Diazepam 10–20 mg PO q1–2h until light sedation (if no liver disease)
+
+- OR Lorazepam 2–4 mg IV q15–30 min (if liver disease or IV access needed)
+
+- Escalation triggers → transfer to medical floor/ICU: Refractory symptoms despite adequate dosing, seizure, DT, respiratory depression, hemodynamic instability
+
+Step 4: Initiate AUD Pharmacotherapy (Days 2–3, as cognition clears)
+
+
+- Default first-line: Naltrexone 25 mg PO × 3 days → 50 mg PO daily[1]
+
+- Contraindicated if: current opioid use, acute hepatitis, liver failure
+
+- If opioid use or liver disease: Acamprosate 666 mg PO TID (requires CrCl >30)[1]
+
+- If prominent withdrawal symptoms/insomnia/anxiety: Gabapentin 300 mg → titrate to 600 mg TID[38][39]
+
+- If obesity or prior MAUD failure: Topiramate 25 mg/d → titrate over 5–6 weeks[1]
+
+- If highly motivated with supervised administration available: Disulfiram 250 mg PO daily[1]
+
+Step 5: Discharge Planning (Begin Day 1)
+
+
+- Warm handoff to outpatient addiction/psychiatry provider[1]
+
+- Schedule follow-up within 7 days[46]
+
+- Prescribe MAUD with ≥30-day supply
+
+- Provide AA/mutual aid referral with specific meeting times/locations; consider peer linkage[38][18]
+
+- Brief MI session during hospitalization[1][44]
+
+- Provide crisis resources and relapse prevention plan
+
+- Consider injectable naltrexone if adherence concerns (aOR 3.88 for adherence vs. oral)[1]
+
+---
+
+9. Common Pitfalls
+
+
+1. Using CIWA-Ar in patients who cannot self-report — delirious, psychotic, or cognitively impaired patients produce unreliable scores; use objective scales (RASS, mMINDS) or fixed-dose protocols instead.[1]
+
+2. Prescribing oral thiamine 100 mg as sole repletion — inadequate for hospitalized patients with AUD; parenteral 200–500 mg daily is the minimum standard.[25][1]
+
+3. Using phenytoin for alcohol withdrawal seizures — phenytoin is ineffective for withdrawal seizures and should not be used unless treating a concomitant underlying seizure disorder.[1]
+
+4. Choosing chlordiazepoxide or diazepam in decompensated liver disease — these agents undergo hepatic oxidation with active metabolites that accumulate; use lorazepam or oxazepam.[19][23]
+
+5. Discharging without initiating MAUD — only ~2% of alcohol-related hospitalizations involve discharge MAUD initiation despite evidence of a 42% reduction in 30-day mortality/readmission.[1]
+
+6. Treating beta-blocker-suppressed vital signs as "mild withdrawal" — sympatholytic medications mask tachycardia and hypertension without preventing seizures or delirium.[1]
+
+7. Using antipsychotics as monotherapy for withdrawal-related agitation — antipsychotics lower the seizure threshold and should only be used as adjuncts to benzodiazepines.[5]
+
+8. Underdosing benzodiazepines in severe withdrawal/DT — very large doses may be required; clinicians should not hesitate to provide adequate dosing to achieve light somnolence.[19][20]
+
+9. Failing to assess for concurrent sedative-hypnotic dependence — concurrent benzodiazepine/sedative withdrawal is more complicated and requires longer tapers.[30]
+
+10. Passive referral at discharge ("here's a phone number") — warm handoffs, peer linkage, and scheduled appointments within 7 days are far more effective than passive referral alone.[1]
+
+---
+
+10. Top 15 References
+
+
+
+
+---
+
+Would you like to explore the specific implementation logistics of transitioning from a CIWA-Ar-based benzodiazepine protocol to a phenobarbital-based protocol on an inpatient psychiatry unit, including nursing education requirements and monitoring infrastructure?
+
+References
+Clinical Practice Guideline on Alcohol Withdrawal Management. Anika Alvanzo MD MS DFASAM FACP, Kurt Kleinschmidt MD FASAM, Julie A. Kmiec DO FASAM, et al. American Society of Addiction Medicine (2020).
+Identification and Treatment of Alcohol Use Disorder. Haber PS. The New England Journal of Medicine. 2025;392(3):258-266. doi:10.1056/NEJMra2306511.
+Prevention of Alcohol Withdrawal Syndrome in the Surgical ICU: An American Association for the Surgery of Trauma Critical Care Committee Clinical Consensus Document. Seshadri A, Appelbaum R, Carmichael SP, et al. Trauma Surgery & Acute Care Open. 2022;7(1):e001010. doi:10.1136/tsaco-2022-001010.
+Evaluation of the Appropriate Use of a CIWA-Ar Alcohol Withdrawal Protocol in the General Hospital Setting. Eloma AS, Tucciarone JM, Hayes EM, Bronson BD. The American Journal of Drug and Alcohol Abuse. 2018;44(4):418-425. doi:10.1080/00952990.2017.1362418.
+Alcohol Use Disorders. Connor JP, Haber PS, Hall WD. Lancet (London, England). 2016;387(10022):988-998. doi:10.1016/S0140-6736(15)00122-1.
+Guidelines for Managing Substance Withdrawal in Jails. Jeffrey Alvarez MD CCHP, Andrew F. Angelino MD, Oscar Aviles CPM CJM CCE CCHP, et al. American Society of Addiction Medicine (2023).
+Correlation Between and Nursing Satisfaction With CIWA-Ar, mMINDS, and SEWS Scoring Tools for the Assessment of Severe Alcohol Withdrawal Syndrome in ICU Patients. Bradley M, Kiser TH, Mueller SW, Reynolds PM, MacLaren R. The Annals of Pharmacotherapy. 2023;57(2):175-183. doi:10.1177/10600280221102562.
+Will This Hospitalized Patient Develop Severe Alcohol Withdrawal Syndrome?The Rational Clinical Examination Systematic Review. Wood E, Albarqouni L, Tkachuk S, et al. JAMA. 2018;320(8):825-833. doi:10.1001/jama.2018.10574.
+Predictive Value of the Clinical Institute Withdrawal Assessment for Alcohol Scale, Revised (CIWA-Ar) Score on Admission for Alcohol Withdrawal Delirium (AWD) in Patients With Alcohol Use Disorder (AUD): A Prospective Observational Study. Uzawa M, Inuzuka S, Adachi M, et al. Journal of Addictive Diseases. 2026;:1-9. doi:10.1080/10550887.2026.2616724.
+Replacing the Clinical Institute Withdrawal Assessment-Alcohol Revised With the Modified Richmond Agitation and Sedation Scale for Alcohol Withdrawal to Support Management of Alcohol Withdrawal Symptoms: Potential Impact on Length of Stay and Complications. de Lemos J, Sharaf M, Moadebi S, et al. Cjem. 2024;26(6):431-435. doi:10.1007/s43678-024-00710-7.
+Symptom-Triggered Therapy for Alcohol Withdrawal Syndrome: A Systematic Review and Meta-Analysis of Randomized Controlled Trials. Holleck JL, Merchant N, Gunderson CG. Journal of General Internal Medicine. 2019;34(6):1018-1024. doi:10.1007/s11606-019-04899-7.
+Patients with Alcohol Problems. O'Connor PG, Schottenfeld RS. The New England Journal of Medicine. 1998;338(9):592-602. doi:10.1056/NEJM199802263380907.
+Symptoms-Triggered Approach Versus Fixed-Scheduled Approach of Benzodiazepines for Management of Alcohol Withdrawal Syndrome: Non-Randomized Controlled Trial. Al-Maqbali JS, Al Alawi AM, Al-Mamari Q, Al-Huraizi A, Al-Maqrashi N. Alcohol (Fayetteville, N.Y.). 2023;106:10-14. doi:10.1016/j.alcohol.2022.09.004.
+Management of Substance Use Disorders: Guidelines From the VA/DoD. Ford B, Smith E, Richards A. American Family Physician. 2022;106(4):466-469.
+Management of Substance Use Disorder (SUD) (2021). Timothy Atkinson PharmD, Charolotte Baldridge FNP, Jennifer Burden PhD MS, et al. Department of Veterans Affairs.
+The Management of Substance Use Disorders: Synopsis of the 2021 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guideline. Perry C, Liberto J, Milliken C, et al. Annals of Internal Medicine. 2022;175(5):720-731. doi:10.7326/M21-4011.
+Managing Selected Chronic Conditions in Hospitalized Patients. Gauer RL, Abellada A, Stewart M, Kozloski R. American Family Physician. 2024;109(2):134-142.
+Alcohol Withdrawal Syndrome: Outpatient Management. Tiglao SM, Meisenheimer ES, Oh RC. American Family Physician. 2021;104(3):253-262.
+Wernicke's Encephalopathy: New Clinical Settings and Recent Advances in Diagnosis and Management. Sechi G, Serra A. The Lancet. Neurology. 2007;6(5):442-55. doi:10.1016/S1474-4422(07)70104-7.
+Thiamine for Prevention and Treatment of Wernicke-Korsakoff Syndrome in People Who Abuse Alcohol. Day E, Bentham PW, Callaghan R, Kuruvilla T, George S. The Cochrane Database of Systematic Reviews. 2013;(7):CD004033. doi:10.1002/14651858.CD004033.pub3.
+Wernicke Encephalopathy-Clinical Pearls. Sinha S, Kataria A, Kolla BP, Thusius N, Loukianova LL. Mayo Clinic Proceedings. 2019;94(6):1065-1072. doi:10.1016/j.mayocp.2019.02.018.
+What Is the Optimum Thiamine Dose to Treat or Prevent Wernicke's Encephalopathy or Wernicke-Korsakoff Syndrome? Results of a Randomized Controlled Trial. Dingwall KM, Delima JF, Binks P, Batey R, Bowden SC. Alcoholism, Clinical and Experimental Research. 2022;46(6):1133-1147. doi:10.1111/acer.14843.
+A.S.P.E.N. Position Paper: Recommendations for Changes in Commercially Available Parenteral Multivitamin and Multi-Trace Element Products. Vanek VW, Borum P, Buchman A, et al. Nutrition in Clinical Practice : Official Publication of the American Society for Parenteral and Enteral Nutrition. 2012;27(4):440-91. doi:10.1177/0884533612446706.
+Unpeeling the Evidence for the Banana Bag: Evidence-Based Recommendations for the Management of Alcohol-Associated Vitamin and Electrolyte Deficiencies in the ICU. Flannery AH, Adkins DA, Cook AM. Critical Care Medicine. 2016;44(8):1545-52. doi:10.1097/CCM.0000000000001659.
+thiamine hydrochloride. Food and Drug Administration. Updated date: 2025-02-27.
+Peripheral Neuropathy. Mauermann ML, Staff NP. JAMA. 2026;335(3):255-266. doi:10.1001/jama.2025.19400.
+Mechanisms of Thiamin Deficiency in Chronic Alcoholism. Hoyumpa AM. The American Journal of Clinical Nutrition. 1980;33(12):2750-61. doi:10.1093/ajcn/33.12.2750.
+Chronic Alcohol Consumption and Intestinal Thiamin Absorption: Effects on Physiological and Molecular Parameters of the Uptake Process. Subramanya SB, Subramanian VS, Said HM. American Journal of Physiology. Gastrointestinal and Liver Physiology. 2010;299(1):G23-31. doi:10.1152/ajpgi.00132.2010.
+A Case for Early High-Dose Thiamine—Moving From Reaction to Prevention. Goldstein DN, Hunter AJ, Riquelme PA. JAMA Internal Medicine. 2025;:2839842. doi:10.1001/jamainternmed.2025.5055.
+Can Thiamine Substitution Restore Cognitive Function in Alcohol Use Disorder?. Listabarth S, Vyssoki B, Marculescu R, et al. Alcohol and Alcoholism (Oxford, Oxfordshire). 2023;58(3):315-323. doi:10.1093/alcalc/agad017.
+Wernicke's Encephalopathy Treated With High Dose Intravenous Thiamine: A case Report. Alamir M, Cantu-Weinstein A, Branning R, Weleff J, Anand A. Journal of Addictive Diseases. 2025 Jul-Sep;43(3):276-281. doi:10.1080/10550887.2024.2365002.
+Alcohol Abuse in the Critically Ill Patient. Moss M, Burnham EL. Lancet (London, England). 2006;368(9554):2231-42. doi:10.1016/S0140-6736(06)69490-7.
+Wernicke Encephalopathy: A Mini Review of the Clinical Spectrum, Atypical Manifestations, and Diagnostic Challenges. Li S, Xing C. Frontiers in Neurology. 2025;16:1566366. doi:10.3389/fneur.2025.1566366.
+Recognition and Management of Withdrawal Delirium (Delirium Tremens). Schuckit MA. The New England Journal of Medicine. 2014;371(22):2109-13. doi:10.1056/NEJMra1407298.
+Alcohol Detoxification and Withdrawal Seizures: Clinical Support for a Kindling Hypothesis. Brown ME, Anton RF, Malcolm R, Ballenger JC. Biological Psychiatry. 1988;23(5):507-14. doi:10.1016/0006-3223(88)90023-6.
+Pharmacotherapy for Alcohol Use Disorder: A Systematic Review and Meta-Analysis. McPheeters M, O'Connor EA, Riley S, et al. JAMA. 2023;330(17):1653-1665. doi:10.1001/jama.2023.19761.
+Positive Relationship Between the Number of Prior Ethanol Withdrawal Episodes and the Severity of Subsequent Withdrawal Seizures. Becker HC. Psychopharmacology. 1994;116(1):26-32. doi:10.1007/BF02244867.
+Alcohol Use in Patients with Chronic Liver Disease. Fuster D, Samet JH. The New England Journal of Medicine. 2018;379(13):1251-1261. doi:10.1056/NEJMra1715733.
+ACG Clinical Guideline: Alcohol-Associated Liver Disease. Jophlin LL, Singal AK, Bataller R, et al. The American Journal of Gastroenterology. 2024;119(1):30-54. doi:10.14309/ajg.0000000000002572.
+Management of Alcohol Use Disorder: A Gastroenterology and Hepatology-Focused Perspective. Díaz LA, König D, Weber S, et al. The Lancet. Gastroenterology & Hepatology. 2025;10(5):475-490. doi:10.1016/S2468-1253(24)00380-7.
+Medications for Alcohol Use Disorder. Poorman E, McQuade BM, Messmer S. American Family Physician. 2024;109(1):71-78.
+Treatment of Patients with Cirrhosis. Ge PS, Runyon BA. The New England Journal of Medicine. 2016;375(8):767-77. doi:10.1056/NEJMra1504367.
+Should Chlordiazepoxide and Diazepam Be Avoided When Treating Alcohol Withdrawal Syndrome in Patients With Hepatic Insufficiency?. Weintraub SJ. Clinical Toxicology (Philadelphia, Pa.). 2025;63(5):303-309. doi:10.1080/15563650.2025.2493216.
+Substance-Use Disorders in Later Life. Lehmann SW, Fingerhood M. The New England Journal of Medicine. 2018;379(24):2351-2360. doi:10.1056/NEJMra1805981.
+Inpatient Management of Acute Alcohol Withdrawal Syndrome. Perry EC. CNS Drugs. 2014;28(5):401-10. doi:10.1007/s40263-014-0163-5.
+Evaluation of a Symptom-Triggered Protocol Approach to the Management of Alcohol Withdrawal Syndrome in Older Adults. Taheri A, Dahri K, Chan P, et al. Journal of the American Geriatrics Society. 2014;62(8):1551-5. doi:10.1111/jgs.12932.
+
+Protocol | Loading Dose | Maintenance | Setting | Reference
+Single-dose front-load | 10 mg/kg IV over 30 min | PRN rescue doses | ED/ward | [1]
+Standard front-load | 15 mg/kg IV over 30 min | 1–2 mg/kg q12h × 2–3 days | Hospital-wide | [2]
+Multi-dose load | 10–15 mg/kg in 3 divided doses on day 1 | 64.8 mg q12h × 2d → 32.4 mg q12h × 2d → 32.4 mg q24h × 2d | Surgical-trauma ICU | [3]
+Agent | Metabolism | Active Metabolites | Use in Liver Disease
+Lorazepam | Glucuronidation (renal elimination) | None | Preferred[1], [2]
+Oxazepam | Glucuronidation | None | Preferred[1], [2]
+Diazepam | Hepatic oxidation | Yes (desmethyldiazepam) | Avoid in decompensated cirrhosis[3]
+Chlordiazepoxide | Hepatic oxidation | Yes (demoxepam, t½ 14–95h) | Avoid — high risk of dose-stacking[3], [4]
+Phenobarbital | Hepatic | — | Not recommended[1]
+Indication | Dose | Route | Duration | Source
+Prophylaxis (at-risk, no WE symptoms) | 200–250 mg daily | IV or IM | 3–5 days | ASAM 2020[1], Expert consensus[2]
+Suspected/established WE | 500 mg TID | IV | 2–3 days, then 250 mg IV/IM daily × 3–5 days if response | Expert consensus[2], Lancet[3]
+Ambulatory prophylaxis | 100 mg daily | PO | Ongoing while drinking | ASAM 2020[1], NEJM 2025[4]
+Maintenance after repletion | 100 mg daily | PO | Several months minimum | [3], [5]
+Medication | FDA Status | Key Efficacy | NNT | Key Contraindications | Dosing | Best Candidate
+Naltrexone (oral) | Approved | ↓ Heavy drinking (RR 0.81)[1] | 11 (heavy drinking)[1] | Current opioid use; acute hepatitis/liver failure[2] | 50 mg PO daily[3] | Any AUD; can start while drinking[4]
+Naltrexone (XR-IM) | Approved | ↓ 5 drinking days/month[1] | — | Same as oral | 380 mg IM q4 weeks[3] | Adherence concerns; better persistence (OR 1.94 vs oral)[5]
+Acamprosate | Approved | ↓ Any drinking (RR 0.88)[1] | 11 (any drinking)[1] | CrCl <30 mL/min[3] | 666 mg PO TID[3] | Abstinent patients; liver disease (no hepatic metabolism)[3]
+Topiramate | Off-label | ↓ Drinking days (WMD −7.2%); ↓ heavy drinking days (WMD −6.2%)[1] | — | Metabolic acidosis; renal calculi[3] | 25 mg/d → 200–300 mg/d over 5–6 weeks[3] | Active drinkers; comorbid obesity[3]
+Gabapentin | Off-label | ↓ Heavy drinking (RR 0.90)[1]; NNT 5 at 1800 mg/d[6] | 5–8 (single-site data)[6] | Misuse potential in SUD populations[3] | 300 mg/d → 600 mg TID[3] | Prominent withdrawal symptoms, insomnia, anxiety, neuropathy[7]
+Disulfiram | Approved | No benefit in blinded RCTs; effective open-label with supervision (Hedges g = 0.82)[3] | — | Active drinking; liver disease; psychosis[3] | 250 mg PO daily[3] | Highly motivated patients with supervised administration[8]
+# | Citation | Significance
+1 | ASAM Clinical Practice Guideline on Alcohol Withdrawal Management (2020)[1], [2], [3], [4], [5] | Most comprehensive US guideline; 74 recommendations covering assessment, pharmacotherapy, special populations, and care transitions
+2 | VA/DoD Clinical Practice Guideline: Management of Substance Use Disorders (2021)[1], [2], [6], [7], [8] | 35 GRADE-rated recommendations; elevated topiramate to first-line; strong recommendations on mutual aid and continuing care
+3 | APA Practice Guideline for Pharmacological Treatment of Patients with AUD (2018)[9] | Systematic evidence review; naltrexone and acamprosate as co-first-line
+4 | McPheeters et al. Pharmacotherapy for AUD: Systematic Review and Meta-Analysis. JAMA 2023[10] | 118 RCTs, 20,976 participants; most comprehensive comparative efficacy data with NNTs
+5 | Holleck et al. Symptom-Triggered Therapy for AWS: Systematic Review and Meta-Analysis. J Gen Intern Med 2019[4] | 6 RCTs; established STT superiority for duration/dose but noted limited applicability to general hospital settings
+6 | Wolpaw et al. Hospital-Wide Implementation of Phenobarbital for Alcohol Withdrawal. JAMA Netw Open 2025[11] | Practice-changing QI study; 2-day reduction in time to discharge with phenobarbital monotherapy
+7 | Bernstein et al. Outcomes After Initiation of MAUD at Hospital Discharge. JAMA Netw Open 2024[1] | Target trial emulation; 42% reduction in 30-day mortality/readmission with discharge MAUD
+8 | Magane et al. (ADOPT Trial) Oral vs XR-Injectable Naltrexone for Hospitalized Patients. JAMA Intern Med 2025[12] | RCT demonstrating feasibility and efficacy of inpatient naltrexone initiation
+9 | Kelly et al. AA and Other 12-Step Programs for AUD. Cochrane Database Syst Rev 2020[13] | 27 studies; high-certainty evidence that AA/TSF produces higher abstinence rates than CBT
+10 | Sechi & Serra. Wernicke's Encephalopathy: New Clinical Settings. Lancet Neurol 2007[14] | Definitive expert consensus on thiamine dosing; established 500 mg IV TID for WE treatment
+11 | Haber. Identification and Treatment of AUD. N Engl J Med 2025[15] | Comprehensive NEJM review covering screening, withdrawal, and long-term management
+12 | Kranzler & Soyka. Diagnosis and Pharmacotherapy of AUD. JAMA 2018[1] | Authoritative review of all AUD pharmacotherapies with effect sizes
+13 | Grayeb et al. Phenobarbital Monotherapy vs Benzodiazepines: Multicenter Propensity-Matched Study. Intern Emerg Med 2026[16] | Largest comparative study (n = 9,424); lower seizures and DT with phenobarbital
+14 | Jophlin et al. ACG Clinical Guideline: Alcohol-Associated Liver Disease. Am J Gastroenterol 2024[17] | Key guidance on benzodiazepine selection in liver disease
+15 | Anton et al. Efficacy of Gabapentin for AUD in Patients with Withdrawal Symptoms. JAMA Intern Med 2020[18] | RCT establishing gabapentin's benefit is restricted to patients with prominent withdrawal symptoms

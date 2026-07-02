@@ -1,0 +1,156 @@
+/* =============================================================================
+   Inpatient Psychiatry MS3 Clerkship — Dark Mode
+   Drop-in theme. Author: prepared for Joshua Moss, MD · 2026-06-28
+   -----------------------------------------------------------------------------
+   HOW IT WORKS
+   Your site is already built on CSS custom properties (--bg, --primary, --accent,
+   --text, --border, …). This file only *remaps those tokens* for dark mode, so
+   every component that already reads the tokens flips automatically — no markup
+   or component changes required.
+
+   It supports BOTH:
+     1) Automatic — follows the OS setting via prefers-color-scheme.
+     2) Manual    — a toggle that sets <html data-theme="dark"> / "light",
+                    which always wins over the OS setting.
+
+   INSTALL
+     1) Add this file AFTER your main stylesheet:
+          <link rel="stylesheet" href="/css/dark-mode.css">
+        (or paste the blocks into your existing stylesheet, at the end).
+     2) Include the same block in the standalone /tools/*.html pages if they
+        don't share the main stylesheet (they use the same token names).
+     3) (Optional) add the toggle button + script at the bottom of this file.
+
+   ACCESSIBILITY NOTES (WCAG 2.1)
+     - Body text  (--text on --bg)      ≈ 13:1  (AAA)
+     - Secondary  (--text-mid on --bg)  ≈ 7.5:1 (AAA)
+     - Muted      (--text-light on --bg)≈ 4.6:1 (AA, secondary text only)
+     - Headings/links (--primary on --bg) ≈ 5.8:1 (AA normal)
+     - Teal text  (--accent on --bg)    ≈ 5.4:1 (AA normal)
+     - White label on a filled --accent/--primary button ≈ 3.2–3.4:1
+       (passes AA for large/bold UI text, which buttons are). If you prefer
+       ≥4.5:1 on filled buttons, set their label color in dark mode to the
+       "on-brand-dark" tokens noted below.
+   ============================================================================= */
+
+/* ---- The dark token set (single source of truth) ------------------------- */
+:root[data-theme="dark"],
+:root.dark { /* alias if you ever use a .dark class instead */
+
+  /* surfaces — warm charcoals, not pure black, to keep the editorial warmth */
+  --bg:            #17140f;
+  --bg-alt:        #1f1b15;
+  --surface:       #241f18;
+  --border:        #39322a;
+
+  /* brand — terracotta, lightened just enough for dark backgrounds */
+  --primary:       #d8754f;  /* headings, links, accents (5.8:1 on --bg)      */
+  --primary-dark:  #ec9270;  /* hover (lighter in dark mode)                   */
+  --primary-light: #2b2019;  /* subtle primary-tinted surface                  */
+
+  /* accent — teal/green for CTAs, active toggles, "good" states */
+  --accent:        #3fa58e;  /* 6:1 on --bg; white label on fill ≈ 3.2:1 (AA large) */
+  --accent-dark:   #58bca6;  /* hover                                          */
+  --accent-light:  #16241f;  /* teal-tinted dark surface                       */
+
+  /* ink */
+  --text:          #ece4d8;  /* body            (~13:1)                        */
+  --text-mid:      #c3b5a4;  /* secondary       (~7.5:1)                       */
+  --text-light:    #9e9080;  /* muted labels    (~4.6:1, secondary use only)   */
+
+  /* warning / "always" callouts — amber */
+  --warning:       #d4b16f;
+  --warning-light: #261f12;
+
+  /* "on-brand-dark" — use as label color on filled brand buttons IF you want
+     ≥4.5:1 instead of the default white-on-brand (~3.2:1, already AA-large):  */
+  --on-primary:    #2a1209;
+  --on-accent:     #08231d;
+
+  /* let the browser theme form controls, scrollbars, etc. */
+  color-scheme: dark;
+}
+
+/* ---- Automatic: follow the OS, unless the user forced light --------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not(.light) {
+    --bg:            #17140f;
+    --bg-alt:        #1f1b15;
+    --surface:       #241f18;
+    --border:        #39322a;
+    --primary:       #d8754f;
+    --primary-dark:  #ec9270;
+    --primary-light: #2b2019;
+    --accent:        #3fa58e;
+    --accent-dark:   #58bca6;
+    --accent-light:  #16241f;
+    --text:          #ece4d8;
+    --text-mid:      #c3b5a4;
+    --text-light:    #9e9080;
+    --warning:       #d4b16f;
+    --warning-light: #261f12;
+    --on-primary:    #2a1209;
+    --on-accent:     #08231d;
+    color-scheme: dark;
+  }
+}
+
+/* ---- Optional polish for dark mode --------------------------------------- */
+/* Soften the heavy light-mode box-shadows so cards don't glow on charcoal.   */
+:root[data-theme="dark"] *,
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) * } {
+  /* (kept minimal on purpose; uncomment if your cards use large shadows)
+     box-shadow: 0 1px 2px rgba(0,0,0,.5) !important; */
+}
+
+/* If your "tool" badges, primary buttons, or the green "Daily review" CTA use
+   white text on a filled brand color and you want maximum contrast in dark
+   mode, opt in by giving those elements these classes OR adapting the
+   selectors to your actual class names:                                      */
+:root[data-theme="dark"] .btn-primary,
+:root[data-theme="dark"] .cta-accent,
+:root[data-theme="dark"] .toggle.is-active {
+  /* color: var(--on-accent);  */   /* uncomment for ≥4.5:1 labels */
+}
+
+/* Respect reduced-motion for the theme transition (nice-to-have).            */
+@media (prefers-reduced-motion: no-preference) {
+  html { transition: background-color .25s ease, color .25s ease; }
+}
+
+/* =============================================================================
+   OPTIONAL — Theme toggle (HTML + JS)
+   Paste the button wherever your header controls live (e.g., next to the
+   Path/Library toggle), and the script before </body>. Uses localStorage so
+   the choice persists. Safe to omit if you only want automatic OS theming.
+   -----------------------------------------------------------------------------
+   <button id="themeToggle" class="theme-toggle" type="button"
+           aria-label="Toggle dark mode" title="Toggle dark / light">
+     <span aria-hidden="true" class="theme-toggle__icon">◐</span>
+   </button>
+
+   <script>
+   (function () {
+     var root = document.documentElement;
+     var KEY = 'ms3-theme';
+     var saved = localStorage.getItem(KEY);
+     if (saved) root.setAttribute('data-theme', saved);   // forced choice wins
+     var btn = document.getElementById('themeToggle');
+     function current() {
+       return root.getAttribute('data-theme') ||
+         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+     }
+     if (btn) btn.addEventListener('click', function () {
+       var next = current() === 'dark' ? 'light' : 'dark';
+       root.setAttribute('data-theme', next);
+       localStorage.setItem(KEY, next);
+     });
+   })();
+   </script>
+
+   .theme-toggle{background:var(--surface);border:1px solid var(--border);
+     color:var(--text-mid);border-radius:999px;width:34px;height:34px;
+     cursor:pointer;font-size:16px;line-height:1;display:inline-flex;
+     align-items:center;justify-content:center}
+   .theme-toggle:hover{color:var(--primary);border-color:var(--primary)}
+   ============================================================================= */

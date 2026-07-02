@@ -1,0 +1,563 @@
+
+
+
+Child and Adolescent Psychiatry for Adult Psychiatrists: A Comprehensive Evidence Review
+
+
+Scope and Framing
+
+
+This review synthesizes the evidence on ten domains of child and adolescent psychiatry most commonly encountered by adult psychiatrists working in emergency departments and inpatient units. It emphasizes adolescents (13–17) while covering the full pediatric range where relevant. The review draws on AACAP practice parameters, AAP clinical reports, systematic reviews, landmark RCTs, and emergency psychiatry consensus statements. It is designed as a resident education and teaching resource.
+
+---
+
+I. Adolescent Psychiatric Boarding
+
+
+Scale of the Crisis
+
+
+Pediatric mental health ED visits approximately doubled from 2011 to 2020, rising from 4.8 million (7.7% of all pediatric ED visits) to 7.5 million (13.1%), with suicide-related visits showing the greatest increase (average annual percent change 23.1%).[1] Among youth requiring inpatient psychiatric care, 23–58% experience boarding, with average ED boarding durations of 5–41 hours and inpatient medical unit boarding of 2–3 days.[2] The COVID-19 pandemic dramatically worsened the crisis: prolonged boarding (≥2 midnights) increased by 76.4% in pandemic year 2, with adolescents aged 13–17 disproportionately affected (87.2% increase).[3]
+
+More than 1 in 10 mental health ED visits among Medicaid-enrolled youth lasted >2 days, with striking state-level variation (3–27%).[4] In Massachusetts, 45% of pediatric psychiatric ED visits resulted in boarding ≥12 hours, and nearly half of boarding episodes did not result in inpatient admission.[5] In October 2021, the AAP, AACAP, and Children's Hospital Association jointly declared a national emergency in child and adolescent mental health.[5]
+
+Disparities and Risk Factors
+
+
+Transgender youth board longer with lower admission rates; Hispanic ethnicity is associated with nearly threefold odds of ED length of stay >12 hours; and youth with autism spectrum disorder have higher baseline boarding rates (18.4% vs. 10.3%) that widened further during the pandemic.[3][5][6] Aggressive behaviors increase boarding duration by 193%, and prior psychiatric admissions by 88%.[7]
+
+Harms
+
+
+The majority of boarding youth report worsening mental health symptoms, with 72.7% reporting increasing anxiety.[8] Only 14% of pediatric hospitalists report that boarding youth receive medication management, and only 18% report psychotherapy access.[3] Parents frequently liken the environment to incarceration.[3] Disposition is often driven by bed availability rather than clinical need — only 56% of youth determined to need inpatient care actually received it after boarding.[5]
+
+Guidelines and Interventions
+
+
+The AAP 2023 policy statement recommends trauma-informed ED protocols, low-stimulation safe areas, embedded mental health professionals, telehealth consultation, and lethal means restriction counseling.[9] A national Delphi consensus panel (2023) recommended a 24-hour threshold for transferring boarding patients from the ED to an inpatient floor, that pediatric patients should not be cared for in the same space as adults (87% agreement), and that emergency medicine or hospitalists maintain primary ownership with child psychiatry in a consultative role.[10]
+
+Comprehensive hospital-level interventions at one institution reduced mean boarding by 53% (9.1 to 4.3 days) and increased access to acute psychiatry programs.[7] Standardized ED stabilization protocols significantly reduced psychiatric facility admissions (22.6% vs. 58.2%) and increased safe discharges home.[11]
+
+---
+
+II. First-Episode Psychosis in Minors
+
+
+Presentation Differences from Adults
+
+
+Approximately 100,000 adolescents and young adults in the U.S. experience FEP annually, with peak onset between ages 15–25.[12] Key developmental differences include: perceptual symptoms (hallucinations) are more prominent in younger patients while delusions and thought disorder increase with age; flat affect is more severe in younger patients; visual hallucinations are more common in children; and delusions are less elaborate.[13][14] Auditory hallucinations are common in children (median 17% of 9–12-year-olds) but most do not signify psychotic disorder.[12]
+
+Early-onset patients have significantly longer duration of untreated psychosis (median 91 vs. 58 days in adults), more prodromal symptoms, and higher rates of premorbid neurodevelopmental difficulties.[15][16] DUP is the strongest predictor of functional outcome at 2-year follow-up in pediatric FEP.[17]
+
+Diagnostic Complexity
+
+
+A thorough differential is essential: psychotic mood disorders, ASD, intellectual disability, substance-induced psychosis, trauma-related presentations, and medical causes (autoimmune encephalitis, seizure disorders, 22q11.2 deletion syndrome, metabolic disorders) must be excluded.[18][19] Notably, 23.5% of children admitted for first psychotic symptoms had substance-/medication-induced or medically-associated psychosis.[20] Daily cannabis use confers 3.2× higher odds of psychotic disorder, and cannabis-induced psychosis has a 36–46% transition rate to schizophrenia spectrum disorders.[12]
+
+AACAP Practice Parameter
+
+
+The AACAP Practice Parameter (2001, updated 2013) establishes that EOS is diagnosed using the same DSM criteria as adults and recommends antipsychotic medications as first-line, with SGAs generally favored due to lower EPS risk.[18][21] Clozapine is reserved for treatment-resistant cases after failure of at least two adequate antipsychotic trials.[18] First-episode patients should receive maintenance treatment for 1–2 years after the initial episode.[18]
+
+Coordinated Specialty Care
+
+
+The landmark RAISE-ETP trial (N = 404, ages 15–40) demonstrated that NAVIGATE (a CSC program including individualized medication management, family education, CBT-based individual therapy, and supported employment/education) produced greater improvement in quality of life and psychopathology, with effects more pronounced with shorter DUP.[22] OnTrackNY increased education/employment rates from 40% to 80% and decreased hospitalization rates from 70% to 10%.[23]
+
+---
+
+III. Adolescent Suicidality
+
+
+Epidemiology
+
+
+Suicide is the second leading cause of death for youth aged 10–24, with 59,827 deaths from 2011–2020.[24] The suicide rate among 10–19-year-olds increased 85.3% between 2007 and 2017.[25] During 2020–2021, ED visits for suspected suicide attempts among girls aged 12–17 increased 50.6% compared to 2019.[26] Firearms (51%), suffocation (33.5%), and overdose (5.9%) are the leading methods.[24]
+
+The following figure illustrates the mean annual rates of ED visits and hospitalizations for suicidality among children and adolescents, demonstrating that females have approximately twice the rate of males and rates peak at ages 16–17:
+
+Figure 1 Mean Annual Rates of Emergency Department Visits and Hospitalizations for Suicidal Ideation and Suicide Attempts Among Children and Adolescents Aged 10 to 18 Years, 2016-2021
+
+Screening Tools
+
+
+The Ask Suicide-Screening Questions (ASQ) is the most validated pediatric suicide screening tool: 97% sensitivity, 88% specificity in the pediatric ED, validated for ages 10–21.[24][28] The C-SSRS provides severity assessment and is recommended by the Joint Commission, with worst-point lifetime suicidal ideation predicting future attempts.[29] The CASSY (computerized adaptive screen) shows similar sensitivity to the ASQ but performs significantly better among patients already presenting with psychiatric symptoms (AUROC 0.72 vs. 0.57).[30]
+
+The USPSTF (2022) found insufficient evidence to recommend for or against universal suicide risk screening in pediatric primary care, creating tension with AAP, AACAP, and Joint Commission recommendations for universal screening.[31]
+
+Safety Planning in Adolescents — A Critical Caveat
+
+
+A 2025 JAMA Pediatrics meta-analysis (10 studies) — the first dedicated to standalone SPIs in youth — found no association between SPI and reduction in suicidal ideation, suicide-related behaviors, or suicide attempts at 1–6 months.[32] This contrasts sharply with the adult evidence base. Family-based adaptations showed more promising results.[32] MI-enhanced safety planning (MI-SafeCope) for hospitalized adolescents showed significantly higher self-efficacy to refrain from suicidal action and greater likelihood of safety plan use.[33]
+
+Evidence-Based Interventions
+
+
+DBT-A is the only well-established (Level 1) intervention for reducing self-injurious thoughts and behaviors in youth.[34] The McCauley et al. (2018) multisite RCT (N = 173) found DBT reduced suicide attempts (OR 0.30), NSSI (OR 0.32), and total self-harm (OR 0.33) compared to supportive therapy, though the advantage diminished during 6–12 month follow-up.[35] Long-term follow-up at 12.4 years showed lower odds of suicidal ideation in adulthood (OR 0.16).[36]
+
+The following figure from McCauley et al. shows the trajectory of suicide attempts, NSSI, and self-harm over 12 months, demonstrating DBT's advantage during active treatment:
+
+Figure 2 Changes in Suicide Attempts, Nonsuicidal Self-injury, Self-harm, and Suicidal Ideation
+
+Family-based interventions are classified as Level 2 (probably efficacious) for reducing youth suicidal ideation.[34] The SAFETY program (CBT/DBT-informed family treatment) showed 100% survival without suicide attempt at 3 months vs. 67% for enhanced TAU (NNT = 3).[37]
+
+Means Restriction
+
+
+For adolescent suicide by firearm, parents owned the firearm 66% of the time for ages 10–14 and 51% for ages 15–19.[38] Only 21.9% of pediatric primary care providers consistently screen for firearms.[39] The AAP, AACAP, and SAMHSA all recommend assessing for access to lethal means and counseling on safe storage.[24]
+
+---
+
+IV. Family Engagement
+
+
+Evidence for Family Involvement
+
+
+Family-based crisis intervention (FBCI) in the ED resulted in significantly more suicidal adolescents discharged home safely with outpatient follow-up compared to TAU, with higher family empowerment and no completed suicides.[40] Any family involvement with inpatient staff was significantly associated with attending outpatient follow-up within 7 days (OR 2.79) and 30 days (OR 3.07) after discharge.[41]
+
+A structured psychoeducational group for adolescents with early-onset psychosis and their families reduced ED visits from 39% to 15% at initial follow-up and from 50% to 13% at 2-year follow-up.[42][43] The Cochrane review of family-based interventions for schizophrenia found reduced days in hospital (MD −2.43 days) and probable reduction in relapse.[44]
+
+AACAP Guidance on Family Assessment
+
+
+The AACAP Practice Parameter for Assessment of the Family (2007) establishes that a family assessment is always indicated in the psychiatric evaluation of a child or adolescent.[45] The clinician begins by identifying family strengths, then defines the problem while observing family interactions. An individual interview with the adolescent is essential, and the clinician must maintain neutrality.[45]
+
+---
+
+V. Consent, Assent, and Confidentiality
+
+
+Consent Framework
+
+
+Parents provide informed permission for diagnosis and treatment, with the assent of the child whenever developmentally appropriate.[46] The AACAP Practice Parameter on Psychotropic Medication (2009) requires documenting assent of the child and consent of the parents before initiating medication and at important treatment transitions.[46]
+
+Psychiatric Hospitalization
+
+
+In practically all states, if a physician determines hospitalization is medically indicated and a parent consents, the minor is admitted — even if the minor objects (Parham v. J.R., 1979).[47] About two-thirds of states allow some minors to independently consent to mental health hospitalization, with minimum ages ranging from no minimum to age 16.[47]
+
+Confidentiality
+
+
+Confidentiality is essential for adolescent care — adolescents are less likely to seek care or disclose sensitive information without it.[48] Key domain-specific rules:
+
+- Substance use: 42 CFR Part 2 provides strong protections; records cannot be shared with parents without the minor's written consent at federally funded facilities[48]
+
+- Sexual/reproductive health: All states allow minor consent for STI services[48]
+
+- Mental health: ~2/3 of states allow some minor consent; ages vary widely[48]
+
+- Mandatory breach: Required for danger to self or others, abuse, or severe disorganization[12][24]
+
+The 21st Century Cures Act creates significant confidentiality risks through mandated easy access to electronic health information, though confidentiality rights themselves have not been altered.[49][50]
+
+---
+
+VI. Neurodevelopmental Disorders
+
+
+Disproportionate ED Utilization
+
+
+Adolescents with ASD have a psychiatric ED visit rate 9.9 times higher than those without ASD or ADHD.[51] The most common presenting complaint is aggression toward others (36.4%), followed by suicidal thoughts and self-injurious behaviors.[52] ASD is an independent risk factor for boarding ≥24 hours (OR 1.82).[53]
+
+Diagnostic Overshadowing
+
+
+Psychiatric disorders occur at least 3 times more often in children with ID than in typically developing children.[54] Symptoms are frequently assumed to be inherent to the underlying disability, leading to substantial underdiagnosis.[54] Behavioral outbursts in ASD/ID may be driven by co-occurring medical issues causing pain (ear infections, abdominal pain), particularly in nonverbal children.[9]
+
+Suicidality Risk
+
+
+Suicidality risk is elevated and often overlooked: ASD without ID with comorbid ADHD carries the highest suicide risk (attempt OR 7.25; suicide OR 13.09).[55] Suicidality assessment tools have not been validated specifically for individuals with ID or minimally verbal ASD.[24]
+
+Management Adaptations
+
+
+ASD-specific de-escalation strategies include clear, concrete, short statements; reduced sensory stimulation; lower-volume tone; refraining from physical contact; and consulting families for calming strategies.[9] Children with ASD are significantly more likely to be physically restrained (RR 2.8), managed in seclusion (RR 3.3), and receive medication for behavioral de-escalation (RR 2.8).[56]
+
+Medication Cautions
+
+
+Risperidone (≥5 yr) and aripiprazole (≥6 yr) are the only FDA-approved medications for irritability in ASD.[57][58] Methylphenidate is effective for ADHD symptoms in ASD but with lower response rates and higher discontinuation rates due to increased adverse events, including behavioral activation.[58][59] The AACAP Practice Parameter for ID states that children with ID/IDD may be more sensitive to medication side effects, and conservative dosing is recommended.[54]
+
+---
+
+VII. Eating Disorder Medical Risk
+
+
+Hospitalization Criteria
+
+
+The AAP/SAHM criteria use percent median BMI (%mBMI) rather than absolute BMI, because absolute BMI varies with age and sex during growth.[60] Any one of the following justifies hospitalization: ≤75% mBMI, HR <50 bpm daytime, BP <90/45, temperature <96°F, orthostatic HR increase >20 bpm, electrolyte abnormalities, syncope, seizures, or acute food refusal.[60]
+
+Atypical anorexia nervosa (significant weight loss but "normal" weight) now comprises nearly one-third of inpatient eating disorder admissions, with comparably significant medical severity to AN in terms of bradycardia and orthostatic changes.[61][62] Weight alone is a misleading indicator of disease severity.
+
+Refeeding: Paradigm Shift
+
+
+The landmark STRIPED trial (N = 120, ages 12–24) demonstrated that higher-calorie refeeding (2000 kcal/d, increasing by 200 kcal/d) restored medical stability significantly earlier (HR 1.67), shortened hospital stay by 4.0 days, and saved $19,056 per participant — with no increase in electrolyte abnormalities or adverse events.[61] The APA (2023) now recommends initial calorie prescriptions of 1,500–2,000 kcal/d.[63]
+
+The following survival analysis from the STRIPED trial demonstrates the superiority of higher-calorie refeeding:
+
+Figure 2 Survival Analysis of Primary Outcome, Time to Medical Stability, in Participants Treated With Higher-Calorie Refeeding (HCR) vs Lower-Calorie Refeeding (LCR)
+
+Cardiac Risk
+
+
+Approximately one-third of deaths in AN are attributed to cardiovascular complications.[64] QTc-prolonging medications and electrolyte abnormalities compound arrhythmic risk.[60] Bupropion is contraindicated in AN and bulimia nervosa due to seizure risk.[63]
+
+Monitoring Protocol
+
+
+Refeeding monitoring requires serum K, Mg, and phosphorus before initiation and every 12 hours for 3 days in high-risk patients; vital signs every 4 hours for the first 24 hours; daily weights; and thiamine supplementation (2 mg/kg up to 100–200 mg/d in pediatrics) before feeding commences.[65]
+
+---
+
+VIII. Pediatric Agitation Management
+
+
+Guideline Framework
+
+
+Three key guidelines anchor management: the AACAP Practice Parameter (2002) on prevention and management of aggressive behavior, the AAEP/AACAP BETA Consensus Statement (2019) recommending a multimodal, etiology-driven approach, and the AAP Clinical Report (2023) reaffirming behavioral de-escalation as first-line.[66][67][9]
+
+De-Escalation First
+
+
+All guidelines uniformly position verbal de-escalation and environmental modification as first-line.[67][9] Pediatric-specific techniques include: physically lowering oneself to the child's height, asking questions rather than giving commands, providing simple single-step instructions, offering choices and distraction, and minimizing stimulation.[68][69] For ASD, provide soothing sensory items (fidget toys, noise-canceling headphones).[69]
+
+Pharmacologic Management
+
+
+No medications are FDA-approved specifically for acute agitation in children/adolescents. The PEAChY-O RCT (N = 348, ages 9–17) found no significant difference between oral olanzapine and diazepam (61% vs. 57% successful sedation at 1 hour), with ~40% failure rate for both.[66][70] IM olanzapine in a 10-year pediatric retrospective study (N = 285) showed 17% required additional sedation within 1 hour, with low adverse event rates.[71]
+
+Restraint Time Limits
+
+
+Regulatory requirements differ critically from adults: 1 hour for children <9 years, 2 hours for ages 9–17, vs. 4 hours for adults ≥18.[66] Face-to-face evaluation is required within 1 hour of initiation, and reevaluation every 2 hours for patients ≤17.[66] The Joint Commission (2025) eliminated separate "physical holding" standards after finding that 63 of 79 reported restraint fatalities among children/adolescents were from physical holding without mechanical devices.[72]
+
+---
+
+IX. Trauma-Informed Care
+
+
+Prevalence
+
+
+Trauma exposure is extremely common: 61.8% of adolescents report at least one lifetime potentially traumatic event, and among youth in a psychiatric ED, 52% reported at least one type of trauma exposure.[73][74] An estimated 50–80% of psychiatric inpatients have a history of trauma.[75]
+
+SAMHSA Framework
+
+
+The SAMHSA model incorporates the "4 Rs": Realizing the widespread effect of trauma, Recognizing how trauma affects clients and staff, Responding by applying trauma knowledge into practice, and Resisting re-traumatization.[76] Six key principles guide implementation: safety, transparency, peer support, collaboration, empowerment, and cultural sensitivity.[77]
+
+Retraumatization Prevention
+
+
+Seclusion and restraint can trigger or escalate PTSD symptoms, particularly in youth with prior abuse histories.[75] Involuntary hospitalization negatively impacts trust in 75% of youth studied, with many reporting unwillingness to disclose suicidal feelings post-discharge.[78] The Six Core Strategies (6CS) approach reduced seclusion by 17%, seclusion hours by 19%, and restraint by 30% across 43 inpatient facilities.[79]
+
+Evidence-Based Interventions
+
+
+TF-CBT is the most evidence-supported intervention for pediatric PTSD (g = 1.06 vs. passive controls in a 2025 network meta-analysis of 70 RCTs).[80] The Child and Family Traumatic Stress Intervention (CFTSI) is a brief (5–8 session) early post-trauma intervention that significantly reduced PTSD diagnoses at 3-month follow-up.[81] No pharmacological treatment is approved for pediatric PTSD; psychotherapy remains first-line.[82]
+
+---
+
+X. Psychotropic Prescribing Differences
+
+
+Antidepressants
+
+
+Only fluoxetine (≥8 yr) and escitalopram (≥12 yr) are FDA-approved for pediatric MDD.[31][84] The FDA black box warning (2004, expanded 2007) applies to all antidepressants in patients <25 years, based on a pooled risk ratio of 1.95 for suicidal ideation/behavior.[85] However, the NNH for suicidality is approximately 112, compared to an NNT of 10 for depression response, yielding a benefit-to-risk ratio of approximately 11:1.[86] No completed suicides occurred in any pediatric antidepressant RCT.[87] Tricyclic antidepressants are not effective for adolescent depression (unlike in adults) and carry higher lethality risk in overdose.[88]
+
+Antipsychotic Metabolic Risk
+
+
+Children and adolescents have higher and faster metabolic adverse effects than adults.[89] Weight gain hierarchy from meta-analysis: ziprasidone (−0.04 kg) < aripiprazole (+0.79 kg) < quetiapine (+1.43 kg) < risperidone (+1.76 kg) < olanzapine (+3.45 kg) vs. placebo.[90] The AACAP recommends BMI and waist circumference monthly for the first 3 months, then at 6 months, then yearly, with fasting glucose, lipid panel, and HbA1c at 3 months then yearly.[12]
+
+The following figure from Nicol et al. (2018) illustrates the differential changes in adiposity across three antipsychotic groups in antipsychotic-naïve youth:
+
+Figure 2 Change in Adiposity During Initial Antipsychotic Exposure in the Study Participants
+
+Benzodiazepines
+
+
+No benzodiazepines have FDA approval for pediatric anxiety disorders, and RCTs do not support their efficacy in this population.[92][93] SSRIs are first-line for pediatric anxiety; duloxetine is the only FDA-approved medication for pediatric GAD (≥7 yr).[94]
+
+Off-Label Prescribing
+
+
+Off-label prescribing is pervasive: excluding ADHD medications, 95–96% of pediatric psychotropic prescriptions are off-label.[95][96] The most common reason is age (72.2%), followed by indication (23.3%).[95]
+
+---
+
+XI. Adult Psychiatrist Quick-Reference
+
+
+
+
+---
+
+XII. Red Flags Requiring Child Psychiatry Consultation
+
+
+
+
+---
+
+XIII. Medication Caution Table
+
+
+
+
+---
+
+XIV. Family Meeting Pearls
+
+
+1. Structure the meeting deliberately. Begin by identifying all attendees and their relationship to the patient. Clarify the purpose and expected duration. The AACAP recommends starting by identifying family strengths and resources before defining problems.[45]
+
+2. Interview the adolescent alone first. An individual interview is essential — adolescents may not disclose suicidal ideation, substance use, or abuse in front of parents. Establish what is confidential and what will be shared before the family meeting.[45][49]
+
+3. Maintain neutrality. Do not side with parents against the child or vice versa. Conflict that emerges during the session provides powerful clinical data about family dynamics.[45][112]
+
+4. Address confidentiality explicitly. Explain what information will and will not be shared with parents. Adolescents are more likely to engage when confidentiality boundaries are clear. Breach only for danger to self/others, abuse, or severe disorganization.[48][24]
+
+5. Involve families in safety planning. Most adolescent safety planning studies that showed benefit included caregiver involvement.[24][32] Parents need specific guidance on lethal means restriction — 66% of adolescent firearm suicides involve a parent-owned weapon.[38]
+
+6. Provide structured psychoeducation. Use the meeting to deliver diagnosis-specific education. Structured psychoeducation for early-onset psychosis reduced ED visits from 39% to 15%.[42] Parents with higher self-efficacy are more likely to follow through on discharge recommendations.[113]
+
+7. Plan discharge collaboratively. Family involvement in discharge planning is significantly associated with outpatient follow-up within 7 days (OR 2.79).[41] Confirm follow-up appointments, review the safety plan, and identify the highest-risk period (first week post-discharge).
+
+8. Assess family functioning. Screen for parental mental illness, substance use, domestic violence, and adverse childhood experiences. Family dysfunction is both a risk factor for the child's presentation and a barrier to treatment engagement.[45]
+
+9. Use MI spirit with resistant families. Avoid confrontation with parents who are angry, dismissive, or in denial. Reflect their concerns, validate their distress, and elicit their goals for their child. Parental distress is common but does not predict engagement — self-efficacy does.[113]
+
+10. Document the meeting. Record attendees, key discussion points, agreements reached, safety plan review, discharge plan, and any confidentiality decisions. This protects both the patient and the clinician.
+
+---
+
+XV. Top 15 References Residents Should Know
+
+
+
+
+[1][3][10][90][22][40][24][32][35][67][9][54][97][85][91][60][61][73][80]
+
+---
+
+XVI. Algorithm: Matching Intervention to Clinical Scenario
+
+
+
+
+Decision Logic:
+
+1. Is the patient medically stable? → If not, medical stabilization first (eating disorder protocol, intoxication management, medical workup for psychosis)
+
+2. Is the patient safe? → If not, 1:1 observation, safety plan with family, means restriction counseling, de-escalation for agitation
+
+3. Is there a neurodevelopmental disorder? → If yes, rule out pain/medical causes, modify environment, use conservative dosing, consult family
+
+4. Is there a family available? → If yes, involve in safety planning, psychoeducation, and discharge planning; family involvement improves 7-day follow-up (OR 2.79)
+
+5. What is the disposition? → Confirm follow-up within 7 days; review safety plan at discharge; provide 988 Suicide and Crisis Lifeline number; consider caring contacts
+
+---
+
+Summary
+
+
+Adult psychiatrists encountering pediatric patients face a fundamentally different clinical landscape shaped by developmental neurobiology, family systems, legal frameworks, and a narrower evidence base. The most critical differences include: use of %mBMI rather than absolute BMI for eating disorders; parental consent plus child assent for all treatment decisions; shorter restraint time limits and stricter monitoring requirements; higher metabolic vulnerability to antipsychotics with olanzapine explicitly cautioned against as first-line by the FDA; no evidence supporting benzodiazepines for pediatric anxiety; and the finding that standalone safety planning lacks demonstrated efficacy in youth, necessitating family-based adaptations.[32][102][66][92][60] The 2021 joint declaration of a national emergency in child and adolescent mental health underscores the urgency of equipping all psychiatrists — not just child specialists — with the knowledge to safely and effectively care for this population.[5]
+
+---
+
+Would you like to explore specific protocols for establishing a pediatric psychiatric boarding care pathway in a general hospital ED, including staffing models, telepsychiatry integration, and quality metrics?
+
+References
+National Trends in Mental Health–Related Emergency Department Visits Among Youth, 2011-2020. Bommersbach TJ, McKean AJ, Olfson M, Rhee TG. JAMA. 2023;329(17):1469-1477. doi:10.1001/jama.2023.4809.
+Pediatric Mental Health Boarding. McEnany FB, Ojugbele O, Doherty JR, McLaren JL, Leyenaar JK. Pediatrics. 2020;146(4):e20201174. doi:10.1542/peds.2020-1174.
+Trends in Acute Care Use for Mental Health Conditions Among Youth During the COVID-19 Pandemic. Overhage L, Hailu R, Busch AB, et al. JAMA Psychiatry. 2023;80(9):924-932. doi:10.1001/jamapsychiatry.2023.2195.
+Variations in Psychiatric Emergency Department Boarding for Medicaid-Enrolled Youths. McConnell KJ, Meath THA, Overhage LN. JAMA Health Forum. 2025;6(8):e253177. doi:10.1001/jamahealthforum.2025.3177.
+Disparities in Psychiatric Emergency Department Boarding of Children and Adolescents. Overhage LN, Lê Cook B, Rosenthal MB, McDowell A, Benson NM. JAMA Pediatrics. 2024;178(9):923-931. doi:10.1001/jamapediatrics.2024.1991.
+Optimizing Pediatric Patient Safety in the Emergency Care Setting. Joseph MM, Mahajan P, Snow SK, Ku BC, Saidinejad M. Pediatrics. 2022;150(5):e2022059674. doi:10.1542/peds.2022-059674.
+Reducing Pediatric Mental Health Boarding and Increasing Acute Care Access. Ibeziako P, Kaufman K, Campbell E, et al. Journal of the Academy of Consultation-Liaison Psychiatry. 2024 Sep-Oct;65(5):441-450. doi:10.1016/j.jaclp.2024.04.001.
+From Their Perspective: Pediatric Patients With Acute Mental Health Needs and Prolonged Emergency Department Stays. Lapsa J, O'Donnell E, Yanek L, Ngo T. Pediatric Emergency Care. 2024;40(10):e257-e262. doi:10.1097/PEC.0000000000003237.
+The Management of Children and Youth With Pediatric Mental and Behavioral Health Emergencies. Saidinejad M, Duffy S, Wallin D, et al. Pediatrics. 2023;152(3):e2023063256. doi:10.1542/peds.2023-063256.
+Addressing the Pediatric Mental Health Crisis in Emergency Departments in the US: Findings of a National Pediatric Boarding Consensus Panel. Feuer V, Mooneyham GC, Malas NM. Journal of the Academy of Consultation-Liaison Psychiatry. 2023 Nov-Dec;64(6):501-511. doi:10.1016/j.jaclp.2023.06.003.
+Stabilizing Pediatric Patients During Psychiatric Boarding: A Quality Improvement Project. Afzal S, Gunnison C, Rudofker A, Esposito J, Geddings W. Pediatrics. 2025;155(2):e2023063262. doi:10.1542/peds.2023-063262.
+Collaborative Care in the Identification and Management of Psychosis in Adolescents and Young Adults. Hua LL. Pediatrics. 2021;147(6):e2021051486. doi:10.1542/peds.2021-051486.
+Developmental Influences on Symptom Expression in Antipsychotic-Naïve First-Episode Psychosis. Bridgwater M, Bachman P, Tervo-Clemmens B, et al. Psychological Medicine. 2022;52(9):1698-1709. doi:10.1017/S0033291720003463.
+Diagnostic and Statistical Manual of Mental Disorders. Dilip V. Jeste, Jeffrey A. Lieberman, David Fassler, et al. American Psychiatric Association (2022).
+Prodromal Symptoms and the Duration of Untreated Psychosis in First Episode of Psychosis Patients: What Differences Are There Between Early vs. Adult Onset and Between Schizophrenia vs. Bipolar Disorder?. Baeza I, de la Serna E, Mezquida G, et al. European Child & Adolescent Psychiatry. 2024;33(3):799-810. doi:10.1007/s00787-023-02196-7.
+Duration of Untreated Psychosis in Adolescents: Ethnic Differences and Clinical Profiles. Dominguez MD, Fisher HL, Major B, et al. Schizophrenia Research. 2013;150(2-3):526-32. doi:10.1016/j.schres.2013.08.018.
+Duration of Untreated Psychosis Predicts Functional and Clinical Outcome in Children and Adolescents With First-Episode Psychosis: A 2-Year Longitudinal Study. Fraguas D, Del Rey-Mejías A, Moreno C, et al. Schizophrenia Research. 2014;152(1):130-8. doi:10.1016/j.schres.2013.11.018.
+Practice Parameter for the Assessment and Treatment of Children and Adolescents With Schizophrenia. American Academy of Child and Adolescent Psychiatry. Journal of the American Academy of Child and Adolescent Psychiatry. 2001;40(7 Suppl):4S-23S. doi:10.1097/00004583-200107001-00002.
+An Overview of Medical Risk Factors for Childhood Psychosis: Implications for Research and Treatment. Giannitelli M, Consoli A, Raffin M, et al. Schizophrenia Research. 2018;192:39-49. doi:10.1016/j.schres.2017.05.011.
+Medical Evaluation of First Presentation of Psychotic Symptoms in Children and Adolescents. Lavan O, Ganelin-Cohen E, Goldstein A, et al. Frontiers in Psychiatry. 2026;17:1678974. doi:10.3389/fpsyt.2026.1678974.
+Practice Parameter for the Assessment and Treatment of Children and Adolescents With Schizophrenia. McClellan J, Stock S. Journal of the American Academy of Child and Adolescent Psychiatry. 2013;52(9):976-90. doi:10.1016/j.jaac.2013.02.008.
+Comprehensive Versus Usual Community Care for First-Episode Psychosis: 2-Year Outcomes From the NIMH RAISE Early Treatment Program. Kane JM, Robinson DG, Schooler NR, et al. The American Journal of Psychiatry. 2016;173(4):362-72. doi:10.1176/appi.ajp.2015.15050632.
+Results of a Coordinated Specialty Care Program for Early Psychosis and Predictors of Outcomes. Nossel I, Wall MM, Scodes J, et al. Psychiatric Services (Washington, D.C.). 2018;69(8):863-870. doi:10.1176/appi.ps.201700436.
+Suicide and Suicide Risk in Adolescents. Hua LL, Lee J, Rahmandar MH, Sigel EJ. Pediatrics. 2023;:e2023064800. doi:10.1542/peds.2023-064800.
+The Youth Mental Health Crisis in the United States: Epidemiology, Contributors, and Potential Solutions. Woolf SH. Pediatrics. 2025;:e2025070849. doi:10.1542/peds.2025-070849.
+Emergency Department Visits for Suspected Suicide Attempts Among Persons Aged 12-25 Years Before and During the COVID-19 Pandemic - United States, January 2019-May 2021. Yard E, Radhakrishnan L, Ballesteros MF, et al. MMWR. Morbidity and Mortality Weekly Report. 2021;70(24):888-894. doi:10.15585/mmwr.mm7024e1.
+Trends and Seasonality of Emergency Department Visits and Hospitalizations for Suicidality Among Children and Adolescents in the US from 2016 to 2021. Kim Y, Krause TM, Lane SD. JAMA Network Open. 2023;6(7):e2324183. doi:10.1001/jamanetworkopen.2023.24183.
+Identifying Patients at Risk for Suicidal Ideation or Behaviors. Ebell MH. American Family Physician. 2023;108(3):311-312.
+The Columbia-Suicide Severity Rating Scale: Initial Validity and Internal Consistency Findings From Three Multisite Studies With Adolescents and Adults. Posner K, Brown GK, Stanley B, et al. The American Journal of Psychiatry. 2011;168(12):1266-77. doi:10.1176/appi.ajp.2011.10111704.
+Prediction of Suicide Attempts and Suicide-Related Events Among Adolescents Seen in Emergency Departments. Brent DA, Horowitz LM, Grupp-Phelan J, et al. JAMA Network Open. 2023;6(2):e2255986. doi:10.1001/jamanetworkopen.2022.55986.
+Screening for Depression and Suicide Risk in Children and Adolescents: US Preventive Services Task Force Recommendation Statement. US Preventive Services Task Force, Mangione CM, Barry MJ, et al. JAMA. 2022;328(15):1534-1542. doi:10.1001/jama.2022.16946.
+Safety Planning Interventions for Suicide Prevention in Children and Adolescents. Albaum C, Irwin SH, Muha J, et al. JAMA Pediatrics. 2025;179(8):886-895. doi:10.1001/jamapediatrics.2025.1012.
+Motivational Interviewing-Enhanced Safety Planning for Adolescents at High Suicide Risk: A Pilot Randomized Controlled Trial. Czyz EK, King CA, Biermann BJ. Journal of Clinical Child and Adolescent Psychology : The Official Journal for the Society of Clinical Child and Adolescent Psychology, American Psychological Association, Division 53. 2019 Mar-Apr;48(2):250-262. doi:10.1080/15374416.2018.1496442.
+Evidence Base Update of Psychosocial Treatments for Self-Injurious Thoughts and Behaviors in Youth: 2018-2024. Esposito EC, Patel KK, Hull S, et al. Journal of Clinical Child and Adolescent Psychology : The Official Journal for the Society of Clinical Child and Adolescent Psychology, American Psychological Association, Division 53. 2026 Jan-Feb;55(1):1-38. doi:10.1080/15374416.2026.2613368.
+Efficacy of Dialectical Behavior Therapy for Adolescents at High Risk for Suicide: A Randomized Clinical Trial. McCauley E, Berk MS, Asarnow JR, et al. JAMA Psychiatry. 2018;75(8):777-785. doi:10.1001/jamapsychiatry.2018.1109.
+Does Dialectical Behaviour Therapy for Adolescents Affect Suicidal Ideation and Use of Coping Skills in Adulthood? A 12.4-Years Follow-Up Study of a Randomized Trial Using Ecological Momentary Assessment. Dibaj IS, Galfalvy H, Tørmoen AJ, Haga E, Mehlum L. Behaviour Research and Therapy. 2026;203:105091. doi:10.1016/j.brat.2026.105091.
+Cognitive-Behavioral Family Treatment for Suicide Attempt Prevention: A Randomized Controlled Trial. Asarnow JR, Hughes JL, Babeva KN, Sugar CA. Journal of the American Academy of Child and Adolescent Psychiatry. 2017;56(6):506-514. doi:10.1016/j.jaac.2017.03.015.
+Firearm-Related Injuries and Deaths in Children and Youth. Lee LK, Fleegler EW, Goyal MK, et al. Pediatrics. 2022;. doi:10.1542/peds.2022-060071.
+Use of Lethal Means Restriction Counseling for Suicide Prevention in Pediatric Primary Care. Bandealy A, Herrera N, Weissman M, Scheidt P. Preventive Medicine. 2020;130:105855. doi:10.1016/j.ypmed.2019.105855.
+Family-Based Crisis Intervention With Suicidal Adolescents: A Randomized Clinical Trial. Wharff EA, Ginnis KB, Ross AM, et al. Pediatric Emergency Care. 2019;35(3):170-175. doi:10.1097/PEC.0000000000001076.
+Family Involvement in Psychiatric Hospitalizations: Associations With Discharge Planning and Prompt Follow-Up Care. Haselden M, Corbeil T, Tang F, et al. Psychiatric Services (Washington, D.C.). 2019;70(10):860-866. doi:10.1176/appi.ps.201900028.
+Intervention for Adolescents With Early-Onset Psychosis and Their Families: A Randomized Controlled Trial. Calvo A, Moreno M, Ruiz-Sancho A, et al. Journal of the American Academy of Child and Adolescent Psychiatry. 2014;53(6):688-96. doi:10.1016/j.jaac.2014.04.004.
+Psychoeducational Group Intervention for Adolescents With Psychosis and Their Families: A Two-Year Follow-Up. Calvo A, Moreno M, Ruiz-Sancho A, et al. Journal of the American Academy of Child and Adolescent Psychiatry. 2015;54(12):984-90. doi:10.1016/j.jaac.2015.09.018.
+Family-Based Interventions Versus Standard Care for People With Schizophrenia. Chien WT, Ma DCF, Bressington D, Mou H. The Cochrane Database of Systematic Reviews. 2024;10:CD013541. doi:10.1002/14651858.CD013541.pub2.
+Practice Parameter for the Assessment of the Family. Josephson AM. Journal of the American Academy of Child and Adolescent Psychiatry. 2007;46(7):922-37. doi:10.1097/chi.0b013e318054e713.
+Practice Parameter on the Use of Psychotropic Medication in Children and Adolescents. Walkup J. Journal of the American Academy of Child and Adolescent Psychiatry. 2009;48(9):961-973. doi:10.1097/CHI.0b013e3181ae0a08.
+Resource Document on Consent for Voluntary Hospitalization of Minors. Peter Ash MD, Pratik Bahekar MD, Elissa Benedek MD, et al. American Psychiatric Association (2022).
+Confidentiality in the Care of Adolescents: Technical Report. Chung RJ, Lee JB, Hackell JM, Alderman EM. Pediatrics. 2024;153(5):e2024066327. doi:10.1542/peds.2024-066327.
+The Hospitalized Adolescent. Breuner CC, Alderman EM, Jewell JA. Pediatrics. 2023;151(2):e2022060646. doi:10.1542/peds.2022-060646.
+21st Century Cures Act ONC Rule: Implications for Adolescent Care and Confidentiality Protections. Pasternak RH, Alderman EM, English A. Pediatrics. 2023;151(Suppl 1):e2022057267K. doi:10.1542/peds.2022-057267K.
+Characteristics of Psychiatric Emergency Department Use Among Privately Insured Adolescents With Autism Spectrum Disorder. Kalb LG, Stuart EA, Vasa RA. Autism : The International Journal of Research and Practice. 2019;23(3):566-573. doi:10.1177/1362361317749951.
+Patients With Autism Spectrum or Intellectual Disability in the Psychiatric Emergency Department: Findings From a 10-Year Retrospective Review. Hong V, Miller F, Kentopp S, et al. Journal of Autism and Developmental Disorders. 2026;56(5):1892-1901. doi:10.1007/s10803-024-06658-y.
+Factors Associated With Boarding and Length of Stay for Pediatric Mental Health Emergency Visits. Hoffmann JA, Stack AM, Monuteaux MC, Levin R, Lee LK. The American Journal of Emergency Medicine. 2019;37(10):1829-1835. doi:10.1016/j.ajem.2018.12.041.
+Practice Parameter for the Assessment and Treatment of Psychiatric Disorders in Children and Adolescents With Intellectual Disability (Intellectual Developmental Disorder). Siegel M, McGuire K, Veenstra-VanderWeele J, et al. Journal of the American Academy of Child and Adolescent Psychiatry. 2020;59(4):468-496. doi:10.1016/j.jaac.2019.11.018.
+Individual Risk and Familial Liability for Suicide Attempt and Suicide in Autism: A Population-Based Study. Hirvikoski T, Boman M, Chen Q, et al. Psychological Medicine. 2020;50(9):1463-1474. doi:10.1017/S0033291719001405.
+Emergency Mental Health Presentations in Children With Autism Spectrum Disorder and Attention Deficit Hyperactivity Disorder. Bourke EM, Say DF, Carison A, et al. Journal of Paediatrics and Child Health. 2021;57(10):1572-1579. doi:10.1111/jpc.15535.
+Atypical Antipsychotics for Disruptive Behaviour Disorders in Children and Youths. Loy JH, Merry SN, Hetrick SE, Stasiak K. The Cochrane Database of Systematic Reviews. 2017;8:CD008559. doi:10.1002/14651858.CD008559.pub3.
+Autism Spectrum Disorder: A Review. Hirota T, King BH. JAMA. 2023;329(2):157-168. doi:10.1001/jama.2022.23661.
+Autism Spectrum Disorder. Lord C, Elsabbagh M, Baird G, Veenstra-Vanderweele J. Lancet (London, England). 2018;392(10146):508-520. doi:10.1016/S0140-6736(18)31129-2.
+Identification and Management of Eating Disorders in Children and Adolescents. Hornberger LL, Lane MA. Pediatrics. 2021;147(1):e2020040279. doi:10.1542/peds.2020-040279.
+Short-term Outcomes of the Study of Refeeding to Optimize Inpatient Gains for Patients With Anorexia Nervosa: A Multicenter Randomized Clinical Trial. Garber AK, Cheng J, Accurso EC, et al. JAMA Pediatrics. 2021;175(1):19-27. doi:10.1001/jamapediatrics.2020.3359.
+Comparison of Disease Severity in Adolescents With Anorexia Nervosa and Atypical Anorexia Nervosa. Kalkan EŞ, Akgül S, Baklacı AB, Kılıç Y, Pehlivantürk Kızılkan M. European Journal of Pediatrics. 2025;184(12):754. doi:10.1007/s00431-025-06557-z.
+Treating Patients With Eating Disorders: Guidelines From the American Psychiatric Association. Arnold MJ. American Family Physician. 2024;109(2):185-187.
+Medical Complications of Anorexia Nervosa. Trapani S, Rubino C. Pediatrics. 2025;:e2024070304. doi:10.1542/peds.2024-070304.
+ASPEN Consensus Recommendations for Refeeding Syndrome. da Silva JSV, Seres DS, Sabino K, et al. Nutrition in Clinical Practice : Official Publication of the American Society for Parenteral and Enteral Nutrition. 2020;35(2):178-195. doi:10.1002/ncp.10474.
+Practice Parameter for the Prevention and Management of Aggressive Behavior in Child and Adolescent Psychiatric Institutions, With Special Reference to Seclusion and Restraint. Masters KJ, Bellonci C, Bernet W, et al. Journal of the American Academy of Child and Adolescent Psychiatry. 2002;41(2 Suppl):4S-25S. doi:10.1097/00004583-200202001-00002.
+Best Practices for Evaluation and Treatment of Agitated Children and Adolescents (BETA) in the Emergency Department: Consensus Statement of the American Association for Emergency Psychiatry. Gerson R, Malas N, Feuer V, et al. The Western Journal of Emergency Medicine. 2019;20(2):409-418. doi:10.5811/westjem.2019.1.41344.
+Resource Document on Approaches to Youth in Mental Health Crisis. American Psychiatric Association (2021).
+Preparation for Pediatric Emergencies in the Office: Technical Report. Cantrell P, Hoffmann J, Yuknis M, et al. Pediatrics. 2026;:e2026076622. doi:10.1542/peds.2026-076622.
+PEAChY-O: Pharmacological Emergency Management of Agitation in Children and Young People: A Randomized Controlled Trial of Oral Medication. Bourke EM, Kochar A, Shellshear D, et al. Annals of Emergency Medicine. 2025;86(1):1-11. doi:10.1016/j.annemergmed.2025.01.007.
+The Use, Safety, and Efficacy of Olanzapine in a Level I Pediatric Trauma Center Emergency Department Over a 10-Year Period. Cole JB, Klein LR, Strobel AM, et al. Pediatric Emergency Care. 2020;36(2):70-76. doi:10.1097/PEC.0000000000001231.
+R3 Report Issue 44: New and Revised Restraint and Seclusion Requirements for Behavioral Health Care and Human Services Organizations. The Joint Commission. Joint Commission (2024).
+Trauma Exposure and Posttraumatic Stress Disorder in a National Sample of Adolescents. McLaughlin KA, Koenen KC, Hill ED, et al. Journal of the American Academy of Child and Adolescent Psychiatry. 2013;52(8):815-830.e14. doi:10.1016/j.jaac.2013.05.011.
+Trauma Exposure and Suicidality in a Pediatric Emergency Psychiatric Population. Marr MC, Gerson R, Lee M, et al. Pediatric Emergency Care. 2022;38(2):e719-e723. doi:10.1097/PEC.0000000000002391.
+Seclusion or Restraint. American Psychiatric Association (2022).
+Implementing a Trauma-Informed Approach in Pediatric Health Care Networks. Marsac ML, Kassam-Adams N, Hildenbrand AK, et al. JAMA Pediatrics. 2016;170(1):70-7. doi:10.1001/jamapediatrics.2015.2206.
+Creating a Parallel Process: A New Methodological Framework for Conducting Trauma-Informed Evaluation and Research (TIER) in Mental Health Settings. Bosk EA. Evaluation and Program Planning. 2023;97:102229. doi:10.1016/j.evalprogplan.2023.102229.
+Investigating the Impact of Involuntary Psychiatric Hospitalization on Youth and Young Adult Trust and Help-Seeking in Pathways to Care. Jones N, Gius BK, Shields M, et al. Social Psychiatry and Psychiatric Epidemiology. 2021;56(11):2017-2027. doi:10.1007/s00127-021-02048-2.
+Multisite Study of an Evidence-Based Practice to Reduce Seclusion and Restraint in Psychiatric Inpatient Facilities. Wieman DA, Camacho-Gonsalves T, Huckshorn KA, Leff S. Psychiatric Services (Washington, D.C.). 2014;65(3):345-51. doi:10.1176/appi.ps.201300210.
+Psychological Interventions for Pediatric Posttraumatic Stress Disorder: A Systematic Review and Network Meta-Analysis. Hoppen TH, Wessarges L, Jehn M, et al. JAMA Psychiatry. 2025;82(2):130-141. doi:10.1001/jamapsychiatry.2024.3908.
+The Child and Family Traumatic Stress Intervention: Secondary Prevention for Youth at Risk of Developing PTSD. Berkowitz SJ, Stover CS, Marans SR. Journal of Child Psychology and Psychiatry, and Allied Disciplines. 2011;52(6):676-85. doi:10.1111/j.1469-7610.2010.02321.x.
+Posttraumatic Stress Following Pediatric Injury: Update on Diagnosis, Risk Factors, and Intervention. Kassam-Adams N, Marsac ML, Hildenbrand A, Winston F. JAMA Pediatrics. 2013;167(12):1158-65. doi:10.1001/jamapediatrics.2013.2741.
+Screening for Depression and Suicide Risk in Children and Adolescents: US Preventive Services Task Force Recommendation Statement. US Preventive Services Task Force, Mangione CM, Barry MJ, et al. JAMA. 2022;328(15):1534-1542. doi:10.1001/jama.2022.16946.
+Depression in Children and Adolescents: Evaluation and Treatment. Selph SS, McDonagh MS. American Family Physician. 2019;100(10):609-617.
+Suicidality in Pediatric Patients Treated With Antidepressant Drugs. Hammad TA, Laughren T, Racoosin J. Archives of General Psychiatry. 2006;63(3):332-9. doi:10.1001/archpsyc.63.3.332.
+When Do You Prescribe Antidepressants to Depressed Children?. Soutullo C, Figueroa-Quintana A. Current Psychiatry Reports. 2013;15(7):366. doi:10.1007/s11920-013-0366-3.
+Improving Suicide Prevention Through Evidence-Based Strategies: A Systematic Review. Mann JJ, Michel CA, Auerbach RP. The American Journal of Psychiatry. 2021;178(7):611-624. doi:10.1176/appi.ajp.2020.20060864.
+Depression in Adolescence. Thapar A, Collishaw S, Pine DS, Thapar AK. Lancet (London, England). 2012;379(9820):1056-67. doi:10.1016/S0140-6736(11)60871-4.
+Type 2 Diabetes Mellitus in Youth Exposed to Antipsychotics: A Systematic Review and Meta-analysis. Galling B, Roldán A, Nielsen RE, et al. JAMA Psychiatry. 2016;73(3):247-59. doi:10.1001/jamapsychiatry.2015.2923.
+Metabolic and Endocrine Adverse Effects of Second-Generation Antipsychotics in Children and Adolescents: A Systematic Review of Randomized, Placebo Controlled Trials and Guidelines for Clinical Practice. De Hert M, Dobbelaere M, Sheridan EM, Cohen D, Correll CU. European Psychiatry : The Journal of the Association of European Psychiatrists. 2011;26(3):144-58. doi:10.1016/j.eurpsy.2010.09.011.
+Metabolic Effects of Antipsychotics on Adiposity and Insulin Sensitivity in Youths: A Randomized Clinical Trial. Nicol GE, Yingling MD, Flavin KS, et al. JAMA Psychiatry. 2018;75(8):788-796. doi:10.1001/jamapsychiatry.2018.1088.
+Advances in Pharmacotherapy for Pediatric Anxiety Disorders. Nicotra CM, Strawn JR. Child and Adolescent Psychiatric Clinics of North America. 2023;32(3):573-587. doi:10.1016/j.chc.2023.02.006.
+Pharmacotherapy for Anxiety Disorders in Children and Adolescents. Ipser JC, Stein DJ, Hawkridge S, Hoppe L. The Cochrane Database of Systematic Reviews. 2009;(3):CD005170. doi:10.1002/14651858.CD005170.pub2.
+Anxiety Disorders in Children and Adolescents. Kowalchuk A, Gonzalez SJ, Zoorob RJ. American Family Physician. 2022;106(6):657-664.
+Off-Label Prescription of Psychopharmacological Drugs in Child and Adolescent Psychiatry. Braüner JV, Johansen LM, Roesbjerg T, Pagsberg AK. Journal of Clinical Psychopharmacology. 2016;36(5):500-7. doi:10.1097/JCP.0000000000000559.
+Off-Label Use of Psychotropic Drugs in Youth. Rosland HG, Wergeland GJ, Holst L. BMC Psychiatry. 2025;25(1):739. doi:10.1186/s12888-025-07176-6.
+Fluoxetine. Food and Drug Administration. Updated date: 2025-09-30.
+Depression in Adolescents. Miller L, Campo JV. The New England Journal of Medicine. 2021;385(5):445-449. doi:10.1056/NEJMra2033475.
+Comparative Efficacy and Tolerability of Antidepressants for Major Depressive Disorder in Children and Adolescents: A Network Meta-Analysis. Cipriani A, Zhou X, Del Giovane C, et al. Lancet (London, England). 2016;388(10047):881-90. doi:10.1016/S0140-6736(16)30385-3.
+Aripiprazole. Food and Drug Administration. Updated date: 2024-11-13.
+Double-Blind Comparison of First- And Second-Generation Antipsychotics in Early-Onset Schizophrenia and Schizo-Affective Disorder: Findings From the Treatment of Early-Onset Schizophrenia Spectrum Disorders (TEOSS) Study. Sikich L, Frazier JA, McClellan J, et al. The American Journal of Psychiatry. 2008;165(11):1420-31. doi:10.1176/appi.ajp.2008.08050756.
+OLANZAPINE. Food and Drug Administration. Updated date: 2026-03-06.
+Quetiapine Extended Release Versus Aripiprazole in Children and Adolescents With First-Episode Psychosis: The Multicentre, Double-Blind, Randomised Tolerability and Efficacy of Antipsychotics (TEA) Trial. Pagsberg AK, Jeppesen P, Klauber DG, et al. The Lancet. Psychiatry. 2017;4(8):605-618. doi:10.1016/S2215-0366(17)30166-9.
+Comparative Physiological Effects of Antipsychotic Drugs in Children and Young People: A Network Meta-Analysis. Rogdaki M, McCutcheon RA, D'Ambrosio E, et al. The Lancet. Child & Adolescent Health. 2024;8(7):510-521. doi:10.1016/S2352-4642(24)00098-1.
+Lithium. Food and Drug Administration. Updated date: 2025-08-20.
+Practice Parameter for the Assessment and Treatment of Children and Adolescents With Bipolar Disorder. McClellan J, Kowatch R, Findling RL. Journal of the American Academy of Child and Adolescent Psychiatry. 2007;46(1):107-125. doi:10.1097/01.chi.0000242240.69678.c4.
+Anticonvulsants for Psychiatric Disorders in Children and Adolescents: A Systematic Review of Their Efficacy. Davico C, Canavese C, Vittorini R, Gandione M, Vitiello B. Frontiers in Psychiatry. 2018;9:270. doi:10.3389/fpsyt.2018.00270.
+Clinical Practice Guideline for the Diagnosis, Evaluation, and Treatment of Attention-Deficit/Hyperactivity Disorder in Children and Adolescents. Wolraich ML, Hagan JF, Allan C, et al. Pediatrics. 2019;144(4):e20192528. doi:10.1542/peds.2019-2528.
+Attention-Deficit/Hyperactivity Disorder: AAP Updates Guideline for Diagnosis and Management. American Academy of Family Physicians (2020).
+Eating Disorders in Primary Care: Diagnosis and Management. Klein DA, Sylvester JE, Schvey NA. American Family Physician. 2021;103(1):22-32.
+Systematic Review of the Efficacy and Tolerability of Clozapine in the Treatment of Youth With Early Onset Schizophrenia. Schneider C, Corrigall R, Hayes D, Kyriakopoulos M, Frangou S. European Psychiatry : The Journal of the Association of European Psychiatrists. 2014;29(1):1-10. doi:10.1016/j.eurpsy.2013.08.001.
+Practice Parameter for Psychodynamic Psychotherapy With Children. Kernberg PF, Ritvo R, Keable H. Journal of the American Academy of Child and Adolescent Psychiatry. 2012;51(5):541-57. doi:10.1016/j.jaac.2012.02.015.
+Predictors of Parent Behavioral Engagement in Youth Suicide Discharge Recommendations: Implications for Family-Centered Crisis Interventions. Ewell Foster C, Magness C, Czyz E, et al. Child Psychiatry and Human Development. 2022;53(6):1240-1251. doi:10.1007/s10578-021-01176-9.
+
+Domain | Key Difference from Adults | Critical Action
+BMI assessment | Use %mBMI, not absolute BMI; CDC <5th percentile is insufficient | Calculate: (patient BMI ÷ 50th %ile BMI for age/sex) × 100
+Consent | Parental consent + child assent required; document both | Verify legal custody; identify who can consent
+Confidentiality | Adolescents have domain-specific confidentiality rights (SUD, sexual health, mental health varies by state) | Know your state's minor consent laws; breach only for danger to self/others
+Suicide screening | Use ASQ (validated ages 10–21); safety planning alone may be insufficient in youth | Screen universally; involve family in safety planning; counsel on means restriction
+Antidepressants | Only fluoxetine (≥8) and escitalopram (≥12) FDA-approved; black box warning <25 yr | Start low, go slow; monitor weekly × 4 weeks then biweekly × 4 weeks
+Antipsychotics | Higher/faster metabolic effects; monitor BMI monthly × 3 mo | Prefer aripiprazole or lurasidone for metabolic profile; avoid olanzapine as first-line
+Benzodiazepines | No evidence of efficacy for pediatric anxiety; not recommended | Use SSRIs for anxiety; avoid benzodiazepines except for acute agitation
+Agitation | No FDA-approved agents; restraint time limits shorter (1 hr <9 yr, 2 hr 9–17) | De-escalation first; weight-based dosing; olanzapine PO or IM off-label
+ASD/ID | 3× higher psychiatric comorbidity; diagnostic overshadowing; increased EPS sensitivity | Rule out pain/medical causes; conservative dosing; sensory modifications
+Eating disorders | Use %mBMI; higher-calorie refeeding now standard; bupropion contraindicated | Check orthostatics, electrolytes, ECG; monitor phosphorus q12h during refeeding
+FEP | Longer DUP; more hallucinations, fewer delusions; higher metabolic vulnerability | Lower starting doses; rule out substances/medical causes; refer to CSC
+Trauma | 50–80% of inpatients have trauma history; hospitalization itself can retraumatize | Screen at admission; minimize coercion; avoid detailed trauma processing in crisis
+Family | Family assessment always indicated; family involvement improves follow-up (OR 2.79) | Conduct family meeting; include family in safety planning and discharge
+Boarding | 24-hour threshold for transfer from ED; do not co-locate with adults | Structure the day; provide meals, hygiene, activities; daily psychiatric evaluation
+Red Flag | Rationale | Urgency
+Psychosis in a child <13 years | Very-early-onset schizophrenia is rare (0.04%); high rate of secondary etiologies (23.5%); extensive differential required | Urgent
+First-episode psychosis in any minor | Longer DUP worsens outcomes; CSC referral needed; diagnostic complexity | Urgent
+Catatonia in a minor | Higher rate of medical/autoimmune etiology; lorazepam challenge and workup needed | Emergent
+Eating disorder with HR <50, BP <90/45, or electrolyte abnormalities | Medical instability; refeeding protocol required; cardiac monitoring | Emergent
+Suicidal adolescent with prior attempt + access to firearms | Highest-risk profile; family-based safety planning and means restriction essential | Emergent
+ASD/ID patient with new-onset aggression | Must rule out pain, medical illness, medication side effects before attributing to behavior | Urgent
+Suspected child abuse or neglect | Mandatory reporting; forensic interview considerations; trauma-informed approach | Emergent
+Medication non-response after 2 adequate antipsychotic trials (FEP) | Clozapine evaluation needed; specialized monitoring; off-label in youth | Urgent
+Adolescent refusing treatment with parental consent | Ethical complexity; developmental assessment of decision-making capacity needed | Semi-urgent
+Involuntary hospitalization of a minor | State-specific legal requirements; Parham v. J.R. framework; independent physician review | Urgent
+Neuroleptic malignant syndrome or severe EPS | Youth may be more vulnerable; ID/ASD populations at higher risk | Emergent
+Preschool-age child (<6) presenting with psychiatric emergency | Very limited evidence base; developmental assessment essential; medication options extremely limited | Urgent
+Medication Class | FDA-Approved Pediatric Indications | Key Cautions in Youth | Contraindications | Ref
+Fluoxetine | MDD ≥8 yr; OCD ≥7 yr | Black box warning: monitor for suicidality; activation more common in youth; NNH ~112 vs. NNT ~10 | Concurrent MAOIs; thioridazine | [1], [2]
+Escitalopram | MDD ≥12 yr | Same black box warning; QTc prolongation at high doses | Concurrent MAOIs; pimozide | [3]
+Other SSRIs | None for MDD (off-label) | Sertraline, citalopram widely used off-label; venlafaxine has highest suicidality risk | Per agent | [4], [5]
+Aripiprazole | Schizophrenia ≥13; bipolar ≥10; ASD irritability ≥6; Tourette's ≥6 | Lowest metabolic risk among SGAs (+0.79 kg); akathisia common | Hypersensitivity | [6], [7]
+Risperidone | Schizophrenia ≥13; bipolar ≥10; ASD irritability ≥5 | Significant weight gain (+1.76 kg); hyperprolactinemia (gynecomastia, amenorrhea) | Hypersensitivity | [7], [8]
+Olanzapine | Schizophrenia ≥13; bipolar ≥13 | Greatest weight gain (+3.45 kg); FDA label warns against first-line use in adolescents; TEOSS arm terminated early | Not first-line in youth per FDA label | [7], [9], [10]
+Quetiapine | Schizophrenia ≥13; bipolar ≥10 | Significant weight gain (+1.43 kg); sedation; widely used off-label for insomnia (not recommended) | Hypersensitivity | [7], [11]
+Lurasidone | Schizophrenia ≥13; bipolar depression ≥10 | Favorable metabolic profile; akathisia; take with food (≥350 kcal) | Concurrent strong CYP3A4 inhibitors/inducers | [12], [13]
+Lithium | Bipolar I ≥7 yr | Narrow therapeutic index; renal/thyroid monitoring; teratogenicity counseling for adolescent females | Severe renal impairment; dehydration | [14]
+Valproate | No pediatric bipolar approval | Placebo-controlled RCTs failed in pediatric bipolar; teratogenicity; hepatotoxicity risk <2 yr | Hepatic disease; urea cycle disorders; pregnancy | [15], [16]
+Stimulants | ADHD ≥6 yr (methylphenidate); ≥3 yr (amphetamine, historical) | Not weight-based — titrate to effect; lower starting doses in preschoolers; psychosis risk ~1/660 | Concurrent MAOIs; structural cardiac abnormalities | [17], [18]
+Benzodiazepines | No pediatric anxiety approval | No evidence of efficacy for pediatric anxiety disorders; paradoxical disinhibition in children | Avoid for anxiety treatment | [19], [20]
+Bupropion | No pediatric approval | Contraindicated in AN and bulimia (seizure risk) | Active eating disorder; seizure disorder | [21], [22]
+Clozapine | No pediatric approval (off-label) | Most effective for treatment-resistant EOS; higher rates of seizures and agranulocytosis in youth; start 6.25–25 mg/d | Standard clozapine contraindications | [23], [24]
+# | Citation | Key Finding | Domain
+1 | McCauley et al., JAMA Psychiatry 2018 | DBT-A reduced suicide attempts (OR 0.30), NSSI (OR 0.32), and self-harm (OR 0.33) in adolescents — the only Level 1 intervention | Adolescent suicidality
+2 | Garber et al., JAMA Pediatrics 2021 (STRIPED) | Higher-calorie refeeding (2000 kcal/d) restored medical stability 4 days faster with no increase in adverse events | Eating disorders
+3 | Kane et al., Am J Psychiatry 2016 (RAISE-ETP) | CSC for FEP improved quality of life, symptoms, and work/school involvement; effects greater with shorter DUP | First-episode psychosis
+4 | Bommersbach et al., JAMA 2023 | Pediatric mental health ED visits doubled 2011–2020; suicide-related visits increased 23.1% annually | Epidemiology
+5 | Gerson et al., West J Emerg Med 2019 (BETA) | Consensus statement on multimodal, etiology-driven approach to pediatric agitation in the ED | Agitation management
+6 | Albaum et al., JAMA Pediatrics 2025 | Standalone safety planning interventions lack demonstrated efficacy in youth — family involvement is key | Safety planning
+7 | Saidinejad et al., Pediatrics 2023 (AAP) | Comprehensive AAP policy on pediatric mental/behavioral health emergencies including boarding, de-escalation, and disposition | Emergency psychiatry
+8 | Siegel et al., JAACAP 2020 | AACAP Practice Parameter for ID/IDD: ≥3× psychiatric comorbidity; conservative dosing; increased EPS sensitivity | Neurodevelopmental
+9 | Hua et al., Pediatrics 2023 | AAP clinical report on adolescent suicide: ASQ screening, safety planning, means restriction, family engagement | Suicide prevention
+10 | Hammad et al., Arch Gen Psychiatry 2006 | FDA meta-analysis: pooled RR 1.95 for suicidal ideation/behavior with antidepressants in youth; basis for black box warning | Psychopharmacology
+11 | Nicol et al., JAMA Psychiatry 2018 | Antipsychotic-naïve youth: olanzapine produces greatest adiposity increase; aripiprazole most metabolically favorable | Metabolic monitoring
+12 | Feuer et al., JACLP 2022 | National consensus: 24-hour boarding threshold; separate from adults; EM/hospitalist primary ownership | Boarding
+13 | Wharff et al., Pediatr Emerg Care 2019 | Family-based crisis intervention in ED: more safe discharges home, higher family empowerment, no completed suicides | Family engagement
+14 | Hoppen et al., JAMA Psychiatry 2025 | Network meta-analysis: TF-CBT is the most effective intervention for pediatric PTSD (g = 1.06 vs. passive controls) | Trauma
+15 | Walkup, JAACAP 2009 | AACAP Practice Parameter on psychotropic medication: consent/assent framework, off-label prescribing principles, monitoring | Psychopharmacology
+Presentation | Immediate Actions | Medication Considerations | Disposition Considerations | Consult Triggers
+Suicidal adolescent | ASQ/C-SSRS → safety plan WITH family → means restriction counseling → 1:1 observation | Hold QTc-prolonging agents if purging; fluoxetine if MDD; avoid TCAs | Outpatient if FBCI successful + family engaged + means restricted; inpatient if high lethality, prior attempt, no family support | Prior attempt + firearm access; <13 yr; plan with high lethality
+Agitated child/adolescent | Verbal de-escalation → environmental modification → offer PO medication → IM only if imminent danger | PO olanzapine 2.5–5 mg or diazepam 0.1–0.3 mg/kg; IM olanzapine 2.5–10 mg if PO refused | Monitor vitals q15 min during restraint; 1-hr time limit <9 yr, 2-hr 9–17 | ASD/ID with new-onset aggression; no response to 2 medication doses; need for prolonged restraint
+First-episode psychosis | Medical workup (CBC, CMP, TSH, UDS, consider MRI/EEG); rule out substances, autoimmune, medical | Start low-dose SGA (aripiprazole 2 mg or risperidone 0.5 mg); avoid olanzapine first-line | Refer to CSC program; ensure 1–2 week follow-up; family psychoeducation | Age <13; catatonia; suspected autoimmune encephalitis; treatment resistance
+Eating disorder — medical instability | Orthostatics, ECG, electrolytes (K, Mg, PO₄), glucose; calculate %mBMI | Thiamine before refeeding; avoid bupropion; caution with QTc-prolonging agents | Admit if any SAHM criterion met; higher-calorie refeeding (1500–2000 kcal/d); PO₄ q12h × 3 days | HR <50, K <3.0, PO₄ <2.5, QTc >500 ms, %mBMI <75%
+ASD/ID with behavioral crisis | Rule out pain/medical cause → sensory modifications → consult family for calming strategies → de-escalation | Conservative dosing; prefer aripiprazole/risperidone for irritability; avoid FGAs (EPS sensitivity) | Boarding likely prolonged (OR 1.82); advocate for appropriate placement; structure the day | New-onset aggression; suspected medical cause; medication non-response; suicidality (often overlooked)
+Trauma-related presentation | Screen for trauma (CTS or UCLA RI-5-BF); stabilize; do NOT process trauma in acute setting | No FDA-approved meds for pediatric PTSD; SSRIs only for severe/persistent/comorbid cases | Refer for TF-CBT or CFTSI outpatient; safety plan if suicidal; family engagement | Suspected abuse (mandatory report); dissociative symptoms; catatonia
+Substance-intoxicated adolescent | Medical stabilization → defer psychiatric assessment until alert/oriented → SBIRT when able | Hold psychotropics until sober; UDS (note: synthetics not on standard panels) | Brief MI when able; 42 CFR Part 2 confidentiality; SUD treatment referral | Substance-induced psychosis; polysubstance; withdrawal risk

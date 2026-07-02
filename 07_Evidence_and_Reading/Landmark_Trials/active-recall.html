@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Active Recall — Landmark Psychiatry</title>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+    --good:#2a6b5e; --good-bg:#e7f1ee; --bad:#b23b2e; --bad-bg:#f7e9e6; --warn:#7a6234;
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.55}
+  .wrap{max-width:760px;margin:0 auto;padding:22px 20px 70px}
+  h1{font-family:var(--font-head);color:var(--primary);font-size:1.6rem;margin:.1em 0 .1em}
+  .sub{color:var(--text-light);font-size:.9rem;margin-bottom:18px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  input.search{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;font:inherit;background:#fff;color:var(--text)}
+  input.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+  .decklist{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .deck{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;border:1px solid var(--border);background:#fff;border-radius:10px;padding:11px 14px;cursor:pointer;font:inherit;color:var(--text)}
+  .deck:hover{border-color:var(--accent);background:var(--accent-light)}
+  .deck .t{font-family:var(--font-head);font-weight:600;color:var(--primary-dark)}
+  .deck .m{font-size:.78rem;color:var(--text-light);white-space:nowrap}
+  .pill{display:inline-block;font-size:.72rem;background:var(--accent);color:#fff;border-radius:999px;padding:2px 9px;font-weight:600}
+  .btn{display:inline-block;border:none;border-radius:8px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer}
+  .btn.primary{background:var(--primary-dark);color:#fff}
+  .btn.ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
+  .prog{height:7px;background:var(--primary-light);border-radius:999px;overflow:hidden;margin:8px 0 2px}
+  .prog>i{display:block;height:100%;background:var(--accent);transition:width .25s}
+  .qstem{font-family:var(--font-head);font-size:1.15rem;margin:10px 0 14px;line-height:1.4}
+  .opts{display:flex;flex-direction:column;gap:9px}
+  .opt{display:flex;gap:10px;align-items:flex-start;text-align:left;border:1px solid var(--border);background:#fff;border-radius:10px;padding:11px 13px;cursor:pointer;font:inherit;color:var(--text);width:100%}
+  .opt:hover:not(:disabled){border-color:var(--accent)}
+  .opt .k{flex:0 0 22px;height:22px;border-radius:50%;background:var(--primary-light);color:var(--primary-dark);font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .opt.correct{border-color:var(--good);background:var(--good-bg)}
+  .opt.correct .k{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+  .opt.wrong .k{background:var(--bad);color:#fff}
+  .opt:disabled{cursor:default}
+  .fb{margin:12px 0 2px;padding:11px 14px;border-radius:9px;font-size:.92rem;border-left:3px solid var(--accent);background:var(--accent-light);color:var(--text-mid)}
+  .fb.bad{border-left-color:var(--bad);background:var(--bad-bg)}
+  .res{text-align:center;padding:14px 0}
+  .res .score{font-family:var(--font-head);font-size:2.6rem;color:var(--primary);margin:6px 0}
+  .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+  .disc{font-size:.8rem;color:var(--text-light);border-top:1px solid var(--border);margin-top:26px;padding-top:12px}
+  a.back{color:var(--accent-dark);font-size:.85rem;text-decoration:none}
+  .loading{color:var(--text-light);padding:30px 0;text-align:center}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+var e=React.createElement, useState=React.useState, useEffect=React.useEffect;
+var LS="cw_recall_v1";
+function loadLS(){try{return JSON.parse(localStorage.getItem(LS))||{}}catch(_){return {}}}
+function saveBest(deckId,score,total){
+  try{var d=loadLS(); d[deckId]=d[deckId]||{}; var b=d[deckId];
+    if(b.best==null||score>b.best){b.best=score;} b.total=total; b.attempts=(b.attempts||0)+1;
+    localStorage.setItem(LS,JSON.stringify(d));}catch(_){}
+}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+var KEYS=["A","B","C","D","E","F"];
+
+function App(){
+  var s=useState(null),data=s[0],setData=s[1];
+  var er=useState(null),err=er[0],setErr=er[1];
+  var f=useState(""),filter=f[0],setFilter=f[1];
+  var v=useState("picker"),view=v[0],setView=v[1];
+  var dk=useState(null),deck=dk[0],setDeck=dk[1];
+  var qs=useState([]),qlist=qs[0],setQlist=qs[1];
+  var qi=useState(0),idx=qi[0],setIdx=qi[1];
+  var an=useState(null),ans=an[0],setAns=an[1];   // selected option index for current q
+  var sc=useState(0),score=sc[0],setScore=sc[1];
+  var bestState=useState(loadLS()),best=bestState[0],setBest=bestState[1];
+
+  useEffect(function(){
+    fetch("quizzes.json").then(function(r){return r.json()}).then(setData).catch(function(){setErr("Could not load the question bank.")});
+  },[]);
+  // deep-link: ?deck=<id or title fragment> auto-opens that deck
+  useEffect(function(){
+    if(!data) return;
+    try{
+      var dp=new URLSearchParams(location.search).get("deck");
+      if(!dp) return;
+      var dl=decodeURIComponent(dp).toLowerCase();
+      var d=data.decks.filter(function(x){return x.id.toLowerCase()===dl || x.title.toLowerCase().indexOf(dl)>=0;})[0];
+      if(d) start(d);
+    }catch(_){}
+  },[data]);
+
+  function start(d){ setDeck(d); setQlist(shuffle(d.questions)); setIdx(0); setAns(null); setScore(0); setView("quiz"); }
+  function choose(oi){
+    if(ans!=null) return;
+    setAns(oi);
+    if(qlist[idx].o[oi].c) setScore(score+1);
+  }
+  function next(){
+    if(idx+1<qlist.length){ setIdx(idx+1); setAns(null); }
+    else { saveBest(deck.id,score,qlist.length); setBest(loadLS()); setView("result"); }
+  }
+
+  if(err) return e("div",{className:"wrap"},e("h1",null,"Active Recall"),e("div",{className:"card"},err));
+  if(!data) return e("div",{className:"wrap"},e("div",{className:"loading"},"Loading the question bank…"));
+
+  // PICKER
+  if(view==="picker"){
+    var decks=data.decks.filter(function(d){return d.title.toLowerCase().indexOf(filter.toLowerCase())>=0;});
+    return e("div",{className:"wrap"},
+      e("h1",null,"Active Recall"),
+      e("div",{className:"sub"},"Self-test decks spanning the landmark papers and core topics — "+data.deckCount+" decks · "+data.questionCount+" questions. Pick a deck to quiz yourself; you get immediate feedback and a score."),
+      e("div",{className:"card"},
+        e("input",{className:"search",placeholder:"Filter papers… (e.g. CATIE, suicide, delirium)",value:filter,onChange:function(ev){setFilter(ev.target.value)}}),
+        e("div",{className:"decklist"}, decks.map(function(d){
+          var b=best[d.id];
+          return e("button",{key:d.id,className:"deck",onClick:function(){start(d)}},
+            e("span",{className:"t"},d.title),
+            e("span",{className:"m"}, (b&&b.best!=null? ("best "+b.best+"/"+d.n+" · ") : "")+d.n+" Q"));
+        })),
+        decks.length===0? e("div",{className:"loading"},"No papers match \""+filter+"\".") : null
+      ),
+      e("div",{className:"disc"},"Educational self-test built from NotebookLM question sets on landmark papers. Verify against the primary sources before clinical use. Scores are saved only in this browser. ",e("br"),"Joshua Moss, MD | Psychiatrist")
+    );
+  }
+
+  // RESULT
+  if(view==="result"){
+    var pct=Math.round(100*score/qlist.length);
+    var msg = pct>=80?"Strong recall.":pct>=60?"Solid — review the misses.":"Worth another pass.";
+    var b=best[deck.id];
+    return e("div",{className:"wrap"},
+      e("a",{className:"back",href:"#",onClick:function(ev){ev.preventDefault();setView("picker")}},"← All papers"),
+      e("div",{className:"card res"},
+        e("div",{style:{fontFamily:"var(--font-head)",fontSize:"1.2rem",color:"var(--primary-dark)"}},deck.title),
+        e("div",{className:"score"},score+" / "+qlist.length),
+        e("div",{className:"sub"},pct+"% · "+msg+(b&&b.best!=null?(" · best "+b.best+"/"+qlist.length):"")),
+        e("div",{className:"row"},
+          e("button",{className:"btn primary",onClick:function(){start(deck)}},"Retry this deck"),
+          e("button",{className:"btn ghost",onClick:function(){setView("picker")}},"Pick another")
+        )
+      ),
+      e("div",{className:"disc"},"Joshua Moss, MD | Psychiatrist · Educational self-test; verify against primary sources.")
+    );
+  }
+
+  // QUIZ
+  var q=qlist[idx];
+  var answered=ans!=null;
+  return e("div",{className:"wrap"},
+    e("div",{className:"topbar"},
+      e("a",{className:"back",href:"#",onClick:function(ev){ev.preventDefault();setView("picker")}},"← All papers"),
+      e("span",{className:"m",style:{color:"var(--text-light)",fontSize:".85rem"}},"Score "+score)
+    ),
+    e("div",{style:{fontFamily:"var(--font-head)",color:"var(--primary-dark)",fontWeight:600}},deck.title),
+    deck.audio? e("details",{style:{margin:"6px 0 2px",border:"1px solid var(--border)",borderRadius:"9px",padding:"7px 11px",background:"var(--bg-alt)"}}, e("summary",{style:{cursor:"pointer",fontSize:".85rem",color:"var(--accent-dark)",fontWeight:600}},"🎧 Listen — paper overview"+(deck.audioDur?(" · "+deck.audioDur):"")), e("audio",{controls:true,preload:"none",src:"../audio_oe/"+deck.audio,style:{width:"100%",marginTop:"8px"}})) : null,
+    e("div",{className:"prog"},e("i",{style:{width:(100*(idx+(answered?1:0))/qlist.length)+"%"}})),
+    e("div",{className:"sub"},"Question "+(idx+1)+" / "+qlist.length),
+    e("div",{className:"card"},
+      e("div",{className:"qstem"},q.q),
+      e("div",{className:"opts"}, q.o.map(function(o,oi){
+        var cls="opt";
+        if(answered){ if(o.c) cls+=" correct"; else if(oi===ans) cls+=" wrong"; }
+        return e("button",{key:oi,className:cls,disabled:answered,onClick:function(){choose(oi)}},
+          e("span",{className:"k"},KEYS[oi]||"?"),
+          e("span",null,o.t));
+      })),
+      answered? e("div",{className:"fb"+(q.o[ans].c?"":" bad")},
+        e("strong",null, q.o[ans].c?"Correct. ":"Not quite. "),
+        (q.o[ans].fb || (function(){var c=q.o.filter(function(x){return x.c})[0];return c?c.fb:"";})() || "See the correct option above.")
+      ) : null,
+      answered? e("div",{className:"row",style:{justifyContent:"flex-end"}},
+        e("button",{className:"btn primary",onClick:next}, idx+1<qlist.length?"Next →":"See score")
+      ) : null
+    ),
+    e("div",{className:"disc"},"Educational self-test; verify against primary sources. Joshua Moss, MD | Psychiatrist")
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(e(App));
+</script>
+</body>
+</html>

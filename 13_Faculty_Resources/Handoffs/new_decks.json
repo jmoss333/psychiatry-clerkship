@@ -1,0 +1,3801 @@
+[
+  {
+    "id": "SP-09",
+    "title": "Kellner 2006 - Continuation ECT",
+    "questions": [
+      {
+        "q": "A patient with severe unipolar major depression remits after a successful acute course of bilateral ECT. What clinical question did the CORE continuation ECT trial primarily address?",
+        "o": [
+          {
+            "t": "Whether continuation ECT could prevent depressive relapse after acute ECT response",
+            "c": true,
+            "fb": "The trial focused on relapse prevention after remission with acute ECT, not on proving acute ECT efficacy."
+          },
+          {
+            "t": "Whether unilateral ECT was superior to bilateral ECT for acute mania",
+            "c": false,
+            "fb": "The study enrolled patients with unipolar depression who had already remitted with bilateral ECT."
+          },
+          {
+            "t": "Whether ECT should replace all antidepressant pharmacotherapy in outpatient depression",
+            "c": false,
+            "fb": "The study compared two continuation strategies after ECT remission and did not argue that ECT should replace all medication treatment."
+          },
+          {
+            "t": "Whether maintenance psychotherapy alone was sufficient after psychotic depression",
+            "c": false,
+            "fb": "Psychotherapy alone was not the tested continuation strategy in this trial."
+          }
+        ]
+      },
+      {
+        "q": "In the Kellner 2006 trial, continuation ECT was most directly compared with which relapse-prevention strategy?",
+        "o": [
+          {
+            "t": "Lithium plus nortriptyline continuation pharmacotherapy",
+            "c": true,
+            "fb": "The pharmacotherapy arm used lithium carbonate plus nortriptyline as an active comparator."
+          },
+          {
+            "t": "Placebo-only follow-up after abrupt discontinuation",
+            "c": false,
+            "fb": "The trial compared two active continuation treatments rather than using placebo-only discontinuation."
+          },
+          {
+            "t": "Cognitive behavioral therapy delivered weekly for one year",
+            "c": false,
+            "fb": "CBT was not the continuation comparator in the CORE ECT relapse-prevention study."
+          },
+          {
+            "t": "Clozapine augmentation for treatment-resistant depression",
+            "c": false,
+            "fb": "Clozapine was not part of the continuation strategy tested in this depression trial."
+          }
+        ]
+      },
+      {
+        "q": "Which teaching point best captures the clinical bottom line of the Kellner continuation ECT study?",
+        "o": [
+          {
+            "t": "Relapse prevention is still needed after ECT remission, and continuation ECT is a reasonable active strategy for selected patients.",
+            "c": true,
+            "fb": "The study highlights that ECT response is not the endpoint; patients need an active continuation plan."
+          },
+          {
+            "t": "Patients who remit with ECT can usually stop all treatment without close monitoring.",
+            "c": false,
+            "fb": "Relapse after ECT remission remains a major risk, so stopping treatment without a plan is unsafe."
+          },
+          {
+            "t": "Continuation ECT is only appropriate for schizophrenia-spectrum disorders.",
+            "c": false,
+            "fb": "This trial studied relapse prevention in major depression after acute ECT response."
+          },
+          {
+            "t": "Lithium and nortriptyline were shown to be ineffective as continuation treatment.",
+            "c": false,
+            "fb": "The pharmacotherapy arm was an active comparator and was not shown to be ineffective."
+          }
+        ]
+      },
+      {
+        "q": "A student asks why the trial matters if ECT is already known to work acutely. What is the best response?",
+        "o": [
+          {
+            "t": "Acute response and sustained remission are different outcomes, and this trial studied the continuation phase.",
+            "c": true,
+            "fb": "The key distinction is acute symptom improvement versus preventing relapse over months after remission."
+          },
+          {
+            "t": "The trial was designed to show that acute ECT has no meaningful antidepressant effect.",
+            "c": false,
+            "fb": "The trial assumed acute ECT can be effective and asked what should happen after remission."
+          },
+          {
+            "t": "The trial mainly tested whether ECT causes serotonin syndrome.",
+            "c": false,
+            "fb": "Serotonin syndrome was not the clinical question in this continuation-treatment study."
+          },
+          {
+            "t": "The trial only measured patient preference and did not assess depressive relapse.",
+            "c": false,
+            "fb": "Relapse of depression was the central outcome."
+          }
+        ]
+      },
+      {
+        "q": "Which patient would most closely match the population studied in Kellner 2006?",
+        "o": [
+          {
+            "t": "An adult with DSM-IV unipolar depression who remitted after a course of bilateral ECT",
+            "c": true,
+            "fb": "The study randomized adults with unipolar depression after remission with bilateral ECT."
+          },
+          {
+            "t": "A child with ADHD beginning stimulant treatment for the first time",
+            "c": false,
+            "fb": "The trial was not about ADHD or pediatric stimulant treatment."
+          },
+          {
+            "t": "A patient with schizophrenia beginning clozapine for persistent hallucinations",
+            "c": false,
+            "fb": "The diagnosis and treatment phase do not match this depression continuation trial."
+          },
+          {
+            "t": "A person with opioid use disorder choosing between methadone and buprenorphine",
+            "c": false,
+            "fb": "The trial was unrelated to medication treatment for opioid use disorder."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-10",
+    "title": "Moncrieff 2022 - Antidepressant Withdrawal",
+    "questions": [
+      {
+        "q": "A patient who has taken paroxetine for several years wants to stop quickly because she feels better. Which counseling point best reflects the clinical lesson of antidepressant withdrawal literature?",
+        "o": [
+          {
+            "t": "Discontinuation symptoms can occur, so stopping should usually be planned, gradual, and monitored.",
+            "c": true,
+            "fb": "The core teaching point is informed consent, tapering, and follow-up rather than abrupt cessation."
+          },
+          {
+            "t": "Withdrawal symptoms prove that the original depression was misdiagnosed.",
+            "c": false,
+            "fb": "Withdrawal can occur after physiologic adaptation and does not by itself prove the original diagnosis was wrong."
+          },
+          {
+            "t": "All antidepressants must be continued lifelong once started.",
+            "c": false,
+            "fb": "Long-term treatment decisions should be individualized; withdrawal risk does not mean indefinite treatment is mandatory for everyone."
+          },
+          {
+            "t": "Patients should stop abruptly so relapse can be distinguished from medication effects.",
+            "c": false,
+            "fb": "Abrupt stopping can worsen discontinuation symptoms and is generally not a safe diagnostic strategy."
+          }
+        ]
+      },
+      {
+        "q": "Which symptom cluster is most consistent with antidepressant discontinuation rather than a simple return of baseline depression?",
+        "o": [
+          {
+            "t": "Dizziness, electric-shock sensations, nausea, insomnia, and anxiety soon after dose reduction",
+            "c": true,
+            "fb": "Neurologic and flu-like symptoms emerging after dose reduction are classic discontinuation clues."
+          },
+          {
+            "t": "Months of isolated low mood beginning before any medication change",
+            "c": false,
+            "fb": "Symptoms predating a dose change are less suggestive of withdrawal."
+          },
+          {
+            "t": "Progressive memory loss with focal neurologic deficits",
+            "c": false,
+            "fb": "That pattern requires a neurologic workup and is not typical antidepressant discontinuation."
+          },
+          {
+            "t": "Persistent euphoria with decreased need for sleep before antidepressant exposure",
+            "c": false,
+            "fb": "That presentation suggests possible mania or hypomania rather than antidepressant withdrawal."
+          }
+        ]
+      },
+      {
+        "q": "A shelf-style question asks how to distinguish antidepressant withdrawal from depressive relapse. Which feature favors withdrawal?",
+        "o": [
+          {
+            "t": "A close temporal relationship to missed doses or dose reduction",
+            "c": true,
+            "fb": "Withdrawal symptoms often begin soon after a medication reduction or interruption."
+          },
+          {
+            "t": "Symptoms that began years before the antidepressant was prescribed",
+            "c": false,
+            "fb": "Symptoms that predate medication exposure do not support withdrawal."
+          },
+          {
+            "t": "Absence of any physical or neurologic symptoms after stopping",
+            "c": false,
+            "fb": "Physical symptoms are often an important clue when present, though withdrawal can still vary."
+          },
+          {
+            "t": "A clear manic episode with psychosis during continued full-dose treatment",
+            "c": false,
+            "fb": "Mania with psychosis requires a different diagnostic and safety assessment."
+          }
+        ]
+      },
+      {
+        "q": "Which clinical approach best avoids overinterpreting the Moncrieff withdrawal discussion?",
+        "o": [
+          {
+            "t": "Discuss benefits, adverse effects, withdrawal risk, and patient goals before changing treatment.",
+            "c": true,
+            "fb": "Balanced shared decision-making is the practical takeaway for students and clinicians."
+          },
+          {
+            "t": "Tell patients antidepressants never help and should not be prescribed.",
+            "c": false,
+            "fb": "Withdrawal concerns do not prove that antidepressants are never useful."
+          },
+          {
+            "t": "Tell patients discontinuation symptoms are always imaginary.",
+            "c": false,
+            "fb": "Discontinuation symptoms are clinically recognized and should be taken seriously."
+          },
+          {
+            "t": "Use withdrawal symptoms as a reason to avoid follow-up appointments.",
+            "c": false,
+            "fb": "Follow-up is especially important when tapering medications."
+          }
+        ]
+      },
+      {
+        "q": "A patient asks why tapering may become slower at lower antidepressant doses. Which explanation is most appropriate?",
+        "o": [
+          {
+            "t": "Small milligram changes near the low end can still produce meaningful changes in receptor occupancy for some drugs.",
+            "c": true,
+            "fb": "This is the rationale behind slower or hyperbolic tapering for selected long-term users."
+          },
+          {
+            "t": "Lower doses are always pharmacologically inactive and can be skipped.",
+            "c": false,
+            "fb": "Low doses can still have biologic effects, especially for some serotonergic medications."
+          },
+          {
+            "t": "Tapering speed should be identical for every patient and every antidepressant.",
+            "c": false,
+            "fb": "Tapering should account for the medication, duration of use, symptoms, and patient preference."
+          },
+          {
+            "t": "The goal is to provoke withdrawal so the patient learns to tolerate it.",
+            "c": false,
+            "fb": "The goal is to reduce avoidable suffering and maintain clinical stability."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-11",
+    "title": "Brown 1962 - Expressed Emotion",
+    "questions": [
+      {
+        "q": "Brown's expressed emotion work is most important for linking which family-level observation to schizophrenia relapse risk?",
+        "o": [
+          {
+            "t": "High criticism, hostility, or emotional overinvolvement in close relatives",
+            "c": true,
+            "fb": "Expressed emotion refers to these relational features and their association with relapse risk."
+          },
+          {
+            "t": "Family income alone as the main cause of schizophrenia",
+            "c": false,
+            "fb": "Socioeconomic context matters, but expressed emotion specifically concerns family emotional climate."
+          },
+          {
+            "t": "The number of siblings as a direct diagnostic criterion",
+            "c": false,
+            "fb": "Sibling count is not the expressed emotion construct."
+          },
+          {
+            "t": "A patient's preference for individual rather than group therapy",
+            "c": false,
+            "fb": "Treatment preference is not what Brown's expressed emotion construct measured."
+          }
+        ]
+      },
+      {
+        "q": "Which vignette best illustrates a high expressed emotion environment?",
+        "o": [
+          {
+            "t": "A parent repeatedly criticizes the patient as lazy and intrudes intensely into every daily decision.",
+            "c": true,
+            "fb": "Criticism plus emotional overinvolvement captures the high expressed emotion pattern."
+          },
+          {
+            "t": "A sibling asks the patient what support would feel useful after discharge.",
+            "c": false,
+            "fb": "Collaborative support is not high expressed emotion."
+          },
+          {
+            "t": "A relative attends psychoeducation and practices calm communication.",
+            "c": false,
+            "fb": "Psychoeducation and calm communication are interventions that can reduce relapse risk."
+          },
+          {
+            "t": "A family member maintains respectful distance while ensuring medication access.",
+            "c": false,
+            "fb": "Respectful support does not fit the high criticism or overinvolvement pattern."
+          }
+        ]
+      },
+      {
+        "q": "What is the best clinical use of expressed emotion research for an MS3 on an inpatient psychiatry rotation?",
+        "o": [
+          {
+            "t": "Assess family stress and communication patterns when planning relapse prevention.",
+            "c": true,
+            "fb": "The finding makes family climate a practical relapse-prevention target."
+          },
+          {
+            "t": "Tell families they caused the patient's schizophrenia.",
+            "c": false,
+            "fb": "Expressed emotion is a relapse-risk construct, not a blame-based cause of schizophrenia."
+          },
+          {
+            "t": "Exclude families from discharge planning whenever psychosis is present.",
+            "c": false,
+            "fb": "The research supports thoughtful family intervention, not automatic exclusion."
+          },
+          {
+            "t": "Use expressed emotion as a stand-alone diagnostic test for schizophrenia.",
+            "c": false,
+            "fb": "Expressed emotion is not a diagnostic test."
+          }
+        ]
+      },
+      {
+        "q": "Which intervention follows most directly from the expressed emotion literature?",
+        "o": [
+          {
+            "t": "Family psychoeducation that reduces criticism and improves problem-solving",
+            "c": true,
+            "fb": "Later family-intervention trials built on expressed emotion by targeting communication and stress."
+          },
+          {
+            "t": "Stopping antipsychotic medication in all patients with supportive families",
+            "c": false,
+            "fb": "Family intervention is an adjunct to evidence-based treatment, not a reason to stop indicated medication."
+          },
+          {
+            "t": "Using confrontation to prove that relatives are wrong",
+            "c": false,
+            "fb": "Blaming relatives is countertherapeutic and misses the collaborative prevention goal."
+          },
+          {
+            "t": "Replacing all outpatient care with genetic testing",
+            "c": false,
+            "fb": "The expressed emotion construct concerns social environment, not genetic testing."
+          }
+        ]
+      },
+      {
+        "q": "Which statement best avoids a common misunderstanding of Brown's work?",
+        "o": [
+          {
+            "t": "High expressed emotion predicts relapse risk in a stress-vulnerability framework; it does not mean families caused the illness.",
+            "c": true,
+            "fb": "This preserves the clinical importance of the finding without blaming families."
+          },
+          {
+            "t": "High expressed emotion is the only proven cause of schizophrenia.",
+            "c": false,
+            "fb": "Schizophrenia is multifactorial and expressed emotion is not a sole cause."
+          },
+          {
+            "t": "Expressed emotion is irrelevant once antipsychotics are prescribed.",
+            "c": false,
+            "fb": "Family emotional climate can still affect relapse risk even when medication is used."
+          },
+          {
+            "t": "Low expressed emotion means a patient no longer needs outpatient follow-up.",
+            "c": false,
+            "fb": "Supportive family climate does not replace clinical follow-up."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-12",
+    "title": "Leff 1982 - Family Intervention",
+    "questions": [
+      {
+        "q": "Leff's 1982 controlled trial selected families of patients with schizophrenia at particularly high relapse risk based on which feature?",
+        "o": [
+          {
+            "t": "High contact with high expressed emotion relatives",
+            "c": true,
+            "fb": "The study targeted patients living in close contact with relatives whose expressed emotion was high."
+          },
+          {
+            "t": "Absence of any family involvement after discharge",
+            "c": false,
+            "fb": "The key risk context was high-contact, high-expressed-emotion family involvement."
+          },
+          {
+            "t": "A genetic test confirming complement activation",
+            "c": false,
+            "fb": "Complement genetics belongs to later schizophrenia research, not this family-intervention trial."
+          },
+          {
+            "t": "Treatment resistance after clozapine failure",
+            "c": false,
+            "fb": "The trial focused on family social intervention while patients remained on neuroleptic medication."
+          }
+        ]
+      },
+      {
+        "q": "Which components best describe the Leff family intervention package?",
+        "o": [
+          {
+            "t": "Education about schizophrenia, a relatives group, and family sessions with relatives and patients",
+            "c": true,
+            "fb": "These components aimed to reduce stress and improve family coping."
+          },
+          {
+            "t": "A medication-free inpatient detoxification protocol",
+            "c": false,
+            "fb": "Patients were maintained on neuroleptic medication; the intervention was psychosocial."
+          },
+          {
+            "t": "Exposure therapy for trauma memories delivered without family involvement",
+            "c": false,
+            "fb": "The study tested family social intervention, not trauma-focused exposure."
+          },
+          {
+            "t": "A diagnostic interview designed to replace DSM criteria",
+            "c": false,
+            "fb": "The trial was not a diagnostic-validity study."
+          }
+        ]
+      },
+      {
+        "q": "What result made Leff 1982 a landmark for family psychoeducation in schizophrenia?",
+        "o": [
+          {
+            "t": "Relapse was lower in the family-intervention group than in routine outpatient care.",
+            "c": true,
+            "fb": "The trial showed that a structured family intervention could reduce relapse risk."
+          },
+          {
+            "t": "Medication adherence became irrelevant after one family meeting.",
+            "c": false,
+            "fb": "The intervention was delivered alongside neuroleptic maintenance, not as a replacement."
+          },
+          {
+            "t": "Family therapy worsened outcomes compared with no contact.",
+            "c": false,
+            "fb": "The landmark finding was a relapse-prevention benefit, not harm."
+          },
+          {
+            "t": "The trial showed that schizophrenia is caused by parenting style.",
+            "c": false,
+            "fb": "The study supports relapse prevention through family intervention, not a parent-blaming etiology."
+          }
+        ]
+      },
+      {
+        "q": "A student asks why all patients in the Leff trial stayed on neuroleptics. What is the best answer?",
+        "o": [
+          {
+            "t": "The study tested whether family intervention added benefit to medication-based care.",
+            "c": true,
+            "fb": "Keeping medication in place helped isolate the added value of psychosocial family work."
+          },
+          {
+            "t": "The study was designed to prove neuroleptics have no role in relapse prevention.",
+            "c": false,
+            "fb": "The design did not attempt to remove medication from relapse prevention."
+          },
+          {
+            "t": "Neuroleptics were used only as placebo tablets.",
+            "c": false,
+            "fb": "Patients received active neuroleptic maintenance."
+          },
+          {
+            "t": "Medication status was unrelated to the family intervention question.",
+            "c": false,
+            "fb": "Medication status matters because the family intervention was an adjunctive strategy."
+          }
+        ]
+      },
+      {
+        "q": "Which discharge-planning recommendation is most consistent with Leff 1982?",
+        "o": [
+          {
+            "t": "Offer structured family psychoeducation when a patient with schizophrenia returns to a high-stress household.",
+            "c": true,
+            "fb": "The trial supports family education and support as relapse-prevention tools in high-risk family settings."
+          },
+          {
+            "t": "Avoid asking about family contact because it is not clinically relevant.",
+            "c": false,
+            "fb": "Family contact and communication are directly relevant to relapse prevention."
+          },
+          {
+            "t": "Use family criticism as proof that the patient cannot live in the community.",
+            "c": false,
+            "fb": "High expressed emotion signals a need for intervention, not automatic exclusion from community care."
+          },
+          {
+            "t": "Replace relapse planning with a one-time printed medication handout.",
+            "c": false,
+            "fb": "The intervention was more active and relational than a single handout."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-13",
+    "title": "Falloon 1982 - Family Management",
+    "questions": [
+      {
+        "q": "Falloon's family management trial in schizophrenia most directly compared at-home family therapy with which control condition?",
+        "o": [
+          {
+            "t": "Clinic-based individual supportive care while patients continued neuroleptic maintenance",
+            "c": true,
+            "fb": "The comparison tested family management against individual supportive community care with medication maintained."
+          },
+          {
+            "t": "Long-term inpatient hospitalization without medication",
+            "c": false,
+            "fb": "The control was community-based supportive care, not medication-free hospitalization."
+          },
+          {
+            "t": "Ketamine infusion for treatment-resistant depression",
+            "c": false,
+            "fb": "The trial was about schizophrenia relapse prevention through family management."
+          },
+          {
+            "t": "A genetics-only risk disclosure session",
+            "c": false,
+            "fb": "The intervention involved education and behavioral problem-solving, not genetic disclosure."
+          }
+        ]
+      },
+      {
+        "q": "Which skill was central to the Falloon family management approach?",
+        "o": [
+          {
+            "t": "Training families in behavioral problem-solving and stress reduction",
+            "c": true,
+            "fb": "The intervention aimed to improve understanding of illness and reduce family stress through practical skills."
+          },
+          {
+            "t": "Teaching families to challenge delusions directly until the patient agrees",
+            "c": false,
+            "fb": "Confrontational correction is not the family management strategy tested."
+          },
+          {
+            "t": "Removing all relatives from treatment planning",
+            "c": false,
+            "fb": "The model intentionally brought family members into the relapse-prevention plan."
+          },
+          {
+            "t": "Using family therapy only after relapse has already occurred",
+            "c": false,
+            "fb": "The trial was prevention-focused and community-based."
+          }
+        ]
+      },
+      {
+        "q": "What was the main outcome pattern reported in Falloon 1982?",
+        "o": [
+          {
+            "t": "Family management reduced major symptomatic exacerbations compared with supportive individual care.",
+            "c": true,
+            "fb": "The study found fewer relapses in the family-treated group."
+          },
+          {
+            "t": "Family management increased relapse by increasing contact with relatives.",
+            "c": false,
+            "fb": "The structured intervention was associated with reduced, not increased, relapse."
+          },
+          {
+            "t": "Supportive individual care eliminated the need for medication monitoring.",
+            "c": false,
+            "fb": "Medication maintenance remained part of care in the trial."
+          },
+          {
+            "t": "No patient in either group had any psychotic symptoms during follow-up.",
+            "c": false,
+            "fb": "The trial compared relapse risk; it did not show complete absence of symptoms for all participants."
+          }
+        ]
+      },
+      {
+        "q": "A resident says family intervention works only by making relatives less emotional. Which response is most accurate for Falloon's model?",
+        "o": [
+          {
+            "t": "It also teaches concrete communication and problem-solving skills that reduce day-to-day stress.",
+            "c": true,
+            "fb": "Falloon's approach was behavioral and skills-based, not merely emotional ventilation."
+          },
+          {
+            "t": "It works by proving relatives are responsible for schizophrenia.",
+            "c": false,
+            "fb": "The model does not assign causal blame to relatives."
+          },
+          {
+            "t": "It works by replacing antipsychotics with family meetings.",
+            "c": false,
+            "fb": "Patients remained on neuroleptic maintenance medication."
+          },
+          {
+            "t": "It works only for patients with no family conflict.",
+            "c": false,
+            "fb": "The intervention was designed for families where stress and communication problems matter clinically."
+          }
+        ]
+      },
+      {
+        "q": "Which MS3-level discharge plan best reflects Falloon 1982?",
+        "o": [
+          {
+            "t": "Combine medication follow-up with family education, communication practice, and relapse-warning planning.",
+            "c": true,
+            "fb": "The study supports integrating pharmacologic and family-management strategies."
+          },
+          {
+            "t": "Give a one-page handout and avoid family sessions because they may increase relapse.",
+            "c": false,
+            "fb": "Structured family sessions were the active ingredient, not something to avoid by default."
+          },
+          {
+            "t": "Use family conflict as a reason to discharge without outpatient services.",
+            "c": false,
+            "fb": "Family stress should trigger more careful relapse-prevention planning."
+          },
+          {
+            "t": "Focus only on diagnostic validity and defer treatment planning.",
+            "c": false,
+            "fb": "Falloon's work is a treatment-planning study, not a diagnostic-validity framework."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-14",
+    "title": "McFarlane 1995 - Multifamily",
+    "questions": [
+      {
+        "q": "McFarlane 1995 compared which two psychoeducational formats for schizophrenia?",
+        "o": [
+          {
+            "t": "Multiple-family group treatment versus single-family psychoeducational treatment",
+            "c": true,
+            "fb": "The key comparison was whether a multifamily format improved outcomes beyond single-family work."
+          },
+          {
+            "t": "ECT versus lithium plus nortriptyline",
+            "c": false,
+            "fb": "That comparison belongs to continuation treatment after ECT remission, not McFarlane's schizophrenia study."
+          },
+          {
+            "t": "Medication management versus placebo only",
+            "c": false,
+            "fb": "The study compared psychosocial family formats rather than active medication versus placebo."
+          },
+          {
+            "t": "Individual psychodynamic therapy versus supportive care",
+            "c": false,
+            "fb": "The intervention was family psychoeducation for schizophrenia."
+          }
+        ]
+      },
+      {
+        "q": "Which mechanism best explains why a multiple-family group might add value in schizophrenia relapse prevention?",
+        "o": [
+          {
+            "t": "Families learn problem-solving with peers and reduce isolation while practicing lower-stress communication.",
+            "c": true,
+            "fb": "The multifamily format creates shared learning, support, and practical problem-solving opportunities."
+          },
+          {
+            "t": "Patients are encouraged to stop medication once the group begins.",
+            "c": false,
+            "fb": "Family psychoeducation is an adjunct to ongoing clinical care, not a medication-discontinuation strategy."
+          },
+          {
+            "t": "The group prevents relapse by diagnosing schizophrenia without symptoms.",
+            "c": false,
+            "fb": "The trial focused on treatment outcomes, not diagnostic replacement."
+          },
+          {
+            "t": "Relatives are trained to confront hallucinations until insight is restored.",
+            "c": false,
+            "fb": "Confrontational correction is not the therapeutic mechanism of psychoeducational multifamily work."
+          }
+        ]
+      },
+      {
+        "q": "What outcome made the McFarlane study clinically important?",
+        "o": [
+          {
+            "t": "Multiple-family groups produced lower relapse rates than single-family psychoeducation over follow-up.",
+            "c": true,
+            "fb": "The study suggested that the group format can improve relapse-prevention outcomes."
+          },
+          {
+            "t": "Single-family treatment cured schizophrenia in all participants.",
+            "c": false,
+            "fb": "The trial did not show cure; it studied relapse and functioning outcomes."
+          },
+          {
+            "t": "Psychoeducation was harmful compared with no treatment.",
+            "c": false,
+            "fb": "The study supported psychoeducational family work rather than showing harm."
+          },
+          {
+            "t": "Medication adherence was irrelevant to relapse risk.",
+            "c": false,
+            "fb": "Medication adherence remained clinically relevant in schizophrenia relapse prevention."
+          }
+        ]
+      },
+      {
+        "q": "Which patient population most closely matches the McFarlane 1995 trial?",
+        "o": [
+          {
+            "t": "Young adults with schizophrenia-spectrum disorders after an acute psychotic episode",
+            "c": true,
+            "fb": "The study enrolled acutely psychotic patients with schizophrenia disorders and followed relapse outcomes."
+          },
+          {
+            "t": "Adolescents with suicidal ideation receiving attachment-based family therapy",
+            "c": false,
+            "fb": "That population matches Diamond's ABFT trial, not McFarlane's schizophrenia study."
+          },
+          {
+            "t": "Adults with panic disorder receiving imipramine and CBT",
+            "c": false,
+            "fb": "McFarlane 1995 was not a panic-disorder pharmacotherapy trial."
+          },
+          {
+            "t": "Children with ADHD randomized to stimulant titration protocols",
+            "c": false,
+            "fb": "That describes the MTA ADHD trial rather than multifamily schizophrenia psychoeducation."
+          }
+        ]
+      },
+      {
+        "q": "A hospital wants to implement the McFarlane model. Which feature should be prioritized?",
+        "o": [
+          {
+            "t": "A structured, ongoing multifamily psychoeducation group with problem-solving practice",
+            "c": true,
+            "fb": "The evidence is for structured, sustained psychoeducation rather than a single informal meeting."
+          },
+          {
+            "t": "A one-time lecture with no family interaction",
+            "c": false,
+            "fb": "The intervention's value comes from ongoing family engagement and group learning."
+          },
+          {
+            "t": "A rule that patients cannot attend with relatives",
+            "c": false,
+            "fb": "The model includes family participation as a core element."
+          },
+          {
+            "t": "A genetic counseling session replacing relapse-prevention planning",
+            "c": false,
+            "fb": "Genetic counseling does not substitute for psychoeducational relapse prevention."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-16",
+    "title": "Diamond 2010 - ABFT",
+    "questions": [
+      {
+        "q": "Diamond 2010 tested Attachment-Based Family Therapy primarily in which clinical population?",
+        "o": [
+          {
+            "t": "Adolescents with suicidal ideation",
+            "c": true,
+            "fb": "The trial evaluated ABFT as a family-based treatment for suicidal adolescents."
+          },
+          {
+            "t": "Older adults with delirium in the ICU",
+            "c": false,
+            "fb": "That population belongs to delirium-prevention and delirium-detection studies, not ABFT."
+          },
+          {
+            "t": "Adults with treatment-resistant schizophrenia receiving clozapine",
+            "c": false,
+            "fb": "ABFT was not a clozapine trial."
+          },
+          {
+            "t": "Children with ADHD receiving medication management",
+            "c": false,
+            "fb": "That describes the MTA ADHD study, not Diamond's ABFT trial."
+          }
+        ]
+      },
+      {
+        "q": "What is the central therapeutic target of Attachment-Based Family Therapy?",
+        "o": [
+          {
+            "t": "Repairing attachment ruptures and improving parent-adolescent communication",
+            "c": true,
+            "fb": "ABFT uses family work to strengthen attachment security and communication around distress."
+          },
+          {
+            "t": "Training the adolescent to avoid all family discussion of suicidal thoughts",
+            "c": false,
+            "fb": "ABFT aims to make family communication safer, not to suppress discussion."
+          },
+          {
+            "t": "Replacing safety planning with genetic testing",
+            "c": false,
+            "fb": "Genetic testing is not the core ABFT mechanism."
+          },
+          {
+            "t": "Teaching parents to confront the adolescent until symptoms stop",
+            "c": false,
+            "fb": "ABFT emphasizes repair and emotional communication rather than confrontation."
+          }
+        ]
+      },
+      {
+        "q": "Which trial design feature best describes Diamond 2010?",
+        "o": [
+          {
+            "t": "A randomized comparison of ABFT with an enhanced usual-care condition",
+            "c": true,
+            "fb": "The study used a randomized design to compare ABFT against enhanced usual care."
+          },
+          {
+            "t": "A qualitative case series with no comparison group",
+            "c": false,
+            "fb": "The landmark study was a controlled trial, not only a case series."
+          },
+          {
+            "t": "A medication dose-finding trial for pediatric antidepressants",
+            "c": false,
+            "fb": "The tested intervention was psychotherapy, not a medication titration."
+          },
+          {
+            "t": "A cross-sectional survey of adverse childhood experiences",
+            "c": false,
+            "fb": "That design describes the ACE Study more closely than ABFT."
+          }
+        ]
+      },
+      {
+        "q": "What is the most appropriate clinical takeaway from ABFT for an MS3?",
+        "o": [
+          {
+            "t": "For some suicidal adolescents, a structured family-based therapy can be part of reducing suicidal ideation.",
+            "c": true,
+            "fb": "ABFT shows that family repair can be a treatment target in adolescent suicidality."
+          },
+          {
+            "t": "Family therapy replaces acute suicide-risk assessment.",
+            "c": false,
+            "fb": "Risk assessment and safety planning remain essential even when family therapy is used."
+          },
+          {
+            "t": "Parents should be excluded whenever suicidality is present.",
+            "c": false,
+            "fb": "ABFT is built around carefully involving caregivers when clinically appropriate."
+          },
+          {
+            "t": "Suicidal ideation is best treated only with inpatient hospitalization.",
+            "c": false,
+            "fb": "Hospitalization may be needed for acute safety, but outpatient family-based treatments can also be important."
+          }
+        ]
+      },
+      {
+        "q": "Which statement best avoids overclaiming Diamond 2010?",
+        "o": [
+          {
+            "t": "ABFT has evidence for reducing suicidal ideation, but it should be integrated with safety assessment and individualized care.",
+            "c": true,
+            "fb": "This respects the trial's psychotherapy finding without ignoring acute safety needs."
+          },
+          {
+            "t": "ABFT eliminates the need to assess access to lethal means.",
+            "c": false,
+            "fb": "Lethal-means assessment remains part of suicide-risk management."
+          },
+          {
+            "t": "ABFT proves that all adolescent suicidality is caused by parents.",
+            "c": false,
+            "fb": "The therapy targets family attachment processes without assigning single-cause blame."
+          },
+          {
+            "t": "ABFT is a diagnostic test for borderline personality disorder.",
+            "c": false,
+            "fb": "ABFT is a psychotherapy model, not a diagnostic instrument."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-17",
+    "title": "Pinsof 1995 - Systemic Meta",
+    "questions": [
+      {
+        "q": "Pinsof and Wynne's 1995 paper is best understood as what type of contribution?",
+        "o": [
+          {
+            "t": "An empirical overview of marital and family therapy evidence across conditions",
+            "c": true,
+            "fb": "The paper synthesized the evidence base and offered conclusions and recommendations."
+          },
+          {
+            "t": "A single-site randomized medication trial for depression",
+            "c": false,
+            "fb": "It was not a medication trial and did not focus on one pharmacologic intervention."
+          },
+          {
+            "t": "A genetic association study of schizophrenia",
+            "c": false,
+            "fb": "Genetic association work is unrelated to this systemic-therapy overview."
+          },
+          {
+            "t": "A diagnostic-validity checklist for schizophrenia",
+            "c": false,
+            "fb": "Diagnostic validity is associated with Robins and Guze, not Pinsof and Wynne."
+          }
+        ]
+      },
+      {
+        "q": "Which clinical principle best reflects a systemic therapy perspective?",
+        "o": [
+          {
+            "t": "Symptoms can be maintained or improved by patterns of interaction within relationships.",
+            "c": true,
+            "fb": "Systemic models examine how relational patterns affect problems and recovery."
+          },
+          {
+            "t": "Only individual brain chemistry matters in psychiatric outcomes.",
+            "c": false,
+            "fb": "A systemic approach explicitly includes relational and contextual processes."
+          },
+          {
+            "t": "Family members should never be included in treatment.",
+            "c": false,
+            "fb": "Systemic therapy often uses family or couple participation as the treatment medium."
+          },
+          {
+            "t": "The therapist should ignore communication patterns and focus only on diagnosis codes.",
+            "c": false,
+            "fb": "Communication patterns are a central target of marital and family therapy."
+          }
+        ]
+      },
+      {
+        "q": "What should an MS3 remember when applying the Pinsof and Wynne overview?",
+        "o": [
+          {
+            "t": "Family and couple interventions can be evidence-based when the relational context is clinically relevant.",
+            "c": true,
+            "fb": "The paper supports using systemic interventions thoughtfully rather than viewing them as non-evidence-based."
+          },
+          {
+            "t": "All psychiatric disorders respond equally to the same family therapy protocol.",
+            "c": false,
+            "fb": "The overview does not support a one-size-fits-all protocol for every condition."
+          },
+          {
+            "t": "Systemic therapy works only if medication is avoided.",
+            "c": false,
+            "fb": "Systemic interventions can be combined with medication and other treatments."
+          },
+          {
+            "t": "Systemic therapy should be used only after every other treatment fails.",
+            "c": false,
+            "fb": "Relational interventions can be first-line or adjunctive depending on the problem."
+          }
+        ]
+      },
+      {
+        "q": "Which outcome domain is especially important in systemic therapy research?",
+        "o": [
+          {
+            "t": "Relationship and family functioning in addition to individual symptoms",
+            "c": true,
+            "fb": "Systemic treatment often aims to improve both individual distress and relational functioning."
+          },
+          {
+            "t": "Serum drug levels as the only valid endpoint",
+            "c": false,
+            "fb": "Serum levels may matter in medication trials but not as the sole endpoint for family therapy."
+          },
+          {
+            "t": "Brain imaging findings without clinical outcomes",
+            "c": false,
+            "fb": "Clinical and relational outcomes are central to therapy evaluation."
+          },
+          {
+            "t": "Length of hospitalization only, regardless of functioning",
+            "c": false,
+            "fb": "Hospitalization may be relevant in some disorders, but systemic work also examines relational and symptom outcomes."
+          }
+        ]
+      },
+      {
+        "q": "Which statement best avoids a common overinterpretation of common systemic evidence?",
+        "o": [
+          {
+            "t": "Evidence for systemic therapy supports relational assessment, but treatment should still be matched to diagnosis, goals, and safety.",
+            "c": true,
+            "fb": "This recognizes the evidence base while preserving individualized clinical judgment."
+          },
+          {
+            "t": "Family therapy evidence means individual therapy is obsolete.",
+            "c": false,
+            "fb": "Different modalities have different indications and can complement one another."
+          },
+          {
+            "t": "A systemic formulation means the patient is not really ill.",
+            "c": false,
+            "fb": "Relational context can matter even when a patient has a serious psychiatric illness."
+          },
+          {
+            "t": "Family therapy is useful only when all relatives agree on the problem.",
+            "c": false,
+            "fb": "Disagreement itself may be a treatment target in systemic work."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-18",
+    "title": "Minuchin 1978 - Psychosomatic Families",
+    "questions": [
+      {
+        "q": "Minuchin's Psychosomatic Families is most closely associated with which therapy tradition?",
+        "o": [
+          {
+            "t": "Structural family therapy",
+            "c": true,
+            "fb": "Minuchin's work examined family structure, boundaries, and interaction patterns."
+          },
+          {
+            "t": "Network meta-analysis of antidepressants",
+            "c": false,
+            "fb": "Network meta-analysis is a quantitative evidence-synthesis method, not Minuchin's family model."
+          },
+          {
+            "t": "Candidate gene association testing",
+            "c": false,
+            "fb": "Genetic association testing is unrelated to structural family therapy."
+          },
+          {
+            "t": "Continuation ECT relapse prevention",
+            "c": false,
+            "fb": "ECT continuation treatment is a separate depression literature."
+          }
+        ]
+      },
+      {
+        "q": "Which pattern is classically described in Minuchin's psychosomatic family model?",
+        "o": [
+          {
+            "t": "Enmeshment, overprotectiveness, rigidity, and poor conflict resolution",
+            "c": true,
+            "fb": "These family-structure patterns are central to the classic model."
+          },
+          {
+            "t": "Low expressed emotion and complete emotional disengagement in every case",
+            "c": false,
+            "fb": "The model emphasizes enmeshment and overinvolvement rather than universal disengagement."
+          },
+          {
+            "t": "Absence of any family interaction around illness",
+            "c": false,
+            "fb": "The model is specifically about interaction patterns around symptoms and family organization."
+          },
+          {
+            "t": "A single gene that determines psychosomatic illness",
+            "c": false,
+            "fb": "Minuchin's framework is relational, not a single-gene model."
+          }
+        ]
+      },
+      {
+        "q": "What is the safest modern way to teach Minuchin's model to medical students?",
+        "o": [
+          {
+            "t": "As an influential relational formulation that can guide assessment without blaming families for illness",
+            "c": true,
+            "fb": "The model is historically important but should be applied in a nonblaming, evidence-aware manner."
+          },
+          {
+            "t": "As proof that parents cause all somatic symptoms in children",
+            "c": false,
+            "fb": "That is an overstatement and risks harmful blame."
+          },
+          {
+            "t": "As a reason to ignore biomedical evaluation",
+            "c": false,
+            "fb": "Psychosomatic formulation should not replace appropriate medical assessment."
+          },
+          {
+            "t": "As a medication algorithm for schizophrenia relapse",
+            "c": false,
+            "fb": "The model is not a schizophrenia medication algorithm."
+          }
+        ]
+      },
+      {
+        "q": "A child with chronic illness has escalating symptoms during family conflict. Which Minuchin-informed question is most useful?",
+        "o": [
+          {
+            "t": "How do family interactions, boundaries, and conflict responses change when symptoms appear?",
+            "c": true,
+            "fb": "Structural family assessment looks at how symptoms and interaction patterns influence each other."
+          },
+          {
+            "t": "Which relative can be blamed for the child's symptoms?",
+            "c": false,
+            "fb": "A blaming stance is not clinically helpful and misuses the model."
+          },
+          {
+            "t": "Can medical evaluation be stopped because this is a family problem?",
+            "c": false,
+            "fb": "Medical and psychosocial assessment should be integrated."
+          },
+          {
+            "t": "Does the family have a serotonin transporter polymorphism?",
+            "c": false,
+            "fb": "That question belongs to a different literature and does not assess family structure."
+          }
+        ]
+      },
+      {
+        "q": "Which statement best distinguishes Minuchin 1978 from later randomized family-intervention trials in schizophrenia?",
+        "o": [
+          {
+            "t": "Minuchin offered a structural family model; later schizophrenia trials tested relapse-prevention interventions empirically.",
+            "c": true,
+            "fb": "This distinction separates theory-building from controlled outcome testing."
+          },
+          {
+            "t": "Minuchin conducted the largest antipsychotic effectiveness trial.",
+            "c": false,
+            "fb": "That describes CATIE, not Psychosomatic Families."
+          },
+          {
+            "t": "Minuchin discovered complement C4 risk alleles.",
+            "c": false,
+            "fb": "Complement C4 findings came from later schizophrenia genetics research."
+          },
+          {
+            "t": "Minuchin created the four-abilities model of treatment capacity.",
+            "c": false,
+            "fb": "The four-abilities capacity model is associated with Appelbaum and Grisso."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-19",
+    "title": "Leff 2000 - Couple Therapy Depression",
+    "questions": [
+      {
+        "q": "The London Depression Intervention Trial focused on depressed patients with which relational context?",
+        "o": [
+          {
+            "t": "Living with a critical partner",
+            "c": true,
+            "fb": "The trial was grounded in the observation that partner criticism is linked with depressive relapse."
+          },
+          {
+            "t": "No current intimate relationship and no family contact",
+            "c": false,
+            "fb": "The intervention specifically required a partner relationship context."
+          },
+          {
+            "t": "A parent with high expressed emotion toward a patient with schizophrenia",
+            "c": false,
+            "fb": "That context fits schizophrenia family-intervention studies, not this depression couple-therapy trial."
+          },
+          {
+            "t": "A child with ADHD and school impairment",
+            "c": false,
+            "fb": "The MTA study, not Leff 2000, addressed ADHD treatment strategies."
+          }
+        ]
+      },
+      {
+        "q": "What were the main active treatments compared in Leff 2000?",
+        "o": [
+          {
+            "t": "Couple therapy versus antidepressant medication treatment",
+            "c": true,
+            "fb": "The trial compared a relational psychotherapy approach with antidepressant drug treatment."
+          },
+          {
+            "t": "ECT versus continuation pharmacotherapy",
+            "c": false,
+            "fb": "That comparison belongs to the Kellner continuation ECT study."
+          },
+          {
+            "t": "ABFT versus enhanced usual care for suicidal adolescents",
+            "c": false,
+            "fb": "That describes Diamond's ABFT trial."
+          },
+          {
+            "t": "ACT versus short-term hospitalization",
+            "c": false,
+            "fb": "That describes Stein and Test's community-treatment study."
+          }
+        ]
+      },
+      {
+        "q": "Which result best captures why the Leff trial is memorable?",
+        "o": [
+          {
+            "t": "Couple therapy was a viable treatment and showed advantages on depressive outcomes and acceptability in this relationally selected group.",
+            "c": true,
+            "fb": "The trial supports couple therapy when depression is embedded in critical partner relationships."
+          },
+          {
+            "t": "Antidepressants cured every participant and couple therapy had no role.",
+            "c": false,
+            "fb": "The study did not show universal medication cure and supported couple therapy as clinically meaningful."
+          },
+          {
+            "t": "The trial proved that depression is always caused by marital conflict.",
+            "c": false,
+            "fb": "The trial studied a selected relational context and should not be generalized as a single-cause model."
+          },
+          {
+            "t": "Both treatments were abandoned because neither improved symptoms.",
+            "c": false,
+            "fb": "The study found improvement, with couple therapy showing important advantages."
+          }
+        ]
+      },
+      {
+        "q": "A patient with depression reports frequent criticism from a spouse but no intimate partner violence. What treatment implication follows from Leff 2000?",
+        "o": [
+          {
+            "t": "Assess whether couple therapy could address relationship processes maintaining depression.",
+            "c": true,
+            "fb": "The trial supports considering couple therapy when partner criticism is clinically relevant."
+          },
+          {
+            "t": "Avoid asking about the relationship because depression treatment should be individual only.",
+            "c": false,
+            "fb": "Relationship context can be central to assessment and treatment planning."
+          },
+          {
+            "t": "Use couple therapy even when there is active coercive violence and safety risk.",
+            "c": false,
+            "fb": "Safety concerns such as intimate partner violence require specialized assessment and may contraindicate conjoint therapy."
+          },
+          {
+            "t": "Stop all antidepressants before discussing psychosocial options.",
+            "c": false,
+            "fb": "Psychotherapy consideration does not require abrupt medication discontinuation."
+          }
+        ]
+      },
+      {
+        "q": "Which broader psychiatry concept does Leff 2000 illustrate?",
+        "o": [
+          {
+            "t": "Psychiatric symptoms can be treated by targeting interpersonal environments as well as individual symptoms.",
+            "c": true,
+            "fb": "The trial is a clear example of relational treatment for an individual psychiatric disorder."
+          },
+          {
+            "t": "Only medication trials can provide evidence in psychiatry.",
+            "c": false,
+            "fb": "This was a psychotherapy trial with clinically relevant outcomes."
+          },
+          {
+            "t": "Depression treatment should ignore relapse prevention.",
+            "c": false,
+            "fb": "The study included treatment and maintenance considerations."
+          },
+          {
+            "t": "Partner criticism is useful because it motivates recovery.",
+            "c": false,
+            "fb": "Criticism is a risk context, not a therapeutic tool."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-20",
+    "title": "Pharoah 2010 - Cochrane Family",
+    "questions": [
+      {
+        "q": "Pharoah 2010 is best described as which type of evidence?",
+        "o": [
+          {
+            "t": "A Cochrane systematic review of family interventions for schizophrenia",
+            "c": true,
+            "fb": "It synthesized randomized evidence on family intervention rather than reporting a single new family-treatment site."
+          },
+          {
+            "t": "A single case report of psychodynamic therapy",
+            "c": false,
+            "fb": "The Cochrane review synthesized multiple studies."
+          },
+          {
+            "t": "A genetic study of serotonin transporter alleles",
+            "c": false,
+            "fb": "That is the Caspi gene-environment literature, not Pharoah's family-intervention review."
+          },
+          {
+            "t": "A diagnostic-validity proposal for psychiatric nosology",
+            "c": false,
+            "fb": "Diagnostic validity is not the focus of this Cochrane family-intervention review."
+          }
+        ]
+      },
+      {
+        "q": "Which outcome did the Pharoah review find family interventions may improve in schizophrenia?",
+        "o": [
+          {
+            "t": "Relapse and hospitalization risk",
+            "c": true,
+            "fb": "The review concluded that family intervention may reduce relapse events and hospitalizations."
+          },
+          {
+            "t": "A cure of schizophrenia after one session",
+            "c": false,
+            "fb": "The evidence supports risk reduction, not cure."
+          },
+          {
+            "t": "Elimination of the need for antipsychotic medication in all patients",
+            "c": false,
+            "fb": "Family intervention is an adjunctive psychosocial approach, not a universal medication replacement."
+          },
+          {
+            "t": "Immediate reversal of all negative symptoms",
+            "c": false,
+            "fb": "The review does not support an immediate universal reversal of negative symptoms."
+          }
+        ]
+      },
+      {
+        "q": "What intervention content best matches family psychoeducation reviewed by Pharoah and colleagues?",
+        "o": [
+          {
+            "t": "Education, communication training, problem-solving, and relapse planning with family members",
+            "c": true,
+            "fb": "These are common active components of structured family interventions."
+          },
+          {
+            "t": "A one-time instruction to relatives to monitor the patient silently",
+            "c": false,
+            "fb": "Effective family interventions are structured and interactive rather than silent monitoring."
+          },
+          {
+            "t": "Unsupervised confrontation of psychotic beliefs by relatives",
+            "c": false,
+            "fb": "Confrontational arguing is not the evidence-based family intervention strategy."
+          },
+          {
+            "t": "A medication algorithm with no family contact",
+            "c": false,
+            "fb": "The review specifically concerns family psychosocial interventions."
+          }
+        ]
+      },
+      {
+        "q": "Which statement is the best evidence-based counseling point after the Pharoah review?",
+        "o": [
+          {
+            "t": "Family intervention can be offered as part of comprehensive schizophrenia care when relatives are involved.",
+            "c": true,
+            "fb": "The review supports family intervention as an adjunct to comprehensive care."
+          },
+          {
+            "t": "Family intervention should replace medication and case management.",
+            "c": false,
+            "fb": "The evidence does not support replacing other indicated treatments."
+          },
+          {
+            "t": "Family intervention is useful only if the family caused the illness.",
+            "c": false,
+            "fb": "The intervention targets relapse risk and support, not blame."
+          },
+          {
+            "t": "Family intervention is contraindicated whenever schizophrenia is diagnosed.",
+            "c": false,
+            "fb": "Schizophrenia is the condition for which the family-intervention evidence applies."
+          }
+        ]
+      },
+      {
+        "q": "Why is a Cochrane review especially useful for teaching this topic?",
+        "o": [
+          {
+            "t": "It summarizes patterns across trials, helping students separate a robust treatment theme from one isolated study.",
+            "c": true,
+            "fb": "Systematic reviews are useful for seeing whether findings replicate across settings."
+          },
+          {
+            "t": "It removes the need to consider study quality.",
+            "c": false,
+            "fb": "Cochrane reviews explicitly assess quality and limitations."
+          },
+          {
+            "t": "It proves every family intervention has the same effect size.",
+            "c": false,
+            "fb": "Family interventions vary in content, dose, and study quality."
+          },
+          {
+            "t": "It is less reliable than a single anecdote.",
+            "c": false,
+            "fb": "A systematic review generally provides stronger evidence than anecdote."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-22",
+    "title": "Bateman 1999 - MBT",
+    "questions": [
+      {
+        "q": "Bateman and Fonagy's 1999 trial studied a structured treatment program for which condition?",
+        "o": [
+          {
+            "t": "Borderline personality disorder",
+            "c": true,
+            "fb": "The trial randomized patients with borderline personality disorder to partial hospitalization or standard care."
+          },
+          {
+            "t": "Acute alcohol withdrawal",
+            "c": false,
+            "fb": "The study was not an addiction detoxification trial."
+          },
+          {
+            "t": "Panic disorder treated with imipramine",
+            "c": false,
+            "fb": "That population belongs to panic-disorder treatment research, not Bateman and Fonagy."
+          },
+          {
+            "t": "Major neurocognitive disorder treated with memantine",
+            "c": false,
+            "fb": "The trial did not study dementia pharmacotherapy."
+          }
+        ]
+      },
+      {
+        "q": "Which intervention did Bateman 1999 evaluate?",
+        "o": [
+          {
+            "t": "Psychoanalytically oriented partial hospitalization including individual and group psychotherapy",
+            "c": true,
+            "fb": "This structured day-treatment model became foundational for mentalization-based treatment."
+          },
+          {
+            "t": "A brief medication-only visit every six months",
+            "c": false,
+            "fb": "The active treatment was intensive and psychotherapeutic, not medication-only."
+          },
+          {
+            "t": "A single family psychoeducation class for schizophrenia",
+            "c": false,
+            "fb": "That resembles family-intervention literature, not this BPD partial-hospitalization study."
+          },
+          {
+            "t": "A diagnostic interview without treatment",
+            "c": false,
+            "fb": "The study tested treatment outcomes rather than diagnostic assessment alone."
+          }
+        ]
+      },
+      {
+        "q": "Which outcome domain was central in Bateman 1999?",
+        "o": [
+          {
+            "t": "Suicidal and self-harming behavior, hospital use, and symptom distress",
+            "c": true,
+            "fb": "The study assessed clinically meaningful BPD outcomes including self-harm and inpatient use."
+          },
+          {
+            "t": "Only cholesterol levels after antipsychotic exposure",
+            "c": false,
+            "fb": "Metabolic monitoring was not the central outcome of this psychotherapy trial."
+          },
+          {
+            "t": "Only diagnostic validity of schizophrenia",
+            "c": false,
+            "fb": "The trial examined treatment outcomes for BPD."
+          },
+          {
+            "t": "Only serum lithium level",
+            "c": false,
+            "fb": "Lithium monitoring was not the primary outcome domain."
+          }
+        ]
+      },
+      {
+        "q": "What does mentalization-based treatment aim to strengthen?",
+        "o": [
+          {
+            "t": "The capacity to understand one's own and others' mental states, especially under attachment stress",
+            "c": true,
+            "fb": "Mentalization is the ability to make sense of behavior in terms of thoughts, feelings, and intentions."
+          },
+          {
+            "t": "The ability to suppress all emotional discussion in therapy",
+            "c": false,
+            "fb": "MBT explores mental states rather than suppressing emotional communication."
+          },
+          {
+            "t": "The capacity to memorize DSM codes without clinical formulation",
+            "c": false,
+            "fb": "MBT is a treatment model, not a diagnostic memorization exercise."
+          },
+          {
+            "t": "The ability to avoid all interpersonal relationships",
+            "c": false,
+            "fb": "MBT works directly with interpersonal understanding rather than avoidance."
+          }
+        ]
+      },
+      {
+        "q": "Which teaching point best follows from Bateman 1999?",
+        "o": [
+          {
+            "t": "Structured psychotherapy programs can meaningfully improve outcomes in BPD.",
+            "c": true,
+            "fb": "The trial countered the view that BPD is untreatable or only manageable with crisis care."
+          },
+          {
+            "t": "BPD should be treated only with benzodiazepines.",
+            "c": false,
+            "fb": "Psychotherapy is central to evidence-based BPD treatment; benzodiazepines can be risky."
+          },
+          {
+            "t": "Self-harm outcomes should be ignored in BPD trials.",
+            "c": false,
+            "fb": "Self-harm and suicidality are key outcome domains."
+          },
+          {
+            "t": "Partial hospitalization is identical to no treatment.",
+            "c": false,
+            "fb": "The structured partial-hospital program was the active intervention."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-23",
+    "title": "Wampold 2001 - Common Factors",
+    "questions": [
+      {
+        "q": "Wampold's common-factors argument most directly challenges which overly narrow view of psychotherapy?",
+        "o": [
+          {
+            "t": "That outcomes are explained only by specific manualized techniques and not by relational or contextual factors",
+            "c": true,
+            "fb": "The common-factors model emphasizes alliance, expectations, rationale, and therapist effects."
+          },
+          {
+            "t": "That psychotherapy requires a trained clinician",
+            "c": false,
+            "fb": "The common-factors argument does not claim training is irrelevant."
+          },
+          {
+            "t": "That patients should be treated with empathy",
+            "c": false,
+            "fb": "Empathy and alliance are part of what the common-factors literature highlights."
+          },
+          {
+            "t": "That treatment should be ethically delivered",
+            "c": false,
+            "fb": "Ethical care is not what the common-factors argument challenges."
+          }
+        ]
+      },
+      {
+        "q": "Which factor is a classic common factor across bona fide psychotherapies?",
+        "o": [
+          {
+            "t": "A credible treatment rationale shared by patient and therapist",
+            "c": true,
+            "fb": "A believable rationale can build hope, engagement, and therapeutic action across modalities."
+          },
+          {
+            "t": "The same homework worksheet for every diagnosis",
+            "c": false,
+            "fb": "Common factors are not identical worksheets or identical techniques."
+          },
+          {
+            "t": "Avoiding discussion of treatment goals",
+            "c": false,
+            "fb": "Goal agreement is often considered part of a strong therapeutic alliance."
+          },
+          {
+            "t": "A rule that the therapist must never adapt to the patient",
+            "c": false,
+            "fb": "Responsiveness to the patient is clinically important and compatible with common-factors thinking."
+          }
+        ]
+      },
+      {
+        "q": "Which statement best avoids overclaiming Wampold's thesis?",
+        "o": [
+          {
+            "t": "Common factors matter substantially, but competent technique and fit to the clinical problem still matter.",
+            "c": true,
+            "fb": "The useful teaching point is balance, not the claim that technique is meaningless."
+          },
+          {
+            "t": "All therapies are identical and training is unnecessary.",
+            "c": false,
+            "fb": "The common-factors literature does not justify abandoning competence or training."
+          },
+          {
+            "t": "Only medication has specific treatment effects.",
+            "c": false,
+            "fb": "Psychotherapies can have both shared and model-specific therapeutic processes."
+          },
+          {
+            "t": "Therapeutic alliance should not be measured.",
+            "c": false,
+            "fb": "Alliance is a key process to monitor in psychotherapy."
+          }
+        ]
+      },
+      {
+        "q": "A student observes that two different evidence-based therapies can both help depression. Which Wampold-informed explanation is most appropriate?",
+        "o": [
+          {
+            "t": "Different bona fide therapies may share healing ingredients such as alliance, hope, structure, and emotional engagement.",
+            "c": true,
+            "fb": "This is the core common-factors explanation for similar outcomes across credible therapies."
+          },
+          {
+            "t": "One of the studies must be fraudulent because only one therapy can work.",
+            "c": false,
+            "fb": "Multiple therapies can be effective through overlapping and distinct mechanisms."
+          },
+          {
+            "t": "Depression outcomes cannot be measured in psychotherapy research.",
+            "c": false,
+            "fb": "Depression outcomes are routinely measured in psychotherapy trials."
+          },
+          {
+            "t": "The result proves diagnosis is irrelevant to every treatment decision.",
+            "c": false,
+            "fb": "Diagnosis and formulation still inform treatment matching and safety planning."
+          }
+        ]
+      },
+      {
+        "q": "Which MS3 behavior best applies the common-factors literature during a therapy observation?",
+        "o": [
+          {
+            "t": "Notice whether the patient and clinician share goals, trust, and a plausible treatment explanation.",
+            "c": true,
+            "fb": "These alliance and expectancy elements are clinically meaningful across therapy models."
+          },
+          {
+            "t": "Judge the session only by whether a named manual page was followed exactly.",
+            "c": false,
+            "fb": "Technique matters, but common factors require attention to relationship and shared meaning."
+          },
+          {
+            "t": "Ignore patient engagement because only diagnosis matters.",
+            "c": false,
+            "fb": "Engagement is central to psychotherapy outcome."
+          },
+          {
+            "t": "Assume that warmth alone is sufficient for all high-risk patients.",
+            "c": false,
+            "fb": "A good relationship is important but does not replace risk management or appropriate treatment structure."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-24",
+    "title": "Shedler 2010 - Psychodynamic",
+    "questions": [
+      {
+        "q": "What was Shedler's main argument in the 2010 review of psychodynamic psychotherapy?",
+        "o": [
+          {
+            "t": "Empirical evidence supports psychodynamic therapy, with effects comparable to other evidence-based therapies.",
+            "c": true,
+            "fb": "The review challenged the perception that psychodynamic therapy lacks evidence."
+          },
+          {
+            "t": "Psychodynamic therapy has never been studied empirically.",
+            "c": false,
+            "fb": "Shedler reviewed empirical studies and meta-analytic findings."
+          },
+          {
+            "t": "Psychodynamic therapy is useful only as a placebo control.",
+            "c": false,
+            "fb": "The review argued for real therapeutic efficacy."
+          },
+          {
+            "t": "Psychodynamic therapy should replace all acute safety interventions.",
+            "c": false,
+            "fb": "Psychodynamic therapy evidence does not remove the need for safety assessment and crisis care."
+          }
+        ]
+      },
+      {
+        "q": "Which feature is commonly associated with psychodynamic psychotherapy?",
+        "o": [
+          {
+            "t": "Exploring affect, avoidance, recurring relationship patterns, and the therapeutic relationship",
+            "c": true,
+            "fb": "These are core psychodynamic treatment processes described in the evidence base."
+          },
+          {
+            "t": "Focusing only on medication blood levels",
+            "c": false,
+            "fb": "Medication monitoring is not a psychodynamic psychotherapy process."
+          },
+          {
+            "t": "Avoiding discussion of emotions to prevent transference",
+            "c": false,
+            "fb": "Psychodynamic therapy often uses emotion and transference as treatment material."
+          },
+          {
+            "t": "Teaching families schizophrenia relapse-prevention scripts only",
+            "c": false,
+            "fb": "That belongs to family psychoeducation rather than psychodynamic psychotherapy."
+          }
+        ]
+      },
+      {
+        "q": "Which finding from Shedler's review is especially useful for teaching?",
+        "o": [
+          {
+            "t": "Patients may maintain gains and continue improving after psychodynamic therapy ends.",
+            "c": true,
+            "fb": "Shedler highlighted durable and sometimes continuing post-treatment gains."
+          },
+          {
+            "t": "Benefits disappear immediately after the last session in all studies.",
+            "c": false,
+            "fb": "The review argued the opposite: gains can be maintained or increase."
+          },
+          {
+            "t": "Psychodynamic therapy works only by prescribing antidepressants.",
+            "c": false,
+            "fb": "The review addressed psychotherapy effects, not medication prescribing."
+          },
+          {
+            "t": "Only inpatient psychodynamic therapy has ever been studied.",
+            "c": false,
+            "fb": "Psychodynamic therapy has been studied in multiple formats and settings."
+          }
+        ]
+      },
+      {
+        "q": "A student says psychodynamic therapy is not evidence-based because it is older than CBT. What is the best correction?",
+        "o": [
+          {
+            "t": "Age of a therapy model does not determine evidence; psychodynamic therapy has empirical support.",
+            "c": true,
+            "fb": "Shedler's review directly addresses the evidence misconception."
+          },
+          {
+            "t": "Older therapies are always superior to newer therapies.",
+            "c": false,
+            "fb": "The point is evidence quality, not chronological superiority."
+          },
+          {
+            "t": "Evidence-based practice excludes psychotherapy research.",
+            "c": false,
+            "fb": "Psychotherapy trials and meta-analyses are part of evidence-based practice."
+          },
+          {
+            "t": "CBT has no evidence for any disorder.",
+            "c": false,
+            "fb": "CBT has a strong evidence base; the correction is that psychodynamic therapy also has evidence."
+          }
+        ]
+      },
+      {
+        "q": "Which clinical scenario is a reasonable place to consider psychodynamic formulation?",
+        "o": [
+          {
+            "t": "A patient with recurring interpersonal conflicts and affective patterns that repeat across settings",
+            "c": true,
+            "fb": "Psychodynamic formulation is especially suited to recurring relational and emotional patterns."
+          },
+          {
+            "t": "A patient with septic shock needing immediate antibiotics",
+            "c": false,
+            "fb": "Acute medical stabilization takes priority in that setting."
+          },
+          {
+            "t": "A patient refusing capacity assessment because psychodynamics replaces consent law",
+            "c": false,
+            "fb": "Psychodynamic formulation does not replace capacity assessment."
+          },
+          {
+            "t": "A patient requesting a genetic test for complement C4 risk",
+            "c": false,
+            "fb": "That request relates to genetics, not psychodynamic treatment selection."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-27",
+    "title": "Appelbaum 1988 - Capacity",
+    "questions": [
+      {
+        "q": "According to Appelbaum's framework, which ability is required for treatment decision-making capacity?",
+        "o": [
+          {
+            "t": "Communicating a stable choice about the proposed treatment",
+            "c": true,
+            "fb": "Communicating a choice is one of the four core abilities in capacity assessment."
+          },
+          {
+            "t": "Having a psychiatric diagnosis",
+            "c": false,
+            "fb": "Diagnosis alone does not determine capacity."
+          },
+          {
+            "t": "Agreeing with the physician's recommendation",
+            "c": false,
+            "fb": "A patient can have capacity and still refuse recommended treatment."
+          },
+          {
+            "t": "Scoring above average on an IQ test",
+            "c": false,
+            "fb": "Capacity is decision-specific and not reducible to IQ."
+          }
+        ]
+      },
+      {
+        "q": "Which list best matches the four abilities model of capacity?",
+        "o": [
+          {
+            "t": "Choice, understanding, appreciation, and reasoning",
+            "c": true,
+            "fb": "These four abilities organize modern clinical capacity assessment."
+          },
+          {
+            "t": "Mood, sleep, appetite, and energy",
+            "c": false,
+            "fb": "Those are depressive symptom domains, not the capacity abilities."
+          },
+          {
+            "t": "Insight, hallucinations, delusions, and affect",
+            "c": false,
+            "fb": "Psychotic symptoms may affect capacity but are not the four-abilities checklist."
+          },
+          {
+            "t": "Risk, resources, relatives, and religion",
+            "c": false,
+            "fb": "Those may be contextual factors but are not Appelbaum's four abilities."
+          }
+        ]
+      },
+      {
+        "q": "A patient can repeat the facts of surgery but denies that the diagnosis applies to him because the lab results were planted by aliens. Which capacity ability is most impaired?",
+        "o": [
+          {
+            "t": "Appreciation",
+            "c": true,
+            "fb": "Appreciation is the ability to apply relevant information to one's own situation and consequences."
+          },
+          {
+            "t": "Visual acuity",
+            "c": false,
+            "fb": "The problem is not seeing the information but applying it realistically to himself."
+          },
+          {
+            "t": "Motor coordination",
+            "c": false,
+            "fb": "Motor function is not the impaired capacity domain in this vignette."
+          },
+          {
+            "t": "Expressed emotion",
+            "c": false,
+            "fb": "Expressed emotion is a family-relapse construct, not a capacity ability."
+          }
+        ]
+      },
+      {
+        "q": "Which statement about capacity is most accurate?",
+        "o": [
+          {
+            "t": "Capacity is task-specific and may fluctuate over time.",
+            "c": true,
+            "fb": "A patient may have capacity for one decision but not another, and capacity can change."
+          },
+          {
+            "t": "Capacity is absent in every patient admitted involuntarily.",
+            "c": false,
+            "fb": "Involuntary status does not automatically remove capacity for all treatment decisions."
+          },
+          {
+            "t": "Capacity can be determined only by whether the patient agrees with treatment.",
+            "c": false,
+            "fb": "Agreement is not the standard; the decision-making process is."
+          },
+          {
+            "t": "Capacity never improves after delirium or psychosis is treated.",
+            "c": false,
+            "fb": "Treating reversible impairments can restore capacity."
+          }
+        ]
+      },
+      {
+        "q": "What is the clinician's role when decision-making capacity is uncertain?",
+        "o": [
+          {
+            "t": "Assess and document the relevant abilities, maximize the patient's functioning, and seek legal adjudication when needed.",
+            "c": true,
+            "fb": "Appelbaum emphasizes careful clinical assessment while recognizing that formal incompetence is a legal determination."
+          },
+          {
+            "t": "Declare the patient legally incompetent without documentation.",
+            "c": false,
+            "fb": "Legal incompetence is not declared casually by undocumented clinical impression."
+          },
+          {
+            "t": "Ignore the patient's reasoning if the family disagrees.",
+            "c": false,
+            "fb": "Family input may help, but the patient's decision-making abilities must be assessed."
+          },
+          {
+            "t": "Avoid explaining the treatment because capacity is already fixed.",
+            "c": false,
+            "fb": "Providing information and support can improve the patient's ability to decide."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-31",
+    "title": "Zanarini 2005 - BPD Remission",
+    "questions": [
+      {
+        "q": "The McLean Study of Adult Development is most important because it changed assumptions about which aspect of borderline personality disorder?",
+        "o": [
+          {
+            "t": "Longitudinal course and likelihood of remission",
+            "c": true,
+            "fb": "The study showed that symptomatic remission in BPD is far more common than earlier pessimistic views suggested."
+          },
+          {
+            "t": "The acute efficacy of antipsychotics for schizophrenia",
+            "c": false,
+            "fb": "That is a different clinical area and study tradition."
+          },
+          {
+            "t": "The genetic basis of complement activation",
+            "c": false,
+            "fb": "Complement genetics is unrelated to the MSAD BPD follow-up study."
+          },
+          {
+            "t": "The diagnosis of delirium in mechanically ventilated patients",
+            "c": false,
+            "fb": "The MSAD followed adults with borderline personality disorder, not ICU delirium."
+          }
+        ]
+      },
+      {
+        "q": "Which finding best reflects Zanarini's early MSAD follow-up?",
+        "o": [
+          {
+            "t": "Many patients with BPD achieved remission, and recurrences were less common than expected.",
+            "c": true,
+            "fb": "The study provided a more hopeful and empirically grounded prognosis for BPD."
+          },
+          {
+            "t": "BPD symptoms never remit once diagnosed.",
+            "c": false,
+            "fb": "The MSAD directly challenged this pessimistic belief."
+          },
+          {
+            "t": "Completed suicide occurred in most patients during follow-up.",
+            "c": false,
+            "fb": "Suicide risk remains serious, but the observed rate was lower than older assumptions."
+          },
+          {
+            "t": "Medication alone produced immediate functional recovery in all participants.",
+            "c": false,
+            "fb": "The study was longitudinal and did not show universal medication-only recovery."
+          }
+        ]
+      },
+      {
+        "q": "Which symptom-course distinction is associated with Zanarini's BPD work?",
+        "o": [
+          {
+            "t": "Some acute symptoms improve sooner, while temperamental and interpersonal features may persist longer.",
+            "c": true,
+            "fb": "The course of BPD is heterogeneous, with different symptom domains changing at different rates."
+          },
+          {
+            "t": "All BPD symptoms improve at the same speed in every patient.",
+            "c": false,
+            "fb": "The MSAD emphasized differential symptom-course patterns."
+          },
+          {
+            "t": "Only hallucinations define BPD prognosis.",
+            "c": false,
+            "fb": "Hallucinations are not the central prognostic marker in BPD course studies."
+          },
+          {
+            "t": "BPD course can be predicted perfectly at intake.",
+            "c": false,
+            "fb": "Longitudinal outcomes are variable and cannot be predicted perfectly."
+          }
+        ]
+      },
+      {
+        "q": "A patient with new BPD diagnosis asks if improvement is possible. Which answer best reflects Zanarini 2005?",
+        "o": [
+          {
+            "t": "Yes; many patients improve substantially over time, though functional recovery may require sustained treatment and support.",
+            "c": true,
+            "fb": "The study supports realistic hope while recognizing ongoing functional challenges."
+          },
+          {
+            "t": "No; remission is essentially impossible.",
+            "c": false,
+            "fb": "That contradicts the longitudinal findings."
+          },
+          {
+            "t": "Yes; symptoms always disappear within one week of diagnosis.",
+            "c": false,
+            "fb": "Improvement is possible but usually not instantaneous or uniform."
+          },
+          {
+            "t": "Only inpatient admission can produce remission.",
+            "c": false,
+            "fb": "BPD improvement is not limited to inpatient treatment."
+          }
+        ]
+      },
+      {
+        "q": "What is a key clinical implication of the MSAD findings for stigma reduction?",
+        "o": [
+          {
+            "t": "Clinicians should avoid describing BPD as untreatable or hopeless.",
+            "c": true,
+            "fb": "The longitudinal evidence supports a hopeful, evidence-based stance."
+          },
+          {
+            "t": "Clinicians should avoid offering psychotherapy because patients remit automatically.",
+            "c": false,
+            "fb": "Hopeful prognosis does not remove the need for evidence-based care."
+          },
+          {
+            "t": "Clinicians should use BPD diagnosis only as an exclusion criterion.",
+            "c": false,
+            "fb": "The diagnosis should guide treatment and support, not exclusion."
+          },
+          {
+            "t": "Clinicians should assume self-harm is never clinically serious in BPD.",
+            "c": false,
+            "fb": "Self-harm and suicide risk must always be taken seriously."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-32",
+    "title": "Gunderson 2018 - BPD Review",
+    "questions": [
+      {
+        "q": "Which feature is central to borderline personality disorder as summarized in Gunderson's review?",
+        "o": [
+          {
+            "t": "Extreme sensitivity to perceived interpersonal slights with unstable self-image and affective volatility",
+            "c": true,
+            "fb": "Interpersonal hypersensitivity, identity disturbance, affective instability, and impulsivity are core BPD features."
+          },
+          {
+            "t": "Progressive memory loss as the defining symptom",
+            "c": false,
+            "fb": "Progressive memory loss suggests a neurocognitive disorder rather than BPD."
+          },
+          {
+            "t": "Fixed negative symptoms without interpersonal reactivity",
+            "c": false,
+            "fb": "Negative symptoms are more characteristic of schizophrenia-spectrum disorders."
+          },
+          {
+            "t": "Only panic attacks triggered by public places",
+            "c": false,
+            "fb": "That pattern would point toward anxiety disorders, not BPD."
+          }
+        ]
+      },
+      {
+        "q": "Which treatment statement best reflects Gunderson 2018?",
+        "o": [
+          {
+            "t": "Evidence-based psychotherapy is central; medication is usually adjunctive and symptom-targeted.",
+            "c": true,
+            "fb": "The review emphasizes psychosocial treatment rather than medication as a cure for core BPD."
+          },
+          {
+            "t": "BPD is treated primarily with indefinite benzodiazepines.",
+            "c": false,
+            "fb": "Benzodiazepines can worsen disinhibition and are not first-line BPD treatment."
+          },
+          {
+            "t": "No psychotherapy has any role in BPD.",
+            "c": false,
+            "fb": "Multiple structured psychotherapies have evidence for BPD."
+          },
+          {
+            "t": "Medication eliminates the need for a therapeutic frame.",
+            "c": false,
+            "fb": "A consistent therapeutic frame is important in BPD care."
+          }
+        ]
+      },
+      {
+        "q": "A student says patients with BPD are manipulative and cannot improve. What is the best evidence-based response?",
+        "o": [
+          {
+            "t": "BPD involves severe emotion and relationship dysregulation, and many patients improve with structured treatment.",
+            "c": true,
+            "fb": "This replaces stigma with a clinically accurate and hopeful formulation."
+          },
+          {
+            "t": "The statement is correct, so treatment should be withheld.",
+            "c": false,
+            "fb": "Withholding care based on stigma is inappropriate and unsupported."
+          },
+          {
+            "t": "BPD symptoms are always intentional and never associated with distress.",
+            "c": false,
+            "fb": "BPD symptoms are associated with substantial distress and risk."
+          },
+          {
+            "t": "BPD is only a legal term and not a clinical diagnosis.",
+            "c": false,
+            "fb": "BPD is a clinical diagnosis with an evidence base."
+          }
+        ]
+      },
+      {
+        "q": "Which clinical stance is most useful when caring for patients with BPD?",
+        "o": [
+          {
+            "t": "Validate distress, maintain clear boundaries, and use a structured treatment plan.",
+            "c": true,
+            "fb": "BPD care benefits from both empathy and consistency."
+          },
+          {
+            "t": "Avoid boundaries because any limit-setting is harmful.",
+            "c": false,
+            "fb": "Clear, compassionate boundaries are often therapeutic."
+          },
+          {
+            "t": "Respond to every crisis with a different plan to show flexibility.",
+            "c": false,
+            "fb": "Inconsistent plans can worsen instability; structure matters."
+          },
+          {
+            "t": "Exclude the patient from psychotherapy if self-harm is present.",
+            "c": false,
+            "fb": "Self-harm is a common treatment target in evidence-based BPD psychotherapies."
+          }
+        ]
+      },
+      {
+        "q": "What prognostic message is most consistent with Gunderson 2018?",
+        "o": [
+          {
+            "t": "Symptomatic remission is common over time, though social and vocational recovery may lag.",
+            "c": true,
+            "fb": "Modern BPD reviews emphasize both hope for symptom improvement and the need to address functioning."
+          },
+          {
+            "t": "BPD inevitably worsens in every patient.",
+            "c": false,
+            "fb": "That pessimistic view is inconsistent with longitudinal evidence."
+          },
+          {
+            "t": "BPD disappears after one medication dose.",
+            "c": false,
+            "fb": "Improvement usually requires sustained treatment and time."
+          },
+          {
+            "t": "BPD has no relationship to suicide risk.",
+            "c": false,
+            "fb": "Suicide risk and self-harm require careful assessment in BPD."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-35",
+    "title": "Franklin 2017 - Risk Factors",
+    "questions": [
+      {
+        "q": "Franklin 2017 reviewed 50 years of research on which clinical problem?",
+        "o": [
+          {
+            "t": "Longitudinal prediction of suicidal thoughts and behaviors",
+            "c": true,
+            "fb": "The meta-analysis examined risk factors for future suicidal thoughts and behaviors."
+          },
+          {
+            "t": "Acute efficacy of antidepressants in adult depression",
+            "c": false,
+            "fb": "The paper focused on suicide-risk prediction, not antidepressant efficacy."
+          },
+          {
+            "t": "Medication titration in pediatric ADHD",
+            "c": false,
+            "fb": "That topic belongs to the MTA ADHD study."
+          },
+          {
+            "t": "Family psychoeducation for schizophrenia relapse",
+            "c": false,
+            "fb": "That topic belongs to the family-intervention literature."
+          }
+        ]
+      },
+      {
+        "q": "What was the most important finding of the Franklin meta-analysis for clinical risk assessment?",
+        "o": [
+          {
+            "t": "Traditional risk factors predicted suicidal outcomes only modestly, often only slightly better than chance.",
+            "c": true,
+            "fb": "The paper warned against overconfidence in individual-level prediction."
+          },
+          {
+            "t": "One risk factor perfectly predicted suicide in all settings.",
+            "c": false,
+            "fb": "No broad risk-factor category provided near-perfect prediction."
+          },
+          {
+            "t": "Risk factors were irrelevant because suicide cannot be studied.",
+            "c": false,
+            "fb": "Risk factors matter, but their predictive power is limited."
+          },
+          {
+            "t": "Prediction accuracy has improved dramatically without new methods.",
+            "c": false,
+            "fb": "The review found that prediction had not substantially improved across decades."
+          }
+        ]
+      },
+      {
+        "q": "Which clinical implication follows from Franklin 2017?",
+        "o": [
+          {
+            "t": "Use risk factors to inform formulation, but do not rely on them as precise individual prediction tools.",
+            "c": true,
+            "fb": "Risk assessment should guide care while acknowledging prediction limits."
+          },
+          {
+            "t": "Stop asking about suicide risk because prediction is imperfect.",
+            "c": false,
+            "fb": "Imperfect prediction does not eliminate the need for assessment and intervention."
+          },
+          {
+            "t": "Use a simple high-risk label as the complete treatment plan.",
+            "c": false,
+            "fb": "Risk labels should not substitute for safety planning and treatment."
+          },
+          {
+            "t": "Discharge all patients with no static risk factors without follow-up.",
+            "c": false,
+            "fb": "Absence of known risk factors does not guarantee safety."
+          }
+        ]
+      },
+      {
+        "q": "A student asks why safety planning matters if risk prediction is weak. What is the best answer?",
+        "o": [
+          {
+            "t": "Because prevention should focus on actionable supports and means safety, not only on predicting who will die by suicide.",
+            "c": true,
+            "fb": "Franklin's findings support shifting from prediction overconfidence toward practical prevention."
+          },
+          {
+            "t": "Safety planning matters only when a scale produces a perfect score.",
+            "c": false,
+            "fb": "Safety planning is useful precisely because prediction is imperfect."
+          },
+          {
+            "t": "Safety planning is contraindicated when risk factors are present.",
+            "c": false,
+            "fb": "Risk factors increase the need for safety planning."
+          },
+          {
+            "t": "Safety planning is only a research tool and not clinical care.",
+            "c": false,
+            "fb": "Safety planning is a clinical intervention used in suicide prevention."
+          }
+        ]
+      },
+      {
+        "q": "Which research direction is most responsive to Franklin 2017?",
+        "o": [
+          {
+            "t": "Developing stronger, prospective, multivariable and near-term prediction models while testing interventions",
+            "c": true,
+            "fb": "The review suggests the field needs better methods and more intervention-focused work."
+          },
+          {
+            "t": "Repeating only small cross-sectional studies of one risk factor",
+            "c": false,
+            "fb": "The meta-analysis showed limits of the traditional isolated-risk-factor approach."
+          },
+          {
+            "t": "Avoiding prospective follow-up because it is too informative",
+            "c": false,
+            "fb": "Prospective follow-up is essential for prediction research."
+          },
+          {
+            "t": "Assuming old risk-factor lists are already sufficient",
+            "c": false,
+            "fb": "The review challenged that assumption."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-36",
+    "title": "Caspi 2003 - 5-HTTLPR",
+    "questions": [
+      {
+        "q": "Caspi 2003 is famous for proposing what kind of relationship between life stress and depression?",
+        "o": [
+          {
+            "t": "A gene-by-environment interaction involving 5-HTTLPR and stressful life events",
+            "c": true,
+            "fb": "The study proposed that serotonin transporter promoter variation moderated the depression risk associated with stress."
+          },
+          {
+            "t": "A randomized medication effect of SSRIs on childhood trauma",
+            "c": false,
+            "fb": "The study was observational and did not randomize antidepressant treatment."
+          },
+          {
+            "t": "A family psychoeducation effect on schizophrenia relapse",
+            "c": false,
+            "fb": "That is a separate psychosocial schizophrenia literature."
+          },
+          {
+            "t": "A diagnostic-validity framework for schizophrenia",
+            "c": false,
+            "fb": "Robins and Guze, not Caspi, proposed the classic diagnostic-validity framework."
+          }
+        ]
+      },
+      {
+        "q": "In the original Caspi report, which genotype pattern was associated with greater stress-related depression vulnerability?",
+        "o": [
+          {
+            "t": "One or two copies of the short allele",
+            "c": true,
+            "fb": "The reported interaction suggested that short-allele carriers had more depressive outcomes after stress."
+          },
+          {
+            "t": "Two copies of a complement C4A high-expression allele",
+            "c": false,
+            "fb": "Complement C4A belongs to schizophrenia genetics, not the 5-HTTLPR depression study."
+          },
+          {
+            "t": "A mutation that directly causes BPD in all carriers",
+            "c": false,
+            "fb": "The study was about moderated stress response, not a deterministic BPD mutation."
+          },
+          {
+            "t": "Absence of any measured genetic variation",
+            "c": false,
+            "fb": "The paper specifically examined serotonin transporter promoter polymorphism."
+          }
+        ]
+      },
+      {
+        "q": "Which design feature is important for interpreting Caspi 2003?",
+        "o": [
+          {
+            "t": "It used a prospective longitudinal birth cohort rather than a randomized trial.",
+            "c": true,
+            "fb": "The design supports temporal observation but does not randomize genes or life stress."
+          },
+          {
+            "t": "It randomly assigned participants to stressful life events.",
+            "c": false,
+            "fb": "Stressful life events were observed, not assigned."
+          },
+          {
+            "t": "It enrolled only inpatients receiving ECT.",
+            "c": false,
+            "fb": "The study was a population cohort, not an ECT trial."
+          },
+          {
+            "t": "It was a Cochrane review of family therapy.",
+            "c": false,
+            "fb": "Caspi 2003 was an original cohort study, not a systematic review."
+          }
+        ]
+      },
+      {
+        "q": "What was the broader influence of Caspi 2003?",
+        "o": [
+          {
+            "t": "It accelerated interest in gene-environment interactions in psychiatric disorders.",
+            "c": true,
+            "fb": "The paper became a landmark example of biological vulnerability interacting with environmental stress."
+          },
+          {
+            "t": "It established 5-HTTLPR testing as a standard clinical depression test.",
+            "c": false,
+            "fb": "The finding did not become a recommended clinical genetic test."
+          },
+          {
+            "t": "It proved depression is caused only by serotonin deficiency.",
+            "c": false,
+            "fb": "The study focused on moderation of stress risk, not a simple serotonin-deficiency model."
+          },
+          {
+            "t": "It eliminated the need to ask about psychosocial stress.",
+            "c": false,
+            "fb": "Stress exposure was central to the proposed interaction."
+          }
+        ]
+      },
+      {
+        "q": "Which clinical use of Caspi 2003 would be inappropriate today?",
+        "o": [
+          {
+            "t": "Ordering 5-HTTLPR testing to decide whether a patient will become depressed after stress",
+            "c": true,
+            "fb": "The finding is historically important but not a clinically validated individual prediction test."
+          },
+          {
+            "t": "Using the study to teach the concept of gene-environment interaction",
+            "c": false,
+            "fb": "The study remains useful pedagogically for explaining gene-environment hypotheses."
+          },
+          {
+            "t": "Discussing how stress and vulnerability can interact",
+            "c": false,
+            "fb": "That is an appropriate conceptual use."
+          },
+          {
+            "t": "Comparing the original finding with later replication attempts",
+            "c": false,
+            "fb": "The study is often taught alongside later non-replication literature."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-37",
+    "title": "Border 2019 - Non-Replication",
+    "questions": [
+      {
+        "q": "Border 2019 primarily challenged which area of depression genetics?",
+        "o": [
+          {
+            "t": "Historical candidate gene and candidate gene-by-environment hypotheses",
+            "c": true,
+            "fb": "The study tested widely studied candidate genes and found no support across large samples."
+          },
+          {
+            "t": "The efficacy of family psychoeducation for schizophrenia",
+            "c": false,
+            "fb": "Border 2019 was a genetics study, not a family-intervention trial."
+          },
+          {
+            "t": "The diagnosis of borderline personality disorder",
+            "c": false,
+            "fb": "The study focused on depression genetics, not BPD diagnosis."
+          },
+          {
+            "t": "The use of ECT after depression remission",
+            "c": false,
+            "fb": "ECT continuation was not the subject of Border 2019."
+          }
+        ]
+      },
+      {
+        "q": "Which methodological feature made Border 2019 more persuasive than many earlier candidate gene studies?",
+        "o": [
+          {
+            "t": "Very large samples and preregistered analyses across multiple depression phenotypes",
+            "c": true,
+            "fb": "Large, preregistered analyses reduce false-positive risk compared with small exploratory studies."
+          },
+          {
+            "t": "A single uncontrolled case report",
+            "c": false,
+            "fb": "The study's strength was scale and systematic analysis, not anecdote."
+          },
+          {
+            "t": "Random assignment to different genotypes",
+            "c": false,
+            "fb": "Genotypes cannot be randomized in this kind of human genetic study."
+          },
+          {
+            "t": "Excluding environmental measures entirely from every analysis",
+            "c": false,
+            "fb": "The paper explicitly examined candidate gene and gene-by-environment hypotheses."
+          }
+        ]
+      },
+      {
+        "q": "What did Border 2019 imply about 5-HTTLPR depression-risk claims?",
+        "o": [
+          {
+            "t": "They should not be treated as established clinical predictors of depression.",
+            "c": true,
+            "fb": "The study found no support for historical candidate gene hypotheses at clinical-prediction strength."
+          },
+          {
+            "t": "They are now definitive enough for routine clinical testing.",
+            "c": false,
+            "fb": "The study argues against that conclusion."
+          },
+          {
+            "t": "They prove that environment has no role in depression.",
+            "c": false,
+            "fb": "Non-replication of specific candidate-gene claims does not erase environmental risk."
+          },
+          {
+            "t": "They show that all genetic research in psychiatry is impossible.",
+            "c": false,
+            "fb": "The paper critiques candidate gene approaches, not all psychiatric genetics."
+          }
+        ]
+      },
+      {
+        "q": "How should students reconcile Caspi 2003 and Border 2019?",
+        "o": [
+          {
+            "t": "Caspi is historically important and hypothesis-generating; Border shows the need for adequately powered replication.",
+            "c": true,
+            "fb": "This teaches scientific self-correction rather than simple dismissal of either paper."
+          },
+          {
+            "t": "Caspi proves clinical testing is mandatory despite later evidence.",
+            "c": false,
+            "fb": "Later non-replication cautions against clinical testing."
+          },
+          {
+            "t": "Border proves life stress never affects depression.",
+            "c": false,
+            "fb": "Border addressed candidate gene hypotheses, not whether stress matters."
+          },
+          {
+            "t": "The two studies are unrelated because neither discusses genes.",
+            "c": false,
+            "fb": "Both are central to teaching candidate gene and gene-environment claims."
+          }
+        ]
+      },
+      {
+        "q": "Which research practice is most reinforced by Border 2019?",
+        "o": [
+          {
+            "t": "Preregistration, large samples, and replication before clinical translation",
+            "c": true,
+            "fb": "The study is a clear example of why robust methods matter in psychiatric genetics."
+          },
+          {
+            "t": "Publishing small positive findings without replication as clinical tests",
+            "c": false,
+            "fb": "That is exactly the kind of premature translation the paper cautions against."
+          },
+          {
+            "t": "Avoiding transparent analytic plans",
+            "c": false,
+            "fb": "Transparency strengthens credibility."
+          },
+          {
+            "t": "Using candidate genes as deterministic explanations for complex disorders",
+            "c": false,
+            "fb": "Complex psychiatric disorders are not explained by single deterministic candidate genes."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-38",
+    "title": "Sekar 2016 - C4 Schizophrenia",
+    "questions": [
+      {
+        "q": "Sekar 2016 investigated the strongest common genetic association for schizophrenia in which genomic region?",
+        "o": [
+          {
+            "t": "The major histocompatibility complex region involving complement component 4",
+            "c": true,
+            "fb": "The study helped explain part of the MHC association through structural variation in C4."
+          },
+          {
+            "t": "The serotonin transporter promoter as a depression-only locus",
+            "c": false,
+            "fb": "5-HTTLPR is associated with the Caspi depression literature, not Sekar's C4 schizophrenia study."
+          },
+          {
+            "t": "The dopamine transporter gene in ADHD treatment response",
+            "c": false,
+            "fb": "Sekar 2016 focused on schizophrenia risk and complement biology."
+          },
+          {
+            "t": "A mitochondrial mutation causing all psychotic disorders",
+            "c": false,
+            "fb": "The study did not identify a single deterministic mitochondrial cause."
+          }
+        ]
+      },
+      {
+        "q": "Which C4-related finding was most central to the Sekar paper?",
+        "o": [
+          {
+            "t": "C4 alleles associated with higher C4A expression were linked to greater schizophrenia risk.",
+            "c": true,
+            "fb": "The paper connected structural C4 variation, C4A expression, and schizophrenia risk."
+          },
+          {
+            "t": "Low C4A expression fully protected every carrier from schizophrenia.",
+            "c": false,
+            "fb": "The association was probabilistic, not fully protective or deterministic."
+          },
+          {
+            "t": "C4 had no expression in the brain.",
+            "c": false,
+            "fb": "The study found complement-related expression and localization relevant to brain biology."
+          },
+          {
+            "t": "C4 variation explained all schizophrenia heritability.",
+            "c": false,
+            "fb": "C4 explains only part of a complex polygenic risk architecture."
+          }
+        ]
+      },
+      {
+        "q": "What neurodevelopmental mechanism did Sekar 2016 help connect to schizophrenia risk?",
+        "o": [
+          {
+            "t": "Complement-mediated synaptic pruning",
+            "c": true,
+            "fb": "The paper linked complement biology to synapse elimination, a plausible neurodevelopmental mechanism."
+          },
+          {
+            "t": "Direct serotonin depletion as the sole cause of psychosis",
+            "c": false,
+            "fb": "The study did not support a simple serotonin-depletion model."
+          },
+          {
+            "t": "Antidepressant withdrawal from SSRIs",
+            "c": false,
+            "fb": "Withdrawal is unrelated to the C4 schizophrenia genetics mechanism."
+          },
+          {
+            "t": "Family criticism as a genetic mutation",
+            "c": false,
+            "fb": "Family expressed emotion is a psychosocial relapse factor, not a genetic mutation."
+          }
+        ]
+      },
+      {
+        "q": "Which clinical statement about C4 testing is most appropriate?",
+        "o": [
+          {
+            "t": "C4 findings are mechanistically important but not a stand-alone diagnostic test for schizophrenia.",
+            "c": true,
+            "fb": "The association improves biological understanding but is not clinically deterministic."
+          },
+          {
+            "t": "C4 testing can diagnose schizophrenia in asymptomatic children.",
+            "c": false,
+            "fb": "That overstates the clinical utility of the finding."
+          },
+          {
+            "t": "C4 status determines which antipsychotic will work for every patient.",
+            "c": false,
+            "fb": "The study did not provide a medication-selection test."
+          },
+          {
+            "t": "C4 findings eliminate the need for psychosocial treatment.",
+            "c": false,
+            "fb": "Biological mechanisms do not replace comprehensive care."
+          }
+        ]
+      },
+      {
+        "q": "Why is Sekar 2016 useful in a psychiatry clerkship curriculum?",
+        "o": [
+          {
+            "t": "It shows how genetic association can point toward a plausible brain mechanism.",
+            "c": true,
+            "fb": "The study bridges population genetics, complement biology, and synaptic development."
+          },
+          {
+            "t": "It proves psychiatric disorders are not biological.",
+            "c": false,
+            "fb": "The paper is an example of biologically grounded psychiatric research."
+          },
+          {
+            "t": "It shows that single genes determine complex psychiatric diagnoses.",
+            "c": false,
+            "fb": "The finding is probabilistic within a polygenic disorder."
+          },
+          {
+            "t": "It replaces clinical interviewing with whole-genome sequencing.",
+            "c": false,
+            "fb": "Clinical diagnosis still relies on clinical assessment."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-39",
+    "title": "Kernberg 1984 - Personality Org",
+    "questions": [
+      {
+        "q": "Kernberg's personality organization model is most useful for assessing which structural features?",
+        "o": [
+          {
+            "t": "Identity integration, predominant defenses, and reality testing",
+            "c": true,
+            "fb": "These domains help distinguish neurotic, borderline, and psychotic levels of personality organization."
+          },
+          {
+            "t": "Serum lithium level, creatinine, and thyroid function",
+            "c": false,
+            "fb": "Those labs matter for lithium monitoring, not personality organization."
+          },
+          {
+            "t": "C4A copy number alone",
+            "c": false,
+            "fb": "C4 genetics is unrelated to Kernberg's structural clinical interview model."
+          },
+          {
+            "t": "Forced expiratory volume and oxygen saturation",
+            "c": false,
+            "fb": "Pulmonary measures are not the structural domains of personality organization."
+          }
+        ]
+      },
+      {
+        "q": "In Kernberg's model, borderline personality organization is classically associated with which pattern?",
+        "o": [
+          {
+            "t": "Identity diffusion, primitive defenses, and generally intact reality testing",
+            "c": true,
+            "fb": "This combination distinguishes borderline organization from psychotic organization."
+          },
+          {
+            "t": "Fully integrated identity, mature defenses, and no interpersonal conflict",
+            "c": false,
+            "fb": "That description is closer to healthier or neurotic-level functioning."
+          },
+          {
+            "t": "Permanent loss of reality testing in every interaction",
+            "c": false,
+            "fb": "Persistent loss of reality testing would suggest psychotic-level organization."
+          },
+          {
+            "t": "Absence of any defenses or affective reactions",
+            "c": false,
+            "fb": "Defensive style and affective reactivity are central to the model."
+          }
+        ]
+      },
+      {
+        "q": "Which defense is most associated with borderline personality organization in Kernberg's framework?",
+        "o": [
+          {
+            "t": "Splitting",
+            "c": true,
+            "fb": "Splitting is a classic primitive defense emphasized in Kernberg's model."
+          },
+          {
+            "t": "Sublimation as the only defense",
+            "c": false,
+            "fb": "Sublimation is a mature defense and not the hallmark primitive defense here."
+          },
+          {
+            "t": "No defensive processes",
+            "c": false,
+            "fb": "The model explicitly evaluates defenses."
+          },
+          {
+            "t": "Bronchodilation",
+            "c": false,
+            "fb": "Bronchodilation is a physiologic process, not a psychological defense."
+          }
+        ]
+      },
+      {
+        "q": "How should students distinguish borderline personality organization from DSM borderline personality disorder?",
+        "o": [
+          {
+            "t": "Personality organization is a structural formulation and is not identical to a DSM categorical diagnosis.",
+            "c": true,
+            "fb": "Kernberg's model can inform formulation across diagnoses and is broader than DSM BPD."
+          },
+          {
+            "t": "They are exactly the same term in every clinical context.",
+            "c": false,
+            "fb": "The structural model and DSM category overlap but are not identical."
+          },
+          {
+            "t": "Personality organization is a lab test and DSM BPD is a medication dose.",
+            "c": false,
+            "fb": "Both are clinical concepts, but one is a structural formulation and one is a diagnostic category."
+          },
+          {
+            "t": "DSM BPD is diagnosed only by C4A expression.",
+            "c": false,
+            "fb": "DSM BPD is diagnosed clinically, not by complement genetics."
+          }
+        ]
+      },
+      {
+        "q": "What is the practical value of Kernberg's model in psychotherapy planning?",
+        "o": [
+          {
+            "t": "It helps anticipate transference, defenses, identity disturbance, and level of structure needed in treatment.",
+            "c": true,
+            "fb": "Structural formulation guides therapeutic stance and treatment frame."
+          },
+          {
+            "t": "It determines the exact antidepressant dose for every patient.",
+            "c": false,
+            "fb": "The model is psychodynamic and structural, not a dosing algorithm."
+          },
+          {
+            "t": "It eliminates the need for risk assessment.",
+            "c": false,
+            "fb": "Risk assessment remains essential regardless of formulation."
+          },
+          {
+            "t": "It proves psychotherapy cannot help personality pathology.",
+            "c": false,
+            "fb": "Kernberg's work is closely tied to psychotherapy for severe personality pathology."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-40",
+    "title": "Gabbard 1995 - Boundaries",
+    "questions": [
+      {
+        "q": "Gabbard's boundary paper is most useful for teaching which clinical distinction?",
+        "o": [
+          {
+            "t": "Boundary crossings may be benign or clinically justified, while boundary violations exploit or harm the patient.",
+            "c": true,
+            "fb": "The paper emphasizes clinical context while distinguishing crossings from harmful violations."
+          },
+          {
+            "t": "All boundary crossings are identical to sexual misconduct.",
+            "c": false,
+            "fb": "Some crossings can be clinically appropriate; violations are harmful or exploitative."
+          },
+          {
+            "t": "Boundaries are irrelevant if the clinician has good intentions.",
+            "c": false,
+            "fb": "Good intentions do not remove the need for boundary awareness and risk management."
+          },
+          {
+            "t": "Boundary issues occur only in inpatient units.",
+            "c": false,
+            "fb": "Boundary issues can occur in any clinical setting."
+          }
+        ]
+      },
+      {
+        "q": "Which area is part of Gabbard's boundary framework?",
+        "o": [
+          {
+            "t": "Role, time, place, money, gifts, self-disclosure, language, and physical contact",
+            "c": true,
+            "fb": "These are examples of clinical boundary domains reviewed in the paper."
+          },
+          {
+            "t": "Only medication dose and insurance formulary",
+            "c": false,
+            "fb": "Medication and insurance matter clinically but do not capture the boundary framework."
+          },
+          {
+            "t": "Only whether the patient has capacity",
+            "c": false,
+            "fb": "Capacity is a separate ethics topic from therapeutic boundaries."
+          },
+          {
+            "t": "Only whether the patient agrees with the clinician",
+            "c": false,
+            "fb": "Agreement does not define whether boundaries are appropriate."
+          }
+        ]
+      },
+      {
+        "q": "Which behavior is best classified as a serious boundary violation?",
+        "o": [
+          {
+            "t": "A sexual relationship with a current patient",
+            "c": true,
+            "fb": "Sexual contact with a current patient is exploitative and never clinically justified."
+          },
+          {
+            "t": "A brief, clinically relevant self-disclosure used to support treatment goals",
+            "c": false,
+            "fb": "Limited self-disclosure can be a crossing that requires judgment, not automatically a violation."
+          },
+          {
+            "t": "Extending a session briefly during an acute safety crisis",
+            "c": false,
+            "fb": "A time boundary crossing may be clinically justified depending on context."
+          },
+          {
+            "t": "Accepting a modest culturally meaningful token after discussing implications",
+            "c": false,
+            "fb": "Gift situations require careful judgment and documentation rather than automatic classification as severe violation."
+          }
+        ]
+      },
+      {
+        "q": "A patient offers an expensive gift to a resident. Which response best reflects boundary-aware practice?",
+        "o": [
+          {
+            "t": "Explore the meaning of the gift, maintain the treatment frame, consult if needed, and document the decision.",
+            "c": true,
+            "fb": "Boundary decisions should be clinically reasoned rather than impulsive."
+          },
+          {
+            "t": "Accept it immediately to avoid hurting the patient's feelings.",
+            "c": false,
+            "fb": "Expensive gifts can create exploitation, obligation, or frame problems."
+          },
+          {
+            "t": "Shame the patient for making an inappropriate offer.",
+            "c": false,
+            "fb": "A respectful exploration is preferable to shaming."
+          },
+          {
+            "t": "Ignore the event and do not document anything.",
+            "c": false,
+            "fb": "Boundary issues should be addressed and documented when clinically relevant."
+          }
+        ]
+      },
+      {
+        "q": "What is the best risk-management lesson from Gabbard 1995?",
+        "o": [
+          {
+            "t": "Maintain a clear therapeutic frame and seek consultation when boundary decisions become ambiguous.",
+            "c": true,
+            "fb": "Consultation and a consistent frame reduce risk and improve patient care."
+          },
+          {
+            "t": "Boundary problems are solved by avoiding empathy.",
+            "c": false,
+            "fb": "Empathy is compatible with clear boundaries."
+          },
+          {
+            "t": "Any patient request requires automatic termination.",
+            "c": false,
+            "fb": "Boundary concerns require assessment, not automatic termination."
+          },
+          {
+            "t": "Documentation is unnecessary if the clinician meant well.",
+            "c": false,
+            "fb": "Documentation is part of thoughtful boundary management."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-42",
+    "title": "Robins-Guze 1970 - Diagnostic Validity",
+    "questions": [
+      {
+        "q": "Robins and Guze proposed which approach to establishing validity in psychiatric diagnosis?",
+        "o": [
+          {
+            "t": "Clinical description, laboratory studies, delimitation from other disorders, follow-up, and family studies",
+            "c": true,
+            "fb": "These five phases became a classic framework for validating psychiatric diagnoses."
+          },
+          {
+            "t": "A single symptom checklist with no longitudinal or family data",
+            "c": false,
+            "fb": "Their model explicitly goes beyond cross-sectional symptom description."
+          },
+          {
+            "t": "Only patient preference for a diagnosis",
+            "c": false,
+            "fb": "Patient experience matters, but diagnostic validity requires multiple evidence domains."
+          },
+          {
+            "t": "Medication response as the only criterion",
+            "c": false,
+            "fb": "Treatment response alone is not the full Robins-Guze framework."
+          }
+        ]
+      },
+      {
+        "q": "Which evidence domain is illustrated by showing that a syndrome has a characteristic long-term course?",
+        "o": [
+          {
+            "t": "Follow-up study",
+            "c": true,
+            "fb": "Longitudinal course is part of the follow-up phase of diagnostic validation."
+          },
+          {
+            "t": "Gift boundary analysis",
+            "c": false,
+            "fb": "Boundary analysis is an ethics topic, not diagnostic validity."
+          },
+          {
+            "t": "Medication discontinuation syndrome",
+            "c": false,
+            "fb": "Withdrawal symptoms are not the diagnostic-validity evidence domain described here."
+          },
+          {
+            "t": "Transference interpretation",
+            "c": false,
+            "fb": "Transference may matter in therapy but is not the follow-up validation phase."
+          }
+        ]
+      },
+      {
+        "q": "What does delimitation from other disorders mean in the Robins-Guze framework?",
+        "o": [
+          {
+            "t": "Showing that the syndrome can be distinguished from neighboring diagnostic conditions",
+            "c": true,
+            "fb": "Delimitation asks whether boundaries between diagnoses are clinically and empirically defensible."
+          },
+          {
+            "t": "Avoiding all differential diagnosis",
+            "c": false,
+            "fb": "Delimitation requires careful differential diagnosis."
+          },
+          {
+            "t": "Making diagnoses based only on family preference",
+            "c": false,
+            "fb": "Family studies are one evidence domain, not the whole delimitation process."
+          },
+          {
+            "t": "Assuming all psychiatric diagnoses are identical",
+            "c": false,
+            "fb": "The framework aims to distinguish valid syndromes."
+          }
+        ]
+      },
+      {
+        "q": "Why was the Robins-Guze paper important for modern psychiatric nosology?",
+        "o": [
+          {
+            "t": "It framed psychiatric diagnoses as hypotheses that should be tested against multiple validators.",
+            "c": true,
+            "fb": "This helped move psychiatry toward operational, evidence-informed diagnostic categories."
+          },
+          {
+            "t": "It proved no psychiatric diagnosis can ever be valid.",
+            "c": false,
+            "fb": "The paper proposed a method for evaluating validity, not abandoning diagnosis."
+          },
+          {
+            "t": "It replaced all diagnosis with psychotherapy technique.",
+            "c": false,
+            "fb": "The paper is about nosology rather than treatment technique."
+          },
+          {
+            "t": "It argued that family history should never be collected.",
+            "c": false,
+            "fb": "Family studies are one of the proposed validators."
+          }
+        ]
+      },
+      {
+        "q": "Which research finding would strengthen diagnostic validity under the Robins-Guze model?",
+        "o": [
+          {
+            "t": "A syndrome has a consistent clinical picture, family aggregation, and a distinguishable longitudinal course.",
+            "c": true,
+            "fb": "That pattern addresses several validators in the framework."
+          },
+          {
+            "t": "A diagnosis is popular on social media for one month.",
+            "c": false,
+            "fb": "Popularity does not establish diagnostic validity."
+          },
+          {
+            "t": "A clinician can remember the acronym easily.",
+            "c": false,
+            "fb": "Mnemonic ease is not a validity criterion."
+          },
+          {
+            "t": "The syndrome has no boundaries, course, or family pattern.",
+            "c": false,
+            "fb": "That would weaken rather than strengthen diagnostic validity."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-43",
+    "title": "Stein-Test 1980 - ACT",
+    "questions": [
+      {
+        "q": "Stein and Test's community-treatment program is an early foundation for which service model?",
+        "o": [
+          {
+            "t": "Assertive Community Treatment",
+            "c": true,
+            "fb": "The study helped establish intensive, team-based community care for people with severe mental illness."
+          },
+          {
+            "t": "Attachment-Based Family Therapy",
+            "c": false,
+            "fb": "ABFT is a family therapy for suicidal adolescents, not Stein and Test's community psychiatry model."
+          },
+          {
+            "t": "Mentalization-Based Treatment",
+            "c": false,
+            "fb": "MBT is a psychotherapy for BPD, not a community-treatment team model."
+          },
+          {
+            "t": "Research Domain Criteria",
+            "c": false,
+            "fb": "RDoC is a research classification framework, not an ACT service model."
+          }
+        ]
+      },
+      {
+        "q": "Which feature best describes the Stein-Test model?",
+        "o": [
+          {
+            "t": "Comprehensive, ongoing, community-based services delivered by an active treatment team",
+            "c": true,
+            "fb": "The model emphasized bringing services to patients in the community rather than relying only on clinic visits."
+          },
+          {
+            "t": "A brief advice session after discharge with no follow-up",
+            "c": false,
+            "fb": "ACT is intensive and ongoing, not a one-time discharge instruction."
+          },
+          {
+            "t": "A genetics-only risk consultation",
+            "c": false,
+            "fb": "The model addresses community functioning and service delivery."
+          },
+          {
+            "t": "A medication trial with placebo blinding",
+            "c": false,
+            "fb": "The study evaluated a service model rather than a blinded medication trial."
+          }
+        ]
+      },
+      {
+        "q": "What outcome pattern made Stein-Test 1980 influential?",
+        "o": [
+          {
+            "t": "The community program reduced hospitalization and improved community tenure while it was active.",
+            "c": true,
+            "fb": "The study showed that intensive community programming could reduce reliance on hospital care."
+          },
+          {
+            "t": "Hospital use increased sharply during the program and improved only after it stopped.",
+            "c": false,
+            "fb": "The study found gains during active programming and deterioration after discontinuation."
+          },
+          {
+            "t": "A single office visit eliminated all functional impairment.",
+            "c": false,
+            "fb": "The model required comprehensive ongoing services."
+          },
+          {
+            "t": "The program showed that community treatment is impossible.",
+            "c": false,
+            "fb": "The study supported community treatment when services are intensive and sustained."
+          }
+        ]
+      },
+      {
+        "q": "Which patient is the best match for ACT-style services?",
+        "o": [
+          {
+            "t": "A person with severe mental illness, repeated hospitalizations, and difficulty engaging in office-based care",
+            "c": true,
+            "fb": "ACT is designed for high-need patients who require outreach and comprehensive community support."
+          },
+          {
+            "t": "A healthy adult requesting a one-time work physical",
+            "c": false,
+            "fb": "ACT is not intended for routine preventive care in low-need patients."
+          },
+          {
+            "t": "A patient with mild insomnia who wants sleep-hygiene handouts only",
+            "c": false,
+            "fb": "ACT is too intensive for isolated mild insomnia."
+          },
+          {
+            "t": "A patient whose only need is a diagnostic-validity research interview",
+            "c": false,
+            "fb": "ACT is a treatment service model, not only a research interview."
+          }
+        ]
+      },
+      {
+        "q": "What lesson follows from the deterioration seen after special programming was discontinued?",
+        "o": [
+          {
+            "t": "For many high-need patients, community supports must be durable rather than brief demonstration projects.",
+            "c": true,
+            "fb": "The study suggested that ongoing comprehensive programming is needed to sustain gains."
+          },
+          {
+            "t": "ACT should always be stopped as soon as hospital use decreases.",
+            "c": false,
+            "fb": "Stopping support may risk loss of gains."
+          },
+          {
+            "t": "Community care works only if no team is involved.",
+            "c": false,
+            "fb": "The team-based model was central to the intervention."
+          },
+          {
+            "t": "Hospitalization is the only possible treatment for chronic mental illness.",
+            "c": false,
+            "fb": "The program showed that community-based alternatives can work when adequately resourced."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-44",
+    "title": "Felitti 1998 - ACE Study",
+    "questions": [
+      {
+        "q": "The ACE Study examined the relationship between childhood adversity and which later outcomes?",
+        "o": [
+          {
+            "t": "Adult health risk behaviors, health status, and disease",
+            "c": true,
+            "fb": "The study linked categories of adverse childhood experiences with a broad range of adult health outcomes."
+          },
+          {
+            "t": "Only short-term antidepressant response",
+            "c": false,
+            "fb": "The ACE Study was not an antidepressant treatment trial."
+          },
+          {
+            "t": "Only schizophrenia relapse after discharge",
+            "c": false,
+            "fb": "Schizophrenia relapse is the focus of family-intervention studies, not the ACE Study."
+          },
+          {
+            "t": "Only inpatient length of stay after ECT",
+            "c": false,
+            "fb": "The ACE Study examined long-term health associations after childhood adversity."
+          }
+        ]
+      },
+      {
+        "q": "Which exposure category was included in the original ACE framework?",
+        "o": [
+          {
+            "t": "Childhood abuse or household dysfunction such as substance abuse, mental illness, or incarceration in the home",
+            "c": true,
+            "fb": "The study counted multiple categories of abuse and household dysfunction."
+          },
+          {
+            "t": "Only whether the child watched television",
+            "c": false,
+            "fb": "Television viewing was not an original ACE exposure category."
+          },
+          {
+            "t": "Only adult occupational stress",
+            "c": false,
+            "fb": "The ACE Study focused on childhood exposures."
+          },
+          {
+            "t": "Only genetic complement variation",
+            "c": false,
+            "fb": "Complement variation is unrelated to the ACE exposure categories."
+          }
+        ]
+      },
+      {
+        "q": "What does the dose-response pattern in the ACE Study mean?",
+        "o": [
+          {
+            "t": "As the number of ACE categories increased, risk for multiple adverse adult outcomes increased.",
+            "c": true,
+            "fb": "The graded association is one of the study's most important findings."
+          },
+          {
+            "t": "One specific ACE category perfectly predicted every adult disease.",
+            "c": false,
+            "fb": "The study found graded risk, not perfect prediction."
+          },
+          {
+            "t": "Childhood adversity had no relation to adult health.",
+            "c": false,
+            "fb": "The study found strong associations between adversity burden and adult outcomes."
+          },
+          {
+            "t": "Only protective childhood experiences mattered.",
+            "c": false,
+            "fb": "The original ACE Study focused on adverse categories."
+          }
+        ]
+      },
+      {
+        "q": "Which clinical use of ACE information is most trauma-informed?",
+        "o": [
+          {
+            "t": "Ask sensitively when relevant, respond with validation and resources, and avoid forcing disclosure.",
+            "c": true,
+            "fb": "Trauma-informed care emphasizes safety, choice, and support."
+          },
+          {
+            "t": "Use the ACE score to blame patients for adult illness.",
+            "c": false,
+            "fb": "The ACE framework should reduce blame, not increase it."
+          },
+          {
+            "t": "Require detailed trauma disclosure at the first visit regardless of readiness.",
+            "c": false,
+            "fb": "Forcing disclosure can be harmful and is not trauma-informed."
+          },
+          {
+            "t": "Treat the ACE score as a deterministic diagnosis.",
+            "c": false,
+            "fb": "ACE burden indicates risk, not destiny."
+          }
+        ]
+      },
+      {
+        "q": "What is a key limitation when applying the ACE Study to individual patients?",
+        "o": [
+          {
+            "t": "Population-level risk associations do not determine an individual patient's future.",
+            "c": true,
+            "fb": "ACE findings are powerful for public health but should not be used deterministically."
+          },
+          {
+            "t": "The study proves adversity has no biologic effects.",
+            "c": false,
+            "fb": "The study is often used to teach long-term health effects of adversity."
+          },
+          {
+            "t": "The study included no adults.",
+            "c": false,
+            "fb": "The original cohort included adult HMO members reporting childhood experiences."
+          },
+          {
+            "t": "The study was a randomized trial assigning children to adversity.",
+            "c": false,
+            "fb": "The study was observational and did not assign adversity."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-46",
+    "title": "Volkow 2016 - Addiction",
+    "questions": [
+      {
+        "q": "Volkow 2016 presents addiction primarily as what kind of condition?",
+        "o": [
+          {
+            "t": "A chronic brain disease involving reward, stress, and self-control circuits",
+            "c": true,
+            "fb": "The brain disease model emphasizes neuroadaptations that affect craving, control, and relapse risk."
+          },
+          {
+            "t": "A simple moral failure with no neurobiology",
+            "c": false,
+            "fb": "The paper explicitly argues against a purely moralizing account."
+          },
+          {
+            "t": "A condition cured by one detoxification admission in all patients",
+            "c": false,
+            "fb": "Addiction is often chronic and relapsing, requiring continuing care."
+          },
+          {
+            "t": "A diagnostic category unrelated to environment",
+            "c": false,
+            "fb": "The model includes biological vulnerability while recognizing environmental and social influences."
+          }
+        ]
+      },
+      {
+        "q": "Which clinical feature is central to addiction in Volkow's model?",
+        "o": [
+          {
+            "t": "Compulsive use despite harmful consequences and impaired control",
+            "c": true,
+            "fb": "Impaired control and compulsive use are core clinical features of addiction."
+          },
+          {
+            "t": "Substance use only when it has no consequences",
+            "c": false,
+            "fb": "Continuing use despite consequences is central to addiction."
+          },
+          {
+            "t": "Absence of craving or cue reactivity",
+            "c": false,
+            "fb": "Craving and cue reactivity are important neurobehavioral features."
+          },
+          {
+            "t": "A single voluntary act that never recurs",
+            "c": false,
+            "fb": "Addiction involves persistent vulnerability and recurrent behavior patterns."
+          }
+        ]
+      },
+      {
+        "q": "What is the practical benefit of the brain disease model for stigma?",
+        "o": [
+          {
+            "t": "It supports treating addiction as a medical condition rather than a character defect.",
+            "c": true,
+            "fb": "A neurobiological model can reduce blame and support evidence-based treatment."
+          },
+          {
+            "t": "It implies patients have no role in recovery.",
+            "c": false,
+            "fb": "Treatment still requires patient engagement and social support."
+          },
+          {
+            "t": "It proves punishment is the most effective treatment.",
+            "c": false,
+            "fb": "The model supports treatment rather than moral punishment."
+          },
+          {
+            "t": "It means social context never matters.",
+            "c": false,
+            "fb": "Environment, stress, access, and social determinants remain important."
+          }
+        ]
+      },
+      {
+        "q": "Which treatment implication follows from Volkow 2016?",
+        "o": [
+          {
+            "t": "Use evidence-based medications, behavioral therapies, and recovery supports when indicated.",
+            "c": true,
+            "fb": "A chronic disease model supports comprehensive, continuing treatment."
+          },
+          {
+            "t": "Provide detoxification only and no follow-up care.",
+            "c": false,
+            "fb": "Detoxification alone often fails to address relapse risk."
+          },
+          {
+            "t": "Avoid medications for addiction because neurobiology is irrelevant.",
+            "c": false,
+            "fb": "Neurobiology supports the rationale for medications such as agonist or antagonist therapies when appropriate."
+          },
+          {
+            "t": "Treat relapse as proof that treatment can never work.",
+            "c": false,
+            "fb": "Relapse can occur in chronic illnesses and should trigger treatment adjustment."
+          }
+        ]
+      },
+      {
+        "q": "Which statement best avoids overinterpreting the brain disease model?",
+        "o": [
+          {
+            "t": "Addiction has neurobiological mechanisms, but psychological, social, and policy factors also shape risk and recovery.",
+            "c": true,
+            "fb": "This balanced view avoids both moralism and biological reductionism."
+          },
+          {
+            "t": "Brain disease means choices and environment are irrelevant.",
+            "c": false,
+            "fb": "The model does not erase agency, learning, or context."
+          },
+          {
+            "t": "Brain disease means treatment should ignore housing and stress.",
+            "c": false,
+            "fb": "Social supports are often essential to recovery."
+          },
+          {
+            "t": "Brain disease means all patients need the same single treatment.",
+            "c": false,
+            "fb": "Treatment should be individualized by substance, severity, comorbidity, and goals."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-47",
+    "title": "MTA 1999 - ADHD",
+    "questions": [
+      {
+        "q": "The MTA Cooperative Group trial studied treatment strategies for which population?",
+        "o": [
+          {
+            "t": "Children with ADHD, combined type",
+            "c": true,
+            "fb": "The trial randomized children with ADHD combined type to medication, behavioral, combined, or community care strategies."
+          },
+          {
+            "t": "Adults with treatment-resistant depression after ECT",
+            "c": false,
+            "fb": "That population belongs to the continuation ECT literature."
+          },
+          {
+            "t": "Adolescents with suicidal ideation receiving ABFT",
+            "c": false,
+            "fb": "That is the Diamond ABFT trial population."
+          },
+          {
+            "t": "Adults with schizophrenia receiving family intervention",
+            "c": false,
+            "fb": "That population belongs to family-intervention trials in schizophrenia."
+          }
+        ]
+      },
+      {
+        "q": "Which four treatment arms best describe the MTA design?",
+        "o": [
+          {
+            "t": "Medication management, intensive behavioral treatment, combined treatment, and community care",
+            "c": true,
+            "fb": "These were the central randomized treatment strategies in the 14-month MTA trial."
+          },
+          {
+            "t": "ECT, lithium, placebo, and psychotherapy",
+            "c": false,
+            "fb": "Those are not the MTA ADHD treatment arms."
+          },
+          {
+            "t": "ABFT, MBT, DBT, and ACT",
+            "c": false,
+            "fb": "Those are psychotherapy or service models from other landmark papers."
+          },
+          {
+            "t": "Clozapine, olanzapine, risperidone, and placebo",
+            "c": false,
+            "fb": "The MTA trial did not compare antipsychotics."
+          }
+        ]
+      },
+      {
+        "q": "What was a key finding about core ADHD symptoms in the MTA trial?",
+        "o": [
+          {
+            "t": "Carefully delivered medication management and combined treatment outperformed behavioral treatment alone and community care for core ADHD symptoms.",
+            "c": true,
+            "fb": "The structured medication strategy was especially strong for core ADHD symptom reduction."
+          },
+          {
+            "t": "Behavioral treatment alone was clearly superior to all other arms for core symptoms.",
+            "c": false,
+            "fb": "Behavioral treatment had value, but medication management was stronger for core symptoms."
+          },
+          {
+            "t": "Community care was identical to structured medication management in every outcome.",
+            "c": false,
+            "fb": "The trial distinguished carefully managed medication from usual community care."
+          },
+          {
+            "t": "No active treatment improved ADHD symptoms.",
+            "c": false,
+            "fb": "Active treatments did improve symptoms."
+          }
+        ]
+      },
+      {
+        "q": "Why is it important that MTA medication management was highly structured?",
+        "o": [
+          {
+            "t": "The results reflect careful titration and follow-up, not just writing a stimulant prescription.",
+            "c": true,
+            "fb": "The medication arm included systematic titration and monitoring."
+          },
+          {
+            "t": "The study showed dose monitoring is unnecessary.",
+            "c": false,
+            "fb": "Careful monitoring was part of the effective medication strategy."
+          },
+          {
+            "t": "The trial used no medication in the medication arm.",
+            "c": false,
+            "fb": "Medication management was an active pharmacologic strategy."
+          },
+          {
+            "t": "The study proves any community prescription is equivalent to MTA care.",
+            "c": false,
+            "fb": "The trial highlighted differences between structured medication management and usual community care."
+          }
+        ]
+      },
+      {
+        "q": "Which clinical takeaway best fits the MTA trial?",
+        "o": [
+          {
+            "t": "Medication is powerful for core ADHD symptoms, while behavioral and combined approaches can address broader functional needs.",
+            "c": true,
+            "fb": "The trial supports individualized multimodal planning based on symptoms and impairments."
+          },
+          {
+            "t": "Behavioral supports should never be used in ADHD.",
+            "c": false,
+            "fb": "Behavioral supports can be useful, especially for family, school, and functional problems."
+          },
+          {
+            "t": "Medication should be prescribed without monitoring.",
+            "c": false,
+            "fb": "Monitoring is essential for efficacy and adverse effects."
+          },
+          {
+            "t": "ADHD treatment should ignore school context.",
+            "c": false,
+            "fb": "School functioning is a central target in pediatric ADHD care."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "SP-50",
+    "title": "Insel 2010 - RDoC",
+    "questions": [
+      {
+        "q": "RDoC was proposed primarily as what kind of framework?",
+        "o": [
+          {
+            "t": "A research framework organized around dimensions of behavior and neurobiology",
+            "c": true,
+            "fb": "RDoC was designed to guide research across units of analysis and functional domains."
+          },
+          {
+            "t": "A replacement bedside diagnostic manual for immediate clinical billing",
+            "c": false,
+            "fb": "RDoC was not intended to replace DSM for routine clinical diagnosis."
+          },
+          {
+            "t": "A medication algorithm for ADHD",
+            "c": false,
+            "fb": "RDoC is a research classification approach, not an ADHD prescribing algorithm."
+          },
+          {
+            "t": "A family therapy protocol for schizophrenia relapse",
+            "c": false,
+            "fb": "Family psychoeducation and RDoC are distinct topics."
+          }
+        ]
+      },
+      {
+        "q": "Which unit of analysis fits the RDoC approach?",
+        "o": [
+          {
+            "t": "Genes, molecules, cells, circuits, physiology, behavior, and self-report",
+            "c": true,
+            "fb": "RDoC explicitly encourages studying constructs across multiple units of analysis."
+          },
+          {
+            "t": "Only DSM diagnosis codes",
+            "c": false,
+            "fb": "RDoC was created partly to move research beyond diagnosis-only categories."
+          },
+          {
+            "t": "Only insurance authorization status",
+            "c": false,
+            "fb": "Insurance status is not an RDoC unit of analysis."
+          },
+          {
+            "t": "Only therapist preference",
+            "c": false,
+            "fb": "Therapist preference is not the organizing unit of RDoC research."
+          }
+        ]
+      },
+      {
+        "q": "What problem in psychiatric research was RDoC designed to address?",
+        "o": [
+          {
+            "t": "Heterogeneity within DSM categories and overlap across traditional diagnoses",
+            "c": true,
+            "fb": "RDoC studies dimensions that may cut across diagnostic boundaries."
+          },
+          {
+            "t": "The complete absence of any psychiatric diagnostic system",
+            "c": false,
+            "fb": "RDoC was proposed in a field already using DSM and ICD categories."
+          },
+          {
+            "t": "A lack of interest in neuroscience across psychiatry",
+            "c": false,
+            "fb": "RDoC aimed to better integrate neuroscience and behavioral science, not respond to total absence of interest."
+          },
+          {
+            "t": "The need to stop measuring behavior",
+            "c": false,
+            "fb": "Behavior is one of the RDoC units of analysis."
+          }
+        ]
+      },
+      {
+        "q": "Which research question best reflects an RDoC-style approach?",
+        "o": [
+          {
+            "t": "How does threat sensitivity vary across patients with panic disorder, PTSD, and depression at circuit and behavioral levels?",
+            "c": true,
+            "fb": "This studies a dimension across diagnoses and units of analysis."
+          },
+          {
+            "t": "How can one DSM code be memorized without considering biology or behavior?",
+            "c": false,
+            "fb": "RDoC emphasizes biology, behavior, and dimensions beyond one code."
+          },
+          {
+            "t": "Can all research participants be excluded unless they have identical symptoms?",
+            "c": false,
+            "fb": "RDoC often examines variation rather than requiring identical categorical presentations."
+          },
+          {
+            "t": "Should family psychoeducation replace all neuroscience research?",
+            "c": false,
+            "fb": "RDoC is a neuroscience-informed research framework, not a family-treatment protocol."
+          }
+        ]
+      },
+      {
+        "q": "What should an MS3 remember about using RDoC clinically?",
+        "o": [
+          {
+            "t": "RDoC can enrich formulation, but DSM/ICD diagnoses still guide current clinical documentation and treatment systems.",
+            "c": true,
+            "fb": "RDoC is mainly a research framework rather than a bedside replacement for current diagnostic systems."
+          },
+          {
+            "t": "RDoC should be used as the only diagnosis in the chart today.",
+            "c": false,
+            "fb": "Current clinical systems still require standard diagnostic categories."
+          },
+          {
+            "t": "RDoC means symptoms are irrelevant.",
+            "c": false,
+            "fb": "Symptoms and behavior remain important units of analysis."
+          },
+          {
+            "t": "RDoC proves psychiatric disorders cannot be studied biologically.",
+            "c": false,
+            "fb": "RDoC was created to support biologically informed psychiatric research."
+          }
+        ]
+      }
+    ]
+  }
+]

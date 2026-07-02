@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Feedback on the library</title>
+<style>
+:root{
+  --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --surface2:#faf6f0; --hover:#f0e9e0;
+  --border:#ddd3c6; --border2:#e7ded2;
+  --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+  --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+  --text:#2f2924; --text-mid:#51473d; --text-light:#665a4f;
+  --danger:#a34132; --danger-light:#f4e3df; --success:#357160; --success-light:#e4f1ec;
+  --focus:#155eef; --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:640px;margin:0 auto;padding:22px 20px 60px}
+.topline{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--primary);color:#fff;display:grid;place-items:center;font-family:Georgia,serif;font-size:20px;flex:none}
+.ttl{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:1.18rem;line-height:1.15}
+.by{color:var(--text-light);font-size:.78rem}
+.thmbtn{margin-left:auto;border:1px solid var(--border);background:var(--surface);color:var(--text);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:1rem;flex:none}
+.thmbtn:hover{background:var(--hover)}
+.lead{color:var(--text-mid);font-size:.95rem;margin:2px 0 14px}
+.note{background:var(--bg-alt);border:1px solid var(--border2);border-radius:10px;padding:10px 13px;font-size:.84rem;color:var(--text-light);margin:0 0 18px}
+.note b{color:var(--text-mid)}
+form{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 18px 20px;box-shadow:var(--shadow-sm)}
+label{display:block;font-weight:600;font-size:.9rem;margin:14px 0 6px}
+label:first-child{margin-top:0}
+.req{color:var(--danger)}
+input[type=text],textarea,select{width:100%;font:inherit;color:var(--text);background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:10px 12px}
+input[type=text]:focus,textarea:focus,select:focus{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
+textarea{min-height:120px;resize:vertical;line-height:1.5}
+.scale{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px}
+.scale label{display:flex;align-items:center;gap:5px;font-weight:500;margin:0;border:1.5px solid var(--border);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:.86rem;background:var(--surface2)}
+.scale input{accent-color:var(--primary)}
+.hp{position:absolute;left:-9999px}
+.btn{margin-top:18px;border:none;border-radius:11px;padding:13px 20px;font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit;background:var(--primary);color:#fff}
+.btn:hover{background:var(--primary-dark)}
+.btn:disabled{background:var(--border);color:var(--text-light);cursor:default}
+.hint{font-size:.78rem;color:var(--text-light);margin-top:5px}
+.thanks{background:var(--success-light);border:1px solid var(--success);color:var(--success);border-radius:14px;padding:26px 20px;text-align:center}
+.thanks .big{font-family:"Source Serif 4",Georgia,serif;font-size:1.3rem;margin:8px 0}
+.err{background:var(--danger-light);border:1px solid var(--danger);color:var(--danger);border-radius:10px;padding:11px 14px;margin-top:12px;font-size:.9rem}
+.sig{color:var(--text-light);font-size:.78rem;text-align:center;margin-top:22px;line-height:1.5}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<main class="wrap" id="root">
+  <div class="topline">
+    <div class="logo">&psi;</div>
+    <div><div class="ttl">Improve this library</div><div class="by">Feedback on the site &middot; Joshua Moss, MD</div></div>
+    <button class="thmbtn" id="thm" title="Toggle dark mode" aria-label="Toggle dark mode">&#9790;</button>
+  </div>
+  <p class="lead">Tell me what helped, what was confusing, a broken link, or a resource worth adding. This shapes what gets built next.</p>
+  <div class="note"><b>About the learning site only</b> — not your preceptor and not any patient. Please include <b>no patient information (PHI)</b>. For feedback about the rotation or clinical supervision, use your school's official evaluation.</div>
+
+  <form id="fbform" name="library-feedback" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+    <input type="hidden" name="form-name" value="library-feedback">
+    <input type="hidden" name="site" id="f_site" value="">
+    <p class="hp"><label>Leave blank: <input name="bot-field"></label></p>
+
+    <label for="f_page">Which page or part of the library?</label>
+    <input type="text" id="f_page" name="page" placeholder="e.g. Psychopharmacology Primer — or the whole site">
+
+    <label for="f_type">Type of feedback</label>
+    <select id="f_type" name="type">
+      <option>This was helpful</option>
+      <option>Confusing or unclear</option>
+      <option>Broken link or error</option>
+      <option>Missing content — suggest a resource</option>
+      <option>Idea / other</option>
+    </select>
+
+    <label>How useful was this? <span class="hint" style="font-weight:400">(optional)</span></label>
+    <div class="scale">
+      <label><input type="radio" name="rating" value="1">1</label>
+      <label><input type="radio" name="rating" value="2">2</label>
+      <label><input type="radio" name="rating" value="3">3</label>
+      <label><input type="radio" name="rating" value="4">4</label>
+      <label><input type="radio" name="rating" value="5">5</label>
+    </div>
+
+    <label for="f_msg">Your feedback <span class="req">*</span></label>
+    <textarea id="f_msg" name="message" required placeholder="What worked, what didn't, what to add or fix…"></textarea>
+
+    <label for="f_role">You are <span class="hint" style="font-weight:400">(optional)</span></label>
+    <select id="f_role" name="role">
+      <option value="">Prefer not to say</option>
+      <option>MS3 student</option>
+      <option>Resident</option>
+      <option>Faculty / other</option>
+    </select>
+
+    <label for="f_contact">Name or email <span class="hint" style="font-weight:400">(optional — leave blank to stay anonymous)</span></label>
+    <input type="text" id="f_contact" name="contact" placeholder="Only if you'd like a reply">
+
+    <button class="btn" type="submit" id="submit">Send feedback</button>
+    <div class="hint">Goes privately to Dr. Moss. Anonymous unless you add your name.</div>
+    <div id="err" class="err hidden">Something went wrong sending that. Please try again, or email jmoss333@gmail.com.</div>
+  </form>
+
+  <div id="thanks" class="thanks hidden">
+    <div style="font-size:2rem">🙏</div>
+    <div class="big">Thank you — that helps.</div>
+    <div style="color:var(--text-mid)">Your feedback shapes what gets built and fixed next.</div>
+  </div>
+
+  <div class="sig">Joshua Moss, MD | Psychiatrist &middot; Educational; fictional composites only, no PHI.</div>
+</main>
+<script>
+(function(){
+ var framed=(window.self!==window.top);
+ // context: which page the learner was on (stashed by the hub), else referrer hint
+ try{ var ctx=localStorage.getItem('cw_fb_ctx'); if(ctx){ document.getElementById('f_page').value=ctx; localStorage.removeItem('cw_fb_ctx'); } }catch(_){ }
+ try{ document.getElementById('f_site').value=location.hostname||''; }catch(_){ }
+
+ var thm=document.getElementById('thm');
+ function setIcon(){ thm.innerHTML=(document.documentElement.getAttribute('data-theme')==='dark')?'☀':'☾'; }
+ setIcon();
+ thm.addEventListener('click',function(){ var nx=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',nx); try{localStorage.setItem('cw_theme',nx);}catch(_){ } setIcon(); if(framed){try{window.parent.postMessage({type:'theme',mode:nx},'*');}catch(_){ }} });
+ window.addEventListener('message',function(ev){ var d=ev.data||{}; if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){ document.documentElement.setAttribute('data-theme',d.mode); setIcon(); } });
+
+ var form=document.getElementById('fbform');
+ form.addEventListener('submit',function(e){
+   e.preventDefault();
+   var btn=document.getElementById('submit'); btn.disabled=true; btn.textContent='Sending…';
+   document.getElementById('err').classList.add('hidden');
+   var enc=new URLSearchParams(new FormData(form)).toString();
+   fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:enc})
+    .then(function(r){ if(r.ok||r.status===200||r.status===303){ form.classList.add('hidden'); document.getElementById('thanks').classList.remove('hidden'); try{window.scrollTo(0,0);}catch(_){ } } else { throw new Error('bad status '+r.status); } })
+    .catch(function(){ document.getElementById('err').classList.remove('hidden'); btn.disabled=false; btn.textContent='Send feedback'; });
+ });
+})();
+</script>
+</body>
+</html>

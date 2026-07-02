@@ -1,0 +1,392 @@
+{
+  "_note": "Structured topic-template metadata rendered above the prose by the SPA. AI-drafted, concise standard teaching aligned with the topic pages and Decision Aids; pending faculty attestation. Educational; fictional composites only; no PHI.",
+  "delirium.md": {
+    "read": 4,
+    "hy": true,
+    "tldr": "New, fluctuating inattention in a hospitalized patient is delirium until proven otherwise — a medical emergency, not a psychiatric label.",
+    "points": [
+      "Acute onset + fluctuating course + inattention (anchor on arousal and attention).",
+      "It almost always has a medical cause — find and fix it.",
+      "Reorient and mobilize, restore the sleep-wake cycle, and remove tethers and deliriogenic meds."
+    ],
+    "cant": "Don't sedate your way past it — benzodiazepines worsen delirium except in alcohol or benzodiazepine withdrawal.",
+    "ruleOut": [
+      "Infection",
+      "Meds / anticholinergics",
+      "Metabolic (Na, glucose, uremia)",
+      "Hypoxia",
+      "Withdrawal",
+      "Intracranial event"
+    ],
+    "firstMove": "Treat the cause, stop deliriogenic meds, use nonpharmacologic measures; reserve low-dose antipsychotic for dangerous agitation.",
+    "quiz": {
+      "q": "An 80-year-old is inattentive and fluctuating two days post-op on oxycodone and diphenhydramine. Best first step?",
+      "o": [
+        {
+          "t": "Identify and treat the cause; stop deliriogenic meds",
+          "c": true
+        },
+        {
+          "t": "Start scheduled lorazepam"
+        },
+        {
+          "t": "Begin donepezil"
+        },
+        {
+          "t": "Reassure the family and observe"
+        }
+      ],
+      "why": "This is delirium; the priority is finding the cause and removing contributors (opioids + anticholinergic). Benzodiazepines worsen non-withdrawal delirium."
+    },
+    "cta": {
+      "label": "Open the Decision Aids",
+      "href": "tools/decision-aids.html"
+    }
+  },
+  "agitation.md": {
+    "read": 4,
+    "hy": true,
+    "tldr": "Treat the driver, not just the behavior — verbal de-escalation before PRN, and PRN before restraint.",
+    "points": [
+      "Secure team and exit safety first.",
+      "Check vitals and glucose; rule out a medical cause.",
+      "Offer (don't force) oral medication; restraint is the last resort — time-limited and monitored."
+    ],
+    "cant": "Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, and akathisia.",
+    "ruleOut": [
+      "Hypoglycemia",
+      "Hypoxia",
+      "Delirium",
+      "Intoxication / withdrawal",
+      "Pain / retention",
+      "Akathisia"
+    ],
+    "firstMove": "Lower stimulation, one calm voice, offer oral PRN; IM only if there is imminent danger.",
+    "quiz": {
+      "q": "First-line treatment for an agitated patient with normal vitals and no delirium?",
+      "o": [
+        {
+          "t": "Verbal de-escalation",
+          "c": true
+        },
+        {
+          "t": "IM haloperidol + lorazepam"
+        },
+        {
+          "t": "Four-point restraints"
+        },
+        {
+          "t": "Scheduled antipsychotic"
+        }
+      ],
+      "why": "Verbal de-escalation is first-line; medication is offered (preferably oral), and restraint is a last resort."
+    },
+    "cta": {
+      "label": "Open the Decision Aids",
+      "href": "tools/decision-aids.html"
+    }
+  },
+  "catatonia.md": {
+    "read": 3,
+    "hy": true,
+    "tldr": "Mutism, immobility, posturing, or waxy flexibility — recognize catatonia, do a lorazepam challenge, and hold antipsychotics.",
+    "points": [
+      "Use the Bush-Francis signs; describe motor findings objectively.",
+      "The lorazepam challenge is both diagnostic and therapeutic.",
+      "ECT is definitive, especially for malignant catatonia."
+    ],
+    "cant": "Antipsychotics can precipitate malignant catatonia / NMS — exclude those before giving one.",
+    "ruleOut": [
+      "Malignant catatonia / NMS",
+      "Nonconvulsive status epilepticus",
+      "Severe metabolic / CNS cause"
+    ],
+    "firstMove": "Lorazepam challenge; hold antipsychotics; consider ECT.",
+    "quiz": {
+      "q": "A mute, posturing patient with waxy flexibility — best initial step?",
+      "o": [
+        {
+          "t": "Lorazepam challenge",
+          "c": true
+        },
+        {
+          "t": "Start scheduled haloperidol"
+        },
+        {
+          "t": "Physical restraint for safety"
+        },
+        {
+          "t": "Reassure and observe"
+        }
+      ],
+      "why": "Catatonia responds to benzodiazepines; antipsychotics risk precipitating malignant catatonia."
+    },
+    "cta": {
+      "label": "Open the BFCRS scale",
+      "href": "tools/bfcrs.html"
+    }
+  },
+  "t_psychosis.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "First-episode psychosis is a workup, not a diagnosis — rule out secondary causes before calling it primary.",
+    "points": [
+      "Screen for substances, delirium, autoimmune (anti-NMDA), seizure, and CNS causes.",
+      "Characterize positive, negative, and disorganized symptoms.",
+      "Choose an antipsychotic by side-effect profile; clozapine for treatment resistance."
+    ],
+    "cant": "Don't anchor on schizophrenia at a first presentation — secondary psychoses are missed when the workup is skipped.",
+    "ruleOut": [
+      "Substance / intoxication",
+      "Delirium",
+      "Autoimmune (anti-NMDA)",
+      "Seizure / CNS lesion",
+      "Medication-induced"
+    ],
+    "firstMove": "Medical workup first; then an antipsychotic chosen by side-effect fit.",
+    "quiz": {
+      "q": "A 22-year-old has three weeks of hallucinations, low-grade fever, and orofacial dyskinesias. Most important to exclude?",
+      "o": [
+        {
+          "t": "Anti-NMDA receptor (autoimmune) encephalitis",
+          "c": true
+        },
+        {
+          "t": "Schizophrenia"
+        },
+        {
+          "t": "Malingering"
+        },
+        {
+          "t": "Adjustment disorder"
+        }
+      ],
+      "why": "Subacute psychosis with neurologic and autonomic features warrants an autoimmune-encephalitis workup before a primary psychiatric label."
+    },
+    "cta": {
+      "label": "Open the Decision Aids",
+      "href": "tools/decision-aids.html"
+    }
+  },
+  "t_mood.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "Before treating depression, screen for a past manic or hypomanic episode — antidepressant monotherapy can destabilize unrecognized bipolar illness.",
+    "points": [
+      "Get collateral and ask specifically about prior mania/hypomania (MDQ).",
+      "Match severity to setting; consider ECT for severe, psychotic, or catatonic depression.",
+      "Lithium carries the strongest maintenance evidence and an anti-suicidal effect."
+    ],
+    "cant": "Acute mania: stop the antidepressant, start a mood stabilizer or second-generation antipsychotic, and protect sleep.",
+    "quiz": {
+      "q": "A patient with prior depressive episodes presents manic while on sertraline. Best next step?",
+      "o": [
+        {
+          "t": "Stop sertraline; start a mood stabilizer or SGA",
+          "c": true
+        },
+        {
+          "t": "Increase the sertraline dose"
+        },
+        {
+          "t": "Add a second antidepressant"
+        },
+        {
+          "t": "Order a brain MRI before any treatment"
+        }
+      ],
+      "why": "This is bipolar mania; discontinue the antidepressant and begin an antimanic agent while protecting sleep."
+    },
+    "cta": {
+      "label": "Open the Screeners (PHQ-9 / GAD-7)",
+      "href": "tools/screeners.html"
+    }
+  },
+  "t_anxiety.md": {
+    "read": 4,
+    "tldr": "SSRIs/SNRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD — standing benzodiazepines are a trap on the unit.",
+    "points": [
+      "Rule out medical mimics (hyperthyroidism, arrhythmia, substance withdrawal).",
+      "OCD: exposure and response prevention plus a higher-dose SSRI.",
+      "PTSD: trauma-focused therapy (CPT/PE) is first-line."
+    ],
+    "cant": "Don't start scheduled benzodiazepines for PTSD — they don't treat core symptoms and carry dependence risk.",
+    "quiz": {
+      "q": "First-line treatment for OCD?",
+      "o": [
+        {
+          "t": "Higher-dose SSRI + exposure and response prevention",
+          "c": true
+        },
+        {
+          "t": "Scheduled benzodiazepine"
+        },
+        {
+          "t": "Low-dose antipsychotic monotherapy"
+        },
+        {
+          "t": "Supportive therapy alone"
+        }
+      ],
+      "why": "OCD responds to ERP and higher-dose SSRIs; antipsychotics are adjuncts, not monotherapy."
+    },
+    "cta": {
+      "label": "Open the Screeners (PHQ-9 / GAD-7)",
+      "href": "tools/screeners.html"
+    }
+  },
+  "t_sud.md": {
+    "read": 4,
+    "hy": true,
+    "tldr": "Time the withdrawal syndrome and treat it proactively — alcohol withdrawal is benzodiazepines (CIWA-guided) plus thiamine before glucose.",
+    "points": [
+      "Use CIWA-Ar (alcohol) and COWS (opioid) to drive symptom-triggered dosing.",
+      "Offer medication for addiction: buprenorphine/methadone for opioids; naltrexone/acamprosate for alcohol.",
+      "Give thiamine before glucose to prevent Wernicke encephalopathy."
+    ],
+    "cant": "Delirium tremens (48–72h) is a medical emergency with real mortality — escalate early, don't wait.",
+    "ruleOut": [
+      "Alcohol withdrawal (tremor → DTs)",
+      "Opioid withdrawal",
+      "Benzodiazepine withdrawal",
+      "Stimulant intoxication"
+    ],
+    "firstMove": "Symptom-triggered benzodiazepine for alcohol; thiamine; begin medication-for-addiction planning early.",
+    "quiz": {
+      "q": "On hospital day 2, a heavy drinker is tremulous and tachycardic with visual hallucinations and a clear sensorium. Best management?",
+      "o": [
+        {
+          "t": "CIWA-guided benzodiazepine + thiamine",
+          "c": true
+        },
+        {
+          "t": "Scheduled haloperidol"
+        },
+        {
+          "t": "IV dextrose first"
+        },
+        {
+          "t": "Restraints and observation"
+        }
+      ],
+      "why": "Alcohol withdrawal is treated with symptom-triggered benzodiazepines and thiamine before glucose."
+    },
+    "cta": {
+      "label": "Open CIWA-Ar / COWS",
+      "href": "tools/withdrawal.html"
+    }
+  },
+  "t_personality.md": {
+    "read": 4,
+    "tldr": "For borderline personality, the unit's job is a consistent, validating frame — not a medication for the diagnosis itself.",
+    "points": [
+      "DBT-informed stance: validate and hold limits; debrief splitting as a team.",
+      "Treat comorbid depression or PTSD; medications target symptoms, not the disorder.",
+      "Name and tolerate countertransference rather than acting on it."
+    ],
+    "cant": "Avoid polypharmacy and reactive medication changes driven by crises — they rarely help and can harm.",
+    "quiz": {
+      "q": "Best inpatient response to staff splitting around a patient with borderline personality disorder?",
+      "o": [
+        {
+          "t": "A unified team plan with consistent, kind limits",
+          "c": true
+        },
+        {
+          "t": "Assign one nurse to meet all requests"
+        },
+        {
+          "t": "Start a mood stabilizer for the personality disorder"
+        },
+        {
+          "t": "Discharge for the behavior"
+        }
+      ],
+      "why": "Splitting is managed with team consistency and clear limits; medication does not treat the personality disorder itself."
+    }
+  },
+  "t_neurodev.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "On the unit, neurodevelopmental disorders (ADHD, autism, intellectual disability) are usually the context a patient arrives with, not the reason for admission — adapt how you communicate and avoid diagnostic overshadowing.",
+    "points": [
+      "Get the developmental and baseline-functioning history from caregivers before interpreting behavior.",
+      "Behavior is communication — screen for pain, constipation, infection, and medication effects first.",
+      "Treat the comorbidity that actually brought them in (mood, anxiety, OCD, psychosis, catatonia, substance use)."
+    ],
+    "cant": "Diagnostic overshadowing — don't write new symptoms off as 'their baseline'; a real change earns a workup. Keep catatonia on the differential in autistic patients.",
+    "ruleOut": [
+      "Pain / constipation / dental",
+      "Infection / metabolic",
+      "Medication effect / akathisia",
+      "Catatonia",
+      "Undiagnosed mood, anxiety, OCD or psychosis"
+    ],
+    "firstMove": "Adapt communication and environment; medical workup for any behavior change; treat the diagnosed comorbidity; psychotropics judiciously (risperidone/aripiprazole for autism-associated irritability).",
+    "quiz": {
+      "q": "A nonverbal autistic adult becomes acutely agitated and self-injurious on the unit. Best first step?",
+      "o": [
+        {
+          "t": "Evaluate for pain and medical causes (constipation, dental, infection) and unmet needs",
+          "c": true
+        },
+        {
+          "t": "Start a scheduled antipsychotic for the autism"
+        },
+        {
+          "t": "Attribute it to baseline autism and observe"
+        },
+        {
+          "t": "Place the patient in restraints"
+        }
+      ],
+      "why": "Behavior is communication; new agitation or self-injury warrants a medical and functional workup before reflexive sedation — diagnostic overshadowing misses treatable causes."
+    },
+    "cta": {
+      "label": "Open the Decision Aids",
+      "href": "tools/decision-aids.html"
+    }
+  },
+  "t_eating.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "Recognize eating disorders, triage medical instability, and prevent refeeding syndrome — a normal weight never rules out bulimia, and anorexia has among the highest mortality in psychiatry.",
+    "points": [
+      "AN, BN, BED: get weight, orthostatic vitals, temperature, and an ECG; check phosphate/K/Mg.",
+      "Decide the level of care by medical instability (bradycardia, orthostasis, electrolytes, QTc), not diagnosis alone.",
+      "Refeeding syndrome — start low, go slow, watch phosphate, give thiamine."
+    ],
+    "cant": "Refeeding hypophosphatemia can be fatal — monitor phosphate/K/Mg daily early and advance calories per protocol; the most malnourished are highest risk.",
+    "ruleOut": [
+      "Medical instability (bradycardia, orthostasis, hypothermia)",
+      "Electrolyte derangement (K, phosphate, Mg)",
+      "QTc prolongation / arrhythmia",
+      "Hypoglycemia / dehydration",
+      "Comorbid mood, OCD, substance use, suicide risk"
+    ],
+    "firstMove": "Stabilize medically first; multidisciplinary nutritional rehab with supervised meals; FBT (adolescent AN) / CBT-E (BN, BED); fluoxetine 60 mg for BN; no drug is first-line for AN.",
+    "quiz": {
+      "q": "A severely malnourished patient with anorexia is admitted and refeeding begins. Which lab change most signals dangerous refeeding syndrome?",
+      "o": [
+        {
+          "t": "Falling serum phosphate",
+          "c": true
+        },
+        {
+          "t": "Rising serum sodium"
+        },
+        {
+          "t": "Falling serum creatinine"
+        },
+        {
+          "t": "Rising hemoglobin"
+        }
+      ],
+      "why": "Hypophosphatemia is the hallmark of refeeding syndrome and can precipitate cardiac and respiratory failure; monitor and replete phosphate (with K, Mg, and thiamine) as calories advance."
+    },
+    "cta": {
+      "label": "Open the Decision Aids",
+      "href": "tools/decision-aids.html"
+    }
+  }
+}

@@ -1,0 +1,519 @@
+
+
+
+Consultation-Liaison Psychiatry for Inpatient Psychiatry Residents: A Comprehensive Evidence Review
+
+
+Scope and Framing
+
+
+This review synthesizes the evidence across twelve core CL psychiatry domains most relevant to residents rotating on adult inpatient psychiatry units. It draws on APA resource documents, SCCM/PADIS guidelines, NEJM and JAMA reviews, Cochrane systematic reviews, FDA drug labels, and landmark trials. The focus is on recognition, acute management, and safe psychopharmacology in medically complex patients.
+
+---
+
+I. Delirium: Prevention and Treatment
+
+
+Epidemiology and Impact
+
+
+Delirium affects 14–56% of hospitalized older adults, with incidence as high as 80% in ICU patients.[1] It is independently associated with increased mortality, prolonged hospitalization, cognitive decline, and institutionalization.[1] Despite its prevalence, delirium is unrecognized in up to 70% of cases by treating clinicians.[1]
+
+Screening and Diagnosis
+
+
+The Confusion Assessment Method (CAM) remains the gold standard bedside tool, requiring (1) acute onset and fluctuating course, (2) inattention, plus either (3) disorganized thinking or (4) altered level of consciousness.[1] Brief adaptations include the 3D-CAM (3-minute assessment) and the 4AT (no training required, validated in ED and general medical settings).[1] The CAM-S scoring system quantifies delirium severity and correlates with clinical outcomes in a direct, graded relationship — measures capturing both intensity and duration correlate best with outcomes.[1]
+
+Prevention: The Strongest Evidence
+
+
+Multicomponent nonpharmacologic prevention is the most effective strategy and remains the cornerstone of delirium management.[1][2] The Hospital Elder Life Program (HELP) — targeting cognitive stimulation, sleep enhancement, early mobilization, hydration, and sensory optimization — reduced incident delirium by 53% (OR 0.47; 95% CI 0.38–0.58) and falls by 62% in a meta-analysis of 14 studies.[1] The ABCDEF bundle (Awakening, Breathing coordination, Delirium monitoring, Early exercise, Family engagement) in ICU settings is associated with less delirium, reduced mortality, and more ICU days without coma or delirium.[3]
+
+The Cochrane review (2021) confirmed that multicomponent nonpharmacologic interventions probably reduce delirium incidence in non-ICU hospitalized patients.[4] There is currently no evidence to support medication use for delirium prevention in non-ICU settings.[2] In ICU patients, dexmedetomidine is associated with a 23% decrease in delirium compared to benzodiazepines for sedation, but showed no difference compared to propofol with light sedation approaches.[3]
+
+Treatment: Pharmacologic Controversy
+
+
+The evidence against routine antipsychotic use for delirium treatment has strengthened considerably. The landmark MIND-USA trial (Girard et al., NEJM 2018; N = 566) found that neither haloperidol nor ziprasidone differed from placebo in days alive without delirium or coma in critically ill patients.[5] A 2019 systematic review (16 RCTs, 10 observational studies) concluded that current evidence does not support routine use of haloperidol or SGAs to treat delirium in adult inpatients.[6]
+
+Figure 2 Effects of Haloperidol, Ziprasidone, and Placebo on Days Alive without Delirium or Coma, Days with Delirium, and Days with Coma.
+
+The SCCM PADIS guidelines (2018) suggest not routinely using haloperidol, atypical antipsychotics, or statins to treat delirium (conditional recommendation, low quality evidence).[7] A network meta-analysis (Wu et al., JAMA Psychiatry 2019) found haloperidol plus lorazepam provided the highest response rate among examined therapeutic interventions, and ramelteon appeared optimal for prevention.[8]
+
+Key treatment principles:
+
+- Identify and treat the underlying cause (infection, metabolic derangement, medication effect, pain, urinary retention, constipation)
+
+- Implement nonpharmacologic strategies (reorientation, sleep hygiene, mobilization, sensory aids)
+
+- Avoid benzodiazepines except for alcohol/benzodiazepine withdrawal or severe agitation refractory to other measures[1][9]
+
+- Reserve low-dose antipsychotics for severe agitation posing safety risk — use the lowest effective dose for the shortest duration
+
+- Avoid antipsychotics for hypoactive delirium[1]
+
+---
+
+II. Capacity Assessment
+
+
+The Four-Component Model
+
+
+The Appelbaum and Grisso framework defines four abilities necessary for decisional capacity (DC): understanding (grasping basic facts about the condition and proposed treatment), appreciation (recognizing how information applies to one's own situation), reasoning (comparing options and inferring consequences), and expressing a choice (communicating a stable decision).[10][11] This model is endorsed by the APA Resource Document on Decisional Capacity (2019).[12]
+
+Key Principles
+
+
+Capacity is decision-specific and time-specific — a patient may have capacity for some decisions but not others, and capacity may fluctuate.[3][11] Capacity is not determined by diagnosis or cognitive test scores alone.[10][3] The most common psychiatric diagnoses contributing to incapacity are cognitive disorders (54.1%), substance use disorders (37.2%), and psychotic disorders (25%).[12] Among patients >65, the most common neurologic causes are Alzheimer's disease (39.4%) and delirium (19.0%).[12]
+
+Assessment Approach (APA Resource Document)
+
+
+The APA recommends an integrated approach including:[12]
+
+1. Ascertain the type of capacity concern (informed consent vs. treatment refusal vs. AMA discharge vs. dispositional capacity)
+
+2. Perform a standardized psychiatric interview including neurocognitive workup (cognitive screening, relevant labs, consider neuroimaging)
+
+3. Formulate a psychiatric diagnosis (or document "no psychiatric illness")
+
+4. Have the patient describe the proposed procedure and its risks/benefits/alternatives in their own words
+
+5. Separately address each of the four Appelbaum-Grisso factors
+
+6. Consider using DC-specific instruments (e.g., MacCAT-T) to supplement clinical judgment — these improve inter-rater reliability but are not required as standard of care[12]
+
+7. Comment on whether treatment could change capacity findings (e.g., treating delirium, psychosis, or depression)
+
+8. Describe differential capacity findings (e.g., patient may be able to choose a surrogate even if unable to consent to surgery)
+
+Any physician can evaluate capacity — psychiatry consultation is helpful but the final determination is made by the treating physician.[11]
+
+---
+
+III. Catatonia in Medically Ill Patients
+
+
+Recognition
+
+
+Catatonia is far more common than traditionally recognized, particularly in medical settings. Wilson et al. found that among critically ill patients, 3% had catatonia without delirium and 31% met criteria for both catatonia and delirium.[13] The APA Resource Document (2025) recommends using ≥4 catatonic signs for diagnosis in critically ill patients, achieving 91% sensitivity and specificity.[13]
+
+Screening and Diagnosis
+
+
+The Bush-Francis Catatonia Rating Scale (BFCRS) is the recommended screening and severity instrument.[13] The first 14 items constitute a screening tool encompassing all 12 DSM-5-TR criteria; a score ≥2 is considered positive and prompts completion of the full 23-item scale.[13] The BFCRS is the only catatonia scale validated in response to the lorazepam challenge.[13]
+
+The Lorazepam Challenge Test (LCT)
+
+
+The LCT serves as both diagnostic and therapeutic: lorazepam 2 mg IV (1 mg in elderly, children, or those at respiratory risk) is administered, with a ≥50% reduction on the BFCRS considered positive.[13] Response may occur within minutes but can take up to 2 hours with oral administration.[13] Lorazepam is effective in up to 90% of acute catatonia cases.[14] Following a positive IV LCT, continued IV lorazepam for 24–48 hours is recommended before transitioning to oral, with doses sometimes required up to 16 mg/day.[14][13]
+
+Differential Diagnosis
+
+
+The NEJM review (Heckers & Walther, 2023) provides a clinical framework across settings:[14]
+
+- ED: Differentiate from acute psychosis, intoxication/withdrawal (cannabis, cocaine, alcohol, opioids, benzodiazepines), NMS, serotonin syndrome, and autoimmune encephalitis
+
+- Medical unit: Rule out epilepsy, delirium (may co-occur), autoimmune encephalitis, encephalopathy, focal cerebral lesions, and medications
+
+- All settings: Monitor BFCRS severity, vital signs, and creatine kinase
+
+Treatment Hierarchy
+
+
+1. Lorazepam (first-line) — dose may be titrated up to 16 mg/day[14]
+
+2. ECT — effective in 60–100% of patients, including after insufficient benzodiazepine response; administered bilaterally with effects expected after 4–6 sessions[14]
+
+3. NMDA receptor antagonists (amantadine, memantine) — second-line[14]
+
+4. Antipsychotics — use with extreme caution; after ruling out NMS, SGAs (particularly clozapine) are preferable to FGAs in patients with catatonia and psychosis[14]
+
+---
+
+IV. Steroid-Induced Psychiatric Syndromes
+
+
+Incidence and Spectrum
+
+
+Neuropsychiatric adverse effects occur in 5–20% of patients receiving corticosteroids, with the spectrum including depression, mania, anxiety, psychosis, cognitive deficits, and behavioral disturbances.[15] The risk of suicide and suicide attempts is reportedly 7 times higher in patients receiving glucocorticoid therapy than in non-users.[16] Mania and hypomania are the most common early presentations, while depression predominates with chronic use.[15][17]
+
+Dose-Response Relationship
+
+
+The classic threshold of prednisone equivalent >40 mg/day is associated with increased psychiatric risk, though this threshold is not rigorously validated.[16] The incidence increases with higher cumulative doses and longer duration.[17] Additional risk factors include female sex, older age, and pre-existing psychiatric illness.[15]
+
+Management
+
+
+- Dose reduction or discontinuation is the ideal first step but often not feasible due to the underlying medical condition[17][16]
+
+- Antipsychotics (particularly SGAs: risperidone, quetiapine, olanzapine) are commonly used for mania, psychosis, and severe irritability, often as co-administered pulses matching steroid pulses[18]
+
+- Mood stabilizers (lithium, valproic acid) have been used prophylactically in patients with prior steroid-induced episodes[15][18]
+
+- SSRIs are less useful for acute pulsed steroid courses due to delayed onset of action[18]
+
+- Clearly document the indication for any initiated pharmacotherapy to avoid confusion with primary psychiatric disorders[18]
+
+---
+
+V. Parkinson Disease Psychosis
+
+
+Clinical Approach
+
+
+Management begins with weaning potentially contributing medications in order: anticholinergics → amantadine → dopamine agonists → MAO-B inhibitors → levodopa (last resort).[19] Rule out delirium and minimize anticholinergic medication use.[20]
+
+Pharmacotherapy
+
+
+Three main options exist, with critical differences:[19]
+
+- Pimavanserin (Nuplazid): The only FDA-approved medication for PD psychosis; a selective 5-HT₂A inverse agonist/antagonist that does not impair motor function. Should be considered front-line where available. Limitations: safety data beyond 6 weeks are lacking, requires specialty pharmacy, and takes 4–6 weeks for full effect.[21][22][20][19]
+
+- Clozapine: Multiple RCTs demonstrate robust efficacy without worsening motor function. However, requires REMS enrollment and regular neutrophil monitoring. Rarely used despite strongest RCT evidence.[22][19][20]
+
+- Quetiapine: Most commonly prescribed in clinical practice despite multiple studies failing to show benefit over placebo. Associated with significant cognitive impairment (SMD 0.60 vs. placebo). Used due to prescribing convenience.[19][22]
+
+All other antipsychotics should be avoided due to risk of worsening parkinsonism and death.[19] All antipsychotic drugs carry black box warnings regarding use in patients with dementia.[19]
+
+---
+
+VI. Transplant Psychiatry Basics
+
+
+Psychosocial Evaluation
+
+
+Both the AASLD/AST (2025) and KDIGO (2020) guidelines recommend psychosocial assessment for all transplant candidates.[23][24] Key domains include: adherence history, caregiver support, cognitive capacity for decision-making, active psychiatric disorders, substance use history, understanding of the transplant process, and financial/insurance coverage.[23][24]
+
+No psychiatric disorder is an absolute contraindication to transplantation — even patients with psychotic disorders or serious SUD can have successful outcomes with proper evaluation, treatment, and support.[23] However, KDIGO recommends against transplanting patients with unstable psychiatric disorders or ongoing SUD that affects decision-making or poses unacceptable post-transplant risk (1C recommendation).[24]
+
+Post-Transplant Psychiatric Considerations
+
+
+- Depression affects 13–40% of post-transplant patients and is associated with 65% higher mortality.[25]
+
+- Non-adherence to immunosuppressants occurs in 25–30% of patients and increases odds of organ loss after kidney transplant (OR 7.1).[25]
+
+- Psychosocial interventions improve adherence by 10–20% over controls.[25]
+
+- Drug interactions with immunosuppressants are critical: calcineurin inhibitors (tacrolimus, cyclosporine) are CYP3A4 substrates — avoid strong CYP3A4 inhibitors (fluvoxamine, nefazodone) and inducers (carbamazepine, St. John's wort)
+
+Standardized Assessment Tools
+
+
+The Stanford Integrated Psychosocial Assessment for Transplant (SIPAT) and Psychosocial Assessment of Candidates for Transplantation (PACT) are commonly used instruments, though no single tool should determine eligibility in isolation.[23][24]
+
+---
+
+VII. Serotonin Syndrome
+
+
+Clinical Triad
+
+
+Serotonin syndrome is characterized by: (1) neuromuscular excitation (tremor, hyperreflexia, clonus — particularly inducible and ocular clonus), (2) autonomic dysfunction (tachycardia, hypertension/hypotension, hyperthermia, diaphoresis), and (3) altered mental status (agitation, delirium, coma).[26][27][28]
+
+Diagnosis
+
+
+The Hunter Serotonin Toxicity Criteria are the most specific diagnostic tool, requiring a serotonergic agent plus any of: spontaneous clonus; inducible clonus + agitation or diaphoresis; ocular clonus + agitation or diaphoresis; tremor + hyperreflexia; or muscle rigidity + temperature >38°C + ocular or inducible clonus.[27][29]
+
+The following diagnostic algorithm from Boyer & Shannon (NEJM 2005) illustrates the Hunter Criteria decision tree:
+
+Figure 4 Algorithm for Diagnosis.
+
+Management (Tiered by Severity)
+
+
+- Mild (hyperreflexia, tremor, no fever): Discontinue offending agent, supportive care, benzodiazepines[27]
+
+- Moderate (autonomic instability, fever): Above plus aggressive correction of cardiorespiratory and thermal abnormalities; cyproheptadine 12–32 mg/24h (5-HT₂A antagonist)[27]
+
+- Severe (temperature >41.1°C): Immediate sedation, neuromuscular paralysis, orotracheal intubation[27]
+
+Physical restraints are contraindicated — they enforce isometric muscle contractions contributing to lactic acidosis and hyperthermia.[27] Most cases resolve within 24 hours of discontinuing serotonergic drugs, but may persist with long-half-life agents.[27]
+
+High-Risk Combinations
+
+
+The most dangerous combinations involve MAOIs + serotonergic agents — 50% of those ingesting an MAOI with a serotonergic agent in overdose exhibit at least moderately severe serotonin toxicity.[29] Moderate serotonin toxicity occurs in ~14% of SSRI overdoses.[29]
+
+---
+
+VIII. Neuroleptic Malignant Syndrome
+
+
+Clinical Features
+
+
+NMS is characterized by fever, muscular rigidity ("lead-pipe"), dysautonomia, and altered mental status after exposure to dopamine-blocking agents.[30] It is rare (0.01–0.04% of antipsychotic-treated patients) but carries mortality as high as 10% despite advances in recognition.[31] Most commonly occurs within hours to days of medication initiation or dose increase.[32]
+
+Diagnosis and Workup
+
+
+- CK is the most common laboratory finding, often >1,000 U/L and sometimes >10,000 U/L[32][30]
+
+- Additional findings: leukocytosis, metabolic acidosis, elevated LDH, transaminases, and lactate
+
+- Monitor for complications: rhabdomyolysis, acute kidney injury, respiratory failure, DIC, cardiac arrhythmias[30]
+
+Treatment
+
+
+The NEJM review (Wijdicks & Ropper, 2024) outlines a tiered approach:[30]
+
+1. Discontinue the offending agent immediately
+
+2. Supportive care: IV fluids, cooling measures, correction of electrolytes (hypocalcemia, hypomagnesemia, hyperkalemia)
+
+3. Airway management: Intubation may be needed for upper-airway rigidity, respiratory muscle involvement, or aspiration risk
+
+4. Dantrolene: Skeletal muscle relaxant reducing calcium release from sarcoplasmic reticulum — commonly used for hyperthermia and rigidity, though no RCTs have conclusively demonstrated efficacy[31]
+
+5. Bromocriptine: Dopamine agonist for moderate-to-severe cases
+
+6. ECT: Considered for refractory cases
+
+7. Dexmedetomidine: For agitation/delirium management to avoid reintroducing antipsychotics[30]
+
+Rechallenge
+
+
+There is a low but real risk of recurrence after reexposure to antipsychotics.[30] If rechallenge is necessary, wait at least 2 weeks, use a low-potency agent or agent from a different class, start at the lowest dose, and titrate slowly with close monitoring.
+
+---
+
+IX. Serotonin Syndrome vs. NMS: Differential Diagnosis
+
+
+
+
+[27][30]
+
+The critical distinguishing features are clonus and hyperreflexia (serotonin syndrome) vs. lead-pipe rigidity and bradyreflexia (NMS), and the rapidity of onset (hours vs. days).[27][30][14]
+
+---
+
+X. Lithium Toxicity
+
+
+Therapeutic Index and Monitoring
+
+
+Lithium has a narrow therapeutic index — toxic concentrations (≥1.5 mEq/L) are close to therapeutic levels (0.8–1.2 mEq/L for acute episodes, 0.8–1.0 mEq/L for maintenance).[35][36] At concentrations >3.0 mEq/L, patients may progress to seizures, coma, and irreversible brain damage.[35]
+
+Clinical Presentation
+
+
+Early symptoms are often neurological: coarse tremor, drowsiness, lethargy, weakness, agitation, muscle fasciculation, ataxia, and dysarthria.[36] GI symptoms (vomiting, diarrhea), cardiovascular effects (dizziness, syncope, arrhythmias), and renal symptoms (polyuria, polydipsia) are also common.[36] Symptoms may not correlate with serum levels, particularly in chronic toxicity and in the elderly — monitoring must be guided primarily by symptoms.[36]
+
+Risk Factors for Toxicity
+
+
+- Reduced renal excretion: Renal disease (including lithium-induced), dehydration, advanced age
+
+- Drug interactions: NSAIDs, ACE inhibitors, ARBs, thiazide diuretics (all reduce lithium clearance); metronidazole, tetracyclines
+
+- Medical illness: Any condition causing dehydration (fever, vomiting, diarrhea, reduced oral intake)
+
+- Elderly patients: Medical comorbidities, polypharmacy, age-related renal changes[36]
+
+Management
+
+
+- Mild toxicity: Dose reduction or cessation, IV hydration, hold interacting medications[35]
+
+- Severe toxicity: Hemodialysis is the treatment of choice — effective and rapid means of removing lithium. Indications include level >4.0 mEq/L, severe neurological symptoms, renal failure, or hemodynamic instability[35]
+
+- Activated charcoal is NOT effective (does not absorb lithium ions)[35]
+
+- Monitor for rebound in serum levels after dialysis due to delayed diffusion from body tissues[35]
+
+- Protect airway in patients with impaired consciousness; correct volume depletion and electrolyte imbalances[37]
+
+---
+
+XI. QTc Prolongation
+
+
+Risk Stratification
+
+
+Drug-induced long QT (QTc ≥500 ms) occurred in 0.9% of psychiatric inpatients in a 5-year cross-sectional study, with sudden cardiac death in 5 patients and torsades de pointes in 7.[38] Risk factors that significantly increased drug-induced long QT included hypokalemia, HCV infection, HIV infection, and abnormal T-wave morphology — 85.5% of affected patients had ≥2 risk factors.[38]
+
+Antipsychotic QTc Risk Hierarchy
+
+
+A 2024 safety review stratified antipsychotics by QTc risk:[39]
+
+- Higher risk: Ziprasidone, iloperidone, thioridazine, IV haloperidol
+
+- Moderate risk: Haloperidol (oral), quetiapine, risperidone
+
+- Lower risk: Brexpiprazole, cariprazine, olanzapine, clozapine, aripiprazole, lurasidone
+
+Antidepressant QTc Risk
+
+
+Citalopram shows dose-dependent QTc prolongation: 7.5 ms at 20 mg/day and 16.7 ms at 60 mg/day.[40] Escitalopram shows similar values. The FDA limits citalopram to 20 mg/day in patients >60 years. Safer alternatives include fluoxetine, sertraline, paroxetine, and fluvoxamine.[40]
+
+Management Principles
+
+
+- Maintain K⁺ >4.0 mmol/L and Mg²⁺ >2.0 mEq/L[41]
+
+- Obtain baseline ECG before initiating QTc-prolonging agents; repeat after dose changes
+
+- QTc >500 ms or increase >60 ms from baseline: Discontinue or switch the offending agent
+
+- Avoid combining multiple QTc-prolonging drugs when possible
+
+- Be aware of pharmacokinetic interactions — CYP2D6 inhibition by SSRIs can increase concentrations of co-administered QTc-prolonging drugs[40]
+
+---
+
+XII. Hepatic and Renal Dosing Considerations
+
+
+Hepatic Impairment
+
+
+
+
+[42][43]
+
+Antipsychotic Hepatotoxicity Risk
+
+
+A comprehensive narrative review graded antipsychotics by hepatotoxicity risk:[44]
+
+- Highest risk: Chlorpromazine, clozapine, olanzapine
+
+- Moderate risk: Quetiapine, risperidone
+
+- Low-to-moderate risk: Haloperidol
+
+- Lowest risk: Paliperidone, aripiprazole, lurasidone, loxapine (no reports of liver failure)
+
+Renal Impairment
+
+
+Most antipsychotics are hepatically metabolized and do not require dose adjustment in renal impairment, with important exceptions:[45][46]
+
+- Risperidone/paliperidone: Reduced clearance in moderate-severe CKD; 9-hydroxyrisperidone (active metabolite) undergoes substantial renal elimination — reduce dose by 50% in CrCl <30 mL/min
+
+- Amisulpride: Primarily renally excreted — reduce dose by 50% in CrCl 30–60, by 67% in CrCl 10–30
+
+- Aripiprazole, quetiapine, ziprasidone, asenapine: No significant pharmacokinetic changes in severe renal impairment; no dose adjustment required[46]
+
+- Lithium: Entirely renally excreted — requires dose reduction proportional to GFR decline; contraindicated in severe renal impairment without close monitoring and dose adjustment
+
+- Gabapentin/pregabalin: Renally excreted — require significant dose reduction
+
+- Benzodiazepines: Hepatically metabolized; prefer lorazepam, oxazepam, temazepam (LOT — no active metabolites, glucuronidation not significantly affected by liver disease)
+
+Psychopharmacology in the Medically Complex Patient: General Principles
+
+
+- Renal disease affects not only urinary excretion but also protein binding, enterohepatic circulation, and drug-metabolizing enzyme activity — even hepatically metabolized drugs may require monitoring[47]
+
+- In cirrhosis, SSRIs plus neuroleptics or antiepileptics predispose to serotonin syndrome; SSRIs plus antiplatelet/NSAIDs increase GI bleeding risk[42]
+
+- Therapeutic drug monitoring is particularly valuable in renal and hepatic disease for drugs with narrow therapeutic indices (lithium, clozapine, tricyclics)[47]
+
+---
+
+XIII. Resident CL Quick-Reference
+
+
+
+
+References
+Delirium in Older Persons: Advances in Diagnosis and Treatment. Oh ES, Fong TG, Hshieh TT, Inouye SK. JAMA. 2017;318(12):1161-1174. doi:10.1001/jama.2017.12067.
+Delirium in Older Persons: Prevention, Evaluation, and Management. Jaqua EE, Nguyen VTN, Chin E. American Family Physician. 2023;108(3):278-287.
+Best Practices Guidelines Geriatric Trauma Management. Alicia Mangram MD FACS, Jessica M. Berdeja MD, Christine S. Cocanour MD FACS FCCM, et al. American College of Surgeons (2023).
+Non-Pharmacological Interventions for Preventing Delirium in Hospitalised Non-Icu Patients. Burton JK, Craig L, Yong SQ, et al. The Cochrane Database of Systematic Reviews. 2021;11:CD013307. doi:10.1002/14651858.CD013307.pub3.
+Haloperidol and Ziprasidone for Treatment of Delirium in Critical Illness. Girard TD, Exline MC, Carson SS, et al. The New England Journal of Medicine. 2018;379(26):2506-2516. doi:10.1056/NEJMoa1808217.
+Antipsychotics for Treating Delirium in Hospitalized Adults: A Systematic Review. Nikooie R, Neufeld KJ, Oh ES, et al. Annals of Internal Medicine. 2019;171(7):485-495. doi:10.7326/M19-1860.
+Clinical Practice Guidelines for the Prevention and Management of Pain, Agitation/Sedation, Delirium, Immobility, and Sleep Disruption in Adult Patients in the ICU. Devlin JW, Skrobik Y, Gélinas C, et al. Critical Care Medicine. 2018;46(9):e825-e873. doi:10.1097/CCM.0000000000003299.
+Association of Delirium Response and Safety of Pharmacological Interventions for the Management and Prevention of Delirium: A Network Meta-analysis. Wu YC, Tseng PT, Tu YK, et al. JAMA Psychiatry. 2019;76(5):526-535. doi:10.1001/jamapsychiatry.2018.4365.
+Benzodiazepines for Treatment of Patients With Delirium Excluding Those Who Are Cared for in an Intensive Care Unit. Li Y, Ma J, Jin Y, et al. The Cochrane Database of Systematic Reviews. 2020;2:CD012670. doi:10.1002/14651858.CD012670.pub2.
+Ethical Considerations in Dementia Diagnosis and Care: AAN Position Statement. Chiong W, Tsou AY, Simmons Z, et al. Neurology. 2021;97(2):80-89. doi:10.1212/WNL.0000000000012079.
+Evaluating Medical Decision-Making Capacity in Practice. Barstow C, Shahan B, Roberts M. American Family Physician. 2018;98(1):40-46.
+Resource Document on the Decisional Capacity Determinations in Consultation-Liaison Psychiatry: A Guide for the General Psychiatrist. James A. Bourgeois OD MD, Maria Tiamson-Kassab MD, Kathleen A. Sheehan MD, Diana Robinson MD, Mira Zein MD. American Psychiatric Association (2019).
+Resource Document on Catatonia. Jo Ellen Wilson, Mark A. Oldham, Andrew Francis, et al. American Psychiatric Association (2025).
+Catatonia. Heckers S, Walther S. The New England Journal of Medicine. 2023;389(19):1797-1802. doi:10.1056/NEJMra2116304.
+Corticosteroid-Induced Neuropsychiatric Manifestations: From Pathophysiology to Management. Husain A, Ahmad F. Psychopharmacology. 2026;:10.1007/s00213-026-07084-x. doi:10.1007/s00213-026-07084-x.
+Prescription patterns of psychotropics in patients receiving synthetic glucocorticoids. Yatomi T, Uchida T, Takeuchi H, et al. Acta Psychiatrica Scandinavica. 2020;142(3):242-248. doi:10.1111/acps.13217.
+Steroid‐Induced Mental Disorders in Oncology Patients: A 10‐Year Retrospective Case Series Review. Seymour N, Ismail MF, Doherty K, et al. Psycho-Oncology. 2025;34(4):e70137. doi:10.1002/pon.70137.
+How we approach steroid‐induced affective disorder in pediatric oncology. Elliott DA, Harman JL. Pediatric Blood & Cancer. 2024;71(12):e31324. doi:10.1002/pbc.31324.
+Diagnosis and Treatment of Parkinson Disease: A Review. Armstrong MJ, Okun MS. JAMA. 2020;323(6):548-560. doi:10.1001/jama.2019.22360.
+The Neuropsychiatry of Parkinson's Disease: Advances and Challenges. Weintraub D, Aarsland D, Chaudhuri KR, et al. The Lancet. Neurology. 2022;21(1):89-102. doi:10.1016/S1474-4422(21)00330-6.
+FDA Orange Book. FDA Orange Book.
+Comparative Efficacy, Safety, and Acceptability of Pimavanserin and Other Atypical Antipsychotics for Parkinson's Disease Psychosis: Systematic Review and Network Meta-Analysis. Yunusa I, Rashid N, Seyedin R, Paratane D, Rajagopalan K. Journal of Geriatric Psychiatry and Neurology. 2023;36(5):417-432. doi:10.1177/08919887231154933.
+AASLD AST Practice Guideline on Adult Liver Transplantation: Candidate Evaluation. Dove L, Chadha RM, Lai JC, et al. Hepatology (Baltimore, Md.). 2025;:01515467-990000000-01508. doi:10.1097/HEP.0000000000001644.
+2020 Kidney Disease: Improving Global Outcomes (KDIGO) Clinical Practice Guideline on the Evaluation and Management of Candidates for Kidney Transplantation. Michael Jadoul, Mustafa Arici, Tara I. Chang, et al. Kidney Disease: Improving Global Outcomes.
+Psychosocial Diagnosis and Treatment Before and After Organ Transplantation. Zwaan M, Erim Y, Kröncke S, et al. Deutsches Arzteblatt International. 2023;120(24):413-416. doi:10.3238/arztebl.m2023.0087.
+High Risk and Low Prevalence Diseases: Serotonin Syndrome. Spadaro A, Scott KR, Koyfman A, Long B. The American Journal of Emergency Medicine. 2022;61:90-97. doi:10.1016/j.ajem.2022.08.030.
+The Serotonin Syndrome. Boyer EW, Shannon M. The New England Journal of Medicine. 2005;352(11):1112-20. doi:10.1056/NEJMra041867.
+Serotonin Syndrome-a Focused Review. Mikkelsen N, Damkier P, Pedersen SA. Basic & Clinical Pharmacology & Toxicology. 2023;133(2):124-129. doi:10.1111/bcpt.13912.
+The Serotonin Toxidrome: Shortfalls of Current Diagnostic Criteria for Related Syndromes. Chiew AL, Buckley NA. Clinical Toxicology (Philadelphia, Pa.). 2022;60(2):143-158. doi:10.1080/15563650.2021.1993242.
+Neuroleptic Malignant Syndrome. Wijdicks EFM, Ropper AH. The New England Journal of Medicine. 2024;391(12):1130-1138. doi:10.1056/NEJMra2404606.
+Clinical Outcomes of Dantrolene in Neuroleptic Malignant Syndrome: A Nationwide Retrospective Study. Suekane A, Senda A, Morishita K, Fushimi K. Acta Psychiatrica Scandinavica. 2026;153(6):627-635. doi:10.1111/acps.70073.
+Collaborative Care in the Identification and Management of Psychosis in Adolescents and Young Adults. Hua LL. Pediatrics. 2021;147(6):e2021051486. doi:10.1542/peds.2021-051486.
+Efficacy of inpatient psychotherapy for major depressive disorder: a meta‐analysis of controlled trials. Schefft C, Guhn A, Brakemeier EL, Sterzer P, Köhler S. Acta Psychiatrica Scandinavica. 2019;139(4):322-335. doi:10.1111/acps.12995.
+Psychological Treatment of Depression in Institutional Settings: A Meta-Analytic Review. Cuijpers P, Ciharova M, Miguel C, et al. Journal of Affective Disorders. 2021;286:340-350. doi:10.1016/j.jad.2021.03.017.
+Lithium Carbonate. Food and Drug Administration. Updated date: 2023-10-02.
+The International Society for Bipolar Disorders (ISBD) consensus guidelines for the safety monitoring of bipolar disorder treatments. Ng F, Mammen OK, Wilting I, et al. Bipolar Disorders. 2009;11(6):559-95. doi:10.1111/j.1399-5618.2009.00737.x.
+Lithium Carbonate. Food and Drug Administration. Updated date: 2022-11-22.
+Drug-Induced Long QT in Adult Psychiatric Inpatients: The 5-Year Cross-Sectional ECG Screening Outcome in Psychiatry Study. Girardin FR, Gex-Fabry M, Berney P, et al. The American Journal of Psychiatry. 2013;170(12):1468-76. doi:10.1176/appi.ajp.2013.12060860.
+An Updated Safety Review of the Relationship Between Atypical Antipsychotic Drugs, the QTc Interval and Torsades De Pointe As: Implications for Clinical Use. Melo L, Pillai A, Kompella R, Patail H, Aronow WS. Expert Opinion on Drug Safety. 2024;23(9):1127-1134. doi:10.1080/14740338.2024.2392002.
+The QT Interval Prolongation Potential of Anticancer and Supportive Drugs: A Comprehensive Overview. Giraud EL, Ferrier KRM, Lankheet NAG, et al. The Lancet. Oncology. 2022;23(9):e406-e415. doi:10.1016/S1470-2045(22)00221-2.
+Clinical Approach to Cardiovascular Toxicity of Oral Antineoplastic Agents: JACC State-of-the-Art Review. Rao VU, Reeves DJ, Chugh AR, et al. Journal of the American College of Cardiology. 2021;77(21):2693-2716. doi:10.1016/j.jacc.2021.04.009.
+Review article: prescribing medications in patients with cirrhosis – a practical guide. Lewis JH, Stine JG. Alimentary Pharmacology & Therapeutics. 2013;37(12):1132-56. doi:10.1111/apt.12324.
+Review article: depression and the use of antidepressants in patients with chronic liver disease or liver transplantation. Mullish BH, Kabir MS, Thursz MR, Dhar A. Alimentary Pharmacology & Therapeutics. 2014;40(8):880-92. doi:10.1111/apt.12925.
+Antipsychotic Safety in Liver Disease: A Narrative Review and Practical Guide for the Clinician. Gunther M, Dopheide JA. Journal of the Academy of Consultation-Liaison Psychiatry. 2023 Jan-Feb;64(1):73-82. doi:10.1016/j.jaclp.2022.09.006.
+Biotransformation of Post-Clozapine Antipsychotics: Pharmacological Implications. Caccia S. Clinical Pharmacokinetics. 2000;38(5):393-414. doi:10.2165/00003088-200038050-00002.
+Psychotherapeutic Agents in End‐Stage Renal Disease. Eyler RF, Unruh ML, Quinn DK, Vilay AM. Seminars in Dialysis. 2015 Jul-Aug;28(4):417-26. doi:10.1111/sdi.12370.
+New Insight Concerning Therapeutic Drug Monitoring-the Importance of the Concept of Psychonephrology. Hashimoto M, Maeda H, Oniki K, et al. Biological & Pharmaceutical Bulletin. 2022;45(7):834-842. doi:10.1248/bpb.b22-00025.
+
+Feature | Serotonin Syndrome | NMS | Ref
+Onset | Rapid (hours, often <24h) | Gradual (days to weeks) | [1], [2]
+Causative agents | Serotonergic drugs (SSRIs, MAOIs, tramadol, linezolid) | Dopamine antagonists (antipsychotics, metoclopramide) | [1], [2]
+Neuromuscular | Clonus (especially ocular), hyperreflexia, myoclonus, tremor | Lead-pipe rigidity, bradyreflexia | [1], [2]
+Pupils | Mydriasis | Normal | [1]
+Bowel sounds | Hyperactive | Normal or decreased | [1]
+Skin | Diaphoresis | Pallor, diaphoresis | [1], [2]
+Temperature | Elevated (may be >41°C in severe cases) | Elevated (often >38°C) | [1], [2]
+CK | Mildly elevated or normal | Markedly elevated (often >1,000 U/L) | [2]
+Resolution | Usually <24h after drug discontinuation | Days to weeks | [1], [2]
+Key treatment | Cyproheptadine, benzodiazepines | Dantrolene, bromocriptine | [1], [2]
+Medication | Hepatic Effect | Dose Adjustment | Ref
+Fluoxetine | Reduced clearance of parent + norfluoxetine; prolonged half-life | Lower doses or reduced frequency | [1]
+Escitalopram | Clearance reduced 37%; half-life doubled | Max 10 mg/day | [1]
+Duloxetine | 85% reduction in clearance in Child-Pugh B; 3× half-life; 5× exposure | Contraindicated in substantial alcohol use or chronic liver disease | [1]
+Venlafaxine | Clearance reduced 40–50% (CP A/B), up to 90% (CP C) | Reduce dose by 50% | [1]
+Bupropion | Unchanged in CP A/B; 3× AUC in CP C | Max 75 mg/day in severe cirrhosis; use with extreme caution | [1], [2]
+Mirtazapine | Clearance reduced 30% | Reduced dose may be necessary | [1]
+Sertraline | 70% reduction in clearance; significant half-life prolongation | Reduce dose; use with caution | [2]
+Haloperidol | PKs unaffected | No specific dose adjustment | [1]
+Diazepam | Half-life increased 2–5× (up to 500 h); clearance decreased 50% | Use with extreme caution | [1]
+Consult Question | Key Assessment | First-Line Intervention | Critical Pitfall
+"Is this delirium?" | CAM or 4AT; review medications, vitals, labs (CBC, CMP, UA, TSH) | Treat underlying cause; nonpharmacologic strategies; low-dose antipsychotic ONLY for severe agitation | Do not treat hypoactive delirium with antipsychotics; do not use benzodiazepines (except alcohol/benzo withdrawal)
+"Does this patient have capacity?" | Assess all 4 Appelbaum-Grisso domains specific to the decision at hand | Document each domain separately; identify reversible causes of incapacity | Capacity ≠ competence (legal term); diagnosis alone does not determine capacity; reassess after treating reversible causes
+"Is this catatonia?" | BFCRS screening (14 items); ≥2 = positive | Lorazepam challenge (2 mg IV); hold antipsychotics | Do not give antipsychotics before ruling out NMS; catatonia and delirium frequently co-occur (31%)
+"Steroid-induced psych symptoms" | Timeline correlation with steroid initiation/dose change; rule out delirium | Dose reduction if possible; SGA for mania/psychosis; pulse dosing to match steroid pulses | Mania is more common early; depression with chronic use; suicide risk 7× higher
+"PD patient with hallucinations" | Rule out delirium; review PD medication regimen | Wean anticholinergics → amantadine → DA agonists; pimavanserin or clozapine if persistent | NEVER use typical antipsychotics or most SGAs — will worsen parkinsonism; only pimavanserin, clozapine, quetiapine are options
+"Pre-transplant psych eval" | SIPAT or PACT; assess adherence, support, cognition, SUD, psychiatric stability | Optimize psychiatric treatment; address SUD; identify caregiver | No psychiatric disorder is an absolute contraindication; avoid CYP3A4 interactions with immunosuppressants
+"Is this serotonin syndrome?" | Hunter Criteria; medication review for serotonergic agents | Stop offending agent; benzodiazepines; cyproheptadine for moderate-severe | Look for CLONUS (distinguishes from NMS); do NOT use physical restraints; most resolve in <24h
+"Is this NMS?" | Fever + rigidity + AMS + CK elevation after dopamine antagonist exposure | Stop antipsychotic; supportive care; dantrolene ± bromocriptine for severe cases | Onset is gradual (days); resolution takes days-weeks (unlike SS); monitor for rhabdomyolysis/AKI
+"Lithium level is high" | Serum lithium, BMP, CK; assess hydration, interacting medications | Hold lithium; IV NS; hemodialysis if >4.0 mEq/L or severe neuro symptoms | Symptoms may not correlate with levels (especially chronic toxicity); activated charcoal is ineffective; watch for rebound after dialysis
+"QTc is prolonged" | ECG; check K⁺, Mg²⁺; review all QTc-prolonging medications | Correct electrolytes (K⁺ >4.0, Mg²⁺ >2.0); switch to lower-risk agent | QTc >500 ms or Δ>60 ms = high risk

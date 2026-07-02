@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Screeners — PHQ-9 & GAD-7</title>
+<meta name="description" content="Interactive PHQ-9 (depression) and GAD-7 (anxiety) screeners with scoring and severity bands. Educational; not a substitute for clinical assessment.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee;--bg-alt:#faf6f0;--surface:#ffffff;--border:#ddd3c6;
+    --primary:#c25a3c;--primary-dark:#a84830;--primary-light:#f3ebe5;
+    --accent:#2a6b5e;--accent-dark:#1e5248;--accent-light:#edf4f2;
+    --text:#3b332c;--text-mid:#64574b;--text-light:#87786a;
+    --warn:#7a6234;--warn-bg:#f5efe2;--danger:#a34132;--danger-bg:#fbece9;
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.5}
+  .shell{max-width:780px;margin:0 auto;padding:24px 18px 70px}
+  h1{font-family:var(--font-head);color:var(--primary);font-size:1.8rem;margin:.1em 0}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark)}
+  .sub{color:var(--text-mid);max-width:62ch;margin:6px 0 18px}
+  .tabs{display:flex;gap:6px;border-bottom:2px solid var(--border);margin-bottom:20px}
+  .tab{border:none;background:transparent;padding:10px 16px;font:inherit;font-weight:700;color:var(--text-mid);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+  .tab.on{color:var(--primary-dark);border-bottom-color:var(--primary-dark)}
+  .lead{font-size:.9rem;color:var(--text-mid);margin-bottom:12px}
+  .q{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:10px}
+  .qt{font-size:.96rem;margin-bottom:9px}
+  .qt .n{color:var(--text-light);font-weight:700;margin-right:6px}
+  .opts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  @media(max-width:560px){.opts{grid-template-columns:repeat(2,1fr)}}
+  .opt{border:1px solid var(--border);background:#fff;border-radius:8px;padding:8px 6px;font:inherit;font-size:.8rem;cursor:pointer;text-align:center;color:var(--text-mid);line-height:1.2}
+  .opt .v{display:block;font-weight:700;color:var(--text-light);font-size:.74rem}
+  .opt.on{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark)}
+  .opt.on .v{color:var(--accent-dark)}
+  .scorebar{position:sticky;bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:16px;box-shadow:0 -2px 10px rgba(59,51,44,.06);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .score{font-family:var(--font-head);font-size:1.7rem;color:var(--primary-dark);font-weight:700}
+  .band{font-weight:700}
+  .badge{display:inline-block;font-size:.85rem;font-weight:700;border-radius:999px;padding:3px 12px}
+  .b0{background:var(--accent-light);color:var(--accent-dark)} .b1{background:#eef3f7;color:#41618a}
+  .b2{background:var(--warn-bg);color:var(--warn)} .b3{background:#f3e7df;color:var(--primary-dark)} .b4{background:var(--danger-bg);color:var(--danger)}
+  .btn{border:none;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .flag{background:var(--danger-bg);border:1px solid var(--danger);border-left:4px solid var(--danger);border-radius:9px;padding:12px 14px;margin-top:14px;font-size:.92rem;color:#7a2c22}
+  .flag a{color:var(--danger);font-weight:700}
+  .interp{font-size:.88rem;color:var(--text-mid);margin-top:12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:9px;padding:11px 14px}
+  .disc{font-size:.8rem;color:var(--text-light);border-top:1px solid var(--border);margin-top:24px;padding-top:12px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+var e=React.createElement,useState=React.useState;
+var OPTS=[["Not at all",0],["Several days",1],["More than half the days",2],["Nearly every day",3]];
+var PHQ=["Little interest or pleasure in doing things",
+"Feeling down, depressed, or hopeless",
+"Trouble falling or staying asleep, or sleeping too much",
+"Feeling tired or having little energy",
+"Poor appetite or overeating",
+"Feeling bad about yourself — or that you are a failure or have let yourself or your family down",
+"Trouble concentrating on things, such as reading or watching television",
+"Moving or speaking so slowly that others could have noticed — or being so fidgety/restless that you move around a lot more than usual",
+"Thoughts that you would be better off dead, or of hurting yourself in some way"];
+var GAD=["Feeling nervous, anxious, or on edge",
+"Not being able to stop or control worrying",
+"Worrying too much about different things",
+"Trouble relaxing",
+"Being so restless that it is hard to sit still",
+"Becoming easily annoyed or irritable",
+"Feeling afraid, as if something awful might happen"];
+function phqBand(s){ if(s<=4)return["Minimal",0]; if(s<=9)return["Mild",1]; if(s<=14)return["Moderate",2]; if(s<=19)return["Moderately severe",3]; return["Severe",4]; }
+function gadBand(s){ if(s<=4)return["Minimal",0]; if(s<=9)return["Mild",1]; if(s<=14)return["Moderate",2]; return["Severe",4]; }
+
+function Scale(props){
+  var items=props.items, band=props.band, name=props.name;
+  var st=useState({}),ans=st[0],setAns=st[1];
+  function set(i,v){ var x=Object.assign({},ans); x[i]=v; setAns(x); }
+  var total=0,answered=0; items.forEach(function(_,i){ if(ans[i]!=null){total+=ans[i];answered++;} });
+  var b=band(total), complete=answered===items.length;
+  var phqRisk = (name==="PHQ-9" && ans[8]!=null && ans[8]>0);
+  return e("div",null,
+    e("div",{className:"lead"},"Over the last 2 weeks, how often have you been bothered by the following?"),
+    items.map(function(t,i){
+      return e("div",{className:"q",key:i},
+        e("div",{className:"qt"}, e("span",{className:"n"},(i+1)+"."), t),
+        e("div",{className:"opts"}, OPTS.map(function(o){
+          return e("button",{key:o[1],className:"opt"+(ans[i]===o[1]?" on":""),onClick:function(){set(i,o[1])}},
+            e("span",{className:"v"},o[1]), o[0]);
+        })));
+    }),
+    phqRisk? e("div",{className:"flag"},"⚠ Item 9 (thoughts of being better off dead or self-harm) is endorsed. Move to a direct safety assessment now — open the ",
+      e("a",{href:"cssrs.html",target:"_blank",rel:"noopener"},"Columbia C-SSRS screener"),", and follow your team's safety protocol.") : null,
+    e("div",{className:"scorebar"},
+      e("div",null, e("span",{className:"score"}, total), e("span",{style:{color:"var(--text-light)"}}, " / "+(items.length*3)),
+        e("span",{style:{marginLeft:"12px"}}, e("span",{className:"badge b"+b[1]}, b[0]))),
+      e("div",null, e("span",{style:{fontSize:".82rem",color:"var(--text-light)",marginRight:"10px"}}, complete?"complete":(answered+"/"+items.length+" answered")),
+        e("button",{className:"btn",onClick:function(){setAns({})}},"Reset"))),
+    e("div",{className:"interp"}, props.interp)
+  );
+}
+
+function App(){
+  var t=useState("phq"),tab=t[0],setTab=t[1];
+  return e("div",{className:"shell"},
+    e("div",{className:"kicker"},"Clinical Skills · validated screeners"),
+    e("h1",null,"Screeners — PHQ-9 & GAD-7"),
+    e("p",{className:"sub"},"Two of the screeners named in the clerkship objectives. Tap the response for each item to score live. These support — they don't replace — a clinical interview, and a positive screen warrants a focused assessment."),
+    e("div",{className:"tabs"},
+      e("button",{className:"tab"+(tab==="phq"?" on":""),onClick:function(){setTab("phq")}},"PHQ-9 · Depression"),
+      e("button",{className:"tab"+(tab==="gad"?" on":""),onClick:function(){setTab("gad")}},"GAD-7 · Anxiety")),
+    tab==="phq"
+      ? e(Scale,{name:"PHQ-9",items:PHQ,band:phqBand,interp:"PHQ-9 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–19 moderately severe · 20–27 severe. ≥10 has good sensitivity/specificity for major depression. Always review item 9 (self-harm) regardless of total."})
+      : e(Scale,{name:"GAD-7",items:GAD,band:gadBand,interp:"GAD-7 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–21 severe. ≥10 is the usual threshold for further evaluation of generalized anxiety; it also screens reasonably for panic, social anxiety, and PTSD."}),
+    e("div",{className:"disc"},"Educational tool for clinical trainees. PHQ-9 and GAD-7 are freely available public instruments (Spitzer, Kroenke, Williams). Scoring is a screen, not a diagnosis — confirm clinically and follow your team's protocols. No PHI is stored. Joshua Moss, MD | Psychiatrist")
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(e(App));
+</script>
+</body>
+</html>

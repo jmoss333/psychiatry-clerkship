@@ -1,0 +1,53 @@
+# .gitignore — Psychiatry Clerkship Library
+# Principle: version the CURATED TEXT source of truth (markdown, html, build scripts, JSON config).
+# Keep large binaries and generated build output OUT of git so the repo stays lean and diffable.
+# Anything ignored here still lives on disk — it is just not version-controlled. Use Git LFS if you
+# later want the media/decks versioned.
+
+# ---- OS / editor junk ----
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ---- Node (future-proof) ----
+node_modules/
+
+# ---- Generated build output ----
+# The two deployed sites are BUILD ARTIFACTS produced by 13_Faculty_Resources/_automation/site_build/
+# and live as SIBLING folders outside this repo (../clerkship-hub-deploy, ../mmc-resident-deploy).
+# They are intentionally not tracked here — source is truth, deploy is generated.
+/_build/
+/_dist/
+
+# ---- Large binary assets (originals; use Git LFS or external storage if you need them versioned) ----
+# Audio / video
+*.mp3
+*.m4a
+*.m4v
+*.wav
+*.aac
+*.flac
+*.mp4
+*.mov
+# Reference documents & slide decks (originals live under **/_source/ and download folders)
+*.pdf
+*.ppt
+*.pptx
+*.doc
+*.docx
+*.key
+
+# ---- Bulk downloads & large data artifacts ----
+13_Faculty_Resources/APA_Downloads_2026-06-29/files/
+00_START_HERE/_audit-census-codex/data/
+
+# ---- Scratch ----
+*.tmp
+*.bak

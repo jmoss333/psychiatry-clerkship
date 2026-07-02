@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Review &amp; Attest — Faculty</title>
+<style>
+  :root{
+    --bg:#f6f3ee; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+    --good:#2a6b5e; --good-bg:#e7f1ee; --warn:#7a6234; --warn-bg:#f5efe2;
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.5}
+  .wrap{max-width:880px;margin:0 auto;padding:22px 20px 70px}
+  h1{font-family:var(--font-head);color:var(--primary);font-size:1.55rem;margin:.1em 0}
+  .sub{color:var(--text-light);font-size:.88rem;margin-bottom:16px}
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:14px}
+  .bar .l{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  label{font-size:.82rem;color:var(--text-mid)}
+  input.name{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font:inherit;min-width:200px}
+  input.name:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+  .btn{border:none;border-radius:8px;padding:8px 13px;font:inherit;font-weight:600;cursor:pointer}
+  .btn.primary{background:var(--primary-dark);color:#fff}
+  .btn.ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .seg button{border:none;background:#fff;padding:7px 12px;font:inherit;cursor:pointer;color:var(--text-mid)}
+  .seg button.on{background:var(--accent);color:#fff}
+  .prog{height:8px;background:var(--primary-light);border-radius:999px;overflow:hidden;margin:4px 0 0}
+  .prog>i{display:block;height:100%;background:var(--good);transition:width .25s}
+  .sec{font-family:var(--font-head);font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-light);font-weight:700;margin:18px 0 6px}
+  .item{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin:7px 0}
+  .item .t{flex:1;min-width:0}
+  .item .t .nm{font-weight:600}
+  .item .t .meta{font-size:.76rem;color:var(--text-light)}
+  .tag{font-size:.62rem;border-radius:999px;padding:1px 7px;font-weight:700;vertical-align:middle;margin-left:6px}
+  .tag.tool{background:var(--accent-dark);color:#fff}
+  .st{border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;background:#fff;color:var(--warn)}
+  .st.ok{background:var(--good-bg);border-color:var(--good);color:var(--good)}
+  a.open{font-size:.82rem;color:var(--accent-dark);text-decoration:none;white-space:nowrap}
+  .disc{font-size:.8rem;color:var(--text-light);border-top:1px solid var(--border);margin-top:24px;padding-top:12px}
+  .loading{color:var(--text-light);padding:30px 0;text-align:center}
+  @media print{ .noprint{display:none!important} body{background:#fff} .item{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+var e=React.createElement, useState=React.useState, useEffect=React.useEffect;
+var LS="cw_review_v1";
+function load(){try{return JSON.parse(localStorage.getItem(LS))||{}}catch(_){return {}}}
+function persist(o){try{localStorage.setItem(LS,JSON.stringify(o))}catch(_){}}
+function today(){return new Date().toISOString().slice(0,10)}
+
+function App(){
+  var nv=useState(null),nav=nv[0],setNav=nv[1];
+  var er=useState(null),err=er[0],setErr=er[1];
+  var st=useState(load()),store=st[0],setStore=st[1];
+  var fl=useState("all"),filter=fl[0],setFilter=fl[1];
+  var reviewer = store.reviewer || "Joshua Moss, MD";
+
+  useEffect(function(){
+    fetch("../nav.json").then(function(r){return r.json()}).then(setNav).catch(function(){setErr("Could not load the page list (nav.json).")});
+  },[]);
+
+  function setReviewer(v){ var o=Object.assign({},store); o.reviewer=v; persist(o); setStore(o); }
+  function toggle(f){
+    var o=Object.assign({},store); o.items=Object.assign({},o.items);
+    var cur=o.items[f]&&o.items[f].status==="reviewed";
+    o.items[f]= cur? {status:"pending"} : {status:"reviewed",at:today(),by:reviewer};
+    persist(o); setStore(o);
+  }
+  function exportJSON(){
+    var blob=new Blob([JSON.stringify(Object.assign({exported:new Date().toISOString(),site:"une-ms3-psychiatry"},store),null,2)],{type:"application/json"});
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="attestation_"+today()+".json"; document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  if(err) return e("div",{className:"wrap"},e("h1",null,"Review & Attest"),e("div",{className:"item"},err));
+  if(!nav) return e("div",{className:"wrap"},e("div",{className:"loading"},"Loading the page list…"));
+
+  // flat items (md pages + tools), skip self
+  var items=[];
+  nav.forEach(function(s){ (s.items||[]).forEach(function(it){
+    if(it.f==="review-attest.html") return;
+    items.push({sec:s.section,t:it.t,f:it.f,k:it.k});
+  });});
+  var total=items.length;
+  var done=items.filter(function(it){return store.items&&store.items[it.f]&&store.items[it.f].status==="reviewed";}).length;
+  function vis(it){ var ok=store.items&&store.items[it.f]&&store.items[it.f].status==="reviewed";
+    return filter==="all"||(filter==="reviewed"&&ok)||(filter==="pending"&&!ok); }
+
+  var bySec={}; items.forEach(function(it){ if(vis(it)){(bySec[it.sec]=bySec[it.sec]||[]).push(it);} });
+
+  return e("div",{className:"wrap"},
+    e("h1",null,"Review & Attest"),
+    e("div",{className:"sub"},"Faculty sign-off for the learner-facing pages and tools. Mark each Reviewed once you've checked it; Export saves a dated record (everything is stored only in this browser until you export)."),
+    e("div",{className:"bar noprint"},
+      e("div",{className:"l"},
+        e("label",null,"Reviewer "),
+        e("input",{className:"name","aria-label":"Reviewer name",value:reviewer,onChange:function(ev){setReviewer(ev.target.value)}}),
+        e("span",{className:"seg"},
+          ["all","pending","reviewed"].map(function(k){return e("button",{key:k,className:filter===k?"on":"",onClick:function(){setFilter(k)}},k.charAt(0).toUpperCase()+k.slice(1));}))
+      ),
+      e("div",{className:"l"},
+        e("button",{className:"btn ghost",onClick:function(){window.print()}},"Print / PDF"),
+        e("button",{className:"btn primary",onClick:exportJSON},"Export record")
+      )
+    ),
+    e("div",{className:"bar"},
+      e("div",null,e("strong",null,done+" / "+total)," reviewed",
+        e("div",{className:"prog"},e("i",{style:{width:(total?100*done/total:0)+"%"}}))),
+      e("div",{className:"sub",style:{margin:0}}, done===total? "All pages attested." : (total-done)+" remaining")
+    ),
+    Object.keys(bySec).map(function(sec){
+      return e("div",{key:sec},
+        e("div",{className:"sec"},sec),
+        bySec[sec].map(function(it){
+          var rec=store.items&&store.items[it.f]; var ok=rec&&rec.status==="reviewed";
+          var href = it.k==="tool" ? it.f : ("../index.html?page="+encodeURIComponent(it.f));
+          return e("div",{className:"item",key:it.f},
+            e("div",{className:"t"},
+              e("div",{className:"nm"}, it.t, it.k==="tool"? e("span",{className:"tag tool"},"tool"):null),
+              ok? e("div",{className:"meta"},"Reviewed by "+(rec.by||reviewer)+" — "+rec.at) : e("div",{className:"meta"},"Pending review")),
+            e("a",{className:"open noprint",href:href,target:"_blank",rel:"noopener"},"Open ↗"),
+            e("button",{className:"st"+(ok?" ok":""),onClick:function(){toggle(it.f)}}, ok? "✓ Reviewed":"Mark reviewed")
+          );
+        }));
+    }),
+    e("div",{className:"disc"},"Educational governance tool. Attestations live in this browser's local storage; use Export record for a durable, shareable copy. Joshua Moss, MD | Psychiatrist")
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(e(App));
+</script>
+</body>
+</html>

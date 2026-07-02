@@ -1,0 +1,516 @@
+
+
+
+Discharge Planning from Adult Inpatient Psychiatry: A Comprehensive Evidence Review
+
+
+Scope and Framing
+
+
+This review synthesizes evidence on discharge planning interventions from adult inpatient psychiatry units, organized around six critical outcomes: suicide, readmission, ED return, homelessness, medication discontinuation, and loss to follow-up. The review is designed for a residency curriculum and QI project, covering all diagnostic populations. Key sources include the VA/DoD 2024 Clinical Practice Guideline on Suicide Risk, the VA/DoD 2023 Schizophrenia CPG, Joint Commission NPSG 15.01.01, SAMHSA resources, Cochrane reviews, and recent practice-changing trials. The review concludes with an evidence-based discharge checklist, risk-stratified transition algorithm, top 20 references, and recommended QI metrics.
+
+---
+
+1. The Post-Discharge Risk Window
+
+
+The immediate post-discharge period carries extraordinarily elevated suicide risk. A meta-analysis of 100 studies (17,857 suicides, 4.7 million person-years) found the pooled post-discharge suicide rate was 1,132 per 100,000 person-years within 3 months — approximately 100 times the global suicide rate.[1] A focused meta-analysis found the first-week rate was 2,950 per 100,000 person-years.[2] A Finnish population-based study (193,197 hospitalizations for depression) provided granular temporal data: the incidence rate was 6,062 per 100,000 on days 0–3, declining steeply thereafter, with 8.9% of all suicides within 2 years occurring during the first week.[3] A Norwegian case-crossover study confirmed a causal effect of discharge on short-term suicide risk (IRR 6.32 in the first week).[1]
+
+The figure below from Chung et al. (2017) illustrates the temporal gradient in post-discharge suicide rates, with the highest rates in the first 3 months declining over subsequent years.
+
+Figure 2 Suicide Rates According to Duration of Follow-up
+
+Readmission rates are similarly concentrated early: approximately 12–15% of psychiatric inpatients are readmitted within 30 days, with rates as high as 20–25% for schizophrenia.[1] Only ~50% of patients nationally receive outpatient mental health follow-up within 7 days, and ~two-thirds within 30 days.[5]
+
+---
+
+2. Safety Planning Intervention (SPI)
+
+
+Evidence Base
+
+
+The Safety Planning Intervention (Stanley & Brown) is a brief, collaborative intervention consisting of six steps: recognizing warning signs, using internal coping strategies, utilizing social contacts for distraction, contacting family/friends for help, contacting professionals/agencies, and making the environment safe.[6]
+
+Stanley et al. (2018) — the landmark VA cohort comparison across 9 EDs (N = 1,640) — found SPI combined with structured follow-up telephone calls (SPI+) was associated with 45% fewer suicidal behaviors (OR 0.56; 95% CI 0.33–0.95; NNT = 44) and more than double the odds of attending ≥1 outpatient mental health visit (OR 2.06; 95% CI 1.57–2.71) over 6 months.[6] Mediation analysis showed the protective effect was not mediated by increased treatment engagement, suggesting the safety plan itself was the active ingredient.[6]
+
+ED-SAFE 2 (Boudreaux et al., 2023) — a stepped-wedge cluster RCT across 8 EDs (N = 2,761) — demonstrated that department-wide implementation of collaborative safety planning yielded a 43% reduction in the suicide composite outcome (OR 0.57; 95% CI 0.43–0.74) during the maintenance phase vs. baseline.[7]
+
+The SPIRIT trial (Weinstock et al., 2025) — the first individual-level RCT of SPI — randomized 800 pretrial jail detainees and found a 42% reduction in composite suicide events (IRR 0.58; 95% CI 0.45–0.78) and a 55% reduction in suicide attempts over 12 months.[8]
+
+A meta-analysis of safety planning-type interventions (Nuij et al., 2021; 6 studies, N = 3,536) found RR 0.57 (95% CI 0.41–0.80; NNT = 16) for suicidal behavior, with no significant effect on suicidal ideation.[9] The Doupnik et al. (2020) meta-analysis of brief acute care suicide prevention interventions (14 studies, N = 4,270) found pooled OR 0.69 (95% CI 0.53–0.89) for subsequent suicide attempts and OR 3.04 (95% CI 1.79–5.17) for linkage to follow-up care.[9]
+
+Figure 2 Forest Plots for 3 Study Outcomes: Depression, Linkage to Follow-up Care, and Subsequent Suicide Attempts
+
+Implementation Quality Matters
+
+
+VA national data show that while 97.9% of mandated patients complete SPI, only 44.2% of all patients screening positive complete an initial plan within 30 days.[1] Critically, higher whole-plan quality (AHR 0.79; 95% CI 0.66–0.95) and fidelity (AHR 0.84; 95% CI 0.71–0.99) are associated with decreased likelihood of future suicide attempt — warning sign quality (Step 1) was particularly protective (HR 0.48; 95% CI 0.30–0.76).[11] However, qualitative interviews found only 44% of veterans recalled creating a safety plan, highlighting the gap between documentation and patient engagement.[12]
+
+Guideline Positions
+
+
+The VA/DoD 2024 CPG concluded there is "insufficient evidence to recommend for or against" SPI specifically, rating evidence quality as low — yet acknowledged SPI is "consistent with the standard of care in both VA and DoD" and is recognized by the Joint Commission and CARF.[13] The Joint Commission NPSG 15.01.01 recommends collaborative safety planning as an alternative to no-suicide contracts.[14] A cross-sectional study of 346 Joint Commission–accredited hospitals found that only 4.0% met full criteria for implementing all recommended discharge suicide prevention activities.[15]
+
+---
+
+3. Caring Contacts
+
+
+Landmark Trials
+
+
+Motto & Bostrom (2001) — the foundational RCT — randomized 843 patients who refused ongoing follow-up care after psychiatric hospitalization to brief letters ≥4 times/year for 5 years vs. no contact. The contact group had a significantly lower suicide rate for the first 2 years (1.8% vs. 3.5%; P = .04), with differences gradually diminishing by year 14.[1] This remains one of the only RCTs demonstrating a reduction in suicide mortality with a brief contact intervention.
+
+WHO SUPRE-MISS (Fleischmann et al., 2008) — randomized 1,867 suicide attempters across 5 countries to a 1-hour psychoeducation session plus 9 follow-up contacts over 18 months vs. TAU. Significantly fewer suicide deaths occurred in the intervention group: 0.2% vs. 2.2% (P < .001).[1] A meta-analysis pooling 3 WHO BIC RCTs found OR 0.20 (95% CI 0.09–0.42) for suicide death — the only intervention class achieving statistical significance for suicide mortality.[16] However, generalizability to high-resource settings is uncertain, as TAU in these countries lacked virtually any psychiatric follow-up.[13]
+
+Comtois et al. (2019) — RCT of 657 active-duty service members randomized to 11 caring text messages over 12 months — found a 48% decrease in odds of suicide attempts (9.0% vs. 14.9%; OR 0.52; 95% CI 0.29–0.92) as a secondary outcome, though primary outcomes were not significant.[17]
+
+Reger et al. (2024) — the largest caring letters evaluation (N = 102,709 veterans contacting the Veterans Crisis Line) — found no association between caring letter receipt and suicide attempt incidence (7.7% vs. 7.8%), though caring letters significantly increased healthcare utilization (outpatient mental health HR 1.19; 95% CI 1.17–1.22).[18] This trial differed from earlier studies by targeting crisis-line callers already engaged in care rather than treatment-refusers.
+
+Guideline Position
+
+
+The VA/DoD 2024 CPG suggests sending periodic caring communications for 12 months following hospitalization related to suicide risk (moderate-quality evidence), noting that a single contact does not influence outcomes — repeated communication for ≥12 months is required.[19]
+
+---
+
+4. Rapid Follow-Up Within 7 Days
+
+
+Evidence for Suicide Reduction
+
+
+Che et al. (2023) — Korean population-based cohort (76,462 patients) — found follow-up within 7 days was associated with HR 0.82 (95% CI 0.80–0.83) for suicide compared with no follow-up within 30 days, with a gradient favoring earlier follow-up.[7] Fontanella et al. (2020) — US Medicaid youth (139,694 inpatients) — found 7-day follow-up was associated with adjusted RR 0.44 (95% CI 0.23–0.83) for suicide during days 8–180, a 56% reduction.[5]
+
+Evidence for Readmission Reduction
+
+
+In a Japanese nationwide cohort (N = 48,579), patients with 30-day follow-up had substantially lower 180-day readmission rates (21.7% vs. 37.5%; adjusted RR 0.54).[1] For schizophrenia and bipolar disorder, 30-day outpatient follow-up was associated with modestly lower readmission during days 31–120 (schizophrenia AOR 0.88; 95% CI 0.81–0.96).[1]
+
+Quality Standards
+
+
+The NCQA HEDIS FUH measure tracks 7-day and 30-day follow-up rates after psychiatric hospitalization.[1] The Joint Commission NPSG 15.01.01 requires written policies for counseling and follow-up care at discharge for patients identified as at risk for suicide.[14] The UK National Confidential Inquiry has proposed an even more stringent 2–3 day follow-up window, noting many patients who die in the early post-discharge period die before their scheduled appointment.[20]
+
+Critical limitation: No RCTs directly test 7-day outpatient follow-up vs. no follow-up for suicide prevention — the evidence is entirely observational and subject to confounding.[5]
+
+---
+
+5. Bridge Clinics and Transitional Interventions
+
+
+Overall Meta-Analytic Evidence
+
+
+A systematic review of 9 RCTs found transitional interventions with bridging components yielded OR 0.76 (95% CI 0.55–1.05) for readmission — a trend favoring intervention but not reaching statistical significance.[1] A 2025 meta-analysis of 12 RCTs (N = 3,663) similarly found no overall significant reduction (pooled RR 0.96; 95% CI 0.86–1.08), though subgroup analyses suggested effectiveness was associated with longer intervention duration.[21] Effective components identified across studies include predischarge and postdischarge psychoeducation, structured needs assessments, medication reconciliation, transition managers, and inpatient/outpatient provider communication, with absolute risk reductions of 13.6–37.0% in individually significant studies.[22]
+
+Critical Time Intervention (CTI)
+
+
+CTI is the best-studied named transitional model — a time-limited (typically 9-month) care coordination intervention. Among 150 previously homeless individuals with SMI, CTI significantly reduced psychiatric rehospitalization at 18 months (OR 0.11; 95% CI 0.01–0.96).[6] Brief CTI (3 months) among adults with a readmission within 30 days was associated with a 30-day readmission rate of 28% vs. 47% in the comparison cohort (adjusted OR 2.83 for readmission in the comparison group).[23] A 2025 meta-analysis of 8 CTI studies found significant small effects on quality of life, homelessness reduction, and positive symptoms.[24]
+
+---
+
+6. Partial Hospitalization (PHP) and Intensive Outpatient (IOP)
+
+
+As Alternative to Inpatient Admission
+
+
+The Cochrane review (Marshall et al., 2011; 10 trials) found approximately 23–38% of patients referred for inpatient admission could be treated in a day hospital, with no significant difference in readmission rates (RR 0.91; 95% CI 0.72–1.15), faster symptom improvement, and 20–50% lower costs.[1] A large European multicenter RCT (N = 1,117) found day hospital care was more effective on social functioning at discharge and at 3- and 12-month follow-up.[1]
+
+As Step-Down After Inpatient Discharge
+
+
+Direct RCT evidence for PHP/IOP specifically as post-discharge step-down care is surprisingly limited. A Medicaid claims study found intermediate service use within 7 days was associated with longer time to readmission (HR 0.71; P = .04) in unadjusted analysis, but this was not significant in propensity-score matched analysis.[21]
+
+---
+
+7. Assertive Community Treatment (ACT)
+
+
+ACT has the most robust evidence base among transitional care models, supported by >30 controlled studies. The Cochrane review on intensive case management (Dieterich et al., 2017) found ICM significantly reduced hospitalization, with a meta-regression showing higher fidelity to the ACT model was associated with greater reductions in hospital days (coefficient −0.31; 95% CI −0.59 to −0.03).[25] Baseline hospital use was the strongest moderator — ACT works best when participants have high baseline hospital use.[25]
+
+The ACCESS trial (N = 120, schizophrenia spectrum) showed ACT significantly reduced service disengagement (6.3% vs. 23.2%; P = .004), with sustained improvements at 4-year follow-up.[26][27] However, the UK REACT trial (N = 251) found no significant differences between ACT and well-organized community mental health teams, demonstrating that ACT's benefits are attenuated in well-resourced systems.[28]
+
+The VA/DoD 2023 Schizophrenia CPG recommends ACT based on moderate-quality evidence showing decreased hospitalizations, reduced relapse, and improved functional status.[29]
+
+---
+
+8. Crisis Stabilization Units and Crisis Resolution Teams
+
+
+The Cochrane review of crisis intervention (Murphy et al., 2015; 8 RCTs, N = 1,144) found crisis intervention may reduce repeat admissions, reduced family burden (RR 0.34; 95% CI 0.20–0.59), and increased patient satisfaction.[30] The landmark North Islington Crisis Study (N = 260) found crisis resolution team patients were significantly less likely to be admitted at 8 weeks (OR 0.19; 95% CI 0.11–0.32).[31] A Swiss RCT (N = 707) found home treatment reduced hospital days by 30.4% over 24 months with comparable clinical outcomes.[32] A peer-staffed crisis respite program found $2,138 lower monthly Medicaid expenditures and 2.9 fewer hospitalizations per year compared to matched controls.[33]
+
+---
+
+9. Peer Support
+
+
+RCT Evidence Is Mixed
+
+
+The ENRICH trial (Gillard et al., 2022; N = 590) — the largest and most rigorous RCT — found peer support plus care as usual did not significantly reduce 12-month readmission compared to care as usual alone, with no significant effects on any primary or secondary outcome.[21] Engagement was notably low (mean 6.2 total contacts vs. 14 planned).[21]
+
+The CORE trial (Johnson et al., 2018; N = 441) — testing peer-supported structured self-management — found a significant reduction in readmission to acute care within 1 year: 29% vs. 38% (OR 0.66; 95% CI 0.43–0.99).[27] The key difference was the structured, manualized intervention with a personal recovery workbook including relapse prevention planning.
+
+Meta-analyses consistently show small but significant positive effects on personal recovery (SMD = 0.20; 95% CI 0.11–0.29) and empowerment, but no impact on clinical symptoms or service use.[27][34] The Cochrane review (Chien et al., 2019) found very low-quality evidence overall and concluded no firm conclusions could be drawn.[35]
+
+The VA/DoD 2023 Schizophrenia CPG found insufficient evidence to recommend for or against peer support but considers it a "value-based practice" that should be maintained, with >1,100 Certified Peer Specialists employed across the VA system.[29]
+
+---
+
+10. Family Involvement
+
+
+Family psychoeducation is among the most efficacious psychosocial interventions for relapse prevention. A network meta-analysis (Rodolico et al., 2022; 90 RCTs, N = 10,340) found family psychoeducation reduced relapse from 37% to 10% (OR 0.18; 95% CI 0.12–0.27) at 12 months — superior to most other psychosocial interventions.[1] The Cochrane review found family interventions may decrease relapse frequency (RR 0.55; 95% CI 0.5–0.6) and hospital admission (RR 0.78; 95% CI 0.63–0.98).[19]
+
+Critically for discharge planning, any involvement between family members and inpatient staff was significantly associated with attending an outpatient appointment within 7 days (OR 2.79; 95% CI 1.28–6.08) and 30 days (OR 3.07; 95% CI 1.29–7.32) after discharge.[1] Despite strong evidence, family intervention remains under-implemented in mental health care.[1]
+
+---
+
+11. Medication Access and Continuity
+
+
+The Magnitude of the Problem
+
+
+Approximately 70% of patients discharged from psychiatric hospitals discontinue at least one medication within 3 months.[36] Among schizophrenia patients, 58.2% are nonadherent within 6 months of discharge.[1] Patients who do not fill an antipsychotic prescription within the first week after discharge have a 75% higher risk of early rehospitalization (HR 1.75; 95% CI 1.13–2.72).[37]
+
+Meds-to-Beds Programs
+
+
+A retrospective cohort across 15 hospital units found participation in a discharge prescription program decreased odds of 7-day readmission by 20% and 30-day readmission by 16%.[38] A psychiatry-specific pharmacy-driven transitional care study found 30-day psychiatric readmission/ED presentations of 15.4% vs. 32.4% in controls (P < .001).[39]
+
+Long-Acting Injectable Antipsychotics (LAIs)
+
+
+A Finnish nationwide cohort (N = 62,250, up to 20-year follow-up) found olanzapine LAI (aHR 0.46), clozapine (aHR 0.51), and paliperidone LAI (aHR 0.51) had the lowest risk of psychiatric rehospitalization.[40] However, post-discharge LAI adherence is poor — only 37% of patients initiated on LAIs during hospitalization demonstrated primary adherence (received another injection post-discharge).[41]
+
+The figure below from Chen et al. (2024) demonstrates that LAI recipients without early discontinuation had the longest time to readmission, while those with early discontinuation had worse outcomes than patients who never received LAIs — underscoring the importance of ensuring outpatient continuation.
+
+Figure 1 Kaplan-Meier Survival Curves of Patients With Psychotic Readmission Events in the 2004-2017 Cohort and 3 Subcohorts
+
+Prior Authorization Barriers
+
+
+In a national survey of dual-eligible psychiatric patients, 43.3% were unable to obtain clinically indicated medications because they were not covered or approved, and patients with prior authorization requirements had 2.4–3.4 times increased likelihood of adverse events including ER visits, hospitalizations, and suicidal ideation.[43] A 10-state Medicaid study found patients with medication access problems had 3.6 times greater likelihood of adverse events.[1]
+
+---
+
+12. Lethal Means Counseling
+
+
+Evidence Base
+
+
+A quasi-experimental study at Kaiser Permanente Colorado found lethal means assessment reduced the risk of suicide attempt or death within 180 days from 3.3% to 0.83% (P = .034) among patients endorsing suicidal ideation.[44] Firearms are used in ~50% of U.S. suicides and are 85–90% lethal per attempt; most suicidal crises are brief (<1 hour in 30% of cases), and fewer than 10% of attempt survivors ultimately die by suicide — meaning delaying access to lethal means during a crisis can be life-saving.[45][1]
+
+Counseling on Access to Lethal Means (CALM) training significantly increases providers' knowledge, confidence, and comfort in discussing means restriction, with sustained effects at 3-month follow-up and increased client receipt of lethal means counseling.[46] CALM is recommended by SAMHSA, the Joint Commission, and JAMA Psychiatry.[40]
+
+Medication Safety at Discharge
+
+
+A Danish national cohort found 52.5% of all unnatural deaths post-discharge were fatal poisonings, with the greatest relative risk for fatal poisoning by psychotropic medication (IRR 93.7).[47] Prescribing decisions should account for toxicity in overdose — citalopram and venlafaxine are of most concern among antidepressants, and clozapine is approximately 18 times more likely to result in death when taken in overdose than chlorpromazine.[20]
+
+The VA/DoD 2024 CPG recommends lethal means safety as part of routine care for patients at intermediate or high suicide risk.[1]
+
+---
+
+13. Transitions for Patients Experiencing Homelessness
+
+
+Homelessness is associated with dramatically elevated suicide rates (males aMRR 2.2; females 3.8), with the combination of psychiatric disorders and homelessness producing an aMRR of 19.9 for males.[47] CTI is the best-studied transitional model for this population — an RCT of 150 previously homeless individuals with SMI found CTI significantly reduced homelessness at 18 months (OR 0.22; 95% CI 0.06–0.88), with effects persisting 9 months after the intervention ended.[1] CTI adapted for homeless veterans showed 19% more days housed per 90-day period (P < .002).[48]
+
+Housing First provides immediate access to permanent housing without preconditions. A Canadian multisite RCT (N = 950) found Housing First with ACT participants spent 71% vs. 29% of time in stable housing (P < .01), with improved quality of life and community functioning.[49] The VA's HUD-VASH program uses a Housing First philosophy with permanent supported housing vouchers.[29]
+
+---
+
+14. Transitions for Patients at Risk of Incarceration
+
+
+Forensic Assertive Community Treatment (FACT) is recognized as a best practice by SAMHSA. The Rochester FACT RCT (N = 70) found significantly fewer mean days in jail (21.5 vs. 43.5; P = .025), fewer hospital days (4.4 vs. 23.8; P = .025), and more days in outpatient treatment (305.5 vs. 169.4; P < .001), with approximately $1.50 return for every $1 spent.[1][31] Mental health discharge planning from correctional settings is now considered a constitutional right per federal court of appeals ruling.[1]
+
+---
+
+15. Evidence-Based Discharge Checklist
+
+
+Before Discharge (Begin Day 1 of Admission)
+
+
+- Assess housing status — identify homelessness or housing instability; initiate CTI or Housing First referral if applicable[1][49]
+
+- Identify family/support persons — engage in discharge planning; any family-staff contact doubles odds of 7-day follow-up[1]
+
+- Complete medication reconciliation — verify all pre-admission medications; resolve discrepancies[1]
+
+- Initiate or optimize psychotropic medications — allow adequate time for dose titration and tolerability assessment
+
+- Begin prior authorization process for discharge medications — 43% of patients unable to obtain medications due to coverage barriers[43]
+
+- Consider LAI initiation for schizophrenia spectrum disorders — ensure outpatient injection appointment is scheduled before discharge[40][41]
+
+- Assess for clozapine — verify REMS registration, ANC monitoring schedule, and outpatient prescriber/pharmacy[1]
+
+- Arrange step-down level of care — PHP/IOP referral if clinically appropriate[1]
+
+- Initiate ACT referral for patients with SMI and high baseline hospital use[25][29]
+
+Suicide Prevention Bundle (All Patients with Suicide Risk)
+
+
+- Complete collaborative Safety Planning Intervention — all 6 steps, personalized, with high fidelity; ensure patient retains a copy[6][11]
+
+- Conduct lethal means counseling — assess firearm access, medication stockpiles, and other means; develop a specific plan for reducing access; provide locking devices if available[44][45][46]
+
+- Limit medication supply — prescribe ≤30-day quantities of medications with overdose potential; avoid prescribing high-lethality agents when alternatives exist[47][20]
+
+- Provide 988 Suicide and Crisis Lifeline information and local crisis resources[14]
+
+- Initiate caring contacts protocol — plan for ≥12 months of periodic contacts (texts, letters, calls) post-discharge[1][19]
+
+Day of Discharge
+
+
+- Schedule outpatient follow-up within 7 days — confirmed appointment with specific date, time, provider name, and location[5][7]
+
+- Warm handoff to outpatient provider — direct communication (phone call, secure message) between inpatient and outpatient clinician[15][22]
+
+- Medications in hand — meds-to-beds delivery or confirmed pharmacy fill before patient leaves; verify insurance coverage[38][39]
+
+- Provide written discharge summary to patient and outpatient provider — include medication list, safety plan, follow-up appointments, and contingency instructions
+
+- Peer support referral — connect with certified peer specialist for structured self-management support if available[27]
+
+- Family psychoeducation — provide education on illness, warning signs, crisis plan, and medication management; schedule family session if not completed during admission[1]
+
+- Transportation arranged — confirm patient has means to reach follow-up appointment and safe destination; discharge homeless patients during daylight hours[1]
+
+Post-Discharge (First 30 Days)
+
+
+- Caring contact within 48–72 hours — phone call or text from treatment team[6][19]
+
+- Verify follow-up attendance — if missed, initiate outreach within 24 hours
+
+- Medication adherence check — pharmacy fill verification or patient contact
+
+- Safety plan review at first outpatient visit — update as needed[11]
+
+- Ongoing caring contacts — per protocol for ≥12 months[19]
+
+---
+
+16. Risk-Stratified Transition Algorithm
+
+
+Tier 1: Standard Risk (No Active Suicidality, Stable Housing, Engaged Supports)
+
+
+- Outpatient follow-up within 7 days
+
+- Safety plan if any history of suicidal ideation
+
+- Medication reconciliation and ≥7-day supply
+
+- Written discharge instructions with crisis resources
+
+- Single caring contact at 48–72 hours
+
+Tier 2: Elevated Risk (Recent Suicidal Ideation, Limited Supports, Prior Readmission)
+
+
+- All Tier 1 interventions PLUS:
+
+- Collaborative SPI with lethal means counseling
+
+- Step-down to PHP/IOP if available
+
+- Warm handoff to outpatient provider (direct clinician-to-clinician communication)
+
+- Meds-to-beds with prior authorization completed
+
+- Caring contacts protocol (≥monthly × 12 months)
+
+- Family engagement in discharge planning
+
+- Peer support referral
+
+Tier 3: High Risk (Recent Suicide Attempt, SMI with High Utilization, Homelessness, Justice Involvement)
+
+
+- All Tier 1 and 2 interventions PLUS:
+
+- Follow-up within 48–72 hours (bridge clinic or home visit)
+
+- ACT team referral for SMI with ≥2 hospitalizations in past year
+
+- CTI referral for patients experiencing homelessness
+
+- FACT referral for justice-involved patients with SMI
+
+- LAI initiation during hospitalization with confirmed outpatient injection appointment
+
+- Housing First/HUD-VASH referral
+
+- Caring contacts protocol (weekly × 4 weeks, then monthly × 12 months)
+
+- Consider crisis stabilization unit as step-down if available
+
+- Coordinate with probation/parole if applicable
+
+Escalation Triggers (Any Tier → Higher Tier)
+
+
+- Missed first follow-up appointment → immediate outreach + escalate to Tier 2 or 3
+
+- Medication non-fill within 7 days → pharmacy outreach + clinician notification
+
+- New suicidal ideation reported on caring contact → same-day clinical assessment
+
+- Loss of housing → CTI/Housing First referral
+
+- Arrest/incarceration → coordinate with jail mental health services
+
+---
+
+17. Top 20 References
+
+
+
+
+---
+
+18. Metrics a Residency Program Should Track
+
+
+Process Metrics (Discharge Quality)
+
+
+
+
+Outcome Metrics
+
+
+
+
+Balancing Metrics (To Detect Unintended Consequences)
+
+
+
+
+Recommended Reporting Cadence
+
+
+- Monthly: Process metrics (safety plan completion, lethal means counseling, 7-day appointment scheduling, medications in hand)
+
+- Quarterly: Outcome metrics (readmission rates, follow-up attendance, medication fill rates)
+
+- Annually: Suicide attempts/deaths, trend analysis, comparison to national benchmarks
+
+- Per event: Root cause analysis for any post-discharge suicide death within 30 days; sentinel event review per Joint Commission requirements
+
+---
+
+Would you like to explore the specific implementation science of embedding these discharge interventions into residency training — including simulation-based SPI training, CALM certification requirements, and competency milestones for discharge planning?
+
+References
+Clinical Practice Guideline on Alcohol Withdrawal Management. Anika Alvanzo MD MS DFASAM FACP, Kurt Kleinschmidt MD FASAM, Julie A. Kmiec DO FASAM, et al. American Society of Addiction Medicine (2020).
+Identification and Treatment of Alcohol Use Disorder. Haber PS. The New England Journal of Medicine. 2025;392(3):258-266. doi:10.1056/NEJMra2306511.
+Prevention of Alcohol Withdrawal Syndrome in the Surgical ICU: An American Association for the Surgery of Trauma Critical Care Committee Clinical Consensus Document. Seshadri A, Appelbaum R, Carmichael SP, et al. Trauma Surgery & Acute Care Open. 2022;7(1):e001010. doi:10.1136/tsaco-2022-001010.
+Suicide Rates After Discharge From Psychiatric Facilities: A Systematic Review and Meta-analysis. Chung DT, Ryan CJ, Hadzi-Pavlovic D, et al. JAMA Psychiatry. 2017;74(7):694-702. doi:10.1001/jamapsychiatry.2017.1044.
+Evaluation of the Appropriate Use of a CIWA-Ar Alcohol Withdrawal Protocol in the General Hospital Setting. Eloma AS, Tucciarone JM, Hayes EM, Bronson BD. The American Journal of Drug and Alcohol Abuse. 2018;44(4):418-425. doi:10.1080/00952990.2017.1362418.
+Alcohol Use Disorders. Connor JP, Haber PS, Hall WD. Lancet (London, England). 2016;387(10022):988-998. doi:10.1016/S0140-6736(15)00122-1.
+Guidelines for Managing Substance Withdrawal in Jails. Jeffrey Alvarez MD CCHP, Andrew F. Angelino MD, Oscar Aviles CPM CJM CCE CCHP, et al. American Society of Addiction Medicine (2023).
+Correlation Between and Nursing Satisfaction With CIWA-Ar, mMINDS, and SEWS Scoring Tools for the Assessment of Severe Alcohol Withdrawal Syndrome in ICU Patients. Bradley M, Kiser TH, Mueller SW, Reynolds PM, MacLaren R. The Annals of Pharmacotherapy. 2023;57(2):175-183. doi:10.1177/10600280221102562.
+Will This Hospitalized Patient Develop Severe Alcohol Withdrawal Syndrome?The Rational Clinical Examination Systematic Review. Wood E, Albarqouni L, Tkachuk S, et al. JAMA. 2018;320(8):825-833. doi:10.1001/jama.2018.10574.
+Association of Suicide Prevention Interventions With Subsequent Suicide Attempts, Linkage to Follow-up Care, and Depression Symptoms for Acute Care Settings: A Systematic Review and Meta-analysis. Doupnik SK, Rudd B, Schmutte T, et al. JAMA Psychiatry. 2020;77(10):1021-1030. doi:10.1001/jamapsychiatry.2020.1586.
+Predictive Value of the Clinical Institute Withdrawal Assessment for Alcohol Scale, Revised (CIWA-Ar) Score on Admission for Alcohol Withdrawal Delirium (AWD) in Patients With Alcohol Use Disorder (AUD): A Prospective Observational Study. Uzawa M, Inuzuka S, Adachi M, et al. Journal of Addictive Diseases. 2026;:1-9. doi:10.1080/10550887.2026.2616724.
+Replacing the Clinical Institute Withdrawal Assessment-Alcohol Revised With the Modified Richmond Agitation and Sedation Scale for Alcohol Withdrawal to Support Management of Alcohol Withdrawal Symptoms: Potential Impact on Length of Stay and Complications. de Lemos J, Sharaf M, Moadebi S, et al. Cjem. 2024;26(6):431-435. doi:10.1007/s43678-024-00710-7.
+Symptom-Triggered Therapy for Alcohol Withdrawal Syndrome: A Systematic Review and Meta-Analysis of Randomized Controlled Trials. Holleck JL, Merchant N, Gunderson CG. Journal of General Internal Medicine. 2019;34(6):1018-1024. doi:10.1007/s11606-019-04899-7.
+Patients with Alcohol Problems. O'Connor PG, Schottenfeld RS. The New England Journal of Medicine. 1998;338(9):592-602. doi:10.1056/NEJM199802263380907.
+Symptoms-Triggered Approach Versus Fixed-Scheduled Approach of Benzodiazepines for Management of Alcohol Withdrawal Syndrome: Non-Randomized Controlled Trial. Al-Maqbali JS, Al Alawi AM, Al-Mamari Q, Al-Huraizi A, Al-Maqrashi N. Alcohol (Fayetteville, N.Y.). 2023;106:10-14. doi:10.1016/j.alcohol.2022.09.004.
+Management of Substance Use Disorders: Guidelines From the VA/DoD. Ford B, Smith E, Richards A. American Family Physician. 2022;106(4):466-469.
+Management of Substance Use Disorder (SUD) (2021). Timothy Atkinson PharmD, Charolotte Baldridge FNP, Jennifer Burden PhD MS, et al. Department of Veterans Affairs.
+The Management of Substance Use Disorders: Synopsis of the 2021 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guideline. Perry C, Liberto J, Milliken C, et al. Annals of Internal Medicine. 2022;175(5):720-731. doi:10.7326/M21-4011.
+Managing Selected Chronic Conditions in Hospitalized Patients. Gauer RL, Abellada A, Stewart M, Kozloski R. American Family Physician. 2024;109(2):134-142.
+Alcohol Withdrawal Syndrome: Outpatient Management. Tiglao SM, Meisenheimer ES, Oh RC. American Family Physician. 2021;104(3):253-262.
+Wernicke's Encephalopathy: New Clinical Settings and Recent Advances in Diagnosis and Management. Sechi G, Serra A. The Lancet. Neurology. 2007;6(5):442-55. doi:10.1016/S1474-4422(07)70104-7.
+Thiamine for Prevention and Treatment of Wernicke-Korsakoff Syndrome in People Who Abuse Alcohol. Day E, Bentham PW, Callaghan R, Kuruvilla T, George S. The Cochrane Database of Systematic Reviews. 2013;(7):CD004033. doi:10.1002/14651858.CD004033.pub3.
+Wernicke Encephalopathy-Clinical Pearls. Sinha S, Kataria A, Kolla BP, Thusius N, Loukianova LL. Mayo Clinic Proceedings. 2019;94(6):1065-1072. doi:10.1016/j.mayocp.2019.02.018.
+What Is the Optimum Thiamine Dose to Treat or Prevent Wernicke's Encephalopathy or Wernicke-Korsakoff Syndrome? Results of a Randomized Controlled Trial. Dingwall KM, Delima JF, Binks P, Batey R, Bowden SC. Alcoholism, Clinical and Experimental Research. 2022;46(6):1133-1147. doi:10.1111/acer.14843.
+A.S.P.E.N. Position Paper: Recommendations for Changes in Commercially Available Parenteral Multivitamin and Multi-Trace Element Products. Vanek VW, Borum P, Buchman A, et al. Nutrition in Clinical Practice : Official Publication of the American Society for Parenteral and Enteral Nutrition. 2012;27(4):440-91. doi:10.1177/0884533612446706.
+Unpeeling the Evidence for the Banana Bag: Evidence-Based Recommendations for the Management of Alcohol-Associated Vitamin and Electrolyte Deficiencies in the ICU. Flannery AH, Adkins DA, Cook AM. Critical Care Medicine. 2016;44(8):1545-52. doi:10.1097/CCM.0000000000001659.
+thiamine hydrochloride. Food and Drug Administration. Updated date: 2025-02-27.
+Peripheral Neuropathy. Mauermann ML, Staff NP. JAMA. 2026;335(3):255-266. doi:10.1001/jama.2025.19400.
+Mechanisms of Thiamin Deficiency in Chronic Alcoholism. Hoyumpa AM. The American Journal of Clinical Nutrition. 1980;33(12):2750-61. doi:10.1093/ajcn/33.12.2750.
+Chronic Alcohol Consumption and Intestinal Thiamin Absorption: Effects on Physiological and Molecular Parameters of the Uptake Process. Subramanya SB, Subramanian VS, Said HM. American Journal of Physiology. Gastrointestinal and Liver Physiology. 2010;299(1):G23-31. doi:10.1152/ajpgi.00132.2010.
+A Case for Early High-Dose Thiamine—Moving From Reaction to Prevention. Goldstein DN, Hunter AJ, Riquelme PA. JAMA Internal Medicine. 2025;:2839842. doi:10.1001/jamainternmed.2025.5055.
+Can Thiamine Substitution Restore Cognitive Function in Alcohol Use Disorder?. Listabarth S, Vyssoki B, Marculescu R, et al. Alcohol and Alcoholism (Oxford, Oxfordshire). 2023;58(3):315-323. doi:10.1093/alcalc/agad017.
+Wernicke's Encephalopathy Treated With High Dose Intravenous Thiamine: A case Report. Alamir M, Cantu-Weinstein A, Branning R, Weleff J, Anand A. Journal of Addictive Diseases. 2025 Jul-Sep;43(3):276-281. doi:10.1080/10550887.2024.2365002.
+Alcohol Abuse in the Critically Ill Patient. Moss M, Burnham EL. Lancet (London, England). 2006;368(9554):2231-42. doi:10.1016/S0140-6736(06)69490-7.
+Wernicke Encephalopathy: A Mini Review of the Clinical Spectrum, Atypical Manifestations, and Diagnostic Challenges. Li S, Xing C. Frontiers in Neurology. 2025;16:1566366. doi:10.3389/fneur.2025.1566366.
+Recognition and Management of Withdrawal Delirium (Delirium Tremens). Schuckit MA. The New England Journal of Medicine. 2014;371(22):2109-13. doi:10.1056/NEJMra1407298.
+Alcohol Detoxification and Withdrawal Seizures: Clinical Support for a Kindling Hypothesis. Brown ME, Anton RF, Malcolm R, Ballenger JC. Biological Psychiatry. 1988;23(5):507-14. doi:10.1016/0006-3223(88)90023-6.
+Pharmacotherapy for Alcohol Use Disorder: A Systematic Review and Meta-Analysis. McPheeters M, O'Connor EA, Riley S, et al. JAMA. 2023;330(17):1653-1665. doi:10.1001/jama.2023.19761.
+Positive Relationship Between the Number of Prior Ethanol Withdrawal Episodes and the Severity of Subsequent Withdrawal Seizures. Becker HC. Psychopharmacology. 1994;116(1):26-32. doi:10.1007/BF02244867.
+Alcohol Use in Patients with Chronic Liver Disease. Fuster D, Samet JH. The New England Journal of Medicine. 2018;379(13):1251-1261. doi:10.1056/NEJMra1715733.
+ACG Clinical Guideline: Alcohol-Associated Liver Disease. Jophlin LL, Singal AK, Bataller R, et al. The American Journal of Gastroenterology. 2024;119(1):30-54. doi:10.14309/ajg.0000000000002572.
+In-Hospital Use of Long-Acting Injectable Antipsychotics and Readmission Risk in Patients With First-Admission Schizophrenia in Taiwan. Chen W, Wu CS, Liu CC, et al. JAMA Network Open. 2024;7(6):e2417006. doi:10.1001/jamanetworkopen.2024.17006.
+Management of Alcohol Use Disorder: A Gastroenterology and Hepatology-Focused Perspective. Díaz LA, König D, Weber S, et al. The Lancet. Gastroenterology & Hepatology. 2025;10(5):475-490. doi:10.1016/S2468-1253(24)00380-7.
+Medications for Alcohol Use Disorder. Poorman E, McQuade BM, Messmer S. American Family Physician. 2024;109(1):71-78.
+Treatment of Patients with Cirrhosis. Ge PS, Runyon BA. The New England Journal of Medicine. 2016;375(8):767-77. doi:10.1056/NEJMra1504367.
+Should Chlordiazepoxide and Diazepam Be Avoided When Treating Alcohol Withdrawal Syndrome in Patients With Hepatic Insufficiency?. Weintraub SJ. Clinical Toxicology (Philadelphia, Pa.). 2025;63(5):303-309. doi:10.1080/15563650.2025.2493216.
+Substance-Use Disorders in Later Life. Lehmann SW, Fingerhood M. The New England Journal of Medicine. 2018;379(24):2351-2360. doi:10.1056/NEJMra1805981.
+Inpatient Management of Acute Alcohol Withdrawal Syndrome. Perry EC. CNS Drugs. 2014;28(5):401-10. doi:10.1007/s40263-014-0163-5.
+Evaluation of a Symptom-Triggered Protocol Approach to the Management of Alcohol Withdrawal Syndrome in Older Adults. Taheri A, Dahri K, Chan P, et al. Journal of the American Geriatrics Society. 2014;62(8):1551-5. doi:10.1111/jgs.12932.
+A Randomized Controlled Trial of Postcrisis Suicide Prevention. Motto JA, Bostrom AG. Psychiatric Services (Washington, D.C.). 2001;52(6):828-33. doi:10.1176/appi.ps.52.6.828.
+
+# | Citation | Significance
+1 | Chung et al. Suicide Rates After Discharge From Psychiatric Facilities. JAMA Psychiatry 2017[1] | Meta-analysis of 100 studies establishing the post-discharge suicide risk window (~100× general population in first 3 months)
+2 | Stanley et al. SPI+ vs Usual Care in VA EDs. JAMA Psychiatry 2018[2] | Landmark cohort comparison: 45% reduction in suicidal behaviors with SPI+ (OR 0.56; NNT 44)
+3 | Boudreaux et al. ED-SAFE 2 Cluster RCT. JAMA Psychiatry 2023[3] | First cluster RCT of department-wide SPI implementation: 43% reduction in suicide composite
+4 | Weinstock et al. SPIRIT Trial. JAMA Netw Open 2025[4] | First individual-level RCT of SPI: 42% reduction in suicide events, 55% reduction in attempts
+5 | Motto & Bostrom. Caring Letters RCT. Psychiatr Serv 2001[1] | Only RCT demonstrating reduced suicide mortality with caring contacts (1.8% vs 3.5% at 2 years)
+6 | Reger et al. Caring Letters for Veterans. JAMA Netw Open 2024[5] | Largest caring contacts evaluation (N=102,709): no effect on suicide attempts but increased healthcare utilization
+7 | Fontanella et al. 7-Day Follow-Up and Suicide in Youth. JAMA Netw Open 2020[6] | 56% reduction in suicide with 7-day follow-up (adjusted RR 0.44)
+8 | Che et al. Follow-Up Timing and Suicide Risk. JAMA Netw Open 2023[3] | Population-based evidence for gradient favoring earlier follow-up (HR 0.82 for 7-day)
+9 | Doupnik et al. Brief Suicide Prevention Interventions Meta-Analysis. JAMA Psychiatry 2020[7] | OR 0.69 for suicide attempts; OR 3.04 for linkage to follow-up care
+10 | Nuij et al. Safety Planning Meta-Analysis. Br J Psychiatry 2021[7] | RR 0.57 for suicidal behavior with safety planning-type interventions (NNT 16)
+11 | VA/DoD CPG: Assessment and Management of Patients at Risk for Suicide. 2024[8] | Comprehensive guideline covering SPI, caring contacts, lethal means, and follow-up
+12 | Joint Commission NPSG 15.01.01 R3 Report. 2019[9] | Regulatory standard requiring discharge follow-up policies for suicide-risk patients
+13 | Gillard et al. ENRICH Trial. Lancet Psychiatry 2022[10] | Largest peer support RCT: negative for readmission reduction
+14 | Johnson et al. CORE Trial. Lancet 2018[11] | Peer-supported structured self-management: significant readmission reduction (OR 0.66)
+15 | Rodolico et al. Family Interventions Network Meta-Analysis. Lancet Psychiatry 2022[1] | Family psychoeducation reduces relapse from 37% to 10% (OR 0.18)
+16 | Dieterich et al. Intensive Case Management Cochrane Review. 2017[12] | ACT effectiveness moderated by fidelity and baseline hospital use
+17 | Taipale et al. Antipsychotic Effectiveness for Rehospitalization. Schizophr Bull 2018[13] | 20-year nationwide cohort: LAIs and clozapine most effective for preventing rehospitalization
+18 | Boggs et al. Lethal Means Assessment. J Gen Intern Med 2020[14] | Lethal means assessment reduced suicide attempt/death risk from 3.3% to 0.83%
+19 | Aaltonen et al. Post-Discharge Suicide Risk Factors. JAMA Psychiatry 2024[15] | Granular temporal data: 6,062/100,000 person-years on days 0–3 post-discharge
+20 | Chitavi et al. Discharge Suicide Prevention Practices. Jt Comm J Qual Patient Saf 2024[16] | Only 4% of hospitals fully implement all recommended discharge suicide prevention activities
+Metric | Target | Data Source | Rationale
+Safety plan completion rate (all patients with SI/SA) | ≥95% | EHR documentation | Joint Commission NPSG 15.01.01; VA mandate[1], [2]
+Safety plan quality score (fidelity to 6-step SPI) | Mean ≥15/22 | Chart audit using SPI fidelity tool | Higher quality associated with lower future attempt risk (AHR 0.79)[3]
+Lethal means counseling documented | ≥90% of suicide-risk patients | EHR documentation | Only 33% of high-risk patients receive this in practice[4], [5]
+7-day follow-up appointment scheduled before discharge | ≥95% | Discharge records | HEDIS FUH measure; associated with 56% suicide reduction[6]
+Warm handoff completed (clinician-to-clinician communication) | ≥80% | Chart audit | Only 37% of hospitals currently do this[7]
+Medications in hand at discharge (or confirmed pharmacy fill) | ≥90% | Pharmacy records | 75% higher rehospitalization risk without first-week fill[8]
+Family/support person contacted during admission | ≥75% | Chart audit | Doubles odds of 7-day follow-up attendance (OR 2.79)[9]
+Caring contact within 72 hours post-discharge | ≥90% | Call/text logs | VA/DoD recommendation; component of SPI+[10], [11]
+Prior authorizations completed before discharge | ≥95% | Pharmacy records | 43% of patients unable to obtain medications due to PA barriers[12]
+LAI outpatient appointment confirmed before discharge (schizophrenia patients on LAI) | 100% | Discharge records | Only 37% demonstrate primary adherence without this[13]
+Metric | Benchmark | Data Source | Rationale
+7-day follow-up attendance rate | ≥60% (national avg ~50%) | Claims/scheduling data | HEDIS FUH-7; associated with suicide and readmission reduction[1], [2]
+30-day follow-up attendance rate | ≥80% (national avg ~67%) | Claims/scheduling data | HEDIS FUH-30[3]
+30-day all-cause readmission rate | <12% | Administrative data | National average ~12–15%[3]
+30-day psychiatric ED return rate | Track and trend | Administrative data | Indicator of discharge adequacy
+30-day medication fill rate (any psychotropic) | ≥80% | Pharmacy claims | 70% discontinue ≥1 medication within 3 months[4]
+Post-discharge suicide attempts (6 months) | Track and trend | EHR/claims | Primary safety outcome
+Post-discharge suicide deaths (12 months) | Zero (aspirational) | Mortality data | Ultimate outcome; requires root cause analysis for each event
+Patient-reported safety plan recall at first follow-up | ≥75% | Patient survey | Only 44% of VA patients recall creating a safety plan[5]
+Metric | Concern | Data Source
+Average length of stay | Ensure discharge planning does not inappropriately prolong LOS | Administrative data
+Discharge against medical advice rate | Ensure interventions do not increase AMA discharges | Administrative data
+Time from discharge order to actual discharge | Ensure medication/PA processes do not create bottlenecks | EHR timestamps
+Patient satisfaction with discharge process | Ensure interventions are patient-centered | HCAHPS or unit-specific survey

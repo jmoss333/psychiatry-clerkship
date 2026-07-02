@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  ============================================================================
+  RECONNECT / MMC RESIDENT PLATFORM — SHARED TOOL SHELL  (Sprint-0 primitive)
+  ============================================================================
+  Purpose: the copy-me base for every interactive tool (Features 1–5).
+  Satisfies audit Issue 9 (shared tool shell) + Issue 4 (local-policy separation).
+
+  HOW TO USE (Codex):
+    1. Copy this file to tools/<your-tool>.html
+    2. Fill the [RC-META] comment (tool, version, built, category, audience,
+       settings, time, reviewCadenceDays, evidenceThrough, status, summary).
+    3. Put ALL clinical content in a sibling pack: tools/<your-tool>.pack.json
+       (envelope shown at bottom of this file). Do NOT inline clinical content.
+    4. Build your feature UI inside App(); reuse the primitives below verbatim.
+    5. Register in nav.json ({t,f,k:"tool"}); add to reviewed.json ONLY after
+       faculty attestation. Until then it ships watermarked "Draft".
+
+  HARD RULES (enforced in CI — see roadmap):
+    • React 18.2 UMD + React.createElement (var e=). No JSX, no bundler.
+    • Theme-init IIFE is the FIRST <script> in <head>.
+    • Token CSS :root + [data-theme="dark"] blocks inlined verbatim (below).
+    • Zero dose literals in tool OR pack. Agents/doses/routes/intervals →
+      LOCAL_POLICY tokens rendered via <LocalChip>. Agent names allowed only
+      in teaching/hazard context, never as an order.
+    • No PHI persisted. localStorage keys use the cw_ prefix only.
+    • Disclaimer present at correct intensity (teaching | safety | simulation).
+
+  CLERKSHIPOS BRIDGE:
+    When migrating to clerkshipos, each LOCAL_POLICY token maps to a tenant-
+    local overlay node (institution layer); the pack `content` becomes a
+    content node; disclaimers/attestation map to schema fields
+    (risk, localPolicy, lastReviewed, verification). Keep tokenIds stable so
+    the overlay mapping is 1:1.
+  ============================================================================
+-->
+<head>
+<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="icon" href="/favicon.svg">
+<!-- [RC-META] tool="TOOL NAME" version="0.1.0" built="YYYY-MM-DD" category="CATEGORY" audience="resident,trainee" settings="inpatient" time="Nmin" reviewCadenceDays="180" evidenceThrough="YYYY-MM-DD" status="draft-pending-attestation" summary="One-line summary. NOT clinical decision support. Local placeholders. Fictional composites; no PHI." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOOL NAME — Teaching Tool</title>
+<meta name="description" content="Educational only; not clinical decision support.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#665a4f;
+    --success:#357160; --success-light:#e7f1ed;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --danger:#a34132; --danger-light:#fbece9;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+  }
+  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(860px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) 90px}
+  h1{font-family:var(--font-head);font-size:1.9rem;color:var(--primary);margin:0 0 4px}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .themebtn{position:fixed;top:12px;right:12px;width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;z-index:30}
+  .disc{border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.84rem;margin-bottom:var(--sp3)}
+  .disc.teach{background:var(--info-light);color:var(--info);border:1px solid var(--info)}
+  .disc.sim{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--accent)}
+  .disc.footer{position:fixed;left:0;right:0;bottom:0;background:var(--danger-light);color:var(--danger);border-top:1px solid var(--danger);font-size:.8rem;padding:8px 14px;text-align:center;margin:0;z-index:20}
+  .localchip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;border:1px dashed var(--warning);color:var(--warning);background:var(--warning-light);border-radius:var(--radius-pill);padding:3px 10px;margin:6px 6px 0 0}
+  .localchip.set{border-style:solid;border-color:var(--success);color:var(--success);background:var(--success-light)}
+  .btn{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-weight:600;cursor:pointer;font:inherit;background:var(--surface);color:var(--accent-dark);min-height:44px}
+  .btn.primary{background:var(--primary-dark);color:var(--on-brand);border-color:var(--primary-dark)}
+  .flag{background:none;border:1px solid var(--border);border-radius:var(--radius-pill);padding:6px 14px;color:var(--text-light);cursor:pointer;font:inherit;font-size:.82rem;min-height:44px}
+  .flag:hover{border-color:var(--danger);color:var(--danger)}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  :focus-visible{outline:3px solid var(--focus,#155eef);outline-offset:2px}
+</style>
+</head>
+<body>
+<button class="themebtn" id="themebtn" aria-label="Toggle light/dark theme">◐</button>
+<main class="shell" id="root"></main>
+<!-- Disclaimer footer intensity: swap text for teaching vs safety vs simulation tools -->
+<div class="disc footer" role="note">Teaching tool — <b>not clinical decision support</b>. Verify all management against attending guidance and local policy.</div>
+<div id="live" class="visually-hidden" aria-live="polite"></div>
+<script>
+(function(){
+  "use strict";
+  var e=React.createElement, useState=React.useState, useEffect=React.useEffect;
+
+  // ---- shared: announce to screen readers ----
+  function announce(m){ try{document.getElementById('live').textContent=m;}catch(e){} }
+
+  // ---- shared PRIMITIVE: LocalChip (renders a LOCAL_POLICY token) ----
+  function LocalChip(props){
+    var tok=props.token; if(!tok) return null;
+    var set=tok.value!==null && tok.value!==undefined;
+    return e('span',{className:'localchip'+(set?' set':''),title:tok.label},
+      set?('Local · '+tok.value):('⚠ '+(tok.placeholder||'Confirm locally')));
+  }
+
+  // ---- shared PRIMITIVE: FlagButton (feeds guideline-surveillance queue) ----
+  var FACULTY_FEEDBACK_EMAIL=""; // {{LOCAL: faculty_feedback_email }}
+  function FlagButton(props){
+    function onFlag(){
+      var reason=window.prompt('Flag this content — reason + note:'); if(reason===null) return;
+      try{var a=JSON.parse(localStorage.getItem('cw_flags')||'[]');a.push({tool:props.tool||'',ctx:props.ctx||'',reason:reason,at:new Date().toISOString()});localStorage.setItem('cw_flags',JSON.stringify(a));}catch(e){}
+      if(FACULTY_FEEDBACK_EMAIL){var s=encodeURIComponent('[Content flag] '+(props.tool||''));var b=encodeURIComponent('Context: '+(props.ctx||'')+'\n'+reason);window.location.href='mailto:'+FACULTY_FEEDBACK_EMAIL+'?subject='+s+'&body='+b;}
+      else{announce('Flag saved locally.');alert('Flag saved locally. Confirm the faculty feedback email (LOCAL_POLICY) to enable email routing.');}
+    }
+    return e('button',{className:'flag',onClick:onFlag},'⚑ Flag content');
+  }
+
+  // ---- shared: token lookup + theme toggle ----
+  function tokenById(pack,id){var a=(pack.localPolicies||[]).filter(function(t){return t.id===id;});return a[0]||null;}
+  function wireTheme(){document.getElementById('themebtn').onclick=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('cw_theme',c);}catch(e){}};}
+
+  // ---- shared PATTERN: pack loader with loading/error states ----
+  function App(){
+    var s=useState('loading'),phase=s[0],setPhase=s[1];
+    var p=useState(null),pack=p[0],setPack=p[1];
+    useEffect(function(){wireTheme();
+      fetch('./REPLACE-WITH-TOOL.pack.json',{cache:'no-store'})
+        .then(function(r){if(!r.ok)throw 0;return r.json();})
+        .then(function(d){setPack(d);setPhase('ready');})
+        .catch(function(){setPhase('error');});
+    },[]);
+    if(phase==='loading')return e('div',null,e('p',null,'Loading…'));
+    if(phase==='error')return e('div',null,e('div',{className:'disc teach'},'Could not load content pack. Refresh to retry.'),e('button',{className:'btn primary',onClick:function(){location.reload();}},'Retry'));
+
+    // ============== BUILD YOUR FEATURE UI HERE ==============
+    return e('div',null,
+      e('div',{className:'kicker'},'CATEGORY · Teaching tool'),
+      e('h1',null,'TOOL NAME'),
+      e('div',{className:'disc teach',role:'note'},'Educational tool. Local specifics are placeholders. Fictional composites — no PHI.'),
+      e('div',{className:'card'},
+        e('p',null,'Replace this card with your feature. Reuse LocalChip, FlagButton, announce().'),
+        // Example LocalChip usage:
+        e(LocalChip,{token:tokenById(pack,'example.token')})),
+      e(FlagButton,{tool:'TOOL NAME',ctx:'home'}));
+    // =======================================================
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+})();
+</script>
+<!--
+  ================= SIBLING PACK ENVELOPE (tools/<tool>.pack.json) =================
+  {
+    "schemaVersion":"1.0","tool":"<id>","version":"0.1.0","built":"YYYY-MM-DD",
+    "evidenceThrough":"YYYY-MM-DD","reviewCadenceDays":180,
+    "status":"draft-pending-attestation",
+    "_incorporationChecklist":{ "source":"","claimExtraction":"","facultyReview":"PENDING",
+      "noPhi":"fictional composites only","publishTarget":"","doseLiteralPolicy":"zero dose literals" },
+    "citations":[{"id":"","ref":"","doi":"","url":""}],
+    "localPolicies":[{"type":"LOCAL_POLICY","id":"example.token","label":"","placeholder":"Confirm locally","value":null,"verifiedBy":null,"verifiedAt":null}],
+    "content":{ }
+  }
+  =================================================================================
+-->
+</body>
+</html>

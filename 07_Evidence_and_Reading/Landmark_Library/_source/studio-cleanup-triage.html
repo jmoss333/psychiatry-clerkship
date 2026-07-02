@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NotebookLM Studio Cleanup — Multi-Source Audio Overview Triage</title>
+<style>
+:root{
+  --bg:#fbf7ee;
+  --bg-2:#f4ead8;
+  --accent:#7a3b2e;
+  --accent-2:#5a2a20;
+  --accent-soft:#f4ead8;
+  --ink:#2a1f17;
+  --ink-2:#5a4a3a;
+  --rule:#d8c8a8;
+  --warn:#b8630d;
+  --good:#2d6a3e;
+  --del:#a6362a;
+  --keep:#2d6a3e;
+  --dec:#5d4e8a;
+  --shadow:0 1px 0 #e8dcc0,0 1px 3px rgba(122,59,46,.08);
+  --mono:"SF Mono","Menlo","Monaco","Consolas",monospace;
+  --serif:"Charter","Iowan Old Style","Georgia",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Helvetica Neue",sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto;padding:36px 28px 80px}
+header{border-bottom:3px solid var(--accent);padding-bottom:20px;margin-bottom:24px}
+h1{font-family:var(--serif);font-size:26px;margin:0 0 6px;color:var(--accent-2);font-weight:600;letter-spacing:-.01em}
+.sub{color:var(--ink-2);font-size:14px;margin:0}
+.assumption{background:var(--bg-2);border-left:4px solid var(--accent);padding:14px 18px;margin:20px 0 24px;border-radius:0 6px 6px 0;font-size:14px;color:var(--ink)}
+.assumption strong{color:var(--accent-2)}
+.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0 24px}
+.stat{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:14px 12px;text-align:center;box-shadow:var(--shadow)}
+.stat .n{font-family:var(--serif);font-size:28px;font-weight:600;color:var(--accent-2);line-height:1}
+.stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);margin-top:6px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0 22px;padding:14px;background:#fff;border:1px solid var(--rule);border-radius:8px;box-shadow:var(--shadow)}
+.controls input[type=search]{flex:1;min-width:220px;padding:9px 12px;border:1px solid var(--rule);border-radius:6px;background:var(--bg);font-size:14px;font-family:inherit;color:var(--ink)}
+.controls input[type=search]:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.btn{padding:8px 14px;border:1px solid var(--rule);border-radius:6px;background:#fff;color:var(--ink);font-size:13px;font-family:inherit;cursor:pointer;font-weight:500}
+.btn:hover{background:var(--bg-2);border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+.btn.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-2)}
+.bucket{margin:32px 0 12px}
+.bucket h2{font-family:var(--serif);font-size:18px;margin:0 0 4px;color:var(--accent-2);display:flex;align-items:baseline;gap:10px}
+.bucket .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.bucket.delete .pill{background:#fbe5e1;color:var(--del)}
+.bucket.keep .pill{background:#e3efe5;color:var(--keep)}
+.bucket.decide .pill{background:#ebe7f3;color:var(--dec)}
+.bucket .desc{color:var(--ink-2);font-size:13px;margin:0 0 12px;font-style:italic}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--rule);border-radius:8px;overflow:hidden;box-shadow:var(--shadow)}
+thead th{background:var(--bg-2);text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);padding:10px 12px;border-bottom:2px solid var(--rule);font-weight:600}
+tbody td{padding:11px 12px;border-bottom:1px solid #eee2c8;vertical-align:top;font-size:14px}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--bg-2)}
+.cb-cell{width:36px;text-align:center}
+input[type=checkbox]{width:17px;height:17px;cursor:pointer;accent-color:var(--accent)}
+.title-cell{font-weight:500;color:var(--ink)}
+.title-cell .reason{display:block;font-size:12px;color:var(--ink-2);margin-top:3px;font-style:italic;font-weight:400}
+.src-cell{width:80px;text-align:center}
+.src-badge{display:inline-block;padding:3px 9px;border-radius:999px;font-family:var(--mono);font-size:11px;font-weight:600;background:var(--bg-2);color:var(--accent-2);border:1px solid var(--rule)}
+.src-badge.high{background:#f5e3dd;color:var(--del);border-color:#e8c8c0}
+.dup-cell{width:240px;font-size:12px;color:var(--ink-2);font-family:var(--mono)}
+.actions-bar{position:sticky;bottom:0;background:#fff;border:2px solid var(--accent);border-radius:8px;padding:14px 18px;margin-top:32px;box-shadow:0 -2px 12px rgba(122,59,46,.12);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.actions-bar .count{font-family:var(--serif);font-size:18px;color:var(--accent-2);font-weight:600;flex:1;min-width:200px}
+.actions-bar .count em{font-style:normal;color:var(--del)}
+.export-out{margin-top:18px;padding:14px;background:var(--bg-2);border:1px solid var(--rule);border-radius:6px;font-family:var(--mono);font-size:12px;white-space:pre-wrap;display:none;color:var(--ink)}
+.export-out.show{display:block}
+.steps{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:18px 22px;margin-top:24px;box-shadow:var(--shadow)}
+.steps h3{font-family:var(--serif);font-size:16px;margin:0 0 10px;color:var(--accent-2)}
+.steps ol{margin:0;padding-left:20px;color:var(--ink)}
+.steps li{margin-bottom:8px;font-size:14px}
+.steps code{font-family:var(--mono);font-size:12px;background:var(--bg-2);padding:2px 6px;border-radius:3px;color:var(--accent-2)}
+.hidden{display:none !important}
+@media (max-width:780px){.summary{grid-template-columns:repeat(2,1fr)}.dup-cell{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>NotebookLM Studio Cleanup — Multi-Source Audio Overview Triage</h1>
+  <p class="sub">Landmark Psychiatry Teaching Library · 26 multi-source items · 21 days old · for Josh Moss MD</p>
+</header>
+
+<div class="assumption">
+  <strong>What this is.</strong> The Studio panel currently holds 123 audio overviews. 97 are single-source (the 50-paper Brief library being built this session plus the 44 single-source Full Deep Dives from the prior session). The remaining <strong>26 are multi-source experimental Deep Dives</strong> from the cleanup window 21 days ago, before the per-paper workflow was standardized. They sit alongside the canonical library and clutter the Studio list. <strong>Triage decisions below are my best judgment</strong> — change checkboxes to override before exporting the delete-list.
+</div>
+
+<div class="summary">
+  <div class="stat"><div class="n">26</div><div class="l">multi-source items</div></div>
+  <div class="stat"><div class="n" style="color:var(--del)">11</div><div class="l">flagged for delete</div></div>
+  <div class="stat"><div class="n" style="color:var(--keep)">8</div><div class="l">recommend keep</div></div>
+  <div class="stat"><div class="n" style="color:var(--dec)">7</div><div class="l">your call</div></div>
+  <div class="stat"><div class="n">123</div><div class="l">total studio items</div></div>
+</div>
+
+<div class="controls">
+  <input type="search" id="q" placeholder="Search title…">
+  <button class="btn" data-filter="all">All</button>
+  <button class="btn active" data-filter="checked">Show checked only</button>
+  <button class="btn" data-filter="unchecked">Show unchecked only</button>
+  <button class="btn" id="check-all-delete">Check all in Delete bucket</button>
+  <button class="btn" id="uncheck-all">Uncheck all</button>
+</div>
+
+<div class="bucket delete">
+  <h2>Delete <span class="pill">11 — duplicates of single-paper briefs</span></h2>
+  <p class="desc">These overviews cover the same ground as a single-source Brief or Full Deep Dive that's already in the canonical library. Removing them eliminates redundancy without losing teaching content.</p>
+  <table>
+    <thead><tr><th class="cb-cell"></th><th>Title</th><th class="src-cell">Sources</th><th class="dup-cell">Duplicates canonical paper</th></tr></thead>
+    <tbody id="bucket-delete"></tbody>
+  </table>
+</div>
+
+<div class="bucket keep">
+  <h2>Keep <span class="pill">8 — deliberate multi-paper syntheses</span></h2>
+  <p class="desc">These are genuine cluster syntheses that add value beyond any single paper — &ldquo;four landmark&rdquo; teaching reels, a BPD tools triangulation, a family-therapy 10-source flagship. Worth preserving as standalone teaching artifacts.</p>
+  <table>
+    <thead><tr><th class="cb-cell"></th><th>Title</th><th class="src-cell">Sources</th><th class="dup-cell">Why keep</th></tr></thead>
+    <tbody id="bucket-keep"></tbody>
+  </table>
+</div>
+
+<div class="bucket decide">
+  <h2>Your call <span class="pill">7 — ambiguous</span></h2>
+  <p class="desc">These could be either deliberate multi-paper syntheses you wanted, or duplicates of canonical singles. Listen to a few seconds of each in NotebookLM if uncertain — checkbox = mark for delete.</p>
+  <table>
+    <thead><tr><th class="cb-cell"></th><th>Title</th><th class="src-cell">Sources</th><th class="dup-cell">Tension</th></tr></thead>
+    <tbody id="bucket-decide"></tbody>
+  </table>
+</div>
+
+<div class="actions-bar">
+  <div class="count"><em id="del-count">11</em> items checked for deletion</div>
+  <button class="btn primary" id="export-btn">Export delete list</button>
+  <button class="btn" id="copy-btn">Copy to clipboard</button>
+</div>
+
+<pre class="export-out" id="export-out"></pre>
+
+<div class="steps">
+  <h3>How to batch-delete in NotebookLM</h3>
+  <ol>
+    <li>Open the notebook in Chrome: <code>Landmark Psychiatry Teaching Library</code></li>
+    <li>Click the <strong>Studio</strong> tab on the right (the audio_magic_eraser icon panel)</li>
+    <li>Scroll to find each item by its title from your exported list</li>
+    <li>Click the <code>more_vert</code> three-dot menu on the right edge of the row</li>
+    <li>Click <strong>Delete</strong> in the menu, then confirm in the dialog</li>
+    <li>Repeat for each title — there's no native multi-select, but the rows refresh in place so you can work through the list top-to-bottom without losing your spot</li>
+  </ol>
+  <p style="margin:10px 0 0;font-size:13px;color:var(--ink-2)"><strong>Tip:</strong> Sort the Studio list by &ldquo;Date created&rdquo; if available — all 26 items are 21 days old, so they'll cluster together at the bottom of the list. That makes the cleanup pass much faster.</p>
+</div>
+
+</div>
+
+<script>
+const items = [
+  // bucket: delete
+  {b:"delete",t:"Suicide Prediction Is a Coin Flip",src:4,r:"Duplicates Paper 33 Belsher 2019 single-source Brief"},
+  {b:"delete",t:"Why Most Borderline Patients Achieve Remission",src:4,r:"Duplicates Paper 32 Zanarini 2010 single-source Brief"},
+  {b:"delete",t:"How Family Stress Becomes Biological Disease",src:4,r:"Duplicates Paper 11 Brown/Leff Expressed Emotion"},
+  {b:"delete",t:"Why Medication Alone Fails Depressed Teens",src:4,r:"Duplicates Paper 23 TADS single-source Brief"},
+  {b:"delete",t:"The Evidence Based Depression Treatment Algorithm",src:4,r:"Duplicates Paper 4 STAR*D single-source Brief"},
+  {b:"delete",t:"Why family environments override psychiatric medication",src:4,r:"Triplicate of family-therapy theme already in canonical 11-15"},
+  {b:"delete",t:"Why family therapy outperforms psychiatric medication",src:10,r:"Same theme as the 10-source Family Therapy flagship — keep one, drop one"},
+  {b:"delete",t:"Connection heals more than therapy manuals",src:3,r:"Duplicates Paper 21/22 Wampold/Lambert relationship cluster"},
+  {b:"delete",t:"The Relationship Is the Intervention",src:3,r:"Duplicates Paper 21/22 Wampold/Lambert relationship cluster"},
+  {b:"delete",t:"Evidence Based Lessons from the Antipsychotic Wars",src:3,r:"Duplicates Paper 5 CATIE single-source Brief"},
+  {b:"delete",t:"Hard Truths From the Antipsychotic Wars",src:3,r:"Duplicates Paper 5 CATIE single-source Brief"},
+
+  // bucket: keep
+  {b:"keep",t:"Family Therapy Slashes Psychiatric Relapse Rates",src:10,r:"10-source flagship synthesis — irreplaceable cluster"},
+  {b:"keep",t:"Clinical Tools for BPD Remission",src:5,r:"5-source BPD tools triangulation — Linehan + Gunderson + Bateman"},
+  {b:"keep",t:"Four landmark papers for psychiatry rounds",src:4,r:"Explicit teaching cluster — rounds-prep artifact"},
+  {b:"keep",t:"Four landmark papers in adolescent psychiatry",src:4,r:"Explicit teaching cluster — adolescent rotation prep"},
+  {b:"keep",t:"Four landmark studies for psychiatric prescribing",src:4,r:"Explicit teaching cluster — prescribing fundamentals"},
+  {b:"keep",t:"Four Frameworks for Your Psychiatry Rotation",src:4,r:"Explicit teaching cluster — frameworks reel"},
+  {b:"keep",t:"Landmark Papers for Your Psychiatry Rotation",src:4,r:"Explicit teaching cluster — overview reel"},
+  {b:"keep",t:"Clinical algorithms for prescribing and tapering antidepressants",src:4,r:"Working clinical tool — tapering algorithm synthesis"},
+
+  // bucket: decide
+  {b:"decide",t:"You Are the Active Pharmaceutical Ingredient",src:4,r:"Could be a Wampold/Lambert synthesis (delete) or a deliberate clinician-as-tool reel (keep)"},
+  {b:"decide",t:"Psychiatry as a complex human ecosystem",src:4,r:"Possible Engel biopsychosocial cluster — listen to confirm scope"},
+  {b:"decide",t:"Redrawing the Map of Mental Illness",src:4,r:"Possible Insel/RDoC + DSM cluster — overlaps Paper 42 single-source"},
+  {b:"decide",t:"Replacing suicide prediction with systematic protection",src:4,r:"Possible Belsher + Stanley/Brown synthesis (Papers 33/34) — deliberate or dup?"},
+  {b:"decide",t:"From Candidate Genes to Synaptic Pruning",src:3,r:"Crosses Border C&C + Sekar C4 — possibly deliberate genetic-trajectory reel"},
+  {b:"decide",t:"Wielding Authority on the Psychiatric Ward",src:3,r:"Boundaries cluster — Gabbard + others; deliberate or duplicate?"},
+  {b:"decide",t:"Labels capacity and boundaries in psychiatry",src:3,r:"Crosses Rosenhan + Appelbaum + Gabbard — deliberate ethics reel?"}
+];
+
+function render() {
+  ["delete","keep","decide"].forEach(b => {
+    const tbody = document.getElementById("bucket-"+b);
+    tbody.innerHTML = "";
+    items.filter(i => i.b === b).forEach((it, idx) => {
+      const id = `${b}-${idx}`;
+      const tr = document.createElement("tr");
+      tr.dataset.title = it.t.toLowerCase();
+      tr.dataset.checked = (b === "delete") ? "1" : "0";
+      const checked = (b === "delete") ? "checked" : "";
+      tr.innerHTML = `
+        <td class="cb-cell"><input type="checkbox" id="${id}" ${checked} data-title="${it.t.replace(/"/g,'&quot;')}" data-src="${it.src}"></td>
+        <td class="title-cell">${it.t}</td>
+        <td class="src-cell"><span class="src-badge ${it.src >= 5 ? 'high' : ''}">${it.src} src</span></td>
+        <td class="dup-cell">${it.r}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+  attachHandlers();
+  updateCount();
+}
+
+function attachHandlers() {
+  document.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener("change", e => {
+      const tr = e.target.closest("tr");
+      tr.dataset.checked = e.target.checked ? "1" : "0";
+      updateCount();
+      applyFilter();
+    });
+  });
+}
+
+function updateCount() {
+  const n = document.querySelectorAll('input[type=checkbox]:checked').length;
+  document.getElementById("del-count").textContent = n;
+}
+
+let activeFilter = "checked";
+function applyFilter() {
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  document.querySelectorAll("tbody tr").forEach(tr => {
+    const matchSearch = !q || tr.dataset.title.includes(q);
+    let matchFilter = true;
+    if (activeFilter === "checked") matchFilter = tr.dataset.checked === "1";
+    if (activeFilter === "unchecked") matchFilter = tr.dataset.checked === "0";
+    tr.classList.toggle("hidden", !(matchSearch && matchFilter));
+  });
+}
+
+document.getElementById("q").addEventListener("input", applyFilter);
+
+document.querySelectorAll(".controls .btn[data-filter]").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll(".controls .btn[data-filter]").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    activeFilter = b.dataset.filter;
+    applyFilter();
+  });
+});
+
+document.getElementById("check-all-delete").addEventListener("click", () => {
+  document.querySelectorAll("#bucket-delete input[type=checkbox]").forEach(cb => {
+    cb.checked = true;
+    cb.closest("tr").dataset.checked = "1";
+  });
+  updateCount();
+  applyFilter();
+});
+
+document.getElementById("uncheck-all").addEventListener("click", () => {
+  document.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.checked = false;
+    cb.closest("tr").dataset.checked = "0";
+  });
+  updateCount();
+  applyFilter();
+});
+
+document.getElementById("export-btn").addEventListener("click", () => {
+  const checked = Array.from(document.querySelectorAll('input[type=checkbox]:checked'));
+  const lines = checked.map((cb, i) => `${String(i+1).padStart(2,' ')}. [${cb.dataset.src}src] ${cb.dataset.title}`);
+  const out = `NotebookLM Studio — Delete List\n${new Date().toISOString().slice(0,10)} · ${checked.length} items\n${'='.repeat(60)}\n${lines.join('\n')}`;
+  const el = document.getElementById("export-out");
+  el.textContent = out;
+  el.classList.add("show");
+});
+
+document.getElementById("copy-btn").addEventListener("click", async () => {
+  const checked = Array.from(document.querySelectorAll('input[type=checkbox]:checked'));
+  const lines = checked.map(cb => cb.dataset.title);
+  try {
+    await navigator.clipboard.writeText(lines.join('\n'));
+    const btn = document.getElementById("copy-btn");
+    const old = btn.textContent;
+    btn.textContent = `Copied ${lines.length} titles ✓`;
+    setTimeout(() => btn.textContent = old, 2000);
+  } catch (e) {
+    alert("Copy failed — use Export instead");
+  }
+});
+
+render();
+applyFilter();
+</script>
+</body>
+</html>

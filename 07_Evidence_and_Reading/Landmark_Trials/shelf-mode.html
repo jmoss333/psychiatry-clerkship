@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [RC-META] tool="Shelf Mode — Exam Simulation" version="1.0" built="2026-06-29" category="evidence-reading" audience="trainee,ms3" settings="inpatient,exam-prep" time="self-paced" summary="Optional timed, blueprint-weighted COMAT/shelf vignette simulation built on the SHELF-* question bank. Tutor or exam mode; per-option feedback, teaching point, and Learn-more links. Fictional composites only; no PHI." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Shelf Mode — Exam Simulation</title>
+<meta name="description" content="An optional timed, blueprint-weighted psychiatry COMAT/shelf vignette simulation with per-question feedback, teaching points, and links back to the hub.">
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#665a4f;
+    --good:#2a6b5e; --good-bg:#e7f1ee; --bad:#b23b2e; --bad-bg:#f7e9e6;
+    --warn:#7a6234; --warn-bg:#f5efe2;
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.55}
+  .wrap{max-width:780px;margin:0 auto;padding:22px 20px 70px}
+  h1{font-family:var(--font-head);color:var(--primary);font-size:1.6rem;margin:.1em 0 .1em}
+  .sub{color:var(--text-light);font-size:.9rem;margin-bottom:16px;max-width:64ch}
+  .opt-pill{display:inline-block;font-size:.7rem;font-weight:700;color:var(--accent-dark);background:var(--accent-light);border:1px solid #cfe1db;border-radius:999px;padding:2px 9px;margin-bottom:10px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .field{margin:14px 0}
+  .field>label.h{display:block;font-family:var(--font-head);font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-mid);font-weight:700;margin-bottom:7px}
+  .seg{display:inline-flex;flex-wrap:wrap;gap:6px}
+  .seg button{border:1px solid var(--border);background:#fff;padding:7px 13px;font:inherit;cursor:pointer;color:var(--text-mid);border-radius:999px}
+  .seg button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{border:1px solid var(--border);background:#fff;border-radius:999px;padding:6px 11px;font:inherit;font-size:.86rem;cursor:pointer;color:var(--text-mid);display:flex;align-items:center;gap:6px}
+  .chip.on{background:var(--primary-light);border-color:var(--primary);color:var(--primary-dark);font-weight:600}
+  .chip .n{font-size:.72rem;color:var(--text-light)}
+  .chip.on .n{color:var(--primary-dark)}
+  .linkrow{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+  .linkrow button{border:none;background:none;color:var(--accent-dark);font:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline;padding:0}
+  .btn{display:inline-block;border:none;border-radius:8px;padding:11px 18px;font:inherit;font-weight:600;cursor:pointer}
+  .btn.primary{background:var(--primary-dark);color:#fff}
+  .btn.ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .between{justify-content:space-between}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
+  .meta{font-size:.82rem;color:var(--text-light)}
+  .tag{display:inline-block;font-size:.72rem;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--accent-light);color:var(--accent-dark);border:1px solid #cfe1db}
+  .dot{display:inline-block;width:.6em;height:.6em;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .dot.easy{background:#5b9279}.dot.med{background:#c9a24b}.dot.hard{background:#bf6a4e}
+  .timer{font-family:var(--font-head);font-variant-numeric:tabular-nums;font-size:1.15rem;color:var(--primary-dark)}
+  .timer.low{color:var(--bad)}
+  .prog{height:7px;background:var(--primary-light);border-radius:999px;overflow:hidden;margin:8px 0 2px}
+  .prog>i{display:block;height:100%;background:var(--accent);transition:width .25s}
+  .qstem{font-family:var(--font-head);font-size:1.13rem;margin:8px 0 14px;line-height:1.45}
+  .opts{display:flex;flex-direction:column;gap:9px}
+  .opt{display:flex;gap:10px;align-items:flex-start;text-align:left;border:1px solid var(--border);background:#fff;border-radius:10px;padding:11px 13px;cursor:pointer;font:inherit;color:var(--text);width:100%}
+  .opt:hover:not(:disabled){border-color:var(--accent)}
+  .opt .k{flex:0 0 22px;height:22px;border-radius:50%;background:var(--primary-light);color:var(--primary-dark);font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .opt.pick{border-color:var(--accent);background:var(--accent-light)}
+  .opt.pick .k{background:var(--accent);color:#fff}
+  .opt.correct{border-color:var(--good);background:var(--good-bg)}
+  .opt.correct .k{background:var(--good);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+  .opt.wrong .k{background:var(--bad);color:#fff}
+  .opt .ofb{display:block;font-size:.82rem;color:var(--text-mid);margin-top:4px}
+  .opt:disabled{cursor:default}
+  .tp{margin:12px 0 2px;padding:11px 14px;border-radius:9px;font-size:.9rem;border-left:3px solid var(--warn);background:var(--warn-bg);color:var(--text-mid)}
+  .tp b{color:var(--warn)}
+  .learn{margin-top:8px;font-size:.86rem}
+  .learn a{color:var(--accent-dark)}
+  .res .score{font-family:var(--font-head);font-size:2.6rem;color:var(--primary);margin:6px 0;text-align:center}
+  table.bt{width:100%;border-collapse:collapse;margin-top:8px;font-size:.9rem}
+  table.bt th,table.bt td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)}
+  table.bt th{font-family:var(--font-head);font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-light)}
+  table.bt td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .mini-bar{height:6px;background:var(--primary-light);border-radius:999px;overflow:hidden;min-width:70px}
+  .mini-bar>i{display:block;height:100%;background:var(--accent)}
+  .rev{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:10px 0;background:#fff}
+  .rev .rq{font-family:var(--font-head);font-size:.98rem;margin-bottom:8px}
+  .rev .ro{font-size:.86rem;padding:4px 8px;border-radius:7px;margin:3px 0}
+  .rev .ro.c{background:var(--good-bg);color:var(--good)}
+  .rev .ro.x{background:var(--bad-bg);color:var(--bad)}
+  .banner{background:var(--warn-bg);border:1px solid #e6d9b8;border-left:3px solid var(--warn);border-radius:9px;padding:10px 14px;font-size:.86rem;color:var(--text-mid);margin:10px 0}
+  .recent{font-size:.84rem;color:var(--text-light)}
+  .recent .r{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px dashed var(--border)}
+  a.back{color:var(--accent-dark);font-size:.85rem;text-decoration:none;cursor:pointer}
+  .disc{font-size:.8rem;color:var(--text-light);border-top:1px solid var(--border);margin-top:26px;padding-top:12px}
+  .loading{color:var(--text-light);padding:30px 0;text-align:center}
+  .kbd{font-size:.72rem;color:var(--text-light)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+var e=React.createElement, useState=React.useState, useEffect=React.useEffect;
+var LS="cw_shelf_v1";
+var KEYS=["A","B","C","D","E","F"];
+var PER_Q=90; // seconds per item (NBME/COMAT pacing ~1.5 min)
+
+function loadLS(){try{return JSON.parse(localStorage.getItem(LS))||{}}catch(_){return {}}}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function fmt(s){s=Math.max(0,Math.round(s));var m=Math.floor(s/60),x=s%60;return m+":"+(x<10?"0":"")+x;}
+function normDiff(d){d=(d||"").toLowerCase();return d==="easy"||d==="hard"||d==="review"?d:"med";}
+
+// Blueprint order + weights (mirror the Qbank spec target counts; used for ordering chips and weighting the draw)
+var BLUEPRINT=[
+ [/mood|depress|bipolar/,"Mood",30],
+ [/psychos|psychot|schizo/,"Psychosis",22],
+ [/anx|ocd|trauma|ptsd/,"Anxiety, OCD & Trauma",26],
+ [/subst|sud|withdraw|alcohol|opioid/,"Substance Use",22],
+ [/pharm|medication|emergenc.*med|nms|serotonin/,"Psychopharm & Med Emergencies",26],
+ [/delir|dementia|neurocog|cognit|mci/,"Delirium, Dementia & MCI",16],
+ [/personal/,"Personality",12],
+ [/child|adolesc|pediatr|adhd|autism/,"Child & Adolescent",14],
+ [/geri|elder|late.?life/,"Geriatric",8],
+ [/perinat|postpartum|pregnan/,"Perinatal",6],
+ [/eating|anorex|bulim/,"Eating Disorders",8],
+ [/somat|factitious|functional|conversion/,"Somatic & Related",10],
+ [/emergenc|suicid|agitat|violen|capacity|hold/,"Psychiatric Emergencies",16],
+ [/interview|ethic|law|legal|consent|mse/,"Interview, Ethics & Law",12],
+ [/sleep|sexual|insomnia/,"Sleep & Sexual",6]
+];
+function weightOf(topic){var t=(topic||"").toLowerCase();for(var i=0;i<BLUEPRINT.length;i++){if(BLUEPRINT[i][0].test(t))return BLUEPRINT[i][2];}return 10;}
+function orderRank(topic){var t=(topic||"").toLowerCase();for(var i=0;i<BLUEPRINT.length;i++){if(BLUEPRINT[i][0].test(t))return i;}return 99;}
+
+// Build a blueprint-weighted set across the chosen topics, capped by availability; excludes "review"-flagged.
+function buildExam(pool, topics, N, diff){
+  var elig=pool.filter(function(it){
+    var d=normDiff(it.diff);
+    if(d==="review") return false;
+    if(diff!=="all" && d!==diff) return false;
+    return topics.indexOf(it.topic)>=0;
+  });
+  var groups={}; elig.forEach(function(it){(groups[it.topic]=groups[it.topic]||[]).push(it);});
+  var tks=Object.keys(groups); if(!tks.length) return [];
+  var wsum=0,w={}; tks.forEach(function(t){w[t]=weightOf(t);wsum+=w[t];});
+  var want=Math.min(N, elig.length), alloc={}, assigned=0;
+  tks.forEach(function(t){var a=Math.min(Math.floor(want*w[t]/wsum), groups[t].length);alloc[t]=a;assigned+=a;});
+  var guard=0;
+  while(assigned<want && guard++<2000){
+    var best=null,bv=-1e9;
+    tks.forEach(function(t){if(alloc[t]<groups[t].length){var v=w[t]/wsum-alloc[t]/Math.max(1,want);if(v>bv){bv=v;best=t;}}});
+    if(best===null) break; alloc[best]++; assigned++;
+  }
+  var out=[]; tks.forEach(function(t){out=out.concat(shuffle(groups[t]).slice(0,alloc[t]));});
+  return shuffle(out);
+}
+
+function shelfPool(data){
+  var out=[];
+  ((data&&data.decks)||[]).forEach(function(d){
+    if(String(d.id||"").toUpperCase().indexOf("SHELF-")!==0) return;
+    var topic=d.topic || (d.title||"").replace(/^.*?—\s*/,"").trim() || d.id;
+    (d.questions||[]).forEach(function(q){
+      out.push({q:q.q,o:q.o,tp:q.tp,obj:q.obj,diff:q.diff,ref:q.ref,topic:q.topic||topic,deck:d.id});
+    });
+  });
+  return out;
+}
+
+function refHref(ref){ if(!ref) return null; return /\.html(\?|#|$)/.test(ref)? ("./"+ref) : ("../index.html?page="+encodeURIComponent(ref)); }
+function correctIdx(o){for(var i=0;i<o.length;i++){if(o[i]&&o[i].c)return i;}return -1;}
+
+// ---- Sample preview items (original, classic teaching points). Only used when no SHELF-* decks exist yet.
+// Clearly labeled as preview; NOT scored content for assessment until the faculty-reviewed bank lands.
+var SAMPLE=[
+ {topic:"Mood",diff:"easy",ref:"t_mood.md",
+  q:"A 26-year-old woman is admitted after 5 days of decreased need for sleep, rapid speech, increased spending, and a belief that she has been chosen to reform the hospital. She has had two prior depressive episodes treated with sertraline. On exam she is irritable with pressured speech and flight of ideas. Which of the following is the most appropriate next step?",
+  o:[{t:"Continue sertraline and add cognitive behavioral therapy",c:false,fb:"Antidepressant monotherapy can sustain or worsen mania; the priority is to stop it and start an antimanic agent."},
+     {t:"Discontinue sertraline and start a mood stabilizer or second-generation antipsychotic",c:true,fb:"Correct — acute mania (bipolar I): stop the antidepressant, begin lithium/valproate or an SGA, and protect sleep."},
+     {t:"Start fluoxetine for treatment-resistant depression",c:false,fb:"The presentation is mania, not depression; an antidepressant is contraindicated."},
+     {t:"Obtain brain MRI before initiating any treatment",c:false,fb:"Classic mania with prior mood episodes does not require imaging before treatment; do not delay antimanic therapy."},
+     {t:"Begin lorazepam as monotherapy",c:false,fb:"A benzodiazepine is adjunctive for agitation/sleep but does not treat the manic episode."}],
+  tp:"Acute mania: stop the antidepressant, start a mood stabilizer or SGA, and protect sleep."},
+ {topic:"Psychopharm & Med Emergencies",diff:"med",ref:"psychopharm_primer.md",
+  q:"A 30-year-old man on fluoxetine is brought in 8 hours after a friend gave him tramadol for back pain. He is agitated and diaphoretic. Temperature is 39.1°C, heart rate 124. Exam shows hyperreflexia and inducible clonus, greater in the lower extremities. Which of the following is the most likely diagnosis?",
+  o:[{t:"Serotonin syndrome",c:true,fb:"Correct — rapid onset after adding a serotonergic agent (tramadol), with hyperthermia, autonomic instability, and neuromuscular hyperexcitability (clonus, hyperreflexia). Stop the agents, supportive care, consider cyproheptadine."},
+     {t:"Neuroleptic malignant syndrome",c:false,fb:"NMS follows dopamine antagonists, evolves over days, and features 'lead-pipe' rigidity and bradyreflexia — not clonus/hyperreflexia."},
+     {t:"Anticholinergic toxicity",c:false,fb:"Anticholinergic toxidrome gives dry skin, absent bowel sounds, and normal reflexes — not diaphoresis with clonus."},
+     {t:"Malignant hyperthermia",c:false,fb:"Malignant hyperthermia is triggered by volatile anesthetics/succinylcholine, not oral serotonergics."},
+     {t:"Sympathomimetic intoxication",c:false,fb:"Stimulant toxicity can mimic this but lacks the prominent clonus/hyperreflexia and the clear serotonergic trigger."}],
+  tp:"Serotonin syndrome = serotonergic trigger + hyperthermia + clonus/hyperreflexia (lower-limb predominant); NMS = dopamine blocker + rigidity + hyporeflexia over days."},
+ {topic:"Substance Use",diff:"easy",ref:"withdrawal.html",
+  q:"A 52-year-old man admitted for pancreatitis becomes tremulous and diaphoretic on hospital day 2, with heart rate 116, blood pressure 168/98, and visual misperceptions. He reports drinking a pint of vodka daily until admission. Which of the following is the most appropriate management?",
+  o:[{t:"Symptom-triggered benzodiazepine dosing with CIWA-Ar monitoring, plus thiamine",c:true,fb:"Correct — alcohol withdrawal: benzodiazepines (often CIWA-Ar–guided) are first-line, with thiamine to prevent Wernicke encephalopathy."},
+     {t:"Scheduled haloperidol",c:false,fb:"Antipsychotics lower the seizure threshold and do not treat the underlying GABA/glutamate dysregulation; they are at most adjunctive for agitation."},
+     {t:"Intravenous dextrose before any other intervention",c:false,fb:"Give thiamine before/with glucose in at-risk patients — a glucose load alone can precipitate Wernicke encephalopathy."},
+     {t:"Physical restraints and observation",c:false,fb:"Restraints do not treat withdrawal and can worsen autonomic arousal; pharmacologic treatment is needed."},
+     {t:"Clonidine monotherapy",c:false,fb:"Clonidine may blunt autonomic signs but does not prevent withdrawal seizures or delirium tremens."}],
+  tp:"Alcohol withdrawal: benzodiazepines (CIWA-Ar–guided) first-line; give thiamine before glucose."},
+ {topic:"Delirium, Dementia & MCI",diff:"med",ref:"delirium.md",
+  q:"A 78-year-old woman is inattentive and intermittently drowsy two days after hip surgery. Her family says she was cognitively intact at baseline; symptoms fluctuate and worsen at night. She is on oxycodone and diphenhydramine for sleep. Which of the following is the most appropriate first step?",
+  o:[{t:"Identify and treat underlying causes and remove deliriogenic medications",c:true,fb:"Correct — acute, fluctuating inattention with altered arousal is delirium. First-line is to find and fix the cause (pain meds, anticholinergics, infection, metabolic) and use nonpharmacologic measures."},
+     {t:"Start a scheduled long-acting benzodiazepine",c:false,fb:"Benzodiazepines worsen delirium (except in alcohol/benzo withdrawal) and increase fall risk."},
+     {t:"Begin donepezil for cognitive decline",c:false,fb:"Cholinesterase inhibitors treat chronic dementia, not acute delirium, and have no role here."},
+     {t:"Obtain an outpatient neuropsychology referral",c:false,fb:"This is an acute medical problem requiring inpatient workup, not deferred testing."},
+     {t:"Reassure the family this is expected post-operative confusion and observe",c:false,fb:"Delirium signals an underlying disturbance and predicts poor outcomes; it requires active workup, not watchful waiting."}],
+  tp:"Delirium is a medical emergency: treat the cause and stop deliriogenic drugs; avoid benzodiazepines unless withdrawal-related."},
+ {topic:"Psychiatric Emergencies",diff:"med",ref:"capacity.html",
+  q:"A 60-year-old man with diabetes and a necrotic foot refuses a recommended amputation. He can describe the gangrene, the risk of fatal sepsis without surgery, the option of amputation, and explains he would rather risk death than lose his leg, citing consistent long-held values. He has no psychosis or cognitive deficit. Which of the following best describes his decision-making capacity?",
+  o:[{t:"He has capacity to refuse the amputation",c:true,fb:"Correct — he demonstrates the four abilities (understanding, appreciation, reasoning, and a stable choice). Capacity is decision-specific; a 'wrong-seeming' choice with intact reasoning is still a capacitated refusal."},
+     {t:"He lacks capacity because the refusal is medically dangerous",c:false,fb:"Capacity is about the process of decision-making, not whether the choice matches the medical recommendation."},
+     {t:"He lacks capacity and a guardian should consent to surgery",c:false,fb:"There is no impairment in the four abilities; overriding a capacitated refusal would violate autonomy."},
+     {t:"Capacity cannot be assessed without neuropsychological testing",c:false,fb:"Capacity is a clinical, decision-specific bedside determination, not a test score."},
+     {t:"He has capacity only if he agrees to surgery",c:false,fb:"Capacity does not depend on agreeing with the team; that reasoning is circular."}],
+  tp:"Capacity is decision-specific and rests on four abilities; a high-risk refusal with intact reasoning is still capacitated."}
+];
+
+function App(){
+  var d=useState(null),data=d[0],setData=d[1];
+  var er=useState(null),err=er[0],setErr=er[1];
+  var S=useState({view:"config",len:20,diff:"all",mode:"tutor",timed:true,topics:[],
+                  items:[],picks:[],flags:{},idx:0,secs:0,total:0,result:null,saved:false,preview:false,revFilter:"missed"});
+  var st=S[0],setS=S[1];
+  function set(p){setS(function(prev){return Object.assign({},prev,p);});}
+
+  useEffect(function(){
+    fetch("quizzes.json").then(function(r){return r.json()}).then(setData).catch(function(){setErr("Could not load the question bank (quizzes.json).");});
+  },[]);
+
+  // derive pool + topics once data lands
+  var pool=[], preview=false, topicsAll=[];
+  if(data){
+    pool=shelfPool(data);
+    if(pool.length===0){ pool=SAMPLE.slice(); preview=true; }
+    var seen={}; pool.forEach(function(it){seen[it.topic]=(seen[it.topic]||0)+1;});
+    topicsAll=Object.keys(seen).sort(function(a,b){return orderRank(a)-orderRank(b);}).map(function(t){return {t:t,n:seen[t]};});
+  }
+  // default-select all topics on first data load
+  useEffect(function(){
+    if(data && st.topics.length===0 && topicsAll.length){ set({topics:topicsAll.map(function(x){return x.t;}), preview:preview}); }
+  },[data]);
+
+  // exam timer
+  useEffect(function(){
+    if(st.view!=="exam") return;
+    var id=setInterval(function(){
+      setS(function(p){
+        if(p.view!=="exam") return p;
+        if(p.timed){ if(p.secs<=1){ return grade(Object.assign({},p,{secs:0})); } return Object.assign({},p,{secs:p.secs-1}); }
+        return Object.assign({},p,{secs:p.secs+1});
+      });
+    },1000);
+    return function(){clearInterval(id);};
+  },[st.view,st.timed]);
+
+  // persist a finished attempt
+  useEffect(function(){
+    if(st.view==="result" && !st.saved && st.result){
+      try{var L=loadLS(); L.attempts=(L.attempts||[]);
+        L.attempts.unshift({at:new Date().toISOString().slice(0,10),n:st.result.n,correct:st.result.correct,
+          pct:st.result.pct,mode:st.mode,timed:st.timed,secs:st.result.secs,preview:st.preview});
+        L.attempts=L.attempts.slice(0,20); localStorage.setItem(LS,JSON.stringify(L));}catch(_){}
+      set({saved:true});
+    }
+  },[st.view,st.saved]);
+
+  // keyboard: 1-5 choose, Enter advance
+  useEffect(function(){
+    if(st.view!=="exam") return;
+    function onKey(ev){
+      var q=st.items[st.idx]; if(!q) return;
+      if(ev.key>="1" && ev.key<=String(Math.min(9,q.o.length))){ choose(parseInt(ev.key,10)-1); }
+      else if(ev.key==="Enter"){ if(canAdvance()) advance(); }
+    }
+    window.addEventListener("keydown",onKey);
+    return function(){window.removeEventListener("keydown",onKey);};
+  });
+
+  function startExam(){
+    var items=buildExam(pool, st.topics, st.len, st.diff);
+    if(!items.length) return;
+    set({view:"exam",items:items,picks:items.map(function(){return null;}),flags:{},idx:0,
+         secs: st.timed? items.length*PER_Q : 0, total:items.length*PER_Q, result:null, saved:false, preview:preview});
+  }
+  function choose(oi){
+    setS(function(p){
+      var q=p.items[p.idx]; if(!q||oi>=q.o.length) return p;
+      if(p.mode==="tutor" && p.picks[p.idx]!=null) return p; // locked after answering in tutor mode
+      var picks=p.picks.slice(); picks[p.idx]=oi; return Object.assign({},p,{picks:picks});
+    });
+  }
+  function canAdvance(){
+    if(st.mode==="tutor") return st.picks[st.idx]!=null;
+    return true;
+  }
+  function advance(){
+    setS(function(p){
+      if(p.idx+1<p.items.length) return Object.assign({},p,{idx:p.idx+1});
+      return grade(p);
+    });
+  }
+  function gotoPrev(){ setS(function(p){return p.idx>0?Object.assign({},p,{idx:p.idx-1}):p;}); }
+  function toggleFlag(){ setS(function(p){var f=Object.assign({},p.flags);f[p.idx]=!f[p.idx];return Object.assign({},p,{flags:f});}); }
+  function grade(p){
+    var correct=0, byTopic={};
+    p.items.forEach(function(q,i){
+      var ci=correctIdx(q.o), ok=(p.picks[i]===ci && ci>=0);
+      if(ok) correct++;
+      var bt=byTopic[q.topic]=byTopic[q.topic]||{c:0,n:0}; bt.n++; if(ok)bt.c++;
+    });
+    var secsUsed = p.timed? (p.total-p.secs) : p.secs;
+    var res={n:p.items.length,correct:correct,pct:Math.round(100*correct/Math.max(1,p.items.length)),byTopic:byTopic,secs:secsUsed};
+    return Object.assign({},p,{view:"result",result:res});
+  }
+
+  if(err) return e("div",{className:"wrap"},e("h1",null,"Shelf Mode"),e("div",{className:"card"},err));
+  if(!data) return e("div",{className:"wrap"},e("div",{className:"loading"},"Loading the question bank…"));
+
+  // ---------------- CONFIG ----------------
+  if(st.view==="config"){
+    var L=loadLS(); var recent=(L.attempts||[]).slice(0,3);
+    var avail=pool.filter(function(it){
+      var dd=normDiff(it.diff); if(dd==="review")return false;
+      if(st.diff!=="all"&&dd!==st.diff)return false;
+      return st.topics.indexOf(it.topic)>=0;
+    }).length;
+    var lens=[10,20,40].filter(function(n){return true;});
+    return e("div",{className:"wrap"},
+      e("h1",null,"Shelf Mode"),
+      e("span",{className:"opt-pill"},"Optional practice · exam simulation"),
+      e("div",{className:"sub"},"A timed, blueprint-weighted vignette set that mirrors the psychiatry COMAT / shelf. Choose your length, topics, and pacing. Single best answer, with feedback and a teaching point on every item."),
+      preview? e("div",{className:"banner"},e("strong",null,"Preview mode. "),"The shelf question bank isn't loaded yet, so this is running on a small set of sample items so you can see how it works. Once the faculty-reviewed ",e("code",null,"SHELF-*")," bank is added, the full blueprint-weighted exam turns on automatically.") : null,
+      e("div",{className:"card"},
+        e("div",{className:"field"},
+          e("label",{className:"h"},"Length"),
+          e("div",{className:"seg"}, lens.map(function(n){
+            return e("button",{key:n,className:st.len===n?"on":"",onClick:function(){set({len:n})}}, n+" Q");
+          }))
+        ),
+        e("div",{className:"field"},
+          e("label",{className:"h"},"Difficulty"),
+          e("div",{className:"seg"}, [["all","All"],["easy","Easy"],["med","Medium"],["hard","Hard"]].map(function(p){
+            return e("button",{key:p[0],className:st.diff===p[0]?"on":"",onClick:function(){set({diff:p[0]})}}, p[1]);
+          }))
+        ),
+        e("div",{className:"field"},
+          e("label",{className:"h"},"Mode"),
+          e("div",{className:"seg"},
+            e("button",{className:st.mode==="tutor"?"on":"",onClick:function(){set({mode:"tutor"})}},"Tutor — feedback after each"),
+            e("button",{className:st.mode==="exam"?"on":"",onClick:function(){set({mode:"exam"})}},"Exam — feedback at end")
+          )
+        ),
+        e("div",{className:"field"},
+          e("label",{className:"h"},"Pacing"),
+          e("div",{className:"seg"},
+            e("button",{className:st.timed?"on":"",onClick:function(){set({timed:true})}},"Timed · 1.5 min/Q"),
+            e("button",{className:!st.timed?"on":"",onClick:function(){set({timed:false})}},"Untimed")
+          )
+        ),
+        e("div",{className:"field"},
+          e("label",{className:"h"},"Topics"),
+          e("div",{className:"linkrow"},
+            e("button",{onClick:function(){set({topics:topicsAll.map(function(x){return x.t;})})}},"Select all"),
+            e("button",{onClick:function(){set({topics:[]})}},"Clear")
+          ),
+          e("div",{className:"chips",style:{marginTop:"7px"}}, topicsAll.map(function(x){
+            var on=st.topics.indexOf(x.t)>=0;
+            return e("button",{key:x.t,className:"chip"+(on?" on":""),onClick:function(){
+              var t=st.topics.slice(),i=t.indexOf(x.t); if(i>=0)t.splice(i,1); else t.push(x.t); set({topics:t});
+            }}, e("span",null,x.t), e("span",{className:"n"},x.n));
+          }))
+        ),
+        e("div",{className:"row between",style:{marginTop:"6px"}},
+          e("span",{className:"meta"}, avail+" item"+(avail===1?"":"s")+" available · drawing "+Math.min(st.len,avail)),
+          e("button",{className:"btn primary",disabled:avail===0,onClick:startExam}, "Start "+Math.min(st.len,avail)+"-question set")
+        ),
+        e("div",{className:"kbd",style:{marginTop:"8px"}},"Tip: press 1–5 to answer, Enter to advance.")
+      ),
+      recent.length? e("div",{className:"card"},
+        e("label",{className:"h",style:{display:"block",marginBottom:"6px"}},"Recent attempts"),
+        e("div",{className:"recent"}, recent.map(function(r,i){
+          return e("div",{className:"r",key:i},
+            e("span",null, r.at+" · "+(r.mode==="tutor"?"Tutor":"Exam")+(r.preview?" · sample":"")),
+            e("span",null, r.correct+"/"+r.n+" ("+r.pct+"%)"));
+        }))
+      ):null,
+      e("div",{className:"disc"},"Optional exam-prep simulation. Items are educational and use fictional composites only (no patient information). Verify management against current guidelines and your team. Progress is saved only in this browser. ",e("br"),"Joshua Moss, MD | Psychiatrist")
+    );
+  }
+
+  // ---------------- RESULT ----------------
+  if(st.view==="result"){
+    var R=st.result, msg=R.pct>=80?"Strong — exam-ready range.":R.pct>=70?"Solid — tighten the misses.":R.pct>=60?"Passing range — keep drilling.":"Worth another pass.";
+    var bts=Object.keys(R.byTopic).sort(function(a,b){return orderRank(a)-orderRank(b);});
+    var revItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){
+      if(st.revFilter==="all") return true;
+      var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci;
+    });
+    return e("div",{className:"wrap"},
+      e("a",{className:"back",onClick:function(){set({view:"config",saved:false});}},"← New set"),
+      e("div",{className:"card res"},
+        e("div",{className:"score"}, R.correct+" / "+R.n),
+        e("div",{className:"sub",style:{textAlign:"center"}}, R.pct+"% · "+msg+" · "+(st.timed?"used ":"took ")+fmt(R.secs)+(st.preview?" · sample set":"")),
+        e("table",{className:"bt"},
+          e("thead",null,e("tr",null,e("th",null,"Topic"),e("th",null,""),e("th",{className:"n"},"Score"))),
+          e("tbody",null, bts.map(function(t){
+            var b=R.byTopic[t], p=Math.round(100*b.c/Math.max(1,b.n));
+            return e("tr",{key:t},
+              e("td",null,t),
+              e("td",null,e("span",{className:"mini-bar"},e("i",{style:{width:p+"%"}}))),
+              e("td",{className:"n"}, b.c+"/"+b.n));
+          }))
+        ),
+        e("div",{className:"row",style:{justifyContent:"center",marginTop:"14px"}},
+          e("button",{className:"btn primary",onClick:function(){set({view:"config",saved:false});}},"New set"),
+          e("a",{className:"btn ghost",href:"../index.html",style:{textDecoration:"none"}},"Back to library")
+        )
+      ),
+      e("div",{className:"card"},
+        e("div",{className:"row between"},
+          e("label",{className:"h"},"Review"),
+          e("div",{className:"seg"},
+            e("button",{className:st.revFilter==="missed"?"on":"",onClick:function(){set({revFilter:"missed"})}},"Missed ("+revItems.length+")"),
+            e("button",{className:st.revFilter==="all"?"on":"",onClick:function(){set({revFilter:"all"})}},"All")
+          )
+        ),
+        revItems.length? revItems.map(function(x){
+          var q=x.q, ci=correctIdx(q.o), pick=st.picks[x.i];
+          return e("div",{className:"rev",key:x.i},
+            e("div",{className:"row between",style:{marginBottom:"4px"}},
+              e("span",{className:"tag"},q.topic), e("span",{className:"meta"}, pick===ci?"Correct":"Missed")),
+            e("div",{className:"rq"}, q.q),
+            e("div",{className:"ro c"}, KEYS[ci]+". "+q.o[ci].t),
+            (pick!=null && pick!==ci)? e("div",{className:"ro x"}, "Your answer: "+KEYS[pick]+". "+q.o[pick].t) : (pick==null? e("div",{className:"meta"},"Left blank") : null),
+            q.tp? e("div",{className:"tp"},e("b",null,"Teaching point. "),q.tp):null,
+            q.ref? e("div",{className:"learn"},e("a",{href:refHref(q.ref)},"Learn more →")):null
+          );
+        }) : e("div",{className:"meta"},"Nothing to review — every item correct.")
+      ),
+      e("div",{className:"disc"},"Joshua Moss, MD | Psychiatrist · Educational simulation; fictional composites only. Verify management against current guidelines.")
+    );
+  }
+
+  // ---------------- EXAM ----------------
+  var q=st.items[st.idx], pick=st.picks[st.idx], ci=correctIdx(q.o);
+  var revealed = (st.mode==="tutor" && pick!=null);
+  var answeredCount = st.picks.filter(function(p){return p!=null;}).length;
+  var low = st.timed && st.secs<=Math.max(30, st.total*0.1);
+  return e("div",{className:"wrap"},
+    e("div",{className:"topbar"},
+      e("a",{className:"back",onClick:function(){if(confirm("End this set and discard progress?")) set({view:"config"});}},"← Exit"),
+      e("span",{className:"timer"+(low?" low":"")}, st.timed? fmt(st.secs) : fmt(st.secs)+" elapsed")
+    ),
+    e("div",{className:"row between"},
+      e("span",{className:"tag"}, q.topic),
+      e("span",{className:"meta"}, e("span",{className:"dot "+normDiff(q.diff)}), normDiff(q.diff)==="med"?"medium":normDiff(q.diff))
+    ),
+    e("div",{className:"prog"},e("i",{style:{width:(100*(st.idx+1)/st.items.length)+"%"}})),
+    e("div",{className:"sub"},"Question "+(st.idx+1)+" / "+st.items.length+" · "+answeredCount+" answered"),
+    e("div",{className:"card"},
+      e("div",{className:"qstem"}, q.q),
+      e("div",{className:"opts"}, q.o.map(function(o,oi){
+        var cls="opt";
+        if(revealed){ if(oi===ci) cls+=" correct"; else if(oi===pick) cls+=" wrong"; }
+        else if(oi===pick) cls+=" pick";
+        return e("button",{key:oi,className:cls,disabled:revealed,onClick:function(){choose(oi)}},
+          e("span",{className:"k"},KEYS[oi]||"?"),
+          e("span",null, e("span",null,o.t), revealed&&o.fb? e("span",{className:"ofb"},o.fb):null));
+      })),
+      revealed? e("div",null,
+        q.tp? e("div",{className:"tp"},e("b",null,"Teaching point. "),q.tp):null,
+        q.ref? e("div",{className:"learn"},e("a",{href:refHref(q.ref),target:"_blank",rel:"noopener"},"Learn more →")):null
+      ):null,
+      e("div",{className:"row between",style:{marginTop:"14px"}},
+        e("div",{className:"row"},
+          st.mode==="exam"? e("button",{className:"btn ghost",disabled:st.idx===0,onClick:gotoPrev},"← Prev"):null,
+          st.mode==="exam"? e("button",{className:"btn ghost",onClick:toggleFlag}, st.flags[st.idx]?"⚑ Flagged":"⚐ Flag"):null
+        ),
+        e("button",{className:"btn primary",disabled:!canAdvance(),onClick:advance},
+          st.idx+1<st.items.length? "Next →" : "Finish")
+      )
+    ),
+    e("div",{className:"disc"},"Educational simulation; fictional composites only (no patient information). Joshua Moss, MD | Psychiatrist")
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(e(App));
+</script>
+</body>
+</html>

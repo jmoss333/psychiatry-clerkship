@@ -1,0 +1,238 @@
+{
+  "schemaVersion": "1.0",
+  "tool": "agitation-trainer",
+  "version": "0.1.0",
+  "built": "2026-07-02",
+  "evidenceThrough": "2026-06-30",
+  "reviewCadenceDays": 180,
+  "status": "draft-pending-attestation",
+  "_incorporationChecklist": {
+    "source": "OpenEvidence — 'Acute Agitation in Adult Inpatient and Emergency Psychiatry: Comprehensive Evidence Review' + 'QTc Prolongation Risk with Psychotropic Medications' (staging, ~2026-06)",
+    "claimExtraction": "Class-level reasoning, etiology discriminators, and contraindication/hazard logic only. Dose/route/agent-selection intentionally NOT copied — routed to LOCAL_POLICY tokens.",
+    "facultyReview": "PENDING — do not add to reviewed.json until Joshua Moss, MD attests. Ships watermarked 'Draft — pending faculty review'.",
+    "noPhi": "All scenarios are fictional composites. No patient-identifiable data.",
+    "publishTarget": "mmc-resident-deploy/tools/agitation-trainer.html + tools/agitation.pack.json (after attestation)",
+    "doseLiteralPolicy": "Pack must contain zero dose literals (regex \\d+\\s?(mg|mcg|mL) returns nothing). Agent names permitted only in teaching/hazard context, never as an order."
+  },
+  "citations": [
+    { "id": "richmond2012", "ref": "Richmond JS, Berlin JS, Fishkind AB, et al. Verbal De-Escalation of the Agitated Patient: Consensus Statement of the AAEP Project BETA De-Escalation Workgroup. West J Emerg Med. 2012;13(1):17-25.", "doi": "10.5811/westjem.2011.9.6864", "url": "" },
+    { "id": "wilson2012", "ref": "Wilson MP, Pepper D, Currier GW, et al. The Psychopharmacology of Agitation: Consensus Statement of the AAEP Project BETA Psychopharmacology Workgroup. West J Emerg Med. 2012;13(1):26-34.", "doi": "", "url": "" },
+    { "id": "knox2012", "ref": "Knox DK, Holloman GH. Use and Avoidance of Seclusion and Restraint: Consensus Statement of the AAEP Project BETA Seclusion and Restraint Workgroup. West J Emerg Med. 2012;13(1):35-40.", "doi": "", "url": "" },
+    { "id": "apa2022", "ref": "American Psychiatric Association. Resource Document on the Use of Seclusion and Restraint. 2022.", "doi": "", "url": "" },
+    { "id": "siafis2026", "ref": "Siafis S, et al. Comparative effectiveness and safety of pharmacological treatments for rapid tranquillisation: individual participant data network meta-analysis. Lancet Psychiatry. 2026.", "doi": "", "url": "" },
+    { "id": "ostinelli2017", "ref": "Ostinelli EG, et al. Haloperidol for psychosis-induced aggression or agitation (rapid tranquillisation). Cochrane Database Syst Rev. 2017.", "doi": "", "url": "" },
+    { "id": "zaman2017", "ref": "Zaman H, et al. Benzodiazepines for psychosis-induced aggression or agitation. Cochrane Database Syst Rev. 2017.", "doi": "", "url": "" },
+    { "id": "martel2021", "ref": "Martel ML, et al. Randomized double-blind trial of IM droperidol, ziprasidone, and lorazepam for acute agitation. Acad Emerg Med. 2021.", "doi": "", "url": "" },
+    { "id": "heckers2023", "ref": "Heckers S, Walther S. Catatonia. N Engl J Med. 2023.", "doi": "", "url": "" },
+    { "id": "beers2023", "ref": "American Geriatrics Society 2023 Updated AGS Beers Criteria. J Am Geriatr Soc. 2023.", "doi": "", "url": "" },
+    { "id": "cole2025", "ref": "Cole JB, et al. Oral medications for treating agitation in a safety-net emergency department. JAMA Netw Open. 2025.", "doi": "", "url": "" }
+  ],
+  "localPolicies": [
+    { "type": "LOCAL_POLICY", "id": "agitation.setting_scope", "label": "Settings this trainer maps to (BHU / ED / C-L) and any differences", "placeholder": "Confirm which units + scope with faculty", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.deescalation_activation", "label": "How/whom to call for help during escalation (team response, security)", "placeholder": "Confirm local activation & call tree", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.po_options", "label": "Oral-first options per BHU formulary", "placeholder": "Confirm local PO formulary options", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.im_options", "label": "IM options per BHU formulary (agent/dose/route)", "placeholder": "Confirm local IM formulary options", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.withdrawal_protocol", "label": "Alcohol/sedative withdrawal medication protocol", "placeholder": "Confirm local withdrawal protocol / order set", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.restraint_policy", "label": "Restraint/seclusion policy, authorization, and documentation timeframes", "placeholder": "Confirm local restraint/seclusion policy", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.monitoring_interval", "label": "Post-medication monitoring cadence and parameters", "placeholder": "Confirm local post-sedation monitoring policy", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.qtc_threshold_action", "label": "QTc threshold and action (hold/ECG/telemetry)", "placeholder": "Confirm local QTc action threshold", "value": null, "verifiedBy": null, "verifiedAt": null }
+  ],
+  "choiceBanks": {
+    "etiology": [
+      { "id": "primary_psych", "label": "Primary psychiatric (psychosis / mania)" },
+      { "id": "delirium", "label": "Delirium / medical cause" },
+      { "id": "withdrawal", "label": "Alcohol / sedative-hypnotic withdrawal" },
+      { "id": "stimulant_intox", "label": "Stimulant / sympathomimetic intoxication" },
+      { "id": "catatonia", "label": "Catatonia (incl. excited catatonia)" },
+      { "id": "undetermined", "label": "Undetermined — needs workup" }
+    ],
+    "nonpharm": [
+      { "id": "deesc", "label": "Verbal de-escalation (Project BETA)" },
+      { "id": "space_safety", "label": "Ensure exit path, personal space, remove hazards" },
+      { "id": "env", "label": "Reduce stimulation / environmental measures" },
+      { "id": "offer_po", "label": "Offer oral medication collaboratively", "tokenId": "agitation.po_options" },
+      { "id": "activate_help", "label": "Activate team/security if imminent danger", "tokenId": "agitation.deescalation_activation" }
+    ],
+    "pharmApproach": [
+      { "id": "sga", "label": "Second-generation antipsychotic", "tokenId": "agitation.po_options",
+        "cautionIf": { "qtc_risk": "Some SGAs prolong QTc (e.g., ziprasidone highest) — check baseline QTc/interacting drugs.", "older_dementia": "All antipsychotics carry FDA black-box mortality warning in dementia-related psychosis." } },
+      { "id": "d2_typical", "label": "Typical antipsychotic (D2 blocker)", "tokenId": "agitation.im_options",
+        "hazardIf": { "parkinson_dlb": "D2 blockade worsens parkinsonism — contraindicated in Parkinson disease / Lewy body dementia.", "catatonia": "May precipitate/worsen catatonia and NMS — hold antipsychotics." },
+        "cautionIf": { "older_dementia": "FDA black-box mortality warning in dementia-related psychosis; high EPS risk in older adults." } },
+      { "id": "benzo", "label": "Benzodiazepine", "tokenId": "agitation.im_options",
+        "hazardIf": { "delirium": "Benzodiazepines worsen non-withdrawal delirium — avoid unless alcohol/sedative withdrawal or end-of-life." },
+        "cautionIf": { "older_dementia": "Falls, cognitive worsening, and delirium risk in older adults (Beers); midazolam has the highest adverse-event rate.", "respiratory": "Respiratory depression risk; caution with pulmonary disease/hepatic impairment." } },
+      { "id": "combo", "label": "Antipsychotic + benzodiazepine combination", "tokenId": "agitation.im_options",
+        "hazardIf": { "delirium": "Benzodiazepine component worsens non-withdrawal delirium." },
+        "cautionIf": { "im_olanzapine_benzo": "Do not combine IM olanzapine with a parenteral benzodiazepine (FDA label — respiratory/CV risk).", "note": "Combination is often most effective for moderate/severe agitation (Siafis 2026) but stacks sedation/respiratory risk — monitor closely." } },
+      { "id": "treat_cause", "label": "Treat the underlying cause first", "tokenId": null },
+      { "id": "im_if_danger", "label": "IM medication only if imminently dangerous & PO refused", "tokenId": "agitation.restraint_policy" }
+    ],
+    "monitoring": [
+      { "id": "pulse_ox", "label": "Continuous pulse oximetry", "tokenId": "agitation.monitoring_interval" },
+      { "id": "serial_vitals", "label": "Serial vitals + sedation level at set intervals", "tokenId": "agitation.monitoring_interval" },
+      { "id": "airway", "label": "Watch airway / oversedation / SpO₂ drop" },
+      { "id": "eps", "label": "Watch for dystonia / EPS / akathisia" },
+      { "id": "ecg", "label": "ECG if QTc risk", "tokenId": "agitation.qtc_threshold_action" },
+      { "id": "reassess", "label": "Reassess before re-dosing", "tokenId": "agitation.monitoring_interval" }
+    ]
+  },
+  "content": {
+    "scenarios": [
+      {
+        "id": "agit-stimulant",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "20s",
+        "stem": "A young adult brought in after a disturbance is pacing, hypervigilant, and intermittently shouting. Diaphoretic, dilated pupils. Reports recent stimulant use; declines to sit.",
+        "vitals": { "hr": 122, "bp": "162/98", "spo2": 99, "temp": 37.6 },
+        "history": "No known psychiatric history; friends report cocaine use tonight.",
+        "currentMeds": ["none reported"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "stimulant_intox",
+        "populationFlags": [],
+        "discriminators": {
+          "stimulant_intox": ["Dilated pupils", "Tachycardia/hypertension", "Diaphoresis", "Recent stimulant use"],
+          "primary_psych": ["Would expect prior history / no sympathomimetic signs"],
+          "delirium": ["Would expect fluctuating attention and a medical trigger"]
+        },
+        "teachingPoints": [
+          { "text": "For stimulant/sympathomimetic intoxication, benzodiazepines are the evidence-based first-line pharmacologic class; they calm sympathetic drive without the D2 risks of antipsychotics.", "citationIds": ["wilson2012", "martel2021"] },
+          { "text": "De-escalation and a low-stimulation environment come first; parenteral agents only if danger persists after PO is offered.", "citationIds": ["richmond2012", "apa2022"] }
+        ],
+        "citationIds": ["wilson2012", "martel2021", "richmond2012"]
+      },
+      {
+        "id": "agit-delirium",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "80s",
+        "stem": "An older adult two days post-op is pulling at lines, attention waxes and wanes, and they misidentify staff. Calmer earlier today, worse tonight.",
+        "vitals": { "hr": 96, "bp": "138/80", "spo2": 93, "temp": 37.9 },
+        "history": "Post-operative; receiving an opioid and an anticholinergic sleep aid. Baseline cognition reportedly intact.",
+        "currentMeds": ["opioid analgesic", "anticholinergic hypnotic"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "delirium",
+        "populationFlags": ["older_dementia"],
+        "discriminators": {
+          "delirium": ["Acute onset + fluctuating course", "Inattention", "Medical/medication trigger", "Age + recent surgery"],
+          "primary_psych": ["New psychosis at this age without delirium features would be unusual"],
+          "withdrawal": ["Consider if alcohol/sedative history — would change benzo reasoning"]
+        },
+        "teachingPoints": [
+          { "text": "New, fluctuating inattention in a hospitalized patient is delirium until proven otherwise — find and treat the cause and remove deliriogenic meds first.", "citationIds": ["beers2023"] },
+          { "text": "Benzodiazepines worsen non-withdrawal delirium; if an agent is needed for dangerous agitation, a second-generation antipsychotic is generally preferred over haloperidol for faster onset and fewer EPS. No medication is FDA-approved for delirium.", "citationIds": ["beers2023", "zaman2017"] }
+        ],
+        "citationIds": ["beers2023", "zaman2017"]
+      },
+      {
+        "id": "agit-withdrawal",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "50s",
+        "stem": "Two days after admission, a patient becomes tremulous, anxious, and diaphoretic with a coarse tremor and reports seeing bugs on the wall.",
+        "vitals": { "hr": 118, "bp": "168/102", "spo2": 98, "temp": 37.7 },
+        "history": "Reported heavy daily alcohol use up to admission.",
+        "currentMeds": ["none relevant reported"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "withdrawal",
+        "populationFlags": [],
+        "discriminators": {
+          "withdrawal": ["Coarse tremor", "Autonomic hyperactivity", "Perceptual disturbance", "Time course since last drink"],
+          "delirium": ["Overlaps — withdrawal IS a delirium subtype where benzos ARE indicated"],
+          "stimulant_intox": ["Would expect recent stimulant use, not an alcohol history"]
+        },
+        "teachingPoints": [
+          { "text": "Alcohol/sedative-hypnotic withdrawal is the key exception where benzodiazepines are first-line — treat the withdrawal per your local protocol; antipsychotics are adjuncts, not monotherapy.", "citationIds": ["wilson2012"] },
+          { "text": "This is why the etiology step matters: the same class (benzodiazepine) that is a hazard in non-withdrawal delirium is the correct choice here.", "citationIds": ["zaman2017"] }
+        ],
+        "citationIds": ["wilson2012", "zaman2017"]
+      },
+      {
+        "id": "agit-psychosis",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "30s",
+        "stem": "A patient with known schizophrenia is agitated, responding to internal stimuli, and pacing near the nursing station. Oriented, no medical red flags. Declines to sit but is talking with you.",
+        "vitals": { "hr": 98, "bp": "132/84", "spo2": 99, "temp": 36.9 },
+        "history": "Chronic schizophrenia; recent medication nonadherence.",
+        "currentMeds": ["home antipsychotic (nonadherent)"],
+        "priorResponse": "Responds partially to verbal engagement.",
+        "trueEtiology": "primary_psych",
+        "populationFlags": [],
+        "discriminators": {
+          "primary_psych": ["Known psychotic illness", "Responding to internal stimuli", "No delirium features / medical triggers"],
+          "delirium": ["No fluctuating inattention or medical trigger"],
+          "catatonia": ["Screen if posturing, mutism, or waxy flexibility appear"]
+        },
+        "teachingPoints": [
+          { "text": "Because the patient is engaging verbally, de-escalation plus an offered oral antipsychotic (collaborative, patient-preference-driven) is the highest-yield path before any parenteral route.", "citationIds": ["richmond2012", "cole2025"] },
+          { "text": "Antipsychotic–benzodiazepine combinations achieve faster sedation than haloperidol monotherapy for moderate-to-severe agitation, but escalate sedation/respiratory risk — reserve for when it is warranted and monitor.", "citationIds": ["siafis2026", "ostinelli2017"] }
+        ],
+        "citationIds": ["richmond2012", "cole2025", "siafis2026"]
+      },
+      {
+        "id": "agit-parkinson",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "70s",
+        "stem": "A patient with Parkinson disease and visual hallucinations becomes frightened and agitated in the evening, trying to leave. Rigidity and bradykinesia at baseline.",
+        "vitals": { "hr": 88, "bp": "128/76", "spo2": 97, "temp": 36.8 },
+        "history": "Parkinson disease on dopaminergic therapy; recent evening confusion/hallucinations.",
+        "currentMeds": ["dopaminergic therapy"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "primary_psych",
+        "populationFlags": ["parkinson_dlb", "older_dementia"],
+        "discriminators": {
+          "primary_psych": ["Psychosis in the context of PD/DLB"],
+          "delirium": ["Always screen — evening worsening could be superimposed delirium"],
+          "undetermined": ["Reasonable to work up medical contributors first"]
+        },
+        "teachingPoints": [
+          { "text": "In Parkinson disease and Lewy body dementia, D2-blocking antipsychotics can cause severe worsening — typical antipsychotics are contraindicated. This is the population where the 'default' agitation agent is the wrong move.", "citationIds": ["wilson2012"] },
+          { "text": "Prioritize de-escalation, environmental measures, and reducing offending medications; if pharmacotherapy is unavoidable, agent choice is narrow and belongs to your attending + local formulary.", "citationIds": ["apa2022"] }
+        ],
+        "citationIds": ["wilson2012", "apa2022"]
+      },
+      {
+        "id": "agit-catatonia",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "40s",
+        "stem": "A patient who was mute and withdrawn for two days is now intermittently agitated with purposeless movements, then freezes with a held posture.",
+        "vitals": { "hr": 104, "bp": "142/88", "spo2": 98, "temp": 37.8 },
+        "history": "Recent severe mood episode; staff noted staring, posturing, and refusal to eat before this.",
+        "currentMeds": ["none relevant reported"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "catatonia",
+        "populationFlags": [],
+        "discriminators": {
+          "catatonia": ["Preceding mutism/immobility/posturing", "Waxy flexibility", "Alternating stupor and excitement"],
+          "primary_psych": ["Underlying mood/psychotic illness common — but catatonia changes management"],
+          "delirium": ["Screen for medical/autonomic instability (malignant catatonia risk)"]
+        },
+        "teachingPoints": [
+          { "text": "Recognize catatonia before reaching for an antipsychotic — D2 blockers can precipitate or worsen catatonia and raise NMS risk. A benzodiazepine (lorazepam) challenge is both diagnostic and therapeutic.", "citationIds": ["heckers2023"] },
+          { "text": "Consider the Bush-Francis scale and screen for autonomic instability (malignant catatonia is an emergency).", "citationIds": ["heckers2023"] }
+        ],
+        "citationIds": ["heckers2023"]
+      },
+      {
+        "id": "agit-undetermined-qtc",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "60s",
+        "stem": "An agitated patient with limited history is on several QT-prolonging medications per the med list. Etiology is not yet clear and vitals are borderline.",
+        "vitals": { "hr": 92, "bp": "150/90", "spo2": 96, "temp": 37.2 },
+        "history": "Sparse history; medication list includes multiple QT-prolonging agents.",
+        "currentMeds": ["multiple QT-prolonging medications"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "undetermined",
+        "populationFlags": ["qtc_risk"],
+        "discriminators": {
+          "undetermined": ["Insufficient data — safest to work up and use least-harm holding measures"],
+          "delirium": ["Actively screen — common and reversible"],
+          "primary_psych": ["Avoid anchoring without history"]
+        },
+        "teachingPoints": [
+          { "text": "When etiology is undetermined, the safe path is de-escalation, a focused workup, and least-harm measures — not committing to a specific agent. This is a valid, non-penalized choice.", "citationIds": ["richmond2012"] },
+          { "text": "With QT-prolonging medications on board, remember benzodiazepines do not prolong QTc and some antipsychotics (e.g., ziprasidone) carry the highest risk; ECG/threshold action follows local policy.", "citationIds": ["wilson2012"] }
+        ],
+        "citationIds": ["richmond2012", "wilson2012"]
+      }
+    ]
+  }
+}

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="icon" href="/favicon.svg">
+<!-- [RC-META] tool="Canon Quiz — 200-Paper Spine" version="0.1.0" built="2026-07-02" category="evidence-reading" audience="resident,trainee" settings="exam-prep,self-paced" time="self-paced" status="draft-pending-attestation" summary="Canon-numbered launcher over the existing quizzes.json (79 decks / 437 Q). Browse landmark papers by number, listen to the audio summary, and drill the deck with immediate feedback and local progress. Educational; surfaces existing attested question content. No PHI. No runtime CDN." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canon Quiz — 200-Paper Spine</title>
+<meta name="description" content="Canon-numbered quiz launcher: browse landmark psychiatry papers, listen to summaries, and drill decks with immediate feedback. Educational only.">
+<script src="./vendor/react.min.js"></script>
+<script src="./vendor/react-dom.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#665a4f;
+    --success:#357160; --success-light:#e7f1ed;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --danger:#a34132; --danger-light:#fbece9;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px;
+  }
+  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(880px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) 60px}
+  h1{font-family:var(--font-head);font-size:1.8rem;color:var(--primary);margin:0 0 4px}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .themebtn{position:fixed;top:12px;right:12px;width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;z-index:30}
+  .disc{border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.84rem;margin-bottom:var(--sp3);background:var(--info-light);color:var(--info);border:1px solid var(--info)}
+  .tabs{display:inline-flex;gap:6px;border:1px solid var(--border);border-radius:var(--radius-pill);padding:4px;margin-bottom:var(--sp3);background:var(--bg-alt)}
+  .tabs button{border:none;background:transparent;padding:7px 16px;border-radius:var(--radius-pill);font:inherit;font-size:.85rem;font-weight:700;color:var(--text-mid);cursor:pointer;min-height:40px}
+  .tabs button.on{background:var(--accent);color:var(--on-brand)}
+  .progress{font-size:.82rem;color:var(--text-light);margin:0 0 var(--sp3)}
+  .row{display:flex;align-items:center;gap:12px;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-md);padding:11px 13px;margin:8px 0}
+  .pnum{flex:0 0 auto;width:34px;height:34px;border-radius:8px;background:var(--primary-light);color:var(--primary-dark);font-family:var(--font-head);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+  .rbody{flex:1;min-width:0}
+  .rtitle{font-weight:600;line-height:1.25}
+  .rmeta{font-size:.78rem;color:var(--text-light);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .best{font-size:.72rem;font-weight:700;border-radius:var(--radius-pill);padding:2px 9px;border:1px solid var(--success);color:var(--success);background:var(--success-light)}
+  .aud{border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-pill);padding:3px 10px;font:inherit;font-size:.76rem;color:var(--accent-dark);cursor:pointer}
+  .aud:hover{border-color:var(--accent);background:var(--accent-light)}
+  .drill{border:none;background:var(--primary-dark);color:var(--on-brand);border-radius:var(--radius-sm);padding:8px 15px;font:inherit;font-weight:600;cursor:pointer;flex:0 0 auto;min-height:40px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .qmeta{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);margin-bottom:6px}
+  .qtext{font-family:var(--font-head);font-size:1.15rem;margin:0 0 var(--sp3);line-height:1.4}
+  .opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-md);padding:12px 14px;margin:8px 0;cursor:pointer;font:inherit;color:var(--text)}
+  .opt:hover{border-color:var(--accent);background:var(--accent-light)}
+  .opt:disabled{cursor:default}
+  .opt.correct{border-color:var(--success);background:var(--success-light)}
+  .opt.wrong{border-color:var(--danger);background:var(--danger-light)}
+  .opt .mk{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--bg-alt);border:1px solid var(--border);font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--text-mid)}
+  .opt.correct .mk{background:var(--success);color:var(--on-brand);border-color:var(--success)}
+  .opt.wrong .mk{background:var(--danger);color:var(--on-brand);border-color:var(--danger)}
+  .fb{font-size:.86rem;color:var(--text-mid);margin:6px 0 0;padding:8px 12px;background:var(--bg-alt);border-radius:var(--radius-sm)}
+  .btn{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-weight:600;cursor:pointer;font:inherit;background:var(--surface);color:var(--accent-dark);min-height:44px}
+  .btn.primary{background:var(--primary-dark);color:var(--on-brand);border-color:var(--primary-dark)}
+  .btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:var(--sp3)}
+  .scorebig{font-family:var(--font-head);font-size:2rem;color:var(--primary)}
+  .foot{font-size:.8rem;color:var(--text-light);margin-top:var(--sp3)}
+  .foot a{color:var(--accent-dark)}
+  :focus-visible{outline:3px solid var(--focus,#155eef);outline-offset:2px}
+  @media(max-width:560px){.row{flex-wrap:wrap}.drill{width:100%}}
+</style>
+</head>
+<body>
+<button class="themebtn" id="themebtn" aria-label="Toggle light/dark theme">◐</button>
+<main class="shell" id="root"></main>
+<div id="live" class="visually-hidden" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
+<script>
+(function(){
+  "use strict";
+  var e=React.createElement, useState=React.useState, useEffect=React.useEffect;
+  var PKEY='rp_quiz_v1';
+  var AUDIO_BASE='../audio_oe/'; // deployed: tools/ -> ../audio_oe/
+  var current=null; // single audio element
+  function announce(m){try{document.getElementById('live').textContent=m;}catch(e){}}
+  function loadProg(){try{return JSON.parse(localStorage.getItem(PKEY)||'{"completions":{}}');}catch(e){return {completions:{}};}}
+  function saveBest(deckId,score,total){try{var p=loadProg();var c=p.completions[deckId]||{best:0,tries:0};c.tries++;c.last=Math.round(100*score/total);c.best=Math.max(c.best||0,c.last);p.completions[deckId]=c;localStorage.setItem(PKEY,JSON.stringify(p));}catch(e){}}
+  function playAudio(file){try{if(current){current.pause();}current=new Audio(AUDIO_BASE+file);current.play().catch(function(){announce('Audio unavailable offline / outside the site.');});}catch(e){}}
+
+  function App(){
+    var s0=useState('loading'),phase=s0[0],setPhase=s0[1];
+    var sd=useState(null),data=sd[0],setData=sd[1];
+    var sv=useState('canon'),view=sv[0],setView=sv[1];
+    var sk=useState(null),deck=sk[0],setDeck=sk[1];
+    var sq=useState(0),qi=sq[0],setQi=sq[1];
+    var sa=useState([]),answers=sa[0],setAnswers=sa[1]; // per-question chosen index
+    var sp=useState(loadProg()),prog=sp[0],setProg=sp[1];
+
+    useEffect(function(){
+      fetch('./quizzes.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+        .then(function(d){setData(d);setPhase('index');}).catch(function(){setPhase('error');});
+    },[]);
+    useEffect(function(){document.getElementById('themebtn').onclick=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('cw_theme',c);}catch(e){}};},[]);
+
+    function startDrill(dk){setDeck(dk);setQi(0);setAnswers(new Array(dk.questions.length).fill(null));setPhase('drill');announce('Drilling '+dk.title+', '+dk.questions.length+' questions.');}
+    function choose(oi){if(answers[qi]!==null)return;var a=answers.slice();a[qi]=oi;setAnswers(a);}
+    function nextQ(){if(qi<deck.questions.length-1){setQi(qi+1);}else{finish();}}
+    function finish(){var sc=score();saveBest(deck.id,sc,deck.questions.length);setProg(loadProg());setPhase('result');announce('Finished. Score '+sc+' of '+deck.questions.length);}
+    function score(){var s=0;deck.questions.forEach(function(q,i){var ci=q.o.findIndex(function(o){return o.c;});if(answers[i]===ci)s++;});return s;}
+
+    if(phase==='loading')return e('div',{className:'shell'},e('p',null,'Loading question bank…'));
+    if(phase==='error')return e('div',{className:'shell'},e('h1',null,'Canon Quiz'),
+      e('div',{className:'disc'},'Could not load the question bank (quizzes.json). This tool runs on the site (served over HTTP); opened directly from disk, the browser blocks the data fetch — use the served version or the preview build.'),
+      e('button',{className:'btn primary',onClick:function(){location.reload();}},'Retry'));
+
+    var header=e('div',null,
+      e('div',{className:'kicker'},'Evidence & reading · Canon spine'),
+      e('h1',null,'Canon Quiz — the 200-Paper Spine'),
+      e('div',{className:'disc',role:'note'},'Work the landmark canon by paper: listen to the summary, then drill the deck. Surfaces the existing question bank (',(data?data.questionCount:'—'),' questions / ',(data?data.deckCount:'—'),' decks). Educational; confirm any clinical specifics against current guidance and local policy.'));
+
+    if(phase==='index'){
+      var canon=data.decks.filter(function(x){return x.art;}).sort(function(a,b){return a.art-b.art;});
+      var spine=data.decks.filter(function(x){return !x.art;});
+      var list=view==='canon'?canon:spine;
+      var done=Object.keys(prog.completions||{}).length;
+      return e('div',null,header,
+        e('div',{className:'tabs',role:'tablist'},
+          e('button',{role:'tab','aria-selected':view==='canon',className:view==='canon'?'on':'',onClick:function(){setView('canon');}},'Canon papers ('+canon.length+')'),
+          e('button',{role:'tab','aria-selected':view==='spine',className:view==='spine'?'on':'',onClick:function(){setView('spine');}},'Topic decks ('+spine.length+')')),
+        e('div',{className:'progress'},'Decks attempted: '+done+' / '+data.decks.length+(done? ' · progress saved on this device only':'')),
+        list.map(function(dk){
+          var c=(prog.completions||{})[dk.id];
+          return e('div',{className:'row',key:dk.id},
+            e('div',{className:'pnum'}, view==='canon'?dk.art:'★'),
+            e('div',{className:'rbody'},
+              e('div',{className:'rtitle'},dk.title),
+              e('div',{className:'rmeta'},
+                e('span',null,dk.n+' questions'),
+                dk.audio?e('button',{className:'aud',onClick:function(){playAudio(dk.audio);}},'▶ Audio '+(dk.audioDur||'')):null,
+                c?e('span',{className:'best'},'Best '+c.best+'%'):null)),
+            e('button',{className:'drill',onClick:function(){startDrill(dk);}},'Drill'));
+        }),
+        e('div',{className:'foot'},'Reading list: see ',e('a',{href:'?page=canon_200.md'},'The Psychiatry Canon (200)'),'. Spaced-repetition review lives in the Daily Review tool.'));
+    }
+
+    if(phase==='drill'){
+      var q=deck.questions[qi];var chosen=answers[qi];var answered=chosen!==null;
+      var ci=q.o.findIndex(function(o){return o.c;});
+      return e('div',null,header,
+        e('div',{className:'card'},
+          e('div',{className:'qmeta'},(deck.art?('Canon paper '+deck.art+' · '):'')+deck.title+' · Q'+(qi+1)+' of '+deck.questions.length),
+          e('div',{className:'qtext'},q.q),
+          q.o.map(function(o,i){
+            var cls='opt';if(answered){if(i===ci)cls+=' correct';else if(i===chosen)cls+=' wrong';}
+            var mk=answered?(i===ci?'✓':(i===chosen?'✗':String.fromCharCode(65+i))):String.fromCharCode(65+i);
+            return e('button',{key:i,className:cls,disabled:answered,onClick:function(){choose(i);}},
+              e('span',{className:'mk'},mk),
+              e('span',null,o.t, (answered&&o.fb)?e('div',{className:'fb'},o.fb):null));
+          }),
+          e('div',{className:'btnrow'},
+            e('button',{className:'btn',onClick:function(){setPhase('index');}},'Exit'),
+            answered?e('button',{className:'btn primary',onClick:nextQ}, qi<deck.questions.length-1?'Next question':'See score'):null)));
+    }
+
+    if(phase==='result'){
+      var sc=score();var pct=Math.round(100*sc/deck.questions.length);
+      var missed=[];deck.questions.forEach(function(q,i){var cix=q.o.findIndex(function(o){return o.c;});if(answers[i]!==cix)missed.push({i:i,q:q,cix:cix});});
+      return e('div',null,header,
+        e('div',{className:'card'},
+          e('div',{className:'qmeta'},(deck.art?('Canon paper '+deck.art+' · '):'')+deck.title),
+          e('div',{className:'scorebig'},sc+' / '+deck.questions.length+'  ('+pct+'%)'),
+          missed.length?e('div',null,e('div',{className:'qmeta',style:{marginTop:'12px'}},'Review the misses'),
+            missed.map(function(m){return e('div',{className:'fb',key:m.i,style:{margin:'8px 0'}},
+              e('div',null,e('b',null,'Q'+(m.i+1)+': '),m.q.q),
+              e('div',{style:{marginTop:'4px',color:'var(--success)'}},'Correct: '+m.q.o[m.cix].t));})):e('p',null,'Perfect set — nicely done.'),
+          e('div',{className:'btnrow'},
+            e('button',{className:'btn primary',onClick:function(){startDrill(deck);}},'Re-drill this deck'),
+            e('button',{className:'btn',onClick:function(){setPhase('index');}},'Back to Canon'))));
+    }
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+})();
+</script>
+</body>
+</html>

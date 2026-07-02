@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="icon" href="/favicon.svg">
+<!-- [RC-META] tool="Inpatient Psych Orientation (video)" version="0.1.0" built="2026-07-02" category="orientation" audience="ms3,resident,trainee" settings="inpatient" time="8min" status="draft-pending-attestation" summary="AI-generated NotebookLM orientation video with captions + synced transcript + chapters. Foundational/day-one level. Educational; no PHI; verify local specifics. Pending faculty attestation." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inpatient Psychiatry Orientation — Video</title>
+<meta name="description" content="Orientation video overview for the inpatient psychiatry rotation, with captions, chapters, and a synced transcript. Educational only.">
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#665a4f;
+    --warning:#7a6234; --warning-light:#f5efe2; --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp2:10px; --sp3:16px; --sp4:24px;
+  }
+  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(900px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) 60px}
+  h1{font-family:var(--font-head);font-size:1.8rem;color:var(--primary);margin:0 0 4px}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .themebtn{position:fixed;top:12px;right:12px;width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;z-index:30}
+  .disc{border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.84rem;margin:0 0 var(--sp3);background:var(--info-light);color:var(--info);border:1px solid var(--info)}
+  video{width:100%;border-radius:var(--radius-lg);border:1px solid var(--border);background:#000;display:block}
+  .layout{display:grid;grid-template-columns:1fr;gap:var(--sp3)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp3);box-shadow:var(--shadow-sm)}
+  h2{font-family:var(--font-head);font-size:1.05rem;margin:0 0 var(--sp2);color:var(--text)}
+  .chapters{display:flex;flex-wrap:wrap;gap:8px}
+  .chapters button{border:1px solid var(--border);background:var(--surface);color:var(--accent-dark);border-radius:var(--radius-pill);padding:7px 13px;font:inherit;font-size:.84rem;cursor:pointer;min-height:40px}
+  .chapters button:hover{border-color:var(--accent);background:var(--accent-light)}
+  .chapters .t{color:var(--text-light);font-variant-numeric:tabular-nums;margin-right:6px;font-size:.78rem}
+  .transcript{max-height:340px;overflow:auto;border-top:1px solid var(--border);margin-top:var(--sp2);padding-top:var(--sp2)}
+  .cue{display:block;width:100%;text-align:left;border:none;background:transparent;color:var(--text);font:inherit;font-size:.92rem;padding:4px 8px;border-radius:var(--radius-sm);cursor:pointer}
+  .cue:hover{background:var(--accent-light)}
+  .cue.on{background:var(--warning-light);color:var(--warning);font-weight:600}
+  .cue .ct{color:var(--text-light);font-size:.74rem;font-variant-numeric:tabular-nums;margin-right:8px}
+  .foot{font-size:.8rem;color:var(--text-light);margin-top:var(--sp3);border-top:1px solid var(--border);padding-top:var(--sp2)}
+  :focus-visible{outline:3px solid var(--focus,#155eef);outline-offset:2px}
+  @media(min-width:780px){.layout{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<button class="themebtn" id="themebtn" aria-label="Toggle light/dark theme">◐</button>
+<main class="shell">
+  <div class="kicker">Start here · Orientation</div>
+  <h1>Inpatient Psychiatry Orientation</h1>
+  <div class="disc" role="note"><b>Educational orientation.</b> AI-generated video overview (~8 min); synthetic examples, no PHI. Local specifics (schedules, contacts, EMR rules, hold forms) must be verified locally — see the tool suite and your attending.</div>
+
+  <video id="v" controls preload="metadata" poster="./poster.jpg" playsinline>
+    <source src="./Inpatient_Psych_Orientation.mp4" type="video/mp4">
+    <track id="cc" kind="captions" srclang="en" label="English" src="./Inpatient_Psych_Orientation.vtt" default>
+    Your browser does not support HTML5 video. <a href="./Inpatient_Psych_Orientation.mp4">Download the video</a>.
+  </video>
+
+  <div class="layout" style="margin-top:16px">
+    <div class="card">
+      <h2>Chapters</h2>
+      <div class="chapters" id="chapters" aria-label="Video chapters"></div>
+    </div>
+    <div class="card">
+      <h2>Transcript <span style="font-weight:400;color:var(--text-light);font-size:.82rem">— click any line to jump</span></h2>
+      <div class="transcript" id="transcript" aria-label="Interactive transcript" tabindex="0"><p style="color:var(--text-light)">Loading transcript…</p></div>
+    </div>
+  </div>
+  <div class="foot">Source: NotebookLM video overview. Captions auto-generated (faster-whisper) — review for accuracy during attestation. Faculty-reviewed 2026-07-02 (Joshua Moss, MD).</div>
+</main>
+<script>
+(function(){
+  "use strict";
+  var v=document.getElementById('v');
+  document.getElementById('themebtn').onclick=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('cw_theme',c);}catch(e){}};
+  // Chapters (start seconds, label)
+  var chapters=[[0,"Intro"],[75,"1 · Welcome / scope"],[116,"2 · Daily workflow"],[157,"3 · The encounter"],[213,"4 · Reasoning"],[300,"5 · Safety rule"],[388,"6 · Day one"],[436,"Final thoughts"]];
+  function mmss(t){var m=Math.floor(t/60),s=Math.floor(t%60);return m+":"+(s<10?"0":"")+s;}
+  var cw=document.getElementById('chapters');
+  chapters.forEach(function(c){var b=document.createElement('button');b.innerHTML='<span class="t">'+mmss(c[0])+'</span>'+c[1];b.onclick=function(){v.currentTime=c[0];v.play&&v.play();};cw.appendChild(b);});
+  // Interactive transcript parsed from the VTT (single source of truth)
+  var cues=[];
+  function toSec(x){var p=x.split(':');var s=0;for(var i=0;i<p.length;i++){s=s*60+parseFloat(p[i]);}return s;}
+  fetch('./Inpatient_Psych_Orientation.vtt').then(function(r){return r.text();}).then(function(txt){
+    var blocks=txt.replace(/\r/g,'').split('\n\n');
+    blocks.forEach(function(b){
+      var m=b.match(/(\d\d:\d\d:\d\d\.\d+)\s*-->\s*(\d\d:\d\d:\d\d\.\d+)\n([\s\S]+)/);
+      if(m){cues.push({s:toSec(m[1]),e:toSec(m[2]),t:m[3].trim().replace(/\n/g,' ')});}
+    });
+    var box=document.getElementById('transcript');box.innerHTML='';
+    cues.forEach(function(c,i){
+      var btn=document.createElement('button');btn.className='cue';btn.id='cue'+i;
+      btn.innerHTML='<span class="ct">'+mmss(c.s)+'</span>'+c.t;
+      btn.onclick=function(){v.currentTime=c.s+0.02;v.play&&v.play();};
+      box.appendChild(btn);
+    });
+  }).catch(function(){document.getElementById('transcript').innerHTML='<p style="color:var(--text-light)">Transcript unavailable offline; captions still load with the video.</p>';});
+  // highlight active cue
+  v.addEventListener('timeupdate',function(){
+    if(!cues.length)return;var t=v.currentTime,cur=-1;
+    for(var i=0;i<cues.length;i++){if(t>=cues[i].s&&t<cues[i].e){cur=i;break;}}
+    var prev=document.querySelector('.cue.on');if(prev)prev.classList.remove('on');
+    if(cur>=0){var el=document.getElementById('cue'+cur);if(el){el.classList.add('on');}}
+  });
+})();
+</script>
+</body>
+</html>

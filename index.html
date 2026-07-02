@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Psychiatry Clerkship Library</title>
+<meta name="description" content="Front door to the adult inpatient psychiatry clerkship library: interactive tools, six-week curriculum, core topics, acute & safety, evidence, and exam prep.">
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+    --warning:#7a6234; --warning-light:#f5efe2; --danger:#a34132;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06); --shadow-md:0 2px 10px rgba(59,51,44,.08);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .wrap{width:min(1040px,100%);margin:0 auto;padding:28px 18px 56px}
+  header.hero{background:linear-gradient(160deg,var(--bg-alt),var(--accent-light));border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px 26px;margin-bottom:24px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark)}
+  h1{font-family:var(--font-head);font-size:2.3rem;color:var(--primary);margin:6px 0 6px}
+  .sub{color:var(--text-mid);max-width:70ch;margin:0}
+  h2{font-family:var(--font-head);font-size:1.4rem;color:var(--text);margin:32px 0 12px;border-bottom:2px solid var(--border);padding-bottom:6px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .card{display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;text-decoration:none;color:inherit;box-shadow:var(--shadow-sm);transition:transform .12s,border-color .12s}
+  .card:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .card .t{font-family:var(--font-head);font-weight:700;color:var(--primary-dark);margin-bottom:4px}
+  .card .d{font-size:.88rem;color:var(--text-mid)}
+  .tool{border-left:4px solid var(--accent)}
+  .pill{display:inline-block;font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:#fff;background:var(--accent);border-radius:var(--radius-pill);padding:2px 9px;margin-bottom:8px}
+  .row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .chip{display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;text-decoration:none;color:var(--text);font-size:.92rem;font-weight:600}
+  .chip:hover{border-color:var(--accent);color:var(--accent-dark)}
+  .chip small{display:block;font-weight:400;color:var(--text-light);font-size:.78rem}
+  .startbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .btn{background:var(--primary-dark);color:#fff;text-decoration:none;border-radius:var(--radius-sm);padding:9px 15px;font-weight:600;font-size:.9rem}
+  .btn.ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .note{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:var(--radius-sm);padding:10px 14px;font-size:.85rem;color:var(--text);margin-top:14px}
+  footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Adult Inpatient Psychiatry · MS3 → Sub-I → Resident</div>
+    <h1>Psychiatry Clerkship Library</h1>
+    <p class="sub">Your front door to the rotation: interactive bedside tools, a six-week curriculum, core-topic teaching, acute & safety references, the evidence base, and exam prep. Start with the tools, follow the weekly arc, and use the topic pages at the point of care.</p>
+    <div class="startbar">
+      <a class="btn" href="00_START_HERE/">Start here</a>
+      <a class="btn ghost" href="01_Six_Week_Curriculum/">6-Week Curriculum</a>
+      <a class="btn ghost" href="_AUDIT_AND_ROADMAP.md">Master plan</a>
+      <a class="btn ghost" href="07_Evidence_and_Reading/Landmark_Library/Primary_Source_Download_Checklist.xlsx">Reading checklist</a>
+    </div>
+  </header>
+
+  <h2>Interactive tools</h2>
+  <div class="grid">
+    <a class="card tool" href="02_Clinical_Skills/Mental_Status_Exam/mental-status-exam-module.html"><span class="pill">Tool</span><div class="t">Mental Status Exam</div><div class="d">Learn the domains, build a written MSE, language &amp; interview tab.</div></a>
+    <a class="card tool" href="04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html"><span class="pill">Tool</span><div class="t">Decisional Capacity</div><div class="d">Appelbaum four abilities + a structured capacity-note generator.</div></a>
+    <a class="card tool" href="02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html"><span class="pill">Tool</span><div class="t">Oral Presentation</div><div class="d">The 3-minute structure, a practice timer, rounds-prep checklist.</div></a>
+    <a class="card tool" href="04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html"><span class="pill">Tool</span><div class="t">Violence Risk (FRST)</div><div class="d">Static vs dynamic factors, MaineHealth's FRST, warning-signs checklist, management.</div></a>
+    <a class="card tool" href="03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html"><span class="pill">Tool</span><div class="t">Withdrawal: CIWA-Ar / COWS</div><div class="d">Interactive scoring + severity bands (educational, not a dosing calculator).</div></a>
+    <a class="card tool" href="02_Clinical_Skills/Reflection_PIF/reflection-and-pif-set.html"><span class="pill">Tool</span><div class="t">Reflection &amp; Identity</div><div class="d">Six weekly prompts + ethics/PIF, private journaling.</div></a>
+    <a class="card tool" href="04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html"><span class="pill">Tool</span><div class="t">Columbia C-SSRS Screener</div><div class="d">The 6-question Columbia screener with branching and risk triage.</div></a>
+  </div>
+
+  <h2>Six-week curriculum</h2>
+  <div class="row">
+    <a class="chip" href="01_Six_Week_Curriculum/Week_1_Foundations/">Week 1<small>Foundations</small></a>
+    <a class="chip" href="01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/">Week 2<small>Mood · Psychosis · Pharm</small></a>
+    <a class="chip" href="01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/">Week 3<small>Psychotherapy · Personality</small></a>
+    <a class="chip" href="01_Six_Week_Curriculum/Week_4_Family_Systems_EE/">Week 4<small>Family · Systems · EE</small></a>
+    <a class="chip" href="01_Six_Week_Curriculum/Week_5_Acute_Emergency/">Week 5<small>Acute · Emergency</small></a>
+    <a class="chip" href="01_Six_Week_Curriculum/Week_6_Integration_Exam/">Week 6<small>Integration · Exam</small></a>
+  </div>
+
+  <h2>Core topics</h2>
+  <div class="row">
+    <a class="chip" href="03_Core_Topics/Mood/">Mood</a>
+    <a class="chip" href="03_Core_Topics/Psychosis/">Psychosis</a>
+    <a class="chip" href="03_Core_Topics/Anxiety/">Anxiety · Trauma · OCD</a>
+    <a class="chip" href="03_Core_Topics/Personality/">Personality</a>
+    <a class="chip" href="03_Core_Topics/SUD_Withdrawal/">Substance Use</a>
+    <a class="chip" href="03_Core_Topics/Geriatric/">Geriatric</a>
+    <a class="chip" href="03_Core_Topics/Perinatal/">Perinatal</a>
+  </div>
+
+  <h2>Clinical skills &amp; acute / safety</h2>
+  <div class="row">
+    <a class="chip" href="02_Clinical_Skills/Differential_Diagnosis/inpatient_differential_scaffolds.md">Differential Dx<small>8 syndrome scaffolds</small></a>
+    <a class="chip" href="02_Clinical_Skills/Interviewing/">Interviewing</a>
+    <a class="chip" href="02_Clinical_Skills/Case_Formulation/">Case Formulation</a>
+    <a class="chip" href="02_Clinical_Skills/Documentation/">Documentation</a>
+    <a class="chip" href="02_Clinical_Skills/Psychotherapy/">Psychotherapy</a>
+    <a class="chip" href="04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/">Suicide &amp; Safety</a>
+    <a class="chip" href="04_Acute_and_Safety/Agitation_and_Restraint/">Agitation</a>
+    <a class="chip" href="04_Acute_and_Safety/Delirium/">Delirium</a>
+    <a class="chip" href="04_Acute_and_Safety/Catatonia/">Catatonia</a>
+    <a class="chip" href="05_Psychopharmacology/">Psychopharmacology</a>
+    <a class="chip" href="06_Family_and_Relational/">Family &amp; Relational</a>
+  </div>
+
+  <h2>Evidence, exam prep &amp; tracks</h2>
+  <div class="row">
+    <a class="chip" href="07_Evidence_and_Reading/Landmark_Library/">Landmark Library</a>
+    <a class="chip" href="07_Evidence_and_Reading/Landmark_Library/Primary_Source_Download_Checklist.xlsx">Download Checklist</a>
+    <a class="chip" href="09_Exam_Prep/Shelf_High_Yield/">Shelf Prep</a>
+    <a class="chip" href="09_Exam_Prep/OSCE_Stations/">OSCE Stations</a>
+    <a class="chip" href="08_Cases_and_Simulation/">Cases</a>
+    <a class="chip" href="14_Tracks/MS3/Student_Ready_Pack/">MS3 Student Pack</a>
+    <a class="chip" href="14_Tracks/Resident_PGY2/">Resident (PGY-2)</a>
+    <a class="chip" href="14_Tracks/Sub-I_MS4/">Sub-I / MS4</a>
+    <a class="chip" href="13_Faculty_Resources/">Faculty Resources</a>
+  </div>
+
+  <div class="note"><strong>Note for faculty:</strong> several teaching pages and tools were drafted with AI assistance and carry educational disclaimers. They are pending physician review/attestation before learner use — see the QA report in <code>13_Faculty_Resources</code>. Content files are Markdown; the six tools above are interactive HTML.</div>
+
+  <footer>Psychiatry Clerkship Library · Adult Inpatient Psychiatry · Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [RC-META] tool="Decisional Capacity — Bedside Module" version="1.0" built="2026-06-26" category="acute-safety" audience="trainee,ms3" settings="inpatient,consult" time="20min" summary="Teaching + bedside tool for the Appelbaum-Grisso four abilities, with sample questions per ability and a structured capacity-note generator. Fictional composites only; no PHI." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decisional Capacity — Bedside Module</title>
+<meta name="description" content="Teaching and bedside tool for assessing decisional capacity using the Appelbaum four-abilities model: communicate a choice, understand, appreciate, reason. Includes sample questions and a structured capacity-note generator.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+    --success:#357160; --success-light:#e7f1ed;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --danger:#a34132; --danger-light:#fbece9;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06); --shadow-md:0 2px 10px rgba(59,51,44,.08);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(900px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) var(--sp5)}
+  h1,h2,h3{font-family:var(--font-head);line-height:1.25;margin:0 0 var(--sp3)}
+  h1{font-size:2.2rem;color:var(--primary)} h2{font-size:1.4rem;margin-top:var(--sp5)} h3{font-size:1.08rem}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .sub{color:var(--text-mid);max-width:64ch;margin:0 0 var(--sp3)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .tabs{display:flex;gap:var(--sp1);border-bottom:2px solid var(--border);margin-bottom:var(--sp4);flex-wrap:wrap}
+  .tab{border:none;background:transparent;padding:10px 14px;font-size:.95rem;font-weight:600;color:var(--text-mid);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;font-family:inherit}
+  .tab.on{color:var(--primary-dark);border-bottom-color:var(--primary-dark)}
+  .ability{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:var(--radius-md);padding:var(--sp3);margin-bottom:var(--sp3);background:var(--surface)}
+  .ability h3{margin:0 0 4px;color:var(--accent-dark)}
+  .ability .def{color:var(--text-mid);font-size:.95rem;margin-bottom:var(--sp2)}
+  .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);font-weight:700;margin:var(--sp3) 0 var(--sp1)}
+  .q{background:var(--accent-light);border-radius:var(--radius-sm);padding:6px 12px;margin:4px 0;font-size:.9rem;font-style:italic}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-pill);overflow:hidden;margin-top:6px}
+  .seg button{border:none;background:var(--surface);padding:6px 14px;font-size:.82rem;font-weight:600;color:var(--text-mid);cursor:pointer;font-family:inherit}
+  .seg button.intact.on{background:var(--success);color:#fff}
+  .seg button.impaired.on{background:var(--danger);color:#fff}
+  .seg button.na.on{background:var(--text-light);color:#fff}
+  textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;font-family:inherit;font-size:.88rem;margin-top:6px;resize:vertical}
+  input[type=text]{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;font-family:inherit;font-size:.9rem}
+  .output{background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-md);padding:var(--sp3);font-size:.95rem;line-height:1.7;white-space:pre-wrap}
+  .verdict{padding:var(--sp2) var(--sp3);border-radius:var(--radius-md);font-weight:700;margin-bottom:var(--sp3)}
+  .verdict.ok{background:var(--success-light);color:var(--success);border:1px solid var(--success)}
+  .verdict.no{background:var(--danger-light);color:var(--danger);border:1px solid var(--danger)}
+  .verdict.part{background:var(--warning-light);color:var(--warning);border:1px solid var(--warning)}
+  .btn{border:none;border-radius:var(--radius-sm);padding:9px 16px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--primary-dark);color:#fff} .btn-primary:hover{background:var(--primary)}
+  .btn-ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .row{display:flex;gap:var(--sp2);flex-wrap:wrap;align-items:center;margin-top:var(--sp3)}
+  .pearl{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);font-size:.9rem;margin-top:var(--sp2)}
+  .pearl b{color:var(--warning)}
+  .grid{display:grid;grid-template-columns:1fr;gap:var(--sp2)}
+  .principle{border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--sp3);background:var(--surface)}
+  .principle b{color:var(--primary-dark)}
+  .disclaimer{background:var(--bg-alt);border:1px dashed var(--border);border-radius:var(--radius-md);padding:var(--sp3);font-size:.82rem;color:var(--text-mid);margin-top:var(--sp4)}
+  footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light);text-align:center}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+var e = React.createElement;
+var useState = React.useState;
+
+var ABIL = [
+  {key:'choice', name:'1 · Communicate a choice', def:'Can the patient express and maintain a clear, stable decision?',
+   qs:['"Have you decided whether to go ahead with this treatment?"','"Can you tell me what you’ve decided?"'],
+   intact:'expressed a clear and consistent choice', impaired:'was unable to express or maintain a consistent choice'},
+  {key:'understand', name:'2 · Understand the information', def:'Can the patient grasp the diagnosis, the proposed treatment, alternatives, and risks/benefits (in their own words)?',
+   qs:['"In your own words, what is the problem we’re treating?"','"What did I say this treatment involves, and what are the main risks and benefits?"','"What are the other options, including doing nothing?"'],
+   intact:'paraphrased the relevant information accurately', impaired:'could not accurately paraphrase the key information despite disclosure'},
+  {key:'appreciate', name:'3 · Appreciate the situation & consequences', def:'Does the patient apply the information to themselves — accepting the diagnosis applies to them and that consequences are real?',
+   qs:['"What do you believe is actually wrong with you?"','"What do you think will happen to you if you don’t have this treatment?"','"Why do you think your doctors are recommending this?"'],
+   intact:'appreciated how the condition and consequences apply to their own situation', impaired:'did not appreciate the personal relevance of the diagnosis or consequences (e.g., denial driven by illness)'},
+  {key:'reason', name:'4 · Reason about options', def:'Can the patient compare options and manipulate the information logically to reach their choice?',
+   qs:['"How did you weigh the benefits and risks in reaching your decision?"','"How does this choice fit with what matters to you?"','"How is this option better, for you, than the alternatives?"'],
+   intact:'logically compared options consistent with their stated values', impaired:'could not provide a logical, internally consistent rationale for the choice'}
+];
+
+function App(){
+  var tab=useState('learn'); var setTab=tab[1]; tab=tab[0];
+  var ctx=useState({decision:'',risk:'moderate'}); var setCtx=ctx[1]; ctx=ctx[0];
+  var rate=useState({}); var setRate=rate[1]; rate=rate[0];
+  var notes=useState({}); var setNotes=notes[1]; notes=notes[0];
+  var copied=useState(false); var setCopied=copied[1]; copied=copied[0];
+
+  function setR(k,v){ var n=Object.assign({},rate); n[k]=v; setRate(n); setCopied(false); }
+  function setN(k,v){ var n=Object.assign({},notes); n[k]=v; setNotes(n); setCopied(false); }
+
+  function verdict(){
+    var anyImp = ABIL.some(function(a){return rate[a.key]==='impaired';});
+    var allRated = ABIL.every(function(a){return rate[a.key];});
+    if(!allRated) return {cls:'part',txt:'Incomplete — rate all four abilities for a determination.'};
+    if(anyImp) return {cls:'no',txt:'Pattern suggests the patient LACKS capacity for this specific decision.'};
+    return {cls:'ok',txt:'Pattern consistent with INTACT capacity for this specific decision.'};
+  }
+
+  function note(){
+    var d = ctx.decision || '[the specific decision]';
+    var lines=[];
+    lines.push('CAPACITY ASSESSMENT — '+d);
+    lines.push('Decision-specific; higher-risk/irreversible decisions warrant a higher evidentiary threshold (sliding scale). Risk level set to: '+ctx.risk+'.');
+    lines.push('');
+    ABIL.forEach(function(a){
+      var r=rate[a.key];
+      var phrase = r==='intact'?('The patient '+a.intact): r==='impaired'?('The patient '+a.impaired):'Not formally assessed';
+      var nm=a.name.replace(/^\d+ · /,'');
+      var extra = notes[a.key]?(' — '+notes[a.key]):'';
+      lines.push('• '+nm+': '+phrase+extra+'.');
+    });
+    lines.push('');
+    var v=verdict();
+    var concl = v.cls==='ok'? ('Based on the four-abilities assessment, the patient demonstrates the capacity to make this specific decision.')
+              : v.cls==='no'? ('Based on the four-abilities assessment, the patient does NOT currently demonstrate capacity for this specific decision; the limiting ability/abilities are documented above. Recommend addressing reversible contributors, re-assessing, and engaging surrogate/established legal pathways per institutional policy.')
+              : ('Assessment incomplete.');
+    lines.push('Clinical impression: '+concl);
+    lines.push('Note: "Capacity" is a clinical determination for a specific decision at this time; "competence" is a legal status determined by a court.');
+    return lines.join('\n');
+  }
+  function copyNote(){ if(navigator.clipboard){navigator.clipboard.writeText(note()).then(function(){setCopied(true);});} }
+  function reset(){ setRate({}); setNotes({}); setCopied(false); }
+
+  var header=e('div',{key:'h'},
+    e('div',{className:'kicker'},'Acute & Safety · 04'),
+    e('h1',null,'Assessing Decisional Capacity'),
+    e('p',{className:'sub'},'Capacity is decision-specific, time-specific, and clinical — not a global verdict. The Appelbaum & Grisso (1988) model breaks it into four assessable abilities. Learn each, then use the bedside tab to structure your exam and draft a note.')
+  );
+  var tabs=e('div',{className:'tabs',key:'t'},
+    e('button',{className:'tab'+(tab==='learn'?' on':''),onClick:function(){setTab('learn')}},'1 · The four abilities'),
+    e('button',{className:'tab'+(tab==='assess'?' on':''),onClick:function(){setTab('assess')}},'2 · Bedside assessment'),
+    e('button',{className:'tab'+(tab==='principles'?' on':''),onClick:function(){setTab('principles')}},'3 · Principles & pitfalls')
+  );
+
+  var learn=e('div',{key:'l'}, ABIL.map(function(a){
+    return e('div',{className:'ability',key:a.key},
+      e('h3',null,a.name), e('div',{className:'def'},a.def),
+      e('span',{className:'label'},'Sample bedside questions'),
+      a.qs.map(function(q,i){return e('div',{className:'q',key:i},q);})
+    );
+  }), e('div',{className:'pearl'}, e('b',null,'Sliding scale: '),'The more serious or irreversible the consequences, the higher the bar for demonstrating capacity. A low-risk decision needs less; refusing a life-saving, low-burden treatment needs more.'));
+
+  var assess=e('div',{key:'a'},
+    e('div',{className:'card'},
+      e('span',{className:'label'},'The specific decision being assessed'),
+      e('input',{type:'text',value:ctx.decision,placeholder:'e.g., refusal of recommended inpatient admission',onChange:function(ev){setCtx(Object.assign({},ctx,{decision:ev.target.value}));setCopied(false);}}),
+      e('span',{className:'label'},'Risk / reversibility of the decision'),
+      e('div',{className:'seg'},
+        ['low','moderate','high'].map(function(r){
+          return e('button',{key:r,className:'na'+(ctx.risk===r?' on':''),onClick:function(){setCtx(Object.assign({},ctx,{risk:r}));setCopied(false);}}, r);
+        }))
+    ),
+    e('div',{className:'card'},
+      ABIL.map(function(a){
+        var r=rate[a.key];
+        return e('div',{key:a.key,style:{marginBottom:'18px'}},
+          e('h3',{style:{margin:'0 0 2px'}},a.name),
+          e('div',{className:'def',style:{fontSize:'.88rem'}},a.def),
+          e('div',{className:'seg'},
+            e('button',{className:'intact'+(r==='intact'?' on':''),onClick:function(){setR(a.key,'intact')}},'Intact'),
+            e('button',{className:'impaired'+(r==='impaired'?' on':''),onClick:function(){setR(a.key,'impaired')}},'Impaired'),
+            e('button',{className:'na'+(r==='na'?' on':''),onClick:function(){setR(a.key,'na')}},'Not assessed')),
+          e('textarea',{rows:2,placeholder:'Optional: quote the patient or note specifics…',value:notes[a.key]||'',onChange:function(ev){setN(a.key,ev.target.value)}})
+        );
+      })
+    ),
+    e('div',{className:'card'},
+      function(){var v=verdict(); return e('div',{className:'verdict '+v.cls}, v.txt);}(),
+      e('div',{className:'output'}, note()),
+      e('div',{className:'row'},
+        e('button',{className:'btn btn-primary',onClick:copyNote}, copied?'Copied ✓':'Copy note'),
+        e('button',{className:'btn btn-ghost',onClick:reset},'Reset')),
+      e('div',{className:'pearl'}, e('b',null,'Before concluding "lacks capacity": '),'rule out and treat reversible contributors — delirium, intoxication/withdrawal, pain, acute psychosis, language/communication barriers. Capacity can return.')
+    )
+  );
+
+  var PRIN=[
+    ['Presume capacity','Adults are presumed to have capacity until shown otherwise. The assessment must justify any conclusion that it is absent.'],
+    ['Decision-specific','A patient may have capacity for one decision and not another. Always name the specific decision.'],
+    ['Capacity ≠ competence','Capacity is a clinical determination at the bedside; competence is a legal status decided by a court.'],
+    ['Disagreement ≠ incapacity','A patient may make a choice you disagree with and still have full capacity. The reasoning process — not the outcome — is what you assess.'],
+    ['Sliding scale','Match the evidentiary threshold to the stakes: higher risk or irreversibility → higher bar.'],
+    ['It can fluctuate','Delirium, intoxication, and acute illness change capacity hour to hour. Re-assess and document the time.'],
+    ['Optimize the exam','Treat reversible factors, use the patient’s language, hearing aids/glasses, a quiet moment, and a supported decision-making approach before concluding incapacity.']
+  ];
+  var principles=e('div',{key:'p'}, e('div',{className:'grid'}, PRIN.map(function(p,i){
+    return e('div',{className:'principle',key:i}, e('b',null,p[0]+'. '), p[1]);
+  })),
+  e('div',{className:'card',style:{marginTop:'16px'}},
+    e('h3',{style:{marginTop:0}},'Annotated sample (fictional composite)'),
+    e('p',{className:'sub',style:{fontSize:'.9rem'}},'A 72-year-old admitted for pneumonia who declines a recommended procedure. Decision: refusal of the procedure. Risk: high.'),
+    e('div',{className:'output'},'• Communicate a choice: clear and consistent ("No, I don’t want it").\n• Understand: accurately paraphrased the procedure, its purpose, and the main risk of refusing.\n• Appreciate: acknowledged the condition is serious and that refusing could shorten her life.\n• Reason: explained the choice in terms of long-standing values about quality vs. length of life; internally consistent.\nImpression: demonstrates capacity to refuse this specific procedure despite the high stakes — a value-based refusal, not impaired cognition.')))
+  ;
+
+  return e('div',{className:'shell'},
+    header, tabs,
+    tab==='learn'?learn:(tab==='assess'?assess:principles),
+    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. Generates draft documentation from your inputs using fictional composite scenarios only — no protected health information. Not a clinical or legal decision-support device; capacity determinations and any surrogate/guardianship pathway must follow supervision and institutional/legal policy.'),
+    e('footer',null,'Decisional Capacity — Bedside Module · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist · Framework: Appelbaum & Grisso (1988)')
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>

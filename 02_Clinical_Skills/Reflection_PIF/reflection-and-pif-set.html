@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [RC-META] tool="Reflection & Professional Identity Set" version="1.0" built="2026-06-26" category="clinical-skills" subcategory="Reflection/PIF" audience="trainee,ms3" settings="inpatient" time="10min/week" summary="Six weekly reflection prompts mapped to the curriculum plus an ethics/professional-identity set, each with a private journaling field and copy/print. In-memory only; nothing is stored or transmitted." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reflection &amp; Professional Identity — Prompt Set</title>
+<meta name="description" content="Six weekly reflection prompts mapped to the inpatient psychiatry curriculum, plus an ethics and professional-identity formation set. Private journaling with copy and print; nothing is saved or sent.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(820px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) var(--sp5)}
+  h1,h2,h3{font-family:var(--font-head);line-height:1.25;margin:0 0 var(--sp3)}
+  h1{font-size:2.1rem;color:var(--primary)} h2{font-size:1.3rem;margin-top:var(--sp4)}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .sub{color:var(--text-mid);max-width:64ch;margin:0 0 var(--sp3)}
+  .prompt{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp3) var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .prompt.pif{border-left:4px solid var(--info)}
+  .prompt.wk{border-left:4px solid var(--accent)}
+  .ptag{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--text-light)}
+  .q{font-family:var(--font-head);font-size:1.08rem;margin:4px 0 2px;color:var(--text)}
+  .hint{font-size:.86rem;color:var(--text-mid);margin-bottom:var(--sp2)}
+  textarea{width:100%;min-height:90px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-family:inherit;font-size:.95rem;resize:vertical;background:var(--bg-alt)}
+  .bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:var(--sp2) 0;display:flex;gap:var(--sp2);flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);margin-bottom:var(--sp3)}
+  .btn{border:none;border-radius:var(--radius-sm);padding:9px 16px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--primary-dark);color:#fff} .btn-primary:hover{background:var(--primary)}
+  .btn-ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .wellbeing{background:var(--info-light);border-left:3px solid var(--info);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);font-size:.88rem;margin-top:var(--sp3)}
+  .wellbeing b{color:var(--info)}
+  .disclaimer{background:var(--bg-alt);border:1px dashed var(--border);border-radius:var(--radius-md);padding:var(--sp3);font-size:.82rem;color:var(--text-mid);margin-top:var(--sp4)}
+  footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light);text-align:center}
+  @media print{.bar,.btn,.disclaimer{display:none}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+var e=React.createElement; var useState=React.useState;
+var WK=[
+  {id:'w1',tag:'Week 1 · Foundations',q:'What did the label do?',hint:'Channeling Rosenhan: describe a moment you noticed the diagnosis arriving before the person did — yours or the team’s. What changed once the label was attached?'},
+  {id:'w2',tag:'Week 2 · Mood, Psychosis & Pharmacology',q:'A medication decision you watched.',hint:'What drove it beyond efficacy — side effects, cost, the patient’s prior experience, adherence, family input? How was the choice explained to the patient?'},
+  {id:'w3',tag:'Week 3 · Psychotherapy & the Relationship',q:'A rupture-and-repair moment.',hint:'A small break in connection with a patient (or team) and what — if anything — repaired it. What did the relationship itself seem to do?'},
+  {id:'w4',tag:'Week 4 · Family & Systems',q:'What would you change about that family meeting?',hint:'Recall a family meeting you observed or joined. Where was the expressed emotion? What would you do differently as the facilitator?'},
+  {id:'w5',tag:'Week 5 · Acute & Emergency',q:'A risk decision made under uncertainty.',hint:'Channeling Franklin (we cannot predict suicide well): how did the team document reasoning rather than certainty? How did that sit with you?'},
+  {id:'w6',tag:'Week 6 · Integration',q:'How has your view changed?',hint:'End of rotation. How has your understanding of psychiatric patients — and of the kind of clinician you want to be — shifted over six weeks?'}
+];
+var PIF=[
+  {id:'p1',tag:'Ethics',q:'A moment of moral discomfort.',hint:'Coercion, involuntary care, a hold, a restraint, a capacity call — what values were in tension, and how did you sit with it?'},
+  {id:'p2',tag:'Boundaries',q:'Setting or holding a boundary.',hint:'A time you had to hold a limit with a patient or family. What made it hard? What helped?'},
+  {id:'p3',tag:'Bias',q:'An assumption you caught.',hint:'A judgment about a patient you noticed yourself making (about adherence, "drug-seeking," likeability, prognosis). What corrected it?'},
+  {id:'p4',tag:'Speaking up',q:'Something you hesitated to raise.',hint:'A safety or care concern you noticed but found hard to voice in the hierarchy. What blocked or enabled speaking up?'},
+  {id:'p5',tag:'Wellbeing',q:'What affected you this week.',hint:'A story or moment that stayed with you emotionally. What did you do with it? What do you need?'},
+  {id:'p6',tag:'Identity',q:'"I am becoming the kind of clinician who…"',hint:'Finish the sentence. Then name one concrete thing you did this week that moved you toward it.'}
+];
+function App(){
+  var txt=useState({}); var setTxt=txt[1]; txt=txt[0];
+  var copied=useState(false); var setCopied=copied[1]; copied=copied[0];
+  function set(id,v){var n=Object.assign({},txt);n[id]=v;setTxt(n);setCopied(false);}
+  function assemble(){
+    var out=['MY PSYCHIATRY CLERKSHIP REFLECTIONS','=============================','','WEEKLY'];
+    WK.forEach(function(p){ out.push('\n['+p.tag+'] '+p.q); out.push((txt[p.id]||'(not yet written)')); });
+    out.push('\n\nPROFESSIONAL IDENTITY & ETHICS');
+    PIF.forEach(function(p){ out.push('\n['+p.tag+'] '+p.q); out.push((txt[p.id]||'(not yet written)')); });
+    return out.join('\n');
+  }
+  function copyAll(){ if(navigator.clipboard){navigator.clipboard.writeText(assemble()).then(function(){setCopied(true);});} }
+  function card(p,cls){
+    return e('div',{className:'prompt '+cls,key:p.id},
+      e('div',{className:'ptag'},p.tag),
+      e('div',{className:'q'},p.q),
+      e('div',{className:'hint'},p.hint),
+      e('textarea',{value:txt[p.id]||'',placeholder:'Write freely — this stays on your screen only.',onChange:function(ev){set(p.id,ev.target.value)}}));
+  }
+  return e('div',{className:'shell'},
+    e('div',{className:'kicker'},'Clinical Skills · 02 · Reflection & PIF'),
+    e('h1',null,'Reflection & Professional Identity'),
+    e('p',{className:'sub'},'Ten minutes of honest reflection each week builds the clinician you’re becoming as much as any reading does. Six prompts track the curriculum; the second set turns toward ethics and identity. Write for yourself.'),
+    e('div',{className:'bar'},
+      e('button',{className:'btn btn-primary',onClick:copyAll}, copied?'Copied ✓':'Copy all'),
+      e('button',{className:'btn btn-ghost',onClick:function(){window.print()}},'Print / Save PDF'),
+      e('span',{style:{fontSize:'.82rem',color:'var(--text-light)'}},'Private — nothing is saved or sent.')),
+    e('h2',null,'Weekly reflections'),
+    WK.map(function(p){return card(p,'wk');}),
+    e('h2',null,'Professional identity & ethics'),
+    PIF.map(function(p){return card(p,'pif');}),
+    e('div',{className:'wellbeing'}, e('b',null,'A note on the hard weeks: '),'inpatient psychiatry can stir up a lot. If something you write about is weighing on you, talk it through with your preceptor, a trusted person, or your school’s support resources. Reflection is for growth, not for carrying it alone.'),
+    e('div',{className:'disclaimer'},'Educational reflection tool. Entries live only in this browser tab and are not saved, stored, or transmitted — use Copy or Print to keep your work before closing. Do not include protected health information or patient identifiers; write about your experience, not identifiable patient details.'),
+    e('footer',null,'Reflection & Professional Identity — Prompt Set · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>

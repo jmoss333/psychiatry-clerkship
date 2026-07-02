@@ -1,0 +1,12 @@
+# More source files on your computer (not copied: large/media/cloud-only)
+
+- **Family Guide BPD** · `~/Documents/Work & Career/Psychiatry Projects/03_FAMILY_MATERIALS/Discharge_Guides/Family_Guide_BPD.pdf` · PDF (copy skipped: OSError)
+- **Patient Discharge BPD** · `~/Documents/Work & Career/Psychiatry Projects/07_BUNDLES_READY_TO_USE/Discharge_by_Diagnosis/BPD/Patient_Discharge_BPD.pdf` · PDF (copy skipped: OSError)
+- **Personality and Relationships Family Bundle** · `~/Documents/Work & Career/Psychiatry Projects/07_BUNDLES_READY_TO_USE/Discharge_by_Diagnosis/BPD/Personality_and_Relationships_Family_Bundle.pdf` · PDF (copy skipped: OSError)
+- **Episode 130 Schema Therapy for BPD 2b849b94b18d80c48b68f06b2f8086e3** · `~/Documents/Work & Career/ReConnect Psychiatry Private Practice/06_CLINICAL_LIBRARY/Raw_Data/Podcasts/PODCASTDATABASE/Podcast Episode Resource Library/Episode 130 Schema Therapy for BPD 2b849b94b18d80c48b68f06b2f8086e3.md` · Markdown (copy skipped: OSError)
+- **Episode 224 BPD Medications and Treatment 2b849b94b18d80e6bc6ff94d4a39** · `~/Documents/Work & Career/ReConnect Psychiatry Private Practice/06_CLINICAL_LIBRARY/Raw_Data/Podcasts/PODCASTDATABASE/Podcast Episode Resource Library/Episode 224 BPD Medications and Treatment 2b849b94b18d80e6bc6ff94d4a39ab2b.md` · Markdown (copy skipped: OSError)
+- **Family Guide BPD DorotheaDix** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/DorotheaDix/Family_Guides/Family_Guide_BPD_DorotheaDix.pdf` · PDF (copy skipped: OSError)
+- **Family Guide BPD EMMC** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/EMMC/Family_Guides/Family_Guide_BPD_EMMC.pdf` · PDF (copy skipped: OSError)
+- **Family Guide BPD MidCoast** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/MidCoast/Family_Guides/Family_Guide_BPD_MidCoast.pdf` · PDF (copy skipped: OSError)
+- **Family Guide BPD MMC** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/MMC/Family_Guides/Family_Guide_BPD_MMC.pdf` · PDF (copy skipped: OSError)
+- **Family Guide BPD PenBay** · `~/Documents/Work & Career/Psychiatry Projects/06_FACILITY_SPECIFIC/PenBay/Family_Guides/Family_Guide_BPD_PenBay.pdf` · PDF (copy skipped: OSError)

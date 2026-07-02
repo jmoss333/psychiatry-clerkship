@@ -1,0 +1,62 @@
+LANDMARK PAPER 32: Gunderson BPD Review — Gunderson (2018)
+
+FULL CITATION
+Gunderson, J. G., Herpertz, S. C., Skodol, A. E., Zanarini, M. C., & Livesley, W. J. (2018). Borderline personality disorder. Nature Reviews Disease Primers, 4(1), 18029.
+
+DOI: Not available (comprehensive review)
+Category: Personality Disorders | Subcategory: BPD Overview | Difficulty: Intermediate
+
+THE ONE SENTENCE
+Borderline personality disorder is a highly heritable disorder of emotion regulation and identity with dimensional (not categorical) phenotype spanning affective instability, impulsivity, self-harm, and relational dysfunction—requiring integrated pharmacological, psychotherapeutic, and systems-based management.
+
+WHY THIS PAPER MATTERS
+Gunderson's comprehensive 2018 review synthesized decades of BPD research into current understanding: BPD is not a purely psychological disorder (arising from trauma/invalidating environment) or purely biological (arising from genetic predisposition), but biopsychosocial. Twin studies show 40-60% heritability; trauma history is present but not universal; brain imaging shows structural/functional abnormalities in emotion regulation circuits (amygdala, prefrontal cortex).
+
+The review emphasized that BPD is dimensional, not categorical. Patients vary widely in severity and symptom profile. It highlighted that BPD is treatable (contrary to historical pessimism), that psychotherapy effects are largest, and that medications are adjunctive (no medication is specifically effective for BPD as a whole, though specific medications may target specific symptoms).
+
+Gunderson's review became the standard reference for BPD pathophysiology and treatment, now cited in psychiatric education worldwide.
+
+CLINICAL APPLICATION: WHAT TO DO MONDAY MORNING
+1. When assessing a potential BPD patient, avoid categorical thinking ("does she have BPD?"). Instead, assess dimensionally: How severe is emotion dysregulation? Impulsivity? Identity disturbance? This guides targeted treatment.
+
+2. When a BPD patient asks "Why do I feel this way?", explain: "Your brain's emotion regulation circuits—amygdala, prefrontal cortex—work differently. This is partly genetic, partly from life experience. Both matter."
+
+3. When prescribing for BPD, remember: no medication treats BPD directly. Medications target specific symptoms (SSRI for depression, low-dose antipsychotic for anger, mood stabilizer for impulsivity). Psychotherapy is primary.
+
+4. When a BPD patient's family blames parenting or trauma as the sole cause, explain: "Genetics loads the gun; environment pulls the trigger. Your genes make you susceptible; experiences shape how it manifests."
+
+5. When treating comorbid conditions (depression, PTSD) in BPD patients, address them but don't neglect BPD-specific interventions (psychotherapy targeting emotion regulation, identity).
+
+TEACHING SCRIPT (10-MINUTE VERSION)
+HOOK: "A BPD patient asks: 'Am I just broken, or can I get better?' Gunderson's review answers that question from biology, psychology, and treatment data."
+
+CONTEXT: "BPD was historically attributed to either 'bad parenting' (psychological blame) or 'personality defect' (pessimism). Gunderson integrates biology and psychology."
+
+KEY FINDING: "BPD is biopsychosocial: 40-60% heritable, associated with trauma/invalidation, involves amygdala hyperactivity and prefrontal hypoactivity. Dimensional phenotype (not categorical): emotion dysregulation severity varies. Treatable with psychotherapy (primary) and adjunctive medications."
+
+CLINICAL TRANSLATION: "BPD isn't a character flaw or parenting failure. It's a neurobiological vulnerability shaped by environment. Understanding biology removes shame; psychotherapy develops skills."
+
+DISCUSSION QUESTION: "If BPD is partly genetic, why do psychotherapy and life experience matter so much for outcome?"
+
+KEY NUMBERS TO REMEMBER
+- Heritability: 40-60% (twin/adoption studies)
+- Trauma/invalidation history: 50-80% (not universal)
+- Response to psychotherapy: 60-80% achieve improvement/remission
+- Medication efficacy: modest; no medication has large effect
+- Amygdala volume: reduced; hyperactivity on emotion processing tasks
+- Prefrontal cortex: hypoactive; impaired emotion regulation
+
+CONTROVERSY AND LIMITATIONS
+Critics argue that heritability estimates vary by study design. Second, "invalidating environment" is difficult to operationalize and measure objectively. Third, Gunderson's framework emphasizes biology, which some argue reductionist—social/relational factors are equally important. Fourth, the dimensional approach is more scientifically accurate but less clinically practical (DSM still uses categorical criteria).
+
+However, the biopsychosocial framework is now accepted as standard. Gunderson's review is considered the authoritative reference.
+
+CONNECTIONS TO OTHER PAPERS IN THE LIBRARY
+Paper 21 (Linehan DBT, 1991), Paper 22 (Bateman MBT, 1999) are psychotherapies built on understanding BPD as partly biological and partly learned. Paper 31 (Zanarini MSAD, 2005) shows BPD has good prognosis; Gunderson explains why (psychotherapy works, natural remission occurs). Paper 39 (Kernberg Personality Organization, 1984) provides structural personality framework; Gunderson bridges structure and neurobiology.
+
+DISCUSSION QUESTIONS FOR ROUNDS
+1. If BPD is 50% heritable, how much of treatment outcome reflects genes vs. therapy?
+
+2. Does understanding BPD as biological reduce stigma or increase fatalism?
+
+3. Gunderson emphasizes psychotherapy as primary; is pharmacotherapy truly just adjunctive?

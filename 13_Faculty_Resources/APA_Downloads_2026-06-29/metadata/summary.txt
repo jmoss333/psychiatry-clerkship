@@ -1,0 +1,5 @@
+pages_crawled=419
+document_candidates=362
+downloaded=353
+skipped=9
+page_errors=0

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="icon" href="/favicon.svg">
+<!-- [RC-META] tool="Agitation Ladder — PRN Decision Trainer" version="0.2.0" built="2026-07-02" category="acute-safety" audience="resident,trainee" settings="inpatient,ED,C-L" time="8min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="draft-pending-attestation" summary="Teaching trainer for acute agitation: least-restrictive ladder, driver-first triage, de-escalation-gated pharmacologic reasoning with hazard feedback, and an ever-present Call-your-senior option. NOT an order set. Agents/doses/routes/monitoring are local-policy placeholders. Fictional composites; no PHI. No runtime CDN (React vendored locally)." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agitation Ladder — PREVIEW (double-clickable)</title>
+<meta name="description" content="Teaching trainer for reasoning through acute agitation using a least-restrictive ladder. Educational only; not clinical decision support.">
+<script src="./vendor/react.min.js"></script>
+<script src="./vendor/react-dom.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#665a4f;
+    --success:#357160; --success-light:#e7f1ed;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --danger:#a34132; --danger-light:#fbece9;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+  }
+  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(940px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) 96px}
+  h1{font-family:var(--font-head);font-size:1.8rem;color:var(--primary);margin:0 0 4px}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .sub{color:var(--text-mid);max-width:66ch;margin:0 0 var(--sp3)}
+  .themebtn{position:fixed;top:12px;right:12px;width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;z-index:30}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .modebar{display:inline-flex;flex-wrap:wrap;gap:6px;border:1px solid var(--border);border-radius:var(--radius-pill);padding:4px;margin-bottom:var(--sp3);background:var(--bg-alt)}
+  .modebar button{border:none;background:transparent;padding:7px 16px;border-radius:var(--radius-pill);font:inherit;font-size:.85rem;font-weight:700;color:var(--text-mid);cursor:pointer;min-height:40px}
+  .modebar button.on{background:var(--accent);color:var(--on-brand)}
+  .disc{border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.84rem;margin-bottom:var(--sp3)}
+  .disc.teach{background:var(--info-light);color:var(--info);border:1px solid var(--info)}
+  /* play layout: ladder rail + main */
+  .play{display:grid;grid-template-columns:190px 1fr;gap:var(--sp3);align-items:start}
+  .rail{position:sticky;top:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp3);box-shadow:var(--shadow-sm)}
+  .rail .rlbl{font-size:.64rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-bottom:8px}
+  .rung{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:var(--radius-sm);margin:3px 0;opacity:.5;border:1px solid transparent}
+  .rung .rn{width:22px;height:22px;border-radius:6px;background:var(--bg-alt);border:1px solid var(--border);font-size:.76rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--text-mid);flex:none}
+  .rung .rt{font-size:.82rem;line-height:1.2}
+  .rung.reached{opacity:1}
+  .rung.reached .rn{background:var(--accent-light);color:var(--accent-dark);border-color:var(--accent)}
+  .rung.current{opacity:1;background:var(--accent-light);border-color:var(--accent)}
+  .rung.current .rn{background:var(--accent);color:var(--on-brand);border-color:var(--accent)}
+  .rung.top.current{background:var(--danger-light);border-color:var(--danger)}
+  .rung.top.current .rn{background:var(--danger);border-color:var(--danger)}
+  .railnote{font-size:.72rem;color:var(--text-light);margin-top:8px;border-top:1px solid var(--border);padding-top:8px}
+  .pills{display:none;gap:6px;flex-wrap:wrap;margin-bottom:var(--sp2)}
+  .pill{font-size:.72rem;border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px 9px;color:var(--text-light)}
+  .pill.current{background:var(--accent);color:var(--on-brand);border-color:var(--accent)}
+  .steplabel{text-transform:uppercase;letter-spacing:.08em;font-size:.68rem;font-weight:700;color:var(--accent-dark);margin:0 0 4px}
+  .qtext{font-family:var(--font-head);font-size:1.18rem;margin:0 0 var(--sp3)}
+  .stemgrid{display:flex;flex-wrap:wrap;gap:8px;margin:var(--sp2) 0 0}
+  .vital{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 10px;font-size:.82rem;color:var(--text-mid)}
+  .vital b{color:var(--text)}
+  .metarow{display:flex;flex-wrap:wrap;gap:8px;font-size:.8rem;color:var(--text-light);margin-top:var(--sp2)}
+  .opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-md);padding:12px 14px;margin:8px 0;cursor:pointer;font:inherit;color:var(--text)}
+  .opt:hover{border-color:var(--accent);background:var(--accent-light)}
+  .opt.on{border-color:var(--accent);background:var(--accent-light);box-shadow:inset 0 0 0 1px var(--accent)}
+  .opt .num{flex:0 0 auto;width:22px;height:22px;border-radius:6px;background:var(--bg-alt);border:1px solid var(--border);font-size:.76rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--text-mid)}
+  .opt.on .num{background:var(--accent);color:var(--on-brand);border-color:var(--accent)}
+  .opt .lab{flex:1;min-width:0}
+  .senior{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:1px dashed var(--accent);background:var(--accent-light);border-radius:var(--radius-md);padding:12px 14px;margin:12px 0 0;cursor:pointer;font:inherit;color:var(--accent-dark);font-weight:700}
+  .senior.on{border-style:solid;box-shadow:inset 0 0 0 1px var(--accent)}
+  .senior .ico{font-size:1.1rem}
+  .localchip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;border:1px dashed var(--warning);color:var(--warning);background:var(--warning-light);border-radius:var(--radius-pill);padding:3px 10px;margin:6px 6px 0 0}
+  .localchip.set{border-style:solid;border-color:var(--success);color:var(--success);background:var(--success-light)}
+  .verdict{border-radius:var(--radius-md);padding:12px 14px;margin:10px 0;font-size:.92rem;border:1px solid}
+  .verdict.good{background:var(--success-light);color:var(--success);border-color:var(--success)}
+  .verdict.caution{background:var(--warning-light);color:var(--warning);border-color:var(--warning)}
+  .verdict.hazard{background:var(--danger-light);color:var(--danger);border-color:var(--danger)}
+  .verdict .vh{font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .stopnote{font-size:.82rem;margin-top:6px;font-style:italic}
+  .btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:var(--sp3)}
+  .btn{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-weight:600;cursor:pointer;font:inherit;background:var(--surface);color:var(--accent-dark);min-height:44px}
+  .btn.primary{background:var(--primary-dark);color:var(--on-brand);border-color:var(--primary-dark)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .nudge{color:var(--danger);font-size:.85rem;margin-top:8px}
+  .trace .node{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:6px 0}
+  .trace .marker{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--on-brand);font-weight:700;font-size:.85rem}
+  .m.good{background:var(--success)} .m.caution{background:var(--warning)} .m.hazard{background:var(--danger)} .m.neutral{background:var(--text-light)}
+  .nodecard{border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 13px}
+  .pearl{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:var(--radius-sm);padding:10px 13px;font-size:.9rem;margin:8px 0}
+  .cite{font-size:.8rem;color:var(--text-light)}
+  details.cites{margin-top:8px} details.cites summary{cursor:pointer;font-size:.82rem;color:var(--accent-dark)}
+  .disc.footer{position:fixed;left:0;right:0;bottom:0;background:var(--danger-light);color:var(--danger);border-top:1px solid var(--danger);font-size:.8rem;padding:8px 14px;text-align:center;margin:0;z-index:20}
+  .flag{background:none;border:1px solid var(--border);border-radius:var(--radius-pill);padding:6px 14px;color:var(--text-light);cursor:pointer;font:inherit;font-size:.82rem;min-height:44px}
+  .flag:hover{border-color:var(--danger);color:var(--danger)}
+  .refmap h3{font-family:var(--font-head);color:var(--primary-dark);margin:var(--sp3) 0 6px;font-size:1.05rem}
+  .refmap ul{margin:4px 0 0;padding-left:1.3em}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  :focus-visible{outline:3px solid var(--focus,#155eef);outline-offset:2px}
+  @media(prefers-reduced-motion:no-preference){.opt:active,.btn:active,.senior:active{transform:scale(.98)}}
+  @media(max-width:640px){.play{grid-template-columns:1fr}.rail{display:none}.pills{display:flex}.shell{padding:var(--sp3) var(--sp2) 96px}h1{font-size:1.5rem}}
+</style>
+</head>
+<body>
+<button class="themebtn" id="themebtn" aria-label="Toggle light/dark theme">◐</button>
+<main class="shell" id="root"></main>
+<div class="disc footer" role="note">Teaching trainer — <b>not clinical decision support</b> and it does not generate orders. In a real emergency, call your senior/attending and follow local protocol.</div>
+<div id="live" class="visually-hidden" aria-live="polite"></div>
+<script>
+(function(){
+  "use strict";
+  var PACK_INLINE = {
+  "schemaVersion": "1.0",
+  "tool": "agitation-trainer",
+  "version": "0.1.0",
+  "built": "2026-07-02",
+  "evidenceThrough": "2026-06-30",
+  "reviewCadenceDays": 180,
+  "status": "draft-pending-attestation",
+  "_incorporationChecklist": {
+    "source": "OpenEvidence — 'Acute Agitation in Adult Inpatient and Emergency Psychiatry: Comprehensive Evidence Review' + 'QTc Prolongation Risk with Psychotropic Medications' (staging, ~2026-06)",
+    "claimExtraction": "Class-level reasoning, etiology discriminators, and contraindication/hazard logic only. Dose/route/agent-selection intentionally NOT copied — routed to LOCAL_POLICY tokens.",
+    "facultyReview": "PENDING — do not add to reviewed.json until Joshua Moss, MD attests. Ships watermarked 'Draft — pending faculty review'.",
+    "noPhi": "All scenarios are fictional composites. No patient-identifiable data.",
+    "publishTarget": "mmc-resident-deploy/tools/agitation-trainer.html + tools/agitation.pack.json (after attestation)",
+    "doseLiteralPolicy": "Pack must contain zero dose literals (regex \\d+\\s?(mg|mcg|mL) returns nothing). Agent names permitted only in teaching/hazard context, never as an order."
+  },
+  "citations": [
+    { "id": "richmond2012", "ref": "Richmond JS, Berlin JS, Fishkind AB, et al. Verbal De-Escalation of the Agitated Patient: Consensus Statement of the AAEP Project BETA De-Escalation Workgroup. West J Emerg Med. 2012;13(1):17-25.", "doi": "10.5811/westjem.2011.9.6864", "url": "" },
+    { "id": "wilson2012", "ref": "Wilson MP, Pepper D, Currier GW, et al. The Psychopharmacology of Agitation: Consensus Statement of the AAEP Project BETA Psychopharmacology Workgroup. West J Emerg Med. 2012;13(1):26-34.", "doi": "", "url": "" },
+    { "id": "knox2012", "ref": "Knox DK, Holloman GH. Use and Avoidance of Seclusion and Restraint: Consensus Statement of the AAEP Project BETA Seclusion and Restraint Workgroup. West J Emerg Med. 2012;13(1):35-40.", "doi": "", "url": "" },
+    { "id": "apa2022", "ref": "American Psychiatric Association. Resource Document on the Use of Seclusion and Restraint. 2022.", "doi": "", "url": "" },
+    { "id": "siafis2026", "ref": "Siafis S, et al. Comparative effectiveness and safety of pharmacological treatments for rapid tranquillisation: individual participant data network meta-analysis. Lancet Psychiatry. 2026.", "doi": "", "url": "" },
+    { "id": "ostinelli2017", "ref": "Ostinelli EG, et al. Haloperidol for psychosis-induced aggression or agitation (rapid tranquillisation). Cochrane Database Syst Rev. 2017.", "doi": "", "url": "" },
+    { "id": "zaman2017", "ref": "Zaman H, et al. Benzodiazepines for psychosis-induced aggression or agitation. Cochrane Database Syst Rev. 2017.", "doi": "", "url": "" },
+    { "id": "martel2021", "ref": "Martel ML, et al. Randomized double-blind trial of IM droperidol, ziprasidone, and lorazepam for acute agitation. Acad Emerg Med. 2021.", "doi": "", "url": "" },
+    { "id": "heckers2023", "ref": "Heckers S, Walther S. Catatonia. N Engl J Med. 2023.", "doi": "", "url": "" },
+    { "id": "beers2023", "ref": "American Geriatrics Society 2023 Updated AGS Beers Criteria. J Am Geriatr Soc. 2023.", "doi": "", "url": "" },
+    { "id": "cole2025", "ref": "Cole JB, et al. Oral medications for treating agitation in a safety-net emergency department. JAMA Netw Open. 2025.", "doi": "", "url": "" }
+  ],
+  "localPolicies": [
+    { "type": "LOCAL_POLICY", "id": "agitation.setting_scope", "label": "Settings this trainer maps to (BHU / ED / C-L) and any differences", "placeholder": "Confirm which units + scope with faculty", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.deescalation_activation", "label": "How/whom to call for help during escalation (team response, security)", "placeholder": "Confirm local activation & call tree", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.po_options", "label": "Oral-first options per BHU formulary", "placeholder": "Confirm local PO formulary options", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.im_options", "label": "IM options per BHU formulary (agent/dose/route)", "placeholder": "Confirm local IM formulary options", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.withdrawal_protocol", "label": "Alcohol/sedative withdrawal medication protocol", "placeholder": "Confirm local withdrawal protocol / order set", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.restraint_policy", "label": "Restraint/seclusion policy, authorization, and documentation timeframes", "placeholder": "Confirm local restraint/seclusion policy", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.monitoring_interval", "label": "Post-medication monitoring cadence and parameters", "placeholder": "Confirm local post-sedation monitoring policy", "value": null, "verifiedBy": null, "verifiedAt": null },
+    { "type": "LOCAL_POLICY", "id": "agitation.qtc_threshold_action", "label": "QTc threshold and action (hold/ECG/telemetry)", "placeholder": "Confirm local QTc action threshold", "value": null, "verifiedBy": null, "verifiedAt": null }
+  ],
+  "choiceBanks": {
+    "etiology": [
+      { "id": "primary_psych", "label": "Primary psychiatric (psychosis / mania)" },
+      { "id": "delirium", "label": "Delirium / medical cause" },
+      { "id": "withdrawal", "label": "Alcohol / sedative-hypnotic withdrawal" },
+      { "id": "stimulant_intox", "label": "Stimulant / sympathomimetic intoxication" },
+      { "id": "catatonia", "label": "Catatonia (incl. excited catatonia)" },
+      { "id": "undetermined", "label": "Undetermined — needs workup" }
+    ],
+    "nonpharm": [
+      { "id": "deesc", "label": "Verbal de-escalation (Project BETA)" },
+      { "id": "space_safety", "label": "Ensure exit path, personal space, remove hazards" },
+      { "id": "env", "label": "Reduce stimulation / environmental measures" },
+      { "id": "offer_po", "label": "Offer oral medication collaboratively", "tokenId": "agitation.po_options" },
+      { "id": "activate_help", "label": "Activate team/security if imminent danger", "tokenId": "agitation.deescalation_activation" }
+    ],
+    "pharmApproach": [
+      { "id": "sga", "label": "Second-generation antipsychotic", "tokenId": "agitation.po_options",
+        "cautionIf": { "qtc_risk": "Some SGAs prolong QTc (e.g., ziprasidone highest) — check baseline QTc/interacting drugs.", "older_dementia": "All antipsychotics carry FDA black-box mortality warning in dementia-related psychosis." } },
+      { "id": "d2_typical", "label": "Typical antipsychotic (D2 blocker)", "tokenId": "agitation.im_options",
+        "hazardIf": { "parkinson_dlb": "D2 blockade worsens parkinsonism — contraindicated in Parkinson disease / Lewy body dementia.", "catatonia": "May precipitate/worsen catatonia and NMS — hold antipsychotics." },
+        "cautionIf": { "older_dementia": "FDA black-box mortality warning in dementia-related psychosis; high EPS risk in older adults." } },
+      { "id": "benzo", "label": "Benzodiazepine", "tokenId": "agitation.im_options",
+        "hazardIf": { "delirium": "Benzodiazepines worsen non-withdrawal delirium — avoid unless alcohol/sedative withdrawal or end-of-life." },
+        "cautionIf": { "older_dementia": "Falls, cognitive worsening, and delirium risk in older adults (Beers); midazolam has the highest adverse-event rate.", "respiratory": "Respiratory depression risk; caution with pulmonary disease/hepatic impairment." } },
+      { "id": "combo", "label": "Antipsychotic + benzodiazepine combination", "tokenId": "agitation.im_options",
+        "hazardIf": { "delirium": "Benzodiazepine component worsens non-withdrawal delirium." },
+        "cautionIf": { "im_olanzapine_benzo": "Do not combine IM olanzapine with a parenteral benzodiazepine (FDA label — respiratory/CV risk).", "note": "Combination is often most effective for moderate/severe agitation (Siafis 2026) but stacks sedation/respiratory risk — monitor closely." } },
+      { "id": "treat_cause", "label": "Treat the underlying cause first", "tokenId": null },
+      { "id": "im_if_danger", "label": "IM medication only if imminently dangerous & PO refused", "tokenId": "agitation.restraint_policy" }
+    ],
+    "monitoring": [
+      { "id": "pulse_ox", "label": "Continuous pulse oximetry", "tokenId": "agitation.monitoring_interval" },
+      { "id": "serial_vitals", "label": "Serial vitals + sedation level at set intervals", "tokenId": "agitation.monitoring_interval" },
+      { "id": "airway", "label": "Watch airway / oversedation / SpO₂ drop" },
+      { "id": "eps", "label": "Watch for dystonia / EPS / akathisia" },
+      { "id": "ecg", "label": "ECG if QTc risk", "tokenId": "agitation.qtc_threshold_action" },
+      { "id": "reassess", "label": "Reassess before re-dosing", "tokenId": "agitation.monitoring_interval" }
+    ]
+  },
+  "content": {
+    "scenarios": [
+      {
+        "id": "agit-stimulant",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "20s",
+        "stem": "A young adult brought in after a disturbance is pacing, hypervigilant, and intermittently shouting. Diaphoretic, dilated pupils. Reports recent stimulant use; declines to sit.",
+        "vitals": { "hr": 122, "bp": "162/98", "spo2": 99, "temp": 37.6 },
+        "history": "No known psychiatric history; friends report cocaine use tonight.",
+        "currentMeds": ["none reported"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "stimulant_intox",
+        "populationFlags": [],
+        "discriminators": {
+          "stimulant_intox": ["Dilated pupils", "Tachycardia/hypertension", "Diaphoresis", "Recent stimulant use"],
+          "primary_psych": ["Would expect prior history / no sympathomimetic signs"],
+          "delirium": ["Would expect fluctuating attention and a medical trigger"]
+        },
+        "teachingPoints": [
+          { "text": "For stimulant/sympathomimetic intoxication, benzodiazepines are the evidence-based first-line pharmacologic class; they calm sympathetic drive without the D2 risks of antipsychotics.", "citationIds": ["wilson2012", "martel2021"] },
+          { "text": "De-escalation and a low-stimulation environment come first; parenteral agents only if danger persists after PO is offered.", "citationIds": ["richmond2012", "apa2022"] }
+        ],
+        "citationIds": ["wilson2012", "martel2021", "richmond2012"]
+      },
+      {
+        "id": "agit-delirium",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "80s",
+        "stem": "An older adult two days post-op is pulling at lines, attention waxes and wanes, and they misidentify staff. Calmer earlier today, worse tonight.",
+        "vitals": { "hr": 96, "bp": "138/80", "spo2": 93, "temp": 37.9 },
+        "history": "Post-operative; receiving an opioid and an anticholinergic sleep aid. Baseline cognition reportedly intact.",
+        "currentMeds": ["opioid analgesic", "anticholinergic hypnotic"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "delirium",
+        "populationFlags": ["older_dementia"],
+        "discriminators": {
+          "delirium": ["Acute onset + fluctuating course", "Inattention", "Medical/medication trigger", "Age + recent surgery"],
+          "primary_psych": ["New psychosis at this age without delirium features would be unusual"],
+          "withdrawal": ["Consider if alcohol/sedative history — would change benzo reasoning"]
+        },
+        "teachingPoints": [
+          { "text": "New, fluctuating inattention in a hospitalized patient is delirium until proven otherwise — find and treat the cause and remove deliriogenic meds first.", "citationIds": ["beers2023"] },
+          { "text": "Benzodiazepines worsen non-withdrawal delirium; if an agent is needed for dangerous agitation, a second-generation antipsychotic is generally preferred over haloperidol for faster onset and fewer EPS. No medication is FDA-approved for delirium.", "citationIds": ["beers2023", "zaman2017"] }
+        ],
+        "citationIds": ["beers2023", "zaman2017"]
+      },
+      {
+        "id": "agit-withdrawal",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "50s",
+        "stem": "Two days after admission, a patient becomes tremulous, anxious, and diaphoretic with a coarse tremor and reports seeing bugs on the wall.",
+        "vitals": { "hr": 118, "bp": "168/102", "spo2": 98, "temp": 37.7 },
+        "history": "Reported heavy daily alcohol use up to admission.",
+        "currentMeds": ["none relevant reported"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "withdrawal",
+        "populationFlags": [],
+        "discriminators": {
+          "withdrawal": ["Coarse tremor", "Autonomic hyperactivity", "Perceptual disturbance", "Time course since last drink"],
+          "delirium": ["Overlaps — withdrawal IS a delirium subtype where benzos ARE indicated"],
+          "stimulant_intox": ["Would expect recent stimulant use, not an alcohol history"]
+        },
+        "teachingPoints": [
+          { "text": "Alcohol/sedative-hypnotic withdrawal is the key exception where benzodiazepines are first-line — treat the withdrawal per your local protocol; antipsychotics are adjuncts, not monotherapy.", "citationIds": ["wilson2012"] },
+          { "text": "This is why the etiology step matters: the same class (benzodiazepine) that is a hazard in non-withdrawal delirium is the correct choice here.", "citationIds": ["zaman2017"] }
+        ],
+        "citationIds": ["wilson2012", "zaman2017"]
+      },
+      {
+        "id": "agit-psychosis",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "30s",
+        "stem": "A patient with known schizophrenia is agitated, responding to internal stimuli, and pacing near the nursing station. Oriented, no medical red flags. Declines to sit but is talking with you.",
+        "vitals": { "hr": 98, "bp": "132/84", "spo2": 99, "temp": 36.9 },
+        "history": "Chronic schizophrenia; recent medication nonadherence.",
+        "currentMeds": ["home antipsychotic (nonadherent)"],
+        "priorResponse": "Responds partially to verbal engagement.",
+        "trueEtiology": "primary_psych",
+        "populationFlags": [],
+        "discriminators": {
+          "primary_psych": ["Known psychotic illness", "Responding to internal stimuli", "No delirium features / medical triggers"],
+          "delirium": ["No fluctuating inattention or medical trigger"],
+          "catatonia": ["Screen if posturing, mutism, or waxy flexibility appear"]
+        },
+        "teachingPoints": [
+          { "text": "Because the patient is engaging verbally, de-escalation plus an offered oral antipsychotic (collaborative, patient-preference-driven) is the highest-yield path before any parenteral route.", "citationIds": ["richmond2012", "cole2025"] },
+          { "text": "Antipsychotic–benzodiazepine combinations achieve faster sedation than haloperidol monotherapy for moderate-to-severe agitation, but escalate sedation/respiratory risk — reserve for when it is warranted and monitor.", "citationIds": ["siafis2026", "ostinelli2017"] }
+        ],
+        "citationIds": ["richmond2012", "cole2025", "siafis2026"]
+      },
+      {
+        "id": "agit-parkinson",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "70s",
+        "stem": "A patient with Parkinson disease and visual hallucinations becomes frightened and agitated in the evening, trying to leave. Rigidity and bradykinesia at baseline.",
+        "vitals": { "hr": 88, "bp": "128/76", "spo2": 97, "temp": 36.8 },
+        "history": "Parkinson disease on dopaminergic therapy; recent evening confusion/hallucinations.",
+        "currentMeds": ["dopaminergic therapy"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "primary_psych",
+        "populationFlags": ["parkinson_dlb", "older_dementia"],
+        "discriminators": {
+          "primary_psych": ["Psychosis in the context of PD/DLB"],
+          "delirium": ["Always screen — evening worsening could be superimposed delirium"],
+          "undetermined": ["Reasonable to work up medical contributors first"]
+        },
+        "teachingPoints": [
+          { "text": "In Parkinson disease and Lewy body dementia, D2-blocking antipsychotics can cause severe worsening — typical antipsychotics are contraindicated. This is the population where the 'default' agitation agent is the wrong move.", "citationIds": ["wilson2012"] },
+          { "text": "Prioritize de-escalation, environmental measures, and reducing offending medications; if pharmacotherapy is unavoidable, agent choice is narrow and belongs to your attending + local formulary.", "citationIds": ["apa2022"] }
+        ],
+        "citationIds": ["wilson2012", "apa2022"]
+      },
+      {
+        "id": "agit-catatonia",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "40s",
+        "stem": "A patient who was mute and withdrawn for two days is now intermittently agitated with purposeless movements, then freezes with a held posture.",
+        "vitals": { "hr": 104, "bp": "142/88", "spo2": 98, "temp": 37.8 },
+        "history": "Recent severe mood episode; staff noted staring, posturing, and refusal to eat before this.",
+        "currentMeds": ["none relevant reported"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "catatonia",
+        "populationFlags": [],
+        "discriminators": {
+          "catatonia": ["Preceding mutism/immobility/posturing", "Waxy flexibility", "Alternating stupor and excitement"],
+          "primary_psych": ["Underlying mood/psychotic illness common — but catatonia changes management"],
+          "delirium": ["Screen for medical/autonomic instability (malignant catatonia risk)"]
+        },
+        "teachingPoints": [
+          { "text": "Recognize catatonia before reaching for an antipsychotic — D2 blockers can precipitate or worsen catatonia and raise NMS risk. A benzodiazepine (lorazepam) challenge is both diagnostic and therapeutic.", "citationIds": ["heckers2023"] },
+          { "text": "Consider the Bush-Francis scale and screen for autonomic instability (malignant catatonia is an emergency).", "citationIds": ["heckers2023"] }
+        ],
+        "citationIds": ["heckers2023"]
+      },
+      {
+        "id": "agit-undetermined-qtc",
+        "settingTokenId": "agitation.setting_scope",
+        "ageBand": "60s",
+        "stem": "An agitated patient with limited history is on several QT-prolonging medications per the med list. Etiology is not yet clear and vitals are borderline.",
+        "vitals": { "hr": 92, "bp": "150/90", "spo2": 96, "temp": 37.2 },
+        "history": "Sparse history; medication list includes multiple QT-prolonging agents.",
+        "currentMeds": ["multiple QT-prolonging medications"],
+        "priorResponse": "None yet.",
+        "trueEtiology": "undetermined",
+        "populationFlags": ["qtc_risk"],
+        "discriminators": {
+          "undetermined": ["Insufficient data — safest to work up and use least-harm holding measures"],
+          "delirium": ["Actively screen — common and reversible"],
+          "primary_psych": ["Avoid anchoring without history"]
+        },
+        "teachingPoints": [
+          { "text": "When etiology is undetermined, the safe path is de-escalation, a focused workup, and least-harm measures — not committing to a specific agent. This is a valid, non-penalized choice.", "citationIds": ["richmond2012"] },
+          { "text": "With QT-prolonging medications on board, remember benzodiazepines do not prolong QTc and some antipsychotics (e.g., ziprasidone) carry the highest risk; ECG/threshold action follows local policy.", "citationIds": ["wilson2012"] }
+        ],
+        "citationIds": ["richmond2012", "wilson2012"]
+      }
+    ]
+  }
+}
+;
+  var e=React.createElement, useState=React.useState, useEffect=React.useEffect;
+  var LS={mode:'rp_agit_v1_mode', flags:'rp_flags'};
+  var FACULTY_FEEDBACK_EMAIL=""; /* {{LOCAL: faculty_feedback_email }} */
+  // Least-restrictive ladder (design-aligned). Higher number = more restrictive.
+  var LADDER=[{r:1,t:"Environment"},{r:2,t:"Verbal de-escalation"},{r:3,t:"Offered PRN"},{r:4,t:"Involuntary med"},{r:5,t:"Restraint"}];
+  var RUNG={space_safety:1,env:1,deesc:2,offer_po:3,activate_help:0,sga:3,benzo:3,combo:3,d2_typical:3,treat_cause:1,im_if_danger:4,call_senior:0};
+  function announce(m){try{document.getElementById('live').textContent=m;}catch(e){}}
+
+  function LocalChip(props){var tok=props.token;if(!tok)return null;var set=tok.value!==null&&tok.value!==undefined;
+    return e('span',{className:'localchip'+(set?' set':''),title:tok.label},set?('Local · '+tok.value):('⚠ '+(tok.placeholder||'Confirm locally')));}
+  function FlagButton(props){
+    function onFlag(){var reason=window.prompt('Flag this content — reason + note:');if(reason===null)return;
+      try{var a=JSON.parse(localStorage.getItem(LS.flags)||'[]');a.push({tool:'rp-agitation',v:'0.2.0',ctx:props.ctx||'',reason:reason,at:new Date().toISOString()});localStorage.setItem(LS.flags,JSON.stringify(a));}catch(e){}
+      if(FACULTY_FEEDBACK_EMAIL){var s=encodeURIComponent('[Content flag] rp-agitation v0.2.0');var b=encodeURIComponent('Context: '+(props.ctx||'')+'\n'+reason);window.location.href='mailto:'+FACULTY_FEEDBACK_EMAIL+'?subject='+s+'&body='+b;}
+      else{announce('Flag saved locally.');alert('Flag saved locally. Confirm the faculty feedback email (LOCAL_POLICY) to enable email routing.');}}
+    return e('button',{className:'flag',onClick:onFlag},'⚑ Flag content');
+  }
+  function tokenById(pack,id){var a=(pack.localPolicies||[]).filter(function(t){return t.id===id;});return a[0]||null;}
+  var ALWAYS_SHOW=['note','im_olanzapine_benzo'];
+  function pharmVerdict(choice,scenario){
+    var ctx=[scenario.trueEtiology].concat(scenario.populationFlags||[]);var haz=[],caut=[];
+    if(choice.hazardIf)Object.keys(choice.hazardIf).forEach(function(k){if(ctx.indexOf(k)>=0)haz.push(choice.hazardIf[k]);});
+    if(choice.cautionIf)Object.keys(choice.cautionIf).forEach(function(k){if(ctx.indexOf(k)>=0||ALWAYS_SHOW.indexOf(k)>=0)caut.push(choice.cautionIf[k]);});
+    var level=haz.length?'hazard':(caut.length?'caution':'good');var notes=haz.concat(caut);
+    if(!notes.length){if(choice.id==='treat_cause')notes=['Addressing the underlying cause is often the highest-yield first move.'];
+      else if(choice.id==='im_if_danger')notes=['Reserve parenteral/involuntary routes for imminent danger after de-escalation; follow restraint policy.'];
+      else notes=['Reasonable class-level choice for this presentation — confirm the specific agent/dose against local formulary.'];}
+    return {level:level,notes:notes,hard:haz.length>0};
+  }
+
+  function LadderRail(props){
+    var cur=props.rung||0;
+    return e('div',{className:'rail','aria-label':'Least-restrictive ladder'},
+      e('div',{className:'rlbl'},'Least-restrictive ladder'),
+      LADDER.slice().reverse().map(function(x){
+        var cls='rung'+(x.r<=cur&&cur>0?' reached':'')+(x.r===cur?' current':'')+(x.r===5?' top':'');
+        return e('div',{className:cls,key:x.r}, e('span',{className:'rn'},x.r), e('span',{className:'rt'},x.t));
+      }),
+      e('div',{className:'railnote'},'Climb only as high as the situation requires. “Call your senior” is never the wrong move.'));
+  }
+  function Pills(props){var cur=props.rung||0;
+    return e('div',{className:'pills','aria-hidden':'true'}, LADDER.map(function(x){
+      return e('span',{className:'pill'+(x.r===cur?' current':''),key:x.r}, x.r+' · '+x.t);}));
+  }
+
+  function App(){
+    var s0=useState('loading'),phase=s0[0],setPhase=s0[1];
+    var sp=useState(null),pack=sp[0],setPack=sp[1];
+    var sm=useState((function(){try{return localStorage.getItem(LS.mode)||'guided';}catch(e){return 'guided';}})()),mode=sm[0],setMode=sm[1];
+    var ss=useState(null),scenario=ss[0],setScenario=ss[1];
+    var si=useState(0),step=si[0],setStep=si[1];
+    var sc=useState({}),choices=sc[0],setChoices=sc[1];
+    var sn=useState(false),nudge=sn[0],setNudge=sn[1];
+
+    useEffect(function(){
+      Promise.resolve(PACK_INLINE)
+        .then(function(d){setPack(d);setPhase('home');}).catch(function(){setPhase('error');});
+    },[]);
+    useEffect(function(){document.getElementById('themebtn').onclick=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('cw_theme',c);}catch(e){}};},[]);
+    useEffect(function(){
+      function onKey(ev){if(phase!=='play'||!scenario)return;var n=parseInt(ev.key,10);if(isNaN(n)||n<1)return;var o=currentOptions();if(n>o.length)return;pick(o[n-1]);}
+      document.addEventListener('keydown',onKey);return function(){document.removeEventListener('keydown',onKey);};
+    });
+
+    function setModeP(m){setMode(m);try{localStorage.setItem(LS.mode,m);}catch(e){}}
+    function startPlay(){var list=pack.content.scenarios;var scn=mode==='challenge'?list[Math.floor(Math.random()*list.length)]:list[0];
+      setScenario(scn);setChoices({etiology:null,nonpharm:[],pharm:null,monitoring:[]});setStep(0);setNudge(false);setPhase('play');announce('Scenario loaded. Step 1 of 4: etiology triage.');}
+    function pickScenario(scn){setScenario(scn);setChoices({etiology:null,nonpharm:[],pharm:null,monitoring:[]});setStep(0);setNudge(false);setPhase('play');}
+
+    var STEP_LABELS=['Step 1 · Etiology triage','Step 2 · Non-pharmacologic first','Step 3 · Pharmacologic reasoning','Step 4 · Monitoring & reassessment'];
+    var STEP_Q=['What is most likely driving this agitation?','Before any medication route — what do you do first? (select all that apply)','If pharmacologic management is needed, what is your class-level approach?','What will you monitor and when will you reassess? (select all that apply)'];
+    function currentOptions(){var b=pack.choiceBanks;return step===0?b.etiology:step===1?b.nonpharm:step===2?b.pharmApproach:b.monitoring;}
+    function currentRung(){
+      var ids=[].concat(choices.nonpharm||[]);if(choices.pharm)ids.push(choices.pharm);
+      var mx=0;ids.forEach(function(id){if(RUNG[id]!==undefined&&RUNG[id]>mx)mx=RUNG[id];});return mx;
+    }
+    function pick(opt){setNudge(false);var c=Object.assign({},choices);
+      if(step===0)c.etiology=opt.id;
+      else if(step===1){var a=c.nonpharm.slice();var i=a.indexOf(opt.id);if(i>=0)a.splice(i,1);else a.push(opt.id);c.nonpharm=a;}
+      else if(step===2)c.pharm=opt.id;
+      else{var m=c.monitoring.slice();var j=m.indexOf(opt.id);if(j>=0)m.splice(j,1);else m.push(opt.id);c.monitoring=m;}
+      setChoices(c);}
+    function pickSenior(){setNudge(false);var c=Object.assign({},choices);if(step===0)c.etiology='call_senior';else if(step===2)c.pharm='call_senior';setChoices(c);}
+    function canAdvance(){if(step===0)return !!choices.etiology;if(step===1)return choices.nonpharm.length>0;if(step===2)return !!choices.pharm;return true;}
+    function next(){if(!canAdvance()){setNudge(true);if(step===1)announce('Address de-escalation before pharmacologic options.');return;}
+      if(step<3){setStep(step+1);announce(STEP_LABELS[step+1]);}else{setPhase('trace');announce('Decision trace ready.');}}
+    function back(){if(step>0)setStep(step-1);}
+
+    function optionEl(opt,idx){
+      var selected=step===0?choices.etiology===opt.id:step===1?choices.nonpharm.indexOf(opt.id)>=0:step===2?choices.pharm===opt.id:choices.monitoring.indexOf(opt.id)>=0;
+      var tok=opt.tokenId?tokenById(pack,opt.tokenId):null;
+      return e('button',{key:opt.id,className:'opt'+(selected?' on':''),onClick:function(){pick(opt);},'aria-pressed':selected},
+        e('span',{className:'num'},idx+1),
+        e('span',{className:'lab'},opt.label,tok?e('div',null,e(LocalChip,{token:tok})):null));
+    }
+    function seniorEl(){ // ever-present on decision steps (0 and 2)
+      if(step!==0&&step!==2)return null;
+      var on=(step===0&&choices.etiology==='call_senior')||(step===2&&choices.pharm==='call_senior');
+      return e('button',{className:'senior'+(on?' on':''),onClick:pickSenior,'aria-pressed':on},
+        e('span',{className:'ico'},'☎'),e('span',null,'Call your senior / attending — never the wrong move'));
+    }
+    function guidedReveal(){
+      if(mode!=='guided')return null;
+      if(step===0&&choices.etiology){
+        if(choices.etiology==='call_senior')return e('div',{className:'verdict good'},e('div',{className:'vh'},'✓ ','Calling for help is never wrong'),e('div',null,'Good instinct — escalate early. While help is on the way, keep gathering the driver so your senior arrives to a clear picture.'));
+        var truth=scenario.trueEtiology,disc=scenario.discriminators||{};var v=choices.etiology===truth?'good':'caution';
+        var head=choices.etiology===truth?'Consistent with the discriminating features':(choices.etiology==='undetermined'?'A safe, non-penalized stance':'Worth re-weighing the discriminators');
+        return e('div',{className:'verdict '+v},e('div',{className:'vh'},v==='good'?'✓ ':'△ ',head),
+          e('div',null,choices.etiology==='undetermined'?'When data are insufficient, working it up and using least-harm measures is appropriate.':'Key features pointing to the likely driver: '+((disc[truth]||[]).join('; '))+'.'));
+      }
+      if(step===2&&choices.pharm){
+        if(choices.pharm==='call_senior')return e('div',{className:'verdict good'},e('div',{className:'vh'},'✓ ','Escalating is always appropriate'),e('div',null,'Reaching your senior/attending — especially when unsure or when danger is escalating — is always a correct move.'));
+        var opt=pack.choiceBanks.pharmApproach.filter(function(o){return o.id===choices.pharm;})[0];var vd=pharmVerdict(opt,scenario);
+        return e('div',{className:'verdict '+vd.level},e('div',{className:'vh'},vd.level==='hazard'?'⚠ Hazard ':(vd.level==='caution'?'△ Caution ':'✓ Reasonable '),'— reasoning check'),
+          e('ul',{style:{margin:'4px 0 0',paddingLeft:'1.1em'}},vd.notes.map(function(n,i){return e('li',{key:i},n);})),
+          vd.hard?e('div',{className:'stopnote'},'This is a stereotyped, high-harm error — make sure you can articulate why before proceeding.'):null);
+      }
+      return null;
+    }
+
+    if(phase==='loading')return e('div',{className:'shell'},e('p',null,'Loading trainer…'));
+    if(phase==='error')return e('div',{className:'shell'},e('h1',null,'Agitation Ladder'),
+      e('div',{className:'verdict caution'},'Could not load the content pack. Refresh to retry, or review the Agitation topic page.'),
+      e('button',{className:'btn primary',onClick:function(){window.location.reload();}},'Retry'));
+
+    var header=e('div',null,
+      e('div',{className:'kicker'},'Acute & Safety · Teaching trainer'),
+      e('h1',null,'Agitation Ladder — PRN Decision Trainer'),
+      e('div',{className:'disc teach',role:'note'},'Educational tool for MMC psychiatry residents. It teaches the ',e('b',null,'least-restrictive ladder'),' and hazard-avoidance — not what to order. Agents, doses, routes, and monitoring are ',e('b',null,'local-policy placeholders'),'. Fictional composites — no PHI.'),
+      e('div',{className:'modebar',role:'tablist','aria-label':'Mode'},['guided','challenge','reference'].map(function(m){
+        return e('button',{key:m,role:'tab','aria-selected':mode===m,className:mode===m?'on':'',onClick:function(){setModeP(m);}},m==='guided'?'Guided drill':m==='challenge'?'Challenge':'Learn the ladder');})));
+
+    if(phase==='home'){
+      return e('div',null,header,
+        e('div',{className:'card'},
+          e('p',{className:'sub'},mode==='reference'?'Learn the ladder: the five rungs of least-restrictive management with the local-policy overlays that stay unverified until attested.':mode==='challenge'?'Challenge mode picks a random scenario and holds feedback until the decision trace.':'Guided mode walks one scenario with feedback at each step, tracking your position on the least-restrictive ladder.'),
+          mode==='reference'?e('button',{className:'btn primary',onClick:function(){setPhase('refmap');}},'Open the ladder'):
+            e('div',null,e('button',{className:'btn primary',onClick:startPlay},mode==='challenge'?'Start a random scenario':'Start scenario'),
+              mode==='guided'?e('div',{style:{marginTop:'14px'}},e('div',{className:'steplabel'},'Or pick a scenario'),
+                pack.content.scenarios.map(function(scn){return e('button',{key:scn.id,className:'opt',onClick:function(){pickScenario(scn);}},e('span',{className:'lab'},scn.stem.slice(0,92)+'…'));})):null)),
+        e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},e(FlagButton,{ctx:'home'}),e('span',{className:'cite'},'v0.2.0 · Draft — pending faculty review')));
+    }
+    if(phase==='refmap'){
+      var b=pack.choiceBanks;
+      function grp(title,arr){return e('div',null,e('h3',null,title),e('ul',null,arr.map(function(o){var tok=o.tokenId?tokenById(pack,o.tokenId):null;return e('li',{key:o.id},o.label,tok?e('span',null,' ',e(LocalChip,{token:tok})):null);})));}
+      return e('div',null,header,
+        e('div',{className:'play'},
+          e(LadderRail,{rung:0}),
+          e('div',{className:'card refmap'},
+            e('p',{className:'sub'},'Project BETA sequencing: safety and verbal de-escalation first (≈5–10 min), oral before parenteral, agent choice driven by etiology and special populations. Climb the ladder only as far as the situation requires. Every specific agent/dose/route/interval is a local-policy placeholder.'),
+            grp('A · Etiology triage',b.etiology),grp('B · Non-pharmacologic first',b.nonpharm),
+            grp('C · Pharmacologic approach (class-level)',b.pharmApproach),grp('D · Monitoring & reassessment',b.monitoring),
+            e('div',{className:'pearl'},'The same class (a benzodiazepine) is a hazard in non-withdrawal delirium but first-line in alcohol/sedative withdrawal — which is why etiology comes first.'))),
+        e(FlagButton,{ctx:'refmap'}));
+    }
+    if(phase==='trace'){
+      var rows=[];
+      (function(){var chosen=choices.etiology,truth=scenario.trueEtiology;
+        if(chosen==='call_senior'){rows.push({k:'Etiology',v:'good',choice:'☎ Called your senior',note:'Escalating when unsure is always safe.'});return;}
+        var v=chosen===truth?'good':'caution';var lbl=pack.choiceBanks.etiology.filter(function(o){return o.id===chosen;})[0];
+        rows.push({k:'Etiology',v:v,choice:lbl?lbl.label:'—',note:chosen===truth?'Matched the discriminating features.':(chosen==='undetermined'?'Safe stance when data are insufficient.':'Re-weigh: '+((scenario.discriminators[truth]||[]).join('; ')))});})();
+      (function(){var picks=choices.nonpharm.map(function(id){return pack.choiceBanks.nonpharm.filter(function(o){return o.id===id;})[0].label;});
+        rows.push({k:'Non-pharm first',v:'good',choice:picks.join(', ')||'—',note:'De-escalation-first sequencing (Project BETA).'});})();
+      (function(){if(choices.pharm==='call_senior'){rows.push({k:'Pharmacologic',v:'good',choice:'☎ Called your senior',note:'Escalation is always an acceptable move.'});return;}
+        var opt=pack.choiceBanks.pharmApproach.filter(function(o){return o.id===choices.pharm;})[0];var vd=pharmVerdict(opt,scenario);
+        rows.push({k:'Pharmacologic',v:vd.level,choice:opt.label,note:vd.notes.join(' ')});})();
+      (function(){var picks=choices.monitoring.map(function(id){return pack.choiceBanks.monitoring.filter(function(o){return o.id===id;})[0].label;});
+        rows.push({k:'Monitoring',v:choices.monitoring.length?'good':'caution',choice:picks.join(', ')||'—',note:choices.monitoring.length?'Post-sedation monitoring selected.':'Always monitor after sedating an agitated patient.'});})();
+      var cites=(scenario.citationIds||[]).map(function(id){return (pack.citations.filter(function(c){return c.id===id;})[0]||{}).ref;}).filter(Boolean);
+      var finalRung=currentRung();
+      return e('div',null,header,
+        e('div',{className:'play'},
+          e(LadderRail,{rung:finalRung}),
+          e('div',{className:'card'},
+            e('div',{className:'steplabel'},'Decision trace'),
+            e('div',{className:'trace'},rows.map(function(r,i){return e('div',{className:'node',key:i},
+              e('div',{className:'marker m '+r.v},r.v==='good'?'✓':r.v==='hazard'?'!':'△'),
+              e('div',{className:'nodecard'},e('div',{className:'steplabel'},r.k),e('div',null,e('b',null,r.choice)),e('div',{className:'cite'},r.note)));})),
+            e('div',{className:'pearl'},'Highest rung reached: ',e('b',null,finalRung?('Rung '+finalRung+' · '+(LADDER[finalRung-1]||{}).t):'none — managed without escalating'),'. Aim for the lowest rung that keeps everyone safe.'),
+            e('div',{className:'pearl'},e('b',null,'Teaching points'),e('ul',{style:{margin:'6px 0 0',paddingLeft:'1.1em'}},(scenario.teachingPoints||[]).map(function(tp,i){return e('li',{key:i},tp.text);}))),
+            cites.length?e('details',{className:'cites'},e('summary',null,'Citations'),e('ul',null,cites.map(function(c,i){return e('li',{key:i,className:'cite'},c);}))):null)),
+        e('div',{className:'btnrow'},e('button',{className:'btn primary',onClick:startPlay},mode==='challenge'?'Another random scenario':'Restart'),
+          e('button',{className:'btn',onClick:function(){setPhase('home');}},'Back to start'),e(FlagButton,{ctx:'trace:'+scenario.id})));
+    }
+
+    // phase play
+    var opts=currentOptions();var rung=currentRung();
+    return e('div',null,header,
+      e('div',{className:'play'},
+        e(LadderRail,{rung:rung}),
+        e('div',null,
+          e(Pills,{rung:rung}),
+          e('div',{className:'card'},
+            e('div',{className:'steplabel'},'Scenario'),
+            e('p',{style:{margin:'0 0 6px'}},scenario.stem),
+            e('div',{className:'stemgrid'},
+              e('span',{className:'vital'},e('b',null,'HR '),scenario.vitals.hr),
+              e('span',{className:'vital'},e('b',null,'BP '),scenario.vitals.bp),
+              e('span',{className:'vital'},e('b',null,'SpO₂ '),scenario.vitals.spo2+'%'),
+              e('span',{className:'vital'},e('b',null,'Temp '),scenario.vitals.temp)),
+            e('div',{className:'metarow'},e('span',null,scenario.history),e('span',null,'Meds: '+scenario.currentMeds.join(', ')))),
+          e('div',{className:'card'},
+            e('div',{className:'steplabel'},STEP_LABELS[step]),
+            e('div',{className:'qtext'},STEP_Q[step]),
+            opts.map(function(o,i){return optionEl(o,i);}),
+            seniorEl(),
+            nudge?e('div',{className:'nudge'},step===1?'Address de-escalation / a non-pharmacologic step before moving to medications.':'Make a selection to continue.'):null,
+            guidedReveal(),
+            e('div',{className:'btnrow'},step>0?e('button',{className:'btn',onClick:back},'Back'):null,
+              e('button',{className:'btn primary',onClick:next,disabled:!canAdvance()&&step!==1},step<3?'Next':'See decision trace'))))),
+      e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'6px'}},
+        e('span',{className:'cite'},'Step '+(step+1)+' of 4 · '+mode),e(FlagButton,{ctx:'play:'+scenario.id+':step'+step})));
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+})();
+</script>
+</body>
+</html>

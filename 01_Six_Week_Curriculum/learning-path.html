@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Learning Path — MS3 Inpatient Psychiatry</title>
+<style>
+  :root{
+    --bg:#f6f3ee; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a; --warn:#7a6234; --warn-bg:#f5efe2;
+    --surface2:#faf6f0; --success:#357160; --success-light:#e7f1ed; --danger:#a34132; --danger-light:#fbece9; --info:#41618a; --info-light:#eaf0f6; --warning:#7a6234; --warning-light:#f5efe2;
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.5}
+  .wrap{max-width:760px;margin:0 auto;padding:18px 16px 80px}
+  .topline{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:700;font-size:19px;flex:0 0 auto}
+  .topline .ttl{font-family:var(--font-head);font-size:1.1rem;color:var(--primary-dark);font-weight:700}
+  .topline .by{font-size:.74rem;color:var(--text-light)}
+  .thmbtn{margin-left:auto;width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;line-height:1;flex:0 0 auto}
+  .thmbtn:hover{border-color:var(--accent);color:var(--accent-dark)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 1px 2px rgba(59,51,44,.04);margin-bottom:14px}
+  .head{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .ring{width:74px;height:74px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .ring>div{width:56px;height:56px;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .pc{font-family:var(--font-head);font-weight:700;font-size:1.15rem;color:var(--accent-dark);line-height:1}
+  .ring .lb{font-size:.56rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-light)}
+  .wk{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .wk b{font-family:var(--font-head);font-size:1.25rem}
+  select{font:inherit;font-family:var(--font-head);font-size:1.2rem;font-weight:700;color:var(--primary-dark);background:var(--primary-light);border:1px solid #e4d6cd;border-radius:8px;padding:1px 6px;cursor:pointer}
+  .wktitle{font-size:.85rem;color:var(--text-mid);margin-top:3px}
+  .badges{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .badge{font-size:.74rem;background:#fff;border:1px solid #ebe5da;border-radius:999px;padding:3px 10px}
+  .badge b{color:var(--accent-dark)}
+  .btn{border:none;border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+  .qbtn{display:block;width:100%;text-align:left;background:#fff;border:1px solid #ebe5da;border-radius:12px;padding:13px 15px;cursor:pointer;font:inherit;margin-top:9px}
+  .qbtn:hover{border-color:var(--accent)}
+  .qbtn .k{font-size:.7rem;color:var(--text-light);font-weight:700}
+  .qbtn .v{font-family:var(--font-head);font-size:1.02rem;font-weight:600;margin-top:1px}
+  .deckbtn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin-top:12px;background:linear-gradient(135deg,#1e5248,#2a6b5e);color:#eaf3f0;border:none;border-radius:14px;padding:15px;cursor:pointer;font:inherit;font-weight:600}
+  .quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .chip{font-family:inherit;font-size:.78rem;background:#fff;border:1px solid #ebe5da;border-radius:999px;padding:7px 12px;cursor:pointer;color:var(--text);text-decoration:none;display:inline-block}
+  .chip:hover{border-color:var(--accent)}
+  .pathlabel{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light);margin:22px 4px 8px}
+  .week{border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:9px;overflow:hidden}
+  .whead{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;cursor:pointer;font:inherit;padding:12px 14px}
+  .wn{width:27px;height:27px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid var(--primary);color:var(--primary-dark);background:#fff}
+  .wn.done{background:var(--accent);border-color:var(--accent);color:#fff}
+  .whead .wt{flex:1;font-weight:600}
+  .whead .wc{font-size:.76rem;color:var(--text-light)}
+  .items{padding:2px 14px 12px 14px;border-top:1px solid #f1ebe1}
+  .it{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #f4efe6}
+  .it:last-child{border-bottom:none}
+  .ck{width:21px;height:21px;border:2px solid var(--accent);border-radius:6px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;font-size:.78rem}
+  .ck.on{background:var(--accent)}
+  .il{flex:1;text-align:left;background:none;border:none;cursor:pointer;font:inherit;min-width:0;padding:2px 0}
+  .il .nm{font-size:.95rem}
+  .tag{font-size:.6rem;font-weight:700;border-radius:999px;padding:1px 7px;margin-left:7px;vertical-align:middle}
+  .tag.tool{background:var(--accent-light);color:var(--accent-dark);border:1px solid #cfe1db}
+  .tag.read{background:var(--primary-light);color:var(--primary-dark)}
+  .tag.recall{background:#efe7f3;color:#6b4d7a}
+  .disc{font-size:.78rem;color:var(--text-light);border-top:1px solid var(--border);margin-top:22px;padding-top:12px}
+  .fac{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;color:#41618a;text-decoration:none;background:#eef3f7;border:1px solid #d4e0ec;border-radius:8px;padding:6px 11px;margin-top:10px}
+  /* deck overlay */
+  .ov{position:fixed;inset:0;z-index:60;background:rgba(51,41,35,.46);backdrop-filter:blur(4px);display:flex;justify-content:center;align-items:center;padding:16px}
+  .deck{width:min(540px,100%);background:var(--surface);border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .dhead{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #efe7dc;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
+  .dx{width:28px;height:28px;border-radius:8px;border:1px solid #e4d8c9;background:#f1ece6;color:var(--text-mid);cursor:pointer;font-size:16px}
+  .dbody{padding:22px 20px;min-height:200px;display:flex;flex-direction:column;gap:12px;justify-content:center}
+  .dtag{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+  .dq{font-family:var(--font-head);font-size:1.3rem;font-weight:600;line-height:1.32}
+  .da{font-size:1rem;line-height:1.5;color:var(--text-mid);background:var(--accent-light);border-radius:10px;padding:12px 14px}
+  .dfoot{display:flex;gap:10px;justify-content:flex-end;padding:14px 16px;border-top:1px solid #efe7dc}
+  .btn-primary{background:var(--primary-dark);color:#fff;padding:9px 16px}
+  .btn-ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border);padding:9px 16px}
+  /* situation-first home (Slice 3) */
+  .hero{font-family:var(--font-head);font-size:1.5rem;font-weight:600;color:var(--text);margin:6px 2px 12px;line-height:1.25}
+  .searchpill{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:10px 15px;margin-bottom:18px}
+  .searchpill svg{flex:0 0 auto;color:var(--text-light)}
+  .searchpill input{flex:1;min-width:0;border:none;background:transparent;font:inherit;font-size:.95rem;color:var(--text);outline:none}
+  .searchpill .kbd{font-size:.72rem;color:var(--text-light);border:1px solid var(--border);border-radius:6px;padding:2px 7px;white-space:nowrap}
+  .onunit{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light);margin:0 4px 9px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:10px;margin-bottom:8px}
+  .tile{display:flex;flex-direction:column;gap:9px;align-items:flex-start;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px;cursor:pointer;font:inherit;color:var(--text)}
+  .tile:hover{border-color:var(--accent)}
+  .tile .ic{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .tile .tt{font-weight:600;font-size:.95rem;line-height:1.2}
+  .tile .cat{font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .seeall{display:inline-block;margin:4px 4px 18px;font-size:.83rem;color:var(--accent-dark);background:none;border:none;cursor:pointer;font:inherit;text-decoration:underline}
+  .weekbars{display:flex;gap:5px;margin-top:12px}
+  .weekbars i{height:5px;border-radius:3px;flex:1;background:var(--border)}
+  .weekbars i.done{background:var(--accent)}
+  .weekbars i.cur{background:var(--primary)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+var e=React.createElement, useState=React.useState, useEffect=React.useEffect;
+var KEY="cw_home_v1";
+var WEEKS=[
+ {n:1,title:"Foundations & orientation",items:[
+   {id:"welcome",label:"Welcome & orientation",kind:"read",target:"welcome.md"},
+   {id:"pg_interview",label:"Interview & MSE pocket guide",kind:"read",target:"pg_interview.md"},
+   {id:"doc_oral",label:"Documentation & presenting",kind:"read",target:"doc_oral.md"},
+   {id:"mse",label:"MSE builder",kind:"tool",target:"mse.html"},
+   {id:"recall",label:"Test yourself",kind:"recall"}]},
+ {n:2,title:"Mood, psychosis & pharmacology",items:[
+   {id:"mood",label:"Mood disorders",kind:"read",target:"t_mood.md"},
+   {id:"psychosis",label:"Psychosis",kind:"read",target:"t_psychosis.md"},
+   {id:"pharm",label:"Psychopharmacology primer",kind:"read",target:"psychopharm_primer.md"},
+   {id:"ddx",label:"Differential Dx scaffolds",kind:"read",target:"ddx.md"},
+   {id:"recall",label:"Test yourself",kind:"recall"}]},
+ {n:3,title:"Psychotherapy & personality",items:[
+   {id:"personality",label:"Personality",kind:"read",target:"t_personality.md"},
+   {id:"tx",label:"Treatment basics",kind:"read",target:"exp_tx.md"},
+   {id:"pg_suicide",label:"Suicide risk & safety pocket guide",kind:"read",target:"pg_suicide.md"},
+   {id:"reflection",label:"Reflection & identity",kind:"tool",target:"reflection.html"},
+   {id:"recall",label:"Test yourself",kind:"recall"}]},
+ {n:4,title:"Family & systems",items:[
+   {id:"family",label:"Family & discharge",kind:"read",target:"exp_family.md"},
+   {id:"modalities",label:"Family therapy modalities",kind:"read",target:"family_modalities.md"},
+   {id:"week4",label:"Week 4 plan",kind:"read",target:"week4.md"},
+   {id:"recall",label:"Test yourself",kind:"recall"}]},
+ {n:5,title:"Acute & emergency",items:[
+   {id:"agitation",label:"Agitation & restraint",kind:"read",target:"agitation.md"},
+   {id:"delirium",label:"Delirium",kind:"read",target:"delirium.md"},
+   {id:"catatonia",label:"Catatonia",kind:"read",target:"catatonia.md"},
+   {id:"cssrs",label:"C-SSRS screener",kind:"tool",target:"cssrs.html"},
+   {id:"withdrawal",label:"Withdrawal: CIWA-Ar / COWS",kind:"tool",target:"withdrawal.html"},
+   {id:"capacity",label:"Decisional capacity",kind:"tool",target:"capacity.html"},
+   {id:"recall",label:"Test yourself",kind:"recall"}]},
+ {n:6,title:"Integration & exam",items:[
+   {id:"shelf",label:"Shelf review guide",kind:"read",target:"shelf.md"},
+   {id:"osce",label:"OSCE stations",kind:"read",target:"osce.md"},
+   {id:"cases",label:"Practice cases",kind:"read",target:"cases.md"},
+   {id:"rounding",label:"Treatment team rounding prep",kind:"tool",target:"oral.html"},
+   {id:"recall",label:"Final review",kind:"recall"}]}
+];
+var CARDS=[
+ {tag:"Mood",q:"Before starting an antidepressant for depression, what must you screen for?",a:"A past manic or hypomanic episode — an antidepressant can destabilize an unrecognized bipolar patient. Screen for bipolarity (collateral + MDQ) first."},
+ {tag:"Delirium",q:"New confusion in a hospitalized patient is ___ until proven otherwise.",a:"Delirium — acute, fluctuating, inattentive. Work up the medical cause before anchoring on a psychiatric one."},
+ {tag:"Pharm",q:"Which mood stabilizer carries an anti-suicidal effect and the strongest maintenance evidence?",a:"Lithium (Cipriani 2013 for anti-suicidal effect; BALANCE for maintenance). Monitor levels, renal and thyroid function."},
+ {tag:"Capacity",q:"A patient refuses treatment. Does refusal alone mean they lack capacity?",a:"No. Assess the four abilities — choice, understanding, appreciation, reasoning. Capacity is decision- and time-specific."},
+ {tag:"Agitation",q:"Before reaching for an antipsychotic in an agitated patient, what should you consider?",a:"Delirium, withdrawal, pain, akathisia (and trauma). Treat the cause, not just the behavior."},
+ {tag:"Mood",q:"Single highest-yield move to separate bipolar from unipolar depression?",a:"Obtain collateral and specifically ask about a past manic or hypomanic episode."},
+ {tag:"Catatonia",q:"Motionless, mute, holding a posture, eating little — what must be on your differential?",a:"Catatonia. Recognize and escalate; describe the motor signs objectively rather than calling it noncompliance."},
+ {tag:"Milieu",q:"Why is protecting sleep treatment, not housekeeping, on the unit?",a:"Sleep loss worsens depression and can precipitate mania — protecting circadian rhythm helps."}
+];
+var SAFETY=[
+ {label:"Agitation",kind:"read",target:"agitation.md"},{label:"Suicide · C-SSRS",kind:"tool",target:"cssrs.html"},
+ {label:"Capacity",kind:"tool",target:"capacity.html"},{label:"Withdrawal",kind:"tool",target:"withdrawal.html"},
+ {label:"Violence · FRST",kind:"tool",target:"violence.html"},{label:"Delirium",kind:"read",target:"delirium.md"},
+ {label:"Catatonia",kind:"read",target:"catatonia.md"},{label:"Catatonia · BFCRS",kind:"tool",target:"bfcrs.html"}
+];
+var SITUATIONS=[
+ {t:"New admission",cat:"Present · tool",tone:"primary",kind:"tool",target:"oral.html",icon:"admit"},
+ {t:"Suicide risk",cat:"C-SSRS · tool",tone:"accent",kind:"tool",target:"cssrs.html",icon:"shield"},
+ {t:"Agitated patient",cat:"De-escalate · 1-pager",tone:"danger",kind:"read",target:"agitation.md",icon:"alert"},
+ {t:"Capacity question",cat:"Assess · tool",tone:"info",kind:"tool",target:"capacity.html",icon:"scale"},
+ {t:"Withdrawal",cat:"CIWA / COWS · tool",tone:"warning",kind:"tool",target:"withdrawal.html",icon:"drop"},
+ {t:"Catatonia",cat:"Recognize · 1-pager",tone:"neutral",kind:"read",target:"catatonia.md",icon:"person"},
+ {t:"Confused / fluctuating",cat:"Delirium · workup",tone:"info",kind:"read",target:"delirium.md",icon:"brain"},
+ {t:"New psychosis",cat:"First episode · workup",tone:"accent",kind:"read",target:"t_psychosis.md",icon:"spark"}
+];
+var IPATHS={
+ admit:["M12 6v12","M6 12h12"],
+ shield:["M12 3l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V6z"],
+ alert:["M12 4l9 16H3z","M12 10v4","M12 17h.01"],
+ scale:["M12 4v16","M6 8h12","M8 8l-3 6h6z","M16 8l3 6h-6z"],
+ drop:["M12 4c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"],
+ person:["M12 8a3 3 0 100-6 3 3 0 000 6z","M5 21c0-4 3-7 7-7s7 3 7 7"],
+ brain:["M12 4v16","M9 5a3 3 0 00-3 3 3 3 0 00-1 4 3 3 0 002 5","M15 5a3 3 0 013 3 3 3 0 011 4 3 3 0 01-2 5"],
+ spark:["M12 5l1.6 4.8L18 11l-4.4 1.2L12 17l-1.6-4.8L6 11l4.4-1.2z"]
+};
+function ICON(n){var ps=IPATHS[n]||IPATHS.spark;return e("svg",{viewBox:"0 0 24 24",width:19,height:19,fill:"none",stroke:"currentColor",strokeWidth:1.9,strokeLinecap:"round",strokeLinejoin:"round"},ps.map(function(d,i){return e("path",{key:i,d:d});}));}
+function toneColors(t){
+ if(t==="primary")return {bg:"var(--primary-light)",fg:"var(--primary-dark)"};
+ if(t==="accent")return {bg:"var(--accent-light)",fg:"var(--accent-dark)"};
+ if(t==="danger")return {bg:"var(--danger-light)",fg:"var(--danger)"};
+ if(t==="info")return {bg:"var(--info-light)",fg:"var(--info)"};
+ if(t==="warning")return {bg:"var(--warning-light)",fg:"var(--warning)"};
+ return {bg:"var(--surface2)",fg:"var(--text-mid)"};
+}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(_){return {}}}
+function save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(_){}}
+function dstr(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+var framed=(window.self!==window.top);
+function openRead(t){ if(framed){try{window.parent.postMessage({type:"openPage",f:t},"*");return;}catch(_){}} window.open("../index.html?page="+encodeURIComponent(t),"_blank","noopener"); }
+function openTool(t){ if(framed){try{window.parent.postMessage({type:"openPage",f:t},"*");return;}catch(_){}} window.open(t,"_blank","noopener"); }
+function srsDue(){ try{ var s=JSON.parse(localStorage.getItem("cw_srs_v1")); if(!s||!s.cards) return null; var now=Date.now(),n=0,seen=0; for(var k in s.cards){ seen++; if(s.cards[k].due<=now)n++; } return {due:n,started:seen>0}; }catch(_){ return null; } }
+function srsLabel(){ var d=srsDue(); if(!d||!d.started) return "🎯 Spaced repetition — start"; return d.due>0? ("🎯 Spaced repetition — "+d.due+" due") : "🎯 Spaced repetition — caught up ✓"; }
+function goLibrary(){ if(framed){try{window.parent.postMessage({type:"openLibrary"},"*");return;}catch(_){}} window.open("../index.html","_blank","noopener"); }
+function doSearch(q){ q=(q||"").trim(); if(!q) return; if(framed){try{window.parent.postMessage({type:"search",q:q},"*");return;}catch(_){}} window.open("../index.html","_blank","noopener"); }
+
+function App(){
+  var st=useState(load()),store=st[0],setStore=st[1];
+  var cw=useState(store.currentWeek||1),week=cw[0],setWeek=cw[1];
+  var ex=useState(store.currentWeek||1),exp=ex[0],setExp=ex[1];
+  var ov=useState(false),deckOpen=ov[0],setDeckOpen=ov[1];
+  var di=useState(0),idx=di[0],setIdx=di[1];
+  var fl=useState(false),flip=fl[0],setFlip=fl[1];
+  var sq=useState(""),query=sq[0],setQuery=sq[1];
+  var thm=useState((document.documentElement.getAttribute("data-theme")==="dark")?"dark":"light"),theme=thm[0],setTheme=thm[1];
+  useEffect(function(){ function onMsg(e){ if(e&&e.data&&e.data.type==="theme"&&(e.data.mode==="dark"||e.data.mode==="light")){ document.documentElement.setAttribute("data-theme",e.data.mode); setTheme(e.data.mode); } } window.addEventListener("message",onMsg); return function(){ window.removeEventListener("message",onMsg); }; },[]);
+  function toggleTheme(){ var nx=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"; document.documentElement.setAttribute("data-theme",nx); try{localStorage.setItem("cw_theme",nx);}catch(_){ } setTheme(nx); if(framed){ try{window.parent.postMessage({type:"theme",mode:nx},"*");}catch(_){ } } }
+
+  // streak bookkeeping on mount
+  useEffect(function(){
+    var o=load(); var today=dstr(new Date()); var y=new Date(Date.now()-86400000); var yest=dstr(y);
+    if(o.lastVisit!==today){
+      o.streak = (o.lastVisit===yest? (o.streak||0)+1 : 1);
+      o.lastVisit=today; save(o); setStore(o);
+    }
+  },[]);
+  function persist(o){save(o);setStore(Object.assign({},o));}
+  function prog(){return store.progress||{};}
+  function isDone(w,id){return !!prog()[("w"+w+":"+id)];}
+  function toggle(w,id){var o=load();o.progress=o.progress||{};var k="w"+w+":"+id;o.progress[k]=!o.progress[k];persist(o);}
+  function coreItems(w){return w.items.filter(function(i){return i.kind!=="tool";});}
+  function weekDone(w){var c=coreItems(w);return c.filter(function(i){return isDone(w.n,i.id);}).length;}
+  function weekTotal(w){return coreItems(w).length;}
+  var totalCore=0,doneCore=0; WEEKS.forEach(function(w){totalCore+=weekTotal(w);doneCore+=weekDone(w);});
+  var pct=totalCore?Math.round(100*doneCore/totalCore):0;
+  var wk=WEEKS[week-1];
+  var cont=coreItems(wk).filter(function(i){return !isDone(wk.n,i.id);})[0];
+
+  function openItem(w,it){
+    if(it.kind==="recall"){ setIdx(0);setFlip(false);setDeckOpen(true); }
+    else if(it.kind==="tool"){ openTool(it.target); }
+    else { openRead(it.target); }
+  }
+  function deckNext(){
+    if(idx+1<CARDS.length){ setIdx(idx+1); setFlip(false); }
+    else { var o=load(); o.reviewed=(o.reviewed||0)+CARDS.length; persist(o); setDeckOpen(false); }
+  }
+
+  var ring=e("div",{className:"ring",style:{background:"conic-gradient(var(--accent) "+pct+"%, var(--primary-light) 0)"}},
+    e("div",null,e("div",{className:"pc"},pct+"%"),e("div",{className:"lb"},"core")));
+
+  return e("div",{className:"wrap"},
+    e("div",{className:"topline"},
+      e("div",{className:"logo"},"ψ"),
+      e("div",null,e("div",{className:"ttl"},"Inpatient Psychiatry — Learning Path"),e("div",{className:"by"},"MS3 Clerkship · Joshua Moss, MD")),e("button",{className:"thmbtn",onClick:toggleTheme,title:"Toggle dark mode","aria-label":"Toggle dark mode"},theme==="dark"?"☀":"☾")),
+
+    e("div",{className:"hero"},"What do you need right now?"),
+    e("div",{className:"searchpill"},
+      e("svg",{viewBox:"0 0 24 24",width:18,height:18,fill:"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round"},e("circle",{cx:11,cy:11,r:7}),e("path",{d:"M21 21l-4-4"})),
+      e("input",{type:"search",placeholder:"Search a symptom, drug, or task…",value:query,
+        onChange:function(ev){setQuery(ev.target.value)},
+        onKeyDown:function(ev){if(ev.key==="Enter"){doSearch(query);}}}),
+      e("span",{className:"kbd"},"↵")),
+    e("div",{className:"onunit"},"On the unit"),
+    e("div",{className:"grid"}, SITUATIONS.map(function(s){
+      var tc=toneColors(s.tone);
+      return e("button",{className:"tile",key:s.t,onClick:function(){ s.kind==="tool"?openTool(s.target):openRead(s.target); }},
+        e("span",{className:"ic",style:{background:tc.bg,color:tc.fg}}, ICON(s.icon)),
+        e("span",{className:"tt"}, s.t),
+        e("span",{className:"cat",style:{color:tc.fg}}, s.cat));
+    })),
+    e("button",{className:"seeall",onClick:function(){openTool("decision-aids.html")}},"Visual decision aids →"),
+
+    e("div",{className:"card"},
+      e("div",{className:"head"},
+        ring,
+        e("div",null,
+          e("div",{className:"wk"},e("b",null,"Week"),
+            e("select",{value:week,onChange:function(ev){var v=+ev.target.value;setWeek(v);setExp(v);var o=load();o.currentWeek=v;persist(o);}},
+              WEEKS.map(function(w){return e("option",{key:w.n,value:w.n},w.n);}))),
+          e("div",{className:"wktitle"},wk.title),
+          e("div",{className:"badges"},
+            e("span",{className:"badge"},e("b",null,store.streak||1),"-day streak"),
+            e("span",{className:"badge"},e("b",null,store.reviewed||0)," cards reviewed")))),
+      e("div",{className:"weekbars"}, WEEKS.map(function(w){var d=weekDone(w),t=weekTotal(w);var full=t>0&&d>=t;var cur=w.n===week;return e("i",{key:w.n,className:full?"done":(cur?"cur":""),title:"Week "+w.n+" · "+d+"/"+t});})),
+      cont? e("button",{className:"qbtn",onClick:function(){openItem(wk,cont)}},
+        e("div",{className:"k"},"Week "+week+" · pick up where you left off"),
+        e("div",{className:"v"},cont.label+" →")) : e("div",{className:"qbtn",style:{cursor:"default"}},
+        e("div",{className:"k"},"Week "+week),e("div",{className:"v"},"All core items checked ✓")),
+      e("button",{className:"deckbtn",onClick:function(){openTool("review.html");}},
+        e("span",null, srsLabel()),e("span",null,"→")),
+      e("div",{className:"quick"},
+        e("a",{className:"chip",href:"active-recall.html",target:"_blank",rel:"noopener"},"Full quiz bank"),
+        e("button",{className:"chip",onClick:function(){openRead("landmark_trials.md")}},"Landmark audio"),
+        e("button",{className:"chip",onClick:goLibrary},"Browse full library / search"))
+    ),
+
+    e("div",{className:"pathlabel"},"The six-week path · tap a week"),
+    WEEKS.map(function(w){
+      var open=exp===w.n; var d=weekDone(w),t=weekTotal(w); var full=t>0&&d>=t;
+      return e("div",{className:"week",key:w.n},
+        e("button",{className:"whead",onClick:function(){setExp(open?0:w.n)}},
+          e("span",{className:"wn"+(full?" done":"")}, full?"✓":w.n),
+          e("span",{className:"wt"},"Week "+w.n+" — "+w.title),
+          e("span",{className:"wc"},d+"/"+t)),
+        open? e("div",{className:"items"}, w.items.map(function(it){
+          var done=isDone(w.n,it.id);
+          return e("div",{className:"it",key:it.id},
+            e("div",{className:"ck"+(done?" on":""),onClick:function(){toggle(w.n,it.id)}}, done?"✓":""),
+            e("button",{className:"il",onClick:function(){openItem(w,it)}},
+              e("span",{className:"nm"},it.label),
+              e("span",{className:"tag "+it.kind}, it.kind==="tool"?"optional tool":(it.kind==="recall"?"quiz":"read"))));
+        })) : null);
+    }),
+
+    e("div",{className:"pathlabel"},"Safety quick-reach"),
+    e("div",{className:"quick"}, SAFETY.map(function(s){
+      return e("button",{className:"chip",key:s.label,onClick:function(){ s.kind==="tool"?openTool(s.target):openRead(s.target); }}, s.label);
+    })),
+
+    e("div",{className:"disc"},
+      e("a",{className:"fac",href:"review-attest.html",target:"_blank",rel:"noopener"},"Faculty: Review & Attest"),
+      e("div",{style:{marginTop:"10px"}},"A suggested path, not a checklist you must complete. The tools are optional aids — use the ones that help. Progress and streak are saved only in this browser. Joshua Moss, MD | Psychiatrist")),
+
+    deckOpen? e("div",{className:"ov",onClick:function(ev){if(ev.target.className==="ov")setDeckOpen(false)}},
+      e("div",{className:"deck"},
+        e("div",{className:"dhead"},e("span",null,"Daily review · "+(idx+1)+" / "+CARDS.length),
+          e("button",{className:"dx",onClick:function(){setDeckOpen(false)}},"×")),
+        e("div",{className:"dbody"},
+          e("div",{className:"dtag"},CARDS[idx].tag),
+          e("div",{className:"dq"},CARDS[idx].q),
+          flip? e("div",{className:"da"},CARDS[idx].a):null),
+        e("div",{className:"dfoot"},
+          !flip? e("button",{className:"btn btn-primary",onClick:function(){setFlip(true)}},"Show answer")
+               : e("button",{className:"btn btn-primary",onClick:deckNext}, idx+1<CARDS.length?"Next card":"Done ✓"))))
+      : null
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(e(App));
+</script>
+</body>
+</html>

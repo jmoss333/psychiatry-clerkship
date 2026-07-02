@@ -1,0 +1,470 @@
+
+
+
+Inpatient Psychiatric Management of Borderline Personality Disorder and Severe Personality Pathology: A Comprehensive Evidence Review
+
+
+---
+
+1. Scope and Framing
+
+
+This review synthesizes the evidence base for managing patients with borderline personality disorder (BPD) and other severe personality pathology on inpatient psychiatric units. The focus is on practical inpatient management — when to admit, how to structure the admission, what to do (and not do) pharmacologically and psychotherapeutically, and how to discharge safely. The evidence draws from Cochrane systematic reviews, major guideline statements (NICE CG78, APA 2001/2010, Lancet 2021 seminar, JAMA 2023 review), landmark RCTs, and consensus frameworks. BPD constitutes approximately 20% of psychiatric hospital admissions and outpatient referrals, making competent management a core skill for every inpatient psychiatrist.[1]
+
+---
+
+2. Indications and Contraindications for Hospitalization
+
+
+When to Admit
+
+
+All major guidelines converge on a narrow set of indications for inpatient admission:[2][3]
+
+- Confirmed suicidal intent with a plan and inability to contract for safety in the community
+
+- Life-threatening self-injury or serious suicide attempt requiring medical stabilization
+
+- Acute psychotic episodes (transient, stress-related paranoid ideation or severe dissociation) that impair reality testing
+
+- Extreme agitation or anxiety unmanageable in outpatient settings
+
+- Serious attacks on others or imminent danger to third parties
+
+- Inability to access or tolerate outpatient treatment when day-hospital or residential alternatives are unavailable[4]
+
+The critical clinical distinction is between suicide attempts, non-suicidal self-injury (NSSI), and high-risk behaviors — these must be differentiated before any admission decision.[2]
+
+When Not to Admit
+
+
+Expert consensus and guideline recommendations are equally clear about contraindications:[2][3][5]
+
+- NSSI without suicidal intent — inpatient crisis intervention should not be initiated for non-life-threatening self-injury
+
+- Chronic suicidality without acute escalation — recurrent suicidal ideation in the context of ongoing outpatient treatment is generally better managed with crisis planning and outpatient intensification
+
+- Repeated serial hospitalizations — inconsistent treatment histories are associated with suicide attempts and completed suicides; frequent admissions can disrupt longer-term outpatient therapies[2]
+
+- Behavioral escalation aimed at obtaining admission — admitting in response to escalating threats without genuine acute risk reinforces maladaptive contingencies
+
+Outpatient crisis management is the preferred default whenever feasible. The Lancet 2021 seminar explicitly states: "Offer crisis intervention on an outpatient basis whenever possible".[2]
+
+---
+
+3. The Risk of Iatrogenic Harm
+
+
+The Widely Held Concern
+
+
+The belief that hospitalization causes regression, reinforces maladaptive behaviors, and creates institutional dependency in BPD patients is pervasive in psychiatric training. This concern has shaped decades of clinical practice, but the empirical evidence directly testing this hypothesis is surprisingly thin.[6]
+
+What the Evidence Actually Shows
+
+
+The most direct empirical examination is the Fowler et al. (2018) naturalistic longitudinal study comparing 245 BPD inpatients with 220 matched reference inpatients during extended treatment. Large effect-size improvements were observed in depression, anxiety, suicidal ideation, and functional disability (Cohen's d ≥ 1.0). Clinical deterioration was rare (≤1.1% on any outcome), with no difference from the non-BPD cohort. The authors concluded there was "no empirical support" for the assertion that extended inpatient care leads to deterioration in BPD.[6]
+
+Chen et al. (2025) found that BPD-positive patients on an acute inpatient unit reported significantly greater improvements in anxiety, depression, and general psychiatric severity compared to BPD-negative patients during short-term hospitalization.[7]
+
+Where Iatrogenic Harm Is Documented
+
+
+The most tangible iatrogenic risk is medication escalation during hospitalization. A study of 569 BPD patients at a tertiary care unit found that the odds of being prescribed antidepressants, antipsychotics, mood stabilizers, hypnotics, or anxiolytics were all higher at discharge than at admission (incidence rate ratio 1.9 for total psychotropic prescriptions).[8] This is particularly concerning given that no medication class has been consistently effective for BPD core symptoms.[3][9]
+
+A meta-synthesis of patient experiences (Stapleton & Wright, 2019) identified negative elements including lack of staff contact, negative staff attitudes, staff's lack of BPD knowledge, coercive involuntary admission, and poor discharge planning.[10] These process failures — rather than hospitalization per se — appear to drive negative outcomes.
+
+---
+
+4. Brief Admissions vs. Prolonged Admissions
+
+
+Guideline Consensus: Brief, Goal-Directed Admissions
+
+
+The dominant position across all major guidelines favors brief crisis admissions with discharge planning beginning on day one.[2][5] The Goal-Oriented Limited-Duration (GOLD) approach (Siefert, 2012) provides a structured framework: a preadmission treatment agreement with a planned discharge date, clear treatment goals, and specified staff roles. Setting a discharge date early allows the team to immediately begin working with feelings of rejection and abandonment rather than avoiding them.[5]
+
+Evidence on Structured Brief Admission Models
+
+
+The Brief Admission Skåne (BASRCT) model allows self-referral admissions of up to 3 days, maximum 3 times per month, integrated into existing treatment plans before crises occur.[11] However, the 2022 Cochrane review of crisis interventions for BPD found only two RCTs total and no clear evidence of benefit for either joint crisis plans or brief admission over treatment as usual.[12]
+
+The Gold Card SA initiative in South Australia — a 4-session structured psychological intervention after acute crisis — demonstrated 63% reduction in ED presentations, 65% reduction in mental health admissions, and 82% reduction in bed days in an uncontrolled pre-post design (n=332).[13] A specialized short-term crisis track in Basel was associated with significantly shorter median length of stay and stable low rates of coercive measures over 8 years.[14]
+
+Extended Treatment: Not Necessarily Harmful
+
+
+The Fowler et al. data challenge the assumption that longer stays are inherently harmful.[6] Bartak et al. (2011) compared outpatient, day hospital, and inpatient psychotherapeutic treatment for Cluster B personality disorders (n=207) and found the inpatient group showed the largest improvements, with a marginally significant advantage over outpatient treatment for psychiatric symptoms (p=0.057).[15] Kujovic et al. (2024) compared 8-week vs. 12-week adapted inpatient DBT (n=175) and found both durations produced large effect sizes (BSL-23 d=1.29 and d=1.16 respectively) with no significant between-group differences.[16]
+
+The key variable is not length of stay but structure of stay. Unstructured, open-ended admissions without clear goals are the problem — not duration per se.
+
+---
+
+5. Managing Core Inpatient Challenges
+
+
+Splitting and Staff Conflict
+
+
+Splitting — the tendency to view some clinicians as "all good" and others as "all bad" — is among the most disruptive dynamics on inpatient units. The JAMA review explicitly recommends that clinicians "facilitate open communication and agreement on a consistent approach with all treating clinicians" to prevent this dynamic.[3] Practical strategies include:
+
+- Daily team huddles with explicit discussion of the patient's interpersonal patterns
+
+- Single treatment plan communicated identically by all staff
+
+- Rotating primary contacts to prevent exclusive attachment to one clinician
+
+- Normalizing the dynamic in team formulation: splitting reflects the patient's internal experience of relationships, not staff failure
+
+- Therapist consultation meetings — identified as one of five common elements across all effective BPD treatments ("therapists discuss cases, including personal reactions, with others")[1]
+
+A quasi-experimental study on a psychiatric intensive care unit demonstrated that implementing a schema-informed case formulation for a patient with emotionally unstable personality disorder resulted in complete extinction of incidents requiring seclusion, restraint, and rapid tranquilization.[17]
+
+Recurrent Self-Harm
+
+
+The critical first step is functional behavioral analysis: identifying the exact problem behavior, triggering parameters, maintenance parameters, and vulnerability factors (sleep problems, substance misuse, social problems).[2] Interventions should be based on this analysis rather than reflexive escalation of observation levels. The Lancet seminar recommends teaching distress tolerance skills as the primary intervention for reducing high levels of distress.[2]
+
+Chronic Suicidality
+
+
+Chronic suicidality in BPD must be distinguished from acute suicidal crises. Gunderson's NEJM review recommends that when suicidal intent is denied, outpatient crisis management with concerned attention and safety planning is preferred over hospitalization.[18] The VA/DoD clinical practice guideline supports crisis response planning — a collaborative, step-by-step document including crisis signs, self-management skills, social supports, and crisis resources — which significantly reduced suicide attempts compared to treatment as usual.[19][20]
+
+Affective Instability
+
+
+Short-term symptoms of depression or anxiety that are part of BPD emotional instability and can be related to specific triggering situations (e.g., interpersonal problems) should not be misinterpreted as comorbid disorders and should be treated solely with psychotherapy.[3] This is one of the most common errors on inpatient units — treating BPD-related affective storms as if they were independent mood or anxiety disorders, leading to inappropriate medication escalation.
+
+---
+
+6. DBT-Informed Inpatient Approaches
+
+
+Evidence Base
+
+
+The systematic review by Bloom et al. (2012) evaluated 11 studies of DBT in inpatient settings and found considerable variation in implementation but consistent reductions in suicidal ideation, self-injurious behaviors, depression, and anxiety. Results for anger and violent behaviors were mixed.[21]
+
+Bohus et al. (2004) conducted a controlled trial of 3-month inpatient DBT (n=50) showing significant improvements on 10 of 11 psychopathological variables, with 42% meeting criteria for clinically relevant recovery.[22] Tebbett-Mock et al. (2020) found that acute-care adolescent inpatient DBT (n=425) produced significantly fewer constant observation hours, fewer suicide attempts and self-injury incidents, fewer restraints, and fewer days hospitalized compared to historical TAU, saving $251,609 in staff time for constant observation.[23]
+
+A dismantling RCT by Linehan et al. (2015) demonstrated that better and faster treatment effects occurred when group skills training was involved, supporting the value of skills groups as a core component even when full DBT cannot be delivered.[24] The McMain et al. (2017) RCT showed that brief DBT skills training produced superior reductions in self-harm, with the DBT group reaching near-zero rates by 32-week follow-up and lower hospitalization probability during treatment.[25]
+
+Figure 2 Outcomes for dialectical behaviour therapy ( N = 42) and waitlist ( N = 42) groups over 32 weeks after randomization. Estimated marginal means and 95% confidence intervals over specific outcomes. DSHI , Deliberate Self‐Harm Inventory; LSASI , Lifetime Suicide Attempt Self‐Injury. Estimates of the marginal means were derived from multilevel generalized linear models. Estimates are incident rate ratios for the self‐harm measures and probabilities for the occurrence of Emergency Room Visits and Hospitalizations.
+
+Practical Inpatient DBT Adaptation
+
+
+On acute units where full DBT is not feasible, the following DBT-informed elements can be incorporated:
+
+- Daily distress tolerance skills groups (TIPP skills: Temperature, Intense exercise, Paced breathing, Progressive relaxation)
+
+- Chain analysis of self-harm episodes as a structured alternative to punitive responses
+
+- Diary cards tracking emotions, urges, and skill use
+
+- Validation strategies balanced with change-oriented interventions
+
+- Behavioral targets hierarchy: life-threatening behaviors → therapy-interfering behaviors → quality-of-life-interfering behaviors
+
+---
+
+7. Safety Planning
+
+
+The Safety Planning Intervention (SPI) is a cognitive-behavioral intervention with six components: (1) identifying personalized warning signs, (2) internal coping strategies, (3) social contacts and settings for distraction, (4) individuals who can provide support, (5) professional and crisis resources, and (6) lethal means counseling.[26] In combination with follow-up contacts, SPI is associated with reduction in suicidality.[27] The VA/DoD guideline recommends SPI for any patient at intermediate or high acute or chronic suicide risk.[20]
+
+No-suicide contracts are explicitly not recommended — they lack evidence of effectiveness, may feel coercive, and do not include personalized coping mechanisms.[27] Safety plans should be living documents, updated during the admission and reviewed at discharge.
+
+---
+
+8. Team-Based Behavioral Plans
+
+
+Structure
+
+
+Effective behavioral plans for BPD inpatients share common elements derived from expert consensus and the common factors literature:[1][3]
+
+1. Formulation-driven: Based on a shared understanding of the patient's interpersonal patterns, triggers, and maintaining factors
+
+2. Consistent across all staff: Every team member responds identically to target behaviors
+
+3. Explicit contingencies: Clear "if-then" statements for predictable scenarios
+
+4. Validation + limits: Acknowledging the patient's distress while maintaining boundaries
+
+5. Regular review: Updated at least weekly in team meetings
+
+Staff Training
+
+
+Even brief training interventions produce meaningful shifts in staff attitudes. A one-day interactive training session significantly reduced stigmatizing attitudes (all measures p < 0.001).[28] A one-day Good Psychiatric Management (GPM) training improved attitudes on 11 of 13 items, with changes persisting at 6-month follow-up.[29] A one-day STEPPS workshop (n=271) produced significantly greater empathy, increased competency, and reduced dislike toward BPD patients.[30] Key effective training elements include co-production with people with lived experience, communicating a psychological model, and teaching clinical skills for practice.[31]
+
+---
+
+9. Medication Use and Overuse
+
+
+The Evidence-Practice Gap
+
+
+No medication has been approved by any regulatory agency for BPD, and no class of psychoactive medication has been consistently effective in RCTs for core BPD symptoms.[3][32] Yet approximately 80% of BPD patients take standing psychotropic medications, with 28.6% taking four or more simultaneously.[9][18] Among European BPD inpatients, approximately 70% receive antidepressants and 70% receive antipsychotics.[9] Out of 87 medications used in clinical practice for BPD, RCT data exist for only 9.[33]
+
+What the Evidence Shows by Drug Class
+
+
+
+
+The forest plot from the Lieslehto et al. (2023) Swedish nationwide cohort study illustrates the comparative suicide risk across pharmacotherapy classes, demonstrating that benzodiazepines carried the highest risk elevation while ADHD medications were uniquely protective.
+
+Figure 1 Risk of Attempted or Completed Suicide During Use of Pharmacotherapy Compared With Nonuse of the Medication Class in Within-Individual Analyses
+
+NICE Crisis Pharmacotherapy Recommendations
+
+
+For acute crisis management, NICE recommends a single drug at minimum effective dose for no longer than 1 week.[3] Preferred agents are sedative antihistamines (e.g., promethazine) or low-potency antipsychotics (e.g., quetiapine) for agitation or sleep problems.[2] Benzodiazepines and tricyclic antidepressants should be avoided.[2]
+
+Deprescription as a Therapeutic Intervention
+
+
+Soler et al. (2022) demonstrated that DBT skills training significantly reduced polypharmacy, with substantial decreases in the number of medications, medication load index, and sedation load index compared to controls.[39] This supports the principle that teaching coping skills can replace medications rather than the reverse.
+
+Figure 1 Differences between groups in prescription changes pre‐post intervention
+
+---
+
+10. Discharge Planning and Transitions of Care
+
+
+Core Principles
+
+
+- Begin discharge planning on day one — this is a consistent recommendation across all major guidelines[2][5]
+
+- Set a discharge date at admission (GOLD approach) — this allows the team to work with abandonment fears proactively rather than reactively[5]
+
+- Make binding agreements about further treatment between the patient and their therapeutic team, reviewed after crisis intervention[2]
+
+- Coordinate across providers — all involved service providers should be informed about medication changes and treatment plan modifications[2]
+
+- Ensure outpatient follow-up is scheduled before discharge — not merely "recommended"
+
+- Update the safety plan at discharge with current triggers, coping strategies, and crisis contacts
+
+Stepped Care and Continuity
+
+
+Inconsistent treatment histories are associated with suicide attempts and completed suicides.[2] Stepped care models — where intensity of treatment is matched to clinical staging — can reduce the need for severe crisis interventions.[2] Inpatient DBT may function as an "intensive orientation" to outpatient DBT services, making the transition from inpatient to outpatient a therapeutic bridge rather than a cliff.[21]
+
+Family Involvement
+
+
+Family members of individuals with BPD have elevated levels of grief and burden compared with relatives of individuals with other severe mental disorders.[2] An RCT of group psychoeducation for 68 family members reduced emotional stress compared with wait-list control.[3] The Family Connections program (12 sessions, DBT-based) showed that patients of caregivers who received the intervention showed significant improvements in stress, depression, and anxiety.[40] Highest-rated sessions in family psychoeducation programs covered communication skills and coping with crises.[41]
+
+---
+
+11. Top 20 Papers
+
+
+
+
+---
+
+12. Practical Inpatient Management Principles
+
+
+The 15 Principles
+
+
+1. Admit only for acute safety — confirmed suicidal intent, life-threatening self-injury, acute psychosis, or danger to others. NSSI without suicidal intent is not an indication for admission.[2]
+
+2. Set a discharge date at admission. Communicate it clearly and begin discharge planning on day one.[5][2]
+
+3. Conduct a functional behavioral analysis of the crisis behavior within the first 24 hours — identify triggers, maintaining factors, and vulnerability factors.[2]
+
+4. Differentiate BPD affective instability from comorbid mood disorders. Short-term depression or anxiety related to interpersonal triggers should not be treated as independent disorders.[3]
+
+5. Minimize medication changes. Resist the pressure to "do something" pharmacologically. If medications are used in crisis, use a single agent at minimum dose for ≤1 week. Never prescribe benzodiazepines.[3][2]
+
+6. Deprescribe before prescribing. Discontinue medications with unclear benefit before adding new ones.[18]
+
+7. Maintain team consistency. Hold daily huddles. Ensure every staff member communicates the same plan. Document the behavioral plan prominently.[3]
+
+8. Validate distress while holding limits. The therapeutic relationship should balance appreciation of the patient's subjective needs with clear orientation toward problem-solving.[2]
+
+9. Teach at least one distress tolerance skill during every admission (e.g., TIPP, ice diving, paced breathing).
+
+10. Complete a safety plan (Stanley-Brown model) collaboratively before discharge. Update it if one already exists.[26]
+
+11. Name the diagnosis. Psychoeducation about BPD is therapeutic — most patients experience relief upon learning their experiences constitute a coherent, treatable syndrome.[2]
+
+12. Schedule outpatient follow-up before discharge — do not discharge with "follow up with your outpatient provider."
+
+13. Involve family/supports with psychoeducation about the disorder, communication strategies, and crisis management.[3][40]
+
+14. Use team formulation to understand splitting and countertransference. Discuss personal reactions to the patient in structured team meetings.[1]
+
+15. Document the rationale for not admitting as carefully as the rationale for admitting. Both decisions carry risk.
+
+---
+
+13. What Residents Should Not Do
+
+
+
+
+---
+
+14. Sample Behavioral Plan Structure
+
+
+Template: Inpatient Behavioral Plan for [Patient Name]
+
+
+Date: [Date] | Team: [Attending, resident, SW, nursing lead] | Review date: [Date + 3 days]
+
+Formulation (2-3 sentences):
+
+[Patient] is a [age]-year-old with BPD admitted for [specific crisis behavior]. Their interpersonal pattern includes [e.g., rapid idealization followed by devaluation when perceived abandonment occurs]. Key vulnerability factors include [e.g., sleep deprivation, recent relationship loss, substance use].
+
+Target Behaviors and Responses:
+
+
+
+Discharge Criteria:
+
+- Safety plan completed and reviewed
+
+- Outpatient appointment scheduled within 7 days
+
+- Family/support person contacted and educated
+
+- Medication list reconciled (goal: fewer medications at discharge than admission)
+
+Contingency:
+
+- If [patient] requires >48 hours beyond planned discharge date, team meeting to reassess formulation and goals
+
+- If self-harm escalates in lethality, reassess for comorbid conditions (substance intoxication, psychosis, acute PTSD)
+
+---
+
+15. Sample Family/Staff Communication Language
+
+
+For Family Members
+
+
+> "Your loved one has been diagnosed with borderline personality disorder. This is a real, well-studied condition — not a character flaw. It involves difficulty regulating emotions, which can lead to intense reactions that may seem out of proportion to the situation. The good news is that BPD is one of the most treatable conditions in psychiatry, and most people improve significantly over time."
+
+> "When [patient] is in distress, the most helpful thing you can do is acknowledge their pain without trying to fix it immediately. You might say: 'I can see this is really hard for you. I'm here.' Try to avoid statements like 'just calm down' or 'you're overreacting' — these tend to escalate distress rather than reduce it."
+
+> "We have a safety plan that [patient] helped create. We'd like to review it with you so you know what steps to take if a crisis occurs after discharge. This includes warning signs to watch for, coping strategies that work for [patient], and who to call."
+
+For Staff (Shift Handoff Language)
+
+
+> "[Patient] is on a structured behavioral plan — please review it before interacting. Key points: all staff respond identically to [specific behavior]. If [patient] asks to speak only to you or tells you that another staff member was unhelpful, respond with: 'The whole team is working together. Let me check in with the team and we'll get back to you.' Do not make individual promises or exceptions without team discussion."
+
+> "If you're feeling frustrated, pulled in, or like you need to rescue this patient — that's expected and normal. These are common reactions when working with BPD. Please bring it to the team huddle rather than acting on it individually."
+
+---
+
+16. Summary
+
+
+The evidence base for inpatient management of BPD is characterized by strong consensus on principles but a striking paucity of high-quality RCTs — the 2022 Cochrane review of crisis interventions found only two trials and no clear evidence of benefit for any specific crisis intervention over treatment as usual.[12] What the evidence does support is that psychotherapy is the definitive treatment,[3][2] medications have no consistent benefit for core BPD symptoms,[3][9] brief structured admissions with discharge planning from day one are preferred, and[2][5] team consistency is the single most important structural intervention on inpatient units.[3][1] The iatrogenic harm hypothesis, while clinically important to keep in mind, has limited direct empirical support — the documented harms are medication escalation and process failures (negative staff attitudes, poor discharge planning), not hospitalization itself.[6][10] Residents who learn to validate without rescuing, hold limits without punishing, and resist the urge to prescribe their way out of BPD crises will provide better care than those armed with any pharmacological algorithm.
+
+---
+
+Would you like to explore the evidence on Good Psychiatric Management (GPM) as a generalist framework that can be implemented on acute inpatient units without specialized DBT or MBT training?
+
+References
+Treatment of Personality Disorder. Bateman AW, Gunderson J, Mulder R. Lancet (London, England). 2015;385(9969):735-43. doi:10.1016/S0140-6736(14)61394-5.
+Borderline Personality Disorder. Bohus M, Stoffers-Winterling J, Sharp C, et al. Lancet (London, England). 2021;398(10310):1528-1540. doi:10.1016/S0140-6736(21)00476-1.
+Borderline Personality Disorder: A Review. Leichsenring F, Heim N, Leweke F, et al. JAMA. 2023;329(8):670-679. doi:10.1001/jama.2023.0589.
+The Availability of Dialectical Behavior Therapy in Partial Hospitalization and Residential Services for Borderline Personality Disorder: An Exploratory Longitudinal Study of the National Mental Health Services Survey From 2014 to 2021. Spina DS, Levy KN. Journal of Consulting and Clinical Psychology. 2024;92(3):176-186. doi:10.1037/ccp0000870.
+A Goal-Oriented Limited-Duration Approach for Borderline Personality Disorder During Brief Inpatient Hospitalizations. Siefert CJ. Psychotherapy (Chicago, Ill.). 2012;49(4):502-18. doi:10.1037/a0026128.
+A Naturalistic Longitudinal Study of Extended Inpatient Treatment for Adults With Borderline Personality Disorder: An Examination of Treatment Response, Remission and Deterioration. Fowler JC, Clapp JD, Madan A, et al. Journal of Affective Disorders. 2018;235:323-331. doi:10.1016/j.jad.2017.12.054.
+Characteristics and Outcomes of Individuals Screening Positive for Borderline Personality Disorder on an Adult Inpatient Psychiatry Unit: A Cross-Sectional Study. Chen JJ, Mermin SA, Duffy LA, et al. BMC Psychiatry. 2025;25(1):452. doi:10.1186/s12888-025-06928-8.
+Prescribing Practices for Patients With Borderline Personality Disorder During Psychiatric Hospitalizations. Romanowicz M, Schak KM, Vande Voort JL, et al. Journal of Personality Disorders. 2020;34(6):736-749. doi:10.1521/pedi_2019_33_405.
+Pharmacological Interventions for People With Borderline Personality Disorder. Stoffers-Winterling JM, Storebø OJ, Pereira Ribeiro J, et al. The Cochrane Database of Systematic Reviews. 2022;11:CD012956. doi:10.1002/14651858.CD012956.pub2.
+The Experiences of People With Borderline Personality Disorder Admitted to Acute Psychiatric Inpatient Wards: A Meta-Synthesis. Stapleton A, Wright N. Journal of Mental Health (Abingdon, England). 2019;28(4):443-457. doi:10.1080/09638237.2017.1340594.
+A Standardized Crisis Management Model for Self-Harming and Suicidal Individuals With Three or More Diagnostic Criteria of Borderline Personality Disorder: The Brief Admission Skåne Randomized Controlled Trial Protocol (BASRCT). Liljedahl SI, Helleman M, Daukantaité D, Westrin Å, Westling S. BMC Psychiatry. 2017;17(1):220. doi:10.1186/s12888-017-1371-6.
+Crisis Interventions for Adults With Borderline Personality Disorder. Monk-Cunliffe J, Borschmann R, Monk A, et al. The Cochrane Database of Systematic Reviews. 2022;9:CD009353. doi:10.1002/14651858.CD009353.pub3.
+A State-Wide Initiative to Improve Health System Responses to People With Borderline Personality Disorder Symptoms in Crisis: A Retrospective Audit. Bartsch DR, McLeod Everitt C, Bednarz J, Ludbrook C, Cammell P. Journal of Personality Disorders. 2024;38(1):87-108. doi:10.1521/pedi.2024.38.1.87.
+Specialized Short Term Crisis Intervention for Patients With Personality Disorder: Effects on Coercion and Length of Stay. Dinsenbacher LL, Imfeld L, Helfenstein F, et al. The International Journal of Social Psychiatry. 2024;70(8):1516-1524. doi:10.1177/00207640241277161.
+Effectiveness of Outpatient, Day Hospital, and Inpatient Psychotherapeutic Treatment for Patients With Cluster B Personality Disorders. Bartak A, Andrea H, Spreeuwenberg MD, et al. Psychotherapy and Psychosomatics. 2011;80(1):28-38. doi:10.1159/000321999.
+Comparison of 8-vs-12 weeks, Adapted Dialectical Behavioral Therapy (DBT) for Borderline Personality Disorder in Routine Psychiatric Inpatient Treatment-a Naturalistic Study. Kujovic M, Benz D, Riesbeck M, et al. Scientific Reports. 2024;14(1):11264. doi:10.1038/s41598-024-61795-9.
+Implementation of a Case Formulation to Reduce Restrictive Interventions on a Psychiatric Intensive Care Unit: Quasi-Experimental Single Case Evaluation. Cox F, Kellett S. Behavioural and Cognitive Psychotherapy. 2023;51(5):497-501. doi:10.1017/S1352465823000309.
+Borderline Personality Disorder. Gunderson JG. The New England Journal of Medicine. 2011;364(21):2037-42. doi:10.1056/NEJMcp1007358.
+Assessment and Management of Patients at Risk for Suicide: Synopsis of the 2019 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guidelines. Sall J, Brenner L, Millikan Bell AM, Colston MJ. Annals of Internal Medicine. 2019;171(5):343-353. doi:10.7326/M19-0687.
+Assessment and Management of Patients at Risk for Suicide (2024). Nazanin Bahraini PhD, Candice Bodie LCSW, Lisa A. Brenner PhD ABPP, et al. Department of Veterans Affairs.
+Use of Dialectical Behavior Therapy in Inpatient Treatment of Borderline Personality Disorder: A Systematic Review. Bloom JM, Woodward EN, Susmaras T, Pantalone DW. Psychiatric Services (Washington, D.C.). 2012;63(9):881-8. doi:10.1176/appi.ps.201100311.
+Effectiveness of Inpatient Dialectical Behavioral Therapy for Borderline Personality Disorder: A Controlled Trial. Bohus M, Haaf B, Simms T, et al. Behaviour Research and Therapy. 2004;42(5):487-99. doi:10.1016/S0005-7967(03)00174-8.
+Efficacy of Dialectical Behavior Therapy Versus Treatment as Usual for Acute-Care Inpatient Adolescents. Tebbett-Mock AA, Saito E, McGee M, Woloszyn P, Venuti M. Journal of the American Academy of Child and Adolescent Psychiatry. 2020;59(1):149-156. doi:10.1016/j.jaac.2019.01.020.
+Dialectical Behavior Therapy for High Suicide Risk in Individuals With Borderline Personality Disorder: A Randomized Clinical Trial and Component Analysis. Linehan MM, Korslund KE, Harned MS, et al. JAMA Psychiatry. 2015;72(5):475-82. doi:10.1001/jamapsychiatry.2014.3039.
+A randomized trial of brief dialectical behaviour therapy skills training in suicidal patients suffering from borderline disorder. McMain SF, Guimond T, Barnhart R, Habinski L, Streiner DL. Acta Psychiatrica Scandinavica. 2017;135(2):138-148. doi:10.1111/acps.12664.
+Association of Suicide Prevention Interventions With Subsequent Suicide Attempts, Linkage to Follow-up Care, and Depression Symptoms for Acute Care Settings: A Systematic Review and Meta-analysis. Doupnik SK, Rudd B, Schmutte T, et al. JAMA Psychiatry. 2020;77(10):1021-1030. doi:10.1001/jamapsychiatry.2020.1586.
+Suicide and Suicide Risk in Adolescents. Hua LL, Lee J, Rahmandar MH, Sigel EJ. Pediatrics. 2023;:e2023064800. doi:10.1542/peds.2023-064800.
+Impact of a One-Day Training Session on Borderline Personality Disorder on Stigmatising Attitudes and Beliefs of Health Personnel. Estric C, Fougere H, Serrand C, Magnin C. BMC Medical Education. 2026;26(1):997. doi:10.1186/s12909-026-09256-x.
+Enduring Effects of One-Day Training in Good Psychiatric Management on Clinician Attitudes About Borderline Personality Disorder. Masland SR, Price D, MacDonald J, et al. The Journal of Nervous and Mental Disease. 2018;206(11):865-869. doi:10.1097/NMD.0000000000000893.
+Can Negative Attitudes Toward Patients With Borderline Personality Disorder Be Changed? The Effect of Attending a STEPPS Workshop. Shanks C, Pfohl B, Blum N, Black DW. Journal of Personality Disorders. 2011;25(6):806-12. doi:10.1521/pedi.2011.25.6.806.
+Improving Attitudes Towards Personality Disorder: Is Training for Health and Social Care Professionals Effective?. Attwood J, Wilkinson-Tough M, Lambe S, Draper E. Journal of Personality Disorders. 2021;35(3):409-S4. doi:10.1521/pedi_2019_33_458.
+Personality Disorders. Sharp C. The New England Journal of Medicine. 2022;387(10):916-923. doi:10.1056/NEJMra2120164.
+Pharmacological Treatments for Borderline Personality Disorder: A Systematic Review and Meta-Analysis. Gartlehner G, Crotty K, Kennedy S, et al. CNS Drugs. 2021;35(10):1053-1067. doi:10.1007/s40263-021-00855-4.
+Comparative Effectiveness of Pharmacotherapies for the Risk of Attempted or Completed Suicide Among Persons With Borderline Personality Disorder. Lieslehto J, Tiihonen J, Lähteenvuo M, et al. JAMA Network Open. 2023;6(6):e2317130. doi:10.1001/jamanetworkopen.2023.17130.
+Pharmacological Interventions for Borderline Personality Disorder. Stoffers J, Völlm BA, Rücker G, et al. The Cochrane Database of Systematic Reviews. 2010;(6):CD005653. doi:10.1002/14651858.CD005653.pub2.
+Comparison of Low and Moderate Dosages of Extended-Release Quetiapine in Borderline Personality Disorder: A Randomized, Double-Blind, Placebo-Controlled Trial. Black DW, Zanarini MC, Romine A, et al. The American Journal of Psychiatry. 2014;171(11):1174-82. doi:10.1176/appi.ajp.2014.13101348.
+Efficacy and Safety of Pharmacological Treatments in Borderline Personality Disorder: A Systematic Review and Network Meta-Analysis. Gerolymos C, Garosi A, Boyer L, et al. Molecular Psychiatry. 2026;31(6):3216-3228. doi:10.1038/s41380-026-03451-4.
+Association of pharmacological treatments and real‐world outcomes in borderline personality disorder. Lieslehto J, Tiihonen J, Lähteenvuo M, et al. Acta Psychiatrica Scandinavica. 2023;147(6):603-613. doi:10.1111/acps.13564.
+“Skills for pills”: The dialectical‐behavioural therapy skills training reduces polypharmacy in borderline personality disorder. Soler J, Casellas-Pujol E, Fernández-Felipe I, et al. Acta Psychiatrica Scandinavica. 2022;145(4):332-342. doi:10.1111/acps.13403.
+"Family Connections", a Program for Relatives of People With Borderline Personality Disorder: A Randomized Controlled Trial. Guillén V, Fernández-Felipe I, Marco JH, et al. Family Process. 2024;63(4):2195-2214. doi:10.1111/famp.13089.
+Psychoeducational Groups for Close Relatives of Patients With Borderline Personality Disorder. Pitschel-Walz G, Spatzl A, Rentrop M. European Archives of Psychiatry and Clinical Neuroscience. 2023;273(4):853-864. doi:10.1007/s00406-022-01395-8.
+
+Drug Class | Evidence Summary | Key Risks | Guideline Position
+SSRIs | Only possible small effect on anger (SMD −0.33); non-significant when restricted to SSRIs alone[1] | Associated with elevated suicide risk (HR 1.38) in Swedish cohort[2] | NICE: only for severe comorbid depression/anxiety[3]
+Second-generation antipsychotics | Olanzapine: limited benefits, possible increase in self-harm[4]; Quetiapine: only 1 published RCT[5]; Aripiprazole: moderate evidence for hostility/anger reduction[6] | Metabolic effects; associated with increased suicide risk (HR 1.18) and psychiatric hospitalization[2], [7] | NICE: not recommended for medium/long-term use[3]
+Mood stabilizers | Topiramate: most consistent evidence for anger reduction[6]; Lamotrigine: no effect at 1 year in pragmatic trial[8] | No significant association with suicide risk[2] | Variable across guidelines
+Benzodiazepines | Only 1 RCT ever conducted (Cowdry 1988)[1] | Highest suicide risk (HR 1.61; 4-fold risk of completed suicide)[2]; high addictive potential | Strongly discouraged by all modern guidelines[8]
+ADHD medications | Only class associated with reduced suicide risk (HR <1.0) and reduced hospitalization[2], [7] | Observational evidence only | Not yet in guidelines for BPD
+# | Citation | Contribution
+1 | Bohus et al., Lancet 2021 | Definitive seminar: acute management algorithm, crisis pharmacotherapy, psychotherapy evidence
+2 | Leichsenring et al., JAMA 2023 | Comprehensive review: clinical management, splitting, pharmacotherapy, psychotherapy meta-analyses
+3 | Gunderson, NEJM 2011 | Foundational clinical review: suicidality management, medication principles, prognosis
+4 | Sharp, NEJM 2022 | Modern personality disorder overview: dimensional models, treatment landscape
+5 | Bateman & Fonagy, Am J Psychiatry 1999 | Landmark RCT: partial hospitalization MBT vs. standard care
+6 | Linehan et al., JAMA Psychiatry 2015 | DBT dismantling RCT: demonstrated primacy of skills group component
+7 | Stoffers-Winterling et al., Cochrane 2022 | Updated Cochrane review of pharmacotherapy: no consistent benefit for any drug class
+8 | Storebø et al., Cochrane 2020 | Cochrane review of psychotherapies: 75 RCTs, 4,507 patients
+9 | Monk-Cunliffe et al., Cochrane 2022 | Cochrane review of crisis interventions: highlighted critical evidence gap
+10 | Fowler et al., J Affect Disord 2018 | Challenged iatrogenic harm hypothesis: large improvements, rare deterioration
+11 | Lieslehto et al., JAMA Netw Open 2023 | Swedish cohort: comparative suicide risk across drug classes
+12 | Bloom et al., Psychiatr Serv 2012 | Systematic review of inpatient DBT: 11 studies
+13 | Bohus et al., Behav Res Ther 2004 | Controlled trial of 3-month inpatient DBT
+14 | Siefert, Psychotherapy 2012 | GOLD approach: structured brief inpatient framework
+15 | Bateman et al., Lancet 2015 | Common elements of effective PD treatments; generalist models
+16 | McMain et al., Acta Psychiatr Scand 2017 | Brief DBT skills training RCT: near-zero self-harm rates
+17 | Tebbett-Mock et al., JAACAP 2020 | Inpatient adolescent DBT: reduced restraints, observation, self-harm
+18 | Brodsky et al., Am J Psychiatry 2025 | DBT vs. SSRI RCT for suicidal BPD
+19 | Masland et al., J Nerv Ment Dis 2018 | One-day GPM training: enduring attitude change at 6 months
+20 | Liljedahl et al., BMC Psychiatry 2017 | Brief Admission Skåne RCT protocol: self-referral model
+❌ Do Not | Why | Instead
+Admit for NSSI without suicidal intent | Reinforces maladaptive contingencies; disrupts outpatient treatment[1] | Crisis plan review, outpatient intensification, brief ED observation
+Start or increase benzodiazepines | Highest suicide risk of any drug class (HR 1.61); high addictive potential[1], [2] | Promethazine, low-dose quetiapine, or hydroxyzine PRN for ≤1 week
+Add medications to "treat" BPD affective storms | No drug class consistently effective; drives polypharmacy[3], [4] | Validate distress, teach distress tolerance skills, wait for the storm to pass
+Interpret splitting as the patient being "manipulative" | Splitting reflects internal relational templates, not intentional manipulation[3] | Name the dynamic in team formulation; maintain consistent responses
+Use no-suicide contracts | No evidence of effectiveness; may feel coercive; patients may conceal ideation[5] | Collaborative safety planning (Stanley-Brown model)
+Discharge without scheduled follow-up | Inconsistent treatment histories are associated with completed suicide[1] | Schedule a specific appointment with a specific provider before discharge
+Respond to escalation with escalation | Punitive responses (seclusion, restraint, discharge threats) worsen outcomes[6] | Chain analysis, validation, clear contingencies from the behavioral plan
+Make unilateral treatment decisions | Inconsistency across providers fuels splitting[3] | All decisions through team consensus; communicate identically
+Extend admission without clear goals | Open-ended stays without structure risk regression and dependency[7] | GOLD approach: set discharge date, define goals, review daily
+Ignore countertransference | Unprocessed staff reactions drive punitive or avoidant care[8] | Structured team consultation; normalize emotional reactions to BPD patients
+Behavior | Staff Response | Rationale
+Suicidal statements with intent | 1:1 assessment by MD; safety plan review; consider observation level change | Acute safety
+NSSI urges verbalized | Validate distress → offer ice/TIPP skills → 15-min check-in after skill use | Reinforce skill use, not observation escalation
+NSSI act on unit | Medical assessment → chain analysis within 4 hours → no change in privileges unless medically indicated | Avoid punitive response; understand function
+Verbal aggression toward staff | Brief, calm limit-setting: "I can see you're upset. I want to help, but I need you to lower your voice." Disengage if escalation continues. Debrief in team huddle. | Prevent reinforcement of escalation
+Requests to speak only to specific staff | Any available staff member responds. "The whole team is working together on your care." | Prevent splitting
+Requests for PRN medications | Offer skill use first. If distress persists after 20 minutes of skill practice, PRN [specific agent, dose] available. Maximum [X] doses per 24 hours. | Skills before pills
+Discharge threats / elopement statements | "Your discharge date is [date]. Let's talk about what's making you want to leave now." Do not discharge reactively. | Maintain structure; explore trigger

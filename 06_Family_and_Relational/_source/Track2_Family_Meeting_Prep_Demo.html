@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Family Meeting Preparation — Track 2 Demo (3 Vignettes)</title>
+<style>
+  :root {
+    --rc-primary:        #b0674e;
+    --rc-primary-dark:   #96523b;
+    --rc-primary-light:  #f3ebe5;
+    --rc-primary-bg:     #fbf2ed;
+    --rc-accent:         #3a7d6e;
+    --rc-accent-dark:    #2c6356;
+    --rc-accent-light:   #edf4f2;
+    --rc-warm-clay:      #B8623A;
+    --rc-success:        #357160;
+    --rc-success-light:  #ecf4f1;
+    --rc-warning:        #8b7040;
+    --rc-warning-light:  #f7f0e2;
+    --rc-bg:             #f6f3ee;
+    --rc-bg-alt:         #fbf8f3;
+    --rc-surface:        #ffffff;
+    --rc-border:         #ddd3c6;
+    --rc-border-light:   #ebe5da;
+    --rc-text:           #3b332c;
+    --rc-text-mid:       #64574b;
+    --rc-text-light:     #87786a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--rc-bg); }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--rc-text);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    padding: 22px 28px 36px;
+    min-height: 100vh;
+  }
+  .display, h1, h2, h3, h4 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+  .mono { font-family: 'Courier New', Menlo, monospace; }
+
+  /* ━━ HEADER ━━ */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--rc-border);
+    margin-bottom: 16px;
+  }
+  .rc-logo {
+    width: 34px; height: 34px;
+    background: var(--rc-primary);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 14px;
+  }
+  .brand-stack { line-height: 1.1; }
+  .brand-name { font-size: 14px; font-weight: 600; color: var(--rc-text); }
+  .brand-sub {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; color: var(--rc-text-light);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .header-right-block { margin-left: auto; text-align: right; }
+  .tool-title {
+    font-family: Georgia, serif;
+    font-size: 17px;
+    color: var(--rc-text);
+  }
+  .tool-sub {
+    font-size: 11px;
+    color: var(--rc-text-mid);
+    margin-top: 2px;
+    font-style: italic;
+  }
+
+  /* ━━ CASE TABS ━━ */
+  .case-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .case-tab {
+    background: var(--rc-surface);
+    border: 1.5px solid var(--rc-border-light);
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .case-tab:hover { border-color: var(--rc-border); background: var(--rc-bg-alt); }
+  .case-tab.active {
+    border-color: var(--rc-primary);
+    background: var(--rc-primary-bg);
+    box-shadow: 0 1px 4px rgba(176,103,78,0.15);
+  }
+  .case-letter {
+    font-family: Georgia, serif;
+    font-size: 26px;
+    color: var(--rc-text-light);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .case-tab.active .case-letter { color: var(--rc-primary); }
+  .case-tab-body { flex: 1; }
+  .case-name {
+    font-family: Georgia, serif;
+    font-size: 13px;
+    color: var(--rc-text);
+    line-height: 1.3;
+    margin-bottom: 3px;
+  }
+  .case-tag {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    color: var(--rc-text-light);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .case-tab.active .case-tag { color: var(--rc-primary-dark); font-weight: 600; }
+
+  /* ━━ THREE-CONTACT TIMELINE STRIP ━━ */
+  .timeline {
+    background: var(--rc-bg-alt);
+    border: 1px solid var(--rc-border-light);
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-bottom: 18px;
+  }
+  .timeline-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    color: var(--rc-text-light);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .timeline-grid {
+    display: grid;
+    grid-template-columns: 1fr 8px 1fr 8px 1fr;
+    align-items: center;
+    gap: 0;
+  }
+  .timeline-step {
+    background: #fff;
+    border: 1px solid var(--rc-border-light);
+    border-radius: 6px;
+    padding: 8px 12px;
+    text-align: center;
+  }
+  .timeline-step.current {
+    border-color: var(--rc-accent);
+    background: var(--rc-accent-light);
+    box-shadow: 0 0 0 2px rgba(58,125,110,0.12);
+  }
+  .timeline-step-day {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    color: var(--rc-text-light);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .timeline-step.current .timeline-step-day { color: var(--rc-accent-dark); font-weight: 600; }
+  .timeline-step-name {
+    font-family: Georgia, serif;
+    font-size: 12.5px;
+    color: var(--rc-text);
+    margin-top: 2px;
+    line-height: 1.2;
+  }
+  .timeline-arrow {
+    color: var(--rc-text-light);
+    font-size: 14px;
+    text-align: center;
+  }
+
+  /* ━━ TWO-COL LAYOUT ━━ */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 20px;
+  }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--rc-surface);
+    border: 1px solid var(--rc-border-light);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(60,40,20,0.04);
+  }
+  .card h2 {
+    font-size: 17px;
+    margin-bottom: 4px;
+    color: var(--rc-text);
+  }
+  .card h2 .step {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: var(--rc-primary);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .card .card-sub {
+    font-size: 12px;
+    color: var(--rc-text-mid);
+    margin-bottom: 16px;
+    line-height: 1.45;
+  }
+
+  /* ━━ LEFT PANEL — INPUTS ━━ */
+  .ctx-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--rc-border-light);
+    font-size: 13px;
+  }
+  .ctx-row:last-of-type { border-bottom: none; }
+  .ctx-label {
+    color: var(--rc-text-light);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-right: 12px;
+  }
+  .ctx-value {
+    color: var(--rc-text);
+    font-weight: 500;
+    text-align: right;
+    line-height: 1.4;
+  }
+  .ctx-value em { font-style: italic; color: var(--rc-text-mid); font-weight: 400; }
+
+  .section-divider {
+    margin: 18px 0 10px;
+    font-family: Georgia, serif;
+    font-size: 13.5px;
+    color: var(--rc-text);
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--rc-border);
+  }
+  .section-divider .note {
+    font-size: 10.5px; color: var(--rc-text-light); font-style: italic;
+    font-family: 'Inter', sans-serif;
+  }
+  .ee-grid { display: grid; grid-template-columns: 1fr; gap: 7px; }
+  .ee-item {
+    background: var(--rc-bg-alt);
+    border: 1px solid var(--rc-border-light);
+    border-radius: 6px;
+    padding: 9px 12px;
+  }
+  .ee-q { color: var(--rc-text-mid); font-size: 11.5px; margin-bottom: 4px; }
+  .ee-choices { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ee-choice {
+    font-size: 11.5px;
+    padding: 3px 9px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid var(--rc-border-light);
+    color: var(--rc-text-light);
+  }
+  .ee-choice.selected {
+    background: var(--rc-primary);
+    color: #fff;
+    border-color: var(--rc-primary);
+    font-weight: 500;
+  }
+  .ctx-meta {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: var(--rc-primary-bg);
+    border-left: 3px solid var(--rc-primary);
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--rc-text-mid);
+    line-height: 1.5;
+  }
+  .btn-generate {
+    margin-top: 18px;
+    width: 100%;
+    padding: 13px;
+    background: var(--rc-accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease;
+  }
+  .btn-generate:hover { background: var(--rc-accent-dark); }
+  .btn-generate.loading { background: var(--rc-text-light); cursor: progress; }
+  .pulse {
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: #fff; border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* ━━ RIGHT PANEL — OUTPUT ━━ */
+  .output-empty {
+    color: var(--rc-text-light);
+    font-style: italic;
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 13px;
+  }
+  .output-section {
+    margin-bottom: 16px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .output-section.visible { opacity: 1; transform: translateY(0); }
+  .out-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    color: var(--rc-text-light);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .out-block {
+    background: var(--rc-bg-alt);
+    border-left: 2px solid var(--rc-accent);
+    padding: 9px 14px;
+    border-radius: 4px;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .out-block.warm { border-left-color: var(--rc-warm-clay); background: var(--rc-primary-bg); }
+  .out-block.success { border-left-color: var(--rc-success); background: var(--rc-success-light); }
+  .out-block.principle {
+    border-left-color: var(--rc-primary);
+    background: linear-gradient(to right, var(--rc-primary-bg) 0%, #fff 100%);
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 14px;
+    padding: 13px 18px;
+    color: var(--rc-text);
+  }
+  .principle-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    color: var(--rc-primary-dark);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: block;
+    font-style: normal;
+  }
+
+  .strategy-list { list-style: none; padding: 0; }
+  .strategy-item {
+    border: 1px solid var(--rc-border-light);
+    border-left: 3px solid var(--rc-primary);
+    border-radius: 6px;
+    padding: 9px 13px;
+    margin-bottom: 7px;
+    background: #fff;
+  }
+  .strategy-num {
+    font-family: 'Courier New', monospace;
+    font-size: 10.5px;
+    color: var(--rc-primary);
+    font-weight: 700;
+    margin-right: 8px;
+    letter-spacing: 0.06em;
+  }
+  .strategy-name {
+    font-family: Georgia, serif;
+    font-size: 13px;
+    color: var(--rc-text);
+  }
+  .strategy-rationale {
+    font-size: 11px;
+    color: var(--rc-text-mid);
+    margin-top: 3px;
+    font-style: italic;
+    line-height: 1.45;
+  }
+  .strategy-opener {
+    margin-top: 6px;
+    padding: 7px 10px;
+    background: var(--rc-bg-alt);
+    border-radius: 4px;
+    font-size: 11.5px;
+    color: var(--rc-text);
+    line-height: 1.55;
+    border-left: 2px solid var(--rc-text-light);
+  }
+  .opener-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    color: var(--rc-text-light);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .opener-text { font-family: Georgia, serif; font-style: italic; }
+
+  .checklist { list-style: none; padding: 0; font-size: 12px; }
+  .checklist li {
+    padding: 4px 0;
+    color: var(--rc-text);
+    line-height: 1.5;
+    position: relative;
+    padding-left: 20px;
+  }
+  .checklist li::before {
+    content: '☐';
+    position: absolute;
+    left: 0; top: 3px;
+    color: var(--rc-text-light);
+    font-size: 13px;
+  }
+  .checklist li .strat-tag {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    color: var(--rc-primary);
+    margin-left: 6px;
+    letter-spacing: 0.06em;
+  }
+
+  .measure-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 3px;
+    margin-top: 6px;
+    font-size: 10.5px;
+  }
+  .measure-grid .h {
+    background: var(--rc-text);
+    color: #fff;
+    padding: 4px 7px;
+    font-weight: 600;
+    border-radius: 3px;
+  }
+  .measure-grid .c {
+    background: var(--rc-bg-alt);
+    padding: 4px 7px;
+    border-radius: 3px;
+    color: var(--rc-text);
+  }
+  .measure-grid .c.done { background: var(--rc-success-light); color: var(--rc-success); }
+  .measure-grid .c.future { color: var(--rc-text-light); font-style: italic; }
+
+  /* ━━ DISCHARGE BRIDGE PREVIEW ━━ */
+  .bridge-card {
+    margin-top: 6px;
+    padding: 10px 14px;
+    background: var(--rc-warning-light);
+    border: 1px solid #e8d9b8;
+    border-left: 3px solid var(--rc-warning);
+    border-radius: 4px;
+    font-size: 11.5px;
+    color: var(--rc-text);
+    line-height: 1.55;
+  }
+  .bridge-card .bridge-day {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    color: var(--rc-warning);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-right: 8px;
+  }
+
+  /* ━━ FOOTER STRIP ━━ */
+  .footer-strip {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  .footer-stat {
+    padding: 11px 14px;
+    background: var(--rc-surface);
+    border: 1px solid var(--rc-border-light);
+    border-radius: 6px;
+  }
+  .footer-stat .stat-num {
+    font-family: Georgia, serif;
+    font-size: 18px;
+    color: var(--rc-warm-clay);
+    line-height: 1;
+  }
+  .footer-stat .stat-label {
+    font-size: 10px;
+    color: var(--rc-text-mid);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  /* ━━ CROSS-CASE COMPARISON ━━ */
+  .compare-strip {
+    margin-top: 18px;
+    padding: 14px 18px;
+    background: var(--rc-surface);
+    border: 1px solid var(--rc-border-light);
+    border-radius: 10px;
+  }
+  .compare-strip h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--rc-text);
+  }
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    font-size: 11.5px;
+  }
+  .compare-cell {
+    padding: 9px 12px;
+    background: var(--rc-bg-alt);
+    border-left: 2px solid var(--rc-primary);
+    border-radius: 4px;
+    line-height: 1.5;
+  }
+  .compare-cell.b { border-left-color: var(--rc-accent); }
+  .compare-cell.c { border-left-color: var(--rc-warm-clay); }
+  .compare-cell strong {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    color: var(--rc-text);
+    display: block;
+    margin-bottom: 3px;
+    font-size: 12px;
+  }
+  .compare-cell em {
+    font-style: italic;
+    color: var(--rc-text-mid);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="rc-logo">RC</div>
+  <div class="brand-stack">
+    <div class="brand-name">ReConnect Psychiatry · Family Meeting Preparation</div>
+    <div class="brand-sub">Inpatient Clinician Tool · RSSM Appendix L.3 · Three-Contact Protocol</div>
+  </div>
+  <div class="header-right-block">
+    <div class="tool-title">Brief Family Intervention Protocol</div>
+    <div class="tool-sub">Manualized · Fidelity-rateable · EE-stratified · 3-contact arc</div>
+  </div>
+</header>
+
+<!-- ━━ CASE SELECTOR ━━ -->
+<div class="case-tabs">
+  <div class="case-tab active" data-case="A" onclick="selectCase('A')">
+    <div class="case-letter">A</div>
+    <div class="case-tab-body">
+      <div class="case-name">Intergenerational Mood Vulnerability</div>
+      <div class="case-tag">Bipolar I + PTSD · Mid-30s · Multigenerational over-involvement</div>
+    </div>
+  </div>
+  <div class="case-tab" data-case="B" onclick="selectCase('B')">
+    <div class="case-letter">B</div>
+    <div class="case-tab-body">
+      <div class="case-name">Co-Parenting Conflict + Child Safety</div>
+      <div class="case-tag">Bipolar I + PTSD · Early-40s · Custody dispute · School-age child</div>
+    </div>
+  </div>
+  <div class="case-tab" data-case="C" onclick="selectCase('C')">
+    <div class="case-letter">C</div>
+    <div class="case-tab-body">
+      <div class="case-name">First-Episode Psychosis + Cannabis</div>
+      <div class="case-tag">FEP + CUD + ADHD · Early-20s · Transition-age · 14yo sibling</div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━ THREE-CONTACT TIMELINE STRIP ━━ -->
+<div class="timeline">
+  <div class="timeline-label">Three Structured Family Contacts · Inpatient Stay Arc</div>
+  <div class="timeline-grid">
+    <div class="timeline-step">
+      <div class="timeline-step-day">Day 1–2</div>
+      <div class="timeline-step-name">Joining + Frame-Setting</div>
+    </div>
+    <div class="timeline-arrow">→</div>
+    <div class="timeline-step current">
+      <div class="timeline-step-day">Day 3–6 · NOW</div>
+      <div class="timeline-step-name">Structured Family Meeting</div>
+    </div>
+    <div class="timeline-arrow">→</div>
+    <div class="timeline-step">
+      <div class="timeline-step-day">Day 6–10</div>
+      <div class="timeline-step-name">Discharge Bridge</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- ━━ LEFT PANEL — INPUTS ━━ -->
+  <div class="card" id="inputs">
+    <h2><span class="step">Step 1 of 2</span><span id="step1-title">Clinical Context — Case A</span></h2>
+    <p class="card-sub" id="step1-sub">Inputs captured during Day 1 joining and Day 1–3 unit observation. Required minimum 24h before structured family meeting.</p>
+
+    <div id="ctx-rows"></div>
+
+    <div class="section-divider">
+      Expressed-Emotion Brief Screen
+      <span class="note">· FMSS-derived · Day 1–3</span>
+    </div>
+    <div class="ee-grid" id="ee-grid"></div>
+
+    <div class="ctx-meta">
+      <strong>Investigator-independence note:</strong> All strategies are fidelity-rateable from audio by an external blind rater against the published opener language and named moves. No expert-PI presence required for delivery. <span id="ee-strat-msg"></span>
+    </div>
+
+    <button class="btn-generate" id="gen-btn" onclick="runDemo()">
+      Generate Family Meeting Plan
+    </button>
+  </div>
+
+  <!-- ━━ RIGHT PANEL — OUTPUT ━━ -->
+  <div class="card" id="output">
+    <h2><span class="step">Step 2 of 2</span><span id="step2-title">Generated Meeting Plan — Case A</span></h2>
+    <p class="card-sub">Manualized strategies, verbatim openers, fidelity checklist, outcome-capture protocol, discharge-bridge preview, manualizable principle.</p>
+
+    <div id="empty-state" class="output-empty">
+      Click <strong>Generate Family Meeting Plan</strong> to render this case's meeting plan.
+    </div>
+
+    <div id="output-content" style="display:none;">
+      <div class="output-section" data-i="1">
+        <div class="out-label">Contact Type</div>
+        <div class="out-block" id="out-contact"></div>
+      </div>
+
+      <div class="output-section" data-i="2">
+        <div class="out-label">EE Stratification · Linszen 1996 logic</div>
+        <div class="out-block warm" id="out-ee"></div>
+      </div>
+
+      <div class="output-section" data-i="3">
+        <div class="out-label" id="out-strategies-label">Strategies Selected for This Case</div>
+        <ul class="strategy-list" id="out-strategies"></ul>
+      </div>
+
+      <div class="output-section" data-i="4">
+        <div class="out-label">Pre-Meeting Fidelity Checklist</div>
+        <div class="out-block">
+          <span style="font-size:11px; color:var(--rc-text-mid); display:block; margin-bottom:6px;">Clinician marks post-meeting. Independently coded from audio by external blind rater.</span>
+          <ul class="checklist" id="out-fidelity"></ul>
+        </div>
+      </div>
+
+      <div class="output-section" data-i="5">
+        <div class="out-label">Outcome-Capture Protocol</div>
+        <div class="out-block success">
+          <span style="font-size:11px; color:var(--rc-text-mid); display:block; margin-bottom:5px;">All measures embedded in EHR triggers; no clinician burden post-discharge.</span>
+          <div class="measure-grid" id="out-measures"></div>
+        </div>
+      </div>
+
+      <div class="output-section" data-i="6">
+        <div class="out-label">Discharge Bridge Preview · Day 6–10</div>
+        <div id="out-bridge"></div>
+      </div>
+
+      <div class="output-section" data-i="7">
+        <div class="out-label">Manualizable Principle · This Case's Named Decision Rule</div>
+        <div class="out-block principle" id="out-principle">
+          <span class="principle-label">From RSSM v10 Appendix L.3 · Fidelity-rateable across cases</span>
+          <span id="out-principle-text"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer-strip">
+  <div class="footer-stat">
+    <div class="stat-num" id="stat-1">0:14</div>
+    <div class="stat-label">Time to generate plan from chart + EE inputs</div>
+  </div>
+  <div class="footer-stat">
+    <div class="stat-num" id="stat-2">6 of 28</div>
+    <div class="stat-label" id="stat-2-label">Core strategies selected from the Family Meeting Intervention Bank</div>
+  </div>
+  <div class="footer-stat">
+    <div class="stat-num">100%</div>
+    <div class="stat-label">Fidelity-rateable by external blind rater · investigator-independent</div>
+  </div>
+  <div class="footer-stat">
+    <div class="stat-num" id="stat-4">3 of 3</div>
+    <div class="stat-label">Structured contacts scheduled in the inpatient arc</div>
+  </div>
+</div>
+
+<!-- ━━ CROSS-CASE COMPARISON ━━ -->
+<div class="compare-strip">
+  <h3>Cross-Case Decision Rules · How the Manual Handles Each Presentation</h3>
+  <div class="compare-grid">
+    <div class="compare-cell">
+      <strong>Case A · Intergenerational Mood</strong>
+      <em>"Trace the pattern back a generation before naming it forward."</em>
+      The intervention surfaces the family's transmitted lesson ("love means vigilance") before re-targeting it. Fidelity-rateable: did the clinician name the generational pattern out loud?
+    </div>
+    <div class="compare-cell b">
+      <strong>Case B · Co-Parenting + Child Safety</strong>
+      <em>"Choose parallel over collaborative when conflict is the harm."</em>
+      The manual explicitly permits clinicians to back off the co-parenting push when it's iatrogenic. Fidelity-rateable: did the meeting establish parallel-parenting criteria?
+    </div>
+    <div class="compare-cell c">
+      <strong>Case C · FEP + Cannabis</strong>
+      <em>"Make the patient the author of the chain."</em>
+      The relapse narrative is constructed <em>with</em> the patient on the whiteboard, not delivered <em>to</em> the patient. Fidelity-rateable: did the patient supply the timeline?
+    </div>
+  </div>
+</div>
+
+<script>
+const cases = {
+  A: {
+    title: "Case A — Intergenerational Mood Vulnerability",
+    context: [
+      ["Admission Day", "Day 3 of expected 8"],
+      ["Patient", "Mid-30s · married · lives independently"],
+      ["Diagnosis", "Bipolar I + PTSD"],
+      ["Presentation", "Hypomanic decompensation; close daily contact with multigenerational family"],
+      ["Family system", "Spouse, parents, sibling, MIL · multiple prior admissions <em>(family not contacted during last 2)</em>"],
+      ["Family pattern noted", "Push–pull cycle: distress → cascading family calls → patient withdrawal → escalation"],
+      ["Day 1 joining", "Held with patient + spouse · 40 min · audio captured for FMSS · key history surfaced: parent cared for own parent's mental-health crisis"],
+    ],
+    ee: [
+      { q: "Criticism observed (multiple family members, Day 1)", choices: ["None","Moderate","High"], selected: 2 },
+      { q: "Emotional overinvolvement (Day 1–3 observation)", choices: ["None","Some","Marked"], selected: 2 },
+      { q: "Warmth / positive remarks (Day 1 joining)", choices: ["Present","Minimal","Absent"], selected: 0 },
+    ],
+    eeStratMsg: "Case A profile: <strong>High criticism + Marked overinvolvement + Warmth present</strong> → high-intensity protocol indicated.",
+    contact: "<strong>Structured Family Meeting</strong> · Day 3–6 of admission · ~70 minutes <em>(extended for high-EE case)</em> · Required: spouse + ≥1 parent · Audio captured for fidelity coding",
+    eeBlock: "<strong>High criticism + Marked overinvolvement + Warmth present → High-intensity protocol indicated.</strong><br><span style='font-size:11px; color:var(--rc-text-mid);'>Linszen 1996 caveat: low-EE families would receive psychoeducation-only frame. High-EE warm families show the largest intervention response in the EE-mediation literature (Hogarty 1986).</span>",
+    strategiesLabel: "Strategies Selected — Core 6 + Case-A Additions",
+    strategies: [
+      { num: "#1", name: "Joining / Frame-setting", rationale: "Opens meeting · required for all contacts", openerLabel: "Manualized Opener", opener: "\"I want to start by naming what these meetings often feel like before they happen — and what we're not going to do today.\"" },
+      { num: "#2", name: "Normalization of fear", rationale: "The cascading calls are fear-based, not control-based — name this before re-targeting", openerLabel: "Manualized Opener", opener: "\"When a family watches for every signal, that watching usually started with a memory of what happened the last time the signals got missed.\"" },
+      { num: "#3", name: "Tracing the pattern back a generation", rationale: "Indexed to Day 1 joining: parent cared for own parent's mental-health crisis decades ago. The transmitted lesson is 'love means vigilance.'", openerLabel: "Manualized Reframe", opener: "\"This pattern didn't start with you, and it didn't start with [patient]. It started a generation back, when watching someone you loved struggle taught you that the only safe response was to never stop watching.\"" },
+      { num: "#13", name: "Respect Lines, not boundaries", rationale: "Reframes from 'you should' to 'I need' — deliverable by a fear-flooded family", openerLabel: "Structured Move", opener: "Each member states a map of their own emotional terrain rather than a rule for the other. Patient: \"When I get three calls before noon I stop answering all of them. I need one check-in, and I need to be the one who decides when to call back.\"" },
+      { num: "#22", name: "Sleep as a family job", rationale: "Sleep disruption is the most reliable prodrome for mood relapse — convert hyper-vigilance into a clinically useful target", openerLabel: "Concrete Protocol", opener: "Family contracts: no calls after 9 PM, no 'just checking in' texts during sleep hours, no surprise visits. The over-vigilance gets redirected, not removed." },
+      { num: "#10", name: "Three Truths frame", rationale: "Rebalances perspectives without adjudication; useful when multiple family members are present", openerLabel: "Structured Move", opener: "Each family member names one thing that's true for them, one thing that's true for the patient, one thing that's true for the family. No rebuttals." },
+      { num: "#28", name: "Aftercare menu + therapist fit", rationale: "Closes meeting · required for discharge bridge sequencing", openerLabel: "Structured Close", opener: "Three outpatient options surfaced. Spouse, patient, and named parent each rate fit across three named dimensions (logistics, style, prior experience)." },
+    ],
+    fidelity: [
+      ["Opened with manualized Joining script", "#1"],
+      ["Normalized the cascading-calls pattern as fear-based", "#2"],
+      ["Named the generational transmission of the watching pattern", "#3"],
+      ["Elicited Respect Lines from ≥2 members (patient + spouse minimum)", "#13"],
+      ["Established written sleep-protection protocol with named family role", "#22"],
+      ["Three Truths frame elicited from all present members", "#10"],
+      ["Aftercare menu reviewed with named therapist-fit dimensions", "#28"],
+    ],
+    measures: [
+      ["Measure","Day 1","Day 9 (DC)","30d / 90d"],
+      ["FMSS (multi-member audio · EE coding)","✓ captured","to capture",""],
+      ["FAD-GF (family functioning · PRIMARY)","✓ baseline","to capture","to capture"],
+      ["FACES-IV (cohesion + flexibility)","✓ baseline","","to capture"],
+      ["ZBI-12 (caregiver burden · spouse + parent)","✓ baseline","","to capture"],
+      ["Mood-episode recurrence (patient)","","","30d + 90d"],
+      ["Aftercare attendance · first OP appt","","","7d + 30d capture"],
+    ],
+    bridge: [
+      ["Day 6","Confirm spouse + named parent attend 30-day follow-up FTM on outpatient side"],
+      ["Day 7","Sleep-protection protocol written and signed by family · refrigerator copy printed"],
+      ["Day 8","Discharge med review with spouse present · prodrome list co-authored"],
+      ["Day 9","Discharge · 7-day follow-up scheduled with outpatient prescriber"],
+      ["Day 30","Family follow-up FTM · FAD-GF + FMSS recapture"],
+    ],
+    principle: "<strong>Trace the pattern back a generation before naming it forward.</strong> <br>The intervention surfaces the family's transmitted lesson (here: <em>love means vigilance</em>) before re-targeting the behavior. This is a teachable, fidelity-rateable named move — not a therapist trait. Coding criterion: did the clinician explicitly name the generational transmission on the audio recording?",
+    stat2: "7 strategies",
+    stat2Label: "Selected from 28-strategy bank · Core 6 + Case-A indexed",
+  },
+
+  B: {
+    title: "Case B — Co-Parenting Conflict + Child Safety",
+    context: [
+      ["Admission Day", "Day 4 of expected 9"],
+      ["Patient", "Early-40s · separated · primary parent of school-age child"],
+      ["Diagnosis", "Bipolar I, mixed episode + PTSD"],
+      ["Presentation", "Mixed-episode hospitalization during active and contested custody dispute"],
+      ["Family system", "Ex-partner <em>(not in care; in conflict)</em> · school-age child <em>(somatic complaints at handoffs)</em> · maternal grandmother as occasional support"],
+      ["Child-safety flag", "School + pediatrician have flagged child's distress to BOTH households"],
+      ["Day 1 joining", "Held with patient alone · 30 min · ex-partner invited Day 3 to single joint session under structured protocol"],
+    ],
+    ee: [
+      { q: "Criticism observed (cross-system; ex-partner)", choices: ["None","Moderate","High"], selected: 2 },
+      { q: "Emotional overinvolvement (patient ↔ child)", choices: ["None","Some","Marked"], selected: 1 },
+      { q: "Warmth / positive remarks (patient toward child)", choices: ["Present","Minimal","Absent"], selected: 0 },
+    ],
+    eeStratMsg: "Case B profile: <strong>High cross-system criticism + Warmth present</strong> → modified-intensity protocol with parallel-parenting frame.",
+    contact: "<strong>Structured Family Meeting</strong> · Day 4 · ~60 minutes · One joint session with ex-partner under structured rules · Audio captured for fidelity · Child NOT present",
+    eeBlock: "<strong>High inter-household criticism + warmth toward child</strong> → <strong>Modified-intensity protocol</strong>: standard family-meeting architecture with explicit parallel-parenting framing. <br><span style='font-size:11px; color:var(--rc-text-mid);'>Critical safety move: the harm in this dyad is the conflict itself, not the absence of cooperation. Manual permits parallel-parenting as the stabilization strategy rather than pushing collaboration.</span>",
+    strategiesLabel: "Strategies Selected — Core 6 + Case-B Structural Moves",
+    strategies: [
+      { num: "#1", name: "Joining / Frame-setting", rationale: "Opens meeting · required for all contacts", openerLabel: "Manualized Opener", opener: "\"This meeting is about the conditions under which your child can settle into both homes. It's not about who's right.\"" },
+      { num: "#19", name: "Co-parenting vs. parallel parenting distinction", rationale: "Case B's central structural move: parallel parenting named explicitly as the stabilization strategy", openerLabel: "Manualized Reframe", opener: "\"Co-parenting requires collaboration; parallel parenting requires only logistics and consistency. For this family, right now, parallel parenting is the safer path. That's not a defeat — that's the intervention.\"" },
+      { num: "#20", name: "Transition rituals built around the child's nervous system", rationale: "Environmental engineering — predictability IS the intervention for the child", openerLabel: "Structured Protocol", opener: "Same goodbye phrase + gesture every handoff. Transitional object travels with child. 30-min 'landing' period at receiving home — no questions asked, child allowed to settle." },
+      { num: "#21", name: "24-Hour Reflection rule for adult conflict", rationale: "Removes trauma-brain reactivity; communication continues asynchronously through the app", openerLabel: "Manualized Contract", opener: "\"When a co-parenting conflict arises — and one will — neither parent responds for 24 hours. After 24 hours, communication resumes through the app, in writing, no live calls.\"" },
+      { num: "#4", name: "Autonomy-deprivation contextualization", rationale: "Indexed: custody fight is fundamentally an autonomy question for both adults", openerLabel: "Manualized Reframe", opener: "\"The custody question is an autonomy question for both of you. We're not going to resolve it here. What we ARE going to do is name what each of you needs to feel safe handing your child to the other person.\"" },
+      { num: "#10", name: "Three Truths frame", rationale: "Adapted: each adult names one truth about themselves, the child, and the dyad — not about each other", openerLabel: "Structured Move", opener: "Each parent names: one thing that is true for them, one thing they have observed in the child, one thing that's true for the household. No truths about the other parent." },
+      { num: "#28", name: "Aftercare menu + therapist fit · with child component", rationale: "Closes meeting · adds child-side referrals", openerLabel: "Structured Close", opener: "Three options for patient's psychotherapy + three options for child therapy + parenting-coordination-app subscription + named school-counselor 90-day touch." },
+    ],
+    fidelity: [
+      ["Opened with manualized Joining script · child-focused framing", "#1"],
+      ["Named parallel parenting as the indicated strategy with rationale", "#19"],
+      ["Established three transition rituals to be implemented at handoffs", "#20"],
+      ["Established 24-Hour Reflection contract in writing", "#21"],
+      ["Reframed custody dispute as autonomy question (not compliance)", "#4"],
+      ["Three Truths elicited from both adults · no truths-about-the-other", "#10"],
+      ["Aftercare menu reviewed including child therapy + parenting app + school touch", "#28"],
+    ],
+    measures: [
+      ["Measure","Day 1","Day 9 (DC)","30d / 90d"],
+      ["FMSS (patient · ex-partner audio joint session)","","✓ captured",""],
+      ["FAD-GF (patient household)","✓ baseline","to capture","to capture"],
+      ["Co-parenting Conflict Scale (CPCS)","✓ baseline","","to capture"],
+      ["CBCL · child-reported behavior (TERTIARY)","","","30d + 90d via school"],
+      ["School-reported pre-handoff somatic complaints","baseline","","30d + 90d"],
+      ["Patient mood-episode recurrence","","","30d + 90d"],
+      ["Aftercare attendance (patient + child therapy)","","","7d + 30d capture"],
+    ],
+    bridge: [
+      ["Day 5","Single joint session with ex-partner held under structured protocol · audio captured"],
+      ["Day 6","Parenting-coordination app set up · subscription paid through hospital social-work fund"],
+      ["Day 7","Written transition-ritual protocol signed by both parents"],
+      ["Day 8","Discharge planning · school counselor briefed (with consent) · child therapist appointment booked"],
+      ["Day 9","Discharge · 30-day single follow-up family session scheduled"],
+      ["Day 90","School-counselor check-in · child behavior recapture"],
+    ],
+    principle: "<strong>Choose parallel over collaborative when conflict is the harm.</strong><br>Most family-therapy literature pushes toward collaboration. On an acute unit, the inverse is sometimes the right move — and clinicians need permission and a rule to do it. This is a high-leverage manualizable decision rule the protocol specifies with explicit criteria.",
+    stat2: "7 strategies",
+    stat2Label: "Selected from 28-strategy bank · Core 6 + Case-B structural-repair moves",
+  },
+
+  C: {
+    title: "Case C — First-Episode Psychosis + Cannabis",
+    context: [
+      ["Admission Day", "Day 5 of expected 10"],
+      ["Patient", "Early-20s · transition-age · lives with single parent + 14yo sibling"],
+      ["Diagnosis", "FEP (brief psychotic episode) + Cannabis use disorder + ADHD + learning challenges"],
+      ["Presentation", "First inpatient admission · heavy daily cannabis · perceptual disturbances · social withdrawal × weeks"],
+      ["Family system", "Single parent <em>(no prior psychiatric experience)</em> · 14yo sibling at home · other parent out-of-state"],
+      ["Day 1 joining", "Held with patient + parent · 45 min · parent oscillating between denial ('it's the drugs') and catastrophizing ('schizophrenia?')"],
+      ["Family knowledge gap", "Parent has been told what is happening but has no FRAMEWORK connecting sleep + cannabis + prodrome + psychotic-spectrum experience"],
+    ],
+    ee: [
+      { q: "Criticism observed (parent · Day 1)", choices: ["None","Moderate","High"], selected: 0 },
+      { q: "Emotional overinvolvement", choices: ["None","Some","Marked"], selected: 0 },
+      { q: "Warmth / positive remarks (parent · Day 1)", choices: ["Present","Minimal","Absent"], selected: 0 },
+    ],
+    eeStratMsg: "Case C profile: <strong>Low EE · informational starvation rather than emotional dysregulation</strong> → psychoeducation-forward protocol.",
+    contact: "<strong>Structured Family Meeting</strong> · Day 5 · ~60 minutes · Patient + parent · 14yo sibling joins for final 15 minutes under developmental protocol · Audio captured",
+    eeBlock: "<strong>Low EE · Warmth present · Informational starvation</strong> → <strong>Psychoeducation-forward protocol</strong>. <br><span style='font-size:11px; color:var(--rc-text-mid);'>Linszen 1996 directly relevant: intensive family therapy may iatrogenically destabilize low-EE families. Case C receives narrative-construction + concrete monitoring frame rather than the high-EE communication-skills module.</span>",
+    strategiesLabel: "Strategies Selected — Psychoeducation-Forward + Case-C Indexed",
+    strategies: [
+      { num: "#1", name: "Joining / Frame-setting", rationale: "Opens meeting · transition-age framing", openerLabel: "Manualized Opener", opener: "\"You're meeting a new system this week. I'm going to walk us through a framework for what's been happening — not a diagnosis lecture, a framework. So that when you walk out of here you have something usable.\"" },
+      { num: "#6", name: "Evidence-based rationale", rationale: "Replaces generic substance-use psychoeducation with a personalized chain — the rationale that anchors all subsequent work", openerLabel: "Manualized Frame", opener: "\"What I'm going to draw on this board is YOUR pattern, not the textbook pattern. The textbook pattern matters but only as a comparison.\"" },
+      { num: "#16", name: "The personal relapse narrative · whiteboard mapping", rationale: "The intervention's structural climax for Case C · patient is co-author, not recipient", openerLabel: "Structured Move", opener: "Whiteboard timeline drawn WITH patient supplying each link: cannabis use → reduced sleep architecture → fragmented sleep → next-day perceptual disturbance → social withdrawal → increased use to self-soothe → escalation. Patient names the chain to parent." },
+      { num: "#17", name: "Sleep as the canary · concrete monitoring frame", rationale: "Converts parent's vague anxiety into a defined, bounded role · not surveillance", openerLabel: "Manualized Frame", opener: "\"If [patient] is awake past 2 AM three nights in a row, that is the canary. Not a moral failure, not a sign you've failed as a parent — a clinical signal we agreed in advance to act on.\"" },
+      { num: "#18", name: "Sibling-developmental frame · 14yo included", rationale: "Low-cost, evidence-supported protective intervention against adolescent-sibling effects of severe family psychiatric illness", openerLabel: "Structured 15-minute Module", opener: "Sibling joins for the last 15 min. Developmentally appropriate explanation of what is happening, what to expect, AND what is NOT her job. Manualized script available in Appendix L.5." },
+      { num: "#2", name: "Normalization of fear", rationale: "Parent's denial/catastrophizing oscillation is fear-driven; named explicitly", openerLabel: "Manualized Opener", opener: "\"When a parent doesn't know what they're looking at, the mind oscillates between 'it's nothing' and 'it's everything.' That's not failure — that's what brains do without a framework.\"" },
+      { num: "#28", name: "Aftercare menu + therapist fit · CSC-FEP referral", rationale: "Closes meeting · routes to Coordinated Specialty Care for FEP", openerLabel: "Structured Close", opener: "Three options surfaced including CSC-FEP program enrollment as the primary recommendation. Cannabis-use treatment + sibling individual therapy options offered as adjuncts." },
+    ],
+    fidelity: [
+      ["Opened with transition-age framing · framework-not-diagnosis language", "#1"],
+      ["Replaced generic substance-use psychoeducation with personalized chain rationale", "#6"],
+      ["Whiteboard chain drawn WITH patient · patient named the chain to parent", "#16"],
+      ["Established 2-AM-three-nights monitoring protocol with parent · written copy provided", "#17"],
+      ["Sibling 15-minute module delivered using Appendix L.5 script", "#18"],
+      ["Normalized parent's denial/catastrophizing oscillation as fear-driven", "#2"],
+      ["CSC-FEP referral confirmed · cannabis treatment + sibling therapy options offered", "#28"],
+    ],
+    measures: [
+      ["Measure","Day 1","Day 9 (DC)","30d / 90d"],
+      ["FMSS (parent audio · low-EE baseline confirmed)","✓ captured","",""],
+      ["FAD-GF (family functioning)","✓ baseline","to capture","to capture"],
+      ["KAMI (illness literacy · patient + parent)","✓ baseline","to capture","to capture"],
+      ["Cannabis use frequency (patient self-report + TLFB)","baseline","","30d + 90d"],
+      ["Sleep architecture (actigraphy)","baseline","","30d + 90d"],
+      ["Sibling functioning · SDQ (TERTIARY)","baseline","","90d only"],
+      ["CSC-FEP program enrollment + retention","","","7d + 30d + 90d"],
+    ],
+    bridge: [
+      ["Day 6","CSC-FEP program contacted · warm handoff scheduled for Day 9 morning"],
+      ["Day 7","Written sleep-monitoring protocol signed by parent · printed copy for refrigerator"],
+      ["Day 8","Discharge planning · patient's personal chain (whiteboard) photographed + provided to patient"],
+      ["Day 9","Discharge · CSC-FEP program intake same day · 7-day patient follow-up + parent follow-up call"],
+      ["Day 30","CSC-FEP integration check · cannabis use TLFB · sibling SDQ touchpoint deferred to 90d"],
+    ],
+    principle: "<strong>Make the patient the author of the chain.</strong><br>The intervention is more durable when the personal relapse narrative is generated WITH the patient on the whiteboard, not delivered TO the patient as didactic content. This is fidelity-rateable: did the patient verbally supply each link of the chain on the audio recording, or did the clinician?",
+    stat2: "7 strategies",
+    stat2Label: "Selected from 28-strategy bank · psychoeducation-forward + transition-age indexed",
+  },
+};
+
+let currentCase = 'A';
+
+function selectCase(letter) {
+  currentCase = letter;
+  // Update tab state
+  document.querySelectorAll('.case-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.case === letter);
+  });
+  // Populate inputs
+  populateInputs(letter);
+  // Reset output
+  resetOutput();
+}
+
+function populateInputs(letter) {
+  const c = cases[letter];
+  document.getElementById('step1-title').textContent = `Clinical Context — ${c.title.split('—')[1].trim()}`;
+  document.getElementById('step2-title').textContent = `Generated Meeting Plan — ${c.title.split('—')[1].trim()}`;
+
+  // Context rows
+  const ctxRows = document.getElementById('ctx-rows');
+  ctxRows.innerHTML = c.context.map(([label, val]) =>
+    `<div class="ctx-row"><span class="ctx-label">${label}</span><span class="ctx-value">${val}</span></div>`
+  ).join('');
+
+  // EE grid
+  const eeGrid = document.getElementById('ee-grid');
+  eeGrid.innerHTML = c.ee.map(item =>
+    `<div class="ee-item">
+      <div class="ee-q">${item.q}</div>
+      <div class="ee-choices">
+        ${item.choices.map((ch, i) => `<span class="ee-choice ${i === item.selected ? 'selected' : ''}">${ch}</span>`).join('')}
+      </div>
+    </div>`
+  ).join('');
+
+  // EE strat msg
+  document.getElementById('ee-strat-msg').innerHTML = c.eeStratMsg;
+}
+
+function resetOutput() {
+  document.getElementById('empty-state').style.display = 'block';
+  document.getElementById('output-content').style.display = 'none';
+  document.querySelectorAll('.output-section').forEach(s => s.classList.remove('visible'));
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = false;
+  btn.classList.remove('loading');
+  btn.style.background = '';
+  btn.innerHTML = 'Generate Family Meeting Plan';
+}
+
+function runDemo() {
+  const c = cases[currentCase];
+  const btn = document.getElementById('gen-btn');
+  const empty = document.getElementById('empty-state');
+  const content = document.getElementById('output-content');
+  const sections = content.querySelectorAll('.output-section');
+
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.innerHTML = '<span class="pulse"></span> Generating plan…';
+
+  // Populate output
+  document.getElementById('out-contact').innerHTML = c.contact;
+  document.getElementById('out-ee').innerHTML = c.eeBlock;
+  document.getElementById('out-strategies-label').textContent = c.strategiesLabel;
+  document.getElementById('out-strategies').innerHTML = c.strategies.map(s =>
+    `<li class="strategy-item">
+      <span class="strategy-num">${s.num}</span>
+      <span class="strategy-name">${s.name}</span>
+      <div class="strategy-rationale">${s.rationale}</div>
+      <div class="strategy-opener">
+        <div class="opener-label">${s.openerLabel}</div>
+        <div class="opener-text">${s.opener}</div>
+      </div>
+    </li>`
+  ).join('');
+  document.getElementById('out-fidelity').innerHTML = c.fidelity.map(([f, tag]) =>
+    `<li>${f} <span class="strat-tag">${tag}</span></li>`
+  ).join('');
+  document.getElementById('out-measures').innerHTML = c.measures.map((row, i) => {
+    if (i === 0) return row.map(h => `<div class="h">${h}</div>`).join('');
+    return row.map((v, j) => {
+      let cls = 'c';
+      if (j === 0) return `<div class="c">${v}</div>`;
+      if (v.startsWith('✓')) cls = 'c done';
+      if (!v || v === '—') cls = 'c future';
+      return `<div class="${cls}">${v || '—'}</div>`;
+    }).join('');
+  }).join('');
+  document.getElementById('out-bridge').innerHTML = c.bridge.map(([day, desc]) =>
+    `<div class="bridge-card"><span class="bridge-day">${day}</span>${desc}</div>`
+  ).join('');
+  document.getElementById('out-principle-text').innerHTML = c.principle;
+
+  // Footer stats
+  document.getElementById('stat-2').textContent = c.stat2;
+  document.getElementById('stat-2-label').textContent = c.stat2Label;
+
+  setTimeout(() => {
+    empty.style.display = 'none';
+    content.style.display = 'block';
+    sections.forEach((sec, idx) => {
+      setTimeout(() => sec.classList.add('visible'), idx * 600);
+    });
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      btn.innerHTML = '✓ Plan generated · click to regenerate · switch tabs for Case A/B/C';
+      btn.style.background = 'var(--rc-success)';
+    }, sections.length * 600 + 400);
+  }, 600);
+}
+
+window.showPrePopulated = function() {
+  runDemo();
+  setTimeout(() => {
+    document.querySelectorAll('.output-section').forEach(s => s.classList.add('visible'));
+  }, 1200);
+};
+
+// Initial load
+document.addEventListener('DOMContentLoaded', () => {
+  populateInputs('A');
+});
+populateInputs('A');
+</script>
+
+</body>
+</html>

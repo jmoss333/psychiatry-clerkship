@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>The Interview Circle</title>
+<style>
+:root{
+  --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --surface2:#faf6f0; --hover:#f0e9e0;
+  --border:#e6dfd4; --border2:#e3dccf;
+  --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+  --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+  --text:#3b332c; --text-mid:#51473d; --text-light:#87786a;
+  --danger:#a34132; --danger-light:#f4e3df;
+  --focus:#155eef; --shadow-card:0 6px 20px rgba(59,51,44,.10);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:30px 26px 64px}
+.topline{display:flex;align-items:center;gap:11px;margin-bottom:18px}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--primary);color:#fff;display:grid;place-items:center;font-family:Georgia,serif;font-size:20px;flex:none}
+.ttl{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:1.18rem;line-height:1.15}
+.by{color:var(--text-light);font-size:.78rem}
+.thmbtn{margin-left:auto;border:1px solid var(--border);background:var(--surface);color:var(--text);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:1rem;flex:none}
+.thmbtn:hover{background:var(--hover)}
+.row{display:flex;gap:40px;align-items:center;flex-wrap:wrap;justify-content:center}
+/* diagram */
+.diagram{width:100%;max-width:620px;flex:0 0 auto;position:relative;aspect-ratio:1/1}
+@media(max-width:680px){.diagram{max-width:100%}}
+.stage{position:absolute;top:0;left:0;width:700px;height:700px;transform-origin:top left}
+.stage svg.under{position:absolute;inset:0;width:700px;height:700px;overflow:visible}
+.ring{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:3 9;stroke-linecap:round;opacity:.55}
+.spoke{stroke:var(--accent);stroke-width:2;stroke-linecap:round;opacity:.4}
+.orbit{transform-origin:350px 350px}
+.orbit .dot{fill:var(--accent)}
+.hub{position:absolute;left:350px;top:350px;transform:translate(-50%,-50%);width:172px;height:172px;border-radius:50%;background:var(--accent-light);border:2px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:var(--shadow-card)}
+.hub b{font-family:"Source Serif 4",Georgia,serif;font-size:17px;font-weight:600;color:var(--accent-dark);line-height:1.05}
+.hub span{font-size:11px;color:var(--text-light);margin-top:5px;max-width:120px;line-height:1.25}
+.node{position:absolute;transform:translate(-50%,-50%);width:188px;display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--border);border-left-width:3px;border-radius:13px;padding:11px 13px;box-shadow:var(--shadow-card)}
+.node .chip{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none}
+.node .chip svg{width:18px;height:18px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.node .tx{min-width:0}
+.node .tt{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.18}
+.node .sb{font-size:11px;color:var(--text-light);line-height:1.3;margin-top:2px}
+/* rail */
+.rail{flex:1 1 380px;max-width:430px;min-width:300px}
+.rail h1{font-family:"Source Serif 4",Georgia,serif;font-size:1.5rem;line-height:1.15;margin:0 0 12px;color:var(--text)}
+.rail .lede{font-size:1rem;color:var(--text-mid);line-height:1.5;margin:0 0 20px}
+.rail .lede b{color:var(--text)}
+.step{display:flex;gap:13px;align-items:flex-start;margin:0 0 15px}
+.step .ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}
+.step .ic svg{width:19px;height:19px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.step .h{font-weight:700;font-size:.96rem;color:var(--text)}
+.step .b{font-size:.9rem;color:var(--text-mid);line-height:1.45;margin-top:2px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border2)}
+.legend .li{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-light)}
+.legend .sw{width:11px;height:11px;border-radius:3px}
+.sig{color:var(--text-light);font-size:.78rem;text-align:center;margin-top:30px;line-height:1.5}
+.embed .topline,.embed .sig{display:none}
+.embed .wrap{padding:8px 14px 18px}
+@media(prefers-reduced-motion:no-preference){
+  .ring{animation:ants 2.4s linear infinite}
+  .orbit{animation:spin 22s linear infinite}
+}
+@keyframes ants{to{stroke-dashoffset:-44}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<main class="wrap" id="root">
+  <div class="topline">
+    <div class="logo">&psi;</div>
+    <div><div class="ttl">The Interview Circle</div><div class="by">Clinical skills · Joshua Moss, MD</div></div>
+    <button class="thmbtn" id="thm" title="Toggle dark mode" aria-label="Toggle dark mode">&#9790;</button>
+  </div>
+  <div class="row">
+    <div class="diagram"><div class="stage" id="stage">
+      <svg class="under" viewBox="0 0 700 700" aria-hidden="true">
+        <circle class="ring" cx="350" cy="350" r="250"/>
+        <g id="spokes"></g>
+        <g class="orbit"><circle class="dot" cx="350" cy="100" r="8"/><circle cx="350" cy="100" r="8" fill="none" stroke="var(--accent)" stroke-opacity="0.18" stroke-width="5"/></g>
+      </svg>
+      <div class="hub"><b>The<br>conversation</b><span>follow the affect in the room</span></div>
+      <div id="nodes"></div>
+    </div></div>
+    <div class="rail">
+      <h1>The interview is a circle, not a checklist.</h1>
+      <p class="lede">You still gather every domain — the story, the histories, substances, family, social, mental status, safety. But you don't march through them in order. Open where the patient opens a door, gather that arc, then come back to the centre and <b>follow the conversation</b> to wherever it goes next.</p>
+      <div id="steps"></div>
+      <div class="legend">
+        <div class="li"><span class="sw" style="background:var(--primary)"></span>Anchor — start with the story</div>
+        <div class="li"><span class="sw" style="background:var(--accent)"></span>Gather — the information arcs</div>
+        <div class="li"><span class="sw" style="background:var(--danger)"></span>Never skip — safety &amp; risk</div>
+      </div>
+    </div>
+  </div>
+  <div class="sig">Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.</div>
+</main>
+<script>
+(function(){
+ var framed=(window.self!==window.top);
+ if(/[?&]embed=1/.test(location.search)) document.body.classList.add('embed');
+
+ var TONE={anchor:{bar:'var(--primary)',bg:'var(--primary-light)',ink:'var(--primary-dark)'},
+           arc:{bar:'var(--accent)',bg:'var(--accent-light)',ink:'var(--accent-dark)'},
+           risk:{bar:'var(--danger)',bg:'var(--danger-light)',ink:'var(--danger)'}};
+ var ICON={
+  hpi:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  psych:'<path d="M8 3h8v3H8z"/><path d="M6 5H5v16h14V5h-1"/><path d="M9 12h6M9 16h4"/>',
+  subs:'<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/>',
+  med:'<path d="M3 12h4l2-5 4 10 2-5h6"/>',
+  family:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.4"/><path d="M3.5 20c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5"/><path d="M15.5 20c0-2 .8-3.6 2.3-4.4"/>',
+  social:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>',
+  mse:'<path d="M12 4v15"/><path d="M9 5a3 3 0 0 0-3 3 3 3 0 0 0-1 4 3 3 0 0 0 2 4.5"/><path d="M15 5a3 3 0 0 1 3 3 3 3 0 0 1 1 4 3 3 0 0 1-2 4.5"/>',
+  safety:'<path d="M12 3l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V6z"/><path d="M9.5 12l1.8 1.8 3.2-3.4"/>'
+ };
+ // 8 domains, clockwise from top (i=0..7); angle = -90 + 45*i degrees
+ var DOMAINS=[
+  {t:'Chief complaint & HPI', s:'The story, in their words', tone:'anchor', ic:'hpi'},
+  {t:'Psychiatric history', s:'Diagnoses, hospitalizations, meds tried', tone:'arc', ic:'psych'},
+  {t:'Substance use', s:'Alcohol, tobacco, drugs — patterns', tone:'arc', ic:'subs'},
+  {t:'Medical history & meds', s:'Conditions, current meds, allergies', tone:'arc', ic:'med'},
+  {t:'Family history', s:'Psychiatric & medical, in the family', tone:'arc', ic:'family'},
+  {t:'Social & developmental', s:'Relationships, trauma, supports, function', tone:'arc', ic:'social'},
+  {t:'Mental status exam', s:'Appearance, affect, thought, cognition', tone:'arc', ic:'mse'},
+  {t:'Safety & risk', s:'SI, HI, access to means', tone:'risk', ic:'safety'}
+ ];
+ var STEPS=[
+  {h:'Start anywhere', b:'Follow what the patient brings first. Every domain on the ring is a valid door in.', tone:'anchor', ic:'<path d="M5 12h14M13 6l6 6-6 6"/>'},
+  {h:'Return to centre', b:'After each thread, come back to the conversation and the affect in the room before you move on.', tone:'arc', ic:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>'},
+  {h:'Close the loop', b:'Before you finish, make sure every arc has been touched — never leave the circle without covering safety.', tone:'risk', ic:'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 5-5"/>'}
+ ];
+ var C=350, R=250;
+ function pos(i){ var th=(-90+45*i)*Math.PI/180; return {x:C+R*Math.cos(th), y:C+R*Math.sin(th), dx:Math.cos(th), dy:Math.sin(th)}; }
+
+ // spokes
+ var sp='';
+ for(var i=0;i<8;i++){ var p=pos(i); var x1=C+88*p.dx,y1=C+88*p.dy,x2=C+168*p.dx,y2=C+168*p.dy;
+   sp+='<line class="spoke" x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'"/>';
+   sp+='<circle cx="'+x1.toFixed(1)+'" cy="'+y1.toFixed(1)+'" r="2.4" fill="var(--accent)" opacity="0.5"/>';
+ }
+ document.getElementById('spokes').innerHTML=sp;
+
+ // nodes
+ var nh='';
+ for(var j=0;j<8;j++){ var d=DOMAINS[j], q=pos(j), tn=TONE[d.tone];
+   nh+='<div class="node" style="left:'+q.x.toFixed(1)+'px;top:'+q.y.toFixed(1)+'px;border-left-color:'+tn.bar+'">'
+     +'<span class="chip" style="background:'+tn.bg+';color:'+tn.ink+'"><svg viewBox="0 0 24 24" stroke="currentColor">'+ICON[d.ic]+'</svg></span>'
+     +'<span class="tx"><span class="tt">'+d.t+'</span><span class="sb">'+d.s+'</span></span></div>';
+ }
+ document.getElementById('nodes').innerHTML=nh;
+
+ // steps
+ var sh='';
+ for(var k=0;k<3;k++){ var st=STEPS[k], t2=TONE[st.tone];
+   sh+='<div class="step"><span class="ic" style="background:'+t2.bg+';color:'+t2.ink+'"><svg viewBox="0 0 24 24" stroke="currentColor">'+st.ic+'</svg></span>'
+     +'<span><span class="h">'+st.h+'</span><div class="b">'+st.b+'</div></span></div>';
+ }
+ document.getElementById('steps').innerHTML=sh;
+
+ // responsive scaling of the 700x700 stage
+ var diagram=document.querySelector('.diagram'), stage=document.getElementById('stage');
+ function postSize(){ if(document.body.classList.contains('embed')){ try{ window.parent.postMessage({type:'ic-size',h:Math.ceil(document.body.scrollHeight)},'*'); }catch(_){ } } }
+ function fit(){ var w=diagram.clientWidth; stage.style.transform='scale('+(w/700)+')'; postSize(); }
+ fit(); window.addEventListener('resize',fit);
+ if(window.ResizeObserver){ new ResizeObserver(fit).observe(diagram); }
+ window.addEventListener('load',function(){ fit(); setTimeout(postSize,120); setTimeout(postSize,500); });
+
+ // theme
+ var thm=document.getElementById('thm');
+ function setIcon(){ thm.innerHTML=(document.documentElement.getAttribute('data-theme')==='dark')?'☀':'☾'; }
+ setIcon();
+ thm.addEventListener('click',function(){ var nx=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',nx); try{localStorage.setItem('cw_theme',nx);}catch(_){ } setIcon(); if(framed){try{window.parent.postMessage({type:'theme',mode:nx},'*');}catch(_){ }} });
+ window.addEventListener('message',function(ev){ var d=ev.data||{}; if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){ document.documentElement.setAttribute('data-theme',d.mode); setIcon(); } });
+})();
+</script>
+</body>
+</html>

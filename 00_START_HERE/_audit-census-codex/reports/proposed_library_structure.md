@@ -1,0 +1,85 @@
+# Proposed Master Psychiatry Clerkship Library Structure
+
+Designed as a single source of truth that can later branch into MS3, sub-I, resident, nursing, social work, and patient/family tracks.
+
+```text
+Psychiatry Clerkship Library/
+  00_Index_and_Curation/
+    Master_Index.csv
+    Duplicate_Log.csv
+    Source_Governance.md
+    PHI_Review_Rules.md
+  01_Orientation/
+    Rotation_Overview/
+    Unit_Workflow/
+    Daily_Rounds/
+    Epic_and_Documentation/
+    Student_Roles_and_Expectations/
+  02_Week_1_Foundations/
+    Psychiatric_Interviewing/
+    Mental_Status_Exam/
+    Safety_and_Therapeutic_Frame/
+    Oral_Presentations/
+  03_Week_2_Diagnosis_and_Formulation/
+    DSM_Overview/
+    Mood_Disorders/
+    Psychotic_Disorders/
+    Anxiety_OCD_Trauma/
+    Personality_Disorders/
+    Biopsychosocial_Formulation/
+  04_Week_3_Treatment/
+    Psychopharmacology_Basics/
+    Psychotherapy_Basics/
+    Family_Work/
+    Measurement_Based_Care/
+  05_Week_4_Acute_and_Consult_Psychiatry/
+    Suicide_Risk/
+    Violence_Risk_and_Agitation/
+    Delirium/
+    Catatonia/
+    Substance_Withdrawal/
+    Capacity_and_Legal/
+    Consult_Etiquette/
+  06_Week_5_Systems_Disposition_and_Family/
+    Family_Meetings/
+    Discharge_Planning/
+    Outpatient_Resources/
+    Patient_and_Family_Education/
+    Systems_Based_Practice/
+  07_Week_6_Integration/
+    Case_Presentations/
+    OSCE_Practice/
+    Shelf_Review/
+    Professional_Identity/
+  Clinical_Skills/
+    Interviewing/
+    MSE/
+    Risk_Assessment/
+    Documentation/
+    Case_Formulation/
+    Family_Meetings/
+  Reference_Library/
+    High_Yield_Articles/
+    Guidelines/
+    Book_Summaries/
+    Landmark_Summaries/
+    Evidence_Tables/
+  Media_Library/
+    Videos/
+    Podcasts_and_Audio/
+    Slide_Decks/
+  AI_Tools/
+    Prompt_Library/
+    Student_Tutoring_Prompts/
+    Faculty_Curation_Tools/
+  Faculty_and_Resident_Resources/
+    Teaching_Guides/
+    Facilitator_Notes/
+    Assessment_Rubrics/
+  Archive/
+    Superseded_Versions/
+    Raw_Source_Packets/
+    Operational_Reports/
+```
+
+Plain-English code note: the scanner does not move files. It only creates a map of what exists and suggests where each item belongs.

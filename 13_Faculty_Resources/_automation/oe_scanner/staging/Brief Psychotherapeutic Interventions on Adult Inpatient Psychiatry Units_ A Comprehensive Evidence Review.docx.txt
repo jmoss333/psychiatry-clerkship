@@ -1,0 +1,445 @@
+Brief Psychotherapeutic Interventions on Adult Inpatient Psychiatry Units: A Comprehensive Evidence Review
+
+
+Scope and Framing
+
+
+This review synthesizes the evidence for brief psychotherapeutic interventions deliverable by psychiatry residents during short (3–7 day) adult inpatient psychiatric admissions. It covers safety planning, brief CBT, behavioral activation, DBT-informed skills, motivational interviewing, problem-solving therapy, supportive psychotherapy, crisis intervention, and psychoeducation. The focus is on interventions with RCT or meta-analytic support, guideline endorsement, and practical feasibility in acute settings. Pediatric and long-stay (>3 month) inpatient data are excluded except where directly informative.
+
+---
+
+I. The Overarching Evidence Base: Does Inpatient Psychotherapy Work?
+
+
+Multiple meta-analyses converge on a small-to-moderate benefit of adding psychotherapy to standard inpatient care. The Schefft et al. (2019) meta-analysis of 14 RCTs (1,080 patients with MDD) found a pooled effect of SMD 0.24 (95% CI 0.12–0.37; NNT = 7.4) with zero heterogeneity across CBT, behavioral activation, psychodynamic, and interpersonal modalities.[1] Cuijpers et al. (2021) extended this to 32 RCTs in institutional settings, finding g = 0.42 (0.29–0.56), sustained at 9–15 months.[2] The Cohen-Chazani et al. (2022) meta-analysis (37 samples, 4,443 patients across diagnoses) found d = 0.43 for the specific contribution of psychotherapy beyond ward treatment, with no significant effect of therapy orientation — diagnosis moderated outcomes more than modality.[3] The Paterson et al. (2018) meta-analysis confirmed small-to-moderate improvements in depression, anxiety, and readmissions, though blinded RCTs showed smaller effects.[4]
+
+The following forest plot from Schefft et al. illustrates the consistent small benefit across modalities for inpatient depression treatment:
+
+Figure 1 Random‐effects meta‐analysis of self‐reported data. All measures BDI except for de Roten et al. : QIDS‐ SR 16 ; SMD , standardized mean difference calculated as Hedge's g. For details on interventions, please refer to Table . AD , antidepressant; BAT , behavioural activation therapy; CBT , cognitive behavioural therapy; c‐ CBT , computerized cognitive behavioural therapy; COMB , combination (activity scheduling, social competence training, cognitive restructuring); CR , cognitive restructuring; CT , cognitive therapy; ICBT / GCBT , individual/group CBT ; IPT , interpersonal therapy; PDT , psychodynamic therapy; SST , social skills training; UCBT , ultrabrief cognitive behavioural therapy.
+
+A critical 2026 JAMA Psychiatry viewpoint by Kleiman et al. argues that the field must stop treating inpatient units as "short-term outpatient" and instead design interventions around stand-alone, open-enrollment modules targeting transdiagnostic crisis mechanisms (emotion dysregulation, cognitive inflexibility, behavioral inactivity, life-threatening behaviors), deliverable by non-specialist staff.[5]
+
+---
+
+II. Safety Planning Intervention (SPI) and Suicide Prevention
+
+
+The Stanley-Brown Safety Planning Intervention
+
+
+The strongest evidence for any single brief inpatient intervention comes from safety planning. The Stanley et al. (2018) VA cohort comparison (N = 1,640 across 9 EDs) found SPI with structured follow-up calls (SPI+) was associated with ~45% fewer suicidal behaviors (OR 0.56; 95% CI 0.33–0.95) and more than double the odds of outpatient engagement over 6 months.[6] Critically, the protective effect was not mediated by increased treatment engagement, suggesting SPI has an independent mechanism.[6]
+
+Figure 1 Suicidal Behavior in 6-Month Follow-up for Safety Planning Intervention With Structured Follow-up Telephone Contact (SPI+) and Usual Care
+
+The Nuij et al. (2021) meta-analysis of 6 studies (N = 3,536) confirmed safety planning-type interventions reduce suicidal behavior (RR 0.57; 95% CI 0.41–0.80; NNT = 16), though not suicidal ideation.[7] Safety plan quality matters: among hospitalized veterans, higher whole-plan quality was associated with decreased suicide attempts (AHR 0.79; 95% CI 0.66–0.95), with Step 1 (warning signs) quality most strongly protective (HR 0.48).[8] Alarmingly, 52.5% of at-risk veterans in one sample lacked a documented safety plan.[8]
+
+Crisis Response Planning
+
+
+Bryan et al. (2017) demonstrated that crisis response planning (an abbreviated 4-step SPI) significantly reduced suicide attempts and improved treatment engagement compared to no-suicide contracts in active-duty military.[9] The 2024 VA/DoD guideline recognizes SPI as standard of care in both VA and DoD settings.[10]
+
+Brief Cognitive Behavioral Therapy for Suicide Prevention (BCBT-Inpatient)
+
+
+The Diefenbach et al. (2024) RCT (N = 200) is the largest and most definitive inpatient suicide prevention psychotherapy trial. Up to 4 sessions of BCBT-Inpatient added to TAU (which already included safety planning and caring contacts) reduced post-discharge suicide attempts by 60% (OR 0.40; 95% CI 0.20–0.80; NNT = 7) and psychiatric readmissions by 71% in patients without SUD over 6 months.[11]
+
+The MSPIRE RCT (Bryan et al., 2025) replicated these findings in military populations, with BCBT reducing cumulative attempt rates to ~6% vs. ~28% for present-centered therapy.[12]
+
+Caring Contacts
+
+
+The 2024 VA/DoD guideline suggests sending periodic caring communications for 12 months post-hospitalization to reduce suicide attempts (moderate quality evidence).[10] A systematic review found caring contacts may reduce attempts by ~43% at 1-year follow-up, though a single postcard is insufficient — repeated communication for ≥12 months is required.[10][9]
+
+Post-Discharge Risk Window
+
+
+The post-discharge period carries extraordinary risk: pooled suicide rates are 2,950 per 100,000 person-years in the first week and 2,060 per 100,000 person-years in the first month after psychiatric discharge.[13] Only 35% of patients attend follow-up within 1 week.[14] The Doupnik et al. (2020) JAMA Psychiatry meta-analysis of 14 studies (N = 4,270) found brief suicide prevention interventions in acute care reduced subsequent attempts (pooled OR 0.69) and increased linkage to follow-up (pooled OR 2.74).[15]
+
+Figure 2 Forest Plots for 3 Study Outcomes: Depression, Linkage to Follow-up Care, and Subsequent Suicide Attempts
+
+---
+
+III. DBT-Informed Skills Training
+
+
+Inpatient Evidence
+
+
+The evidence for DBT in acute inpatient settings is consistently positive but methodologically limited, consisting primarily of retrospective studies and small trials.[16] Bohus et al. (2004) demonstrated that 3-month inpatient DBT for BPD (N = 50) was superior to waitlist on 7 of 9 psychopathological variables, with 42% achieving clinical recovery.[17] Kujovic et al. (2024) found that 8-week and 12-week adapted inpatient DBT produced comparable large effect sizes (BSL-23: d = 1.29 vs. 1.16), suggesting shorter programs may be viable.[18]
+
+Jones et al. (2025) conducted a feasibility RCT of digital DBT (5 online modules over 5–10 days) for acutely suicidal inpatients (N = 42), finding a large effect on suicidality (Cohen's d = −1.0) with 75% adherence.[19] The "Living Through Distress" DBT-informed skills group showed significant reductions in self-harm and increased distress tolerance maintained at 3-month follow-up.[20][21]
+
+The Dismantling Evidence: Skills Training as the Active Ingredient
+
+
+The landmark Linehan et al. (2015) dismantling RCT (N = 99) compared standard DBT, DBT skills training + case management, and DBT individual therapy + activities group. Conditions including skills training were significantly superior for reducing NSSI (F = 59.1, p < .001) and depression, while all three reduced suicide attempts comparably.[22] This supports skills training as a necessary and potentially sufficient component — directly relevant to inpatient settings where individual DBT therapy is impractical.
+
+The following figure from McMain et al. (2017) illustrates outcomes from a brief DBT skills training trial, showing steep declines in self-harm reaching near-zero rates:
+
+Figure 2 Outcomes for dialectical behaviour therapy ( N = 42) and waitlist ( N = 42) groups over 32 weeks after randomization. Estimated marginal means and 95% confidence intervals over specific outcomes. DSHI , Deliberate Self‐Harm Inventory; LSASI , Lifetime Suicide Attempt Self‐Injury. Estimates of the marginal means were derived from multilevel generalized linear models. Estimates are incident rate ratios for the self‐harm measures and probabilities for the occurrence of Emergency Room Visits and Hospitalizations.
+
+Meta-Analytic Evidence
+
+
+DeCou et al. (2019; 18 controlled trials) found DBT significantly reduced self-directed violence (d = −0.32) and crisis service use (d = −0.38), but the effect on suicidal ideation was not significant.[24] The 2024 VA/DoD guideline concluded there is insufficient evidence to recommend for or against DBT specifically for suicide attempts, reflecting uncertainty about DBT's effect on attempts as distinct from self-harm broadly.[10]
+
+A practical overview of the four core DBT skill categories — mindfulness, distress tolerance, emotion regulation, and interpersonal effectiveness — with specific techniques teachable in brief clinical encounters is shown below:
+
+Figure 1 Dialectical behavior therapy interventions. Information from references 12 and 13.
+
+---
+
+IV. Behavioral Activation (BA)
+
+
+BA's simplicity and low cognitive demands make it particularly well-suited to acute inpatient settings. Hopko et al. (2003) conducted the first inpatient BA pilot RCT, demonstrating superiority over supportive treatment with a large effect size.[26] Folke et al. (2015) showed that a 5-day, 10-session BA protocol produced marked improvements in 4 of 6 inpatients.[27] Melicherova et al. (2024; N = 375) found group BA and group CBT produced comparable depression reductions (d = 0.83 vs. 1.08) with no significant between-group differences.[28]
+
+The Cochrane review by Uphoff et al. (2020; 15 RCTs, 2,208 participants) found BA superior to TAU for depression (SMD −0.78; 95% CI −1.05 to −0.51) and anxiety (SMD −0.33).[29] A 2024 JAMA review confirmed BA's effect on depression vs. usual care (SMD 0.73; 95% CI 0.52–0.95), comparable to CBT (0.67) and problem-solving therapy (0.64).[30] BA is not significantly different from other active treatments, supporting its use as a pragmatic, easily taught alternative to more complex modalities.[31]
+
+---
+
+V. Motivational Interviewing (MI)
+
+
+Inpatient Psychiatric Settings
+
+
+The Bagøien et al. (2013) RCT is the most directly relevant trial: 135 patients with comorbid substance use admitted to a psychiatric emergency unit received 2 sessions of MI + TAU vs. TAU alone. At 2-year follow-up, the MI group showed a net reduction of 7.3 days of substance use per month (95% CI 1.9–12.6, p < 0.01), suggesting a delayed but substantial benefit from a very brief intervention.[32] Baker et al. (2002) found a single 30–45 minute MI session for psychiatric inpatients with SUD produced modest short-term effects on polydrug use, though effects were not sustained at 12 months.[33]
+
+Treatment Engagement
+
+
+A meta-analysis by Lawrence et al. (2017) found MI as a pre-treatment intervention significantly increased subsequent treatment attendance, with effects concentrated in non-treatment-seeking populations (OR ≈ 5, no heterogeneity).[34] This supports MI's particular value for engaging ambivalent or involuntary patients encountered on inpatient units.
+
+Figure 2 Forest plot: attendance to treatment [Colour figure can be viewed at wileyonlinelibrary.com]
+
+Medication Adherence
+
+
+Palacio et al. (2016; 17 RCTs) found MI improved medication adherence (pooled RR 1.17; 95% CI 1.05–1.31).[35] For bipolar disorder, Pakpour et al. (2017; N = 270) found 5 sessions of MI + psychoeducation significantly improved adherence scores.[36] The VA/DoD SUD guideline emphasizes using MI style during all therapeutic encounters as a fundamental engagement strategy.[37]
+
+Cochrane Evidence
+
+
+The 2023 Cochrane review (93 studies, 22,776 participants) found MI showed small-to-moderate benefit vs. no intervention post-treatment (SMD 0.48), weakening over time, with no clear benefit vs. TAU at most time points.[38]
+
+---
+
+VI. Problem-Solving Therapy (PST)
+
+
+The Hatcher et al. (2011) Zelen RCT (N = 1,094) found that among patients with repeat self-harm history, PST significantly reduced re-presentations (13.5% vs. 22.1%, RR = 0.39, NNT = 12).[39] Turgut & Eskin (2025; N = 39) showed both individual and group PST produced large effect sizes for reducing suicide probability and depression.[40] A 2026 meta-analysis found PST demonstrated a 55% reduction in suicide deaths at 6–12 month follow-up — one of only two intervention types to show significant effects on suicide mortality.[41]
+
+Figure 3 Forest plots of self‐harm recurrence (a) and suicide deaths (b) at T2 (> 6 to 12 months).
+
+The VA/DoD guideline describes PST as "brief, easily taught, and usable by various providers".[10] The 2024 JAMA review confirmed PST's effect on depression (SMD 0.64) is comparable to CBT and BA.[30]
+
+---
+
+VII. Psychoeducation
+
+
+The Cochrane review by Xia et al. (2011; 44 RCTs, 5,142 participants, mostly inpatients with schizophrenia) found psychoeducation significantly reduced non-compliance (RR 0.52, NNT = 11), relapse (RR 0.70, NNT = 9), and readmission (RR 0.71, NNT = 5).[42] Barnicot et al. (2020) confirmed psychoeducation as having the strongest evidence base among psychological interventions for acute inpatients with schizophrenia-spectrum disorders.[43] Vickar et al. (2009) found intensive inpatient-initiated psychoeducation reduced 6-month rehospitalization from 56% to 20% (p = 0.038).[44]
+
+Despite this evidence, a survey of psychiatry trainees found 81–84% reported non-uniform psychoeducation content and delivery, with 98% using unstructured conversation and only 25% using supplemental materials.[45]
+
+---
+
+VIII. Supportive Psychotherapy and Common Factors
+
+
+Direct RCT evidence for manualized supportive psychotherapy in inpatient settings is sparse — it typically serves as the control condition rather than the experimental intervention.[26] The Massachusetts General Hospital model teaches four key brief inpatient psychotherapy techniques: support, affective experience and expression, chain analysis, and identification of relational styles/maladaptive relational patterns.[46] Qualitative evidence highlights that patients value the "human" therapeutic relationship as the foundation for therapeutic work in acute settings, with psychological formulation providing meaning-making and hope.[47] The finding that no single therapy orientation demonstrates superiority in inpatient settings (Cohen-Chazani et al., 2022) suggests common therapeutic factors — alliance, validation, support — account for much of the benefit.[3]
+
+---
+
+IX. Guideline Recommendations
+
+
+
+
+---
+
+X. Contraindications and Common Pitfalls
+
+
+Structural pitfalls are the most consequential barriers. Kleiman et al. (2026) identify the fundamental mismatch: outpatient evidence-based treatments assume stable attendance, cumulative learning, and continuity — assumptions that rarely hold in inpatient settings with rapid turnover, frequent cancellations, and diagnostic heterogeneity.[5] Even the briefest manualized treatments often exceed typical lengths of stay.[5]
+
+Clinical contraindications and cautions:
+
+- Acute psychosis with disorganization: Insight-oriented or cognitively demanding interventions (CBT restructuring, PST) are poorly tolerated; prioritize supportive contact, simple behavioral strategies, and psychoeducation[55]
+
+- Severe intoxication or withdrawal: Defer MI and structured interventions until the patient is alert and oriented; SAMHSA recommends providing brief interventions "as early as possible during hospitalization when the patient is alert and oriented"[54]
+
+- Involuntary admission and coercion: The therapeutic alliance is uniquely challenged; Bolsinger et al. (2019) found that coercive admission circumstances, lack of autonomy, and environmental factors (noise, lack of privacy) significantly impair relationship-building. MI spirit (autonomy support, collaboration) is particularly important here[56][34]
+
+- Trauma exposure: Avoid detailed trauma processing during acute crisis; focus on stabilization, grounding, and safety[57]
+
+- Substance use disorder comorbidity: Moderates treatment effects — BCBT-Inpatient's readmission benefit was attenuated in patients with SUD; bipolar disorder patients did not benefit from SPI+ in the Stanley et al. study[11][6]
+
+- Safety plan quality: Mandating safety plans without ensuring quality is insufficient — poor-quality plans may provide false reassurance[8][58]
+
+- No-suicide contracts: Should be abandoned — they have no evidence of efficacy and crisis response planning is significantly superior[9]
+
+Resident-specific pitfalls:
+
+- Attempting multi-session manualized protocols that exceed the patient's length of stay
+
+- Providing unstructured psychoeducation without standardized content[45]
+
+- Neglecting to document and communicate psychotherapeutic interventions to the outpatient team
+
+- Failing to match intervention intensity to patient acuity and cognitive capacity
+
+---
+
+XI. Practical Interventions by Time Available
+
+
+
+
+---
+
+XII. Top 15 Papers Residents Should Know
+
+
+
+
+---
+
+XIII. Top 10 Bedside Psychotherapy Skills for Inpatient Psychiatry
+
+
+1. Safety Planning (Stanley-Brown 6-Step Model)
+
+The single most evidence-based brief intervention. Complete all 6 steps: warning signs, internal coping strategies, social contacts for distraction, people to contact for help, professionals/agencies to contact, making the environment safe. Personalize each step; quality predicts outcomes.[6][8]
+
+2. Validation and Therapeutic Alliance
+
+The foundation for all other interventions. Reflect the patient's emotional experience without judgment. In acute settings marked by coercion and loss of autonomy, the "human" relationship is what patients value most.[47][56] Use Linehan's 6 levels of validation: being present, accurate reflection, articulating the unverbalized, validating in terms of past history, validating in terms of present context, radical genuineness.
+
+3. Chain Analysis
+
+Map the behavioral sequence from vulnerability factors through prompting event, thoughts, emotions, urges, behavior, and consequences. Identifies intervention points and builds patient insight. Core to both DBT and the MGH inpatient psychotherapy model.[46][22]
+
+4. Behavioral Activation Scheduling
+
+Collaboratively schedule one concrete pleasant or mastery activity. Start small — even getting out of bed, showering, or walking the hallway counts. Track mood before and after. BA's simplicity and low cognitive demands make it ideal for acutely ill patients.[26][29]
+
+5. Distress Tolerance Skills (TIPP)
+
+Teach one concrete skill: Temperature (ice water on face), Intense exercise (wall push-ups, pacing), Paced breathing (exhale longer than inhale), Progressive/Paired muscle relaxation. These produce immediate physiological down-regulation and are the most immediately applicable DBT skills.[22][20]
+
+6. Motivational Interviewing Spirit
+
+Use OARS (Open questions, Affirmations, Reflections, Summaries) in every encounter. Elicit change talk with the "readiness ruler." Particularly valuable for medication ambivalence, substance use, and treatment engagement in non-treatment-seeking patients.[34][32]
+
+7. Psychoeducation Delivery
+
+Provide structured, diagnosis-specific information about the illness, medications, warning signs of relapse, and when to seek help. Use standardized materials when available. The strongest evidence base of any inpatient psychological intervention for psychosis.[42][43]
+
+8. Problem-Solving in 4 Steps
+
+Define the problem concretely → brainstorm solutions without judgment → evaluate pros/cons → select and plan implementation of one solution. Effective for patients with concrete stressors (housing, relationships, finances) driving the crisis.[39][10]
+
+9. Collaborative Formulation
+
+Develop a brief, shared understanding of why the crisis happened now — linking history, vulnerabilities, triggers, and maintaining factors. This provides meaning-making and hope, and improves staff understanding of the patient's presentation.[47][55]
+
+10. Discharge Preparation and Bridging
+
+Review the safety plan, confirm follow-up appointments, identify the highest-risk period (first week post-discharge), rehearse coping strategies for anticipated stressors, and ensure the patient has crisis line numbers. This is the intervention with the highest potential impact given the extreme post-discharge risk window.[13][15]
+
+---
+
+XIV. Suggested Resident Teaching Handout
+
+
+"BRIEF THERAPY ON THE INPATIENT UNIT: A Pocket Guide for Psychiatry Residents"
+
+
+Core Principle: Every patient encounter is a therapeutic opportunity. Even 5-minute interactions can be structured to deliver evidence-based interventions. The goal is not to replicate outpatient therapy but to target crisis mechanisms, build coping skills, and bridge to post-discharge care.[5]
+
+The 4 Transdiagnostic Targets (Kleiman et al., 2026):[5]
+
+1. Emotion dysregulation → Distress tolerance skills, validation
+
+2. Cognitive inflexibility → Collaborative formulation, psychoeducation
+
+3. Behavioral inactivity → Behavioral activation scheduling
+
+4. Life-threatening behaviors → Safety planning, chain analysis, means restriction
+
+Before Every Encounter, Ask Yourself:
+
+- What is this patient's primary crisis mechanism?
+
+- What is one skill or insight this patient can leave with today?
+
+- What is the discharge plan, and how does today's work support it?
+
+The "3-3-3" Framework for Each Admission:
+
+- 3 assessments: Suicide risk (C-SSRS), substance use (AUDIT/DAST), readiness for change
+
+- 3 interventions: Safety plan, one skills-based intervention matched to diagnosis, psychoeducation
+
+- 3 discharge tasks: Confirm follow-up within 7 days, review safety plan, provide crisis resources
+
+What NOT to Do:
+
+- ✗ No-suicide contracts (no evidence; use safety planning instead)[9]
+
+- ✗ Detailed trauma processing during acute crisis (stabilize first)
+
+- ✗ Unstructured "how are you feeling?" without a therapeutic frame
+
+- ✗ Attempting a full course of manualized therapy in 3 days
+
+- ✗ Assuming psychoeducation happened if it wasn't documented
+
+---
+
+XV. Algorithm: Matching Intervention to Clinical Scenario
+
+
+
+
+Decision Logic:
+
+1. All patients → Safety plan + psychoeducation + discharge bridging (non-negotiable minimum)
+
+2. Suicidal? → Add BCBT-Inpatient session if ≥4 days of stay; if shorter, prioritize high-quality SPI
+
+3. Self-harm/BPD? → Chain analysis + distress tolerance skill + DBT skills group
+
+4. Depressed? → Behavioral activation scheduling (lowest cognitive demand, highest feasibility)
+
+5. Substance use? → MI session; SBIRT if not yet screened
+
+6. Psychotic? → Psychoeducation first; brief CBTp formulation if patient is engaged and able
+
+7. Disengaged/involuntary? → Lead with MI spirit and validation; avoid confrontation
+
+---
+
+Summary
+
+
+The evidence supports a small-to-moderate benefit (d = 0.24–0.43) of adding psychotherapy to standard inpatient care, with no single modality demonstrating superiority — common therapeutic factors likely account for much of the benefit.[3][1] The strongest evidence for specific brief interventions comes from safety planning (RR 0.57 for suicidal behavior),[7] BCBT-Inpatient (60% reduction in post-discharge attempts),[11] psychoeducation for psychosis (NNT = 5 for readmission), and[42] behavioral activation for depression (SMD −0.78 vs. TAU).[29] DBT skills training appears to be the active ingredient of DBT for reducing NSSI, and MI is most effective for engaging non-treatment-seeking patients.[22][34] The critical gap is that most evidence comes from studies with longer stays than typical US admissions, and the field needs interventions designed specifically for the inpatient context — stand-alone, modular, transdiagnostic, and deliverable by trainees.[5] Every patient encounter, however brief, can be structured to deliver an evidence-based micro-intervention.
+
+---
+
+Would you like to explore the specific implementation strategies for establishing an evidence-based group therapy curriculum on an inpatient unit, including session structure, staff training requirements, and fidelity monitoring approaches?
+
+References
+Efficacy of inpatient psychotherapy for major depressive disorder: a meta‐analysis of controlled trials. Schefft C, Guhn A, Brakemeier EL, Sterzer P, Köhler S. Acta Psychiatrica Scandinavica. 2019;139(4):322-335. doi:10.1111/acps.12995.
+Psychological Treatment of Depression in Institutional Settings: A Meta-Analytic Review. Cuijpers P, Ciharova M, Miguel C, et al. Journal of Affective Disorders. 2021;286:340-350. doi:10.1016/j.jad.2021.03.017.
+Meta-Analysis of the Effect of Psychotherapy in an Inpatient Setting: Examining the Moderating Role of Diagnosis and Therapeutic Approach. Cohen-Chazani Y, Lavidor M, Gilboa-Schechtman E, Roe D, Hasson-Ohayon I. Psychiatry. 2022;85(4):399-417. doi:10.1080/00332747.2022.2062660.
+Psychological Therapy for Inpatients Receiving Acute Mental Health Care: A Systematic Review and Meta-Analysis of Controlled Trials. Paterson C, Karatzias T, Dickson A, et al. The British Journal of Clinical Psychology. 2018;57(4):453-472. doi:10.1111/bjc.12182.
+Updating Psychological Treatment During Inpatient Psychiatric Care. Kleiman EM, Hawes-Sousa MT, Rizvi SL, Nock MK. JAMA Psychiatry. 2026;:2848042. doi:10.1001/jamapsychiatry.2026.0443.
+Comparison of the Safety Planning Intervention With Follow-up vs Usual Care of Suicidal Patients Treated in the Emergency Department. Stanley B, Brown GK, Brenner LA, et al. JAMA Psychiatry. 2018;75(9):894-900. doi:10.1001/jamapsychiatry.2018.1776.
+Safety Planning-Type Interventions for Suicide Prevention: Meta-Analysis. Nuij C, van Ballegooijen W, de Beurs D, et al. The British Journal of Psychiatry : The Journal of Mental Science. 2021;219(2):419-426. doi:10.1192/bjp.2021.50.
+Evaluating the Effectiveness of Safety Plans for Mitigating Suicide Risk in Two Samples of Psychiatrically Hospitalized Military Veterans. Kearns JC, Crasta D, Spitzer EG, et al. Behavior Therapy. 2025;56(2):438-451. doi:10.1016/j.beth.2024.08.001.
+Assessment and Management of Patients at Risk for Suicide: Synopsis of the 2019 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guidelines. Sall J, Brenner L, Millikan Bell AM, Colston MJ. Annals of Internal Medicine. 2019;171(5):343-353. doi:10.7326/M19-0687.
+Assessment and Management of Patients at Risk for Suicide (2024). Nazanin Bahraini PhD, Candice Bodie LCSW, Lisa A. Brenner PhD ABPP, et al. Department of Veterans Affairs.
+Brief Cognitive Behavioral Therapy for Suicidal Inpatients: A Randomized Clinical Trial. Diefenbach GJ, Lord KA, Stubbing J, et al. JAMA Psychiatry. 2024;81(12):1177-1186. doi:10.1001/jamapsychiatry.2024.2349.
+Brief Cognitive Behavioral Therapy for Suicidal Military Personnel and Veterans. Bryan CJ, Khazem LR, Baker JC, et al. JAMA Psychiatry. 2025;82(12):1169-1176. doi:10.1001/jamapsychiatry.2025.2850.
+Follow-Up Timing After Discharge and Suicide Risk Among Patients Hospitalized With Psychiatric Illness. Che SE, Gwon YG, Kim KH. JAMA Network Open. 2023;6(10):e2336767. doi:10.1001/jamanetworkopen.2023.36767.
+Effectiveness of Brief Interventions and Contacts After Suicide Attempt: A Systematic Review and Meta-Analysis. Homan S, Marciniak MA, Michel S, et al. EClinicalMedicine. 2026;93:103824. doi:10.1016/j.eclinm.2026.103824.
+Association of Suicide Prevention Interventions With Subsequent Suicide Attempts, Linkage to Follow-up Care, and Depression Symptoms for Acute Care Settings: A Systematic Review and Meta-analysis. Doupnik SK, Rudd B, Schmutte T, et al. JAMA Psychiatry. 2020;77(10):1021-1030. doi:10.1001/jamapsychiatry.2020.1586.
+Use of Dialectical Behavior Therapy in Inpatient Treatment of Borderline Personality Disorder: A Systematic Review. Bloom JM, Woodward EN, Susmaras T, Pantalone DW. Psychiatric Services (Washington, D.C.). 2012;63(9):881-8. doi:10.1176/appi.ps.201100311.
+Effectiveness of Inpatient Dialectical Behavioral Therapy for Borderline Personality Disorder: A Controlled Trial. Bohus M, Haaf B, Simms T, et al. Behaviour Research and Therapy. 2004;42(5):487-99. doi:10.1016/S0005-7967(03)00174-8.
+Comparison of 8-vs-12 weeks, Adapted Dialectical Behavioral Therapy (DBT) for Borderline Personality Disorder in Routine Psychiatric Inpatient Treatment-a Naturalistic Study. Kujovic M, Benz D, Riesbeck M, et al. Scientific Reports. 2024;14(1):11264. doi:10.1038/s41598-024-61795-9.
+A Digital Dialectical Behaviour Therapy Intervention for Acute Suicidality in Psychiatric Inpatients: A Feasibility Randomised Controlled Study: Intervention Numérique en Thérapie Comportementale Dialectique en Cas De Suicidabilité Aiguë De Patients Hospitalisés en Psychiatrie : Étude De Faisabilité Contrôlée À Répartition Aléatoire. Jones BDM, Kittur ME, Mak MSB, et al. Canadian Journal of Psychiatry. Revue Canadienne De Psychiatrie. 2025;:7067437251337607. doi:10.1177/07067437251337607.
+Living Through Distress: A Skills Training Group for Reducing Deliberate Self-Harm. Booth R, Keogh K, Doyle J, Owens T. Behavioural and Cognitive Psychotherapy. 2014;42(2):156-65. doi:10.1017/S1352465812001002.
+Dialectical Behaviour Therapy-Informed Skills Training for Deliberate Self-Harm: A Controlled Trial With 3-Month Follow-Up Data. Gibson J, Booth R, Davenport J, Keogh K, Owens T. Behaviour Research and Therapy. 2014;60:8-14. doi:10.1016/j.brat.2014.06.007.
+Dialectical Behavior Therapy for High Suicide Risk in Individuals With Borderline Personality Disorder: A Randomized Clinical Trial and Component Analysis. Linehan MM, Korslund KE, Harned MS, et al. JAMA Psychiatry. 2015;72(5):475-82. doi:10.1001/jamapsychiatry.2014.3039.
+A randomized trial of brief dialectical behaviour therapy skills training in suicidal patients suffering from borderline disorder. McMain SF, Guimond T, Barnhart R, Habinski L, Streiner DL. Acta Psychiatrica Scandinavica. 2017;135(2):138-148. doi:10.1111/acps.12664.
+Dialectical Behavior Therapy Is Effective for the Treatment of Suicidal Behavior: A Meta-Analysis. DeCou CR, Comtois KA, Landes SJ. Behavior Therapy. 2019;50(1):60-72. doi:10.1016/j.beth.2018.03.009.
+Dialectical Behavior Therapy: A Brief Counseling Skill for Clinical Practice. Bylotas J, Cherubini MK, Dixon MA. American Family Physician. 2025;112(1):88-90.
+A Brief Behavioral Activation Treatment for Depression. A Randomized Pilot Trial Within an Inpatient Psychiatric Hospital. Hopko DR, Lejuez CW, LePage JP, Hopko SD, McNeil DW. Behavior Modification. 2003;27(4):458-69. doi:10.1177/0145445503255489.
+Behavioral Activation in Acute Inpatient Psychiatry: A Multiple Baseline Evaluation. Folke F, Hursti T, Tungström S, et al. Journal of Behavior Therapy and Experimental Psychiatry. 2015;46:170-81. doi:10.1016/j.jbtep.2014.10.006.
+Behavioral Activation for Depression in Groups Embedded in Psychosomatic Rehabilitation Inpatient Treatment: A Quasi-Randomized Controlled Study. Melicherova U, Schott T, Köllner V, Hoyer J. Frontiers in Psychiatry. 2024;15:1229380. doi:10.3389/fpsyt.2024.1229380.
+Behavioural Activation Therapy for Depression in Adults. Uphoff E, Ekers D, Robertson L, et al. The Cochrane Database of Systematic Reviews. 2020;7:CD013305. doi:10.1002/14651858.CD013305.pub2.
+Management of Depression in Adults: A Review. Simon GE, Moise N, Mohr DC. JAMA. 2024;332(2):141-152. doi:10.1001/jama.2024.5756.
+Looking Beyond Depression: A Meta-Analysis of the Effect of Behavioral Activation on Depression, Anxiety, and Activation. Stein AT, Carl E, Cuijpers P, Karyotaki E, Smits JAJ. Psychological Medicine. 2021;51(9):1491-1504. doi:10.1017/S0033291720000239.
+The Effects of Motivational Interviewing on Patients With Comorbid Substance Use Admitted to a Psychiatric Emergency Unit - A Randomised Controlled Trial With Two Year Follow-Up. Bagøien G, Bjørngaard JH, Østensen C, et al. BMC Psychiatry. 2013;13:93. doi:10.1186/1471-244X-13-93.
+Evaluation of a Motivational Interview for Substance Use Within Psychiatric in-Patient Services. Baker A, Lewin T, Reichler H, et al. Addiction (Abingdon, England). 2002;97(10):1329-37. doi:10.1046/j.1360-0443.2002.00178.x.
+Motivational interviewing to enhance treatment attendance in mental health settings: A systematic review and meta‐analysis. Lawrence P, Fulbrook P, Somerset S, Schulz P. Journal of Psychiatric and Mental Health Nursing. 2017;24(9-10):699-718. doi:10.1111/jpm.12420.
+Motivational Interviewing Improves Medication Adherence: A Systematic Review and Meta-Analysis. Palacio A, Garay D, Langer B, et al. Journal of General Internal Medicine. 2016;31(8):929-40. doi:10.1007/s11606-016-3685-3.
+Promoting Medication Adherence Among Patients With Bipolar Disorder: A Multicenter Randomized Controlled Trial of a Multifaceted Intervention. Pakpour AH, Modabbernia A, Lin CY, et al. Psychological Medicine. 2017;47(14):2528-2539. doi:10.1017/S003329171700109X.
+The Management of Substance Use Disorders: Synopsis of the 2021 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guideline. Perry C, Liberto J, Milliken C, et al. Annals of Internal Medicine. 2022;175(5):720-731. doi:10.7326/M21-4011.
+Motivational Interviewing for Substance Use Reduction. Schwenker R, Dietrich CE, Hirpa S, et al. The Cochrane Database of Systematic Reviews. 2023;12:CD008063. doi:10.1002/14651858.CD008063.pub3.
+Problem-Solving Therapy for People Who Present to Hospital With Self-Harm: Zelen Randomised Controlled Trial. Hatcher S, Sharon C, Parag V, Collins N. The British Journal of Psychiatry : The Journal of Mental Science. 2011;199(4):310-6. doi:10.1192/bjp.bp.110.090126.
+Efficacy of Individual and Group Problem-Solving Therapy in Treating Psychiatric Patients Who Attempted Suicide: A Randomized Controlled Trial. Turgut MN, Eskin M. Psychology, Health & Medicine. 2025;:1-16. doi:10.1080/13548506.2025.2546590.
+Acute‐Phase Interventions After Self‐Harm for Preventing Suicide and Recurrence: A Systematic Review and Meta‐Analysis. Roncete GP, Farhat LC, Beiram L, et al. Acta Psychiatrica Scandinavica. 2026;153(6):610-626. doi:10.1111/acps.70085.
+Psychoeducation for Schizophrenia. Xia J, Merinder LB, Belgamwar MR. The Cochrane Database of Systematic Reviews. 2011;(6):CD002831. doi:10.1002/14651858.CD002831.pub2.
+Psychological Interventions for Acute Psychiatric Inpatients With Schizophrenia-Spectrum Disorders: A Systematic Review and Meta-Analysis. Barnicot K, Michael C, Trione E, et al. Clinical Psychology Review. 2020;82:101929. doi:10.1016/j.cpr.2020.101929.
+A Randomized Controlled Trial of a Private-Sector Inpatient-Initiated Psychoeducation Program for Schizophrenia. Vickar GM, North CS, Downs D, Marshall DL. Psychiatric Services (Washington, D.C.). 2009;60(1):117-20. doi:10.1176/appi.ps.60.1.117.
+Psychoeducation for Inpatients With First-Episode Psychosis: Results From a Survey of Psychiatry Trainees in New York City. Belkin MR, Briggs MC, Candan K, et al. Psychiatric Services (Washington, D.C.). 2021;72(5):582-585. doi:10.1176/appi.ps.201900633.
+Brief Inpatient Psychotherapeutic Technique. Stein MB, Jacobo MC. Psychotherapy (Chicago, Ill.). 2013;50(3):464-8. doi:10.1037/a0032549.
+Individual Psychological Therapy in an Acute Inpatient Setting: Service User and Psychologist Perspectives. Small C, Pistrang N, Huddy V, Williams C. Psychology and Psychotherapy. 2018;91(4):417-433. doi:10.1111/papt.12169.
+Resource Document on Psychotherapy as an Essential Skill of Psychiatrists. Mantosh Dewan MD, Michele T. Pato MD, Nicole Del Castillo MD. American Psychiatric Association (2014).
+Examining the Feasibility of a Crisis-Focused Cognitive Behaviour Therapy (CBT)-informed Psychological Intervention for Inpatients Experiencing Psychosis (The CRISIS Study): Results From a Pilot Randomised Controlled Trial. Wood L, Morrison AP, Birken M, et al. EClinicalMedicine. 2025;86:103380. doi:10.1016/j.eclinm.2025.103380.
+Management of Major Depressive Disorder (MDD) (2022). Rhanda Brockington DNP FNP-BC, Andrew Buelt DO, Vincent Capaldi MD MSc FAPA FACP, et al. Department of Veterans Affairs.
+Management of Substance Use Disorder (SUD) (2021). Timothy Atkinson PharmD, Charolotte Baldridge FNP, Jennifer Burden PhD MS, et al. Department of Veterans Affairs.
+Management of First-Episode Psychosis and Schizophrenia (SCZ) (2023). Marlene Arias-Reynoso DNP PMHNP-BC, Jennifer L. Bell MD, Pamela Blueford LICSW, et al. Department of Veterans Affairs.
+Screening, Brief Intervention and Referral to Treatment: Implications of SAMHSA's SBIRT Initiative for Substance Abuse Policy and Practice. Babor TF, Del Boca F, Bray JW. Addiction (Abingdon, England). 2017;112 Suppl 2:110-117. doi:10.1111/add.13675.
+Best Practices Guidelines Screening And Intervention For Mental Health Disorders And Substance Use And Misuse In The Acute Trauma Patient. Karen J. Brasel MD MPH, Terri A. deRoon-Cassini PhD MS, Andrew Bernard MD FACS, et al. American College of Surgeons (2022).
+Psychologists' Perspectives on the Implementation of Psychological Therapy for Psychosis in the Acute Psychiatric Inpatient Setting. Wood L, Williams C, Billings J, Johnson S. Qualitative Health Research. 2019;29(14):2048-2056. doi:10.1177/1049732319843499.
+Challenges and Opportunities in Building and Maintaining a Good Therapeutic Relationship in Acute Psychiatric Settings: A Narrative Review. Bolsinger J, Jaeger M, Hoff P, Theodoridou A. Frontiers in Psychiatry. 2019;10:965. doi:10.3389/fpsyt.2019.00965.
+Individual Therapy on Inpatient Units: Flexibility in the Face of Resistance. Sayles KA, Ayoub M, van Schalkwyk GI. Journal of the American Academy of Child and Adolescent Psychiatry. 2019;58(9):837-840. doi:10.1016/j.jaac.2019.04.017.
+Evaluating the Effectiveness of Safety Plans for Military Veterans: Do Safety Plans Tailored to Veteran Characteristics Decrease Suicide Risk?. Green JD, Kearns JC, Rosen RC, Keane TM, Marx BP. Behavior Therapy. 2018;49(6):931-938. doi:10.1016/j.beth.2017.11.005.
+Single-Session Interventions for Mental Health Problems and Service Engagement: Umbrella Review of Systematic Reviews and Meta-Analyses. Schleider JL, Zapata JP, Rapoport A, et al. Annual Review of Clinical Psychology. 2025;21(1):279-303. doi:10.1146/annurev-clinpsy-081423-025033.
+A Systematic Review and Meta-Analysis of Cognitive Behavioural Informed Psychological Interventions for Psychiatric Inpatients With Psychosis. Wood L, Williams C, Billings J, Johnson S. Schizophrenia Research. 2020;222:133-144. doi:10.1016/j.schres.2020.03.041.
+
+Organization | Key Recommendations | Reference
+APA | Psychotherapy should be the "universal treatment base" for all patients; combined treatment particularly effective for severely impaired patients; all residents should receive excellent psychotherapy training | [1]
+NICE | Recommends CBTp during acute phase including inpatient care; ≥16 planned sessions following a manual (rarely achieved in practice) | [2]
+VA/DoD (Suicide, 2024) | SPI is standard of care; suggests caring contacts for 12 months post-hospitalization; CBT-based psychotherapies to reduce suicidal ideation; insufficient evidence to recommend for/against DBT for suicide attempts | [3]
+VA/DoD (MDD, 2022) | Suggests CBT, IPT, MBCT, BA, ACT, PST, or STPP based on patient preference; no modality found superior | [4]
+VA/DoD (SUD, 2021) | MI style recommended during all therapeutic encounters; menu of psychosocial interventions including MET, CBT, 12-step facilitation | [5], [6]
+VA/DoD (Schizophrenia, 2023) | Suggests CBTp, ACT, MCT, or positive psychology in combination with pharmacotherapy (weak recommendation) | [7]
+SAMHSA | SBIRT model for substance use; brief interventions 1–5 sessions, 5–60 minutes, MI framework; can be delivered by diverse clinicians | [8], [9]
+Time | Intervention | Technique | Evidence Base
+5 min | Validation + agenda-setting | Reflect emotion, name the experience, set collaborative goal for the encounter | Common factors; alliance predicts outcomes[1], [2]
+5 min | Brief MI "readiness ruler" | "On a scale of 0–10, how important is it to you to [take medication/reduce drinking]? Why not a lower number?" | MI meta-analysis; effective for engagement[3], [4]
+5 min | Distress tolerance coaching | Teach one TIPP skill (Temperature, Intense exercise, Paced breathing, Progressive relaxation) | DBT skills evidence[5], [6]
+5 min | Behavioral activation micro-dose | Identify one pleasant or mastery activity for today; schedule it | BA Cochrane review[7], [8]
+10 min | Safety plan review/update | Review and refine existing safety plan steps; ensure warning signs and coping strategies are personalized | SPI evidence; quality predicts outcomes[9], [10]
+10 min | Chain analysis | Map the sequence: vulnerability → prompting event → thoughts → emotions → behavior → consequences | MGH model[11]; DBT evidence[5]
+10 min | Psychoeducation module | Structured teaching on diagnosis, medications, or relapse warning signs using standardized materials | Cochrane: NNT = 5 for readmission[12]
+10 min | Problem-solving micro-session | Define one problem → brainstorm 3 solutions → evaluate pros/cons → select one → plan first step | PST evidence; NNT = 12 for repeat self-harm[13], [14]
+20 min | Full safety planning intervention | Complete 6-step Stanley-Brown SPI with lethal means counseling | ~45% reduction in suicidal behavior[9], [15]
+20 min | MI session for substance use | Explore ambivalence, develop discrepancy, support self-efficacy, elicit change talk | Bagøien: 7.3 fewer SU days/month at 2 years[16]
+20 min | BCBT-Inpatient session | Narrative assessment of crisis, crisis response plan, reasons for living, hope kit, coping cards | 60% reduction in post-discharge attempts[17]
+20 min | DBT skills group module | Single-topic open-enrollment group: one distress tolerance or emotion regulation skill with practice | Linehan dismantling; skills = active ingredient[5]
+20 min | Supportive formulation session | Collaborative psychological formulation linking history, triggers, and current crisis; instill hope | Qualitative evidence; meaning-making valued by patients[18]
+# | Citation | Key Finding | Why It Matters
+1 | Diefenbach et al., JAMA Psychiatry 2024 | BCBT-Inpatient reduced post-discharge suicide attempts by 60% (NNT = 7) | Largest inpatient suicide prevention psychotherapy RCT[1]
+2 | Stanley et al., JAMA Psychiatry 2018 | SPI+ reduced suicidal behaviors by ~45% in VA EDs | Foundation for safety planning as standard of care[2]
+3 | Linehan et al., JAMA Psychiatry 2015 | DBT skills training is the active ingredient for reducing NSSI and depression | Justifies skills-only groups on inpatient units[3]
+4 | Doupnik et al., JAMA Psychiatry 2020 | Brief suicide prevention interventions reduce attempts (OR 0.69) and increase follow-up linkage (OR 2.74) | Meta-analytic foundation for acute care interventions[4]
+5 | Uphoff et al., Cochrane 2020 | BA superior to TAU for depression (SMD −0.78) and anxiety (SMD −0.33) | Supports BA as simple, effective, teachable intervention[5]
+6 | Xia et al., Cochrane 2011 | Psychoeducation reduces readmission (NNT = 5), relapse (NNT = 9), non-compliance (NNT = 11) | Strongest evidence for any single inpatient intervention for psychosis[6]
+7 | Kleiman et al., JAMA Psychiatry 2026 | Inpatient care needs stand-alone, transdiagnostic, mechanism-focused modules | Conceptual framework for redesigning inpatient psychotherapy[7]
+8 | Schefft et al., Acta Psychiatr Scand 2019 | Inpatient psychotherapy for MDD: SMD 0.24, NNT = 7.4, zero heterogeneity | Definitive meta-analysis; modality doesn't matter[8]
+9 | Cohen-Chazani et al., Psychiatry 2022 | No effect of therapy orientation; diagnosis moderates outcomes | Common factors drive inpatient psychotherapy benefit[9]
+10 | Nuij et al., Br J Psychiatry 2021 | Safety planning-type interventions: RR 0.57 for suicidal behavior (NNT = 16) | First dedicated meta-analysis of SPTIs[10]
+11 | Bagøien et al., BMC Psychiatry 2013 | 2 MI sessions on psychiatric emergency unit: 7.3 fewer SU days/month at 2 years | Best evidence for brief MI in psychiatric inpatients[11]
+12 | Hatcher et al., Br J Psychiatry 2011 | PST reduces repeat self-harm presentations (NNT = 12) in those with prior history | Largest PST trial for self-harm; identifies who benefits[12]
+13 | Kearns et al., Behav Ther 2025 | Safety plan quality predicts suicide attempt risk (AHR 0.79) | Quality, not just completion, matters[13]
+14 | Stein & Jacobo, Psychotherapy 2013 | MGH model: support, affect, chain analysis, relational patterns | Practical teaching framework for resident inpatient psychotherapy[14]
+15 | Schleider et al., Annu Rev Clin Psychol 2025 | SSIs show SMD = −0.25 across 415 trials for mental health problems | Validates single-session intervention paradigm[15]
+Clinical Scenario | Primary Intervention | Secondary Intervention | Time Needed | Key Evidence
+Suicidal ideation/attempt | Safety Planning Intervention (6-step) | BCBT session (narrative, crisis response plan, hope kit) | 20 min + 20 min | SPI: OR 0.56[1]; BCBT: OR 0.40[2]
+Self-harm/NSSI (BPD features) | Chain analysis + distress tolerance skill | DBT skills group enrollment | 10 min + group | Linehan dismantling[3]; LTD program[4]
+Depression (low motivation, withdrawal) | Behavioral activation scheduling | Psychoeducation on depression | 10 min + 10 min | BA: SMD −0.78 vs. TAU[5]
+Psychosis (acute) | Supportive contact + psychoeducation | Brief CBTp formulation if tolerated | 10 min + 20 min | Psychoeducation NNT = 5[6]; CBTp equivocal[7]
+Substance use comorbidity | MI session (explore ambivalence) | SBIRT framework; referral to SUD treatment | 20 min | Bagøien: 7.3 fewer days/month[8]
+Medication non-adherence | MI + psychoeducation | Collaborative problem-solving re: barriers | 10–20 min | MI: RR 1.17 for adherence[9]
+Interpersonal crisis | Problem-solving therapy (4-step) | Supportive formulation | 10–20 min | PST: NNT = 12 for repeat self-harm[10]
+Agitation/emotional dysregulation | TIPP distress tolerance skill | Validation; sensory modulation | 5–10 min | DBT skills evidence[3], [4]
+First-episode psychosis | Structured psychoeducation | Family psychoeducation if family available | 20 min | Cochrane: NNT = 5 for readmission[6]
+Treatment disengagement/involuntary | MI spirit (OARS); autonomy support | Collaborative formulation | 10–20 min | MI: OR ≈ 5 for non-treatment-seekers[11]
+Pre-discharge (all patients) | Safety plan review + discharge bridging | Confirm 7-day follow-up; caring contacts plan | 10–20 min | Post-discharge risk: 2,950/100K PY[12]

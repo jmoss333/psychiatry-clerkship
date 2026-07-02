@@ -1,0 +1,385 @@
+QTc Prolongation Risk with Psychotropic and Commonly Co-Prescribed Medications: A Comprehensive Evidence Review
+
+
+Scope and Framing
+
+
+This review synthesizes evidence on drug-induced QTc prolongation across psychotropic medications (antipsychotics, antidepressants), methadone, antiemetics, and commonly co-prescribed antibiotics. It integrates guideline recommendations from the AHA, ACC, HRS, and FDA safety communications, and concludes with practical tools for inpatient risk stratification. The focus is on adult populations; pediatric data is referenced where it provides unique comparative insights.
+
+---
+
+1. Pathophysiology: Why QTc Prolongation Matters
+
+
+Drug-induced QTc prolongation occurs primarily through inhibition of the rapid component of the delayed rectifier potassium current (IKr), encoded by the hERG gene, resulting in prolonged ventricular repolarization and increased susceptibility to early afterdepolarizations (EADs) that can trigger torsades de pointes (TdP).[1] The concept of repolarization reserve — the redundancy of multiple ion currents maintaining normal repolarization — explains why TdP typically requires multiple concurrent "hits" (drug + electrolyte disturbance + genetic predisposition).[1][2] Each 10-ms increase in QTc contributes approximately a 5–7% exponential increase in TdP risk, and a QTc >500 ms is associated with a 2- to 3-fold higher risk for TdP compared to normal values.[3]
+
+The following figure from Roden (NEJM 2004) illustrates the cellular mechanisms linking action potential prolongation, EADs, and transmural dispersion of repolarization to TdP — the fundamental substrate that IKr-blocking drugs and electrolyte disturbances exploit.
+
+Figure 2 Postulated Basic Mechanisms in Arrhythmias Related to Long-QT Intervals.
+
+Critically, QTc prolongation is an imperfect surrogate for TdP/sudden cardiac death (SCD) risk. The relationship is not linear, and some drugs with moderate QTc effects (e.g., ziprasidone) have not shown excess mortality in large trials.[5][3] At least one additional risk factor was present in 92.2% of case reports of drug-associated TdP.[1]
+
+---
+
+2. Antipsychotics
+
+
+Comparative QTc Data
+
+
+The pivotal Harrigan et al. (2004) head-to-head randomized study evaluated six antipsychotics at steady-state Cmax: thioridazine produced the greatest QTc prolongation, followed by ziprasidone (~15.9 ms), with haloperidol, quetiapine, olanzapine, and risperidone producing smaller effects. No patient on any agent had QTc ≥500 ms.[2] The largest network meta-analysis (Schneider-Thoma et al., Lancet 2026, k=66 trials, n=21,022) confirmed that sertindole, amisulpride, and ziprasidone increased QTc more than at least three other antipsychotics, while brexpiprazole, aripiprazole, and lurasidone increased QTc less than at least three others.[2]
+
+Sudden Cardiac Death: The Ray 2009 NEJM Study
+
+
+The landmark Ray et al. (NEJM 2009) retrospective cohort study (1,042,159 person-years, 1,870 SCDs) demonstrated that both typical antipsychotics (adjusted IRR 1.99; 95% CI 1.68–2.34) and atypical antipsychotics (IRR 2.26; 95% CI 1.88–2.72) were associated with increased SCD risk versus nonusers, with no significant difference between classes and a clear dose-response relationship for both.[6]
+
+The following figure shows adjusted incidence-rate ratios for SCD across six frequently prescribed antipsychotics stratified by dose.
+
+Figure 2 Adjusted Incidence-Rate Ratios for Sudden Cardiac Death among Current Users of Six Frequently Prescribed Antipsychotic Drugs, According to Dose.
+
+IV Haloperidol
+
+
+In September 2007, the FDA strengthened label warnings for IV haloperidol regarding QTc prolongation and TdP, recommending continuous ECG monitoring.[8] A systematic review identified 70 cases of IV haloperidol-associated QTc prolongation/TdP; 97% had additional risk factors, and cumulative doses ranged from 5 to 645 mg.[8] However, the MIND-USA secondary analysis (JAMA Network Open 2024) found no evidence that haloperidol or ziprasidone caused clinically relevant QTc changes in critically ill adults with delirium who had baseline QTc <550 ms.[9]
+
+The ZODIAC Trial
+
+
+The ZODIAC trial (N=18,154 schizophrenia patients) — the largest randomized postmarketing cardiac safety study of any antipsychotic — found no elevated risk of non-suicide mortality with ziprasidone versus olanzapine (RR 1.02; 95% CI 0.76–1.39), though it was not powered to detect rare events like TdP.[3]
+
+FDA Black Box Warnings
+
+
+Thioridazine carries a black box warning for dose-related QTc prolongation, TdP, and sudden death, restricted to treatment-refractory schizophrenia.[10] All antipsychotics carry a class-wide black box warning regarding increased mortality in elderly patients with dementia-related psychosis.[10][11]
+
+---
+
+3. Antidepressants
+
+
+Citalopram: The FDA Dose Restriction
+
+
+Citalopram causes dose-dependent QTc prolongation that is the most well-characterized among antidepressants. In a thorough QT study, the maximum mean QTcNi difference from placebo was 8.5 ms for 20 mg and 18.5 ms for 60 mg.[12] The FDA issued a safety communication (August 2011, revised March 2012) restricting citalopram to a maximum of 40 mg/day (20 mg/day for patients >60 years, hepatic impairment, CYP2C19 poor metabolizers, or concomitant CYP2C19 inhibitors).[12][13] A large EHR study (n=38,397) confirmed the dose-response association, with mean QTc increases of 7.8 ms (10→20 mg) and 10.3 ms (20→40 mg).[14]
+
+Escitalopram
+
+
+Escitalopram demonstrates dose-dependent QTc prolongation to a lesser degree: maximum mean QTcF difference from placebo was 4.5 ms for 10 mg and 10.7 ms for 30 mg (supratherapeutic).[15] Both citalopram and escitalopram are classified as "Known risk of TdP" by CredibleMeds.[5]
+
+Other SSRIs
+
+
+A meta-analysis of 16 prospective studies (n=4,292) found SSRIs as a class associated with a dose-dependent QTc increase of +6.10 ms (95% CI 3.47–8.73) versus placebo, with citalopram showing significantly greater prolongation than sertraline, paroxetine, and fluvoxamine.[16] Paroxetine appears to have the lowest QTc risk among SSRIs.[17]
+
+Tricyclic Antidepressants
+
+
+All TCAs cause significant QRS and QTc prolongation through Class Ia antiarrhythmic (sodium channel blocking) activity.[5][18] TCAs were associated with 7.05 ms greater QTc increase than SSRIs in meta-analysis.[16] In overdose, TCAs are among the most cardiotoxic antidepressants, with the primary conduction abnormality being QRS widening.[19] TCAs should be avoided in patients with cardiovascular disease.[18][20]
+
+SNRIs and Other Antidepressants
+
+
+Duloxetine and desvenlafaxine show no demonstrated QTc prolongation risk.[21] Venlafaxine has a modest QTc-prolonging potential (~3.7 ms) and is classified as "Possible risk".[5][21] Trazodone carries a "Conditional risk" classification with postmarketing TdP events reported at doses as low as 100 mg.[22] Bupropion was associated with QTc shortening in one large EHR study and is not listed on CredibleMeds TdP risk lists, making it potentially the safest option when QTc risk is a concern.[14]
+
+The NCCN Survivorship guidelines provide a comparative table of first-line antidepressants with QTc risk ratings.
+
+SANXDE-E-1 First-Line Antidepressants for Depression or Anxiety in Adults — NCCN Guidelines® — Survivorship p. 94 (v2.2026)
+
+---
+
+4. Methadone
+
+
+Methadone carries the highest QTc prolongation risk among the drugs reviewed, potently blocking IKr channels. A 2025 meta-analysis of 22 observational studies found a pooled QTc prolongation prevalence of 34% (95% CI 24–43%) among patients on methadone maintenance therapy, with pooled TdP incidence of 2%.[22] A prospective double-blind trial showed mean QTc increases of +17 ms at 4 weeks and +34 ms at 16 weeks with methadone versus +6 ms and +10 ms with buprenorphine; 23% of methadone patients developed QTc prolongation (>470 ms men / >490 ms women) versus 0% on buprenorphine.[23]
+
+The APS/College on Problems of Drug Dependence/Heart Rhythm Society (2014) guideline recommends obtaining follow-up ECG when methadone dose reaches 30–40 mg/day and again at 100 mg/day; QTc ≥500 ms warrants switching to an alternative opioid or immediate dose reduction.[24]
+
+---
+
+5. Antiemetics
+
+
+Ondansetron
+
+
+Ondansetron prolongs QTc dose-dependently: +5.6 ms at 8 mg IV and +19.5 ms at 32 mg IV.[25] In 2012, the FDA removed the 32 mg single IV dose from labeling, capping the maximum at 16 mg IV.[25][24] At standard clinical doses (4–8 mg), the risk appears low — a prospective ED study (n=435) found mean QTc prolongation of only 7.9 ms with no arrhythmias observed.[26]
+
+Droperidol
+
+
+Droperidol carries an FDA black box warning (2001) for QTc prolongation and TdP, including fatal cases at or below recommended doses.[27] However, subsequent large studies have challenged this: a retrospective study of 20,122 surgical patients receiving 35,536 doses of 0.625 mg droperidol found zero cases of polymorphic VT or death, and an ED study (n=16,546) found TdP incidence of only[28] 0.006%.[22]
+
+---
+
+6. Commonly Co-Prescribed Antibiotics
+
+
+Fluoroquinolones
+
+
+All fluoroquinolones prolong QTc via IKr blockade with significant intraclass variability. Moxifloxacin carries the highest risk (mean QTc change +6–14 ms at 400 mg oral; used as the positive control in ICH E14 thorough QT studies).[29][30] A meta-analysis found fluoroquinolone use associated with 85% increased risk of arrhythmia (OR 1.85; 95% CI 1.22–2.81), with moxifloxacin ranking highest.[31] Ciprofloxacin has the lowest QTc risk among fluoroquinolones, with a cardiac safety profile comparable to amoxicillin.[32][33] Risk hierarchy: moxifloxacin >> levofloxacin > ciprofloxacin.[31][32][34]
+
+Macrolides
+
+
+The landmark Ray et al. (NEJM 2012) study found 5-day azithromycin therapy associated with increased cardiovascular death versus amoxicillin (HR 2.49; 95% CI 1.38–4.50), with an estimated 47 additional cardiovascular deaths per 1 million courses.[35] The FDA updated azithromycin labeling to warn of QTc prolongation and TdP risk.[23] Erythromycin (especially IV) and clarithromycin have higher IKr-blocking potency than azithromycin and carry known TdP risk.[36][37]
+
+---
+
+7. Electrolyte Abnormalities
+
+
+Hypokalemia
+
+
+Hypokalemia is the most well-established electrolyte risk factor for TdP, reported in 17–70% of patients who develop drug-induced TdP.[38] The mechanisms are multiple and synergistic: enhanced IKr fast inactivation, dramatically increased drug block potency of IKr (the IC₅₀ for dofetilide shifts ~30-fold between high and low [K⁺]), hERG channel internalization and degradation, and increased dispersion of repolarization.[39][40][41]
+
+Hypomagnesemia
+
+
+Hypomagnesemia frequently coexists with hypokalemia and impairs potassium repletion — magnesium must be repleted first.[42] IV magnesium (1–2 g) is first-line therapy for acute TdP regardless of serum magnesium level, likely through suppression of EADs via calcium channel inhibition.[1][43]
+
+Hypocalcemia
+
+
+Hypocalcemia prolongs the QT interval by impairing calcium-dependent inactivation of L-type calcium channels, specifically prolonging the ST segment (plateau phase).[44] For every 1 mg/dL decrease in serum total calcium, QTc increases by approximately 13 ms.[45] However, TdP from hypocalcemia alone is rare.[3]
+
+Electrolyte Correction Targets
+
+
+
+
+---
+
+8. Congenital Long QT Syndrome
+
+
+Patients with congenital LQTS have inherently reduced repolarization reserve, making them fundamentally more susceptible to drug-induced TdP.[1][2] Nearly 30% of patients who develop drug-induced QT prolongation carry mutations in one of the 5 major LQTS genes.[1] The 2017 AHA/ACC/HRS guideline assigns a Class III: Harm recommendation: QT-prolonging medications are potentially harmful in LQTS patients.[46]
+
+The CredibleMeds "drugs to avoid in congenital LQTS" list is intentionally conservative and includes essentially all commonly used psychotropic medications.[5][47] Bupropion is the notable exception — not listed on CredibleMeds TdP risk lists and associated with QTc shortening — though it has not been specifically studied in cLQTS populations.[14] A study from the Rochester LQTS Registry found a striking genotype-specific effect: antidepressant therapy was associated with increased cardiac arrhythmic events in LQT1 patients (HR 3.67; 95% CI 1.98–6.82) but not in LQT2 patients.[46]
+
+---
+
+9. Inpatient Risk Stratification: The Tisdale Risk Score
+
+
+The Tisdale Risk Score was developed and validated by Tisdale et al. (2013) in 1,200 cardiac care unit patients for predicting QTc prolongation (QTc >500 ms or increase >60 ms from baseline).[48]
+
+
+
+Risk categories: Low (≤6): 15% incidence; Moderate (7–10): 37% incidence; High (≥11): 73% incidence of QTc prolongation.[48] The C statistic was 0.823 in the development cohort. In a large multi-center study (n=92,383 across 28 hospitals), a modified Tisdale score was strongly associated with inpatient mortality: OR 4.80 for moderate risk and OR 11.51 for high risk.[49]
+
+Limitations
+
+
+The Tisdale score has high sensitivity but low specificity (97% sensitivity, 16% specificity in one ICU validation), making it better for ruling out risk than ruling it in.[50] It was developed in cardiac care unit patients and has not been validated across all populations.[46] There is no consensus on a single optimal QT correction formula; Bazett is most commonly used but overestimates QTc at faster heart rates; Fridericia is preferred by the FDA and in oncology.[48][33]
+
+---
+
+10. QTc Thresholds for Action
+
+
+The AHA/ACC 2010 Scientific Statement and 2020 AHA Scientific Statement on Drug-Induced Arrhythmias provide the following framework:[1][3][48]
+
+
+
+---
+
+11. Comprehensive Medication Risk Table
+
+
+
+
+---
+
+12. Resident Risk Stratification Algorithm
+
+
+Step 1: Baseline Assessment (Before Starting QTc-Prolonging Drug)
+
+
+1. Obtain 12-lead ECG and calculate QTc (use Bazett for clinical practice; Fridericia if HR >100 or <60)[48]
+
+2. Check electrolytes: K⁺, Mg²⁺, Ca²⁺
+
+3. Calculate Tisdale Risk Score (see table above)[48]
+
+4. Screen for: congenital LQTS (personal/family history of syncope, SCD, known LQTS), structural heart disease, HFrEF, bradycardia, hepatic/renal impairment
+
+5. Review medication list for concurrent QTc-prolonging drugs and CYP interactions (check CredibleMeds.org)
+
+Step 2: Risk-Stratified Decision
+
+
+- Tisdale ≤6 (Low Risk): Proceed with drug; repeat ECG after steady state (typically 5 half-lives or 48–72 hours); correct any electrolyte abnormalities[48]
+
+- Tisdale 7–10 (Moderate Risk): Prefer lower-risk alternatives when available (e.g., aripiprazole over haloperidol; sertraline over citalopram; ciprofloxacin over moxifloxacin); if proceeding, obtain ECG at 8–12 hours and at steady state; maintain K⁺ >4.0, Mg²⁺ ≥2.0[1][48]
+
+- Tisdale ≥11 (High Risk): Strongly prefer lowest-risk alternatives; if QTc-prolonging drug is essential, continuous telemetry; ECG every 8–12 hours; aggressive electrolyte correction (K⁺ 4.5–5.0, Mg²⁺ ≥2.0); cardiology consultation[1][48]
+
+Step 3: QTc-Based Action Tiers
+
+
+- QTc >450 ms (M) / >460 ms (F): Review medications → check electrolytes → reassess risk-benefit → repeat ECG in 8–12 hours[48]
+
+- QTc >470 ms (M) / >480 ms (F): All above → consider dose reduction or switch → correct electrolytes to target → cardiology consultation if ≥2 risk factors[3][45]
+
+- QTc >500 ms OR ΔQTc ≥60 ms: Discontinue offending drug(s) → continuous telemetry → aggressive electrolyte correction → defibrillator at bedside → cardiology consultation → keep in highest-surveillance unit[1][3][48]
+
+- Active TdP: IV magnesium sulfate 1–2 g → potassium repletion to 4.5–5.0 → if refractory with bradycardia: overdrive pacing or isoproterenol → defibrillation if hemodynamically unstable[42][43]
+
+Step 4: Ongoing Monitoring
+
+
+- Inpatient: ECG before and every 8–12 hours after initiation/dose change of QTc-prolonging drug; more frequently if QTc prolongation observed[48]
+
+- Outpatient: 12-lead ECG at 1–2 weeks after initiation, then every 3–6 months depending on risk factors[1][52]
+
+- Methadone-specific: ECG at baseline, at 30–40 mg/day, at 100 mg/day, and annually thereafter[24]
+
+- Serial ECGs should be recorded at the same time of day due to ~25 ms circadian variation in QTc[52]
+
+---
+
+13. Monitoring Recommendations Summary
+
+
+
+
+---
+
+14. Evidence Gaps and Emerging Data
+
+
+Several important uncertainties remain. No RCTs have specifically evaluated potassium repletion for TdP prevention; the evidence supporting specific K⁺ targets is largely observational and mechanistic.[3] Whether baseline and serial ECG monitoring reduces mortality in patients on QT-prolonging medications remains unproven.[45] The 2025 Lancet network meta-analysis of RCT data found little evidence of clinically significant QTc prolongation with any antidepressant, likely reflecting the younger, healthier populations enrolled in RCTs versus real-world populations.[24] General genetic screening for prediction of drug-induced TdP is not currently recommended, though polygenic risk scores show promise.[1] The Clinical Toxicology Workgroup (2025) concluded that TdP risk is "likely overstated" for quetiapine, olanzapine, and risperidone, and concern should focus on thioridazine, amisulpride, and ziprasidone specifically.[48]
+
+---
+
+15. Summary
+
+
+Drug-induced QTc prolongation and TdP are rare but potentially fatal complications that require systematic risk assessment, particularly in inpatient settings where multiple QTc-prolonging drugs are commonly co-prescribed. The Tisdale Risk Score provides a validated framework for inpatient risk stratification (C statistic 0.823), though it has high sensitivity but low specificity.[48] Among antipsychotics, aripiprazole and lurasidone carry the lowest QTc risk, while thioridazine carries the highest.[2][51] Among antidepressants, bupropion and duloxetine are the safest choices, while citalopram carries the highest risk with FDA-mandated dose restrictions.[12][14][21] Methadone requires dedicated ECG monitoring protocols.[24] The critical action threshold is QTc >500 ms or ΔQTc ≥60 ms, which should trigger drug discontinuation, continuous telemetry, and aggressive electrolyte correction.[1][3] Electrolyte targets of K⁺ >4.0 mEq/L and Mg²⁺ ≥2.0 mg/dL should be maintained in all patients on QTc-prolonging drugs, with IV magnesium 1–2 g as first-line therapy for acute TdP regardless of serum levels.[1][42]
+
+---
+
+Would you like to explore the pharmacogenomic basis of drug-induced QTc prolongation, including the role of subclinical LQTS mutations and emerging polygenic risk scores for predicting individual susceptibility to TdP?
+
+References
+Citalopram Hydrobromide. Food and Drug Administration. Updated date: 2024-05-08.
+citalopram. Food and Drug Administration. Updated date: 2025-10-07.
+Celexa. Food and Drug Administration. Updated date: 2023-10-09.
+Drug-Induced Prolongation of the QT Interval. Roden DM. The New England Journal of Medicine. 2004;350(10):1013-22. doi:10.1056/NEJMra032426.
+Drugs That May Cause or Exacerbate Heart Failure: A Scientific Statement From the American Heart Association. Page RL, O'Bryant CL, Cheng D, et al. Circulation. 2016;134(6):e32-69. doi:10.1161/CIR.0000000000000426.
+QT Interval and Antidepressant Use: A Cross Sectional Study of Electronic Health Records. Castro VM, Clements CC, Murphy SN, et al. BMJ (Clinical Research Ed.). 2013;346:f288. doi:10.1136/bmj.f288.
+Atypical Antipsychotic Drugs and the Risk of Sudden Cardiac Death. Ray WA, Chung CP, Murray KT, Hall K, Stein CM. The New England Journal of Medicine. 2009;360(3):225-35. doi:10.1056/NEJMoa0806994.
+Comparison of the Effect of Citalopram, Bupropion, Sertraline, and Tricyclic Antidepressants on QTc: A Cross-Sectional Study. Straley CM, Sochacki M, Reed E, Carr CN, Baugh TB. Journal of Affective Disorders. 2022;296:476-484. doi:10.1016/j.jad.2021.08.149.
+Citalopram, QTc Interval Prolongation, and Torsade De Pointes. How Should We Apply the Recent FDA Ruling?. Vieweg WV, Hasnain M, Howland RH, et al. The American Journal of Medicine. 2012;125(9):859-68. doi:10.1016/j.amjmed.2011.12.002.
+Lexapro. Food and Drug Administration. Updated date: 2023-10-01.
+escitalopram. Food and Drug Administration. Updated date: 2025-08-31.
+A Thorough QT Study to Evaluate the QTc Prolongation Potential of Two Neuropsychiatric Drugs, Quetiapine and Escitalopram, in Healthy Volunteers. Kim A, Lim KS, Lee H, et al. International Clinical Psychopharmacology. 2016;31(4):210-7. doi:10.1097/YIC.0000000000000124.
+The Cardiovascular Safety Profile of Escitalopram. Thase ME, Larsen KG, Reines E, Kennedy SH. European Neuropsychopharmacology : The Journal of the European College of Neuropsychopharmacology. 2013;23(11):1391-400. doi:10.1016/j.euroneuro.2013.05.011.
+Heart Rate-Corrected QT Interval Dynamics Following Antidepressant Switching From Escitalopram to High-Dose Venlafaxine: Cardiac Safety Insights From the Early Medication Change Cohort. Engelmann J, Solheid A, Wagner S, et al. Pharmacopsychiatry. 2026;. doi:10.1055/a-2793-9711.
+A Comparative Study of QT Prolongation With Serotonin Reuptake Inhibitors. Ojero-Senard A, Benevent J, Bondon-Guitton E, et al. Psychopharmacology. 2017;234(20):3075-3081. doi:10.1007/s00213-017-4685-7.
+Exploring the Link Between Antipsychotic and Antidepressant Use and Severe QT Prolongation: Impacts on Ventricular Arrhythmias and Sudden Cardiac Death. Wang CL, Wu VC, Wu CL, Chang SH. Heart Rhythm. 2026;23(6):e877-e886. doi:10.1016/j.hrthm.2025.12.020.
+Meta-Analysis of Selective Serotonin Reuptake Inhibitor-Associated QTc Prolongation. Beach SR, Kostis WJ, Celano CM, et al. The Journal of Clinical Psychiatry. 2014;75(5):e441-9. doi:10.4088/JCP.13r08672.
+A Comparison of the Risk of QT Prolongation Among SSRIs. Funk KA, Bostwick JR. The Annals of Pharmacotherapy. 2013;47(10):1330-41. doi:10.1177/1060028013501994.
+Arrhythmic Events Pertinent With Antidepressants: A Bayesian Disproportional Analysis Mining the FDA Adverse Event Reporting System Database. Cao S, Huang Z, Yang W, et al. Frontiers in Psychiatry. 2025;16:1637471. doi:10.3389/fpsyt.2025.1637471.
+Survivorship. National Comprehensive Cancer Network. Updated 2026-04-08.
+Comparative Cardiac Safety of Selective Serotonin Reuptake Inhibitors Among Individuals Receiving Maintenance Hemodialysis. Assimon MM, Brookhart MA, Flythe JE. Journal of the American Society of Nephrology : JASN. 2019;30(4):611-623. doi:10.1681/ASN.2018101032.
+Psychopharmacology and Cardiovascular Disease. Piña IL, Di Palo KE, Ventura HO. Journal of the American College of Cardiology. 2018;71(20):2346-2359. doi:10.1016/j.jacc.2018.03.458.
+The Effects of Antidepressants on Cardiometabolic and Other Physiological Parameters: A Systematic Review and Network Meta-Analysis. Pillinger T, Arumuham A, McCutcheon RA, et al. Lancet (London, England). 2025;406(10515):2063-2077. doi:10.1016/S0140-6736(25)01293-0.
+ACC/AHA/ESC 2006 Guidelines for Management of Patients With Ventricular Arrhythmias and the Prevention of Sudden Cardiac Death: A Report of the American College of Cardiology/American Heart Association Task Force and the European Society of Cardiology Committee for Practice Guidelines (Writing Committee to Develop Guidelines for Management of Patients With Ventricular Arrhythmias and the Prevention of Sudden Cardiac Death). European Heart Rhythm Association, Heart Rhythm Society, Zipes DP, et al. Journal of the American College of Cardiology. 2006;48(5):e247-346. doi:10.1016/j.jacc.2006.07.010.
+Amitriptyline Hydrochloride. Food and Drug Administration. Updated date: 2025-11-03.
+Risk Factors for QT Prolongation Associated With Acute Psychotropic Drug Overdose. Miura N, Saito T, Taira T, Umebachi R, Inokuchi S. The American Journal of Emergency Medicine. 2015;33(2):142-9. doi:10.1016/j.ajem.2014.09.048.
+Drug-Specific Risk of Severe QT Prolongation Following Acute Drug Overdose. Campleman SL, Brent J, Pizon AF, et al. Clinical Toxicology (Philadelphia, Pa.). 2020;58(12):1326-1334. doi:10.1080/15563650.2020.1746330.
+Screening and Management of Depression in Patients With Cardiovascular Disease: JACC State-of-the-Art Review. Jha MK, Qamar A, Vaduganathan M, Charney DS, Murrough JW. Journal of the American College of Cardiology. 2019;73(14):1827-1845. doi:10.1016/j.jacc.2019.01.041.
+Risk of QT/QTc Prolongation Among Newer Non-Ssri Antidepressants. Jasiak NM, Bostwick JR. The Annals of Pharmacotherapy. 2014;48(12):1620-8. doi:10.1177/1060028014550645.
+The QT Interval Prolongation Potential of Anticancer and Supportive Drugs: A Comprehensive Overview. Giraud EL, Ferrier KRM, Lankheet NAG, et al. The Lancet. Oncology. 2022;23(9):e406-e415. doi:10.1016/S1470-2045(22)00221-2.
+The Effect of Venlafaxine on Electrocardiogram Intervals During Treatment for Depression in Older Adults. Behlke LM, Lenze EJ, Pham V, et al. Journal of Clinical Psychopharmacology. 2020 Nov/Dec;40(6):553-559. doi:10.1097/JCP.0000000000001287.
+Trazodone Hydrochloride. Food and Drug Administration. Updated date: 2020-06-30.
+Drug-Induced Arrhythmias: A Scientific Statement From the American Heart Association. Tisdale JE, Chung MK, Campbell KB, et al. Circulation. 2020;142(15):e214-e233. doi:10.1161/CIR.0000000000000905.
+QTc Interval Prolongation and Torsade De Pointes Associated With Second-Generation Antipsychotics and Antidepressants: A Comprehensive Review. Hasnain M, Vieweg WV. CNS Drugs. 2014;28(10):887-920. doi:10.1007/s40263-014-0196-9.
+Association of QT-Prolonging Medications With Risk of Autopsy-Defined Causes of Sudden Death. Simpson TF, Salazar JW, Vittinghoff E, et al. JAMA Internal Medicine. 2020;180(5):698-706. doi:10.1001/jamainternmed.2020.0148.
+Association Between Citalopram, Escitalopram and QTc Prolongation in a Real-World Geriatric Setting. Crépeau-Gendron G, Brown HK, Shorey C, et al. Journal of Affective Disorders. 2019;250:341-345. doi:10.1016/j.jad.2019.02.060.
+Use of Selective Serotonin Re-Uptake Inhibitors and the Heart Rate Corrected QT Interval in a Real-Life Setting: The Population-Based Rotterdam Study. Maljuric NM, Noordam R, Aarts N, et al. British Journal of Clinical Pharmacology. 2015;80(4):698-705. doi:10.1111/bcp.12681.
+Development and Validation of a Risk Score to Predict QT Interval Prolongation in Hospitalized Patients. Tisdale JE, Jaynes HA, Kingery JR, et al. Circulation. Cardiovascular Quality and Outcomes. 2013;6(4):479-87. doi:10.1161/CIRCOUTCOMES.113.000152.
+Arrhythmias and COVID-19: A Review. Dherange P, Lang J, Qian P, et al. JACC. Clinical Electrophysiology. 2020;6(9):1193-1204. doi:10.1016/j.jacep.2020.08.002.
+Predictive Validity of a QT Interval Prolongation Risk Score in the Intensive Care Unit. Su K, McGloin R, Gellatly RM. Pharmacotherapy. 2020;40(6):492-499. doi:10.1002/phar.2400.
+Risk Stratification of QTc Prolongations in Hospitalized Cardiology and Gastroenterology Patients Using the Tisdale Score-a Retrospective Analysis. Steinbrech J, Amann U, Irlbeck M, Clauß S, Strobach D. Journal of Clinical Medicine. 2025;14(2):339. doi:10.3390/jcm14020339.
+Relationship Between a Risk Score for QT Interval Prolongation and Mortality Across Rural and Urban Inpatient Facilities. Tan MS, Heise CW, Gallo T, et al. Journal of Electrocardiology. 2023 Mar-Apr;77:4-9. doi:10.1016/j.jelectrocard.2022.11.008.
+A Calculated Risk: Evaluation of QTc Drug-Drug Interaction (DDI) Clinical Decision Support (CDS) Alerts and Performance of the Tisdale Risk Score Calculator. Wasserman RL, Seger DL, Amato MG, et al. Drug Safety. 2024;47(12):1235-1243. doi:10.1007/s40264-024-01466-w.
+AHA/ACCF/HRS Recommendations for the Standardization and Interpretation of the Electrocardiogram: Part IV: The ST Segment, T and U Waves, and the QT Interval: A Scientific Statement From the American Heart Association Electrocardiography and Arrhythmias Committee, Council on Clinical Cardiology; The American College of Cardiology Foundation; And the Heart Rhythm Society. Endorsed by the International Society for Computerized Electrocardiology. Rautaharju PM, Surawicz B, Gettes LS, et al. Journal of the American College of Cardiology. 2009;53(11):982-91. doi:10.1016/j.jacc.2008.12.014.
+Update to Practice Standards for Electrocardiographic Monitoring in Hospital Settings: A Scientific Statement From the American Heart Association. Sandau KE, Funk M, Auerbach A, et al. Circulation. 2017;136(19):e273-e344. doi:10.1161/CIR.0000000000000527.
+Prevention of Torsade De Pointes in Hospital Settings: A Scientific Statement From the American Heart Association and the American College of Cardiology Foundation. Drew BJ, Ackerman MJ, Funk M, et al. Circulation. 2010;121(8):1047-60. doi:10.1161/CIRCULATIONAHA.109.192704.
+Cardiovascular Complications of Cancer Therapy: Best Practices in Diagnosis, Prevention, and Management: Part 2. Chang HM, Okwuosa TM, Scarabelli T, Moudgil R, Yeh ETH. Journal of the American College of Cardiology. 2017;70(20):2552-2565. doi:10.1016/j.jacc.2017.09.1095.
+Prevention of Torsade De Pointes in Hospital Settings: A Scientific Statement From the American Heart Association and the American College of Cardiology Foundation. Drew BJ, Ackerman MJ, Funk M, et al. Journal of the American College of Cardiology. 2010;55(9):934-47. doi:10.1016/j.jacc.2010.01.001.
+QT Interval Prolongation and the Risk of Torsades De Pointes: Essentials for Clinicians. Trinkley KE, Page RL, Lien H, Yamanouye K, Tisdale JE. Current Medical Research and Opinion. 2013;29(12):1719-26. doi:10.1185/03007995.2013.840568.
+QTc Monitoring in Adults With Medical and Psychiatric Comorbidities: Expert Consensus From the Association of Medicine and Psychiatry. Xiong GL, Pinkhasov A, Mangal JP, et al. Journal of Psychosomatic Research. 2020;135:110138. doi:10.1016/j.jpsychores.2020.110138.
+2017 AHA/ACC/HRS Guideline for Management of Patients With Ventricular Arrhythmias and the Prevention of Sudden Cardiac Death: Executive Summary: A Report of the American College of Cardiology/American Heart Association Task Force on Clinical Practice Guidelines and the Heart Rhythm Society. Al-Khatib SM, Stevenson WG, Ackerman MJ, et al. Journal of the American College of Cardiology. 2018;72(14):1677-1749. doi:10.1016/j.jacc.2017.10.053.
+2023 ACC/AHA/ACCP/HRS Guideline for the Diagnosis and Management of Atrial Fibrillation: A Report of the American College of Cardiology/American Heart Association Joint Committee on Clinical Practice Guidelines. Writing Committee Members, Joglar JA, Chung MK, et al. Journal of the American College of Cardiology. 2024;83(1):109-279. doi:10.1016/j.jacc.2023.08.017.
+
+Electrolyte | Prevention Target (on QT-prolonging drugs) | Acute TdP Management | Guideline Source
+Potassium | >4.0 mEq/L | 4.0–5.0 mmol/L (some recommend 4.5–5.0) | AHA 2020[1]; ACC/AHA/HRS 2017[2]
+Magnesium | ≥2.0 mg/dL | IV MgSO₄ 1–2 g regardless of serum level | AHA 2020[1]; ACC/AHA/HRS 2017[2]
+Calcium | Correct to normal (≥8.3 mg/dL suggested) | Correct hypocalcemia | AHA 2020[1]; observational data[3]
+Risk Factor | Points
+Age ≥68 years | 1
+Female sex | 1
+Loop diuretic use | 1
+Serum K⁺ <3.5 mEq/L | 2
+Admitting QTc ≥450 ms | 2
+Acute myocardial infarction | 2
+≥1 QT-prolonging drug | 3
+≥2 QT-prolonging drugs | 3
+Sepsis | 3
+Heart failure | 3
+Maximum possible score | 21
+QTc Threshold | Clinical Significance | Required Actions
+>450 ms (M) / >460 ms (F) | Prolonged; warrants attention | Review all medications for QTc-prolonging potential; check K⁺, Mg²⁺, Ca²⁺; obtain baseline ECG if not done; reassess risk-benefit[1]
+>470 ms (M) / >480 ms (F) | Intermediate risk; exceeds 99th percentile | All above + consider dose reduction or switch to lower-risk agent; correct electrolytes to target (K⁺ >4.0, Mg²⁺ ≥2.0); repeat ECG in 8–12 hours; cardiology consultation if multiple risk factors[2], [3]
+>500 ms | High risk for TdP | Discontinue offending drug(s); continuous telemetry; aggressive electrolyte correction (K⁺ 4.5–5.0, Mg²⁺ ≥2.0); have defibrillator available; cardiology consultation; keep in highest-surveillance unit[1], [2], [4]
+ΔQTc ≥60 ms from baseline | High risk regardless of absolute value | Same as >500 ms: prompt action indicated[1], [2], [4]
+Medication | CredibleMeds TdP Risk | Mean ΔQTc | FDA Regulatory Action | Key Notes
+ANTIPSYCHOTICS |  |  |  | 
+Thioridazine | Known | ~23 ms | Black box warning | Restricted to treatment-refractory schizophrenia[1]
+Haloperidol (oral) | Known | ~7 ms | Warnings section | Dose-dependent risk[2]
+Haloperidol (IV) | Known | ~6–15 ms | 2007 strengthened warning | ECG monitoring recommended; 97% of TdP cases had additional risk factors[3]
+Ziprasidone | Conditional | ~10–16 ms | Warnings section | ZODIAC trial: no excess mortality vs olanzapine[4]
+Quetiapine | Conditional | ~8 ms | None specific | 13% severe QTc prolongation in large cohort[5]
+Olanzapine | Possible | Minimal | None specific | Favorable QTc profile in head-to-head trials[6]
+Risperidone | Possible | ~1.7 ms | None specific | Minimal QTc effect[7]
+Aripiprazole | Possible | −1.4 ms (decrease) | None specific | Lowest risk SGA; only SGA with mean QTc decrease[7]
+ANTIDEPRESSANTS |  |  |  | 
+Citalopram | Known | 8.5–18.5 ms (dose-dependent) | 2011 FDA safety communication; max 40 mg/d | Max 20 mg/d if age >60, hepatic impairment, CYP2C19 PM[8], [9]
+Escitalopram | Known | 4.5–10.7 ms | Warnings section | Lower risk than citalopram[10]
+Sertraline | Conditional | Minimal | None specific | Low QTc risk[11]
+Paroxetine | Conditional | Minimal | None specific | Lowest SSRI QTc risk[11]
+Fluoxetine | Conditional | Minimal | None specific | Low QTc risk[11]
+TCAs (class) | Possible–Conditional | +7 ms > SSRIs | None specific | Avoid in CVD; primary risk is QRS widening[12], [13]
+Venlafaxine | Possible | ~3.7 ms | None specific | Hypertension is primary CV concern[14]
+Duloxetine | Not listed | None demonstrated | None | Favorable cardiac profile[14]
+Bupropion | Not listed | QTc shortening | None | Safest option for QTc-concerned patients[15]
+Trazodone | Conditional | Modest | Label warning | TdP reported at doses ≥100 mg[16]
+Mirtazapine | Possible | Modest | None specific | Higher SCD odds vs paroxetine in elderly[17]
+OPIOIDS |  |  |  | 
+Methadone | Known | +17–34 ms (dose/time-dependent) | Label warning; ECG monitoring | ECG at 30–40 mg/d and 100 mg/d; 34% prevalence of QTc prolongation[16], [18], [19]
+ANTIEMETICS |  |  |  | 
+Ondansetron | Known (dose-dependent) | +5.6 ms (8 mg IV); +19.5 ms (32 mg IV) | 32 mg IV dose removed (2012); max 16 mg IV | Low risk at 4–8 mg doses[19], [20]
+Droperidol | Known | +37–59 ms (dose-dependent) | Black box warning (2001) | Evidence suggests risk overstated at low doses[16], [21]
+ANTIBIOTICS |  |  |  | 
+Moxifloxacin | Known | +6–14 ms | Label warning; ICH E14 positive control | Highest FQ risk[22], [23]
+Levofloxacin | Possible/Conditional | +3.5–4.9 ms | Label warning | Intermediate FQ risk[24]
+Ciprofloxacin | Lowest FQ risk | +2.3–4.9 ms | Label warning (class) | Comparable to amoxicillin[25], [26]
+Azithromycin | Known | Modest | Label updated 2011–2013; CV death warning | 47 excess CV deaths/million courses[18], [27]
+Erythromycin | Known | High (especially IV) | Label warning | Avoid IV; CYP3A4 interactions dangerous[28]
+Clarithromycin | Known | Higher IKr potency than azithromycin | Label warning | Avoid with QT-prolonging drugs[29]
+Clinical Scenario | Baseline ECG | Follow-up ECG Timing | Electrolyte Monitoring | Telemetry
+Starting any QTc-prolonging psychotropic (inpatient) | Yes | 8–12 hours, then at steady state | K⁺, Mg²⁺, Ca²⁺ at baseline; daily if abnormal | If Tisdale ≥11 or QTc >500 ms
+Starting citalopram/escitalopram (outpatient) | Yes if risk factors present | 1–2 weeks; repeat if dose changed | At baseline in at-risk patients | No
+Starting/titrating methadone | Yes | At 30–40 mg/d, at 100 mg/d, annually | K⁺, Mg²⁺ at baseline and periodically | If QTc >500 ms
+IV haloperidol | Yes | Continuous ECG monitoring per FDA | K⁺, Mg²⁺ before and during | Yes (continuous)
+Congenital LQTS on any psychotropic | Yes | With any medication change; annually | K⁺, Mg²⁺ at baseline and periodically | During initiation
+Multiple QTc-prolonging drugs (e.g., methadone + haloperidol + levofloxacin) | Yes | Every 8–12 hours until stable | Daily K⁺, Mg²⁺ | Strongly recommended
+Dofetilide/sotalol initiation | Yes | Continuous during 3-day hospitalization | K⁺, Mg²⁺, Cr at baseline; every 3–6 months | Yes (3 days)

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="icon" href="/favicon.svg">
+<!-- [RC-META] tool="Agitation: PRN Decision Trainer" version="0.1.0" built="2026-07-02" category="acute-safety" audience="resident,trainee" settings="inpatient,ED,C-L" time="8min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="draft-pending-attestation" summary="Teaching trainer for reasoning through acute agitation: etiology triage, de-escalation-first sequencing, and class-level pharmacologic reasoning with hazard feedback. NOT an order set. All agents/doses/routes/monitoring are local-policy placeholders. Fictional composites; no PHI." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agitation: PRN Decision Trainer — Teaching Tool</title>
+<meta name="description" content="A teaching trainer for reasoning through acute agitation management: etiology triage, de-escalation first, and class-level pharmacologic reasoning with hazard feedback. Educational only; not clinical decision support.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#665a4f;
+    --success:#357160; --success-light:#e7f1ed;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --danger:#a34132; --danger-light:#fbece9;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+  }
+  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(860px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) 90px}
+  h1{font-family:var(--font-head);font-size:1.9rem;color:var(--primary);margin:0 0 4px}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .sub{color:var(--text-mid);max-width:66ch;margin:0 0 var(--sp3)}
+  .themebtn{position:fixed;top:12px;right:12px;width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;z-index:30}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .modebar{display:inline-flex;flex-wrap:wrap;gap:6px;border:1px solid var(--border);border-radius:var(--radius-pill);padding:4px;margin-bottom:var(--sp3);background:var(--bg-alt)}
+  .modebar button{border:none;background:transparent;padding:7px 16px;border-radius:var(--radius-pill);font:inherit;font-size:.85rem;font-weight:700;color:var(--text-mid);cursor:pointer}
+  .modebar button.on{background:var(--accent);color:var(--on-brand)}
+  .disc{border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.84rem;margin-bottom:var(--sp3)}
+  .disc.teach{background:var(--info-light);color:var(--info);border:1px solid var(--info)}
+  .stemgrid{display:flex;flex-wrap:wrap;gap:8px;margin:var(--sp2) 0 0}
+  .vital{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 10px;font-size:.82rem;color:var(--text-mid)}
+  .vital b{color:var(--text)}
+  .metarow{display:flex;flex-wrap:wrap;gap:8px;font-size:.8rem;color:var(--text-light);margin-top:var(--sp2)}
+  .steplabel{text-transform:uppercase;letter-spacing:.08em;font-size:.68rem;font-weight:700;color:var(--accent-dark);margin:0 0 4px}
+  .qtext{font-family:var(--font-head);font-size:1.18rem;margin:0 0 var(--sp3)}
+  .opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-md);padding:12px 14px;margin:8px 0;cursor:pointer;font:inherit;color:var(--text)}
+  .opt:hover{border-color:var(--accent);background:var(--accent-light)}
+  .opt.on{border-color:var(--accent);background:var(--accent-light);box-shadow:inset 0 0 0 1px var(--accent)}
+  .opt .num{flex:0 0 auto;width:22px;height:22px;border-radius:6px;background:var(--bg-alt);border:1px solid var(--border);font-size:.76rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--text-mid)}
+  .opt.on .num{background:var(--accent);color:var(--on-brand);border-color:var(--accent)}
+  .opt .lab{flex:1;min-width:0}
+  .localchip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;border:1px dashed var(--warning);color:var(--warning);background:var(--warning-light);border-radius:var(--radius-pill);padding:3px 10px;margin:6px 6px 0 0}
+  .localchip.set{border-style:solid;border-color:var(--success);color:var(--success);background:var(--success-light)}
+  .verdict{border-radius:var(--radius-md);padding:12px 14px;margin:10px 0;font-size:.92rem;border:1px solid}
+  .verdict.good{background:var(--success-light);color:var(--success);border-color:var(--success)}
+  .verdict.caution{background:var(--warning-light);color:var(--warning);border-color:var(--warning)}
+  .verdict.hazard{background:var(--danger-light);color:var(--danger);border-color:var(--danger)}
+  .verdict .vh{font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:var(--sp3)}
+  .btn{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-weight:600;cursor:pointer;font:inherit;background:var(--surface);color:var(--accent-dark)}
+  .btn.primary{background:var(--primary-dark);color:var(--on-brand);border-color:var(--primary-dark)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .nudge{color:var(--danger);font-size:.85rem;margin-top:8px}
+  .trace .node{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:6px 0}
+  .trace .marker{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--on-brand);font-weight:700;font-size:.85rem}
+  .m.good{background:var(--success)} .m.caution{background:var(--warning)} .m.hazard{background:var(--danger)} .m.neutral{background:var(--text-light)}
+  .nodecard{border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 13px}
+  .pearl{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:var(--radius-sm);padding:10px 13px;font-size:.9rem;margin:8px 0}
+  .cite{font-size:.8rem;color:var(--text-light)}
+  details.cites{margin-top:8px} details.cites summary{cursor:pointer;font-size:.82rem;color:var(--accent-dark)}
+  .disc.footer{position:fixed;left:0;right:0;bottom:0;background:var(--danger-light);color:var(--danger);border-top:1px solid var(--danger);font-size:.8rem;padding:8px 14px;text-align:center;margin:0;z-index:20}
+  .flag{background:none;border:1px solid var(--border);border-radius:var(--radius-pill);padding:6px 14px;color:var(--text-light);cursor:pointer;font:inherit;font-size:.82rem}
+  .flag:hover{border-color:var(--danger);color:var(--danger)}
+  .refmap h3{font-family:var(--font-head);color:var(--primary-dark);margin:var(--sp3) 0 6px;font-size:1.05rem}
+  .refmap ul{margin:4px 0 0;padding-left:1.3em}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  :focus-visible{outline:3px solid var(--focus,#155eef);outline-offset:2px}
+  @media(prefers-reduced-motion:no-preference){.opt:active,.btn:active{transform:scale(.98)}}
+  @media(max-width:520px){.shell{padding:var(--sp3) var(--sp2) 96px}h1{font-size:1.55rem}.opt{padding:12px}}
+</style>
+</head>
+<body>
+<button class="themebtn" id="themebtn" aria-label="Toggle light/dark theme">◐</button>
+<main class="shell" id="root"></main>
+<div class="disc footer" role="note">Teaching trainer — <b>not clinical decision support</b> and it does not generate orders. In a real emergency, call your senior/attending and follow local protocol.</div>
+<div id="live" class="visually-hidden" aria-live="polite"></div>
+<script>
+(function(){
+  "use strict";
+  var e=React.createElement, useState=React.useState, useEffect=React.useEffect, useRef=React.useRef;
+  var LS={mode:'cw_agit_mode', flags:'cw_flags'};
+  var FACULTY_FEEDBACK_EMAIL=""; /* {{LOCAL: agitation faculty_feedback_email }} — empty renders copy-to-clipboard fallback */
+
+  function announce(msg){ try{ document.getElementById('live').textContent=msg; }catch(e){} }
+
+  /* ---------- Shared primitive: LocalChip (see _TEMPLATE.html) ---------- */
+  function LocalChip(props){
+    var tok=props.token; if(!tok) return null;
+    var set=tok.value!==null && tok.value!==undefined;
+    return e('span',{className:'localchip'+(set?' set':''),title:tok.label},
+      set? ('Local · '+tok.value) : ('⚠ '+(tok.placeholder||'Confirm locally')));
+  }
+  /* ---------- Shared primitive: FlagButton ---------- */
+  function FlagButton(props){
+    function onFlag(){
+      var reason=window.prompt('Flag this content — reason (out of date / factual error / local mismatch / typo-UX) + note:');
+      if(reason===null) return;
+      try{ var arr=JSON.parse(localStorage.getItem(LS.flags)||'[]');
+        arr.push({tool:'agitation-trainer',v:'0.1.0',ctx:props.ctx||'',reason:reason,at:new Date().toISOString()});
+        localStorage.setItem(LS.flags,JSON.stringify(arr)); }catch(e){}
+      var subj=encodeURIComponent('[Content flag] agitation-trainer v0.1.0');
+      var body=encodeURIComponent('Context: '+(props.ctx||'')+'\nReason/notes: '+reason);
+      if(FACULTY_FEEDBACK_EMAIL){ window.location.href='mailto:'+FACULTY_FEEDBACK_EMAIL+'?subject='+subj+'&body='+body; }
+      else { announce('Flag saved locally. Set the faculty feedback email to enable sending.'); alert('Flag saved locally.\n(Confirm the faculty feedback email — a LOCAL_POLICY item — to enable email routing.)'); }
+    }
+    return e('button',{className:'flag',onClick:onFlag},'⚑ Flag content');
+  }
+
+  function tokenById(pack,id){ var a=(pack.localPolicies||[]).filter(function(t){return t.id===id;}); return a[0]||null; }
+
+  /* ---------- verdict logic for the pharmacologic step ---------- */
+  var ALWAYS_SHOW=['note','im_olanzapine_benzo'];
+  function pharmVerdict(choice, scenario){
+    var ctx=[scenario.trueEtiology].concat(scenario.populationFlags||[]);
+    var haz=[], caut=[];
+    if(choice.hazardIf){ Object.keys(choice.hazardIf).forEach(function(k){ if(ctx.indexOf(k)>=0) haz.push(choice.hazardIf[k]); }); }
+    if(choice.cautionIf){ Object.keys(choice.cautionIf).forEach(function(k){ if(ctx.indexOf(k)>=0 || ALWAYS_SHOW.indexOf(k)>=0) caut.push(choice.cautionIf[k]); }); }
+    var level = haz.length? 'hazard' : (caut.length? 'caution':'good');
+    var notes = haz.concat(caut);
+    if(!notes.length){
+      if(choice.id==='treat_cause') notes=['Addressing the underlying cause is often the highest-yield first move.'];
+      else if(choice.id==='im_if_danger') notes=['Reserve parenteral/involuntary routes for imminent danger after de-escalation; follow restraint policy.'];
+      else notes=['Reasonable class-level choice for this presentation — confirm the specific agent/dose against local formulary.'];
+    }
+    return {level:level, notes:notes};
+  }
+
+  function App(){
+    var s0=useState('loading'), phase=s0[0], setPhase=s0[1]; /* loading|error|home|play|refmap */
+    var sp=useState(null), pack=sp[0], setPack=sp[1];
+    var sm=useState((function(){try{return localStorage.getItem(LS.mode)||'guided';}catch(e){return 'guided';}})()), mode=sm[0], setMode=sm[1];
+    var ss=useState(null), scenario=ss[0], setScenario=ss[1];
+    var si=useState(0), step=si[0], setStep=si[1];
+    var sc=useState({}), choices=sc[0], setChoices=sc[1]; /* {etiology, nonpharm:[], pharm, monitoring:[]} */
+    var sn=useState(false), nudge=sn[0], setNudge=sn[1];
+    var contentRef=useRef(null);
+
+    useEffect(function(){
+      fetch('./agitation.pack.json',{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function(d){ setPack(d); setPhase('home'); })
+        .catch(function(){ setPhase('error'); });
+    },[]);
+
+    useEffect(function(){ /* keyboard number accelerators during play */
+      function onKey(ev){
+        if(phase!=='play' || !scenario) return;
+        var n=parseInt(ev.key,10); if(isNaN(n)||n<1) return;
+        var opts=currentOptions(); if(n>opts.length) return;
+        pick(opts[n-1]);
+      }
+      document.addEventListener('keydown',onKey); return function(){document.removeEventListener('keydown',onKey);};
+    });
+
+    useEffect(function(){ document.getElementById('themebtn').onclick=function(){
+      var cur=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+      document.documentElement.setAttribute('data-theme',cur); try{localStorage.setItem('cw_theme',cur);}catch(e){}
+    };},[]);
+
+    function setModeP(m){ setMode(m); try{localStorage.setItem(LS.mode,m);}catch(e){} }
+    function startPlay(){
+      var list=pack.content.scenarios;
+      var sc = mode==='challenge' ? list[Math.floor(Math.random()*list.length)] : list[0];
+      setScenario(sc); setChoices({etiology:null,nonpharm:[],pharm:null,monitoring:[]}); setStep(0); setNudge(false); setPhase('play');
+      announce('Scenario loaded. Step 1 of 4: etiology triage.');
+    }
+    function pickScenario(sc){ setScenario(sc); setChoices({etiology:null,nonpharm:[],pharm:null,monitoring:[]}); setStep(0); setNudge(false); setPhase('play'); }
+
+    var STEP_KEYS=['etiology','nonpharm','pharm','monitoring'];
+    var STEP_LABELS=['Step 1 · Etiology triage','Step 2 · Non-pharmacologic first','Step 3 · Pharmacologic reasoning','Step 4 · Monitoring & reassessment'];
+    var STEP_Q=[
+      'What is most likely driving this agitation?',
+      'Before any medication route — what do you do first? (select all that apply)',
+      'If pharmacologic management is needed, what is your class-level approach?',
+      'What will you monitor and when will you reassess? (select all that apply)'
+    ];
+    function currentOptions(){
+      var b=pack.choiceBanks;
+      if(step===0) return b.etiology;
+      if(step===1) return b.nonpharm;
+      if(step===2) return b.pharmApproach;
+      return b.monitoring;
+    }
+    function pick(opt){
+      setNudge(false);
+      var c=Object.assign({},choices);
+      if(step===0){ c.etiology=opt.id; }
+      else if(step===1){ var a=c.nonpharm.slice(); var i=a.indexOf(opt.id); if(i>=0)a.splice(i,1); else a.push(opt.id); c.nonpharm=a; }
+      else if(step===2){ c.pharm=opt.id; }
+      else { var m=c.monitoring.slice(); var j=m.indexOf(opt.id); if(j>=0)m.splice(j,1); else m.push(opt.id); c.monitoring=m; }
+      setChoices(c);
+    }
+    function canAdvance(){
+      if(step===0) return !!choices.etiology;
+      if(step===1) return choices.nonpharm.length>0; /* de-escalation GATE */
+      if(step===2) return !!choices.pharm;
+      return true;
+    }
+    function next(){
+      if(!canAdvance()){ setNudge(true);
+        if(step===1) announce('Address de-escalation or a non-pharmacologic step before pharmacologic options.');
+        return; }
+      if(step<3){ setStep(step+1); announce(STEP_LABELS[step+1]); }
+      else { setPhase('trace'); announce('Decision trace ready.'); }
+    }
+    function back(){ if(step>0){ setStep(step-1);} }
+
+    /* ---------- render helpers ---------- */
+    function optionEl(opt,idx){
+      var selected = step===0? choices.etiology===opt.id :
+                     step===1? choices.nonpharm.indexOf(opt.id)>=0 :
+                     step===2? choices.pharm===opt.id :
+                     choices.monitoring.indexOf(opt.id)>=0;
+      var tok = opt.tokenId? tokenById(pack,opt.tokenId): null;
+      return e('button',{key:opt.id,className:'opt'+(selected?' on':''),onClick:function(){pick(opt);},'aria-pressed':selected},
+        e('span',{className:'num'},idx+1),
+        e('span',{className:'lab'}, opt.label, tok? e('div',null,e(LocalChip,{token:tok})):null));
+    }
+
+    function guidedReveal(){
+      if(mode!=='guided') return null;
+      if(step===0 && choices.etiology){
+        var chosen=choices.etiology, truth=scenario.trueEtiology;
+        var disc=scenario.discriminators||{};
+        var v = chosen===truth?'good':(chosen==='undetermined'?'caution':'caution');
+        var head = chosen===truth?'Consistent with the discriminating features':(chosen==='undetermined'?'A safe, non-penalized stance':'Worth re-weighing the discriminators');
+        var cues=(disc[truth]||[]);
+        return e('div',{className:'verdict '+v},
+          e('div',{className:'vh'}, v==='good'?'✓ ':'△ ', head),
+          e('div',null, chosen==='undetermined'? 'When data are insufficient, working it up and using least-harm measures is appropriate.' :
+            'Key features that point toward the most likely driver here: '+cues.join('; ')+'.'));
+      }
+      if(step===2 && choices.pharm){
+        var opt=pack.choiceBanks.pharmApproach.filter(function(o){return o.id===choices.pharm;})[0];
+        var vd=pharmVerdict(opt,scenario);
+        return e('div',{className:'verdict '+vd.level},
+          e('div',{className:'vh'}, vd.level==='hazard'?'⚠ Hazard ':(vd.level==='caution'?'△ Caution ':'✓ Reasonable '), '— reasoning check'),
+          e('ul',{style:{margin:'4px 0 0',paddingLeft:'1.1em'}}, vd.notes.map(function(n,i){return e('li',{key:i},n);})));
+      }
+      return null;
+    }
+
+    /* ================= PHASES ================= */
+    if(phase==='loading') return e('div',{className:'shell'},e('p',null,'Loading trainer…'));
+    if(phase==='error') return e('div',{className:'shell'},
+      e('h1',null,'Agitation: PRN Decision Trainer'),
+      e('div',{className:'verdict caution'},'Could not load the content pack. Refresh to retry, or review the Agitation topic page in the library.'),
+      e('button',{className:'btn primary',onClick:function(){window.location.reload();}},'Retry'));
+
+    var header=e('div',null,
+      e('div',{className:'kicker'},'Acute & Safety · Teaching trainer'),
+      e('h1',null,'Agitation: PRN Decision Trainer'),
+      e('div',{className:'disc teach',role:'note'},'Educational tool for MMC psychiatry residents. It teaches ',e('b',null,'reasoning and hazard-avoidance'),', not what to order. Agents, doses, routes, and monitoring are ',e('b',null,'local-policy placeholders'),'. Fictional composites — no PHI.'),
+      e('div',{className:'modebar',role:'tablist','aria-label':'Mode'},
+        ['guided','challenge','reference'].map(function(m){
+          return e('button',{key:m,role:'tab','aria-selected':mode===m,className:mode===m?'on':'',onClick:function(){setModeP(m);}}, m==='guided'?'Guided':m==='challenge'?'Challenge':'Reference map');
+        })));
+
+    if(phase==='home'){
+      return e('div',null, header,
+        e('div',{className:'card'},
+          e('p',{className:'sub'}, mode==='reference'? 'Reference map shows the full decision structure with local-policy placeholders — no scoring.' : mode==='challenge'? 'Challenge mode picks a random scenario and holds feedback until the decision trace.' : 'Guided mode walks one scenario with feedback at each step.'),
+          mode==='reference'
+            ? e('button',{className:'btn primary',onClick:function(){setPhase('refmap');}},'Open reference map')
+            : e('div',null,
+                e('button',{className:'btn primary',onClick:startPlay}, mode==='challenge'?'Start a random scenario':'Start scenario'),
+                mode==='guided'? e('div',{style:{marginTop:'14px'}},
+                  e('div',{className:'steplabel'},'Or pick a scenario'),
+                  pack.content.scenarios.map(function(sc){
+                    return e('button',{key:sc.id,className:'opt',onClick:function(){pickScenario(sc);}},
+                      e('span',{className:'lab'}, sc.stem.slice(0,90)+'…'));
+                  })):null)),
+        e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}}, e(FlagButton,{ctx:'home'}), e('span',{className:'cite'},'v0.1.0 · Draft — pending faculty review')));
+    }
+
+    if(phase==='refmap'){
+      var b=pack.choiceBanks;
+      function grp(title,arr){ return e('div',null,e('h3',null,title),e('ul',null,arr.map(function(o){var tok=o.tokenId?tokenById(pack,o.tokenId):null;return e('li',{key:o.id},o.label, tok?e('span',null,' ',e(LocalChip,{token:tok})):null);}))); }
+      return e('div',null,header,
+        e('div',{className:'card refmap'},
+          e('p',{className:'sub'},'The trainer follows Project BETA sequencing: safety and verbal de-escalation first (≈5–10 min), oral before parenteral, and agent choice driven by etiology and special populations. Every specific agent/dose/route/interval is a local-policy placeholder.'),
+          grp('A · Etiology triage',b.etiology),
+          grp('B · Non-pharmacologic first',b.nonpharm),
+          grp('C · Pharmacologic approach (class-level)',b.pharmApproach),
+          grp('D · Monitoring & reassessment',b.monitoring),
+          e('div',{className:'pearl'},'Teaching anchor: the same class (a benzodiazepine) is a hazard in non-withdrawal delirium but first-line in alcohol/sedative withdrawal — which is why etiology comes first.')),
+        e(FlagButton,{ctx:'refmap'}));
+    }
+
+    if(phase==='trace'){
+      var traceRows=[];
+      // etiology
+      (function(){
+        var chosen=choices.etiology, truth=scenario.trueEtiology;
+        var v=chosen===truth?'good':(chosen==='undetermined'?'caution':'caution');
+        var lbl=pack.choiceBanks.etiology.filter(function(o){return o.id===chosen;})[0];
+        traceRows.push({k:'Etiology',v:v,choice:lbl?lbl.label:'—',
+          note: chosen===truth?'Matched the discriminating features.':(chosen==='undetermined'?'Safe stance when data are insufficient.':'Re-weigh: '+((scenario.discriminators[truth]||[]).join('; ')))});
+      })();
+      // nonpharm
+      (function(){
+        var picks=choices.nonpharm.map(function(id){return pack.choiceBanks.nonpharm.filter(function(o){return o.id===id;})[0].label;});
+        traceRows.push({k:'Non-pharm first',v:'good',choice:picks.join(', ')||'—',note:'De-escalation-first sequencing (Project BETA).'});
+      })();
+      // pharm
+      (function(){
+        var opt=pack.choiceBanks.pharmApproach.filter(function(o){return o.id===choices.pharm;})[0];
+        var vd=pharmVerdict(opt,scenario);
+        traceRows.push({k:'Pharmacologic',v:vd.level,choice:opt.label,note:vd.notes.join(' ')});
+      })();
+      // monitoring
+      (function(){
+        var picks=choices.monitoring.map(function(id){return pack.choiceBanks.monitoring.filter(function(o){return o.id===id;})[0].label;});
+        traceRows.push({k:'Monitoring',v:choices.monitoring.length?'good':'caution',choice:picks.join(', ')||'—',note:choices.monitoring.length?'Post-sedation monitoring selected.':'Always monitor after sedating an agitated patient.'});
+      })();
+
+      var cites=(scenario.citationIds||[]).map(function(id){return (pack.citations.filter(function(c){return c.id===id;})[0]||{}).ref;}).filter(Boolean);
+      return e('div',null,header,
+        e('div',{className:'card'},
+          e('div',{className:'steplabel'},'Decision trace'),
+          e('div',{className:'trace'}, traceRows.map(function(r,i){
+            return e('div',{className:'node',key:i},
+              e('div',{className:'marker m '+r.v}, r.v==='good'?'✓':r.v==='hazard'?'!':'△'),
+              e('div',{className:'nodecard'},
+                e('div',{className:'steplabel'},r.k),
+                e('div',null,e('b',null,r.choice)),
+                e('div',{className:'cite'},r.note)));
+          })),
+          e('div',{className:'pearl'},
+            e('b',null,'Teaching points'),
+            e('ul',{style:{margin:'6px 0 0',paddingLeft:'1.1em'}}, (scenario.teachingPoints||[]).map(function(tp,i){return e('li',{key:i},tp.text);}))),
+          cites.length? e('details',{className:'cites'},e('summary',null,'Citations'),e('ul',null,cites.map(function(c,i){return e('li',{key:i,className:'cite'},c);}))):null),
+        e('div',{className:'btnrow'},
+          e('button',{className:'btn primary',onClick:startPlay}, mode==='challenge'?'Another random scenario':'Restart'),
+          e('button',{className:'btn',onClick:function(){setPhase('home');}},'Back to start'),
+          e(FlagButton,{ctx:'trace:'+scenario.id})));
+    }
+
+    /* phase === 'play' */
+    var opts=currentOptions();
+    return e('div',null,header,
+      e('div',{className:'card'},
+        e('div',{className:'steplabel'},'Scenario'),
+        e('p',{style:{margin:'0 0 6px'}},scenario.stem),
+        e('div',{className:'stemgrid'},
+          e('span',{className:'vital'},e('b',null,'HR '),scenario.vitals.hr),
+          e('span',{className:'vital'},e('b',null,'BP '),scenario.vitals.bp),
+          e('span',{className:'vital'},e('b',null,'SpO₂ '),scenario.vitals.spo2+'%'),
+          e('span',{className:'vital'},e('b',null,'Temp '),scenario.vitals.temp)),
+        e('div',{className:'metarow'},e('span',null,scenario.history),e('span',null,'Meds: '+scenario.currentMeds.join(', ')))),
+      e('div',{className:'card',ref:contentRef},
+        e('div',{className:'steplabel'},STEP_LABELS[step]),
+        e('div',{className:'qtext'},STEP_Q[step]),
+        opts.map(function(o,i){return optionEl(o,i);}),
+        nudge? e('div',{className:'nudge'}, step===1?'Address de-escalation / a non-pharmacologic step before moving to medications.':'Make a selection to continue.'):null,
+        guidedReveal(),
+        e('div',{className:'btnrow'},
+          step>0? e('button',{className:'btn',onClick:back},'Back'):null,
+          e('button',{className:'btn primary',onClick:next,disabled:!canAdvance() && step!==1}, step<3?'Next':'See decision trace'))),
+      e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
+        e('span',{className:'cite'},'Step '+(step+1)+' of 4 · '+mode),
+        e(FlagButton,{ctx:'play:'+scenario.id+':step'+step})));
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+})();
+</script>
+</body>
+</html>

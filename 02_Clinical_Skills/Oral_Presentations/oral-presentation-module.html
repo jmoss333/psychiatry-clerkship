@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [RC-META] tool="Treatment Team Rounding Prep" version="2.0" built="2026-06-28" category="clinical-skills" audience="trainee,ms3" settings="inpatient" time="15min" summary="Optional aid for treatment-team rounds: gather the right data before rounds, then present it crisply (the 3-minute oral presentation + practice timer). Fictional composites only; no PHI." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Treatment Team Rounding Prep</title>
+<meta name="description" content="An optional aid for inpatient treatment-team rounds: gather the right data before rounds, then present it in three minutes — structure, live section cues, and a practice timer.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --success:#357160; --warning:#7a6234; --warning-light:#f5efe2; --danger:#a34132;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text,#3b332c);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(900px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) var(--sp5)}
+  h1,h2,h3{font-family:var(--font-head);line-height:1.25;margin:0 0 var(--sp3)}
+  h1{font-size:2.1rem;color:var(--primary)} h3{font-size:1.05rem}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .sub{color:var(--text-mid,#64574b);max-width:64ch;margin:0 0 var(--sp3)}
+  .opt{display:inline-block;font-size:.7rem;font-weight:700;color:var(--accent-dark);background:var(--accent-light);border:1px solid #cfe1db;border-radius:999px;padding:2px 9px;margin-bottom:var(--sp3)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .tabs{display:flex;gap:var(--sp1);border-bottom:2px solid var(--border);margin-bottom:var(--sp4);flex-wrap:wrap}
+  .tab{border:none;background:transparent;padding:10px 14px;font-size:.95rem;font-weight:600;color:var(--text-mid,#64574b);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;font-family:inherit}
+  .tab.on{color:var(--primary-dark);border-bottom-color:var(--primary-dark)}
+  .step{display:grid;grid-template-columns:auto 1fr auto;gap:var(--sp3);align-items:start;border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--sp3);margin-bottom:var(--sp2);background:var(--surface)}
+  .step.active{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-light)}
+  .step.done{opacity:.6}
+  .step-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-pill);background:var(--accent);color:#fff;font-weight:700;font-size:.85rem}
+  .step h3{margin:0 0 2px} .step .d{font-size:.9rem;color:var(--text-mid,#64574b)}
+  .step .t{font-size:.8rem;color:var(--text-light,#87786a);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .ex{font-style:italic;background:var(--primary-light);border-radius:var(--radius-sm);padding:6px 10px;font-size:.88rem;margin-top:6px;display:block}
+  .timer{font-family:var(--font-head);font-size:3rem;font-variant-numeric:tabular-nums;text-align:center;color:var(--primary-dark);margin:var(--sp2) 0}
+  .bar{height:10px;border-radius:var(--radius-pill);background:var(--border);overflow:hidden;margin-bottom:var(--sp3)}
+  .bar > div{height:100%;background:var(--accent);transition:width .5s linear}
+  .bar.over > div{background:var(--danger)}
+  .cue{text-align:center;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp3);min-height:1.4em}
+  .cue.over{color:var(--danger)}
+  .btn{border:none;border-radius:var(--radius-sm);padding:10px 18px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--primary-dark);color:#fff}
+  .btn-ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .row{display:flex;gap:var(--sp2);justify-content:center;flex-wrap:wrap}
+  .check{display:flex;gap:var(--sp2);align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer}
+  .check:last-child{border-bottom:none}
+  .box{width:20px;height:20px;border:2px solid var(--accent);border-radius:5px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;margin-top:2px}
+  .box.on{background:var(--accent)}
+  .check .ct{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light,#87786a);font-weight:700}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp3)}
+  @media(max-width:640px){.twocol{grid-template-columns:1fr}}
+  .do b{color:var(--success)} .dont b{color:var(--danger)}
+  .pearl{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);font-size:.9rem;margin-top:var(--sp3)}
+  .pearl b{color:var(--warning)}
+  .disclaimer{background:var(--bg-alt);border:1px dashed var(--border);border-radius:var(--radius-md);padding:var(--sp3);font-size:.82rem;color:var(--text-mid,#64574b);margin-top:var(--sp4)}
+  .ringwrap{display:flex;justify-content:center;margin:var(--sp2) 0 var(--sp1)}
+  .ring{width:150px;height:150px;border-radius:50%;position:relative;transition:background .5s linear}
+  .ring::after{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 1px var(--border)}
+  .ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1}
+  .ringtime{font-family:var(--font-head);font-size:1.9rem;font-variant-numeric:tabular-nums;color:var(--accent-dark);line-height:1}
+  .ring.over .ringtime{color:var(--danger)}
+  .ringlbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-light,#87786a);font-weight:700;margin-top:5px}
+  .ringtot{font-size:.78rem;color:var(--text-light,#87786a);text-align:center;font-variant-numeric:tabular-nums;margin-bottom:var(--sp2)}
+  .sdot{width:11px;height:11px;border-radius:50%;flex:none;background:var(--border);transition:background .2s,box-shadow .2s}
+  .sdot.done{background:var(--accent)}
+  .sdot.current{background:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+  @media(prefers-reduced-motion:reduce){.ring,.sdot{transition:none}}
+  footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light,#87786a);text-align:center}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+var e=React.createElement; var useState=React.useState; var useEffect=React.useEffect; var useRef=React.useRef;
+
+var GATHER=[
+  ['Overnight','Events, nursing notes, incidents, PRNs given'],
+  ['Sleep','Hours slept; pattern vs. prior nights'],
+  ['Behavior / milieu','Agitation, isolation, interactions, groups attended'],
+  ['Intake','PO intake, appetite, hydration; refusals'],
+  ['Meds','Current psychotropics, changes, missed/refused doses, levels'],
+  ['Vitals / labs','Pertinent vitals, labs, drug levels, pending studies'],
+  ['Safety','SI/HI status, observation level, restraint/seclusion use'],
+  ['Disposition','Barriers to discharge, family/collateral, aftercare, legal status']
+];
+var STEPS=[
+  {n:1,t:'One-liner',sec:20,d:'ID + chief concern + key context, in one sentence.',ex:'"Mr. A is a 34-year-old man with bipolar I, admitted on a hold for a manic episode after stopping lithium."'},
+  {n:2,t:'Interval / overnight',sec:25,d:'What changed since the last presentation: events, behavior, sleep, intake, PRNs.',ex:'"Overnight he slept 3 hours, was redirectable, took one PRN olanzapine for agitation."'},
+  {n:3,t:'Subjective + MSE highlights',sec:35,d:'Patient report plus the 2-3 MSE findings that matter today — not the whole exam.',ex:'"Reports he feels great; still pressured, expansive affect, grandiose themes, no SI/HI."'},
+  {n:4,t:'Objective: meds, vitals, labs',sec:25,d:'Relevant data and changes only: current psychotropics + adjustments, pertinent vitals/labs/levels.',ex:'"Lithium restarted, level pending; valproate at goal; vitals stable."'},
+  {n:5,t:'Safety / risk',sec:20,d:'Explicit SI/HI, agitation, elopement, and observation level — never skipped.',ex:'"No SI/HI; one agitation episode managed verbally; remains on Q15 checks."'},
+  {n:6,t:'Assessment (formulation)',sec:25,d:'One to two lines: who, what, why now — biological + relational. Not a re-read of the HPI.',ex:'"Manic relapse precipitated by lithium discontinuation and sleep loss, with high family expressed emotion."'},
+  {n:7,t:'Plan by problem',sec:30,d:'Problem-based, concrete next steps: meds, monitoring, milieu/family, disposition.',ex:'"1) Mania: resume lithium, recheck level. 2) Sleep: protect with scheduled meds. 3) Family meeting today. 4) Dispo: needs 1 more day of stability."'}
+];
+var TARGET=STEPS.reduce(function(a,s){return a+s.sec},0);
+function fmt(s){var m=Math.floor(s/60),x=s%60;return m+':'+(x<10?'0':'')+x;}
+
+function App(){
+  var tab=useState('gather'); var setTab=tab[1]; tab=tab[0];
+  var sec=useState(0); var setSec=sec[1]; sec=sec[0];
+  var run=useState(false); var setRun=run[1]; run=run[0];
+  var done=useState({}); var setDone=done[1]; done=done[0];
+  var prep=useState({}); var setPrep=prep[1]; prep=prep[0];
+  var ref=useRef(null);
+  useEffect(function(){ if(run){ ref.current=setInterval(function(){ setSec(function(s){return s+1}); },1000);} return function(){ if(ref.current) clearInterval(ref.current);} },[run]);
+  function activeStep(){ var acc=0; for(var i=0;i<STEPS.length;i++){ acc+=STEPS[i].sec; if(sec<acc) return i;} return STEPS.length-1; }
+  function togglePrep(k){ var x=Object.assign({},prep); x[k]=!x[k]; setPrep(x); }
+  function toggleDone(n){ var x=Object.assign({},done); x[n]=!x[n]; setDone(x); }
+  var over=sec>TARGET; var pct=Math.min(100,(sec/TARGET)*100); var cur=activeStep();
+  var deg=Math.min(360,(sec/TARGET)*360); var remain=Math.max(0,TARGET-sec);
+  var cue=over?'Over time — wrap up and stop.':('Now: '+STEPS[cur].t+'  ·  target '+fmt(TARGET-sec)+' left');
+
+  var header=e('div',{key:'h'},
+    e('div',{className:'kicker'},'Clinical Skills · optional aid'),
+    e('h1',null,'Treatment Team Rounding Prep'),
+    e('span',{className:'opt'},'Optional — use it if it helps'),
+    e('p',{className:'sub'},'Walk into treatment-team rounds with the right data, then present it crisply. Step 1: gather. Step 2: present (the 3-minute structure). Step 3: rehearse against the timer. Nothing here is required — it is a scaffold you can lean on while you build the habit.')
+  );
+  var tabs=e('div',{className:'tabs',key:'t'},
+    e('button',{className:'tab'+(tab==='gather'?' on':''),onClick:function(){setTab('gather')}},'1 · Gather'),
+    e('button',{className:'tab'+(tab==='present'?' on':''),onClick:function(){setTab('present')}},'2 · Present'),
+    e('button',{className:'tab'+(tab==='practice'?' on':''),onClick:function(){setTab('practice')}},'3 · Practice timer')
+  );
+
+  var gather=e('div',{key:'g'},
+    e('div',{className:'card'},
+      e('h3',{style:{marginTop:0}},'Before rounds — have these ready'),
+      e('p',{className:'sub',style:{marginTop:0}},'The pre-round sweep. Tick what you have; the gaps are your to-do before the team sits down.'),
+      GATHER.map(function(p){
+        return e('div',{className:'check',key:p[0],onClick:function(){togglePrep(p[0])}},
+          e('span',{className:'box'+(prep[p[0]]?' on':'')}, prep[p[0]]?'✓':''),
+          e('div',null, e('div',{className:'ct'},p[0]), e('div',null,p[1])));
+      })
+    ),
+    e('div',{className:'pearl'}, e('b',null,'Safety is the non-negotiable. '),'Even on a quiet patient, know the SI/HI status and observation level before you walk in.')
+  );
+
+  var present=e('div',{key:'pr'},
+    e('p',{className:'sub'},'How to say it: the seven-part, ~3-minute inpatient presentation. The one-liner does the heavy lifting.'),
+    STEPS.map(function(s){
+      return e('div',{className:'step',key:s.n},
+        e('span',{className:'step-num'},s.n),
+        e('div',null, e('h3',null,s.t), e('div',{className:'d'},s.d), e('span',{className:'ex'},s.ex)),
+        e('span',{className:'t'},'~'+s.sec+'s'));
+    }),
+    e('div',{className:'pearl'}, e('b',null,'Lead with the one-liner; never bury SI/HI. '),'If your first sentence names age, key diagnosis, and why-they-are-here, the team is oriented before the HPI.'),
+    e('div',{className:'twocol',style:{marginTop:'16px'}},
+      e('div',{className:'card do'},
+        e('h3',{style:{marginTop:0}},'Do'),
+        e('p',null,e('b',null,'Lead with the one-liner.')),
+        e('p',null,e('b',null,'State SI/HI explicitly.')),
+        e('p',null,e('b',null,'Give a real assessment '),'— who/what/why-now, not a recap.'),
+        e('p',null,e('b',null,'Plan by problem '),'with concrete next steps.'),
+        e('p',null,e('b',null,'Know your numbers '),'(levels, vitals, days admitted).')),
+      e('div',{className:'card dont'},
+        e('h3',{style:{marginTop:0}},'Don’t'),
+        e('p',null,e('b',null,'Re-read the whole MSE '),'— highlights only.'),
+        e('p',null,e('b',null,'Bury the risk '),'mid-presentation.'),
+        e('p',null,e('b',null,'List labs with no point.')),
+        e('p',null,e('b',null,'Editorialize '),'("difficult patient") — describe behavior.'),
+        e('p',null,e('b',null,'End without a plan '),'or disposition thought.'))
+    )
+  );
+
+  var practice=e('div',{key:'p'},
+    e('div',{className:'card'},
+      e('div',{className:'ringwrap'},
+        e('div',{className:'ring'+(over?' over':''),role:'img',
+          'aria-label':'Practice timer: '+fmt(sec)+' elapsed of a '+fmt(TARGET)+' target'+(over?', over time':', '+fmt(remain)+' remaining'),
+          style:{background:'conic-gradient('+(over?'var(--danger)':'var(--accent)')+' '+deg+'deg, var(--primary-light) 0deg)'}},
+          e('div',{className:'ringtxt'},
+            e('div',{className:'ringtime'}, over?('+'+fmt(sec-TARGET)):fmt(remain)),
+            e('div',{className:'ringlbl'}, over?'over time':'left')))
+      ),
+      e('div',{className:'ringtot'}, fmt(sec)+' / '+fmt(TARGET)+' elapsed'),
+      e('div',{className:'bar'+(over?' over':'')}, e('div',{style:{width:pct+'%'}})),
+      e('div',{className:'cue'+(over?' over':'')}, cue),
+      e('div',{className:'row'},
+        e('button',{className:'btn btn-primary',onClick:function(){setRun(!run)}}, run?'Pause':(sec?'Resume':'Start')),
+        e('button',{className:'btn btn-ghost',onClick:function(){setRun(false);setSec(0)}},'Reset'))
+    ),
+    e('div',{className:'card'},
+      e('p',{className:'sub',style:{marginTop:0}},'Tick each section as you say it. The highlighted step is where a well-paced presentation should be right now.'),
+      STEPS.map(function(s,i){
+        var st=done[s.n]?'done':(run?(i<cur?'done':(i===cur?'current':'future')):'future');
+        return e('div',{className:'step'+(i===cur&&run?' active':'')+(done[s.n]?' done':''),key:s.n,onClick:function(){toggleDone(s.n)},style:{cursor:'pointer'}},
+          e('span',{style:{display:'flex',alignItems:'center',gap:'9px'}},
+            e('span',{className:'sdot '+st,title:st==='current'?'on now':(st==='done'?'covered':'upcoming')}),
+            e('span',{className:'box'+(done[s.n]?' on':'')}, done[s.n]?'✓':'')),
+          e('div',null, e('h3',null,s.t), e('div',{className:'d'},s.d)),
+          e('span',{className:'t'},'~'+s.sec+'s'));
+      })
+    )
+  );
+
+  return e('div',{className:'shell'},
+    header, tabs,
+    tab==='gather'?gather:(tab==='present'?present:practice),
+    e('div',{className:'disclaimer'},'Optional educational aid for clinical trainees. Examples are fictional composites — no protected health information. The format is a scaffold; follow your team and institution conventions.'),
+    e('footer',null,'Treatment Team Rounding Prep · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>

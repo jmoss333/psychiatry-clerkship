@@ -1,0 +1,107 @@
+# Podcasts "Find on YouTube" Feature — Design Spec
+
+**Date:** 2026-03-15
+**Status:** Approved
+**Scope:** 481 podcast records in canonical database + Resource Finder v6/v7 UI
+
+## Problem
+
+Podcast episodes in the Resource Finder display as cards with title, show name, duration, and description but have no external link. Families cannot click through to watch or listen to the episode. All 481 records also lack verification metadata.
+
+## Design
+
+### Data Layer
+
+Add two fields to each of the 481 podcast records:
+
+**`youtube_search_url`** — auto-generated from `Show Name` + `Title` using a parts-list approach (same pattern as books):
+```python
+parts = []
+if show_name: parts.append(quote_plus(show_name))
+if title: parts.append(quote_plus(title))
+url = f"https://www.youtube.com/results?search_query={'+'.join(parts)}"
+```
+- For the ~20 records with blank `Show Name`, URL is generated from `Title` only (no leading `+`).
+- One URL per record. YouTube search typically surfaces the exact episode.
+
+**`show_url`** — the show's official homepage or primary web presence:
+- One lookup per unique show (~51 shows).
+- Hardcoded as a lookup table in the migration script.
+- Stored on every episode belonging to that show.
+- For blank-show-name episodes, `show_url` is left empty. The "Visit show website" link will not appear for those records.
+
+While touching each record, also set provenance:
+- `last_verified_date`: `2026-03-15` (ISO format, consistent with `parse_date()`)
+- `source`: `ReConnect clinical library curation`
+- `source_confidence`: `high`
+- `verification_note`: `Podcast selected for clinical library. YouTube search link auto-generated from show name and title.`
+
+### Migration Script
+
+New script: `databases/maintenance/add_podcast_urls.py`
+
+- Contains a `SHOW_URLS` dict mapping each of the ~51 unique show names to their homepage URL
+- Iterates canonical database `podcasts` array
+- Computes `youtube_search_url` using parts-list approach (conditional on `Show Name` being non-empty)
+- Sets `show_url` from the `SHOW_URLS` lookup table
+- Skips records that already have a non-empty `youtube_search_url` (idempotent — note: provenance is also skipped on already-processed records, same trade-off as books script)
+- Sets provenance fields on new records
+- Writes back to canonical database
+- Prints count of records updated
+
+### Normalizer Changes
+
+**`tools-suite/tools/ReConnect_Resource_Finder_v6.html`** — `normalizePodcast()`:
+- Add: `youtube_search_url: r['youtube_search_url'] || ''`
+- Add: `show_url: r['show_url'] || ''`
+
+**`tools-suite/tools/ReConnect_Resource_Finder_v7.html`** — `normalizePodcast()`:
+- Add: `show_name: r['Show Name'] || r['show_name'] || ''` (currently missing in v7 normalizer)
+- Add: `youtube_search_url: r['youtube_search_url'] || ''`
+- Add: `show_url: r['show_url'] || ''`
+
+### UI Changes
+
+**`tools-suite/tools/generated/ReConnect_Resource_Finder_v6.app.jsx`** — podcast card:
+- "Find on YouTube" button in the card action buttons area, rendered only when `resource.youtube_search_url` is truthy and `resource._db === 'podcasts'`.
+- Opens in a new tab (`target="_blank" rel="noopener noreferrer"`).
+- `aria-label={`Find "${resource.name}" on YouTube`}`.
+- Styled as `btn-secondary text-sm` (same as books' "Find on Amazon").
+- "Visit show website" link in the expanded Details grid, rendered only when `resource.show_url` is truthy.
+
+**`tools-suite/tools/generated/ReConnect_Resource_Finder_v7.app.jsx`**:
+- `buildResourceList()`: add `youtube_search_url: resource.youtube_search_url || ""` and `show_url: resource.show_url || ""` as explicit named properties in the return object (alongside existing `amazon_search_url`).
+- `ResourceCard` "Find on YouTube" button: guard uses `resource.dbKey === 'podcasts'` (v7 uses `dbKey`, not `_db` — matches the existing Amazon button which uses `resource.dbKey === "books"`).
+- "Visit show website" link: rendered as a standalone `<a>` element after the `detailRows` loop, following the same pattern as the existing `resource.website` link. Not added to `buildDetailRows` (which returns plain text, not clickable links).
+
+### Files Changed
+
+1. Canonical database — 481 podcast records: add `youtube_search_url`, `show_url`, provenance fields
+2. `databases/maintenance/add_podcast_urls.py` — new migration script with `SHOW_URLS` lookup table
+3. `tools-suite/tools/ReConnect_Resource_Finder_v6.html` — `normalizePodcast()` update
+4. `tools-suite/tools/ReConnect_Resource_Finder_v7.html` — `normalizePodcast()` update (add `show_name` + two new URL fields)
+5. `tools-suite/tools/generated/ReConnect_Resource_Finder_v6.app.jsx` — podcast card button + details link
+6. `tools-suite/tools/generated/ReConnect_Resource_Finder_v6.app.js` — precompiled
+7. `tools-suite/tools/generated/ReConnect_Resource_Finder_v7.app.jsx` — `buildResourceList` + card button + details link
+8. `tools-suite/tools/generated/ReConnect_Resource_Finder_v7.app.js` — precompiled
+
+Note: `tools-suite/_site/` artifacts are regenerated by `build_netlify.py` and not edited directly.
+
+### Not In Scope
+
+- Books (already done)
+- Manual per-episode YouTube URL lookups
+- Embedded video players
+- Podcast RSS feed integration
+
+### Verification
+
+- `python3 databases/maintenance/add_podcast_urls.py` (run migration)
+- `python3 databases/maintenance/build_all.py --stage validate`
+- `python3 databases/maintenance/run_quality_guard.py --json`
+- Precompile v6 and v7 via esbuild
+- `python3 tools-suite/build_netlify.py`
+- Visual check: open Resource Finder, find a podcast card, click "Find on YouTube", confirm YouTube search with correct show+title
+- Visual check: expand a podcast card, confirm "Visit show website" link appears and works
+- Visual check: expand a blank-show-name podcast card, confirm no "Visit show website" link appears
+- Deploy to production via `npx netlify deploy --prod`

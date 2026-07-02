@@ -1,0 +1,505 @@
+
+
+
+Perinatal and Reproductive Psychiatry: A Comprehensive Evidence Review for Adult Inpatient Psychiatry
+
+
+Scope and Framing
+
+
+This review synthesizes the evidence landscape on psychiatric medication safety and management during pregnancy, postpartum, and lactation — organized for use as both a clinical quick-reference on inpatient psychiatry units and a resident teaching resource. Coverage spans psychiatric hospitalization indications, postpartum psychosis, bipolar disorder management, psychotropic medication safety (antidepressants, antipsychotics, mood stabilizers, benzodiazepines), ECT, lactation, novel FDA-approved therapies, and contraception counseling. Guideline positions from ACOG (2023), APA, NICE, AAN/AES/SMFM (2024), and VA/DoD (2023) are integrated throughout.
+
+---
+
+1. Psychiatric Hospitalization During Pregnancy and Postpartum
+
+
+Epidemiology and Indications
+
+
+Postpartum psychiatric admissions occur at a rate of approximately 4 per 1,000 deliveries, with the most common indications being substance-related disorders (28.8%) and depression (28.7%).[1] Hospitalizations are generally short (median 3 days) and occur later than expected (median 5.5 months postpartum).[1] Key risk factors include age <20 (aOR 5.01), treatment for schizophrenia during pregnancy (aOR 4.21), and any psychiatric diagnosis during pregnancy (aOR 3.58).[1]
+
+Indications for emergent psychiatric hospitalization in the perinatal period include active suicidal ideation with plan or intent, postpartum psychosis (a psychiatric emergency), severe mood decompensation with inability to care for self or infant, command hallucinations or delusions involving the infant, and acute agitation or grossly disorganized behavior.[2][3][4] ACOG 2023 guidelines state that patients with psychosis, active suicidal thoughts, or thoughts of harming their newborns should receive same-day psychiatric consultation and referral for possible inpatient treatment.[5]
+
+Specialized Perinatal Units
+
+
+NICE guidelines recommend mother and baby units (MBUs) as the preferred setting for inpatient psychiatric care of postpartum women, allowing co-admission of mother and infant.[6][7] MBUs provide perinatally-focused, family-centered care; women and clinicians prefer MBUs over general psychiatric wards, where separation of mothers and babies is experienced as traumatic.[7] A quasi-experimental study across 42 UK healthcare organizations found no significant difference in 12-month readmission rates between MBU and non-MBU care (aOR 0.95, 95% CI 0.86–1.04), but service satisfaction was significantly higher among MBU patients.[8] The first US Perinatal Psychiatry Inpatient Unit (PPIU) at UNC Chapel Hill demonstrated significant improvements in depression, anxiety, suicidal ideation, and functioning between admission and discharge (all p < 0.0001).[6]
+
+---
+
+2. Postpartum Psychosis
+
+
+Epidemiology and Clinical Features
+
+
+Postpartum psychosis occurs in approximately 1–2 per 1,000 births, with onset typically within the first 1–4 weeks after delivery (median ~10 days).[4][9][10] The DSM-5 classifies it under mood episodes with the "peripartum onset" specifier rather than as a distinct diagnosis, though expert consensus now recommends reclassification within the bipolar disorders chapter based on shared genetic architecture and treatment response.[11][12]
+
+Earliest symptoms include feeling excited/elated/high (52%), inability to sleep (48%), increased energy (37%), and increased talkativeness (31%).[13] Core features include mood fluctuation, delusions (87.6%), persecutory delusions (75.2%), visual hallucinations (52.3%), auditory hallucinations (48.1%), and cognitive confusion.[14] Bipolar I disorder is the strongest risk factor, with a recurrence risk of 30–50% per subsequent delivery in women with a prior episode.[12]
+
+Differential Diagnosis
+
+
+Organic causes must be excluded: autoimmune thyroiditis, infections, anti-NMDA receptor encephalitis, and inborn errors of metabolism.[4] Postpartum delirium (fluctuating level of awareness/attention) must be differentiated from postpartum psychosis.[12] Thyroid function should be assessed in all cases.[12]
+
+Treatment
+
+
+The largest treatment study (N = 64) used a structured sequential algorithm — benzodiazepines → antipsychotics → lithium → ECT — achieving complete remission in 98.4% within the first three steps; none required ECT.[7] Lithium maintenance was associated with significantly lower relapse rates than antipsychotic monotherapy.[7] ECT response rates are higher in the postpartum period (87.0%) than outside it (73.5%, p = 0.001).[7] Lithium has an NNT of 3 for prevention of postpartum mood episode relapse.[14]
+
+---
+
+3. Bipolar Disorder in Pregnancy and Postpartum
+
+
+Relapse Risk
+
+
+Pregnancy itself appears to be a relatively low-risk period for new bipolar episodes (~5.2% episode risk during pregnancy in BD-I).[15] However, postpartum relapse risk is substantial: a meta-analysis across 5,700 deliveries found a pooled relapse rate of 35% (95% CI 29–41), rising to 39% (95% CI 29–49) for any mood episode in BD-I specifically.[16][17] The risk is six times higher after delivery compared to during pregnancy.[15] Mania/psychosis within 6 weeks postpartum occurs in 23% of BD-I patients versus 4% in BD-II.[18]
+
+Medication status profoundly affects relapse risk: medication-free during pregnancy carries a 66% relapse rate (95% CI 57–75) versus 23% (95% CI 14–37) with prophylactic medication — a more than twofold reduction.[16] Abrupt discontinuation increases relapse risk significantly.[19]
+
+Prophylaxis Strategy
+
+
+For women with history of postpartum psychosis only (no bipolar disorder outside the perinatal period), lithium prophylaxis initiated immediately postpartum avoids in utero exposure; in one study, 0% of women who used postpartum prophylaxis relapsed versus 44.4% who declined.[20] For women with established bipolar disorder, prophylaxis should continue throughout pregnancy and postpartum, with the understanding that 24.4% may still relapse during pregnancy.[20] A written perinatal bipolar relapse prevention plan covering maintenance treatment, delivery planning, postpartum medication, feeding plan, sleep/circadian strategies, and early symptom recognition is recommended.[21]
+
+---
+
+4. Antidepressants in Pregnancy
+
+
+Teratogenicity: SSRIs as a Class
+
+
+Overall risk is small and substantially attenuated by confounding by indication. A meta-analysis of 29 cohort studies (>9 million births) found SSRIs associated with a modest increase in major congenital anomalies (RR 1.11, 95% CI 1.03–1.19), but when restricted to women with a psychiatric diagnosis, neither association remained significant (RR 1.04, 95% CI 0.95–1.13).[22] The landmark Huybrechts et al. NEJM cohort (949,504 pregnancies) showed that associations between SSRIs and cardiac defects were progressively attenuated with increasing confounding adjustment, with a fully adjusted RR of 1.06 (95% CI 0.93–1.22) among women with depression.[23] A 2025 umbrella review found no convincing or highly suggestive evidence of adverse health outcomes associated with psychotropic medication use in pregnant people with mental disorders.[24]
+
+The following figure from the Huybrechts et al. NEJM study demonstrates how associations between antidepressants and specific cardiac malformations progressively attenuate with increasing confounding adjustment.
+
+Figure 2 Risk of Specific Cardiac Malformation in Infants, According to Maternal Exposure to Antidepressants.
+
+Individual SSRI Profiles
+
+
+Sertraline and escitalopram are recommended as first-line by ACOG 2023 for treatment-naïve patients with perinatal depression.[26] Escitalopram showed no elevated adjusted ORs with any examined birth defects in the National Birth Defects Prevention Study (NBDPS).[27] Paroxetine carries the highest concern among SSRIs: a meta-analysis of 23 studies found first-trimester exposure associated with major cardiac malformations (pooled OR 1.28, 95% CI 1.11–1.47), specifically atrial septal defects (OR 2.38) and right ventricular outflow tract defects (OR 2.29).[28] The FDA label states paroxetine should be "initiated only after consideration of the other available treatment options" in women in the first trimester.[29] Fluoxetine has been associated with right ventricular outflow tract obstruction (OR 2.0) and craniosynostosis (OR 1.9) in Bayesian analysis, though these attenuate after confounding adjustment.[17]
+
+SNRIs
+
+
+SNRIs show higher point estimates for congenital malformations than SSRIs. A 2023 meta-analysis found SNRIs associated with cardiovascular abnormalities (OR 1.64, 95% CI 1.36–1.97) and nervous system malformations (OR 2.28, 95% CI 1.50–3.45).[30] Venlafaxine had the highest proportion of elevated birth defect associations among all antidepressants in the NBDPS, including anencephaly (aOR 9.14, 95% CI 1.91–43.83).[31] Duloxetine appears unlikely to be a major teratogen (PS-matched OR 0.98, 95% CI 0.74–1.30 for major malformations in a Danish-Swedish cohort of >2 million births), but duloxetine-exposed infants had the highest rates of NICU admission (39.6%) among individual antidepressants studied.[28][32]
+
+Persistent Pulmonary Hypertension of the Newborn (PPHN)
+
+
+A meta-analysis found SSRI/SNRI exposure associated with PPHN (OR 2.08, 95% CI 1.44–3.01 for exposure >20 weeks), with an incidence of 2.9 per 1,000 and NNH ~1,000.[33] However, the largest US study (3.8 million pregnancies) found the association substantially attenuated after high-dimensional propensity-score adjustment (OR 1.10, 95% CI 0.94–1.29 for SSRIs), suggesting much of the observed risk may be due to confounding.[34]
+
+Neonatal Adaptation Syndrome (PNAS)
+
+
+This is the most consistently documented adverse effect of late-pregnancy SSRI/SNRI exposure, occurring in 20–30% of exposed neonates.[35][36] Symptoms include irritability, tachypnea, temperature instability, jitteriness, and tremor. Severe syndrome (seizures, intubation) is rare (~1/313 cases); no neonatal deaths have been attributed to SRI exposure.[35] Symptoms are typically self-limited, resolving within 2 weeks.[35] Discontinuation of SSRIs in the third trimester does not improve neonatal outcomes.[37]
+
+Long-Term Neurodevelopmental Outcomes
+
+
+Converging evidence from sibling-design studies suggests that observed associations between prenatal antidepressant exposure and neurodevelopmental problems (ASD, ADHD) are largely due to confounding by maternal condition rather than direct drug effects. The Suarez et al. JAMA Internal Medicine study (2022) using Medicaid data found that sibling analyses showed hazard ratios very close to 1.0 for all neurodevelopmental outcomes.[7] A 2026 Lancet Psychiatry meta-analysis of 37 studies confirmed that associations were largely attenuated in sensitivity analyses, and pre-conception antidepressant use showed similar risk elevations, arguing against causation.[38]
+
+Risks of Untreated Depression
+
+
+Untreated antenatal depression carries its own risks: preterm birth (OR 1.56), low birth weight (OR 1.96), intrauterine growth restriction (RR 4.39), and decreased breastfeeding initiation (OR 0.68).[39][40][41]
+
+---
+
+5. Antipsychotics in Pregnancy
+
+
+Antipsychotics do not appear to be major teratogens. A meta-analysis of 12 studies (>10 million pregnancies) found borderline evidence of association with congenital malformations (OR 1.27, 95% CI 0.996–1.624, p = 0.054), with no significant association when limited to SGAs (OR 1.16, 95% CI 0.78–1.72).[42] Aripiprazole, olanzapine, and quetiapine are not associated with increased risk of major congenital malformations, whereas risperidone and paliperidone may carry a very minor increased risk.[43]
+
+Gestational diabetes risk is the primary metabolic concern. The most recent meta-analysis (2025) found an overall OR of 1.33 (95% CI 1.22–1.44) for antipsychotic use and GDM, driven by SGAs (1.4× higher risk) with no increased risk for FGAs.[44] Drug-specific data show adjusted RRs of 1.61 for olanzapine and 1.28 for quetiapine, with no significant increase for aripiprazole, ziprasidone, or risperidone.[45]
+
+The FDA drug label for all antipsychotics warns of neonatal extrapyramidal and/or withdrawal symptoms in neonates exposed during the third trimester.[46] Approximately 32.6% of SGA-exposed infants experience at least one PNAS sign, comparable to the 34.6% rate in SSRI/SNRI-exposed infants.[47] A 2025 systematic review found transient motor delays but no persistent increased risk of neurodevelopmental disorders after adjusting for confounders.[48]
+
+---
+
+6. Mood Stabilizers in Pregnancy
+
+
+Lithium
+
+
+Teratogenicity. The Patorno et al. NEJM 2017 study (N = 1,325,563 pregnancies, 663 lithium-exposed) found cardiac malformations in 2.41% of lithium-exposed infants versus 1.15% of unexposed (adjusted RR 1.65, 95% CI 1.02–2.68).[17] The risk is dose-dependent: RR 1.11 for ≤600 mg/day, 1.60 for 601–900 mg/day, and 3.22 (95% CI 1.47–7.02) for >900 mg/day.[17] The historical 400-fold increase in Ebstein anomaly risk from the 1970s International Register of Lithium Babies is now considered a major overestimate based on methodologic limitations.[17] Modern absolute risk of any congenital malformation is approximately 4.2%, and cardiac malformations ~1.2%.[2] Fetal echocardiography between 16–20 weeks gestation is recommended for first-trimester lithium exposure.[17]
+
+The following figure from the Patorno et al. NEJM study illustrates the dose-dependent relationship between lithium exposure and cardiac malformation risk.
+
+Figure 2 Absolute and Relative Risk of Cardiac Malformations among Lithium-Exposed and Lamotrigine-Exposed Infants as Compared with Unexposed Infants, Stratified According to the Mother’s Dose of the Drug.
+
+Pharmacokinetic changes. Lithium blood levels decrease by 24% in the first trimester, 36% in the second trimester (nadir), and 21% in the third trimester, with a 9% increase postpartum.[2] Lithium elimination clearance increases an average of 63.5% by the third trimester.[50] The FDA label recommends decreasing or discontinuing lithium 2–3 days before expected delivery to reduce risk of maternal/neonatal toxicity, then restarting at preconception dose when medically stable postpartum.[17][25] Monitoring should include lithium levels every 2–4 weeks until 34 weeks, then weekly until delivery, and twice weekly for the first 2 weeks postpartum.[51]
+
+Risk-benefit balance: Lithium has an NNT of 3 for prevention of mood episode relapse versus NNH of 33 for any congenital anomaly.[2]
+
+Valproate — Contraindicated
+
+
+Valproate carries the highest teratogenic risk among all psychotropic medications. The overall malformation rate is ~9.3% (vs. 2.1% for lamotrigine), increasing to 25.2% at doses ≥1,450 mg/day.[52][53] The risk of spina bifida is 1–2% (vs. background 0.06–0.07%).[54] The NEAD study found age-6 IQ was significantly lower after valproate exposure: mean IQ 97 versus lamotrigine 108, carbamazepine 105, and phenytoin 108, with a dose-dependent effect (r = −0.56, p < 0.0001).[53] Valproate exposure is associated with a 2.9-fold increased risk of ASD.[54]
+
+The FDA contraindicated valproate in pregnancy for migraine prophylaxis (2013) and states it "should not be used" for epilepsy or bipolar disorder unless other medications have failed.[54][55] The AAN/AES/SMFM 2024 guideline states valproate must be avoided if clinically feasible (Level A recommendation).[56] The VA/DoD 2023 guideline recommends against valproate in individuals of childbearing potential.[53]
+
+Carbamazepine
+
+
+The overall malformation rate is approximately 3.3–5.5%, with spina bifida risk of ~0.5–1% (lower than valproate).[57][58] Neurodevelopmental outcomes appear relatively safe: the NEAD study found no significant IQ difference between carbamazepine and lamotrigine or phenytoin.[53] Carbamazepine is an enzyme-inducing AED; routine neonatal vitamin K is standard, though evidence for antenatal maternal supplementation is insufficient per the AAN 2009 guideline.[25]
+
+Lamotrigine — Preferred
+
+
+Lamotrigine has the lowest malformation rate among mood stabilizers/ASMs: 2.0–2.9% across major registries, similar to the general population background rate of 2–4%.[59] An initial signal of increased oral cleft risk has not been replicated in multiple large registries and is now considered most likely a chance finding.[35] Neurodevelopmental data are the most reassuring among all ASMs: mean IQ of 108 at age 6 in the NEAD study.[53]
+
+Pharmacokinetic changes are dramatic. Estrogen-induced enhancement of UGT-mediated glucuronidation increases clearance by up to 230% above prepregnancy baseline at 32 weeks.[2] The MONEAD study showed clearance changes begin as early as 3–5 weeks gestation, with a 50% increase by end of the first trimester.[25] PBPK modeling suggests doses need to increase by 1.3-fold in the first trimester, 2.4-fold in the second, and 2.7-fold in the third.[60] In MONEAD, 87.7% of participants had at least 1 dose change, with doses increased by a median of 100 mg/day at 4–6 week intervals.[60] Postpartum, clearance returns to pre-pregnancy values within weeks; dose should be reduced by ~25% weekly for 3 weeks to avoid toxicity.[60]
+
+The following figure from the MONEAD study illustrates the progressive decline in dose-normalized lamotrigine concentrations across trimesters with restoration postpartum.
+
+Figure 1 Lamotrigine and Levetiracetam Dose-Normalized Concentrations During Pregnancy and the Postpartum Period
+
+---
+
+7. Benzodiazepines in Pregnancy
+
+
+The historical concern about oral clefts originated from 1970s case-control studies. A 2019 meta-analysis of 8 prospective cohort studies found no significant association with overall congenital malformations (OR 1.13, 95% CI 0.99–1.30).[60] However, the largest recent population-based study (South Korea, N = 3,094,227 pregnancies) found a small but significant dose-dependent increased risk: adjusted RR 1.09 (95% CI 1.05–1.13) for overall malformations and 1.15 (95% CI 1.10–1.21) for heart defects, rising to RR 1.26 for >2.5 mg/day lorazepam-equivalent.[62]
+
+Neonatal effects include floppy infant syndrome (hypotonia, lethargy, sucking difficulties, apnea) from third-trimester exposure and neonatal withdrawal in 20–40% of exposed neonates.[63] Guidelines recommend prescribing at the lowest effective dose, preferring lorazepam due to its lack of active metabolites, and optimizing non-pharmacologic alternatives.[63]
+
+---
+
+8. ECT in Pregnancy
+
+
+ECT is effective for severe depression, suicidal ideation, psychosis, and catatonia during pregnancy, with at least partial remission in 78% of cases.[64] A 2025 scoping review of >1,300 pregnancies confirmed rapid benefit with a manageable safety profile.[65] No associations with congenital anomalies or neurocognitive disturbances in children have been identified.[66]
+
+Pregnancy-specific modifications include: left lateral tilt positioning after ~20 weeks to prevent aortocaval compression; fetal heart rate monitoring before and after ECT in the second and third trimesters; aspiration precautions (consider endotracheal intubation in later trimesters); and multidisciplinary team involvement (obstetrics, MFM, psychiatry, anesthesiology).[66][67] The APA supports ECT use for severe postpartum depressive disorders and states ECT is generally safe in pregnancy.[67]
+
+---
+
+9. Brexanolone and Zuranolone: Novel Therapies for Postpartum Depression
+
+
+Brexanolone (Zulresso)
+
+
+FDA-approved March 2019 as the first drug specifically for PPD; no longer commercially available in the US as of January 2025 (FDA approval withdrawn April 2025 at manufacturer's request).[68] Administered as a 60-hour continuous IV infusion requiring REMS-certified facility with continuous monitoring.[69] Phase 2 trial showed a mean HAM-D reduction of 21.0 versus 8.8 for placebo (difference −12.2, p = 0.0075).[70] Phase 3 trials confirmed significant reductions with durable response through day 30.[67]
+
+Zuranolone (Zurzuvae)
+
+
+FDA-approved August 2023 as the first oral medication specifically for PPD.[71] Dosed at 50 mg orally once daily in the evening with fat-containing food for 14 days.[72] Two phase 3 trials showed significant improvement: HAMD-17 change at day 15 of −15.6 versus −11.6 (difference −4.0, p = 0.001) in Study 1, and −17.8 versus −13.6 (difference −4.2, p = 0.003) in the ROBIN trial.[73][74] Significant improvement was observed from day 3 through day 45.[73] The AAFP notes the mean between-group difference of ~4 points is of borderline clinical significance (MID for HAMD-17 is 3–5 points).[75]
+
+A 2025 Cochrane review of 6 RCTs (674 women) found moderate-certainty evidence that zuranolone probably improves depression response (RR 1.26, 95% CI 1.03–1.55) and remission (RR 1.65, 95% CI 1.22–2.22) at day 45, but low-certainty evidence for brexanolone.[76] All studies were industry-sponsored, and no active-comparator trials exist.[68][76]
+
+Key safety considerations: Zuranolone is a Schedule IV controlled substance; patients must avoid driving or caring for infant alone for ≥12 hours after each dose.[68] Animal studies show embryo-fetal toxicity; effective contraception is required during treatment and for 1 week after the final dose.[72] Phase 1 lactation data showed RID <1%, suggesting likely compatibility with breastfeeding, though direct infant data are lacking.[77]
+
+---
+
+10. Lactation Safety
+
+
+General Principles
+
+
+A relative infant dose (RID) <10% is the widely accepted threshold below which drug exposure via breast milk is considered clinically unimportant.[78] LactMed (National Library of Medicine) is the authoritative, free resource for lactation safety data.[79] The general clinical principle is to continue the medication that was effective during pregnancy rather than switching for lactation.[80]
+
+Key Drug-Specific Data
+
+
+Sertraline is the first-line antidepressant for new-onset postpartum depression during lactation: RID ~0.4–2.2%, with 87.4% of infant sertraline levels below the limit of detection.[81][82] Paroxetine is undetectable in infant serum in all studied cases and is preferred during lactation despite pregnancy concerns.[83] Fluoxetine should be avoided if possible during lactation due to higher RID (4–12%) and the highest infant plasma concentrations among SSRIs.[83] Quetiapine (RID <1%) and olanzapine (RID ~1%) are the preferred antipsychotics during breastfeeding.[84][85]
+
+Lithium is the most controversial: RID ~12–30%, with infant serum concentrations averaging ~21% of maternal levels.[84][86] The FDA label states breastfeeding is "not recommended," but more recent evidence supports lithium as a "possible treatment option" during breastfeeding with close monitoring of infant serum lithium, creatinine, and thyroid function.[84][87] Lamotrigine has a relatively high infant-to-maternal serum ratio (~29%) but rare adverse events and reassuring neurodevelopmental data up to 6 years.[88][89] Valproate and carbamazepine have very low milk transfer (RID ~3–5%) and are considered relatively safe during breastfeeding.[78][90]
+
+Lorazepam is the preferred benzodiazepine during lactation due to its lack of active metabolites and low RID.[63][83] A 2025 JAMA Network Open study found no adverse cognitive effects in preschool-aged children exposed to SSRIs through breast milk.[83]
+
+The following figure from the MONEAD/Birnbaum et al. JAMA Neurology study shows infant-to-maternal plasma concentration percentages for antiepileptic drugs, demonstrating that lamotrigine has the highest median transfer (~29%) with wide variability.
+
+Figure 1 Box Plots
+
+---
+
+11. Contraception Counseling for Teratogenic Medications
+
+
+Regulatory Framework
+
+
+No REMS exists for valproate in the US, a major regulatory gap given that valproate is among the most teratogenic drugs in the neuropsychiatric pharmacopeia.[72][33] The US approach relies on boxed warnings, medication guides, and drug safety communications. The European Medicines Agency (EMA) implemented substantially more stringent measures in 2018, including a Pregnancy Prevention Programme requiring highly reliable contraception (IUD or implant), monthly pregnancy tests if not using such contraception, and annual signed risk-acknowledgment forms.[92][72]
+
+Real-World Compliance Gaps
+
+
+Compliance is alarmingly low across all settings. In the US, only 14.1% of females of reproductive age using valproate were also using contraception (2017–2022).[72] Documentation of teratogenicity discussion occurred in only 13.2% of charts at one US academic medical center.[49] Even in Europe, the monthly proportion of compliant valproate prescriptions with contraceptive coverage was <25% across 5 countries after the 2018 PPP.[49] Pregnancy rates during valproate use in the US did not decrease despite enhanced FDA safety communications.[49]
+
+Contraceptive Method Selection
+
+
+For women on enzyme-inducing AEDs (carbamazepine, phenytoin, phenobarbital), combined hormonal contraceptives have reduced efficacy (USMEC Category 3).[49] Preferred methods include the LNG-IUD (52 mg), copper IUD, and DMPA (all USMEC Category 1).[49][17] Valproate and lithium do not induce hepatic enzymes and do not reduce hormonal contraceptive efficacy.[93] Lamotrigine has a unique bidirectional interaction with combined oral contraceptives: COCs reduce lamotrigine concentrations by 40–60%, potentially causing breakthrough seizures.[94]
+
+The APA Resource Document on the Post-Roe Era (2024) states that psychiatrists caring for individuals of childbearing age should play a crucial role in discussing and facilitating family planning goals, including contraception access.[95] A comprehensive review in the American Journal of Psychiatry emphasized that long-acting reversible contraceptives (LARCs) have low failure rates and favorable safety profiles, yet are chosen by only 14% of women; all contraceptive methods are acceptable for women with depression (USMEC Category 1).[96]
+
+---
+
+Medication Safety Summary Table
+
+
+
+
+---
+
+Postpartum Psychosis Emergency Algorithm
+
+
+Step 1: Recognition and Safety (Hours 0–4)
+
+- Identify red flags: new-onset insomnia, elation, confusion, paranoia, disorganized behavior within 1–4 weeks postpartum
+
+- Assess safety: suicidal ideation, infanticidal ideation, command hallucinations
+
+- Ensure infant safety; do not leave mother alone with infant
+
+- Rule out organic causes: CBC, CMP, TSH, urinalysis, urine drug screen, consider anti-NMDA receptor antibodies
+
+- Admit to inpatient psychiatry (MBU if available)
+
+Step 2: Acute Stabilization (Hours 4–24)
+
+- Lorazepam 1–2 mg PO/IM q4–6h PRN for agitation and insomnia (max 6 mg/day)
+
+- Ensure sleep: treat insomnia aggressively — sleep deprivation worsens psychosis
+
+- If breastfeeding, discuss risks/benefits; lorazepam is preferred BZD
+
+Step 3: Antipsychotic Initiation (Days 1–3)
+
+- If symptoms persist beyond benzodiazepine management:
+
+- Olanzapine 5–10 mg/day PO (preferred if breastfeeding; monitor metabolic effects) OR
+
+- Quetiapine 100–400 mg/day PO (lowest breast milk transfer)
+
+- Haloperidol 2–5 mg PO/IM if rapid control needed (avoid during lactation per FDA)
+
+Step 4: Lithium Initiation (Days 3–7)
+
+- If inadequate response to antipsychotic, or if history of bipolar disorder:
+
+- Lithium carbonate 300 mg BID–TID, titrate to therapeutic level (0.6–1.0 mEq/L)
+
+- Check baseline: Cr, TSH, ECG, pregnancy test
+
+- If breastfeeding: shared decision-making; monitor infant Li, TSH, Cr
+
+- 98.4% achieve remission by this step[7]
+
+Step 5: ECT (If Refractory)
+
+- If inadequate response to Steps 2–4, or if catatonic features present:
+
+- ECT — response rate 87% in postpartum psychosis[7]
+
+- Typically 1–6 sessions for improvement, 5–11 for remission
+
+- Can be administered during lactation
+
+Step 6: Maintenance and Discharge Planning
+
+- Continue lithium for ≥9 months minimum (relapse rate 20% vs. 60% without maintenance)
+
+- Written relapse prevention plan: sleep hygiene, early warning signs, emergency contacts
+
+- Outpatient follow-up within 1 week of discharge
+
+- Counsel on 30–50% recurrence risk with future pregnancies[12]
+
+---
+
+Lactation Quick-Reference
+
+
+
+
+Key monitoring for lithium during lactation: Infant serum lithium, creatinine, and thyroid function at baseline and periodically. Infant serum concentrations average ~21% of maternal levels and decrease up to 60% by the third month postpartum.[84][86]
+
+---
+
+Resident Counseling Language
+
+
+For Antidepressants in Pregnancy
+
+
+"The evidence shows that SSRIs like sertraline and escitalopram have a very reassuring safety profile in pregnancy. While early studies raised concerns about heart defects, the largest and best-designed studies show that when we account for the depression itself, there is no meaningful increase in risk. The absolute risk of any birth defect is very similar to the general population. On the other hand, untreated depression during pregnancy is associated with preterm birth, low birth weight, and difficulty bonding with your baby. We recommend continuing your antidepressant because the benefits of treating your depression outweigh the small, uncertain risks."
+
+For Lithium in Pregnancy
+
+
+"Lithium is one of the most effective medications for preventing mood episodes, and it's especially important after delivery when the risk of relapse is highest. There is a small increased risk of heart defects — about 2.4% compared to 1.2% in the general population — and this risk goes up with higher doses. We will get a specialized heart ultrasound of the baby between 16 and 20 weeks. We'll also need to check your lithium levels more frequently during pregnancy because your kidneys clear the drug faster, and we may need to adjust your dose near delivery. The risk of stopping lithium — a 66% chance of relapse — is much higher than the small risk to the baby."
+
+For Valproate
+
+
+"Valproate is not safe to use during pregnancy. It has about a 1 in 10 chance of causing birth defects, including spinal cord defects, and children exposed to valproate in the womb score lower on IQ tests and have a higher risk of autism. We need to switch you to a safer medication — lamotrigine is the preferred alternative — and make sure you are using reliable birth control. An IUD or implant is the most effective option. If you are planning a pregnancy, we should start this transition well in advance."
+
+For Postpartum Psychosis
+
+
+"Postpartum psychosis is a psychiatric emergency that affects about 1 in 1,000 new mothers. It usually starts within the first few weeks after delivery with symptoms like not sleeping, feeling unusually high or confused, and having thoughts that don't make sense. It is very treatable — almost all women recover fully with the right medications, which usually include a mood stabilizer and sometimes an antipsychotic. The most important thing right now is your safety and your baby's safety, which is why we are recommending hospitalization. With treatment, most women are back to themselves within a few weeks."
+
+For Breastfeeding on Psychiatric Medications
+
+
+"Most psychiatric medications pass into breast milk in very small amounts — usually less than 2% of what you take. Sertraline is the best-studied and safest antidepressant for breastfeeding. Quetiapine and olanzapine are the safest antipsychotics. The benefits of breastfeeding for you and your baby — including bonding, immune protection, and reduced postpartum depression — generally outweigh the very small amount of medication your baby would be exposed to. We do not recommend stopping your medication to breastfeed, because the risk of relapse is much more dangerous for both of you."
+
+---
+
+Evidence Gaps and Emerging Data
+
+
+- No RCTs exist assessing antidepressant efficacy or safety during pregnancy; all evidence is observational.[35]
+
+- Postpartum psychosis lacks a distinct DSM diagnostic classification as of 2026, though expert consensus recommends reclassification within the bipolar disorders chapter.[11]
+
+- No REMS for valproate in the US remains a major regulatory gap, with compliance rates for contraception counseling below 15%.[72]
+
+- No active-comparator trials exist for zuranolone versus SSRIs or psychotherapy.[68]
+
+- The quality of lactation pharmacokinetic studies is generally poor — most antipsychotic studies do not meet FDA/ILCA guidelines for correct RID calculation.[97]
+
+- Whether peripartum lithium dose reduction is truly necessary remains debated; recent data challenge this practice.[53]
+
+- Optimal folic acid dose for women on valproate/carbamazepine (0.4 mg vs. 4–5 mg) is unresolved, with a 2026 Nordic target trial emulation suggesting high-dose folic acid (4–5 mg/day) initiated before pregnancy may reduce MCAs by 45%.[49]
+
+---
+
+Would you like to explore the specific evidence on lamotrigine-to-valproate cross-titration protocols for women of reproductive age with bipolar disorder, or the emerging data on paternal valproate exposure and offspring outcomes?
+
+References
+Postpartum Psychiatric Hospital Admissions: A Population-Based Study From British Columbia, Canada. Hippman C, Kaur P, Carrion P, et al. Psychiatry Research. 2025;352:116712. doi:10.1016/j.psychres.2025.116712.
+Peripartum Depression: Detection and Treatment. Justesen K, Jourdaine D. American Family Physician. 2023;108(3):267-272.
+Identification and Management of Peripartum Depression. Langan R, Goodbred AJ. American Family Physician. 2016;93(10):852-8.
+Postpartum Psychosis: Madness, Mania, and Melancholia in Motherhood. Bergink V, Rasgon N, Wisner KL. The American Journal of Psychiatry. 2016;173(12):1179-1188. doi:10.1176/appi.ajp.2016.16040454.
+Recognizing and Managing Postpartum Psychosis: A Clinical Guide for Obstetric Providers. Osborne LM. Obstetrics and Gynecology Clinics of North America. 2018;45(3):455-468. doi:10.1016/j.ogc.2018.04.005.
+Postpartum Depression. Stewart DE, Vigod S. The New England Journal of Medicine. 2016;375(22):2177-2186. doi:10.1056/NEJMcp1607649.
+Diagnostic and Statistical Manual of Mental Disorders. Dilip V. Jeste, Jeffrey A. Lieberman, David Fassler, et al. American Psychiatric Association (2022).
+Behavioral Emergencies: Special Considerations in the Pregnant Patient. Aftab A, Shah AA. The Psychiatric Clinics of North America. 2017;40(3):435-448. doi:10.1016/j.psc.2017.05.017.
+Prioritizing Maternal Mental Health in Addressing Morbidity and Mortality. Wisner KL, Murphy C, Thomas MM. JAMA Psychiatry. 2024;81(5):521-526. doi:10.1001/jamapsychiatry.2023.5648.
+A Review of Postpartum Psychosis. Sit D, Rothschild AJ, Wisner KL. Journal of Women's Health (2002). 2006;15(4):352-68. doi:10.1089/jwh.2006.15.352.
+Early Postpartum Symptoms in Puerperal Psychosis. Heron J, McGuinness M, Blackmore ER, Craddock N, Jones I. BJOG : An International Journal of Obstetrics and Gynaecology. 2008;115(3):348-53. doi:10.1111/j.1471-0528.2007.01563.x.
+The Phenomenology of Postpartum Psychosis: Preliminary Findings From the Massachusetts General Hospital Postpartum Psychosis Project. Cohen LS, Arakelian M, Church TR, et al. Molecular Psychiatry. 2025;30(6):2537-2544. doi:10.1038/s41380-024-02856-3.
+Postpartum Psychosis and Bipolar Disorder: Review of Neurobiology and Expert Consensus Statement on Classification. Bergink V, Akbarian S, Byatt N, et al. Biological Psychiatry. 2026;99(9):740-747. doi:10.1016/j.biopsych.2025.10.016.
+Preventive Interventions for Postnatal Psychosis. Essali A, Alabed S, Guul A, Essali N. The Cochrane Database of Systematic Reviews. 2013;(6):CD009991. doi:10.1002/14651858.CD009991.pub2.
+Treatment of Psychosis and Mania in the Postpartum Period. Bergink V, Burgerhout KM, Koorengevel KM, et al. The American Journal of Psychiatry. 2015;172(2):115-23. doi:10.1176/appi.ajp.2014.13121652.
+Postpartum Psychosis: A Proposed Treatment Algorithm. Jairaj C, Seneviratne G, Bergink V, Sommer IE, Dazzan P. Journal of Psychopharmacology (Oxford, England). 2023;37(10):960-970. doi:10.1177/02698811231181573.
+Lithium Exposure During Pregnancy and the Postpartum Period: A Systematic Review and Meta-Analysis of Safety and Efficacy Outcomes. Fornaro M, Maritan E, Ferranti R, et al. The American Journal of Psychiatry. 2020;177(1):76-92. doi:10.1176/appi.ajp.2019.19030228.
+Antipsychotics in Postpartum Psychosis. Teodorescu A, Dima L, Popa MA, et al. American Journal of Therapeutics. 2020;28(3):e341-e348. doi:10.1097/MJT.0000000000001218.
+Effectiveness of Electroconvulsive Therapy in Postpartum Psychosis: A Systematic Review. Herrera-Barrón O, Cors-Cepeda X, López-García C, Paez-Mayorga J, Baca-De-Anda A. The Journal of ECT. 2026;42(2):86-95. doi:10.1097/YCT.0000000000001188.
+Improvement of Postpartum Depression and Psychosis After Electroconvulsive Therapy: A Population-Based Study With a Matched Comparison Group. Rundgren S, Brus O, Båve U, et al. Journal of Affective Disorders. 2018;235:258-264. doi:10.1016/j.jad.2018.04.043.
+Bipolar Episodes After Reproductive Events in Women With Bipolar I Disorder, a Study of 919 Pregnancies. Gilden J, Poels EMP, Lambrichts S, et al. Journal of Affective Disorders. 2021;295:72-79. doi:10.1016/j.jad.2021.08.006.
+Bipolar Disorder Incidence During Pregnancy and in the Postpartum Period: A Population-Based Study. Bergink V, Mægbæk ML, Blæhr EE, Liu X, Munk-Olsen T. Bipolar Disorders. 2026;28(4):e70122. doi:10.1111/bdi.70122.
+Mood Episodes in Pregnancy and Risk of Postpartum Recurrence in Bipolar Disorder: The Bipolar Disorder Research Network Pregnancy Study. Perry A, Gordon-Smith K, Di Florio A, et al. Journal of Affective Disorders. 2021;294:714-722. doi:10.1016/j.jad.2021.07.067.
+Risk of Postpartum Relapse in Bipolar Disorder and Postpartum Psychosis: A Systematic Review and Meta-Analysis. Wesseloo R, Kamperman AM, Munk-Olsen T, et al. The American Journal of Psychiatry. 2016;173(2):117-27. doi:10.1176/appi.ajp.2015.15010124.
+Antidepressant Use in Pregnancy and the Risk of Cardiac Defects. Huybrechts KF, Palmsten K, Avorn J, et al. The New England Journal of Medicine. 2014;370(25):2397-407. doi:10.1056/NEJMoa1312828.
+Postpartum Relapse in Patients With Bipolar Disorder. Conejo-Galindo J, Sanz-Giancola A, Álvarez-Mon MÁ, et al. Journal of Clinical Medicine. 2022;11(14):3979. doi:10.3390/jcm11143979.
+Occurrence of postpartum manic or mixed episodes in women with bipolar I disorder: A systematic review and meta‐analysis. Sharma V, Wood KN, Weaver B, Mazmanian D, Thomson M. Bipolar Disorders. 2024;26(3):240-248. doi:10.1111/bdi.13405.
+Perinatal Episodes Across the Mood Disorder Spectrum. Di Florio A, Forty L, Gordon-Smith K, et al. JAMA Psychiatry. 2013;70(2):168-75. doi:10.1001/jamapsychiatry.2013.279.
+Management of Bipolar Disorder in Pregnancy and Postpartum: A Clinicians' Guide. Bergink V, Suleiman M, Hennen MA, Robakis T. CNS Drugs. 2025;39(8):763-777. doi:10.1007/s40263-025-01202-7.
+Bipolar Disorder. Grande I, Berk M, Birmaher B, Vieta E. Lancet (London, England). 2016;387(10027):1561-1572. doi:10.1016/S0140-6736(15)00241-X.
+Stratification of the Risk of Bipolar Disorder Recurrences in Pregnancy and Postpartum. Di Florio A, Gordon-Smith K, Forty L, et al. The British Journal of Psychiatry : The Journal of Mental Science. 2018;213(3):542-547. doi:10.1192/bjp.2018.92.
+Screening and Diagnosis of Mental Health Conditions During Pregnancy and Postpartum: ACOG Clinical Practice Guideline No. 4. Obstetrics and Gynecology. 2023;141(6):1232-1261. doi:10.1097/AOG.0000000000005200.
+Treatment and Management of Mental Health Conditions During Pregnancy and Postpartum: ACOG Clinical Practice Guideline No. 5. Obstetrics and Gynecology. 2023;141(6):1262-1288. doi:10.1097/AOG.0000000000005202.
+ACOG Committee Opinion No. 757 Summary: Screening for Perinatal Depression. Obstetrics and Gynecology. 2018;132(5):1314-1316. doi:10.1097/AOG.0000000000002928.
+Optimizing Psychological Health Across the Perinatal Period: An Update on Maternal Cardiovascular Health: A Scientific Statement From the American Heart Association. Sharma G, Gaffey AE, Hameed A, et al. Journal of the American Heart Association. 2025;14(5):e041369. doi:10.1161/JAHA.125.041369.
+Between a Rock-a-Bye and a Hard Place: Mood Disorders During the Peripartum Period. Thomson M, Sharma V. CNS Spectrums. 2017;22(S1):49-64. doi:10.1017/S1092852917000852.
+The Collision of Mental Health, Substance Use Disorder, and Suicide. Forray A, Yonkers KA. Obstetrics and Gynecology. 2021;137(6):1083-1090. doi:10.1097/AOG.0000000000004391.
+Antidepressant Treatment for Postnatal Depression. Brown JVE, Wilson CA, Ayre K, et al. The Cochrane Database of Systematic Reviews. 2021;2:CD013560. doi:10.1002/14651858.CD013560.pub2.
+Postpartum Psychiatric Disorders. Brockington I. Lancet (London, England). 2004;363(9405):303-10. doi:10.1016/S0140-6736(03)15390-1.
+A Qualitative Comparison of Experiences of Specialist Mother and Baby Units Versus General Psychiatric Wards. Griffiths J, Lever Taylor B, Morant N, et al. BMC Psychiatry. 2019;19(1):401. doi:10.1186/s12888-019-2389-8.
+Mother and Baby Units for Schizophrenia. Joy CB, Saylan M. The Cochrane Database of Systematic Reviews. 2007;(1):CD006333. doi:10.1002/14651858.CD006333.
+Uncovering the Model and Philosophy of Care of a Psychiatric Inpatient Mother-Baby Unit in a Qualitative Study With Staff. Branjerdporn G, Hussain B, Roberts S, Creedy D. International Journal of Environmental Research and Public Health. 2022;19(15):9717. doi:10.3390/ijerph19159717.
+Effectiveness and Cost-Effectiveness of Psychiatric Mother and Baby Units: Quasi-Experimental Study. Howard LM, Trevillion K, Potts L, et al. The British Journal of Psychiatry : The Journal of Mental Science. 2022;221(4):628-636. doi:10.1192/bjp.2022.48.
+Clinical Effectiveness of the Circle of Security-Parenting Group Intervention for Birthing Parents in Perinatal Mental Health Services in England (COSI): A Pragmatic, Multicentre, Assessor-Masked, Randomised Controlled Trial. Rosan C, Alyousefi-van Dijk K, Cornelius V, et al. The Lancet. Psychiatry. 2025;12(11):817-829. doi:10.1016/S2215-0366(25)00263-9.
+Management of Pregnancy (2023). Colleen C. Blosser MSN RN, Michael Bybel DO FAAFP, Alicia Christy MD MHSCR, et al. Department of Veterans Affairs.
+Evaluating the Clinical Effectiveness of a Specialized Perinatal Psychiatry Inpatient Unit. Meltzer-Brody S, Brandon AR, Pearson B, et al. Archives of Women's Mental Health. 2014;17(2):107-13. doi:10.1007/s00737-013-0390-7.
+Treatment of Severe Perinatal Mood Disorders on a Specialized Perinatal Psychiatry Inpatient Unit. Kimmel MC, Lara-Cinisomo S, Melvin K, et al. Archives of Women's Mental Health. 2016;19(4):645-53. doi:10.1007/s00737-016-0599-3.
+Prevention of Postpartum Psychosis and Mania in Women at High Risk. Bergink V, Bouvy PF, Vervoort JS, et al. The American Journal of Psychiatry. 2012;169(6):609-15. doi:10.1176/appi.ajp.2012.11071047.
+Lithium Use in Pregnancy and the Risk of Cardiac Malformations. Patorno E, Huybrechts KF, Bateman BT, et al. The New England Journal of Medicine. 2017;376(23):2245-2254. doi:10.1056/NEJMoa1612222.
+Selective Serotonin Reuptake Inhibitor Use During Early Pregnancy and Congenital Malformations: A Systematic Review and Meta-Analysis of Cohort Studies of More Than 9 Million Births. Gao SY, Wu QJ, Sun C, et al. BMC Medicine. 2018;16(1):205. doi:10.1186/s12916-018-1193-5.
+Maternal Exposure to SSRIs or SNRIs and the Risk of Congenital Abnormalities in Offspring: A Systematic Review and Meta-Analysis. Huang W, Page RL, Morris T, et al. PloS One. 2023;18(11):e0294996. doi:10.1371/journal.pone.0294996.
+Safety of Psychotropic Medications in Pregnancy: An Umbrella Review. Fabiano N, Wong S, Gupta A, et al. Molecular Psychiatry. 2025;30(1):327-335. doi:10.1038/s41380-024-02697-0.
+Maternal Use of Specific Antidepressant Medications During Early Pregnancy and the Risk of Selected Birth Defects. Anderson KN, Lind JN, Simeone RM, et al. JAMA Psychiatry. 2020;77(12):1246-1255. doi:10.1001/jamapsychiatry.2020.2453.
+Updated Guidelines for Pharmacologic Treatment of Perinatal Depression: Understanding Medication Options. Ortiz Worthington R, Aftab Z, Leong N, Alexander J. Cleveland Clinic Journal of Medicine. 2026;93(4):201-205. doi:10.3949/ccjm.93a.25052.
+Lexapro. Food and Drug Administration. Updated date: 2023-10-01.
+Specific SSRIs and Birth Defects: Bayesian Analysis to Interpret New Data in the Context of Previous Reports. Reefhuis J, Devine O, Friedman JM, Louik C, Honein MA. BMJ (Clinical Research Ed.). 2015;351:h3190. doi:10.1136/bmj.h3190.
+The Risk of Major Cardiac Malformations Associated With Paroxetine Use During the First Trimester of Pregnancy: A Systematic Review and Meta-Analysis. Bérard A, Iessa N, Chaabane S, et al. British Journal of Clinical Pharmacology. 2016;81(4):589-604. doi:10.1111/bcp.12849.
+PAROXETINE HYDROCHLORIDE. Food and Drug Administration. Updated date: 2026-04-29.
+A Systematic Review and Meta-Analysis Considering the Risk for Congenital Heart Defects of Antidepressant Classes and Individual Antidepressants. De Vries C, Gadzhanova S, Sykes MJ, Ward M, Roughead E. Drug Safety. 2021;44(3):291-312. doi:10.1007/s40264-020-01027-x.
+Effexor XR. Food and Drug Administration. Updated date: 2023-08-15.
+Antiseizure Medication Concentrations During Pregnancy: Results From the Maternal Outcomes and Neurodevelopmental Effects of Antiepileptic Drugs (MONEAD) Study. Pennell PB, Karanam A, Meador KJ, et al. JAMA Neurology. 2022;79(4):370-379. doi:10.1001/jamaneurol.2021.5487.
+Exposure to Duloxetine During Pregnancy and Risk of Congenital Malformations and Stillbirth: A Nationwide Cohort Study in Denmark and Sweden. Ankarfeldt MZ, Petersen J, Andersen JT, et al. PLoS Medicine. 2021;18(11):e1003851. doi:10.1371/journal.pmed.1003851.
+Maternal and Fetal Outcomes Following Exposure to Duloxetine in Pregnancy: Cohort Study. Huybrechts KF, Bateman BT, Pawar A, et al. BMJ (Clinical Research Ed.). 2020;368:m237. doi:10.1136/bmj.m237.
+Comparing Newborn Outcomes After Prenatal Exposure to Individual Antidepressants: A Retrospective Cohort Study. Marks C, Silvola R, Teal E, Quinney SK, Haas DM. Pharmacotherapy. 2021;41(11):907-914. doi:10.1002/phar.2628.
+Prenatal Exposure to Selective Serotonin Reuptake Inhibitors and Serotonin Norepinephrine Reuptake Inhibitors and Risk for Persistent Pulmonary Hypertension of the Newborn: A Systematic Review, Meta-Analysis, and Network Meta-Analysis. Masarwa R, Bar-Oz B, Gorelik E, et al. American Journal of Obstetrics and Gynecology. 2019;220(1):57.e1-57.e13. doi:10.1016/j.ajog.2018.08.030.
+Selective Serotonin Reuptake Inhibitors During Pregnancy and Risk of Persistent Pulmonary Hypertension in the Newborn: Population Based Cohort Study From the Five Nordic Countries. Kieler H, Artama M, Engeland A, et al. BMJ (Clinical Research Ed.). 2012;344:d8012. doi:10.1136/bmj.d8012.
+Antidepressant Use Late in Pregnancy and Risk of Persistent Pulmonary Hypertension of the Newborn. Huybrechts KF, Bateman BT, Palmsten K, et al. JAMA. 2015;313(21):2142-51. doi:10.1001/jama.2015.5605.
+Association of Persistent Pulmonary Hypertension in Infants With the Timing and Type of Antidepressants In Utero. Munk-Olsen T, Bergink V, Rommel AS, Momen N, Liu X. JAMA Network Open. 2021;4(12):e2136639. doi:10.1001/jamanetworkopen.2021.36639.
+Prenatal Exposure to Antidepressants and Persistent Pulmonary Hypertension of the Newborn: Systematic Review and Meta-Analysis. Grigoriadis S, Vonderporten EH, Mamisashvili L, et al. BMJ (Clinical Research Ed.). 2014;348:f6932. doi:10.1136/bmj.f6932.
+SSRI and SNRI Use During Pregnancy and the Risk of Persistent Pulmonary Hypertension of the Newborn. Bérard A, Sheehy O, Zhao JP, et al. British Journal of Clinical Pharmacology. 2017;83(5):1126-1133. doi:10.1111/bcp.13194.
+FDA Panel Casts SSRIs During Pregnancy as Risky—Many Experts Disagree. Schneider L. JAMA. 2025;:2837827. doi:10.1001/jama.2025.14105.
+Depression during Pregnancy. Stewart DE. The New England Journal of Medicine. 2011;365(17):1605-11. doi:10.1056/NEJMcp1102730.
+Maternal Use of SSRIs, SNRIs and NaSSAs: Practical Recommendations During Pregnancy and Lactation. Sie SD, Wennink JM, van Driel JJ, et al. Archives of Disease in Childhood. Fetal and Neonatal Edition. 2012;97(6):F472-6. doi:10.1136/archdischild-2011-214239.
+The Effect of Prenatal Antidepressant Exposure on Neonatal Adaptation: A Systematic Review and Meta-Analysis. Grigoriadis S, VonderPorten EH, Mamisashvili L, et al. The Journal of Clinical Psychiatry. 2013;74(4):e309-20. doi:10.4088/JCP.12r07967.
+Neonatal Signs After Late In Utero Exposure to Serotonin Reuptake Inhibitors: Literature Review and Implications for Clinical Applications. Moses-Kolko EL, Bogen D, Perel J, et al. JAMA. 2005;293(19):2372-83. doi:10.1001/jama.293.19.2372.
+The Roles of Maternal Depression, Serotonin Reuptake Inhibitor Treatment, and Concomitant Benzodiazepine Use on Infant Neurobehavioral Functioning Over the First Postnatal Month. Salisbury AL, O'Grady KE, Battle CL, et al. The American Journal of Psychiatry. 2016;173(2):147-57. doi:10.1176/appi.ajp.2015.14080989.
+Maternal Treatment With Selective Serotonin Reuptake Inhibitors During Pregnancy and Delayed Neonatal Adaptation: A Population-Based Cohort Study. Cornet MC, Wu YW, Forquer H, et al. Archives of Disease in Childhood. Fetal and Neonatal Edition. 2024;109(3):294-300. doi:10.1136/archdischild-2023-326049.
+Pharmacologic Treatment of Depression. Kovich H, Kim W, Quaste AM. American Family Physician. 2023;107(2):173-181.
+Risk of Poor Neonatal Adaptation Syndrome Among Infants Exposed to Second-Generation Atypical Antipsychotics Compared to Antidepressants: Results From the National Pregnancy Registry for Psychiatric Medications. Viguera AC, McElheny SA, Caplin PS, et al. The Journal of Clinical Psychiatry. 2023;84(1):22m14492. doi:10.4088/JCP.22m14492.
+Implementation of Advanced Methods for Reproductive Pharmacovigilance in Autism: A Meta-Analysis of the Effects of Prenatal Antidepressant Exposure. Vega ML, Newport GC, Bozhdaraj D, et al. The American Journal of Psychiatry. 2020;177(6):506-517. doi:10.1176/appi.ajp.2020.18070766.
+Maternal Psychiatric Conditions, Treatment With Selective Serotonin Reuptake Inhibitors, and Neurodevelopmental Disorders. Ames JL, Ladd-Acosta C, Fallin MD, et al. Biological Psychiatry. 2021;90(4):253-262. doi:10.1016/j.biopsych.2021.04.002.
+Association Between Serotonergic Antidepressant Use During Pregnancy and Autism Spectrum Disorder in Children. Brown HK, Ray JG, Wilton AS, et al. JAMA. 2017;317(15):1544-1552. doi:10.1001/jama.2017.3415.
+Maternal and Paternal Antidepressant Use Before and During Pregnancy and Offspring Risk of Neurodevelopmental Disorders: A Systematic Review and Meta-Analysis. Chan JKN, Zhong AHF, Lam JYH, et al. The Lancet. Psychiatry. 2026;13(6):472-484. doi:10.1016/S2215-0366(26)00089-1.
+Association of Antidepressant Use During Pregnancy With Risk of Neurodevelopmental Disorders in Children. Suarez EA, Bateman BT, Hernández-Díaz S, et al. JAMA Internal Medicine. 2022;. doi:10.1001/jamainternmed.2022.4268.
+Annual Research Review: Maternal Antidepressant Use During Pregnancy and Offspring Neurodevelopmental Problems - A Critical Review and Recommendations for Future Research. Sujan AC, Öberg AS, Quinn PD, D'Onofrio BM. Journal of Child Psychology and Psychiatry, and Allied Disciplines. 2019;60(4):356-376. doi:10.1111/jcpp.13004.
+Selective Serotonin Reuptake Inhibitor Use in Pregnant Women; Pharmacogenetics, Drug-Drug Interactions and Adverse Effects. Ornoy A, Koren G. Expert Opinion on Drug Metabolism & Toxicology. 2018;14(3):247-259. doi:10.1080/17425255.2018.1430139.
+Selective Serotonin Reuptake Inhibitors (SSRIs) in Pregnancy: An Updated Review on Risks to Mother, Fetus, and Child. Lebin LG, Novick AM. Current Psychiatry Reports. 2022;24(11):687-695. doi:10.1007/s11920-022-01372-x.
+Neonatal Outcomes in Women With Untreated Antenatal Depression Compared With Women Without Depression: A Systematic Review and Meta-analysis. Jarde A, Morais M, Kingston D, et al. JAMA Psychiatry. 2016;73(8):826-37. doi:10.1001/jamapsychiatry.2016.0934.
+Depression During Pregnancy and the Risk of Low Birth Weight, Preterm Birth and Intrauterine Growth Restriction- An Updated Meta-Analysis. Ghimire U, Papabathini SS, Kawuki J, Obore N, Musa TH. Early Human Development. 2021;152:105243. doi:10.1016/j.earlhumdev.2020.105243.
+The Impact of Maternal Depression During Pregnancy on Perinatal Outcomes: A Systematic Review and Meta-Analysis. Grigoriadis S, VonderPorten EH, Mamisashvili L, et al. The Journal of Clinical Psychiatry. 2013;74(4):e321-41. doi:10.4088/JCP.12r07968.
+Antiepileptic Drug Exposure in Infants of Breastfeeding Mothers With Epilepsy. Birnbaum AK, Meador KJ, Karanam A, et al. JAMA Neurology. 2020;77(4):441-450. doi:10.1001/jamaneurol.2019.4443.
+Guidelines on Treatment of Perinatal Depression With Antidepressants: An International Review. Molenaar NM, Kamperman AM, Boyce P, Bergink V. The Australian and New Zealand Journal of Psychiatry. 2018;52(4):320-327. doi:10.1177/0004867418762057.
+Maternal and Infant Outcomes Associated With Lithium Use in Pregnancy: An International Collaborative Meta-Analysis of Six Cohort Studies. Munk-Olsen T, Liu X, Viktorin A, et al. The Lancet. Psychiatry. 2018;5(8):644-652. doi:10.1016/S2215-0366(18)30180-9.
+Lithium Carbonate. Food and Drug Administration. Updated date: 2022-11-22.
+Lithium Carbonate. Food and Drug Administration. Updated date: 2023-10-02.
+Lithium. Food and Drug Administration. Updated date: 2025-08-20.
+Management of Bipolar Disorder (BD) (2023). Thad Abrams MD MS, Jennifer Bell MD, Paulette Cazares MD MPH, et al. Department of Veterans Affairs.
+
+Medication | Pregnancy Risk | Key Teratogenic Concern | Dose-Dependent? | Fetal Monitoring | Lactation (RID) | Lactation Compatibility
+Sertraline | Low | No significant signal after confounding adjustment | No | None specific | 0.4–2.2% | First-line
+Escitalopram | Low | No elevated aORs in NBDPS | No | None specific | ~5.3% | Compatible; monitor
+Paroxetine | Moderate | Cardiac malformations (OR 1.28); ASD OR 2.38 | Unclear | Consider fetal echo if high dose | Very low | Preferred in lactation
+Fluoxetine | Low-Moderate | RVOT obstruction (OR 2.0); craniosynostosis | Unclear | None specific | 4–12% | Avoid if possible
+Venlafaxine | Moderate | Anencephaly (aOR 9.14); cardiovascular (OR 1.64) | Unclear | None specific | 6.4–8.1% | Compatible; less preferred
+Duloxetine | Low | No major signal (OR 0.98); highest NICU rate | Unclear | None specific | <1% | Compatible
+Bupropion | Low | Inconsistent CHD data (OR 1.23) | Unclear | None specific | ~2% | Compatible; seizure reports
+Lithium | Moderate | Cardiac malformations (RR 1.65); Ebstein anomaly | Yes (>900 mg: RR 3.22) | Fetal echo 16–20 wk | 12–30% | Possible with monitoring
+Valproate | HIGH — Contraindicated | NTDs 1–2%; IQ ↓8–11 pts; ASD ↑2.9× | Yes (up to 25% at >1450 mg) | Level II US; fetal echo | 3–5% | Compatible
+Carbamazepine | Moderate | Spina bifida 0.5–1%; MCM 3.3–5.5% | Yes (>700 mg) | Level II US | 3–5% | Compatible
+Lamotrigine | Low — Preferred | MCM 2–3% (≈ background); oral cleft not confirmed | No | None specific | ~9–10% | Compatible with monitoring
+Quetiapine | Low | No significant MCM signal | No | GDM screening | <1% | First-line AP
+Olanzapine | Low-Moderate | No MCM signal; GDM risk (RR 1.61) | No | GDM screening | ~1% | First-line AP
+Aripiprazole | Low | No MCM signal; no GDM signal | No | None specific | Moderate | Limited data
+Haloperidol | Low-Moderate | Higher reporting frequency for MCMs vs. quetiapine | Unclear | None specific | ~2–3% (est.) | FDA: do not nurse
+Lorazepam | Low-Moderate | Small dose-dependent cardiac risk (RR 1.09–1.26) | Yes | None specific | Low (<10%) | Preferred BZD
+Clonazepam | Low-Moderate | Similar to class | Unclear | None specific | Low (<10%) | Compatible; long t½
+Zuranolone | Contraindicated | Animal: cleft palate, perinatal mortality | — | — | <1% | Likely compatible
+Category | First-Line | Acceptable | Use with Caution | Avoid
+Antidepressants | Sertraline (RID 0.4–2.2%) | Paroxetine, escitalopram, duloxetine | Venlafaxine (RID 6–8%), citalopram | Fluoxetine (RID 4–12%; long t½)
+Antipsychotics | Quetiapine (RID <1%), Olanzapine (RID ~1%) | Aripiprazole (limited data) | Risperidone (limited data) | Haloperidol (FDA: do not nurse)
+Mood Stabilizers | Lamotrigine (RID ~9–10%; monitor infant) | Valproate (RID 3–5%), Carbamazepine (RID 3–5%) | Lithium (RID 12–30%; requires infant monitoring: Li, TSH, Cr) | —
+Benzodiazepines | Lorazepam (no active metabolites) | Clonazepam (low transfer) | — | Long-acting BZDs (diazepam)
+Other | Zuranolone (RID <1%; likely compatible) | — | — | —

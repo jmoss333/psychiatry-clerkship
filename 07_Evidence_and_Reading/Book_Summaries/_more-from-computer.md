@@ -1,0 +1,11 @@
+# More source files on your computer (not copied: large/media/cloud-only)
+
+- **Part1 Chapters4 6 Expanded** · `~/Documents/Work & Career/Psychiatry Projects/03_FAMILY_MATERIALS/Family_Manual/Part1_Chapters4-6_Expanded.docx` · Word (copy skipped: OSError)
+- **Family as Stabilizer Not Substitute** · `~/Documents/Work & Career/Psychiatry Projects/01_CORE_FRAMEWORK/Chapter_Drafts/Family_as_Stabilizer_Not_Substitute.md` · Markdown (copy skipped: OSError)
+- **First 7 Days After Discharge** · `~/Documents/Work & Career/Psychiatry Projects/01_CORE_FRAMEWORK/Chapter_Drafts/First_7_Days_After_Discharge.md` · Markdown (copy skipped: OSError)
+- **Rival Manual Executive Summary** · `~/Documents/Work & Career/Psychiatry Projects/01_CORE_FRAMEWORK/Chapter_Drafts/Rival_Manual_Executive_Summary.md` · Markdown (copy skipped: OSError)
+- **AuthorityWithoutCoercion Chapter** · `~/Documents/Work & Career/Psychiatry Projects/01_CORE_FRAMEWORK/Chapter_Drafts/AuthorityWithoutCoercion_Chapter.docx` · Word (copy skipped: OSError)
+- **Chapter 10A Parental Moral Injury** · `~/Documents/Work & Career/Psychiatry Projects/01_CORE_FRAMEWORK/Chapter_Drafts/Chapter_10A_Parental_Moral_Injury.docx` · Word (copy skipped: OSError)
+- **Chapter Uncertainty Tolerance** · `~/Documents/Work & Career/Psychiatry Projects/01_CORE_FRAMEWORK/Chapter_Drafts/Chapter_Uncertainty_Tolerance.docx` · Word (copy skipped: OSError)
+- **Draft ch 5 and 6** · `~/Documents/Work & Career/Psychiatry Projects/01_CORE_FRAMEWORK/Chapter_Drafts/Draft ch 5 and 6.docx` · Word (copy skipped: OSError)
+- **PMM Translation Framework Chapter** · `~/Documents/Work & Career/Psychiatry Projects/01_CORE_FRAMEWORK/Chapter_Drafts/PMM_Translation_Framework_Chapter.docx` · Word (copy skipped: OSError)

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [RC-META] tool="Mental Status Exam — Teaching Module" version="1.0" built="2026-06-26" category="clinical-skills" audience="trainee,ms3" settings="inpatient" time="30min" summary="Interactive MSE teaching module: domain-by-domain descriptors, a builder that drafts a written MSE, and an annotated exemplar. Fictional composites only; no PHI." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mental Status Exam — Teaching Module</title>
+<meta name="description" content="A teaching module for the mental status exam: what to observe in each domain, a descriptor bank, an interactive MSE builder that drafts a written exam, and an annotated exemplar.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+    --success:#357160; --success-light:#e7f1ed;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --danger:#a34132; --danger-light:#fbece9;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06); --shadow-md:0 2px 10px rgba(59,51,44,.08);
+    --shadow-lg:0 8px 28px rgba(59,51,44,.10);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(900px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) var(--sp5)}
+  h1,h2,h3{font-family:var(--font-head);line-height:1.25;margin:0 0 var(--sp3)}
+  h1{font-size:2.2rem;color:var(--primary)} h2{font-size:1.45rem;color:var(--text);margin-top:var(--sp5)}
+  h3{font-size:1.1rem;color:var(--text)}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .sub{color:var(--text-mid);max-width:64ch;margin:0 0 var(--sp3)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .domain{border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:var(--sp2);background:var(--surface);overflow:hidden}
+  .domain-head{display:flex;justify-content:space-between;align-items:center;gap:var(--sp2);padding:var(--sp3);cursor:pointer;background:var(--bg-alt)}
+  .domain-head:hover{background:var(--primary-light)}
+  .domain-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:var(--radius-pill);background:var(--accent);color:#fff;font-size:.8rem;font-weight:700;flex:none}
+  .domain-title{font-weight:700;font-family:var(--font-head)}
+  .domain-body{padding:var(--sp3);border-top:1px solid var(--border)}
+  .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);font-weight:700;margin:var(--sp3) 0 var(--sp1)}
+  .chips{display:flex;flex-wrap:wrap;gap:var(--sp1)}
+  .chip{border:1px solid var(--border);background:var(--surface);color:var(--text-mid);border-radius:var(--radius-pill);padding:5px 12px;font-size:.85rem;cursor:pointer;transition:all .15s}
+  .chip:hover{border-color:var(--accent)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .pearl{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);font-size:.9rem;color:var(--text);margin-top:var(--sp3)}
+  .pearl b{color:var(--warning)}
+  .danger{background:var(--danger-light);border-left:3px solid var(--danger)}
+  .danger b{color:var(--danger)}
+  .output{background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-md);padding:var(--sp3);font-size:.97rem;line-height:1.7;white-space:pre-wrap}
+  .btn{border:none;border-radius:var(--radius-sm);padding:9px 16px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--primary-dark);color:#fff} .btn-primary:hover{background:var(--primary)}
+  .btn-ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)} .btn-ghost:hover{border-color:var(--accent)}
+  .row{display:flex;gap:var(--sp2);flex-wrap:wrap;align-items:center;margin-top:var(--sp3)}
+  .tabs{display:flex;gap:var(--sp1);border-bottom:2px solid var(--border);margin-bottom:var(--sp4);flex-wrap:wrap}
+  .tab{border:none;background:transparent;padding:10px 14px;font-size:.95rem;font-weight:600;color:var(--text-mid);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;font-family:inherit}
+  .tab.on{color:var(--primary-dark);border-bottom-color:var(--primary-dark)}
+  .anno{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp2)}
+  .anno-item{border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--sp3);background:var(--surface)}
+  .anno-item .ex{font-style:italic;color:var(--text);background:var(--primary-light);padding:6px 10px;border-radius:var(--radius-sm);display:block;margin-bottom:6px}
+  .anno-item .why{font-size:.88rem;color:var(--text-mid)}
+  .disclaimer{background:var(--bg-alt);border:1px dashed var(--border);border-radius:var(--radius-md);padding:var(--sp3);font-size:.82rem;color:var(--text-mid);margin-top:var(--sp4)}
+  .domchips{display:flex;flex-wrap:wrap;gap:6px;margin:var(--sp2) 0 var(--sp3)}
+  .domchip{font-size:.72rem;font-weight:700;border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px 10px;color:var(--text-light);background:var(--bg-alt);transition:all .2s}
+  .domchip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .note{background:var(--bg-alt);border:1px dashed var(--border);border-radius:var(--radius-md);padding:var(--sp3) var(--sp4);line-height:1.75}
+  .noteline{margin:0 0 8px;font-size:.97rem;color:var(--text)}
+  .noteline:last-child{margin-bottom:0}
+  .notedom{color:var(--accent-dark);font-family:var(--font-head)}
+  .noteph{color:var(--text-light);font-style:italic}
+  @keyframes notein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .noteline{animation:notein .3s ease}
+  @media(prefers-reduced-motion:reduce){.domchip{transition:none}.noteline{animation:none}}
+  footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light);text-align:center}
+  .count{font-size:.78rem;color:var(--text-light)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+var e = React.createElement;
+var useState = React.useState;
+
+var DOMAINS = [
+  {key:'appearance', title:'Appearance', observe:'Apparent age, grooming, hygiene, dress, distinguishing features, nutritional status.',
+   prose:'appears ', options:['stated age','older than stated age','well-groomed','disheveled','poor hygiene','appropriately dressed','malodorous','cachectic'],
+   pearl:'Describe, do not interpret. "Wearing a heavy coat indoors in summer" beats "bizarrely dressed."'},
+  {key:'behavior', title:'Behavior & psychomotor', observe:'Eye contact, cooperation, psychomotor activity, abnormal movements, attitude toward examiner.',
+   prose:'with ', options:['good eye contact','poor eye contact','cooperative','guarded','psychomotor agitation','psychomotor retardation','no abnormal movements','tremor'],
+   pearl:'Screen any mute or immobile patient for catatonia (Bush-Francis). Missing it can be fatal — antipsychotics can precipitate NMS.', danger:true},
+  {key:'speech', title:'Speech', observe:'Rate, rhythm, volume, tone, latency, articulation, spontaneity.',
+   prose:'Speech is ', options:['normal rate and rhythm','pressured','slowed','loud','soft','increased latency','monotone','spontaneous'],
+   pearl:'Speech describes the form of output (mechanics); thought process describes how ideas connect. Keep them separate.'},
+  {key:'mood', title:'Mood', observe:'The patient’s subjective emotional state — ideally in their own words, in quotation marks.',
+   prose:'Mood is ', single:true, options:['"fine"','"depressed"','"anxious"','"angry"','"empty"','"good"','"irritable"'],
+   pearl:'Mood is what the patient tells you; affect is what you observe. Quote the patient verbatim.'},
+  {key:'affect', title:'Affect', observe:'Observed emotional expression: quality, range, congruence, stability, appropriateness.',
+   prose:'affect is ', options:['euthymic','dysphoric','full range','constricted','flat','labile','congruent with mood','incongruent'],
+   pearl:'Characterize affect on at least range and quality. "Constricted and dysphoric" says more than "depressed affect."'},
+  {key:'thoughtProcess', title:'Thought process', observe:'How thoughts are organized and connected (the form, not the content).',
+   prose:'Thought process is ', single:true, options:['linear and goal-directed','circumstantial','tangential','loose associations','flight of ideas','thought blocking','disorganized'],
+   pearl:'Process = the connections between ideas. Reserve "disorganized" for genuinely incoherent output, not merely talkative.'},
+  {key:'thoughtContent', title:'Thought content', observe:'What the patient is thinking: SI/HI, delusions, obsessions, preoccupations.',
+   prose:'Thought content notable for ', options:['no SI/HI','passive SI','active SI','homicidal ideation','paranoid delusions','grandiose delusions','obsessions','no delusions'],
+   pearl:'Always document suicidal and homicidal ideation explicitly — including their absence. "Denies SI/HI" is not optional.', danger:true},
+  {key:'perception', title:'Perception', observe:'Hallucinations (auditory, visual, other), illusions, dissociation, responding to internal stimuli.',
+   prose:'with ', options:['no perceptual disturbances','auditory hallucinations','visual hallucinations','responding to internal stimuli','denies hallucinations'],
+   pearl:'Note both what the patient reports and what you observe (e.g., appearing to respond to internal stimuli).'},
+  {key:'cognition', title:'Cognition', observe:'Alertness, orientation, attention, memory, fund of knowledge. Use a tool (MoCA/MMSE) when indicated.',
+   prose:'Cognitively, ', options:['alert','oriented x3','oriented x4','inattentive','grossly intact','impaired short-term memory'],
+   pearl:'"Oriented x4" = person, place, time, situation. Screen formally (MoCA) when delirium or dementia is on the differential.'},
+  {key:'insight', title:'Insight', observe:'Awareness of illness and need for treatment.',
+   prose:'Insight is ', single:true, options:['good','fair','limited','poor','absent'],
+   pearl:'Insight predicts adherence. In psychosis, anosognosia (not denial) may be the barrier — see Amador’s LEAP.'},
+  {key:'judgment', title:'Judgment', observe:'Capacity to make reasoned, safe decisions; recent real-world decisions are the best evidence.',
+   prose:'judgment is ', single:true, options:['good','fair','limited','poor'],
+   pearl:'Judge judgment on behavior, not hypotheticals. "Left AMA against advice with active SI" is the evidence.'}
+];
+
+function App(){
+  var tab = useState('learn'); var setTab = tab[1]; tab = tab[0];
+  var open = useState({}); var setOpen = open[1]; open = open[0];
+  var sel = useState({}); var setSel = sel[1]; sel = sel[0];
+  var copied = useState(false); var setCopied = copied[1]; copied = copied[0];
+
+  function toggleOpen(k){ var n=Object.assign({},open); n[k]=!n[k]; setOpen(n); }
+  function pick(dk, opt, single){
+    var cur = (sel[dk]||[]).slice();
+    if(single){ cur = (cur[0]===opt)?[]:[opt]; }
+    else { var i=cur.indexOf(opt); if(i>=0)cur.splice(i,1); else cur.push(opt); }
+    var n=Object.assign({},sel); n[dk]=cur; setSel(n); setCopied(false);
+  }
+  function selectedCount(){ return DOMAINS.reduce(function(a,d){return a+((sel[d.key]||[]).length?1:0)},0); }
+
+  function jn(s){ return s.length>2 ? s.slice(0,-1).join(', ')+', and '+s[s.length-1] : s.join(' and '); }
+  function buildParagraph(){
+    var tmpl={
+      appearance:function(j){return 'The patient appears '+j+'.';},
+      behavior:function(j){return 'On observation, '+j+'.';},
+      speech:function(j){return 'Speech is '+j+'.';},
+      mood:function(j){return 'Mood is '+j+'.';},
+      affect:function(j){return 'Affect is '+j+'.';},
+      thoughtProcess:function(j){return 'Thought process is '+j+'.';},
+      thoughtContent:function(j){return 'Thought content is notable for '+j+'.';},
+      perception:function(j){return 'Perception is notable for '+j+'.';},
+      cognition:function(j){return 'Cognitively, '+j+'.';},
+      insight:function(j){return 'Insight is '+j+'.';},
+      judgment:function(j){return 'Judgment is '+j+'.';}
+    };
+    var out=[];
+    DOMAINS.forEach(function(d){
+      var s=sel[d.key]||[]; if(!s.length) return;
+      var fn=tmpl[d.key]; if(fn) out.push(fn(jn(s)));
+    });
+    return out.length ? out.join(' ') : 'Select descriptors above to draft a written MSE.';
+  }
+  function copyOut(){
+    var t=buildParagraph();
+    if(navigator.clipboard){ navigator.clipboard.writeText(t).then(function(){setCopied(true);}); }
+  }
+  function reset(){ setSel({}); setCopied(false); }
+
+  var header = e('div',{key:'h'},
+    e('div',{className:'kicker'},'Clinical Skills · 02'),
+    e('h1',null,'The Mental Status Exam'),
+    e('p',{className:'sub'},'The MSE is your structured snapshot of a patient’s current presentation — the psychiatric equivalent of the physical exam. Learn each domain, then use the builder to draft a written exam in clinical prose.')
+  );
+
+  var tabs = e('div',{className:'tabs',key:'t'},
+    e('button',{className:'tab'+(tab==='learn'?' on':''),onClick:function(){setTab('learn')}},'1 · Learn the domains'),
+    e('button',{className:'tab'+(tab==='build'?' on':''),onClick:function(){setTab('build')}},'2 · Build an MSE'),
+    e('button',{className:'tab'+(tab==='exemplar'?' on':''),onClick:function(){setTab('exemplar')}},'3 · Annotated exemplar'),
+    e('button',{className:'tab'+(tab==='language'?' on':''),onClick:function(){setTab('language')}},'4 · Language & interview')
+  );
+
+  var learn = e('div',{key:'l'},
+    DOMAINS.map(function(d,i){
+      return e('div',{className:'domain',key:d.key},
+        e('div',{className:'domain-head',onClick:function(){toggleOpen(d.key)}},
+          e('span',{style:{display:'flex',alignItems:'center',gap:'10px'}},
+            e('span',{className:'domain-num'},i+1),
+            e('span',{className:'domain-title'},d.title)),
+          e('span',{className:'count'}, open[d.key]?'−':'+')),
+        open[d.key]?e('div',{className:'domain-body'},
+          e('div',null, e('span',{className:'label'},'What to observe'), e('div',null,d.observe)),
+          e('div',null, e('span',{className:'label'},'Common descriptors'),
+            e('div',{className:'chips'}, d.options.map(function(o){return e('span',{className:'chip',key:o},o)}))),
+          e('div',{className:'pearl'+(d.danger?' danger':'')}, e('b',null,d.danger?'Safety pearl: ':'Pearl: '), d.pearl)
+        ):null
+      );
+    })
+  );
+
+  var build = e('div',{key:'b'},
+    e('div',{className:'card'},
+      e('p',{className:'sub',style:{marginTop:0}},'Tap descriptors in each domain. Single-choice domains (mood, thought process, insight, judgment) take one; others accept several. Your written MSE drafts live below.'),
+      DOMAINS.map(function(d){
+        var s=sel[d.key]||[];
+        return e('div',{key:d.key,style:{marginBottom:'14px'}},
+          e('span',{className:'label'}, d.title, d.single?' (choose one)':''),
+          e('div',{className:'chips'}, d.options.map(function(o){
+            return e('span',{className:'chip'+(s.indexOf(o)>=0?' on':''),key:o,onClick:function(){pick(d.key,o,d.single)}},o);
+          }))
+        );
+      })
+    ),
+    e('div',{className:'card'},
+      e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
+        e('h3',{style:{margin:0}},'Drafted MSE'),
+        e('span',{className:'count'}, selectedCount()+' / '+DOMAINS.length+' domains')),
+      e('div',{className:'domchips'}, DOMAINS.map(function(d){
+        return e('span',{className:'domchip'+((sel[d.key]||[]).length?' on':''),key:d.key}, d.title);
+      })),
+      e('div',{className:'note',style:{marginTop:'4px'}},
+        (function(){
+          var filled=DOMAINS.filter(function(d){return (sel[d.key]||[]).length;});
+          if(!filled.length) return e('div',{className:'noteph'},'Select descriptors above — each domain appears here as you complete it, assembling into a written mental status exam.');
+          return filled.map(function(d){
+            return e('div',{className:'noteline',key:d.key},
+              e('b',{className:'notedom'}, d.title), ' — ', jn(sel[d.key]), '.');
+          });
+        })()
+      ),
+      e('div',{className:'row'},
+        e('button',{className:'btn btn-primary',onClick:copyOut}, copied?'Copied ✓':'Copy as prose'),
+        e('button',{className:'btn btn-ghost',onClick:reset},'Reset')),
+      e('div',{className:'pearl',style:{marginTop:'16px'}}, e('b',null,'Remember: '),'A written MSE is a description, not a diagnosis. Document what you saw and heard; let the assessment do the interpreting.')
+    )
+  );
+
+  var EX = [
+    {ex:'Appearance: A man appearing his stated age, disheveled, wearing a hospital gown, with poor hygiene.',
+     why:'Concrete, observable details. "Disheveled with poor hygiene" flags possible self-neglect without interpreting.'},
+    {ex:'Behavior: Guarded, with intermittent eye contact and psychomotor agitation; pacing the interview room.',
+     why:'Captures attitude + activity. Agitation here would prompt an agitation-management plan (see 04 · Acute & Safety).'},
+    {ex:'Speech: Loud, pressured, and difficult to interrupt.',
+     why:'Pressured speech is a form/mechanics finding pointing toward mania — distinct from the content of what is said.'},
+    {ex:'Mood / Affect: Mood "great, never better"; affect expansive, labile, and incongruent at times.',
+     why:'Patient’s words in quotes for mood; observed expansive/labile affect supports a manic picture.'},
+    {ex:'Thought process: Flight of ideas with tangentiality.',
+     why:'Names the disorganization precisely rather than the vague "disorganized."'},
+    {ex:'Thought content: Grandiose delusions (special mission); denies SI/HI; no paranoia elicited.',
+     why:'Explicit SI/HI documentation is mandatory — including its absence.'},
+    {ex:'Perception: No hallucinations reported; not observed responding to internal stimuli.',
+     why:'Pairs patient report with examiner observation.'},
+    {ex:'Cognition: Alert; oriented x4; attention grossly intact; formal testing deferred.',
+     why:'States the screen and what was deferred, so the next clinician knows what is outstanding.'},
+    {ex:'Insight / Judgment: Insight poor (does not believe he is ill); judgment impaired (stopped lithium two weeks ago).',
+     why:'Both rated on real behavior — the strongest available evidence.'}
+  ];
+  var exemplar = e('div',{key:'x'},
+    e('div',{className:'card'},
+      e('h3',{style:{marginTop:0}},'Annotated exemplar — fictional composite'),
+      e('p',{className:'sub'},'A 34-year-old man brought in by family for several days of decreased sleep and expansive behavior. Each line pairs the written finding with why it is phrased that way. No PHI — fully fictional.'),
+      e('div',{className:'anno'}, EX.map(function(a,i){
+        return e('div',{className:'anno-item',key:i}, e('span',{className:'ex'},a.ex), e('span',{className:'why'}, e('b',null,'Why: '), a.why));
+      }))
+    )
+  );
+
+  var qStyle={background:'var(--primary-light)',borderRadius:'6px',padding:'6px 10px',margin:'4px 0',fontStyle:'italic',fontSize:'.9rem'};
+  var WORDS=[
+    ['"Manipulative"','describe the behavior + context (what they did, what need it served)'],
+    ['"Noncompliant"','"missed doses because…" / "declined because…"'],
+    ['"Attention-seeking"','"sought staff support repeatedly when distressed"'],
+    ['"Poor historian"','"history limited by disorganization / intoxication / anxiety"'],
+    ['"Denies SI" (alone)','state what you asked and how you reasoned about risk'],
+    ['"Frequent flyer"','"multiple recent admissions" — neutral and factual']
+  ];
+  var SEQ=['Opening narrative','Current symptoms & timeline','Safety: suicide, self-harm, violence, vulnerability','Psychiatric history','Substance use & withdrawal risk','Medical / neurologic contributors','Medications, adherence, adverse effects','Trauma & developmental context (gently)','Family, supports, living situation, collateral','Function, strengths, values, discharge barriers','Summary + next step'];
+  var language = e('div',{key:'lang'},
+    e('div',{className:'card'},
+      e('h3',{style:{marginTop:0}},'Words to use carefully (anti-stigma)'),
+      e('p',{className:'sub',style:{fontSize:'.9rem'}},'The MSE is permanent and shapes how the next clinician sees the patient. Swap loaded shorthand for observable, neutral description.'),
+      e('div',{className:'anno'}, WORDS.map(function(w,i){
+        return e('div',{className:'anno-item',key:i}, e('span',{className:'ex'},'Avoid: '+w[0]), e('span',{className:'why'}, e('b',null,'Instead: '), w[1]));
+      }))),
+    e('div',{className:'card'},
+      e('h3',{style:{marginTop:0}},'Interview sequence'),
+      e('p',{className:'sub',style:{fontSize:'.9rem'}},'A reliable order so you’re not bouncing between questions (adapt if safety requires a different path).'),
+      SEQ.map(function(s,i){ return e('div',{className:'anno-item',key:i,style:{marginBottom:'6px'}}, e('b',null,(i+1)+'. '), s); })),
+    e('div',{className:'card'},
+      e('h3',{style:{marginTop:0}},'High-yield questions'),
+      e('span',{className:'label'},'Opening'),
+      ['"What was happening before you came to the hospital?"','"What feels most urgent to you today?"','"When did this start to feel different from your usual self?"','"Who knows you well enough to notice when you’re not yourself?"'].map(function(q,i){return e('div',{style:qStyle,key:'o'+i},q);}),
+      e('span',{className:'label'},'Safety — ask directly and calmly'),
+      ['"Have you wished you wouldn’t wake up?"','"Have you had thoughts of killing yourself? Of how? Any steps? What has stopped you?"','"Do you have access to firearms or stockpiled medications?"','"Have you felt afraid you might hurt someone? Has anyone felt unsafe around you?"','"Has anyone hurt, threatened, or exploited you? Do you feel safe where you live?"'].map(function(q,i){return e('div',{style:qStyle,key:'s'+i},q);})),
+    e('div',{className:'pearl'}, e('b',null,'Companion reference: '),'the full ',e('a',{href:'../index.html?page=pg_interview.md',target:'_blank',rel:'noopener'},'Interview & MSE Pocket Guide'),' is available in the library.')
+  );
+
+  return e('div',{className:'shell'},
+    header, tabs,
+    tab==='learn'?learn:(tab==='build'?build:(tab==='exemplar'?exemplar:language)),
+    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. Uses fictional composite scenarios only — no protected health information. Not a clinical decision-support device and not a substitute for supervised assessment or institutional policy.'),
+    e('footer',null,'Mental Status Exam — Teaching Module · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>

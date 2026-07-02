@@ -1,0 +1,461 @@
+# Mentalization Subsystem Implementation Plan
+
+> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Build a 3-surface mentalization subsystem (clinician formulation tool, family practice tool, PWA module) integrated into the ReConnect tools-suite architecture.
+
+**Architecture:** Two new single-file HTML tools + one PWA JSON module + one shared JS library + ~70 database records. All surfaces share a common `mentalizationContext` RCContext object and emit signals through RCSignals. The shared library (`rc-mentalization.js`) provides computation and validation but not content — content comes from the `mentalizing_exercises` database via `rc-data.js`.
+
+**Tech Stack:** React 18 (CDN UMD), vanilla CSS with `--rc-*` tokens, esbuild JSX precompilation, IndexedDB data caching, BroadcastChannel cross-tool context, Node.js QA harnesses.
+
+**Spec:** `docs/superpowers/specs/2026-03-14-mentalization-subsystem-design.md`
+
+---
+
+## 1. Implementation Architecture
+
+### Data Flow
+
+```
+                        MASTER DATABASE
+  databases/core/ -> mentalizing_exercises (17th database key)
+              |                              |
+    rc-data.js load()                build_mentalization_pwa_module.py
+              |                              |
+              v                              v
+     rc-mentalization.js           mentalization_module.json
+     (filter, compute,             (Schema A, self-contained
+      validate, write)              offline-first)
+        |      |                         |
+        v      v                         v
+   Compass   Family                PWA Module
+   (clinic)  (family)             (post-discharge)
+        |      |                         |
+        | writes | reads                 | standalone
+        v      v                         |
+   mentalizationContext                  |
+   (RCContext)                           |
+        |      |                         |
+        v      v                         v
+              RCSignals (10 signal types)
+    -> Relational State Map, Analytics Dashboard
+```
+
+### Component Interactions
+
+| From | To | Mechanism | Data |
+|------|----|-----------|------|
+| Master DB | Compass | rc-data.js `load(['mentalizing_exercises'])` | Pattern card definitions |
+| Master DB | Family tool | rc-data.js `load(['mentalizing_exercises'])` | Exercise content |
+| Master DB | PWA module | build_mentalization_pwa_module.py (build-time) | Embedded in JSON |
+| Compass | Family tool | RCContext `mentalizationContext` | Formulation, route, status bands |
+| Compass | Relational State Map | RCSignals (3 types) | Formulation events |
+| Family tool | Relational State Map | RCSignals (5 types) | Practice events |
+| PWA module | Signal buffer | RCSignals (2 types) | Offline-safe practice events |
+| rc-mentalization.js | Compass | Full API | Computation, validation, context I/O |
+| rc-mentalization.js | Family tool | Reader + filter | Context reading, exercise filtering |
+
+---
+
+## 2. File-Level Change Plan
+
+### New Files (14)
+
+| File | Type | Sprint |
+|------|------|--------|
+| `tools-suite/shared-libs/rc-mentalization.js` | Shared library | 1 |
+| `tools-suite/tools/Mentalization_Compass.html` | HTML shell | 1 |
+| `tools-suite/tools/generated/Mentalization_Compass.app.jsx` | JSX source | 1 |
+| `tools-suite/tools/generated/Mentalization_Compass.app.js` | Compiled bundle | 1 |
+| `scripts/precompile_mentalization_compass.sh` | Build script | 1 |
+| `tools-suite/qa/qa_harness_mentalization_compass.js` | QA harness | 1 |
+| `tools-suite/tools/Family_Mentalizing.html` | HTML shell | 2 |
+| `tools-suite/tools/generated/Family_Mentalizing.app.jsx` | JSX source | 2 |
+| `tools-suite/tools/generated/Family_Mentalizing.app.js` | Compiled bundle | 2 |
+| `scripts/precompile_family_mentalizing.sh` | Build script | 2 |
+| `tools-suite/qa/qa_harness_family_mentalizing.js` | QA harness | 2 |
+| `pwa/data/mentalization_module.json` | PWA module | 3 |
+| `databases/maintenance/build_mentalization_pwa_module.py` | Build script | 3 |
+| `tools-suite/qa/qa_harness_mentalization_pwa.js` | QA harness | 3 |
+
+### Modified Files (5)
+
+| File | Change | Sprint |
+|------|--------|--------|
+| `databases/maintenance/database_registry.py` | Register `mentalizing_exercises` database | 1 |
+| `databases/maintenance/schema_validator.py` | Add validation rules for mentalizing_exercises records | 1 |
+| `tools-suite/shared-libs/rc-data.js` | Add `'mentalizing_exercises'` to `ALL_KEYS` array (line ~52), update comment from "All 16" to "All 17" | 1 |
+| `tools-suite/build_netlify.py` | Add `build_mentalization_pwa_module.py` invocation to stage 6 (PWA data copy). Verify new tools auto-discovered in copy stages; if not, register Mentalization_Compass.html and Family_Mentalizing.html explicitly. | 3 |
+| `pwa/config/precache_manifest.json` | Regenerated by `scripts/generate_precache_manifest.py` after adding PWA module | 3 |
+
+### Content Authoring (Sprint 2-3, requires clinical input)
+
+~70 exercise records authored into master database under `mentalizing_exercises` key via the rc-database-steward workflow. Categories per the spec's database schema enum: perspective_taking (12-16, includes marked affect examples tagged with `situation_tag: "calm"` and `difficulty: "intermediate"`), pause_and_wonder (8-10), repair (6-8), communication (8-10), psychoed (6-8, includes daily prompts for PWA with `surface: "pwa"`). The 14 daily prompts and clinically nuanced vignettes require Josh's input — flag as a distinct content task. **Note:** Content authoring (T-MZ-019) is the most likely schedule risk since Sprints 2-3 depend on it and it requires clinical time.
+
+---
+
+## 3. Shared Infrastructure
+
+### rc-mentalization.js
+
+**Responsibility:** Computation, validation, and context I/O for the mentalization subsystem. Does NOT contain content — content is loaded from the database.
+
+**Exports (via `window.RCMentalization`):**
+
+| Export | Type | Used By |
+|--------|------|---------|
+| `OBSERVED_PATTERNS` | Object (5 situation groups, each with card schema: id, label, description, hidden MBT tags). These are structural definitions embedded in the lib — not clinical content from the database. ~20 card schemas, ~3 KB. | Compass Tab 1 |
+| `FORMULATION_SCHEMA` | Object (6 field definitions) | Compass Tab 2 |
+| `INTERVENTION_ROUTES` | Object (L2/L3/L4 with criteria) | Compass Tab 3 |
+| `computeStatusBands(patterns)` | Function -> descriptive labels | Compass Tab 2 |
+| `generateFormulationNarrative(formulation)` | Function -> string | Compass Tab 2 |
+| `filterExercises(route, ageGroup)` | Function -> filtered records | Family tool |
+| `writeMentalizationContext(data)` | Function -> void | Compass |
+| `readMentalizationContext()` | Function -> object or null | Family tool |
+| `validateMentalizationContext(obj)` | Function -> { valid, errors } | QA harnesses |
+| `validateExerciseRecord(record)` | Function -> { valid, errors } | QA harnesses |
+| `BANNED_TERMS` | Array of strings | QA harnesses |
+
+### mentalizing_exercises Database
+
+New 17th database key in master database. Each record has: `id`, `category`, `title`, `family_safe_label`, `body` (category-specific), `rss_layer`, `situation_tag`, `difficulty`, `age_group`, `mbt_dimension_tag` (internal), `pre_mentalizing_mode_tag` (internal), `surface`, `word_count`, `reading_level`.
+
+### Signal Contracts
+
+10 signal types across 3 surfaces. All follow existing `rc_signal_events_v1` schema with `sourceTool`, `rssLayer`, `signalType`, `signalValue`, `intensity`, `metadata`. Full contract table in spec Section 4.
+
+### mentalizationContext (RCContext)
+
+Single structured object with 6 top-level keys: `observedPatterns`, `formulation`, `statusBands`, `interventionRoute`, `dischargeSummary`, `prfq`. Written by Compass, read by Family tool, ignored by PWA. Full schema in spec Section 4.
+
+---
+
+## 4. Sprint Plan
+
+### Sprint 1: Foundation + Mentalization Compass
+
+**Goal:** Shared library, database registration, Compass HTML tool with all 4 tabs, QA harness.
+
+| Task | Description | Dependencies |
+|------|-------------|-------------|
+| 1.1 | Create rc-mentalization.js with OBSERVED_PATTERNS, FORMULATION_SCHEMA, BANNED_TERMS, context I/O, and validators | None |
+| 1.2 | Register mentalizing_exercises in database_registry.py and schema_validator.py | None |
+| 1.3 | Add mentalizing_exercises to rc-data.js ALL_KEYS | 1.2 |
+| 1.4 | Author seed exercise records (~10 starter records) via rc-database-steward | 1.2 |
+| 1.5 | Create Mentalization_Compass.html shell + app.jsx skeleton with 4-tab navigation | 1.1 |
+| 1.6 | Create precompile_mentalization_compass.sh | 1.5 |
+| 1.7 | Create qa_harness_mentalization_compass.js | 1.5 |
+| 1.8 | Implement Tab 1 (Observed Interaction Patterns) with pattern card selection | 1.1, 1.5 |
+| 1.9 | Implement Tab 2 (Formulation) with structured fields, status bands, narrative generator | 1.8 |
+| 1.10 | Implement Tab 3 (Intervention Route) with RSS-layered recommendations | 1.9 |
+| 1.11 | Implement Tab 4 (Discharge Summary) with all 8 fields | 1.10 |
+| 1.12 | Wire RCContext writes (mentalizationContext) and signal emission | 1.11 |
+
+### Sprint 2: Family Mentalizing Tool
+
+**Goal:** Family-facing practice tool with 4 modes, standalone + routed paths, localStorage persistence.
+
+| Task | Description | Dependencies |
+|------|-------------|-------------|
+| 2.1 | Create Family_Mentalizing.html shell + app.jsx skeleton with mode navigation | 1.1 |
+| 2.2 | Create precompile_family_mentalizing.sh | 2.1 |
+| 2.3 | Create qa_harness_family_mentalizing.js (including family-safe language scan) | 2.1 |
+| 2.4 | Implement Mode 1 (What's Behind the Behavior) with vignette rendering | 2.1, 1.4 |
+| 2.5 | Implement Mode 2 (Pause and Wonder) with standard + high-arousal paths | 2.1 |
+| 2.6 | Implement Mode 3 (Repair Together) with safety rule and fill-in templates | 2.1 |
+| 2.7 | Implement Mode 4 (Try Saying It This Way) with phrase pairs and starring | 2.1 |
+| 2.8 | Wire RCContext reading (mentalizationContext) for clinician-routed path | 2.4, 1.12 |
+| 2.9 | Wire signal emission (5 signal types) | 2.4-2.7 |
+| 2.10 | Implement "Take This Home" discharge export | 2.7 |
+| 2.11 | Author remaining exercise records to reach ~70 total (clinical input needed) | 1.4 |
+
+### Sprint 3: PWA Module + Discharge Integration
+
+**Goal:** Offline-first PWA module, build pipeline, precache integration.
+
+| Task | Description | Dependencies |
+|------|-------------|-------------|
+| 3.1 | Create build_mentalization_pwa_module.py (database -> Schema A transformation) | 1.4 |
+| 3.2 | Run build script to generate mentalization_module.json | 3.1 |
+| 3.3 | Regenerate precache_manifest.json via scripts/generate_precache_manifest.py | 3.2 |
+| 3.4 | Create qa_harness_mentalization_pwa.js | 3.2 |
+| 3.5 | Verify PWA module renders in Recovery Companion | 3.2 |
+| 3.6 | Author 14 daily practice prompts (clinical input needed) | None |
+| 3.7 | Modify build_netlify.py stage 6 to invoke build_mentalization_pwa_module.py | 3.1 |
+| 3.8 | Verify offline behavior (service worker cache, IndexedDB fallback) | 3.3 |
+
+### Sprint 4: Signal Integration + Polish
+
+**Goal:** End-to-end signal flow, Relational State Map visibility, cross-tool workflow testing.
+
+| Task | Description | Dependencies |
+|------|-------------|-------------|
+| 4.1 | Verify all 10 signals appear in Relational State Map | 1.12, 2.9 |
+| 4.2 | Test full clinical workflow: Compass -> Family tool -> PWA | All |
+| 4.3 | Test standalone Family tool path (no Compass formulation) | 2.8 |
+| 4.4 | Run all 3 QA harnesses, fix failures | All |
+| 4.5 | Verify build_netlify.py correctly copies all new files to _site/ | All |
+| 4.6 | Bundle budget check (Compass < 40 KB, Family < 45 KB, rc-mentalization.js < 20 KB) | All |
+
+---
+
+## 5. First Pull Request Scope
+
+### PR #1: "feat(mentalization): shared infrastructure + Compass skeleton"
+
+**Branch:** `feat/mentalization-compass-skeleton`
+
+**Scope:** The minimal viable foundation — shared library, database registration, Compass HTML shell with tab navigation, QA harness stub. NO full tab logic yet (that comes in subsequent commits on the same branch).
+
+**Files created:**
+
+| File | Content |
+|------|---------|
+| `tools-suite/shared-libs/rc-mentalization.js` | OBSERVED_PATTERNS, FORMULATION_SCHEMA, INTERVENTION_ROUTES, BANNED_TERMS, context I/O stubs, validators |
+| `tools-suite/tools/Mentalization_Compass.html` | HTML shell: 3 CSS imports, React 18 CDN, 7 shared lib scripts, skip link, root div, generated bundle ref |
+| `tools-suite/tools/generated/Mentalization_Compass.app.jsx` | React skeleton: 4-tab navigation (Observed Patterns / Formulation / Intervention Route / Discharge Summary), placeholder content per tab, localStorage persistence of selected tab |
+| `tools-suite/tools/generated/Mentalization_Compass.app.js` | Precompiled from JSX via esbuild |
+| `scripts/precompile_mentalization_compass.sh` | esbuild script: jsx loader, React.createElement factory, es2019 target |
+| `tools-suite/qa/qa_harness_mentalization_compass.js` | QA stub: file existence, RC-META tag, CSS/JS imports, skip link, no runtime Babel, bundle uses createRoot |
+
+**Files modified:**
+
+| File | Change |
+|------|--------|
+| `databases/maintenance/database_registry.py` | Add `mentalizing_exercises` entry |
+| `databases/maintenance/schema_validator.py` | Add validation rules for new database |
+| `tools-suite/shared-libs/rc-data.js` | Add `'mentalizing_exercises'` to ALL_KEYS (17th key), update comment |
+
+**What this PR does NOT include:**
+- No full Tab 1-4 implementation (just navigation + placeholders)
+- No exercise records in master database yet
+- No Family Mentalizing tool
+- No PWA module
+- No signal emission beyond stubs
+
+**Acceptance test:**
+1. `node tools-suite/qa/qa_harness_mentalization_compass.js` passes
+2. Compass opens in browser, shows 4 tabs with placeholder content
+3. Tab selection persists across page reload (localStorage)
+4. `rc-mentalization.js` loads without errors (`window.RCMentalization` exists)
+5. `RCMentalization.OBSERVED_PATTERNS.duringConflict` returns 4 card schemas (embedded in lib, no database needed)
+6. `RCMentalization.BANNED_TERMS` returns array of banned clinical terms
+7. `RCMentalization.validateMentalizationContext({})` returns `{ valid: false, errors: [...] }`
+
+---
+
+## 6. Acceptance Criteria
+
+### rc-mentalization.js
+
+- [ ] `window.RCMentalization` exists after script load
+- [ ] `OBSERVED_PATTERNS` contains 5 situation groups with 4 card schemas each (20 card schemas total). These are structural definitions embedded in the lib (id, label, description, MBT tags), not database content.
+- [ ] `FORMULATION_SCHEMA` contains 6 field definitions
+- [ ] `INTERVENTION_ROUTES` contains L2, L3, L4 entries with criteria and readiness indicators
+- [ ] `computeStatusBands([])` returns object with 4 keys, all set to lowest value
+- [ ] `computeStatusBands(allPatterns)` returns descriptive labels (never numbers)
+- [ ] `generateFormulationNarrative({...})` returns a coherent paragraph
+- [ ] `writeMentalizationContext(data)` writes to RCContext
+- [ ] `readMentalizationContext()` returns null when no context exists
+- [ ] `readMentalizationContext()` returns structured object after write
+- [ ] `validateMentalizationContext({})` returns `{ valid: false }`
+- [ ] `validateExerciseRecord({})` returns `{ valid: false }`
+- [ ] `BANNED_TERMS` contains at least: mentalizing, reflective functioning, pre-mentalizing, teleological, psychic equivalence, hypermentalizing, biobehavioral switch, MBT, RF, PRFQ
+- [ ] File size less than 20 KB
+- [ ] No MBT terminology in any exported function name or return value
+
+### Mentalization Compass
+
+- [ ] RC-META tag: `tool="Mentalization Compass" data-sync="mentalizing_exercises"`
+- [ ] Loads all 7 shared libs in correct order
+- [ ] Tab 1 renders 5 situation groups with selectable pattern cards
+- [ ] Tab 1 supports multi-select and free-text notes per group
+- [ ] Tab 2 renders 6 structured fields, all editable
+- [ ] Tab 2 shows 4 soft status bands (descriptive labels only)
+- [ ] Tab 2 generates editable narrative formulation
+- [ ] Tab 3 shows L2/L3/L4 intervention recommendations with entry criteria
+- [ ] Tab 3 exercises are selectable by clinician
+- [ ] Tab 4 renders all 8 discharge fields
+- [ ] Tab 4 includes recovery signals and re-collapse contexts
+- [ ] PRFQ section hidden by default, collapsible, includes disclaimer
+- [ ] Emits `formulation_completed` signal on Tab 2 completion
+- [ ] Emits `intervention_route_selected` signal on Tab 3 selection
+- [ ] Emits `discharge_rf_summary` signal on Tab 4 finalization
+- [ ] Writes complete `mentalizationContext` to RCContext
+- [ ] QA harness passes: `node tools-suite/qa/qa_harness_mentalization_compass.js`
+- [ ] Skip link present, ARIA landmarks present
+- [ ] No runtime Babel
+
+### Family Mentalizing
+
+- [ ] RC-META tag: `tool="Family Mentalizing" data-sync="mentalizing_exercises"`
+- [ ] Loads all 7 shared libs
+- [ ] Mode 1 renders vignettes with multiple interpretations (never "correct" answer)
+- [ ] Mode 1 vignettes tagged by age_group and situation_tag
+- [ ] Mode 2 standard path: pause -> name -> wonder (3 steps)
+- [ ] Mode 2 high-arousal path: pause -> name -> stabilize (triggered by "I can't think about them")
+- [ ] Mode 3 displays safety rule at entry ("after the heat has come down")
+- [ ] Mode 3 provides fill-in-the-blank repair templates
+- [ ] Mode 4 shows phrase pairs with starring capability
+- [ ] Standalone path works: all modes available when mentalizationContext is null
+- [ ] Clinician-routed path works: highlighted mode matches interventionRoute.currentLayer
+- [ ] Emits all 5 signal types
+- [ ] localStorage persists: fm_completed_exercises, fm_saved_repairs, fm_practice_history, fm_favorite_scripts
+- [ ] "Take This Home" generates printable discharge summary
+- [ ] Family-safe language scan passes: no BANNED_TERMS in rendered output
+- [ ] "Never implies certainty" scan passes: interpretations use "might," "may," "one possibility"
+- [ ] Crisis help accessible (footer/affordance)
+- [ ] QA harness passes: `node tools-suite/qa/qa_harness_family_mentalizing.js`
+
+### PWA Module
+
+- [ ] Valid Schema A JSON structure with 6 sections
+- [ ] contentType field present on all subsections (prose, exercise, script, daily_prompt)
+- [ ] 14 daily prompts in sections[4]
+- [ ] communityResources includes 988 and Crisis Text Line
+- [ ] All text at or below Flesch-Kincaid grade 8
+- [ ] No RCContext references in module content
+- [ ] Family-safe language scan passes on all text
+- [ ] Module precached by service worker
+- [ ] Renders correctly in Recovery Companion PWA
+- [ ] QA harness passes: `node tools-suite/qa/qa_harness_mentalization_pwa.js`
+
+### Database Integration
+
+- [ ] mentalizing_exercises registered in database_registry.py
+- [ ] schema_validator.py validates required fields (id, category, title, family_safe_label, rss_layer, surface)
+- [ ] rc-data.js ALL_KEYS contains 17 keys including mentalizing_exercises
+- [ ] `RCData.load(['mentalizing_exercises'])` returns exercise records
+- [ ] build_mentalization_pwa_module.py transforms records to Schema A
+- [ ] build_netlify.py stage 6 invokes build_mentalization_pwa_module.py before PWA data copy
+- [ ] build_netlify.py copies all new files to _site/ (both tool HTML + generated bundles + shared libs)
+
+### Cross-Surface Integration
+
+- [ ] Compass formulation -> Family tool receives via RCContext
+- [ ] Family tool works standalone when Compass not used
+- [ ] PWA module works offline with no RCContext
+- [ ] All 10 signals emit correctly and appear in localStorage buffer
+- [ ] Relational State Map can display mentalization signals
+- [ ] Full workflow: Compass -> Family -> PWA produces coherent clinical arc
+
+---
+
+## 7. Prioritized Ticket List
+
+| Priority | Ticket | Sprint | Dependencies | Effort |
+|----------|--------|--------|-------------|--------|
+| P0 | T-MZ-001: Create rc-mentalization.js shared library | 1 | None | L |
+| P0 | T-MZ-002: Register mentalizing_exercises database | 1 | None | S |
+| P0 | T-MZ-003: Add mentalizing_exercises to rc-data.js ALL_KEYS | 1 | T-MZ-002 | S |
+| P0 | T-MZ-004: Create Mentalization Compass HTML shell + skeleton | 1 | T-MZ-001 | M |
+| P0 | T-MZ-005: Create precompile + QA harness for Compass | 1 | T-MZ-004 | S |
+| P1 | T-MZ-006: Implement Compass Tab 1 (Observed Patterns) | 1 | T-MZ-004 | M |
+| P1 | T-MZ-007: Implement Compass Tab 2 (Formulation) | 1 | T-MZ-006 | L |
+| P1 | T-MZ-008: Implement Compass Tab 3 (Intervention Route) | 1 | T-MZ-007 | M |
+| P1 | T-MZ-009: Implement Compass Tab 4 (Discharge Summary) | 1 | T-MZ-008 | M |
+| P1 | T-MZ-010: Wire Compass signals + RCContext | 1 | T-MZ-009 | M |
+| P1 | T-MZ-011: Create Family Mentalizing HTML shell + skeleton | 2 | T-MZ-001 | M |
+| P1 | T-MZ-012: Create precompile + QA harness for Family tool | 2 | T-MZ-011 | S |
+| P1 | T-MZ-013: Implement Family Mode 1 (Behind the Behavior) | 2 | T-MZ-011, seed data | M |
+| P1 | T-MZ-014: Implement Family Mode 2 (Pause and Wonder) | 2 | T-MZ-011 | M |
+| P1 | T-MZ-015: Implement Family Mode 3 (Repair Together) | 2 | T-MZ-011 | M |
+| P1 | T-MZ-016: Implement Family Mode 4 (Try Saying It This Way) | 2 | T-MZ-011 | S |
+| P1 | T-MZ-017: Wire Family tool RCContext reading + signals | 2 | T-MZ-013-016, T-MZ-010 | M |
+| P1 | T-MZ-018: Implement "Take This Home" discharge export | 2 | T-MZ-016 | M |
+| P2 | T-MZ-019: Author ~70 exercise records (clinical input) | 2-3 | T-MZ-002 | XL |
+| P2 | T-MZ-020: Create build_mentalization_pwa_module.py | 3 | T-MZ-019 | M |
+| P2 | T-MZ-021: Generate mentalization_module.json | 3 | T-MZ-020 | S |
+| P2 | T-MZ-022: Create PWA QA harness | 3 | T-MZ-021 | S |
+| P2 | T-MZ-023: Regenerate precache manifest | 3 | T-MZ-021 | S |
+| P2 | T-MZ-024: Verify PWA offline behavior | 3 | T-MZ-023 | M |
+| P3 | T-MZ-025: End-to-end signal verification | 4 | All | M |
+| P3 | T-MZ-026: Full clinical workflow test | 4 | All | L |
+| P3 | T-MZ-027: Bundle budget verification | 4 | All | S |
+| P3 | T-MZ-028: Build pipeline verification | 4 | All | S |
+
+**Effort key:** S = small (< 1 hr), M = medium (1-3 hrs), L = large (3-6 hrs), XL = extra large (6+ hrs, needs clinical input)
+
+---
+
+## 8. Dependency Map
+
+```
+T-MZ-001 (rc-mentalization.js)
+  |-- T-MZ-004 (Compass shell)
+  |     |-- T-MZ-005 (precompile + QA)
+  |     |-- T-MZ-006 (Tab 1)
+  |     |     +-- T-MZ-007 (Tab 2)
+  |     |           +-- T-MZ-008 (Tab 3)
+  |     |                 +-- T-MZ-009 (Tab 4)
+  |     |                       +-- T-MZ-010 (signals + context)
+  |     |                             +-- T-MZ-017 (Family context)
+  |     |                                   +-- T-MZ-025 (e2e signals)
+  |     +-- T-MZ-026 (full workflow)
+  +-- T-MZ-011 (Family shell)
+        |-- T-MZ-012 (precompile + QA)
+        |-- T-MZ-013 (Mode 1) --- needs T-MZ-019 (exercise records)
+        |-- T-MZ-014 (Mode 2)
+        |-- T-MZ-015 (Mode 3)
+        |-- T-MZ-016 (Mode 4)
+        |     +-- T-MZ-018 (Take This Home)
+        +-- T-MZ-017 (context + signals)
+
+T-MZ-002 (database registration)
+  |-- T-MZ-003 (ALL_KEYS)
+  +-- T-MZ-019 (exercise records)
+        +-- T-MZ-020 (PWA build script)
+              +-- T-MZ-021 (PWA module)
+                    |-- T-MZ-022 (PWA QA)
+                    |-- T-MZ-023 (precache)
+                    |     +-- T-MZ-024 (offline verify)
+                    +-- T-MZ-026 (full workflow)
+
+T-MZ-027 (bundle budgets) <- All implementation complete
+T-MZ-028 (build pipeline) <- All implementation complete
+```
+
+**Critical path:** T-MZ-001 -> T-MZ-004 -> T-MZ-006 -> T-MZ-007 -> T-MZ-008 -> T-MZ-009 -> T-MZ-010 -> T-MZ-017 -> T-MZ-025 -> T-MZ-026
+
+**Parallelizable:**
+- T-MZ-001 and T-MZ-002 can run in parallel (no dependency)
+- T-MZ-013, T-MZ-014, T-MZ-015, T-MZ-016 can run in parallel (independent modes)
+- T-MZ-019 (content authoring) can start as soon as T-MZ-002 completes
+- T-MZ-005 and T-MZ-006 can run in parallel (QA stub vs Tab 1 implementation)
+
+---
+
+## 9. First PR Exact Scope
+
+### PR #1: `feat(mentalization): shared infrastructure + Compass skeleton`
+
+**Branch:** `feat/mentalization-compass-skeleton`
+
+**What ships:**
+1. `rc-mentalization.js` with full OBSERVED_PATTERNS, FORMULATION_SCHEMA, INTERVENTION_ROUTES, BANNED_TERMS, context read/write, and validators
+2. `Mentalization_Compass.html` shell with correct imports
+3. `Mentalization_Compass.app.jsx` skeleton with 4-tab navigation + placeholder content
+4. `Mentalization_Compass.app.js` precompiled bundle
+5. `precompile_mentalization_compass.sh`
+6. `qa_harness_mentalization_compass.js` (file existence, runtime contract, RC-META)
+7. Database registration in `database_registry.py` and `schema_validator.py`
+8. `mentalizing_exercises` added to `rc-data.js` ALL_KEYS
+
+**What does NOT ship:**
+- No Tab 1-4 full implementation (just navigation skeleton)
+- No exercise records in master database
+- No Family Mentalizing tool
+- No PWA module
+- No signal emission beyond console.log stubs
+
+**PR checklist:**
+- [ ] `node tools-suite/qa/qa_harness_mentalization_compass.js` exits 0
+- [ ] `bash scripts/precompile_mentalization_compass.sh` succeeds
+- [ ] Compass opens in browser with 4 navigable tabs
+- [ ] `window.RCMentalization` is accessible in console
+- [ ] `RCMentalization.OBSERVED_PATTERNS.duringConflict` returns 4 cards
+- [ ] `RCMentalization.BANNED_TERMS.length >= 10`
+- [ ] `RCMentalization.validateMentalizationContext({})` returns `{ valid: false }`
+- [ ] No runtime Babel in HTML source
+- [ ] Skip link present and functional
+- [ ] Tab selection persists in localStorage

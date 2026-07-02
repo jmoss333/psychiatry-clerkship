@@ -1,0 +1,433 @@
+
+
+
+
+Acute Agitation in Adult Inpatient and Emergency Psychiatry: Comprehensive Evidence Review
+
+
+Scope and Framing
+
+
+This review synthesizes current evidence on the pharmacologic and nonpharmacologic management of acute agitation in adult psychiatric emergency and inpatient settings. It integrates Project BETA (Best practices in Evaluation and Treatment of Agitation) consensus statements, ACEP and APA guidance, systematic reviews, network meta-analyses, and comparative medication trials through mid-2026. The review addresses verbal de-escalation, trauma-informed care, pharmacotherapy (including route comparisons and combination strategies), eight special populations, restraint/seclusion reduction, and safety outcomes. It concludes with a risk-stratified PRN algorithm, medication table by scenario, contraindications summary, and a resident bedside checklist.
+
+---
+
+I. Verbal De-Escalation
+
+
+Project BETA Framework
+
+
+Project BETA, published in 2012 by the American Association for Emergency Psychiatry (AAEP), established noncoercive de-escalation as the intervention of choice for acute agitation.[1] The De-Escalation Workgroup (Richmond et al., 2012) articulated a 3-step paradigm: (1) verbally engage the patient, (2) establish a collaborative relationship, and (3) verbally de-escalate the patient out of the agitated state.[1] Four overarching objectives guide every encounter: ensure safety, help the patient regain behavioral control, avoid restraint, and avoid coercive interventions that escalate agitation.[1]
+
+The workgroup's 10 Domains of De-Escalation provide a structured framework encompassing: respecting personal space, being non-provocative, establishing verbal contact, being concise, identifying wants and feelings, listening closely, agreeing or agreeing to disagree, setting clear limits, offering choices and optimism, and debriefing the patient and staff.[1] Effective de-escalation should take approximately 5–10 minutes to return an agitated person to a calm state.[2]
+
+APA Guidance and the ERASER Mnemonic
+
+
+The APA Resource Document on Seclusion or Restraint (2022) designates verbal de-escalation as first-line treatment, effective for a majority of patients in behavioral health crisis within 5 minutes.[3] The APA recommends all staff—including security and observation personnel—be trained in de-escalation, referencing the ERASER mnemonic as a teaching tool.[3] Environmental interventions endorsed by the APA include quiet rooms, sensory rooms, music, warm showers, weighted blankets, aromatherapy, exercise, and 1:1 observation with de-escalation-trained staff.[3]
+
+Effectiveness Evidence
+
+
+A cluster-randomized controlled trial across all psychiatric hospitals in Slovenia demonstrated that de-escalation training reduced aggressive events by 73% (IRR 0.268, 95% CI 0.221–0.342), severe aggressive events by 86%, and physical restraints by 70% compared to controls.[4] Implementation of Project BETA-aligned initiatives at a large county hospital ED reduced physical assaults on emergency medicine residents from 28% to 11.3% (p = 0.032), though gains eroded when in-person training was disrupted by COVID-19.[5] A systematic review of de-escalation training in health professions education (56 studies) found that curricula incorporating both didactic education and active skills practice (role-play/simulation) produced the strongest evidence of effectiveness.[6]
+
+Critically, two Cochrane systematic reviews found no RCTs meeting inclusion criteria for de-escalation techniques alone, highlighting that the evidence base remains predominantly consensus-driven and observational despite universal guideline endorsement.[7][2]
+
+---
+
+II. Trauma-Informed Approaches
+
+
+Trauma-informed care (TIC) applied to agitation management rests on three core recognitions: the prevalence of trauma, how trauma affects all individuals involved, and the need to prevent retraumatization.[8] The SAMHSA model emphasizes five interpersonal principles: safety, trustworthiness, choice, collaboration, and empowerment.[9]
+
+The Six Core Strategies (6CS) framework—developed by the National Association of State Mental Health Program Directors—is the most extensively studied TIC-based restraint reduction model. A federally funded multisite study of 43 inpatient psychiatric facilities found that stabilized 6CS implementation reduced the percentage of patients secluded by 17% (p = .002), seclusion hours by 19% (p = .001), and proportion restrained by 30% (p = .03).[10] The Pennsylvania State Hospital System achieved near-complete cessation of mechanical restraint and seclusion over a 10-year period through continuous 6CS adherence, with all safety measures (assaults, aggression, self-injurious behavior) improved or unchanged.[11] A cluster-RCT in Finnish forensic wards demonstrated that seclusion-restraint-observation days declined from 30% to 15% in intervention wards without any increase in violence (p = .91).[12]
+
+A scoping review of 31 studies found that TIC approaches (most commonly 6CS and the Sanctuary Model) were associated with decreased restraint and seclusion rates, though most evidence remains preliminary.[13]
+
+---
+
+III. Pharmacotherapy: Comparative Evidence
+
+
+Antipsychotic–Benzodiazepine Combinations vs. Monotherapy
+
+
+The largest and most recent evidence comes from the 2026 individual participant data network meta-analysis (IPD-NMA) by Siafis et al. (18 trials, 3,411 participants), published in The Lancet Psychiatry.[14] For moderate agitation, antipsychotic–benzodiazepine combinations were substantially more effective than haloperidol monotherapy for achieving sedation within 15–30 minutes (OR 12.93, 95% CrI 3.00–50.91; RR 1.58), followed by benzodiazepines alone (OR 5.52, 95% CrI 1.37–21.02) and other antipsychotics (OR 4.54, 95% CrI 1.35–14.45).[14] For severe agitation, combinations remained superior (OR 4.86, 95% CrI 1.28–17.54), but results for monotherapy were uncertain.[14] Haloperidol monotherapy was among the least effective options and carried the highest risk of extrapyramidal side effects; benzodiazepines (alone or in combination) increased hypotension risk.[14] Confidence in all estimates was very low.[14]
+
+The Cochrane review on haloperidol for psychosis-induced aggression found that haloperidol alone produced significantly more adverse effects than haloperidol + promethazine (RR 2.01, 95% CI 1.07–3.80), with acute dystonia so common in the haloperidol-alone arm that the trial steering group deemed continuing monotherapy unethical.[15]
+
+Oral vs. Intramuscular Strategies
+
+
+A landmark quality-improvement study (n = 1,178 prospectively observed patients) from a safety-net ED found no difference in time to adequate sedation between oral and IM medications: median 15 minutes for both routes (median difference 1 min, 95% CI −0.6 to 2.6).[16] Additional sedation rates and adverse drug reaction rates were comparable.[16] This finding supports the Project BETA and APA recommendation to offer oral medications first whenever patients are cooperative.[3][17]
+
+
+
+Expert Tiered Rankings (Stetson & Osser, 2022)
+
+
+Based on qualitative synthesis of meta-analyses and Cochrane reviews:[25]
+
+
+
+IM Olanzapine + Benzodiazepine: The FDA–ACEP Discordance
+
+
+The FDA label warns against concomitant IM olanzapine and parenteral benzodiazepines due to potential for excessive sedation and cardiorespiratory depression.[28][29] Postmarketing data identified 29 fatalities among an estimated 539,000 exposures, with 66% involving concomitant benzodiazepines.[30] However, a large retrospective ED study (n = 693) found no difference in intubation rates between olanzapine-only (3.8%) and olanzapine + benzodiazepine (3.5%; difference 0.3%, 95% CI −3.0% to 3.7%).[31] The ACEP clinical policy recommends coadministration for severe agitation, creating a guideline–label discordance that clinicians must navigate.[31]
+
+---
+
+IV. Special Populations
+
+
+Older Adults
+
+
+Nonpharmacologic strategies are first-line per AGS 2023 Beers Criteria guidance.[32] Benzodiazepines should generally be avoided due to cognitive impairment, falls, and delirium risk; a Geriatric ED Guidelines 2.0 systematic review found midazolam had the highest adverse event rate (53%; OR 5.25 vs. haloperidol, 95% CI 2.64–10.45).[33] Quetiapine was the only agent with lower adverse events than haloperidol (OR 0.27, 95% CI 0.08–0.97).[33] All antipsychotics carry an FDA black box warning for increased mortality in dementia-related psychosis.[34] Recommended starting doses: quetiapine 12.5–25 mg PO, olanzapine 2.5–5 mg PO/IM, haloperidol 0.5–1 mg PO/IM.[35]
+
+Pregnancy
+
+
+No efficacy or safety RCTs exist for acute agitation management in pregnancy.[36] Haloperidol (high-potency antipsychotic) is the most commonly administered agent, based on retrospective data from a psychiatric emergency service.[36][37] Lorazepam is preferred among benzodiazepines due to lack of active metabolites, though 20–40% of neonates exposed in late pregnancy develop withdrawal symptoms.[38] Nonpharmacologic approaches should be attempted first.[37]
+
+Alcohol/Substance Intoxication
+
+
+Droperidol (5–10 mg IM) or olanzapine (where droperidol is unavailable) are recommended first-line for undifferentiated agitation including intoxication.[39][40] Benzodiazepines are specifically indicated for stimulant intoxication and alcohol/sedative-hypnotic withdrawal.[39][41] For alcohol withdrawal delirium, benzodiazepines should be administered IV to achieve light somnolence; antipsychotics may be used as adjuncts but not monotherapy.[41]
+
+Delirium
+
+
+Nonpharmacologic multicomponent interventions are the cornerstone.[42][32] No medications are FDA-approved for delirium.[34] When pharmacotherapy is needed for severe agitation, second-generation antipsychotics (quetiapine, olanzapine, risperidone) are preferred over haloperidol for faster onset and fewer EPS.[34] Benzodiazepines should be avoided unless the etiology is alcohol/benzodiazepine withdrawal or end-of-life delirium.[42][43] Trazodone is an alternative with lower EPS and QTc risk.[44]
+
+Autism Spectrum Disorder / Intellectual Developmental Disability
+
+
+Environmental modification is critical: quiet rooms, dimmable lights, reduced stimulation, clear/concrete communication, and family involvement.[45] Risperidone and aripiprazole are the only FDA-approved medications for irritability/aggression in ASD, with meta-analytic effect sizes of SMD 1.07 and 1.18, respectively.[46][47] Evaluate for organic causes (pain, infections) especially in nonverbal patients.[45] No specific RCTs exist for acute agitation management in ASD/IDD populations in emergency settings.
+
+QTc Prolongation
+
+
+Ziprasidone and iloperidone carry the highest QTc prolongation risk among antipsychotics; aripiprazole and lurasidone have minimal risk.[48] Benzodiazepines do not prolong QTc and are a reasonable alternative.[49] A clinical decision analysis found quetiapine optimal for delirium patients with baseline QTc ≥450 ms.[50] The Association of Medicine and Psychiatry recommends baseline ECG for patients with risk score ≥2; if QTc >500 ms, medication adjustments should be considered.[51] A secondary analysis of the MIND-USA trial found that neither haloperidol nor ziprasidone was associated with clinically significant QTc changes compared to placebo in ICU patients with normal baseline QTc.[52]
+
+Parkinson Disease
+
+
+Avoid all dopamine D2-blocking antipsychotics (haloperidol, olanzapine, risperidone, ziprasidone, aripiprazole), which worsen parkinsonism.[53][54] Only three antipsychotics are considered acceptable: pimavanserin (FDA-approved for PD psychosis), clozapine (efficacious but requires REMS), and quetiapine (most commonly prescribed, generally well tolerated).[53][55] For acute agitation, short-acting benzodiazepines (lorazepam, alprazolam) are the mainstay.[56] Optimize motor fluctuation treatment and taper anxiogenic antiparkinsonian drugs in order: anticholinergics → MAO-B inhibitors → amantadine → dopamine agonists → reduce levodopa.[56]
+
+Catatonia
+
+
+Recognition is critical: catatonia presents in 5–18% of psychiatric inpatients.[57] Lorazepam is both diagnostic and therapeutic—the lorazepam challenge test (1–2 mg IV) has response rates of 66–100%.[57] Scheduled lorazepam (minimum TID, up to 16 mg/day) is first-line treatment.[57][58] ECT is second-line, improving 80–100% of cases including up to 60% of benzodiazepine-refractory cases.[58] NMDA receptor antagonists (amantadine, memantine) are third-line options.[59][58] Antipsychotics may worsen catatonia and should be held; if needed for coexisting psychosis, clozapine is preferred.[59][57]
+
+---
+
+V. Restraint and Seclusion Reduction
+
+
+The evidence consistently demonstrates that multimodal, trauma-informed programs can substantially reduce restraint and seclusion without increasing violence or adverse safety outcomes. The Pennsylvania State Hospital System's 10-year experience with 6CS showed physical restraint duration fell by 64% (6.6 to 2.4 minutes, p < .001) while all safety measures improved or were unchanged.[11] The Finnish cluster-RCT confirmed no increase in violence with seclusion-restraint reduction (p = .91 for between-group difference).[12] An ED-based agitation code team achieved a 27.3% proportionate decrease in restraint rates over 5 years.[60]
+
+The CMS Inpatient Psychiatric Facility Quality Reporting program, requiring public reporting of restraint and seclusion measures, reduced restraint duration by 49% and seclusion by 54%.[61] Joint Commission 2024/2025 updated standards (effective January 1, 2025) require continuous in-person observation, regular interval assessments, physician evaluation before order expiration, and face-to-face evaluation within 1 hour of initiation.[62]
+
+---
+
+VI. Safety Outcomes and Monitoring
+
+
+Staff Safety
+
+
+Government-sector mental health workers experience the highest rate of nonfatal workplace violence at 77.1 incidents per 1,000 workers.[8] In a prospective ED study, staff received injuries in 12% of sedation events.[63] The APA 2025 resource document endorses the Assaulted Staff Action Program (ASAP) for post-assault support.[8]
+
+Patient Adverse Events
+
+
+A prospective Australian study of 904 patients receiving parenteral sedation found 15.9% experienced at least one adverse event, most commonly oxygen desaturation (7.4%), airway obstruction (3.6%), and bradycardia (1.9%). Risk factors included age ≥65 (OR 2.8), multiple sedatives within 60 minutes (OR 2.1), and alcohol intoxication (OR 1.8).[64] In older adults, adverse events occurred in 16.8% of patients, with midazolam posing the highest risk.[33]
+
+Post-Sedation Monitoring Protocol
+
+
+Expert recommendations for post-sedation monitoring include, at minimum: regular vital signs, level of sedation assessment, and continuous pulse oximetry (without supplemental oxygen); end-tidal CO₂ monitoring when available.[39] Clinical trials typically employed 1:1 nursing with sedation level and vital sign monitoring at 10, 20, 30, 45, and 60 minutes post-dose, along with cardiac rhythm monitoring.[22] The British National Formulary recommends monitoring for a minimum of 4 hours following IM antipsychotic administration.[65]
+
+---
+
+VII. Risk-Stratified PRN Algorithm
+
+
+
+
+---
+
+VIII. Medication Table by Scenario
+
+
+
+
+---
+
+IX. Key Contraindications Summary
+
+
+
+
+---
+
+X. Resident Bedside Checklist for Acute Agitation
+
+
+□ SAFETY FIRST
+
+- Ensure clear exit path; remove potential weapons from environment
+
+- Activate team response if patient is violent or imminently dangerous
+
+- Maintain ≥2 arm lengths of personal space
+
+□ ASSESS
+
+- Vital signs (HR, BP, SpO₂, temperature, glucose) when safely obtainable
+
+- Rapid etiology screen: psychosis vs. delirium vs. intoxication/withdrawal vs. medical vs. catatonia
+
+- Check medication list for QT-prolonging drugs; review allergies
+
+- Screen for special populations: age ≥65, pregnancy, Parkinson disease, ASD/IDD, known QTc prolongation
+
+□ DE-ESCALATE (Project BETA 10 Domains)
+
+- Respect personal space; use calm, non-provocative tone
+
+- Introduce yourself; establish verbal contact concisely
+
+- Identify wants and feelings; listen actively
+
+- Offer choices ("Would you prefer a pill or a drink?")
+
+- Set clear, enforceable limits
+
+- Allow 5–10 minutes for de-escalation before pharmacotherapy
+
+□ OFFER ORAL MEDICATION FIRST
+
+- Olanzapine 5–10 mg ODT, OR lorazepam 1–2 mg PO, OR haloperidol 5 mg + lorazepam 2 mg PO
+
+- Frame as collaborative: "This medication can help you feel calmer"
+
+- Document patient preference and response
+
+□ IF ORAL REFUSED OR INEFFECTIVE → IM MEDICATION
+
+- Select agent based on etiology and population (see medication table)
+
+- Default: IM olanzapine 10 mg, OR IM haloperidol 5 mg + promethazine 25–50 mg, OR IM droperidol 5–10 mg
+
+- Do not combine IM olanzapine with parenteral benzodiazepine (FDA label)[28]
+
+- Reassess in 15–30 minutes; may repeat dose once
+
+□ POST-MEDICATION MONITORING
+
+- Continuous pulse oximetry (no supplemental O₂ unless SpO₂ <92%)
+
+- Vital signs + sedation level at 10, 20, 30, 45, 60 minutes post-dose[22]
+
+- Assess for: airway compromise, SpO₂ <90%, SBP <90, dystonic reactions, seizures, vomiting
+
+- ECG within 30 minutes of sedation if QTc-prolonging agent used[22]
+
+- Patient should remain recumbent if drowsy; assess orthostatic vitals before ambulation[29]
+
+- Monitor for minimum 4 hours after IM antipsychotic[65]
+
+□ RESTRAINT (LAST RESORT ONLY)
+
+- Document less restrictive interventions attempted and failed
+
+- Physician order required; specify type, duration, and clinical justification
+
+- Face-to-face evaluation within 1 hour of initiation (CMS requirement)[3]
+
+- Maximum order duration: 4 hours for adults (Joint Commission)[62]
+
+- Continuous in-person observation; reassess readiness for discontinuation at each interval[62]
+
+- Pulse, BP, range of motion every 15 minutes; nutrition/hydration/elimination ongoing[68]
+
+□ DEBRIEF
+
+- Debrief with patient after de-escalation (trauma-informed practice)
+
+- Debrief with team; document in chart
+
+- Report any staff or patient injuries per institutional protocol
+
+---
+
+XI. Evidence Gaps and Emerging Data
+
+
+Several critical uncertainties persist. No RCTs of verbal de-escalation alone have met Cochrane inclusion criteria, meaning the universal first-line recommendation rests on consensus and observational data.[7][2] The sustainability of restraint reduction programs without external oversight remains a significant concern, as demonstrated by the resumption of high seclusion/restraint use when 6CS adherence was discontinued.[69] The FDA warning against IM olanzapine + parenteral benzodiazepines conflicts with emerging ED safety data and ACEP recommendations, creating unresolved clinical uncertainty.[31] Evidence on equity in agitation management is limited, though some data suggest disproportionate restraint use among Black patients.[70] The role of underlying etiology in treatment selection remains poorly studied in comparative trials.[14] Emerging agents and formulations—including sublingual dexmedetomidine and novel rapid-acting formulations—may expand the therapeutic armamentarium but lack robust agitation-specific trial data.
+
+---
+
+XII. Summary
+
+
+The totality of evidence supports a stepwise, etiology-informed approach to acute agitation: verbal de-escalation and environmental modification as universal first-line interventions, oral medication offered before intramuscular when feasible, and pharmacotherapy guided by clinical scenario and patient-specific factors. Haloperidol monotherapy should no longer be considered standard practice given its inferior efficacy and high EPS risk.[14][15] Antipsychotic–benzodiazepine combinations appear most effective for rapid tranquilization but carry increased hypotension risk.[14] Trauma-informed, multimodal programs (particularly the Six Core Strategies) can substantially reduce restraint and seclusion without compromising safety.[11][12] Sustained organizational commitment, ongoing training, and external oversight are essential to maintain gains.
+
+---
+
+XIII. Top 15 References
+
+
+1. Richmond JS et al. Verbal De-Escalation of the Agitated Patient: Consensus Statement of the AAEP Project BETA De-Escalation Workgroup. West J Emerg Med. 2012.
+
+2. Wilson MP et al. The Psychopharmacology of Agitation: Consensus Statement of the AAEP Project BETA Psychopharmacology Workgroup. West J Emerg Med. 2012.
+
+3. Knox DK, Holloman GH. Use and Avoidance of Seclusion and Restraint: Consensus Statement of the AAEP Project BETA. West J Emerg Med. 2012.
+
+4. Siafis S et al. Comparative Effectiveness and Safety of Pharmacological Treatments for Rapid Tranquilisation: IPD Network Meta-Analysis. Lancet Psychiatry. 2026.
+
+5. Nazarian DJ et al. ACEP Clinical Policy: Critical Issues in the Diagnosis and Management of the Adult Psychiatric Patient in the ED. Ann Emerg Med. 2017.
+
+6. APA Resource Document on Seclusion or Restraint. 2022.
+
+7. Cole JB et al. Oral Medications for Treating Agitation in a Safety Net Emergency Department. JAMA Netw Open. 2025.
+
+8. Stetson SR, Osser DN. Psychopharmacology of Agitation in Acute Psychotic and Manic Episodes. Curr Opin Psychiatry. 2022.
+
+9. Ostinelli EG et al. Haloperidol for Psychosis-Induced Aggression or Agitation (Rapid Tranquillisation). Cochrane Database Syst Rev. 2017.
+
+10. Zaman H et al. Benzodiazepines for Psychosis-Induced Aggression or Agitation. Cochrane Database Syst Rev. 2017.
+
+11. Martel ML et al. Randomized Double-Blind Trial of IM Droperidol, Ziprasidone, and Lorazepam for Acute Agitation. Acad Emerg Med. 2021.
+
+12. Wieman DA et al. Multisite Study of an Evidence-Based Practice to Reduce Seclusion and Restraint. Psychiatr Serv. 2014.
+
+13. Celofiga A et al. Effectiveness of De-Escalation in Reducing Aggression and Coercion: A Cluster RCT. Front Psychiatry. 2022.
+
+14. Heckers S, Walther S. Catatonia. N Engl J Med. 2023.
+
+15. Isoardi KZ et al. What Is the Best Approach for Parenteral Sedation to Manage Severe Acute Behavioral Disturbance? Clin Toxicol. 2026.
+
+---
+
+Would you like to explore the evidence on specific dosing protocols and monitoring strategies for ketamine use in acute agitation, including the reduced-dose (2 mg/kg) approach and its safety profile compared to standard dosing?
+
+References
+Verbal De-Escalation of the Agitated Patient: Consensus Statement of the American Association for Emergency Psychiatry Project BETA De-Escalation Workgroup. Richmond JS, Berlin JS, Fishkind AB, et al. The Western Journal of Emergency Medicine. 2012;13(1):17-25. doi:10.5811/westjem.2011.9.6864.
+De-Escalation Techniques for Managing Non-Psychosis Induced Aggression in Adults. Spencer S, Johnson P, Smith IC. The Cochrane Database of Systematic Reviews. 2018;7:CD012034. doi:10.1002/14651858.CD012034.pub2.
+Seclusion or Restraint. American Psychiatric Association (2022).
+Effectiveness of De-Escalation in Reducing Aggression and Coercion in Acute Psychiatric Units. A Cluster Randomized Study. Celofiga A, Kores Plesnicar B, Koprivsek J, et al. Frontiers in Psychiatry. 2022;13:856153. doi:10.3389/fpsyt.2022.856153.
+Reducing Physical Assaults on Residents Through Implementation of Project BETA: Best Practices in the Evaluation and Treatment of Agitation. Roppolo L, Choe JL, Beyer L, et al. AEM Education and Training. 2025;9(1):e11064. doi:10.1002/aet2.11064.
+Best Practices for Teaching Verbal De-Escalation in Health Professions Education: A Systematic Review. Jameyfield EL, Suh M, Hill-Ricciuti A, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2026;101(7):869-881. doi:10.1093/acamed/wvag026.
+De-Escalation Techniques for Psychosis-Induced Aggression or Agitation. Du M, Wang X, Yin S, et al. The Cochrane Database of Systematic Reviews. 2017;4:CD009922. doi:10.1002/14651858.CD009922.pub2.
+Resource Document on Prevention of Patient Assaults on Mental Healthcare Employees in Psychiatric Healthcare Settings. Jose A. Arriola Vigo MD MPH, Erick H. Cheung MD, Suliman El-Amin MD, et al. American Psychiatric Association (2025).
+Clinical Update: Child and Adolescent Behavioral Health Care in Community Systems of Care. Journal of the American Academy of Child and Adolescent Psychiatry. 2023;62(4):367-384. doi:10.1016/j.jaac.2022.06.001.
+Multisite Study of an Evidence-Based Practice to Reduce Seclusion and Restraint in Psychiatric Inpatient Facilities. Wieman DA, Camacho-Gonsalves T, Huckshorn KA, Leff S. Psychiatric Services (Washington, D.C.). 2014;65(3):345-51. doi:10.1176/appi.ps.201300210.
+Effects of Ending the Use of Seclusion and Mechanical Restraint in the Pennsylvania State Hospital System, 2011-2020. Smith GM, Altenor A, Altenor RJ, et al. Psychiatric Services (Washington, D.C.). 2023;74(2):173-181. doi:10.1176/appi.ps.202200004.
+Cluster-Randomized Controlled Trial of Reducing Seclusion and Restraint in Secured Care of Men With Schizophrenia. Putkonen A, Kuivalainen S, Louheranta O, et al. Psychiatric Services (Washington, D.C.). 2013;64(9):850-5. doi:10.1176/appi.ps.201200393.
+A Scoping Review of Trauma Informed Approaches in Acute, Crisis, Emergency, and Residential Mental Health Care. Saunders KRK, McGuinness E, Barnett P, et al. BMC Psychiatry. 2023;23(1):567. doi:10.1186/s12888-023-05016-z.
+Comparative Effectiveness and Safety of Pharmacological Treatments for Rapid Tranquilisation in Emergency Settings: A Systematic Review and Individual Participant Data Network Meta-Analysis. Siafis S, Philipona F, Nomura N, et al. The Lancet. Psychiatry. 2026;13(7):567-580. doi:10.1016/S2215-0366(26)00097-0.
+Haloperidol for Psychosis-Induced Aggression or Agitation (Rapid Tranquillisation). Ostinelli EG, Brooke-Powney MJ, Li X, Adams CE. The Cochrane Database of Systematic Reviews. 2017;7:CD009377. doi:10.1002/14651858.CD009377.pub3.
+Oral Medications for Treating Agitation in a Safety Net Emergency Department. Cole JB, Hurreh KM, Taghizadeh LA, et al. JAMA Network Open. 2025;8(12):e2551683. doi:10.1001/jamanetworkopen.2025.51683.
+The Psychopharmacology of Agitation: Consensus Statement of the American Association for Emergency Psychiatry Project Beta Psychopharmacology Workgroup. Wilson MP, Pepper D, Currier GW, Holloman GH, Feifel D. The Western Journal of Emergency Medicine. 2012;13(1):26-34. doi:10.5811/westjem.2011.9.6866.
+Evidence-Based Review of Pharmacotherapy for Acute Agitation. Part 1: Onset of Efficacy. Zun LS. The Journal of Emergency Medicine. 2018;54(3):364-374. doi:10.1016/j.jemermed.2017.10.011.
+Efficacy and Safety of Loxapine for Inhalation in the Treatment of Agitation in Patients With Schizophrenia: A Randomized, Double-Blind, Placebo-Controlled Trial. Allen MH, Feifel D, Lesem MD, et al. The Journal of Clinical Psychiatry. 2011;72(10):1313-21. doi:10.4088/JCP.10m06011yel.
+Rapid Acute Treatment of Agitation in Individuals With Schizophrenia: Multicentre, Randomised, Placebo-Controlled Study of Inhaled Loxapine. Lesem MD, Tran-Johnson TK, Riesenberg RA, et al. The British Journal of Psychiatry : The Journal of Mental Science. 2011;198(1):51-8. doi:10.1192/bjp.bp.110.081513.
+Intramuscular Olanzapine for Agitated Patients: A Systematic Review and Meta-Analysis of Randomized Controlled Trials. Kishi T, Matsunaga S, Iwata N. Journal of Psychiatric Research. 2015;68:198-209. doi:10.1016/j.jpsychires.2015.07.005.
+Intramuscular Midazolam, Olanzapine, or Haloperidol for the Management of Acute Agitation: A Multi-Centre, Double-Blind, Randomised Clinical Trial. Chan EW, Lao KSJ, Lam L, et al. EClinicalMedicine. 2021;32:100751. doi:10.1016/j.eclinm.2021.100751.
+Intramuscular Midazolam, Olanzapine, Ziprasidone, or Haloperidol for Treating Acute Agitation in the Emergency Department. Klein LR, Driver BE, Miner JR, et al. Annals of Emergency Medicine. 2018;72(4):374-385. doi:10.1016/j.annemergmed.2018.04.027.
+Randomized Double-Blind Trial of Intramuscular Droperidol, Ziprasidone, and Lorazepam for Acute Undifferentiated Agitation in the Emergency Department. Martel ML, Driver BE, Miner JR, Biros MH, Cole JB. Academic Emergency Medicine : Official Journal of the Society for Academic Emergency Medicine. 2021;28(4):421-434. doi:10.1111/acem.14124.
+Psychopharmacology of Agitation in Acute Psychotic and Manic Episodes. Stetson SR, Osser DN. Current Opinion in Psychiatry. 2022;35(3):171-176. doi:10.1097/YCO.0000000000000787.
+Rapid Tranquillisation in Psychiatric Emergency Settings in Brazil: Pragmatic Randomised Controlled Trial of Intramuscular Haloperidol Versus Intramuscular Haloperidol Plus Promethazine. Huf G, Coutinho ES, Adams CE. BMJ (Clinical Research Ed.). 2007;335(7625):869. doi:10.1136/bmj.39339.448819.AE.
+Short-Acting Intramuscular Second-Generation Antipsychotic Drugs for Acutely Agitated Patients With Schizophrenia Spectrum Disorders. A Systematic Review and Network Meta-Analysis. Paris G, Bighelli I, Deste G, et al. Schizophrenia Research. 2021;229:3-11. doi:10.1016/j.schres.2021.01.021.
+ZYPREXA Intramuscular. Food and Drug Administration. Updated date: 2025-11-18.
+OLANZAPINE. Food and Drug Administration. Updated date: 2026-03-06.
+Case Reports of Postmarketing Adverse Event Experiences With Olanzapine Intramuscular Treatment in Patients With Agitation. Marder SR, Sorsaburu S, Dunayevich E, et al. The Journal of Clinical Psychiatry. 2010;71(4):433-41. doi:10.4088/JCP.08m04411gry.
+Comparing Intubation Rates in Patients Receiving Parenteral Olanzapine With and Without a Parenteral Benzodiazepine in the Emergency Department. Cole JB, Stang JL, Collins JD, et al. Annals of Emergency Medicine. 2024;84(6):658-667. doi:10.1016/j.annemergmed.2024.05.006.
+Alternative Treatments to Selected Medications in the 2023 American Geriatrics Society Beers Criteria®. Steinman MA. Journal of the American Geriatrics Society. 2025;73(9):2657-2677. doi:10.1111/jgs.19500.
+Comparative Safety of Medications for Severe Agitation: A Geriatric Emergency Department Guidelines 2.0 Systematic Review. Casey MF, Elder NM, Fenn A, et al. Journal of the American Geriatrics Society. 2025;. doi:10.1111/jgs.19485.
+Delirium in Older Persons: Prevention, Evaluation, and Management. Jaqua EE, Nguyen VTN, Chin E. American Family Physician. 2023;108(3):278-287.
+Recent-Onset Altered Mental Status: Evaluation and Management. Veauthier B, Hornecker JR, Thrasher T. American Family Physician. 2021;104(5):461-470.
+Emergency Management of Agitation in Pregnancy. Ladavac AS, Dubin WR, Ning A, Stuckeman PA. General Hospital Psychiatry. 2007 Jan-Feb;29(1):39-41. doi:10.1016/j.genhosppsych.2006.09.003.
+The Use of Psychotropic Agents in Pregnancy and Lactation. Mortola JF. The Psychiatric Clinics of North America. 1989;12(1):69-87.
+The Joint Clinical Practice Guideline on Benzodiazepine Tapering: Considerations when Benzodiazepine Risks Outweigh Benefits. Emily Brunner, Chwen-Yuen A. Chen, Tracy Klein, et al. American College of Medical Toxicology (2024).
+What Is the Best Approach for Parenteral Sedation to Manage Severe Acute Behavioral Disturbance in the Emergency Department?. Isoardi KZ, Cole JB, Hoffman RS, Isbister GK. Clinical Toxicology (Philadelphia, Pa.). 2026;64(2):79-85. doi:10.1080/15563650.2025.2591356.
+Parenteral Antipsychotic Choice and Its Association With Emergency Department Length of Stay for Acute Agitation Secondary to Alcohol Intoxication. Cole JB, Klein LR, Martel ML. Academic Emergency Medicine : Official Journal of the Society for Academic Emergency Medicine. 2019;26(1):79-84. doi:10.1111/acem.13486.
+Clinical Practice Guideline on Alcohol Withdrawal Management. Anika Alvanzo MD MS DFASAM FACP, Kurt Kleinschmidt MD FASAM, Julie A. Kmiec DO FASAM, et al. American Society of Addiction Medicine (2020).
+Delirium in Hospitalized Older Adults. Marcantonio ER. The New England Journal of Medicine. 2017;377(15):1456-1466. doi:10.1056/NEJMcp1605501.
+Benzodiazepines for Treatment of Patients With Delirium Excluding Those Who Are Cared for in an Intensive Care Unit. Li Y, Ma J, Jin Y, et al. The Cochrane Database of Systematic Reviews. 2020;2:CD012670. doi:10.1002/14651858.CD012670.pub2.
+Resource Document on Acute Neuropsychiatric Sequelae of COVID-19 Infection. Scott Beach, Nadia Cacodcar, Erica Baller, Jon Levenson. American Psychiatric Association (2023).
+The Management of Children and Youth With Pediatric Mental and Behavioral Health Emergencies. Saidinejad M, Duffy S, Wallin D, et al. Pediatrics. 2023;152(3):e2023063256. doi:10.1542/peds.2023-063256.
+Pharmacological Intervention for Irritability, Aggression, and Self-Injury in Autism Spectrum Disorder (ASD). Iffland M, Livingstone N, Jorgensen M, Hazell P, Gillies D. The Cochrane Database of Systematic Reviews. 2023;10:CD011769. doi:10.1002/14651858.CD011769.pub2.
+Autism Spectrum Disorder: A Review. Hirota T, King BH. JAMA. 2023;329(2):157-168. doi:10.1001/jama.2022.23661.
+Risk Stratification of QTc Prolongation in Critically Ill Patients Receiving Antipsychotics for the Management of Delirium Symptoms. Sadlonova M, Beach SR, Funk MC, et al. Journal of Intensive Care Medicine. 2025;40(4):355-371. doi:10.1177/08850666231222470.
+Pharmacological Management of Acute Agitation. Battaglia J. Drugs. 2005;65(9):1207-22. doi:10.2165/00003495-200565090-00003.
+Comparison of Antipsychotics for the Treatment of Patients With Delirium and QTc Interval Prolongation: A Clinical Decision Analysis. Kurisu K, Yoshiuchi K. Frontiers in Psychiatry. 2021;12:609678. doi:10.3389/fpsyt.2021.609678.
+QTc Monitoring in Adults With Medical and Psychiatric Comorbidities: Expert Consensus From the Association of Medicine and Psychiatry. Xiong GL, Pinkhasov A, Mangal JP, et al. Journal of Psychosomatic Research. 2020;135:110138. doi:10.1016/j.jpsychores.2020.110138.
+Antipsychotics and the QTc Interval During Delirium in the Intensive Care Unit: A Secondary Analysis of a Randomized Clinical Trial. Stollings JL, Boncyk CS, Birdrow CI, et al. JAMA Network Open. 2024;7(1):e2352034. doi:10.1001/jamanetworkopen.2023.52034.
+Parkinson’s Disease. Tanner CM, Ostrem JL. The New England Journal of Medicine. 2024;391(5):442-452. doi:10.1056/NEJMra2401857.
+Diagnosis and Treatment of Parkinson Disease: A Review. Armstrong MJ, Okun MS. JAMA. 2020;323(6):548-560. doi:10.1001/jama.2019.22360.
+The Neuropsychiatry of Parkinson's Disease: Advances and Challenges. Weintraub D, Aarsland D, Chaudhuri KR, et al. The Lancet. Neurology. 2022;21(1):89-102. doi:10.1016/S1474-4422(21)00330-6.
+The Scientific and Clinical Basis for the Treatment of Parkinson Disease (2009). Olanow CW, Stern MB, Sethi K. Neurology. 2009;72(21 Suppl 4):S1-136. doi:10.1212/WNL.0b013e3181a1d44c.
+Catatonia. Heckers S, Walther S. The New England Journal of Medicine. 2023;389(19):1797-1802. doi:10.1056/NEJMra2116304.
+Resource Document on Catatonia. Jo Ellen Wilson, Mark A. Oldham, Andrew Francis, et al. American Psychiatric Association (2025).
+Catatonia. Hirjak D, Rogers JP, Wolf RC, et al. Nature Reviews. Disease Primers. 2024;10(1):49. doi:10.1038/s41572-024-00534-w.
+Design and Implementation of an Agitation Code Response Team in the Emergency Department. Wong AH, Ray JM, Cramer LD, et al. Annals of Emergency Medicine. 2022;79(5):453-464. doi:10.1016/j.annemergmed.2021.10.013.
+The Effect of Centers for Medicare and Medicaid's Inpatient Psychiatric Facility Quality Reporting Program on the Use of Restraint and Seclusion. Shields MC, Busch AB. Medical Care. 2020;58(10):889-894. doi:10.1097/MLR.0000000000001393.
+R3 Report Issue 44: New and Revised Restraint and Seclusion Requirements for Behavioral Health Care and Human Services Organizations. The Joint Commission. Joint Commission (2024).
+Impact of Acutely Behavioural Disturbed Patients in the Emergency Department: A Prospective Observational Study. Oliver M, Adonopulos AA, Haber PS, et al. Emergency Medicine Australasia : EMA. 2019;31(3):387-392. doi:10.1111/1742-6723.13173.
+Risk Factors for Sedation-Related Events During Acute Agitation Management in the Emergency Department. Yap CYL, Taylor DM, Kong DCM, et al. Academic Emergency Medicine : Official Journal of the Society for Academic Emergency Medicine. 2019;26(10):1135-1143. doi:10.1111/acem.13826.
+Olanzapine for the Prevention and Treatment of Cancer-Related Nausea and Vomiting in Adults. Sutherland A, Naessens K, Plugge E, et al. The Cochrane Database of Systematic Reviews. 2018;9:CD012555. doi:10.1002/14651858.CD012555.pub2.
+Examining the Safety, Efficacy, and Patient Acceptability of Inhaled Loxapine for the Acute Treatment of Agitation Associated With Schizophrenia or Bipolar I Disorder in Adults. Faden J, Citrome L. Neuropsychiatric Disease and Treatment. 2019;15:2273-2283. doi:10.2147/NDT.S173567.
+Ketamine: A Practical Review for the Consultation-Liaison Psychiatrist. Evanoff AB, Baig M, Taylor JB, Beach SR. Journal of the Academy of Consultation-Liaison Psychiatry. 2023 Nov-Dec;64(6):521-532. doi:10.1016/j.jaclp.2023.06.001.
+Practice Parameter for the Prevention and Management of Aggressive Behavior in Child and Adolescent Psychiatric Institutions, With Special Reference to Seclusion and Restraint. Masters KJ, Bellonci C, Bernet W, et al. Journal of the American Academy of Child and Adolescent Psychiatry. 2002;41(2 Suppl):4S-25S. doi:10.1097/00004583-200202001-00002.
+Toward the Cessation of Seclusion and Mechanical Restraint Use in Psychiatric Hospitals: A Call for Regulatory Action. Atdjian S, Huckshorn KA. Psychiatric Services (Washington, D.C.). 2024;75(1):64-71. doi:10.1176/appi.ps.202100538.
+Behavioral Emergency Response Teams in the Hospital Setting: A Scoping Review. Mendelsohn L, Miclau KR, Sang L, et al. Journal of Hospital Medicine. 2026;21(5):555-572. doi:10.1002/jhm.70307.
+
+Agent | Route | Approximate Onset | Key Evidence
+Droperidol | IV | 5–10 min | Fastest parenteral onset[1]
+Inhaled loxapine | Inhaled | 10–20 min | Peak plasma in ~2 min; NNT 3–5 vs. placebo[2], [3]
+Olanzapine | IM | 15–30 min | Superior to haloperidol on ACES; fewer EPS[4]
+Midazolam | IM | 8–15 min | Fastest IM sedation but highest oversedation risk[5], [6]
+Droperidol | IM | 15–20 min | 64% sedated at 15 min; lower respiratory depression than lorazepam[7]
+Ziprasidone | IM | 15–30 min | Effective but slower than droperidol[7]
+Haloperidol + promethazine | IM | 15–20 min | Tier 1 IM per expert consensus; fewer AEs than haloperidol alone[8], [9]
+Olanzapine | PO/ODT | 15–120 min | Equivalent clinical sedation time to IM in practice[10]
+Haloperidol (± lorazepam) | IM | 30–60 min | Least effective monotherapy; high EPS risk[1], [11]
+Aripiprazole | IM | 45–90 min | Effective with less sedation; slowest onset[1], [12]
+Tier | Oral | Intramuscular
+1 | Haloperidol + lorazepam; lorazepam alone; olanzapine | Haloperidol + promethazine; olanzapine alone
+2 | Haloperidol + promethazine; inhaled loxapine; risperidone | Haloperidol + lorazepam; lorazepam alone
+3 | Asenapine; quetiapine | —
+Agitation Level | Assessment | Intervention | Escalation Trigger
+Mild (pacing, irritable, redirectable) | Verbal engagement; identify triggers; assess for pain, delirium, substance use | Verbal de-escalation (10 Domains); environmental modification; offer PO PRN: olanzapine 5–10 mg ODT, or lorazepam 1–2 mg, or haloperidol 5 mg + lorazepam 2 mg PO | No improvement in 15–20 min → escalate to Moderate
+Moderate (threatening, refusing redirection, not imminently dangerous) | Rapid safety assessment; etiology screen (vitals, glucose, SpO₂, substance screen) | Offer PO first (olanzapine 5–10 mg ODT ± lorazepam 1–2 mg); if refused → IM olanzapine 10 mg, OR IM haloperidol 5 mg + promethazine 25–50 mg, OR IM droperidol 5–10 mg | No improvement in 15–30 min → repeat IM dose or escalate to Severe
+Severe (violent, imminent danger to self/others) | Team response; ensure staff safety; brief medical screen when safe | IM droperidol 10 mg, OR IM olanzapine 10 mg, OR IM midazolam 5 mg + droperidol 5 mg; ketamine 4 mg/kg IM reserved for extreme/refractory cases | Ongoing danger after 2 doses → consider ketamine rescue; continuous monitoring; physical hold only as needed for medication administration
+Special population flags | Screen for: age ≥65, pregnancy, Parkinson disease, catatonia, QTc >500 ms, ASD/IDD, delirium, intoxication/withdrawal | See population-specific table below | Consult psychiatry/toxicology/neurology as indicated
+Clinical Scenario | First-Line Agent(s) | Dose/Route | Second-Line / Rescue | Avoid
+Undifferentiated agitation | Olanzapine 10 mg IM; OR droperidol 5–10 mg IM; OR haloperidol 5 mg + promethazine 25–50 mg IM | IM preferred if PO refused | Repeat dose at 15–30 min; midazolam 5 mg IM if refractory | Haloperidol monotherapy (high EPS risk)[1]
+Known psychosis (schizophrenia/bipolar) | Olanzapine 5–10 mg PO/ODT or IM; OR inhaled loxapine 10 mg; OR risperidone 2 mg PO solution | PO first if cooperative | IM haloperidol 5 mg + lorazepam 2 mg; OR IM ziprasidone 20 mg | Inhaled loxapine if pulmonary disease[2]
+Alcohol intoxication | Droperidol 5–10 mg IM; OR olanzapine 10 mg IM | IM | Repeat at 15 min; ketamine if refractory | BZD monotherapy (unless withdrawal suspected)[3]
+Alcohol/sedative withdrawal | Lorazepam 2–4 mg PO/IM/IV; symptom-triggered dosing | PO/IV preferred | Phenobarbital adjunct; diazepam 10–20 mg IV | Antipsychotic monotherapy[4]
+Stimulant intoxication | Lorazepam 2–4 mg IM/IV; OR midazolam 5 mg IM | IM/IV | Repeat BZD; add antipsychotic for psychotic features | —
+Delirium (non-withdrawal) | Quetiapine 12.5–25 mg PO; OR olanzapine 2.5–5 mg PO/IM; OR haloperidol 0.5–2 mg PO/IM | Lowest effective dose | Trazodone 25–50 mg PO; valproic acid if antipsychotics contraindicated | Benzodiazepines (worsen delirium)[5]
+Older adults (≥65) | Quetiapine 12.5–25 mg PO; OR olanzapine 2.5–5 mg PO/IM; OR haloperidol 0.5–1 mg PO/IM | Half standard doses | Trazodone 25–50 mg PO | Midazolam; all BZDs if possible[6], [7]
+Pregnancy | Haloperidol 2–5 mg PO/IM; ± lorazepam 1–2 mg PO/IM | Lowest effective dose | — | Chronic BZDs; low-potency antipsychotics in 1st trimester[8], [9]
+Parkinson disease / DLB | Lorazepam 0.5–1 mg PO/IM; quetiapine 12.5–25 mg PO | Low doses | Clozapine (if antipsychotic needed) | All D2-blocking antipsychotics; buspirone; metoclopramide[10], [11]
+Catatonia | Lorazepam 1–2 mg IV (challenge test); then scheduled lorazepam TID | IV preferred | ECT; amantadine 100 mg BID; memantine 5 mg BID | Antipsychotics (may worsen catatonia)[12]
+QTc >500 ms | Lorazepam 1–2 mg PO/IM; OR quetiapine 25 mg PO; OR aripiprazole 9.75 mg IM | Correct K⁺, Mg²⁺ first | — | Ziprasidone; IV haloperidol without monitoring[13], [14]
+ASD/IDD | Environmental modification first; risperidone 0.5–1 mg PO; OR aripiprazole 5–10 mg PO | Weight-based dosing | Olanzapine 2.5–5 mg PO/IM | — Evaluate for organic causes[15], [16]
+Agent | Absolute/Strong Contraindications | Relative Contraindications
+Haloperidol | Parkinson disease; catatonia; known QTc >500 ms (IV) | Older adults (high EPS risk); monotherapy for agitation (inferior efficacy)[1], [2]
+Olanzapine IM | Concurrent parenteral benzodiazepine (FDA label)[3] | Alcohol intoxication with BZD coadministration (↑ respiratory risk)[4]
+Ziprasidone | Known QTc prolongation; congenital LQTS; concurrent QT-prolonging drugs | Hypokalemia; hypomagnesemia[5], [6]
+Droperidol | Known QTc >500 ms | Concurrent QT-prolonging drugs (monitor ECG)[7]
+Midazolam | Older adults (high AE rate); respiratory compromise | Delirium (may worsen); hepatic impairment[8], [9]
+All benzodiazepines | Delirium (non-withdrawal etiology); myasthenia gravis | Older adults; respiratory disease; hepatic impairment[9], [10]
+Inhaled loxapine | Asthma; COPD; any active pulmonary disease (black box warning) | Requires patient cooperation; REMS enrollment required[11]
+All D2-blocking antipsychotics | Parkinson disease; Lewy body dementia; catatonia (hold) | — [2], [12]
+All antipsychotics | — | Dementia-related psychosis (FDA black box: ↑ mortality)[13]
+Ketamine | — | Psychotic disorders (may worsen); uncontrolled hypertension[14]
