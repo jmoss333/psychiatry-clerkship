@@ -774,5 +774,114 @@
       "label": "Open the Mood topic",
       "href": "?page=t_mood.md"
     }
+  },
+  "t_geri.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "Separate delirium vs dementia vs depression in every confused elder, treat the reversible, and deprescribe before you prescribe — the drug list is often the diagnosis.",
+    "points": [
+      "Inattention is the fingerprint of delirium — test it at the bedside (digit span, months backward) rather than inferring it.",
+      "Effortful 'I don't know' answers with disengagement suggest pseudodementia — treat the depression and cognition improves.",
+      "Beers Criteria plus anticholinergic-burden review on every med list; start low, go slow on anything new."
+    ],
+    "cant": "New psychosis in an older adult is delirium or another medical cause until proven otherwise — work it up before you call it psychiatric.",
+    "ruleOut": [
+      "Delirium (inattention, fluctuation)",
+      "Medication effects / anticholinergic load",
+      "Infection, retention, constipation, pain",
+      "Depression (pseudodementia)",
+      "Vascular depression"
+    ],
+    "firstMove": "Test attention formally, get collateral for the true baseline and tempo of change, review every medication against Beers — then treat what's reversible.",
+    "quiz": {
+      "q": "An 82-year-old admitted for 'failure to thrive' answers 'I don't know' to most cognitive questions, gives up easily, and stopped cooking after her husband died. A structured cognitive screen is mildly impaired. Most likely explanation?",
+      "o": [
+        {
+          "t": "Depressive pseudodementia — treat the depression and retest cognition",
+          "c": true
+        },
+        {
+          "t": "Early Alzheimer dementia — start a cholinesterase inhibitor"
+        },
+        {
+          "t": "Delirium — search for a UTI"
+        },
+        {
+          "t": "Normal aging — reassure and discharge"
+        }
+      ],
+      "why": "Effortful 'I don't know' answers, giving up easily, and a clear mood context are the pseudodementia pattern — cognition improves when the depression is treated. Delirium requires inattention and fluctuation, and dementia patients more often minimize or confabulate than disengage."
+    },
+    "cta": {
+      "label": "Open the Delirium page",
+      "href": "?page=delirium.md"
+    }
+  },
+  "motivational_interviewing.md": {
+    "read": 4,
+    "tldr": "Resist the righting reflex — people talk themselves into change. Use OARS to evoke the patient's own reasons, listen for change talk, and reflect it back instead of arguing.",
+    "points": [
+      "PACE spirit: Partnership, Acceptance, Compassion, Evocation — work with the patient, not on them.",
+      "OARS moves: Open questions, Affirmations, Reflections, Summaries — reflecting change talk does the heavy lifting.",
+      "Readiness ruler: 'You said 4 — why not a 2?' forces the patient to voice their own reasons for change."
+    ],
+    "cant": "Arguing for change (the righting reflex) reliably produces sustain talk — the harder you push, the more the patient defends the status quo.",
+    "quiz": {
+      "q": "A patient admitted after his second alcohol-related hospitalization says, 'I'm not an alcoholic.' Which response is most consistent with motivational interviewing?",
+      "o": [
+        {
+          "t": "'The labs and your history clearly meet criteria for alcohol use disorder.'"
+        },
+        {
+          "t": "'That label doesn't fit you. And the drinking has landed you here twice this year — what's your read on that?'",
+          "c": true
+        },
+        {
+          "t": "'You need to stop drinking or you'll be back a third time.'"
+        },
+        {
+          "t": "'Let's move on to something you're more comfortable discussing.'"
+        }
+      ],
+      "why": "A reflection plus a neutral fact and an open question sidesteps the argument and invites change talk. Quoting criteria or issuing warnings is the righting reflex and evokes sustain talk; dropping the subject avoids the conversation the patient actually needs."
+    },
+    "cta": {
+      "label": "Open the Substance Use topic",
+      "href": "?page=t_sud.md"
+    }
+  },
+  "pg_suicide.md": {
+    "read": 4,
+    "hy": true,
+    "tldr": "Ask directly and specifically — thoughts, plan, intent, preparation, means — then separate chronic from acute risk and turn the answers into a formulation, not a checkbox.",
+    "points": [
+      "Ask in plain words: 'Have you had thoughts of killing yourself?' — direct questions do not plant the idea.",
+      "Formulate chronic vs acute risk with drivers and modifiable targets — 'denies SI' is not an assessment.",
+      "Means safety is specific: firearms, stockpiled medication, who secures them, and how that is confirmed."
+    ],
+    "cant": "Sudden improvement after severe suicidality without a clear explanation is an escalation trigger, not reassurance — as is collateral that contradicts the patient's report.",
+    "quiz": {
+      "q": "On hospital day 4, a patient admitted after a serious suicide attempt becomes suddenly bright and calm and asks about discharge. Nothing in the treatment has changed. Best next step?",
+      "o": [
+        {
+          "t": "Document the improved mood and support same-day discharge"
+        },
+        {
+          "t": "Accept the improvement if the patient completes a safety plan"
+        },
+        {
+          "t": "Treat the unexplained improvement as a possible warning sign — reassess intent, preparation, and collateral before any discharge planning",
+          "c": true
+        },
+        {
+          "t": "Avoid re-asking about suicide so the questions don't re-trigger the thoughts"
+        }
+      ],
+      "why": "Sudden unexplained improvement after severe suicidality is an explicit escalation trigger — it can reflect relief at a decision to act. A safety plan is one component of the risk plan, not a discharge permission slip, and direct questioning does not implant suicidal thoughts."
+    },
+    "cta": {
+      "label": "Open the Columbia C-SSRS screener",
+      "href": "tools/cssrs.html"
+    }
   }
 }
