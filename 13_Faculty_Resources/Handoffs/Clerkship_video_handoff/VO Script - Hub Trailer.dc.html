@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VO Script — Clerkship Hub Trailer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&amp;family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400;1,600&amp;display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; }
+    doc-page:not(:defined) { visibility: hidden; }
+  </style>
+</helmet>
+<x-import component-from-global-scope="doc-page" from="./doc-page.js" size="letter" margin="0.7in" hint-size="100%,1500px">
+
+  <div slot="header" style="display: flex; justify-content: space-between; align-items: baseline; font-family: 'Source Sans 3', sans-serif; font-size: 9.5pt; color: #665a4f; border-bottom: 1px solid #ddd3c6; padding-bottom: 6px;">
+    <span style="font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Clerkship Hub — Intro Trailer</span>
+    <span>Voiceover script · v1</span>
+  </div>
+
+  <div style="font-family: 'Source Sans 3', sans-serif; color: #2f2924;">
+
+    <div style="margin: 10px 0 4px; font-family: 'Source Serif 4', Georgia, serif; font-size: 24pt; font-weight: 700; color: #c25a3c; letter-spacing: -0.01em;">Voiceover Script</div>
+    <div style="font-size: 12pt; color: #51473d; margin-bottom: 14px;">Inpatient Psychiatry — The MS3 Clerkship Hub · 78-second cut</div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px;">
+      <span style="font-size: 10.5pt; font-weight: 600; color: #1e5248; background: #edf4f2; border: 1px solid #2a6b5e; border-radius: 999px; padding: 4px 14px;">Runtime 1:18</span>
+      <span style="font-size: 10.5pt; font-weight: 600; color: #1e5248; background: #edf4f2; border: 1px solid #2a6b5e; border-radius: 999px; padding: 4px 14px;">≈160 words · ~125 wpm</span>
+      <span style="font-size: 10.5pt; font-weight: 600; color: #7a6234; background: #f5efe2; border: 1px solid #7a6234; border-radius: 999px; padding: 4px 14px;">Tone: warm, unhurried attending — not an ad read</span>
+    </div>
+
+    <sc-for list="{{ cues }}" as="cue" hint-placeholder-count="8">
+      <div style="display: grid; grid-template-columns: 108px 1fr; gap: 0 18px; border-top: 1px solid #ddd3c6; padding: 14px 0 12px; break-inside: avoid;">
+        <div>
+          <div style="font-family: 'Source Sans 3', sans-serif; font-size: 12pt; font-weight: 700; color: #2f2924; font-variant-numeric: tabular-nums;">{{ cue.time }}</div>
+          <div style="font-size: 9.5pt; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #c25a3c; margin-top: 3px;">{{ cue.scene }}</div>
+          <div style="font-size: 9.5pt; color: #665a4f; margin-top: 3px;">{{ cue.words }}</div>
+        </div>
+        <div>
+          <div style="font-size: 10pt; color: #665a4f; margin-bottom: 5px;"><span style="font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-size: 8.5pt; color: #87786a;">On screen&nbsp;&nbsp;</span>{{ cue.visual }}</div>
+          <div style="font-family: 'Source Serif 4', Georgia, serif; font-size: 13.5pt; line-height: 1.55; color: #2f2924;">{{ cue.vo }}</div>
+          <div style="font-size: 10.5pt; font-style: italic; color: #51473d; margin-top: 6px;"><span style="font-style: normal; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-size: 8.5pt; color: #87786a;">Direction&nbsp;&nbsp;</span>{{ cue.note }}</div>
+        </div>
+      </div>
+    </sc-for>
+
+    <div style="border-top: 3px solid #c25a3c; margin-top: 6px; padding-top: 14px; break-inside: avoid;">
+      <div style="font-family: 'Source Serif 4', Georgia, serif; font-size: 15pt; font-weight: 700; color: #2f2924; margin-bottom: 8px;">Recording notes</div>
+      <ul style="margin: 0; padding-left: 18px; font-size: 11.5pt; line-height: 1.65; color: #51473d;">
+        <li>Record each cue as its own take, plus one full straight-through pass. Leave a half-second of silence before and after every line.</li>
+        <li>Small room, soft surfaces; phone or USB mic 6–8 inches away, just off-axis. A closet full of clothes beats an office.</li>
+        <li>Pace: the timecodes have slack built in. If a line runs long, cut words rather than speeding up — the cut breathes at ~125 wpm.</li>
+        <li>Do two alternates of the opening and closing lines — those set and seal the tone.</li>
+        <li>Sync anchors are approximate: match the <em>feel</em> of each beat, and we'll nudge the edit to the read, not the reverse.</li>
+      </ul>
+    </div>
+  </div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const cues = [
+      {
+        time: '0:01–0:09', scene: 'Cue 1 · Hook', words: '22 words',
+        visual: 'Dark screen. "7:02 am · your first morning on the unit" → "Day one of inpatient psychiatry." → "Where do you even start?"',
+        vo: '"Seven a.m., day one of inpatient psychiatry. A badge, a coffee — and one very fair question: where do you even start?"',
+        note: 'Quiet, close, almost conspiratorial. Small pause after "coffee". Land "where do you even start?" as the question appears on screen (~0:05).',
+      },
+      {
+        time: '0:10–0:17', scene: 'Cue 2 · One place', words: '21 words',
+        visual: 'Scattered cards (open tabs, PDFs, group-chat advice) fly in, then snap into a single hub card.',
+        vo: '"Not with seventeen open tabs and a photo of someone\u2019s pocket card. Everything for this rotation now lives in one place."',
+        note: 'A touch of dry humor on the first sentence. Hit "one place" right as the hub card pops (~0:13), then let the feature rows tick by in silence.',
+      },
+      {
+        time: '0:19–0:28', scene: 'Cue 3 · The arc', words: '22 words',
+        visual: 'Six week cards slide in; "Signature focus" badge appears on Week 4 (~0:23).',
+        vo: '"Six weeks, one arc — from the first interview, through medications, psychotherapy, and family meetings, to the acute unit and the shelf."',
+        note: 'Steady, rhythmic list — one gentle step per card. A hint of warmth on "family meetings" as the badge lands.',
+      },
+      {
+        time: '0:31–0:35', scene: 'Cue 4a · The tour', words: '8 words',
+        visual: 'Browser frame appears; caption "The whole rotation · one private hub"; cursor drifts toward the sidebar.',
+        vo: '"Inside, it works like this. Pick your week —"',
+        note: 'Conversational downshift, like turning a laptop toward a student. End on a hanging dash; the click on Week 1 (~0:36) is the punctuation.',
+      },
+      {
+        time: '0:37–0:43', scene: 'Cue 4b · Week page', words: '15 words',
+        visual: 'Week 1 page opens: goals box, checklist, linked tools. Camera pans across the content.',
+        vo: '"— goals, readings, skills, and the tools to practice them, linked right where you need them."',
+        note: 'Easy list rhythm again; slight lift on "linked right where you need them".',
+      },
+      {
+        time: '0:44–0:51', scene: 'Cue 4c · The tool', words: '23 words',
+        visual: 'Cursor opens Mental Status Exam tool; a chip is tapped (~0:47) and the note text grows. Caption: "15 interactive tools".',
+        vo: '"Like the mental status exam builder: tap through the exam, and it writes the note with you. Fifteen tools, built for the bedside."',
+        note: 'Time "it writes the note with you" to the chip click at ~0:47. "With you", not "for you" — say it that way.',
+      },
+      {
+        time: '0:53–1:02', scene: 'Cue 5 · Audio + shelf', words: '28 words',
+        visual: 'Audio player with waveform (Kane 1988) beside a shelf-mode question; correct answer reveals (~0:58).',
+        vo: '"And for the gaps in your day — pre-rounds coffee, the drive home — fifty landmark trials on audio, two minutes each, with a quick quiz to make them stick."',
+        note: 'Lighter, quicker energy. Let "make them stick" land just after the ✓ reveals on the question.',
+      },
+      {
+        time: '1:04–1:16', scene: 'Cue 6 · Close', words: '22 words',
+        visual: 'Fade to dark. "Nothing here is required reading." → lockup + attribution → "Start with Week 1 →" button (~1:12).',
+        vo: '"Nothing here is required reading. It\u2019s just here, the moment you need it. (beat) Welcome to the rotation. Start with Week One."',
+        note: 'Slowest read of the piece. Honor the (beat) — a full second while the lockup settles. Smile on the last line; end downward and certain, not salesy.',
+      },
+    ];
+    return { cues };
+  }
+}
+</script>
+</body>
+</html>

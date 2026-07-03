@@ -68,6 +68,14 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
 </style>
 </head>
 <body>
+<style>.tl-spotlight summary{list-style:none;cursor:pointer}.tl-spotlight summary::-webkit-details-marker{display:none}</style>
+<details class="tl-spotlight" style="max-width:1240px;margin:14px auto 0;padding:0 26px">
+  <summary style="display:flex;align-items:center;gap:8px;font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:.95rem;color:var(--accent-dark,var(--accent-d,#1e5248))"><span aria-hidden="true">&#9656;</span> See it in action</summary>
+  <video src="../media/tool-spotlight-interview-circle.mp4" muted loop playsinline
+    aria-label="Tool spotlight: The Interview Circle, recreated inside a browser window with a live interaction."
+    style="width:100%;max-width:820px;aspect-ratio:16/9;border-radius:12px;display:block;margin:8px 0 14px;border:1px solid var(--border,#ddd3c6)"></video>
+</details>
+<script>(function(){var d=document.currentScript.previousElementSibling;if(!d||d.tagName!=='DETAILS')return;var v=d.querySelector('video');if(!v)return;d.addEventListener('toggle',function(){if(d.open){try{v.currentTime=0;v.play&&v.play();}catch(_){}}else{try{v.pause&&v.pause();}catch(_){}}});})();</script>
 <main class="wrap" id="root">
   <div class="topline">
     <div class="logo">&psi;</div>

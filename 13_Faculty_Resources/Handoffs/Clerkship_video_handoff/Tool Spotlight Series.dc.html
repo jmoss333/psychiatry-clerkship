@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clerkship Hub — Tool Spotlight Series</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,500&amp;family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; height: 100%; background: #0a0a0a; }
+  </style>
+</helmet>
+<div id="cw-tools-root" data-screen-label="t=0s" style="position: fixed; inset: 0;">
+  <x-import component-from-global-scope="ToolSpotlightVideo" from="./animations.jsx ./browser-window.jsx ./toolspotlight-video.jsx" autoplay="{{ autoplay }}" loop="{{ loop }}" only="{{ only }}" hint-size="100%,100%"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;autoplay&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Playback&quot; },
+  &quot;loop&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Playback&quot; },
+  &quot;only&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;All&quot;, &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;], &quot;default&quot;: &quot;All&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Playback&quot; }
+}">
+class Component extends DCLogic {
+  renderVals() {
+    const propOnly = this.props.only && this.props.only !== 'All' ? this.props.only : null;
+    const urlOnly = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('tool')) || null;
+    return {
+      autoplay: this.props.autoplay ?? true,
+      loop: this.props.loop ?? true,
+      only: propOnly ?? urlOnly,
+    };
+  }
+}
+</script>
+</body>
+</html>

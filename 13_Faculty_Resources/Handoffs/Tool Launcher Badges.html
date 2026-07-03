@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Floating Tool Launcher — Clerkship Library</title>
+<style>
+/* ============================================================
+   HOUSE STYLE · "Clinical Warm"
+   Tokens are ALSO defined by the host SPA — declared here only so
+   the file renders standalone. Dark mode remaps every token; there
+   are no hard-coded #fff / #000 anywhere in the component CSS.
+   ============================================================ */
+:root{
+  --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+  --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+  --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+  --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+  --radius-pill:999px;
+  --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+  --shadow-lg:0 8px 28px rgba(59,51,44,.10);
+  --font-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --font-head:"Source Serif 4",Georgia,serif;
+}
+/* Dark values match the deployed shell's own [data-theme="dark"] palette (index.html) */
+[data-theme="dark"]{
+  --bg:#1a1816; --bg-alt:#211d1a; --surface:#2a2520; --on-brand:#211d1a; --border:#3d3630;
+  --primary:#d4896e; --primary-dark:#dd9277; --primary-light:rgba(212,137,110,.16);
+  --accent:#5aad9a; --accent-dark:#6cbcaa; --accent-light:rgba(90,173,154,.16);
+  --text:#e8e2da; --text-mid:#b3a596; --text-light:#8a7c6e;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.35);
+  --shadow-lg:0 8px 28px rgba(0,0,0,.45);
+}
+
+/* ---------- page chrome (demo only) ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:var(--font-body);line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  transition:background .3s,color .3s;
+}
+.wrap{max-width:1000px;margin:0 auto;padding:34px 22px 160px}
+.eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-dark)}
+h1{font-family:var(--font-head);font-weight:600;color:var(--primary);font-size:2rem;margin:.15em 0 .1em}
+.lede{color:var(--text-mid);max-width:64ch;margin:0;font-size:1.02rem}
+h2{font-family:var(--font-head);font-weight:600;color:var(--text);font-size:1.28rem;margin:0 0 4px}
+.sec{margin-top:52px}
+.sec > .kicker{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light);margin-bottom:14px}
+.sec-note{color:var(--text-mid);font-size:.92rem;margin:.1em 0 20px;max-width:70ch}
+
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.themebtn{
+  display:inline-flex;align-items:center;gap:.5em;flex:0 0 auto;
+  font-family:var(--font-body);font-size:.85rem;font-weight:600;cursor:pointer;
+  color:var(--text-mid);background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-pill);padding:10px 16px;min-height:44px;
+  transition:background .18s,color .18s,box-shadow .18s;
+}
+.themebtn:hover{color:var(--text);box-shadow:var(--shadow-sm)}
+.themebtn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+.themebtn svg{width:18px;height:18px}
+
+/* =====================================================================
+   THE COMPONENT · "Tool Launcher" — chip + dock
+   Everything below is what gets lifted into the host build.
+   ===================================================================== */
+
+/* ---- 1 · inline tool chip ---- */
+.tl-chip{
+  display:inline-flex;align-items:center;gap:.55em;
+  font-family:var(--font-body);font-size:.9rem;font-weight:600;line-height:1;
+  text-decoration:none;cursor:pointer;white-space:nowrap;vertical-align:middle;
+  color:var(--accent-dark);background:var(--accent-light);
+  border:1px solid var(--border);border-radius:var(--radius-pill);
+  padding:11px 15px;min-height:44px;                 /* ≥44px tap target */
+  transition:background .18s,color .18s,box-shadow .18s,border-color .18s,transform .12s;
+}
+.tl-chip svg{width:1.15em;height:1.15em;flex:0 0 auto;stroke:currentColor}
+.tl-chip:hover{background:var(--surface);color:var(--accent);border-color:var(--accent);box-shadow:var(--shadow-sm)}
+.tl-chip:active{transform:translateY(1px)}
+.tl-chip:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+/* optional terracotta "safety" emphasis (C-SSRS, Violence) */
+.tl-chip.is-safety{color:var(--primary-dark);background:var(--primary-light)}
+.tl-chip.is-safety:hover{color:var(--primary);border-color:var(--primary)}
+.tl-chip.is-safety:focus-visible{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--primary)}
+/* compact form for tight inline flow */
+.tl-chip.is-compact{font-size:.82rem;padding:8px 13px;min-height:38px}
+
+/* ---- 2 · floating dock (FAB) ---- */
+.tl-dock{
+  position:fixed;right:22px;bottom:22px;z-index:9990;
+  display:flex;flex-direction:column;align-items:flex-end;gap:12px;
+  font-family:var(--font-body);
+}
+.tl-dock__stack{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.tl-dock__item{
+  display:inline-flex;align-items:center;gap:.6em;
+  font-size:.86rem;font-weight:600;line-height:1;text-decoration:none;cursor:pointer;white-space:nowrap;
+  color:var(--accent-dark);background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius-pill);
+  padding:0 16px 0 14px;height:48px;box-shadow:var(--shadow-lg);
+  opacity:0;transform:translateY(14px) scale(.9);pointer-events:none;
+  transition:opacity .22s ease,transform .22s cubic-bezier(.2,.8,.3,1.2),background .18s,color .18s;
+}
+.tl-dock__item svg{width:20px;height:20px;flex:0 0 auto}
+.tl-dock__item.is-safety{color:var(--primary-dark)}
+.tl-dock__item:hover{color:var(--surface);background:var(--accent)}
+.tl-dock__item.is-safety:hover{background:var(--primary)}
+.tl-dock__item:focus-visible{outline:none;box-shadow:var(--shadow-lg),0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+.tl-dock.is-open .tl-dock__item{opacity:1;transform:none;pointer-events:auto}
+.tl-dock.is-open .tl-dock__item:nth-child(1){transition-delay:.02s}
+.tl-dock.is-open .tl-dock__item:nth-child(2){transition-delay:.06s}
+.tl-dock.is-open .tl-dock__item:nth-child(3){transition-delay:.10s}
+
+.tl-fab{
+  width:58px;height:58px;flex:0 0 auto;border-radius:50%;cursor:pointer;position:relative;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--surface);background:var(--accent);border:none;
+  box-shadow:var(--shadow-lg);
+  transition:background .18s,transform .25s cubic-bezier(.2,.8,.3,1.2),box-shadow .18s;
+}
+.tl-fab svg{width:26px;height:26px;transition:transform .25s ease}
+.tl-fab:hover{background:var(--accent-dark)}
+.tl-fab:focus-visible{outline:none;box-shadow:var(--shadow-lg),0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+.tl-dock.is-open .tl-fab{background:var(--accent-dark)}
+.tl-dock.is-open .tl-fab svg{transform:rotate(45deg)}
+.tl-fab__label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* first-run discoverability: a soft pulse ring + a caption until first use */
+.tl-fab::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent);opacity:0;pointer-events:none}
+.tl-dock.is-hint .tl-fab::after{animation:tlPulse 2.1s ease-out 3}
+@keyframes tlPulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(1.75);opacity:0}}
+.tl-dock__hint{
+  position:absolute;right:72px;bottom:26px;white-space:nowrap;
+  background:var(--surface);color:var(--text);border:1px solid var(--border);
+  border-radius:var(--radius-pill);padding:9px 14px;font-size:.8rem;font-weight:600;line-height:1;
+  box-shadow:var(--shadow-lg);opacity:0;transform:translateX(8px);pointer-events:none;
+  transition:opacity .3s,transform .3s;
+}
+.tl-dock.is-hint .tl-dock__hint{opacity:1;transform:none}
+.tl-dock.is-open .tl-dock__hint{opacity:0}
+
+@media (max-width:820px){
+  .tl-dock{right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+  .tl-fab{width:50px;height:50px}
+  .tl-fab svg{width:23px;height:23px}
+  .tl-dock__item{height:46px;font-size:.84rem}
+  .tl-dock__hint{right:62px;bottom:20px;font-size:.76rem}
+}
+
+/* ---- motion: fully disabled when the user asks ---- */
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none !important;animation:none !important}
+  .tl-dock__item{transform:none}
+  .tl-dock.is-open .tl-fab svg{transform:rotate(45deg)}   /* state, not motion */
+}
+
+/* ---------- gallery (demo scaffolding) ---------- */
+.galgroup + .galgroup{margin-top:28px}
+.galgroup__head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.galgroup__head h3{font-family:var(--font-head);font-weight:600;font-size:1.08rem;color:var(--text);margin:0}
+.galgroup__head span{font-size:.84rem;color:var(--text-light)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:16px 17px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:12px;
+}
+.card__head{display:flex;align-items:center;gap:12px}
+.card__icon{
+  width:44px;height:44px;flex:0 0 auto;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--border);
+}
+.card__icon.is-safety{color:var(--primary-dark);background:var(--primary-light)}
+.card__icon svg{width:24px;height:24px}
+.card__title{font-family:var(--font-head);font-weight:600;font-size:1rem;color:var(--text);line-height:1.2}
+.card__key{font-size:.74rem;color:var(--text-light);font-variant-numeric:tabular-nums}
+.card__where{font-size:.83rem;color:var(--text-mid);line-height:1.45;margin:0}
+.tag-safety{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--primary-dark);background:var(--primary-light);border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px 9px}
+
+/* light & dark paired panel */
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.panel{border:1px solid var(--border);border-radius:16px;padding:20px;background:var(--bg-alt)}
+.panel .pl-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light);margin-bottom:14px}
+.panel .chips{display:flex;flex-wrap:wrap;gap:10px}
+@media (max-width:640px){.pair{grid-template-columns:1fr}}
+
+/* in-context reading demo */
+.read{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 26px;box-shadow:var(--shadow-sm)}
+.read h3{font-family:var(--font-head);font-weight:600;font-size:1.15rem;color:var(--text);margin:0 0 4px}
+.read .meta{font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-bottom:14px}
+.read p{color:var(--text-mid);margin:0 0 14px;font-size:1rem;line-height:1.9}
+
+/* dock demo controls */
+.setswitch{display:inline-flex;gap:6px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-pill);padding:5px}
+.setswitch button{
+  font-family:var(--font-body);font-size:.82rem;font-weight:600;cursor:pointer;
+  color:var(--text-mid);background:transparent;border:none;border-radius:var(--radius-pill);
+  padding:8px 14px;min-height:38px;transition:background .16s,color .16s;
+}
+.setswitch button[aria-pressed="true"]{color:var(--surface);background:var(--accent)}
+.setswitch button:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 4px var(--accent)}
+
+/* snippet */
+.snip{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow-sm);margin-bottom:16px}
+.snip__top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.snip h3{font-family:var(--font-head);font-weight:600;font-size:1.05rem;margin:0;color:var(--text)}
+.snip p{font-size:.88rem;color:var(--text-mid);margin:0 0 12px;line-height:1.55}
+.copybtn{
+  font-family:var(--font-body);font-size:.78rem;font-weight:700;cursor:pointer;
+  color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--border);
+  border-radius:var(--radius-pill);padding:8px 14px;min-height:38px;transition:background .16s,color .16s;
+}
+.copybtn:hover{color:var(--surface);background:var(--accent)}
+.copybtn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 4px var(--accent)}
+pre{margin:0;background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;padding:16px;overflow-x:auto}
+code{font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:.8rem;line-height:1.65;color:var(--text);white-space:pre}
+.docnote{font-size:.82rem;color:var(--text-light);margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- header -->
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Clerkship Library · access layer</div>
+      <h1>Floating Tool Launcher</h1>
+      <p class="lede">One small badge that puts the right interactive tool one tap away from whatever a student is reading — as an inline chip mid-passage, or a floating dock that expands to the 2–3 tools a page maps to. Portable vanilla markup; change one attribute per placement.</p>
+    </div>
+    <button class="themebtn" id="themeToggle" type="button" aria-pressed="false">
+      <span id="themeIcon"></span><span id="themeText">Dark</span>
+    </button>
+  </header>
+
+  <!-- gallery -->
+  <section class="sec">
+    <div class="kicker">The tool set · one badge per tool</div>
+    <div id="gallery"></div>
+  </section>
+
+  <!-- light & dark -->
+  <section class="sec">
+    <h2>Light &amp; dark</h2>
+    <p class="sec-note">Every color is a token, so the same chip renders correctly in both themes with no per-badge overrides. Left follows the host's light theme; right is a forced-dark surface.</p>
+    <div class="pair">
+      <div class="panel" data-theme="light" id="panelLight">
+        <div class="pl-label">Light surface</div>
+        <div class="chips" id="chipsLight"></div>
+      </div>
+      <div class="panel" data-theme="dark" id="panelDark">
+        <div class="pl-label">Dark surface</div>
+        <div class="chips" id="chipsDark"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- in context -->
+  <section class="sec">
+    <h2>Inline, in context</h2>
+    <p class="sec-note">The chip flows with text and wraps gracefully — paste it right next to the passage it serves.</p>
+    <div class="read">
+      <div class="meta">03 · Core topics · SUD &amp; Withdrawal</div>
+      <h3>Alcohol withdrawal — recognition &amp; scoring</h3>
+      <p>Escalating autonomic arousal — tremor, sweats, tachycardia, and rising anxiety within 6–24 hours of the last drink — should prompt formal, repeated scoring rather than eyeballing. Score at the bedside with the <a class="tl-chip" href="?tool=withdrawal.html" data-tool="withdrawal.html" aria-label="Open the CIWA-Ar / COWS tool">%%ICON:withdrawal%%CIWA-Ar / COWS</a> tool and treat symptom-triggered. For suspected opioid withdrawal the same tool carries COWS.</p>
+      <p>Because withdrawal severity and safety travel together, keep the risk screens close at hand: an unsafe patient may need the <a class="tl-chip is-safety" href="?tool=cssrs.html" data-tool="cssrs.html" aria-label="Open the C-SSRS Suicide Screen tool">%%ICON:cssrs%%C-SSRS</a> before discharge planning, and a documented <a class="tl-chip" href="?tool=capacity.html" data-tool="capacity.html" aria-label="Open the Decisional Capacity tool">%%ICON:capacity%%Decisional Capacity</a> note if the patient wants to leave against advice.</p>
+      <p>Practically, that means scoring on a schedule rather than by impression. Reach for the <a class="tl-chip" href="?tool=withdrawal.html" data-tool="withdrawal.html" aria-label="Open the CIWA-Ar / COWS tool">%%ICON:withdrawal%%CIWA-Ar / COWS</a> at fixed intervals, chart the trend, and let the trajectory — not a single number — drive escalation or spacing of doses.</p>
+      <p>Comorbid mood and anxiety symptoms are easy to over-attribute to withdrawal in the first 48 hours. Re-measure once the patient is stable with the <a class="tl-chip" href="?tool=screeners.html" data-tool="screeners.html" aria-label="Open the PHQ-9 / GAD-7 tool">%%ICON:screeners%%PHQ-9 / GAD-7</a> before attributing a primary disorder, and document the moving parts cleanly with the <a class="tl-chip" href="?tool=mse.html" data-tool="mse.html" aria-label="Open the Mental Status Exam tool">%%ICON:mse%%Mental Status Exam</a>.</p>
+      <p>When you present this patient on rounds, lead with the trend and the plan, not the raw list of symptoms. A tight, timed pitch — rehearsed with the <a class="tl-chip" href="?tool=oral.html" data-tool="oral.html" aria-label="Open the Rounding Prep + Timer tool">%%ICON:oral%%Rounding Prep + Timer</a> — and the shared taper logic in the <a class="tl-chip" href="?tool=decision-aids.html" data-tool="decision-aids.html" aria-label="Open the Algorithms & Decision Aids tool">%%ICON:decision-aids%%Decision Aids</a> keep the team aligned. Notice the launcher stays pinned bottom-right as you scroll — always reachable, never covering the text.</p>
+    </div>
+  </section>
+
+  <!-- dock demo -->
+  <section class="sec">
+    <h2>Floating dock</h2>
+    <p class="sec-note">Idle, it is a single circular button pinned bottom-right (look for it now →). Click, hover, or focus + Enter to expand upward into the page's tools; it collapses when you click away or press Escape. Switch the page context to see the stack change:</p>
+    <div class="setswitch" role="group" aria-label="Demo page context">
+      <button type="button" data-set="safety" aria-pressed="true">Suicide &amp; Safety</button>
+      <button type="button" data-set="withdrawal" aria-pressed="false">Withdrawal</button>
+      <button type="button" data-set="mse" aria-pressed="false">MSE / Interview</button>
+    </div>
+  </section>
+
+  <!-- snippets -->
+  <section class="sec">
+    <h2>Copy-paste snippets</h2>
+    <p class="sec-note">Two forms. In each you change only <code>data-tool</code> (and the matching <code>href</code>/<code>aria-label</code>/label). Paste the shared style block and script once per page (or keep them in your global stylesheet + app bundle). Swap the inline <code>&lt;svg&gt;</code> for the tool's glyph from the gallery above.</p>
+
+    <div class="snip">
+      <div class="snip__top"><h3>A · Inline chip</h3><button class="copybtn" type="button" data-copy="snipChip">Copy</button></div>
+      <p>Best for a single, obviously-relevant tool sitting next to a passage. Add <code>is-safety</code> for the terracotta emphasis on C-SSRS / Violence, or <code>is-compact</code> for tighter text.</p>
+      <pre><code id="snipChip"></code></pre>
+    </div>
+
+    <div class="snip">
+      <div class="snip__top"><h3>B · Floating dock</h3><button class="copybtn" type="button" data-copy="snipDock">Copy</button></div>
+      <p>Best when a page maps to 2–3 tools. Drop one dock per page and list its badges; the FAB stays out of the way until tapped.</p>
+      <pre><code id="snipDock"></code></pre>
+    </div>
+
+    <div class="snip">
+      <div class="snip__top"><h3>Shared · style + routing script (once per page)</h3><button class="copybtn" type="button" data-copy="snipShared">Copy</button></div>
+      <p>The routing script makes the same badge work everywhere: it opens the tool <b>in-app</b> via the sidebar if present, <b>posts to the parent</b> if embedded in an iframe, and otherwise falls back to the <code>?tool=</code> link. No framework, no build step.</p>
+      <pre><code id="snipShared"></code></pre>
+      <p class="docnote">Placement guide, per tool, is printed on each card in the gallery above (“Lives on…”). The safety variant is reserved for C-SSRS and Violence Risk so those two read as urgent at a glance.</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============ LIVE FLOATING DOCK (the component, in situ) ============ -->
+<div class="tl-dock" id="dock">
+  <div class="tl-dock__hint" aria-hidden="true">Tools for this page →</div>
+  <div class="tl-dock__stack" id="dockStack" role="menu" aria-label="Related tools"></div>
+  <button class="tl-fab" id="fab" type="button" aria-expanded="false" aria-controls="dockStack" aria-label="Open related tools for this page">
+    <span class="tl-fab__label">Related tools</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</div>
+
+<script>
+/* ============================================================
+   TOOL REGISTRY  (icon = original minimal line glyph, currentColor)
+   ============================================================ */
+var G = {
+  mse:'<circle cx="12" cy="8.6" r="5"/><path d="M6.4 20c1-3.2 3.1-4.9 5.6-4.9S16.6 16.8 17.6 20"/><circle cx="10" cy="8" r=".7" fill="currentColor" stroke="none"/><circle cx="13.6" cy="9.1" r=".7" fill="currentColor" stroke="none"/><circle cx="11.4" cy="10.8" r=".7" fill="currentColor" stroke="none"/>',
+  'interview-circle':'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8.4" stroke-dasharray="2 2.6"/><circle cx="12" cy="3.6" r="1.4" fill="currentColor" stroke="none"/><circle cx="20" cy="15" r="1.1" fill="currentColor" stroke="none"/>',
+  cssrs:'<path d="M12 3l7.5 3v5.4c0 4.7-3.2 8.1-7.5 9.3-4.3-1.2-7.5-4.6-7.5-9.3V6z"/><path d="M8.6 12l2.3 2.3 4.5-4.8"/>',
+  withdrawal:'<path d="M4 15.5a8 8 0 1 1 16 0"/><path d="M12 15.5l4.4-4"/><circle cx="12" cy="15.5" r="1.3" fill="currentColor" stroke="none"/>',
+  bfcrs:'<circle cx="12" cy="5.2" r="2.3"/><path d="M12 7.6v7.4M8.4 10.6h7.2M12 15l-2.6 3.4M12 15l2.6 3.4"/>',
+  violence:'<path d="M12 3.4L21.2 19.6H2.8z"/><circle cx="12" cy="10.4" r="1.5"/><path d="M9.4 16.4c0-1.9 1.2-3.1 2.6-3.1s2.6 1.2 2.6 3.1"/>',
+  capacity:'<path d="M12 4.4v15"/><path d="M7 19.4h10"/><path d="M6.4 7.6h11.2"/><path d="M6.4 7.6L3.8 12.4a2.6 2.6 0 0 0 5.2 0z"/><path d="M17.6 7.6l-2.6 4.8a2.6 2.6 0 0 0 5.2 0z"/><circle cx="12" cy="5.4" r="1.1" fill="currentColor" stroke="none"/>',
+  screeners:'<path d="M4 6.6l1.4 1.4L8.2 5"/><path d="M4 12l1.4 1.4L8.2 10.6"/><path d="M4 17.4l1.4 1.4L8.2 16"/><path d="M11 6.2h9M11 11.8h9M11 17.2h6"/>',
+  oral:'<circle cx="12" cy="13.8" r="6.8"/><path d="M12 13.8V9.6"/><path d="M9.6 3.6h4.8M12 3.6v2.6M18.4 8l1.4-1.4"/>',
+  'decision-aids':'<rect x="9" y="3.4" width="6" height="4" rx="1"/><rect x="3.2" y="16.6" width="6" height="4" rx="1"/><rect x="14.8" y="16.6" width="6" height="4" rx="1"/><path d="M12 7.4v3M12 10.4H6.2v6M12 10.4h5.8v6"/>',
+  'active-recall':'<rect x="3.4" y="5.6" width="17.2" height="12.8" rx="2.2"/><path d="M15.2 12.2a3.1 3.1 0 1 1-.95-2.25"/><path d="M15.2 8.4v2.6h-2.6"/>',
+  'shelf-mode':'<rect x="4.8" y="3.4" width="11" height="17.2" rx="2"/><path d="M7.8 8h5M7.8 11.4h5.4M7.8 14.8h4"/><circle cx="16.6" cy="7.2" r="2.7"/><path d="M16.6 5.9v1.5l1 .7"/>',
+  review:'<rect x="3.4" y="5" width="17.2" height="15.2" rx="2.2"/><path d="M3.4 9.6h17.2M8 3.4v3.2M16 3.4v3.2"/><path d="M9.6 15a2.8 2.8 0 0 1 4.9-1.9M14.6 12.6l-.1 2.1-2-.5"/><path d="M14.4 16.2a2.8 2.8 0 0 1-4.9 1.9M9.4 18.6l.1-2.1 2 .5"/>',
+  reflection:'<path d="M6 4.2h7.5a2.2 2.2 0 0 1 2.2 2.2v13.4l-2.4-1.5-2.4 1.5-2.4-1.5V4.2z"/><path d="M8.6 8.4h4.4M8.6 11.4h3"/><path d="M17.4 5.4l2.2 2.2-5 5-2.4.3.3-2.4z"/>'
+};
+var TOOLS = [
+  {k:'mse.html',            g:'mse',            label:'Mental Status Exam',      where:'Lives on the MSE, interviewing and documentation pages — a one-tap way to build a written exam domain by domain.'},
+  {k:'interview-circle.html',g:'interview-circle',label:'Interview Circle',        where:'Pairs with interviewing, intake and history-taking teaching to rehearse the arc of a session.'},
+  {k:'cssrs.html',          g:'cssrs',          label:'C-SSRS Suicide Screen',   safety:true, where:'Anchors the Suicide &amp; Safety and Discharge pages; the safety variant flags it as urgent.'},
+  {k:'withdrawal.html',     g:'withdrawal',     label:'CIWA-Ar / COWS',          where:'Sits beside withdrawal-scoring passages on the SUD page for symptom-triggered scoring.'},
+  {k:'bfcrs.html',          g:'bfcrs',          label:'Bush-Francis Catatonia',  where:'Lives on the Catatonia page next to the screen / severity discussion.'},
+  {k:'violence.html',       g:'violence',       label:'Violence Risk (FRST)',    safety:true, where:'Used on Agitation &amp; Restraint pages; safety variant for fast recognition.'},
+  {k:'capacity.html',       g:'capacity',       label:'Decisional Capacity',     where:'Attaches to capacity, consent and refusal topics — including AMA and consult notes.'},
+  {k:'screeners.html',      g:'screeners',      label:'PHQ-9 / GAD-7',           where:'Drops into Mood and Anxiety topics next to symptom-measurement text.'},
+  {k:'oral.html',           g:'oral',           label:'Rounding Prep + Timer',   where:'Placed on oral-presentation and rounding pages to practice a timed pitch.'},
+  {k:'decision-aids.html',  g:'decision-aids',  label:'Algorithms & Decision Aids',where:'Reusable on any page that carries a decision tree or clinical algorithm.'},
+  {k:'active-recall.html',  g:'active-recall',  label:'Active Recall (Self-Test)',where:'Added to Landmark Trials, evidence and exam-prep pages for a quick self-test.'},
+  {k:'shelf-mode.html',     g:'shelf-mode',     label:'Shelf Mode Exam Sim',     where:'Surfaced on Shelf / COMAT prep pages for a timed simulation.'},
+  {k:'review.html',         g:'review',         label:'Daily Review (Spaced Rep)',where:'A universal review badge for the spaced-repetition workflow on any topic.'},
+  {k:'reflection.html',     g:'reflection',     label:'Reflection & Identity',   where:'Lives on reflection and professional-identity pages.'}
+];
+var BY = {}; TOOLS.forEach(function(t){ BY[t.k]=t; });
+
+function svg(id, cls){
+  return '<svg class="'+(cls||'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+G[id]+'</svg>';
+}
+
+/* ---------- routing contract ---------- */
+function launchTool(el, tool){
+  var nav = document.querySelector('.navitem[data-f="'+tool+'"]');
+  if(nav){ nav.click(); return true; }                                   // 1 · in-app via sidebar
+  if(window.parent && window.parent !== window){                         // 2 · embedded in iframe (shell listens for 'openPage')
+    window.parent.postMessage({type:'openPage', f:tool}, '*'); return true;
+  }
+  if(el && el.getAttribute('href')) return false;                        // 3a · let <a href="?tool="> navigate
+  window.location.href = 'tools/' + tool;                               // 3b · last resort
+  return true;
+}
+document.addEventListener('click', function(e){
+  var el = e.target.closest('[data-tool]');
+  if(!el) return;
+  var handled = launchTool(el, el.getAttribute('data-tool'));
+  if(handled) e.preventDefault();
+  closeDock();
+});
+
+/* ---------- gallery (grouped) ---------- */
+var GROUPS = [
+  {name:'Assessment & clinical', sub:'Scales and screens you reach for at the bedside', keys:['mse.html','interview-circle.html','cssrs.html','withdrawal.html','bfcrs.html','violence.html','capacity.html','screeners.html']},
+  {name:'Study & workflow', sub:'Reference, self-testing and review loops for any topic', keys:['oral.html','decision-aids.html','active-recall.html','shelf-mode.html','review.html','reflection.html']}
+];
+function cardHTML(t){
+  var s = t.safety ? ' is-safety' : '';
+  return '<div class="card">'
+    + '<div class="card__head">'
+      + '<span class="card__icon'+s+'">'+svg(t.g)+'</span>'
+      + '<div><div class="card__title">'+t.label+'</div><div class="card__key">'+t.k+'</div></div>'
+      + (t.safety ? '<span class="tag-safety" style="margin-left:auto">Safety</span>' : '')
+    + '</div>'
+    + '<a class="tl-chip'+s+'" href="?tool='+t.k+'" data-tool="'+t.k+'" aria-label="Open the '+t.label+' tool">'+svg(t.g)+t.label+'</a>'
+    + '<p class="card__where">'+t.where+'</p>'
+  + '</div>';
+}
+document.getElementById('gallery').innerHTML = GROUPS.map(function(g){
+  return '<div class="galgroup"><div class="galgroup__head"><h3>'+g.name+'</h3><span>'+g.sub+'</span></div>'
+    + '<div class="grid">' + g.keys.map(function(k){ return cardHTML(BY[k]); }).join('') + '</div></div>';
+}).join('');
+
+/* ---------- light & dark paired chips ---------- */
+var demoKeys = ['withdrawal.html','cssrs.html','capacity.html','screeners.html'];
+function chipHTML(k){
+  var t = BY[k], s = t.safety ? ' is-safety' : '';
+  return '<a class="tl-chip'+s+'" href="?tool='+k+'" data-tool="'+k+'" aria-label="Open the '+t.label+' tool">'+svg(t.g)+t.label+'</a>';
+}
+document.getElementById('chipsLight').innerHTML = demoKeys.map(chipHTML).join('');
+document.getElementById('chipsDark').innerHTML  = demoKeys.map(chipHTML).join('');
+
+/* ---------- in-context icon substitution ---------- */
+document.querySelector('.read').innerHTML = document.querySelector('.read').innerHTML.replace(/%%ICON:([a-z-]+)%%/g, function(_, id){ return svg(id); });
+
+/* ---------- floating dock ---------- */
+var dock = document.getElementById('dock');
+var fab  = document.getElementById('fab');
+var stack= document.getElementById('dockStack');
+var SETS = {
+  safety:     ['cssrs.html','violence.html','decision-aids.html'],
+  withdrawal: ['withdrawal.html','cssrs.html','capacity.html'],
+  mse:        ['mse.html','interview-circle.html','oral.html']
+};
+function renderStack(setName){
+  stack.innerHTML = SETS[setName].map(function(k){
+    var t = BY[k], s = t.safety ? ' is-safety' : '';
+    return '<a class="tl-dock__item'+s+'" role="menuitem" href="?tool='+k+'" data-tool="'+k+'" aria-label="Open the '+t.label+' tool">'+svg(t.g)+'<span>'+t.label+'</span></a>';
+  }).join('');
+}
+renderStack('safety');
+
+function openDock(){ dock.classList.add('is-open'); dock.classList.remove('is-hint'); clearTimeout(hintTimer); fab.setAttribute('aria-expanded','true'); }
+function closeDock(){ dock.classList.remove('is-open'); fab.setAttribute('aria-expanded','false'); }
+fab.addEventListener('click', function(){ dock.classList.contains('is-open') ? closeDock() : openDock(); });
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDock(); });
+document.addEventListener('click', function(e){ if(!dock.contains(e.target)) closeDock(); });
+/* open on hover for fine pointers (desktop convenience) */
+if(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches){
+  dock.addEventListener('mouseenter', openDock);
+  dock.addEventListener('mouseleave', closeDock);
+}
+/* first-run discoverability: pulse + caption until first interaction (auto-clears after 7s) */
+var hintTimer = setTimeout(function(){ dock.classList.remove('is-hint'); }, 7000);
+dock.classList.add('is-hint');
+['click','keydown','mouseenter'].forEach(function(evt){
+  dock.addEventListener(evt, function(){ dock.classList.remove('is-hint'); clearTimeout(hintTimer); }, {once:true});
+});
+
+/* set switcher */
+document.querySelectorAll('.setswitch button').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.setswitch button').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+    b.setAttribute('aria-pressed','true');
+    renderStack(b.getAttribute('data-set'));
+    openDock();
+  });
+});
+
+/* ---------- theme toggle ---------- */
+var root = document.documentElement, tBtn = document.getElementById('themeToggle');
+var sun  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>';
+var moon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>';
+function paintTheme(){
+  var dark = root.getAttribute('data-theme')==='dark';
+  document.getElementById('themeIcon').innerHTML = dark ? sun : moon;
+  document.getElementById('themeText').textContent = dark ? 'Light' : 'Dark';
+  tBtn.setAttribute('aria-pressed', dark ? 'true':'false');
+}
+tBtn.addEventListener('click', function(){
+  root.setAttribute('data-theme', root.getAttribute('data-theme')==='dark' ? 'light':'dark');
+  paintTheme();
+});
+paintTheme();
+
+/* ---------- snippet text + copy ---------- */
+var SNIPPETS = {
+  snipChip:
+'<!-- Inline tool chip \u2014 change only data-tool / href / aria-label / label -->\n'+
+'<a class="tl-chip" href="?tool=withdrawal.html" data-tool="withdrawal.html"\n'+
+'   aria-label="Open the CIWA-Ar / COWS tool">\n'+
+'  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"\n'+
+'       stroke-linecap="round" stroke-linejoin="round">\n'+
+'    <path d="M4 15.5a8 8 0 1 1 16 0"/><path d="M12 15.5l4.4-4"/>\n'+
+'    <circle cx="12" cy="15.5" r="1.3" fill="currentColor" stroke="none"/>\n'+
+'  </svg>\n'+
+'  CIWA-Ar / COWS\n'+
+'</a>\n'+
+'<!-- add class="tl-chip is-safety" for C-SSRS / Violence \u00b7 is-compact for tight flow -->',
+  snipDock:
+'<!-- Floating dock \u2014 one per page; list the 1\u20133 tools it should surface -->\n'+
+'<div class="tl-dock" data-dock>\n'+
+'  <div class="tl-dock__stack" role="menu" aria-label="Related tools">\n'+
+'    <a class="tl-dock__item is-safety" role="menuitem" href="?tool=cssrs.html"\n'+
+'       data-tool="cssrs.html" aria-label="Open the C-SSRS Suicide Screen tool">\n'+
+'      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"\n'+
+'           stroke-linecap="round" stroke-linejoin="round">\n'+
+'        <path d="M12 3l7.5 3v5.4c0 4.7-3.2 8.1-7.5 9.3-4.3-1.2-7.5-4.6-7.5-9.3V6z"/>\n'+
+'        <path d="M8.6 12l2.3 2.3 4.5-4.8"/></svg>\n'+
+'      <span>C-SSRS</span>\n'+
+'    </a>\n'+
+'    <!-- \u2026 up to two more <a class="tl-dock__item"> \u2026 -->\n'+
+'  </div>\n'+
+'  <button class="tl-fab" type="button" aria-expanded="false"\n'+
+'          aria-label="Open related tools for this page">\n'+
+'    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"\n'+
+'         stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>\n'+
+'  </button>\n'+
+'</div>',
+  snipShared:
+'<!-- Paste ONCE per page (or move the <style> to your global sheet and the\n'+
+'     <script> to your app bundle). No framework, no build step. -->\n'+
+'<script>\n'+
+'(function(){\n'+
+'  function launchTool(el, tool){\n'+
+'    var nav = document.querySelector(\'.navitem[data-f="\'+tool+\'"]\');\n'+
+'    if(nav){ nav.click(); return true; }                 // 1 in-app sidebar\n'+
+'    if(window.parent && window.parent !== window){       // 2 embedded iframe\n'+
+'      window.parent.postMessage({type:"openPage", f:tool}, "*"); return true;\n'+
+'    }\n'+
+'    if(el && el.getAttribute("href")) return false;      // 3a ?tool= link\n'+
+'    window.location.href = "tools/" + tool; return true; // 3b last resort\n'+
+'  }\n'+
+'  document.addEventListener("click", function(e){\n'+
+'    var el = e.target.closest("[data-tool]");\n'+
+'    if(!el) return;\n'+
+'    if(launchTool(el, el.getAttribute("data-tool"))) e.preventDefault();\n'+
+'  });\n'+
+'  // floating dock: expand / collapse\n'+
+'  document.querySelectorAll("[data-dock]").forEach(function(d){\n'+
+'    var fab = d.querySelector(".tl-fab");\n'+
+'    function set(open){ d.classList.toggle("is-open", open); fab.setAttribute("aria-expanded", open?"true":"false"); }\n'+
+'    fab.addEventListener("click", function(){ set(!d.classList.contains("is-open")); });\n'+
+'    document.addEventListener("click", function(e){ if(!d.contains(e.target)) set(false); });\n'+
+'    document.addEventListener("keydown", function(e){ if(e.key==="Escape") set(false); });\n'+
+'  });\n'+
+'})();\n'+
+'<\/script>'
+};
+Object.keys(SNIPPETS).forEach(function(id){ document.getElementById(id).textContent = SNIPPETS[id]; });
+document.querySelectorAll('.copybtn').forEach(function(b){
+  b.addEventListener('click', function(){
+    var txt = document.getElementById(b.getAttribute('data-copy')).textContent;
+    var done = function(){ var o=b.textContent; b.textContent='Copied!'; setTimeout(function(){ b.textContent=o; },1400); };
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done, done); }
+    else { var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done(); }
+  });
+});
+</script>
+</body>
+</html>

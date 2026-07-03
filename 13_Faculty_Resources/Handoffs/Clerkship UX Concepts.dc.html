@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#2a6b5e"/><rect x="18" y="24" width="64" height="10" rx="5" fill="#f3ebe5"/><rect x="18" y="24" width="26" height="10" rx="5" fill="#e3b3a8"/><circle cx="34" cy="60" r="15" fill="none" stroke="#f3ebe5" stroke-width="5"/><path d="M34 45a15 15 0 0 1 13 22" fill="none" stroke="#c25a3c" stroke-width="5" stroke-linecap="round"/><rect x="56" y="50" width="26" height="7" rx="3.5" fill="#f3ebe5"/><rect x="56" y="63" width="20" height="7" rx="3.5" fill="#f3ebe5"/></svg></template>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0}
+  .scw::-webkit-scrollbar{height:8px;width:8px}
+  .scw::-webkit-scrollbar-thumb{background:#d8cdbe;border-radius:99px}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#f6f3ee;font-family:'Source Sans 3','Segoe UI',system-ui,sans-serif;color:#2f2924;-webkit-font-smoothing:antialiased">
+
+  <!-- tab bar -->
+  <div style="position:sticky;top:0;z-index:5;background:rgba(246,243,238,.92);backdrop-filter:blur(8px);border-bottom:1px solid #ddd3c6;padding:14px 22px 12px">
+    <div style="max-width:1120px;margin:0 auto">
+      <div style="font-size:.7rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#1e5248;margin-bottom:9px">Inpatient Psychiatry · MS3 Clerkship · concept designs</div>
+      <div class="scw" style="display:flex;gap:8px;overflow-x:auto">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="3">
+          <sc-if value="{{ n.on }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ n.go }}" style="flex:0 0 auto;border:1px solid #2a6b5e;background:#2a6b5e;color:#fff;border-radius:999px;padding:9px 17px;font:inherit;font-size:.88rem;font-weight:700;cursor:pointer;white-space:nowrap">{{ n.label }}</button>
+          </sc-if>
+          <sc-if value="{{ n.off }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ n.go }}" style="flex:0 0 auto;border:1px solid #ddd3c6;background:#fff;color:#51473d;border-radius:999px;padding:9px 17px;font:inherit;font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap">{{ n.label }}</button>
+          </sc-if>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:26px 22px 80px">
+
+  <!-- ═══════════ SCREEN 1 · START HERE ═══════════ -->
+  <sc-if value="{{ isStart }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Start here">
+    <div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1e5248">First run · orientation</div>
+    <h1 style="font-family:'Source Serif 4',Georgia,serif;color:#c25a3c;font-size:2.1rem;font-weight:600;margin:.12em 0 .1em">Welcome. Let's get you oriented.</h1>
+    <p style="color:#51473d;font-size:1.05rem;max-width:64ch;margin:0 0 24px;line-height:1.55">Two minutes now saves you hunting later. Pick how you want to move through the rotation — you can switch anytime from the sidebar.</p>
+
+    <!-- mode cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:26px">
+      <sc-for list="{{ modeCards }}" as="m" hint-placeholder-count="2">
+        <div style="background:#fff;border:1px solid #ddd3c6;border-radius:18px;padding:22px 22px 20px;box-shadow:0 1px 3px rgba(59,51,44,.06);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:13px;margin-bottom:12px">
+            <span style="width:46px;height:46px;border-radius:13px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:{{ m.bg }};color:{{ m.fg }}" dangerouslySetInnerHTML="{{ m.icon }}"></span>
+            <div>
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:1.22rem;color:#2f2924;line-height:1.1">{{ m.title }}</div>
+              <div style="font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:{{ m.fg }};margin-top:3px">{{ m.tag }}</div>
+            </div>
+          </div>
+          <p style="font-size:.92rem;color:#51473d;line-height:1.5;margin:0 0 16px;flex:1">{{ m.desc }}</p>
+          <button style="align-self:flex-start;border:none;background:{{ m.btnBg }};color:#fff;border-radius:9px;padding:11px 18px;font:inherit;font-size:.9rem;font-weight:700;cursor:pointer">{{ m.cta }} →</button>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- first day + track -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:26px">
+      <!-- checklist -->
+      <div style="background:#fff;border:1px solid #ddd3c6;border-radius:16px;padding:20px 22px;box-shadow:0 1px 3px rgba(59,51,44,.06)">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#665a4f;margin-bottom:14px">Your first day · 4 quick wins</div>
+        <sc-for list="{{ firstDay }}" as="f" hint-placeholder-count="4">
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f1ebe1">
+            <span style="flex:0 0 auto;width:24px;height:24px;border-radius:50%;border:1.5px solid {{ f.ring }};background:{{ f.dotBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700" dangerouslySetInnerHTML="{{ f.mark }}"></span>
+            <div style="flex:1">
+              <div style="font-size:.95rem;font-weight:600;color:#2f2924;line-height:1.3">{{ f.title }}</div>
+              <div style="font-size:.8rem;color:#665a4f;line-height:1.35">{{ f.sub }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <!-- track picker -->
+      <div style="background:#fff;border:1px solid #ddd3c6;border-radius:16px;padding:20px 22px;box-shadow:0 1px 3px rgba(59,51,44,.06)">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#665a4f;margin-bottom:12px">Set your track</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
+          <sc-for list="{{ roles }}" as="r" hint-placeholder-count="4">
+            <span style="font-size:.85rem;font-weight:600;border-radius:999px;padding:8px 14px;cursor:pointer;background:{{ r.bg }};color:{{ r.fg }};border:1px solid {{ r.bd }}">{{ r.label }}</span>
+          </sc-for>
+        </div>
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#665a4f;margin-bottom:12px">Which week are you starting?</div>
+        <div style="display:flex;gap:7px">
+          <sc-for list="{{ weekChips }}" as="w" hint-placeholder-count="6">
+            <span style="flex:1;text-align:center;font-size:.85rem;font-weight:700;border-radius:10px;padding:11px 0;cursor:pointer;background:{{ w.bg }};color:{{ w.fg }};border:1px solid {{ w.bd }}">{{ w.n }}</span>
+          </sc-for>
+        </div>
+        <div style="font-size:.78rem;color:#665a4f;margin-top:11px;line-height:1.4">This tailors your <b style="color:#1e5248">Progress home</b> and what surfaces as due for review.</div>
+      </div>
+    </div>
+
+    <!-- quick tools -->
+    <div style="background:#edf4f2;border:1px solid #cfe1db;border-radius:16px;padding:18px 22px">
+      <div style="font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#1e5248;margin-bottom:12px">Or jump straight to a bedside tool</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <sc-for list="{{ quickTools }}" as="t" hint-placeholder-count="5">
+          <span style="display:inline-flex;align-items:center;gap:8px;font-size:.9rem;font-weight:600;color:#1e5248;background:#fff;border:1px solid #ddd3c6;border-radius:999px;padding:9px 15px;cursor:pointer">
+            <span style="display:inline-flex" dangerouslySetInnerHTML="{{ t.icon }}"></span>{{ t.label }}
+          </span>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ═══════════ SCREEN 2 · PROGRESS HOME ═══════════ -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Progress home">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px">
+      <div>
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1e5248">Week 2 of 6 · Mood, Psychosis & Pharm</div>
+        <h1 style="font-family:'Source Serif 4',Georgia,serif;color:#c25a3c;font-size:1.9rem;font-weight:600;margin:.1em 0 0">Good morning — here's what's next.</h1>
+      </div>
+      <span style="display:inline-flex;align-items:center;gap:8px;font-size:.85rem;font-weight:700;color:#a84830;background:#f3ebe5;border:1px solid #e4d6cd;border-radius:999px;padding:8px 14px">
+        <span style="display:inline-flex;color:#c25a3c" dangerouslySetInnerHTML="{{ flameIcon }}"></span>6-day streak
+      </span>
+    </div>
+
+    <!-- stat row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px">
+      <!-- ring -->
+      <div style="background:#fff;border:1px solid #ddd3c6;border-radius:16px;padding:18px;box-shadow:0 1px 3px rgba(59,51,44,.06);display:flex;align-items:center;gap:16px">
+        <div style="flex:0 0 auto;width:74px;height:74px;border-radius:50%;background:conic-gradient(#2a6b5e {{ reviewedDeg }},#f1e7dd 0);display:flex;align-items:center;justify-content:center">
+          <div style="width:56px;height:56px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <span style="font-family:'Source Serif 4',Georgia,serif;font-size:1.2rem;font-weight:700;color:#1e5248;line-height:1">{{ reviewedN }}</span>
+            <span style="font-size:.54rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#665a4f">of {{ reviewedTotal }}</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#665a4f">Topics reviewed</div>
+          <div style="font-size:.86rem;color:#51473d;line-height:1.4;margin-top:3px">You're on track for Week 2.</div>
+        </div>
+      </div>
+      <!-- due today -->
+      <div style="background:#fff;border:1px solid #ddd3c6;border-radius:16px;padding:18px;box-shadow:0 1px 3px rgba(59,51,44,.06)">
+        <div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#665a4f">Due for review today</div>
+        <div style="display:flex;align-items:baseline;gap:7px;margin:4px 0 2px"><span style="font-family:'Source Serif 4',Georgia,serif;font-size:2.4rem;font-weight:700;color:#7a6234;line-height:1">7</span><span style="font-size:.9rem;color:#665a4f;font-weight:600">cards</span></div>
+        <div style="font-size:.84rem;color:#51473d;line-height:1.4">~6 minutes of spaced review.</div>
+      </div>
+      <!-- shelf -->
+      <div style="background:#fff;border:1px solid #ddd3c6;border-radius:16px;padding:18px;box-shadow:0 1px 3px rgba(59,51,44,.06)">
+        <div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#665a4f">Shelf / COMAT</div>
+        <div style="display:flex;align-items:baseline;gap:7px;margin:4px 0 2px"><span style="font-family:'Source Serif 4',Georgia,serif;font-size:2.4rem;font-weight:700;color:#a34132;line-height:1">24</span><span style="font-size:.9rem;color:#665a4f;font-weight:600">days out</span></div>
+        <div style="font-size:.84rem;color:#51473d;line-height:1.4"><b style="color:#a34132">9 high-yield</b> topics still unreviewed.</div>
+      </div>
+    </div>
+
+    <!-- two column lists -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <!-- due today list -->
+      <div style="background:#fff;border:1px solid #ddd3c6;border-radius:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(59,51,44,.06)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#665a4f">Due today</div>
+          <button style="border:1px solid #2a6b5e;background:#2a6b5e;color:#fff;border-radius:999px;padding:6px 13px;font:inherit;font-size:.76rem;font-weight:700;cursor:pointer">Start review</button>
+        </div>
+        <sc-for list="{{ dueToday }}" as="d" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f1ebe1">
+            <span style="flex:1;min-width:0"><span style="font-size:.94rem;font-weight:600;color:#2f2924;display:block;line-height:1.25">{{ d.title }}</span><span style="font-size:.78rem;color:{{ d.metaColor }}">{{ d.meta }}</span></span>
+            <span style="flex:0 0 auto;font-size:.72rem;font-weight:700;color:{{ d.pillFg }};background:{{ d.pillBg }};border:1px solid {{ d.pillBd }};border-radius:999px;padding:3px 10px">{{ d.tag }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <!-- high yield unreviewed -->
+      <div style="background:#fff;border:1px solid #ddd3c6;border-radius:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(59,51,44,.06)">
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#665a4f;margin-bottom:8px">High-yield · not yet reviewed</div>
+        <sc-for list="{{ highYield }}" as="h" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid #f1ebe1">
+            <span style="flex:0 0 auto;color:#7a6234;font-size:.9rem">★</span>
+            <span style="flex:1;min-width:0;font-size:.94rem;font-weight:600;color:#2f2924;line-height:1.25">{{ h.title }}</span>
+            <span style="flex:0 0 auto;font-size:.7rem;font-weight:700;color:#41618a;background:#eaf0f6;border:1px solid #d6e0ee;border-radius:999px;padding:3px 9px">{{ h.week }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- continue -->
+    <div style="background:#f3ebe5;border:1px solid #e4d6cd;border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:16px">
+      <span style="flex:0 0 auto;width:44px;height:44px;border-radius:12px;background:#c25a3c;color:#fff;display:flex;align-items:center;justify-content:center" dangerouslySetInnerHTML="{{ bookIcon }}"></span>
+      <div style="flex:1">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#a84830">Continue where you left off</div>
+        <div style="font-family:'Source Serif 4',Georgia,serif;font-size:1.1rem;font-weight:600;color:#2f2924;margin-top:2px">Mood disorders · Antidepressant selection</div>
+        <div style="height:6px;background:#e6d7cc;border-radius:99px;overflow:hidden;margin-top:8px;max-width:340px"><div style="height:100%;width:62%;background:#c25a3c;border-radius:99px"></div></div>
+      </div>
+      <button style="flex:0 0 auto;border:none;background:#a84830;color:#fff;border-radius:9px;padding:11px 18px;font:inherit;font-size:.88rem;font-weight:700;cursor:pointer">Resume →</button>
+    </div>
+
+    <!-- week arc + coverage -->
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px">
+      <div style="background:#fff;border:1px solid #ddd3c6;border-radius:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(59,51,44,.06)">
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#665a4f;margin-bottom:12px">The six-week arc</div>
+        <div style="display:flex;gap:8px">
+          <sc-for list="{{ weeks }}" as="w" hint-placeholder-count="6">
+            <div style="flex:1;background:{{ w.bg }};border:1px solid {{ w.bd }};border-radius:11px;padding:11px 8px;text-align:center">
+              <div style="width:26px;height:26px;margin:0 auto 6px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;background:{{ w.dot }};color:{{ w.dotfg }};border:1px solid {{ w.dotbd }}">{{ w.mark }}</div>
+              <div style="font-size:.66rem;font-weight:700;color:#2f2924">Wk {{ w.n }}</div>
+              <div style="font-size:.6rem;color:#665a4f;line-height:1.2;margin-top:1px">{{ w.t }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #ddd3c6;border-radius:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(59,51,44,.06)">
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#665a4f;margin-bottom:12px">Coverage by section</div>
+        <sc-for list="{{ coverage }}" as="c" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
+            <span style="flex:0 0 92px;font-size:.78rem;color:#51473d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+            <span style="flex:1;height:8px;background:#f1e7dd;border-radius:99px;overflow:hidden"><span style="display:block;height:100%;width:{{ c.pct }};background:{{ c.color }};border-radius:99px"></span></span>
+            <span style="flex:0 0 30px;text-align:right;font-size:.76rem;font-weight:700;color:#2f2924">{{ c.pct }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ═══════════ SCREEN 3 · BEDSIDE MOBILE ═══════════ -->
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Bedside mobile" style="display:grid;grid-template-columns:390px 1fr;gap:34px;align-items:start">
+    <!-- phone -->
+    <div style="justify-self:center">
+      <div style="width:390px;background:#1a1613;border-radius:46px;padding:11px;box-shadow:0 18px 50px rgba(59,51,44,.28)">
+        <div style="position:relative;background:#f6f3ee;border-radius:36px;overflow:hidden;height:788px;display:flex;flex-direction:column">
+          <!-- status bar -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 26px 6px;font-size:.78rem;font-weight:700;color:#2f2924">
+            <span>9:41</span>
+            <div style="width:118px;height:26px;background:#1a1613;border-radius:0 0 16px 16px;position:absolute;left:50%;transform:translateX(-50%);top:0"></div>
+            <span style="letter-spacing:.02em">▪▪▪ ▪ 􀙇</span>
+          </div>
+          <!-- app top bar -->
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 16px 12px;border-bottom:1px solid #ddd3c6">
+            <span style="width:34px;height:34px;border-radius:8px;background:#a84830;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem">☰</span>
+            <div style="flex:1;min-width:0"><div style="font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:.98rem;color:#c25a3c;line-height:1">Alcohol withdrawal</div><div style="font-size:.66rem;color:#665a4f">Core Topics · SUD</div></div>
+            <span style="font-size:1.1rem;color:#51473d">☾</span>
+          </div>
+          <!-- content -->
+          <div class="scw" style="flex:1;overflow:hidden;padding:14px 16px 10px">
+            <div style="background:#edf4f2;border-left:3px solid #2a6b5e;border-radius:0 10px 10px 0;padding:11px 13px;margin-bottom:11px">
+              <div style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1e5248;margin-bottom:5px">In 30 seconds</div>
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:.95rem;line-height:1.35;color:#2f2924">Score early and repeatedly; treat symptom-triggered, not by the clock.</div>
+            </div>
+            <div style="display:flex;gap:9px;background:#fbece9;border-left:3px solid #a34132;border-radius:0 10px 10px 0;padding:10px 13px;margin-bottom:11px">
+              <span style="color:#a34132;font-size:.95rem">⚠</span>
+              <div style="font-size:.86rem;line-height:1.4;color:#2f2924"><b style="color:#a34132">Can't miss. </b>Thiamine before glucose; watch for seizures and DTs.</div>
+            </div>
+            <p style="font-size:.88rem;color:#51473d;line-height:1.6;margin:0 0 8px">Escalating tremor, sweats, tachycardia and anxiety within 6–24 h of the last drink should prompt formal scoring rather than eyeballing…</p>
+            <p style="font-size:.88rem;color:#51473d;line-height:1.6;margin:0">Because severity and safety travel together, keep the risk screens close at hand.</p>
+          </div>
+          <!-- bedside tool bar -->
+          <div style="border-top:1px solid #ddd3c6;background:#faf6f0;padding:9px 12px 22px">
+            <div style="font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#87786a;margin:0 2px 8px">Tools for this page</div>
+            <div style="display:flex;gap:7px">
+              <sc-for list="{{ bedside }}" as="b" hint-placeholder-count="5">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:{{ b.bg }};border:1px solid {{ b.bd }};border-radius:13px;padding:9px 4px;min-height:60px;justify-content:center">
+                  <span style="display:inline-flex;color:{{ b.fg }}" dangerouslySetInnerHTML="{{ b.icon }}"></span>
+                  <span style="font-size:.6rem;font-weight:700;color:{{ b.fg }};text-align:center;line-height:1.05">{{ b.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <!-- home indicator -->
+          <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;border-radius:99px;background:#2f2924;opacity:.3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- annotations -->
+    <div style="padding-top:6px">
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1e5248">Concept 3 · bedside on your phone</div>
+      <h1 style="font-family:'Source Serif 4',Georgia,serif;color:#c25a3c;font-size:1.9rem;font-weight:600;margin:.12em 0 .1em">A persistent tool bar where you actually work.</h1>
+      <p style="color:#51473d;font-size:1.02rem;max-width:56ch;margin:0 0 22px;line-height:1.55">On the unit you're one-handed with a phone. The four tools this page maps to sit docked at the bottom — no drawer, no hunting — and the bar changes with the topic you're reading.</p>
+      <sc-for list="{{ mobileNotes }}" as="a" hint-placeholder-count="4">
+        <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:16px">
+          <span style="flex:0 0 auto;width:34px;height:34px;border-radius:10px;background:#edf4f2;color:#1e5248;display:flex;align-items:center;justify-content:center;font-family:'Source Serif 4',Georgia,serif;font-weight:700">{{ a.n }}</span>
+          <div><div style="font-size:.98rem;font-weight:700;color:#2f2924;margin-bottom:1px">{{ a.title }}</div><div style="font-size:.9rem;color:#51473d;line-height:1.5">{{ a.body }}</div></div>
+        </div>
+      </sc-for>
+      <div style="background:#edf4f2;border:1px solid #cfe1db;border-radius:14px;padding:14px 17px;margin-top:6px;font-size:.88rem;color:#23423b;line-height:1.5">
+        <b style="color:#1e5248">Ties into the launcher badges:</b> the docked bar reuses the same tool registry, icons, and in-app routing — the phone gets a bar, wider screens get the floating dock.
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:880}}">
+class Component extends DCLogic {
+  state = { tab: 'start' };
+  renderVals() {
+    const S = this.state;
+    const set = (t) => () => this.setState({ tab: t });
+    const ic = (p, w) => ({ __html: '<svg width="' + (w||20) + '" height="' + (w||20) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg>' });
+
+    const G = {
+      withdrawal:'<path d="M4 15.5a8 8 0 1 1 16 0"/><path d="M12 15.5l4.4-4"/><circle cx="12" cy="15.5" r="1.3" fill="currentColor" stroke="none"/>',
+      cssrs:'<path d="M12 3l7.5 3v5.4c0 4.7-3.2 8.1-7.5 9.3-4.3-1.2-7.5-4.6-7.5-9.3V6z"/><path d="M8.6 12l2.3 2.3 4.5-4.8"/>',
+      mse:'<circle cx="12" cy="8.6" r="5"/><path d="M6.4 20c1-3.2 3.1-4.9 5.6-4.9S16.6 16.8 17.6 20"/><circle cx="10" cy="8" r=".7" fill="currentColor" stroke="none"/><circle cx="13.6" cy="9.1" r=".7" fill="currentColor" stroke="none"/><circle cx="11.4" cy="10.8" r=".7" fill="currentColor" stroke="none"/>',
+      capacity:'<path d="M12 4.4v15"/><path d="M7 19.4h10"/><path d="M6.4 7.6h11.2"/><path d="M6.4 7.6L3.8 12.4a2.6 2.6 0 0 0 5.2 0z"/><path d="M17.6 7.6l-2.6 4.8a2.6 2.6 0 0 0 5.2 0z"/><circle cx="12" cy="5.4" r="1.1" fill="currentColor" stroke="none"/>',
+      screeners:'<path d="M4 6.6l1.4 1.4L8.2 5"/><path d="M4 12l1.4 1.4L8.2 10.6"/><path d="M4 17.4l1.4 1.4L8.2 16"/><path d="M11 6.2h9M11 11.8h9M11 17.2h6"/>',
+      path:'<circle cx="5.5" cy="18.5" r="1.7" fill="currentColor" stroke="none"/><circle cx="18.5" cy="5.5" r="1.7" fill="currentColor" stroke="none"/><path d="M6 17c3-.6 4.4-2.6 4.4-5.5S8 6.5 12 6.2s6-.5 6.2-.6"/>',
+      library:'<rect x="4" y="4.5" width="4.2" height="15" rx="1"/><rect x="9.4" y="4.5" width="4.2" height="15" rx="1"/><path d="M15.3 6l3.4.9 1 13.2-3.9-1z"/>',
+      check:'<path d="M5 13l4 4L19 7"/>',
+      book:'<path d="M4 5.4A1.6 1.6 0 0 1 5.6 4H12v15.5H5.6A1.6 1.6 0 0 0 4 20.6z"/><path d="M20 5.4A1.6 1.6 0 0 0 18.4 4H12v15.5h6.4A1.6 1.6 0 0 1 20 20.6z"/>',
+      flame:'<path d="M12 3c3 3 5 5.2 5 9a5 5 0 0 1-10 0c0-2 .9-3.2 2-4.2 0 1.8 1 2.8 2 2.8 0-3-1-4-1-5.8 0-1 .3-1.6 2-1.8z"/>'
+    };
+
+    const nav = [['start','Start here'],['home','Progress home'],['mobile','Bedside · mobile']]
+      .map(([id,label]) => { const on = S.tab===id; return { label, on, off:!on, go:set(id) }; });
+
+    // ---- Screen 1 ----
+    const modeCards = [
+      { title:'Follow the Path', tag:'Guided · 6 weeks', bg:'#f3ebe5', fg:'#a84830', btnBg:'#a84830', icon:ic(G.path,22),
+        desc:'A week-by-week route through the rotation — foundations first, acute & exam last. Best if you want structure and a visible sense of progress.', cta:'Start Week 1' },
+      { title:'Browse the Library', tag:'Self-directed', bg:'#edf4f2', fg:'#1e5248', btnBg:'#2a6b5e', icon:ic(G.library,22),
+        desc:'Jump to any topic, pocket card, or tool the moment it comes up on the unit. Best for looking things up between patients.', cta:'Open the library' }
+    ];
+    const firstDay = [
+      { title:'Read the orientation packet', sub:'What the rotation expects — 10 minutes.', done:true },
+      { title:'Skim the Interview & MSE pocket guide', sub:'The two cards to keep on you.', done:true },
+      { title:'Try the MSE builder on a real patient', sub:'Build a written exam, domain by domain.', done:false },
+      { title:'Set your track and week', sub:'Tailors your Progress home.', done:false }
+    ].map(f => ({ title:f.title, sub:f.sub, mark: f.done ? ic(G.check,14) : {__html:''}, ring: f.done ? '#357160' : '#ccbfae', dotBg: f.done ? '#357160' : '#fff' }));
+    const roles = ['MS3','Sub-I / MS4','Resident','SW / Nursing'].map((label,i) => ({
+      label, bg: i===0?'#2a6b5e':'#faf6f0', fg: i===0?'#fff':'#51473d', bd: i===0?'#2a6b5e':'#ddd3c6'
+    }));
+    const weekChips = [1,2,3,4,5,6].map(n => ({ n, bg: n===2?'#c25a3c':'#faf6f0', fg: n===2?'#fff':'#51473d', bd: n===2?'#c25a3c':'#ddd3c6' }));
+    const quickTools = [['CIWA / COWS','withdrawal'],['C-SSRS','cssrs'],['MSE','mse'],['Capacity','capacity'],['PHQ-9 / GAD-7','screeners']]
+      .map(([label,g]) => ({ label, icon: ic(G[g],18) }));
+
+    // ---- Screen 2 ----
+    const reviewedN = 18, reviewedTotal = 34;
+    const reviewedDeg = Math.round(reviewedN/reviewedTotal*360) + 'deg';
+    const dueToday = [
+      { title:'C-SSRS triage tiers', meta:'Last seen 4 days ago', tag:'Overdue', metaColor:'#a34132', pillFg:'#a34132', pillBg:'#fbece9', pillBd:'#e6bcb2' },
+      { title:'Serotonin syndrome vs. NMS', meta:'Scheduled for today', tag:'Due', metaColor:'#665a4f', pillFg:'#7a6234', pillBg:'#f5efe2', pillBd:'#e0cf9f' },
+      { title:'Lithium monitoring', meta:'Scheduled for today', tag:'Due', metaColor:'#665a4f', pillFg:'#7a6234', pillBg:'#f5efe2', pillBd:'#e0cf9f' },
+      { title:'Delirium vs. dementia', meta:'Seen 2 days ago', tag:'Review', metaColor:'#665a4f', pillFg:'#1e5248', pillBg:'#edf4f2', pillBd:'#cfe1db' }
+    ];
+    const highYield = [
+      { title:'First-episode psychosis workup', week:'Wk 2' },
+      { title:'Alcohol withdrawal · CIWA', week:'Wk 5' },
+      { title:'Decisional capacity & consent', week:'Wk 5' },
+      { title:'Agitation & de-escalation', week:'Wk 5' }
+    ];
+    const weeksRaw = [['1','Foundations','done'],['2','Mood · Psychosis','cur'],['3','Therapy · Personality','future'],['4','Family · Systems','future'],['5','Acute · Emergency','future'],['6','Integration · Exam','future']];
+    const weeks = weeksRaw.map(([n,t,st]) => ({
+      n, t,
+      bg: st==='cur'?'#f3ebe5':'#faf6f0', bd: st==='cur'?'#e4d6cd':'#ebe5da',
+      dot: st==='done'?'#2a6b5e':st==='cur'?'#c25a3c':'#fff',
+      dotfg: st==='future'?'#a84830':'#fff',
+      dotbd: st==='future'?'#e4d6cd':'transparent',
+      mark: st==='done'?'✓':n
+    }));
+    const coverage = [
+      { name:'Clinical Skills', pct:'80%', color:'#2a6b5e' },
+      { name:'Core Topics', pct:'55%', color:'#7a6234' },
+      { name:'Acute & Safety', pct:'30%', color:'#a34132' },
+      { name:'Evidence', pct:'20%', color:'#41618a' }
+    ];
+
+    // ---- Screen 3 ----
+    const bedside = [
+      { label:'CIWA', g:'withdrawal', safety:false },
+      { label:'C-SSRS', g:'cssrs', safety:true },
+      { label:'MSE', g:'mse', safety:false },
+      { label:'Capacity', g:'capacity', safety:false },
+      { label:'More', g:'library', more:true }
+    ].map(b => ({
+      label: b.label, icon: ic(G[b.g],21),
+      bg: b.more?'#faf6f0':b.safety?'#f3ebe5':'#edf4f2',
+      bd: b.more?'#ddd3c6':b.safety?'#e4d6cd':'#cfe1db',
+      fg: b.more?'#665a4f':b.safety?'#a84830':'#1e5248'
+    }));
+    const mobileNotes = [
+      { n:'1', title:'Your four most-used tools, docked', body:'CIWA, C-SSRS, MSE and Capacity sit one thumb-tap away. "More" opens the full set as a sheet.' },
+      { n:'2', title:'Context-aware', body:'The bar reflects the page you\u2019re reading — a withdrawal page surfaces CIWA; a safety page surfaces C-SSRS and Violence.' },
+      { n:'3', title:'Built for thumbs', body:'Every target is \u226544\u00d744px and the bar clears the home indicator and the sidebar drawer.' },
+      { n:'4', title:'Opens in-app', body:'Tapping a tool loads it in place through the same sidebar routing the hub already uses \u2014 no dead-end new tab.' }
+    ];
+
+    return {
+      nav, isStart:S.tab==='start', isHome:S.tab==='home', isMobile:S.tab==='mobile',
+      modeCards, firstDay, roles, weekChips, quickTools,
+      reviewedN, reviewedTotal, reviewedDeg, dueToday, highYield, weeks, coverage,
+      flameIcon: ic(G.flame,17), bookIcon: ic(G.book,22),
+      bedside, mobileNotes
+    };
+  }
+}
+</script>
+</body>
+</html>
