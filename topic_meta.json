@@ -1047,5 +1047,172 @@
       "label": "Open the Protocol Library",
       "href": "?page=protocol_library.md"
     }
+  },
+  "ddx.md": {
+    "read": 4,
+    "hy": true,
+    "tldr": "Run a medical mimic screen before anchoring any psychiatric diagnosis — a new or acutely changed presentation is a medical workup until proven otherwise, especially in elderly, medically ill, and first-episode patients.",
+    "points": [
+      "For new psychosis, delirium is the can't-miss before schizophrenia — confirm attention, get a tox screen and basic labs, and do not assume a primary psychotic disorder on first episode without a workup.",
+      "In mania or severe agitation, akathisia — drug-induced restlessness from antipsychotics — is frequently missed because it looks like anxiety or behavioral escalation.",
+      "In withdrawal, give thiamine before glucose — a glucose load in a thiamine-deficient patient can precipitate Wernicke's encephalopathy."
+    ],
+    "cant": "Anchoring on a psychiatric diagnosis before ruling out the medical mimics — especially delirium, intoxication/withdrawal, and thyroid or metabolic causes — is the most common reasoning error on the inpatient unit.",
+    "quiz": {
+      "q": "An 80-year-old man with no psychiatric history becomes acutely paranoid, cannot say the months in reverse, and was completely lucid last week. The overnight team labels this 'new onset psychosis' and considers an antipsychotic. What is the most important next step?",
+      "o": [
+        {
+          "t": "Start a low-dose antipsychotic for the paranoia and request outpatient psychiatric follow-up"
+        },
+        {
+          "t": "Treat as delirium until proven otherwise — check vitals, basic labs, tox screen, medication list, and infection markers before any psychiatric label",
+          "c": true
+        },
+        {
+          "t": "Request a psychiatry consult to clarify the diagnosis before doing a medical workup"
+        },
+        {
+          "t": "Schedule formal cognitive testing to differentiate dementia from new-onset psychosis"
+        }
+      ],
+      "why": "New confusion with fluctuating attention in an elderly patient is delirium until proven otherwise — the one rule on this page that prevents most errors. Starting an antipsychotic before workup risks masking the medical cause; waiting for psychiatry before doing the evaluation loses critical time; dementia testing is premature when delirium hasn't been excluded."
+    },
+    "cta": {
+      "label": "Open the Decision Aids",
+      "href": "tools/decision-aids.html"
+    }
+  },
+  "pg_interview.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "Use the interview as a circle with the patient's story at the center — covering all 11 domains in whatever order the conversation allows — and always gather the safety trio (suicide, violence, vulnerability) before closing.",
+    "points": [
+      "Ask suicide questions directly: 'Have you had thoughts of killing yourself?' — direct questions do not implant suicidal thoughts, and indirect approaches miss real risk.",
+      "MSE language should be behavioral and observable: write 'affect constricted, minimally reactive, mood-congruent' rather than 'patient appeared depressed' — describe what you saw, not your interpretation.",
+      "Close every interview with a summary in the patient's language, one correction invitation, and one named next step — this closes the loop and builds trust."
+    ],
+    "cant": "'Denies SI/HI — no risk' is not a risk assessment; document what you asked, what the patient reported, and the reasoning that led to your risk level.",
+    "quiz": {
+      "q": "During a rounds presentation, a student reports: 'On MSE, mood was depressed and the patient was anxious.' The attending asks for more precise language. Which revision is best?",
+      "o": [
+        {
+          "t": "The patient appeared to have a depressed mood and showed signs of anxiety"
+        },
+        {
+          "t": "Patient denied euphoria and grandiosity; affect within normal limits"
+        },
+        {
+          "t": "Mood: 'really low, like a 2 out of 10' (patient quote); affect constricted, minimally reactive, mood-congruent; no psychomotor agitation",
+          "c": true
+        },
+        {
+          "t": "Patient reported moderate depression and anxiety consistent with major depressive disorder"
+        }
+      ],
+      "why": "The MSE separates mood (the patient's subjective report, always quoted in the patient's words) from affect (the clinician's behavioral observation: range, reactivity, congruence). Option 3 shows both correctly. The other options either interpret rather than observe, skip the patient quote, or make a diagnostic statement where a description belongs."
+    },
+    "cta": {
+      "label": "Open the MSE tool",
+      "href": "tools/mse.html"
+    }
+  },
+  "pg_formulation.md": {
+    "read": 4,
+    "tldr": "Answer why-this-person, why-this-syndrome, and why-now using the four-layer framework (body/brain, psychiatric syndrome, relationships/environment, recovery/role) — a diagnosis without a formulation is just a label.",
+    "points": [
+      "The five-part differential always includes substance/medication-induced and medical contributors — stopping at the primary psychiatric diagnosis skips the most reversible causes.",
+      "The formulation template: name the leading syndrome, the contributors from each layer, the immediate risk, and what must change before discharge — then explain how the treatment follows from that.",
+      "Faculty questions that sharpen formulation: 'What would make this diagnosis wrong?' and 'What collateral would change the plan?' — bring answers to these before presenting."
+    ],
+    "cant": "Listing a diagnosis without a formulation leaves the team without the why-now — and without the why-now, the treatment plan has no clinical logic.",
+    "quiz": {
+      "q": "A student presents a patient with severe depression and recommends starting an SSRI. The attending asks for the formulation before any treatment decision. What must the student add?",
+      "o": [
+        {
+          "t": "A summary of the body/brain contributors, the psychiatric syndrome, the family/social context, what must change before discharge, and how the SSRI fits that picture",
+          "c": true
+        },
+        {
+          "t": "The specific DSM criteria met by the patient"
+        },
+        {
+          "t": "A list of prior antidepressants the patient has tried and why they failed"
+        },
+        {
+          "t": "The patient's GAF score and number of prior hospitalizations"
+        }
+      ],
+      "why": "A formulation answers why-this-person, why-this-syndrome, and why-now — linking those answers to the treatment choice. The four-layer framework (body/brain, syndrome, relationships/environment, recovery/role) is the structure. The SSRI is only clinically reasoned after the formulation confirms the target is a primary depressive episode, not bipolar depression, a substance-induced condition, or a medically driven one."
+    },
+    "cta": {
+      "label": "Open the Differential Dx Scaffolds",
+      "href": "?page=ddx.md"
+    }
+  },
+  "doc_oral.md": {
+    "read": 5,
+    "tldr": "Write notes and give presentations that reveal reasoning — every note should let the next clinician know what you are treating, what else it could be, what the risk is today, what changed, and what has to happen before discharge.",
+    "points": [
+      "Daily rounds presentations run 60–90 seconds: hospital day, overnight events, one subjective point and one MSE change, a risk update, and a plan question — lead with what changed, not the full history.",
+      "Organize the note plan by problem: safety → medications/medical/substance/sleep → psychotherapy/milieu → family/collateral → disposition — so the structure mirrors the clinical priorities.",
+      "The handoff template names the main overnight risks, a trigger-plan pair (if X happens, do Y), and what escalates and what helps with this patient — generic handoffs create coverage gaps."
+    ],
+    "cant": "Copying forward yesterday's risk language without updating the reasoning — 'denies SI/HI, low acute risk' on hospital day 7 without noting today's context — erases the clinical event and creates a documentation gap.",
+    "quiz": {
+      "q": "During a 90-second rounds update, a student presents 5 minutes of history and ends with 'so the plan is to continue current medications.' The attending asks what the student should have led with instead. What is correct?",
+      "o": [
+        {
+          "t": "A full review of the patient's psychiatric history to give the team context"
+        },
+        {
+          "t": "The complete medication list with doses and adherence"
+        },
+        {
+          "t": "A review of the patient's insurance and discharge plan"
+        },
+        {
+          "t": "Hospital day, what changed overnight, one MSE point, a risk update, and the clinical question for the team",
+          "c": true
+        }
+      ],
+      "why": "A daily rounds presentation is a structured 60–90 second clinical update — it begins with the hospital day and what changed overnight, not a retelling of the history. The attending already knows the background; they need to know what shifted and what decision is needed today. A plan question names the uncertainty and invites attending input."
+    },
+    "cta": {
+      "label": "Open the Formulation & DDx Pocket Guide",
+      "href": "?page=pg_formulation.md"
+    }
+  },
+  "exp_tx.md": {
+    "read": 4,
+    "tldr": "Every treatment decision starts with a target symptom linked to the formulation — name what the intervention is treating and why it fits, monitor for adverse effects, and remember that inpatient treatment is medication plus supportive therapy plus milieu plus family.",
+    "points": [
+      "Treatment rationale template: 'The main target is [symptom/risk]; I think [intervention] fits because [formulation reason]; the main monitoring need is [X]; the discharge implication is [Y].'",
+      "Inpatient treatment is not just medication — monitor sleep schedule, group attendance, PRN use, and family calls that worsen or improve regulation as clinical data equal in weight to the medication.",
+      "Ask what the patient has tried before, what helped, what caused adverse effects, and what medication belief or fear needs to be addressed — prior history changes the choice."
+    ],
+    "cant": "Recommending a medication without naming the target symptom or the formulation reason — 'continue olanzapine' without linking it to a specific symptom target — is not a treatment plan.",
+    "quiz": {
+      "q": "A student recommends olanzapine for a patient admitted with acute psychosis. The attending asks for the treatment rationale. Which response demonstrates the required reasoning?",
+      "o": [
+        {
+          "t": "Olanzapine is an atypical antipsychotic with established efficacy for schizophrenia"
+        },
+        {
+          "t": "The main targets are persecutory delusions and sleep disruption driving acute risk; olanzapine addresses both; monitor baseline weight, glucose, and lipids given metabolic burden",
+          "c": true
+        },
+        {
+          "t": "The patient has failed two other antipsychotics, so olanzapine is the next logical step"
+        },
+        {
+          "t": "The family requested this medication and the patient tolerated it well in the past"
+        }
+      ],
+      "why": "A treatment rationale links a specific target symptom to the formulation, names why the intervention fits, identifies the monitoring need, and implies the discharge plan. Naming the drug class without the target is not a rationale; prior failures change choice but are not the rationale; family request and past tolerance are clinical data, not sufficient justification on their own."
+    },
+    "cta": {
+      "label": "Open the Protocol Library",
+      "href": "?page=protocol_library.md"
+    }
   }
 }
