@@ -112,7 +112,7 @@ if (existsSync(tmPath) && parsed[tmPath]) {
     const ctas = Array.isArray(m.cta) ? m.cta : [m.cta];
     for (const c of ctas) {
       if (!c || !c.href) continue;
-      const pageMatch = c.href.match(/^\.?\/?\?page=(.+)$/);
+      const pageMatch = c.href.match(/^\.?\/?\?page=([^&#]+)$/);
       if (pageMatch) {
         const target = decodeURIComponent(pageMatch[1]);
         if (!existsSync(p('content', target))) H(`topic_meta cta for ${key} → missing target: ${c.href}`);
