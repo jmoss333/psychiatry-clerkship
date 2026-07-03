@@ -11,6 +11,12 @@ OUT=os.environ.get("OUT_DIR", os.path.join(ROOT,"mmc-resident-deploy"))
 if os.path.exists(OUT): shutil.rmtree(OUT)
 shutil.copytree(MS3, OUT)   # start as a full copy of the polished/dark/motion MS3 build
 
+# ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the 4 files
+# that rode along via the MS3 copytree above; resident gets its own prototypes only (below).
+for _f in ["orientation-video.html","Inpatient_Psych_Orientation.mp4","Inpatient_Psych_Orientation.vtt","poster.jpg"]:
+    _p=os.path.join(OUT,"tools",_f)
+    if os.path.exists(_p): os.remove(_p)
+
 # ---- resident-only pages (welcome overrides the MS3 welcome.md) ----
 RES_EXTRA=[
  ("14_Tracks/Resident/resident_welcome.md","welcome.md"),
@@ -33,7 +39,6 @@ for src,dst in RES_EXTRA:
 # Previously hand-copied straight into the deploy dir (source/deploy drift); now built from
 # git-tracked _prototypes/ so build-on-push keeps them live. Copied raw to match live (no polish pass).
 PROTO_TOOLS=[
- ("_prototypes/orientation-video/orientation-video.html","orientation-video.html"),
  ("_prototypes/agitation-trainer/rp-agitation.html","rp-agitation.html"),
  ("_prototypes/brief-psych/rp-brief-psych.html","rp-brief-psych.html"),
  ("_prototypes/canon-quiz/rp-canon-quiz.html","rp-canon-quiz.html"),
@@ -74,7 +79,6 @@ TOOLS=[("mse.html","Mental Status Exam"),("interview-circle.html","The Interview
  ("feedback.html","Improve this library — send feedback")]
 nav=[
  {"section":"Start here","items":[
-   {"t":"Orientation Video (start here)","f":"orientation-video.html","k":"tool"},
    {"t":"Welcome — Resident Rotation","f":"welcome.md","k":"md"},
    {"t":"4-Week Rotation Plan","f":"rotation.md","k":"md"},
    {"t":"Core Reading List","f":"core_readings.md","k":"md"}]},
@@ -106,7 +110,7 @@ for g in GROUPS:
     for term in g: tt.update(tok(term))
     for x in tt: syn.setdefault(x,set()).update(tt-{x})
 syn={k:sorted(v) for k,v in syn.items()}
-TOOLKW={"mse.html":"mental status exam appearance behavior speech mood affect thought","interview-circle.html":"interview circle radial domain map intake history hpi substance family social mental status safety conversation interviewing checklist","capacity.html":"decisional capacity informed consent four abilities","oral.html":"rounding presentation oral assessment plan handoff timer","violence.html":"violence risk aggression frst de-escalation","cssrs.html":"columbia suicide severity rating scale ideation safety planning","withdrawal.html":"withdrawal alcohol ciwa opioid cows benzodiazepine thiamine","reflection.html":"reflection professional identity formation","screeners.html":"phq-9 gad-7 depression anxiety screener cutoff","active-recall.html":"active recall self test quiz board review flashcards","shelf-mode.html":"board style question bank exam simulation vignette mixed blueprint mock test","decision-aids.html":"algorithms decision aids trees escalation ladder nms serotonin withdrawal timeline ciwa catatonia","bfcrs.html":"bush francis catatonia rating scale immobility mutism posturing waxy flexibility lorazepam challenge","review.html":"daily review spaced repetition srs flashcards retention due cards streak board review test enhanced learning forgetting curve","feedback.html":"feedback improve library suggest resource report broken link error confusing helpful comment suggestion box","learning-path.html":"learning path home dashboard rotation progress daily review","orientation-video.html":"orientation video start here inpatient unit welcome introduction onboarding tour first day","rp-agitation.html":"agitation ladder prn trainer restraint de-escalation seclusion intramuscular haloperidol lorazepam olanzapine decision escalation","rp-brief-psych.html":"five good minutes brief psychotherapy coach supportive bedside therapeutic conversation skills","rp-canon-quiz.html":"canon quiz 200 paper spine landmark trials evidence self test board review recall"}
+TOOLKW={"mse.html":"mental status exam appearance behavior speech mood affect thought","interview-circle.html":"interview circle radial domain map intake history hpi substance family social mental status safety conversation interviewing checklist","capacity.html":"decisional capacity informed consent four abilities","oral.html":"rounding presentation oral assessment plan handoff timer","violence.html":"violence risk aggression frst de-escalation","cssrs.html":"columbia suicide severity rating scale ideation safety planning","withdrawal.html":"withdrawal alcohol ciwa opioid cows benzodiazepine thiamine","reflection.html":"reflection professional identity formation","screeners.html":"phq-9 gad-7 depression anxiety screener cutoff","active-recall.html":"active recall self test quiz board review flashcards","shelf-mode.html":"board style question bank exam simulation vignette mixed blueprint mock test","decision-aids.html":"algorithms decision aids trees escalation ladder nms serotonin withdrawal timeline ciwa catatonia","bfcrs.html":"bush francis catatonia rating scale immobility mutism posturing waxy flexibility lorazepam challenge","review.html":"daily review spaced repetition srs flashcards retention due cards streak board review test enhanced learning forgetting curve","feedback.html":"feedback improve library suggest resource report broken link error confusing helpful comment suggestion box","learning-path.html":"learning path home dashboard rotation progress daily review","rp-agitation.html":"agitation ladder prn trainer restraint de-escalation seclusion intramuscular haloperidol lorazepam olanzapine decision escalation","rp-brief-psych.html":"five good minutes brief psychotherapy coach supportive bedside therapeutic conversation skills","rp-canon-quiz.html":"canon quiz 200 paper spine landmark trials evidence self test board review recall"}
 postings={}; docs=[]
 def addtok(docid,text,wt):
     for x in tok(text):

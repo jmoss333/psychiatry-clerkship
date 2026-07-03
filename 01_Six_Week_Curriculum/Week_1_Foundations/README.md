@@ -1,5 +1,10 @@
 # Week 1 — Foundations & Orientation
 
+<video src="media/week-intro-1.mp4" autoplay muted loop playsinline
+  aria-label="Week 1 preview: Foundations — the psychiatric interview, the mental status exam, capacity, and writing an admission note."
+  style="width:100%;max-width:960px;aspect-ratio:16/9;border-radius:12px;display:block;margin:10px 0 18px">
+</video>
+
 **Objectives:** orient to the unit; conduct a basic psychiatric interview; structure an MSE; write an admission note; begin assessing capacity.
 
 **Suggested reading:** Engel 1977 (biopsychosocial) · Rosenhan 1973 (labeling) · Appelbaum & Grisso 1988 (capacity). *(See the Landmark reading list + the Download Checklist.)*

@@ -1,5 +1,10 @@
 # Week 3 — Psychotherapy, Personality & the Relationship
 
+<video src="media/week-intro-3.mp4" autoplay muted loop playsinline
+  aria-label="Week 3 preview: Psychotherapy & Personality — the therapeutic relationship, DBT-informed care, and safety planning."
+  style="width:100%;max-width:960px;aspect-ratio:16/9;border-radius:12px;display:block;margin:10px 0 18px">
+</video>
+
 **Objectives:** understand common factors; the logic of DBT for BPD; basic CBT/MI/exposure literacy; build a case formulation.
 
 **Suggested reading:** Wampold 1997 (common factors) · Linehan 1991 (DBT). **Journal Club #3 (Safety Planning).**

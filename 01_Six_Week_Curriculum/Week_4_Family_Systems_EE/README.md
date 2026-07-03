@@ -1,5 +1,10 @@
 # Week 4 — Family, Systems & Expressed Emotion
 
+<video src="media/week-intro-4.mp4" autoplay muted loop playsinline
+  aria-label="Week 4 preview: Family & Systems — family meetings and expressed emotion."
+  style="width:100%;max-width:960px;aspect-ratio:16/9;border-radius:12px;display:block;margin:10px 0 18px">
+</video>
+
 **Objectives:** observe/run a family meeting; recognize high expressed emotion (EE); cite the family-intervention evidence.
 
 **Suggested reading:** Brown 1962 (EE) · Pharoah 2010 (Cochrane family intervention). **Journal Club #2 (EE)** and **#6 (Family Intervention).**

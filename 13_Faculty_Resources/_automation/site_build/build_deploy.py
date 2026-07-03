@@ -29,6 +29,40 @@ tools=[
 ]
 for src,dst,_ in tools:
     shutil.copy2(os.path.join(LIB,src), OUT+"/tools/"+dst)
+
+# ---- orientation video (MS3 "start here") ----
+ORIENT_VIDEO=[
+ ("_prototypes/orientation-video/orientation-video.html","orientation-video.html"),
+ ("_prototypes/orientation-video/Inpatient_Psych_Orientation.mp4","Inpatient_Psych_Orientation.mp4"),
+ ("_prototypes/orientation-video/Inpatient_Psych_Orientation.vtt","Inpatient_Psych_Orientation.vtt"),
+ ("_prototypes/orientation-video/poster.jpg","poster.jpg"),
+]
+for src,dst in ORIENT_VIDEO:
+    p=os.path.join(LIB,src)
+    if os.path.exists(p): shutil.copy2(p, OUT+"/tools/"+dst)
+    else: print("  WARN: orientation video asset missing from source:",src)
+
+# ---- video library (intro trailer, day-in-the-life, week stingers, tool spotlights) ----
+# Design source: Clerkship_video_handoff package (2026-07-02/03). Each .mp4 is exported by hand
+# from the design tool (Cowork can't click "Export"); until a file lands in _prototypes/video-library/,
+# its entry below is a silent no-op and the page embed referencing it just won't play yet.
+# See _prototypes/video-library/README.md for the exact export filenames + placement map.
+VIDEO_MEDIA=[
+ "intro-trailer.mp4","intro-trailer-poster.jpg","day-in-the-life.mp4",
+ "week-intro-1.mp4","week-intro-2.mp4","week-intro-3.mp4","week-intro-4.mp4","week-intro-5.mp4","week-intro-6.mp4",
+ "tool-spotlight-interview-circle.mp4","tool-spotlight-capacity.mp4","tool-spotlight-violence.mp4",
+ "tool-spotlight-withdrawal.mp4","tool-spotlight-bfcrs.mp4","tool-spotlight-decision-aids.mp4",
+ "tool-spotlight-reel.mp4","week-stingers-reel.mp4",
+]
+_vidsrc=LIB+"/_prototypes/video-library"
+_vidfound=0
+if os.path.isdir(_vidsrc):
+    os.makedirs(OUT+"/media",exist_ok=True)
+    for _vf in VIDEO_MEDIA:
+        _p=os.path.join(_vidsrc,_vf)
+        if os.path.exists(_p): shutil.copy2(_p, OUT+"/media/"+_vf); _vidfound+=1
+print("video library:",_vidfound,"of",len(VIDEO_MEDIA),"assets found in _prototypes/video-library/")
+
 shutil.copy2(LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json", OUT+"/tools/quizzes.json")
 _aud=LIB+"/07_Evidence_and_Reading/Landmark_Trials/audio"
 if os.path.isdir(_aud): shutil.copytree(_aud, OUT+"/audio")
@@ -115,7 +149,7 @@ for src,dst,_ in md:
     else: missing.append(src)
 
 nav=[
- {"section":"Start here","items":[{"t":"Welcome to the Rotation","f":"welcome.md","k":"md"},{"t":"Core Reading List","f":"core_readings.md","k":"md"},{"t":"Orientation Packet","f":"orientation.md","k":"md"}]},
+ {"section":"Start here","items":[{"t":"Orientation Video (start here)","f":"orientation-video.html","k":"tool"},{"t":"Welcome to the Rotation","f":"welcome.md","k":"md"},{"t":"Core Reading List","f":"core_readings.md","k":"md"},{"t":"Orientation Packet","f":"orientation.md","k":"md"}]},
  {"section":"Interactive tools","items":[{"t":n,"f":d,"k":"tool"} for s,d,n in tools]},
  {"section":"Six-Week Curriculum","items":[{"t":t,"f":f,"k":"md"} for f,(_,t) in [("week%d.md"%i,(0,["Week 1 — Foundations","Week 2 — Mood/Psychosis/Pharm","Week 3 — Psychotherapy/Personality","Week 4 — Family/Systems/EE","Week 5 — Acute/Emergency","Week 6 — Integration/Exam"][i-1])) for i in range(1,7)]]},
  {"section":"Core Topics","items":[{"t":"Differential Dx Scaffolds","f":"ddx.md","k":"md"},{"t":"Mood","f":"t_mood.md","k":"md"},{"t":"Psychosis","f":"t_psychosis.md","k":"md"},{"t":"Anxiety/Trauma/OCD","f":"t_anxiety.md","k":"md"},{"t":"Personality","f":"t_personality.md","k":"md"},{"t":"Substance Use","f":"t_sud.md","k":"md"},{"t":"Geriatric","f":"t_geri.md","k":"md"},{"t":"Perinatal","f":"t_perinatal.md","k":"md"},{"t":"Neurodevelopmental Disorders","f":"t_neurodev.md","k":"md"},{"t":"Eating Disorders","f":"t_eating.md","k":"md"},{"t":"Nutrition & Metabolic Health","f":"nutrition_metabolic.md","k":"md"},{"t":"Osteopathic (OMM) Resources","f":"omm_resources.md","k":"md"}]},
@@ -208,6 +242,7 @@ def build_search_index():
      "decision-aids.html":"algorithms decision aids visual trees flowchart rule out first move escalation ladder agitation restraint nms serotonin syndrome hyperthermia alcohol withdrawal timeline delirium tremens ciwa score bands catatonia psychosis differential dark mode",
      "bfcrs.html":"bush francis catatonia rating scale bfcrs bfcsi catatonia screening immobility stupor mutism posturing catalepsy waxy flexibility negativism mitgehen gegenhalten echopraxia lorazepam challenge severity score",
      "learning-path.html":"learning path home dashboard six week progress streak daily review study plan start here",
+     "orientation-video.html":"orientation video start here inpatient unit welcome introduction onboarding tour first day",
     }
     postings={}  # token -> {docid: weighted tf}
     docs=[]

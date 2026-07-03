@@ -1,6 +1,11 @@
 # Inpatient Psychiatry — Your 6-Week MS3 Rotation
 ### UNE COM third-year clerkship · with Joshua Moss, MD · Maine Medical Center – Sanford
 
+<video src="media/intro-trailer.mp4" controls playsinline poster="media/intro-trailer-poster.jpg"
+  aria-label="Clerkship Hub introduction trailer: a 78-second tour of the hub — the six-week arc, the bedside tools, and how to get started."
+  style="width:100%;max-width:960px;aspect-ratio:16/9;border-radius:12px;display:block;margin:14px 0">
+</video>
+
 Welcome. This rotation is built as a **structured six-week arc** so that wherever you are in the year, you get the same strong foundation in inpatient psychiatry — and leave ready for the shelf and your sub-internship.
 
 **What you'll do.** Work as part of the treatment team on the inpatient unit: interview and follow patients, build differentials and formulations, present on rounds, participate in family meetings, and practice safe, evidence-based management under direct supervision.

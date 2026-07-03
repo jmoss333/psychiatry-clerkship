@@ -183,8 +183,29 @@
   .tl-dock.is-hint .tl-dock__hint{opacity:1;transform:none}
   .tl-dock.is-open .tl-dock__hint{opacity:0}
   .tl-fab__label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-  @media(max-width:820px){.tl-dock{right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}.tl-fab{width:50px;height:50px}.tl-fab svg{width:23px;height:23px}.tl-dock__item{height:44px}}
+  @media(max-width:820px){.tl-dock{display:none}}
   @media(prefers-reduced-motion:reduce){.tl-chip,.tl-dock__item,.tl-fab svg{transition:none}.tl-dock__item{transform:none}}
+  /* ===== Bedside mobile tool bar (Concept C) — phone gets a bar, wider screens keep the dock ===== */
+  .tl-bar{display:none}
+  @media(max-width:820px){
+    .tl-bar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:29;gap:6px;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -4px 16px rgba(59,51,44,.14)}
+    body.has-tlbar #content{padding-bottom:78px}
+    .tl-bar__item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border:1px solid var(--border);background:var(--accent-light);color:var(--accent-dark);border-radius:12px;text-decoration:none;cursor:pointer;font-family:var(--font-body);font-size:.64rem;font-weight:700;line-height:1.15;padding:6px 2px}
+    .tl-bar__item svg{width:20px;height:20px;flex:0 0 auto;stroke:currentColor}
+    .tl-bar__item.is-safety{background:var(--primary-light);color:var(--primary-dark)}
+    .tl-bar__item.tl-bar__more{background:var(--bg-alt);color:var(--text-light);border:1px solid var(--border)}
+    .tl-bar__item:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+  }
+  .tl-sheet-backdrop{position:fixed;inset:0;z-index:39;background:rgba(47,41,36,.4)}
+  .tl-sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:70vh;overflow-y:auto;box-shadow:0 -8px 28px rgba(59,51,44,.24)}
+  .tl-sheet h2{font-family:var(--font-head);font-size:1.05rem;margin:0 0 12px;color:var(--text)}
+  .tl-sheet__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+  .tl-sheet__item{display:flex;align-items:center;gap:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:10px 11px;text-decoration:none;font-size:.86rem;font-weight:600;cursor:pointer;min-height:44px}
+  .tl-sheet__item svg{width:19px;height:19px;flex:0 0 auto;stroke:currentColor;color:var(--accent-dark)}
+  .tl-sheet__item.is-safety{border-color:var(--primary);color:var(--primary-dark)}
+  .tl-sheet__item.is-safety svg{color:var(--primary-dark)}
+  .tl-sheet__item:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+  @media(prefers-reduced-motion:reduce){.tl-bar__item{transition:none}}
   /* ===== Progress home (Concept B) ===== */
   .hm{max-width:900px;margin:0 auto;padding:26px 28px 60px}
   .hm h1{font-family:var(--font-head);color:var(--primary);font-size:1.9rem;margin:.1em 0}
@@ -486,16 +507,18 @@
   function svg(id,cls){ if(!G[id])return ''; return '<svg class="'+(cls||'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+G[id]+'</svg>'; }
   function navClick(f){ var n=document.querySelector('.navitem[data-f="'+f+'"]'); if(n){ n.click(); return true; } return false; }
   function launchTool(el,tool){ if(navClick(tool))return true; if(window.parent&&window.parent!==window){ window.parent.postMessage({type:'openPage',f:tool},'*'); return true; } if(el&&el.getAttribute('href'))return false; window.location.href='tools/'+tool; return true; }
-  document.addEventListener('click',function(e){ var el=e.target.closest?e.target.closest('[data-tool]'):null; if(!el)return; var h=launchTool(el,el.getAttribute('data-tool')); if(h)e.preventDefault(); closeDock(); });
+  document.addEventListener('click',function(e){ var el=e.target.closest?e.target.closest('[data-tool]'):null; if(!el)return; var h=launchTool(el,el.getAttribute('data-tool')); if(h)e.preventDefault(); closeDock(); closeSheet(); });
   function hydrate(root){ if(!root)return; [].forEach.call(root.querySelectorAll('.tl-chip[data-tool]'),function(a){ if(a.__tl)return; a.__tl=1; var tool=a.getAttribute('data-tool'); var ic=a.getAttribute('data-icon')||ICON[tool]; if(SAFE[tool]&&a.className.indexOf('is-safety')<0)a.className+=' is-safety'; if(ic&&!a.querySelector('svg'))a.insertAdjacentHTML('afterbegin',svg(ic)); if(!a.getAttribute('aria-label'))a.setAttribute('aria-label','Open the '+(LAB[tool]||'tool')+' tool'); }); }
 
   /* ---- per-page floating dock ---- */
   var PAGE_TOOLS={ 't_sud.md':['withdrawal.html','cssrs.html'], 'pg_suicide.md':['cssrs.html','violence.html','decision-aids.html'], 'catatonia.md':['bfcrs.html'], 'agitation.md':['violence.html','decision-aids.html'], 'exp_consult.md':['capacity.html','decision-aids.html'], 'cl_reference.md':['decision-aids.html'], 't_mood.md':['screeners.html','active-recall.html'], 't_anxiety.md':['screeners.html'], 't_psychosis.md':['decision-aids.html'], 't_perinatal.md':['cssrs.html'], 't_personality.md':['cssrs.html','reflection.html'], 'brief_psychotherapy.md':['mse.html','decision-aids.html'], 'doc_oral.md':['oral.html'], 'landmark_trials.md':['active-recall.html','shelf-mode.html','review.html'], 'evidence_inpatient.md':['active-recall.html','review.html'], 'shelf.md':['shelf-mode.html','active-recall.html'], 'reading_map.md':['review.html','active-recall.html'] };
-  var dockEl=null;
+  var dockEl=null, barEl=null;
   function closeDock(){ if(dockEl){ dockEl.classList.remove('is-open'); var f=dockEl.querySelector('.tl-fab'); if(f)f.setAttribute('aria-expanded','false'); } }
   window.__closeDock=closeDock;
-  window.__clearDock=function(){ if(dockEl&&dockEl.parentNode)dockEl.parentNode.removeChild(dockEl); dockEl=null; };
-  function mountDock(keys){ window.__clearDock(); if(!keys||!keys.length)return; var d=document.createElement('div'); d.className='tl-dock is-hint';
+  function closeSheet(){ var sh=document.querySelector('.tl-sheet'), bd=document.querySelector('.tl-sheet-backdrop'); if(sh&&sh.parentNode)sh.parentNode.removeChild(sh); if(bd&&bd.parentNode)bd.parentNode.removeChild(bd); }
+  function clearBar(){ if(barEl&&barEl.parentNode)barEl.parentNode.removeChild(barEl); barEl=null; document.body.classList.remove('has-tlbar'); closeSheet(); }
+  window.__clearDock=function(){ if(dockEl&&dockEl.parentNode)dockEl.parentNode.removeChild(dockEl); dockEl=null; clearBar(); };
+  function mountDock(keys){ if(!keys||!keys.length)return; var d=document.createElement('div'); d.className='tl-dock is-hint';
     var stack=keys.map(function(k){ var s=SAFE[k]?' is-safety':''; return '<a class="tl-dock__item'+s+'" role="menuitem" href="?tool='+k+'" data-tool="'+k+'" aria-label="Open the '+(LAB[k]||'tool')+' tool">'+svg(ICON[k])+'<span>'+(LAB[k]||k)+'</span></a>'; }).join('');
     d.innerHTML='<div class="tl-dock__hint" aria-hidden="true">Tools for this page</div><div class="tl-dock__stack" role="menu" aria-label="Related tools">'+stack+'</div><button class="tl-fab" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Tools for this page"><span class="tl-fab__label">Tools</span>'+svg('plus')+'</button>';
     document.body.appendChild(d); dockEl=d; var fab=d.querySelector('.tl-fab');
@@ -503,9 +526,26 @@
     if(window.matchMedia&&window.matchMedia('(hover:hover) and (pointer:fine)').matches){ d.addEventListener('mouseenter',function(){ d.classList.add('is-open'); d.classList.remove('is-hint'); fab.setAttribute('aria-expanded','true'); }); d.addEventListener('mouseleave',closeDock); }
     setTimeout(function(){ if(d)d.classList.remove('is-hint'); },7000);
   }
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape')closeDock(); });
+  /* ---- bedside mobile tool bar (Concept C) — reuses the same registry + launchTool; phone gets a bar, wider screens get the dock above ---- */
+  function openSheet(){
+    closeSheet();
+    var keys=Object.keys(LAB);
+    var bd=document.createElement('div'); bd.className='tl-sheet-backdrop';
+    var sh=document.createElement('div'); sh.className='tl-sheet'; sh.setAttribute('role','dialog'); sh.setAttribute('aria-modal','true'); sh.setAttribute('aria-label','All tools');
+    sh.innerHTML='<h2>All tools</h2><div class="tl-sheet__grid">'+keys.map(function(k){ var s=SAFE[k]?' is-safety':''; return '<a class="tl-sheet__item'+s+'" href="?tool='+k+'" data-tool="'+k+'" aria-label="Open the '+(LAB[k]||k)+' tool">'+svg(ICON[k])+'<span>'+(LAB[k]||k)+'</span></a>'; }).join('')+'</div>';
+    document.body.appendChild(bd); document.body.appendChild(sh);
+    bd.addEventListener('click',closeSheet);
+  }
+  function mountBar(keys){ clearBar(); if(!keys||!keys.length)return; var b=document.createElement('div'); b.className='tl-bar'; b.setAttribute('role','navigation'); b.setAttribute('aria-label','Tools for this page');
+    var pick=keys.slice(0,4);
+    var html=pick.map(function(k){ var s=SAFE[k]?' is-safety':''; return '<a class="tl-bar__item'+s+'" href="?tool='+k+'" data-tool="'+k+'" aria-label="Open the '+(LAB[k]||k)+' tool">'+svg(ICON[k])+'<span>'+(LAB[k]||k)+'</span></a>'; }).join('');
+    html+='<button type="button" class="tl-bar__item tl-bar__more" aria-haspopup="dialog" aria-label="More tools">'+svg('plus')+'<span>More</span></button>';
+    b.innerHTML=html; document.body.appendChild(b); barEl=b; document.body.classList.add('has-tlbar');
+    var moreBtn=b.querySelector('.tl-bar__more'); moreBtn.addEventListener('click',openSheet);
+  }
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ closeDock(); closeSheet(); } });
   document.addEventListener('click',function(e){ if(dockEl&&!dockEl.contains(e.target))closeDock(); });
-  window.__afterContent=function(item){ hydrate(document.getElementById('content')); try{ if(item&&item.f)localStorage.setItem('cw_last',item.f); }catch(_){ } if(item&&PAGE_TOOLS[item.f])mountDock(PAGE_TOOLS[item.f]); };
+  window.__afterContent=function(item){ hydrate(document.getElementById('content')); try{ if(item&&item.f)localStorage.setItem('cw_last',item.f); }catch(_){ } if(item&&PAGE_TOOLS[item.f]){ mountDock(PAGE_TOOLS[item.f]); mountBar(PAGE_TOOLS[item.f]); } };
 
   /* ---- helpers reading existing storage ---- */
   function LS(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }
