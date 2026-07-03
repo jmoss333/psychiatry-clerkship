@@ -1445,5 +1445,70 @@
       "label": "Open the Interview & MSE Pocket Guide",
       "href": "?page=pg_interview.md"
     }
+  },
+  "week2.md": {
+    "read": 3,
+    "tldr": "Week 2 — Mood, Psychosis & Pharmacology: build a differential for depression, mania, and psychosis; learn antipsychotic-selection logic by side-effect profile; and run a Bush-Francis catatonia screen on any mute or immobile patient.",
+    "points": [
+      "The skill of the week is the psychopharmacology primer — work through the top-10 inpatient classes and apply the CATIE lesson: choose antipsychotics by side-effect profile (metabolic, QTc, EPS), not by generation.",
+      "Suggested landmarks: CATIE (Lieberman 2005), STAR*D (Rush 2006), and Bush 1996 (catatonia) — Journal Clubs 1 and 5 pair with these readings.",
+      "On the unit: run a Bush-Francis catatonia screen on any mute or immobile patient — the screen is diagnostic and the lorazepam challenge can be therapeutic."
+    ],
+    "cta": {
+      "label": "Open the Psychopharmacology Primer",
+      "href": "?page=psychopharm_primer.md"
+    }
+  },
+  "week3.md": {
+    "read": 3,
+    "tldr": "Week 3 — Psychotherapy, Personality & the Relationship: understand common factors, practice DBT-informed care for borderline-pattern crises, and complete a supervised collaborative safety plan using the Stanley-Brown model.",
+    "points": [
+      "The skill of the week is completing a supervised safety plan with a patient using the C-SSRS — practice building it collaboratively in real time, not as a form to fill.",
+      "Suggested landmarks: Wampold 1997 (common factors) and Linehan 1991 (DBT for BPD) — Journal Club 3 (Safety Planning) ties them to the clinical week.",
+      "On the unit: draft a full biopsychosocial and relational formulation, and notice a rupture-and-repair moment in the therapeutic relationship for the Week 3 reflection."
+    ],
+    "cta": {
+      "label": "Open the Brief Psychotherapy page",
+      "href": "?page=brief_psychotherapy.md"
+    }
+  },
+  "week4.md": {
+    "read": 3,
+    "tldr": "Week 4 — Family, Systems & Expressed Emotion: observe or co-facilitate a family meeting, spot high expressed emotion, and cite the family-intervention evidence for relapse prevention.",
+    "points": [
+      "The skill of the week is the Family Meeting Playbook (90-min) — observe first, then co-facilitate with a defined role; use an expressed-emotion spotting checklist during the meeting.",
+      "Suggested landmarks: Brown 1962 (expressed emotion) and Pharoah 2010 (Cochrane family intervention) — Journal Clubs 2 and 6 pair with these.",
+      "Reflection prompt: 'What would I change about that family meeting?' — identify the phase where time was lost and debrief with your supervisor."
+    ],
+    "cta": {
+      "label": "Open the Family Meeting Playbook",
+      "href": "?page=family_playbook.md"
+    }
+  },
+  "week5.md": {
+    "read": 3,
+    "tldr": "Week 5 — Acute & Emergency Psychiatry: manage agitation safely through the verbal de-escalation ladder, recognize delirium and catatonia, assess violence risk with structured tools, and reduce means access.",
+    "points": [
+      "The skills of the week are the agitation ladder and Violence-Risk/Brøset tool, delirium prevention bundles, and the CIWA-Ar/COWS withdrawal card — all are bedside tools available in the hub sidebar.",
+      "Pocket references to keep on hand: restraint checklist, benzo taper protocol, and clozapine ANC monitoring schedule.",
+      "Case of the week: substance plus psychosis plus risk composite — designed to integrate the acute safety calls covered throughout the rotation."
+    ],
+    "cta": {
+      "label": "Open the Acute Consult module",
+      "href": "?page=exp_consult.md"
+    }
+  },
+  "week6.md": {
+    "read": 3,
+    "tldr": "Week 6 — Integration, Disposition & Exam Readiness: build a discharge/disposition plan, present a full case with formulation and risk reasoning, and complete the shelf high-yield review and OSCE station set.",
+    "points": [
+      "Skills of the week: the Risk-Stratified Discharge Pathway, the shelf high-yield review with self-check, and the full OSCE station set for stations you have not yet completed.",
+      "Suggested readings: Felitti 1998 (ACE study) and Deegan 1996 (recovery) — the two papers that frame trauma and the patient's own goals in the discharge plan.",
+      "Reflection: end-of-rotation professional-identity reflection — what changed in how you think about psychiatric illness, the therapeutic relationship, and your role on the team."
+    ],
+    "cta": {
+      "label": "Open the Shelf Review Guide",
+      "href": "?page=shelf.md"
+    }
   }
 }
