@@ -1,0 +1,24 @@
+[
+  {
+    "finding_id": "link:reconnectpractice.com::broken-link::660b002e81baed0a",
+    "fingerprint": "link:reconnectpractice.com::broken-link::660b002e81baed0a",
+    "job": "link-source-monitor",
+    "source_id": "link:reconnectpractice.com",
+    "source_name": "reconnectpractice.com",
+    "source_url": "https://reconnectpractice.com/videos/autonomy-and-containment",
+    "source_type": "html",
+    "detected_at": "2026-07-03T21:34:51+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (no response) on 03_Core_Topics/Personality/_source/BPD_Understanding_Your_Diagnosis_PAT.md: https://reconnectpractice.com/videos/autonomy-and-containment",
+    "evidence": {
+      "http_status": null
+    },
+    "affects": [
+      "03_Core_Topics/Personality/_source/BPD_Understanding_Your_Diagnosis_PAT.md"
+    ],
+    "recommended_action": "Fix or replace the link in `03_Core_Topics/Personality/_source/BPD_Understanding_Your_Diagnosis_PAT.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/88"
+  }
+]
