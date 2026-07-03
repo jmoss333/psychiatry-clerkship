@@ -5,9 +5,13 @@
  * No dependencies. Node 18+.
  *
  * Usage:
- *   node check-static-site.mjs [siteDir]
- *   node check-static-site.mjs /Users/jm/mmc-resident-deploy
+ *   node check-static-site.mjs <siteDir>
+ *   node check-static-site.mjs _build/ms3       # after build_deploy.py
+ *   node check-static-site.mjs _build/res       # after resident_section.py
  *   STRICT=1 node check-static-site.mjs <dir>   # metadata/review coverage gaps also fail
+ *
+ * CI: invoked by build_and_check.sh (both Netlify site build commands) after the build;
+ * a non-zero exit fails the Netlify build, so HARD findings block the deploy.
  *
  * Exit codes: 0 = pass, 1 = hard failures (see HARD FAILURES section).
  *
@@ -28,7 +32,8 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, basename } from 'node:path';
 
-const SITE = process.argv[2] || '/Users/jm/mmc-resident-deploy';
+const SITE = process.argv[2];
+if (!SITE) { console.error('usage: node check-static-site.mjs <siteDir>'); process.exit(1); }
 const STRICT = process.env.STRICT === '1';
 const hard = [], soft = [], info = [];
 const H = (m) => hard.push(m);

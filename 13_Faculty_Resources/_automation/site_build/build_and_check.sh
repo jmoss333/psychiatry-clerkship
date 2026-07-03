@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# build_and_check.sh — build one site, then run the static QA harness as a publish gate.
+#
+# Usage:  bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3|res
+#
+# This is the Netlify build command for BOTH sites (set per-site in the Netlify UI,
+# NOT in netlify.toml — see GIT_AND_DEPLOY_PLAN.md):
+#   une-ms3-psychiatry (publish _build/ms3):
+#     bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+#   mmc-psychiatry-residents-sanford (publish _build/res):
+#     bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+#
+# Gate semantics (check-static-site.mjs): HARD findings (broken nav/search targets,
+# dose literals in rp-*/-trainer tools, invalid JSON, missing <title>/viewport,
+# non-namespaced storage keys) exit non-zero and FAIL the deploy. SOFT findings only
+# warn — do not set STRICT=1 here or every metadata gap blocks production.
+set -euo pipefail
+
+SITE="${1:?usage: build_and_check.sh ms3|res}"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB="$(cd "$HERE/../../.." && pwd)"   # repo root
+
+MS3_OUT="$LIB/_build/ms3"
+RES_OUT="$LIB/_build/res"
+
+case "$SITE" in
+  ms3)
+    echo "── build: MS3 → $MS3_OUT"
+    OUT_DIR="$MS3_OUT" python3 "$HERE/build_deploy.py"
+    echo "── QA gate: $MS3_OUT"
+    node "$HERE/check-static-site.mjs" "$MS3_OUT"
+    ;;
+  res)
+    # Resident derives from the MS3 build, so build both; gate the published dir.
+    echo "── build: MS3 (base) → $MS3_OUT"
+    OUT_DIR="$MS3_OUT" python3 "$HERE/build_deploy.py"
+    echo "── build: Resident → $RES_OUT"
+    MS3_DIR="$MS3_OUT" OUT_DIR="$RES_OUT" python3 "$HERE/resident_section.py"
+    echo "── QA gate: $RES_OUT"
+    node "$HERE/check-static-site.mjs" "$RES_OUT"
+    ;;
+  *)
+    echo "unknown site '$SITE' (expected ms3|res)" >&2
+    exit 2
+    ;;
+esac
+
+echo "── build_and_check: $SITE OK"
