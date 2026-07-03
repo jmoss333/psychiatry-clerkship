@@ -59,6 +59,11 @@ for src,dst in PROTO_TOOLS:
     p=os.path.join(LIB,src)
     if os.path.exists(p): shutil.copyfile(p,OUT+"/tools/"+dst)
     else: print("  WARN: prototype tool missing from source:",src)
+    # sibling content pack (tools/<name>.pack.json convention — see _TEMPLATE.html);
+    # the tool's own fetch() 404s at runtime if this doesn't ride along with the .html.
+    pack_src=p[:-len(".html")]+".pack.json"
+    if os.path.exists(pack_src):
+        shutil.copyfile(pack_src, OUT+"/tools/"+dst[:-len(".html")]+".pack.json")
 # vendor React (shared across all three rp-* tools; files are byte-for-byte identical)
 _vendor_src=os.path.join(LIB,"_prototypes/agitation-trainer/vendor")
 _vendor_dst=OUT+"/tools/vendor"
@@ -127,6 +132,12 @@ for g in GROUPS:
     for x in tt: syn.setdefault(x,set()).update(tt-{x})
 syn={k:sorted(v) for k,v in syn.items()}
 TOOLKW={"mse.html":"mental status exam appearance behavior speech mood affect thought","interview-circle.html":"interview circle radial domain map intake history hpi substance family social mental status safety conversation interviewing checklist","capacity.html":"decisional capacity informed consent four abilities","oral.html":"rounding presentation oral assessment plan handoff timer","violence.html":"violence risk aggression frst de-escalation","cssrs.html":"columbia suicide severity rating scale ideation safety planning","withdrawal.html":"withdrawal alcohol ciwa opioid cows benzodiazepine thiamine","reflection.html":"reflection professional identity formation","screeners.html":"phq-9 gad-7 depression anxiety screener cutoff","active-recall.html":"active recall self test quiz board review flashcards","shelf-mode.html":"board style question bank exam simulation vignette mixed blueprint mock test","decision-aids.html":"algorithms decision aids trees escalation ladder nms serotonin withdrawal timeline ciwa catatonia","bfcrs.html":"bush francis catatonia rating scale immobility mutism posturing waxy flexibility lorazepam challenge","review.html":"daily review spaced repetition srs flashcards retention due cards streak board review test enhanced learning forgetting curve","feedback.html":"feedback improve library suggest resource report broken link error confusing helpful comment suggestion box","learning-path.html":"learning path home dashboard rotation progress daily review","rp-agitation.html":"agitation ladder prn trainer restraint de-escalation seclusion intramuscular haloperidol lorazepam olanzapine decision escalation","rp-brief-psych.html":"five good minutes brief psychotherapy coach supportive bedside therapeutic conversation skills","rp-canon-quiz.html":"canon quiz 200 paper spine landmark trials evidence self test board review recall"}
+# ---------- MEDIA GUARD: drop <video> embeds whose asset was never exported (resident build) ----------
+# Resident inherits ms3's already-guarded pages via copytree, but re-writes some content from
+# source and adds its own media — so guard the final OUT before indexing.
+from media_guard import strip_missing_media
+strip_missing_media(OUT)
+
 postings={}; docs=[]
 def addtok(docid,text,wt):
     for x in tok(text):

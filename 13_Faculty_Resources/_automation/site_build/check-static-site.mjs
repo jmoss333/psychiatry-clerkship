@@ -127,6 +127,28 @@ for (const f of toolFiles) {
   for (const k of keys) if (!k.startsWith('cw_') && !k.startsWith('rp_')) H(`non-namespaced storage key in ${f}: "${k}" (use cw_* or rp_*)`);
 }
 
+/* ---------- 5b. <video> embeds must resolve to a shipped asset (no broken players) ---------- */
+// content/*.md is rendered by the SPA at the site ROOT; tools/*.html is served at its own path.
+const VIDEO_SRC = /<video\b[^>]*\bsrc=["']([^"']+)["'][^>]*>|<source\b[^>]*\bsrc=["']([^"']+)["']/gi;
+const VIDEO_EXT = /\.(mp4|webm|mov|m4v|ogg|ogv)$/i;
+// md is rendered by the SPA at the site ROOT (media/x → SITE/media/x); tools are served from
+// tools/ (../media/x → SITE/media/x — join() normalizes the ..). Query/hash stripped first.
+const resolveMedia = (isMd, src) => {
+  const clean = src.replace(/[?#].*$/, '');
+  return isMd ? p(clean.replace(/^\.?\//, '')) : p('tools', clean);
+};
+for (const [dir, files] of [['content', contentFiles], ['tools', toolFiles]]) {
+  const isMd = dir === 'content';
+  for (const f of files) {
+    for (const m of readFileSync(p(dir, f), 'utf8').matchAll(VIDEO_SRC)) {
+      const src = m[1] || m[2];
+      if (!src || !VIDEO_EXT.test(src.replace(/[?#].*$/, ''))) continue;
+      if (!existsSync(resolveMedia(isMd, src)))
+        H(`broken <video> in ${dir}/${f} → missing asset: ${src}  (export it or let the media guard strip the embed)`);
+    }
+  }
+}
+
 /* ---------- 6. *.pack.json checks (dose literals + token integrity + localization) ---------- */
 for (const f of jsonFiles.filter(x => x.endsWith('.pack.json'))) {
   const raw = readFileSync(f, 'utf8');

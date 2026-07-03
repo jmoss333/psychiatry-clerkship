@@ -338,4 +338,9 @@ for _f in _glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]:
     if _t!=_o: open(_f,"w",encoding="utf-8").write(_t)
 print("dark-mode pass: tokens + init injected across tools + index")
 
+# ---------- MEDIA GUARD: drop <video> embeds whose asset was never exported ----------
+# Keeps per-week / per-tool embeds from shipping as broken players when only the reels exist.
+from media_guard import strip_missing_media
+strip_missing_media(OUT)
+
 build_search_index()
