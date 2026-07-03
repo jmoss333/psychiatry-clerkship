@@ -21,7 +21,7 @@ Examples:
   python3 sync_findings.py --findings f.json --job guideline-surveillance \
       --dry-run --existing-fixture existing_fps.json --out-dir /tmp/surv
 """
-import os, sys, json, argparse, urllib.request, urllib.error
+import os, sys, json, time, argparse, urllib.request, urllib.error
 import lib_surveillance as L
 
 API = "https://api.github.com"
@@ -100,7 +100,9 @@ def main():
             sys.exit("ERROR: GITHUB_TOKEN required (or use --dry-run)")
         existing = fetch_existing_fingerprints(args.repo, token)
 
-    created, deduped = [], []
+    max_new = int(os.environ.get("MAX_NEW_ISSUES", "25"))
+    created, deduped, overflow = [], [], []
+    stop_creating = False
     for f in issue_findings:
         if f["fingerprint"] in existing:
             f["status"] = "triaged"
@@ -108,19 +110,35 @@ def main():
             continue
         if args.dry_run:
             print(f"[dry-run] CREATE  {L.issue_title(f)}")
-        else:
+            f["status"] = "issue-open"
+            created.append(f)
+            existing.add(f["fingerprint"])
+            continue
+        if stop_creating or len(created) >= max_new:   # cap: rest -> digest
+            f["status"] = "new"
+            overflow.append(f)
+            continue
+        try:
             f["github_issue"] = create_issue(args.repo, token, f)
-            print(f"CREATED {f['github_issue']}  {L.issue_title(f)}")
+        except Exception as e:   # e.g. GitHub secondary rate limit (HTTP 403)
+            print(f"WARN: issue create failed ({e}); routing remaining findings to digest.",
+                  file=sys.stderr)
+            stop_creating = True
+            f["status"] = "new"
+            overflow.append(f)
+            continue
+        print(f"CREATED {f['github_issue']}  {L.issue_title(f)}")
         f["status"] = "issue-open"
         created.append(f)
-        existing.add(f["fingerprint"])   # dedup within this same run too
+        existing.add(f["fingerprint"])
+        time.sleep(1.5)   # throttle: stay under GitHub's secondary rate limit
 
     reports = L.write_report(args.job, findings, base=args.out_dir)
-    digest = L.append_digest(digest_findings, base=args.out_dir)
+    digest = L.append_digest(digest_findings + overflow, base=args.out_dir)
     L.update_last_run(sorted({f["source_id"] for f in findings}), base=args.out_dir)
 
     print(f"\nSummary [{args.job}]: {len(created)} created, {len(deduped)} deduped, "
-          f"{len(digest_findings)} digested (P2).")
+          f"{len(digest_findings)} P2 digested, {len(overflow)} overflow->digest.")
     print("Reports: " + ", ".join(os.path.basename(r) for r in reports)
           + (f", {os.path.basename(digest)}" if digest else ""))
 

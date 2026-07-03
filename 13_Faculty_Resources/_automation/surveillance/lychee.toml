@@ -1,0 +1,19 @@
+# lychee config for surveillance-link-monitor (referenced via --config in the workflow).
+# Rationale: this checks EXTERNAL citation health only. Publisher/DOI 403 and auth-gated 401
+# are bot-blocks (reachable by humans), not dead links, so we accept them. Meta/inbox/scratch
+# trees are excluded — they are not student-facing curriculum.
+scheme = ["https", "http"]
+accept = [200, 201, 202, 203, 204, 206, 401, 403, 429, 503]
+exclude_path = [
+  "00_START_HERE",
+  "OPENEVIDENCE RAW FILES TO REVIEW",
+  "_prototypes",
+  "_build",
+  "99_Archive",
+]
+exclude = [
+  "doi\\.org",
+  "linkedin\\.com",
+  "x\\.com",
+  "twitter\\.com",
+]
