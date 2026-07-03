@@ -1,0 +1,16 @@
+# Netlify configuration — INTENTIONALLY minimal.
+#
+# Build command, publish directory, and the Git-LFS env vars are set per-site in each
+# site's Netlify UI, NOT here, because:
+#   1. Two sites (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) share this one repo
+#      with DIFFERENT build commands / publish dirs — a single toml can't express both.
+#   2. GIT_LFS_ENABLED must live in the UI: netlify.toml is read AFTER the repo is cloned,
+#      too late to affect the LFS checkout.
+#
+# The ONE thing that legitimately belongs here (shared by both sites, and safe post-clone)
+# is the build-ignore hook: it cancels a rebuild + redeploy when a push changes only
+# _automation/*.md planning docs. It saves build minutes and avoids a redundant production
+# redeploy — but NOT Git-LFS bandwidth (Netlify fetches LFS during clone, before this hook
+# runs). See GIT_AND_DEPLOY_PLAN.md §7.
+[build]
+  ignore = "bash 13_Faculty_Resources/_automation/site_build/netlify-ignore.sh"

@@ -3,7 +3,7 @@
 **Owner:** Joshua Moss, MD · **Created:** 2026-07-01 · **Updated:** 2026-07-02
 **Goal:** put the library under version control and move both sites to *deploy-on-push* so concurrent editing (multiple chats/sessions) can never again silently clobber the live sites.
 
-> **Status (2026-07-02):** §1 cleanup ✅ · §2 pushed to `jmoss333/psychiatry-clerkship` (private) ✅ · §6 audio migrated to Git LFS (100 files) ✅ · resident source/deploy drift reconciled ✅ · Netlify LFS env vars pre-set on both sites ✅. **Remaining:** the one-time §3 repo-link (OAuth) per site, then verify the first CI build serves real audio before retiring manual deploys.
+> **Status (2026-07-02): build-on-push is LIVE and verified on both sites.** §1 cleanup ✅ · §2 pushed to `jmoss333/psychiatry-clerkship` (private) ✅ · §6 audio migrated to Git LFS (100 files) ✅ · resident source/deploy drift reconciled ✅ · Netlify LFS env vars set on both sites ✅ · both sites git-linked; latest published deploy = commit `1b1bf51` on `main`, `state: ready` ✅ · audio verified live (HTTP 200, `audio/mp4`, 2.7–3.2 MB real files in both `/audio` and `/audio_oe` on both sites — no pointer stubs) ✅ · build-ignore hook added to skip doc-only rebuilds (§7) ✅. **The manual `netlify deploy --dir` flow can be retired.** Ongoing watch-item: Git-LFS bandwidth (see §6).
 
 ---
 
@@ -68,7 +68,7 @@ Today both sites deploy manually via `netlify deploy --dir=…` from whatever se
 - ⚠️ **Git LFS must be enabled or the audio deploys as pointer stubs.** Set `GIT_LFS_ENABLED=true` (already done 2026-07-02, plus `GIT_LFS_FETCH_INCLUDE=*.m4a`). **This must live in the Netlify UI env vars, NOT `netlify.toml`** — `netlify.toml` is read *after* the repo is cloned, too late to affect the LFS checkout. This is why we don't commit a `netlify.toml`.
 - Build image includes Python 3 by default; if needed set env `PYTHON_VERSION=3.11`. The scripts use only the standard library (no `pip install`).
 - Confirm each site's **publish dir** and **build command** in its own settings (one repo can back multiple sites with different commands).
-- Do **not** add a repo `netlify.toml`: two sites need different commands from one repo, and the LFS env var can't live there anyway — use per-site UI settings.
+- Keep build command / publish dir / LFS env vars in each site's **UI settings** (two sites need different commands from one repo, and the LFS env var can't live in `netlify.toml` anyway). The repo `netlify.toml` is deliberately minimal — it carries **only** the shared build-ignore hook (§7), no build command or env, so it does not override either site's UI build settings.
 
 After this, the workflow is: **edit source → commit → push → both sites rebuild and deploy automatically.** No more `netlify deploy` by hand, no more two-session clobbering.
 
@@ -110,5 +110,17 @@ git push
 
 **Sequencing:** linking the repos (§3) is harmless, but **don't treat build-on-push as your deploy mechanism until the first CI build is verified to include audio.** Until then, keep the manual `netlify deploy --dir` flow (§5), which includes audio from disk. If a first CI build ships audio-less, roll back with one manual deploy.
 
+## 7. Build-ignore hook — protect Git-LFS bandwidth (2026-07-02)
+Now that both sites build-on-push and each build re-fetches the LFS audio, **every push costs ~688 MB of LFS bandwidth** (2 sites × ~344 MB) against GitHub's **1 GB/mo free** tier. To avoid burning that on commits that don't change the sites, `netlify.toml` registers a shared build-ignore hook:
+
+- **Script:** `13_Faculty_Resources/_automation/site_build/netlify-ignore.sh`
+- **Rule:** SKIP the build only when **every** changed file is a Markdown doc under `13_Faculty_Resources/_automation/` (planning/status docs no build script reads). Any other change — content, tools, build scripts, audio, config — builds normally. Fails safe toward BUILD on empty cache, unreadable diff, or no changes.
+- **Exit convention:** `0` = Netlify cancels the build; non-zero = build proceeds.
+- **Gotcha baked in:** do not use `grep -q` on a `git diff` pipe — its early exit SIGPIPEs `git diff` and, under `pipefail`, flips the pipeline exit code. The script captures output and tests emptiness instead.
+
+To broaden what's skippable, widen the ignore pattern in the script (e.g. add other non-deployed doc paths). To verify after any change: `CACHED_COMMIT_REF=<old> COMMIT_REF=<new> bash …/netlify-ignore.sh; echo $?`.
+
+**Post-first-push check:** confirm the minimal `netlify.toml` didn't disturb either site's UI build command / publish dir (it shouldn't — it sets only `ignore`). If a deploy ever uses the wrong publish dir, delete `netlify.toml` and move the ignore command into each site's UI ("Ignore builds").
+
 ---
-*Prepared 2026-07-01; updated 2026-07-02 (repo pushed, audio LFS-migrated, resident build reconciled, Netlify LFS env vars set). Baseline commit `a7793cc`. Only remaining step: the one-time §3 repo-link (OAuth) per site, then verify first CI build serves real audio.*
+*Prepared 2026-07-01; updated 2026-07-02 (repo pushed; audio LFS-migrated; resident build reconciled; both sites git-linked, deploying on push, audio verified live; build-ignore hook added). Baseline commit `a7793cc`. Migration complete — manual deploys can be retired; watch Git-LFS bandwidth per §6/§7.*
