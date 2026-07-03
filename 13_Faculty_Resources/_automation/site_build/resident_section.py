@@ -59,6 +59,11 @@ for src,dst in PROTO_TOOLS:
     p=os.path.join(LIB,src)
     if os.path.exists(p): shutil.copyfile(p,OUT+"/tools/"+dst)
     else: print("  WARN: prototype tool missing from source:",src)
+    # sibling content pack (tools/<name>.pack.json convention — see _TEMPLATE.html);
+    # the tool's own fetch() 404s at runtime if this doesn't ride along with the .html.
+    pack_src=p[:-len(".html")]+".pack.json"
+    if os.path.exists(pack_src):
+        shutil.copyfile(pack_src, OUT+"/tools/"+dst[:-len(".html")]+".pack.json")
 # vendor React (shared across all three rp-* tools; files are byte-for-byte identical)
 _vendor_src=os.path.join(LIB,"_prototypes/agitation-trainer/vendor")
 _vendor_dst=OUT+"/tools/vendor"
