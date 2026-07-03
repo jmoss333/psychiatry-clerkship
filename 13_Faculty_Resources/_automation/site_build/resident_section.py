@@ -48,6 +48,11 @@ for src,dst in PROTO_TOOLS:
     p=os.path.join(LIB,src)
     if os.path.exists(p): shutil.copyfile(p,OUT+"/tools/"+dst)
     else: print("  WARN: prototype tool missing from source:",src)
+# vendor React (shared across all three rp-* tools; files are byte-for-byte identical)
+_vendor_src=os.path.join(LIB,"_prototypes/agitation-trainer/vendor")
+_vendor_dst=OUT+"/tools/vendor"
+if os.path.isdir(_vendor_src) and not os.path.exists(_vendor_dst):
+    shutil.copytree(_vendor_src, _vendor_dst)
 
 # ---- rebrand index.html (copied, already dark/motion/polished) ----
 ix=open(OUT+"/index.html",encoding="utf-8").read()

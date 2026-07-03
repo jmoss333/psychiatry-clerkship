@@ -39,7 +39,10 @@ ORIENT_VIDEO=[
 ]
 for src,dst in ORIENT_VIDEO:
     p=os.path.join(LIB,src)
-    if os.path.exists(p): shutil.copy2(p, OUT+"/tools/"+dst)
+    if os.path.exists(p):
+        out_p=OUT+"/tools/"+dst
+        shutil.copy2(p, out_p)
+        os.chmod(out_p, 0o644)   # source MP4 arrives with mode 400 (LFS/download artifact); world-readable required
     else: print("  WARN: orientation video asset missing from source:",src)
 
 # ---- video library (intro trailer, day-in-the-life, week stingers, tool spotlights) ----
