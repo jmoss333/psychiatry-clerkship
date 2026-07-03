@@ -48,6 +48,10 @@ node_modules/
 # ---- Bulk downloads & large data artifacts ----
 13_Faculty_Resources/APA_Downloads_2026-06-29/files/
 00_START_HERE/_audit-census-codex/data/
+# OpenEvidence review inbox: raw source files (docx/video/working notes) staged for the
+# oe_scanner, then processed into curated pages — never committed from here. The *.docx are
+# already covered above; this also guards the raw .mp4 (globally LFS-tracked) and stray notes.
+/OPENEVIDENCE RAW FILES TO REVIEW/
 
 # ---- Netlify CLI local state (never commit; per-site config lives in the Netlify UI) ----
 .netlify/
