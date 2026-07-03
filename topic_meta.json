@@ -1575,5 +1575,57 @@
       "label": "Open the Podcast Library",
       "href": "?page=podcast_library.md"
     }
+  },
+  "podcast_library.md": {
+    "read": 8,
+    "tldr": "Dr. David Puder's Psychiatry & Psychotherapy Podcast — 250+ episodes in 10 categories with YouTube links; start with the therapeutic alliance series (Ep. 28/32/36/62/69) and use the library as a point-of-care reference matched to your patient panel.",
+    "points": [
+      "The Foundations section (38 episodes) covers psychiatric interview, therapeutic alliance, suicide, capacity, and Big Five personality — the highest-yield cluster for the clinical rotation.",
+      "Full episode pages and CME credit are available at psychiatrypodcast.com; YouTube links are provided for direct access without subscription or download.",
+      "Start with a patient in front of you and find the category that matches today's clinical question — use it as a point-of-care resource rather than listening linearly."
+    ],
+    "cta": {
+      "label": "Open the Book Library",
+      "href": "?page=book_library.md"
+    }
+  },
+  "landmark_trials.md": {
+    "read": 6,
+    "tldr": "Fifty landmark papers as 90–120 second audio overviews with paired Active Recall self-test decks — listen to the four Foundations papers first (Engel, Rosenhan, Robins-Guze, Insel), then follow your patients to the theme that fits.",
+    "points": [
+      "Each audio is 90–120 seconds with a paired self-test quiz — designed for the walk between the unit and the staff room, not a dedicated study block.",
+      "The Acute & Safety cluster (6 papers) covers Appelbaum capacity, Bush-Francis catatonia, lithium-suicide (Cipriani 2013), safety planning (Stanley 2012), and the limits of risk-factor prediction (Franklin 2017) — the most rotation-relevant papers.",
+      "Papers tagged 'Quiz this paper' link to an Active Recall deck that extends beyond the individual trial into the broader clinical question — use both the audio and the self-test for shelf preparation."
+    ],
+    "cta": {
+      "label": "Open the High-Yield Rounds Questions",
+      "href": "?page=rounds_questions.md"
+    }
+  },
+  "rounds_questions.md": {
+    "read": 8,
+    "tldr": "Nearly 100 Q&A pairs formatted for oral rehearsal before rounds — each with a model answer, supporting evidence, key paper, and clinical pearl; rehearse out loud, not by reading silently.",
+    "points": [
+      "The format mirrors what attendings actually ask: a direct clinical question, a concise evidence-based answer, the key paper, and one pearl that adds depth or names a trap.",
+      "Covers all shelf/COMAT domains: psychotic disorders (Q1–15), mood, substance use, acute safety, personality, neurocognitive, and psychopharmacology.",
+      "Rehearse out loud before rounds — saying the answer in 20–30 seconds approximates the actual clinical demand and reveals gaps that silent reading conceals."
+    ],
+    "cta": {
+      "label": "Open the Landmark Trials page",
+      "href": "?page=landmark_trials.md"
+    }
+  },
+  "omm_resources.md": {
+    "read": 3,
+    "tldr": "OMM/OPP competencies in psychiatry are taught and checked by your osteopathic faculty — this page points to AACOM and AOA resources; the evidence base is emerging and limited, and OMM should be framed as adjunctive, not established first-line.",
+    "points": [
+      "OMM objectives for the psychiatry rotation focus on structural exam for somatic dysfunction tied to anxiety, insomnia, and autonomic dysregulation — gentle techniques (suboccipital release, rib raising, diaphragmatic release) are the target skills.",
+      "The mechanistic rationale is autonomic balance shift toward parasympathetic tone; the evidence is emerging — mostly small pilot studies — so present it as adjunctive rather than established.",
+      "Document your osteopathic reasoning in the assessment when anxiety, insomnia, or chronic pain are present — that is what the OPP competency is looking for in the note."
+    ],
+    "cta": {
+      "label": "Open the Orientation Packet",
+      "href": "?page=orientation.md"
+    }
   }
 }
