@@ -1510,5 +1510,70 @@
       "label": "Open the Shelf Review Guide",
       "href": "?page=shelf.md"
     }
+  },
+  "reading_map.md": {
+    "read": 4,
+    "tldr": "Six weeks of suggested readings paired with one clinical skill and one observable task each week — a coverage map, not a reading list; nothing here should take longer than 20 minutes.",
+    "points": [
+      "Each week has a small suggested core plus optional deeper resources — the weekly skill anchor is the clinical behavior you are building toward, not the reading itself.",
+      "Week 4 is the most reading-intensive, covering the Family Meeting Playbook, family therapy modalities, and the family/discharge module — reflecting this rotation's signature focus on family work.",
+      "Week 6 reading is deliberately light because the skill of the week is a full OSCE-style case presentation integrating everything from the prior five weeks."
+    ],
+    "cta": {
+      "label": "Open Week 1",
+      "href": "?page=week1.md"
+    }
+  },
+  "osce.md": {
+    "read": 4,
+    "tldr": "Six OSCE stations covering the skills most tested on rounds — suicide risk with collateral, capacity with delirium recognition, catatonia, alcohol withdrawal, family meeting agenda, and oral case presentation — with entrustment anchors 1–4.",
+    "points": [
+      "Each station specifies behaviors to practice, not answers to memorize — rater focus is on clinical reasoning, communication, and appropriate escalation, not on naming the correct drug first.",
+      "Station 2 (capacity) and Station 3 (catatonia) test whether you avoid premature psychiatric labels when a medical mimic is present — both require recognizing the underlying driver before concluding behavior.",
+      "Target entrustment level 3 by end of rotation: able to perform routine parts with indirect supervision and escalate appropriately — safe and organized, not yet independent."
+    ],
+    "cta": {
+      "label": "Open the Practice Cases",
+      "href": "?page=cases.md"
+    }
+  },
+  "cases.md": {
+    "read": 6,
+    "tldr": "Eight synthetic composite cases spanning first-episode mania, suicide risk, withdrawal, delirium, catatonia, family dynamics, and discharge planning — each includes student tasks, hidden clinical detail that rewards direct questioning, and a case discussion template.",
+    "points": [
+      "Each case contains hidden clinical detail that is only revealed when the student asks directly — the reward for thorough, non-assumption-based history-taking.",
+      "Student tasks mirror the OSCE: build the differential, name the safety questions, draft an MSE, prepare a family meeting agenda, and identify the discharge barrier.",
+      "The case discussion template asks: what would change the differential? what collateral is missing? what is the discharge barrier? what must be done before tomorrow? — use it after every case."
+    ],
+    "cta": {
+      "label": "Open the OSCE Stations",
+      "href": "?page=osce.md"
+    }
+  },
+  "shelf.md": {
+    "read": 5,
+    "tldr": "Use patients to organize exam review — for each patient, name the syndrome, write the differential, name one medical mimic, name first-line treatment, and name one safety or legal issue; the exam is patient-anchored, not topic-anchored.",
+    "points": [
+      "Six COMAT/shelf exam traps to internalize: 'denies SI — low risk' (ask about means and preparatory behavior), 'psychosis means schizophrenia' (check substances, mood, and delirium first), and 'family support means discharge is safe' (family support is data, not a risk decision).",
+      "The final week 9-item checklist covers mania vs. stimulant intoxication, delirium vs. psychosis, capacity in 4 abilities, chronic vs. acute risk formulation, catatonia red flags, antipsychotic adverse effects, lithium monitoring, alcohol withdrawal risk, and case presentation under 6 minutes.",
+      "Legal and ethical questions anchor on decision-specific capacity, duty-to-protect jurisdictional variation, and voluntary vs. involuntary hospitalization — treat these as clinical reasoning problems, not rule memorization."
+    ],
+    "cta": {
+      "label": "Open the High-Yield Rounds Questions",
+      "href": "?page=rounds_questions.md"
+    }
+  },
+  "book_library.md": {
+    "read": 6,
+    "tldr": "Curated from 345 titles for the inpatient rotation — use the library to go deeper on a patient's diagnosis or recommend a book to a family; domains span borderline, addiction, trauma, mood, psychosis, ADHD, and child development.",
+    "points": [
+      "Books in the library double as bibliotherapy recommendations — pick by the patient and family in front of you, not by diagnostic category alone.",
+      "Highest-yield family resources: CRAFT approach (Beyond Addiction) for substance use, LEAP method (I Am Not Sick I Don't Need Help!) for psychosis anosognosia, and Stop Walking on Eggshells for borderline-pattern family dynamics.",
+      "For trauma: The Body Keeps the Score is the standard patient/family resource; for mood narratives: An Unquiet Mind (bipolar) and Reasons to Stay Alive (depression) are widely received and readable."
+    ],
+    "cta": {
+      "label": "Open the Podcast Library",
+      "href": "?page=podcast_library.md"
+    }
   }
 }
