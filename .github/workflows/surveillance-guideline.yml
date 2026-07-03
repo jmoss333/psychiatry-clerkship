@@ -1,0 +1,63 @@
+name: Surveillance — Guideline Monitor
+
+# Monthly: crawl authoritative sources (FDA/APA/DSM/USPSTF/SAMHSA/AACAP) via
+# apify/website-content-crawler, diff against stored baselines, and open issues
+# for meaningful changes. First run just establishes baselines (no issues).
+#
+# Requires repo secret: APIFY_TOKEN.
+
+on:
+  schedule:
+    - cron: "0 6 1 * *"         # 1st of month, 06:00 UTC
+  workflow_dispatch:
+  repository_dispatch:
+    types: [surveillance-guideline]  # external trigger (e.g. Apify webhook)
+
+permissions:
+  contents: write               # commit updated baselines + dated delta report
+  issues: write
+
+concurrency:
+  group: surveillance-guideline
+  cancel-in-progress: false
+
+jobs:
+  guideline-delta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install --quiet pyyaml
+
+      - name: Crawl + diff sources -> findings
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/run_guideline_surv.py
+          --out findings.json
+
+      - name: Sync findings -> issues + report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/sync_findings.py
+          --findings findings.json --job guideline-surveillance
+
+      - name: Rebuild faculty status page
+        run: python3 13_Faculty_Resources/_automation/surveillance/bin/build_status.py
+
+      - name: Commit baselines + report + status
+        run: |
+          git config user.name "surveillance-bot"
+          git config user.email "surveillance-bot@users.noreply.github.com"
+          git add 13_Faculty_Resources/_automation/surveillance
+          git commit -m "surveillance: guideline delta $(date -u +%F)" || { echo "no changes"; exit 0; }
+          git push || (git pull --rebase --autostash && git push) || echo "push failed"

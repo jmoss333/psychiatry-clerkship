@@ -1,0 +1,58 @@
+name: Surveillance — Resource Intake
+
+# On-demand only: scoped crawl of allow-listed domains for candidate resources.
+# All results are P2 -> they batch into the monthly digest (history/digest_YYYY-MM.md),
+# never individual issues. Highest-noise job, so it is manual-trigger and capped.
+#
+# Requires repo secret: APIFY_TOKEN.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: surveillance-intake
+  cancel-in-progress: false
+
+jobs:
+  resource-intake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install --quiet pyyaml
+
+      - name: Crawl candidates -> findings
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/run_resource_intake.py
+          --out findings.json
+
+      - name: Sync -> digest + report (no issues; all P2)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/sync_findings.py
+          --findings findings.json --job resource-intake
+
+      - name: Rebuild faculty status page
+        run: python3 13_Faculty_Resources/_automation/surveillance/bin/build_status.py
+
+      - name: Commit digest + report + status
+        run: |
+          git config user.name "surveillance-bot"
+          git config user.email "surveillance-bot@users.noreply.github.com"
+          git add 13_Faculty_Resources/_automation/surveillance
+          git commit -m "surveillance: resource intake $(date -u +%F)" || { echo "no changes"; exit 0; }
+          git push || (git pull --rebase --autostash && git push) || echo "push failed"

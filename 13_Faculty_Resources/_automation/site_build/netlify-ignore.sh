@@ -10,8 +10,10 @@
 # skipped build has already paid the LFS transfer. To curb LFS bandwidth, batch pushes or
 # buy the data pack (see GIT_AND_DEPLOY_PLAN.md §6).
 #
-# Skip ONLY when every changed file is a Markdown doc under
-# 13_Faculty_Resources/_automation/ (planning/status docs that no build script reads).
+# Skip when every changed file is EITHER a Markdown doc under
+# 13_Faculty_Resources/_automation/ (planning/status docs) OR any file under
+# 13_Faculty_Resources/_automation/surveillance/ (machine-generated audit data,
+# configs, and scripts that no build script reads).
 # Any other change — content markdown, tools, build scripts, audio, config — builds
 # normally on both sites. Fails safe toward BUILD whenever anything is uncertain.
 #
@@ -20,6 +22,8 @@
 set -u
 
 IGNORE_RE='^13_Faculty_Resources/_automation/.*\.md$'
+# All surveillance artifacts (JSON/CSV/YAML/py) are build-irrelevant — no build script reads them.
+IGNORE_SURV_RE='^13_Faculty_Resources/_automation/surveillance/'
 
 # No cached ref (first build / cleared cache / forced deploy) -> build.
 [ -n "${CACHED_COMMIT_REF:-}" ] || { echo "ignore: no CACHED_COMMIT_REF -> build"; exit 1; }
@@ -33,12 +37,12 @@ FILES=$(git diff --name-only "$CACHED_COMMIT_REF" "$COMMIT_REF") || {
 [ -n "$FILES" ] || { echo "ignore: no changed files -> build"; exit 1; }
 
 # Any changed file NOT matching the ignorable pattern forces a build.
-RELEVANT=$(printf '%s\n' "$FILES" | grep -vE "$IGNORE_RE" || true)
+RELEVANT=$(printf '%s\n' "$FILES" | grep -vE "$IGNORE_RE" | grep -vE "$IGNORE_SURV_RE" || true)
 if [ -n "$RELEVANT" ]; then
   echo "ignore: build-relevant changes present -> build"
   printf '  %s\n' $RELEVANT
   exit 1
 fi
 
-echo "ignore: only _automation/*.md docs changed -> skip build"
+echo "ignore: only _automation docs / surveillance artifacts changed -> skip build"
 exit 0

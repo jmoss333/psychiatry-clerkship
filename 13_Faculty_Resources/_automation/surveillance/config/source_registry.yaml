@@ -1,0 +1,169 @@
+# Curriculum Surveillance — Source Registry (single source of truth)
+# All three jobs (link-source-monitor, guideline-surveillance, resource-intake) read
+# THIS file. Do not hard-code sources inside Actors.
+#
+# Governance notes:
+#   - modality: full_text   -> we may fetch/normalize/diff the readable content.
+#   - modality: signal_only -> COPYRIGHTED or paywalled. Monitor version numbers,
+#     table-of-contents, publication dates, or metadata hashes ONLY. Never store or
+#     diff the copyrighted text (DSM-5-TR, most journals).
+#   - verified: false -> URL not yet confirmed by a link-monitor run. First weekly run
+#     flips this to true (or opens a P1 "source URL unreachable" issue).
+#   - severity_default seeds the finding's severity; REVIEW_RULES.md can escalate.
+
+version: 1
+updated: 2026-07-03
+owner: "Joshua Moss, MD"
+
+defaults:
+  proxy: datacenter          # residential only if a source blocks datacenter IPs
+  retry_before_flag: 2       # transient failures retried before a finding is emitted
+  snapshot: true             # store a content/PDF snapshot for provenance (audit trail)
+  respect_robots: true
+
+# ---------------------------------------------------------------------------
+# GUIDELINE SURVEILLANCE (monthly) — authoritative clinical sources
+# ---------------------------------------------------------------------------
+sources:
+  - id: fda-drug-safety
+    name: FDA Drug Safety Communications
+    job: guideline-surveillance
+    url: https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications
+    type: html
+    modality: full_text
+    severity_default: P0            # boxed warnings / REMS = patient safety
+    cadence: monthly
+    watch_for: ["boxed warning", "contraindication", "REMS", "withdrawal", "recall"]
+    affects_hint: ["05_Psychopharmacology/**"]
+    verified: false
+    notes: Highest patient-safety yield. Pair with drug-label checks for teaching meds.
+
+  - id: clozapine-rems
+    name: Clozapine REMS Program
+    job: guideline-surveillance
+    url: https://www.newclozapinerems.com/
+    type: html
+    modality: full_text
+    severity_default: P0
+    cadence: monthly
+    watch_for: ["monitoring", "ANC", "enrollment", "requirement", "discontinu"]
+    affects_hint: ["05_Psychopharmacology/Protocol_Library/**", "03_Core_Topics/Psychosis/**"]
+    verified: false
+    notes: REMS requirements have been in flux; do not encode current rules in teaching—monitor.
+
+  - id: spravato-rems
+    name: Spravato (esketamine) REMS
+    job: guideline-surveillance
+    url: https://www.spravatorems.com/
+    type: html
+    modality: full_text
+    severity_default: P1
+    cadence: monthly
+    watch_for: ["monitoring", "requirement", "certified", "administration"]
+    affects_hint: ["05_Psychopharmacology/**", "03_Core_Topics/Mood/**"]
+    verified: false
+
+  - id: apa-practice-guidelines
+    name: APA Practice Guidelines (index)
+    job: guideline-surveillance
+    url: https://www.psychiatry.org/psychiatrists/practice/clinical-practice-guidelines
+    type: html+pdf
+    modality: full_text
+    severity_default: P1
+    cadence: monthly
+    watch_for: ["updated", "new guideline", "revision", "withdrawn", "PDF"]
+    affects_hint: ["03_Core_Topics/**", "04_Acute_and_Safety/**", "07_Evidence_and_Reading/Guidelines/**"]
+    verified: false
+    notes: Index page lists per-topic guidelines (MDD, schizophrenia, bipolar, SUD, suicidal behaviors, eating disorders). Diff the index for add/remove/date changes; fetch changed PDFs.
+
+  - id: dsm-5-tr
+    name: DSM-5-TR (APPI)
+    job: guideline-surveillance
+    url: https://www.appi.org/products/dsm
+    type: login
+    modality: signal_only            # COPYRIGHTED — version/errata signals only
+    severity_default: P1
+    cadence: monthly
+    watch_for: ["text revision", "errata", "coding update", "printing"]
+    affects_hint: ["03_Core_Topics/**", "02_Clinical_Skills/Differential_Diagnosis/**"]
+    verified: false
+    legal_note: Do not scrape or store DSM text. Monitor edition/errata/coding-update announcements only.
+
+  - id: uspstf-mental-health
+    name: USPSTF Recommendations (mental health topics)
+    job: guideline-surveillance
+    url: https://www.uspreventiveservicestaskforce.org/uspstf/topic_search_results?topic_status=P
+    type: html
+    modality: full_text
+    severity_default: P1
+    cadence: monthly
+    watch_for: ["depression", "anxiety", "suicide", "perinatal", "grade", "final recommendation"]
+    affects_hint: ["02_Clinical_Skills/Screeners/**", "03_Core_Topics/Mood/**", "03_Core_Topics/Perinatal/**", "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/**"]
+    verified: false
+    notes: Screening grades change and are board-relevant.
+
+  - id: samhsa-guidelines
+    name: SAMHSA Guidelines & Advisories
+    job: guideline-surveillance
+    url: https://www.samhsa.gov/resource-search/all
+    type: html+pdf
+    modality: full_text
+    severity_default: P2
+    cadence: monthly
+    watch_for: ["crisis", "988", "treatment improvement protocol", "TIP", "advisory"]
+    affects_hint: ["04_Acute_and_Safety/**", "03_Core_Topics/SUD_Withdrawal/**"]
+    verified: false
+
+  - id: aacap-parameters
+    name: AACAP Practice Parameters / Clinical Resources
+    job: guideline-surveillance
+    url: https://www.aacap.org/AACAP/Resources_for_Primary_Care/Practice_Parameters_and_Resource_Centers/Practice_Parameters.aspx
+    type: html
+    modality: full_text
+    severity_default: P2
+    cadence: monthly
+    watch_for: ["parameter", "updated", "new"]
+    affects_hint: ["14_Tracks/CAP_Fellow/**"]
+    verified: false
+    notes: Include only if clerkship covers child/adolescent psychiatry.
+
+# ---------------------------------------------------------------------------
+# LINK / SOURCE MONITOR (weekly) — reachability of everything we cite/link
+# ---------------------------------------------------------------------------
+# The link job does NOT enumerate individual URLs here; it harvests outbound links
+# from the built site + repo markdown and checks them. This block only tunes behavior.
+link_monitor:
+  job: link-source-monitor
+  cadence: weekly
+  engine: github_action_lychee        # apify fallback: logiover/bulk-url-status-checker
+  treat_as_finding:
+    hard_404: true
+    soft_404: true                     # 200 body that says "not found"
+    permanent_redirect_301: true       # 301 to a new URL -> P1 update, not a silent pass
+    temporary_redirect_302: false
+    rate_limited_429: false            # retry, do not flag as broken
+    tls_error: true
+  severity_default: P1
+  high_traffic_paths_P0:               # dead link on these = P0
+    - "00_START_HERE/**"
+    - "04_Acute_and_Safety/**"
+    - "index.html"
+
+# ---------------------------------------------------------------------------
+# RESOURCE INTAKE (on-demand / monthly) — candidate resources for review
+# ---------------------------------------------------------------------------
+resource_intake:
+  job: resource-intake
+  cadence: on_demand
+  engine: apify_website_content_crawler
+  inclusion:                           # strict filters to prevent a firehose
+    require_domains:
+      - psychiatry.org
+      - jamanetwork.com
+      - thelancet.com
+      - nejm.org
+      - cochranelibrary.com
+    exclude_if_present_in: config/citation_index.json   # dedup against existing library
+  max_candidates_per_run: 25
+  severity_default: P2
+  notes: Manual-trigger first. Journals are copyright-sensitive—capture citation + link, not full text.

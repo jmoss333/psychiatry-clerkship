@@ -1,0 +1,65 @@
+name: Surveillance — Link Monitor
+
+# Weekly: verify every external link in the library's markdown/html still resolves.
+# Broken/redirect links become GitHub issues (P0 on high-traffic pages, else P1).
+# Internal relative links are intentionally out of scope here (checked by the site
+# build); this job targets external citation/source rot.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"        # Mondays 06:00 UTC
+  workflow_dispatch:
+  repository_dispatch:
+    types: [surveillance-link]  # external trigger (e.g. Apify webhook)
+
+permissions:
+  contents: write               # commit dated report under history/
+  issues: write                 # open findings as issues
+
+concurrency:
+  group: surveillance-link
+  cancel-in-progress: false
+
+jobs:
+  link-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Check links (lychee)
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: "--scheme https --scheme http --exclude-mail --max-concurrency 8 './**/*.md' './**/*.html'"
+          format: json
+          output: lychee.json
+          fail: false           # a broken link must not fail the workflow
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Parse lychee report -> findings
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/run_link_monitor.py
+          --lychee lychee.json --out findings.json
+
+      - name: Sync findings -> issues + report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/sync_findings.py
+          --findings findings.json --job link-source-monitor
+
+      - name: Rebuild faculty status page
+        run: python3 13_Faculty_Resources/_automation/surveillance/bin/build_status.py
+
+      - name: Commit report + status
+        run: |
+          git config user.name "surveillance-bot"
+          git config user.email "surveillance-bot@users.noreply.github.com"
+          git add 13_Faculty_Resources/_automation/surveillance
+          git commit -m "surveillance: link audit $(date -u +%F)" || { echo "no changes"; exit 0; }
+          git push || (git pull --rebase --autostash && git push) || echo "push failed"

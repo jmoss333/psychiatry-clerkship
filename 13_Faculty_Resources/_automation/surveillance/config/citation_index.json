@@ -1,0 +1,423 @@
+{
+  "_note": "Reverse index: which curriculum files depend on which external source. When a source in source_registry.yaml changes, the sync inverts this map to populate a finding's affects[] and route it to the exact teaching pages. Hand-editable and auto-augmented by bin/build_citation_index.py (scans curriculum for source references). Keys are repo-relative paths; values.cites are source_id values from source_registry.yaml.",
+  "_schema": "path -> { cites: [source_id], notes?: string, auto?: bool }",
+  "generated": "2026-07-03",
+  "generated_by": "seed + auto-scan (build_citation_index.py)",
+  "index": {
+    "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md": {
+      "cites": [
+        "apa-practice-guidelines",
+        "uspstf-mental-health",
+        "fda-drug-safety",
+        "spravato-rems"
+      ],
+      "notes": "MDD/bipolar guidance, depression screening grade, antidepressant/mood-stabilizer safety, esketamine."
+    },
+    "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md": {
+      "cites": [
+        "apa-practice-guidelines",
+        "fda-drug-safety",
+        "samhsa-guidelines",
+        "uspstf-mental-health"
+      ],
+      "notes": "Perinatal depression prevention/screening; medication-in-pregnancy safety."
+    },
+    "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md": {
+      "cites": [
+        "apa-practice-guidelines",
+        "clozapine-rems",
+        "fda-drug-safety"
+      ],
+      "notes": "Schizophrenia guideline; clozapine monitoring; antipsychotic safety."
+    },
+    "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md": {
+      "cites": [
+        "clozapine-rems",
+        "fda-drug-safety",
+        "samhsa-guidelines"
+      ],
+      "notes": "SAMHSA TIPs/advisories; MOUD/withdrawal medication safety."
+    },
+    "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md": {
+      "cites": [
+        "apa-practice-guidelines"
+      ],
+      "notes": "APA eating disorders practice guideline."
+    },
+    "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html": {
+      "cites": [
+        "uspstf-mental-health",
+        "apa-practice-guidelines"
+      ],
+      "notes": "Suicide risk screening recommendation; APA guideline on suicidal behaviors. HIGH-TRAFFIC (04_*) -> broken link here is P0."
+    },
+    "05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md": {
+      "cites": [
+        "fda-drug-safety",
+        "clozapine-rems",
+        "spravato-rems"
+      ],
+      "notes": "Drug protocols most exposed to boxed-warning/REMS changes."
+    },
+    "02_Clinical_Skills/Screeners/screeners.html": {
+      "cites": [
+        "uspstf-mental-health"
+      ],
+      "notes": "Screener selection tracks USPSTF grades."
+    },
+    "01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md": {
+      "cites": [
+        "clozapine-rems"
+      ],
+      "auto": true
+    },
+    "02_Clinical_Skills/Screeners/README.md": {
+      "cites": [
+        "apa-practice-guidelines",
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "02_Clinical_Skills/Interviewing/README.md": {
+      "cites": [
+        "apa-practice-guidelines",
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Psychosis/README.md": {
+      "cites": [
+        "apa-practice-guidelines"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md": {
+      "cites": [
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/SUD_Withdrawal/README.md": {
+      "cites": [
+        "apa-practice-guidelines"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md": {
+      "cites": [
+        "dsm-5-tr",
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md": {
+      "cites": [
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Personality/README.md": {
+      "cites": [
+        "apa-practice-guidelines"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md": {
+      "cites": [
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md": {
+      "cites": [
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Nutrition/README.md": {
+      "cites": [
+        "apa-practice-guidelines"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Nutrition/nutrition_metabolic_inpatient_teaching.md": {
+      "cites": [
+        "clozapine-rems"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md": {
+      "cites": [
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md": {
+      "cites": [
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "03_Core_Topics/Geriatric/README.md": {
+      "cites": [
+        "apa-practice-guidelines"
+      ],
+      "auto": true
+    },
+    "04_Acute_and_Safety/Delirium/delirium_inpatient_teaching.md": {
+      "cites": [
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "04_Acute_and_Safety/Delirium/README.md": {
+      "cites": [
+        "apa-practice-guidelines"
+      ],
+      "auto": true
+    },
+    "05_Psychopharmacology/README.md": {
+      "cites": [
+        "clozapine-rems"
+      ],
+      "auto": true
+    },
+    "05_Psychopharmacology/Protocol_Library/README.md": {
+      "cites": [
+        "clozapine-rems"
+      ],
+      "auto": true
+    },
+    "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md": {
+      "cites": [
+        "clozapine-rems",
+        "fda-drug-safety",
+        "spravato-rems"
+      ],
+      "auto": true
+    },
+    "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md": {
+      "cites": [
+        "clozapine-rems",
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "07_Evidence_and_Reading/Landmark_Library/Primary_Source_Download_List.md": {
+      "cites": [
+        "apa-practice-guidelines",
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "07_Evidence_and_Reading/Landmark_Trials/reading_order_by_week.md": {
+      "cites": [
+        "clozapine-rems",
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "07_Evidence_and_Reading/Landmark_Trials/landmark_trials_page.md": {
+      "cites": [
+        "clozapine-rems"
+      ],
+      "auto": true
+    },
+    "07_Evidence_and_Reading/Landmark_Trials/LM_crosswalk.md": {
+      "cites": [
+        "clozapine-rems"
+      ],
+      "auto": true
+    },
+    "07_Evidence_and_Reading/Landmark_Trials/INCORPORATION_PLAN.md": {
+      "cites": [
+        "clozapine-rems",
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md": {
+      "cites": [
+        "clozapine-rems",
+        "dsm-5-tr",
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md": {
+      "cites": [
+        "clozapine-rems",
+        "dsm-5-tr",
+        "fda-drug-safety",
+        "spravato-rems",
+        "uspstf-mental-health"
+      ],
+      "auto": true
+    },
+    "12_Media/psychiatry_psychotherapy_podcast_library.md": {
+      "cites": [
+        "clozapine-rems"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md": {
+      "cites": [
+        "apa-practice-guidelines",
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/README.md": {
+      "cites": [
+        "apa-practice-guidelines"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/APA_Downloads_2026-06-29/catalog.html": {
+      "cites": [
+        "apa-practice-guidelines",
+        "dsm-5-tr",
+        "samhsa-guidelines"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/APA_Downloads_2026-06-29/README.md": {
+      "cites": [
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md": {
+      "cites": [
+        "apa-practice-guidelines",
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/APA_Downloads_2026-06-29/scripts/catalog_template.html": {
+      "cites": [
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/Handoffs/library_review_2026-07-01.md": {
+      "cites": [
+        "clozapine-rems",
+        "fda-drug-safety",
+        "spravato-rems"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/Handoffs/openevidence_library_accuracy_review_2026-07-01.md": {
+      "cites": [
+        "clozapine-rems",
+        "dsm-5-tr",
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/Handoffs/HANDOFF_for_fable5_2026-07-01.md": {
+      "cites": [
+        "clozapine-rems",
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/Handoffs/STATUS_LATEST.md": {
+      "cites": [
+        "clozapine-rems",
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/Handoffs/openevidence_library_accuracy_review_2026-06-30.md": {
+      "cites": [
+        "clozapine-rems",
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/Handoffs/Tier3_attestation_sheet_2026-07-01.md": {
+      "cites": [
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/Handoffs/codex_qbank_spec_2026-06-29.md": {
+      "cites": [
+        "clozapine-rems",
+        "fda-drug-safety"
+      ],
+      "auto": true
+    },
+    "13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md": {
+      "cites": [
+        "clozapine-rems",
+        "fda-drug-safety",
+        "spravato-rems"
+      ],
+      "auto": true
+    },
+    "14_Tracks/Resident/resident_welcome.md": {
+      "cites": [
+        "clozapine-rems"
+      ],
+      "auto": true
+    },
+    "14_Tracks/Resident/canon_200.md": {
+      "cites": [
+        "clozapine-rems",
+        "dsm-5-tr",
+        "fda-drug-safety",
+        "spravato-rems"
+      ],
+      "auto": true
+    },
+    "14_Tracks/Resident/adv_psychopharmacology.md": {
+      "cites": [
+        "clozapine-rems",
+        "fda-drug-safety",
+        "spravato-rems"
+      ],
+      "auto": true
+    },
+    "14_Tracks/Sub-I_MS4/README.md": {
+      "cites": [
+        "clozapine-rems"
+      ],
+      "auto": true
+    },
+    "14_Tracks/MS3/README.md": {
+      "cites": [
+        "apa-practice-guidelines"
+      ],
+      "auto": true
+    },
+    "14_Tracks/MS3/Student_Ready_Pack/07_shelf_guide/shelf_review_guide.md": {
+      "cites": [
+        "dsm-5-tr"
+      ],
+      "auto": true
+    },
+    "14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md": {
+      "cites": [
+        "clozapine-rems"
+      ],
+      "auto": true
+    },
+    "14_Tracks/MS3/Student_Ready_Pack/09_revision_maps/revision_plan.md": {
+      "cites": [
+        "clozapine-rems"
+      ],
+      "auto": true
+    },
+    "14_Tracks/MS3/Student_Ready_Pack/00_index/README.md": {
+      "cites": [
+        "apa-practice-guidelines",
+        "samhsa-guidelines"
+      ],
+      "auto": true
+    }
+  },
+  "auto_scanned_at": "2026-07-03"
+}

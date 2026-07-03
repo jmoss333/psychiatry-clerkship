@@ -1,0 +1,12 @@
+{
+  "_comment": "Input for apify/website-content-crawler used by run_guideline_surv.py. This is a reference you can paste into the Apify console to test ONE source. The collector builds this per-source from source_registry.yaml (crawlerType 'cheerio' for type:html, else 'playwright:firefox'). maxCrawlPages=1/maxCrawlDepth=0 = fetch just the target page. Read the returned item's 'text'/'markdown' field.",
+  "startUrls": [
+    { "url": "https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications" }
+  ],
+  "crawlerType": "cheerio",
+  "maxCrawlPages": 1,
+  "maxCrawlDepth": 0,
+  "useSitemaps": false,
+  "respectRobotsTxtFile": true,
+  "proxyConfiguration": { "useApifyProxy": true }
+}

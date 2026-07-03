@@ -1,0 +1,10 @@
+{
+  "_comment": "FALLBACK ONLY. Primary link checking is the lychee GitHub Action (free, in-repo). Use this Apify actor (logiover/bulk-url-status-checker) for hosts that block lychee or need a browser. Feed it the specific external URLs to verify; it returns HTTP status + redirect chains as CSV/JSON. Observed success rate ~74% — rely on retry-before-flag.",
+  "startUrls": [
+    { "url": "https://www.psychiatry.org/psychiatrists/practice/clinical-practice-guidelines" },
+    { "url": "https://www.uspreventiveservicestaskforce.org/uspstf/" },
+    { "url": "https://www.newclozapinerems.com/" }
+  ],
+  "maxConcurrency": 8,
+  "proxyConfiguration": { "useApifyProxy": true }
+}

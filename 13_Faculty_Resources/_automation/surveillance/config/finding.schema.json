@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://une-ms3-psychiatry/surveillance/finding.schema.json",
+  "title": "Surveillance Finding",
+  "description": "Normalized finding emitted by any of the three surveillance jobs. One object per detected change/candidate. Datasets are arrays of these.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["finding_id", "fingerprint", "job", "source_id", "detected_at", "change_type", "severity", "summary", "status"],
+  "properties": {
+    "finding_id": {
+      "type": "string",
+      "description": "Unique per emission (uuid or run-scoped id)."
+    },
+    "fingerprint": {
+      "type": "string",
+      "description": "STABLE idempotency key = hash(source_id + change_type + change_signature). The GitHub sync searches open issues for this before creating one, so re-runs never open duplicates. A dismissed fingerprint is NOT reopened."
+    },
+    "job": {
+      "type": "string",
+      "enum": ["guideline-surveillance", "link-source-monitor", "resource-intake"]
+    },
+    "source_id": {
+      "type": "string",
+      "description": "Foreign key into config/source_registry.yaml (e.g. 'fda-drug-safety'). For link-monitor findings on arbitrary outbound links, use 'link:<domain>'."
+    },
+    "source_name": { "type": "string" },
+    "source_url": { "type": "string", "format": "uri" },
+    "source_type": {
+      "type": "string",
+      "enum": ["html", "html+pdf", "pdf", "api", "login"]
+    },
+    "modality": {
+      "type": "string",
+      "enum": ["full_text", "signal_only"],
+      "description": "signal_only findings must NOT include copyrighted content in evidence.diff_excerpt."
+    },
+    "detected_at": { "type": "string", "format": "date-time" },
+    "change_type": {
+      "type": "string",
+      "enum": ["new", "modified", "removed", "broken-link", "soft-404", "redirect", "tls-error", "candidate"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2"],
+      "description": "P0 issue immediately + notify; P1 issue; P2 batched digest. See REVIEW_RULES.md."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Human-readable one-liner. This becomes the GitHub issue title (prefixed with severity + source_id for idempotent search)."
+    },
+    "evidence": {
+      "type": "object",
+      "description": "Provenance for audit/accreditation. Omit copyrighted text for signal_only sources.",
+      "additionalProperties": false,
+      "properties": {
+        "prev_hash": { "type": "string" },
+        "new_hash": { "type": "string" },
+        "diff_excerpt": { "type": "string", "description": "Normalized text diff. EMPTY for signal_only sources." },
+        "snapshot_url": { "type": "string", "description": "Apify key-value store URL of the captured snapshot (page or PDF)." },
+        "prev_seen_at": { "type": "string", "format": "date-time" },
+        "http_status": { "type": "integer" },
+        "redirect_to": { "type": "string", "format": "uri" }
+      }
+    },
+    "affects": {
+      "type": "array",
+      "description": "Repo-relative curriculum paths that cite this source, resolved via config/citation_index.json. Drives routing and the reviewed.json re-attestation prompt.",
+      "items": { "type": "string" }
+    },
+    "recommended_action": {
+      "type": "string",
+      "description": "e.g. 'Re-verify APA MDD dosing table on t_mood.md; re-stamp reviewed.json when confirmed.'"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["new", "triaged", "issue-open", "actioned", "dismissed"],
+      "default": "new"
+    },
+    "github_issue": {
+      "type": "string",
+      "description": "Issue URL once opened (null for P2/digest-only)."
+    }
+  },
+  "examples": [
+    {
+      "finding_id": "b1c2-...",
+      "fingerprint": "fda-drug-safety::modified::9f2a...",
+      "job": "guideline-surveillance",
+      "source_id": "fda-drug-safety",
+      "source_name": "FDA Drug Safety Communications",
+      "source_url": "https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications",
+      "source_type": "html",
+      "modality": "full_text",
+      "detected_at": "2026-08-01T06:03:00Z",
+      "change_type": "modified",
+      "severity": "P0",
+      "summary": "[P0][fda-drug-safety] New boxed-warning communication added since last scan",
+      "evidence": {
+        "prev_hash": "aa11",
+        "new_hash": "bb22",
+        "diff_excerpt": "+ New Drug Safety Communication: ...",
+        "snapshot_url": "https://api.apify.com/v2/key-value-stores/.../snapshot.html",
+        "prev_seen_at": "2026-07-01T06:02:00Z"
+      },
+      "affects": ["05_Psychopharmacology/Protocol_Library/README.md"],
+      "recommended_action": "Confirm whether an affected teaching med is involved; open issue; re-stamp reviewed.json on resolution.",
+      "status": "new"
+    }
+  ]
+}

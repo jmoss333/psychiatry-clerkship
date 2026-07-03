@@ -1,0 +1,19 @@
+{
+  "_comment": "Input for apify/website-content-crawler used by run_resource_intake.py. Scoped crawl: only follows links within the allow-listed domains (includeUrlGlobs) so it can't wander. maxCrawlPages caps cost. Journals are copyright-sensitive — capture title + URL, not full text, downstream.",
+  "startUrls": [
+    { "url": "https://www.psychiatry.org/" },
+    { "url": "https://jamanetwork.com/journals/jamapsychiatry" }
+  ],
+  "crawlerType": "playwright:firefox",
+  "maxCrawlPages": 25,
+  "maxCrawlDepth": 1,
+  "includeUrlGlobs": [
+    { "glob": "https://*psychiatry.org/**" },
+    { "glob": "https://*jamanetwork.com/**" },
+    { "glob": "https://*thelancet.com/**" },
+    { "glob": "https://*nejm.org/**" },
+    { "glob": "https://*cochranelibrary.com/**" }
+  ],
+  "respectRobotsTxtFile": true,
+  "proxyConfiguration": { "useApifyProxy": true }
+}
