@@ -105,25 +105,27 @@ TOOLS=[("mse.html","Mental Status Exam"),("interview-circle.html","The Interview
 # items up by filename, not by sidebar visibility) — see the `hidden` flag on the nav item below.
 HIDDEN_TOOLS={"shelf-mode.html","review.html","active-recall.html"}
 nav=[
- {"section":"Start here","items":[
+ {"section":"Start here","group":"Get oriented","items":[
    {"t":"Welcome — Resident Rotation","f":"welcome.md","k":"md"},
    {"t":"4-Week Rotation Plan","f":"rotation.md","k":"md"},
    {"t":"Core Reading List","f":"core_readings.md","k":"md"}]},
- {"section":"Resident depth","items":[
+ {"section":"Resident depth","group":"Get oriented","items":[
    {"t":"Advanced Psychopharmacology","f":"adv_psychopharm.md","k":"md"},
    {"t":"Inpatient Systems & Med-Legal","f":"systems_medlegal.md","k":"md"},
-   {"t":"Supervision, EPAs & Teaching","f":"supervision_teaching.md","k":"md"},
-   {"t":"The Psychiatry Canon (200)","f":"canon_200.md","k":"md"}]},
- {"section":"Interactive tools","items":[dict({"t":n,"f":f,"k":"tool"},**({"hidden":True} if f in HIDDEN_TOOLS else {})) for f,n in TOOLS]},
- {"section":"Core Topics","items":[{"t":"Differential Dx Scaffolds","f":"ddx.md","k":"md"},{"t":"Mood","f":"t_mood.md","k":"md"},{"t":"Psychosis","f":"t_psychosis.md","k":"md"},{"t":"Anxiety/Trauma/OCD","f":"t_anxiety.md","k":"md"},{"t":"Personality","f":"t_personality.md","k":"md"},{"t":"Substance Use","f":"t_sud.md","k":"md"},{"t":"Geriatric","f":"t_geri.md","k":"md"},{"t":"Perinatal","f":"t_perinatal.md","k":"md"},{"t":"Neurodevelopmental Disorders","f":"t_neurodev.md","k":"md"},{"t":"Eating Disorders","f":"t_eating.md","k":"md"},{"t":"Nutrition & Metabolic Health","f":"nutrition_metabolic.md","k":"md"}]},
- {"section":"Acute & Safety","items":[{"t":"Catatonia","f":"catatonia.md","k":"md"},{"t":"Delirium","f":"delirium.md","k":"md"},{"t":"Agitation & Restraint","f":"agitation.md","k":"md"},{"t":"C-L: Emergencies, Tox & Capacity (Numbers)","f":"cl_reference.md","k":"md"},{"t":"Agitation Ladder — PRN Trainer","f":"rp-agitation.html","k":"tool"}]},
- {"section":"Psychopharmacology","items":[{"t":"Psychopharmacology Primer","f":"psychopharm_primer.md","k":"md"},{"t":"Advanced Psychopharmacology","f":"adv_psychopharm.md","k":"md"},{"t":"Protocol Library","f":"protocol_library.md","k":"md"}]},
- {"section":"Skills & reference","items":[{"t":"Interview & MSE","f":"pg_interview.md","k":"md"},{"t":"Formulation & DDx","f":"pg_formulation.md","k":"md"},{"t":"Suicide Risk & Safety","f":"pg_suicide.md","k":"md"},{"t":"Documentation & Oral Presentation","f":"doc_oral.md","k":"md"},{"t":"Consult: Capacity/Delirium/Catatonia/Withdrawal","f":"exp_consult.md","k":"md"},{"t":"Family & Discharge","f":"exp_family.md","k":"md"},{"t":"Family Therapy Modalities","f":"family_modalities.md","k":"md"},{"t":"Family Meeting Playbook (90-min)","f":"family_playbook.md","k":"md"},{"t":"Motivational Interviewing","f":"motivational_interviewing.md","k":"md"},{"t":"Brief Psychotherapy on the Unit","f":"brief_psychotherapy.md","k":"md"},{"t":"High-Yield Rounds Questions","f":"rounds_questions.md","k":"md"},{"t":"Five Good Minutes — Brief Psych Coach","f":"rp-brief-psych.html","k":"tool"}]},
- {"section":"Evidence & reading","items":[{"t":"Evidence-Based Inpatient Psychiatry","f":"evidence_inpatient.md","k":"md"},{"t":"Landmark Trials — Listen & Test","f":"landmark_trials.md","k":"md"},{"t":"The Psychiatry Canon (200)","f":"canon_200.md","k":"md"},{"t":"Canon Quiz — 200-Paper Spine","f":"rp-canon-quiz.html","k":"tool"}]},
- {"section":"Books & Podcasts","items":[{"t":"Book Library","f":"book_library.md","k":"md"},{"t":"Podcast Library (Psychiatry & Psychotherapy)","f":"podcast_library.md","k":"md"}]},
- {"section":"Faculty","items":[{"t":"Review & Attest","f":"review-attest.html","k":"tool"},{"t":"Question Bank Attestation","f":"qbank-attest.html","k":"tool"}]},
+   {"t":"Supervision, EPAs & Teaching","f":"supervision_teaching.md","k":"md"}]},
+ {"section":"Core Topics","group":"Learn the topics","items":[{"t":"Differential Dx Scaffolds","f":"ddx.md","k":"md"},{"t":"Mood","f":"t_mood.md","k":"md"},{"t":"Psychosis","f":"t_psychosis.md","k":"md"},{"t":"Anxiety/Trauma/OCD","f":"t_anxiety.md","k":"md"},{"t":"Personality","f":"t_personality.md","k":"md"},{"t":"Substance Use","f":"t_sud.md","k":"md"},{"t":"Geriatric","f":"t_geri.md","k":"md"},{"t":"Perinatal","f":"t_perinatal.md","k":"md"},{"t":"Neurodevelopmental Disorders","f":"t_neurodev.md","k":"md"},{"t":"Eating Disorders","f":"t_eating.md","k":"md"},{"t":"Nutrition & Metabolic Health","f":"nutrition_metabolic.md","k":"md"}]},
+ {"section":"Psychopharmacology","group":"Learn the topics","items":[{"t":"Psychopharmacology Primer","f":"psychopharm_primer.md","k":"md"},{"t":"Advanced Psychopharmacology","f":"adv_psychopharm.md","k":"md"},{"t":"Protocol Library","f":"protocol_library.md","k":"md"}]},
+ {"section":"Skills & reference","group":"Learn the topics","items":[{"t":"Interview & MSE","f":"pg_interview.md","k":"md"},{"t":"Formulation & DDx","f":"pg_formulation.md","k":"md"},{"t":"Suicide Risk & Safety","f":"pg_suicide.md","k":"md"},{"t":"Documentation & Oral Presentation","f":"doc_oral.md","k":"md"},{"t":"Consult: Capacity/Delirium/Catatonia/Withdrawal","f":"exp_consult.md","k":"md"},{"t":"Family & Discharge","f":"exp_family.md","k":"md"},{"t":"Family Therapy Modalities","f":"family_modalities.md","k":"md"},{"t":"Family Meeting Playbook (90-min)","f":"family_playbook.md","k":"md"},{"t":"Motivational Interviewing","f":"motivational_interviewing.md","k":"md"},{"t":"Brief Psychotherapy on the Unit","f":"brief_psychotherapy.md","k":"md"},{"t":"High-Yield Rounds Questions","f":"rounds_questions.md","k":"md"}]},
+ {"section":"Practice","items":[dict({"t":n,"f":f,"k":"tool"},**({"hidden":True} if f in HIDDEN_TOOLS else {})) for f,n in TOOLS]+[
+   {"t":"Agitation Ladder — PRN Trainer","f":"rp-agitation.html","k":"tool"},
+   {"t":"Five Good Minutes — Brief Psych Coach","f":"rp-brief-psych.html","k":"tool"},
+   {"t":"Canon Quiz — 200-Paper Spine","f":"rp-canon-quiz.html","k":"tool"}]},
+ {"section":"Acute & Safety","pinned":True,"items":[{"t":"Catatonia","f":"catatonia.md","k":"md"},{"t":"Delirium","f":"delirium.md","k":"md"},{"t":"Agitation & Restraint","f":"agitation.md","k":"md"},{"t":"C-L: Emergencies, Tox & Capacity (Numbers)","f":"cl_reference.md","k":"md"}]},
+ {"section":"Evidence & the Canon","items":[{"t":"Evidence-Based Inpatient Psychiatry","f":"evidence_inpatient.md","k":"md"},{"t":"Landmark Trials — Listen & Test","f":"landmark_trials.md","k":"md"},{"t":"The Psychiatry Canon (200)","f":"canon_200.md","k":"md"},{"t":"Canon Quiz — 200-Paper Spine","f":"rp-canon-quiz.html","k":"tool"}]},
+ {"section":"Books & Podcasts","group":"Reference","items":[{"t":"Book Library","f":"book_library.md","k":"md"},{"t":"Podcast Library (Psychiatry & Psychotherapy)","f":"podcast_library.md","k":"md"}]},
+ {"section":"Faculty","group":"Reference","items":[{"t":"Review & Attest","f":"review-attest.html","k":"tool"},{"t":"Question Bank Attestation","f":"qbank-attest.html","k":"tool"}]},
 ]
-_navorder=["Start here","Resident depth","Core Topics","Interactive tools","Acute & Safety","Psychopharmacology","Skills & reference","Evidence & reading","Books & Podcasts","Faculty"]
+_navorder=["Start here","Resident depth","Core Topics","Psychopharmacology","Skills & reference","Practice","Acute & Safety","Evidence & the Canon","Books & Podcasts","Faculty"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
 open(OUT+"/nav.json","w").write(json.dumps(nav))
 
