@@ -1214,5 +1214,170 @@
       "label": "Open the Protocol Library",
       "href": "?page=protocol_library.md"
     }
+  },
+  "exp_family.md": {
+    "read": 5,
+    "tldr": "Discharge risk peaks in the first week post-discharge — map every barrier (housing, medications, follow-up, family capacity, means safety) before any note says 'plan for discharge,' and always leave with a scheduled 7-day appointment, not a phone number.",
+    "points": [
+      "Suicide risk in the first week post-discharge is roughly 100× the population rate — a pre-scheduled 7-day follow-up appointment (not 'they will call to arrange one') is itself an evidence-based intervention.",
+      "Structured lethal-means counseling cut attempts and deaths from 3.3% to 0.83% at 180 days — 'who can confirm items are secured before discharge?' is a clinical act, not a formality.",
+      "Family involvement during admission nearly triples the odds of 7-day follow-up, and family psychoeducation lowers 12-month relapse from ~37% to ~10% — bringing family in is treatment, not logistics."
+    ],
+    "cant": "'The family is supportive' is an observation, not a discharge plan — verify concretely who can do what (medications, transportation, means safety, appointments) before any note says 'safe for discharge.'",
+    "quiz": {
+      "q": "A patient with a recent serious suicide attempt is being discussed for discharge. The team notes 'family is supportive and patient has a safety plan.' What is the most important missing element before discharge planning proceeds?",
+      "o": [
+        {
+          "t": "A PHQ-9 score below 10 to confirm symptom resolution"
+        },
+        {
+          "t": "Written confirmation that the patient has memorized the safety plan steps"
+        },
+        {
+          "t": "A discharge barrier map confirming housing, medication access, a scheduled 7-day follow-up appointment, and confirmed means restriction",
+          "c": true
+        },
+        {
+          "t": "An attestation from family that they have read the diagnosis handout"
+        }
+      ],
+      "why": "'Family is supportive' is a conclusion, not a plan. The discharge barrier map must verify specific domains: where the patient will sleep, who will be there, whether medications are obtainable, whether a 7-day appointment is actually scheduled, and who has confirmed lethal means are secured. Each unconfirmed assumption is a gap in the safety net."
+    },
+    "cta": {
+      "label": "Open the Family Meeting Playbook",
+      "href": "?page=family_playbook.md"
+    }
+  },
+  "family_modalities.md": {
+    "read": 4,
+    "tldr": "Match the family intervention to the family in front of you — family psychoeducation is the default highest-evidence approach (OR 0.18, NNT 7 for relapse prevention), but dose matters: ≤2 sessions is ineffective, and the main barrier to delivery is clinician avoidance, not patient refusal.",
+    "points": [
+      "Family psychoeducation (OR 0.18 vs. treatment as usual) is the single strongest psychosocial intervention for schizophrenia relapse prevention, supported by 90 RCTs across more than 10,000 patients.",
+      "CRAFT is the go-to modality when a family member is struggling with a patient's substance use — it changes the family's own behavior to reduce blame and invite treatment engagement, without confrontation.",
+      "Expressed emotion (high criticism, hostility, emotional over-involvement) roughly quintuples relapse odds; family warmth is protective — lowering expressed emotion is a modifiable clinical target."
+    ],
+    "cant": "≤2 family sessions is ineffective for relapse prevention — NICE recommends ≥10 sessions over ≥3 months; a single discharge meeting starts the work but is not a course of care.",
+    "quiz": {
+      "q": "A patient with schizophrenia is preparing for discharge. Family members are willing to participate in family work. Which intervention has the strongest evidence for preventing 12-month relapse?",
+      "o": [
+        {
+          "t": "Family psychoeducation — OR 0.18 for 12-month relapse across 90 RCTs, with ≥10 sessions over ≥3 months required for the effect to hold",
+          "c": true
+        },
+        {
+          "t": "Emotionally Focused Therapy — attachment-based approach targeting the pursue-withdraw cycle in couples"
+        },
+        {
+          "t": "A single family meeting covering diagnosis and the safety plan before discharge"
+        },
+        {
+          "t": "Solution-focused brief therapy — one high-yield session amplifying existing family strengths"
+        }
+      ],
+      "why": "Family psychoeducation has the strongest evidence for schizophrenia relapse prevention (OR 0.18 vs. treatment as usual; 90 RCTs, >10,000 patients). EFT is evidence-based for couples but is not the default for schizophrenia; a single meeting is below the therapeutic dose (≤2 sessions is ineffective); solution-focused therapy is useful when only one meeting is possible but does not have the relapse-prevention evidence base."
+    },
+    "cta": {
+      "label": "Open the Family Meeting Playbook",
+      "href": "?page=family_playbook.md"
+    }
+  },
+  "family_playbook.md": {
+    "read": 4,
+    "tldr": "Structure the 90-minute meeting across five phases — open/join, share the picture, hear the family and read expressed emotion, problem-solve and plan, then summarize — convene early to plant a seed, not at discharge to harvest one.",
+    "points": [
+      "Convene the family meeting early in the admission — the relapse-prevention benefit of family work accrues over the following 12 months, not on the unit; saving it for the day before discharge squanders the inpatient window.",
+      "Phase 3 (0:35–0:55) — hearing the family's perspective and reading expressed emotion — is the phase that most changes outcomes; protect the time, listen without correcting in the moment, and de-shame by framing behavior as regulation, not character.",
+      "Set the meeting goal in one sentence before you begin: 'Align on the diagnosis and discharge plan' or 'Lower the temperature and agree on warning signs' — a meeting with a single clear goal beats one that tries to cover everything."
+    ],
+    "cant": "Letting information-sharing (Phase 2) expand to fill the entire meeting is the most common failure — the clinical work that changes outcomes is in Phase 3 (family perspective) and Phase 4 (shared planning), not the didactic.",
+    "quiz": {
+      "q": "A family meeting has run to 85 minutes. The team shared the diagnosis and treatment plan thoroughly but skipped Phase 4 (problem-solving) and Phase 5 (close). With 5 minutes remaining, what should the facilitator prioritize?",
+      "o": [
+        {
+          "t": "Re-review the diagnosis and medication rationale so the family leaves with complete information"
+        },
+        {
+          "t": "Schedule a separate follow-up meeting to complete the missed agenda items"
+        },
+        {
+          "t": "Open the floor for family questions about long-term prognosis"
+        },
+        {
+          "t": "Summarize one concrete shared agreement, name the next contact, and close — even an incomplete meeting with a shared next step is more durable than leaving without one",
+          "c": true
+        }
+      ],
+      "why": "Phase 5 (close, last 10 min) anchors the meeting: recap the plan in the family's own words, name the follow-up, and hand over a written version. A meeting that ends without a shared next step loses its durability. Over-investing in information delivery at the expense of Phases 3 and 5 is the classic pitfall the page names."
+    },
+    "cta": {
+      "label": "Open the Family Therapy Modalities page",
+      "href": "?page=family_modalities.md"
+    }
+  },
+  "brief_psychotherapy.md": {
+    "read": 4,
+    "tldr": "Match the technique to the mechanism — behavioral activation for shutdown/anhedonia, safety planning for suicidal states, psychoeducation for illness confusion — rather than choosing a school; the modality matters less than the fit.",
+    "points": [
+      "Behavioral activation is the highest-yield, lowest cognitive-demand inpatient move for the withdrawn anhedonic patient — it works by scheduling one small valued activity, not by asking a depressed person to think their way out.",
+      "Psychoeducation has the strongest inpatient numbers: readmission NNT 5, relapse NNT 9 — give it as a conversation with family looped in, not a packet dump.",
+      "Safety planning with follow-up reduces suicidal behaviors by approximately 50%; no-suicide contracts have no evidence and create false reassurance — abandon them."
+    ],
+    "cant": "No-suicide contracts have no evidence and can create false reassurance — replace every contract with a collaborative safety plan in the patient's own words, with a scheduled follow-up contact.",
+    "quiz": {
+      "q": "A patient admitted after a suicide attempt is now medically stable but withdrawn, has stopped attending groups, and says 'nothing matters.' The student wants to do a brief bedside intervention. What is the best match for the mechanism driving the crisis?",
+      "o": [
+        {
+          "t": "Cognitive restructuring — identify and challenge the automatic thoughts driving hopelessness"
+        },
+        {
+          "t": "Behavioral activation — schedule one small, concrete, valued activity; behavioral shutdown responds better to action than to thought-change in the acute setting",
+          "c": true
+        },
+        {
+          "t": "Chain analysis — walk the sequence leading to the suicidal crisis to understand its function"
+        },
+        {
+          "t": "Motivational interviewing — roll with ambivalence about treatment and evoke change talk"
+        }
+      ],
+      "why": "The mechanism is behavioral shutdown — withdrawn, anhedonic, inactive. Behavioral activation is the match: it targets this mechanism directly by scheduling activity and requires the lowest cognitive demand, which is why the page flags it as the best inpatient fit. Cognitive restructuring requires cognitive engagement a deeply depressed patient may not have; chain analysis is for a self-harm incident; MI is for motivational ambivalence."
+    },
+    "cta": {
+      "label": "Open the Motivational Interviewing page",
+      "href": "?page=motivational_interviewing.md"
+    }
+  },
+  "evidence_inpatient.md": {
+    "read": 8,
+    "tldr": "The strongest inpatient evidence: environmental safety checklists cut inpatient suicide 82%; brief CBT (up to 4 sessions) reduces post-discharge attempts 60% (NNT 7); family psychoeducation cuts 12-month relapse (OR 0.18); antipsychotics do not improve delirium outcomes.",
+    "points": [
+      "MIND-USA (n=566) and AID-ICU (n=1,000) both found no benefit for antipsychotics vs. placebo on delirium outcomes — the PADIS guidelines recommend against routine antipsychotic use for delirium.",
+      "The VHA MHEOCC environmental safety checklist produced an 82% reduction in the inpatient suicide rate — ligature point removal is the single strongest structural inpatient suicide prevention intervention.",
+      "Pre-discharge 7-day follow-up (actually scheduled, not 'patient will call') is associated with substantially lower suicide risk, and family involvement during admission nearly triples the odds of achieving it."
+    ],
+    "cant": "Antipsychotics for non-withdrawal delirium — the MIND-USA and AID-ICU trials showed no benefit; reserve them for severe hyperactive delirium refractory to non-pharmacological bundles.",
+    "quiz": {
+      "q": "A 72-year-old develops hyperactive delirium 2 days after hip surgery. The surgical team asks whether starting haloperidol is appropriate. What does the strongest evidence support?",
+      "o": [
+        {
+          "t": "Haloperidol is first-line for hyperactive delirium and should be started promptly"
+        },
+        {
+          "t": "A low-dose atypical antipsychotic is preferred over haloperidol for delirium because it is better tolerated"
+        },
+        {
+          "t": "Non-pharmacological multicomponent bundles are first-line; antipsychotics showed no benefit in MIND-USA and AID-ICU and should be reserved for severe refractory hyperactive symptoms",
+          "c": true
+        },
+        {
+          "t": "Benzodiazepines are the evidence-based first choice for non-withdrawal delirium"
+        }
+      ],
+      "why": "MIND-USA and AID-ICU both showed no benefit for antipsychotics vs. placebo on days alive without delirium or coma; the PADIS guidelines recommend against routine use. Multicomponent non-pharmacological bundles (HELP-based) reduced incident delirium by 53%. Benzodiazepines are reserved for alcohol/benzo withdrawal delirium — they worsen non-withdrawal delirium."
+    },
+    "cta": {
+      "label": "Open the Acute Consult module",
+      "href": "?page=exp_consult.md"
+    }
   }
 }
