@@ -1,10 +1,20 @@
 # Video library — drop exported .mp4s here
 
-Source design files: `13_Faculty_Resources/Handoffs/Clerkship_video_handoff/` (intro trailer, day-in-the-life,
-week stingers ×6, tool spotlights ×6 — built as Design Components on a timeline engine). Those `.dc.html` /
-`.jsx` files are **design references, not production code** — they pull React/ReactDOM/Babel from `unpkg.com`
-at load time, which is exactly the CDN-on-ward-wifi risk already fixed elsewhere in this repo (see
-`marked.min.js`, vendored locally for the same reason). Do not embed the `.dc.html` files directly.
+Source design files: `13_Faculty_Resources/Handoffs/Clerkship_video_handoff/` (MS3: intro trailer,
+day-in-the-life, week stingers ×6, tool spotlights ×6 · Resident: onboarding trailer — all built as Design
+Components on a timeline engine). Those `.dc.html` / `.jsx` files are **design references, not production
+code** — they pull React/ReactDOM/Babel from `unpkg.com` at load time, which is exactly the CDN-on-ward-wifi
+risk already fixed elsewhere in this repo (see `marked.min.js`, vendored locally for the same reason). Do
+not embed the `.dc.html` files directly.
+
+## Resident onboarding trailer — wired differently from the rest
+
+`resident-onboarding.mp4` + `resident-onboarding-poster.jpg` (from "Resident Onboarding Video.dc.html" /
+"Yours to Run.", ~87s, silent/kinetic-text) are **resident-only**, so they're copied by
+`resident_section.py` directly, not by `build_deploy.py`'s `VIDEO_MEDIA` list below — MS3 doesn't need a
+copy riding along unused. Embed lives in `14_Tracks/Resident/resident_welcome.md` → resident's `welcome.md`,
+hero placement, click-to-play (same treatment as the MS3 intro trailer: a linear "watch once" narrative,
+not an ambient loop).
 
 ## What actually ships
 

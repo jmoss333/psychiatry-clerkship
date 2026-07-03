@@ -17,6 +17,17 @@ for _f in ["orientation-video.html","Inpatient_Psych_Orientation.mp4","Inpatient
     _p=os.path.join(OUT,"tools",_f)
     if os.path.exists(_p): os.remove(_p)
 
+# ---- resident onboarding trailer ("Yours to Run.", ~87s, silent/kinetic-text) — resident-only,
+# so it's copied here rather than added to build_deploy.py's VIDEO_MEDIA (which would also ship it,
+# unused, on the MS3 site). Embed lives in resident_welcome.md -> welcome.md.
+RESIDENT_VIDEO_MEDIA=["resident-onboarding.mp4","resident-onboarding-poster.jpg"]
+_rvidsrc=os.path.join(LIB,"_prototypes","video-library")
+os.makedirs(OUT+"/media",exist_ok=True)
+for _rvf in RESIDENT_VIDEO_MEDIA:
+    _rp=os.path.join(_rvidsrc,_rvf)
+    if os.path.exists(_rp): shutil.copy2(_rp, OUT+"/media/"+_rvf)
+    else: print("  WARN: resident onboarding video asset missing from source:",_rvf)
+
 # ---- resident-only pages (welcome overrides the MS3 welcome.md) ----
 RES_EXTRA=[
  ("14_Tracks/Resident/resident_welcome.md","welcome.md"),
