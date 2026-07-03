@@ -883,5 +883,169 @@
       "label": "Open the Columbia C-SSRS screener",
       "href": "tools/cssrs.html"
     }
+  },
+  "t_perinatal.md": {
+    "read": 6,
+    "hy": true,
+    "tldr": "Postpartum psychosis is a bipolar-spectrum emergency requiring urgent admission — a lucid interval does not rule it out; distinguish it from PMADs and baby blues by waxing/waning course, and assess safety for both mother and infant on every encounter.",
+    "points": [
+      "Postpartum psychosis typically appears in the first 1–4 weeks, recurs in 30–50% of subsequent deliveries, and is bipolar-spectrum until proven otherwise — screen for prior mania.",
+      "The EPDS screens for depression, not psychosis — ask directly about delusions and perceptual disturbance, and screen for manic symptoms separately.",
+      "Stopping maintenance medication in bipolar disorder roughly doubles postpartum relapse risk — 'stop everything' is itself a high-risk clinical decision."
+    ],
+    "cant": "A calm, lucid interval does not rule out postpartum psychosis — the waxing/waning course is the illness, not a sign the crisis has passed.",
+    "ruleOut": [
+      "Postpartum psychosis (bipolar-spectrum emergency)",
+      "Perinatal mood or anxiety disorder (PMAD)",
+      "Baby blues (self-limited, resolves ≤2 weeks)",
+      "Thyroid dysfunction / infection / eclampsia"
+    ],
+    "firstMove": "Assess safety explicitly for both mother and infant, screen for manic and psychotic symptoms beyond the EPDS, order TSH and infection workup, and obtain collateral about prior mania or prior postpartum episodes.",
+    "quiz": {
+      "q": "A patient 8 days postpartum arrives confused and speaking about her baby being 'replaced.' Her family reports she was completely lucid 3 hours ago. She has a personal history of bipolar disorder. Best next step?",
+      "o": [
+        {
+          "t": "Reassure the family that the lucid interval confirms the crisis has passed and arrange outpatient follow-up"
+        },
+        {
+          "t": "Admit urgently for evaluation and treatment of postpartum psychosis",
+          "c": true
+        },
+        {
+          "t": "Diagnose postpartum depression and start an SSRI"
+        },
+        {
+          "t": "Wait 48 hours to see whether the confusion resolves spontaneously"
+        }
+      ],
+      "why": "Postpartum psychosis is a psychiatric emergency — waxing/waning course with lucid intervals is a feature of the illness, not reassurance. The bipolar history, acute onset, and perceptual disturbance require urgent admission. Starting an SSRI without ruling out bipolar disorder risks destabilization; waiting risks harm to mother and infant."
+    },
+    "cta": {
+      "label": "Open the Columbia C-SSRS screener",
+      "href": "tools/cssrs.html"
+    }
+  },
+  "nutrition_metabolic.md": {
+    "read": 5,
+    "tldr": "Track metabolic health for every patient on an antipsychotic — weight, glucose, and lipids at baseline, 12 weeks, and annually — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.",
+    "points": [
+      "Olanzapine and clozapine carry the highest metabolic burden; aripiprazole, lurasidone, ziprasidone, and cariprazine carry the lowest — choose by side-effect profile when efficacy is comparable.",
+      "Lithium levels shift with sodium and hydration changes; MAOI patients must avoid tyramine-rich foods (aged cheeses, cured meats, tap beer) to prevent hypertensive crisis.",
+      "A Mediterranean dietary pattern is the best-supported food-as-treatment signal for depression (SMILES trial); pair dietary counseling with Motivational Interviewing for sustainable change."
+    ],
+    "cant": "Starting an antipsychotic without documenting baseline weight, glucose, and lipids — and skipping the 12-week recheck — means prescribing metabolic risk without a safety net.",
+    "ruleOut": [
+      "Olanzapine/clozapine metabolic toxicity (highest-burden agents)",
+      "MAOI-tyramine interaction (hypertensive crisis)",
+      "Lithium toxicity from sodium or hydration shift",
+      "Grapefruit / CYP3A4 inhibition"
+    ],
+    "firstMove": "Document baseline weight, fasting glucose, and lipid panel before starting any antipsychotic; counsel MAOI patients on tyramine; check sodium and hydration with lithium; schedule the 12-week recheck at the time of prescribing.",
+    "quiz": {
+      "q": "A patient started on olanzapine three months ago had weight, glucose, and lipids checked at baseline. Nothing has been rechecked. What monitoring is now overdue?",
+      "o": [
+        {
+          "t": "No recheck is needed unless the patient reports symptoms"
+        },
+        {
+          "t": "Weight only — glucose and lipids are checked annually"
+        },
+        {
+          "t": "Weight, fasting glucose, and fasting lipids — the 12-week metabolic recheck is due",
+          "c": true
+        },
+        {
+          "t": "A full endocrine panel including cortisol and thyroid — antipsychotics affect multiple hormonal axes"
+        }
+      ],
+      "why": "ADA/APA consensus monitoring recommends checking weight, fasting glucose, and fasting lipids at approximately 12 weeks after starting an antipsychotic — this is the first scheduled interval recheck, not an annual event. Rechecking weight only is incomplete; a full endocrine panel is not the standard; waiting a full year misses early metabolic drift."
+    },
+    "cta": {
+      "label": "Open the Psychopharmacology Primer",
+      "href": "?page=psychopharm_primer.md"
+    }
+  },
+  "exp_consult.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "Frame every consult with the decision that is blocked — then assess capacity (4 Appelbaum abilities), delirium (acute inattention), catatonia (motor signs), and withdrawal (last use plus prior seizure history) before anchoring on any primary psychiatric diagnosis.",
+    "points": [
+      "Capacity is decision-specific and time-specific — having a psychiatric diagnosis, disagreeing with the team, or exercising poor judgment in general does not mean lacking capacity for this specific decision.",
+      "Delirium is medical until proven otherwise — acute fluctuating inattention demands workup for infection, hypoxia, metabolic disturbance, medications, and withdrawal before any psychiatric label is applied.",
+      "Catatonia can mimic depression, psychosis, behavior, or refusal — look for mutism, immobility, posturing, waxy flexibility, and poor oral intake, and escalate rather than assuming oppositional behavior."
+    ],
+    "cant": "Accepting 'please evaluate' as the consult question blocks both the consultation and the clinical decision — always name the specific decision at stake and what changed today.",
+    "ruleOut": [
+      "Delirium (rule out reversible medical cause first)",
+      "Catatonia (can mimic psychosis, refusal, or depression)",
+      "Alcohol/benzodiazepine withdrawal (potentially life-threatening)",
+      "Capacity impairment (always decision-specific and time-specific)"
+    ],
+    "firstMove": "Name the exact decision at stake, do a brief attention screen and focused MSE, review vitals, labs, and medications for delirium triggers, and escalate immediately for fever, rigidity, autonomic instability, or withdrawal red flags.",
+    "quiz": {
+      "q": "The medical team asks psychiatry to 'evaluate' a 68-year-old patient refusing a central line for sepsis. She was lucid yesterday. Today she is intermittently confused, cannot say the months in reverse, and believes her IV is poison. How should the capacity assessment be framed?",
+      "o": [
+        {
+          "t": "Assess the four Appelbaum abilities for this specific decision — the fluctuating inattention suggests delirium may be impairing capacity reversibly",
+          "c": true
+        },
+        {
+          "t": "Diagnose paranoid schizophrenia given the poisoning belief and document permanent lack of capacity"
+        },
+        {
+          "t": "Accept the refusal as a valid patient preference — she has the right to decline"
+        },
+        {
+          "t": "Order a neuropsychological battery before any capacity determination can be made"
+        }
+      ],
+      "why": "Capacity is decision-specific: the question is whether she can communicate a stable choice, understand the information, appreciate it applies to her, and reason about options — not whether she has a diagnosis or agrees with the team. The fluctuating inattention suggests delirium as the driver, making the impairment potentially reversible and requiring immediate evaluation."
+    },
+    "cta": {
+      "label": "Open the Capacity tool",
+      "href": "tools/capacity.html"
+    }
+  },
+  "psychopharm_primer.md": {
+    "read": 6,
+    "hy": true,
+    "tldr": "Choose psychotropics by side-effect profile — metabolic, QTc, movement, prolactin — not recency; monitor proportionally; and recognize the five medication emergencies (serotonin syndrome, NMS, lithium toxicity, QTc/torsades, anticholinergic toxicity) well enough to escalate before decompensation.",
+    "points": [
+      "Antidepressants carry an FDA black-box warning for suicidality through age 24 — not just children; screen for bipolarity before starting any antidepressant, and monitor young adults closely in early weeks.",
+      "Lithium has the strongest anti-suicidal evidence in its class and a narrow therapeutic window — levels, renal function, and thyroid monitoring are non-negotiable at every relevant interval.",
+      "Clozapine is uniquely effective for treatment-resistant schizophrenia and requires mandatory ANC monitoring for agranulocytosis; myocarditis, ileus, and lowered seizure threshold are additional red flags requiring immediate escalation."
+    ],
+    "cant": "Benzodiazepines left on a scheduled standing basis rather than short-term and targeted create dependence, falls, and delirium — autopilot benzodiazepines are a common and preventable inpatient harm.",
+    "ruleOut": [
+      "Serotonin syndrome (clonus + hyperreflexia + rapid onset)",
+      "Neuroleptic malignant syndrome (lead-pipe rigidity + hyperthermia + elevated CK)",
+      "Lithium toxicity (tremor + ataxia + confusion)",
+      "QTc prolongation / torsades de pointes",
+      "Anticholinergic toxicity (dry, flushed, delirious, confused)"
+    ],
+    "firstMove": "Verify baseline labs are back before a new agent starts, reconcile the medication list for QTc-prolonging and anticholinergic stacking, and escalate any suspected medication emergency immediately — speed matters more than certainty.",
+    "quiz": {
+      "q": "A patient on a monoamine oxidase inhibitor and a serotonergic tricyclic develops agitation, tremor, visible clonus, and diaphoresis within 2 hours of a dose increase. The intern considers neuroleptic malignant syndrome. What finding best distinguishes these two emergencies?",
+      "o": [
+        {
+          "t": "High fever confirms NMS — serotonin syndrome does not cause fever"
+        },
+        {
+          "t": "Diaphoresis alone distinguishes serotonin syndrome from NMS"
+        },
+        {
+          "t": "Rapid onset rules out both — this presentation fits a panic attack"
+        },
+        {
+          "t": "Clonus and hyperreflexia with rapid onset point to serotonin syndrome — NMS presents with lead-pipe rigidity, hyperthermia, and elevated CK over a slower course",
+          "c": true
+        }
+      ],
+      "why": "The discriminating sign is clonus — rapid-onset clonus with hyperreflexia is the fingerprint of serotonin syndrome. NMS presents with lead-pipe rigidity, markedly elevated CK, and hyperthermia developing over hours to days on a dopamine-blocking agent. Both can cause fever, so fever alone does not distinguish them. The MAOI-plus-serotonergic-TCA combination is a classic serotonin syndrome setup."
+    },
+    "cta": {
+      "label": "Open the Protocol Library",
+      "href": "?page=protocol_library.md"
+    }
   }
 }
