@@ -388,5 +388,391 @@
       "label": "Open the Decision Aids",
       "href": "tools/decision-aids.html"
     }
+  },
+  "t_adjustment.md": {
+    "read": 4,
+    "tldr": "Distress or impairment beginning within 3 months of a stressor and resolving within 6 months of its end — the diagnosis for someone struggling more than expected who doesn't meet criteria for another disorder, and it still carries real suicide risk.",
+    "points": [
+      "If full criteria for MDD, an anxiety disorder, or PTSD are met — it is not adjustment disorder.",
+      "PTSD/acute stress disorder require a traumatic event; adjustment disorder follows any stressor.",
+      "First-line treatment is time-limited psychotherapy (supportive, problem-solving); medication is adjunctive."
+    ],
+    "cant": "Don't be lulled by the 'subthreshold' label — assess suicide risk directly, as impulsive self-harm can occur.",
+    "ruleOut": [
+      "Major depressive disorder",
+      "Anxiety disorder",
+      "Acute stress disorder / PTSD",
+      "Normal reaction / prolonged grief",
+      "Substance-induced / medical"
+    ],
+    "firstMove": "Anchor the timeline to the stressor, confirm criteria for other disorders aren't met, quantify suicide risk, and start brief supportive therapy.",
+    "quiz": {
+      "q": "Two months after a divorce, a patient has low mood and impaired work function but does not meet criteria for major depression. Best diagnosis and first-line treatment?",
+      "o": [
+        {
+          "t": "Adjustment disorder — time-limited psychotherapy",
+          "c": true
+        },
+        {
+          "t": "Major depressive disorder — start an SSRI as monotherapy"
+        },
+        {
+          "t": "PTSD — begin trauma-focused therapy"
+        },
+        {
+          "t": "No diagnosis — reassure and discharge without follow-up"
+        }
+      ],
+      "why": "Symptoms tied to a stressor, within 3 months, not meeting full criteria for another disorder, indicate an adjustment disorder; supportive/problem-solving psychotherapy is first-line, with suicide-risk assessment."
+    },
+    "cta": {
+      "label": "Open the C-SSRS screener",
+      "href": "tools/cssrs.html"
+    }
+  },
+  "t_dissociative.md": {
+    "read": 4,
+    "tldr": "Rule out the medical, seizure, and substance mimics; keep dissociation separate from psychosis and malingering; and stabilize safety before any trauma work.",
+    "points": [
+      "Exclude delirium, seizure, TBI, and substances before diagnosing a dissociative disorder.",
+      "Depersonalization/derealization disorder = detachment with intact reality testing.",
+      "Suicide/self-harm risk is high — assess it every time."
+    ],
+    "cant": "Don't reflexively start an antipsychotic for dissociative phenomena — no medication treats dissociation itself.",
+    "ruleOut": [
+      "Delirium / medical cause",
+      "Seizure (temporal lobe) / TBI",
+      "Substance (ketamine, PCP, cannabis)",
+      "PTSD / acute stress disorder",
+      "Malingering / factitious"
+    ],
+    "firstMove": "Exclude organic causes, ground the patient, assess suicide risk, and treat comorbidities; refer for phase-based trauma therapy.",
+    "quiz": {
+      "q": "A trauma survivor reports feeling detached and unreal but knows the feeling isn't real. Best next step?",
+      "o": [
+        {
+          "t": "Grounding and safety, screen risk, treat comorbidities — after excluding organic causes",
+          "c": true
+        },
+        {
+          "t": "Start a scheduled antipsychotic"
+        },
+        {
+          "t": "Begin trauma-processing therapy immediately"
+        },
+        {
+          "t": "Reassure and discharge"
+        }
+      ],
+      "why": "Depersonalization/derealization (intact reality testing) is managed with grounding, risk assessment, and comorbidity treatment once organic mimics are excluded; stabilization precedes trauma processing."
+    },
+    "cta": {
+      "label": "Open the C-SSRS screener",
+      "href": "tools/cssrs.html"
+    }
+  },
+  "t_impulse.md": {
+    "read": 5,
+    "tldr": "Look past the behavior for the driver — trace ODD → conduct disorder → antisocial personality disorder, and rule out mania, substances, ADHD, and trauma underneath the aggression.",
+    "points": [
+      "ODD is defiance; conduct disorder violates others' rights; antisocial PD requires conduct disorder onset before age 15.",
+      "Episodic aggression with low sleep and grandiosity is mania — not a conduct disorder.",
+      "Psychosocial/family interventions are first-line; medication treats the comorbidity, not the 'behavior.'"
+    ],
+    "cant": "Don't reach for a standing antipsychotic for 'behavior' — screen for and treat mania, substances, ADHD, and trauma first.",
+    "ruleOut": [
+      "Bipolar mania / hypomania",
+      "Substance intoxication / withdrawal",
+      "ADHD",
+      "Trauma / PTSD",
+      "Delirium / medical cause (new change)"
+    ],
+    "firstMove": "Set a consistent behavioral frame, treat the driving comorbidity, and start parent-management/skills interventions in youth.",
+    "quiz": {
+      "q": "A 16-year-old has a lifelong pattern of aggression, theft, and rule violations. Which adult diagnosis requires this history to have begun before age 15?",
+      "o": [
+        {
+          "t": "Antisocial personality disorder",
+          "c": true
+        },
+        {
+          "t": "Intermittent explosive disorder"
+        },
+        {
+          "t": "Oppositional defiant disorder"
+        },
+        {
+          "t": "Bipolar disorder"
+        }
+      ],
+      "why": "Antisocial personality disorder (age ≥18) requires evidence of conduct disorder with onset before age 15."
+    },
+    "cta": {
+      "label": "Open the Violence Risk (FRST) tool",
+      "href": "tools/violence.html"
+    }
+  },
+  "t_neurocog.md": {
+    "read": 6,
+    "hy": true,
+    "tldr": "Sort delirium vs dementia vs depression, rule out the reversible causes, and name the subtype — because subtype decides what you prescribe and what you must not.",
+    "points": [
+      "Onset, course, and attention separate delirium (acute, fluctuating, inattentive) from dementia.",
+      "Screen every new diagnosis for reversible causes (B12/folate, TSH, CMP, ± RPR/HIV, NPH).",
+      "Antipsychotics carry a black-box mortality warning in dementia — and are dangerous in Lewy body disease."
+    ],
+    "cant": "New, fluctuating confusion with inattention is delirium, not 'worse dementia' — work it up before relabeling.",
+    "ruleOut": [
+      "Delirium (superimposed)",
+      "Depression (pseudodementia)",
+      "B12 / thyroid / metabolic",
+      "Normal-pressure hydrocephalus",
+      "Medication (anticholinergic / sedative)"
+    ],
+    "firstMove": "Establish trajectory, run the reversible-cause panel, identify the subtype, and treat behavior nonpharmacologically first.",
+    "quiz": {
+      "q": "An older adult with dementia has fluctuating cognition, recurrent visual hallucinations, and parkinsonism. Which is most dangerous to give?",
+      "o": [
+        {
+          "t": "A typical antipsychotic (severe neuroleptic sensitivity in Lewy body disease)",
+          "c": true
+        },
+        {
+          "t": "A cholinesterase inhibitor"
+        },
+        {
+          "t": "Melatonin"
+        },
+        {
+          "t": "Nonpharmacologic reorientation"
+        }
+      ],
+      "why": "This is Lewy body dementia; antipsychotics can cause life-threatening neuroleptic sensitivity, so they are avoided or used only with great caution (quetiapine/pimavanserin)."
+    },
+    "cta": {
+      "label": "Open the Decisional Capacity tool",
+      "href": "tools/capacity.html"
+    }
+  },
+  "t_sexual.md": {
+    "read": 5,
+    "tldr": "Three distinct topics: sexual dysfunctions (check meds first), paraphilic disorders (distress/impairment or non-consent defines the disorder), and gender dysphoria (distress from incongruence — not a disorder of being transgender).",
+    "points": [
+      "SSRIs and antipsychotics are leading causes of sexual dysfunction — review meds before a primary diagnosis.",
+      "A paraphilia (interest) becomes a paraphilic disorder only with distress/impairment or harm to non-consenting others.",
+      "Gender dysphoria names the distress; use affirming care and screen the elevated suicide risk."
+    ],
+    "cant": "Paraphilic disorders involving a child or non-consenting person raise safety and reporting duties.",
+    "firstMove": "For dysfunction, treat the cause (switch to bupropion/mirtazapine, add PDE5i); for gender dysphoria, provide affirming care and continuity; report when a child is at risk.",
+    "quiz": {
+      "q": "A patient on an SSRI reports new anorgasmia and distress. Best first step?",
+      "o": [
+        {
+          "t": "Address the medication (dose-reduce, switch to bupropion/mirtazapine, or augment)",
+          "c": true
+        },
+        {
+          "t": "Diagnose a primary orgasmic disorder immediately"
+        },
+        {
+          "t": "Stop all psychiatric treatment"
+        },
+        {
+          "t": "Tell the patient it is unrelated"
+        }
+      ],
+      "why": "SSRI-induced sexual dysfunction is common and reversible; manage the medication before diagnosing a primary sexual disorder."
+    },
+    "cta": {
+      "label": "Open the Psychopharmacology primer",
+      "href": "?page=psychopharm_primer.md"
+    }
+  },
+  "t_sleep.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "Restoring the sleep-wake cycle is high-leverage — choose CBT-I over hypnotics, screen OSA in treatment-resistant depression, and don't sedate inpatients with benzodiazepines or antihistamines.",
+    "points": [
+      "CBT-I is first-line for chronic insomnia and beats hypnotics long-term.",
+      "Untreated OSA mimics and perpetuates depression — a classic reversible cause of 'treatment resistance.'",
+      "Cataplexy = narcolepsy type 1 (low orexin); sleep paralysis/hypnagogic hallucinations are not psychosis."
+    ],
+    "cant": "In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them.",
+    "ruleOut": [
+      "Obstructive sleep apnea",
+      "Mood / anxiety driver",
+      "Substances / caffeine / meds",
+      "Restless legs (check ferritin)",
+      "REM sleep behavior disorder"
+    ],
+    "firstMove": "Sleep hygiene + CBT-I; treat the specific disorder (CPAP, iron, modafinil, melatonin/clonazepam) and taper offending agents.",
+    "quiz": {
+      "q": "A patient with 'treatment-resistant' depression snores, is obese, and is sleepy all day. Best next step?",
+      "o": [
+        {
+          "t": "Evaluate for obstructive sleep apnea (polysomnography) and treat it",
+          "c": true
+        },
+        {
+          "t": "Add a third antidepressant"
+        },
+        {
+          "t": "Start nightly diphenhydramine"
+        },
+        {
+          "t": "Start a long-acting benzodiazepine"
+        }
+      ],
+      "why": "Untreated OSA is a common, reversible driver of apparent treatment resistance; diagnose with polysomnography and treat with CPAP before escalating pharmacotherapy."
+    },
+    "cta": {
+      "label": "Open the Psychopharmacology primer",
+      "href": "?page=psychopharm_primer.md"
+    }
+  },
+  "t_somatic.md": {
+    "read": 5,
+    "tldr": "Treat the suffering without chasing endless workups — the diagnosis rests on the excessive response to symptoms, and the entities separate on two axes: conscious? and external incentive?",
+    "points": [
+      "Somatic symptom disorder is defined by the excessive thoughts/feelings/behaviors, not by whether symptoms are 'explained.'",
+      "Conversion (functional neurological) is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures.",
+      "Factitious = internal (sick role); malingering = external incentive and is not a disorder."
+    ],
+    "cant": "Factitious disorder imposed on another is child/vulnerable-adult abuse — a reporting duty; and real disease can coexist, so don't anchor either way.",
+    "ruleOut": [
+      "Occult medical disease",
+      "Depression / anxiety / PTSD",
+      "Substance use",
+      "Factitious (sick role)",
+      "Malingering (external incentive)"
+    ],
+    "firstMove": "Focused workup once, then one consistent clinician with scheduled visits, validation, CBT, and treatment of comorbidities.",
+    "quiz": {
+      "q": "A patient has leg weakness that gives way on formal testing but shows a positive Hoover sign. Best framing?",
+      "o": [
+        {
+          "t": "Functional neurological (conversion) disorder — diagnosed by positive signs",
+          "c": true
+        },
+        {
+          "t": "Malingering for disability"
+        },
+        {
+          "t": "Order repeat MRIs until something appears"
+        },
+        {
+          "t": "Tell the patient nothing is wrong"
+        }
+      ],
+      "why": "Conversion/functional neurological disorder is a positive, rule-in diagnosis based on internal inconsistency (Hoover sign), not a diagnosis of exclusion."
+    },
+    "cta": {
+      "label": "Open the MSE trainer",
+      "href": "tools/mse.html"
+    }
+  },
+  "ethics_legal.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "Confidentiality is the default — know exactly when it yields: a credible threat to an identifiable victim, suspected child/elder abuse, and danger-based commitment — and remember commitment does not equal consent to medicate.",
+    "points": [
+      "Duty to protect (Tarasoff): a serious threat to a reasonably identifiable person overrides confidentiality — warn, notify police, or hospitalize.",
+      "Child and elder abuse are mandated reports on reasonable suspicion, not proof; good-faith reporters are protected.",
+      "Capacity is clinical and decision-specific; competence is a legal (court) determination."
+    ],
+    "cant": "Involuntary hospitalization does not authorize involuntary medication — refusal stands absent a true emergency or a separate legal process.",
+    "firstMove": "Default to confidentiality; when risk appears, name which exception applies (identifiable-victim threat, abuse, danger to self) and take the least restrictive protective action — then document your reasoning.",
+    "quiz": {
+      "q": "An inpatient tells you he plans to kill his ex-girlfriend when discharged, naming her. What must you do?",
+      "o": [
+        {
+          "t": "Take protective action — warn the victim and/or notify police, and continue hospitalization",
+          "c": true
+        },
+        {
+          "t": "Keep it confidential — HIPAA forbids disclosure"
+        },
+        {
+          "t": "Discharge as planned but document the statement"
+        },
+        {
+          "t": "Ask his family to pass along a warning"
+        }
+      ],
+      "why": "A serious threat against a reasonably identifiable victim triggers the duty to protect (Tarasoff): confidentiality yields, and reasonable steps include warning the victim, notifying police, and continued hospitalization."
+    },
+    "cta": {
+      "label": "Read Culture, Disparities & Formulation",
+      "href": "?page=cultural_psychiatry.md"
+    }
+  },
+  "cultural_psychiatry.md": {
+    "read": 4,
+    "tldr": "Elicit the patient's explanatory model, use the DSM-5-TR Cultural Formulation Interview, work through trained interpreters — never family — and guard against documented diagnostic bias.",
+    "points": [
+      "Kleinman's explanatory-model questions surface what the illness means to the patient.",
+      "Cultural concepts of distress (e.g., ataque de nervios) can mimic panic or psychosis — ask before you label.",
+      "Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against."
+    ],
+    "cant": "Never use family members — especially children — as interpreters; book a trained professional and speak directly to the patient.",
+    "firstMove": "Ask the explanatory-model questions early, then structure a real cultural formulation with the CFI's four domains.",
+    "quiz": {
+      "q": "A Spanish-speaking patient describes sudden trembling, screaming, and a sense of losing control after a family conflict. Her son offers to interpret. Best first step?",
+      "o": [
+        {
+          "t": "Book a professional interpreter and explore the episode through the patient's explanatory model before assigning a diagnosis",
+          "c": true
+        },
+        {
+          "t": "Diagnose panic disorder and start an SSRI"
+        },
+        {
+          "t": "Diagnose brief psychotic disorder and start an antipsychotic"
+        },
+        {
+          "t": "Let her son interpret to save time"
+        }
+      ],
+      "why": "This presentation is consistent with ataque de nervios, a cultural concept of distress that can mimic panic or psychosis; a professional interpreter (never family) and the explanatory model prevent mislabeling."
+    },
+    "cta": {
+      "label": "Open Ethics & the Law",
+      "href": "?page=ethics_legal.md"
+    }
+  },
+  "ect_neuromodulation.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications, transient memory effects — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.",
+    "points": [
+      "Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, pregnancy, or prior ECT response.",
+      "Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.",
+      "rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours and reduce suicidal ideation (esketamine requires REMS monitoring)."
+    ],
+    "cant": "There are no absolute contraindications to ECT — raised intracranial pressure and recent MI/unstable cardiac disease are the key relative risks.",
+    "firstMove": "Identify the depression that can't wait (psychotic, catatonic, suicidal, not eating or drinking) and refer for ECT evaluation with cardiac/anesthesia workup and a medication review.",
+    "quiz": {
+      "q": "A pregnant patient has severe major depression with psychotic features and is refusing food and fluids. Most effective next step?",
+      "o": [
+        {
+          "t": "Electroconvulsive therapy",
+          "c": true
+        },
+        {
+          "t": "Start an SSRI and reassess in 4–6 weeks"
+        },
+        {
+          "t": "Repetitive transcranial magnetic stimulation"
+        },
+        {
+          "t": "Bright light therapy"
+        }
+      ],
+      "why": "ECT is the most effective treatment for severe/psychotic depression, acts fastest when the patient cannot safely wait, and is safe in pregnancy when indicated."
+    },
+    "cta": {
+      "label": "Open the Mood topic",
+      "href": "?page=t_mood.md"
+    }
   }
 }
