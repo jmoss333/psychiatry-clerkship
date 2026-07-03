@@ -23,16 +23,17 @@ High-fidelity. Every visual, color, and timing beat in the `.dc.html` files is f
 
 ---
 
-## 1 · The four videos
+## 1 · The videos
 
-| # | File (source) | What it is | Duration | Loop? |
-|---|---|---|---|---|
-| 1 | `Clerkship Hub Intro Video.dc.html` | Welcome trailer — hook → "everything in one place" → 6-week arc → guided tour of the hub UI → close. Has a full **voiceover script** ready to record (`VO Script - Hub Trailer.dc.html`). | 0:78 | No — a "watch" piece, not a background loop |
-| 2 | `Clerkship Day in the Life.dc.html` | Five timestamped moments (6:45a–7:15p) each pairing a real situation with the hub tool that fits, acted out on an animated iPhone. Silent/kinetic-text, no VO. | 1:26 | Yes, fine as ambient loop |
-| 3 | `Week Intro Stingers.dc.html` | Six 6-second bumpers (one per curriculum week), each with its own accent color, title, and topic chips. Ships as one 36s reel **or** any single week in isolation. Silent. | 0:36 (reel) / 0:06 (single week) | Yes |
-| 4 | `Tool Spotlight Series.dc.html` | Six ~13s spotlights, one per bedside tool (Interview Circle, Decisional Capacity, Violence Risk, Withdrawal, Catatonia, Decision Aids), each recreated inside a browser-window frame with one live interaction. Ships as one 88.5s reel **or** any single tool in isolation. Silent. | 1:28.5 (reel) / 0:13.5 (single tool) | Yes |
+| # | File (source) | Site | What it is | Duration | Loop? |
+|---|---|---|---|---|---|
+| 1 | `Clerkship Hub Intro Video.dc.html` | MS3 | Welcome trailer — hook → "everything in one place" → 6-week arc → guided tour of the hub UI → close. Has a full **voiceover script** ready to record (`VO Script - Hub Trailer.dc.html`). | 0:78 | No — a "watch" piece, not a background loop |
+| 2 | `Clerkship Day in the Life.dc.html` | MS3 | Five timestamped moments (6:45a–7:15p) each pairing a real situation with the hub tool that fits, acted out on an animated iPhone. Silent/kinetic-text, no VO. | 1:26 | Yes, fine as ambient loop |
+| 3 | `Week Intro Stingers.dc.html` | MS3 | Six 6-second bumpers (one per curriculum week), each with its own accent color, title, and topic chips. Ships as one 36s reel **or** any single week in isolation. Silent. | 0:36 (reel) / 0:06 (single week) | Yes |
+| 4 | `Tool Spotlight Series.dc.html` | MS3 | Six ~13s spotlights, one per bedside tool (Interview Circle, Decisional Capacity, Violence Risk, Withdrawal, Catatonia, Decision Aids), each recreated inside a browser-window frame with one live interaction. Ships as one 88.5s reel **or** any single tool in isolation. Silent. | 1:28.5 (reel) / 0:13.5 (single tool) | Yes |
+| 5 | `Resident Onboarding Video.dc.html` | Resident | "Yours to Run." — the shift from student to resident: taking ownership of your own patients, a tour of the Resident Depth hub sections, and the flagship Agitation Ladder drill. Silent/kinetic-text, no VO. Shipped (exported `.mp4` landed 2026-07-03). | 1:26.7 | No — a "watch" piece, not a background loop |
 
-All four: **1920×1080**, background `#2f2924` (dark) or `#f6f3ee` (light, intro only), fonts **Source Serif 4** + **Source Sans 3** (Google Fonts — already loaded site-wide, no new font dependency).
+All five: **1920×1080**, background `#2f2924` (dark) or `#f6f3ee` (light, intro + resident trailer only), fonts **Source Serif 4** + **Source Sans 3** (Google Fonts — already loaded site-wide, no new font dependency).
 
 ---
 
@@ -60,6 +61,9 @@ Tool Spotlight's `only` index maps to: **1** Interview Circle · **2** Decisiona
 | `week1.md` … `week6.md` — each week page | matching `week-intro-N.mp4` | Small banner under the page `<h1>` | Muted autoplay loop |
 | `tools/interview-circle.html`, `capacity.html`, `violence.html`, `withdrawal.html`, `bfcrs.html`, `decision-aids.html` | matching `tool-spotlight-*.mp4` | Collapsible "See it in action" panel above the tool | Muted autoplay loop, paused until expanded (don't compete with the live tool below it) |
 | `welcome.md`, or a new "Tour" nav item | `tool-spotlight-reel.mp4` and/or `week-stingers-reel.mp4` | Optional showcase reel for a first-run walkthrough | Muted autoplay loop |
+| Resident `welcome.md` (`resident_welcome.md` source, overrides MS3's) | `resident-onboarding.mp4` | Hero, top of page | Click-to-play, **not** autoplay/muted — silent (no VO), but a linear "watch once" narrative, same treatment as the MS3 intro trailer despite having no soundtrack |
+
+The resident video is copied by `resident_section.py` directly (not `build_deploy.py`'s `VIDEO_MEDIA`) — see `_prototypes/video-library/README.md`. Everything else in this table is MS3-only.
 
 The other 8 tool pages (`mse.html`, `oral.html`, `cssrs.html`, `screeners.html`, `reflection.html`, `active-recall.html`, `shelf-mode.html`, `review.html`) have no spotlight yet — out of scope here, not a gap to fix.
 

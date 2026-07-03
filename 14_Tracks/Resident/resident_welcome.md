@@ -1,5 +1,10 @@
 # Welcome — MMC Psychiatry Resident Rotation
 
+<video src="media/resident-onboarding.mp4" controls playsinline poster="media/resident-onboarding-poster.jpg"
+  aria-label="Resident onboarding trailer, about 87 seconds: the shift to running your own patients, a tour of the Resident Depth hub sections, and the Agitation Ladder drill."
+  style="width:100%;max-width:960px;aspect-ratio:16/9;border-radius:12px;display:block;margin:14px 0">
+</video>
+
 > **Review status:** AI-drafted — **pending Dr. Moss's review/attestation before learner use.**
 
 **In one line** — This four-week adult inpatient block at the MaineHealth–Sanford Behavioral Health Unit is built to sharpen your acute decision-making, deepen your psychopharmacology, and grow you as a supervisor and teacher — not to re-teach the basics.
