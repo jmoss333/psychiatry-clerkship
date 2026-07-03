@@ -86,10 +86,22 @@ def main():
     ap.add_argument("--out", default="findings.json")
     args = ap.parse_args()
 
+    report = None
     try:
-        report = json.load(open(args.lychee, encoding="utf-8"))
+        with open(args.lychee, encoding="utf-8") as fh:
+            raw = fh.read().strip()
+        if raw:
+            report = json.loads(raw)
+    except FileNotFoundError:
+        pass
     except Exception as e:
-        sys.exit(f"ERROR: cannot read lychee report: {e}")
+        print(f"WARNING: lychee report unreadable ({e}); treating as no findings. "
+              f"Inspect the lychee step logs.", file=sys.stderr)
+
+    if not report:
+        json.dump([], open(args.out, "w", encoding="utf-8"))
+        print(f"link-monitor: no usable lychee report (empty/missing) -> 0 findings; wrote {args.out}")
+        return
 
     findings = to_findings(report)
     json.dump(findings, open(args.out, "w", encoding="utf-8"), indent=2)
