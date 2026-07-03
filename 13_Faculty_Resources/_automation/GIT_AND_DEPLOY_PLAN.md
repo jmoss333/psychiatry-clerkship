@@ -108,6 +108,19 @@ git push
 ```
 **Quota note:** 328 MB fits GitHub LFS free storage (1 GB), but LFS **bandwidth** is 1 GB/mo free and each full CI build pulls the objects (~328 MB) → budget a **$5/mo 50 GB data pack** if you build often. Also confirm the **first Netlify build actually checks out LFS objects** (Netlify supports Git LFS; verify `/audio` and `/audio_oe` are populated on the deployed site).
 
+### 6a. If LFS bandwidth becomes a real problem — escape hatch (NOT needed yet)
+**Decision recorded 2026-07-02; do not act unless GitHub LFS bandwidth actually bites.** First just watch GitHub → repo → Settings → "Git LFS" usage for a couple of weeks. Netlify likely caches LFS objects across builds, so the 1 GB/mo bandwidth is mainly consumed when the audio *changes*, not every build. If it stays low, leave everything as-is.
+
+If it does creep toward the limit, in order of preference:
+1. **Zero-effort stopgap:** buy the **$5/mo GitHub 50 GB LFS data pack**. No re-architecture.
+2. **Real fix — move audio off git to object storage + CDN, reference by absolute URL.** Removes audio from the repo entirely: no LFS, no build-time checkout, no GitHub LFS bandwidth meter. The build scripts would emit `<audio src="https://cdn/…/xyz.m4a">` instead of copying local files into `_build/*/audio*`.
+   - **Cloudflare R2** (recommended): S3-compatible, **zero egress fees**, cheap storage, public bucket + custom domain. Best fit for "serve static audio forever, cheaply."
+   - **Backblaze B2**: similar; free egress via the Cloudflare CDN alliance.
+   - **AWS S3 + CloudFront**: works but egress costs + more setup.
+   - **Netlify Blobs**: Netlify-native but aimed at runtime KV data; serving static media wants a function — more friction than R2 for plain assets.
+   - Migration touch-points: (a) upload the 100 `.m4a` to the bucket; (b) in `build_deploy.py`/`resident_section.py`, swap the local audio-copy step for URL rewriting; (c) keep the manual `netlify deploy --dir` flow working during transition; (d) then un-track audio from LFS. Pull current R2 + Netlify docs before writing any of it.
+3. **Do NOT** use a database (e.g. Netlify's Neon/Postgres extension) for this — it's for relational data, not media blobs; it trades the LFS bandwidth cap for function compute + egress + latency and is strictly worse.
+
 **Sequencing:** linking the repos (§3) is harmless, but **don't treat build-on-push as your deploy mechanism until the first CI build is verified to include audio.** Until then, keep the manual `netlify deploy --dir` flow (§5), which includes audio from disk. If a first CI build ships audio-less, roll back with one manual deploy.
 
 ## 7. Build-ignore hook — skip redundant doc-only rebuilds (2026-07-02)
