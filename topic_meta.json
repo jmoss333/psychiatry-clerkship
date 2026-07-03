@@ -1379,5 +1379,71 @@
       "label": "Open the Acute Consult module",
       "href": "?page=exp_consult.md"
     }
+  },
+  "protocol_library.md": {
+    "read": 3,
+    "tldr": "A teaching index of the unit's order sets — always pull exact medications, doses, and monitoring from the live EHR order set; this page tells you which protocol applies and why, not what to prescribe.",
+    "points": [
+      "Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); always give thiamine before glucose in any withdrawal or nutritional risk.",
+      "Clozapine initiation requires mandatory ANC monitoring per the hematologic schedule — know the workflow before the patient starts, not after the first dose.",
+      "Delirium prevention bundles non-pharmacologic measures first; the restraint and agitation pathway is least-restrictive, time-limited, and always followed by a debrief."
+    ],
+    "cta": {
+      "label": "Open the Psychopharmacology Primer",
+      "href": "?page=psychopharm_primer.md"
+    }
+  },
+  "welcome.md": {
+    "read": 3,
+    "tldr": "A structured six-week arc — Foundations through Integration — with interactive bedside tools, clinical one-pagers, and readings organized so you can navigate by week, topic, or tool whenever it is useful.",
+    "points": [
+      "The six-week arc gives every student the same foundational sequence regardless of start week: interview/MSE, mood/psychosis/pharm, therapy/personality, family/systems, acute/emergency, integration.",
+      "Seven interactive bedside tools are available in the sidebar: MSE builder, capacity assessor, C-SSRS, safety planning, violence-risk (FRST), CIWA-Ar/COWS, and oral-presentation timer.",
+      "Nothing here is required reading — use the hub whenever it is useful to you, organized by week, topic, or tool."
+    ],
+    "cta": {
+      "label": "Open the Orientation Packet",
+      "href": "?page=orientation.md"
+    }
+  },
+  "orientation.md": {
+    "read": 5,
+    "tldr": "One safety rule above all: if you are worried about immediate safety, tell the resident or attending now — do not wait, do not carry it alone; the four daily questions, PHI discipline, and student boundary rules structure everything else.",
+    "points": [
+      "Escalate immediately for: current suicidal intent or new plan, threats or escalating agitation, confusion/fever/rigidity suggesting delirium or catatonia, or any withdrawal concern — these cannot wait for rounds.",
+      "Use four questions for every patient: what is the syndrome? What medical/substance/sleep/medication factor is driving it? What family/social/discharge context changes the plan? What must be safer before discharge?",
+      "Students may interview patients, draft notes, suggest differentials, and observe family meetings with a defined role — but may not make independent safety or discharge decisions, promise anything, or provide unsupervised therapy."
+    ],
+    "cant": "PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.",
+    "cta": {
+      "label": "Open the Weekly Reading Map",
+      "href": "?page=reading_map.md"
+    }
+  },
+  "core_readings.md": {
+    "read": 3,
+    "tldr": "Fourteen hub pages form the spine of the rotation — read these and you will have covered the core diagnostic classes, the acute can't-miss calls, one medication primer, one family/therapy module, and one differential reasoning scaffold.",
+    "points": [
+      "Start with the acute and safety pages before the diagnostic classes — suicide risk, agitation, and consult essentials are the can't-miss calls you will face from Week 1.",
+      "Two pocket cards belong on your person every day: the Interview & MSE guide and the Formulation & DDx guide — they replace the improvised checklist on rounds.",
+      "The differential-diagnosis scaffolds and rounds questions pair with the landmark trials audio set for the deepest shelf and COMAT preparation in the hub."
+    ],
+    "cta": {
+      "label": "Open the Weekly Reading Map",
+      "href": "?page=reading_map.md"
+    }
+  },
+  "week1.md": {
+    "read": 3,
+    "tldr": "Week 1 — Foundations: orient to the unit, conduct your first psychiatric interview, structure a mental status exam, write an admission note, and ask one capacity question on rounds.",
+    "points": [
+      "The skill of the week is the Mental Status Exam — use the interactive MSE module and write your first admission note using the Documentation guide.",
+      "Suggested landmark readings: Engel 1977 (biopsychosocial), Rosenhan 1973 (labeling), and Appelbaum & Grisso 1988 (capacity) — three papers that shape how the unit thinks about diagnosis and autonomy.",
+      "On the unit this week: shadow an admission and ask one capacity question on rounds — observable, low-stakes, and directly tied to Week 1 competencies."
+    ],
+    "cta": {
+      "label": "Open the Interview & MSE Pocket Guide",
+      "href": "?page=pg_interview.md"
+    }
   }
 }
