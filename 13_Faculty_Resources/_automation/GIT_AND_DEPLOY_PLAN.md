@@ -110,8 +110,10 @@ git push
 
 **Sequencing:** linking the repos (§3) is harmless, but **don't treat build-on-push as your deploy mechanism until the first CI build is verified to include audio.** Until then, keep the manual `netlify deploy --dir` flow (§5), which includes audio from disk. If a first CI build ships audio-less, roll back with one manual deploy.
 
-## 7. Build-ignore hook — protect Git-LFS bandwidth (2026-07-02)
-Now that both sites build-on-push and each build re-fetches the LFS audio, **every push costs ~688 MB of LFS bandwidth** (2 sites × ~344 MB) against GitHub's **1 GB/mo free** tier. To avoid burning that on commits that don't change the sites, `netlify.toml` registers a shared build-ignore hook:
+## 7. Build-ignore hook — skip redundant doc-only rebuilds (2026-07-02)
+Both sites build-on-push, so a commit that changes only planning docs would still trigger two full rebuilds + redeploys. `netlify.toml` registers a shared build-ignore hook to skip those:
+
+> ⚠️ **What it does and doesn't save.** It saves **build minutes** and avoids a **redundant production redeploy**. It does **NOT** save Git-LFS bandwidth: Netlify fetches LFS objects during the repo *clone*, which runs **before** the ignore hook (netlify.toml is read post-clone), so a skipped build has already paid the transfer. Curb LFS bandwidth via §6 (batch pushes / data pack), not this hook.
 
 - **Script:** `13_Faculty_Resources/_automation/site_build/netlify-ignore.sh`
 - **Rule:** SKIP the build only when **every** changed file is a Markdown doc under `13_Faculty_Resources/_automation/` (planning/status docs no build script reads). Any other change — content, tools, build scripts, audio, config — builds normally. Fails safe toward BUILD on empty cache, unreadable diff, or no changes.
