@@ -499,12 +499,12 @@
     }
     contentEl.innerHTML=html;
     var bs=contentEl.querySelectorAll('.result');
-    for(var i=0;i<bs.length;i++){ bs[i].onclick=function(){ var d=SI.docs[this.getAttribute('data-i')]; searchEl.value=''; sxEl.style.display='none'; show(d,null); }; }
+    for(var i=0;i<bs.length;i++){ bs[i].onclick=function(){ var d=SI.docs[this.getAttribute('data-i')]; searchEl.value=''; sxEl.style.display='none'; var _nb=document.querySelector('.navitem[data-f="'+d.f+'"]'); if(_nb){_nb.click();}else{show(d,null);} }; }
   }
   var dt;
   searchEl.addEventListener('input',function(){ clearTimeout(dt); var q=searchEl.value; dt=setTimeout(function(){ renderResults(q); },130); });
   searchEl.addEventListener('keydown',function(e){
-    if(e.key==='Enter'){ var res=runSearch(searchEl.value); if(res.length){ var d=res[0].d; searchEl.value=''; sxEl.style.display='none'; show(d,null); } }
+    if(e.key==='Enter'){ var res=runSearch(searchEl.value); if(res.length){ var d=res[0].d; searchEl.value=''; sxEl.style.display='none'; var _nb=document.querySelector('.navitem[data-f="'+d.f+'"]'); if(_nb){_nb.click();}else{show(d,null);} } }
     else if(e.key==='Escape'){ searchEl.value=''; sxEl.style.display='none'; restore(); }
   });
   sxEl.onclick=function(){ searchEl.value=''; sxEl.style.display='none'; searchEl.focus(); restore(); };
