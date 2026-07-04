@@ -81,12 +81,12 @@
   },
   "t_mood.md": {
     "status": "reviewed",
-    "at": "2026-07-01",
+    "at": "2026-07-04",
     "by": "Joshua Moss, MD"
   },
   "t_psychosis.md": {
     "status": "reviewed",
-    "at": "2026-07-01",
+    "at": "2026-07-04",
     "by": "Joshua Moss, MD"
   },
   "t_anxiety.md": {
@@ -161,7 +161,7 @@
   },
   "t_sexual.md": {
     "status": "reviewed",
-    "at": "2026-07-03",
+    "at": "2026-07-04",
     "by": "Joshua Moss, MD"
   },
   "t_sleep.md": {
@@ -176,17 +176,17 @@
   },
   "ethics_legal.md": {
     "status": "reviewed",
-    "at": "2026-07-03",
+    "at": "2026-07-04",
     "by": "Joshua Moss, MD"
   },
   "cultural_psychiatry.md": {
     "status": "reviewed",
-    "at": "2026-07-03",
+    "at": "2026-07-04",
     "by": "Joshua Moss, MD"
   },
   "ect_neuromodulation.md": {
     "status": "reviewed",
-    "at": "2026-07-03",
+    "at": "2026-07-04",
     "by": "Joshua Moss, MD"
   },
   "motivational_interviewing.md": {
@@ -211,7 +211,7 @@
   },
   "psychopharm_primer.md": {
     "status": "reviewed",
-    "at": "2026-07-03",
+    "at": "2026-07-04",
     "by": "Joshua Moss, MD"
   },
   "pg_interview.md": {
@@ -301,7 +301,7 @@
   },
   "osce.md": {
     "status": "reviewed",
-    "at": "2026-07-03",
+    "at": "2026-07-04",
     "by": "Joshua Moss, MD"
   },
   "cases.md": {
@@ -337,6 +337,36 @@
   "omm_resources.md": {
     "status": "reviewed",
     "at": "2026-07-03",
+    "by": "Joshua Moss, MD"
+  },
+  "rotation.md": {
+    "status": "reviewed",
+    "at": "2026-07-04",
+    "by": "Joshua Moss, MD"
+  },
+  "adv_psychopharm.md": {
+    "status": "reviewed",
+    "at": "2026-07-04",
+    "by": "Joshua Moss, MD"
+  },
+  "cl_reference.md": {
+    "status": "reviewed",
+    "at": "2026-07-04",
+    "by": "Joshua Moss, MD"
+  },
+  "systems_medlegal.md": {
+    "status": "reviewed",
+    "at": "2026-07-04",
+    "by": "Joshua Moss, MD"
+  },
+  "supervision_teaching.md": {
+    "status": "reviewed",
+    "at": "2026-07-04",
+    "by": "Joshua Moss, MD"
+  },
+  "canon_200.md": {
+    "status": "reviewed",
+    "at": "2026-07-04",
     "by": "Joshua Moss, MD"
   }
 }

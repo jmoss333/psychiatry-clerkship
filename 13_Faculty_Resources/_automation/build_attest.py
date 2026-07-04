@@ -22,10 +22,9 @@ TM   = os.path.join(LIB, "topic_meta.json")
 RV   = os.path.join(LIB, "13_Faculty_Resources", "reviewed.json")
 OUT  = os.path.join(LIB, "13_Faculty_Resources", "attest-batch.html")
 
-# Topics whose content changed and should be re-attested. Updated 2026-07-04 for PR #112
-# (teaching content behind these was edited: clozapine/lithium wording + OSCE scored checklists).
+# Topics whose content changed and should be re-attested. Empty = nothing pending re-attestation
+# (the #112 pages were re-attested 2026-07-04). New/unattested topics surface under the "Unattested" filter.
 CHANGED = [
-    "t_psychosis.md", "t_mood.md", "psychopharm_primer.md", "osce.md",
 ]
 
 meta = json.load(open(TM, encoding="utf-8"))
