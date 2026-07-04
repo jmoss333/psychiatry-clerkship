@@ -148,8 +148,7 @@
       "q": "A 22-year-old has three weeks of hallucinations, low-grade fever, and orofacial dyskinesias. Most important to exclude?",
       "o": [
         {
-          "t": "Anti-NMDA receptor (autoimmune) encephalitis",
-          "c": true
+          "t": "Adjustment disorder"
         },
         {
           "t": "Schizophrenia"
@@ -158,7 +157,8 @@
           "t": "Malingering"
         },
         {
-          "t": "Adjustment disorder"
+          "t": "Anti-NMDA receptor (autoimmune) encephalitis",
+          "c": true
         }
       ],
       "why": "Subacute psychosis with neurologic and autonomic features warrants an autoimmune-encephalitis workup before a primary psychiatric label."
@@ -182,14 +182,14 @@
       "q": "A patient with prior depressive episodes presents manic while on sertraline. Best next step?",
       "o": [
         {
-          "t": "Stop sertraline; start a mood stabilizer or SGA",
-          "c": true
+          "t": "Add a second antidepressant"
         },
         {
           "t": "Increase the sertraline dose"
         },
         {
-          "t": "Add a second antidepressant"
+          "t": "Stop sertraline; start a mood stabilizer or SGA",
+          "c": true
         },
         {
           "t": "Order a brain MRI before any treatment"
@@ -215,11 +215,11 @@
       "q": "First-line treatment for OCD?",
       "o": [
         {
-          "t": "Higher-dose SSRI + exposure and response prevention",
-          "c": true
+          "t": "Scheduled benzodiazepine"
         },
         {
-          "t": "Scheduled benzodiazepine"
+          "t": "Higher-dose SSRI + exposure and response prevention",
+          "c": true
         },
         {
           "t": "Low-dose antipsychotic monotherapy"
@@ -256,8 +256,7 @@
       "q": "On hospital day 2, a heavy drinker is tremulous and tachycardic with visual hallucinations and a clear sensorium. Best management?",
       "o": [
         {
-          "t": "CIWA-guided benzodiazepine + thiamine",
-          "c": true
+          "t": "Restraints and observation"
         },
         {
           "t": "Scheduled haloperidol"
@@ -266,7 +265,8 @@
           "t": "IV dextrose first"
         },
         {
-          "t": "Restraints and observation"
+          "t": "CIWA-guided benzodiazepine + thiamine",
+          "c": true
         }
       ],
       "why": "Alcohol withdrawal is treated with symptom-triggered benzodiazepines and thiamine before glucose."
@@ -289,8 +289,7 @@
       "q": "Best inpatient response to staff splitting around a patient with borderline personality disorder?",
       "o": [
         {
-          "t": "A unified team plan with consistent, kind limits",
-          "c": true
+          "t": "Discharge for the behavior"
         },
         {
           "t": "Assign one nurse to meet all requests"
@@ -299,7 +298,8 @@
           "t": "Start a mood stabilizer for the personality disorder"
         },
         {
-          "t": "Discharge for the behavior"
+          "t": "A unified team plan with consistent, kind limits",
+          "c": true
         }
       ],
       "why": "Splitting is managed with team consistency and clear limits; medication does not treat the personality disorder itself."
@@ -327,14 +327,14 @@
       "q": "A nonverbal autistic adult becomes acutely agitated and self-injurious on the unit. Best first step?",
       "o": [
         {
-          "t": "Evaluate for pain and medical causes (constipation, dental, infection) and unmet needs",
-          "c": true
+          "t": "Attribute it to baseline autism and observe"
         },
         {
           "t": "Start a scheduled antipsychotic for the autism"
         },
         {
-          "t": "Attribute it to baseline autism and observe"
+          "t": "Evaluate for pain and medical causes (constipation, dental, infection) and unmet needs",
+          "c": true
         },
         {
           "t": "Place the patient in restraints"
@@ -369,11 +369,11 @@
       "q": "A severely malnourished patient with anorexia is admitted and refeeding begins. Which lab change most signals dangerous refeeding syndrome?",
       "o": [
         {
-          "t": "Falling serum phosphate",
-          "c": true
+          "t": "Rising serum sodium"
         },
         {
-          "t": "Rising serum sodium"
+          "t": "Falling serum phosphate",
+          "c": true
         },
         {
           "t": "Falling serum creatinine"
@@ -451,11 +451,11 @@
       "q": "A trauma survivor reports feeling detached and unreal but knows the feeling isn't real. Best next step?",
       "o": [
         {
-          "t": "Grounding and safety, screen risk, treat comorbidities — after excluding organic causes",
-          "c": true
+          "t": "Start a scheduled antipsychotic"
         },
         {
-          "t": "Start a scheduled antipsychotic"
+          "t": "Grounding and safety, screen risk, treat comorbidities — after excluding organic causes",
+          "c": true
         },
         {
           "t": "Begin trauma-processing therapy immediately"
@@ -492,14 +492,14 @@
       "q": "A 16-year-old has a lifelong pattern of aggression, theft, and rule violations. Which adult diagnosis requires this history to have begun before age 15?",
       "o": [
         {
-          "t": "Antisocial personality disorder",
-          "c": true
+          "t": "Oppositional defiant disorder"
         },
         {
           "t": "Intermittent explosive disorder"
         },
         {
-          "t": "Oppositional defiant disorder"
+          "t": "Antisocial personality disorder",
+          "c": true
         },
         {
           "t": "Bipolar disorder"
@@ -534,14 +534,14 @@
       "q": "An older adult with dementia has fluctuating cognition, recurrent visual hallucinations, and parkinsonism. Which is most dangerous to give?",
       "o": [
         {
-          "t": "A typical antipsychotic (severe neuroleptic sensitivity in Lewy body disease)",
-          "c": true
+          "t": "Melatonin"
         },
         {
           "t": "A cholinesterase inhibitor"
         },
         {
-          "t": "Melatonin"
+          "t": "A typical antipsychotic (severe neuroleptic sensitivity in Lewy body disease)",
+          "c": true
         },
         {
           "t": "Nonpharmacologic reorientation"
@@ -568,8 +568,7 @@
       "q": "A patient on an SSRI reports new anorgasmia and distress. Best first step?",
       "o": [
         {
-          "t": "Address the medication (dose-reduce, switch to bupropion/mirtazapine, or augment)",
-          "c": true
+          "t": "Tell the patient it is unrelated"
         },
         {
           "t": "Diagnose a primary orgasmic disorder immediately"
@@ -578,7 +577,8 @@
           "t": "Stop all psychiatric treatment"
         },
         {
-          "t": "Tell the patient it is unrelated"
+          "t": "Address the medication (dose-reduce, switch to bupropion/mirtazapine, or augment)",
+          "c": true
         }
       ],
       "why": "SSRI-induced sexual dysfunction is common and reversible; manage the medication before diagnosing a primary sexual disorder."
@@ -610,8 +610,7 @@
       "q": "A patient with 'treatment-resistant' depression snores, is obese, and is sleepy all day. Best next step?",
       "o": [
         {
-          "t": "Evaluate for obstructive sleep apnea (polysomnography) and treat it",
-          "c": true
+          "t": "Start a long-acting benzodiazepine"
         },
         {
           "t": "Add a third antidepressant"
@@ -620,7 +619,8 @@
           "t": "Start nightly diphenhydramine"
         },
         {
-          "t": "Start a long-acting benzodiazepine"
+          "t": "Evaluate for obstructive sleep apnea (polysomnography) and treat it",
+          "c": true
         }
       ],
       "why": "Untreated OSA is a common, reversible driver of apparent treatment resistance; diagnose with polysomnography and treat with CPAP before escalating pharmacotherapy."
@@ -651,8 +651,7 @@
       "q": "A patient has leg weakness that gives way on formal testing but shows a positive Hoover sign. Best framing?",
       "o": [
         {
-          "t": "Functional neurological (conversion) disorder — diagnosed by positive signs",
-          "c": true
+          "t": "Tell the patient nothing is wrong"
         },
         {
           "t": "Malingering for disability"
@@ -661,7 +660,8 @@
           "t": "Order repeat MRIs until something appears"
         },
         {
-          "t": "Tell the patient nothing is wrong"
+          "t": "Functional neurological (conversion) disorder — diagnosed by positive signs",
+          "c": true
         }
       ],
       "why": "Conversion/functional neurological disorder is a positive, rule-in diagnosis based on internal inconsistency (Hoover sign), not a diagnosis of exclusion."
@@ -797,11 +797,11 @@
       "q": "An 82-year-old admitted for 'failure to thrive' answers 'I don't know' to most cognitive questions, gives up easily, and stopped cooking after her husband died. A structured cognitive screen is mildly impaired. Most likely explanation?",
       "o": [
         {
-          "t": "Depressive pseudodementia — treat the depression and retest cognition",
-          "c": true
+          "t": "Early Alzheimer dementia — start a cholinesterase inhibitor"
         },
         {
-          "t": "Early Alzheimer dementia — start a cholinesterase inhibitor"
+          "t": "Depressive pseudodementia — treat the depression and retest cognition",
+          "c": true
         },
         {
           "t": "Delirium — search for a UTI"
