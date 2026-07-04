@@ -20,7 +20,7 @@ from pathlib import Path
 import requests
 
 
-BASE = Path('/Users/jm/Psychiatry-Clerkship-Library/13_Faculty_Resources/Handoffs')
+BASE = Path(__file__).resolve().parent   # this script lives in .../Handoffs
 YTDLP = BASE / '.link_resolver_venv/bin/yt-dlp'
 CHANNEL_ID = 'UCDV4XSQbdB3n6X3QirO5i_w'
 CHANNEL_HANDLE = '@psychiatrypsychotherapy6939'

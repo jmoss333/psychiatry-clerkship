@@ -125,5 +125,8 @@ for i,(k,v) in enumerate([("Exists","usable today"),("Revise","update/fix drift"
     cc=s.cell(row=15+i,column=4,value=k); cc.fill=PatternFill("solid",start_color=status_fill[k]); cc.font=Font(name="Arial",bold=True,size=10)
     s.cell(row=15+i,column=5,value=v).font=base_font
 for col,w in {"A":24,"B":10,"C":3,"D":14,"E":26}.items(): s.column_dimensions[col].width=w
-out="/sessions/zen-loving-cori/mnt/jm/Psychiatry_Clerkship_Library_Master_Index.xlsx"
+import os
+_here = os.path.dirname(os.path.abspath(__file__))
+_lib = os.path.abspath(os.path.join(_here, "..", "..", ".."))   # repo root
+out = os.environ.get("MASTER_INDEX_OUT", os.path.join(_lib, "_MASTER_INDEX.xlsx"))
 wb.save(out); print("rows:", ws.max_row-1, "saved", out)

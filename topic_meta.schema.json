@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "topic_meta",
+  "description": "Structured topic-template metadata for the clerkship SPA. Keys are '<topic>.md' plus a leading '_note'. The enforced check is 13_Faculty_Resources/_automation/validate_topic_meta.py; this schema documents the shape for editors.",
+  "type": "object",
+  "properties": { "_note": { "type": "string" } },
+  "additionalProperties": {
+    "type": "object",
+    "properties": {
+      "read": { "type": "string" },
+      "hy": { "type": "boolean" },
+      "tldr": { "type": "string" },
+      "points": { "type": "array", "items": { "type": "string" } },
+      "cant": { "type": "string" },
+      "ruleOut": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+      "firstMove": { "type": "string" },
+      "quiz": {
+        "type": "object",
+        "required": ["q", "o", "why"],
+        "properties": {
+          "q": { "type": "string" },
+          "why": { "type": "string" },
+          "o": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": ["t"],
+              "properties": { "t": { "type": "string" }, "c": { "type": "boolean" } }
+            }
+          }
+        }
+      },
+      "cta": {}
+    },
+    "dependencies": { "firstMove": ["ruleOut"] }
+  }
+}

@@ -3,10 +3,9 @@
 Run from anywhere. Pure-Python, no network. The actual re-crawl is the separate
 Chrome-based download_public_apa_resources.py (run attended)."""
 import csv,re,os,glob,json,sys
-FAC=os.path.expanduser("/Users/jm/Psychiatry-Clerkship-Library/13_Faculty_Resources")
-# In the sandbox the same tree is mounted here:
-if not os.path.isdir(FAC):
-    FAC="/sessions/quirky-intelligent-wozniak/mnt/Psychiatry-Clerkship-Library/13_Faculty_Resources"
+# Portable: this script lives in 13_Faculty_Resources/APA_Downloads_*/scripts/,
+# so the faculty dir is two levels up — derive it, no hard-coded machine paths.
+FAC=os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 sets=sorted(glob.glob(os.path.join(FAC,"APA_Downloads_*")))
 sets=[s for s in sets if os.path.isdir(s)]
 if not sets: sys.exit("no APA_Downloads_* set found")
