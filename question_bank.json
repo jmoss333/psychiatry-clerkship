@@ -416,48 +416,47 @@
     {
       "id": "qb_anx_002",
       "status": "draft",
-      "type": "relational",
-      "subtype": "what-would-you-say",
+      "type": "sba",
       "category": "anxiety",
-      "competency": ["psychosocial"],
-      "difficulty": 2,
-      "pages": ["motivational_interviewing.md"],
-      "link": { "label": "Open the Motivational Interviewing page", "href": "?page=motivational_interviewing.md" },
-      "stem": "A student is meeting with a patient admitted for alcohol use disorder. When the student mentions the recommendation for an outpatient treatment program, the patient says: 'I'm not an alcoholic. I just drink when things get hard. I don't need a program.' The student wants to use motivational interviewing. Which response is best?",
+      "competency": ["management", "pharm"],
+      "difficulty": 1,
+      "pages": ["t_anxiety.md"],
+      "link": { "label": "Open the Anxiety, OCD & Trauma page", "href": "?page=t_anxiety.md" },
+      "stem": "A 28-year-old woman admitted for a severe depressive episode is also found to have untreated PTSD — she endorses daily nightmares, hypervigilance, and avoidance behaviors that have persisted for two years since an assault. She has no history of substance use disorder. After addressing the acute safety concern, which is the most appropriate first-line pharmacotherapy for her PTSD?",
       "options": [
         {
           "key": "A",
-          "t": "'You've been hospitalized twice this year for alcohol-related problems — that's the definition of alcohol use disorder, and a program is the standard of care.'",
+          "t": "Start scheduled lorazepam — benzodiazepines reduce hyperarousal and improve sleep, targeting PTSD's core neurobiological substrate",
           "trap": {
-            "name": "The righting reflex",
-            "note": "Arguing why the patient should change produces sustain talk — the patient defends his position and no internal motivation is evoked."
+            "name": "The reflexive benzodiazepine",
+            "note": "Benzodiazepines drive dependence, falls, and delirium and are not a treatment for PTSD — standing benzodiazepines for anxiety disorders are explicitly to be avoided on the inpatient unit."
           }
         },
         {
           "key": "B",
-          "t": "'That label doesn't have to fit. And it sounds like stress has been a real driver. What's your own read on how the drinking has been affecting things?'",
+          "t": "Start an SSRI or SNRI, counsel her about delayed onset, and plan trauma-focused therapy (prolonged exposure or CPT) as a discharge goal",
           "c": true
         },
         {
           "key": "C",
-          "t": "'If you don't agree to a program, we can't discharge you safely — participation is a condition of discharge.'",
+          "t": "Start propranolol — beta blockade prevents autonomic consolidation of traumatic memories and is first-line for established PTSD",
           "trap": {
-            "name": "Ultimatum over autonomy",
-            "note": "Issuing a compliance ultimatum replaces internal motivation with external coercion and shuts down the patient's own reasons for change."
+            "name": "Wrong mechanism for PTSD",
+            "note": "Propranolol is studied as an acute peritraumatic adjunct — it is not first-line pharmacotherapy for established PTSD; SSRIs and SNRIs are."
           }
         },
         {
           "key": "D",
-          "t": "'OK — I'll document that you declined the recommendation and we'll move forward with discharge planning.'",
+          "t": "Start an antipsychotic for the intrusive re-experiencing — flashback-like episodes indicate psychotic features requiring dopamine blockade",
           "trap": {
-            "name": "Accept at face value",
-            "note": "Accepting the statement without reflecting misses the ambivalence — the patient has not been invited to voice his own concerns about the drinking."
+            "name": "Psychosis = schizophrenia",
+            "note": "Intrusive re-experiencing in PTSD is not psychosis — antipsychotics are not first-line for PTSD and conflating the two is the inpatient trap that delays correct treatment."
           }
         }
       ],
-      "why": "The righting reflex trap is option A — arguing with the label produces sustain talk, not change talk. The correct response reflects the patient's experience, sidesteps the diagnostic argument, and opens a question that invites him to voice his own concerns. Ultimatum over autonomy replaces internal motivation with coercion. Accept at face value abandons the opportunity to evoke change talk.",
-      "pearl": "The righting reflex — arguing for change — produces sustain talk; reflect without countering and let the patient voice his own reasons.",
-      "evidence": "motivational_interviewing.md 'The one idea' — People talk themselves into change. Your job is not to supply the arguments (the 'righting reflex' — resist it) but to evoke the patient's own reasons. Pushing usually produces sustain talk; curiosity produces change talk."
+      "why": "The reflexive benzodiazepine is the most common trap — standing benzos for PTSD create dependence without treating the disorder and are explicitly avoided on the inpatient unit. SSRIs and SNRIs are first-line across all anxiety disorders and PTSD; definitive treatment pairs medication with trauma-focused therapy (prolonged exposure or CPT) planned at discharge. Propranolol is studied in acute peritraumatic settings, not as first-line pharmacotherapy for established PTSD. Antipsychotics conflate re-experiencing with psychosis.",
+      "pearl": "SSRIs/SNRIs are first-line for PTSD — benzodiazepines are a liability on the unit; pair medication with trauma-focused therapy (PE or CPT) at discharge.",
+      "evidence": "t_anxiety.md 'Acute inpatient management' — SSRIs and SNRIs are first-line across anxiety disorders, OCD, and PTSD; avoid standing benzodiazepines on the unit; pair pharmacology with disorder-specific behavioral work — prolonged exposure (PE) and cognitive processing therapy (CPT) for PTSD."
     },
     {
       "id": "qb_sud_002",
