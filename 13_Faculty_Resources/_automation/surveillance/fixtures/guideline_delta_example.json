@@ -1,0 +1,43 @@
+[
+  {
+    "finding_id": "example-0001",
+    "job": "guideline-surveillance",
+    "source_id": "clozapine-rems",
+    "source_name": "Clozapine REMS Program",
+    "source_url": "https://www.newclozapinerems.com/",
+    "source_type": "html",
+    "modality": "full_text",
+    "detected_at": "2026-08-01T06:03:00Z",
+    "change_type": "modified",
+    "severity": "P0",
+    "summary": "Monitoring-requirement language changed on the REMS site since last scan",
+    "evidence": {
+      "prev_hash": "aa11",
+      "new_hash": "bb22",
+      "diff_excerpt": "- Prescribers must be certified and patients enrolled.\n+ Centralized REMS requirements have been modified; consult current prescribing information for ANC monitoring.",
+      "snapshot_url": "https://api.apify.com/v2/key-value-stores/EXAMPLE/records/snapshot.html"
+    },
+    "affects": [
+      "05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md",
+      "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md"
+    ],
+    "recommended_action": "Re-verify the clozapine ANC-monitoring language on the affected pages against current prescribing information; edit if needed and re-attest.",
+    "status": "new"
+  },
+  {
+    "finding_id": "example-0002",
+    "job": "guideline-surveillance",
+    "source_id": "aacap-parameters",
+    "source_name": "AACAP Practice Parameters",
+    "source_url": "https://www.aacap.org/",
+    "source_type": "html",
+    "modality": "full_text",
+    "detected_at": "2026-08-01T06:03:00Z",
+    "change_type": "modified",
+    "severity": "P2",
+    "summary": "Low-priority index reflow (should NOT open a PR — P2)",
+    "evidence": {"new_hash": "cc33", "diff_excerpt": "cosmetic"},
+    "affects": ["14_Tracks/CAP_Fellow/README.md"],
+    "status": "new"
+  }
+]

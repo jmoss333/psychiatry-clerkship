@@ -16,6 +16,7 @@ on:
 permissions:
   contents: write               # commit updated baselines + dated delta report
   issues: write
+  pull-requests: write          # open attestation-routed update PRs (open_update_pr.py)
 
 concurrency:
   group: surveillance-guideline
@@ -61,3 +62,12 @@ jobs:
           git add 13_Faculty_Resources/_automation/surveillance
           git commit -m "surveillance: guideline delta $(date -u +%F)" || { echo "no changes"; exit 0; }
           git push || (git pull --rebase --autostash && git push)
+
+      - name: Open attestation update PRs
+        continue-on-error: true        # a PR hiccup must not fail the surveillance run
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/open_update_pr.py
+          --findings findings.json
