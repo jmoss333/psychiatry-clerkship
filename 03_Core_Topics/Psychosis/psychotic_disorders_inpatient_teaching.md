@@ -22,6 +22,8 @@
 - Per CATIE, pick the antipsychotic by side-effect fit; "newer" is not automatically better.
 - Anosognosia is not denial — use LEAP, not debate, to build the alliance.
 - Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information (the clozapine REMS was discontinued in 2025).
+- Beyond the ANC: clozapine can cause **myocarditis** (especially in the first weeks), **severe constipation/ileus**, seizures, and orthostasis — monitor for these, not just the count.
+- **Neuroleptic malignant syndrome** (fever, rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively (supportive care, consider dantrolene/bromocriptine).
 
 **Pair with** — the [Family Meeting Playbook (90-min)](?page=family_playbook.md), the protocol library (benzo taper, clozapine), the Decisional Capacity tool, and the Differential Diagnosis scaffolds.
 
