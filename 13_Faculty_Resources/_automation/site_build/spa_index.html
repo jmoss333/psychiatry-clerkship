@@ -557,9 +557,10 @@
 
   /* ---- Concept B: Progress home ---- */
   window.renderHome=function(){
-    var rev=(typeof reviewedCount==='function')?reviewedCount():0, tot=(typeof topicCount==='function')?topicCount():1;
+    var scan=navScan();
+    var rev=0, tot=0; for(var _ck in scan.cov){ rev+=scan.cov[_ck].done; tot+=scan.cov[_ck].tot; }
     var pct=tot?Math.round(rev/tot*100):0; var dc=dueCount(); var s=srsState();
-    var streak=(s&&s.stats&&s.stats.streak)||0; var scan=navScan();
+    var streak=(s&&s.stats&&s.stats.streak)||0;
     var last=LS('cw_last'); var shelf=LS('cw_shelf_date'); var shelfDays=null;
     if(shelf){ var t=new Date(shelf+'T00:00:00').getTime(); if(!isNaN(t)) shelfDays=Math.ceil((t-Date.now())/86400000); }
     var fresh=(rev===0 && dc.due===0 && !last);
