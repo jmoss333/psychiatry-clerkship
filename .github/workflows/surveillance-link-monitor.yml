@@ -62,4 +62,4 @@ jobs:
           git config user.email "surveillance-bot@users.noreply.github.com"
           git add 13_Faculty_Resources/_automation/surveillance
           git commit -m "surveillance: link audit $(date -u +%F)" || { echo "no changes"; exit 0; }
-          git push || (git pull --rebase --autostash && git push) || echo "push failed"
+          git push || (git pull --rebase --autostash && git push)

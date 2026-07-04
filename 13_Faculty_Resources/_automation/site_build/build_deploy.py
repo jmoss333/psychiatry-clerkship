@@ -27,6 +27,22 @@ tools=[
  ("07_Evidence_and_Reading/Landmark_Trials/review.html","review.html","Daily Review (Spaced Repetition)"),
  ("13_Faculty_Resources/Feedback/feedback.html","feedback.html","Improve this library — send feedback"),
 ]
+
+# ---- pre-flight: verify every REQUIRED source asset exists BEFORE we build ----
+# (added 2026-07-03) A renamed/missing required source used to throw FileNotFoundError
+# mid-build and fail the Netlify deploy for BOTH sites with a bare traceback. Fail fast
+# here with the COMPLETE list of missing assets so the fix is obvious.
+_required=[os.path.join(LIB,src) for src,_,_ in tools]+[
+    LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
+    LIB+"/13_Faculty_Resources/review-attest.html",
+    LIB+"/01_Six_Week_Curriculum/learning-path.html",
+]
+_missing_req=[p for p in _required if not os.path.exists(p)]
+if _missing_req:
+    print("BUILD ABORTED — %d required source asset(s) missing:" % len(_missing_req))
+    for _p in _missing_req: print("   -", os.path.relpath(_p, LIB))
+    raise SystemExit(1)
+
 for src,dst,_ in tools:
     shutil.copy2(os.path.join(LIB,src), OUT+"/tools/"+dst)
 
