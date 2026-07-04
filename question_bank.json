@@ -1,0 +1,167 @@
+{
+  "_note": "Exam-style question bank rendered by the SPA, separate from topic_meta.json. AI-drafted ORIGINAL items aligned with the library's topic pages — never reproductions of NBME/NBOME/USMLE or commercial-bank questions; pending faculty attestation (status stays 'draft' until Dr. Moss attests). Educational; fictional composites only; no PHI. Quality bar: QUESTION_BANK_STANDARD.md · categories/counts: QUESTION_BANK_BLUEPRINT.md · shape: question_bank.schema.json.",
+  "version": 1,
+  "items": [
+    {
+      "id": "qb_sud_001",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "substance",
+      "competency": ["next-step", "pharm"],
+      "difficulty": 2,
+      "hy": true,
+      "pages": ["t_sud.md"],
+      "link": { "label": "Open the CIWA-Ar / COWS card", "href": "tools/withdrawal.html" },
+      "stem": "A 34-year-old man admitted last night for opioid use disorder asks to start buprenorphine right away — 'I don't want to get sick.' His last heroin use was about 6 hours ago. He is anxious but has no yawning, rhinorrhea, mydriasis, or piloerection; his COWS score is 4. Best next step?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Start buprenorphine now, before the withdrawal becomes severe",
+          "trap": {
+            "name": "Comfort-first induction",
+            "note": "Starting early to spare the patient discomfort is what causes the discomfort — induction waits for objective withdrawal, not for the request."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Continue serial COWS scoring and start buprenorphine once objective withdrawal is present (COWS roughly 8 to 12)",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Give a benzodiazepine to control the withdrawal symptoms",
+          "trap": {
+            "name": "The reflexive benzodiazepine",
+            "note": "Benzodiazepines treat alcohol and sedative withdrawal — opioid withdrawal is tracked with the COWS and treated with agonist therapy."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Reassure him that opioid withdrawal is not dangerous and defer any medication",
+          "trap": {
+            "name": "Not lethal = not treatable",
+            "note": "Opioid withdrawal is rarely fatal but intensely miserable — and untreated it drives discharge against advice into the highest-overdose-risk window."
+          }
+        }
+      ],
+      "why": "Comfort-first induction is the trap the request invites — buprenorphine started before objective withdrawal precipitates the withdrawal it was meant to prevent. Serial COWS scores make the timing objective: induction begins at roughly 8 to 12, not at the patient's anxiety. The benzodiazepine belongs to alcohol and sedative withdrawal, and 'not dangerous' is not a plan when MOUD linkage is the discharge intervention.",
+      "pearl": "Do not start buprenorphine until objective withdrawal is on board (COWS roughly ≥ 8 to 12) or you may precipitate withdrawal.",
+      "evidence": "t_sud.md 'Acute inpatient management' — begin buprenorphine induction only once objective withdrawal is present (roughly COWS ≥ 8 to 12) to avoid precipitated withdrawal from displacing residual full agonist too early.",
+      "tier2": {
+        "q": "Why must buprenorphine wait for objective withdrawal?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Buprenorphine is ineffective until the urine drug screen has cleared"
+          },
+          {
+            "key": "B",
+            "t": "Early dosing risks oversedation and respiratory arrest from stacking agonists"
+          },
+          {
+            "key": "C",
+            "t": "As a high-affinity partial agonist, buprenorphine displaces residual full agonist from the receptor — started too early, it precipitates withdrawal",
+            "c": true
+          },
+          {
+            "key": "D",
+            "t": "Waiting builds the patient's motivation to engage with treatment"
+          }
+        ],
+        "why": "It is a receptor-displacement problem, not a clearance, sedation, or motivation problem — the partial agonist evicts the remaining full agonist and the net signal drops abruptly. Making the patient 'earn' the dose has no place in a non-judgmental, brain-disease framing of addiction."
+      }
+    },
+    {
+      "id": "qb_rel_001",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "what-would-you-say",
+      "category": "relational",
+      "competency": ["psychosocial", "safety"],
+      "difficulty": 2,
+      "hy": true,
+      "pages": ["exp_family.md"],
+      "link": { "label": "Open the Family & Discharge module", "href": "?page=exp_family.md" },
+      "stem": "A family meeting is held the day before planned discharge for a 52-year-old man admitted after a suicide attempt by overdose. When the agenda reaches safety and warning signs, his wife says: 'We'll keep a close eye on him. And you don't need to worry about the guns — he would never use them, and they're put away.' The attending invites your input. Which response is best?",
+      "options": [
+        {
+          "key": "A",
+          "t": "'It makes sense that everyone is exhausted and scared. Before discharge, who can confirm that the firearms — and any stockpiled medications — are actually secured, and how will we know it's done?'",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "'Firearms are involved in about half of US suicides and are lethal in 85 to 90 percent of attempts — \"put away\" isn't good enough.'",
+          "trap": {
+            "name": "Quoting statistics at families",
+            "note": "The numbers explain the why to you — recited at a frightened family they become an argument, and arguing invites defense of the status quo."
+          }
+        },
+        {
+          "key": "C",
+          "t": "'That's reassuring — we'll document that the family will keep him safe and that the guns are secured.'",
+          "trap": {
+            "name": "Face-value reassurance",
+            "note": "Family support is data, not a substitute for risk reasoning — a safety plan with unconfirmed means safety is a known failure mode, not a completed task."
+          }
+        },
+        {
+          "key": "D",
+          "t": "'Discharge can't move forward unless you agree to remove every firearm from the home today.'",
+          "trap": {
+            "name": "Making the family responsible",
+            "note": "The goal is to understand what support is realistic, not to hand the family the treatment — and disposition ultimatums are not the student's call."
+          }
+        }
+      ],
+      "why": "The best response validates first, stays inside the student role, and converts 'put away' into a concrete, verifiable step — who secures the items and how the team will know. Quoting lethality statistics at the family is the righting reflex in evidence clothing; accepting reassurance leaves means safety unconfirmed at the exact moment risk peaks; and an ultimatum makes the family responsible for treatment while overstepping the student's role.",
+      "pearl": "Means safety is a lethality intervention, not a formality — 'who can confirm items are secured before discharge?' is a clinical act.",
+      "evidence": "exp_family.md 'Why It Matters' — structured lethal-means counseling (CALM) cut attempts/deaths from 3.3% to 0.83% at 180 days; suicide risk peaks in the first week post-discharge (Chung et al., JAMA Psychiatry 2017)."
+    },
+    {
+      "id": "qb_cog_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": ["dx", "safety"],
+      "difficulty": 2,
+      "pages": ["delirium.md"],
+      "link": { "label": "Open the Delirium page", "href": "?page=delirium.md" },
+      "stem": "A 76-year-old woman on hospital day 3 after hip-fracture repair is referred to psychiatry for 'depression.' She is quiet, slow to respond, and sleeps much of the day; her nurse notes she was conversational yesterday evening but is 'flat' this morning. She cannot recite the months of the year backward. Most likely explanation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Major depressive episode — recommend starting an antidepressant",
+          "trap": {
+            "name": "Hypoactive delirium labeled depression",
+            "note": "The withdrawn, flat, quiet patient is the delirium presentation that gets missed — depression does not fluctuate across a single shift."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Early dementia unmasked by hospitalization",
+          "trap": {
+            "name": "Confused elder = dementia",
+            "note": "Dementia is chronic and progressive over months — a change that arrived in hours to days and waxes and wanes is delirium until proven otherwise."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Hypoactive delirium — screen for precipitating causes and deliriogenic medications",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Expected postoperative fatigue — reassure the team and sign off",
+          "trap": {
+            "name": "Quiet patient = stable patient",
+            "note": "No one is alarmed by a quiet patient — which is exactly why hypoactive delirium is missed and carries worse outcomes."
+          }
+        }
+      ],
+      "why": "Acute onset, a course that fluctuates across one shift, and failed months-backward — inattention, the cardinal deficit — assemble the CAM picture; low arousal makes it hypoactive delirium, the form most often mislabeled as depression or overlooked because the patient is quiet. Dementia declines over months, not shifts, and 'postoperative fatigue' does not take attention with it. The work now is finding the drivers — infection, metabolic derangement, deliriogenic medications, retention, constipation, pain.",
+      "pearl": "Hypoactive delirium is the dangerous one: commonly missed, worse outcomes, and easily mislabeled as depression.",
+      "evidence": "delirium.md 'Recognize and screen' — Confusion Assessment Method (CAM, Inouye et al.): acute onset and fluctuating course, plus inattention, plus either disorganized thinking or altered level of consciousness."
+    }
+  ]
+}

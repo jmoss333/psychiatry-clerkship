@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "question_bank",
+  "description": "Exam-style question bank for the clerkship SPA, separate from topic_meta.json. Quality bar: QUESTION_BANK_STANDARD.md; categories/counts: QUESTION_BANK_BLUEPRINT.md. This schema documents the shape for editors; the drafting checklist in QUESTION_BANK_EXECUTION_BRIEF.md is the enforced check. All strings are plain text (HTML-escaped on render). Item ids and option keys are stable identities — SRS cards (QB#<id>), response records (cw_qb_v1), and future cohort aggregation key on them; never renumber or reuse.",
+  "type": "object",
+  "required": ["_note", "version", "items"],
+  "properties": {
+    "_note": { "type": "string" },
+    "version": { "const": 1 },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "type", "category", "competency", "difficulty", "pages", "stem", "options", "why", "pearl", "evidence"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^qb_[a-z]+_[0-9]{3}$",
+            "description": "Stable forever. Prefix matches the blueprint category (qb_sud_001)."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "attested"],
+            "description": "Drafting models always write 'draft'. Only faculty attest tooling sets 'attested'."
+          },
+          "type": { "type": "string", "enum": ["sba", "two-tier", "relational"] },
+          "subtype": {
+            "type": "string",
+            "enum": ["family-system", "what-would-you-say", "transition-of-care"],
+            "description": "Relational items only."
+          },
+          "category": {
+            "type": "string",
+            "enum": ["mood", "psychosis", "anxiety", "substance", "neurocog", "pharm", "safety", "personality", "childdev", "otherdx", "ethics", "relational"]
+          },
+          "competency": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": { "type": "string", "enum": ["dx", "next-step", "management", "safety", "pharm", "psychosocial"] }
+          },
+          "difficulty": { "type": "integer", "minimum": 1, "maximum": 3 },
+          "hy": { "type": "boolean", "description": "Scarce (≤ 1/3 of items); omit rather than false." },
+          "pages": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "pattern": "\\.md$" },
+            "description": "Deployed slugs the item is derived from; must include one from the item's blueprint category."
+          },
+          "link": {
+            "type": "object",
+            "required": ["href"],
+            "properties": { "label": { "type": "string" }, "href": { "type": "string" } },
+            "description": "One deep link: ?page=<slug>.md or tools/<name>.html."
+          },
+          "stem": { "type": "string", "description": "Clinical vignette ending in a positive lead-in; answerable with options covered." },
+          "options": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "required": ["key", "t"],
+              "properties": {
+                "key": { "type": "string", "enum": ["A", "B", "C", "D"], "description": "Stable identity; renderer may shuffle display order." },
+                "t": { "type": "string" },
+                "c": { "const": true, "description": "Present on exactly one option per item." },
+                "trap": {
+                  "type": "object",
+                  "required": ["name", "note"],
+                  "properties": {
+                    "name": { "type": "string", "description": "Named misconception, 2–6 words, reusable across items (see brief vocabulary)." },
+                    "note": { "type": "string", "description": "One line of better thinking that dispatches it." }
+                  }
+                }
+              },
+              "if": { "not": { "required": ["c"] } },
+              "then": { "required": ["trap"] }
+            }
+          },
+          "why": { "type": "string", "description": "Dispatches the traps by name, then states the discriminator." },
+          "pearl": { "type": "string", "description": "One keepable line — ideally the source page's own pearl." },
+          "evidence": { "type": "string", "description": "The anchor exactly as a `pages` source states it — never a new outside citation." },
+          "tier2": {
+            "type": "object",
+            "required": ["q", "options", "why"],
+            "description": "Required iff type is 'two-tier'. Options are competing rationales; the strong distractor rationales mirror the tier-1 traps.",
+            "properties": {
+              "q": { "type": "string" },
+              "options": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "required": ["key", "t"],
+                  "properties": {
+                    "key": { "type": "string", "enum": ["A", "B", "C", "D"] },
+                    "t": { "type": "string" },
+                    "c": { "const": true }
+                  }
+                }
+              },
+              "why": { "type": "string" }
+            }
+          },
+          "v2": {
+            "type": "object",
+            "description": "Reserved hooks — v1 authors write nothing here; renderers ignore unknown keys. Confidence weighting and cohort reveal need no per-item authoring: response records in cw_qb_v1 carry {id, option key, tier2 key, confidence, correct, ts}.",
+            "properties": {
+              "case": {
+                "type": "object",
+                "required": ["caseId", "step", "of"],
+                "description": "Sequential/unfolding cases: items sharing caseId render in step order; stems are cumulative.",
+                "properties": {
+                  "caseId": { "type": "string" },
+                  "step": { "type": "integer", "minimum": 1 },
+                  "of": { "type": "integer", "minimum": 2 }
+                }
+              },
+              "blockTag": { "type": "string", "description": "Adaptive-difficulty block label; the picker otherwise uses category + difficulty + id." }
+            }
+          }
+        },
+        "allOf": [
+          { "if": { "properties": { "type": { "const": "two-tier" } } }, "then": { "required": ["tier2"] } },
+          { "if": { "properties": { "type": { "const": "relational" } } }, "then": { "required": ["subtype"] } }
+        ]
+      }
+    }
+  }
+}
