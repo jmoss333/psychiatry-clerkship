@@ -22,9 +22,10 @@ TM   = os.path.join(LIB, "topic_meta.json")
 RV   = os.path.join(LIB, "13_Faculty_Resources", "reviewed.json")
 OUT  = os.path.join(LIB, "13_Faculty_Resources", "attest-batch.html")
 
-# Topics whose content changed in the 2026-07-03 QA pass (should be re-attested).
+# Topics whose content changed and should be re-attested. Updated 2026-07-04 for PR #112
+# (teaching content behind these was edited: clozapine/lithium wording + OSCE scored checklists).
 CHANGED = [
-    "t_sexual.md", "ethics_legal.md", "cultural_psychiatry.md", "ect_neuromodulation.md",
+    "t_psychosis.md", "t_mood.md", "psychopharm_primer.md", "osce.md",
 ]
 
 meta = json.load(open(TM, encoding="utf-8"))
