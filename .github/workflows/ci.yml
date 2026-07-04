@@ -36,11 +36,7 @@ jobs:
       - name: Unit — media guard
         run: python3 13_Faculty_Resources/_automation/site_build/test_media_guard.py
 
-      # Non-blocking until the QA-fixed content (branch docs/topic-meta-fill) lands on
-      # main — current main still has the 4 firstMove-without-ruleOut violations that
-      # branch fixes. Once it lands, delete continue-on-error to make this a hard gate.
       - name: Validate — topic_meta.json contract
-        continue-on-error: true
         run: python3 13_Faculty_Resources/_automation/validate_topic_meta.py
 
       - uses: actions/setup-node@v4
