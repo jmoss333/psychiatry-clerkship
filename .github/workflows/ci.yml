@@ -1,0 +1,51 @@
+name: CI — build, test, validate
+
+# Fast pre-merge gate on every PR: unit test + topic_meta contract + no hard-coded
+# machine paths + full site build & static QA harness. Mirrors what Netlify runs, so
+# breakage turns a PR red instead of only surfacing at deploy time.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Lint — no hard-coded machine paths in tracked Python
+        run: |
+          if git grep -nE "/(Users|sessions)/[a-z]" -- "*.py"; then
+            echo "::error::hard-coded /Users or /sessions path in tracked .py — derive from __file__"; exit 1
+          fi
+          echo "path lint OK"
+
+      - name: Unit — media guard
+        run: python3 13_Faculty_Resources/_automation/site_build/test_media_guard.py
+
+      # Non-blocking until the QA-fixed content (branch docs/topic-meta-fill) lands on
+      # main — current main still has the 4 firstMove-without-ruleOut violations that
+      # branch fixes. Once it lands, delete continue-on-error to make this a hard gate.
+      - name: Validate — topic_meta.json contract
+        continue-on-error: true
+        run: python3 13_Faculty_Resources/_automation/validate_topic_meta.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build + static QA gate (ms3)
+        run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3

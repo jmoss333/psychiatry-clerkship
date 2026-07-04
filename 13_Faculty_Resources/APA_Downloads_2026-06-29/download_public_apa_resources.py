@@ -24,7 +24,7 @@ from pathlib import Path
 import requests
 
 
-BASE = Path('/Users/jm/Psychiatry-Clerkship-Library/13_Faculty_Resources/APA_Downloads_2026-06-29')
+BASE = Path(__file__).resolve().parent   # this script lives in .../APA_Downloads_2026-06-29
 FILES = BASE / 'files'
 METADATA = BASE / 'metadata'
 SITEMAP = 'https://www.psychiatry.org/sitemap.xml'
