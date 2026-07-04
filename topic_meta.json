@@ -1645,5 +1645,173 @@
       "label": "Open the Orientation Packet",
       "href": "?page=orientation.md"
     }
+  },
+  "rotation.md": {
+    "read": 4,
+    "tldr": "A week-by-week map of the four-week inpatient block: safety and the acute workup first, then diagnosis and psychopharmacology, then systems and med-legal, then integration, supervision, and scholarship.",
+    "points": [
+      "Week 1 builds the acute-safety base (suicide, violence, agitation, capacity, withdrawal, delirium, catatonia) while you start carrying patients.",
+      "Weeks 2–3 deepen diagnosis and prescribing, then move from the patient to the system (commitment, capacity, documentation, disposition).",
+      "Week 4 is leading rounds, supervising the student, and consolidating — pick a case or topic to present."
+    ],
+    "cta": {
+      "label": "Open Evidence-Based Inpatient Psychiatry",
+      "href": "?page=evidence_inpatient.md"
+    }
+  },
+  "adv_psychopharm.md": {
+    "read": 8,
+    "hy": true,
+    "tldr": "Sequence therapy rationally, recognize genuine first-line failure, escalate to definitive treatment (clozapine, ECT) without delay, and own the safety monitoring that keeps patients alive between doses.",
+    "points": [
+      "\"Treatment-resistant\" is a measurement claim: confirm adequate dose and duration, verify adherence, and track with a repeated scale before escalating.",
+      "Two failed adequate antipsychotic trials defines treatment-resistant schizophrenia — clozapine is the only superior agent and is started too late; do not keep cycling.",
+      "Build monitoring at order entry: lithium renal/thyroid/PTH, clozapine ANC + bowel regimen, antipsychotic metabolic panel, QTc when stacking."
+    ],
+    "cant": "Clozapine-associated constipation can progress to a fatal ileus — a bowel regimen is part of the prescription; and smoking cessation induces CYP1A2, so a patient who quits at admission may need a dose decrease, not an increase.",
+    "quiz": {
+      "q": "A patient with schizophrenia has failed two adequate antipsychotic trials with documented adherence. Best next step?",
+      "o": [
+        {
+          "t": "Try a third first-line second-generation antipsychotic"
+        },
+        {
+          "t": "Start clozapine with ANC and metabolic monitoring",
+          "c": true
+        },
+        {
+          "t": "Add a benzodiazepine and reassess in a month"
+        },
+        {
+          "t": "Combine two antipsychotics at high dose"
+        }
+      ],
+      "why": "Two failed adequate trials defines treatment-resistant schizophrenia, where clozapine is the only agent with demonstrated superiority; cycling further agents or high-dose combinations just delays the effective treatment."
+    },
+    "cta": {
+      "label": "Open the Psychopharmacology Primer",
+      "href": "?page=psychopharm_primer.md"
+    }
+  },
+  "cl_reference.md": {
+    "read": 7,
+    "hy": true,
+    "tldr": "The numbers residents carry on the consult service: serotonin syndrome vs NMS, the catatonia lorazepam challenge, lithium-toxicity thresholds, and QTc action points — recognition and escalation, confirmed against institutional protocol.",
+    "points": [
+      "Serotonin syndrome is fast with clonus and hyperreflexia; NMS is slow with lead-pipe rigidity and CK often >1,000 — tempo and the neuromuscular exam separate them.",
+      "Catatonia: a ≥50% BFCRS drop after a 2 mg IV lorazepam challenge is diagnostic and therapeutic; avoid antipsychotics; ECT is definitive.",
+      "Lithium: toxicity generally ≥1.5 mEq/L, dialysis if >4.0 (or >2.5 with severe signs) — treat the patient, not the number, in chronic toxicity."
+    ],
+    "cant": "In serotonin syndrome, physical restraints are contraindicated — isometric contraction worsens hyperthermia and lactic acidosis; sedate instead.",
+    "ruleOut": [
+      "Serotonin syndrome (clonus, hyperreflexia, fast onset)",
+      "Neuroleptic malignant syndrome (lead-pipe rigidity, high CK, slow onset)",
+      "Malignant catatonia (overlaps NMS)",
+      "Lithium toxicity (tremor, ataxia, confusion)",
+      "Anticholinergic toxicity"
+    ],
+    "firstMove": "Stop the offending agent, cool and support, give a benzodiazepine, and match the antidote to the syndrome — cyproheptadine for serotonin syndrome, dantrolene/bromocriptine for severe NMS.",
+    "quiz": {
+      "q": "A patient on a serotonergic agent develops rapid-onset hyperthermia with lower-extremity clonus and hyperreflexia. Best next step?",
+      "o": [
+        {
+          "t": "Apply physical restraints for safety"
+        },
+        {
+          "t": "Start an antipsychotic to control agitation"
+        },
+        {
+          "t": "Stop the agent, sedate with a benzodiazepine, and give cyproheptadine",
+          "c": true
+        },
+        {
+          "t": "Give dantrolene for presumed NMS"
+        }
+      ],
+      "why": "Clonus and hyperreflexia with fast onset are serotonin syndrome: stop the agent, cool/support, benzodiazepine, cyproheptadine. Restraints worsen hyperthermia, antipsychotics can worsen it, and dantrolene targets NMS (slow onset, rigidity, high CK)."
+    },
+    "cta": {
+      "label": "Open Advanced Psychopharmacology",
+      "href": "?page=adv_psychopharm.md"
+    }
+  },
+  "systems_medlegal.md": {
+    "read": 7,
+    "tldr": "Your documentation, your handling of voluntary/involuntary status, and your disposition planning are clinical acts with legal weight — do them deliberately and verify every statute-specific detail against current Maine law (Title 34-B) and hospital policy.",
+    "points": [
+      "Document the reasoning behind risk and observation level, not just a score — most patients who die by suicide screen low-risk at last contact.",
+      "An involuntary hold is not authorization to medicate over objection; non-emergency forced medication needs its own legal/administrative process.",
+      "Disposition starts at admission: least-restrictive level of care, a dated follow-up ≤7 days, a warm handoff, and problem-solving boarding/housing/guardianship."
+    ],
+    "cant": "\"Hold\" is not \"treat\": verify the Maine/hospital pathway for medication over objection before treating a refusing patient, and document the emergency rationale when you medicate to prevent imminent harm.",
+    "quiz": {
+      "q": "A patient on an emergency involuntary hold refuses their scheduled antipsychotic (no emergency). What is correct?",
+      "o": [
+        {
+          "t": "The hold authorizes you to medicate over objection"
+        },
+        {
+          "t": "Discharge the patient for non-cooperation"
+        },
+        {
+          "t": "Sedate them involuntarily to enforce the order"
+        },
+        {
+          "t": "Respect the refusal and pursue the separate legal process for medication over objection",
+          "c": true
+        }
+      ],
+      "why": "Commitment and involuntary medication are distinct: a hold does not authorize non-emergency medication over objection, which requires its own legal/administrative pathway. Emergency medication is only for imminent harm."
+    },
+    "cta": {
+      "label": "Open Family & Discharge",
+      "href": "?page=exp_family.md"
+    }
+  },
+  "supervision_teaching.md": {
+    "read": 6,
+    "tldr": "You sit in the middle of the supervision chain — earning graduated autonomy from your attending while becoming the first-line supervisor for the MS3 — on the shared skills of explicit expectations, active feedback, and knowing when to ask for help.",
+    "points": [
+      "Entrustment is graded (observe → direct → indirect → oversee); over four weeks, earn indirect supervision on specific activities, not vaguely \"get better.\"",
+      "Teach with the One-Minute Preceptor (get a commitment, probe reasoning, teach one principle, reinforce, correct) and give feedback via Ask–Tell–Ask.",
+      "Keep formative feedback distinct from summative evaluation, and treat asking for help as a professionalism competency, not a weakness."
+    ],
+    "cant": "\"Agree with above\" over an exam you did not perform is both a quality and a liability problem — document your own independent assessment; the attending remains the physician of record.",
+    "quiz": {
+      "q": "A student presents a case and you want to teach effectively in one minute. What comes first?",
+      "o": [
+        {
+          "t": "Get a commitment — ask what they think is going on",
+          "c": true
+        },
+        {
+          "t": "Deliver the correct answer so they learn it"
+        },
+        {
+          "t": "Point out every error in the presentation"
+        },
+        {
+          "t": "Give general praise to build confidence"
+        }
+      ],
+      "why": "The One-Minute Preceptor starts by getting a commitment so the learner reasons first; you then probe the reasoning and teach to the gap. Leading with the answer, error-listing, or vague praise skips the diagnostic step and teaches less."
+    },
+    "cta": {
+      "label": "Open Documentation & Oral Presentation",
+      "href": "?page=doc_oral.md"
+    }
+  },
+  "canon_200.md": {
+    "read": 6,
+    "tldr": "A residency-level reading canon — a Top 25 essential set plus subdomain lists across psychopharmacology, psychotherapy, anxiety/OCD, PTSD, suicide, neuroscience, neuromodulation, addiction, eating disorders, and nosology — used across training, not in four weeks.",
+    "points": [
+      "The Top 25 (STAR*D, CATIE, Cipriani 2018, the ACE study, NCS-R, and more) are the conceptual scaffolding of modern psychiatry.",
+      "The MS3 site's 50-paper landmark set is the starting subset; this canon extends it to residency-level depth.",
+      "Use it longitudinally across training — pick a subdomain that matches your current rotation or scholarly interest."
+    ],
+    "cta": {
+      "label": "Open Landmark Trials — Listen & Test",
+      "href": "?page=landmark_trials.md"
+    }
   }
 }
