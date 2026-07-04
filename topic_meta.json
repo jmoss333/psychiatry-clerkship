@@ -563,6 +563,13 @@
       "Gender dysphoria names the distress; use affirming care and screen the elevated suicide risk."
     ],
     "cant": "Paraphilic disorders involving a child or non-consenting person raise safety and reporting duties.",
+    "ruleOut": [
+      "Medication-induced (SSRI, antipsychotic, beta-blocker)",
+      "Endocrine / vascular / neurologic cause",
+      "Depression or anxiety driver",
+      "Substance use",
+      "Relationship or situational factor"
+    ],
     "firstMove": "For dysfunction, treat the cause (switch to bupropion/mirtazapine, add PDE5i); for gender dysphoria, provide affirming care and continuity; report when a child is at risk.",
     "quiz": {
       "q": "A patient on an SSRI reports new anorgasmia and distress. Best first step?",
@@ -681,6 +688,12 @@
       "Capacity is clinical and decision-specific; competence is a legal (court) determination."
     ],
     "cant": "Involuntary hospitalization does not authorize involuntary medication — refusal stands absent a true emergency or a separate legal process.",
+    "ruleOut": [
+      "Identifiable-victim threat (duty to protect)",
+      "Child / elder / dependent-adult abuse (mandated report)",
+      "Imminent danger to self",
+      "Grave disability / decisional incapacity"
+    ],
     "firstMove": "Default to confidentiality; when risk appears, name which exception applies (identifiable-victim threat, abuse, danger to self) and take the least restrictive protective action — then document your reasoning.",
     "quiz": {
       "q": "An inpatient tells you he plans to kill his ex-girlfriend when discharged, naming her. What must you do?",
@@ -715,6 +728,12 @@
       "Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against."
     ],
     "cant": "Never use family members — especially children — as interpreters; book a trained professional and speak directly to the patient.",
+    "ruleOut": [
+      "Misdiagnosis from language or cultural bias",
+      "Cultural idiom of distress vs primary disorder",
+      "Religious or spiritual experience vs psychosis",
+      "Trauma or migration-related distress"
+    ],
     "firstMove": "Ask the explanatory-model questions early, then structure a real cultural formulation with the CFI's four domains.",
     "quiz": {
       "q": "A Spanish-speaking patient describes sudden trembling, screaming, and a sense of losing control after a family conflict. Her son offers to interpret. Best first step?",
@@ -750,7 +769,6 @@
       "rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours and reduce suicidal ideation (esketamine requires REMS monitoring)."
     ],
     "cant": "There are no absolute contraindications to ECT — raised intracranial pressure and recent MI/unstable cardiac disease are the key relative risks.",
-    "firstMove": "Identify the depression that can't wait (psychotic, catatonic, suicidal, not eating or drinking) and refer for ECT evaluation with cardiac/anesthesia workup and a medication review.",
     "quiz": {
       "q": "A pregnant patient has severe major depression with psychotic features and is refusing food and fluids. Most effective next step?",
       "o": [
