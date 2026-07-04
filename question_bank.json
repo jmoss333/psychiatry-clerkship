@@ -162,6 +162,1029 @@
       "why": "Acute onset, a course that fluctuates across one shift, and failed months-backward — inattention, the cardinal deficit — assemble the CAM picture; low arousal makes it hypoactive delirium, the form most often mislabeled as depression or overlooked because the patient is quiet. Dementia declines over months, not shifts, and 'postoperative fatigue' does not take attention with it. The work now is finding the drivers — infection, metabolic derangement, deliriogenic medications, retention, constipation, pain.",
       "pearl": "Hypoactive delirium is the dangerous one: commonly missed, worse outcomes, and easily mislabeled as depression.",
       "evidence": "delirium.md 'Recognize and screen' — Confusion Assessment Method (CAM, Inouye et al.): acute onset and fluctuating course, plus inattention, plus either disorganized thinking or altered level of consciousness."
+    },
+    {
+      "id": "qb_mood_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": ["dx", "safety"],
+      "difficulty": 1,
+      "hy": true,
+      "pages": ["t_mood.md"],
+      "link": { "label": "Open the Mood Disorders page", "href": "?page=t_mood.md" },
+      "stem": "A 31-year-old woman is admitted for a severe depressive episode with passive suicidal ideation. The intern plans to start sertraline today. Before initiating an antidepressant, the most important step is which of the following?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Start sertraline now — the diagnosis of major depressive disorder is established by her current presentation",
+          "trap": {
+            "name": "Antidepressant before bipolar screen",
+            "note": "Starting an antidepressant without screening for bipolarity can destabilize an unrecognized bipolar patient into mania or rapid cycling."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Obtain a collateral history and formally screen for any prior manic or hypomanic episode before prescribing an antidepressant",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Start sertraline and add lithium prophylactically to cover any occult bipolar risk",
+          "trap": {
+            "name": "Polypharmacy first",
+            "note": "Layering a mood stabilizer on an unconfirmed diagnosis substitutes complexity for the needed diagnostic step."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Start sertraline and a PRN benzodiazepine, since anxiety commonly accompanies depression",
+          "trap": {
+            "name": "The reflexive benzodiazepine",
+            "note": "Adding a benzodiazepine before the mood diagnosis is established compounds diagnostic uncertainty and adds dependence risk without benefit."
+          }
+        }
+      ],
+      "why": "Antidepressant before bipolar screen is the key trap: an SSRI started in unrecognized bipolar disorder can trigger mania or rapid cycling. Obtaining collateral and screening for past mania or hypomania is the gatekeeping step before any antidepressant is written. Prophylactic lithium without a diagnosis is premature polypharmacy, and the reflexive benzodiazepine adds risk without resolving the diagnostic question.",
+      "pearl": "Screen every depressed patient for past mania before writing for an antidepressant.",
+      "evidence": "t_mood.md 'High-yield pearls' — Screen every depressed patient for past mania before writing for an antidepressant."
+    },
+    {
+      "id": "qb_mood_002",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "mood",
+      "competency": ["pharm", "safety"],
+      "difficulty": 3,
+      "pages": ["t_mood.md", "psychopharm_primer.md"],
+      "link": { "label": "Open the Mood Disorders page", "href": "?page=t_mood.md" },
+      "stem": "A 38-year-old man with bipolar I disorder, stable on lithium maintenance for two years, presents with a 2-day course of worsening tremor, confusion, and vomiting. Five days ago he began ibuprofen for back pain. Which of the following best explains his presentation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "A breakthrough manic episode — agitation and confusion signal mood destabilization",
+          "trap": {
+            "name": "Treat the number, not the patient",
+            "note": "Mania does not cause vomiting and an acute 2-day toxic picture — this is a medication interaction problem, not a mood relapse."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Viral encephalitis — the confusion warrants urgent neuroimaging and lumbar puncture",
+          "trap": {
+            "name": "Missing the interaction",
+            "note": "Attributing a toxic picture to an infectious cause before checking the medication list in a patient on a narrow-therapeutic-window drug is a systematic miss."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Serotonin syndrome — lithium combined with ibuprofen triggers excess serotonin activity",
+          "trap": {
+            "name": "Wrong toxidrome",
+            "note": "Serotonin syndrome requires serotonergic agents and presents with clonus and hyperreflexia — neither fits; the clinical picture and the drug interaction both point to lithium toxicity."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Lithium toxicity precipitated by ibuprofen reducing renal lithium clearance",
+          "c": true
+        }
+      ],
+      "why": "Treat the number not the patient, Missing the interaction, and Wrong toxidrome are the traps. Lithium has a narrow therapeutic window; NSAIDs reduce prostaglandin-mediated renal clearance and push lithium levels into the toxic range — a textbook drug interaction. The 2-day picture of tremor, confusion, and vomiting in a lithium-maintained patient who just started an NSAID is lithium toxicity until proven otherwise.",
+      "pearl": "NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push lithium levels toward toxicity — check the list when lithium patients deteriorate.",
+      "evidence": "t_mood.md 'Lithium' — lithium runs a narrow therapeutic window (~0.6–1.2 mEq/L); NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+      "tier2": {
+        "q": "Why does ibuprofen raise lithium levels?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Ibuprofen displaces lithium from plasma protein binding, increasing free drug levels"
+          },
+          {
+            "key": "B",
+            "t": "Ibuprofen inhibits hepatic metabolism of lithium, slowing its clearance"
+          },
+          {
+            "key": "C",
+            "t": "Ibuprofen blocks gut absorption of lithium, causing erratic bioavailability and rebound toxicity"
+          },
+          {
+            "key": "D",
+            "t": "Lithium is cleared almost entirely by the kidney; NSAIDs impair prostaglandin-dependent renal handling, reducing lithium clearance and raising serum levels",
+            "c": true
+          }
+        ],
+        "why": "Lithium is not protein-bound and not hepatically metabolized — it is excreted almost entirely by the kidney. NSAIDs impair prostaglandin-mediated renal perfusion and tubular handling, reducing lithium clearance. This is why the page flags them alongside dehydration and other drugs that reduce glomerular filtration or tubular function as conditions that push levels toward toxicity."
+      }
+    },
+    {
+      "id": "qb_psy_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": ["dx"],
+      "difficulty": 1,
+      "hy": true,
+      "pages": ["t_psychosis.md"],
+      "link": { "label": "Open the Psychotic Disorders page", "href": "?page=t_psychosis.md" },
+      "stem": "A 27-year-old woman with no prior psychiatric history is admitted for new-onset paranoid ideation, disorganized behavior, and auditory hallucinations. Her chart notes she was started on high-dose prednisone three weeks ago for an autoimmune flare. Before establishing a primary psychiatric diagnosis, the most important step is which of the following?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Take a thorough medication and medical history and consider a substance- or medication-induced cause before labeling this a primary psychotic disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Start a second-generation antipsychotic immediately — symptom control should not await diagnostic clarity",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "Treating before excluding a secondary cause may mask a reversible etiology and commit the patient to a diagnosis that is not hers."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Diagnose schizophreniform disorder based on symptom type and the absence of a prior psychiatric history",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "Schizophreniform disorder requires exclusion of medical and substance causes — the diagnosis cannot be established while a high-dose corticosteroid is on board."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Reassure the family that first-episode psychosis in young adults is almost always primary and will respond to antipsychotics",
+          "trap": {
+            "name": "Face-value reassurance",
+            "note": "First-episode psychosis has a broad differential — medication-induced, autoimmune, and substance-related causes must be excluded before prognosis can be offered."
+          }
+        }
+      ],
+      "why": "Psychosis = schizophrenia is the trap in two forms: treating immediately or diagnosing before excluding secondary causes. Psychosis is a syndrome with a broad differential — corticosteroids are a recognized cause of secondary psychosis, and the clinical picture (new-onset, no prior history, active steroid course) demands a medical workup first. Face-value reassurance skips that step and commits to a prognosis without a diagnosis.",
+      "pearl": "Psychosis is a syndrome — exclude delirium, substances, medications, and autoimmune causes before settling on a primary disorder.",
+      "evidence": "t_psychosis.md 'Differential and can't-miss mimics' — Always exclude secondary/medical psychosis before settling on a primary disorder. Screen for substance-induced psychosis and medication causes including corticosteroids. Do not miss autoimmune/limbic encephalitis."
+    },
+    {
+      "id": "qb_psy_002",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": ["next-step", "safety"],
+      "difficulty": 3,
+      "pages": ["t_psychosis.md", "psychopharm_primer.md"],
+      "link": { "label": "Open the Psychotic Disorders page", "href": "?page=t_psychosis.md" },
+      "stem": "A 41-year-old man with treatment-resistant schizophrenia has been on haloperidol for three days. The medical student is paged because he is rigid, febrile to 39.1°C (102.4°F), diaphoretic, and confused. His creatine kinase is critically elevated. Best next step?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Increase the haloperidol dose — the agitation and confusion indicate undertreated psychosis",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "Increasing a dopamine blocker in neuroleptic malignant syndrome accelerates the emergency — the antipsychotic is the cause, not the treatment."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Give a benzodiazepine to relieve the rigidity and agitation while awaiting attending review",
+          "trap": {
+            "name": "The reflexive benzodiazepine",
+            "note": "Benzodiazepines may have a supportive role in NMS but are not the primary intervention — stopping the antipsychotic and escalating are the priority."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Stop the antipsychotic immediately and escalate to the attending — this presentation is consistent with neuroleptic malignant syndrome",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Switch to a second-generation antipsychotic — NMS is an FGA-specific adverse effect",
+          "trap": {
+            "name": "Newer = better",
+            "note": "NMS can occur with any dopamine-blocking agent, including second-generation antipsychotics — treatment is to stop the antipsychotic, not switch it."
+          }
+        }
+      ],
+      "why": "Agitation = antipsychotic is the most dangerous trap — increasing the drug causing NMS is contraindicated. NMS (fever, lead-pipe rigidity, elevated CK, autonomic instability) is the can't-miss antipsychotic emergency: stop the antipsychotic and escalate. The reflexive benzodiazepine mistakes a supportive adjunct for the primary action. Newer = better misunderstands mechanism — NMS is not FGA-specific.",
+      "pearl": "NMS — fever, lead-pipe rigidity, elevated CK, autonomic instability — is the can't-miss antipsychotic emergency: stop the antipsychotic and escalate immediately.",
+      "evidence": "t_psychosis.md — Neuroleptic malignant syndrome (fever, rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively. psychopharm_primer.md — NMS: 'lead-pipe' rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker."
+    },
+    {
+      "id": "qb_anx_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": ["dx"],
+      "difficulty": 1,
+      "pages": ["t_anxiety.md"],
+      "link": { "label": "Open the Anxiety, OCD & Trauma page", "href": "?page=t_anxiety.md" },
+      "stem": "A 29-year-old woman admitted for a manic episode is started on risperidone. Two days later she is restless, pacing the hallway, unable to sit through meals, and says she 'can't stop moving.' She denies worsening mood symptoms. Which of the following best explains her presentation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Worsening mixed mania with motor agitation — increase the risperidone",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "Adding more dopamine blockade to akathisia worsens the very symptom it is meant to treat — the restlessness is medication-induced, not mood-driven."
+          }
+        },
+        {
+          "key": "B",
+          "t": "New-onset generalized anxiety disorder unmasked by hospitalization stress",
+          "trap": {
+            "name": "Missing the iatrogenic cause",
+            "note": "A new anxiety disorder diagnosis requires ruling out medication-induced causes — akathisia began 48 hours after a dopamine blocker was started."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Restless legs syndrome — the urge to move is confined to the lower extremities at rest",
+          "trap": {
+            "name": "RLS vs akathisia",
+            "note": "RLS is a distal, rest-provoked urge that improves with movement — akathisia is a global inner restlessness that does not resolve with movement and is not limb-specific."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Akathisia — medication-induced inner restlessness from dopamine blockade that worsens with more antipsychotic",
+          "c": true
+        }
+      ],
+      "why": "Agitation = antipsychotic is the dangerous error: escalating the dopamine blocker intensifies akathisia. Missing the iatrogenic cause leads to a wrong new diagnosis. RLS vs akathisia distinguishes them by distribution and provocation — RLS is limb-specific and rest-provoked; akathisia is global, medication-timed, and worsens with increased dosing.",
+      "pearl": "Akathisia is the classic inpatient miss — inner restlessness from antipsychotics that worsens with more dopamine blockade, not less.",
+      "evidence": "t_anxiety.md 'Differential on the unit' — akathisia is the classic miss: restless, driven motor anxiety from antipsychotics that worsens if you reflexively treat it as 'agitation' with more dopamine blockade."
+    },
+    {
+      "id": "qb_anx_002",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "what-would-you-say",
+      "category": "anxiety",
+      "competency": ["psychosocial"],
+      "difficulty": 2,
+      "pages": ["motivational_interviewing.md"],
+      "link": { "label": "Open the Motivational Interviewing page", "href": "?page=motivational_interviewing.md" },
+      "stem": "A student is meeting with a patient admitted for alcohol use disorder. When the student mentions the recommendation for an outpatient treatment program, the patient says: 'I'm not an alcoholic. I just drink when things get hard. I don't need a program.' The student wants to use motivational interviewing. Which response is best?",
+      "options": [
+        {
+          "key": "A",
+          "t": "'You've been hospitalized twice this year for alcohol-related problems — that's the definition of alcohol use disorder, and a program is the standard of care.'",
+          "trap": {
+            "name": "The righting reflex",
+            "note": "Arguing why the patient should change produces sustain talk — the patient defends his position and no internal motivation is evoked."
+          }
+        },
+        {
+          "key": "B",
+          "t": "'That label doesn't have to fit. And it sounds like stress has been a real driver. What's your own read on how the drinking has been affecting things?'",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "'If you don't agree to a program, we can't discharge you safely — participation is a condition of discharge.'",
+          "trap": {
+            "name": "Ultimatum over autonomy",
+            "note": "Issuing a compliance ultimatum replaces internal motivation with external coercion and shuts down the patient's own reasons for change."
+          }
+        },
+        {
+          "key": "D",
+          "t": "'OK — I'll document that you declined the recommendation and we'll move forward with discharge planning.'",
+          "trap": {
+            "name": "Accept at face value",
+            "note": "Accepting the statement without reflecting misses the ambivalence — the patient has not been invited to voice his own concerns about the drinking."
+          }
+        }
+      ],
+      "why": "The righting reflex trap is option A — arguing with the label produces sustain talk, not change talk. The correct response reflects the patient's experience, sidesteps the diagnostic argument, and opens a question that invites him to voice his own concerns. Ultimatum over autonomy replaces internal motivation with coercion. Accept at face value abandons the opportunity to evoke change talk.",
+      "pearl": "The righting reflex — arguing for change — produces sustain talk; reflect without countering and let the patient voice his own reasons.",
+      "evidence": "motivational_interviewing.md 'The one idea' — People talk themselves into change. Your job is not to supply the arguments (the 'righting reflex' — resist it) but to evoke the patient's own reasons. Pushing usually produces sustain talk; curiosity produces change talk."
+    },
+    {
+      "id": "qb_sud_002",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": ["safety", "next-step"],
+      "difficulty": 2,
+      "pages": ["t_sud.md"],
+      "link": { "label": "Score at the bedside — CIWA-Ar / COWS", "href": "tools/withdrawal.html" },
+      "stem": "A 52-year-old man with a history of heavy daily alcohol use is admitted in early withdrawal — tremulous and tachycardic. A nurse is about to start an IV dextrose infusion for a fingerstick glucose in the low-normal range. The most important step before administering the glucose is which of the following?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Obtain a CIWA-Ar score to guide benzodiazepine dosing before starting any IV fluids",
+          "trap": {
+            "name": "Sequence error",
+            "note": "CIWA-Ar scoring is essential for withdrawal management but does not address the thiamine-before-glucose imperative — both are needed, but thiamine is the safety gate specifically for glucose administration."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Confirm his blood alcohol level has cleared to zero before giving glucose-containing fluids",
+          "trap": {
+            "name": "It's just withdrawal",
+            "note": "Waiting for alcohol clearance before glucose misses the danger — the risk is Wernicke encephalopathy from carbohydrate loading in a thiamine-depleted brain, not from residual alcohol."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Administer thiamine before or with the glucose to prevent Wernicke encephalopathy",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Reassure the team that Wernicke encephalopathy risk applies only to patients with a documented prior episode",
+          "trap": {
+            "name": "It's just withdrawal",
+            "note": "Wernicke risk exists in any patient with heavy alcohol use and thiamine depletion — a prior documented episode is not a prerequisite."
+          }
+        }
+      ],
+      "why": "Sequence error and It's just withdrawal are the traps. Administering carbohydrate to a thiamine-depleted patient precipitates Wernicke encephalopathy — a preventable neurologic emergency. The rule is simple and categorical: thiamine before glucose, every time, without requiring a prior history of encephalopathy.",
+      "pearl": "Thiamine before glucose, every time — carbohydrate loading in a thiamine-depleted patient can precipitate Wernicke encephalopathy.",
+      "evidence": "t_sud.md 'Acute inpatient management' — Give thiamine before glucose — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy. High-yield pearl: 'Thiamine before glucose, every time.'"
+    },
+    {
+      "id": "qb_cog_002",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": ["next-step", "safety"],
+      "difficulty": 2,
+      "pages": ["catatonia.md"],
+      "link": { "label": "Open the Catatonia page", "href": "?page=catatonia.md" },
+      "stem": "A 44-year-old woman with a history of bipolar disorder is found mute and immobile in her room, staring past the examiner. When the examiner positions her arm in an awkward posture, it remains in place for over a minute. A colleague suggests starting haloperidol for presumed psychosis. Best next step?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Evaluate for catatonia using a structured rating instrument before initiating any antipsychotic",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Start haloperidol immediately — mutism and posturing indicate untreated psychosis",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "Giving an antipsychotic before catatonia is excluded can precipitate or worsen neuroleptic malignant syndrome — mutism and waxy flexibility are catatonic signs, not automatically psychotic symptoms."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Apply a physical hold for safety while awaiting psychiatric evaluation",
+          "trap": {
+            "name": "Restraint first",
+            "note": "Restraint is the least-restrictive principle's last resort — an immobile, mute patient is not threatening anyone; the priority is diagnostic evaluation."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Order a urine drug screen and defer further evaluation to the morning team",
+          "trap": {
+            "name": "Quiet patient = stable patient",
+            "note": "An immobile, mute patient in a sustained abnormal posture requires urgent evaluation — deferring because she appears calm is the hypoactive-delirium error applied to catatonia."
+          }
+        }
+      ],
+      "why": "Psychosis = schizophrenia drives the dangerous action: haloperidol in an unexcluded catatonia can precipitate NMS. Waxy flexibility (sustained posturing) is a catatonic sign — catatonia must be rated before any dopamine blocker is started. Restraint first violates least-restrictive principle; Quiet patient = stable patient defers an urgent evaluation.",
+      "pearl": "Avoid antipsychotics until catatonia is excluded — they can precipitate or worsen NMS and malignant catatonia; the lorazepam challenge is both diagnostic and therapeutic.",
+      "evidence": "catatonia.md 'Management principles' — avoid antipsychotics until catatonia is excluded — they can precipitate or worsen NMS and malignant catatonia. A positive lorazepam challenge both supports the diagnosis and begins treatment."
+    },
+    {
+      "id": "qb_pha_001",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "pharm",
+      "competency": ["pharm", "safety"],
+      "difficulty": 2,
+      "hy": true,
+      "pages": ["psychopharm_primer.md"],
+      "link": { "label": "Open the Psychopharmacology Primer", "href": "?page=psychopharm_primer.md" },
+      "stem": "A 23-year-old man with a history of depression on high-dose sertraline is brought to the emergency department 3 hours after a second serotonergic medication was added to his regimen. Examination shows agitation, diarrhea, diaphoresis, and clonus; reflexes are brisk and symmetrically hyperactive throughout. Temperature is 38.3°C. Which of the following best explains this presentation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Neuroleptic malignant syndrome — high-dose SSRIs can block dopamine receptors",
+          "trap": {
+            "name": "Wrong toxidrome",
+            "note": "NMS requires a dopamine blocker and presents with lead-pipe rigidity — clonus and hyperreflexia are the serotonin syndrome fingerprint."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Anticholinergic toxidrome — sertraline has strong anticholinergic activity",
+          "trap": {
+            "name": "Wrong toxidrome",
+            "note": "SSRIs have minimal anticholinergic activity; anticholinergic toxidrome presents with dry/flushed skin, urinary retention, and confusion — not clonus or diarrhea."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Alcohol withdrawal — autonomic instability and agitation are hallmarks",
+          "trap": {
+            "name": "It's just withdrawal",
+            "note": "Alcohol withdrawal produces tremor, diaphoresis, and tachycardia but not clonus or hyperreflexia — and there is no alcohol use context in this stem."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Serotonin syndrome — rapid onset after a second serotonergic agent was added, with hyperreflexia, clonus, and autonomic instability",
+          "c": true
+        }
+      ],
+      "why": "Wrong toxidrome is the common trap in two directions: NMS (requires a dopamine blocker, slower, lead-pipe rigid) and anticholinergic (dry skin, urinary retention, no clonus). It's just withdrawal misreads autonomic instability without the serotonin-specific signs. Serotonin syndrome is the answer: rapid onset after serotonergic augmentation, clonus, hyperreflexia, and autonomic instability are its distinguishing features.",
+      "pearl": "Serotonin syndrome: rapid onset, clonus, hyperreflexia after a serotonergic agent was added. NMS: lead-pipe rigidity, elevated CK, on a dopamine blocker — slower and stiffer.",
+      "evidence": "psychopharm_primer.md — Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased. Neuroleptic malignant syndrome: 'lead-pipe' rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+      "tier2": {
+        "q": "Why does this presentation fit serotonin syndrome rather than neuroleptic malignant syndrome?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Both syndromes are clinically indistinguishable — only CK level reliably separates them"
+          },
+          {
+            "key": "B",
+            "t": "NMS occurs only with first-generation antipsychotics; sertraline is an antidepressant"
+          },
+          {
+            "key": "C",
+            "t": "Serotonin syndrome requires two agents simultaneously; this patient is only on one medication"
+          },
+          {
+            "key": "D",
+            "t": "The reflexes distinguish them: serotonin syndrome produces clonus and hyperreflexia; NMS produces lead-pipe rigidity — and this patient has no dopamine blocker on board",
+            "c": true
+          }
+        ],
+        "why": "Clonus is the serotonin syndrome fingerprint at the spinal cord — it distinguishes it from NMS (lead-pipe rigidity) and from anticholinergic toxidrome (no clonus). NMS can occur with second-generation antipsychotics, so drug class alone does not settle it. The absence of a dopamine blocker on this patient's list and the presence of clonus together confirm serotonin syndrome."
+      }
+    },
+    {
+      "id": "qb_pha_002",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": ["pharm", "management"],
+      "difficulty": 1,
+      "pages": ["psychopharm_primer.md"],
+      "link": { "label": "Open the Psychopharmacology Primer", "href": "?page=psychopharm_primer.md" },
+      "stem": "A 34-year-old man with treatment-resistant schizophrenia has just been started on clozapine. He reports feeling better than he has in years. The treatment team asks the student to identify the most critical ongoing monitoring parameter for this medication. Which of the following is correct?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Monthly liver function tests — clozapine is heavily metabolized by the liver and hepatotoxicity is the primary dose-limiting toxicity",
+          "trap": {
+            "name": "Wrong monitoring target",
+            "note": "Hepatotoxicity is not the primary safety concern for clozapine — agranulocytosis is the life-threatening adverse effect that drives mandatory blood monitoring."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Absolute neutrophil count monitoring per prescribing requirements — clozapine carries a risk of agranulocytosis",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Serum clozapine levels at every visit — toxicity is reliably predicted by drug concentration",
+          "trap": {
+            "name": "Treat the number, not the patient",
+            "note": "Serum levels inform clinical decisions but do not replace the ANC monitoring that is the mandatory safety requirement for this medication."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Monthly QTc interval on ECG — clozapine's primary dose-limiting toxicity is cardiac arrhythmia",
+          "trap": {
+            "name": "Wrong monitoring target",
+            "note": "QTc prolongation is the primary concern for other antipsychotics (thioridazine, ziprasidone); clozapine's specific mandatory monitoring is the ANC for agranulocytosis."
+          }
+        }
+      ],
+      "why": "Wrong monitoring target in two forms — LFTs and QTc — and Treat the number not the patient (serum levels without ANC) are the traps. Clozapine's mandated monitoring is the absolute neutrophil count due to the risk of potentially fatal agranulocytosis. Serum levels and LFTs may be checked but do not constitute the primary safety obligation.",
+      "pearl": "Clozapine requires mandatory ANC monitoring for agranulocytosis; also watch for myocarditis, severe constipation/ileus, and seizures.",
+      "evidence": "psychopharm_primer.md — Clozapine for treatment-resistant schizophrenia: ANC monitoring per prescribing information; also watch for myocarditis, severe constipation/ileus, and seizures."
+    },
+    {
+      "id": "qb_saf_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": ["safety"],
+      "difficulty": 3,
+      "hy": true,
+      "pages": ["pg_suicide.md"],
+      "link": { "label": "Open the Suicide Risk pocket card", "href": "?page=pg_suicide.md" },
+      "stem": "A 19-year-old man is admitted after a near-lethal suicide attempt. He has expressed persistent hopelessness and a stated wish to die for three days. On hospital day 4, nurses report he seems 'much better' — calm, well-rested, and telling the team he is ready to go home. His affect is bright and he is chatty with staff. No clinical change or social development explains the shift. Best next step?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Begin discharge planning — improvement is the goal of admission and this patient has achieved it",
+          "trap": {
+            "name": "Sudden improvement = recovery",
+            "note": "Unexplained brightening after severe suicidality is an established escalation trigger — it is not the same as clinical improvement with a clear cause."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Reduce his observation level and move him to a lower-acuity room to reinforce the progress",
+          "trap": {
+            "name": "Quiet patient = stable patient",
+            "note": "The calm, engaged patient after a lethal attempt is precisely the scenario the escalation list exists for — reducing vigilance based on surface behavior is the error."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Escalate to the attending immediately — unexplained sudden improvement after severe suicidality is a warning sign requiring reassessment",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Update the safety plan and schedule discharge within 24 hours while the patient is engaged",
+          "trap": {
+            "name": "Safety plan = discharge permission slip",
+            "note": "A safety plan is one component of the risk formulation — it does not substitute for the clinical escalation this presentation demands."
+          }
+        }
+      ],
+      "why": "Sudden improvement = recovery is the most dangerous trap: the pocket card explicitly lists unexplained sudden improvement as an immediate escalation trigger. Quiet patient = stable patient reduces vigilance at exactly the wrong moment. Safety plan = discharge permission slip conflates a tool with a risk decision.",
+      "pearl": "Sudden unexplained improvement after severe suicidality is an escalation trigger, not evidence of recovery.",
+      "evidence": "pg_suicide.md 'What to escalate immediately' — Sudden improvement after severe suicidality without clear explanation."
+    },
+    {
+      "id": "qb_saf_002",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "what-would-you-say",
+      "category": "safety",
+      "competency": ["safety", "psychosocial"],
+      "difficulty": 2,
+      "pages": ["agitation.md"],
+      "link": { "label": "Open the Agitation & Restraint page", "href": "?page=agitation.md" },
+      "stem": "A patient is pacing the hallway, speaking loudly, and waving his hands. He has not threatened anyone and is not in immediate danger of harming himself or others. You are the student. Which response is best?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Approach calmly, introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter, or is there something I can get you?'",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Return to the nursing station and request a PRN intramuscular medication order before approaching",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "Medication is not the default first step when verbal de-escalation has not been attempted — the framework starts with presence and listening, not a syringe."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Call for additional staff and prepare for restraint in case the patient escalates",
+          "trap": {
+            "name": "Restraint first",
+            "note": "Restraint is the last resort of the least-restrictive principle — preemptive preparation for restraint before de-escalation has been tried violates that principle."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Instruct him firmly to return to his room or staff will have to intervene",
+          "trap": {
+            "name": "Commands over choices",
+            "note": "Issuing a command rather than offering a choice removes the patient's sense of control — the opposite of what the de-escalation framework centers."
+          }
+        }
+      ],
+      "why": "Agitation = antipsychotic, Restraint first, and Commands over choices are the three forms of the same error: defaulting to force or medication before de-escalation. The Project BETA framework begins with calm presence, acknowledgment of distress, and genuine choices — not commands or preemptive escalation.",
+      "pearl": "Verbal de-escalation — calm presence, acknowledgment, and genuine choices — is the default first response to agitation, not a courtesy step before medication.",
+      "evidence": "agitation.md 'Verbal de-escalation, first' — This is the default response, not a courtesy step. The Project BETA de-escalation framework (Richmond et al. 2012) centers respect, simple boundaries, listening, and offering choices rather than issuing commands."
+    },
+    {
+      "id": "qb_per_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": ["dx", "psychosocial"],
+      "difficulty": 1,
+      "pages": ["t_personality.md"],
+      "link": { "label": "Open the Personality Disorders page", "href": "?page=t_personality.md" },
+      "stem": "A 26-year-old woman with borderline personality disorder tells her student doctor that she trusts only her and that the other staff 'just don't care.' Night nurses describe her as cooperative and warm; day nurses report she screams at them. How is this pattern best understood?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The patient has genuine rapport with the student and a legitimate complaint about day staff behavior",
+          "trap": {
+            "name": "Face-value reassurance",
+            "note": "Taking the patient's report at face value misses the clinical process — the same person being warm to nights and hostile to days is the diagnostic picture, not a staff quality problem."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Splitting — a feature of BPD in which people are experienced as entirely good or bad, requiring team consistency as the antidote",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Deliberate manipulation — the patient is consciously exploiting the split to get preferential treatment",
+          "trap": {
+            "name": "Manipulation framing",
+            "note": "Labeling splitting as manipulation invites punitive responses and misses the clinical process — it is a symptom of affect dysregulation, not a conscious strategy."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A delusional belief about staff intentions that warrants diagnostic reassessment for a psychotic disorder",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "Splitting is not a fixed false belief — the patient's experience of staff shifts with context and person, which is characteristic of BPD, not psychosis."
+          }
+        }
+      ],
+      "why": "Face-value reassurance takes the report at face value and misses the clinical process. Manipulation framing leads to punitive responses that worsen therapeutic alliance. Psychosis = schizophrenia misapplies a diagnostic frame to a personality-disorder phenomenon. Splitting — all-good or all-bad experiencing of staff — is a feature of BPD; the intervention is team communication and consistency, not confrontation.",
+      "pearl": "Splitting is a feature of BPD, not a character flaw — team consistency and shared notes are the antidote, not confrontation.",
+      "evidence": "t_personality.md — Splitting — experiencing staff as all-good or all-bad — is common and is a feature of the illness, not a character flaw or manipulation."
+    },
+    {
+      "id": "qb_per_002",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": ["management", "safety"],
+      "difficulty": 3,
+      "pages": ["t_personality.md"],
+      "link": { "label": "Open the Personality Disorders page", "href": "?page=t_personality.md" },
+      "stem": "A 22-year-old woman with borderline personality disorder is admitted in crisis with severe anxiety and sleep disturbance. She has been engaged in DBT for six months with good skill use documented. She is asking for 'something for her nerves.' The pharmacologic approach most consistent with evidence-based practice for BPD is which of the following?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Prescribe scheduled lorazepam PRN — addressing the anxiety will help her engage with skills",
+          "trap": {
+            "name": "The reflexive benzodiazepine",
+            "note": "Benzodiazepines in BPD carry the highest risk of attempted or completed suicide of any psychotropic class studied and worsen disinhibition — they are contraindicated in this context."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Add a nightly benzodiazepine for sleep — insomnia is fueling the crisis cycle",
+          "trap": {
+            "name": "The reflexive benzodiazepine",
+            "note": "Scheduled benzodiazepines compound the dependence and suicide risk seen with this class in BPD — sleep disturbance in crisis is treated with the crisis, not with hypnotics."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Add a second SSRI since her current antidepressant is clearly inadequate for her anxiety",
+          "trap": {
+            "name": "Polypharmacy first",
+            "note": "Adding a second antidepressant without evidence of benefit in BPD, when DBT skill use is documented, substitutes medication for the more effective behavioral approach."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Limit pharmacotherapy to the minimum needed for the acute crisis — a single low-risk agent for no more than one week, preferring a sedating antihistamine or low-dose quetiapine over a benzodiazepine",
+          "c": true
+        }
+      ],
+      "why": "The reflexive benzodiazepine in two forms (PRN and scheduled) and Polypharmacy first are the traps. No medication treats BPD itself; the evidence base supports skills over pills, and benzodiazepines in BPD carry the highest risk of attempted or completed suicide of any psychotropic class studied (HR 1.61, Lieslehto 2023). The NICE-aligned approach is a single, low-risk agent at the minimum dose for ≤1 week — sedating antihistamine or low-dose quetiapine preferred over benzodiazepines.",
+      "pearl": "Benzodiazepines in BPD carry the highest risk of attempted or completed suicide of any class studied — reach for skills, not pills.",
+      "evidence": "t_personality.md — do not start or escalate benzodiazepines — they carry the highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, Lieslehto 2023) and worsen disinhibition. If a crisis genuinely needs pharmacology, follow the NICE rule: a single agent at the minimum effective dose for ≤1 week (prefer a sedating antihistamine or low-dose quetiapine over benzodiazepines and TCAs)."
+    },
+    {
+      "id": "qb_chd_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": ["dx"],
+      "difficulty": 2,
+      "pages": ["t_neurodev.md"],
+      "link": { "label": "Open the Neurodevelopmental Disorders page", "href": "?page=t_neurodev.md" },
+      "stem": "A 19-year-old college student is brought to the inpatient unit by his parents after three weeks of dramatically decreased need for sleep (sleeping two to three hours and feeling rested), expansive and grandiose mood, pressured speech, and impulsive spending. His parents note he has always been 'a little hyper' in school but never like this. He takes no medications and denies substance use. Most likely diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Bipolar disorder, manic episode — the episodic 3-week course with decreased need for sleep and grandiosity distinguishes this from ADHD",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "ADHD, first recognized in adulthood — the impulsivity and hyperactivity confirm childhood-onset ADHD now decompensated",
+          "trap": {
+            "name": "ADHD vs mania",
+            "note": "ADHD is chronic, pervasive, and cross-situational from childhood — an episodic, 3-week onset with grandiosity and dramatically decreased need for sleep is not ADHD, even with a baseline 'hyper' history."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Brief psychotic disorder — the grandiosity indicates loss of reality testing",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "Grandiosity in the setting of a manic episode is a mood symptom — it does not automatically indicate a primary psychotic disorder."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Adjustment disorder — the academic stress of college explains the sleep changes and mood elevation",
+          "trap": {
+            "name": "Adjustment by default",
+            "note": "Attributing a full manic symptom cluster to situational stress avoids the diagnosis and delays treatment — adjustment disorder cannot account for decreased need for sleep and grandiosity sustained over three weeks."
+          }
+        }
+      ],
+      "why": "ADHD vs mania is the key discrimination: ADHD is chronic and cross-situational from childhood, not episodic with decreased need for sleep and grandiosity. Psychosis = schizophrenia misreads a mood symptom as a primary psychotic feature. Adjustment by default collapses a manic episode into a stress reaction.",
+      "pearl": "ADHD is chronic and cross-situational from childhood; mania is episodic — episodic ADHD-like symptoms are a mood or substance flag.",
+      "evidence": "t_neurodev.md — ADHD vs bipolar mania: ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity. Episodic 'ADHD-like' symptoms are a mood or substance flag."
+    },
+    {
+      "id": "qb_chd_002",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": ["management"],
+      "difficulty": 1,
+      "pages": ["t_neurodev.md"],
+      "link": { "label": "Open the Neurodevelopmental Disorders page", "href": "?page=t_neurodev.md" },
+      "stem": "An autistic adult admitted after aggression at his group home is increasingly distressed on the inpatient unit — covering his ears, rocking, and repeatedly asking when it will be quiet. He is not in imminent danger. No PRN medication has been given. The most appropriate first step is which of the following?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Administer a PRN antipsychotic — irritability and agitation in autism respond to targeted medication",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "Medication before environment in ASD skips the intervention with the best evidence: reducing sensory load and providing predictability."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Engage him in a group activity to normalize the milieu and reduce his isolation",
+          "trap": {
+            "name": "Group = stimulation",
+            "note": "Group environments increase sensory load and unpredictability for autistic patients — the opposite of what is needed when sensory overwhelm is the problem."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Move him to a quieter space and establish a predictable routine to reduce sensory load",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Assign a staff member to redirect him verbally and prompt use of calming strategies",
+          "trap": {
+            "name": "Verbal prompting first",
+            "note": "Verbal redirection adds auditory stimulation and demand to a patient already overwhelmed by sensory input — environment comes before coaching in ASD."
+          }
+        }
+      ],
+      "why": "Agitation = antipsychotic skips the evidence-based first step. Group = stimulation adds sensory load when reduction is the goal. Verbal prompting first increases auditory demand on an already overloaded sensory system. The environment-first approach — quiet space, predictable routine, reduced sensory input — is the foundational intervention in ASD on the inpatient unit.",
+      "pearl": "In ASD, lead with the environment — predictability, reduced sensory load, and concrete communication — before reaching for medication.",
+      "evidence": "t_neurodev.md — Lead with the environment and communication, not medication. Provide predictability (routine, visual schedules, consistent staff), reduce sensory load, allow extra processing time, use concrete language."
+    },
+    {
+      "id": "qb_oth_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": ["safety", "next-step"],
+      "difficulty": 2,
+      "hy": true,
+      "pages": ["t_eating.md"],
+      "link": { "label": "Open the Eating Disorders page", "href": "?page=t_eating.md" },
+      "stem": "A 16-year-old with severe anorexia nervosa is medically admitted and nutritional rehabilitation is started. On day 4 of refeeding, she develops progressive fatigue, weakness, paresthesias, and a new cardiac arrhythmia. Her phosphate level is critically low. Which of the following best explains this complication?",
+      "options": [
+        {
+          "key": "A",
+          "t": "She has been purging secretly — vomiting causes the hypokalemia and electrolyte disturbances",
+          "trap": {
+            "name": "Purging assumption",
+            "note": "Attributing electrolyte disturbances in anorexia to purging misses the timing — the arrhythmia and hypophosphatemia appearing 4 days into nutrition restart are specific to refeeding syndrome."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Dehydration — poor oral intake before admission led to total-body electrolyte depletion now becoming apparent",
+          "trap": {
+            "name": "Dehydration first",
+            "note": "Dehydration causes concentration of solutes, not the sudden hypophosphatemia triggered by an anabolic shift — the timing with nutrition restart is the diagnostic key."
+          }
+        },
+        {
+          "key": "C",
+          "t": "An opportunistic infection — malnutrition-related immune suppression has caused a bacteremia",
+          "trap": {
+            "name": "Medical complication",
+            "note": "Infection does not explain critically low phosphate appearing specifically on day 4 of nutritional rehabilitation — the pattern is refeeding syndrome."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Refeeding syndrome — resuming nutrition triggers a shift from catabolism to anabolism, driving phosphate into cells and producing hypophosphatemia",
+          "c": true
+        }
+      ],
+      "why": "Purging assumption blames the wrong mechanism; Dehydration first misreads timing; Medical complication misattributes a metabolic pattern to infection. Refeeding syndrome is the answer: when nutrition restarts, the anabolic shift drives phosphate, potassium, and magnesium intracellularly, and the resulting hypophosphatemia is the hallmark — with arrhythmia, cardiac failure, and respiratory failure as the serious sequelae.",
+      "pearl": "Refeeding syndrome — watch the phosphate: start low, go slow, replete electrolytes, give thiamine with carbohydrate; highest risk in the most malnourished.",
+      "evidence": "t_eating.md — Refeeding syndrome: when nutrition restarts, the shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium into cells; hypophosphatemia is the hallmark, and the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Start low, go slow; supplement phosphate, potassium, and magnesium before and during refeeding; give thiamine before or with carbohydrate; check electrolytes daily at the start. The most malnourished are at highest risk."
+    },
+    {
+      "id": "qb_oth_002",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": ["dx", "safety"],
+      "difficulty": 2,
+      "pages": ["t_perinatal.md"],
+      "link": { "label": "Open the Perinatal Psychiatry page", "href": "?page=t_perinatal.md" },
+      "stem": "A 27-year-old mother, 9 days postpartum, is brought to the emergency department by her partner. Days 2 and 3 she had mild tearfulness and fatigue that fully resolved by day 5. Since yesterday afternoon she has been awake all night, agitated, and saying 'something isn't right with the baby.' This morning she appeared briefly lucid when asked direct questions but became disorganized within minutes. Most likely diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Postpartum baby blues — mild tearfulness in the first week is common and self-limiting",
+          "trap": {
+            "name": "Face-value reassurance",
+            "note": "Baby blues resolved on day 5 — the current presentation is a new, severe syndrome with agitation, disorganization, and waxing/waning lucidity; reassurance misses the emergency."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Postpartum psychosis — abrupt onset, waxing/waning confusion, disorganization, and emerging delusions centered on the infant in the first two weeks",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Postpartum OCD — intrusive thoughts about the baby reflect ego-dystonic harm obsessions",
+          "trap": {
+            "name": "Obsession vs delusion",
+            "note": "PPOCD features ego-dystonic intrusive thoughts without disorganization or waxing/waning confusion — the disorganized, fluctuating course here is not OCD."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Postpartum depression — onset within two weeks with crying, exhaustion, and worry",
+          "trap": {
+            "name": "Depression by default",
+            "note": "PPD lacks the abrupt onset, confusion, waxing/waning lucidity, and disorganization that characterize postpartum psychosis — assigning depression here delays a psychiatric emergency."
+          }
+        }
+      ],
+      "why": "Face-value reassurance mistakes a resolved baby blues history for the current presentation. Obsession vs delusion distinguishes PPOCD (ego-dystonic intrusive thoughts, no confusion) from psychosis (waxing/waning disorganization). Depression by default collapses a psychiatric emergency into a mood disorder. Postpartum psychosis — abrupt onset, confusion, waxing/waning lucidity, emerging delusions about the infant — requires emergency evaluation and admission.",
+      "pearl": "Postpartum psychosis — abrupt onset, waxing/waning confusion, and delusions about the infant — is a psychiatric emergency; a lucid interval does not rule it out.",
+      "evidence": "t_perinatal.md — Postpartum psychosis: abrupt onset (often within the first two weeks), confusion, mood lability, delusions frequently centered on the infant, and a characteristic waxing-and-waning course. A lucid interval does not rule out psychosis — the waxing/waning course is part of the illness, not reassurance. POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY."
+    },
+    {
+      "id": "qb_eth_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": ["dx", "next-step"],
+      "difficulty": 2,
+      "pages": ["ethics_legal.md"],
+      "link": { "label": "Open the Ethics & Law page", "href": "?page=ethics_legal.md" },
+      "stem": "A 45-year-old man with schizophrenia is voluntarily admitted and refuses his prescribed antipsychotic. When asked, he explains what the medication is for, articulates specific concerns about its side effects, understands the risks of not taking it, and asks whether alternatives exist. Best next step?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Conduct a formal capacity assessment; if he has capacity, his refusal must be respected, documented, and an alternative offered",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Override the refusal — voluntarily admitted patients accept the prescribed treatment plan as a condition of admission",
+          "trap": {
+            "name": "Refusal = no capacity",
+            "note": "Voluntary admission does not imply consent to every prescribed treatment — a patient with demonstrated decision-making abilities retains the right to refuse."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Seek an emergency court order — a schizophrenia diagnosis with medication refusal requires judicial review",
+          "trap": {
+            "name": "Refusal = no capacity",
+            "note": "A psychiatric diagnosis does not equal incapacity — capacity is four specific, assessable abilities; if he has them, a court order for medication requires a non-emergency legal process, not reflexive judicial referral."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Discharge him against medical advice — he is voluntary and refusing treatment",
+          "trap": {
+            "name": "Discharge for refusal",
+            "note": "Discharging a patient for refusing a medication without first assessing capacity bypasses the clinical and ethical obligation — the appropriate response is assessment, not expulsion."
+          }
+        }
+      ],
+      "why": "Refusal = no capacity in two forms — assumed from admission type and assumed from diagnosis — is the central error. Capacity is decision-specific and clinical: the four abilities are assessed, not inferred from the admission voluntary/involuntary status or from a psychiatric diagnosis. Discharge for refusal conflates refusal with grounds for discharge. This patient's demonstrated abilities (communicating, understanding, appreciating, reasoning) point toward capacity — in which case his refusal must be honored.",
+      "pearl": "Capacity is decision-specific and clinical — a psychiatric diagnosis and even a refusal do not equal incapacity; assess the four abilities.",
+      "evidence": "ethics_legal.md — Capacity is decision-specific and clinical (a physician assesses it). The four abilities: communicate a choice, understand, appreciate, and reason. Competent patients (including many involuntarily hospitalized ones) generally retain the right to refuse medication. Overriding that refusal requires either a true emergency or a separate legal/adjudicated process."
+    },
+    {
+      "id": "qb_eth_002",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "ethics",
+      "competency": ["next-step", "safety"],
+      "difficulty": 3,
+      "hy": true,
+      "pages": ["ethics_legal.md"],
+      "link": { "label": "Open the Ethics & Law page", "href": "?page=ethics_legal.md" },
+      "stem": "An outpatient therapist is meeting with a 34-year-old patient who describes, in specific detail, a plan to assault a named family member. He states his intent to act before the end of the week and describes the location and means. The therapist's obligation is which of the following?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Maintain confidentiality — disclosing the patient's statements would violate the therapeutic relationship and deter future help-seeking",
+          "trap": {
+            "name": "Confidentiality always wins",
+            "note": "A specific, credible threat to a reasonably identifiable person is the established exception to therapeutic confidentiality — the duty to protect overrides it."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Document the threat and continue outpatient treatment with increased session frequency",
+          "trap": {
+            "name": "Document and continue",
+            "note": "Documentation alone does not fulfill the duty to protect — when there is a specific, credible threat to an identifiable person, protective action is required."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Take reasonable protective steps — which may include warning the potential victim, notifying law enforcement, hospitalizing the patient, or intensifying treatment",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Wait for corroborating evidence before acting — a single session disclosure does not establish genuine intent",
+          "trap": {
+            "name": "Wait for action",
+            "note": "Waiting for corroborating evidence or for the patient to act defeats the entire purpose of the duty to protect — the obligation is triggered by a specific, credible threat, not by subsequent harm."
+          }
+        }
+      ],
+      "why": "Confidentiality always wins, Document and continue, and Wait for action are three forms of inaction in the face of the duty to protect. A specific, credible threat to a named, identifiable person — with described means and timeline — triggers a duty to take reasonable protective steps. The options are broad: warning the victim, notifying police, hospitalizing, or intensifying treatment. The duty does not require certainty that harm will occur.",
+      "pearl": "A specific, credible threat to a reasonably identifiable victim overrides confidentiality — the duty to protect obligates action, not only documentation.",
+      "evidence": "ethics_legal.md — When a patient makes a serious threat of violence against a reasonably identifiable victim, the clinician has a duty to take reasonable protective steps — which may include warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment.",
+      "tier2": {
+        "q": "Why does this duty override therapeutic confidentiality?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Any mention of violence mandates disclosure under mental health law — the therapist has no discretion"
+          },
+          {
+            "key": "B",
+            "t": "The therapist-patient privilege does not apply in outpatient settings, only in inpatient contexts"
+          },
+          {
+            "key": "C",
+            "t": "A specific, credible threat to a named, identifiable person is the recognized exception — the duty to protect an endangered third party overrides confidentiality in that circumstance",
+            "c": true
+          },
+          {
+            "key": "D",
+            "t": "Mentioning intent to harm automatically ends the therapeutic relationship and terminates all confidentiality obligations"
+          }
+        ],
+        "why": "The exception is specific and limited: it requires a serious threat to a reasonably identifiable person — not any mention of violence, not a setting restriction, and not automatic termination. Outside this exception, confidentiality stands. Disclosing broadly in response to general hostility or vague threats would itself be an ethical violation. The therapist-patient relationship continues; the duty is to protect, not to terminate."
+      }
+    },
+    {
+      "id": "qb_rel_002",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "family-system",
+      "category": "relational",
+      "competency": ["psychosocial"],
+      "difficulty": 2,
+      "pages": ["family_playbook.md"],
+      "link": { "label": "Open the Family Meeting Playbook", "href": "?page=family_playbook.md" },
+      "stem": "A family meeting is held on hospital day 3 for a 29-year-old man admitted for a first manic episode. His mother interrupts repeatedly: 'He does this every time he stops his medication — he's selfish and he makes us all suffer.' She is tearful and wringing her hands. The attending invites the student to observe what is happening. What is the student's best understanding of this dynamic?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The mother's criticism is accurate and should be incorporated into the discharge plan as a documented adherence barrier",
+          "trap": {
+            "name": "Criticism as fact",
+            "note": "Accepting high expressed emotion as objective reporting misses the fear and grief driving it — and forecloses the most clinically valuable phase of the meeting."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The meeting should be suspended — the mother's distress is dysregulating the patient and the therapeutic goals cannot be met",
+          "trap": {
+            "name": "Terminate for emotion",
+            "note": "Cutting off the emotional climate phase forfeits the part of the family meeting where outcomes change most — this phase should be protected, not terminated."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The mother should be gently corrected about the medication-stopping narrative to address the factual inaccuracy",
+          "trap": {
+            "name": "Correct the narrative",
+            "note": "Redirecting to facts before the emotional climate is acknowledged closes off the therapeutic opportunity — expressed emotion must be heard before it can shift."
+          }
+        },
+        {
+          "key": "D",
+          "t": "The mother is showing expressed emotion — criticism that likely masks fear and grief — and the student's task is to validate the feeling behind it before moving to problem-solving",
+          "c": true
+        }
+      ],
+      "why": "Criticism as fact accepts EE as objective reporting; Terminate for emotion cuts off the highest-yield phase of the meeting; Correct the narrative redirects to facts before the emotional climate has been heard. Expressed emotion — criticism, hostility, emotional over-involvement — is the measurable family dynamic that predicts relapse. De-shaming and validating the underlying fear or grief, without correcting in the moment, is what the playbook calls the phase that most changes outcomes.",
+      "pearl": "Expressed emotion — criticism, hostility, emotional over-involvement — often masks fear; validate it without correcting it in the moment, because this phase is where outcomes change.",
+      "evidence": "family_playbook.md 'Hear the family and read the emotional climate' — Listen for expressed emotion — criticism, hostility, and emotional over-involvement — without correcting it in the moment. De-shame: frame symptoms and behavior as illness and regulation, not character or fault. This is the phase that most changes outcomes; protect the time for it."
     }
   ]
 }
