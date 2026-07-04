@@ -27,6 +27,14 @@ OUT  = os.path.join(LIB, "13_Faculty_Resources", "attest-batch.html")
 CHANGED = [
 ]
 
+# Surveillance-flagged re-attestations (surveillance/config/needs_reattest.json) are unioned in,
+# so a guideline delta that opened an update PR also badges its page here for re-confirmation.
+try:
+    _nr = json.load(open(os.path.join(HERE, "surveillance", "config", "needs_reattest.json"), encoding="utf-8"))
+    CHANGED = sorted(set(CHANGED) | set(_nr.get("slugs", [])))
+except Exception:
+    pass
+
 meta = json.load(open(TM, encoding="utf-8"))
 reviewed = json.load(open(RV, encoding="utf-8")) if os.path.exists(RV) else {}
 

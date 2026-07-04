@@ -130,3 +130,26 @@ Collectors run offline too: `--fixture` (guideline / intake) or `--lychee` (link
   from `history/last_run.json`; only build if you want it surfaced on the site.
 - Optional: pull FDA drug-label changes per taught medication (structured openFDA API)
   as a higher-precision complement to the drug-safety page diff.
+
+## The attestation hop — `bin/open_update_pr.py`
+
+Surveillance no longer ends at an issue. For an **actionable** guideline delta (P0/P1 on a page we
+teach), `open_update_pr.py` opens an **attestation-routed pull request** (branch
+`surveillance/update-<fp8>`, idempotent per fingerprint) that:
+
+- flags the affected topic slug(s) in `config/needs_reattest.json` — which `build_attest.py` unions
+  into the Review & Attest tool's "changed" list, so the page's *Reviewed by* badge is queued for
+  re-confirmation;
+- logs the proposal in `PENDING_UPDATES.md`;
+- carries the source diff, affected pages, recommended action, and an **attestation checklist** in the
+  PR body, for Dr. Moss to confirm the edit and re-stamp `reviewed.json`.
+
+It runs as the last step of the guideline workflow (needs `pull-requests: write`), is
+`continue-on-error`, and caps new PRs via `MAX_NEW_PRS`. Test it offline (no git/gh):
+
+```
+python3 bin/open_update_pr.py --findings fixtures/guideline_delta_example.json --dry-run --out-dir /tmp/surv_pr
+```
+
+Loop: **detect → PR that flags re-attestation → faculty edits + re-attests → merge.** A future
+Phase 2 can add an LLM step that drafts the suggested content edit into the same PR.

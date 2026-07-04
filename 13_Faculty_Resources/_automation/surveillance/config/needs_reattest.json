@@ -1,0 +1,4 @@
+{
+  "_note": "Topic slugs flagged by curriculum surveillance (bin/open_update_pr.py) for faculty re-attestation. build_attest.py unions these into the Review & Attest tool's 'changed' list so the page's badge is queued for re-confirmation. Remove a slug after re-attesting its page.",
+  "slugs": []
+}
