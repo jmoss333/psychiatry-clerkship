@@ -67,7 +67,7 @@ function App(){
   var reviewer = store.reviewer || "Joshua Moss, MD";
 
   useEffect(function(){
-    fetch("../nav.json").then(function(r){return r.json()}).then(setNav).catch(function(){setErr("Could not load the page list (nav.json).")});
+    fetch("../nav.json").then(function(r){return r.json()}).then(setNav).catch(function(){setErr("Could not load nav.json — this tool runs on the deployed site. For local attestation run: python3 13_Faculty_Resources/_automation/attest_serve.py and open the printed URL, or open 13_Faculty_Resources/attest-batch.html directly.")});
   },[]);
 
   function setReviewer(v){ var o=Object.assign({},store); o.reviewer=v; persist(o); setStore(o); }
