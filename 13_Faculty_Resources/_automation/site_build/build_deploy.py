@@ -180,6 +180,7 @@ nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _na
 open(OUT+"/nav.json","w").write(json.dumps(nav))
 shutil.copy2(SPA, OUT+"/index.html")
 shutil.copy2(MARKED, OUT+"/marked.min.js")  # vendored (ward-wifi: no CDN dependency)
+shutil.copy2(os.path.join(HERE,"clinical-warm.css"), OUT+"/clinical-warm.css")  # shared dark-mode tokens (linked into tools below)
 print("tools:",len(tools)," md copied:",len(md)-len(missing)," missing:",missing)
 
 # ---------- SEARCH INDEX (mirrors rc-search foundation: pre-tokenized inverted index + bidirectional synonyms) ----------
@@ -328,8 +329,9 @@ for _f in _glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]:
     _t=_re.sub(r'color\s*:\s*#(?:fff|ffffff)\b', 'color:var(--on-brand)', _t)
     if "cw_theme" not in _t:
         _t=_t.replace("<head>", "<head>\n"+_INIT, 1)
-    if '[data-theme="dark"]' not in _t and "</style>" in _t:
-        _t=_t.replace("</style>", _DARK+"\n</style>", 1)
+    if '[data-theme="dark"]' not in _t and 'clinical-warm.css' not in _t and "</head>" in _t:
+        # shared dark tokens now come from the linked clinical-warm.css (one file, not 34 inline copies)
+        _t=_t.replace("</head>", '<link rel="stylesheet" href="/clinical-warm.css">\n</head>', 1)
     if "cc-rise" not in _t and "</style>" in _t:
         _t=_t.replace("</style>", _MOTION+"\n</style>", 1)
     if not _f.endswith("/index.html") and "<!--ifn-->" not in _t and "</body>" in _t:
