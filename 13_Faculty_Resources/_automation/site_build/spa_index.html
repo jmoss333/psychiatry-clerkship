@@ -349,8 +349,8 @@
   contentEl.addEventListener('click',function(ev){ var pf=ev.target.closest?ev.target.closest('.pgfb-b'):null; if(pf){ try{localStorage.setItem('cw_fb_ctx', currentItem?currentItem.t:'');}catch(_){ } var _fbn=document.querySelector('.navitem[data-f="feedback.html"]'); if(_fbn) _fbn.click(); return; } var mr=ev.target.closest?ev.target.closest('.markrev'):null; if(mr){ var mf=mr.getAttribute('data-f'); var pp=progLoad(); var nd=!(pp[mf]&&pp[mf].done); if(nd){ pp[mf]={done:true,at:new Date().toISOString().slice(0,10)}; seedSRS(mf); } else { delete pp[mf]; } progSave(pp); mr.classList.toggle('on',nd); mr.setAttribute('aria-pressed',String(nd)); mr.textContent=nd?'✓ Reviewed':'☆ Mark reviewed'; var rcx=mr.parentNode&&mr.parentNode.querySelector('.revcount'); if(rcx) rcx.textContent=reviewedCount(pp)+' of '+topicCount()+' reviewed'; return; } var ty=ev.target.closest?ev.target.closest('.tyo'):null; if(ty){ var wrap=ty.closest('.tyourself'); if(wrap&&!wrap.getAttribute('data-done')){ wrap.setAttribute('data-done','1'); var os=wrap.querySelectorAll('.tyo'); for(var z=0;z<os.length;z++){ if(os[z].getAttribute('data-c')==='1') os[z].classList.add('correct'); } if(ty.getAttribute('data-c')!=='1') ty.classList.add('wrong'); var fb=wrap.querySelector('.tyfb'); if(fb) fb.classList.add('show'); } return; } var a=ev.target.closest?ev.target.closest('a'):null; if(!a)return; var href=a.getAttribute('href')||''; var m=href.match(/[?&]page=([^&#]+)/); if(m){ ev.preventDefault(); var f=decodeURIComponent(m[1]); var all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===f){ all[i].click(); return; } } } });
   function show(item, btn, opts){
     try{ if(currentItem) SCROLL[currentItem.f]=window.scrollY||window.pageYOffset||0; }catch(_){ }
-    document.querySelectorAll('.navitem.on').forEach(function(b){b.classList.remove('on')});
-    if(btn) btn.classList.add('on');
+    document.querySelectorAll('.navitem.on').forEach(function(b){b.classList.remove('on');b.removeAttribute('aria-current');});
+    if(btn){ btn.classList.add('on'); btn.setAttribute('aria-current','page'); }
     if(btn){ var _w=btn.closest&&btn.closest('.navsec-wrap'); if(_w){ _w.classList.add('open'); var _hh=_w.querySelector('.navsec'); if(_hh) _hh.setAttribute('aria-expanded','true'); } }
     setDrawer(false);
     try{ if(window.__clearDock) window.__clearDock(); }catch(_){ }
@@ -385,6 +385,8 @@
       h.innerHTML='<span class="chev" aria-hidden="true">▸</span><span class="navsec-t"></span>';
       h.querySelector('.navsec-t').textContent=sec.section;
       var grp=document.createElement('div'); grp.className='navgroup';
+      var _gid='navgrp-'+sec.section.replace(/[^a-z0-9]+/gi,'-').toLowerCase();
+      grp.id=_gid; h.setAttribute('aria-controls',_gid);
       sec.items.forEach(function(it){
         var b=document.createElement('button'); b.className='navitem';
         b.innerHTML=it.t+(it.k==='tool'?' <span class="tool-tag">tool</span>':'');

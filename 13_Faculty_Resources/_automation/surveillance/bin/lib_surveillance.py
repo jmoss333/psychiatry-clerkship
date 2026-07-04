@@ -117,14 +117,17 @@ def issue_body(f):
         ex = ev["diff_excerpt"]
         if len(ex) > 1500:
             ex = ex[:1500] + "\n…(truncated)"
+        # crawled/untrusted content: neutralize any ``` so it cannot close the code
+        # fence early and break out of the <details> block (issue-body injection).
+        ex = ex.replace("```", "``​`")
         L.append(f"\n<details><summary>Diff excerpt</summary>\n\n```diff\n{ex}\n```\n</details>")
     if ev.get("http_status"):
         line = f"\n**HTTP status:** {ev['http_status']}"
         if ev.get("redirect_to"):
-            line += f" → {ev['redirect_to']}"
+            line += f" → `{ev['redirect_to']}`"  # backtick-wrap crawled URL (render literal)
         L.append(line)
     if ev.get("snapshot_url"):
-        L.append(f"\n**Snapshot:** {ev['snapshot_url']}")
+        L.append(f"\n**Snapshot:** `{ev['snapshot_url']}`")  # backtick-wrap crawled URL
     if f.get("affects"):
         L.append("\n### Affected curriculum pages")
         L += [f"- `{a}`" for a in f["affects"]]
