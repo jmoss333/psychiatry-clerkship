@@ -99,3 +99,33 @@ duplicate-issue idempotency, false sense of currency).
 Per-source **modality** classification (open HTML vs PDF vs login/paywalled). Unknown
 sources default to `signal_only` in `config/source_registry.yaml` until classified;
 the first `link-source-monitor` run confirms reachability and content type.
+
+
+---
+
+## Addendum — Phase 2 (AI-drafted suggestions + citation validity)
+
+**Decision.** Extend the "detect → attestation PR" loop with two *advisory* capabilities that
+never bypass the human attestation gate.
+
+**AI-drafted edit (`lib_ai_draft.py`).** An attestation PR may carry an LLM-drafted *suggested*
+edit. We accepted the value (faculty start from a concrete diff, not a blank page) only because
+the design makes autonomy impossible **by construction**, not by prompt discipline: the module has
+no write path to teaching content or `reviewed.json`; its only output is text appended to a PR body;
+the draft is banner-labelled advisory, collapsed, and fence-neutralized against markdown injection;
+and absence of `ANTHROPIC_API_KEY` yields a byte-identical Phase-1 PR. Stdlib `urllib` call (no SDK)
+keeps the zero-install ethos. Temperature 0, bounded input (page/diff truncation) and output tokens.
+This preserves the ADR's core invariant: **surveillance never edits teaching content** — a *draft
+suggestion for a human* is not an edit.
+
+**Live citation validity (`run_citation_check.py`).** The lychee link-monitor crawls links in
+built HTML/markdown; it cannot see the authoritative source URLs that live in `source_registry.yaml`,
+nor validate DOIs/PMIDs as citations. A dedicated weekly job checks both (doi.org / NCBI eutils),
+emitting the same `finding` schema so it reuses `sync_findings.py` unchanged. To avoid alert fatigue
+(a known risk in `REVIEW_RULES.md`), a *no-HTTP-response* result — commonly datacenter-IP bot-blocking
+rather than a dead page — is capped at P1 so it can never page as a false P0; a definitive HTTP 4xx/5xx
+keeps the registry severity. Idempotency (fingerprint dedup across open **and** closed issues) means a
+dismissed false positive never reopens.
+
+**Human gate unchanged.** Both features still terminate at Dr. Moss reviewing and re-attesting.
+The only new operational input is an optional `ANTHROPIC_API_KEY` repo secret to enable drafting.

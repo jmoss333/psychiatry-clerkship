@@ -25,7 +25,10 @@ _automation/surveillance/
 │   ├── sync_findings.py           ← findings → idempotent GitHub issues + reports (the core)
 │   ├── run_link_monitor.py        ← parse lychee JSON → findings
 │   ├── run_guideline_surv.py      ← Apify crawl + normalize/hash/diff vs baseline → findings
-│   └── run_resource_intake.py     ← scoped Apify crawl → P2 candidates
+│   ├── run_resource_intake.py     ← scoped Apify crawl → P2 candidates
+│   ├── open_update_pr.py          ← actionable delta → attestation-routed PR (Phase 1)
+│   ├── lib_ai_draft.py            ← ADVISORY AI-drafted edit for a PR (Phase 2; needs ANTHROPIC_API_KEY)
+│   └── run_citation_check.py      ← live source-URL + DOI/PMID validity → findings (Phase 2)
 ├── apify/                         ← paste-into-console input examples (3)
 ├── config/
 │   ├── source_registry.yaml       ← SINGLE SOURCE OF TRUTH for all 3 jobs
@@ -151,5 +154,31 @@ It runs as the last step of the guideline workflow (needs `pull-requests: write`
 python3 bin/open_update_pr.py --findings fixtures/guideline_delta_example.json --dry-run --out-dir /tmp/surv_pr
 ```
 
-Loop: **detect → PR that flags re-attestation → faculty edits + re-attests → merge.** A future
-Phase 2 can add an LLM step that drafts the suggested content edit into the same PR.
+Loop: **detect → PR that flags re-attestation → faculty edits + re-attests → merge.**
+
+## Phase 2 — AI-drafted suggestions + live citation validity
+
+Two additions close the loop tighter, both strictly **advisory** and both no-ops without setup:
+
+**1. AI-drafted suggested edit (`lib_ai_draft.py`).** When an attestation PR is opened, if the
+`ANTHROPIC_API_KEY` repo secret is present, each PR gets an **advisory** AI-drafted edit — a minimal
+`before:`/`after:` suggestion tying the source change to the affected page, plus a *Reviewer must
+verify* checklist. Hard guardrails by construction: it **never** writes a teaching `.md`, **never**
+touches `reviewed.json`, **never** marks anything attested; output is banner-labelled, collapsed in a
+`<details>` block, and fence-neutralized. **No key → PR is byte-identical to Phase 1.** Test offline:
+
+```
+python3 bin/open_update_pr.py --findings fixtures/guideline_delta_example.json --dry-run \
+    --out-dir /tmp/surv_pr --ai-stub      # canned block, no API call
+```
+
+**2. Live citation validity (`run_citation_check.py`).** Weekly (`surveillance-citations.yml`), verifies
+the authoritative **source URLs** in `source_registry.yaml` (which live in YAML, so lychee never sees
+them) and any **DOIs/PMIDs** cited in curriculum text still resolve — via `doi.org` / NCBI eutils.
+Failures become idempotent issues (a no-HTTP-response is capped at P1 to avoid false P0 pages from
+bot-blocking). Stdlib-only; no extra secret. Test:
+
+```
+python3 bin/run_citation_check.py --self-test                 # offline logic check
+python3 bin/run_citation_check.py --skip-citations --out /tmp/f.json   # live: registry URLs only
+```
