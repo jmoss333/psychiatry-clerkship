@@ -70,6 +70,14 @@ _vendor_dst=OUT+"/tools/vendor"
 if os.path.isdir(_vendor_src) and not os.path.exists(_vendor_dst):
     shutil.copytree(_vendor_src, _vendor_dst)
 
+# ---- QA-gate source map: resident = MS3's wired sources (this build starts as a copytree
+# of the MS3 build) + resident-only extras. Written next to the build dir, never inside it;
+# consumed by check-static-site.mjs's orphaned-source check.
+_ms3map=MS3.rstrip("/\\")+".source-map.json"
+_srcs=set(json.load(open(_ms3map,encoding="utf-8"))["sources"]) if os.path.exists(_ms3map) else set()
+_srcs|={s for s,_ in RES_EXTRA}|{s for s,_ in PROTO_TOOLS}
+open(OUT.rstrip("/\\")+".source-map.json","w",encoding="utf-8").write(json.dumps({"sources":sorted(_srcs)}))
+
 # ---- rebrand index.html (copied, already dark/motion/polished) ----
 ix=open(OUT+"/index.html",encoding="utf-8").read()
 ix=ix.replace('<div class="by">MS3 Clerkship · Joshua Moss, MD</div>','<div class="by">Resident Rotation · Sanford BHU · Joshua Moss, MD</div>')

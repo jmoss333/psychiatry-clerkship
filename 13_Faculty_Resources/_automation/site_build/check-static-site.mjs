@@ -23,6 +23,9 @@
  *   - a non-cw_-prefixed localStorage key in any tools/*.html
  *   - a tool HTML missing [RC-META], <title>, or viewport meta
  *   - a *.pack.json whose choiceBank tokenId is not defined in localPolicies
+ *   - a content-convention source page not wired into the build's source map
+ *     (<siteDir>.source-map.json, emitted by build_deploy.py / resident_section.py)
+ *   - a shipped file that is a Git-LFS pointer stub instead of real bytes
  * SOFT findings (warn; fail only under STRICT=1):
  *   - nav markdown files missing from topic_meta.json
  *   - nav items missing from reviewed.json
@@ -30,7 +33,8 @@
  *   - LOCAL_POLICY tokens still unfilled (value:null)  [reported, never fails]
  */
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { join, basename, dirname, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const SITE = process.argv[2];
 if (!SITE) { console.error('usage: node check-static-site.mjs <siteDir>'); process.exit(1); }
@@ -48,13 +52,13 @@ const DOSE = /\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg\/kg)\b/i;
 if (!existsSync(SITE)) { console.error(`Site dir not found: ${SITE}`); process.exit(1); }
 
 /* ---------- 1. JSON validity ---------- */
-const jsonFiles = [];
+const jsonFiles = [], allFiles = [];
 (function walk(d) {
   for (const f of readdirSync(d)) {
     const fp = join(d, f);
     const st = statSync(fp);
     if (st.isDirectory()) { if (!/node_modules|\.netlify|\.git/.test(fp)) walk(fp); }
-    else if (f.endsWith('.json')) jsonFiles.push(fp);
+    else { allFiles.push({ fp, size: st.size }); if (f.endsWith('.json')) jsonFiles.push(fp); }
   }
 })(SITE);
 const parsed = {};
@@ -181,6 +185,54 @@ for (const f of jsonFiles.filter(x => x.endsWith('.pack.json'))) {
   const unfilled = (pack.localPolicies || []).filter(t => t.value === null).map(t => t.id);
   if (unfilled.length) I(`${rel}: ${unfilled.length} LOCAL_POLICY token(s) awaiting faculty fill → ${unfilled.join(', ')}`);
   if (pack.status && pack.status !== 'reviewed') I(`${rel}: status="${pack.status}" (ships watermarked until attested)`);
+}
+
+/* ---------- 7. orphaned source pages (HARD) ---------- */
+// The build emits its wired source list to <siteDir>.source-map.json (a SIBLING of the
+// publish dir — never shipped). Any source-tree markdown that follows the learner-content
+// naming conventions but is absent from that map is a page the build silently drops —
+// the "10 pages dropped at git cutover" failure class. Fails CLOSED: a missing map is
+// itself a hard failure (old build_deploy.py, or checker run against a stale build).
+const LIBROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const srcMapPath = SITE.replace(/[\/\\]+$/, '') + '.source-map.json';
+if (!existsSync(srcMapPath)) {
+  H(`source map not found: ${srcMapPath} — rebuild with current build_deploy.py (orphaned-source check cannot run)`);
+} else {
+  const wired = new Set(JSON.parse(readFileSync(srcMapPath, 'utf8')).sources || []);
+  // Content conventions: teaching pages, pocket guides/cards, and week READMEs. Scoped to
+  // the NN_Category/ tree; _-prefixed segments (_source/, _automation/, …) and archive/meta
+  // dirs are working material, not site content.
+  const CONTENT_PAGE = [/_inpatient(?:_teaching)?\.md$/, /_pocket_(?:guide|card)\.md$/];
+  const isWeekReadme = (rel) => /^01_Six_Week_Curriculum\/Week_[^/]+\/README\.md$/.test(rel);
+  const orphanSources = [];
+  (function scan(d) {
+    for (const f of readdirSync(d)) {
+      const fp = join(d, f);
+      const rel = relative(LIBROOT, fp).split('\\').join('/');
+      const seg = basename(fp);
+      if (seg.startsWith('_') || seg.startsWith('.')) continue;
+      if (statSync(fp).isDirectory()) {
+        const top = rel.split('/')[0];
+        if (rel === top && !(/^\d{2}_/.test(top)) ) continue;          // only NN_Category/ roots
+        if (top === '00_START_HERE' || top === '99_Archive') continue; // meta/archive, not content
+        scan(fp);
+      } else if (f.endsWith('.md') && (CONTENT_PAGE.some(rx => rx.test(f)) || isWeekReadme(rel))) {
+        if (!wired.has(rel)) orphanSources.push(rel);
+      }
+    }
+  })(LIBROOT);
+  for (const o of orphanSources.sort())
+    H(`orphaned source page (not wired into build): ${o} — register it in build_deploy.py or rename it out of the content convention`);
+}
+
+/* ---------- 8. Git-LFS pointer stubs (HARD) ---------- */
+// A pointer stub means the deploy fetched the LFS *pointer* (~130 bytes of
+// "version https://git-lfs…") instead of the real media bytes — the orientation-video
+// bug. Any shipped file this small that opens with the LFS header is a broken asset.
+for (const { fp, size } of allFiles) {
+  if (size > 512) continue;
+  if (readFileSync(fp, 'latin1').startsWith('version https://git-lfs'))
+    H(`Git-LFS pointer stub shipped (not real bytes): ${fp.replace(SITE, '.')} — re-fetch LFS objects (deploy without cache) before building`);
 }
 
 /* ---------- report ---------- */

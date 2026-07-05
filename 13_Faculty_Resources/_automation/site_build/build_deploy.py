@@ -187,6 +187,13 @@ for src,dst,_ in md:
     if os.path.exists(p): shutil.copy2(p, OUT+"/content/"+dst)
     else: missing.append(src)
 
+# ---- QA-gate source map: every source path this build knows about, written NEXT TO the
+# build dir (<OUT>.source-map.json), never inside it — nothing ships. check-static-site.mjs
+# reads it to hard-fail any content-convention markdown in the source tree that the build
+# ignores (the "10 pages dropped at git cutover" failure class).
+_srcmap=sorted({s for s,_,_ in tools}|{s for s,_,_ in md})
+open(OUT.rstrip("/\\")+".source-map.json","w",encoding="utf-8").write(json.dumps({"sources":_srcmap}))
+
 nav=[
  {"section":"Start here","group":"Get oriented","items":[{"t":"Welcome to the Rotation","f":"welcome.md","k":"md"},{"t":"Core Reading List","f":"core_readings.md","k":"md"},{"t":"Orientation Packet","f":"orientation.md","k":"md"}]},
  {"section":"Six-Week Curriculum","group":"Get oriented","items":[{"t":t,"f":f,"k":"md"} for f,(_,t) in [("week%d.md"%i,(0,["Week 1 — Foundations","Week 2 — Mood/Psychosis/Pharm","Week 3 — Psychotherapy/Personality","Week 4 — Family/Systems/EE","Week 5 — Acute/Emergency","Week 6 — Integration/Exam"][i-1])) for i in range(1,7)]]},
