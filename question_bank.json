@@ -2732,6 +2732,1473 @@
         ],
         "why": "It is a drug–driver matching principle. Benzodiazepines are correct for alcohol/sedative withdrawal and dangerous in most other delirium. Antipsychotics are appropriate for dangerous agitation in non-catatonic, non-LBD states and dangerous if catatonia or LBD is present. Analgesics resolve pain-driven agitation that no psychotropic would touch. The wrong drug in the wrong patient makes the agitation worse — the paradigm case being benzodiazepines deepening delirium in a delirious elder."
       }
+    },
+    {
+      "id": "qb_sud_003",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 57-year-old man with severe alcohol use disorder is admitted through the ED with altered mental status. The nurse establishes IV access and is preparing to infuse D5W. He appears malnourished and confused. Which step must occur before the glucose infusion is started?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Start a CIWA-Ar protocol — the altered mental status indicates active alcohol withdrawal requiring immediate benzodiazepine dosing.",
+          "trap": {
+            "name": "It's just withdrawal",
+            "note": "Starting symptom-triggered withdrawal treatment is appropriate, but thiamine must be given first — glucose infusion in a thiamine-depleted patient can precipitate Wernicke encephalopathy."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Obtain a CT head to exclude intracranial pathology before administering any fluids.",
+          "trap": {
+            "name": "Imaging before treatment",
+            "note": "Imaging may be appropriate if there are focal deficits, but the immediate life-safety priority is thiamine before glucose — this cannot wait for CT."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Administer IV thiamine before any glucose-containing fluids — carbohydrate loading in a thiamine-depleted patient can precipitate Wernicke encephalopathy.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Confirm blood alcohol level — management depends on whether the AMS is from intoxication or withdrawal.",
+          "trap": {
+            "name": "Labs before treatment",
+            "note": "A BAL may guide management but does not change the immediate thiamine requirement — glucose before thiamine in a depleted patient is the intervention that causes Wernicke."
+          }
+        }
+      ],
+      "why": "It's just withdrawal and Imaging before treatment both bypass the irreversible intervention: thiamine before glucose. Wernicke encephalopathy — confusion, ophthalmoplegia, ataxia — is precipitated when carbohydrate is infused into a thiamine-depleted nervous system. The intervention costs almost nothing and the omission is catastrophic. Labs before treatment similarly delays a maneuver that should be reflexive.",
+      "pearl": "Thiamine before glucose — every time, before any IV dextrose in a malnourished or alcohol-dependent patient.",
+      "evidence": "t_sud.md — Give thiamine before glucose — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy."
+    },
+    {
+      "id": "qb_sud_004",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 46-year-old woman is admitted for alcohol detoxification. Her CIWA-Ar score is 16 on admission. A nurse asks how benzodiazepines should be dosed for alcohol withdrawal management on this unit. Which approach is correct?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Symptom-triggered dosing guided by serial CIWA-Ar scores — administer benzodiazepines when the score crosses a threshold and escalate monitoring for seizure or delirium tremens risk.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A fixed-schedule taper starting at maximum dose for 5 days regardless of symptoms — scheduled dosing prevents breakthrough withdrawal.",
+          "trap": {
+            "name": "Scheduled over symptom-triggered",
+            "note": "Fixed-schedule dosing tends to over-sedate patients with mild withdrawal and is not the guideline-recommended approach; symptom-triggered CIWA-Ar dosing is preferred."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Administer benzodiazepines only if a seizure occurs — prophylactic dosing is not supported by evidence.",
+          "trap": {
+            "name": "Underestimate the emergency",
+            "note": "A CIWA-Ar of 16 indicates moderate withdrawal; waiting for a seizure before treating is dangerous — seizure prevention is the goal."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Use a non-benzodiazepine anticonvulsant such as phenobarbital as first-line — benzodiazepines are contraindicated in alcohol withdrawal due to cross-tolerance.",
+          "trap": {
+            "name": "Contraindication confusion",
+            "note": "Benzodiazepines are the first-line treatment for alcohol withdrawal precisely because of GABAergic cross-tolerance — cross-tolerance is the therapeutic mechanism, not a contraindication."
+          }
+        }
+      ],
+      "why": "Scheduled over symptom-triggered, Underestimate the emergency, and Contraindication confusion are all active. Symptom-triggered CIWA-Ar–guided benzodiazepine dosing is the standard for alcohol withdrawal — it provides treatment when needed, avoids over-sedation, and maintains vigilance for the lethal end of the spectrum (seizures, delirium tremens).",
+      "pearl": "Alcohol withdrawal: CIWA-Ar–driven, symptom-triggered benzodiazepines — escalate monitoring for seizure and DT risk.",
+      "evidence": "t_sud.md — For alcohol withdrawal, score serially with the CIWA-Ar and treat symptom-driven with benzodiazepines, escalating vigilance for seizures and delirium tremens in high-risk patients."
+    },
+    {
+      "id": "qb_sud_005",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "management",
+        "next-step"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 28-year-old man with opioid use disorder requests buprenorphine. He last used heroin 5 hours ago and reports mild cramping but looks comfortable. His COWS score is 5. He says, 'I'm ready to start — please give it now.' What is the most appropriate response?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Start buprenorphine now — early induction prevents relapse and meeting the patient's readiness is clinically more important than withdrawal scoring.",
+          "trap": {
+            "name": "Comfort-first induction",
+            "note": "Starting buprenorphine before objective withdrawal is present risks precipitated withdrawal — buprenorphine displaces residual full agonist from receptors and can precipitate severe withdrawal if opioids are still present."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Wait until objective withdrawal is established (COWS roughly ≥8–12) before initiating buprenorphine induction — this is required to avoid precipitating withdrawal.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Administer a test dose of buprenorphine 0.5 mg and observe for 30 minutes — a small test dose avoids precipitated withdrawal.",
+          "trap": {
+            "name": "Comfort-first induction",
+            "note": "Any buprenorphine dose before adequate objective withdrawal risks precipitated withdrawal — the scoring threshold is the safety check, not a half-dose adjustment."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Refuse buprenorphine and offer clonidine instead — clonidine is safer in the early withdrawal window.",
+          "trap": {
+            "name": "Non-MOUD for OUD",
+            "note": "Clonidine addresses symptoms but has no evidence for reducing overdose risk or supporting recovery — MOUD (buprenorphine or methadone) is the goal; the issue is timing, not substitution."
+          }
+        }
+      ],
+      "why": "Comfort-first induction in two forms is the central trap. Buprenorphine is a partial agonist with high receptor affinity — it displaces full agonists. If taken before sufficient withdrawal, it precipitates sudden, severe withdrawal. The COWS threshold (≥8–12) ensures residual full agonist has cleared enough receptors that induction is safe.",
+      "pearl": "COWS ≥8–12 before buprenorphine induction — the scoring threshold prevents precipitated withdrawal, not patient readiness.",
+      "evidence": "t_sud.md — Begin buprenorphine induction only once objective withdrawal is present (roughly COWS ≥8 to 12) to avoid precipitated withdrawal from displacing residual full agonist too early."
+    },
+    {
+      "id": "qb_sud_006",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 34-year-old woman with cocaine use disorder presents with elevated mood, decreased need for sleep, pressured speech, and grandiosity beginning 2 days after she used cocaine heavily. The team wants to document a diagnosis of bipolar I disorder. Which statement best characterizes the diagnostic approach?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Bipolar I disorder should be diagnosed — the clinical picture is classic and the cocaine use is a separate comorbidity.",
+          "trap": {
+            "name": "Diagnose through intoxication",
+            "note": "Co-occurring psychiatric illness cannot be reliably diagnosed while the patient is within the acute intoxication or withdrawal window."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Stimulant-induced mood disorder is the only possible diagnosis — patients with SUD cannot be diagnosed with primary bipolar disorder.",
+          "trap": {
+            "name": "SUD excludes comorbidity",
+            "note": "Co-occurring bipolar disorder is common in SUD; the issue is timing — the acute window is not the right time to establish primary diagnosis, not that it is permanently excluded."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The decreased sleep alone confirms a manic episode distinct from stimulant effects.",
+          "trap": {
+            "name": "Single criterion = diagnosis",
+            "note": "Stimulant intoxication produces virtually identical symptoms to mania — a single criterion does not differentiate them."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A primary psychiatric diagnosis cannot be reliably established while the patient is within the acute intoxication or withdrawal window — stabilize medically, allow clearance, then reassess.",
+          "c": true
+        }
+      ],
+      "why": "Diagnose through intoxication and SUD excludes comorbidity are the two opposing errors. The standard is clear: co-occurring psychiatric illness is the rule in SUD, but you cannot reliably diagnose a primary mood or psychotic disorder while the patient is acutely intoxicated or withdrawing — the symptoms are indistinguishable. Stabilize first, then reassess.",
+      "pearl": "No primary psychiatric diagnosis while acutely intoxicated or withdrawing — stabilize first, then reassess.",
+      "evidence": "t_sud.md — You cannot reliably diagnose a primary mood or psychotic disorder while the patient is acutely intoxicated or withdrawing."
+    },
+    {
+      "id": "qb_sud_007",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "hy": true,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 61-year-old man with severe alcohol use disorder is admitted for detoxification. On day 2, a nurse pages: he is increasingly confused, stumbling when ambulated, and his eyes appear to be 'moving strangely.' He was ambulatory on admission. Which diagnosis must be excluded immediately?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Delirium tremens — fluctuating confusion and ataxia are expected in severe alcohol withdrawal and represent the feared end of the spectrum.",
+          "trap": {
+            "name": "It's just withdrawal",
+            "note": "DT is on the differential and important, but the triad of confusion + ataxia + abnormal eye movements (ophthalmoplegia) specifically constitutes the Wernicke presentation, which requires immediate thiamine even when all three features are not complete."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Wernicke encephalopathy — the triad of confusion, ataxia, and ophthalmoplegia constitutes Wernicke, which occurs in incomplete forms and requires immediate IV thiamine regardless of completeness.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Alcohol-related cerebellar degeneration — chronic ataxia is expected in severe alcohol use and does not require acute intervention.",
+          "trap": {
+            "name": "Chronic = benign",
+            "note": "New or worsening ataxia in the acute setting is not attributable to chronic degeneration — Wernicke encephalopathy is an acute emergency requiring immediate treatment."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Hepatic encephalopathy — asterixis and confusion in a patient with alcohol use disorder indicate liver failure.",
+          "trap": {
+            "name": "It's just withdrawal",
+            "note": "Hepatic encephalopathy is on the differential but ophthalmoplegia is not a feature; the ocular signs specifically raise Wernicke and require immediate thiamine."
+          }
+        }
+      ],
+      "why": "It's just withdrawal in two forms. The Wernicke triad — confusion, ataxia, ophthalmoplegia — is classically taught as a complete triad but occurs frequently in incomplete forms. The threshold for treatment is low because thiamine is cheap and Wernicke untreated progresses to Korsakoff syndrome, which is irreversible.",
+      "pearl": "Wernicke encephalopathy: confusion + ataxia + ophthalmoplegia — often incomplete; treat with IV thiamine immediately without waiting for the complete triad.",
+      "evidence": "t_sud.md — Wernicke encephalopathy (confusion, ophthalmoplegia, ataxia — often incomplete, so a low threshold is correct)."
+    },
+    {
+      "id": "qb_sud_008",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "safety",
+        "management"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 31-year-old man with opioid use disorder is being discharged after a brief admission for opioid intoxication. He declines to start buprenorphine during the admission. Which discharge intervention has the strongest direct evidence for preventing death in the weeks following discharge?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Refer to a residential rehabilitation program — structured environments eliminate the post-discharge overdose window.",
+          "trap": {
+            "name": "Referral without bridge",
+            "note": "Referral alone without immediate naloxone and MOUD linkage leaves the highest-risk window unaddressed — residential programs have wait times and the risk is immediate."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Prescribe clonidine for autonomic withdrawal symptoms — addressing physiological discomfort reduces relapse.",
+          "trap": {
+            "name": "Non-MOUD for OUD",
+            "note": "Clonidine addresses symptoms only and has no evidence for reducing overdose mortality — naloxone and MOUD linkage are the life-saving interventions."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Provide naloxone with overdose-prevention education and arrange linkage to medication for opioid use disorder (MOUD) before discharge.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Schedule a routine outpatient psychiatric follow-up in 4–6 weeks — continuity of care addresses the root causes of relapse.",
+          "trap": {
+            "name": "Routine follow-up adequate",
+            "note": "Routine follow-up in 4–6 weeks does not address the immediate post-discharge overdose window — naloxone and MOUD linkage are needed before the patient walks out."
+          }
+        }
+      ],
+      "why": "Referral without bridge, Non-MOUD for OUD, and Routine follow-up adequate all fail to address the acute post-discharge window. Tolerance drops during admission; returning to a pre-admission dose now carries high overdose risk. Naloxone plus MOUD linkage before discharge is the concrete, evidence-based life-saving intervention named on the page.",
+      "pearl": "Naloxone + MOUD linkage at discharge for every patient with opioid use disorder — the post-discharge window is the highest-risk period.",
+      "evidence": "t_sud.md — Provide naloxone and overdose-prevention education to any patient at opioid risk and to their family. Arrange linkage to MOUD before the patient leaves, since the post-discharge window carries elevated overdose risk."
+    },
+    {
+      "id": "qb_sud_009",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "pharm"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 52-year-old woman completes medically supervised alcohol detoxification and wants pharmacotherapy to support sobriety. She has normal renal and hepatic function and no contraindications. Which agents are FDA-approved, evidence-based first-line options for alcohol use disorder maintenance?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Naltrexone or acamprosate — both are FDA-approved pharmacotherapies with evidence for reducing relapse and supporting sobriety in alcohol use disorder.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A long-term benzodiazepine — GABAergic agents reduce alcohol craving through the same receptor mechanism as alcohol.",
+          "trap": {
+            "name": "The reflexive benzodiazepine",
+            "note": "Benzodiazepines are for acute withdrawal management, not maintenance sobriety — chronic use produces dependence and does not treat alcohol use disorder."
+          }
+        },
+        {
+          "key": "C",
+          "t": "An SSRI — the anxiety and dysphoria underlying alcohol use are the primary drivers, and antidepressants address them.",
+          "trap": {
+            "name": "Treat the symptom not the disorder",
+            "note": "SSRIs are not first-line pharmacotherapy for alcohol use disorder; they may be appropriate for a co-occurring mood or anxiety disorder but do not replace naltrexone or acamprosate."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Valproate — mood stabilization reduces the emotional dysregulation and impulsivity that drive relapse.",
+          "trap": {
+            "name": "Off-label equals evidence-based",
+            "note": "Valproate is not FDA-approved for alcohol use disorder maintenance and is not the standard; naltrexone and acamprosate have the evidence base."
+          }
+        }
+      ],
+      "why": "The reflexive benzodiazepine, Treat the symptom not the disorder, and Off-label equals evidence-based all miss the two agents the page explicitly names. Naltrexone (opioid antagonist — reduces reward) and acamprosate (GABA/glutamate modulation — reduces craving) are the established pharmacotherapies for maintaining sobriety in alcohol use disorder.",
+      "pearl": "AUD maintenance pharmacotherapy: naltrexone or acamprosate — not benzodiazepines, not SSRIs alone.",
+      "evidence": "t_sud.md — For ongoing alcohol use disorder, offer naltrexone or acamprosate."
+    },
+    {
+      "id": "qb_sud_010",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "what-would-you-say",
+      "category": "substance",
+      "competency": [
+        "psychosocial"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A patient with opioid use disorder says: 'I'm not an addict. I can stop whenever I want — it hasn't caused me any real problems.' You are the student conducting the initial interview using a motivational interviewing approach. Which response is best?",
+      "options": [
+        {
+          "key": "A",
+          "t": "\"That's not accurate — research shows that opioid use changes your brain's reward system in ways that make 'just stopping' very difficult. Let me explain what the evidence says.\"",
+          "trap": {
+            "name": "The righting reflex",
+            "note": "Arguing against the patient's self-assessment triggers sustain talk and damages the alliance — MI directs curiosity, not confrontation."
+          }
+        },
+        {
+          "key": "B",
+          "t": "\"I hear you saying it hasn't caused problems, but the data is clear — untreated opioid use disorder has a high mortality rate, and I want you to understand that risk.\"",
+          "trap": {
+            "name": "Quoting statistics at patients",
+            "note": "Presenting risk statistics as an argument for change produces resistance rather than engagement — MI meets ambivalence with curiosity rather than factual correction."
+          }
+        },
+        {
+          "key": "C",
+          "t": "\"I understand you feel that way. Before we go further, I need you to complete this substance use disorder questionnaire for our documentation.\"",
+          "trap": {
+            "name": "Process over person",
+            "note": "Redirecting to paperwork when the patient is expressing ambivalence misses an opportunity for motivational engagement and communicates that the form matters more than the conversation."
+          }
+        },
+        {
+          "key": "D",
+          "t": "\"It sounds like you feel like you have it handled. I'm curious — has there been any time when using has gotten in the way of something that mattered to you?\"",
+          "c": true
+        }
+      ],
+      "why": "The righting reflex and Quoting statistics at patients are the two forms of pushing for change that motivational interviewing specifically avoids — they produce resistance. Process over person abandons the conversation entirely. The correct response reflects the patient's frame, rolls with resistance, and opens a door with curiosity — the Volkow brain-disease model frames addiction as a brain condition requiring engagement rather than moral correction.",
+      "pearl": "MI meets ambivalence with curiosity, not confrontation — reflect, don't argue; the righting reflex produces sustain talk.",
+      "evidence": "t_sud.md — Use motivational interviewing to meet ambivalence with curiosity rather than confrontation. Frame the whole encounter through the Volkow brain-disease model of addiction."
+    },
+    {
+      "id": "qb_sud_011",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "substance",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "An 19-year-old man is admitted for heroin withdrawal. He is visibly distressed, diaphoretic, tachycardic, and requesting immediate medication. A colleague asks, 'Is this patient in danger?' Which response most accurately conveys the clinical urgency?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Yes, severely — opioid withdrawal can progress to respiratory depression and circulatory collapse.",
+          "trap": {
+            "name": "Not lethal = not treatable inverted",
+            "note": "Opioid withdrawal rarely causes respiratory depression or circulatory collapse — those are signs of ongoing intoxication, not withdrawal."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Minimal — opioid withdrawal is uncomfortable but medically benign; supportive care and reassurance are sufficient without formal pharmacotherapy.",
+          "trap": {
+            "name": "Not lethal = not treatable",
+            "note": "Dismissing opioid withdrawal as benign invites AMA discharge during the highest-overdose-risk window — untreated withdrawal is a driver of dangerous post-discharge behavior even if it is rarely directly fatal."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Opioid withdrawal is rarely fatal, but leaving it untreated risks AMA discharge into the highest overdose-risk window — the treatment imperative is engaging the patient in MOUD, not the withdrawal severity alone.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Yes — untreated opioid withdrawal routinely progresses to seizures and delirium, creating the same risk as alcohol withdrawal.",
+          "trap": {
+            "name": "It's just withdrawal",
+            "note": "Seizures and delirium are features of alcohol and benzodiazepine withdrawal, not opioid withdrawal — conflating their lethality misjudges the urgency of both."
+          }
+        }
+      ],
+      "why": "Not lethal = not treatable in two forms frame this item. Opioid withdrawal itself is rarely lethal — but dismissing it as benign is a clinical error because untreated withdrawal drives AMA discharge at the moment when tolerance is lowest and overdose risk is highest. The urgency is engagement in MOUD, not hemodynamic management.",
+      "pearl": "Opioid withdrawal: rarely fatal but drives AMA discharge into the highest-overdose-risk window — the treatment priority is MOUD engagement, not the withdrawal itself.",
+      "evidence": "t_sud.md — Opioid and stimulant withdrawal are intensely uncomfortable but rarely lethal. Naloxone plus MOUD linkage at discharge is a concrete, evidence-based way to save a life.",
+      "tier2": {
+        "q": "Why does the post-discharge period carry elevated overdose risk after an opioid withdrawal episode?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Opioid withdrawal produces a lasting sensitization that amplifies the effect of future doses for weeks."
+          },
+          {
+            "key": "B",
+            "t": "Withdrawal depletes endogenous endorphins, causing rebound pain that requires higher subsequent doses."
+          },
+          {
+            "key": "C",
+            "t": "Tolerance decreases substantially during withdrawal — the dose used before admission now exceeds the lethal threshold for a less-tolerant brain.",
+            "c": true
+          },
+          {
+            "key": "D",
+            "t": "Post-discharge overdose risk is from co-ingestant adulterants (e.g., fentanyl), not from tolerance changes."
+          }
+        ],
+        "why": "Tolerance is not a fixed property — it decreases during a period of abstinence or withdrawal. The patient who used 100 mg of heroin daily before admission may now have the tolerance of a naive user. Returning to the same dose can cause fatal respiratory depression. This is why the discharge window is the highest-risk window, and why naloxone must be provided regardless of whether MOUD is initiated."
+      }
+    },
+    {
+      "id": "qb_sud_012",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "dx",
+        "next-step"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 56-year-old man with alcohol use disorder is brought in by EMS after being found unresponsive. Blood alcohol level is 0.22. He remains obtunded 45 minutes after arrival despite being stable. A colleague says, 'He's just drunk — let's monitor and wait.' Which response is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Agree — a BAC of 0.22 fully accounts for the clinical picture in a patient with alcohol use disorder.",
+          "trap": {
+            "name": "It's just intoxication",
+            "note": "Alcohol tolerance in a chronic user makes BAC an unreliable guide to consciousness level — obtundation disproportionate to BAC in a chronic user warrants a broader workup."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Disagree — altered mental status in a patient who uses alcohol requires a real differential: Wernicke encephalopathy, subdural hematoma, infection, hepatic encephalopathy, and co-ingestants must be actively excluded before attributing obtundation to alcohol alone.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Agree — wait for the alcohol to metabolize, but plan to obtain a CT head if not improved in 4 hours.",
+          "trap": {
+            "name": "It's just intoxication",
+            "note": "Deferring the workup 4 hours is dangerous — a subdural or Wernicke cannot wait; the evaluation must be active, not deferred."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Disagree — the next step is naloxone administration to reverse any opioid co-ingestion before other workup is done.",
+          "trap": {
+            "name": "Reflex antidote",
+            "note": "Naloxone is appropriate if opioid co-ingestion is suspected clinically (miosis, respiratory depression), but empiric naloxone does not substitute for the full differential evaluation."
+          }
+        }
+      ],
+      "why": "It's just intoxication in two forms: accepting alcohol as the only explanation and deferring to a 4-hour reassessment both delay a workup that could catch a treatable emergency. The page explicitly states that altered mental status in a patient who uses substances is never automatically 'just withdrawal' — the same principle applies to intoxication. The differential includes Wernicke, subdural, infection, hepatic encephalopathy, and polysubstance use.",
+      "pearl": "AMS + alcohol use disorder = real differential; BAC does not close the workup — Wernicke, subdural, infection, and hepatic encephalopathy must be actively excluded.",
+      "evidence": "t_sud.md — Altered mental status in a patient who uses substances is never automatically 'just withdrawal.' Keep these live: Wernicke encephalopathy, head injury/subdural hematoma, occult infection/sepsis, hepatic encephalopathy, and polysubstance use."
+    },
+    {
+      "id": "qb_sud_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "safety",
+        "pharm"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 64-year-old man with severe alcohol use disorder and documented Child-Pugh B cirrhosis is admitted for alcohol withdrawal. CIWA-Ar is 14. The team considers using chlordiazepoxide for symptom-triggered dosing. A student identifies a safety concern. Which response is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "In significant hepatic impairment, long-acting benzodiazepines (chlordiazepoxide, diazepam) accumulate due to impaired oxidative metabolism — lorazepam or oxazepam are preferred because they undergo direct glucuronidation, which is preserved in hepatic disease.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Benzodiazepines are contraindicated in alcohol withdrawal for patients with cirrhosis — use phenobarbital or an antipsychotic instead.",
+          "trap": {
+            "name": "Contraindication confusion",
+            "note": "Benzodiazepines are not contraindicated in cirrhosis — the concern is accumulation with long-acting agents; switching to lorazepam or oxazepam addresses the risk while maintaining appropriate treatment."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Chlordiazepoxide is preferred in liver disease — its long half-life provides smoother coverage than short-acting agents and prevents rebound.",
+          "trap": {
+            "name": "Long half-life equals smooth coverage",
+            "note": "The long half-life is the problem in hepatic impairment, not a benefit — impaired metabolism causes drug accumulation and over-sedation."
+          }
+        },
+        {
+          "key": "D",
+          "t": "All benzodiazepines are equally affected by hepatic dysfunction — no single agent is preferred over another in cirrhosis.",
+          "trap": {
+            "name": "All drugs equal",
+            "note": "Benzodiazepines differ substantially in metabolic pathway — lorazepam and oxazepam undergo glucuronidation, which is preserved in cirrhosis, making them distinctly preferable."
+          }
+        }
+      ],
+      "why": "Contraindication confusion and Long half-life equals smooth coverage are the two active errors. The clinical principle: lorazepam and oxazepam are preferred in hepatic impairment precisely because their glucuronidation pathway is preserved while oxidative metabolism (which processes chlordiazepoxide and diazepam) is impaired in cirrhosis. All drugs equal ignores a clinically important pharmacokinetic distinction.",
+      "pearl": "Hepatic impairment + alcohol withdrawal: use lorazepam or oxazepam (glucuronidation preserved); avoid long-acting benzodiazepines that accumulate.",
+      "evidence": "t_sud.md — For alcohol withdrawal, treat symptom-driven with benzodiazepines. [Anchor: general principle requiring hepatic-specific application — the page names benzodiazepines as first-line and identifies the need for 'focused and pragmatic' initial workup including LFTs.]"
+    },
+    {
+      "id": "qb_sud_014",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "substance",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 49-year-old man with severe alcohol use disorder is admitted after a tonic-clonic seizure at home. He has a documented prior alcohol withdrawal seizure from two years ago. CIWA-Ar on arrival is 12. Which statement best characterizes his risk and clinical priority?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The seizure occurred before admission; since he is now calmer, observation without immediate pharmacologic intervention is appropriate.",
+          "trap": {
+            "name": "Underestimate the emergency",
+            "note": "A prior withdrawal seizure and a current CIWA-Ar of 12 indicate high risk for further seizures and progression to delirium tremens — this is not a wait-and-observe clinical picture."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The seizure risk has passed — withdrawal seizures occur in the first 24–48 hours; further seizures are not expected after a first event.",
+          "trap": {
+            "name": "Underestimate the emergency",
+            "note": "Post-seizure clinical presentation with a CIWA-Ar of 12 does not indicate that risk has passed — recurrent seizures and DT progression are the specific concern in this window."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Start a fixed-schedule antipsychotic — antipsychotics lower seizure threshold and provide targeted coverage for alcohol withdrawal psychosis.",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "Antipsychotics lower the seizure threshold — they are the wrong agent in a patient at active seizure risk from alcohol withdrawal; benzodiazepines are the treatment."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Prior withdrawal seizure is a strong predictor of future seizures; this patient requires aggressive CIWA-Ar-guided benzodiazepine titration with close monitoring for progression to delirium tremens.",
+          "c": true
+        }
+      ],
+      "why": "Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. CIWA-Ar-guided benzodiazepines are the treatment, and DT vigilance is the priority.",
+      "pearl": "Prior withdrawal seizure = highest predictor of future seizures; aggressive CIWA-Ar-guided benzodiazepines + DT monitoring is the standard.",
+      "evidence": "t_sud.md — Alcohol withdrawal: score serially with the CIWA-Ar and treat symptom-driven with benzodiazepines, escalating vigilance for seizures and delirium tremens in high-risk patients.",
+      "tier2": {
+        "q": "Why does abrupt alcohol cessation cause seizures, whereas opioid withdrawal does not?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Alcohol directly damages neurons, and the damaged cells become epileptogenic on cessation."
+          },
+          {
+            "key": "B",
+            "t": "Opioid withdrawal does cause seizures, but at a lower incidence than alcohol withdrawal."
+          },
+          {
+            "key": "C",
+            "t": "Alcohol upregulates GABA-A receptors with chronic use — abrupt cessation removes GABAergic suppression, leaving an unopposed glutamatergic hyperexcitable state that can generate seizures.",
+            "c": true
+          },
+          {
+            "key": "D",
+            "t": "The seizure risk is from concurrent electrolyte disturbances (hypomagnesemia, hypocalcemia), not from the alcohol withdrawal itself."
+          }
+        ],
+        "why": "Chronic alcohol use potentiates GABA-A activity. In response, the brain compensatory downregulates GABA receptors and upregulates glutamate receptors. When alcohol is abruptly removed, the GABAergic brake is gone and the glutamatergic accelerator is overactive — the resulting hyperexcitability produces seizures and, at its worst, delirium tremens. Opioid withdrawal does not affect the seizure threshold through this mechanism — it causes autonomic distress but not neuronal hyperexcitability."
+      }
+    },
+    {
+      "id": "qb_pha_003",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "pharm"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
+      "stem": "A student argues that quetiapine should be chosen over haloperidol for a patient with psychosis because 'it's a second-generation agent and therefore more effective.' An attending asks what the CATIE trial established about this reasoning. Which response is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The student is correct — second-generation antipsychotics have uniformly superior efficacy to first-generation agents in head-to-head trials.",
+          "trap": {
+            "name": "Newer = better",
+            "note": "CATIE found no consistent efficacy advantage for second-generation over first-generation agents — the differences between antipsychotics are primarily in side-effect profile."
+          }
+        },
+        {
+          "key": "B",
+          "t": "CATIE showed that antipsychotics differ primarily in side-effect profile — metabolic effects, EPS, QTc, and prolactin — not in raw efficacy; agents should be chosen based on the patient's specific risk profile.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "CATIE found that olanzapine is the most effective antipsychotic overall and should be the default first choice.",
+          "trap": {
+            "name": "Selective citation",
+            "note": "CATIE found olanzapine had better discontinuation rates in some analyses, but it was also the most metabolically harmful; the lesson is to choose by the full side-effect profile, not to default to olanzapine."
+          }
+        },
+        {
+          "key": "D",
+          "t": "First-generation antipsychotics are preferred in first-episode psychosis because their longer evidence base makes them more predictable.",
+          "trap": {
+            "name": "Older = better",
+            "note": "The CATIE framing cuts both ways — neither generation is universally preferred; individual side-effect risk drives the choice."
+          }
+        }
+      ],
+      "why": "Newer = better is the target trap. CATIE's fundamental lesson: the FGA/SGA distinction is not a reliable efficacy hierarchy. Choose by side-effect profile — the patient's metabolic risk, EPS vulnerability, QTc baseline, and prolactin sensitivity are the discriminating factors.",
+      "pearl": "CATIE: choose antipsychotics by side-effect profile, not generation — no consistent efficacy advantage for SGAs over FGAs.",
+      "evidence": "psychopharm_primer.md — The single most useful framing comes from CATIE: choose by side-effect profile, not by 'newer is better' — agents differ more in what they do to weight, glucose, lipids, prolactin, QTc, and movement than in raw efficacy."
+    },
+    {
+      "id": "qb_pha_004",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "management",
+        "pharm"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
+      "stem": "A 23-year-old man is starting risperidone for his first psychotic episode. The student is asked to set up his monitoring schedule. What does the standard require for ALL patients starting any antipsychotic?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Baseline ECG — all antipsychotics require cardiac clearance due to QTc prolongation risk.",
+          "trap": {
+            "name": "QTc always",
+            "note": "ECG is warranted when a QTc-prolonging agent is used or there is a cardiac history, but it is not mandatory for all antipsychotics; metabolic monitoring is the universal requirement."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Serum drug level at steady state — therapeutic monitoring ensures adequate receptor occupancy.",
+          "trap": {
+            "name": "Drug levels = necessary",
+            "note": "Antipsychotic serum levels are not routinely monitored for most agents in clinical practice; metabolic monitoring is the standard universal requirement."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Urine drug screen at baseline — substance use can confound both the psychotic presentation and antipsychotic response.",
+          "trap": {
+            "name": "Most relevant test first",
+            "note": "A urine drug screen may be clinically appropriate at admission but is not the monitoring requirement built into the antipsychotic prescription; metabolic monitoring is."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Baseline weight, fasting glucose, and lipid profile — then ongoing tracking; metabolic monitoring is part of the antipsychotic prescription for every agent.",
+          "c": true
+        }
+      ],
+      "why": "QTc always, Drug levels = necessary, and Most relevant test first all substitute a different monitoring task for the universal one. Metabolic monitoring — baseline weight, glucose, and lipids, then tracking — is built into the antipsychotic prescription regardless of the agent chosen. The page explicitly states: 'metabolic monitoring is part of the prescription.'",
+      "pearl": "Every antipsychotic: baseline weight, fasting glucose, lipids — then ongoing tracking. Metabolic monitoring is part of the prescription.",
+      "evidence": "psychopharm_primer.md — Whatever the choice, metabolic monitoring is part of the prescription: baseline weight, glucose, and lipids, then ongoing tracking."
+    },
+    {
+      "id": "qb_pha_005",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "pharm",
+      "competency": [
+        "pharm",
+        "safety"
+      ],
+      "difficulty": 2,
+      "hy": true,
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
+      "stem": "A 49-year-old man with bipolar I disorder has had three prior hospitalizations and two suicide attempts. The team is weighing lithium versus valproate for maintenance. Which statement about lithium's unique clinical profile is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Lithium has the strongest anti-suicidal evidence in its class and a narrow therapeutic window requiring renal and thyroid monitoring — its unique therapeutic profile and its monitoring requirements are inseparable considerations.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Lithium's anti-suicidal effect is secondary to mood stabilization — any effective mood stabilizer achieves equivalent reduction in completed suicide.",
+          "trap": {
+            "name": "Anti-suicidal = just mood stabilization",
+            "note": "The page notes lithium's anti-suicidal evidence as distinct from other mood stabilizers — worth remembering when the team weighs risk, implying it is not simply a mood-stabilization effect."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Lithium is first-line only for acute mania; its anti-suicidal and maintenance evidence are not strong enough to justify its monitoring burden.",
+          "trap": {
+            "name": "Narrow = second-line",
+            "note": "Lithium has robust maintenance and anti-suicidal evidence — its narrow window is a monitoring challenge, not a reason to avoid it in patients like this one."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Lithium can be started without baseline labs in a medically healthy patient — monitoring is required only once toxicity signs appear.",
+          "trap": {
+            "name": "Monitoring = optional",
+            "note": "Baseline renal and thyroid studies are required before starting lithium — monitoring after toxicity appears is not a protocol, it is a missed safety step."
+          }
+        }
+      ],
+      "why": "Anti-suicidal = just mood stabilization, Narrow = second-line, and Monitoring = optional all undermine the case for lithium in the highest-risk patient. Lithium's anti-suicidal evidence is cited on the page as worth remembering specifically when the team is weighing risk. For a patient with two prior suicide attempts, this is the discriminating consideration.",
+      "pearl": "Lithium: strongest anti-suicidal evidence in the mood stabilizer class + narrow window demanding renal/thyroid monitoring — both sides of the profile matter.",
+      "evidence": "psychopharm_primer.md — Lithium has a narrow therapeutic window — too little does nothing, too much is toxic — and demands renal and thyroid monitoring over time; it also carries the strongest anti-suicidal evidence in the class, which is worth remembering when the team weighs risk.",
+      "tier2": {
+        "q": "Why does lithium's narrow therapeutic window require renal monitoring specifically?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Lithium is metabolized in the kidney, and renal impairment reduces the rate of lithium breakdown."
+          },
+          {
+            "key": "B",
+            "t": "Lithium is not protein-bound and is excreted entirely by the kidney — any reduction in renal clearance (dehydration, NSAIDs, diuretics, declining GFR) directly raises the serum level into the toxic range.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "Renal monitoring detects lithium-induced nephrogenic diabetes insipidus, which is the primary toxicity of concern."
+          },
+          {
+            "key": "D",
+            "t": "Renal monitoring is a regulatory requirement without a strong pharmacokinetic rationale."
+          }
+        ],
+        "why": "Lithium is renally cleared without protein binding and without hepatic transformation. This means the serum level is determined almost entirely by renal clearance. Any factor that reduces GFR — dehydration, NSAIDs, ACE inhibitors, loop diuretics, or simply age-related decline — will raise the level. The therapeutic and toxic windows are close enough that a modest change in clearance can shift a stable patient into toxicity. This is why renal function is monitored longitudinally, not just at baseline."
+      }
+    },
+    {
+      "id": "qb_pha_006",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "safety",
+        "pharm"
+      ],
+      "difficulty": 2,
+      "hy": true,
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
+      "stem": "The team plans to start valproate for a 27-year-old woman with bipolar I disorder admitted for acute mania. The student reviews her chart and finds no documentation of pregnancy status or contraception. Which action must occur before the first dose is given?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Order baseline LFTs — hepatotoxicity is valproate's primary safety concern and must be screened before initiation.",
+          "trap": {
+            "name": "Hepatotox before teratogenicity",
+            "note": "LFTs are part of pre-treatment workup, but the must-not-miss step is establishing pregnancy status — valproate teratogenicity is the flag that precedes any prescribing decision in a person who could become pregnant."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Obtain neurology sign-off — valproate is primarily an anticonvulsant and requires specialist authorization before psychiatric use.",
+          "trap": {
+            "name": "Specialist equals prerequisite",
+            "note": "Valproate is a first-line mood stabilizer in psychiatry; specialist authorization is not a prerequisite — the teratogenicity screening is."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Confirm she is not pregnant and discuss contraception — valproate is a known teratogen (neural tube defects and other major malformations); this must be addressed before initiating in any person who could become pregnant.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Start valproate at a low dose and monitor for teratogenic risk — low doses are safe in pregnancy.",
+          "trap": {
+            "name": "Low dose equals safe",
+            "note": "Valproate teratogenicity is not dose-dependent in a way that makes low doses safe during early organogenesis — the page states should not be started in people who may become pregnant."
+          }
+        }
+      ],
+      "why": "Hepatotox before teratogenicity, Specialist equals prerequisite, and Low dose equals safe all miss or displace the must-act-first check. The page is explicit: valproate should not be started in people who may become pregnant given teratogenicity — this check must come before the first dose, not afterward.",
+      "pearl": "Before valproate in any person who could become pregnant: confirm not pregnant, discuss contraception — this is the pre-prescribing gate, not a post-hoc conversation.",
+      "evidence": "psychopharm_primer.md — Valproate is effective but should not be started in people who may become pregnant given teratogenicity; flag this before it is ordered."
+    },
+    {
+      "id": "qb_pha_007",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "pharm",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
+      "stem": "A 29-year-old man presents with a 3-week first depressive episode. His maternal grandmother and aunt both have bipolar disorder. The team is ready to prescribe sertraline. The student asks whether a bipolar screen should be done first. The most appropriate response is:",
+      "options": [
+        {
+          "key": "A",
+          "t": "A family history of bipolar disorder has no bearing on SSRI prescribing — treat the current episode.",
+          "trap": {
+            "name": "Diagnosis by symptom alone",
+            "note": "Family history of bipolar disorder is a known risk factor for bipolar illness — treating a depressive episode in someone with unrecognized bipolar disorder with an antidepressant alone can precipitate a manic switch."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Screen for prior hypomanic or manic episodes before starting sertraline — an antidepressant without a mood stabilizer can destabilize unrecognized bipolar disorder, and a strong family history elevates the suspicion.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Start sertraline and monitor for mania — treatment-emergent mania is how bipolar disorder is identified in practice.",
+          "trap": {
+            "name": "Treat before diagnose",
+            "note": "Using SSRI-induced mania as a diagnostic maneuver is not the standard — the screening question should precede treatment, not the adverse outcome."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Co-prescribe a mood stabilizer with the SSRI as a precaution — mood stabilizers prevent antidepressant-induced destabilization.",
+          "trap": {
+            "name": "Precautionary polypharmacy",
+            "note": "Empirically adding a mood stabilizer without a bipolar diagnosis introduces medication risk without a clear indication — the correct step is to screen first."
+          }
+        }
+      ],
+      "why": "Diagnosis by symptom alone, Treat before diagnose, and Precautionary polypharmacy all bypass the screening step. The page states: 'screen for bipolarity before starting' an antidepressant — an antidepressant alone can destabilize bipolar illness. A positive family history, especially multiple first-degree relatives, makes this screening step particularly important.",
+      "pearl": "Screen for prior hypomania or mania before every first antidepressant prescription — family history of bipolar disorder elevates the index of suspicion.",
+      "evidence": "psychopharm_primer.md — Two cautions matter on an inpatient unit: screen for bipolarity before starting (an antidepressant alone can destabilize bipolar illness)."
+    },
+    {
+      "id": "qb_pha_008",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "pharm",
+        "management"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
+      "stem": "A 24-year-old woman started sertraline 3 days ago for major depression. She calls the unit and says, 'I don't feel any better — maybe this medication isn't right for me.' What is the most accurate and helpful response?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Consider switching agents — inadequate early response after 3 days in a young adult suggests pharmacogenomic mismatch.",
+          "trap": {
+            "name": "Impatient switching",
+            "note": "Three days is well within the expected latency period — switching at day 3 is premature and abandons a potentially effective treatment."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Increase the dose — subtherapeutic early levels explain the absence of response.",
+          "trap": {
+            "name": "Treat the number, not the patient",
+            "note": "Dose escalation at day 3 is premature — antidepressant onset is weeks, not days; early side effects may appear before mood benefit."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Discontinue sertraline and pursue psychotherapy alone — the black box warning signals that SSRIs are more dangerous than beneficial.",
+          "trap": {
+            "name": "Black box = don't treat",
+            "note": "The black box warning is a monitoring mandate for patients through age 24, not a reason to withhold treatment — the NNT for response is near 10."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Antidepressants require weeks before mood benefits emerge — it is too early to assess response; early side effects (e.g., activating effects, nausea) may appear before mood improvement, so continue and monitor closely.",
+          "c": true
+        }
+      ],
+      "why": "Impatient switching, Treat the number, and Black box = don't treat are three forms of the same error: responding to early non-response as if it were evidence of treatment failure. The page is clear: onset is delayed — symptom relief lags weeks behind the first dose. Managing expectations is a clinical skill.",
+      "pearl": "SSRI onset is delayed — weeks, not days; early side effects can appear before mood benefit; it is too early to assess response at day 3.",
+      "evidence": "psychopharm_primer.md — Onset is delayed — symptom relief lags weeks behind the first dose, so manage expectations and keep watching."
+    },
+    {
+      "id": "qb_pha_009",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
+      "stem": "A 21-year-old man is starting escitalopram for his first major depressive episode. His parents ask: 'We've heard there's a black box warning on these medications — what does it mean?' Which response best reflects the FDA warning?",
+      "options": [
+        {
+          "key": "A",
+          "t": "All antidepressants carry an FDA black box warning for increased suicidal thinking and behavior through age 24 — this mandates close monitoring especially early in treatment; it is a monitoring requirement, not a contraindication to treatment.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "The warning applies only to tricyclic antidepressants — SSRIs are exempt from the black box warning.",
+          "trap": {
+            "name": "Selective citation",
+            "note": "The black box warning applies to all antidepressants, not just tricyclics — SSRIs, SNRIs, and others are all included through age 24."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The black box applies only to patients under 18 — your son at 21 is no longer in the warning category.",
+          "trap": {
+            "name": "Partial citation",
+            "note": "The warning explicitly spans all antidepressants through age 24, not just through 18 — the page specifically notes 'relevant to your young-adult admissions.'"
+          }
+        },
+        {
+          "key": "D",
+          "t": "The warning concerns completed suicide — the medications increase the likelihood of a lethal attempt.",
+          "trap": {
+            "name": "Partial citation",
+            "note": "The black box warning concerns suicidal thinking and behavior, not specifically completed suicide — the absolute risk is small and the NNT for response is near 10."
+          }
+        }
+      ],
+      "why": "Selective citation, Partial citation in two forms. The FDA black box warning covers all antidepressants through age 24 — not just TCAs, not just under-18 patients. The correct framing is that it mandates close monitoring early in treatment, not that it prohibits treatment. The absolute increase in suicidal ideation/behavior is roughly 1 per 110 treated, against an NNT near 10 for response.",
+      "pearl": "FDA black box: all antidepressants + all ages through 24 = monitor closely early; it is a monitoring mandate, not a contraindication.",
+      "evidence": "psychopharm_primer.md — The FDA black-box warning for suicidality spans all antidepressants through age 24, not just children — relevant to your young-adult admissions."
+    },
+    {
+      "id": "qb_pha_010",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "pharm",
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
+      "stem": "A 71-year-old woman with generalized anxiety disorder has been prescribed lorazepam 0.5 mg TID continuously for 18 months by her primary care physician. She is now admitted for a fall and mild confusion. The student is asked to comment on her lorazepam use. Which is the most accurate framing?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Lorazepam TID is appropriate for generalized anxiety — long-term benzodiazepine maintenance has a well-established evidence base for GAD.",
+          "trap": {
+            "name": "Autopilot prescribing",
+            "note": "Standing benzodiazepines for GAD are not the evidence-based standard; long-term use produces dependence, falls, and cognitive impairment, especially in older adults."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The dose has remained stable, so tolerance and dependence are unlikely — the clinical concern is solely whether the dose is sufficient for symptom control.",
+          "trap": {
+            "name": "Stability equals safety",
+            "note": "Dose stability does not prevent dependence, cognitive impairment, or falls; scheduled benzodiazepine use in an older patient accumulates harm even without escalation."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Long-term scheduled benzodiazepines in an older adult accumulate risk: physical dependence, falls, and delirium; the admission events (fall, confusion) are consistent with adverse effects; deprescribing should be planned with appropriate tapering.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Benzodiazepines produce less sedation in older adults due to reduced receptor sensitivity — standing use is safe in elderly patients.",
+          "trap": {
+            "name": "Wrong direction of aging effect",
+            "note": "Benzodiazepine sensitivity increases with age due to pharmacokinetic and pharmacodynamic changes — the opposite of this claim; older adults are more vulnerable, not less."
+          }
+        }
+      ],
+      "why": "Autopilot prescribing, Stability equals safety, and Wrong direction of aging effect all normalize long-term scheduled benzodiazepines. The fall and confusion on admission are not incidental — they are the expected adverse effects the page names: falls, dependence, and delirium especially in older adults. The answer: targeted, short-term use is the standard; this patient needs a supervised taper.",
+      "pearl": "Standing benzodiazepines in older adults: dependence, falls, and delirium are expected adverse effects — short-term targeted use is the standard; deprescribe with a supervised taper.",
+      "evidence": "psychopharm_primer.md — Benzodiazepines are genuinely useful for alcohol/sedative withdrawal, catatonia, and short-term agitation — but avoid standing scheduled use. Dependence, falls, and delirium (especially in older adults) are the price of leaving them on autopilot."
+    },
+    {
+      "id": "qb_pha_011",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "pharm",
+      "competency": [
+        "pharm",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
+      "stem": "A 39-year-old man with schizophrenia has failed two adequate antipsychotic trials (olanzapine, then risperidone) at adequate doses and durations. The team discusses clozapine. What is the non-negotiable safety requirement before clozapine can be initiated?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Baseline EEG — clozapine lowers the seizure threshold and a baseline neurological status must be documented.",
+          "trap": {
+            "name": "Seizure monitoring over agranulocytosis",
+            "note": "While clozapine does lower seizure threshold, the non-negotiable safety requirement is hematologic monitoring for agranulocytosis, not a baseline EEG."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Baseline absolute neutrophil count and enrollment in the clozapine monitoring program with ongoing ANC monitoring — agranulocytosis is the central safety concern requiring structured hematologic surveillance per the prescribing information.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Baseline echocardiogram — clozapine-associated myocarditis requires cardiac clearance before initiation.",
+          "trap": {
+            "name": "Cardiac over ANC",
+            "note": "Myocarditis is a serious early clozapine risk but the structured, mandatory, non-negotiable monitoring requirement is the ANC — myocarditis is watched for clinically, not with a pre-treatment echocardiogram."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A failed trial of ECT — clozapine is reserved for patients who have also failed somatic therapies.",
+          "trap": {
+            "name": "Hierarchical misread",
+            "note": "Two adequate antipsychotic trial failures define treatment-resistant schizophrenia and qualify for clozapine; ECT failure is not a prerequisite."
+          }
+        }
+      ],
+      "why": "Seizure monitoring over agranulocytosis, Cardiac over ANC, and Hierarchical misread all displace the correct priority. Clozapine's unique safety architecture is organized around the ANC: agranulocytosis is the life-threatening risk that drove the original REMS requirement, and ongoing hematologic monitoring per the prescribing information remains mandatory.",
+      "pearl": "Clozapine requires baseline ANC + ongoing monitoring per prescribing information — agranulocytosis is the central safety concern; the REMS ended in 2025 but the monitoring requirement continues.",
+      "evidence": "psychopharm_primer.md — Clozapine is the agent for treatment-resistant schizophrenia, reserved precisely because it demands ongoing ANC monitoring for agranulocytosis per its prescribing information (the centralized REMS program ended in 2025).",
+      "tier2": {
+        "q": "Why is the absolute neutrophil count monitored for clozapine rather than total white blood cell count alone?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Clozapine suppresses all white blood cell lines equally — ANC and WBC change in parallel, but ANC is the regulatory standard."
+          },
+          {
+            "key": "B",
+            "t": "Clozapine selectively suppresses neutrophil production — a normal total WBC can mask agranulocytosis if lymphocytes are preserved; ANC isolates the neutrophil compartment where the risk resides.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "The ANC requirement is purely regulatory and does not reflect a pharmacologic distinction from total WBC monitoring."
+          },
+          {
+            "key": "D",
+            "t": "Clozapine causes neutrophilia, not neutropenia; monitoring the ANC detects the upper end of the distribution."
+          }
+        ],
+        "why": "Clozapine's bone marrow toxicity targets neutrophil production — specifically, it suppresses the neutrophil precursors in the myeloid lineage. A patient can have a normal or near-normal total WBC with preserved lymphocytes while their neutrophil count has dropped to a dangerous level. The ANC directly measures the neutrophils, which are the cells responsible for fighting bacterial infections. Agranulocytosis — ANC below 500 — renders the patient functionally unable to mount a bacterial defense, making infections rapidly life-threatening."
+      }
+    },
+    {
+      "id": "qb_pha_012",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "safety",
+        "next-step"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
+      "stem": "Two patients on the unit develop acute syndromes. Patient A was started on venlafaxine 3 days ago and tramadol was added yesterday; today he is agitated with muscle twitching, hyperreflexia, and diaphoresis. Patient B was started on haloperidol 5 days ago; today he is febrile to 39.8°C with 'lead-pipe' rigidity and a CK of 4,100. Which response correctly characterizes both presentations?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Both patients have NMS — elevated temperature and rigidity after antipsychotic exposure is the defining feature of NMS in both cases.",
+          "trap": {
+            "name": "All rigidity equals NMS",
+            "note": "Patient A's presentation (hyperreflexia, clonus, rapid onset after serotonergic agents) is serotonin syndrome — lead-pipe rigidity plus hyperthermia plus elevated CK after antipsychotic initiation is NMS; they are pharmacologically distinct emergencies."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Both patients have serotonin syndrome — venlafaxine and haloperidol both affect serotonin pathways.",
+          "trap": {
+            "name": "All agitation equals serotonin syndrome",
+            "note": "Haloperidol is a dopamine blocker, not a serotonergic agent — the clinical picture of Patient B (lead-pipe rigidity, slower onset, elevated CK after antipsychotic initiation) is NMS."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Both emergencies should be treated identically with cyproheptadine and cooling measures.",
+          "trap": {
+            "name": "One treatment for all",
+            "note": "Serotonin syndrome and NMS are pharmacologically distinct emergencies — cyproheptadine is a serotonin antagonist used for serotonin syndrome; NMS management requires stopping the antipsychotic, supportive care, and consideration of bromocriptine or dantrolene."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Patient A has serotonin syndrome (clonus, hyperreflexia, rapid onset after adding a serotonergic agent); Patient B has NMS (lead-pipe rigidity, hyperthermia, elevated CK, slower onset after antipsychotic). These are distinct emergencies with different mechanisms and treatments.",
+          "c": true
+        }
+      ],
+      "why": "All rigidity equals NMS, All agitation equals serotonin syndrome, and One treatment for all are three forms of diagnostic conflation. The discriminating features: serotonin syndrome = rapid onset, clonus, hyperreflexia, after serotonergic agent combination; NMS = slower onset, lead-pipe rigidity, hyperthermia, elevated CK, after dopamine blocker. Treating them identically mismatches the pharmacologic antidote to the wrong mechanism.",
+      "pearl": "Serotonin syndrome: rapid onset, clonus, hyperreflexia (serotonergic agents); NMS: slower, lead-pipe rigidity, hyperthermia, elevated CK (dopamine blockade) — different mechanisms, different treatments.",
+      "evidence": "psychopharm_primer.md — Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased. Neuroleptic malignant syndrome: 'lead-pipe' rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+    },
+    {
+      "id": "qb_pha_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
+      "stem": "A 65-year-old man with bipolar I disorder maintained on lithium 900 mg daily presents with intention tremor, unsteady gait, and mild confusion over 5 days. His lithium level was 0.75 mEq/L two months ago. He recently started lisinopril for newly diagnosed hypertension. Most likely explanation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Lithium toxicity — ACE inhibitors reduce renal lithium clearance, leading to lithium level elevation; tremor, ataxia, and confusion are early-to-moderate toxicity signs.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Essential tremor triggered by a new antihypertensive — beta-blockers, not ACE inhibitors, cause tremor.",
+          "trap": {
+            "name": "Neurological symptoms equal neurological diagnosis",
+            "note": "The tremor onset after starting lisinopril in a patient on lithium must be attributed to lithium toxicity until proven otherwise — the drug interaction, not a new neurological diagnosis, is the first explanation."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Bipolar mixed state with neurological features — the combination of mood instability and motor symptoms represents bipolar cycling.",
+          "trap": {
+            "name": "Bipolar by default",
+            "note": "Tremor, ataxia, and confusion in a lithium-treated patient who recently started an interacting drug is lithium toxicity until proven otherwise — attributing it to bipolar cycling before checking a level is a diagnostic error."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Lisinopril-induced hypotension — orthostatic changes reduce cerebral perfusion and explain the ataxia and confusion.",
+          "trap": {
+            "name": "Cardiac first",
+            "note": "Orthostatic hypotension would present with lightheadedness and be episodic — the 5-day progressive course of tremor + ataxia + confusion in a lithium-treated patient with a new interacting drug is lithium toxicity."
+          }
+        }
+      ],
+      "why": "Neurological symptoms equal neurological diagnosis, Bipolar by default, and Cardiac first all bypass the pharmacokinetic explanation that is sitting in the chart. ACE inhibitors reduce renal lithium clearance — a well-established drug interaction. The triad of tremor, ataxia, and confusion after something changed in a lithium-treated patient is the textbook lithium toxicity presentation.",
+      "pearl": "Lithium toxicity: tremor + ataxia + confusion = check the level when something changed (dehydration, NSAIDs, ACE inhibitors, diuretics, declining renal function).",
+      "evidence": "psychopharm_primer.md — Lithium toxicity: tremor, ataxia, and confusion, often when something changed (dehydration, renal function, an interacting drug)."
+    },
+    {
+      "id": "qb_pha_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "pharm",
+        "management"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "ect_neuromodulation.md"
+      ],
+      "link": {
+        "label": "Open the ECT & Neuromodulation page",
+        "href": "?page=ect_neuromodulation.md"
+      },
+      "stem": "A 72-year-old woman with treatment-resistant MDD has active suicidal ideation, has stopped eating and drinking, and expresses a fixed belief that her body is rotting. She has failed two adequate antidepressant trials. The team is choosing between a third antidepressant plus antipsychotic versus ECT. Which response best reflects the evidence?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Start a third antidepressant plus an atypical antipsychotic — combination pharmacotherapy is the standard for psychotic depression and avoids the risks of anesthesia.",
+          "trap": {
+            "name": "Pharmacotherapy first at any severity",
+            "note": "ECT is the evidence-based first choice for severe, psychotic, treatment-resistant depression — 'pharmacotherapy first' is appropriate for mild-moderate presentations, not this clinical picture."
+          }
+        },
+        {
+          "key": "B",
+          "t": "ECT — it is the most effective treatment for severe, psychotic, and treatment-resistant depression and provides the rapid response required for a patient with active suicidality who is not eating or drinking.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "rTMS — it avoids anesthesia, is FDA-cleared for treatment-resistant depression, and has equivalent efficacy to ECT in psychotic depression.",
+          "trap": {
+            "name": "Newer = better",
+            "note": "rTMS is less potent than ECT; it is not equivalent in psychotic or severe depression — ECT is the standard for this clinical severity."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Esketamine — rapid-acting antidepressants with same-day onset should be tried before ECT for any treatment-resistant presentation.",
+          "trap": {
+            "name": "Ordering by recency",
+            "note": "Esketamine has rapid anti-suicidal effects but is not established as superior to ECT for this clinical picture; ECT is indicated for severe, psychotic, treatment-resistant depression and should not be deferred by default."
+          }
+        }
+      ],
+      "why": "Pharmacotherapy first at any severity, Newer = better, and Ordering by recency all delay the most effective and most appropriate intervention. ECT's indications include exactly this constellation: severe, psychotic, treatment-resistant depression with active suicidality and refusal to eat/drink. The page lists 'rapid, definitive response needed' as the specific framing that points to ECT.",
+      "pearl": "ECT is the most effective treatment for severe, psychotic, or catatonic depression — choose it when a rapid, definitive response is needed (active suicidality, not eating/drinking, prior good ECT response).",
+      "evidence": "ect_neuromodulation.md — ECT indications: severe MDD (especially with psychotic features, catatonia, or high suicide risk), treatment-resistant depression, acute mania, and catatonia/NMS. Choose ECT when a rapid, definitive response is needed — active suicidality, refusal to eat or drink, pregnancy where medications are undesirable, or prior good ECT response."
+    },
+    {
+      "id": "qb_pha_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "management",
+        "pharm"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ect_neuromodulation.md"
+      ],
+      "link": {
+        "label": "Open the ECT & Neuromodulation page",
+        "href": "?page=ect_neuromodulation.md"
+      },
+      "stem": "A patient with severe depression is scheduled for ECT tomorrow. Her current medications include clonazepam 1 mg BID, gabapentin 300 mg TID, and escitalopram 20 mg daily. Her ECT team asks the student to identify which medication adjustment is most critical before the procedure.",
+      "options": [
+        {
+          "key": "A",
+          "t": "Discontinue escitalopram — antidepressants inhibit the neuroplasticity mechanisms through which ECT works.",
+          "trap": {
+            "name": "Wrong medication stopped",
+            "note": "Antidepressants do not antagonize ECT — the agents to hold are benzodiazepines and anticonvulsants, which raise the seizure threshold and blunt the induced seizure."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Hold gabapentin only — anticonvulsants raise seizure threshold, but benzodiazepines are safe to continue through ECT.",
+          "trap": {
+            "name": "Partial hold",
+            "note": "Both the benzodiazepine (clonazepam) and the anticonvulsant (gabapentin) raise the seizure threshold — both should be held or adjusted before ECT."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Hold clonazepam and gabapentin — benzodiazepines and anticonvulsants raise the seizure threshold and blunt the induced seizure that is the mechanism of ECT's therapeutic effect.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Discontinue all medications for 72 hours before ECT — polypharmacy during ECT increases anesthesia risk.",
+          "trap": {
+            "name": "All medications stopped",
+            "note": "There is no blanket requirement to discontinue all medications before ECT; the specific concern is benzodiazepines and anticonvulsants that raise seizure threshold."
+          }
+        }
+      ],
+      "why": "Wrong medication stopped, Partial hold, and All medications stopped all fail to identify the pharmacologically correct adjustment. The ECT page is explicit: benzodiazepines and anticonvulsants raise the seizure threshold and reduce ECT efficacy — they are the agents to hold. Escitalopram is not contraindicated.",
+      "pearl": "Before ECT: hold benzodiazepines and anticonvulsants — they raise the seizure threshold and reduce ECT efficacy.",
+      "evidence": "ect_neuromodulation.md — Pre-ECT medication review: hold/adjust benzodiazepines and anticonvulsants, which raise seizure threshold."
+    },
+    {
+      "id": "qb_pha_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "pharm",
+      "competency": [
+        "management",
+        "pharm"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "ect_neuromodulation.md"
+      ],
+      "link": {
+        "label": "Open the ECT & Neuromodulation page",
+        "href": "?page=ect_neuromodulation.md"
+      },
+      "stem": "A 48-year-old man with treatment-resistant depression (two adequate antidepressant trials, no psychotic features, no active suicidality) strongly prefers to avoid general anesthesia. He asks the team about neuromodulation options. Which correctly characterizes what is available?",
+      "options": [
+        {
+          "key": "A",
+          "t": "rTMS is equivalent to ECT for all indications including psychotic depression — the delivery route is the only difference.",
+          "trap": {
+            "name": "Newer = better",
+            "note": "rTMS is less potent than ECT — it is not equivalent for severe or psychotic presentations; ECT remains the most effective neuromodulation treatment."
+          }
+        },
+        {
+          "key": "B",
+          "t": "ECT is the only FDA-cleared neuromodulation option for treatment-resistant depression.",
+          "trap": {
+            "name": "Ignores rTMS",
+            "note": "rTMS is FDA-cleared for treatment-resistant depression and OCD — this patient who wants to avoid anesthesia is exactly the candidate for whom rTMS is an appropriate consideration."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Esketamine intranasal requires no monitoring and can be self-administered at home once initiated.",
+          "trap": {
+            "name": "Misread REMS monitoring",
+            "note": "Esketamine is delivered under a REMS with in-office monitoring for dissociation, sedation, and blood-pressure elevation — it cannot be self-administered at home."
+          }
+        },
+        {
+          "key": "D",
+          "t": "rTMS is FDA-cleared for treatment-resistant depression, requires no anesthesia, carries a small seizure risk, and is less potent than ECT; for this patient who declines anesthesia, rTMS is a clinically appropriate next step.",
+          "c": true
+        }
+      ],
+      "why": "Newer = better, Ignores rTMS, and Misread REMS monitoring all mischaracterize the options. rTMS is FDA-cleared for TRD and OCD, outpatient, anesthesia-free, with a small seizure risk — less potent than ECT but a reasonable option for patients who cannot or will not tolerate anesthesia. Esketamine requires in-office REMS monitoring.",
+      "pearl": "rTMS: FDA-cleared for TRD and OCD, no anesthesia, small seizure risk, less potent than ECT — appropriate for patients who decline anesthesia.",
+      "evidence": "ect_neuromodulation.md — rTMS: FDA-cleared for treatment-resistant depression (and OCD); outpatient, no anesthesia, no memory effects; main risk is a small seizure risk. Less potent than ECT but far better tolerated."
     }
   ]
 }
