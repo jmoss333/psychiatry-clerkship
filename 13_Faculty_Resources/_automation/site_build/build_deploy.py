@@ -27,6 +27,7 @@ tools=[
  ("07_Evidence_and_Reading/Landmark_Trials/review.html","review.html","Daily Review (Spaced Repetition)"),
  ("13_Faculty_Resources/Feedback/feedback.html","feedback.html","Improve this library — send feedback"),
  ("13_Faculty_Resources/_automation/site_build/question-bank-practice.html","question-bank-practice.html","Practice Questions — Question Bank"),
+ ("13_Faculty_Resources/qbank-attest.html","qbank-attest.html","Question Bank Attestation — Faculty"),
 ]
 
 # ---- pre-flight: verify every REQUIRED source asset exists BEFORE we build ----
@@ -111,6 +112,7 @@ _rv=LIB+"/13_Faculty_Resources/reviewed.json"
 shutil.copy2(_rv, OUT+"/reviewed.json") if os.path.exists(_rv) else open(OUT+"/reviewed.json","w").write("{}")
 _tm=LIB+"/topic_meta.json"
 shutil.copy2(_tm, OUT+"/topic_meta.json") if os.path.exists(_tm) else open(OUT+"/topic_meta.json","w").write("{}")
+# question_bank.json: served at site root so both qbank-attest.html and question-bank-practice.html can fetch ../question_bank.json
 shutil.copy2(LIB+"/question_bank.json", OUT+"/question_bank.json")
 shutil.copy2(LIB+"/13_Faculty_Resources/review-attest.html", OUT+"/tools/review-attest.html")
 shutil.copy2(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learning-path.html")
@@ -192,7 +194,7 @@ nav=[
  {"section":"Skills, cases & exam","items":[{"t":"Documentation & Oral Presentation","f":"doc_oral.md","k":"md"},{"t":"Capacity/Delirium/Catatonia/Withdrawal","f":"exp_consult.md","k":"md"},{"t":"Treatment Basics","f":"exp_tx.md","k":"md"},{"t":"Family & Discharge","f":"exp_family.md","k":"md"},{"t":"Family Therapy Modalities","f":"family_modalities.md","k":"md"},{"t":"Family Meeting Playbook (90-min)","f":"family_playbook.md","k":"md"},{"t":"Motivational Interviewing","f":"motivational_interviewing.md","k":"md"},{"t":"Brief Psychotherapy on the Unit","f":"brief_psychotherapy.md","k":"md"},{"t":"OSCE Stations","f":"osce.md","k":"md"},{"t":"Practice Cases","f":"cases.md","k":"md"},{"t":"COMAT & Shelf Review","f":"shelf.md","k":"md"},{"t":"High-Yield Rounds Questions","f":"rounds_questions.md","k":"md"},{"t":"Practice Questions — Question Bank","f":"question-bank-practice.html","k":"tool"}]},
  {"section":"Evidence & reading","items":[{"t":"Weekly Reading Map","f":"reading_map.md","k":"md"},{"t":"Landmark Trials — Listen & Test","f":"landmark_trials.md","k":"md"},{"t":"Evidence-Based Inpatient Psychiatry","f":"evidence_inpatient.md","k":"md"}]},
  {"section":"Books & Podcasts","items":[{"t":"MS3 Book Library","f":"book_library.md","k":"md"},{"t":"Podcast Library (Psychiatry & Psychotherapy)","f":"podcast_library.md","k":"md"}]},
- {"section":"Faculty","items":[{"t":"Review & Attest","f":"review-attest.html","k":"tool"}]},
+ {"section":"Faculty","items":[{"t":"Review & Attest","f":"review-attest.html","k":"tool"},{"t":"Question Bank Attestation","f":"qbank-attest.html","k":"tool"}]},
 ]
 _navorder=["Start here","Core Topics","Six-Week Curriculum","Interactive tools","Acute & Safety","Psychopharmacology","Ethics, Law & Culture","Pocket guides","Skills, cases & exam","Evidence & reading","Books & Podcasts","Faculty"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)

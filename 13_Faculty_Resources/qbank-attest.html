@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Question Bank Attestation — Faculty</title>
+<style>
+  :root{
+    --bg:#f6f3ee; --surface:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+    --good:#2a6b5e; --good-bg:#e7f1ee; --warn:#7a6234; --warn-bg:#f5efe2;
+    --flag:#7a3030; --flag-bg:#f5e8e8;
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --font-mono:ui-monospace,Menlo,"Courier New",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.55}
+
+  /* ── sticky header ── */
+  .hdr{position:sticky;top:0;z-index:10;background:rgba(246,243,238,.97);backdrop-filter:blur(6px);
+       border-bottom:1px solid var(--border);padding:10px 16px}
+  .hdr-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  h1{font-family:var(--font-head);color:var(--primary);font-size:1.3rem;margin:0;white-space:nowrap}
+  .rev-input{padding:5px 9px;border:1px solid var(--border);border-radius:7px;font:inherit;font-size:.82rem;min-width:160px}
+  .rev-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+
+  /* progress */
+  .prog-wrap{flex:1;min-width:140px}
+  .prog-lbl{font-size:.78rem;color:var(--text-mid);margin-bottom:3px}
+  .prog-bar{height:6px;background:var(--primary-light);border-radius:999px;overflow:hidden}
+  .prog-bar>i{display:block;height:100%;background:var(--good);border-radius:999px;transition:width .3s}
+
+  /* buttons */
+  .btn{border:none;border-radius:8px;padding:7px 13px;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap}
+  .btn-primary{background:var(--primary-dark);color:#fff}
+  .btn-ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .btn-approve{background:var(--good);color:#fff}
+  .btn-flag{background:var(--flag);color:#fff}
+  .btn-sm{padding:5px 10px;font-size:.78rem}
+
+  /* filter pills */
+  .pills{display:flex;flex-wrap:wrap;gap:5px;padding:8px 16px 0}
+  .pill{font-size:.75rem;padding:3px 10px;border:1px solid var(--border);border-radius:999px;
+        background:var(--surface);cursor:pointer;color:var(--text-mid);transition:all .15s}
+  .pill:hover{border-color:var(--accent);color:var(--accent-dark)}
+  .pill.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .pill-sect{font-size:.68rem;font-weight:700;color:var(--text-light);letter-spacing:.07em;
+             text-transform:uppercase;padding:3px 0;align-self:center}
+
+  /* ── nav bar ── */
+  .nav-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;
+           border-bottom:1px solid var(--border);background:var(--surface)}
+  .nav-pos{font-size:.85rem;color:var(--text-mid);min-width:80px;text-align:center}
+  .view-toggle{font-size:.78rem;padding:4px 10px;border:1px solid var(--border);border-radius:7px;
+               cursor:pointer;background:var(--surface);color:var(--text-mid)}
+  .view-toggle.on{background:var(--primary-light);border-color:var(--primary);color:var(--primary-dark)}
+  .kbd{display:inline-block;font-family:var(--font-mono);font-size:.65rem;padding:1px 5px;
+       border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text-mid)}
+
+  /* ── main layout ── */
+  .wrap{max-width:900px;margin:0 auto;padding:14px 16px 80px}
+
+  /* ── item card ── */
+  .item-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;
+             padding:18px 20px;margin-bottom:14px}
+  .item-card.approved{border-color:var(--good);border-width:2px}
+  .item-card.flagged{border-color:var(--flag);border-width:2px}
+
+  .item-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px}
+  .item-id{font-family:var(--font-mono);font-size:.72rem;color:var(--text-light);padding:2px 7px;
+            background:var(--bg);border:1px solid var(--border);border-radius:5px}
+  .badge{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:999px;
+         text-transform:uppercase;letter-spacing:.04em}
+  .b-cat{background:var(--primary-light);color:var(--primary-dark)}
+  .b-type{background:#e8edf5;color:#3a4d6e}
+  .b-hy{background:#fdefd8;color:#7a4e10}
+  .b-diff{color:var(--text-light);font-size:.8rem;letter-spacing:.05em}
+  .b-ok{background:var(--good-bg);color:var(--good)}
+  .b-flag{background:var(--flag-bg);color:var(--flag)}
+
+  /* stem */
+  .lbl{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+       color:var(--text-light);margin:14px 0 5px}
+  .stem-text{font-size:.97rem;line-height:1.6;color:var(--text);font-style:italic;
+              background:var(--bg);border-radius:9px;padding:12px 14px;
+              border-left:3px solid var(--primary-light)}
+
+  /* options */
+  .opts{list-style:none;margin:0;padding:0}
+  .opts li{padding:7px 11px;border-radius:8px;margin:4px 0}
+  .opt-correct{background:var(--good-bg);border:1px solid var(--good)}
+  .opt-correct .opt-key{color:var(--good);font-weight:700}
+  .opt-wrong{background:var(--bg);border:1px solid var(--border)}
+  .opt-key{font-family:var(--font-mono);font-size:.82rem;margin-right:6px;color:var(--text-mid);font-weight:700}
+  .opt-text{font-size:.9rem}
+  .trap-chip{display:inline-block;font-size:.7rem;font-weight:700;padding:1px 7px;
+              border-radius:999px;background:#f5ece8;color:#7a4030;margin:3px 0 1px;border:1px solid #e8d4cc}
+  .trap-note{font-size:.78rem;color:var(--text-mid);margin:1px 0 0 2px;font-style:italic}
+
+  /* tier 2 */
+  .tier2-box{background:var(--accent-light);border:1px solid #c5ddd8;border-radius:10px;
+              padding:12px 14px;margin-top:10px}
+  .tier2-box .lbl{margin-top:0;color:var(--accent-dark)}
+  .tier2-q{font-size:.9rem;font-weight:600;color:var(--accent-dark);margin-bottom:7px}
+
+  /* rationale */
+  .rationale-grid{display:grid;gap:8px;margin-top:10px}
+  .rat-block{background:var(--bg);border-radius:8px;padding:10px 12px;border:1px solid var(--border)}
+  .rat-text{font-size:.87rem;color:var(--text-mid);margin-top:3px;line-height:1.55}
+  .pearl-text{font-size:.92rem;color:var(--accent-dark);font-weight:600;margin-top:3px}
+  .link-btn{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;color:var(--accent-dark);
+             text-decoration:none;border:1px solid var(--accent-light);border-radius:7px;
+             padding:4px 10px;background:var(--accent-light);margin-top:5px}
+  .link-btn:hover{background:#d4ebe5}
+
+  /* attestation row */
+  .attest-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;
+               margin-top:16px;padding-top:14px;border-top:1px dashed var(--border)}
+  .attest-actions{display:flex;gap:8px;align-items:center}
+  .attest-status{font-size:.8rem;color:var(--text-light)}
+  .attest-status.ok{color:var(--good)}
+  .attest-status.fl{color:var(--flag)}
+  .notes-wrap{flex:1;min-width:220px}
+  .notes-area{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:8px;
+               font:inherit;font-size:.82rem;resize:vertical;min-height:54px;background:var(--bg)}
+  .notes-area:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+
+  /* ── grid view ── */
+  .grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;
+              padding-bottom:40px}
+  .grid-tile{background:var(--surface);border:1px solid var(--border);border-radius:9px;
+              padding:9px 10px;cursor:pointer;transition:border-color .12s}
+  .grid-tile:hover{border-color:var(--accent)}
+  .grid-tile.approved{border-color:var(--good);border-width:2px;background:var(--good-bg)}
+  .grid-tile.flagged{border-color:var(--flag);border-width:2px;background:var(--flag-bg)}
+  .gt-id{font-family:var(--font-mono);font-size:.65rem;color:var(--text-light)}
+  .gt-cat{font-size:.68rem;font-weight:700;color:var(--text-mid);text-transform:uppercase;margin:2px 0}
+  .gt-status{font-size:.68rem;font-weight:700}
+  .gt-status.ok{color:var(--good)}
+  .gt-status.fl{color:var(--flag)}
+  .gt-status.pend{color:var(--text-light)}
+  .gt-stem{font-size:.7rem;color:var(--text-mid);overflow:hidden;display:-webkit-box;
+            -webkit-line-clamp:2;-webkit-box-orient:vertical;margin-top:3px}
+
+  /* misc */
+  .loading{text-align:center;padding:60px 20px;color:var(--text-light)}
+  .error-box{background:#fdf4f2;border:1px solid #e8c4b8;border-radius:11px;padding:18px 20px;
+              margin:20px 0;color:var(--primary-dark)}
+  .error-box code{font-family:var(--font-mono);font-size:.82rem;background:var(--primary-light);
+                   padding:2px 6px;border-radius:4px}
+  .disc{font-size:.78rem;color:var(--text-light);border-top:1px solid var(--border);
+         margin-top:24px;padding-top:12px}
+  .empty-state{text-align:center;padding:40px 20px;color:var(--text-light)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+var e = React.createElement;
+var useState = React.useState;
+var useEffect = React.useEffect;
+var useRef = React.useRef;
+var useMemo = React.useMemo;
+var useCallback = React.useCallback;
+
+var LS_KEY = 'cw_qbank_attest_v1';
+
+function loadStore() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(_) { return {}; }
+}
+function saveStore(o) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(o)); } catch(_) {}
+}
+function today() { return new Date().toISOString().slice(0, 10); }
+
+var CAT_LABELS = {
+  all: 'All', mood: 'Mood', psychosis: 'Psychosis', anxiety: 'Anxiety',
+  substance: 'Substance', neurocog: 'Neurocog', pharm: 'Pharm', safety: 'Safety',
+  personality: 'Personality', childdev: 'Child/Dev', otherdx: 'Other Dx',
+  ethics: 'Ethics', relational: 'Relational'
+};
+var TYPE_LABELS = { sba: 'SBA', 'two-tier': 'Two-Tier', relational: 'Relational' };
+var DIFF_DOTS = ['', '●', '●●', '●●●'];
+
+// ── Sub-components ──────────────────────────────────────────────
+
+function ItemCard(p) {
+  var item = p.item;
+  var decision = p.decision || {};
+  var status = decision.status || 'pending';
+  var reviewer = p.reviewer;
+  var noteRef = useRef(null);
+
+  var cls = 'item-card' + (status === 'approved' ? ' approved' : status === 'flagged' ? ' flagged' : '');
+
+  function handleApprove() { p.onApprove(item.id); }
+  function handleFlag() { p.onFlag(item.id, noteRef.current ? noteRef.current.value : ''); }
+
+  var correctOpt = (item.options || []).find(function(o) { return o.c; });
+
+  return e('div', { className: cls },
+
+    // meta row
+    e('div', { className: 'item-meta' },
+      e('span', { className: 'item-id' }, item.id),
+      e('span', { className: 'badge b-cat' }, CAT_LABELS[item.category] || item.category),
+      e('span', { className: 'badge b-type' }, TYPE_LABELS[item.type] || item.type),
+      item.subtype ? e('span', { className: 'badge b-type' }, item.subtype) : null,
+      e('span', { className: 'b-diff', title: 'Difficulty ' + item.difficulty },
+        DIFF_DOTS[item.difficulty] || ''),
+      item.hy ? e('span', { className: 'badge b-hy' }, 'High Yield') : null,
+      status === 'approved' ? e('span', { className: 'badge b-ok' }, '✓ Approved') : null,
+      status === 'flagged' ? e('span', { className: 'badge b-flag' }, '⚑ Flagged') : null
+    ),
+
+    // stem
+    e('div', { className: 'lbl' }, 'Question'),
+    e('div', { className: 'stem-text' }, item.stem),
+
+    // options
+    e('div', { className: 'lbl' }, 'Options'),
+    e('ul', { className: 'opts' },
+      (item.options || []).map(function(opt) {
+        var isCorrect = !!opt.c;
+        return e('li', { key: opt.key, className: isCorrect ? 'opt-correct' : 'opt-wrong' },
+          e('span', { className: 'opt-key' }, opt.key + '.'),
+          e('span', { className: 'opt-text' }, opt.t),
+          (!isCorrect && opt.trap) ? e('div', null,
+            e('span', { className: 'trap-chip' }, '⚠ ' + opt.trap.name),
+            e('div', { className: 'trap-note' }, opt.trap.note)
+          ) : null
+        );
+      })
+    ),
+
+    // tier 2
+    item.tier2 ? e('div', { className: 'tier2-box' },
+      e('div', { className: 'lbl' }, 'Tier 2 — Reasoning Question'),
+      e('div', { className: 'tier2-q' }, item.tier2.q),
+      e('ul', { className: 'opts', style: { marginBottom: 6 } },
+        (item.tier2.options || []).map(function(opt) {
+          var isCorrect = !!opt.c;
+          return e('li', { key: opt.key, className: isCorrect ? 'opt-correct' : 'opt-wrong' },
+            e('span', { className: 'opt-key' }, opt.key + '.'),
+            e('span', { className: 'opt-text' }, opt.t)
+          );
+        })
+      ),
+      e('div', { className: 'trap-note', style: { marginTop: 4 } }, item.tier2.why)
+    ) : null,
+
+    // rationale
+    e('div', { className: 'rationale-grid' },
+      e('div', { className: 'rat-block' },
+        e('div', { className: 'lbl', style: { margin: 0 } }, 'Why'),
+        e('div', { className: 'rat-text' }, item.why)
+      ),
+      e('div', { className: 'rat-block' },
+        e('div', { className: 'lbl', style: { margin: 0 } }, 'Pearl'),
+        e('div', { className: 'pearl-text' }, item.pearl)
+      ),
+      e('div', { className: 'rat-block' },
+        e('div', { className: 'lbl', style: { margin: 0 } }, 'Evidence'),
+        e('div', { className: 'rat-text' }, item.evidence),
+        item.link ? e('a', {
+          className: 'link-btn', href: '../' + item.link.href,
+          target: '_blank', rel: 'noopener'
+        }, (item.link.label || 'Open resource') + ' ↗') : null
+      )
+    ),
+
+    // attestation row
+    e('div', { className: 'attest-row' },
+      e('div', { className: 'attest-actions' },
+        e('button', {
+          className: 'btn btn-approve btn-sm', onClick: handleApprove,
+          title: 'Approve this item (keyboard: A)'
+        }, '✓ Approve'),
+        e('button', {
+          className: 'btn btn-flag btn-sm', onClick: handleFlag,
+          title: 'Flag for edit (keyboard: F)'
+        }, '⚑ Flag'),
+        status !== 'pending' ? e('span', {
+          className: 'attest-status' + (status === 'approved' ? ' ok' : ' fl')
+        }, status === 'approved'
+          ? '✓ Approved by ' + (decision.by || reviewer) + ' — ' + (decision.at || '')
+          : '⚑ Flagged by ' + (decision.by || reviewer) + ' — ' + (decision.at || '')
+        ) : e('span', { className: 'attest-status' }, 'Pending review')
+      ),
+      e('div', { className: 'notes-wrap' },
+        e('textarea', {
+          ref: noteRef,
+          className: 'notes-area',
+          placeholder: 'Flag notes (e.g. "Option B text unclear", "Evidence cite needs update")…',
+          defaultValue: decision.note || '',
+          key: item.id + '-note'
+        })
+      )
+    )
+  );
+}
+
+// ── Grid view ──────────────────────────────────────────────────
+
+function GridView(p) {
+  var items = p.items;
+  var decisions = p.decisions;
+  return e('div', { className: 'grid-view' },
+    items.map(function(item, i) {
+      var dec = decisions[item.id] || {};
+      var status = dec.status || 'pending';
+      return e('div', {
+        key: item.id,
+        className: 'grid-tile' + (status === 'approved' ? ' approved' : status === 'flagged' ? ' flagged' : ''),
+        onClick: function() { p.onSelect(i); }
+      },
+        e('div', { className: 'gt-id' }, item.id),
+        e('div', { className: 'gt-cat' }, CAT_LABELS[item.category] || item.category),
+        e('div', { className: 'gt-status ' + (status === 'approved' ? 'ok' : status === 'flagged' ? 'fl' : 'pend') },
+          status === 'approved' ? '✓ Approved' : status === 'flagged' ? '⚑ Flagged' : '— Pending'
+        ),
+        e('div', { className: 'gt-stem' }, item.stem.slice(0, 90))
+      );
+    })
+  );
+}
+
+// ── App ────────────────────────────────────────────────────────
+
+function App() {
+  var qbState = useState(null); var qbank = qbState[0]; var setQbank = qbState[1];
+  var errState = useState(null); var error = errState[0]; var setError = errState[1];
+  var storeState = useState(loadStore); var store = storeState[0]; var setStore = storeState[1];
+  var idxState = useState(0); var idx = idxState[0]; var setIdx = idxState[1];
+  var viewState = useState('card'); var view = viewState[0]; var setView = viewState[1];
+  var catState = useState('all'); var catFilter = catState[0]; var setCatFilter = catState[1];
+  var statState = useState('all'); var statusFilter = statState[0]; var setStatusFilter = statState[1];
+
+  var reviewer = store.reviewer || 'Joshua Moss, MD';
+  var decisions = store.decisions || {};
+
+  // Load question_bank.json
+  useEffect(function() {
+    fetch('../question_bank.json')
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(data) { setQbank(data); })
+      .catch(function() {
+        setError('Could not load question_bank.json. ' +
+          'This tool is designed to run on the deployed site. ' +
+          'For local use, run: python3 -m http.server 8080 from the repo root, ' +
+          'then open: http://localhost:8080/13_Faculty_Resources/qbank-attest.html');
+      });
+  }, []);
+
+  // Filtered item list
+  var filtered = useMemo(function() {
+    if (!qbank) return [];
+    return qbank.items.filter(function(item) {
+      if (catFilter !== 'all' && item.category !== catFilter) return false;
+      var dec = decisions[item.id];
+      var st = dec ? dec.status : 'pending';
+      if (statusFilter === 'approved') return st === 'approved';
+      if (statusFilter === 'flagged') return st === 'flagged';
+      if (statusFilter === 'pending') return st === 'pending';
+      return true;
+    });
+  }, [qbank, catFilter, statusFilter, decisions]);
+
+  var clampedIdx = Math.min(idx, Math.max(0, filtered.length - 1));
+  var currentItem = filtered[clampedIdx] || null;
+
+  // Persist decisions helper
+  function updateDecisions(id, dec) {
+    var next = Object.assign({}, store, { decisions: Object.assign({}, decisions, { [id]: dec }) });
+    saveStore(next);
+    setStore(next);
+  }
+
+  function setReviewer(v) {
+    var next = Object.assign({}, store, { reviewer: v });
+    saveStore(next);
+    setStore(next);
+  }
+
+  function handleApprove(id) {
+    updateDecisions(id, { status: 'approved', at: today(), by: reviewer });
+    // Auto-advance if there are more items
+    if (clampedIdx < filtered.length - 1) setIdx(clampedIdx + 1);
+  }
+
+  function handleFlag(id, note) {
+    updateDecisions(id, { status: 'flagged', at: today(), by: reviewer, note: note || '' });
+    if (clampedIdx < filtered.length - 1) setIdx(clampedIdx + 1);
+  }
+
+  function navigate(delta) {
+    setIdx(function(i) { return Math.max(0, Math.min(filtered.length - 1, i + delta)); });
+  }
+
+  // Keyboard shortcuts
+  useEffect(function() {
+    function handler(ev) {
+      // Don't intercept when typing in an input/textarea
+      if (ev.target.tagName === 'INPUT' || ev.target.tagName === 'TEXTAREA') return;
+      if (ev.key === 'ArrowRight' || ev.key === 'l') navigate(1);
+      if (ev.key === 'ArrowLeft' || ev.key === 'h') navigate(-1);
+      if ((ev.key === 'a' || ev.key === 'A') && currentItem) handleApprove(currentItem.id);
+      if ((ev.key === 'f' || ev.key === 'F') && currentItem) handleFlag(currentItem.id, '');
+      if (ev.key === 'g' || ev.key === 'G') setView(function(v) { return v === 'grid' ? 'card' : 'grid'; });
+    }
+    window.addEventListener('keydown', handler);
+    return function() { window.removeEventListener('keydown', handler); };
+  }, [currentItem, filtered, clampedIdx, reviewer]);
+
+  // Export patch JSON
+  function exportPatch() {
+    if (!qbank) return;
+    var patch = { exported: new Date().toISOString(), by: reviewer, items: {} };
+    qbank.items.forEach(function(item) {
+      var dec = decisions[item.id];
+      if (!dec) return;
+      if (dec.status === 'approved') {
+        patch.items[item.id] = { status: 'attested', at: dec.at, by: dec.by };
+      } else if (dec.status === 'flagged') {
+        patch.items[item.id] = { status: 'flagged', at: dec.at, by: dec.by, note: dec.note || '' };
+      }
+    });
+    var total = qbank.items.length;
+    var attested = Object.values(patch.items).filter(function(v) { return v.status === 'attested'; }).length;
+    var flagged = Object.values(patch.items).filter(function(v) { return v.status === 'flagged'; }).length;
+    patch.summary = { total: total, attested: attested, flagged: flagged, pending: total - attested - flagged };
+    var blob = new Blob([JSON.stringify(patch, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'qbank_attestation_' + today() + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  // Loading / error states
+  if (!qbank && !error) {
+    return e('div', { className: 'wrap' }, e('div', { className: 'loading' }, 'Loading question bank…'));
+  }
+  if (error) {
+    return e('div', { className: 'wrap' },
+      e('h1', { style: { fontFamily: 'Georgia,serif', color: '#c25a3c' } }, 'Question Bank Attestation'),
+      e('div', { className: 'error-box' },
+        e('strong', null, 'Cannot load question_bank.json'),
+        e('p', null, error),
+        e('p', null, 'Example: ', e('code', null, 'python3 -m http.server 8080'), ' then open ',
+          e('code', null, 'http://localhost:8080/13_Faculty_Resources/qbank-attest.html'))
+      )
+    );
+  }
+
+  // Stats
+  var allItems = qbank.items;
+  var totalItems = allItems.length;
+  var approvedCount = allItems.filter(function(it) { return decisions[it.id] && decisions[it.id].status === 'approved'; }).length;
+  var flaggedCount = allItems.filter(function(it) { return decisions[it.id] && decisions[it.id].status === 'flagged'; }).length;
+  var doneCount = approvedCount + flaggedCount;
+
+  // Category counts for filter pills
+  var catCounts = {};
+  allItems.forEach(function(it) { catCounts[it.category] = (catCounts[it.category] || 0) + 1; });
+
+  // All categories present in data
+  var cats = ['all'].concat(Object.keys(catCounts).sort());
+
+  return e('div', null,
+
+    // ── Header ──
+    e('div', { className: 'hdr' },
+      e('div', { className: 'hdr-row' },
+        e('h1', null, 'Question Bank Attestation'),
+        e('label', { style: { fontSize: '.78rem', color: 'var(--text-mid)' } },
+          'Reviewer ',
+          e('input', {
+            className: 'rev-input', value: reviewer, 'aria-label': 'Reviewer name',
+            onChange: function(ev) { setReviewer(ev.target.value); }
+          })
+        ),
+        e('div', { className: 'prog-wrap' },
+          e('div', { className: 'prog-lbl' },
+            e('strong', null, doneCount + ' / ' + totalItems),
+            ' reviewed (' + approvedCount + ' approved, ' + flaggedCount + ' flagged)'
+          ),
+          e('div', { className: 'prog-bar' },
+            e('i', { style: { width: (totalItems ? 100 * doneCount / totalItems : 0) + '%' } })
+          )
+        ),
+        e('button', { className: 'btn btn-primary btn-sm', onClick: exportPatch }, 'Export Patch ↓')
+      ),
+
+      // filter pills row
+      e('div', { className: 'pills', style: { paddingTop: 8 } },
+        e('span', { className: 'pill-sect' }, 'Cat:'),
+        cats.map(function(cat) {
+          return e('button', {
+            key: cat,
+            className: 'pill' + (catFilter === cat ? ' on' : ''),
+            onClick: function() { setCatFilter(cat); setIdx(0); }
+          }, cat === 'all' ? 'All' : (CAT_LABELS[cat] || cat) + ' (' + (catCounts[cat] || 0) + ')');
+        }),
+        e('span', { className: 'pill-sect', style: { marginLeft: 8 } }, 'Status:'),
+        ['all', 'pending', 'approved', 'flagged'].map(function(st) {
+          return e('button', {
+            key: st,
+            className: 'pill' + (statusFilter === st ? ' on' : ''),
+            onClick: function() { setStatusFilter(st); setIdx(0); }
+          }, st.charAt(0).toUpperCase() + st.slice(1));
+        })
+      )
+    ),
+
+    // ── Nav bar ──
+    e('div', { className: 'nav-bar' },
+      e('button', {
+        className: 'btn btn-ghost btn-sm', onClick: function() { navigate(-1); },
+        disabled: clampedIdx === 0
+      }, '← Prev'),
+      e('span', { className: 'nav-pos' },
+        filtered.length > 0
+          ? (clampedIdx + 1) + ' / ' + filtered.length
+          : '0 / 0'
+      ),
+      e('button', {
+        className: 'btn btn-ghost btn-sm', onClick: function() { navigate(1); },
+        disabled: clampedIdx >= filtered.length - 1
+      }, 'Next →'),
+      e('span', { style: { flex: 1 } }),
+      e('span', { style: { fontSize: '.75rem', color: 'var(--text-light)' } },
+        e('span', { className: 'kbd' }, 'A'), ' Approve  ',
+        e('span', { className: 'kbd' }, 'F'), ' Flag  ',
+        e('span', { className: 'kbd' }, '←→'), ' Navigate  ',
+        e('span', { className: 'kbd' }, 'G'), ' Grid view'
+      ),
+      e('button', {
+        className: 'view-toggle' + (view === 'grid' ? ' on' : ''),
+        onClick: function() { setView(function(v) { return v === 'grid' ? 'card' : 'grid'; }); }
+      }, view === 'grid' ? '▤ Card' : '▦ Grid')
+    ),
+
+    // ── Main content ──
+    e('div', { className: 'wrap' },
+
+      view === 'grid'
+        ? e(GridView, {
+            items: filtered,
+            decisions: decisions,
+            onSelect: function(i) { setIdx(i); setView('card'); }
+          })
+        : (filtered.length === 0
+            ? e('div', { className: 'empty-state' }, 'No items match the current filters.')
+            : currentItem
+              ? e(ItemCard, {
+                  key: currentItem.id,
+                  item: currentItem,
+                  decision: decisions[currentItem.id],
+                  reviewer: reviewer,
+                  onApprove: handleApprove,
+                  onFlag: handleFlag
+                })
+              : null
+          ),
+
+      e('div', { className: 'disc' },
+        'Faculty attestation tool for the question bank. Decisions are stored only in this browser (localStorage). ',
+        'When finished, click Export Patch to download a dated JSON file — commit it to docs/question-bank-wave1 to record sign-off. ',
+        'Approved items → ', e('code', null, 'status:"attested"'), ' in the patch; flagged items include your note for the author. ',
+        'The BUILD does NOT write any attestations — only your clicks here do. ',
+        'Joshua Moss, MD | Psychiatrist'
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>
