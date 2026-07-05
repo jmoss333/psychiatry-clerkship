@@ -68,6 +68,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          # Optional: if set, each PR gets an ADVISORY AI-drafted suggested edit
+          # (lib_ai_draft.py). Absent -> PRs are byte-identical to Phase 1. The draft
+          # is never applied or attested automatically; faculty review + re-attest.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: >-
           python3 13_Faculty_Resources/_automation/surveillance/bin/open_update_pr.py
           --findings findings.json

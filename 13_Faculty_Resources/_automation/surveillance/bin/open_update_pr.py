@@ -23,6 +23,10 @@ Usage:
 """
 import os, sys, json, argparse, subprocess, re
 import lib_surveillance as L
+try:
+    import lib_ai_draft            # Phase 2: advisory AI-drafted edit (optional)
+except Exception:
+    lib_ai_draft = None
 
 NEEDS   = os.path.join(L.CONFIG, "needs_reattest.json")
 PENDING = os.path.join(L.SURV_ROOT, "PENDING_UPDATES.md")
@@ -46,7 +50,21 @@ def fp8(f):
     return f["fingerprint"].split("::")[-1][:8]
 
 
-def pr_body(f, slugs):
+def build_ai_block(f, stub=False):
+    """Advisory AI-drafted suggestion block, or None. Never raises into the PR flow."""
+    if lib_ai_draft is None:
+        return None
+    if not stub and not os.environ.get("ANTHROPIC_API_KEY"):
+        return None
+    try:
+        pages = lib_ai_draft.load_pages(f.get("affects", []), L.LIB_ROOT)
+        return lib_ai_draft.suggest_block(f, pages, stub=stub)
+    except Exception as e:
+        print("WARN: AI draft skipped for %s: %s" % (fp8(f), e), file=sys.stderr)
+        return None
+
+
+def pr_body(f, slugs, ai_block=None):
     body = L.issue_body(f)   # reuse exact rendering: FP marker, source, diff, affects, action
     extra = [
         "", "### Attestation checklist",
@@ -59,7 +77,10 @@ def pr_body(f, slugs):
         extra.append("\n**Flagged for re-attestation:** " + ", ".join(f"`{s}`" for s in slugs))
     else:
         extra.append("\n_(Affected page(s) have no topic_meta card; review the path(s) above.)_")
-    return body + "\n" + "\n".join(extra)
+    out = body + "\n" + "\n".join(extra)
+    if ai_block:
+        out += "\n" + ai_block
+    return out
 
 
 def load_needs():
@@ -86,7 +107,7 @@ def branch_or_pr_exists(branch):
     return run(["git", "ls-remote", "--exit-code", "--heads", "origin", branch]).returncode == 0
 
 
-def open_pr(f, slugs):
+def open_pr(f, slugs, ai_block=None):
     branch = "surveillance/update-" + fp8(f)
     if branch_or_pr_exists(branch):
         return None, "exists"
@@ -105,7 +126,7 @@ def open_pr(f, slugs):
     title = ("surveillance: review %s — %s changed"
              % (", ".join(slugs) or f["source_id"], f["source_id"]))[:250]
     pr = run(["gh", "pr", "create", "--base", "main", "--head", branch,
-              "--title", title, "--body", pr_body(f, slugs),
+              "--title", title, "--body", pr_body(f, slugs, ai_block),
               "--label", "surveillance", "--label", f["severity"], "--label", "needs-attestation"])
     return (pr.stdout.strip() or None), (None if pr.returncode == 0 else pr.stderr.strip())
 
@@ -116,6 +137,10 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--out-dir")
     ap.add_argument("--max-prs", type=int, default=int(os.environ.get("MAX_NEW_PRS", "10")))
+    ap.add_argument("--ai-stub", action="store_true",
+                    help="Attach a canned (no-API) advisory block — offline wiring test.")
+    ap.add_argument("--no-ai", action="store_true",
+                    help="Never attach an AI draft even if ANTHROPIC_API_KEY is set.")
     a = ap.parse_args()
 
     findings = json.load(open(a.findings, encoding="utf-8"))
@@ -134,14 +159,16 @@ def main():
         branch = "surveillance/update-" + fp8(f)
         if len(opened) >= a.max_prs:
             skipped.append((branch, "max-prs")); continue
+        ai_block = None if a.no_ai else build_ai_block(f, stub=a.ai_stub)
         if a.dry_run:
             outd = a.out_dir or "."
             os.makedirs(outd, exist_ok=True)
-            open(os.path.join(outd, "PR_%s.md" % fp8(f)), "w", encoding="utf-8").write(pr_body(f, slugs))
-            print("[dry-run] PR on %s | affects slugs: %s" % (branch, slugs or "(none with topic_meta)"))
+            open(os.path.join(outd, "PR_%s.md" % fp8(f)), "w", encoding="utf-8").write(pr_body(f, slugs, ai_block))
+            print("[dry-run] PR on %s | affects slugs: %s | ai_draft: %s"
+                  % (branch, slugs or "(none with topic_meta)", "yes" if ai_block else "no"))
             opened.append(branch); continue
         try:
-            url, err = open_pr(f, slugs)
+            url, err = open_pr(f, slugs, ai_block)
         except Exception as e:
             url, err = None, str(e)
         if url and not err:
