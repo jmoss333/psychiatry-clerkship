@@ -6258,7 +6258,7 @@
       }
     },
     {
-      "id": "qb_eth_001",
+      "id": "qb_eth_007",
       "status": "draft",
       "type": "sba",
       "category": "ethics",
@@ -6312,7 +6312,7 @@
       "evidence": "ethics_law_confidentiality_inpatient_teaching.md — A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields."
     },
     {
-      "id": "qb_eth_002",
+      "id": "qb_eth_008",
       "status": "draft",
       "type": "sba",
       "category": "ethics",
@@ -6574,7 +6574,7 @@
       "evidence": "ethics_law_confidentiality_inpatient_teaching.md — Parents/guardians generally consent for minors, with exceptions (emancipated/mature minors and, in many states, care for STIs, contraception, substance use, and some mental-health services)."
     },
     {
-      "id": "qb_per_001",
+      "id": "qb_per_005",
       "status": "draft",
       "type": "sba",
       "category": "personality",
@@ -6628,7 +6628,7 @@
       "evidence": "personality_disorders_inpatient_teaching.md — Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, 95% CI 1.45–1.78; Lieslehto 2023) and worsen disinhibition."
     },
     {
-      "id": "qb_per_002",
+      "id": "qb_per_006",
       "status": "draft",
       "type": "sba",
       "category": "personality",
