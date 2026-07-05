@@ -10,25 +10,12 @@ MARKED=os.path.join(HERE,"marked.min.js")                 # vendored marked (co-
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(OUT+"/content"); os.makedirs(OUT+"/tools")
 
-tools=[
- ("02_Clinical_Skills/Mental_Status_Exam/mental-status-exam-module.html","mse.html","Mental Status Exam"),
- ("02_Clinical_Skills/Interviewing/interview-circle.html","interview-circle.html","The Interview Circle"),
- ("04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html","capacity.html","Decisional Capacity"),
- ("02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html","oral.html","Treatment Team Rounding Prep"),
- ("04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html","violence.html","Violence Risk (FRST)"),
- ("04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html","cssrs.html","Columbia C-SSRS Screener"),
- ("02_Clinical_Skills/Screeners/screeners.html","screeners.html","Screeners: PHQ-9 & GAD-7"),
- ("03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html","withdrawal.html","Withdrawal: CIWA-Ar/COWS"),
- ("04_Acute_and_Safety/Decision_Aids/decision-aids.html","decision-aids.html","Algorithms & Decision Aids"),
- ("04_Acute_and_Safety/Catatonia/bfcrs.html","bfcrs.html","Bush-Francis Catatonia Scale (BFCRS)"),
- ("02_Clinical_Skills/Reflection_PIF/reflection-and-pif-set.html","reflection.html","Reflection & Identity"),
- ("07_Evidence_and_Reading/Landmark_Trials/active-recall.html","active-recall.html","Active Recall (Self-Test)"),
- ("07_Evidence_and_Reading/Landmark_Trials/shelf-mode.html","shelf-mode.html","Shelf Mode — Exam Simulation"),
- ("07_Evidence_and_Reading/Landmark_Trials/review.html","review.html","Daily Review (Spaced Repetition)"),
- ("13_Faculty_Resources/Feedback/feedback.html","feedback.html","Improve this library — send feedback"),
- ("13_Faculty_Resources/_automation/site_build/question-bank-practice.html","question-bank-practice.html","Practice Questions — Question Bank"),
- ("13_Faculty_Resources/qbank-attest.html","qbank-attest.html","Question Bank Attestation — Faculty"),
-]
+# Source→slug map: data-driven since 2026-07-05 (was ~73 literal tuples inline).
+# site_manifest.json (co-located) is the single source of truth for what ships;
+# the QA gate's orphaned-source check audits the NN_Category/ tree against it.
+# New content pages: register in site_manifest.json AND in nav[] below to ship.
+_manifest=json.load(open(os.path.join(HERE,"site_manifest.json"),encoding="utf-8"))
+tools=[tuple(x) for x in _manifest["tools"]]
 # Hidden from the sidebar list + search per Dr. Moss's request (2026-07-06) — superseded by the
 # question bank practice tool. Files still ship (still in `tools` above) and stay fully reachable
 # by direct link / the home "Start review" card / per-page tool docks (all look items up by
@@ -122,65 +109,8 @@ shutil.copy2(LIB+"/question_bank.json", OUT+"/question_bank.json")
 shutil.copy2(LIB+"/13_Faculty_Resources/review-attest.html", OUT+"/tools/review-attest.html")
 shutil.copy2(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learning-path.html")
 
-# md content: (source rel, out name, title)
-md=[
- ("13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md","welcome.md","Welcome to the Rotation"),
- ("14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md","orientation.md","Orientation Packet"),
- ("14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md","core_readings.md","Core Reading List"),
- ("01_Six_Week_Curriculum/Week_1_Foundations/README.md","week1.md","Week 1 — Foundations"),
- ("01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md","week2.md","Week 2 — Mood/Psychosis/Pharm"),
- ("01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md","week3.md","Week 3 — Psychotherapy/Personality"),
- ("01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md","week4.md","Week 4 — Family/Systems/EE"),
- ("01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md","week5.md","Week 5 — Acute/Emergency"),
- ("01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md","week6.md","Week 6 — Integration/Exam"),
- ("02_Clinical_Skills/Differential_Diagnosis/inpatient_differential_scaffolds.md","ddx.md","Differential Dx Scaffolds"),
- ("03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md","t_mood.md","Mood Disorders"),
- ("03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md","t_psychosis.md","Psychotic Disorders"),
- ("03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md","t_anxiety.md","Anxiety/Trauma/OCD"),
- ("03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md","t_personality.md","Personality"),
- ("03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md","t_sud.md","Substance Use"),
- ("03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md","t_geri.md","Geriatric"),
- ("03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md","t_perinatal.md","Perinatal"),
- ("03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md","t_neurodev.md","Neurodevelopmental Disorders"),
- ("03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md","t_eating.md","Eating Disorders"),
- ("03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md","t_neurocog.md","Neurocognitive (Dementia)"),
- ("03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md","t_somatic.md","Somatic Symptom & Related"),
- ("03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md","t_sleep.md","Sleep-Wake Disorders"),
- ("03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md","t_dissociative.md","Dissociative Disorders"),
- ("03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md","t_sexual.md","Sexual, Paraphilic & Gender"),
- ("03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md","t_impulse.md","Impulse-Control & Conduct"),
- ("03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md","t_adjustment.md","Adjustment Disorders"),
- ("05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md","ect_neuromodulation.md","ECT & Neuromodulation"),
- ("03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md","ethics_legal.md","Ethics & the Law: Confidentiality, Tarasoff, Reporting"),
- ("03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md","cultural_psychiatry.md","Culture, Disparities & Formulation"),
- ("14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md","pg_interview.md","Interview & MSE Pocket Guide"),
- ("14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/formulation_differential_pocket_guide.md","pg_formulation.md","Formulation & DDx Pocket Guide"),
- ("14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/suicide_risk_and_safety_pocket_card.md","pg_suicide.md","Suicide Risk & Safety Card"),
- ("14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md","doc_oral.md","Documentation & Oral Presentation"),
- ("14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md","exp_consult.md","Capacity/Delirium/Catatonia/Withdrawal"),
- ("14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/treatment_basics_digest.md","exp_tx.md","Treatment Basics"),
- ("14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/family_discharge_student_module.md","exp_family.md","Family & Discharge"),
- ("14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md","osce.md","OSCE Stations"),
- ("14_Tracks/MS3/Student_Ready_Pack/07_shelf_guide/shelf_review_guide.md","shelf.md","Shelf Review Guide"),
- ("14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md","reading_map.md","Weekly Reading Map"),
- ("14_Tracks/MS3/Student_Ready_Pack/08_synthetic_cases/synthetic_practice_cases.md","cases.md","Practice Cases"),
- ("06_Family_and_Relational/family_therapy_modalities_inpatient.md","family_modalities.md","Family Therapy Modalities"),
- ("06_Family_and_Relational/family_meeting_playbook_90min.md","family_playbook.md","Family Meeting Playbook (90-min)"),
- ("04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md","catatonia.md","Catatonia"),
- ("04_Acute_and_Safety/Delirium/delirium_inpatient_teaching.md","delirium.md","Delirium"),
- ("04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md","agitation.md","Agitation & Restraint"),
- ("05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md","psychopharm_primer.md","Psychopharmacology Primer"),
- ("05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md","protocol_library.md","Protocol Library"),
- ("07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md","book_library.md","MS3 Book Library"),
- ("12_Media/psychiatry_psychotherapy_podcast_library.md","podcast_library.md","Podcast Library (P&P)"),
- ("03_Core_Topics/Nutrition/nutrition_metabolic_inpatient_teaching.md","nutrition_metabolic.md","Nutrition & Metabolic Health"),
- ("03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md","omm_resources.md","Osteopathic (OMM) Resources"),
- ("06_Family_and_Relational/motivational_interviewing_inpatient_teaching.md","motivational_interviewing.md","Motivational Interviewing"),
- ("02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md","brief_psychotherapy.md","Brief Psychotherapy on the Unit"),
- ("07_Evidence_and_Reading/Landmark_Trials/landmark_trials_page.md","landmark_trials.md","Landmark Trials — Listen & Test"),
- ("07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md","rounds_questions.md","High-Yield Rounds Questions"),
- ("07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md","evidence_inpatient.md","Evidence-Based Inpatient Psychiatry"),
-]
+# md content pages: [source rel, out name, title] — see site_manifest.json
+md=[tuple(x) for x in _manifest["md"]]
 missing=[]
 for src,dst,_ in md:
     p=os.path.join(LIB,src)
