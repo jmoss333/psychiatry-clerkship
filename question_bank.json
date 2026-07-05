@@ -7,11 +7,19 @@
       "status": "draft",
       "type": "two-tier",
       "category": "substance",
-      "competency": ["next-step", "pharm"],
+      "competency": [
+        "next-step",
+        "pharm"
+      ],
       "difficulty": 2,
       "hy": true,
-      "pages": ["t_sud.md"],
-      "link": { "label": "Open the CIWA-Ar / COWS card", "href": "tools/withdrawal.html" },
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the CIWA-Ar / COWS card",
+        "href": "tools/withdrawal.html"
+      },
       "stem": "A 34-year-old man admitted last night for opioid use disorder asks to start buprenorphine right away — 'I don't want to get sick.' His last heroin use was about 6 hours ago. He is anxious but has no yawning, rhinorrhea, mydriasis, or piloerection; his COWS score is 4. Best next step?",
       "options": [
         {
@@ -77,11 +85,19 @@
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "relational",
-      "competency": ["psychosocial", "safety"],
+      "competency": [
+        "psychosocial",
+        "safety"
+      ],
       "difficulty": 2,
       "hy": true,
-      "pages": ["exp_family.md"],
-      "link": { "label": "Open the Family & Discharge module", "href": "?page=exp_family.md" },
+      "pages": [
+        "exp_family.md"
+      ],
+      "link": {
+        "label": "Open the Family & Discharge module",
+        "href": "?page=exp_family.md"
+      },
       "stem": "A family meeting is held the day before planned discharge for a 52-year-old man admitted after a suicide attempt by overdose. When the agenda reaches safety and warning signs, his wife says: 'We'll keep a close eye on him. And you don't need to worry about the guns — he would never use them, and they're put away.' The attending invites your input. Which response is best?",
       "options": [
         {
@@ -123,10 +139,18 @@
       "status": "draft",
       "type": "sba",
       "category": "neurocog",
-      "competency": ["dx", "safety"],
+      "competency": [
+        "dx",
+        "safety"
+      ],
       "difficulty": 2,
-      "pages": ["delirium.md"],
-      "link": { "label": "Open the Delirium page", "href": "?page=delirium.md" },
+      "pages": [
+        "delirium.md"
+      ],
+      "link": {
+        "label": "Open the Delirium page",
+        "href": "?page=delirium.md"
+      },
       "stem": "A 76-year-old woman on hospital day 3 after hip-fracture repair is referred to psychiatry for 'depression.' She is quiet, slow to respond, and sleeps much of the day; her nurse notes she was conversational yesterday evening but is 'flat' this morning. She cannot recite the months of the year backward. Most likely explanation?",
       "options": [
         {
@@ -168,11 +192,19 @@
       "status": "draft",
       "type": "sba",
       "category": "mood",
-      "competency": ["dx", "safety"],
+      "competency": [
+        "dx",
+        "safety"
+      ],
       "difficulty": 1,
       "hy": true,
-      "pages": ["t_mood.md"],
-      "link": { "label": "Open the Mood Disorders page", "href": "?page=t_mood.md" },
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
       "stem": "A 31-year-old woman is admitted for a severe depressive episode with passive suicidal ideation. The intern plans to start sertraline today. Before initiating an antidepressant, the most important step is which of the following?",
       "options": [
         {
@@ -214,10 +246,19 @@
       "status": "draft",
       "type": "two-tier",
       "category": "mood",
-      "competency": ["pharm", "safety"],
+      "competency": [
+        "pharm",
+        "safety"
+      ],
       "difficulty": 3,
-      "pages": ["t_mood.md", "psychopharm_primer.md"],
-      "link": { "label": "Open the Mood Disorders page", "href": "?page=t_mood.md" },
+      "pages": [
+        "t_mood.md",
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
       "stem": "A 38-year-old man with bipolar I disorder, stable on lithium maintenance for two years, presents with a 2-day course of worsening tremor, confusion, and vomiting. Five days ago he began ibuprofen for back pain. Which of the following best explains his presentation?",
       "options": [
         {
@@ -282,11 +323,18 @@
       "status": "draft",
       "type": "sba",
       "category": "psychosis",
-      "competency": ["dx"],
+      "competency": [
+        "dx"
+      ],
       "difficulty": 1,
       "hy": true,
-      "pages": ["t_psychosis.md"],
-      "link": { "label": "Open the Psychotic Disorders page", "href": "?page=t_psychosis.md" },
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
       "stem": "A 27-year-old woman with no prior psychiatric history is admitted for new-onset paranoid ideation, disorganized behavior, and auditory hallucinations. Her chart notes she was started on high-dose prednisone three weeks ago for an autoimmune flare. Before establishing a primary psychiatric diagnosis, the most important step is which of the following?",
       "options": [
         {
@@ -328,10 +376,19 @@
       "status": "draft",
       "type": "sba",
       "category": "psychosis",
-      "competency": ["next-step", "safety"],
+      "competency": [
+        "next-step",
+        "safety"
+      ],
       "difficulty": 3,
-      "pages": ["t_psychosis.md", "psychopharm_primer.md"],
-      "link": { "label": "Open the Psychotic Disorders page", "href": "?page=t_psychosis.md" },
+      "pages": [
+        "t_psychosis.md",
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
       "stem": "A 41-year-old man with treatment-resistant schizophrenia has been on haloperidol for three days. The medical student is paged because he is rigid, febrile to 39.1°C (102.4°F), diaphoretic, and confused. His creatine kinase is critically elevated. Best next step?",
       "options": [
         {
@@ -373,10 +430,17 @@
       "status": "draft",
       "type": "sba",
       "category": "anxiety",
-      "competency": ["dx"],
+      "competency": [
+        "dx"
+      ],
       "difficulty": 1,
-      "pages": ["t_anxiety.md"],
-      "link": { "label": "Open the Anxiety, OCD & Trauma page", "href": "?page=t_anxiety.md" },
+      "pages": [
+        "t_anxiety.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=t_anxiety.md"
+      },
       "stem": "A 29-year-old woman admitted for a manic episode is started on risperidone. Two days later she is restless, pacing the hallway, unable to sit through meals, and says she 'can't stop moving.' She denies worsening mood symptoms. Which of the following best explains her presentation?",
       "options": [
         {
@@ -418,10 +482,18 @@
       "status": "draft",
       "type": "sba",
       "category": "anxiety",
-      "competency": ["management", "pharm"],
+      "competency": [
+        "management",
+        "pharm"
+      ],
       "difficulty": 1,
-      "pages": ["t_anxiety.md"],
-      "link": { "label": "Open the Anxiety, OCD & Trauma page", "href": "?page=t_anxiety.md" },
+      "pages": [
+        "t_anxiety.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=t_anxiety.md"
+      },
       "stem": "A 28-year-old woman admitted for a severe depressive episode is also found to have untreated PTSD — she endorses daily nightmares, hypervigilance, and avoidance behaviors that have persisted for two years since an assault. She has no history of substance use disorder. After addressing the acute safety concern, which is the most appropriate first-line pharmacotherapy for her PTSD?",
       "options": [
         {
@@ -463,10 +535,18 @@
       "status": "draft",
       "type": "sba",
       "category": "substance",
-      "competency": ["safety", "next-step"],
+      "competency": [
+        "safety",
+        "next-step"
+      ],
       "difficulty": 2,
-      "pages": ["t_sud.md"],
-      "link": { "label": "Score at the bedside — CIWA-Ar / COWS", "href": "tools/withdrawal.html" },
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Score at the bedside — CIWA-Ar / COWS",
+        "href": "tools/withdrawal.html"
+      },
       "stem": "A 52-year-old man with a history of heavy daily alcohol use is admitted in early withdrawal — tremulous and tachycardic. A nurse is about to start an IV dextrose infusion for a fingerstick glucose in the low-normal range. The most important step before administering the glucose is which of the following?",
       "options": [
         {
@@ -508,10 +588,18 @@
       "status": "draft",
       "type": "sba",
       "category": "neurocog",
-      "competency": ["next-step", "safety"],
+      "competency": [
+        "next-step",
+        "safety"
+      ],
       "difficulty": 2,
-      "pages": ["catatonia.md"],
-      "link": { "label": "Open the Catatonia page", "href": "?page=catatonia.md" },
+      "pages": [
+        "catatonia.md"
+      ],
+      "link": {
+        "label": "Open the Catatonia page",
+        "href": "?page=catatonia.md"
+      },
       "stem": "A 44-year-old woman with a history of bipolar disorder is found mute and immobile in her room, staring past the examiner. When the examiner positions her arm in an awkward posture, it remains in place for over a minute. A colleague suggests starting haloperidol for presumed psychosis. Best next step?",
       "options": [
         {
@@ -553,11 +641,19 @@
       "status": "draft",
       "type": "two-tier",
       "category": "pharm",
-      "competency": ["pharm", "safety"],
+      "competency": [
+        "pharm",
+        "safety"
+      ],
       "difficulty": 2,
       "hy": true,
-      "pages": ["psychopharm_primer.md"],
-      "link": { "label": "Open the Psychopharmacology Primer", "href": "?page=psychopharm_primer.md" },
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
       "stem": "A 23-year-old man with a history of depression on high-dose sertraline is brought to the emergency department 3 hours after a second serotonergic medication was added to his regimen. Examination shows agitation, diarrhea, diaphoresis, and clonus; reflexes are brisk and symmetrically hyperactive throughout. Temperature is 38.3°C. Which of the following best explains this presentation?",
       "options": [
         {
@@ -622,10 +718,18 @@
       "status": "draft",
       "type": "sba",
       "category": "pharm",
-      "competency": ["pharm", "management"],
+      "competency": [
+        "pharm",
+        "management"
+      ],
       "difficulty": 1,
-      "pages": ["psychopharm_primer.md"],
-      "link": { "label": "Open the Psychopharmacology Primer", "href": "?page=psychopharm_primer.md" },
+      "pages": [
+        "psychopharm_primer.md"
+      ],
+      "link": {
+        "label": "Open the Psychopharmacology Primer",
+        "href": "?page=psychopharm_primer.md"
+      },
       "stem": "A 34-year-old man with treatment-resistant schizophrenia has just been started on clozapine. He reports feeling better than he has in years. The treatment team asks the student to identify the most critical ongoing monitoring parameter for this medication. Which of the following is correct?",
       "options": [
         {
@@ -667,11 +771,18 @@
       "status": "draft",
       "type": "sba",
       "category": "safety",
-      "competency": ["safety"],
+      "competency": [
+        "safety"
+      ],
       "difficulty": 3,
       "hy": true,
-      "pages": ["pg_suicide.md"],
-      "link": { "label": "Open the Suicide Risk pocket card", "href": "?page=pg_suicide.md" },
+      "pages": [
+        "pg_suicide.md"
+      ],
+      "link": {
+        "label": "Open the Suicide Risk pocket card",
+        "href": "?page=pg_suicide.md"
+      },
       "stem": "A 19-year-old man is admitted after a near-lethal suicide attempt. He has expressed persistent hopelessness and a stated wish to die for three days. On hospital day 4, nurses report he seems 'much better' — calm, well-rested, and telling the team he is ready to go home. His affect is bright and he is chatty with staff. No clinical change or social development explains the shift. Best next step?",
       "options": [
         {
@@ -714,10 +825,18 @@
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "safety",
-      "competency": ["safety", "psychosocial"],
+      "competency": [
+        "safety",
+        "psychosocial"
+      ],
       "difficulty": 2,
-      "pages": ["agitation.md"],
-      "link": { "label": "Open the Agitation & Restraint page", "href": "?page=agitation.md" },
+      "pages": [
+        "agitation.md"
+      ],
+      "link": {
+        "label": "Open the Agitation & Restraint page",
+        "href": "?page=agitation.md"
+      },
       "stem": "A patient is pacing the hallway, speaking loudly, and waving his hands. He has not threatened anyone and is not in immediate danger of harming himself or others. You are the student. Which response is best?",
       "options": [
         {
@@ -759,10 +878,18 @@
       "status": "draft",
       "type": "sba",
       "category": "personality",
-      "competency": ["dx", "psychosocial"],
+      "competency": [
+        "dx",
+        "psychosocial"
+      ],
       "difficulty": 1,
-      "pages": ["t_personality.md"],
-      "link": { "label": "Open the Personality Disorders page", "href": "?page=t_personality.md" },
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
       "stem": "A 26-year-old woman with borderline personality disorder tells her student doctor that she trusts only her and that the other staff 'just don't care.' Night nurses describe her as cooperative and warm; day nurses report she screams at them. How is this pattern best understood?",
       "options": [
         {
@@ -804,10 +931,18 @@
       "status": "draft",
       "type": "sba",
       "category": "personality",
-      "competency": ["management", "safety"],
+      "competency": [
+        "management",
+        "safety"
+      ],
       "difficulty": 3,
-      "pages": ["t_personality.md"],
-      "link": { "label": "Open the Personality Disorders page", "href": "?page=t_personality.md" },
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
       "stem": "A 22-year-old woman with borderline personality disorder is admitted in crisis with severe anxiety and sleep disturbance. She has been engaged in DBT for six months with good skill use documented. She is asking for 'something for her nerves.' The pharmacologic approach most consistent with evidence-based practice for BPD is which of the following?",
       "options": [
         {
@@ -849,10 +984,17 @@
       "status": "draft",
       "type": "sba",
       "category": "childdev",
-      "competency": ["dx"],
+      "competency": [
+        "dx"
+      ],
       "difficulty": 2,
-      "pages": ["t_neurodev.md"],
-      "link": { "label": "Open the Neurodevelopmental Disorders page", "href": "?page=t_neurodev.md" },
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
       "stem": "A 19-year-old college student is brought to the inpatient unit by his parents after three weeks of dramatically decreased need for sleep (sleeping two to three hours and feeling rested), expansive and grandiose mood, pressured speech, and impulsive spending. His parents note he has always been 'a little hyper' in school but never like this. He takes no medications and denies substance use. Most likely diagnosis?",
       "options": [
         {
@@ -894,10 +1036,17 @@
       "status": "draft",
       "type": "sba",
       "category": "childdev",
-      "competency": ["management"],
+      "competency": [
+        "management"
+      ],
       "difficulty": 1,
-      "pages": ["t_neurodev.md"],
-      "link": { "label": "Open the Neurodevelopmental Disorders page", "href": "?page=t_neurodev.md" },
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
       "stem": "An autistic adult admitted after aggression at his group home is increasingly distressed on the inpatient unit — covering his ears, rocking, and repeatedly asking when it will be quiet. He is not in imminent danger. No PRN medication has been given. The most appropriate first step is which of the following?",
       "options": [
         {
@@ -939,11 +1088,19 @@
       "status": "draft",
       "type": "sba",
       "category": "otherdx",
-      "competency": ["safety", "next-step"],
+      "competency": [
+        "safety",
+        "next-step"
+      ],
       "difficulty": 2,
       "hy": true,
-      "pages": ["t_eating.md"],
-      "link": { "label": "Open the Eating Disorders page", "href": "?page=t_eating.md" },
+      "pages": [
+        "t_eating.md"
+      ],
+      "link": {
+        "label": "Open the Eating Disorders page",
+        "href": "?page=t_eating.md"
+      },
       "stem": "A 16-year-old with severe anorexia nervosa is medically admitted and nutritional rehabilitation is started. On day 4 of refeeding, she develops progressive fatigue, weakness, paresthesias, and a new cardiac arrhythmia. Her phosphate level is critically low. Which of the following best explains this complication?",
       "options": [
         {
@@ -985,10 +1142,18 @@
       "status": "draft",
       "type": "sba",
       "category": "otherdx",
-      "competency": ["dx", "safety"],
+      "competency": [
+        "dx",
+        "safety"
+      ],
       "difficulty": 2,
-      "pages": ["t_perinatal.md"],
-      "link": { "label": "Open the Perinatal Psychiatry page", "href": "?page=t_perinatal.md" },
+      "pages": [
+        "t_perinatal.md"
+      ],
+      "link": {
+        "label": "Open the Perinatal Psychiatry page",
+        "href": "?page=t_perinatal.md"
+      },
       "stem": "A 27-year-old mother, 9 days postpartum, is brought to the emergency department by her partner. Days 2 and 3 she had mild tearfulness and fatigue that fully resolved by day 5. Since yesterday afternoon she has been awake all night, agitated, and saying 'something isn't right with the baby.' This morning she appeared briefly lucid when asked direct questions but became disorganized within minutes. Most likely diagnosis?",
       "options": [
         {
@@ -1030,10 +1195,18 @@
       "status": "draft",
       "type": "sba",
       "category": "ethics",
-      "competency": ["dx", "next-step"],
+      "competency": [
+        "dx",
+        "next-step"
+      ],
       "difficulty": 2,
-      "pages": ["ethics_legal.md"],
-      "link": { "label": "Open the Ethics & Law page", "href": "?page=ethics_legal.md" },
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & Law page",
+        "href": "?page=ethics_legal.md"
+      },
       "stem": "A 45-year-old man with schizophrenia is voluntarily admitted and refuses his prescribed antipsychotic. When asked, he explains what the medication is for, articulates specific concerns about its side effects, understands the risks of not taking it, and asks whether alternatives exist. Best next step?",
       "options": [
         {
@@ -1075,11 +1248,19 @@
       "status": "draft",
       "type": "two-tier",
       "category": "ethics",
-      "competency": ["next-step", "safety"],
+      "competency": [
+        "next-step",
+        "safety"
+      ],
       "difficulty": 3,
       "hy": true,
-      "pages": ["ethics_legal.md"],
-      "link": { "label": "Open the Ethics & Law page", "href": "?page=ethics_legal.md" },
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & Law page",
+        "href": "?page=ethics_legal.md"
+      },
       "stem": "An outpatient therapist is meeting with a 34-year-old patient who describes, in specific detail, a plan to assault a named family member. He states his intent to act before the end of the week and describes the location and means. The therapist's obligation is which of the following?",
       "options": [
         {
@@ -1145,10 +1326,17 @@
       "type": "relational",
       "subtype": "family-system",
       "category": "relational",
-      "competency": ["psychosocial"],
+      "competency": [
+        "psychosocial"
+      ],
       "difficulty": 2,
-      "pages": ["family_playbook.md"],
-      "link": { "label": "Open the Family Meeting Playbook", "href": "?page=family_playbook.md" },
+      "pages": [
+        "family_playbook.md"
+      ],
+      "link": {
+        "label": "Open the Family Meeting Playbook",
+        "href": "?page=family_playbook.md"
+      },
       "stem": "A family meeting is held on hospital day 3 for a 29-year-old man admitted for a first manic episode. His mother interrupts repeatedly: 'He does this every time he stops his medication — he's selfish and he makes us all suffer.' She is tearful and wringing her hands. The attending invites the student to observe what is happening. What is the student's best understanding of this dynamic?",
       "options": [
         {
@@ -1184,6 +1372,1366 @@
       "why": "Criticism as fact accepts EE as objective reporting; Terminate for emotion cuts off the highest-yield phase of the meeting; Correct the narrative redirects to facts before the emotional climate has been heard. Expressed emotion — criticism, hostility, emotional over-involvement — is the measurable family dynamic that predicts relapse. De-shaming and validating the underlying fear or grief, without correcting in the moment, is what the playbook calls the phase that most changes outcomes.",
       "pearl": "Expressed emotion — criticism, hostility, emotional over-involvement — often masks fear; validate it without correcting it in the moment, because this phase is where outcomes change.",
       "evidence": "family_playbook.md 'Hear the family and read the emotional climate' — Listen for expressed emotion — criticism, hostility, and emotional over-involvement — without correcting it in the moment. De-shame: frame symptoms and behavior as illness and regulation, not character or fault. This is the phase that most changes outcomes; protect the time for it."
+    },
+    {
+      "id": "qb_cog_003",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "delirium.md"
+      ],
+      "link": {
+        "label": "Open the Delirium page",
+        "href": "?page=delirium.md"
+      },
+      "stem": "An 82-year-old man on postoperative day 2 after hip arthroplasty is confused and agitated. The Confusion Assessment Method is positive for delirium. He has no history of dementia. Which is the most appropriate initial management step?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Start scheduled haloperidol — antipsychotics prevent delirium progression in post-surgical patients.",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "Scheduled antipsychotics are not indicated for delirium prevention and carry a black-box mortality warning in older patients."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Implement non-pharmacologic measures: reorient, protect the sleep-wake cycle, mobilize early, restore sensory aids, and investigate the underlying cause while deprescribing deliriogenic medications.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Start a benzodiazepine PRN — GABAergic agents calm delirium-related agitation while the cause is sought.",
+          "trap": {
+            "name": "The reflexive benzodiazepine",
+            "note": "Benzodiazepines worsen delirium except when the cause is alcohol or sedative withdrawal, where they are the treatment."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Order a STAT non-contrast CT head — new confusion in a post-surgical patient indicates intracranial pathology until proven otherwise.",
+          "trap": {
+            "name": "CT before non-pharm",
+            "note": "Imaging may be warranted if there are focal neurological signs, but the immediate priority is non-pharmacologic management and cause investigation, not reflexive CT."
+          }
+        }
+      ],
+      "why": "Agitation = antipsychotic is the most dangerous trap — scheduled antipsychotics are not for delirium prevention and carry a mortality warning in older patients with dementia-related psychosis. The reflexive benzodiazepine deepens delirium unless the cause is alcohol or sedative withdrawal. Non-pharmacologic measures — reorientation, sleep-wake cycle protection, early mobilization, sensory aids, deprescribing — are first-line while the cause is found.",
+      "pearl": "Non-pharmacologic measures (ABCDEF bundle, sensory aids, mobility) are first-line for delirium — antipsychotics are for dangerous agitation only, never for prevention.",
+      "evidence": "delirium.md 'Management' — Non-pharmacologic measures come first, not as an afterthought: reorient the patient, protect the sleep–wake cycle, mobilize early, restore sensory aids. Antipsychotics are reserved for dangerous agitation only — not for prevention."
+    },
+    {
+      "id": "qb_cog_004",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": [
+        "management",
+        "pharm"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "delirium.md"
+      ],
+      "link": {
+        "label": "Open the Delirium page",
+        "href": "?page=delirium.md"
+      },
+      "stem": "A 78-year-old woman with mild Alzheimer disease is admitted from her nursing home after 2 days of worsening confusion. A CAM is positive. She is agitated and picking at her IV. The team asks the student to help select an appropriate PRN medication for dangerous agitation. Which of the following is correct?",
+      "options": [
+        {
+          "key": "A",
+          "t": "A benzodiazepine is the safest first choice — GABAergic agents are better tolerated than antipsychotics in cognitively impaired older patients.",
+          "trap": {
+            "name": "The reflexive benzodiazepine",
+            "note": "Benzodiazepines worsen delirium and increase fall risk in older patients; they are appropriate only when the cause is alcohol or sedative withdrawal."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Start a scheduled antipsychotic to prevent further deterioration — treating the agitation reduces downstream complications.",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "Scheduled antipsychotics are not first-line for delirium management and carry a black-box mortality warning in dementia — non-pharmacologic measures come first."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Combine a benzodiazepine with a low-dose antipsychotic for the best coverage of mixed delirium-related agitation.",
+          "trap": {
+            "name": "Polypharmacy first",
+            "note": "Combination therapy before non-pharmacologic management ignores the standard and adds synergistic CNS depression in a delirious elder."
+          }
+        },
+        {
+          "key": "D",
+          "t": "If pharmacotherapy is needed after non-pharmacologic measures fail, use the lowest effective dose of an antipsychotic time-limited with close monitoring, and avoid benzodiazepines unless the cause is alcohol or sedative withdrawal.",
+          "c": true
+        }
+      ],
+      "why": "The reflexive benzodiazepine and Agitation = antipsychotic are both active. Benzodiazepines are appropriate only for alcohol and sedative withdrawal — in other delirium they worsen confusion and increase aspiration and fall risk. If pharmacotherapy is needed for dangerous agitation after non-pharmacologic measures, a low-dose antipsychotic time-limited is the choice. Polypharmacy before non-pharmacologic management is never the correct framework.",
+      "pearl": "Benzodiazepines worsen delirium — reserve them for alcohol and sedative withdrawal only; antipsychotics at the lowest effective dose, time-limited, for dangerous agitation.",
+      "evidence": "delirium.md 'Management' — Avoid benzodiazepines, with the single exception of alcohol or sedative withdrawal, where they are the treatment. Antipsychotics are reserved for dangerous agitation only — lowest effective dose, time-limited."
+    },
+    {
+      "id": "qb_cog_005",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "t_neurocog.md"
+      ],
+      "link": {
+        "label": "Open the Neurocognitive Disorders page",
+        "href": "?page=t_neurocog.md"
+      },
+      "stem": "A 74-year-old man presents with an 18-month history of vivid recurrent visual hallucinations (small animals in the room), episodes of staring with fluctuating cognition, mild rigidity and slowness, and his wife's report that he 'acts out his dreams' and has struck her while asleep. Which dementia subtype does this constellation most strongly suggest?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Lewy body dementia — the combination of fluctuating cognition, recurrent visual hallucinations, spontaneous parkinsonism, and REM sleep behavior disorder is the pathognomonic tetrad.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Behavioral-variant frontotemporal dementia — visual hallucinations and behavioral change point to frontotemporal degeneration.",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "Visual hallucinations with parkinsonism and REM behavior disorder are the LBD tetrad — FTD presents with disinhibition and personality change, not this specific constellation."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Alzheimer disease — amnestic dementia with behavioral symptoms in a 74-year-old is most commonly Alzheimer.",
+          "trap": {
+            "name": "Most common = correct",
+            "note": "Alzheimer is the most prevalent dementia, but the specific tetrad of visual hallucinations + parkinsonism + REM behavior disorder exceeds any typical Alzheimer presentation."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Vascular dementia — stepwise decline with parkinsonism and motor slowing points to cerebrovascular disease.",
+          "trap": {
+            "name": "Parkinsonian features = vascular",
+            "note": "Vascular dementia shows stepwise decline with focal neurological signs; the full LBD tetrad including visual hallucinations and dream-enactment behavior is not a vascular pattern."
+          }
+        }
+      ],
+      "why": "Most common = correct drives most errors here: Alzheimer is most prevalent, but the full LBD tetrad — fluctuating cognition, recurrent visual hallucinations, spontaneous parkinsonism, and REM sleep behavior disorder — is present. FTD shows disinhibition and personality change without this constellation. Vascular dementia follows a stepwise course with focal signs, not this tetrad. Recognizing LBD matters urgently because of its neuroleptic sensitivity.",
+      "pearl": "LBD tetrad: fluctuating cognition + recurrent visual hallucinations + parkinsonism + REM sleep behavior disorder — recognize it before anyone prescribes an antipsychotic.",
+      "evidence": "t_neurocog.md — Lewy body dementia — fluctuating cognition, recurrent visual hallucinations, spontaneous parkinsonism, REM sleep behavior disorder, and severe neuroleptic sensitivity."
+    },
+    {
+      "id": "qb_cog_006",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "neurocog",
+      "competency": [
+        "pharm",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurocog.md"
+      ],
+      "link": {
+        "label": "Open the Neurocognitive Disorders page",
+        "href": "?page=t_neurocog.md"
+      },
+      "stem": "A patient with known Lewy body dementia is admitted with agitation and paranoid delusions. A nurse asks whether the team should start haloperidol. The most appropriate response is which of the following?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Start haloperidol — first-generation antipsychotics are better tolerated in elderly patients than second-generation agents.",
+          "trap": {
+            "name": "Newer = better inverted",
+            "note": "Typicals have greater D2 blockade and the highest risk of precipitating neuroleptic sensitivity in LBD — they are the agents to most avoid."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Start olanzapine — second-generation antipsychotics do not carry neuroleptic sensitivity risk in LBD.",
+          "trap": {
+            "name": "Newer = better",
+            "note": "SGAs still block dopamine receptors and can trigger neuroleptic sensitivity in LBD; quetiapine and pimavanserin are preferred lower-risk choices."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Hold the antipsychotic, flag the LBD diagnosis to the team, pursue non-pharmacologic management first, and reserve quetiapine or pimavanserin if pharmacotherapy is truly unavoidable.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Start risperidone — its lower EPS profile compared to haloperidol makes it the safest antipsychotic for LBD.",
+          "trap": {
+            "name": "Newer = better",
+            "note": "Risperidone has high D2 occupancy and is not a preferred agent in LBD; quetiapine and pimavanserin are lower-risk when an antipsychotic is truly unavoidable."
+          }
+        }
+      ],
+      "why": "Newer = better in three forms. In LBD, neuroleptic sensitivity can be triggered by any dopamine-blocking agent — the risk is highest with typicals and substantial with high-D2-occupancy SGAs like risperidone and olanzapine. The correct first step is flagging the diagnosis, non-pharmacologic management, and choosing quetiapine or pimavanserin if medication is truly unavoidable.",
+      "pearl": "Avoid antipsychotics in LBD — especially typicals; if pharmacotherapy is unavoidable, quetiapine or pimavanserin are lower-risk choices.",
+      "evidence": "t_neurocog.md 'Acute inpatient management' — In Lewy body dementia, avoid antipsychotics (especially typicals) because of life-threatening neuroleptic sensitivity — if one is unavoidable, quetiapine or pimavanserin are lower-risk choices.",
+      "tier2": {
+        "q": "Why is neuroleptic sensitivity so severe in Lewy body dementia?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Alpha-synuclein deposits reduce plasma protein binding of antipsychotics, causing unpredictably high free drug levels."
+          },
+          {
+            "key": "B",
+            "t": "In LBD, dopaminergic neurons are already severely depleted — antipsychotics block the remaining dopamine receptors, precipitating profound rigidity, autonomic instability, and potentially death.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "LBD patients cannot metabolize antipsychotics at standard adult doses due to age-related hepatic decline."
+          },
+          {
+            "key": "D",
+            "t": "Visual hallucinations in LBD are cholinergic, not dopaminergic — blocking dopamine has no symptom effect and creates only adverse effects."
+          }
+        ],
+        "why": "It is a receptor-depletion problem, not a pharmacokinetic one. LBD selectively destroys dopaminergic neurons in the nigrostriatal pathway, leaving remaining receptors critical for motor function. Blocking them produces an extreme parkinson-like crisis — severe rigidity, autonomic dysregulation, worsening consciousness — that can be fatal. This is why the mechanism matters: it is pharmacodynamic sensitivity, not a dosing issue."
+      }
+    },
+    {
+      "id": "qb_cog_007",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "t_neurocog.md"
+      ],
+      "link": {
+        "label": "Open the Neurocognitive Disorders page",
+        "href": "?page=t_neurocog.md"
+      },
+      "stem": "A 69-year-old man is referred for evaluation of progressive cognitive decline, urinary incontinence that preceded the cognitive changes by several months, and a gait his wife describes as 'shuffling and magnetic — like his feet are stuck to the floor.' MRI is pending. Which diagnosis should be considered first because of its potential reversibility?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Alzheimer disease — amnestic-predominant decline with gait changes in a 69-year-old is most likely AD.",
+          "trap": {
+            "name": "Most common = correct",
+            "note": "Alzheimer does not explain the magnetic gait and early urinary incontinence that preceded the cognitive change — the specific triad here points to NPH."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Normal-pressure hydrocephalus — the triad of magnetic gait apraxia, cognitive decline, and urinary incontinence is potentially reversible with ventriculoperitoneal shunting.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Vascular dementia — gait dysfunction and cognitive decline indicate stepwise cerebrovascular disease.",
+          "trap": {
+            "name": "Parkinsonian features = vascular",
+            "note": "A magnetic, small-step gait with early incontinence preceding cognition is the NPH triad; vascular dementia follows a stepwise course with focal neurological signs."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Parkinson disease dementia — gait dysfunction and cognitive decline indicate a Lewy body spectrum disorder.",
+          "trap": {
+            "name": "Gait = Parkinson",
+            "note": "The NPH gait is magnetic and apraxic without tremor or classic rigidity; early urinary incontinence preceding cognition is unusual for PD dementia and is the NPH discriminating feature."
+          }
+        }
+      ],
+      "why": "Most common = correct drives most errors. The specific triad — wet (urinary incontinence), wacky (cognitive decline), and wobbly (magnetic gait) — is classic NPH, and its potential reversibility with shunting makes it a must-diagnose. The magnetic gait is low-clearance, wide-based, and apraxic — different from Parkinsonian tremor-and-rigidity gait. Early incontinence preceding cognition is unusual for Alzheimer or vascular dementia at this stage.",
+      "pearl": "NPH triad = wet, wacky, wobbly (urinary incontinence, cognition, magnetic gait) — potentially reversible with ventriculoperitoneal shunting.",
+      "evidence": "t_neurocog.md — normal-pressure hydrocephalus (the triad — wet, wacky, wobbly: urinary incontinence, cognitive decline, magnetic gait)."
+    },
+    {
+      "id": "qb_cog_008",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurocog.md",
+        "t_geri.md"
+      ],
+      "link": {
+        "label": "Open the Neurocognitive Disorders page",
+        "href": "?page=t_neurocog.md"
+      },
+      "stem": "Psychiatry is consulted on a 72-year-old man in the surgical ICU who is 'flat and unresponsive' on postoperative day 3 after bowel surgery. His nurse reports he was interactive at yesterday's evening shift but is minimally responsive this morning. He cannot recite the months of the year backward. Which is the most likely explanation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Major depressive episode precipitated by hospitalization — flat affect, psychomotor slowing, and social withdrawal are consistent with an ICU-precipitated depression.",
+          "trap": {
+            "name": "Hypoactive delirium labeled depression",
+            "note": "Depression does not fluctuate across a single nursing shift and does not impair attention — the cardinal feature here is inattention with acute, fluctuating course."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Underlying dementia unmasked by the physiologic stress of surgery.",
+          "trap": {
+            "name": "Confused elder = dementia",
+            "note": "Dementia is chronic and progressive — a change arriving in 3 days, fluctuating shift to shift, with demonstrable inattention is delirium until proven otherwise."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Sensory deprivation psychosis — the ICU environment produces brief psychotic breaks in older adults.",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "New psychosis in a medically ill post-surgical elder is delirium until a medical workup excludes organic causes — labeling it a psychotic break bypasses mandatory evaluation."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Hypoactive delirium — acute onset after surgery, a course that fluctuated across one shift, and demonstrable inattention satisfy the CAM criteria; the ICU and recent surgery are strong precipitants.",
+          "c": true
+        }
+      ],
+      "why": "Hypoactive delirium labeled depression is the paradigm trap — the flat, quiet, non-responsive ICU patient is the prototype miss. Depression does not fluctuate across a single shift. Confused elder = dementia misreads a days-to-hours change as chronic disease. Psychosis = schizophrenia bypasses the medical workup that is mandatory for new psychiatric symptoms in medically ill patients.",
+      "pearl": "Acute + fluctuating + inattention after ICU/surgery = delirium; the quiet, non-interactive patient is exactly the one mislabeled as depressed or attributed to pre-existing dementia.",
+      "evidence": "t_neurocog.md — The recurring inpatient task is the three-way sort — delirium vs dementia vs depression — and recognizing that the three coexist: a delirium is layered on a dementia far more often than either occurs alone."
+    },
+    {
+      "id": "qb_cog_009",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": [
+        "next-step"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurocog.md"
+      ],
+      "link": {
+        "label": "Open the Neurocognitive Disorders page",
+        "href": "?page=t_neurocog.md"
+      },
+      "stem": "A 68-year-old woman is admitted after 4 months of progressive cognitive decline and withdrawal. Neuropsychological testing suggests a moderate amnestic syndrome. She has no known prior psychiatric or neurological history. Which is the most appropriate first-line laboratory workup before assigning a neurodegenerative diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "CBC, CMP, TSH, B12/folate, and consider RPR/HIV — reversible causes must be excluded before a neurodegenerative diagnosis is established.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Anti-NMDA receptor antibody panel — autoimmune encephalitis mimics dementia and should be ruled out first in all new presentations.",
+          "trap": {
+            "name": "Jump to autoimmune",
+            "note": "Anti-NMDA antibodies are appropriate in subacute encephalitis with psychiatric features, seizures, or movement disorder — a progressive 4-month amnestic syndrome warrants the standard reversible-cause panel first."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Brain MRI with gadolinium — structural imaging is the single most important diagnostic step for a new dementia presentation.",
+          "trap": {
+            "name": "Imaging before labs",
+            "note": "MRI is important in atypical, rapid, focal, or early-onset presentations — but the first workup step is the reversible-cause laboratory screen, which is faster, cheaper, and catches treatable conditions."
+          }
+        },
+        {
+          "key": "D",
+          "t": "APOE genotyping — an APOE ε4 allele would confirm Alzheimer disease and guide management.",
+          "trap": {
+            "name": "Genetic confirmation",
+            "note": "APOE status informs population-level risk but does not diagnose AD and is not part of the standard workup — reversible causes must be excluded first."
+          }
+        }
+      ],
+      "why": "Jump to autoimmune and Imaging before labs both skip the foundational step. The reversible-cause panel — B12/folate, TSH, CMP, and when indicated RPR/HIV — must precede neurodegenerative labeling because these conditions are treatable and clinically indistinguishable at presentation. APOE genotyping is not a diagnostic standard. MRI is appropriate, especially for atypical or rapid presentations, but not before basic labs.",
+      "pearl": "Order the reversible-cause panel (B12/folate, TSH, CMP, ± RPR/HIV) on every new cognitive presentation before assigning a neurodegenerative diagnosis.",
+      "evidence": "t_neurocog.md 'Initial workup' — Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Medication reconciliation to strip anticholinergic and sedative burden."
+    },
+    {
+      "id": "qb_cog_010",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "neurocog",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_geri.md"
+      ],
+      "link": {
+        "label": "Open the Geriatric Psychiatry page",
+        "href": "?page=t_geri.md"
+      },
+      "stem": "A 78-year-old woman with mild cognitive impairment is admitted for worsening confusion and agitation over the past week. She recently started diphenhydramine nightly for insomnia and oxybutynin for urge incontinence. The student reviews her medication list. Which is the most appropriate next step?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Add risperidone for the agitation — it is the most evidence-based pharmacotherapy for behavioral symptoms in cognitive impairment.",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "Adding a dopamine blocker before addressing the obvious medication-related drivers is pharmacologically backwards and potentially harmful."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Order a 24-hour EEG — medication-induced encephalopathy can produce seizure patterns that explain cognitive worsening.",
+          "trap": {
+            "name": "Jump to testing",
+            "note": "Costly procedural workup before deprescribing the medications most likely causing the problem is a diagnostic error of omission."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Flag diphenhydramine and oxybutynin as high-risk anticholinergic agents for the team, escalate for deprescribing, and recommend non-pharmacologic sleep and bladder strategies.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Reassure the family that mild cognitive impairment commonly worsens under medical stress and will recover once she is discharged.",
+          "trap": {
+            "name": "Face-value reassurance",
+            "note": "Dismissing a potentially reversible pharmacologic cause without addressing identifiable high-risk medications is a clinical error of omission."
+          }
+        }
+      ],
+      "why": "Agitation = antipsychotic and Face-value reassurance both bypass the diagnosis. Anticholinergic burden is a recognized, reversible driver of cognitive worsening in older adults — diphenhydramine and oxybutynin are among the Beers Criteria's most flagged agents. Jump to testing substitutes cost for the straightforward clinical action. The geriatric psychiatry principle: the drug list is often the diagnosis; deprescribing is active treatment.",
+      "pearl": "In older adults with cognitive change, the medication list is often the diagnosis — assess anticholinergic burden and deprescribe before adding anything.",
+      "evidence": "t_geri.md 'Acute inpatient management' — Apply the Beers Criteria and assess cumulative anticholinergic burden, then actively deprescribe deliriogenic and high-risk agents. 'High-yield pearls' — The drug list is often the diagnosis — deprescribing is active treatment.",
+      "tier2": {
+        "q": "Why do anticholinergic medications disproportionately impair cognition in older adults?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Older adults have reduced hepatic metabolism, causing higher serum drug levels than predicted for a given dose."
+          },
+          {
+            "key": "B",
+            "t": "Older adults have reduced cholinergic reserve due to aging and often concurrent dementia — blocking acetylcholine impairs attention and memory in a system already depleted.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "Anticholinergic agents cause orthostatic hypotension, reducing cerebral perfusion and producing cognitive symptoms."
+          },
+          {
+            "key": "D",
+            "t": "The mechanism is peripheral: urinary retention and constipation trigger systemic inflammation that secondarily impairs cognition."
+          }
+        ],
+        "why": "It is a pharmacodynamic-reserve problem, not primarily pharmacokinetic. Acetylcholine is essential for attention and memory; older adults — especially those with early Alzheimer or MCI — have fewer cholinergic neurons. Blocking the remaining ones with an anticholinergic produces an outsized, often rapid cognitive effect that clinically mimics dementia progression. This is why cholinesterase inhibitors (which increase acetylcholine) treat AD, and anticholinergics are its pharmacologic enemy."
+      }
+    },
+    {
+      "id": "qb_cog_011",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "hy": true,
+      "pages": [
+        "t_neurocog.md"
+      ],
+      "link": {
+        "label": "Open the Neurocognitive Disorders page",
+        "href": "?page=t_neurocog.md"
+      },
+      "stem": "A 58-year-old man is brought to the emergency department by his wife, who reports an 18-month history of increasingly disinhibited behavior — making inappropriate sexual comments to strangers, hoarding food, and neglecting hygiene. He has no memory complaints, names and recognizes objects normally, and denies mood symptoms. Neuropsychological testing shows prominent executive dysfunction with intact episodic memory. Most likely diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Bipolar disorder — new-onset mania presents with disinhibition, impulsivity, and executive dysfunction in midlife.",
+          "trap": {
+            "name": "Bipolar by default",
+            "note": "Mania is episodic and includes mood elevation and increased energy — a progressive 18-month course of isolated behavioral change without mood symptoms indicates a neurodegenerative process, not a mood disorder."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Behavioral-variant frontotemporal dementia — early disinhibition, socially inappropriate behavior, and executive dysfunction with relative sparing of episodic memory in a younger adult is the classic bvFTD presentation.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Early-onset Alzheimer disease — insidious behavioral change in a 58-year-old is most commonly early-onset AD.",
+          "trap": {
+            "name": "Most common = correct",
+            "note": "Alzheimer typically begins with episodic memory loss — prominent early behavioral disinhibition with intact episodic memory is the FTD signature, not Alzheimer."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Personality disorder — disinhibition, impulsivity, and boundary violations reflect a longstanding personality pattern rather than a new neurological process.",
+          "trap": {
+            "name": "Personality disorder by default",
+            "note": "A progressive 18-month course representing a clear change from baseline is a neurodegenerative process — personality disorders are stable and longstanding, not new-onset in the sixth decade."
+          }
+        }
+      ],
+      "why": "Bipolar by default, Most common = correct, and Personality disorder by default are three forms of the same error: assigning a functional psychiatric diagnosis before considering neurodegeneration. FTD is the dementia of younger adults, presenting with behavior and personality change or progressive language, while sparing episodic memory early — the exact opposite of Alzheimer.",
+      "pearl": "Frontotemporal dementia: younger onset, behavioral disinhibition or progressive language first, episodic memory spared early — the signature that separates it from Alzheimer.",
+      "evidence": "t_neurocog.md — Frontotemporal — younger onset with early personality/behavior change or progressive aphasia; memory relatively spared early."
+    },
+    {
+      "id": "qb_cog_012",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": [
+        "dx",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_geri.md"
+      ],
+      "link": {
+        "label": "Open the Geriatric Psychiatry page",
+        "href": "?page=t_geri.md"
+      },
+      "stem": "A 74-year-old woman with no prior psychiatric history is brought to the emergency department by her family. She has developed, over the past month, a fixed belief that her neighbors are poisoning her food and has stopped eating. She is alert, coherent, and oriented. There is no mood disturbance. Which is the most important next step?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Diagnose late-onset schizophrenia — paranoid delusions in late life unexplained by a mood disorder represent a primary psychotic illness.",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "First-episode psychosis in a 74-year-old has an extensive organic differential — labeling it late-onset schizophrenia without a medical workup is premature diagnostic closure."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Start an antipsychotic immediately — the refusal to eat constitutes an acute safety emergency requiring empirical treatment.",
+          "trap": {
+            "name": "Treat before diagnosis",
+            "note": "The safety concern is real but empirical antipsychotic treatment without an organic workup can mask a reversible medical or neurological cause."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Reassure the family that paranoid ideation is a normal variant of cognitive aging.",
+          "trap": {
+            "name": "Face-value reassurance",
+            "note": "Paranoid ideation is not a normal aging variant — in an older adult with no prior psychiatric history, it is a medical red flag requiring evaluation."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Conduct a medical workup to exclude organic causes of new-onset psychosis — including delirium, medication effect, CNS lesion, metabolic derangement, and autoimmune encephalitis — before establishing a primary psychiatric diagnosis.",
+          "c": true
+        }
+      ],
+      "why": "Psychosis = schizophrenia, Treat before diagnosis, and Face-value reassurance all skip the foundational step. New-onset psychosis in an older adult without a prior psychiatric history is a medical emergency until proven otherwise. The differential includes delirium, CNS lesion, metabolic cause, autoimmune encephalitis, and medication-induced psychosis — all requiring workup before a primary psychotic diagnosis is made.",
+      "pearl": "New psychosis in an older adult is a medical emergency until proven otherwise — work up before labeling or treating.",
+      "evidence": "t_geri.md 'High-yield pearls' — New psychosis in an older adult is delirium or a medical cause until proven otherwise."
+    },
+    {
+      "id": "qb_cog_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": [
+        "next-step"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "catatonia.md"
+      ],
+      "link": {
+        "label": "Open the Catatonia page",
+        "href": "?page=catatonia.md"
+      },
+      "stem": "A 35-year-old man with bipolar disorder is found maintaining an awkward arm position for over a minute, staring past the examiner, and not responding to his name. The covering resident is considering giving intramuscular haloperidol for presumed acute psychosis. Which step should occur first?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Screen with the Bush-Francis Catatonia Rating Scale before any antipsychotic — waxy flexibility and mutism are catatonic signs, and antipsychotics can precipitate NMS and malignant catatonia if given before catatonia is excluded.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Give haloperidol IM immediately — the immobility and staring indicate psychotic regression requiring urgent dopamine blockade.",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "Immobility and waxy flexibility are catatonic signs — administering an antipsychotic before catatonia is excluded risks precipitating NMS."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Apply soft restraints for patient safety while the cause is determined.",
+          "trap": {
+            "name": "Restraint first",
+            "note": "An immobile, non-threatening patient does not require restraints — the priority is diagnostic evaluation using the BFCRS, not physical containment."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Order a STAT non-contrast CT head — acute posturing may represent a seizure or intracranial lesion.",
+          "trap": {
+            "name": "CT before clinical exam",
+            "note": "Neuroimaging may ultimately be needed, but the immediate clinical priority is recognizing catatonia and avoiding antipsychotics before it is excluded."
+          }
+        }
+      ],
+      "why": "Psychosis = schizophrenia drives the dangerous action: haloperidol in unexcluded catatonia can precipitate NMS. Waxy flexibility — a limb held in a positioned posture — is a BFCRS screening sign for catatonia. Restraint first violates least-restrictive principle for an immobile, non-threatening patient. CT before clinical exam delays appropriate management without changing the immediate priority.",
+      "pearl": "Screen with the BFCRS before any antipsychotic in a mute or posturing patient — antipsychotics can precipitate NMS and malignant catatonia.",
+      "evidence": "catatonia.md 'Treatment and the critical caution' — Avoid antipsychotics until catatonia is excluded — they can precipitate or worsen NMS and malignant catatonia. The standard screening instrument is the Bush-Francis Catatonia Rating Scale (BFCRS)."
+    },
+    {
+      "id": "qb_cog_014",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "neurocog",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "catatonia.md"
+      ],
+      "link": {
+        "label": "Open the Catatonia page",
+        "href": "?page=catatonia.md"
+      },
+      "stem": "A 29-year-old woman with schizophrenia has been mute and posturing for 2 days. Today she is found febrile to 39.6°C, diaphoretic, hypotensive, with lead-pipe rigidity and a markedly elevated CK. Her antipsychotic was increased yesterday. Best next step?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Administer additional lorazepam challenge doses and observe on the psychiatric unit — the rigidity suggests catatonic stupor responding to benzodiazepines.",
+          "trap": {
+            "name": "Underestimate the emergency",
+            "note": "Autonomic instability + hyperthermia + rigidity + elevated CK after antipsychotic escalation is a medical emergency requiring transfer, not continued psychiatric unit observation."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Increase the antipsychotic — this is a catatonic variant of treatment-resistant psychosis requiring more aggressive dopamine blockade.",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "In a febrile patient with elevated CK and rigidity after an antipsychotic was escalated, this is NMS/malignant catatonia — increasing the dopamine blocker accelerates the emergency."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Stop all antipsychotics immediately, transfer to a medical unit for hemodynamic monitoring and supportive care, and obtain urgent psychiatric and neurology consultation — ECT should be considered for malignant or refractory catatonia.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Treat empirically for sepsis — fever, hypotension, and elevated CK indicate bacterial infection requiring antibiotics.",
+          "trap": {
+            "name": "Sepsis first",
+            "note": "Sepsis is on the differential but the timing (antipsychotic escalated yesterday), catatonic signs on exam, and the specific combination of lead-pipe rigidity + fever + elevated CK after a dopamine blocker constitute NMS/malignant catatonia until proven otherwise."
+          }
+        }
+      ],
+      "why": "Underestimate the emergency and Agitation = antipsychotic are the two clinical catastrophes. This is NMS/malignant catatonia: fever, autonomic instability, lead-pipe rigidity, elevated CK after antipsychotic escalation. The correct sequence is stop all antipsychotics, transfer to a medical unit, and emergently consider ECT for malignant or refractory catatonia — not more benzodiazepines on the psychiatric unit and certainly not more antipsychotic.",
+      "pearl": "Malignant catatonia overlaps with NMS: fever + rigidity + elevated CK + autonomic instability after antipsychotic exposure — stop antipsychotics, transfer to medical, and consider ECT urgently.",
+      "evidence": "catatonia.md — The emergency you must never miss is malignant catatonia: autonomic instability, hyperthermia, and rigidity that clinically overlaps with neuroleptic malignant syndrome (NMS). ECT is the treatment for severe, malignant, or benzodiazepine-refractory catatonia and should not be delayed when the patient is deteriorating.",
+      "tier2": {
+        "q": "Why does ECT have a role in malignant catatonia when benzodiazepines have not been effective?",
+        "options": [
+          {
+            "key": "A",
+            "t": "ECT provides dopamine agonism that directly counteracts antipsychotic receptor blockade."
+          },
+          {
+            "key": "B",
+            "t": "ECT is used because it avoids all pharmacologic agents, preventing further receptor blockade."
+          },
+          {
+            "key": "C",
+            "t": "ECT directly treats the catatonic syndrome regardless of etiology — it is the definitive treatment for malignant or benzodiazepine-refractory catatonia and its effectiveness does not depend on removing the antipsychotic.",
+            "c": true
+          },
+          {
+            "key": "D",
+            "t": "ECT is a last resort used only after a second antipsychotic trial has failed in treatment-resistant psychosis."
+          }
+        ],
+        "why": "ECT acts directly on the motor and autonomic systems driving catatonia — its mechanism bypasses the pharmacologic state that triggered the syndrome. The BAP 2023 catatonia guideline endorses ECT for severe, refractory, or malignant catatonia as a treatment that should not be delayed when the patient is deteriorating. The example here illustrates this: benzodiazepines are insufficient for malignant presentations; ECT can be lifesaving even when the antipsychotic cannot be fully cleared."
+      }
+    },
+    {
+      "id": "qb_cog_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": [
+        "pharm"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurocog.md"
+      ],
+      "link": {
+        "label": "Open the Neurocognitive Disorders page",
+        "href": "?page=t_neurocog.md"
+      },
+      "stem": "An 82-year-old man with moderate-to-severe Alzheimer disease is currently on donepezil 10 mg daily. His neurologist asks the student to identify what pharmacotherapy optimization is supported by evidence for this stage of disease.",
+      "options": [
+        {
+          "key": "A",
+          "t": "Increase donepezil to the maximum tolerated dose — dose escalation of cholinesterase inhibitors alone is the evidence-based approach for moderate-to-severe disease.",
+          "trap": {
+            "name": "Dose escalation alone",
+            "note": "Dose escalation of a cholinesterase inhibitor alone is not the evidence-based approach for moderate-to-severe AD — memantine should be added."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Add memantine — combination of a cholinesterase inhibitor and memantine (NMDA antagonist) is the evidence-based pharmacotherapy for moderate-to-severe Alzheimer disease.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Switch to a rivastigmine patch — transdermal delivery is more effective than oral donepezil in advanced disease.",
+          "trap": {
+            "name": "Newer = better",
+            "note": "Formulation does not determine efficacy — donepezil is appropriate; the treatment gap is the absence of memantine, not the delivery route."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Start a monoclonal anti-amyloid antibody — these agents are now standard of care for all stages of Alzheimer.",
+          "trap": {
+            "name": "Newer = better",
+            "note": "Anti-amyloid antibodies modestly slow early Alzheimer progression and require amyloid confirmation and specialized monitoring; they are not standard of care for all stages and are not started on an inpatient psychiatry unit."
+          }
+        }
+      ],
+      "why": "Dose escalation alone and Newer = better in two forms. For mild-to-moderate AD, cholinesterase inhibitors alone are the standard. For moderate-to-severe AD, adding memantine is the evidence-based optimization. Anti-amyloid antibodies are specialist-initiated, amyloid-confirmed, and restricted to early disease.",
+      "pearl": "Cholinesterase inhibitors for mild-to-moderate AD; add memantine for moderate-to-severe disease.",
+      "evidence": "t_neurocog.md 'Acute inpatient management' — Cognitive symptoms: cholinesterase inhibitors (donepezil, rivastigmine, galantamine) for mild–moderate Alzheimer/Lewy body disease; add memantine (NMDA antagonist) for moderate–severe disease."
+    },
+    {
+      "id": "qb_cog_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 3,
+      "hy": true,
+      "pages": [
+        "t_geri.md"
+      ],
+      "link": {
+        "label": "Open the Geriatric Psychiatry page",
+        "href": "?page=t_geri.md"
+      },
+      "stem": "A 73-year-old woman with recurrent major depression (last treated 5 years ago) is referred for cognitive evaluation after 3 months of 'memory problems.' On formal cognitive testing she scores in the impaired range on delayed recall but consistently answers 'I don't know' rather than confabulating; she is slow to initiate answers and appears effortfully disengaged. She remains alert and attentive, and scores 22 on the PHQ-9. Most appropriate next step?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Diagnose major neurocognitive disorder — the cognitive test scores confirm a dementia syndrome independent of mood.",
+          "trap": {
+            "name": "Scores = diagnosis",
+            "note": "Cognitive test performance in the context of active major depression does not establish dementia — scores may normalize with successful mood treatment in pseudodementia."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Start a cholinesterase inhibitor — the episodic memory impairment indicates Alzheimer-spectrum disease requiring pharmacotherapy.",
+          "trap": {
+            "name": "Treat the number, not the patient",
+            "note": "Cholinesterase inhibitors are not indicated until reversible causes, including depression, are excluded — treating the score without treating the depression is the error."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Order an amyloid PET scan — direct amyloid visualization definitively distinguishes depression-associated cognitive impairment from Alzheimer disease.",
+          "trap": {
+            "name": "Jump to advanced imaging",
+            "note": "Amyloid PET is a research and specialist tool, not a first-line workup step — the well-established clinical approach is to treat the depression and reassess cognition."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Prioritize treatment of the depressive episode and reassess cognitive function after remission — the pattern of 'I don't know' responses, effortful disengagement, and a PHQ-9 of 22 is consistent with pseudodementia that may resolve with antidepressant treatment.",
+          "c": true
+        }
+      ],
+      "why": "Scores = diagnosis, Treat the number not the patient, and Jump to advanced imaging all bypass the pseudodementia maneuver. 'I don't know' responses with effortful disengagement and preserved alertness — rather than confabulation and unawareness — is the clinical signature of depression-associated cognitive impairment (Caine 1981). The correct next step is antidepressant treatment and follow-up cognitive assessment.",
+      "pearl": "Pseudodementia: 'I don't know' with effortful disengagement and preserved alertness — treat the depression first and reassess cognition; scores may fully normalize.",
+      "evidence": "t_geri.md — Depression can masquerade as cognitive impairment — the pseudodementia presentation (Caine 1981), where patients say 'I don't know' rather than confabulate, show effortful disengagement, and improve cognitively when mood is treated."
+    },
+    {
+      "id": "qb_saf_003",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "pg_suicide.md"
+      ],
+      "link": {
+        "label": "Open the Suicide Risk pocket card",
+        "href": "?page=pg_suicide.md"
+      },
+      "stem": "A 22-year-old man is admitted following a suicide attempt by acetaminophen overdose. When the student asks about means restriction, he asks only: 'Do you have access to anything dangerous at home?' The patient answers 'no.' The attending asks what a complete means safety assessment requires. Which response is best?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Ask the patient if he feels safe returning home — a verbal assurance of safety constitutes adequate means restriction documentation.",
+          "trap": {
+            "name": "Face-value reassurance",
+            "note": "A general feeling-of-safety answer is not a means safety assessment — specific items must be asked about explicitly and the plan for restriction must be named."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Ask specifically about firearms, stockpiled medications, sharps and ligatures, and who will remove or secure each item — then ask how it will be confirmed before discharge.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Have the patient and family sign a no-harm contract — a signed document constitutes the means safety plan.",
+          "trap": {
+            "name": "Safety plan = discharge permission slip",
+            "note": "No-harm contracts are not evidence-based as a risk-reduction measure and do not substitute for specific, actionable means restriction counseling."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Document 'means safety discussed' in the note — documenting the discussion fulfills the clinical obligation.",
+          "trap": {
+            "name": "Document and continue",
+            "note": "'Means safety discussed' without specifying the items addressed and the restriction plan is weak documentation that does not fulfill the clinical obligation."
+          }
+        }
+      ],
+      "why": "Face-value reassurance and Document and continue are both documentation traps. Means safety requires asking by item — firearms, stockpiled medications, sharps, ligatures, and the patient-specific methods the presentation revealed — and confirming who will secure them and how the team will know it happened. A general safety question or a no-harm contract does not accomplish this.",
+      "pearl": "Means safety = ask by item (firearms, medications, sharps), name who will secure them, and confirm how the team will know.",
+      "evidence": "pg_suicide.md 'Means Safety' — Ask specifically. Do not say only 'we discussed safety.' Include: Firearms. Stockpiled medication. Sharps or ligatures when relevant. Who will remove/secure means. How it will be confirmed."
+    },
+    {
+      "id": "qb_saf_004",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety",
+        "dx"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "pg_suicide.md"
+      ],
+      "link": {
+        "label": "Open the Suicide Risk pocket card",
+        "href": "?page=pg_suicide.md"
+      },
+      "stem": "A 45-year-old man with schizophrenia and two prior suicide attempts is admitted for worsening command hallucinations telling him to jump. He is calm on exam; he reports the voices are 'quieter today' and denies current intent. Which statement best reflects how to frame his suicide risk?",
+      "options": [
+        {
+          "key": "A",
+          "t": "His current denial of suicidal intent indicates low acute risk — patient self-report is the most reliable indicator of imminent safety.",
+          "trap": {
+            "name": "Denies SI = low risk",
+            "note": "Denial of intent in the context of active command hallucinations and prior attempts is not sufficient to conclude low acute risk — command hallucinations are an explicit acute risk factor."
+          }
+        },
+        {
+          "key": "B",
+          "t": "His prior attempts are the most important factor and define his overall risk level — chronic factors drive the primary assessment.",
+          "trap": {
+            "name": "Denies SI = low risk",
+            "note": "Chronic factors establish the floor but acute factors — active command hallucinations — are the focus for this admission; relying on chronic factors alone misses the immediate targets."
+          }
+        },
+        {
+          "key": "C",
+          "t": "His schizophrenia diagnosis independently elevates his risk to high — a psychiatric diagnosis drives the risk classification.",
+          "trap": {
+            "name": "Diagnosis = high risk",
+            "note": "A psychiatric diagnosis is a chronic risk factor, not a standalone determination of the acute risk level — the formulation must address both tiers separately."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Separate chronic risk (prior attempts, schizophrenia — the floor) from acute risk (active command hallucinations — the current target); the formulation must address both tiers and identify the modifiable acute drivers.",
+          "c": true
+        }
+      ],
+      "why": "Denies SI = low risk in two forms and Diagnosis = high risk all produce single-tier formulations that miss the key structure. Risk formulation separates the chronic floor (prior attempts, schizophrenia) from the acute drivers (command hallucinations, current voices) that are the admission's targets. Command hallucinations are explicitly listed as an acute risk factor; denial of intent does not neutralize them.",
+      "pearl": "Separate chronic and acute risk — prior attempts and a psychiatric diagnosis set the floor; command hallucinations and current intent are the acute targets.",
+      "evidence": "pg_suicide.md 'Separate Chronic And Acute Risk' — Acute risk: current intent or plan; psychosis or command hallucinations. Chronic risk: prior attempts; chronic psychiatric illness."
+    },
+    {
+      "id": "qb_saf_005",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "pg_suicide.md"
+      ],
+      "link": {
+        "label": "Open the Suicide Risk pocket card",
+        "href": "?page=pg_suicide.md"
+      },
+      "stem": "A 38-year-old woman is admitted after a near-lethal suicide attempt. She has three young children and is an ICU nurse. A student notes 'strong family ties and professional identity' as protective factors and proposes these substantially mitigate her acute risk. The attending asks the student to refine this reasoning. Which statement is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The number of protective factors is inversely proportional to acute risk — more factors reliably indicate lower risk.",
+          "trap": {
+            "name": "Face-value reassurance",
+            "note": "The number of protective factors does not reliably predict acute risk — their credibility and availability during the risk window are what matter, not the count."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Protective factors matter only if they are credible and available during the risk window — a family connection that is geographically unavailable during a crisis does not reduce risk at that moment.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Professional status significantly reduces suicide risk — healthcare workers have lower rates of completed suicide than the general population.",
+          "trap": {
+            "name": "Face-value reassurance",
+            "note": "Healthcare workers do not have lower rates of completed suicide — professional identity may create barriers to seeking help rather than functioning as a protective factor."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Protective factors and acute risk factors can be numerically compared — strong protective factors offset recent preparatory behavior in the calculation.",
+          "trap": {
+            "name": "Safety plan = discharge permission slip",
+            "note": "Protective factors and acute risk factors are not numerically additive — protective factors must be evaluated for real-time credibility, and preparatory behavior is a hard escalation indicator."
+          }
+        }
+      ],
+      "why": "Face-value reassurance appears throughout. Protective factors are not protective if they are geographically distant, unavailable, or theoretically present but non-operative during the crisis. Healthcare worker status does not protect against suicide. The page states explicitly: 'Protective factors are not magic. They matter only if they are credible and available during the risk window.'",
+      "pearl": "Protective factors matter only if they are credible and available during the risk window — not as a list, but as real-time assets.",
+      "evidence": "pg_suicide.md — Protective factors are not magic. They matter only if they are credible and available during the risk window."
+    },
+    {
+      "id": "qb_saf_006",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety",
+        "next-step"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "pg_suicide.md"
+      ],
+      "link": {
+        "label": "Open the Suicide Risk pocket card",
+        "href": "?page=pg_suicide.md"
+      },
+      "stem": "A student is asked to draft the safety note for a patient admitted with active suicidal ideation, a stated plan, and unsecured firearm access. Which of the following best illustrates strong safety documentation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "\"Patient endorses suicidal ideation — reviewed risks and benefits of hospitalization, patient agrees to continued treatment.\"",
+          "trap": {
+            "name": "Document and continue",
+            "note": "Consent documentation does not substitute for a safety formulation — reviewing risks and benefits of hospitalization does not record chronic factors, acute drivers, protective factor limits, or modifiable targets."
+          }
+        },
+        {
+          "key": "B",
+          "t": "\"Denies SI/HI. No acute safety concerns.\"",
+          "trap": {
+            "name": "Denies SI = low risk",
+            "note": "This is the prototypical weak documentation: it records a denial without any formulation, omits the known risk factors, and provides no reasoning for the safety decision."
+          }
+        },
+        {
+          "key": "C",
+          "t": "\"Acute suicide risk elevated due to active plan, persistent insomnia, escalating alcohol use, and firearm access not yet confirmed secured; chronic risk elevated by prior attempt and family history; modifiable targets include means restriction and substance stabilization; continued inpatient care indicated.\"",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Verbatim patient quotes about suicidal intent are the most forensically defensible form of safety documentation and constitute the core of the note.",
+          "trap": {
+            "name": "Quotes = documentation",
+            "note": "Verbatim quotes are valuable but do not constitute a risk formulation — the clinician's reasoning about chronic factors, acute drivers, and the plan is the required core of strong safety documentation."
+          }
+        }
+      ],
+      "why": "Document and continue, Denies SI = low risk, and Quotes = documentation all replace formulation with something easier to write. Strong safety documentation names chronic factors, acute drivers, protective factors with limits, modifiable targets, and the current plan. 'Denies SI/HI. No acute safety concerns.' is the example the page uses for the weakest possible documentation.",
+      "pearl": "Strong safety documentation = chronic factors + acute drivers + protective factors with limits + modifiable targets + current plan — not 'denies SI/HI.'",
+      "evidence": "pg_suicide.md 'Documentation Sentence' — Strong: [detailed formulation with acute risk factors, chronic risk, means safety status, and plan]. Weak: 'Denies SI/HI. No acute safety concerns.'"
+    },
+    {
+      "id": "qb_saf_007",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety",
+        "next-step"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "pg_suicide.md"
+      ],
+      "link": {
+        "label": "Open the Suicide Risk pocket card",
+        "href": "?page=pg_suicide.md"
+      },
+      "stem": "A 19-year-old woman is brought to the inpatient unit after a self-reported suicide attempt. On arrival she is visibly intoxicated with alcohol. The student is attempting to complete an initial risk assessment. Which of the following best describes the correct approach?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Escalate to the attending immediately — intoxication is an explicit escalation trigger; a reliable risk assessment cannot be completed while she is intoxicated, and medical monitoring is required.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Complete the risk assessment now — gathering history while the patient can still speak is more important than waiting for sobriety.",
+          "trap": {
+            "name": "Assess before escalate",
+            "note": "A meaningful risk assessment cannot be conducted while the patient is intoxicated — the acute safety priority is medical monitoring and attending notification, not history-taking."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Document 'unable to assess due to intoxication' and defer further evaluation to the morning team.",
+          "trap": {
+            "name": "Document and continue",
+            "note": "Deferring without escalating creates an unmonitored safety gap — intoxication is an escalation trigger requiring immediate attending notification, not a deferred entry."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Reassure the patient that alcohol often exaggerates suicidal statements and that a full assessment in the morning will clarify her actual risk level.",
+          "trap": {
+            "name": "Face-value reassurance",
+            "note": "Alcohol is an acute risk factor that amplifies risk, not a minimizer — intoxication during a period of expressed suicidal intent requires immediate escalation, not reassurance."
+          }
+        }
+      ],
+      "why": "Assess before escalate and Face-value reassurance both produce the same error: treating an escalation trigger as a reason to delay action. Intoxication is explicitly listed on the card as 'what to escalate immediately.' Document and continue creates an unmonitored gap. The correct approach is immediate attending notification, with the formal risk assessment deferred to sobriety.",
+      "pearl": "Intoxication during active suicidal ideation is an escalation trigger — notify the attending now; complete the formal risk assessment after sobriety.",
+      "evidence": "pg_suicide.md 'What To Escalate Immediately' — Intoxication or withdrawal."
+    },
+    {
+      "id": "qb_saf_008",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "pg_suicide.md"
+      ],
+      "link": {
+        "label": "Open the Suicide Risk pocket card",
+        "href": "?page=pg_suicide.md"
+      },
+      "stem": "A medical student is alone with a patient who says: 'I feel so much better — can you put in a good word with the team about going home today?' The student has not been briefed on this patient's risk. Which response is most appropriate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Affirm to the patient that she appears improved and will relay this to the team, then complete a brief suicide screen to provide the team with an update.",
+          "trap": {
+            "name": "Student clears patient",
+            "note": "Affirming improvement to the patient and conducting an independent assessment crosses the student role boundary — the student cannot produce or communicate a dispositive safety determination."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Explain that discharge is the team's decision, then conduct a full structured suicide risk assessment using a standardized instrument and document findings independently.",
+          "trap": {
+            "name": "Student clears patient",
+            "note": "Conducting and independently documenting a solo risk assessment is well outside the student role — students report to the team, they do not clear patients."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Reassure the patient that the team is working toward discharge and provide the hospital's crisis line number.",
+          "trap": {
+            "name": "Reassure and defer",
+            "note": "Providing a crisis line to an admitted patient implies discharge is coming; the student is implying endorsement of a decision the team hasn't made, without any supervisory loop."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Tell the patient that discharge is the team's decision and that you will let the attending know she wants to discuss it — then inform the team promptly.",
+          "c": true
+        }
+      ],
+      "why": "Student clears patient in two forms — direct affirmation and independent documentation — both cross the role boundary. The student's role is to ask, observe, and report to the team — not to clear a patient for discharge or to produce an independent safety assessment. Reassure and defer leaves the student in a limbo of implied endorsement without any supervisory loop.",
+      "pearl": "Students can ask, observe, and report to the team — they cannot independently clear a patient for discharge or conduct a solo risk assessment.",
+      "evidence": "pg_suicide.md 'Student Role' — You cannot: Clear a patient for discharge independently."
+    },
+    {
+      "id": "qb_saf_009",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety",
+        "management"
+      ],
+      "difficulty": 2,
+      "hy": true,
+      "pages": [
+        "agitation.md"
+      ],
+      "link": {
+        "label": "Open the Agitation & Restraint page",
+        "href": "?page=agitation.md"
+      },
+      "stem": "A patient placed in physical restraints 4 hours ago following an agitation episode is now calm, cooperative, and asking to be released. His nurse pages the on-call student. Which of the following best reflects the correct management principle?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Continue the restraints through the end of the shift to ensure safety is maintained across the nursing team handoff.",
+          "trap": {
+            "name": "Restraint as stability",
+            "note": "Restraints are not a shift-duration safety measure — they must be discontinued the moment the patient is safe, regardless of shift timing."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Notify the attending immediately — the patient's calm state and request to be released require prompt reassessment; restraints must be discontinued as soon as the patient is safe, not held to shift end.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Ask the patient to demonstrate he can remain calm for 30 minutes, then release him and document the trial.",
+          "trap": {
+            "name": "Restraint as stability",
+            "note": "Imposing a time-contingent test before release inverts the standard — the principle is discontinue as soon as safe, not apply additional criteria."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Since the original physician order is still active, no action is needed until the order expires.",
+          "trap": {
+            "name": "Order = permission to continue",
+            "note": "A restraint order requires continuous time-limited review — a patient who is calm and requesting release must be reassessed immediately, not held to order expiration."
+          }
+        }
+      ],
+      "why": "Restraint as stability in two forms and Order = permission both treat the order as a static permission. Restraint is a time-limited safety measure requiring a physician order, continuous monitoring, and discontinuation the moment the patient is safe — the page explicitly states 'not the end of a shift.' The student's correct action is immediate attending notification so the reassessment can happen.",
+      "pearl": "Restraints require time-limited orders, continuous monitoring, and discontinuation as soon as the patient is safe — not the end of a shift.",
+      "evidence": "agitation.md 'Restraint and seclusion' — They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift."
+    },
+    {
+      "id": "qb_saf_010",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety",
+        "psychosocial"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "agitation.md"
+      ],
+      "link": {
+        "label": "Open the Agitation & Restraint page",
+        "href": "?page=agitation.md"
+      },
+      "stem": "A team is debriefing after a physical restraint episode involving a Black patient on the inpatient unit. A student asks what the published evidence shows about racial disparities in restraint use in inpatient psychiatry. Which statement correctly reflects the data?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Black patients are restrained at similar rates to White patients after adjusting for clinical acuity — the apparent disparity is explained by severity of presentation.",
+          "trap": {
+            "name": "No disparity exists",
+            "note": "The adjusted disparity persists after controlling for clinical factors — it is a quality-of-care issue, not an acuity artifact."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Black patients are more likely to receive verbal de-escalation before physical restraint — the data show greater resource deployment, not disparity.",
+          "trap": {
+            "name": "No disparity exists",
+            "note": "The evidence shows the opposite — Black patients face higher adjusted odds of physical restraint, not more de-escalation."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Black patients face roughly 1.85× the adjusted odds of physical restraint on inpatient units — this disparity is a quality-of-care issue, not an acuity artifact.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Joint Commission non-discrimination standards adopted in 2015 have eliminated racial disparities in restraint use.",
+          "trap": {
+            "name": "No disparity exists",
+            "note": "The disparity is ongoing and documented — regulatory standards have not eliminated it."
+          }
+        }
+      ],
+      "why": "No disparity exists in three forms. The page explicitly states: 'Black patients face roughly 1.85× the adjusted odds of physical restraint on inpatient units (and ~2.84× in the ED awaiting admission) — that disparity is a quality-of-care issue, not a footnote.' This is the only data point cited on the page for this topic and is explicitly framed as belonging in a post-restraint debrief.",
+      "pearl": "Black patients face ~1.85× the adjusted odds of physical restraint on inpatient units — a quality-of-care disparity that belongs in every post-restraint debrief.",
+      "evidence": "agitation.md 'Restraint and seclusion' — Black patients face roughly 1.85× the adjusted odds of physical restraint on inpatient units (and ~2.84× in the ED awaiting admission) — that disparity is a quality-of-care issue, not a footnote."
+    },
+    {
+      "id": "qb_saf_011",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "what-would-you-say",
+      "category": "safety",
+      "competency": [
+        "safety",
+        "psychosocial"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "agitation.md"
+      ],
+      "link": {
+        "label": "Open the Agitation & Restraint page",
+        "href": "?page=agitation.md"
+      },
+      "stem": "A patient with mania is pacing loudly in the hallway, slamming cabinet doors, and making hostile comments toward staff. He has not made a direct threat or moved toward anyone. You are the student and the first person to encounter him. Which response is best?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Step calmly into the hallway — not blocking his exit — introduce yourself, acknowledge his frustration: 'I can see you're really upset right now. What's going on?' Then offer a choice of where to speak.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Return to the nursing station and request an involuntary IM medication order before approaching, so the team is ready to intervene.",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "Medication is not the default first step when verbal de-escalation has not been attempted and no imminent threat exists — the framework starts with presence and listening."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Stand in the doorway and firmly instruct him to return to his room or further action will be taken.",
+          "trap": {
+            "name": "Commands over choices",
+            "note": "Issuing a command removes the patient's sense of control — the de-escalation framework centers offering choices, not issuing directives."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Alert the restraint team and position staff at the hallway exits in case the patient escalates.",
+          "trap": {
+            "name": "Restraint first",
+            "note": "Preemptively positioning the restraint team before de-escalation has been attempted violates least-restrictive principle when no imminent threat has occurred."
+          }
+        }
+      ],
+      "why": "Agitation = antipsychotic, Commands over choices, and Restraint first are three forms of reaching for escalation before de-escalation. The Project BETA framework starts with calm presence, acknowledgment, genuine choices, and listening. The student also needs to stay near the exit and never block the patient's — personal safety and de-escalation are not competing goals.",
+      "pearl": "Calm presence + acknowledging distress + offering choices = the first move in de-escalation; stay near your exit and never block the patient's.",
+      "evidence": "agitation.md 'Verbal de-escalation, first' — The Project BETA de-escalation framework (Richmond et al. 2012) centers respect, simple boundaries, listening, and offering choices rather than issuing commands."
+    },
+    {
+      "id": "qb_saf_012",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "safety",
+      "competency": [
+        "safety",
+        "next-step"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "agitation.md"
+      ],
+      "link": {
+        "label": "Open the Agitation & Restraint page",
+        "href": "?page=agitation.md"
+      },
+      "stem": "A 67-year-old man with no psychiatric history, admitted for pneumonia, begins shouting at night and pulling at his oxygen tubing. He is combative with staff. The on-call resident asks the student how to approach this. What is the most appropriate first frame?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Start an antipsychotic immediately and then search for the cause — treating the agitation reduces the risk of self-harm while the workup proceeds.",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "Reaching for the antipsychotic before identifying the driver is the error — non-pharmacologic and cause-directed management comes first even in hyperactive presentations."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Initiate a CIWA-Ar protocol — nighttime agitation in an older admitted patient is most likely alcohol withdrawal.",
+          "trap": {
+            "name": "It's just withdrawal",
+            "note": "Alcohol withdrawal is on the differential but imposing a specific protocol before the actual driver is identified may apply the wrong treatment to the wrong cause."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Apply soft restraints and then assess — the agitation puts both the patient and staff at immediate risk.",
+          "trap": {
+            "name": "Restraint first",
+            "note": "Restraints are the last resort after lesser measures have failed or are clearly inadequate — applying them before cause-finding and de-escalation bypasses the entire ladder."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Name the question: 'What is driving this agitation?' — systematic evaluation for delirium, substance withdrawal, medication effects (akathisia, steroids), pain, hypoxia, urinary retention, and fear must precede any pharmacologic decision.",
+          "c": true
+        }
+      ],
+      "why": "Agitation = antipsychotic, It's just withdrawal, and Restraint first all skip cause-finding. Agitation is a symptom. The standard is to name the driver — delirium, withdrawal, akathisia, pain, hypoxia, retention, fear — before selecting an intervention. Pharmacotherapy, if needed, then matches the cause.",
+      "pearl": "Agitation is always a symptom — name the driver before selecting the intervention; the treatment should match the cause.",
+      "evidence": "agitation.md 'Find the driver' — Before you decide what to do, ask what is producing this. The usual drivers are delirium, intoxication or withdrawal, an acute psychotic or manic process, akathisia, unrelieved pain, and a fear or trauma response. 'High-yield pearls' — Agitation is a symptom — always ask 'what is driving this?' before 'what do we give?'",
+      "tier2": {
+        "q": "Why does matching the treatment to the agitation driver matter so much in an older medical patient?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Older patients cannot metabolize antipsychotics — any dose will cause over-sedation regardless of indication."
+          },
+          {
+            "key": "B",
+            "t": "Agitation in older patients is always fear-related — benzodiazepines are therefore the universal treatment."
+          },
+          {
+            "key": "C",
+            "t": "The wrong treatment can worsen the driver: benzodiazepines deepen most delirium; antipsychotics can precipitate NMS in unexcluded catatonia; treating withdrawal incorrectly can cause seizures — mismatching agent to cause produces iatrogenic harm.",
+            "c": true
+          },
+          {
+            "key": "D",
+            "t": "Pharmacotherapy is inappropriate in all older patients — verbal de-escalation is the only evidence-based approach regardless of driver."
+          }
+        ],
+        "why": "It is a drug–driver matching principle. Benzodiazepines are correct for alcohol/sedative withdrawal and dangerous in most other delirium. Antipsychotics are appropriate for dangerous agitation in non-catatonic, non-LBD states and dangerous if catatonia or LBD is present. Analgesics resolve pain-driven agitation that no psychotropic would touch. The wrong drug in the wrong patient makes the agitation worse — the paradigm case being benzodiazepines deepening delirium in a delirious elder."
+      }
     }
   ]
 }
