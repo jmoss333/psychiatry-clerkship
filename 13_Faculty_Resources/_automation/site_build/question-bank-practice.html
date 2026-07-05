@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Questions — MS3 Question Bank</title>
+<style>
+:root{
+  --bg:#f6f3ee;--bg-alt:#faf6f0;--surface:#ffffff;--border:#ddd3c6;
+  --primary:#c25a3c;--primary-dark:#a84830;--primary-light:#f3ebe5;
+  --accent:#2a6b5e;--accent-dark:#1e5248;--accent-light:#edf4f2;
+  --text:#2f2924;--text-mid:#51473d;--text-light:#665a4f;
+  --success:#357160;--success-light:#e7f1ed;
+  --danger:#a34132;--danger-light:#fbece9;
+  --warning:#7a6234;--warning-light:#f5efe2;
+  --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  --focus:#155eef;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.6}
+.app{max-width:740px;margin:0 auto;padding:20px 16px 60px}
+.hdr{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.hdr h1{font-family:var(--font-head);color:var(--primary);font-size:1.35rem;margin:0;flex:1}
+.prog-label{font-size:.82rem;color:var(--text-light)}
+.qprog{height:4px;background:var(--border);border-radius:2px;margin-bottom:16px;overflow:hidden}
+.qprog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
+/* Buttons */
+.btn{border:none;border-radius:8px;padding:9px 18px;font:inherit;font-weight:700;cursor:pointer;font-size:.9rem;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--primary-dark);color:#fff}.btn-primary:hover{background:var(--primary)}
+.btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:var(--accent-dark)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-mid)}.btn-ghost:hover{border-color:var(--accent);color:var(--accent-dark)}
+.btn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn:disabled{opacity:.5;cursor:default}
+/* Setup */
+.setup{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px}
+.setup h2{font-family:var(--font-head);color:var(--text);font-size:1.25rem;margin:0 0 4px}
+.setup .sub{color:var(--text-mid);font-size:.88rem;margin:0 0 18px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:20px}
+.field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);margin-bottom:4px}
+.field select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font:inherit;background:var(--surface);color:var(--text);font-size:.88rem}
+.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.setup-foot{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.item-count{font-size:.82rem;color:var(--text-light)}
+/* Question card */
+.qcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.qcard-meta{display:flex;align-items:center;gap:7px;padding:14px 18px 0;flex-wrap:wrap}
+.chip{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-radius:999px;padding:3px 9px;border:1px solid var(--border)}
+.chip-cat{color:var(--accent-dark);background:var(--accent-light);border-color:var(--accent-light)}
+.chip-draft{color:var(--warning);background:var(--warning-light);border-color:var(--warning)}
+.chip-hy{color:var(--primary-dark);background:var(--primary-light);border-color:var(--primary-light)}
+.chip-rel{color:var(--info,#41618a);background:#eaf0f6;border-color:#eaf0f6}
+.diff-dots{display:flex;gap:3px;align-items:center;margin-left:2px}
+.diff-dot{width:7px;height:7px;border-radius:50%;background:var(--border)}
+.diff-dot.on{background:var(--primary)}
+.qcard-stem{padding:16px 18px 12px;font-family:var(--font-head);font-size:1.06rem;line-height:1.55;color:var(--text)}
+.qcard-stem .subtype{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent-dark);display:block;margin-bottom:6px;font-family:var(--font-body)}
+/* Confidence */
+.conf-section{padding:0 18px 12px}
+.conf-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);margin-bottom:8px}
+.conf-btns{display:flex;gap:8px}
+.conf-btn{flex:1;border:2px solid var(--border);background:var(--bg-alt);border-radius:10px;padding:8px 6px;cursor:pointer;font:inherit;font-size:.78rem;font-weight:700;color:var(--text-mid);text-align:center;line-height:1.3;transition:border-color .12s,background .12s,color .12s}
+.conf-btn:hover{border-color:var(--accent);color:var(--accent-dark)}
+.conf-btn.guess.on{border-color:var(--warning);background:var(--warning-light);color:var(--warning)}
+.conf-btn.likely.on{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark)}
+.conf-btn.certain.on{border-color:var(--success);background:var(--success-light);color:var(--success)}
+.conf-btn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.conf-hint{font-size:.74rem;color:var(--danger);margin-top:4px;display:none}
+.conf-hint.show{display:block}
+/* Options */
+.opts{padding:0 18px 16px;display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;border:2px solid var(--border);background:var(--bg-alt);border-radius:10px;padding:11px 14px;cursor:pointer;font:inherit;font-size:.92rem;color:var(--text);line-height:1.45;transition:border-color .1s,background .1s}
+.opt:hover:not(:disabled):not(.locked){border-color:var(--accent);background:var(--accent-light)}
+.opt.locked{cursor:default}
+.opt.selected-wrong{border-color:var(--danger) !important;background:var(--danger-light) !important}
+.opt.correct-reveal{border-color:var(--success) !important;background:var(--success-light) !important}
+.opt.selected-correct{border-color:var(--success) !important;background:var(--success-light) !important;font-weight:600}
+.opt-key{font-weight:700;margin-right:8px;font-size:.8rem;color:var(--text-light)}
+.opt.correct-reveal .opt-key,.opt.selected-correct .opt-key{color:var(--success)}
+.opt.selected-wrong .opt-key{color:var(--danger)}
+/* Tier2 */
+.tier2-section{border-top:2px solid var(--border);padding:16px 18px 0;background:var(--bg-alt)}
+.tier2-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent-dark);margin-bottom:6px}
+.tier2-q{font-weight:700;font-size:.95rem;margin:0 0 10px;color:var(--text)}
+.tier2-note{font-size:.78rem;color:var(--text-light);font-style:italic;margin-bottom:10px}
+/* Feedback */
+.feedback{border-top:2px solid var(--border);padding:16px 18px;background:var(--surface)}
+.verdict{font-size:1.05rem;font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.verdict.correct{color:var(--success)}.verdict.wrong{color:var(--danger)}.verdict.shaky{color:var(--warning)}
+.fb-trap{background:var(--danger-light);border-left:3px solid var(--danger);border-radius:0 8px 8px 0;padding:10px 13px;margin-bottom:12px;font-size:.88rem}
+.fb-trap .tn{font-weight:700;color:var(--danger)}
+.fb-trap .note{color:var(--text-mid);margin-top:3px}
+.fb-shaky{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:0 8px 8px 0;padding:10px 13px;margin-bottom:12px;font-size:.88rem;color:var(--warning)}
+.fb-block{margin-bottom:10px;font-size:.9rem;line-height:1.55}
+.fb-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);display:block;margin-bottom:2px}
+.fb-link{display:inline-block;margin-top:10px;color:var(--accent-dark);font-size:.86rem;font-weight:600;text-decoration:none;border:1px solid var(--accent);border-radius:6px;padding:6px 12px}
+.fb-link:hover{background:var(--accent-light)}
+.fb-link:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.fb-actions{margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+/* Summary */
+.summary{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px}
+.summary h2{font-family:var(--font-head);color:var(--text);font-size:1.25rem;margin:0 0 4px}
+.sum-score{font-family:var(--font-head);font-size:2.6rem;color:var(--accent-dark);line-height:1;margin-bottom:2px}
+.sum-sub{color:var(--text-mid);font-size:.88rem;margin:0 0 18px}
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.sum-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--bg-alt)}
+.sum-card .k{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);margin-bottom:3px}
+.sum-card .v{font-family:var(--font-head);font-size:1.4rem;color:var(--text)}
+.sum-card .v small{font-size:.75rem;color:var(--text-light);font-family:var(--font-body)}
+.cal-warn{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:0 8px 8px 0;padding:10px 13px;font-size:.86rem;color:var(--warning);margin-bottom:14px}
+.sum-certlist{margin-bottom:16px}
+.sum-certlist h3{font-family:var(--font-head);font-size:.95rem;color:var(--text);margin:0 0 8px}
+.sum-certlist .row{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:.84rem}
+.sum-certlist .lab{flex:0 0 38%;color:var(--text-mid);text-transform:capitalize}
+.sum-certlist .track{flex:1;height:7px;background:var(--bg-alt);border-radius:999px;overflow:hidden;border:1px solid var(--border)}
+.sum-certlist .fill{height:100%;background:var(--success);border-radius:999px}
+.sum-certlist .fill.warn{background:var(--warning)}
+.sum-certlist .pct{flex:0 0 36px;text-align:right;font-size:.76rem;color:var(--text-light)}
+.sum-actions{display:flex;gap:10px;flex-wrap:wrap}
+/* Misc */
+.loading{text-align:center;padding:40px;color:var(--text-light);font-size:.95rem}
+.err-box{background:var(--danger-light);border:1px solid var(--danger);border-radius:12px;padding:16px;color:var(--danger);font-size:.9rem}
+@media(prefers-reduced-motion:no-preference){
+  .qcard{animation:qrise .22s ease both}
+  @keyframes qrise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+}
+@media(max-width:520px){
+  .conf-btns{gap:5px}.conf-btn{font-size:.72rem;padding:7px 4px}
+  .qcard-stem{font-size:1rem}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <h1>Practice Questions</h1>
+    <span class="prog-label" id="progLabel"></span>
+  </div>
+  <div class="qprog" id="qprog" hidden><div class="qprog-fill" id="qprogFill" style="width:0%"></div></div>
+  <div id="root"><div class="loading">Loading question bank&hellip;</div></div>
+</div>
+<script>
+(function(){
+'use strict';
+var BANK = null;
+var SESSION = null;
+var CAT_LABELS = {
+  mood:'Mood',psychosis:'Psychosis',anxiety:'Anxiety/Trauma',
+  substance:'Substance Use',neurocog:'Neurocognitive',pharm:'Pharmacology',
+  safety:'Safety',personality:'Personality',childdev:'Child/Dev',
+  otherdx:'Other Dx',ethics:'Ethics/Law',relational:'Relational'
+};
+var SUBTYPE_LABELS = {
+  'family-system':'Family system','what-would-you-say':'What would you say?',
+  'transition-of-care':'Transition of care'
+};
+
+/* ---- utilities ---------------------------------------------------------------- */
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function shuffle(arr){
+  var a=arr.slice(),i=a.length,j,t;
+  while(i--){j=Math.floor(Math.random()*(i+1));t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
+}
+
+/* ---- localStorage helpers ----------------------------------------------------- */
+function lsGet(k){ try{return JSON.parse(localStorage.getItem(k)||'null');}catch(_){return null;} }
+function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(_){} }
+
+/* ---- cw_qb_v1 response store -------------------------------------------------- */
+function qbLoad(){ return lsGet('cw_qb_v1')||{}; }
+function qbSave(data){ lsSet('cw_qb_v1',data); }
+function qbRecord(item, key, tier2Key, confidence, correct, twoTierResult){
+  var data = qbLoad();
+  var rec = {
+    id: item.id,
+    key: key,
+    tier2Key: tier2Key||null,
+    confidence: confidence,
+    correct: correct,
+    pages: item.pages||[],
+    ts: Date.now()
+  };
+  if(confidence==='certain' && !correct) rec.certWrong = true;
+  data[item.id] = rec;
+  qbSave(data);
+  return rec;
+}
+
+/* ---- cw_srs_v1 SRS seeding + grading ----------------------------------------- */
+function srsLoad(){
+  var s = lsGet('cw_srs_v1');
+  if(!s||s.v!==1){
+    s={v:1,cards:{},day:{lastDay:'',newToday:0},
+      stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},
+      settings:{newPerDay:12}};
+  }
+  return s;
+}
+function srsSave(s){ lsSet('cw_srs_v1',s); }
+
+function srsGrade(item, confidence, correct, twoTierResult){
+  /* Map confidence×correct to SM-2 grade, respecting two-tier shaky cap */
+  if(!correct) return 'Again';
+  if(twoTierResult==='shaky') return 'Hard';  /* cap: right answer, wrong reason */
+  if(confidence==='certain') return 'Easy';
+  if(confidence==='likely')  return 'Good';
+  /* guess + correct = Hard (lucky guess ≠ mastery) */
+  return 'Hard';
+}
+
+var DAY = 86400000;
+function applyGrade(card, grade){
+  /* SM-2 variant: ease floor 1.3, interval cap 365 d */
+  var c = Object.assign({}, card);
+  c.reps = (c.reps||0) + 1;
+  if(c.ivl===0){
+    /* first encounter */
+    if(grade==='Again'){ c.lapses=(c.lapses||0)+1; c.ivl=1; c.due=Date.now(); }
+    else if(grade==='Hard'){ c.ivl=1; c.due=Date.now()+DAY; }
+    else if(grade==='Good'){ c.ivl=1; c.due=Date.now()+DAY; }
+    else { c.ivl=4; c.due=Date.now()+4*DAY; }  /* Easy */
+  } else {
+    if(grade==='Again'){
+      c.lapses=(c.lapses||0)+1;
+      c.ease=Math.max(1.3, (c.ease||2.5)-0.2);
+      c.ivl=Math.max(1, Math.round(c.ivl*0.5));
+      c.due=Date.now();
+    } else if(grade==='Hard'){
+      c.ease=Math.max(1.3, (c.ease||2.5)-0.15);
+      c.ivl=Math.max(1, Math.round(c.ivl*1.2));
+      c.due=Date.now()+Math.min(365,c.ivl)*DAY;
+    } else if(grade==='Good'){
+      c.ivl=Math.max(1, Math.round(c.ivl*(c.ease||2.5)));
+      c.ivl=Math.min(365,c.ivl);
+      c.due=Date.now()+c.ivl*DAY;
+    } else {  /* Easy */
+      c.ease=Math.min(4, (c.ease||2.5)+0.15);
+      c.ivl=Math.max(1, Math.round(c.ivl*(c.ease)*1.3));
+      c.ivl=Math.min(365,c.ivl);
+      c.due=Date.now()+c.ivl*DAY;
+    }
+  }
+  c.last=Date.now();
+  return c;
+}
+
+function srsUpdate(item, confidence, correct, twoTierResult){
+  var s = srsLoad();
+  var cardId = 'QB#'+item.id;
+  var card = s.cards[cardId]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0};
+  var grade = srsGrade(item, confidence, correct, twoTierResult);
+  s.cards[cardId] = applyGrade(card, grade);
+  /* update aggregate stats */
+  s.stats.totalReviews = (s.stats.totalReviews||0)+1;
+  if(correct) s.stats.correct=(s.stats.correct||0)+1;
+  s.stats.seen=(s.stats.seen||0)+1;
+  srsSave(s);
+  return grade;
+}
+
+/* ---- queue building ----------------------------------------------------------- */
+function buildQueue(items, catFilter, diffFilter, sizeLimit){
+  var q = items.filter(function(it){
+    if(catFilter!=='all' && it.category!==catFilter) return false;
+    if(diffFilter!=='all' && String(it.difficulty)!==diffFilter) return false;
+    return true;
+  });
+  q = shuffle(q);
+  if(sizeLimit!=='all') q = q.slice(0, parseInt(sizeLimit,10)||20);
+  return q;
+}
+
+/* ---- rendering helpers -------------------------------------------------------- */
+function diffDots(n){
+  var h='<div class="diff-dots" title="Difficulty '+n+'/3" aria-label="Difficulty '+n+' of 3">';
+  for(var i=1;i<=3;i++) h+='<span class="diff-dot'+(i<=n?' on':'')+'"></span>';
+  return h+'</div>';
+}
+
+function renderSetup(){
+  var items = BANK ? BANK.items : [];
+  var cats = {};
+  items.forEach(function(it){ cats[it.category]=1; });
+  var catOpts = '<option value="all">All categories</option>';
+  Object.keys(CAT_LABELS).forEach(function(k){
+    if(cats[k]) catOpts+='<option value="'+k+'">'+CAT_LABELS[k]+'</option>';
+  });
+  var total = items.length;
+  return '<div class="setup">'
+    +'<h2>Practice bank</h2>'
+    +'<p class="sub">'+total+' items across 12 categories. Select filters, then start. Draft items are included and marked; they teach well even before formal faculty attestation.</p>'
+    +'<div class="filters">'
+    +'<div class="field"><label for="f-cat">Category</label><select id="f-cat">'+catOpts+'</select></div>'
+    +'<div class="field"><label for="f-diff">Difficulty</label><select id="f-diff"><option value="all">All levels</option><option value="1">1 — Recognition</option><option value="2">2 — Shelf-standard</option><option value="3">3 — Stretch</option></select></div>'
+    +'<div class="field"><label for="f-size">Session size</label><select id="f-size"><option value="10">10 questions</option><option value="20" selected>20 questions</option><option value="all">All matching</option></select></div>'
+    +'</div>'
+    +'<div class="setup-foot">'
+    +'<button class="btn btn-primary" id="startBtn">Start practice</button>'
+    +'<span class="item-count" id="itemCount">'+total+' questions match</span>'
+    +'</div>'
+    +'</div>';
+}
+
+function renderMeta(item){
+  var h = '<div class="qcard-meta">';
+  h += '<span class="chip chip-cat">'+esc(CAT_LABELS[item.category]||item.category)+'</span>';
+  h += diffDots(item.difficulty);
+  if(item.type==='two-tier') h+='<span class="chip">Two-tier</span>';
+  if(item.type==='relational') h+='<span class="chip chip-rel">Relational</span>';
+  if(item.hy) h+='<span class="chip chip-hy">&#9733; High-yield</span>';
+  if(item.status==='draft') h+='<span class="chip chip-draft">&#9888; Pending faculty review</span>';
+  h += '</div>';
+  return h;
+}
+
+function renderConfidence(disabled){
+  var ds = disabled ? ' disabled' : '';
+  return '<div class="conf-section">'
+    +'<div class="conf-lbl">Your confidence — select before answering</div>'
+    +'<div class="conf-btns">'
+    +'<button class="conf-btn guess" data-conf="guess"'+ds+'>Guess<br><small style="font-weight:400;font-size:.7em;opacity:.8">uncertain</small></button>'
+    +'<button class="conf-btn likely" data-conf="likely"'+ds+'>Likely<br><small style="font-weight:400;font-size:.7em;opacity:.8">confident</small></button>'
+    +'<button class="conf-btn certain" data-conf="certain"'+ds+'>Certain<br><small style="font-weight:400;font-size:.7em;opacity:.8">no doubt</small></button>'
+    +'</div>'
+    +'<div class="conf-hint" id="confHint">Select your confidence level first.</div>'
+    +'</div>';
+}
+
+function renderOptions(item, state){
+  /* state: 'active'|'locked' — locked after answer */
+  var displayOrder = shuffle(item.options.slice());
+  /* store display order on session for tier-reveal */
+  SESSION.displayOrder = displayOrder;
+  var h = '<div class="opts" id="optsList">';
+  displayOrder.forEach(function(opt){
+    var cls = 'opt';
+    if(state==='locked') cls += ' locked';
+    h += '<button class="'+cls+'" data-key="'+esc(opt.key)+'" '
+       + (state==='locked'?'disabled ':'')+' aria-label="Option '+esc(opt.key)+': '+esc(opt.t)+'">'
+       + '<span class="opt-key">'+esc(opt.key)+'.</span>'+esc(opt.t)
+       + '</button>';
+  });
+  h += '</div>';
+  return h;
+}
+
+function renderTier2(item){
+  var t2 = item.tier2;
+  var displayOrder = shuffle(t2.options.slice());
+  SESSION.tier2DisplayOrder = displayOrder;
+  var h = '<div class="tier2-section" id="tier2Sect">'
+    +'<div class="tier2-lbl">Now the reason</div>'
+    +'<p class="tier2-q">'+esc(t2.q)+'</p>'
+    +'<p class="tier2-note">Select the best rationale — then see your full feedback.</p>'
+    +'<div class="opts" id="tier2Opts">';
+  displayOrder.forEach(function(opt){
+    h += '<button class="opt" data-tier2key="'+esc(opt.key)+'" aria-label="Rationale '+esc(opt.key)+': '+esc(opt.t)+'">'
+       + '<span class="opt-key">'+esc(opt.key)+'.</span>'+esc(opt.t)+'</button>';
+  });
+  h += '</div></div>';
+  return h;
+}
+
+function getFeedbackHtml(item, selectedKey, tier2Key, confidence, correct, twoTierResult){
+  var h = '<div class="feedback" id="feedbackPanel">';
+  /* verdict */
+  var verdClass, verdText;
+  if(twoTierResult==='shaky'){
+    verdClass='shaky'; verdText='&#10003; Right answer — shaky reasoning';
+  } else if(correct){
+    verdClass='correct'; verdText='&#10003; Correct';
+    if(confidence==='certain') verdText+=' &#183; Nailed it';
+    else if(confidence==='guess') verdText+=' &#183; Lucky — review soon';
+  } else {
+    verdClass='wrong'; verdText='&#10007; Incorrect';
+    if(confidence==='certain') verdText+=' &#183; Confidently wrong — flagged for review';
+  }
+  h += '<div class="verdict '+verdClass+'">'+verdText+'</div>';
+  /* trap feedback for wrong answers */
+  if(!correct){
+    var wrongOpt = item.options.filter(function(o){return o.key===selectedKey;})[0];
+    if(wrongOpt&&wrongOpt.trap){
+      h += '<div class="fb-trap">'
+         +'<div class="tn">You fell for: '+esc(wrongOpt.trap.name)+'</div>'
+         +'<div class="note">'+esc(wrongOpt.trap.note)+'</div>'
+         +'</div>';
+    }
+    /* reveal correct option */
+    var correctOpt = item.options.filter(function(o){return o.c;})[0];
+    if(correctOpt){
+      h += '<div class="fb-block"><span class="fb-lbl">Correct answer</span>'
+         + '<strong>'+esc(correctOpt.key)+'. </strong>'+esc(correctOpt.t)+'</div>';
+    }
+  }
+  /* shaky reason feedback */
+  if(twoTierResult==='shaky'){
+    var correctT2 = item.tier2.options.filter(function(o){return o.c;})[0];
+    h += '<div class="fb-shaky">Right answer, wrong reason — your SRS interval is capped at <em>Hard</em> and this item resurfaces soon. The correct rationale: <strong>'+esc(correctT2?correctT2.t:'—')+'</strong></div>';
+    h += '<div class="fb-block"><span class="fb-lbl">Why that rationale</span>'+esc(item.tier2.why)+'</div>';
+  }
+  /* standard why / pearl / evidence */
+  h += '<div class="fb-block"><span class="fb-lbl">Why</span>'+esc(item.why)+'</div>';
+  h += '<div class="fb-block"><span class="fb-lbl">Pearl</span><em>'+esc(item.pearl)+'</em></div>';
+  h += '<div class="fb-block"><span class="fb-lbl">Source</span>'+esc(item.evidence)+'</div>';
+  /* deep link */
+  if(item.link&&item.link.href){
+    var linkHref = item.link.href;
+    /* route through SPA shell if running inside iframe */
+    var isSPA = (window.self!==window.top);
+    if(isSPA && linkHref.indexOf('?page=')===-1 && linkHref.indexOf('?tool=')===-1){
+      linkHref = '?tool='+encodeURIComponent(linkHref);
+    }
+    h += '<a class="fb-link" href="'+esc(linkHref)+'" '+(isSPA?'data-spa-nav="1"':' target="_blank" rel="noopener"')+'>'
+       + esc(item.link.label||'Continue reading')+(isSPA?'':' →')+'</a>';
+  }
+  h += '<div class="fb-actions">'
+     + '<button class="btn btn-accent" id="nextBtn">Next question &rarr;</button>'
+     + '</div></div>';
+  return h;
+}
+
+function renderQuestion(item){
+  var h = '<div class="qcard">';
+  h += renderMeta(item);
+  h += '<div class="qcard-stem">';
+  if(item.type==='relational'&&item.subtype){
+    h += '<span class="subtype">'+esc(SUBTYPE_LABELS[item.subtype]||item.subtype)+'</span>';
+  }
+  h += esc(item.stem);
+  h += '</div>';
+  h += renderConfidence(false);
+  h += renderOptions(item, 'active');
+  h += '</div>';
+  return h;
+}
+
+/* ---- render session summary -------------------------------------------------- */
+function renderSummary(){
+  var responses = SESSION.responses;
+  var total = responses.length;
+  var correct = responses.filter(function(r){return r.correct;}).length;
+  var pct = total ? Math.round(correct/total*100) : 0;
+  /* calibration: certain answers that were correct */
+  var certTotal=0, certCorrect=0;
+  responses.forEach(function(r){
+    if(r.confidence==='certain'){ certTotal++; if(r.correct) certCorrect++; }
+  });
+  var certPct = certTotal ? Math.round(certCorrect/certTotal*100) : null;
+  /* calibration by category */
+  var byCat={};
+  responses.forEach(function(r){
+    var c=r.item.category;
+    if(!byCat[c]) byCat[c]={cert:0,certC:0};
+    if(r.confidence==='certain'){ byCat[c].cert++; if(r.correct)byCat[c].certC++; }
+  });
+  var h = '<div class="summary">';
+  h += '<h2>Session complete</h2>';
+  h += '<div class="sum-score">'+correct+'/'+total+'</div>';
+  h += '<div class="sum-sub">'+pct+'% correct &nbsp;&#183;&nbsp; '+total+' question'+(total!==1?'s':'')+' answered</div>';
+  h += '<div class="sum-grid">';
+  h += '<div class="sum-card"><div class="k">Correct</div><div class="v">'+correct+'<small> / '+total+'</small></div></div>';
+  if(certTotal>0){
+    h += '<div class="sum-card"><div class="k">When certain</div><div class="v">'+certPct+'%<small> accurate</small></div></div>';
+  }
+  var certWrong = responses.filter(function(r){return r.confidence==='certain'&&!r.correct;}).length;
+  if(certWrong>0){
+    h += '<div class="sum-card"><div class="k">Confidently wrong</div><div class="v">'+certWrong+'<small> flagged</small></div></div>';
+  }
+  h += '</div>';
+  /* calibration warning */
+  if(certTotal>=3 && certPct!==null && certPct<80){
+    h += '<div class="cal-warn">'
+       + '<strong>Calibration gap:</strong> You were certain '+certTotal+' time'+(certTotal!==1?'s':'')
+       + ' but only '+certPct+'% accurate when certain. '
+       + 'Miscalibration on the wards is more dangerous than ignorance — '
+       + 'those items resurface soon in Daily Review.</div>';
+  }
+  /* per-category calibration bars */
+  var catKeys = Object.keys(byCat).filter(function(k){ return byCat[k].cert>=2; });
+  if(catKeys.length){
+    h += '<div class="sum-certlist"><h3>Calibration by category</h3>';
+    catKeys.forEach(function(k){
+      var d=byCat[k], p=Math.round(d.certC/d.cert*100);
+      h += '<div class="row">'
+         +'<span class="lab">'+esc(CAT_LABELS[k]||k)+'</span>'
+         +'<span class="track"><span class="fill'+(p<80?' warn':'')+'" style="width:'+p+'%"></span></span>'
+         +'<span class="pct">'+p+'%</span></div>';
+    });
+    h += '</div>';
+  }
+  h += '<div class="sum-actions">'
+     +'<button class="btn btn-primary" id="practiceMoreBtn">Practice more</button>'
+     +'<button class="btn btn-ghost" id="goHomeBtn">Go to Home</button>'
+     +'</div></div>';
+  return h;
+}
+
+/* ---- DOM helpers -------------------------------------------------------------- */
+var root = document.getElementById('root');
+var progLabel = document.getElementById('progLabel');
+var qprog = document.getElementById('qprog');
+var qprogFill = document.getElementById('qprogFill');
+
+function setRoot(html){ root.innerHTML=html; }
+function updateProgress(){
+  if(!SESSION) return;
+  var idx=SESSION.idx, total=SESSION.queue.length;
+  if(total===0) return;
+  var pct=Math.round((idx/total)*100);
+  progLabel.textContent = 'Question '+(idx+1)+' of '+total;
+  qprog.hidden=false;
+  qprogFill.style.width=pct+'%';
+}
+
+/* ---- app state transitions ---------------------------------------------------- */
+function showSetup(){
+  SESSION=null;
+  progLabel.textContent='';
+  qprog.hidden=true;
+  setRoot(renderSetup());
+  bindSetup();
+}
+
+function bindSetup(){
+  var catSel=document.getElementById('f-cat');
+  var diffSel=document.getElementById('f-diff');
+  var sizeSel=document.getElementById('f-size');
+  var countEl=document.getElementById('itemCount');
+  var startBtn=document.getElementById('startBtn');
+  function updateCount(){
+    var cat=catSel?catSel.value:'all', diff=diffSel?diffSel.value:'all';
+    var n = (BANK?BANK.items:[]).filter(function(it){
+      if(cat!=='all'&&it.category!==cat) return false;
+      if(diff!=='all'&&String(it.difficulty)!==diff) return false;
+      return true;
+    }).length;
+    var size=sizeSel?sizeSel.value:'20';
+    var showing = (size==='all')?n:Math.min(n,parseInt(size,10)||20);
+    if(countEl) countEl.textContent=(showing===n?n:showing+' of '+n)+' question'+(n!==1?'s':'')+' match';
+    if(startBtn) startBtn.disabled=(n===0);
+  }
+  if(catSel) catSel.addEventListener('change',updateCount);
+  if(diffSel) diffSel.addEventListener('change',updateCount);
+  if(sizeSel) sizeSel.addEventListener('change',updateCount);
+  updateCount();
+  if(startBtn) startBtn.addEventListener('click',function(){
+    var cat=catSel?catSel.value:'all';
+    var diff=diffSel?diffSel.value:'all';
+    var size=sizeSel?sizeSel.value:'20';
+    startSession(cat,diff,size);
+  });
+}
+
+function startSession(catFilter, diffFilter, sizeLimit){
+  var queue = buildQueue(BANK.items, catFilter, diffFilter, sizeLimit);
+  if(!queue.length){
+    setRoot('<div class="err-box">No questions match the selected filters.</div>');
+    return;
+  }
+  SESSION = {
+    queue: queue,
+    idx: 0,
+    responses: [],
+    confidence: null,
+    tier1Key: null,
+    displayOrder: [],
+    tier2DisplayOrder: [],
+    state: 'conf'  /* conf | tier2 | feedback */
+  };
+  showQuestion();
+}
+
+function showQuestion(){
+  if(!SESSION || SESSION.idx >= SESSION.queue.length){
+    showSummary(); return;
+  }
+  SESSION.confidence = null;
+  SESSION.tier1Key = null;
+  SESSION.state = 'conf';
+  SESSION.displayOrder = [];
+  SESSION.tier2DisplayOrder = [];
+  updateProgress();
+  var item = SESSION.queue[SESSION.idx];
+  setRoot(renderQuestion(item));
+  bindQuestion(item);
+}
+
+function bindQuestion(item){
+  /* confidence buttons */
+  var confBtns = root.querySelectorAll('.conf-btn');
+  var confHint = document.getElementById('confHint');
+  confBtns.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      if(SESSION.state!=='conf') return;
+      confBtns.forEach(function(b){ b.classList.remove('on'); });
+      btn.classList.add('on');
+      SESSION.confidence = btn.getAttribute('data-conf');
+      if(confHint) confHint.classList.remove('show');
+    });
+  });
+  /* tier1 option buttons */
+  var optBtns = root.querySelectorAll('#optsList .opt');
+  optBtns.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      if(SESSION.state!=='conf') return;
+      if(!SESSION.confidence){
+        if(confHint) confHint.classList.add('show');
+        /* briefly shake the confidence section */
+        var cs=root.querySelector('.conf-section');
+        if(cs){ cs.style.outline='2px solid var(--danger)'; cs.style.borderRadius='8px';
+          setTimeout(function(){cs.style.outline='';cs.style.borderRadius='';},600); }
+        return;
+      }
+      var key = btn.getAttribute('data-key');
+      onTier1Answer(item, key);
+    });
+  });
+}
+
+function onTier1Answer(item, key){
+  SESSION.tier1Key = key;
+  var isCorrect = item.options.some(function(o){ return o.key===key && o.c; });
+  /* lock tier1 options and highlight */
+  var optBtns = root.querySelectorAll('#optsList .opt');
+  optBtns.forEach(function(btn){
+    btn.disabled = true;
+    btn.classList.add('locked');
+    var k = btn.getAttribute('data-key');
+    if(k===key && isCorrect) btn.classList.add('selected-correct');
+    else if(k===key && !isCorrect) btn.classList.add('selected-wrong');
+    else if(item.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add('correct-reveal');
+  });
+  /* lock confidence buttons */
+  root.querySelectorAll('.conf-btn').forEach(function(b){ b.disabled=true; });
+  if(item.type==='two-tier' && isCorrect){
+    /* show tier2 before feedback */
+    SESSION.state = 'tier2';
+    var qcard = root.querySelector('.qcard');
+    if(qcard){
+      var t2html = renderTier2(item);
+      qcard.insertAdjacentHTML('beforeend', t2html);
+      bindTier2(item);
+    }
+  } else {
+    /* for wrong tier1 on two-tier, still show tier2 (spec: "tier 2 still shown and answered — the feedback teaches against both selections") */
+    if(item.type==='two-tier' && !isCorrect){
+      SESSION.state = 'tier2';
+      var qcard2 = root.querySelector('.qcard');
+      if(qcard2){
+        var t2html2 = renderTier2(item);
+        qcard2.insertAdjacentHTML('beforeend', t2html2);
+        bindTier2(item);
+      }
+    } else {
+      /* sba / relational: show feedback directly */
+      SESSION.state = 'feedback';
+      var twoTierResult = null;
+      commitResponse(item, key, null, SESSION.confidence, isCorrect, twoTierResult);
+      showFeedback(item, key, null, SESSION.confidence, isCorrect, null);
+    }
+  }
+}
+
+function bindTier2(item){
+  var t2Btns = root.querySelectorAll('#tier2Opts .opt');
+  t2Btns.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      if(SESSION.state!=='tier2') return;
+      var tier2Key = btn.getAttribute('data-tier2key');
+      onTier2Answer(item, tier2Key);
+    });
+  });
+}
+
+function onTier2Answer(item, tier2Key){
+  SESSION.state = 'feedback';
+  var tier1Key = SESSION.tier1Key;
+  var tier1Correct = item.options.some(function(o){ return o.key===tier1Key && o.c; });
+  var tier2Correct = item.tier2.options.some(function(o){ return o.key===tier2Key && o.c; });
+  /* lock tier2 options + highlight */
+  var t2Btns = root.querySelectorAll('#tier2Opts .opt');
+  t2Btns.forEach(function(btn){
+    btn.disabled=true; btn.classList.add('locked');
+    var k=btn.getAttribute('data-tier2key');
+    if(k===tier2Key && tier2Correct) btn.classList.add('selected-correct');
+    else if(k===tier2Key && !tier2Correct) btn.classList.add('selected-wrong');
+    else if(item.tier2.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add('correct-reveal');
+  });
+  /* scoring: both right = correct; right answer/wrong reason = shaky; wrong tier1 = wrong */
+  var correct, twoTierResult;
+  if(!tier1Correct){
+    correct=false; twoTierResult='wrong';
+  } else if(tier2Correct){
+    correct=true; twoTierResult='both_right';
+  } else {
+    correct=true; twoTierResult='shaky';  /* right answer, wrong reason — cap at Hard */
+  }
+  commitResponse(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult);
+  showFeedback(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult);
+}
+
+function commitResponse(item, key, tier2Key, confidence, correct, twoTierResult){
+  var rec = qbRecord(item, key, tier2Key, confidence, correct, twoTierResult);
+  srsUpdate(item, confidence, correct, twoTierResult);
+  SESSION.responses.push({
+    item: item,
+    key: key,
+    tier2Key: tier2Key,
+    confidence: confidence,
+    correct: correct,
+    twoTierResult: twoTierResult,
+    ts: rec.ts
+  });
+}
+
+function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){
+  var fbHtml = getFeedbackHtml(item, key, tier2Key, confidence, correct, twoTierResult);
+  var qcard = root.querySelector('.qcard');
+  if(qcard){
+    /* remove any tier2 section first if it already exists */
+    var existing = qcard.querySelector('.feedback');
+    if(existing) existing.parentNode.removeChild(existing);
+    qcard.insertAdjacentHTML('beforeend', fbHtml);
+    /* scroll feedback into view */
+    var fb = document.getElementById('feedbackPanel');
+    if(fb) setTimeout(function(){ fb.scrollIntoView({behavior:'smooth',block:'nearest'}); },80);
+  }
+  /* bind spa nav links */
+  root.querySelectorAll('.fb-link[data-spa-nav="1"]').forEach(function(a){
+    a.addEventListener('click',function(ev){
+      ev.preventDefault();
+      var href=a.getAttribute('href')||'';
+      try{ window.parent.postMessage({type:'openPage',f:decodeURIComponent(href.replace(/^\?(?:page|tool)=/,''))},'*'); }
+      catch(_){ window.location.href=href; }
+    });
+  });
+  /* next button */
+  var nextBtn = document.getElementById('nextBtn');
+  if(nextBtn) nextBtn.addEventListener('click', advance);
+}
+
+function advance(){
+  if(!SESSION) return;
+  SESSION.idx++;
+  if(SESSION.idx >= SESSION.queue.length) showSummary();
+  else showQuestion();
+}
+
+function showSummary(){
+  progLabel.textContent='Session complete';
+  qprog.hidden=false;
+  qprogFill.style.width='100%';
+  setRoot(renderSummary());
+  var moreBtn=document.getElementById('practiceMoreBtn');
+  if(moreBtn) moreBtn.addEventListener('click',showSetup);
+  var homeBtn=document.getElementById('goHomeBtn');
+  if(homeBtn) homeBtn.addEventListener('click',function(){
+    /* send parent SPA to Home page */
+    try{ window.parent.postMessage({type:'openPage',f:'__home__'},'*'); }
+    catch(_){}
+  });
+}
+
+/* ---- init --------------------------------------------------------------------- */
+(function init(){
+  /* try relative path (built: /tools/question-bank-practice.html → /question_bank.json) */
+  fetch('../question_bank.json')
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(data){
+      BANK = data;
+      showSetup();
+    })
+    .catch(function(err){
+      root.innerHTML='<div class="err-box">'
+        +'<strong>Could not load question bank.</strong> '
+        +'question_bank.json was not found alongside this tool. '
+        +'Make sure the build ran successfully and question_bank.json is at the site root.'
+        +'<br><small style="opacity:.7">'+esc(String(err))+'</small></div>';
+    });
+  /* handle filter count updates before bank loads */
+  root.addEventListener('input',function(ev){
+    var t=ev.target; if(t&&(t.id==='f-cat'||t.id==='f-diff'||t.id==='f-size')){
+      var catSel=document.getElementById('f-cat'),diffSel=document.getElementById('f-diff'),sizeSel=document.getElementById('f-size'),countEl=document.getElementById('itemCount');
+      if(!BANK||!countEl) return;
+      var cat=catSel?catSel.value:'all',diff=diffSel?diffSel.value:'all';
+      var n=(BANK.items||[]).filter(function(it){
+        return (cat==='all'||it.category===cat)&&(diff==='all'||String(it.difficulty)===diff);
+      }).length;
+      var size=sizeSel?sizeSel.value:'20';
+      var showing=(size==='all')?n:Math.min(n,parseInt(size,10)||20);
+      countEl.textContent=(showing===n?n:showing+' of '+n)+' question'+(n!==1?'s':'')+' match';
+    }
+  });
+  /* dark mode sync from parent SPA */
+  window.addEventListener('message',function(ev){
+    var d=ev.data||{};
+    if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){
+      document.documentElement.setAttribute('data-theme',d.mode);
+      try{localStorage.setItem('cw_theme',d.mode);}catch(_){}
+    }
+  });
+  try{
+    var t=localStorage.getItem('cw_theme');
+    if(t==='dark'||t==='light') document.documentElement.setAttribute('data-theme',t);
+  }catch(_){}
+})();
+})();
+</script>
+</body>
+</html>

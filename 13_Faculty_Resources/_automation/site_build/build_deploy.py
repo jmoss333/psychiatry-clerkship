@@ -26,6 +26,7 @@ tools=[
  ("07_Evidence_and_Reading/Landmark_Trials/shelf-mode.html","shelf-mode.html","Shelf Mode — Exam Simulation"),
  ("07_Evidence_and_Reading/Landmark_Trials/review.html","review.html","Daily Review (Spaced Repetition)"),
  ("13_Faculty_Resources/Feedback/feedback.html","feedback.html","Improve this library — send feedback"),
+ ("13_Faculty_Resources/_automation/site_build/question-bank-practice.html","question-bank-practice.html","Practice Questions — Question Bank"),
 ]
 
 # ---- pre-flight: verify every REQUIRED source asset exists BEFORE we build ----
@@ -36,6 +37,7 @@ _required=[os.path.join(LIB,src) for src,_,_ in tools]+[
     LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
     LIB+"/13_Faculty_Resources/review-attest.html",
     LIB+"/01_Six_Week_Curriculum/learning-path.html",
+    LIB+"/question_bank.json",
 ]
 _missing_req=[p for p in _required if not os.path.exists(p)]
 if _missing_req:
@@ -109,6 +111,7 @@ _rv=LIB+"/13_Faculty_Resources/reviewed.json"
 shutil.copy2(_rv, OUT+"/reviewed.json") if os.path.exists(_rv) else open(OUT+"/reviewed.json","w").write("{}")
 _tm=LIB+"/topic_meta.json"
 shutil.copy2(_tm, OUT+"/topic_meta.json") if os.path.exists(_tm) else open(OUT+"/topic_meta.json","w").write("{}")
+shutil.copy2(LIB+"/question_bank.json", OUT+"/question_bank.json")
 shutil.copy2(LIB+"/13_Faculty_Resources/review-attest.html", OUT+"/tools/review-attest.html")
 shutil.copy2(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learning-path.html")
 
@@ -186,7 +189,7 @@ nav=[
  {"section":"Psychopharmacology","items":[{"t":"Psychopharmacology Primer","f":"psychopharm_primer.md","k":"md"},{"t":"Protocol Library","f":"protocol_library.md","k":"md"},{"t":"ECT & Neuromodulation","f":"ect_neuromodulation.md","k":"md"}]},
  {"section":"Ethics, Law & Culture","items":[{"t":"Ethics & the Law: Confidentiality, Tarasoff, Reporting","f":"ethics_legal.md","k":"md"},{"t":"Culture, Disparities & Formulation","f":"cultural_psychiatry.md","k":"md"}]},
  {"section":"Pocket guides","items":[{"t":"Interview & MSE","f":"pg_interview.md","k":"md"},{"t":"Formulation & DDx","f":"pg_formulation.md","k":"md"},{"t":"Suicide Risk & Safety","f":"pg_suicide.md","k":"md"}]},
- {"section":"Skills, cases & exam","items":[{"t":"Documentation & Oral Presentation","f":"doc_oral.md","k":"md"},{"t":"Capacity/Delirium/Catatonia/Withdrawal","f":"exp_consult.md","k":"md"},{"t":"Treatment Basics","f":"exp_tx.md","k":"md"},{"t":"Family & Discharge","f":"exp_family.md","k":"md"},{"t":"Family Therapy Modalities","f":"family_modalities.md","k":"md"},{"t":"Family Meeting Playbook (90-min)","f":"family_playbook.md","k":"md"},{"t":"Motivational Interviewing","f":"motivational_interviewing.md","k":"md"},{"t":"Brief Psychotherapy on the Unit","f":"brief_psychotherapy.md","k":"md"},{"t":"OSCE Stations","f":"osce.md","k":"md"},{"t":"Practice Cases","f":"cases.md","k":"md"},{"t":"COMAT & Shelf Review","f":"shelf.md","k":"md"},{"t":"High-Yield Rounds Questions","f":"rounds_questions.md","k":"md"}]},
+ {"section":"Skills, cases & exam","items":[{"t":"Documentation & Oral Presentation","f":"doc_oral.md","k":"md"},{"t":"Capacity/Delirium/Catatonia/Withdrawal","f":"exp_consult.md","k":"md"},{"t":"Treatment Basics","f":"exp_tx.md","k":"md"},{"t":"Family & Discharge","f":"exp_family.md","k":"md"},{"t":"Family Therapy Modalities","f":"family_modalities.md","k":"md"},{"t":"Family Meeting Playbook (90-min)","f":"family_playbook.md","k":"md"},{"t":"Motivational Interviewing","f":"motivational_interviewing.md","k":"md"},{"t":"Brief Psychotherapy on the Unit","f":"brief_psychotherapy.md","k":"md"},{"t":"OSCE Stations","f":"osce.md","k":"md"},{"t":"Practice Cases","f":"cases.md","k":"md"},{"t":"COMAT & Shelf Review","f":"shelf.md","k":"md"},{"t":"High-Yield Rounds Questions","f":"rounds_questions.md","k":"md"},{"t":"Practice Questions — Question Bank","f":"question-bank-practice.html","k":"tool"}]},
  {"section":"Evidence & reading","items":[{"t":"Weekly Reading Map","f":"reading_map.md","k":"md"},{"t":"Landmark Trials — Listen & Test","f":"landmark_trials.md","k":"md"},{"t":"Evidence-Based Inpatient Psychiatry","f":"evidence_inpatient.md","k":"md"}]},
  {"section":"Books & Podcasts","items":[{"t":"MS3 Book Library","f":"book_library.md","k":"md"},{"t":"Podcast Library (Psychiatry & Psychotherapy)","f":"podcast_library.md","k":"md"}]},
  {"section":"Faculty","items":[{"t":"Review & Attest","f":"review-attest.html","k":"tool"}]},
@@ -274,6 +277,7 @@ def build_search_index():
      "bfcrs.html":"bush francis catatonia rating scale bfcrs bfcsi catatonia screening immobility stupor mutism posturing catalepsy waxy flexibility negativism mitgehen gegenhalten echopraxia lorazepam challenge severity score",
      "learning-path.html":"learning path home dashboard six week progress streak daily review study plan start here",
      "orientation-video.html":"orientation video start here inpatient unit welcome introduction onboarding tour first day",
+     "question-bank-practice.html":"practice questions question bank comat shelf exam vignette single best answer sba two-tier confidence calibration trap feedback spaced repetition category filter mood psychosis anxiety substance neurocognitive pharmacology safety personality relational ethics",
     }
     postings={}  # token -> {docid: weighted tf}
     docs=[]
