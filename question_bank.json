@@ -5683,6 +5683,1316 @@
       "why": "One trial sufficient, Duration sufficient alone, and ECT in the ladder all misstate the threshold. The page defines treatment resistance as 'inadequate response to two adequate antipsychotic trials' — both trials must be at therapeutic doses for adequate durations. One partially-dosed trial does not qualify.",
       "pearl": "Treatment-resistant schizophrenia = inadequate response to two adequate antipsychotic trials (therapeutic dose, adequate duration) — both criteria must be met before clozapine.",
       "evidence": "t_psychosis.md — For treatment-resistant schizophrenia (inadequate response to two adequate antipsychotic trials), clozapine is the evidence-based agent."
+    },
+    {
+      "id": "qb_anx_003",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "dx",
+        "next-step"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "anxiety_trauma_ocd_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+      },
+      "stem": "A 48-year-old woman admitted for a first manic episode was started on haloperidol 3 days ago. Nursing staff report she has been pacing the unit constantly and cannot sit still, and she tells the student, 'I feel like I'm going to jump out of my skin.' The team plans to increase her haloperidol for 'worsening agitation.' Which is the most accurate assessment?",
+      "options": [
+        {
+          "key": "A",
+          "t": "This presentation is most consistent with akathisia — a drug-induced restlessness characterized by an inner urge to move; increasing dopamine blockade will worsen it, not treat it.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "The patient's agitation reflects incompletely treated mania — increasing haloperidol is the correct next step.",
+          "trap": {
+            "name": "Treat before diagnose",
+            "note": "Haloperidol-induced akathisia mimics agitation from the underlying illness; increasing the dose worsens the akathisia and can produce dangerous outcomes."
+          }
+        },
+        {
+          "key": "C",
+          "t": "This is situational anxiety from the hospitalization itself — reassure the patient and add a benzodiazepine as needed.",
+          "trap": {
+            "name": "Anxiety diagnosis by exclusion",
+            "note": "Benzodiazepines may transiently suppress akathisia but do not treat it, and the pacing driven by an inner motor urge is a specific antipsychotic adverse effect that requires recognition and dose adjustment or switch."
+          }
+        },
+        {
+          "key": "D",
+          "t": "The 'jumping out of her skin' sensation indicates serotonin syndrome — check serotonin toxicity criteria immediately.",
+          "trap": {
+            "name": "Serotonin syndrome by symptom pattern",
+            "note": "Serotonin syndrome features hyperreflexia, clonus, diaphoresis, and temperature elevation; akathisia is a dopaminergic adverse effect distinct from serotonin toxicity."
+          }
+        }
+      ],
+      "why": "Treat before diagnose, Anxiety by exclusion, and Serotonin syndrome by symptom all bypass recognition of akathisia — the page calls it 'the great inpatient impostor.' The inner restlessness of akathisia worsens if you add more dopamine blockade, which is the planned intervention; the correct move is to recognize it and reduce, switch, or add a beta-blocker.",
+      "pearl": "Akathisia is the great inpatient impostor — inner-urge restlessness from antipsychotics worsens with more dopamine blockade; recognize it before adjusting the dose upward.",
+      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Akathisia is the classic miss — restless, driven motor anxiety from antipsychotics that worsens if you reflexively treat it as 'agitation' with more dopamine blockade."
+    },
+    {
+      "id": "qb_anx_004",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "anxiety_trauma_ocd_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+      },
+      "stem": "A 52-year-old man is admitted to the inpatient psychiatry unit. He is anxious, diaphoretic, and tremulous. His heart rate is 102. He says he has always been 'an anxious person.' The team prepares to increase his home sertraline. Which step is most important before attributing this presentation to his anxiety disorder?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Obtain a psychiatric consultation — his elevated heart rate may indicate a panic attack requiring specialist evaluation.",
+          "trap": {
+            "name": "Specialist before differential",
+            "note": "Obtaining consultation does not replace completing the medical differential; the vital signs and diaphoresis suggest a medical or withdrawal etiology that precedes the psychiatric assessment."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Screen for medical and withdrawal mimics first — anxiety is a symptom before it is a diagnosis; diaphoresis, tachycardia, and tremor in a newly admitted patient require a workup for hyperthyroidism, withdrawal, arrhythmia, and hypoglycemia before attributing to primary anxiety.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Increase the sertraline — the anxiety disorder history provides the most parsimonious explanation.",
+          "trap": {
+            "name": "Anchoring to prior diagnosis",
+            "note": "A prior anxiety diagnosis does not preclude new medical or withdrawal causes; acting on a prior label without investigating new-admission vital sign abnormalities is anchoring bias."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Obtain an ECG and troponin immediately — the anxiety symptoms likely represent cardiac ischemia.",
+          "trap": {
+            "name": "Single diagnosis before differential",
+            "note": "Cardiac workup may be part of the evaluation, but the correct move is to work the full differential, not jump to one specific etiology before establishing what the presentation represents."
+          }
+        }
+      ],
+      "why": "Specialist before differential, Anchoring to prior diagnosis, and Single diagnosis before differential all bypass the foundational step. The page's first pearl: 'Anxiety is a symptom before it is a diagnosis — clear the medical and withdrawal mimics first.' In a newly admitted patient with diaphoresis, tremor, and tachycardia, alcohol or sedative withdrawal must top the differential.",
+      "pearl": "Anxiety is a symptom before it is a diagnosis — clear medical and withdrawal mimics (thyroid, withdrawal, arrhythmia, hypoglycemia) before treating the disorder.",
+      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Anxiety is a final common pathway, so screen the body first: cardiopulmonary causes, thyroid disease, hypoglycemia, caffeine and stimulant intoxication, and alcohol or benzodiazepine withdrawal."
+    },
+    {
+      "id": "qb_anx_005",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "pharm",
+        "safety"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "anxiety_trauma_ocd_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+      },
+      "stem": "A 44-year-old woman with panic disorder and alcohol use disorder in early recovery is admitted for assessment. She is anxious and requesting 'something to help right away.' The student considers adding a standing lorazepam dose for anxiety management. Which response reflects the inpatient standard?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Start lorazepam 0.5 mg twice daily and titrate to response — benzodiazepines are first-line for inpatient anxiety.",
+          "trap": {
+            "name": "Benzos for anxiety disorder",
+            "note": "Benzodiazepines are not first-line maintenance treatment for anxiety disorders, especially on an inpatient unit with comorbid SUD — they drive dependence, worsen delirium risk, and are specifically contraindicated in this context."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Give a single dose of lorazepam now and plan to stop it in 24 hours — brief PRN use avoids dependence.",
+          "trap": {
+            "name": "One dose is safe",
+            "note": "Even single doses establish a pattern in SUD recovery, and the plan to stop in 24 hours frequently escalates; the standard is to avoid benzodiazepines as an anxiety strategy and use alternative approaches."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Avoid standing benzodiazepines on the inpatient unit — they drive dependence, falls, and delirium, and are especially hazardous with comorbid SUD or in older adults; use structured skills, SSRI/SNRI planning, and targeted behavioral strategies instead.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Benzodiazepines are acceptable for a few days in any patient — dependence only develops with chronic outpatient use.",
+          "trap": {
+            "name": "Inpatient benzos are safe short-term",
+            "note": "Dependence and withdrawal risk are not confined to outpatient chronic use; on the inpatient unit, standing benzodiazepines also impair cognition, raise fall risk, and — in this patient — risk activating craving and relapse behavior."
+          }
+        }
+      ],
+      "why": "Benzos for anxiety disorder, One dose is safe, and Inpatient benzos safe short-term all contradict the page's explicit guidance. The page states: 'Avoid standing benzodiazepines on the unit — they drive dependence, falls, and delirium, and are especially hazardous with comorbid SUD or in older adults.' This patient has both risk factors.",
+      "pearl": "Standing benzodiazepines are a liability on the inpatient unit — dependence, falls, delirium; especially avoid with SUD or in older adults; use SSRIs + behavioral skills instead.",
+      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Avoid standing benzodiazepines on the unit — they drive dependence, falls, and delirium, and are especially hazardous with comorbid SUD or in older adults."
+    },
+    {
+      "id": "qb_anx_006",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "anxiety_trauma_ocd_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+      },
+      "stem": "A 32-year-old man with OCD spends 4–6 hours daily performing handwashing and checking rituals that he recognizes as excessive. He asks what the most effective treatment for his OCD is. Which response is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Cognitive restructuring — identifying and challenging the distorted beliefs underlying the OCD cognitions is the first-line behavioral approach.",
+          "trap": {
+            "name": "Cognitive restructuring over ERP",
+            "note": "Standard CBT for OCD focuses on behavioral exposure rather than cognitive restructuring alone; the evidence-based behavioral treatment is specifically ERP, not generic cognitive work."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Prolonged exposure — reliving the feared OCD content in an imaginal narrative is the evidence-based treatment for OCD.",
+          "trap": {
+            "name": "ERP confused with PE",
+            "note": "Prolonged exposure (PE) is the behavioral treatment for PTSD, not OCD; ERP — gradually exposing to feared triggers while preventing the compulsive response — is the evidence-based approach for OCD."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Mindfulness-based stress reduction — cultivating non-judgmental awareness of obsessional thoughts reduces their power over the patient's behavior.",
+          "trap": {
+            "name": "Mindfulness over ERP",
+            "note": "Mindfulness may be a helpful adjunct, but ERP has the strongest evidence for OCD; mindfulness alone does not address the exposure-response chain that maintains OCD."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Exposure and response prevention (ERP) — gradually exposing the patient to feared triggers while preventing the compulsive ritual, breaking the anxiety-reduction cycle that maintains OCD.",
+          "c": true
+        }
+      ],
+      "why": "Cognitive restructuring over ERP, ERP confused with PE, and Mindfulness over ERP all substitute adjacent techniques for the specific evidence-based intervention. The page states: 'Definitive treatment is behavioral — ERP for OCD.' The mechanism of ERP (exposure + ritual prevention breaks the anxiety-reduction cycle) is what distinguishes it from general cognitive or mindfulness work.",
+      "pearl": "First-line behavioral treatment for OCD is ERP (exposure and response prevention) — not PE (which is PTSD), not generic CBT, not mindfulness alone.",
+      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Pair pharmacology with disorder-specific behavioral work: exposure and response prevention (ERP) for OCD."
+    },
+    {
+      "id": "qb_anx_007",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "anxiety_trauma_ocd_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+      },
+      "stem": "A 29-year-old man is admitted from the emergency department with a possible psychotic disorder. He is noted to perform elaborate ritualized behaviors before eating — arranging his tray precisely, touching items in a fixed sequence, and repeating phrases — and he becomes extremely distressed if interrupted. He describes intrusive thoughts about contamination. Which diagnosis should be reconsidered?",
+      "options": [
+        {
+          "key": "A",
+          "t": "OCD can masquerade as psychosis when rituals are elaborate — the structured, ego-dystonic nature of the rituals and the contamination preoccupation are consistent with OCD, not a primary psychotic disorder.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "This confirms a psychotic disorder with magical thinking — ritualized behavior during a psychotic episode indicates command hallucinations driving the rituals.",
+          "trap": {
+            "name": "Rituals = psychosis",
+            "note": "OCD rituals are ego-dystonic and performed to reduce anxiety from recognized obsessions — the patient recognizes them as excessive; psychotic rituals driven by hallucinations have a different phenomenological quality."
+          }
+        },
+        {
+          "key": "C",
+          "t": "This is catatonia — the stereotyped movements and distress on interruption indicate a catatonic episode requiring lorazepam challenge.",
+          "trap": {
+            "name": "Stereotypy = catatonia",
+            "note": "Catatonia involves waxy flexibility, stupor, mutism, posturing, and negativism — not purposeful anxiety-driven rituals with intact communication; OCD rituals are purposeful and relief-driven."
+          }
+        },
+        {
+          "key": "D",
+          "t": "This represents an autism spectrum disorder with restricted/repetitive behaviors — pursue developmental history and ASD workup.",
+          "trap": {
+            "name": "Repetitive behavior = ASD",
+            "note": "ASD restricted behaviors are ego-syntonic routines that provide comfort; OCD rituals are ego-dystonic — recognized as excessive and performed to reduce anxiety. Both can occur, but the contamination-driven, distress-on-interruption pattern points to OCD."
+          }
+        }
+      ],
+      "why": "Rituals = psychosis, Stereotypy = catatonia, and Repetitive behavior = ASD all replace OCD with other diagnoses based on surface features. The page notes: 'OCD can masquerade as psychosis when rituals are elaborate.' The discriminating features are ego-dystonicity (patient recognizes the ritual as excessive) and the contamination obsession → relief-seeking ritual chain.",
+      "pearl": "Elaborate ego-dystonic rituals + contamination obsessions on a psychiatric unit = OCD masquerading as psychosis — clarify ego-dystonicity before committing to a psychosis diagnosis.",
+      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — OCD can masquerade as psychosis when rituals are elaborate, or as treatment refusal when contamination fears collide with the milieu."
+    },
+    {
+      "id": "qb_anx_008",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "anxiety",
+      "competency": [
+        "dx",
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "anxiety_trauma_ocd_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+      },
+      "stem": "A student is reviewing a patient with OCD and notes serial Y-BOCS scores in the chart: 32 on admission, 24 at one week, and 20 at two weeks. The attending asks the student to interpret what the Y-BOCS measures and what these scores indicate. Which response is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The Y-BOCS is a patient self-report symptom checklist for OCD — scores above 20 indicate clinical disorder; a drop from 32 to 20 reflects the patient's subjective sense of improvement.",
+          "trap": {
+            "name": "Y-BOCS = self-report",
+            "note": "The Y-BOCS is a clinician-rated measure, not a patient self-report — it assesses both a symptom checklist phase and 10 severity items scored by the clinician; self-report vs clinician-rated tools have different psychometric properties and different uses."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The Y-BOCS (Yale-Brown Obsessive-Compulsive Scale) is the gold-standard clinician-rated measure of OCD severity and treatment response — it includes obsession and compulsion domains scored separately, and the drop from 32 to 20 indicates a meaningful response to treatment.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "The Y-BOCS is a broadband anxiety screen — it measures generalized anxiety severity across all anxiety disorders and is used to track treatment response in any anxiety condition.",
+          "trap": {
+            "name": "Broadband anxiety screen",
+            "note": "The Y-BOCS is OCD-specific — it does not measure generalized anxiety, panic, or social anxiety; using it as a general anxiety measure would conflate very different constructs."
+          }
+        },
+        {
+          "key": "D",
+          "t": "The Y-BOCS is a behavioral observation tool completed by nursing staff during the hospital stay, documenting observable compulsive behaviors rather than the patient's internal experience.",
+          "trap": {
+            "name": "Behavioral observation only",
+            "note": "The Y-BOCS assesses both behavioral and cognitive dimensions, including obsessional distress and the patient's ability to resist intrusive thoughts — it is clinician-administered, not a nursing observation form."
+          }
+        }
+      ],
+      "why": "Y-BOCS = self-report, Broadband anxiety screen, and Behavioral observation only all mischaracterize the instrument. The page specifically names the Y-BOCS as 'the gold-standard clinician-rated measure of OCD severity and treatment response.' Serial tracking — obsessions and compulsions scored separately — is the measure's primary clinical value.",
+      "pearl": "Y-BOCS = gold-standard clinician-rated OCD scale; obsessions and compulsions scored separately; use it to track treatment response, not just screen at baseline.",
+      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — The scale to know for OCD is the Y-BOCS (Yale-Brown Obsessive-Compulsive Scale) — the gold-standard clinician-rated measure of OCD severity and treatment response.",
+      "tier2": {
+        "q": "What is the structure of the Y-BOCS that makes it sensitive to treatment response over time?",
+        "options": [
+          {
+            "key": "A",
+            "t": "A single total score calculated from patient self-report items rated on a 0–4 scale — simple total tracking over serial administrations."
+          },
+          {
+            "key": "B",
+            "t": "A symptom checklist phase (cataloguing which obsessions and compulsions are present) followed by 10 severity items (5 for obsessions, 5 for compulsions) rated by the clinician — the two subscores can detect differential improvement in obsessions vs compulsions.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "A frequency-only scale that counts the hours per day spent on rituals — higher ritual time equals higher severity regardless of patient distress."
+          },
+          {
+            "key": "D",
+            "t": "A functional impairment scale that rates the impact of OCD on work, relationships, and ADLs — not symptom severity per se."
+          }
+        ],
+        "why": "The Y-BOCS structure is what makes it the gold standard. The symptom checklist phase establishes which obsessions and compulsions are present (a dimensional catalogue of content types), but the severity rating is driven by the 10 severity items — 5 for obsessions and 5 for compulsions — rated by the clinician across dimensions like time occupied, distress, resistance, and control. Because obsessions and compulsions are scored separately (0–20 each, 0–40 total), the Y-BOCS can detect when medication reduces compulsions while obsessions persist, or vice versa, which informs the decision to intensify ERP vs pharmacotherapy."
+      }
+    },
+    {
+      "id": "qb_anx_009",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "management",
+        "psychosocial"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "anxiety_trauma_ocd_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+      },
+      "stem": "A 34-year-old woman with PTSD is admitted following a psychiatric emergency. During nursing assessment, she becomes acutely distressed, raises her voice, and states, 'Don't touch me — get away from me.' Two staff members consider initiating a hold. The attending pauses and asks the team to consider the clinical frame. Which interpretation best reflects trauma-informed care?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The patient's behavior meets criteria for involuntary hold — refusing assessment endangers the evaluation process.",
+          "trap": {
+            "name": "Refusal = hold criteria",
+            "note": "Refusing a physical assessment is not a hold criterion; the clinical frame must account for PTSD-related hyperarousal and the traumatizing potential of physical hold for a patient with trauma history."
+          }
+        },
+        {
+          "key": "B",
+          "t": "This is treatment-seeking behavior — the distress indicates she wants more intense intervention; respond by offering medication.",
+          "trap": {
+            "name": "Distress = medication need",
+            "note": "Distress in a trauma context may reflect hyperarousal and triggering, not a request for pharmacotherapy; offering medication first bypasses the trauma-informed approach of predictability, explanation, and choice."
+          }
+        },
+        {
+          "key": "C",
+          "t": "This likely represents trauma activation — PTSD may surface as hyperarousal and behavioral reactions to perceived threats; the trauma-informed response is to pause, explain procedures, offer choices, and avoid restraint that would retraumatize.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "The verbal aggression may be a prodrome of violence — activate the behavioral emergency protocol for potential assault.",
+          "trap": {
+            "name": "Verbal escalation = imminent assault",
+            "note": "Verbal escalation in a trauma-activated patient represents hyperarousal, not an assault prodrome; activating a behavioral emergency without a trauma-informed de-escalation attempt increases the risk of retraumatization and may precipitate a physical escalation that would not otherwise occur."
+          }
+        }
+      ],
+      "why": "Refusal = hold criteria, Distress = medication need, and Verbal escalation = imminent assault all trigger coercive responses that retraumatize. The page explicitly states: 'PTSD may surface as hyperarousal, nightmares, or a behavioral reaction to restraint, seclusion, or a same-gender vs. opposite-gender examiner.' Trauma-informed care — 'predictability, explained procedures, offered choices, and minimized restraint/seclusion — reduces retraumatization and lowers behavioral escalation.'",
+      "pearl": "PTSD may surface as behavioral distress on the unit; trauma-informed care (predictability, choice, explain procedures, minimize restraint) reduces both retraumatization and escalation.",
+      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Wrap all of it in trauma-informed care — predictability, explained procedures, offered choices, and minimized restraint/seclusion — which both reduces retraumatization and lowers behavioral escalation."
+    },
+    {
+      "id": "qb_anx_010",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "dx",
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "anxiety_trauma_ocd_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+      },
+      "stem": "A 26-year-old combat veteran is admitted for a depressive episode. He is being interviewed by a female medical student when he abruptly terminates the interview and states he cannot continue. He has nightmares, is hypervigilant, and startle-reactive. The student asks the attending how to understand this behavior clinically. Which is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The patient is likely psychotic — the refusal to engage with an examiner is a negative symptom or paranoia.",
+          "trap": {
+            "name": "Avoidance = psychosis",
+            "note": "Avoidance and refusal to engage in a specific context are PTSD hyperarousal and avoidance symptoms, not negative symptoms or paranoia; psychosis would require positive symptoms (delusions, hallucinations) that are absent here."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The patient is non-adherent and should be counseled on the importance of clinical cooperation.",
+          "trap": {
+            "name": "Avoidance = non-compliance",
+            "note": "Framing trauma-driven avoidance as non-compliance places responsibility on the patient and misses the clinical diagnosis; the appropriate response is accommodating the trauma context, not counseling compliance."
+          }
+        },
+        {
+          "key": "C",
+          "t": "This may represent a personality disorder — emotional dysregulation and interview termination suggest borderline features.",
+          "trap": {
+            "name": "Avoidance = personality disorder",
+            "note": "A veteran with nightmares, hypervigilance, startle response, and context-specific interview termination fits a PTSD pattern, not a personality disorder; personality pathology requires a pervasive pattern across contexts."
+          }
+        },
+        {
+          "key": "D",
+          "t": "PTSD on the inpatient unit may surface as behavioral reactions to specific examiners, procedures, or triggers; the combat veteran's response to a same-gender vs. opposite-gender examiner is a recognized PTSD presentation that calls for accommodating the trigger, not pathologizing the refusal.",
+          "c": true
+        }
+      ],
+      "why": "Avoidance = psychosis, Avoidance = non-compliance, and Avoidance = personality disorder all pathologize what is a PTSD-specific behavioral response. The page is explicit: 'PTSD may surface as hyperarousal, nightmares, or a behavioral reaction to restraint, seclusion, or a same-gender vs. opposite-gender examiner.' Accommodation (e.g., offering a male examiner) is the clinical response.",
+      "pearl": "PTSD may present on the unit as interview refusal or agitation related to specific triggers (examiner gender, restraint, procedures) — accommodate the trigger rather than pathologizing the refusal.",
+      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — PTSD may surface as hyperarousal, nightmares, or a 'behavioral' reaction to restraint, seclusion, or a same-gender vs. opposite-gender examiner."
+    },
+    {
+      "id": "qb_anx_011",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "anxiety_trauma_ocd_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+      },
+      "stem": "A 39-year-old woman with PTSD is ready for discharge after a brief inpatient stay. She was started on sertraline. The resident says, 'She's on an SSRI — she's set.' The attending asks the student to identify what is missing from this discharge plan.",
+      "options": [
+        {
+          "key": "A",
+          "t": "She should also have a benzodiazepine prescription for acute anxiety management in the first few weeks after discharge.",
+          "trap": {
+            "name": "Discharge benzo for anxiety",
+            "note": "The page explicitly advises against leaving patients on standing benzodiazepines without an explicit time-limited rationale — adding a new benzodiazepine at discharge for PTSD is not the answer."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The discharge plan is complete — SSRIs are the evidence-based treatment for PTSD, and outpatient titration will complete the course.",
+          "trap": {
+            "name": "Medication alone is sufficient",
+            "note": "SSRIs are first-line pharmacotherapy for PTSD, but the page emphasizes that 'medication rarely finishes the job alone' — definitive treatment requires behavioral therapy (PE or CPT) delivered by a qualified outpatient clinician."
+          }
+        },
+        {
+          "key": "C",
+          "t": "She needs a referral to outpatient therapy that can deliver prolonged exposure (PE) or cognitive processing therapy (CPT) — medication alone does not finish the job; the behavioral component is the definitive treatment for PTSD.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "The sertraline dose should be maximized before discharge — achieving therapeutic dosing during inpatient stay makes outpatient follow-up less urgent.",
+          "trap": {
+            "name": "Maximize dose before discharge",
+            "note": "Maximizing the dose before discharge is not the standard; the missing component is the behavioral therapy referral — the discharge checklist requires confirming outpatient follow-up that can deliver evidence-based PTSD therapy, not just dose adjustment."
+          }
+        }
+      ],
+      "why": "Discharge benzo for anxiety, Medication alone is sufficient, and Maximize dose before discharge all miss the key gap. The page states: 'Confirm the SSRI/SNRI is at a tolerated dose with a clear titration plan, and verify outpatient follow-up that can deliver ERP, PE, or CPT — the medication rarely finishes the job alone.' PE or CPT referral is the explicit discharge requirement.",
+      "pearl": "Medication alone rarely finishes the PTSD treatment job — discharge requires a referral to outpatient PE or CPT; confirming the behavioral therapy access is a discharge criterion.",
+      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Confirm the SSRI/SNRI is at a tolerated dose with a clear titration plan, and verify outpatient follow-up that can deliver ERP, PE, or CPT — the medication rarely finishes the job alone."
+    },
+    {
+      "id": "qb_anx_012",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "anxiety",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "anxiety_trauma_ocd_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety, OCD & Trauma page",
+        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+      },
+      "stem": "A student is preparing a PTSD psychoeducation handout and wants to explain the difference between prolonged exposure (PE) and cognitive processing therapy (CPT). Both are listed as evidence-based treatments in the patient's discharge plan. Which statement about the distinction is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "PE and CPT are the same treatment with different names used by different institutions.",
+          "trap": {
+            "name": "PE = CPT",
+            "note": "PE and CPT are distinct evidence-based protocols with different mechanisms and session structures; conflating them would leave patients unable to recognize which therapy they are receiving."
+          }
+        },
+        {
+          "key": "B",
+          "t": "PE focuses on repeated imaginal and in-vivo exposure to trauma-related memories and avoided stimuli; CPT focuses on identifying and challenging maladaptive beliefs ('stuck points') about the trauma and its meaning.",
+          "trap": {
+            "name": "PE and CPT descriptions swapped",
+            "note": "This option has both descriptions but tests whether the student correctly knows which label goes with which approach — check the stem's option C for the mechanistically distinct description before selecting."
+          }
+        },
+        {
+          "key": "C",
+          "t": "PE focuses on gradual, repeated imaginal and in-vivo exposure to the trauma memory and avoided triggers to reduce conditioned fear; CPT targets cognitive stuck points — maladaptive beliefs about safety, trust, power, esteem, and intimacy altered by the trauma.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "PE is behavioral (no cognitive component) and requires revisiting the trauma narrative; CPT is purely cognitive (no behavioral component) and avoids discussing the trauma entirely.",
+          "trap": {
+            "name": "Behavioral vs cognitive = entirely separate",
+            "note": "Both PE and CPT are cognitive-behavioral approaches with overlapping elements; CPT does include a trauma account component in some protocols, and PE includes cognitive elements — framing them as entirely separate is an oversimplification."
+          }
+        }
+      ],
+      "why": "PE = CPT and Behavioral vs cognitive = entirely separate flatten the distinction. The page names both PE and CPT as first-line behavioral treatments for PTSD. Knowing that PE works through fear extinction via exposure and CPT works through cognitive restructuring of stuck points is the key clinical distinction for recommending or describing the referral.",
+      "pearl": "PE = repeated exposure to trauma memory and avoided triggers; CPT = cognitive stuck points about safety/trust/esteem altered by trauma — both are first-line for PTSD, mechanisms differ.",
+      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.",
+      "tier2": {
+        "q": "A patient with PTSD has significant disability from maladaptive beliefs — she believes she is permanently damaged, that the world is entirely unsafe, and that she was responsible for the assault. Which therapy would most directly target these specific cognitions?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Prolonged exposure (PE) — revisiting the trauma memory repeatedly reduces the activation tied to these beliefs through habituation and corrective experience."
+          },
+          {
+            "key": "B",
+            "t": "Cognitive processing therapy (CPT) — directly targeting 'stuck points' (maladaptive appraisals about self, others, and the world) is the mechanism CPT was designed around, making it the more direct match for this cognitive profile.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "DBT skills training — distress tolerance skills reduce the emotional activation that sustains these beliefs."
+          },
+          {
+            "key": "D",
+            "t": "Exposure and response prevention (ERP) — gradual exposure to feared beliefs while preventing safety behaviors will extinguish the associated fear."
+          }
+        ],
+        "why": "CPT is specifically designed around the 'stuck point' model: the idea that trauma disrupts assimilated beliefs about safety, trust, power, esteem, and intimacy, and that recovery requires directly challenging and revising these disrupted cognitions through structured written and verbal exercises. PE works primarily through fear extinction via repeated exposure to the trauma memory — it addresses the cognitions indirectly, through the corrective emotional experience of confronting the memory without harm. For a patient whose primary disability is cognitive (who I am now, is the world safe, was I responsible), CPT's direct targeting of these appraisals is the more mechanistically matched choice."
+      }
+    },
+    {
+      "id": "qb_eth_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "safety",
+        "management"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "ethics_law_confidentiality_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & Law page",
+        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+      },
+      "stem": "During an outpatient psychiatry session, a 34-year-old man with paranoid schizophrenia states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Escalate by warning the potential victim, notifying law enforcement, or hospitalizing the patient — a specific threat to an identifiable person triggers a duty to protect, and confidentiality yields to this obligation.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Maintain confidentiality — the threat is against a family member, and family threats are not covered by the Tarasoff duty.",
+          "trap": {
+            "name": "Family exception to Tarasoff",
+            "note": "There is no family exception to the duty to protect; a specific, credible threat to an identifiable person triggers the duty regardless of the relationship between patient and potential victim."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Document the threat and reassess at the next session — the duty to warn only applies to imminent threats.",
+          "trap": {
+            "name": "Imminence required for Tarasoff",
+            "note": "The Tarasoff duty does not require the threat to be imminent — a serious, credible threat to an identifiable victim (here, named with a specific plan) is sufficient to trigger the duty; waiting is not appropriate."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Consult with a supervisor and take no other action until legal counsel is contacted — clinicians must confirm the legal requirement before taking any action.",
+          "trap": {
+            "name": "Legal clearance required first",
+            "note": "While consultation is wise, clinicians do not need to wait for legal clearance before acting on an imminent safety obligation — the duty to protect is a clinical and legal standard, and delay can result in harm."
+          }
+        }
+      ],
+      "why": "Family exception, Imminence required, and Legal clearance first all create barriers to a clinically required action. The page states: 'A specific threat to a specific person overrides confidentiality.' The duty to protect may be fulfilled by warning the victim, notifying police, hospitalizing the patient, or intensifying treatment — and specifics vary by state, but the tested principle is clear.",
+      "pearl": "Tarasoff: a specific threat to an identifiable victim overrides confidentiality — warn, notify police, or hospitalize; inaction in a credible threat is not a safe option.",
+      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields."
+    },
+    {
+      "id": "qb_eth_002",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "safety",
+        "management"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "ethics_law_confidentiality_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & Law page",
+        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+      },
+      "stem": "A 6-year-old boy is brought to the pediatrician with multiple bruises in various stages of healing. His mother explains that he 'bruises easily.' The student suspects possible physical abuse but is uncertain. There are no obvious fractures, and the child denies being hurt. Which is the correct action?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Do not report yet — a definitive diagnosis of abuse must be established before filing a report, and reporting uncertainty could harm an innocent family.",
+          "trap": {
+            "name": "Proof required to report",
+            "note": "Mandatory reporting requires reasonable suspicion, not proof; waiting for certainty is not the standard and may leave the child unprotected."
+          }
+        },
+        {
+          "key": "B",
+          "t": "File a mandatory report with child protective services immediately — mandatory reporters must report on reasonable suspicion, not proof, and good-faith reporters are legally protected.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Refer to a social worker and wait for a social assessment before deciding whether to report — the social worker's professional judgment supersedes the clinician's obligation.",
+          "trap": {
+            "name": "Social work replaces report",
+            "note": "Involving a social worker is appropriate and may be parallel to the report, but it does not replace the clinician's mandatory reporting obligation — mandated reporters are required to report independently of social work consultation."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Conduct a formal forensic assessment before reporting — premature reports reduce the accuracy of subsequent forensic interviews.",
+          "trap": {
+            "name": "Forensic assessment before report",
+            "note": "Forensic child abuse evaluations are an investigative step, not a prerequisite to reporting; the mandatory report initiates the protective process and must come before the formal forensic evaluation."
+          }
+        }
+      ],
+      "why": "Proof required to report, Social work replaces report, and Forensic assessment before report all create delays in a child protection obligation. The page states: 'Reporting requires reasonable suspicion, not proof, and mandated reporters are generally protected when reporting in good faith.' Multiple healing bruises is reasonable suspicion; that is the threshold.",
+      "pearl": "Mandatory reporting for child abuse requires reasonable suspicion, not proof — good-faith reporters are protected; report now and let CPS investigate.",
+      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — Report suspected child abuse or neglect and elder/dependent-adult abuse — reporting requires reasonable suspicion, not proof, and mandated reporters are generally protected when reporting in good faith."
+    },
+    {
+      "id": "qb_eth_003",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ethics_law_confidentiality_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & Law page",
+        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+      },
+      "stem": "A 38-year-old man with schizophrenia is involuntarily hospitalized following an acute psychotic episode with danger to others. On day 2, he states that he refuses to take haloperidol. The team wants to medicate him over his objection because 'he's committed.' Which statement is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Involuntary hospitalization authorizes involuntary medication — the commitment order supersedes the patient's medication refusal.",
+          "trap": {
+            "name": "Commitment = consent to medicate",
+            "note": "Commitment status does not equal consent to medication; this is explicitly stated in the ethics principles and is one of the most commonly tested distinctions in psychiatric ethics."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The team should use a shorter-acting intramuscular formulation — minimizing the degree of involuntary intervention makes the override ethically permissible.",
+          "trap": {
+            "name": "Route reduces ethical constraint",
+            "note": "Changing the route of administration does not change the ethical standard; the question is whether the refusal can be overridden, not how to make an unauthorized medication seem less coercive."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Involuntary hospitalization does NOT authorize involuntary medication; overriding the refusal requires either a true emergency (imminent danger) or a separate legal or adjudicated process independent of the commitment.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "The patient's schizophrenia diagnosis implies impaired judgment — a psychiatric diagnosis automatically confers authority to override medication refusal.",
+          "trap": {
+            "name": "Diagnosis = impaired capacity",
+            "note": "A psychiatric diagnosis does not automatically negate capacity; capacity is decision-specific and clinical — a patient with schizophrenia may or may not have capacity for a specific medication decision, and capacity must be assessed, not assumed."
+          }
+        }
+      ],
+      "why": "Commitment = consent to medicate, Route reduces ethical constraint, and Diagnosis = impaired capacity are all versions of the same error. The page is clear: 'Involuntary hospitalization does NOT by itself authorize involuntary medication.' Overriding refusal requires an imminent-danger emergency or a separate legal/adjudicated process. Commitment status and medication consent are independent legal states.",
+      "pearl": "Commitment ≠ consent to medicate — involuntary hospitalization does not override medication refusal; a separate emergency or legal process is required.",
+      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — Involuntary hospitalization does NOT by itself authorize involuntary medication. Separate the four legal states: voluntary vs committed, and has-capacity vs court-determined-incompetent."
+    },
+    {
+      "id": "qb_eth_004",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ethics_law_confidentiality_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & Law page",
+        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+      },
+      "stem": "A patient with delirium cannot provide coherent consent for an emergent procedure. The family asks if the patient 'has been declared incompetent.' The resident responds that the patient 'lacks capacity.' The family seems confused by the distinction. Which explanation is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Capacity and competence are synonymous — they differ only in which professional makes the determination.",
+          "trap": {
+            "name": "Capacity = competence",
+            "note": "Capacity and competence are distinct on a critical dimension: who determines them. Conflating them misrepresents the legal process required for competence determination."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Competence is a legal determination made by a court; capacity is a clinical determination made by a physician for a specific decision at a specific time — the two are distinct.",
+          "trap": {
+            "name": "Description with keys swapped",
+            "note": "Read carefully — the descriptions are correct here; the choice is whether B or D captures the full clinical meaning with the decision-specific element emphasized."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Incompetence is determined by a psychiatrist through formal neuropsychological testing; capacity is determined by a court based on a jury's judgment.",
+          "trap": {
+            "name": "Roles reversed",
+            "note": "This option has the processes reversed — psychiatrists assess capacity clinically; courts determine competence; neuropsychological testing may inform the assessment but is not the standard definition."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Capacity is clinical and decision-specific — assessed by any physician for a particular decision at a point in time; competence is a legal determination made by a court, applicable more globally.",
+          "c": true
+        }
+      ],
+      "why": "Capacity = competence, Description with keys swapped (B), and Roles reversed all miss the key discriminators. The page states: 'Capacity is decision-specific and clinical (a physician assesses it); competence is a legal determination (a court decides).' Option D captures both discriminators — the clinical/legal distinction AND the decision-specific nature of capacity.",
+      "pearl": "Capacity = clinical, decision-specific (physician decides); competence = legal determination (court decides) — they are not interchangeable.",
+      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — Capacity is decision-specific and clinical (a physician assesses it); competence is a legal determination (a court decides)."
+    },
+    {
+      "id": "qb_eth_005",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ethics_law_confidentiality_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & Law page",
+        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+      },
+      "stem": "A 62-year-old man with intact cognition is informed of the risks, benefits, and alternatives of a recommended ECT course. He is under no coercion and says, 'I understand what you've told me, and I want to have ECT.' Which component of informed consent has NOT yet been addressed?",
+      "options": [
+        {
+          "key": "A",
+          "t": "He has expressed a choice — the consent is now complete because all required elements are present.",
+          "trap": {
+            "name": "Choice = consent",
+            "note": "Expressing a choice alone does not complete informed consent — three components are required: capacity, disclosure, and voluntariness. The question asks which has NOT been addressed; verifying all three requires checking capacity systematically."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The emergency exception permits ECT without formal consent in this case — ECT is a medical urgency.",
+          "trap": {
+            "name": "Emergency exception for ECT",
+            "note": "There is no emergency exception without an actual emergency — a cognitively intact patient recommending an elective ECT course requires standard informed consent; the emergency exception is for situations where consent cannot be obtained and delay causes harm."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Voluntariness has not been assessed — the stem confirms disclosure and that the patient made a choice, but does not confirm he is free from undue influence, coercion, or therapeutic misconception.",
+          "trap": {
+            "name": "Voluntariness fully assessed",
+            "note": "The stem says the patient 'is under no coercion' — voluntariness IS addressed; the missing component is different."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A formal clinical capacity assessment has not been explicitly performed — consent requires capacity, disclosure (risks/benefits/alternatives), and voluntariness; disclosure and voluntariness are confirmed in the stem, but capacity is asserted by the word 'intact cognition' without a documented four-ability assessment.",
+          "c": true
+        }
+      ],
+      "why": "Choice = consent and Emergency exception for ECT overlook the structure of valid consent. Valid consent requires ALL three: capacity + disclosure + voluntariness. Disclosure is confirmed (risks/benefits/alternatives given), voluntariness is confirmed ('under no coercion'), but formal capacity documentation — the four abilities: communicate a choice, understand, appreciate, reason — is described as 'intact cognition' without a documented assessment. This is the gap.",
+      "pearl": "Informed consent = capacity + disclosure + voluntariness — all three must be documented; 'intact cognition' is not the same as a documented capacity assessment.",
+      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — Valid consent requires capacity, disclosure (risks/benefits/alternatives), and voluntariness. The four abilities: communicate a choice, understand, appreciate, and reason."
+    },
+    {
+      "id": "qb_eth_006",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "ethics_law_confidentiality_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & Law page",
+        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+      },
+      "stem": "A 15-year-old presents to an outpatient clinic requesting evaluation and treatment for alcohol use disorder. He does not want his parents informed. His parents are alive, married, and have not relinquished guardianship. Which framework applies?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Parental consent is always required for minors — the 15-year-old cannot consent to or receive evaluation without parental involvement.",
+          "trap": {
+            "name": "Minor always requires parental consent",
+            "note": "Many jurisdictions allow minor-only consent for substance use treatment specifically — this is one of the statutory exceptions to the general parental consent rule for minors."
+          }
+        },
+        {
+          "key": "B",
+          "t": "In many states, minors may consent to and receive substance use treatment without parental consent — this is one of the recognized statutory exceptions to the general parental consent rule; however, specific state law governs.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Since he is 15, he is an emancipated minor in most states — emancipation applies to all minors above age 14.",
+          "trap": {
+            "name": "Emancipation by age",
+            "note": "Emancipation is a legal status based on specific criteria (marriage, military service, court order), not simply being 14 or 15 years old; not all adolescents are emancipated."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Adolescent confidentiality cannot be protected in substance use treatment — HIPAA requires parental access to minor treatment records in all clinical contexts.",
+          "trap": {
+            "name": "HIPAA overrides minor confidentiality",
+            "note": "HIPAA defers to state law on minor confidentiality; when state law permits minor-only consent for substance use treatment, HIPAA permits corresponding confidentiality protections for that care."
+          }
+        }
+      ],
+      "why": "Minor always requires parental consent, Emancipation by age, and HIPAA overrides minor confidentiality all misstate the legal framework. The page states: 'In many states, care for STIs, contraception, substance use, and some mental-health services' are exceptions to the general parental consent requirement. The correct answer acknowledges the exception while noting state variation.",
+      "pearl": "In many states, minors can consent to substance use treatment without parental involvement — this is a recognized statutory exception; state law governs the specifics.",
+      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — Parents/guardians generally consent for minors, with exceptions (emancipated/mature minors and, in many states, care for STIs, contraception, substance use, and some mental-health services)."
+    },
+    {
+      "id": "qb_per_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "pharm",
+        "safety"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "personality_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=personality_disorders_inpatient_teaching.md"
+      },
+      "stem": "A 27-year-old woman with borderline personality disorder is admitted following a suicide attempt by overdose. The treating team is considering starting lorazepam to help manage her emotional lability and distress between therapy sessions. Which evidence-based statement most accurately characterizes this plan?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Benzodiazepines should not be started or escalated in patients with BPD — they are associated with the highest risk of attempted or completed suicide of any psychotropic class studied in this population, and they worsen disinhibition.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A short 5-day lorazepam course is safe — the risk only applies to chronic outpatient benzodiazepine use, not brief inpatient administration.",
+          "trap": {
+            "name": "Inpatient benzos safe short-term",
+            "note": "The evidence does not exempt brief inpatient use; the Lieslehto 2023 data on benzodiazepines in BPD does not restrict the signal to outpatient or chronic use."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Benzodiazepines are acceptable in BPD when prescribed at the lowest effective dose — the risk-benefit ratio favors treatment for acute distress.",
+          "trap": {
+            "name": "Low dose = safe",
+            "note": "The page gives no dose-based exception — the recommendation is to avoid starting or escalating benzodiazepines in BPD; the risk-benefit calculation in this population does not favor initiation."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Lorazepam is first-line for BPD crisis management — emotional lability is its primary pharmacological target.",
+          "trap": {
+            "name": "Benzo for BPD emotional dysregulation",
+            "note": "No medication treats BPD itself; benzodiazepines are specifically contraindicated in this context, and emotional dysregulation is targeted through skills and DBT-informed approaches, not standing benzodiazepines."
+          }
+        }
+      ],
+      "why": "Inpatient benzos safe short-term, Low dose = safe, and Benzo for BPD emotional dysregulation all lead to starting a contraindicated drug class. The page is explicit: 'Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any class (Lieslehto 2023); reach for skills, not pills.'",
+      "pearl": "Never start or escalate benzodiazepines in BPD — they carry the highest suicide risk of any psychotropic class in this population; use skills, not pills.",
+      "evidence": "personality_disorders_inpatient_teaching.md — Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, 95% CI 1.45–1.78; Lieslehto 2023) and worsen disinhibition."
+    },
+    {
+      "id": "qb_per_002",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "psychosocial",
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "personality_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=personality_disorders_inpatient_teaching.md"
+      },
+      "stem": "A patient with borderline personality disorder is on a psychiatric unit. Different nursing staff describe her in starkly different terms — night staff call her 'the most difficult patient I've had,' while day staff say 'she's actually doing great.' Two nurses are in visible conflict about the appropriate management approach. Which clinical concept best explains this dynamic?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Staff burnout — the patient's behavior is objectively difficult and the divergent views reflect compassion fatigue among night staff.",
+          "trap": {
+            "name": "Staff problem, not patient dynamic",
+            "note": "Framing splitting as a staff problem normalizes the dynamic but misses the clinical opportunity; splitting is a BPD illness feature that requires a team response, not individual staff management."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Splitting — the patient's tendency to experience relationships as all-good or all-bad is a BPD symptom that manifests as polarized staff perceptions; the antidote is consistent team communication and unified limit-setting, not confrontation of the patient.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "This represents a normal disagreement about clinical approach — no specific diagnosis or intervention is indicated.",
+          "trap": {
+            "name": "Staff disagreement is normal",
+            "note": "When disagreement about a specific patient divides staff dramatically along positive/negative lines, BPD splitting is the clinical frame — the divergence is driven by the patient's relational dynamics, not random staff variation."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Milieu management failure — the divergent perceptions indicate inadequate supervision; the solution is closer oversight of staff conduct.",
+          "trap": {
+            "name": "Administrative solution for clinical dynamic",
+            "note": "Administrative oversight does not address the clinical mechanism of splitting; the correct intervention is unified team communication, shared notes, and consistent limit-setting to prevent the patient from being experienced as split object."
+          }
+        }
+      ],
+      "why": "Staff problem, Normal disagreement, and Administrative solution all externalize a clinical phenomenon. The page states: 'Splitting — experiencing staff as all-good or all-bad — is common and is a feature of the illness, not a character flaw or manipulation.' The antidote is 'team consistency and communication, not confrontation.'",
+      "pearl": "Splitting in BPD (polarized all-good/all-bad staff perceptions) is a symptom, not manipulation — the antidote is unified team communication and consistent limit-setting.",
+      "evidence": "personality_disorders_inpatient_teaching.md — Splitting — experiencing staff as all-good or all-bad — is common and is a feature of the illness, not a character flaw or manipulation. The antidote is team consistency and communication, not confrontation."
+    },
+    {
+      "id": "qb_per_003",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "personality_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=personality_disorders_inpatient_teaching.md"
+      },
+      "stem": "A 24-year-old woman with borderline personality disorder has had 6 psychiatric admissions in the past 2 years, each following an episode of suicidal ideation and non-suicidal self-injury after an interpersonal rupture. She describes ongoing passive suicidal ideation at baseline. Tonight she is calm, the relationship dispute that triggered this admission has somewhat resolved, and her self-harm behaviors have decreased. How should the team conceptualize the discharge planning?",
+      "options": [
+        {
+          "key": "A",
+          "t": "She should be admitted as long as suicidal ideation is present — admission ends only when suicidal ideation resolves completely.",
+          "trap": {
+            "name": "Admission until SI resolves",
+            "note": "Chronic baseline suicidality in BPD does not resolve between episodes — waiting for complete resolution would mean indefinite hospitalization; the clinical task is to distinguish the acute crisis from the chronic baseline."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Discharge should be planned now that the acute crisis has resolved — her chronic suicidality is managed primarily through collaborative safety planning and outpatient therapy, not serial acute admissions.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Transfer to a long-term residential program is the appropriate step — repeated admissions indicate that outpatient treatment has failed.",
+          "trap": {
+            "name": "Repeated admissions = step up",
+            "note": "Repeated admissions in BPD often reflect inadequate outpatient structure, not the failure of outpatient treatment as a modality; serial inpatient admissions can reinforce hospital use as a coping strategy, worsening the pattern."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Increase the frequency of psychiatric medications — the recurrent admissions indicate inadequate pharmacotherapy.",
+          "trap": {
+            "name": "Polypharmacy for BPD",
+            "note": "No medication treats BPD itself; the page explicitly advises minimizing polypharmacy; repeated admissions call for better collaborative safety planning and structured outpatient therapy, not more medications."
+          }
+        }
+      ],
+      "why": "Admission until SI resolves, Repeated admissions = step up, and Polypharmacy for BPD all fail to apply the chronic-vs-acute distinction. The page is explicit: 'For chronic suicidality, collaborative safety planning is often preferable to repeated or prolonged admission, which can reinforce the hospital as the primary coping strategy.' Discharge planning after acute-on-chronic resolution is the correct frame.",
+      "pearl": "Chronic BPD suicidality ≠ acute crisis — distinguish the baseline from escalation; safety planning + outpatient DBT, not serial admissions, manage the chronic pattern.",
+      "evidence": "personality_disorders_inpatient_teaching.md — For chronic suicidality, collaborative safety planning is often preferable to repeated or prolonged admission, which can reinforce the hospital as the primary coping strategy."
+    },
+    {
+      "id": "qb_per_004",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "personality_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=personality_disorders_inpatient_teaching.md"
+      },
+      "stem": "A 31-year-old woman with a documented BPD diagnosis is admitted with severe depressive symptoms, inability to get out of bed, anhedonia, and new passive suicidal ideation. A third-year student says, 'She has BPD — this is probably just her mood lability.' The attending asks the student to reflect on this reasoning. What is the specific error in this approach?",
+      "options": [
+        {
+          "key": "A",
+          "t": "BPD should not be diagnosed in women under 35 — the patient's age makes the diagnosis questionable.",
+          "trap": {
+            "name": "Age-based BPD exclusion",
+            "note": "There is no age restriction on BPD diagnosis below 35; DSM-5 allows the diagnosis from age 18 onward, and the clinical question here is about diagnostic overshadowing, not diagnostic validity."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The student should have assessed self-harm first before considering mood symptoms.",
+          "trap": {
+            "name": "Sequence error",
+            "note": "Sequencing the assessment differently does not address the core reasoning error — the student is dismissing potentially treatable mood symptoms by attributing them to the BPD diagnosis."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The patient's depressive symptoms should prompt a full evaluation for a superimposed mood episode — diagnostic overshadowing (letting a personality label suppress investigation of a treatable illness) is the cardinal error in this population.",
+          "trap": {
+            "name": "Correct description, but wrong key",
+            "note": "Read carefully — this is the correct clinical reasoning."
+          }
+        },
+        {
+          "key": "D",
+          "t": "The student is using diagnostic overshadowing — attributing the depressive symptoms to the BPD diagnosis and under-investigating a potentially treatable mood episode; a BPD diagnosis does not protect a patient from also having major depression.",
+          "c": true
+        }
+      ],
+      "why": "Age-based BPD exclusion and Sequence error miss the core error. Option C has the correct clinical description but key D is the answer that specifically names the error and its mechanism. The page calls this 'the cardinal error: diagnostic overshadowing — letting a personality label cause you to under-treat a real, acute, treatable illness.'",
+      "pearl": "Diagnostic overshadowing in BPD: never let a personality diagnosis suppress investigation of a treatable comorbid mood, psychotic, or substance disorder.",
+      "evidence": "personality_disorders_inpatient_teaching.md — The cardinal error is diagnostic overshadowing: letting a personality label cause you to under-treat a real, acute, treatable illness. A BPD diagnosis does not protect a patient from also having a serious mood, psychotic, or medical condition."
+    },
+    {
+      "id": "qb_cdev_001",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx",
+        "next-step"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "neurodevelopmental_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=neurodevelopmental_disorders_inpatient_teaching.md"
+      },
+      "stem": "A 22-year-old man with autism spectrum disorder and intellectual disability who lives in a group home is admitted for acute behavioral escalation — he became agitated and hit a staff member after a change in his daily routine. A nurse says, 'He has ASD — this is probably just how he behaves.' Which response reflects the correct clinical approach?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Agree — behavioral escalation is expected in ASD and does not require further workup.",
+          "trap": {
+            "name": "Baseline dismissal",
+            "note": "Attributing new behavioral escalation to the baseline diagnosis without investigation is the cardinal error of diagnostic overshadowing; new or worsening behaviors always earn a workup for pain, medical causes, and psychiatric comorbidity."
+          }
+        },
+        {
+          "key": "B",
+          "t": "New behavioral escalation in a patient with ASD or ID earns a medical workup — diagnostic overshadowing (assuming new behavior is just the developmental disorder) is the cardinal error; screen for pain, constipation, infection, dental problems, and medication effects before attributing to baseline.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Start risperidone immediately — it is FDA-approved for autism and will treat the behavioral dyscontrol.",
+          "trap": {
+            "name": "Medication before assessment",
+            "note": "Initiating an antipsychotic before identifying the cause of the behavioral change is poor clinical practice; if pain or a medical cause is driving the behavior, medicating without treating the cause harms the patient."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Contact the group home about the routine change — environmental causes are the only plausible explanation for behavioral escalation in ASD.",
+          "trap": {
+            "name": "Environmental cause only",
+            "note": "The routine change may be a precipitant, but medical workup must come first — pain, constipation, dental problems, and infection are nonverbal communication channels in ASD and frequently underlie behavioral escalation."
+          }
+        }
+      ],
+      "why": "Baseline dismissal, Medication before assessment, and Environmental cause only all skip the foundational step. The page's first pearl: 'Diagnostic overshadowing is the cardinal error — new symptoms in ASD/ID earn a workup, not a shrug.' Behavior is communication; medical drivers must be excluded before attributing to baseline or starting a psychotropic.",
+      "pearl": "Diagnostic overshadowing in ASD/ID: new behavioral escalation always earns a workup for pain, constipation, infection, dental issues, and medications before attributing to baseline.",
+      "evidence": "neurodevelopmental_disorders_inpatient_teaching.md — Diagnostic overshadowing is the cardinal error — new symptoms in ASD/ID earn a workup, not a shrug. Behavior is communication; look for pain and medical drivers before sedation."
+    },
+    {
+      "id": "qb_cdev_002",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "pharm"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "neurodevelopmental_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=neurodevelopmental_disorders_inpatient_teaching.md"
+      },
+      "stem": "An 18-year-old with autism spectrum disorder is admitted for aggressive behavior. His parents ask if medication can 'help with his autism.' The team considers starting risperidone. Which statement about the pharmacological target of risperidone in ASD is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Risperidone is FDA-approved to improve the core social-communication deficits of autism, including eye contact, reciprocal conversation, and restricted interests.",
+          "trap": {
+            "name": "Antipsychotic treats core ASD features",
+            "note": "No medication treats the core social-communication features of ASD; the FDA approval for risperidone is specifically limited to irritability and aggression associated with autism."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Risperidone is effective for all ASD-related behavioral symptoms when used at sufficient doses — including social withdrawal, repetitive behaviors, and communication deficits.",
+          "trap": {
+            "name": "Sufficient dose treats all features",
+            "note": "The FDA approval is explicitly limited to irritability/aggression associated with autism; dose escalation does not expand the approved indication or the therapeutic range of the drug."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Risperidone and aripiprazole are FDA-approved for irritability and aggression associated with autism — they do not treat the core social-communication features; target symptoms must be explicitly defined, and metabolic monitoring is required.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Risperidone is a first-line agent for all behaviors in any patient with autism regardless of severity — it should be started prophylactically to prevent aggression.",
+          "trap": {
+            "name": "Prophylactic antipsychotic in ASD",
+            "note": "Prophylactic antipsychotic initiation is not evidence-based in ASD; the indication is irritability/aggression when present, with explicit target symptom documentation, not preventive standing orders."
+          }
+        }
+      ],
+      "why": "Antipsychotic treats core ASD features, Sufficient dose treats all features, and Prophylactic antipsychotic all misstate the indication. The page is specific: 'Risperidone and aripiprazole are FDA-approved for irritability/aggression associated with autism (they do NOT treat the core social-communication features), so target symptoms explicitly, monitor metabolically, and avoid reflexive standing antipsychotics.'",
+      "pearl": "Risperidone/aripiprazole treat autism-associated irritability/aggression (FDA-approved) — they do NOT treat core social-communication features; always document the target symptom.",
+      "evidence": "neurodevelopmental_disorders_inpatient_teaching.md — Antipsychotics (risperidone, aripiprazole) treat autism-associated irritability, not the core social-communication features."
+    },
+    {
+      "id": "qb_cdev_003",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "neurodevelopmental_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=neurodevelopmental_disorders_inpatient_teaching.md"
+      },
+      "stem": "A 16-year-old boy with a childhood diagnosis of ADHD is admitted following his first episode of several days of markedly decreased sleep, grandiosity, pressured speech, and impulsive behavior. His parents report that his ADHD has 'always been there' but this episode is 'completely different.' His Vanderbilt score from 3 years ago documented inattention and hyperactivity across home and school settings. Which interpretation is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "This is undertreated ADHD — intensifying stimulant therapy will address the behavioral escalation.",
+          "trap": {
+            "name": "ADHD intensification for episodic change",
+            "note": "Intensifying stimulants during a probable manic episode is contraindicated — stimulants are not started during acute mania or psychosis; the cross-situational childhood ADHD baseline is distinct from this episodic presentation."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The childhood ADHD diagnosis rules out bipolar disorder — the two cannot co-occur.",
+          "trap": {
+            "name": "ADHD excludes bipolar",
+            "note": "ADHD and bipolar disorder can co-occur; the ADHD diagnosis does not protect against a first manic episode. The key discriminator is that ADHD is chronic and cross-situational from childhood, while mania is episodic with mood elevation, decreased sleep, and grandiosity."
+          }
+        },
+        {
+          "key": "C",
+          "t": "ADHD is chronic and cross-situational from childhood; this episodic presentation — new sleep change, grandiosity, pressured speech — is a mood flag, not an ADHD exacerbation; evaluate for a first manic episode.",
+          "trap": {
+            "name": "Correct description but label confusion",
+            "note": "This is the correct reasoning — check key D."
+          }
+        },
+        {
+          "key": "D",
+          "t": "ADHD is chronic and cross-situational from childhood; episodic presentations with mood elevation, decreased need for sleep, and grandiosity are mood or substance flags, not ADHD exacerbations — this clinical picture warrants a first manic episode evaluation, not a stimulant adjustment.",
+          "c": true
+        }
+      ],
+      "why": "ADHD intensification for episodic change and ADHD excludes bipolar both apply the wrong clinical framework. Option C also describes the correct reasoning but D is more complete in naming the key discriminators. The page explicitly states: 'ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity — episodic ADHD-like symptoms are a mood or substance flag.'",
+      "pearl": "ADHD is chronic and cross-situational from childhood; a new episodic presentation with decreased sleep, grandiosity, and pressured speech is a first manic episode flag — not an ADHD exacerbation.",
+      "evidence": "neurodevelopmental_disorders_inpatient_teaching.md — ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity. Episodic 'ADHD-like' symptoms are a mood or substance flag."
+    },
+    {
+      "id": "qb_cdev_004",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "neurodevelopmental_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=neurodevelopmental_disorders_inpatient_teaching.md"
+      },
+      "stem": "A 26-year-old man with autism spectrum disorder is admitted by his group home for a change in behavior. Over the past 10 days he has become mute, stopped eating, and is found in fixed postures for hours at a time. He previously spoke in simple sentences and was active in daily activities. Which diagnosis must be actively evaluated?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Worsening autism — the increase in stereotyped behaviors and withdrawal represents a regression to a lower developmental level.",
+          "trap": {
+            "name": "Regression = autism worsening",
+            "note": "Mutism, posturing, and immobility in an autistic adult represent catatonia — a treatable medical/psychiatric syndrome — until proven otherwise; labeling it autism regression misses a potentially dangerous and treatable condition."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Treatment-resistant depression — the mutism and akinesia reflect severe depression refractory to prior treatment.",
+          "trap": {
+            "name": "Mutism = severe depression",
+            "note": "While depression can cause akinesia and withdrawal, the specific combination of mutism + fixed posturing + sudden onset in an autistic patient points to catatonia first; catatonia evaluation takes priority over depression attribution."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Neuroleptic malignant syndrome — posturing and immobility indicate a drug reaction if the patient is on an antipsychotic.",
+          "trap": {
+            "name": "NMS by default with antipsychotic",
+            "note": "If the patient is on an antipsychotic, NMS must be considered, but NMS requires fever, autonomic instability, and elevated CK — the broad differential here includes catatonia as the primary diagnostic task, which may occur with or without antipsychotic use in ASD."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Catatonia — new mutism, fixed posturing, and immobility in an autistic patient represent catatonia until proven otherwise; catatonia is under-recognized in ASD and requires specific evaluation and treatment.",
+          "c": true
+        }
+      ],
+      "why": "Regression = autism worsening, Mutism = severe depression, and NMS by default all bypass the specific catatonia recognition task. The page explicitly calls out: 'Catatonia is under-recognized in autistic patients — look for it.' New mutism, immobility, and posturing in a previously communicative autistic adult is the classic presentation — it requires a catatonia evaluation (Bush-Francis scale), not dismissal as regression.",
+      "pearl": "Catatonia is under-recognized in ASD — new mutism, fixed posturing, and immobility in an autistic patient = catatonia evaluation, not regression or depression attribution.",
+      "evidence": "neurodevelopmental_disorders_inpatient_teaching.md — Catatonia in autism — under-recognized and important; new mutism, immobility, posturing, or stupor in an autistic patient should prompt a catatonia evaluation."
     }
   ]
 }
