@@ -26,7 +26,9 @@
  *   - a content-convention source page not wired into the build's source map
  *     (<siteDir>.source-map.json, emitted by build_deploy.py / resident_section.py)
  *   - a shipped file that is a Git-LFS pointer stub instead of real bytes
+ *   - a duplicate (or missing) item id in question_bank.json
  * SOFT findings (warn; fail only under STRICT=1):
+ *   - near-duplicate question stems in question_bank.json (≥85% token overlap)
  *   - nav markdown files missing from topic_meta.json
  *   - nav items missing from reviewed.json
  *   - orphan tools/content not referenced by nav
@@ -185,6 +187,32 @@ for (const f of jsonFiles.filter(x => x.endsWith('.pack.json'))) {
   const unfilled = (pack.localPolicies || []).filter(t => t.value === null).map(t => t.id);
   if (unfilled.length) I(`${rel}: ${unfilled.length} LOCAL_POLICY token(s) awaiting faculty fill → ${unfilled.join(', ')}`);
   if (pack.status && pack.status !== 'reviewed') I(`${rel}: status="${pack.status}" (ships watermarked until attested)`);
+}
+
+/* ---------- 6b. question_bank.json integrity (dup ids HARD, near-dup stems SOFT) ---------- */
+// Item ids key attestation (cw_qbank_attest_v1) and SRS state — a collision silently
+// merges two items' records. Near-duplicate stems flag the copy-drift pattern (an item
+// duplicated from a _build copy or re-angled without retiring the original) for review.
+const qbPath = p('question_bank.json');
+if (existsSync(qbPath) && parsed[qbPath]) {
+  const qItems = parsed[qbPath].items || [];
+  const qSeen = new Map();
+  qItems.forEach((it, i) => {
+    if (!it.id) { H(`question_bank item[${i}] missing id`); return; }
+    if (qSeen.has(it.id)) H(`duplicate question_bank id "${it.id}" (items ${qSeen.get(it.id)} and ${i})`);
+    else qSeen.set(it.id, i);
+  });
+  const stemToks = qItems.map(it =>
+    new Set((it.stem || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(w => w.length > 2)));
+  for (let a = 0; a < qItems.length; a++) {
+    for (let b = a + 1; b < qItems.length; b++) {
+      const A = stemToks[a], B = stemToks[b];
+      if (!A.size || !B.size) continue;
+      let inter = 0; for (const w of A) if (B.has(w)) inter++;
+      const jac = inter / (A.size + B.size - inter);
+      if (jac >= 0.85) S(`near-duplicate question stems: ${qItems[a].id} vs ${qItems[b].id} (${Math.round(jac * 100)}% token overlap)`);
+    }
+  }
 }
 
 /* ---------- 7. orphaned source pages (HARD) ---------- */
