@@ -6993,6 +6993,1205 @@
       "why": "Regression = autism worsening, Mutism = severe depression, and NMS by default all bypass the specific catatonia recognition task. The page explicitly calls out: 'Catatonia is under-recognized in autistic patients — look for it.' New mutism, immobility, and posturing in a previously communicative autistic adult is the classic presentation — it requires a catatonia evaluation (Bush-Francis scale), not dismissal as regression.",
       "pearl": "Catatonia is under-recognized in ASD — new mutism, fixed posturing, and immobility in an autistic patient = catatonia evaluation, not regression or depression attribution.",
       "evidence": "neurodevelopmental_disorders_inpatient_teaching.md — Catatonia in autism — under-recognized and important; new mutism, immobility, posturing, or stupor in an autistic patient should prompt a catatonia evaluation."
+    },
+    {
+      "id": "qb_rel_003",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "what-would-you-say",
+      "category": "relational",
+      "competency": [
+        "psychosocial"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "motivational_interviewing_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Motivational Interviewing page",
+        "href": "?page=motivational_interviewing_inpatient_teaching.md"
+      },
+      "stem": "A student is seeing a 38-year-old man who is admitted after an alcohol-related incident. When the student mentions concerns about his drinking, the patient says, 'Look, I drink to handle stress — I don't have a problem. Everyone drinks.' The student's instinct is to explain why the drinking is dangerous and list the health consequences. Which response best reflects motivational interviewing?",
+      "options": [
+        {
+          "key": "A",
+          "t": "'That label isn't the point — and it sounds like work stress has been really heavy lately. You've ended up here twice this year. What's your take on that?' [Rolling with resistance, reflecting back the fact without argument, then opening with a genuine question]",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "'Your liver enzymes are elevated and your blood pressure is high — the data clearly show that alcohol is harming you.' [Presenting the medical evidence directly to motivate change]",
+          "trap": {
+            "name": "The righting reflex",
+            "note": "Supplying arguments for change is the righting reflex — it produces defensiveness and sustain talk. MI works by evoking the patient's own reasons, not installing yours."
+          }
+        },
+        {
+          "key": "C",
+          "t": "'I think you should stop drinking entirely — it's the only way to protect your health.' [A clear recommendation from the clinician]",
+          "trap": {
+            "name": "Advice without readiness",
+            "note": "Unsolicited direct advice before a patient is in the preparation stage typically produces resistance, not change; the MI principle is to match the communication style to the patient's readiness."
+          }
+        },
+        {
+          "key": "D",
+          "t": "'Would you be willing to try an abstinence contract for the next 30 days — just to see if you feel better?' [Proposing a behavior change target]",
+          "trap": {
+            "name": "Planning before evoking",
+            "note": "Planning (Step 4) precedes a contract proposal; the patient has not shown readiness yet, so jumping to a plan bypasses Engaging, Focusing, and Evoking — the MI processes that build readiness first."
+          }
+        }
+      ],
+      "why": "The righting reflex, Advice without readiness, and Planning before evoking all push the patient into a defensive position. MI's core insight: 'People talk themselves into change. Your job is not to supply the arguments but to evoke the patient's own reasons.' Rolling with resistance and reflecting the ambiguity without arguing is the MI move.",
+      "pearl": "Resist the righting reflex — don't argue for change; roll with resistance, reflect change talk, and let the patient articulate their own reasons.",
+      "evidence": "motivational_interviewing_inpatient_teaching.md — The one idea: People talk themselves into change. Your job is not to supply the arguments (the 'righting reflex' — resist it) but to evoke the patient's own reasons. Pushing usually produces sustain talk; curiosity produces change talk."
+    },
+    {
+      "id": "qb_rel_004",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "family-system",
+      "category": "relational",
+      "competency": [
+        "management",
+        "psychosocial"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "family_therapy_modalities_inpatient.md"
+      ],
+      "link": {
+        "label": "Open the Family Therapy Modalities page",
+        "href": "?page=family_therapy_modalities_inpatient.md"
+      },
+      "stem": "A family asks the treatment team what they can do during their loved one's hospitalization for schizophrenia to help with recovery. The team is considering whether to invest the time in a formal family meeting. Which argument best supports making structured family psychoeducation the default approach?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Family involvement is primarily a courtesy — it improves patient satisfaction but has no measurable impact on relapse rates.",
+          "trap": {
+            "name": "Family work = courtesy",
+            "note": "Family psychoeducation has among the strongest inpatient evidence in all of psychiatry — it is not a courtesy; it directly reduces relapse rates with an NNT of 7."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Families frequently refuse structured family meetings, so the effort should be reserved for families who specifically request it.",
+          "trap": {
+            "name": "Patient/family refusal as barrier",
+            "note": "The research shows the main barrier to family work is clinician avoidance, not family refusal — underdelivering family work is primarily a clinician behavior problem."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Family psychoeducation is the highest-evidence family intervention — it led 11 models for 12-month relapse prevention with an NNT of 7 (Pharoah, Cochrane 2010; 53 RCTs), and dose matters: ≤2 sessions is ineffective, with NICE recommending ≥10 sessions over ≥3 months.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Family involvement should wait until the patient is stable — in the acute phase, it increases stimulation and worsens psychosis.",
+          "trap": {
+            "name": "Stability first",
+            "note": "While the inpatient approach to family work is brief, psychoeducational, and low-stimulation (with acutely psychotic patients: brief, concrete, limited interpretation), family engagement should begin in the hospital, not wait for full stabilization — family involvement nearly triples 7-day follow-up odds."
+          }
+        }
+      ],
+      "why": "Family work = courtesy, Patient/family refusal as barrier, and Stability first all undermine the evidence-based standard. Family psychoeducation has NNT 7 for 12-month relapse prevention — one of the strongest NNTs in inpatient psychiatry. The dose requirement (≥10 sessions over ≥3 months) means starting the work during the admission and securing the outpatient continuation.",
+      "pearl": "Family psychoeducation for schizophrenia: NNT 7 for 12-month relapse prevention; ≥10 sessions over ≥3 months; dose matters — start during admission.",
+      "evidence": "family_therapy_modalities_inpatient.md — NNT 7 — treat seven families to prevent one relapse (Pharoah, Cochrane 2010; 53 RCTs). Dose matters: ≤2 sessions is ineffective; NICE recommends ≥10 sessions over ≥3 months."
+    },
+    {
+      "id": "qb_rel_005",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "what-would-you-say",
+      "category": "relational",
+      "competency": [
+        "psychosocial"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "motivational_interviewing_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Motivational Interviewing page",
+        "href": "?page=motivational_interviewing_inpatient_teaching.md"
+      },
+      "stem": "A student is using the MI readiness ruler with a patient who has poorly controlled diabetes and drinks heavily. He rates the importance of cutting back alcohol as '4 out of 10.' Which follow-up question best uses the readiness ruler to elicit change talk?",
+      "options": [
+        {
+          "key": "A",
+          "t": "'What would it take to get you to a 9 or 10?' [Asking about reaching the top of the scale]",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "'Why isn't your number higher? You should care more about your health.' [Naming the mismatch between the rating and the clinical severity]",
+          "trap": {
+            "name": "Confrontational reflect",
+            "note": "Pointing out the gap confrontationally activates resistance — the MI principle is to work with the ambivalence, not against it; questioning the 'low' number as a character deficit shuts down change talk."
+          }
+        },
+        {
+          "key": "C",
+          "t": "'That's a 4 — you're clearly not ready to change right now. Let's talk about something else.' [Accepting the score and moving on]",
+          "trap": {
+            "name": "Score = readiness fixed",
+            "note": "A 4 on the readiness ruler is not a signal to abandon the exploration; it is the starting point for evoking change talk by asking 'why not lower?' and 'what would move you up?'"
+          }
+        },
+        {
+          "key": "D",
+          "t": "'A 4 means ambivalence — let's complete a full decisional balance worksheet together right now.' [Shifting to a structured CBT exercise]",
+          "trap": {
+            "name": "Decisional balance as MI",
+            "note": "Decisional balance worksheets are a structured CBT exercise, not a core MI move; the readiness ruler is followed by open questions that elicit the patient's own reasons — not a structured checklist."
+          }
+        }
+      ],
+      "why": "Confrontational reflect, Score = readiness fixed, and Decisional balance as MI all bypass the evocative purpose of the readiness ruler. The MI readiness ruler follow-up sequence: '...why not a 2?' forces change talk by asking the patient to articulate why they're not lower. 'What would move you from a 4 to a 6?' explores the next steps. Both are evocative, not confrontational.",
+      "pearl": "MI readiness ruler: after the patient rates importance (e.g., 4/10), ask 'why not a 2?' — this forces the patient to articulate their own change talk rather than pushing your reasons.",
+      "evidence": "motivational_interviewing_inpatient_teaching.md — A 30-second tool: the readiness ruler. 'You said 4 — why not a 2?' (forces change talk). 'What would move you from a 4 to a 6?'"
+    },
+    {
+      "id": "qb_rel_006",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "family-system",
+      "category": "relational",
+      "competency": [
+        "management",
+        "psychosocial"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "family_therapy_modalities_inpatient.md"
+      ],
+      "link": {
+        "label": "Open the Family Therapy Modalities page",
+        "href": "?page=family_therapy_modalities_inpatient.md"
+      },
+      "stem": "The family of a patient with schizophrenia is described in the chart as 'high expressed emotion' — high criticism and high emotional over-involvement. The resident says, 'We can't do much about the family climate — it's just how they are.' Which response is most evidence-based?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Agree — expressed emotion is a fixed family trait that does not respond to clinical intervention.",
+          "trap": {
+            "name": "EE is fixed",
+            "note": "Expressed emotion is modifiable — behavioral family therapy and family psychoeducation specifically reduce EE; treating it as fixed is both incorrect and missed opportunity."
+          }
+        },
+        {
+          "key": "B",
+          "t": "High EE only predicts relapse in schizophrenia, not in other psychiatric illnesses — it is not relevant beyond psychosis.",
+          "trap": {
+            "name": "EE = schizophrenia only",
+            "note": "Expressed emotion predicts relapse across multiple psychiatric conditions including mood disorders; the family therapy modalities page cites EE-relapse data for schizophrenia because that is the strongest evidence base, but EE is a transdiagnostic concept."
+          }
+        },
+        {
+          "key": "C",
+          "t": "High EE is a family problem but not a clinical problem — it is outside the scope of inpatient psychiatric intervention.",
+          "trap": {
+            "name": "EE = out of scope",
+            "note": "Family climate is explicitly clinical data; the page calls it modifiable and quantifies its impact on relapse risk — addressing EE is within the scope of inpatient psychiatry through family meetings."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Expressed emotion (EE) roughly quintuples relapse odds, while family warmth is protective — but EE is modifiable through behavioral family therapy and family psychoeducation, making the family climate a tractable clinical target.",
+          "c": true
+        }
+      ],
+      "why": "EE is fixed, EE = schizophrenia only, and EE = out of scope all represent clinical fatalism about a modifiable variable. The page states EE 'roughly quintuples relapse odds (OR ~4.87), while family warmth is protective (OR ~0.35) — and family climate is modifiable, which is why meetings help lower it.'",
+      "pearl": "Expressed emotion (EE) quintuples relapse odds and is MODIFIABLE — behavioral family therapy and psychoeducation specifically target and reduce it; EE is a tractable clinical problem.",
+      "evidence": "family_therapy_modalities_inpatient.md — Expressed emotion: high-EE roughly quintuples relapse odds (OR ~4.87), while family warmth is protective (OR ~0.35). Family climate is modifiable — meetings help lower it."
+    },
+    {
+      "id": "qb_rel_007",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "what-would-you-say",
+      "category": "relational",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "brief_psychotherapy_inpatient.md"
+      ],
+      "link": {
+        "label": "Open the Brief Psychotherapy page",
+        "href": "?page=brief_psychotherapy_inpatient.md"
+      },
+      "stem": "A 27-year-old woman is being discharged after a suicidal crisis. The resident asks her to 'sign a contract that she won't hurt herself.' The student wonders whether this is the evidence-based approach. Which response reflects the current standard?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Yes — a no-suicide contract is the gold standard for discharge safety planning; it establishes a binding commitment to safety.",
+          "trap": {
+            "name": "Contract = gold standard",
+            "note": "No-suicide contracts have no supporting evidence and can create false reassurance — the current standard is collaborative safety planning, which has real outcome data."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Yes — contracts are more legally protective for the clinician than safety plans, which is why they are standard at discharge.",
+          "trap": {
+            "name": "Contract = legal protection",
+            "note": "Contracts have no established legal protection advantage and do not reduce suicide attempts; they have been replaced by evidence-based safety planning in clinical standards."
+          }
+        },
+        {
+          "key": "C",
+          "t": "No — a collaborative safety plan (Stanley-Brown model) is the evidence-based tool; no-suicide contracts have no supporting evidence and can create false reassurance that displaces genuine clinical assessment.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Neither approach has evidence — rely on clinical judgment and family support for suicidal patients at discharge.",
+          "trap": {
+            "name": "No evidence either way",
+            "note": "Safety planning WITH follow-up has evidence: approximately 50% fewer suicidal behaviors (Stanley 2018); it is not evidence-neutral."
+          }
+        }
+      ],
+      "why": "Contract = gold standard, Contract = legal protection, and No evidence either way all misrepresent the evidence. The brief psychotherapy page explicitly states: 'Abandon no-suicide contracts — they don't work.' Safety planning (Stanley-Brown) with follow-up reduces suicidal behaviors by approximately 50%.",
+      "pearl": "Safety planning (Stanley-Brown) with follow-up ≈ 50% fewer suicidal behaviors — abandon no-suicide contracts, which have no evidence and create false reassurance.",
+      "evidence": "brief_psychotherapy_inpatient.md — Safety planning (Stanley-Brown) + crisis response planning: Safety Planning Intervention with follow-up ≈ 50% fewer suicidal behaviors (Stanley 2018); abandon no-suicide 'contracts' — they don't work."
+    },
+    {
+      "id": "qb_rel_008",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "what-would-you-say",
+      "category": "relational",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "brief_psychotherapy_inpatient.md"
+      ],
+      "link": {
+        "label": "Open the Brief Psychotherapy page",
+        "href": "?page=brief_psychotherapy_inpatient.md"
+      },
+      "stem": "A 52-year-old man with severe depression is withdrawn, stays in bed all day, and says 'nothing matters anymore.' The student asks how to perform a brief psychotherapy intervention given a 15-minute window. Which approach is most appropriate for this presentation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Behavioral activation — schedule one small, specific valued activity for today; this is the highest-yield, lowest-cognitive-demand inpatient move for behavioral shutdown.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Psychodynamic interpretation — explore the unconscious drivers of the behavioral withdrawal during this session.",
+          "trap": {
+            "name": "Insight therapy for shutdown",
+            "note": "Psychodynamic interpretation requires cognitive engagement that a severely depressed, withdrawn patient cannot sustain; the mismatch between mechanism (insight) and the presenting driver (behavioral shutdown) makes BA the more evidence-based choice."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Prolonged exposure — begin reliving any traumatic experiences that may underlie the depression.",
+          "trap": {
+            "name": "PE for depression",
+            "note": "Prolonged exposure is for PTSD — its mechanism (trauma memory reconsolidation) does not match behavioral shutdown; applying PE to a shutdown depressed patient mismatches mechanism and technique."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Wait for medication to take effect before beginning any psychotherapy — behavioral shutdown is too severe for psychotherapy engagement.",
+          "trap": {
+            "name": "Medication before psychotherapy",
+            "note": "Brief behavioral activation is specifically designed for patients with low engagement — scheduling a single valued activity is achievable even with severe depression; waiting for full medication response before any behavioral intervention delays recovery unnecessarily."
+          }
+        }
+      ],
+      "why": "Insight therapy for shutdown, PE for depression, and Medication before psychotherapy all mismatch mechanism to technique. The brief psychotherapy table: 'Withdrawn, inactive, anhedonic — behavioral shutdown → reach for behavioral activation (BA): schedule one small, valued activity. Superior to TAU for depression (SMD −0.78) and anxiety, on par with CBT; lowest cognitive demand → best inpatient fit.'",
+      "pearl": "Behavioral activation is the highest-yield, lowest-effort inpatient move for the shutdown depressed patient — schedule one small valued activity; it requires no cognitive engagement.",
+      "evidence": "brief_psychotherapy_inpatient.md — Behavioral activation (BA) — schedule one small, valued activity. Superior to TAU for depression (SMD −0.78) and anxiety (−0.33), on par with CBT; lowest cognitive demand → best inpatient fit."
+    },
+    {
+      "id": "qb_rel_009",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "transition-of-care",
+      "category": "relational",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "brief_psychotherapy_inpatient.md"
+      ],
+      "link": {
+        "label": "Open the Brief Psychotherapy page",
+        "href": "?page=brief_psychotherapy_inpatient.md"
+      },
+      "stem": "A patient with recurrent MDD completed three individual therapy sessions during an 8-day hospitalization. At discharge, the student writes in the note: 'CBT skills taught inpatient; patient discharged with psychotherapy complete.' The attending asks the student to reconsider the framing. Which is more accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The note is accurate — three CBT sessions is the evidence-based minimum for inpatient psychotherapy, and the skills have been transferred.",
+          "trap": {
+            "name": "Three sessions = complete",
+            "note": "No evidence-based framework defines 3 inpatient sessions as 'complete' — the purpose of inpatient psychotherapy is to start the work and secure the outpatient handoff, not to complete treatment."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Inpatient psychotherapy starts the work and secures the handoff — the discharge note should name the specific therapeutic thread started (e.g., BA for behavioral shutdown), identify the named outpatient clinician who will continue it, and make the handoff explicit so the thread is not dropped.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Psychotherapy is an outpatient intervention — inpatient therapy has no meaningful impact and should not be documented as a treatment component.",
+          "trap": {
+            "name": "Inpatient therapy = ineffective",
+            "note": "Inpatient psychotherapy has a documented pooled benefit (SMD ~0.24, NNT ~7) — framing it as ineffective dismisses evidence; the point is that it must continue outpatient to complete the benefit."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Three CBT sessions is sufficient only if the patient was 'CBT-naive' — if she had prior CBT, the inpatient work is redundant.",
+          "trap": {
+            "name": "Prior CBT = redundant inpatient therapy",
+            "note": "Prior CBT experience does not make inpatient psychotherapy redundant; patients return to therapy at every level of care as needed, and the inpatient component serves crisis stabilization and continuity, regardless of prior exposure."
+          }
+        }
+      ],
+      "why": "Three sessions = complete, Inpatient therapy = ineffective, and Prior CBT = redundant all miss the purpose. The page: 'The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care.' 'Write the handoff so the outpatient clinician can continue the thread — the point of inpatient therapy is to start it and secure the follow-up.'",
+      "pearl": "Inpatient psychotherapy starts the thread and secures the handoff — document the technique, name the outpatient clinician, and make the handoff explicit; it does not complete treatment.",
+      "evidence": "brief_psychotherapy_inpatient.md — Write the handoff so the outpatient clinician can continue the thread — the point of inpatient therapy is to start it and secure the follow-up."
+    },
+    {
+      "id": "qb_rel_010",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "family-system",
+      "category": "relational",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "family_therapy_modalities_inpatient.md"
+      ],
+      "link": {
+        "label": "Open the Family Therapy Modalities page",
+        "href": "?page=family_therapy_modalities_inpatient.md"
+      },
+      "stem": "The treatment team reviews its data and finds that structured family meetings occurred in only 8% of admissions over the past year, despite family members being available and willing in most cases. The team discusses why. Which explanation is most consistent with the literature?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Families of inpatient psychiatric patients predominantly refuse to participate in structured family meetings when offered.",
+          "trap": {
+            "name": "Family refusal",
+            "note": "The research specifically identifies clinician avoidance — not family refusal — as the dominant barrier to delivering family work; this is a clinician behavior finding, not a family behavior finding."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Structured family work requires >90 minutes per family — the time investment is prohibitive in an acute inpatient setting.",
+          "trap": {
+            "name": "Time as primary barrier",
+            "note": "While time is a real constraint, the research identifies clinician avoidance as the main barrier, not time alone — and some high-yield modalities (solution-focused, single-session work) can be effective in one meeting."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The main barrier to family psychoeducation being delivered is clinician avoidance — structured family work is available to the minority of families who receive it largely because of clinician behavior, not family behavior.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Insurance authorization is the dominant barrier — family meetings require separate billing codes that are denied in most health systems.",
+          "trap": {
+            "name": "Billing as dominant barrier",
+            "note": "Billing complexity may be a factor, but the research (Dixon 1999; Eassom 2014) specifically identifies clinician avoidance as the dominant explanation for the historically low delivery of structured family work."
+          }
+        }
+      ],
+      "why": "Family refusal, Time as primary barrier, and Billing as dominant barrier all attribute the gap to external factors. The literature finding is counterintuitive and important: 'Reaches a minority of families — structured family work is delivered in only ~0–53% of cases (historically <10%), and the main barrier is clinician avoidance, not patient refusal (Dixon 1999; Eassom 2014).' This is a clinician self-awareness finding.",
+      "pearl": "The main barrier to family psychoeducation in inpatient psychiatry is clinician avoidance, not patient or family refusal — the gap is a clinician behavior problem.",
+      "evidence": "family_therapy_modalities_inpatient.md — Reaches a minority of families — structured family work is delivered in only ~0–53% of cases (historically <10%), and the main barrier is clinician avoidance, not patient refusal (Dixon 1999; Eassom 2014)."
+    },
+    {
+      "id": "qb_rel_011",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "what-would-you-say",
+      "category": "relational",
+      "competency": [
+        "psychosocial"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "brief_psychotherapy_inpatient.md"
+      ],
+      "link": {
+        "label": "Open the Brief Psychotherapy page",
+        "href": "?page=brief_psychotherapy_inpatient.md"
+      },
+      "stem": "A 24-year-old woman with BPD cuts herself on the unit. The charge nurse says, 'Document it and flag it. Don't talk to her about it — it just encourages the behavior.' The student wonders about the evidence-based approach. Which response is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The nurse is right — direct conversation about self-harm incidents reinforces the behavior by providing attention; the clinical standard is documentation without engagement.",
+          "trap": {
+            "name": "Engagement reinforces behavior",
+            "note": "Withholding engagement after self-harm misses the chain analysis opportunity that is central to DBT — it treats the symptom as behavior to extinguish rather than as communication to understand."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The appropriate response is immediate medication review — self-harm indicates the current regimen is inadequate.",
+          "trap": {
+            "name": "Self-harm = medication failure",
+            "note": "Self-harm in BPD is a behavioral coping strategy — the clinician-level response is to understand its function through chain analysis, not to reflexively adjust medications."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The student should complete a punitive documentation record and involve security — self-harm on the unit is a rule violation that requires an administrative response.",
+          "trap": {
+            "name": "Punitive documentation",
+            "note": "A punitive response to self-harm damages the therapeutic alliance and bypasses the clinical function of the behavior; chain analysis replaces a punitive response."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A chain analysis — walking the sequence of antecedents, emotions, and behaviors with the patient non-punitively — turns the incident into a clinical formulation and a coping plan; this is the DBT standard and replaces documentation-only or punitive responses.",
+          "c": true
+        }
+      ],
+      "why": "Engagement reinforces behavior, Self-harm = medication failure, and Punitive documentation all fail to apply the DBT-informed clinical standard. The page states: 'Chain analysis replaces a punitive response to self-harm — understand the behavior, don't just document it.' The chain analysis is a brief, structured, non-punitive conversation about what preceded the self-harm that turns the incident into a formulation.",
+      "pearl": "After self-harm: chain analysis (non-punitive, with the patient) replaces documentation-only or punitive responses — it transforms the incident into a formulation and a coping plan.",
+      "evidence": "brief_psychotherapy_inpatient.md — Chain analysis — walk the sequence with the patient, non-punitively. Turns an incident into a formulation and a plan; core DBT move. Chain analysis replaces a punitive response to self-harm — understand the behavior, don't just document it."
+    },
+    {
+      "id": "qb_rel_012",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "family-system",
+      "category": "relational",
+      "competency": [
+        "management",
+        "psychosocial"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "family_therapy_modalities_inpatient.md"
+      ],
+      "link": {
+        "label": "Open the Family Therapy Modalities page",
+        "href": "?page=family_therapy_modalities_inpatient.md"
+      },
+      "stem": "A 32-year-old man with alcohol use disorder has refused treatment for 2 years. His wife is desperate to help and asks the team what she can do. The team is considering a traditional confrontational intervention approach. Which family therapy modality is specifically evidence-based for this scenario?",
+      "options": [
+        {
+          "key": "A",
+          "t": "CRAFT (Community Reinforcement and Family Training) — the family member changes her own behavior in specific ways that reduce the reinforcement of drinking and increase the appeal of treatment-seeking, without confrontation or blame.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Structural family therapy (Minuchin) — the focus is on realigning the roles and boundaries in the marriage to reduce the enabling dynamic.",
+          "trap": {
+            "name": "Structural for substance refusal",
+            "note": "Structural therapy addresses role and boundary dysfunction but does not provide the specific behavioral strategies for family members managing a treatment-refusing person with SUD; CRAFT is specifically designed for this scenario."
+          }
+        },
+        {
+          "key": "C",
+          "t": "A family confrontation (traditional intervention) — bringing family and friends together to confront the patient with consequences is the most evidence-based approach.",
+          "trap": {
+            "name": "Confrontational intervention",
+            "note": "Traditional confrontational interventions have mixed evidence and can damage the therapeutic alliance; CRAFT specifically trains families to use non-blame behavioral strategies and has a larger evidence base for engagement."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Emotionally focused therapy (EFT) — addressing the attachment disruption in the marriage will resolve the motivational impasse for the patient.",
+          "trap": {
+            "name": "EFT for treatment refusal",
+            "note": "EFT is couples-attachment focused and is the modality for a distressed couple's negative cycle — it is not specifically designed for a family member trying to invite a treatment-refusing person into care."
+          }
+        }
+      ],
+      "why": "Structural for substance refusal, Confrontational intervention, and EFT for treatment refusal all apply less-specific frameworks. CRAFT is the specific modality: 'the family changes its own behavior to invite treatment — no blame.' It trains the wife to use behavioral strategies (reinforcing non-drinking behavior, withdrawing reinforcement of drinking, using teachable moments) that increase the patient's engagement with treatment.",
+      "pearl": "CRAFT: the family changes its OWN behavior to invite treatment — no blame, no confrontation; evidence-based for families of treatment-refusing people with SUD.",
+      "evidence": "family_therapy_modalities_inpatient.md — CRAFT (Community Reinforcement & Family Training): the family changes its own behavior to invite treatment — no blame."
+    },
+    {
+      "id": "qb_rel_013",
+      "status": "draft",
+      "type": "relational",
+      "subtype": "family-system",
+      "category": "relational",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "brief_psychotherapy_inpatient.md"
+      ],
+      "link": {
+        "label": "Open the Brief Psychotherapy page",
+        "href": "?page=brief_psychotherapy_inpatient.md"
+      },
+      "stem": "A quality-improvement team wants to identify the single inpatient psychological intervention with the strongest readmission-prevention evidence. Which intervention has the hardest numbers?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Safety planning (Stanley-Brown) — approximately 50% fewer suicidal behaviors.",
+          "trap": {
+            "name": "Safety planning hardest numbers",
+            "note": "Safety planning has strong evidence (50% reduction in suicidal behaviors), but the question asks about readmission prevention specifically — psychoeducation has the hardest readmission-specific numbers."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Psychoeducation — the hardest inpatient numbers for readmission prevention: readmission NNT 5 (Xia, Cochrane 2011) and relapse NNT 9; and it costs nothing except time.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Behavioral activation — the most evidence-based inpatient psychological intervention for any condition.",
+          "trap": {
+            "name": "BA = strongest overall",
+            "note": "BA has the strongest evidence for acute depression (SMD −0.78) and is the best-fit inpatient technique, but readmission NNT 5 for psychoeducation specifically addresses the readmission-prevention question."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Problem-solving therapy (PST) — NNT 12 for repeat self-harm re-presentation.",
+          "trap": {
+            "name": "PST hardest numbers",
+            "note": "PST has an NNT of 12 for self-harm re-presentation — meaningful evidence, but psychoeducation's readmission NNT of 5 is the strongest number on the brief psychotherapy page."
+          }
+        }
+      ],
+      "why": "Safety planning hardest numbers, BA = strongest overall, and PST hardest numbers each reference real evidence for different outcomes. For readmission prevention specifically, psychoeducation's NNT 5 is the standout: 'Psychoeducation has the hardest inpatient numbers (readmission NNT 5) — and it's free.' This is the quality-improvement answer.",
+      "pearl": "Psychoeducation has the hardest inpatient readmission numbers: NNT 5 (Xia, Cochrane 2011) — the highest-evidence, lowest-cost psychological intervention for preventing readmission.",
+      "evidence": "brief_psychotherapy_inpatient.md — Psychoeducation has the hardest inpatient numbers (readmission NNT 5) — and it's free."
+    },
+    {
+      "id": "qb_otherdx_001",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "otherdx",
+      "competency": [
+        "safety",
+        "management"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "eating_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Eating Disorders page",
+        "href": "?page=eating_disorders_inpatient_teaching.md"
+      },
+      "stem": "A 17-year-old with severe anorexia nervosa has been starved for 4 months and is starting nutritional rehabilitation. On day 3 of refeeding, her phosphate drops to 2.1 mg/dL. She is also mildly confused and has new-onset leg weakness. What is the most important diagnosis to recognize?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Refeeding syndrome — the metabolic shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium into cells; hypophosphatemia is the hallmark and can cause cardiac failure, arrhythmia, respiratory failure, and delirium.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Electrolyte depletion from malnutrition alone — she was already malnourished on admission, so the low phosphate reflects pre-existing deficiency rather than a refeeding process.",
+          "trap": {
+            "name": "Pre-existing deficiency only",
+            "note": "While pre-existing malnutrition contributes to baseline deficiencies, the precipitous drop in phosphate after initiating refeeding is the refeeding syndrome pattern — the metabolic shift of refeeding, not chronic depletion, is the mechanism."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Conversion disorder — the confusion and leg weakness represent a functional neurological symptom disorder superimposed on the eating disorder.",
+          "trap": {
+            "name": "Functional explanation for metabolic emergency",
+            "note": "Confusion and leg weakness in the context of a falling phosphate during refeeding is refeeding syndrome until proven otherwise — it is a medical emergency, not a functional disorder."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Thiamine deficiency — the neurological symptoms indicate Wernicke encephalopathy from B1 deficiency.",
+          "trap": {
+            "name": "Thiamine over phosphate",
+            "note": "Thiamine deficiency is a real risk in eating disorders and requires prophylactic replacement before carbohydrate loading, but a falling phosphate on day 3 of refeeding with weakness and confusion is the classic refeeding syndrome presentation — phosphate is the hallmark electrolyte."
+          }
+        }
+      ],
+      "why": "Pre-existing deficiency only, Functional explanation for metabolic emergency, and Thiamine over phosphate all miss the refeeding-specific mechanism. The page calls refeeding syndrome 'the complication that kills' — hypophosphatemia is the hallmark. Note that D (thiamine) is also clinically relevant and the page specifically says 'give thiamine before or with carbohydrate' — but the presenting electrolyte abnormality and timing point to refeeding syndrome as the primary diagnosis.",
+      "pearl": "Refeeding syndrome: watch phosphate — the hallmark is hypophosphatemia after starting nutrition in the severely malnourished; start low, go slow; supplement phosphate; give thiamine before carbs.",
+      "evidence": "eating_disorders_inpatient_teaching.md — Refeeding syndrome — the complication that kills: hypophosphatemia is the hallmark; the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Supplement phosphate and give thiamine before or with carbohydrate.",
+      "tier2": {
+        "q": "Why does hypophosphatemia develop after initiating refeeding in a severely malnourished patient, rather than during the starvation period itself?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Carbohydrate refeeding increases renal phosphate excretion — the kidneys preferentially excrete phosphate when insulin levels rise."
+          },
+          {
+            "key": "B",
+            "t": "Refeeding shifts metabolism from catabolic to anabolic — glucose and insulin drive phosphate, potassium, and magnesium into cells for new cellular synthesis; since total body stores are depleted from malnutrition, the extracellular pool drops precipitously.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "Starvation preserves phosphate by reducing cellular metabolic demand — refeeding simply re-activates the pre-existing phosphate deficiency that was masked."
+          },
+          {
+            "key": "D",
+            "t": "Thiamine deficiency prevents phosphate absorption from the gut — refeeding exposes this deficiency because oral phosphate intake increases."
+          }
+        ],
+        "why": "During starvation, catabolism releases phosphate from cells into the extracellular space, partially maintaining serum levels despite total body depletion. When refeeding begins, glucose triggers insulin release, which drives phosphate (along with potassium and magnesium) into cells for anabolic processes (glycolysis, ATP synthesis, protein synthesis). This intracellular shift drops extracellular phosphate rapidly — in an already-depleted patient, the serum level can fall to dangerous levels within 24–72 hours of starting nutrition. This is why refeeding syndrome occurs early in the refeeding course and why the most malnourished patients are at highest risk."
+      }
+    },
+    {
+      "id": "qb_otherdx_002",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "eating_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Eating Disorders page",
+        "href": "?page=eating_disorders_inpatient_teaching.md"
+      },
+      "stem": "A 24-year-old woman is referred for 'weight-related anxiety.' She is at normal weight and denies dieting. However, she endorses recurrent binge episodes followed by self-induced vomiting several times weekly, and she reports that her self-worth is almost entirely based on her weight and shape. On exam, you note calluses on her right hand knuckles. Which diagnosis should be suspected?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Anorexia nervosa, binge-purging subtype — the purging behavior and weight preoccupation are classic for anorexia.",
+          "trap": {
+            "name": "Normal weight rules out AN misread as AN",
+            "note": "Anorexia nervosa requires significantly low weight — this patient is at normal weight; her presentation is much more consistent with bulimia nervosa."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Binge-eating disorder — binge episodes with distress are the defining feature; no compensatory behavior is required.",
+          "trap": {
+            "name": "Binge = BED",
+            "note": "Binge-eating disorder specifically involves binges WITHOUT regular compensatory behavior; this patient has self-induced vomiting as a compensatory behavior, which distinguishes bulimia nervosa from BED."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Bulimia nervosa — normal weight does not rule out bulimia; the binge-purge cycle, weight/shape self-evaluation, and Russell's sign (knuckle calluses) are the diagnostic markers.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Malingering — the combination of normal weight and eating-related symptoms without visible weight loss indicates fabrication.",
+          "trap": {
+            "name": "Normal weight = malingering",
+            "note": "Bulimia nervosa is by definition a disorder of normal or elevated weight; normal weight is entirely consistent with the diagnosis — not a reason to suspect malingering."
+          }
+        }
+      ],
+      "why": "Normal weight rules out AN, Binge = BED, and Normal weight = malingering all miss the defining features. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.",
+      "pearl": "Normal weight DOES NOT rule out bulimia nervosa — look for binge-purge cycle + Russell's sign (knuckle calluses) + parotid swelling + dental erosion.",
+      "evidence": "eating_disorders_inpatient_teaching.md — Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion."
+    },
+    {
+      "id": "qb_otherdx_003",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "otherdx",
+      "competency": [
+        "dx",
+        "safety"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "perinatal_psychiatry_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Perinatal Psychiatry page",
+        "href": "?page=perinatal_psychiatry_inpatient_teaching.md"
+      },
+      "stem": "A 28-year-old woman who delivered 6 days ago is brought by her husband with confusion, talking to people who aren't there, and expressing beliefs that her baby 'was sent to test her faith.' She had been laughing and crying alternately. She was seen yesterday and appeared fine for two hours. What is the most critical diagnosis to consider?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Baby blues — mild postpartum mood changes are expected in the first 2 weeks and are self-limited.",
+          "trap": {
+            "name": "Baby blues by default",
+            "note": "Baby blues involves mild mood lability without functional impairment and certainly without psychotic features or confusion; the presentation here — new perceptual disturbance, delusions, and confusion — is not baby blues."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Postpartum depression — the mood lability and behavioral change represent a perinatal major depressive episode.",
+          "trap": {
+            "name": "Postpartum depression default",
+            "note": "Postpartum depression does not include psychotic features, delusions, or confusion in its non-psychotic form; the abrupt-onset psychosis with waxing-and-waning course within days of delivery is postpartum psychosis — a different and urgent entity."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Postpartum psychosis — this is a psychiatric emergency; abrupt onset within days of delivery, waxing-and-waning course, psychotic features centered on the infant, and the lucid interval do not provide reassurance.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Medical emergency — new psychosis postpartum indicates eclampsia or infection until proven otherwise.",
+          "trap": {
+            "name": "Medical cause only",
+            "note": "Medical causes must be excluded (thyroid, infection, eclampsia) but the waxing-and-waning course with psychotic features centered on the infant in the first week postpartum is the postpartum psychosis picture — the clinical priority is both psychiatric emergency evaluation AND medical workup simultaneously."
+          }
+        }
+      ],
+      "why": "Baby blues by default, Postpartum depression default, and Medical cause only all fail to identify postpartum psychosis as the emergency. The page: 'Postpartum psychosis is a psychiatric emergency: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The lucid interval yesterday is explicitly stated to not provide reassurance: 'A lucid interval does not rule out psychosis — the waxing/waning course is part of the illness.'",
+      "pearl": "Postpartum psychosis is a psychiatric emergency — abrupt onset, waxing/waning course, infant-focused delusions within days of delivery; a lucid interval does NOT rule it out.",
+      "evidence": "perinatal_psychiatry_inpatient_teaching.md — POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently. A lucid interval does not rule out psychosis — the waxing/waning course is part of the illness, not reassurance.",
+      "tier2": {
+        "q": "What psychiatric history most strongly predicts postpartum psychosis, and why does this influence the medication decision at discharge?",
+        "options": [
+          {
+            "key": "A",
+            "t": "A history of major depressive disorder — postpartum psychosis is an extension of unipolar depression and responds best to antidepressants."
+          },
+          {
+            "key": "B",
+            "t": "A history of bipolar disorder — postpartum psychosis is strongly linked to bipolar spectrum illness; stopping maintenance mood stabilizer roughly doubles the risk of postpartum relapse.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "A history of schizophrenia — postpartum psychosis is simply a schizophrenic relapse triggered by the hormonal changes of delivery."
+          },
+          {
+            "key": "D",
+            "t": "No prior psychiatric history predicts postpartum psychosis — it is idiopathic and equally likely in any postpartum patient."
+          }
+        ],
+        "why": "Postpartum psychosis is strongly linked to bipolar disorder — patients with bipolar disorder have a risk approximately 100-fold higher than the general population. This matters for discharge because 'stopping maintenance medication roughly doubles postpartum relapse (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis).' The medication-stop decision in a postpartum patient with bipolar disorder is itself a high-risk intervention — 'stop everything' is not a safe default."
+      }
+    },
+    {
+      "id": "qb_otherdx_004",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "somatic_symptom_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Somatic Symptom Disorders page",
+        "href": "?page=somatic_symptom_disorders_inpatient_teaching.md"
+      },
+      "stem": "A 45-year-old woman is referred for psychiatric consultation for 'medically unexplained' chest pain and fatigue. Her symptoms are real and distressing, her workup is negative, and she spends hours daily researching health threats and 4–5 hours daily focused on her symptoms. Which DSM-5-TR principle is most relevant to the diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Somatic symptom disorder requires that the symptoms have no identifiable organic cause — the diagnosis is made only after medical explanation is definitively excluded.",
+          "trap": {
+            "name": "SSD = medically unexplained",
+            "note": "This is the pre-DSM-5 framing — DSM-5-TR shifted the definition of SSD away from 'medically unexplained' to focus on the excessive psychological response; the symptom may or may not be medically explained."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Somatic symptom disorder requires at least 3 distinct somatic complaints across different organ systems.",
+          "trap": {
+            "name": "Multiple organ systems required",
+            "note": "The DSM-5-TR criterion is ≥1 distressing somatic symptom plus excessive thoughts/feelings/behaviors — not a minimum number of symptoms or organ systems; one symptom with excessive response qualifies."
+          }
+        },
+        {
+          "key": "C",
+          "t": "These complaints are best diagnosed as illness anxiety disorder because the patient's main symptom is health preoccupation rather than multiple somatic symptoms.",
+          "trap": {
+            "name": "Preoccupation = IAD not SSD",
+            "note": "Illness anxiety disorder (IAD) features preoccupation with having a disease with minimal somatic symptoms — this patient has distressing somatic symptoms (chest pain, fatigue) plus the excessive cognitive response; this fits SSD, not IAD."
+          }
+        },
+        {
+          "key": "D",
+          "t": "DSM-5-TR defines somatic symptom disorder by the excessive thoughts, feelings, and behaviors around symptoms — not by whether those symptoms are medically explained; a patient with a confirmed medical diagnosis can still meet SSD criteria if her response to symptoms is disproportionate.",
+          "c": true
+        }
+      ],
+      "why": "SSD = medically unexplained, Multiple organ systems required, and Preoccupation = IAD all misstate the DSM-5-TR diagnosis. The page's first pearl: 'SSD is defined by the excessive response to symptoms, not by whether they're medically explained (a key DSM-5-TR shift from medically unexplained).' This is a tested concept: the diagnosis no longer hinges on medical explanation.",
+      "pearl": "SSD (DSM-5-TR): defined by excessive thoughts/feelings/behaviors about symptoms — NOT by whether the symptoms are medically unexplained; a confirmed medical illness can coexist with SSD.",
+      "evidence": "somatic_symptom_disorders_inpatient_teaching.md — SSD is defined by the excessive response to symptoms, not by whether they're medically explained (a key DSM-5-TR shift from 'medically unexplained')."
+    },
+    {
+      "id": "qb_otherdx_005",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "somatic_symptom_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Somatic Symptom Disorders page",
+        "href": "?page=somatic_symptom_disorders_inpatient_teaching.md"
+      },
+      "stem": "A 36-year-old woman is admitted with a 3-day history of right-sided paralysis and inability to walk. Neurological workup is negative. When the examiner tests hip flexion strength on the right, the patient's hip flexes strongly in the contralateral direction consistent with the Hoover sign. Which statement about the diagnosis is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Functional neurological symptom disorder (conversion) is diagnosed here by a positive examination finding — the Hoover sign; this is a rule-in diagnosis, not solely a diagnosis of exclusion.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "The diagnosis requires a psychiatric interview confirming psychosocial stress as the precipitant before a neurological cause can be excluded.",
+          "trap": {
+            "name": "Psychiatric cause required",
+            "note": "DSM-5 removed the requirement for an identified psychological precipitant from the conversion disorder criteria; the diagnosis is made by positive examination signs (rule-in), not by excluding all neurology and confirming a psychological cause."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The diagnosis requires a complete neurological workup including MRI, EMG, and nerve conduction studies before conversion can be considered.",
+          "trap": {
+            "name": "Full workup before conversion",
+            "note": "Positive examination signs like the Hoover sign are themselves diagnostic and are not simply 'tests not yet done'; waiting for a complete negative workup before considering conversion delays a treatable diagnosis."
+          }
+        },
+        {
+          "key": "D",
+          "t": "The positive examination finding is unreliable — the Hoover sign has poor sensitivity and should not anchor a diagnosis.",
+          "trap": {
+            "name": "Hoover sign unreliable",
+            "note": "The Hoover sign has good specificity for functional weakness — it is a clinically validated examination finding that supports a rule-in diagnosis, not an unreliable anecdotal maneuver."
+          }
+        }
+      ],
+      "why": "Psychiatric cause required, Full workup before conversion, and Hoover sign unreliable all delay diagnosis or require unnecessary conditions. The page is explicit: 'Conversion/functional neurological disorder is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures. Name conversion by its positive signs — don't make it a diagnosis of exclusion alone.'",
+      "pearl": "Functional neurological disorder (conversion) is diagnosed by POSITIVE examination signs (Hoover sign, tremor entrainment, give-way weakness) — not solely by exclusion; DSM-5 removed the psychological precipitant requirement.",
+      "evidence": "somatic_symptom_disorders_inpatient_teaching.md — Conversion/functional neurological disorder is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures. Name conversion by its positive signs — don't make it a diagnosis of exclusion alone.",
+      "tier2": {
+        "q": "Why did DSM-5 remove the requirement for an identified psychological stressor from the diagnosis of functional neurological symptom disorder (conversion)?",
+        "options": [
+          {
+            "key": "A",
+            "t": "To make the diagnosis easier to code — the removal was an administrative convenience rather than a clinical improvement."
+          },
+          {
+            "key": "B",
+            "t": "Because a psychological precipitant is not reliably identifiable in all cases, and requiring it was clinician-attributed (confabulated) rather than patient-reported; the diagnosis now rests on the neurological examination finding, which is objective.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "Because DSM-5 de-medicalized all psychiatric diagnoses — the psychological stressor requirement was removed from all diagnoses in the somatic section."
+          },
+          {
+            "key": "D",
+            "t": "To increase the sensitivity of the diagnosis — more patients qualify without requiring documentation of a precipitant."
+          }
+        ],
+        "why": "The pre-DSM-5 requirement for an identified psychological stressor was criticized because (1) clinicians often attributed stress confabulatorily rather than patients actually reporting a clear precipitant, (2) it was unreliable across clinicians, and (3) it implied that the absence of an identified stressor could falsely reassure about the diagnosis. DSM-5 shifted the criteria to rest on the positive neurological examination finding — an objective, replicable observation — which better separates functional from structural neurological disease and removes the subjective psychological stressor requirement."
+      }
+    },
+    {
+      "id": "qb_otherdx_006",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "somatic_symptom_disorders_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Somatic Symptom Disorders page",
+        "href": "?page=somatic_symptom_disorders_inpatient_teaching.md"
+      },
+      "stem": "A 42-year-old woman has been hospitalized multiple times for recurrent infections. Staff have noted that her central line infections always follow nursing shifts during which she is left alone with the IV port. A camera reveals that she is injecting herself with contaminated fluid. She appears distressed when confronted and says, 'I just need doctors to take care of me.' There is no evidence of secondary gain (no pending disability, no legal issue). Which diagnosis is most consistent?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Malingering — the deliberate production of symptoms for secondary gain is the defining feature.",
+          "trap": {
+            "name": "Deliberate = malingering",
+            "note": "Deliberate production of symptoms is present in BOTH factitious disorder and malingering; the critical distinction is motivation — malingering requires an external incentive (financial, legal, drug-seeking), which is absent here."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Somatic symptom disorder — the recurrent hospitalizations and the distress of the patient indicate a pattern of disproportionate health concern.",
+          "trap": {
+            "name": "Recurrent admissions = SSD",
+            "note": "SSD is characterized by excessive worry about symptoms — not by deliberate production of illness; the conscious self-injection places this in a different diagnostic category entirely."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Conversion disorder — the pattern of self-limited infections with resolution suggests a functional mechanism.",
+          "trap": {
+            "name": "Episodic = functional",
+            "note": "Conversion disorder is unconscious and produces neurological symptoms; deliberate self-injection with contaminated fluid is a conscious act in a medically serious, not functional, illness category."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Factitious disorder imposed on self — conscious falsification or induction of illness motivated by assuming the sick role, without external incentive; 'I need doctors to take care of me' is the factitious driver.",
+          "c": true
+        }
+      ],
+      "why": "Deliberate = malingering, Recurrent admissions = SSD, and Episodic = functional all apply the wrong framework. The page's diagnostic table: 'Factitious disorder — conscious falsification or induction of illness (self or another) motivated by assuming the sick role, without external reward.' The two-axis rule: 'Separate on two axes: conscious? and external incentive? Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder).'",
+      "pearl": "Factitious = conscious, internal motive (sick role); malingering = conscious, external incentive (money/drugs/legal); neither has unconscious somatic symptoms.",
+      "evidence": "somatic_symptom_disorders_inpatient_teaching.md — Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder). Separate on the two axes: conscious? and external incentive?",
+      "tier2": {
+        "q": "A caregiver is suspected of intentionally inducing illness in her 6-year-old child to maintain hospital access and medical attention. Which specific diagnosis and clinical obligation apply?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Malingering by proxy — the external incentive (social support, housing) makes this malingering rather than factitious disorder; no mandatory reporting obligation applies."
+          },
+          {
+            "key": "B",
+            "t": "Factitious disorder imposed on another (medical child abuse) — this is a form of child abuse and a mandatory reporting obligation; protecting the child takes priority over confronting the caregiver.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "Munchausen syndrome by proxy — this is a historical term; no specific mandatory reporting obligation exists because psychiatric diagnosis does not create reporting duties."
+          },
+          {
+            "key": "D",
+            "t": "Somatic symptom disorder imposed by parent — the parent's excessive health preoccupation shapes the child's medical utilization; no reporting duty applies."
+          }
+        ],
+        "why": "The current DSM-5-TR term is 'factitious disorder imposed on another' (formerly Munchausen by proxy). The page explicitly states it is a form of abuse: 'Factitious disorder imposed on another (medical child abuse) is reportable.' The clinical obligation is to protect the dependent (the child) and file a mandatory report — this takes precedence over psychiatric consultation, confrontation, or treatment of the caregiver. The page cross-references the ethics and law teaching: 'Imposed on another (formerly Munchausen by proxy) is a form of abuse — report it.'"
+      }
+    },
+    {
+      "id": "qb_otherdx_007",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "cultural_psychiatry_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Cultural Psychiatry page",
+        "href": "?page=cultural_psychiatry_inpatient_teaching.md"
+      },
+      "stem": "A 55-year-old Puerto Rican woman is brought to the emergency department by her family. She is hyperventilating, trembling, shouting uncontrollably, and has fallen to the floor. Her family says this has happened before after a stressful family argument. Her vitals are normal and she recovers fully within 30 minutes. Which culturally informed interpretation is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "This is a panic disorder episode — the hyperventilation and trembling meet the physiological criteria for a panic attack.",
+          "trap": {
+            "name": "Symptoms match panic",
+            "note": "While the symptoms overlap with panic, applying a Western diagnostic label before exploring cultural context risks misdiagnosis; the episodic, stress-triggered, interpersonally mediated presentation with full recovery is classic for ataque de nervios, a culturally recognized pattern."
+          }
+        },
+        {
+          "key": "B",
+          "t": "This is a functional neurological disorder — the shouting and falling indicate a non-epileptic seizure.",
+          "trap": {
+            "name": "Motor symptoms = functional seizure",
+            "note": "Functional neurological disorder requires positive examination signs and an individual assessment; without those, attributing a culturally patterned episode to conversion is premature and bypasses cultural context."
+          }
+        },
+        {
+          "key": "C",
+          "t": "This may be ataque de nervios — a cultural concept of distress common in Latino communities; it is characterized by trembling, shouting, hyperventilation, and sometimes falling, typically precipitated by family stress, and may be misread as panic disorder or psychosis without cultural inquiry.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "This is malingering — the rapid recovery and interpersonal context suggest the episode served a social function.",
+          "trap": {
+            "name": "Socially embedded = malingering",
+            "note": "Cultural idioms of distress may serve interpersonal functions within their cultural context without constituting malingering — applying malingering to a culturally recognized pattern without adequate assessment is both inaccurate and harmful."
+          }
+        }
+      ],
+      "why": "Symptoms match panic, Motor symptoms = functional seizure, and Socially embedded = malingering all bypass cultural inquiry. The page: 'Cultural concepts of distress (e.g., ataque de nervios) can mimic panic or psychosis — ask before you label.' Using Kleinman's explanatory-model questions would surface the patient's interpretation and cultural meaning before assigning a diagnosis.",
+      "pearl": "Ataque de nervios: culturally patterned distress in Latino communities — trembling, shouting, hyperventilation, falling, stress-triggered — can be misread as panic, seizure, or psychosis without cultural inquiry.",
+      "evidence": "cultural_psychiatry_inpatient_teaching.md — Cultural concepts of distress (e.g., ataque de nervios, susto) can be mistaken for panic, psychosis, or malingering. Ask before you label.",
+      "tier2": {
+        "q": "What is the purpose of Kleinman's explanatory-model questions in cross-cultural clinical encounters?",
+        "options": [
+          {
+            "key": "A",
+            "t": "To confirm that the patient's illness understanding matches the biomedical diagnosis — explaining any discrepancy corrects cultural misunderstanding."
+          },
+          {
+            "key": "B",
+            "t": "To elicit the patient's own framework for what the illness means, what caused it, what they fear, and what treatment they expect — surfacing beliefs and expectations that shape adherence and therapeutic relationship.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "To determine whether the patient requires a medical interpreter — the questions reveal whether language is the primary communication barrier."
+          },
+          {
+            "key": "D",
+            "t": "To screen for psychosis — patients who attribute illness to supernatural causes are flagged for psychiatric assessment."
+          }
+        ],
+        "why": "Kleinman's explanatory-model questions ('What do you call this problem? What do you think caused it? How does it affect you? What are you most afraid of? What treatment do you expect?') are not about correcting the patient's beliefs or screening for pathology. They are about surfacing the patient's illness framework so the clinician understands what the illness means to the patient — beliefs about cause, significance, and expected treatment that directly influence adherence, trust, and therapeutic planning. Cultural concepts of distress may emerge through these questions that would otherwise be mislabeled as panic or psychosis."
+      }
+    },
+    {
+      "id": "qb_otherdx_008",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "cultural_psychiatry_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Cultural Psychiatry page",
+        "href": "?page=cultural_psychiatry_inpatient_teaching.md"
+      },
+      "stem": "A 34-year-old Black man presents with paranoid ideation, disorganized thinking, and social withdrawal that began 3 months ago. A student suggests schizophrenia. The attending asks the student to consider a documented cultural bias. Which statement reflects the clinical evidence?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Black patients present with more severe schizophrenia symptoms on average, which explains the higher diagnostic rate.",
+          "trap": {
+            "name": "Severity explains disparity",
+            "note": "The higher rate of schizophrenia diagnoses in Black patients is not explained by symptom severity — it reflects a documented diagnostic bias; the same presentations in Black patients are more often labeled schizophrenia and less often labeled mood disorder."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The diagnostic difference reflects differential rates of schizophrenia across demographic groups — epidemiological data confirm higher prevalence in this population.",
+          "trap": {
+            "name": "Epidemiology explains disparity",
+            "note": "The prevalence difference in diagnosis rates does not reflect true prevalence differences — it reflects clinician diagnostic bias; the page specifically states these disparities are driven by clinician bias, not different rates of underlying illness."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Cultural mistrust in the clinical encounter leads Black patients to endorse more psychotic symptoms on screening, creating a false-positive signal.",
+          "trap": {
+            "name": "Patient behavior explains disparity",
+            "note": "The documented disparity is driven by clinician diagnostic behavior (over-applying schizophrenia, under-applying mood disorders), not by patient reporting patterns."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Black patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations — a documented clinician bias that is not explained by symptom profile or true prevalence differences.",
+          "c": true
+        }
+      ],
+      "why": "Severity explains disparity, Epidemiology explains disparity, and Patient behavior explains disparity all misattribute the cause. The page is explicit: 'Black (and some other minority) patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations — a documented bias to guard against.' This is a patient-safety issue that requires active self-monitoring.",
+      "pearl": "Documented bias: Black patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — not due to prevalence differences, but clinician diagnostic bias; guard against it.",
+      "evidence": "cultural_psychiatry_inpatient_teaching.md — Black (and some other minority) patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations — a documented bias to guard against."
+    },
+    {
+      "id": "qb_otherdx_009",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "otherdx",
+      "competency": [
+        "dx",
+        "safety"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "perinatal_psychiatry_inpatient_teaching.md"
+      ],
+      "link": {
+        "label": "Open the Perinatal Psychiatry page",
+        "href": "?page=perinatal_psychiatry_inpatient_teaching.md"
+      },
+      "stem": "A 30-year-old mother, 3 weeks postpartum, scores a 14 on the Edinburgh Postnatal Depression Scale (EPDS). She is distressed and anxious. The student says, 'She screened positive for postpartum depression — start sertraline.' The attending asks what the student may have missed. Which is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The EPDS is not validated for postpartum use — use the PHQ-9 instead.",
+          "trap": {
+            "name": "EPDS not validated postpartum",
+            "note": "The EPDS is specifically designed and validated for postpartum screening; this is factually incorrect."
+          }
+        },
+        {
+          "key": "B",
+          "t": "A score of 14 on the EPDS requires hospitalization — outpatient sertraline is below the level of care indicated.",
+          "trap": {
+            "name": "EPDS score mandates hospitalization",
+            "note": "EPDS scores guide clinical decisions but do not directly mandate a specific level of care; the clinical picture (function, safety, psychotic features) determines disposition."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The EPDS screens for depression and anxiety but does NOT detect psychotic or manic symptoms — the student must explicitly ask about delusions, hallucinations, and manic symptoms before assuming this is postpartum depression and not postpartum psychosis or bipolar relapse.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Sertraline is contraindicated in the first 4 weeks postpartum — the student should recommend a different SSRI.",
+          "trap": {
+            "name": "Sertraline contraindicated postpartum",
+            "note": "Sertraline and escitalopram are specifically mentioned in the page as usual first-line SSRIs for perinatal depression; there is no 4-week postpartum contraindication."
+          }
+        }
+      ],
+      "why": "EPDS not validated, EPDS score mandates hospitalization, and Sertraline contraindicated all misstate the evidence. The page's explicit pearl: 'The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.' The student's error is treating a positive depression screen as a complete psychiatric assessment — the EPDS misses psychosis and mania by design.",
+      "pearl": "EPDS screens for depression and anxiety — it does NOT detect psychosis or mania; always ask explicitly about delusions, hallucinations, and manic symptoms in every postpartum patient.",
+      "evidence": "perinatal_psychiatry_inpatient_teaching.md — The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.",
+      "tier2": {
+        "q": "A postpartum patient describes recurring intrusive thoughts of accidentally dropping her baby, which she finds horrifying. She does not act on these thoughts and goes out of her way to avoid holding the baby near stairs. What is the correct interpretation, and how does it differ from a concerning psychotic feature?",
+        "options": [
+          {
+            "key": "A",
+            "t": "This is a command hallucination instructing her to harm the baby — she requires emergency admission and a safety plan for infant protection."
+          },
+          {
+            "key": "B",
+            "t": "This is postpartum OCD — the intrusive thoughts are ego-dystonic (horrifying to her), and she avoids situations that could lead to the feared outcome; this is the opposite of command hallucinations (which are ego-syntonic and acted upon), and the correct response is clinical support and reassurance, not emergency separation from the baby.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "This is a normal postpartum anxiety response — new mothers universally have intrusive thoughts about infant safety, which resolves without treatment."
+          },
+          {
+            "key": "D",
+            "t": "This is a delusion of persecution — the belief that she might harm her child is a paranoid misinterpretation that requires antipsychotic treatment."
+          }
+        ],
+        "why": "Postpartum OCD intrusive thoughts are a critically important differential. The page states: 'Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.' Key discrimination: (1) Ego-dystonic: the patient is horrified by the thoughts and does not want to act on them. (2) She avoids, not approaches, situations that could lead to the feared outcome. (3) Command hallucinations are ego-syntonic experiences that the patient may feel compelled to act on. Mislabeling postpartum OCD as command hallucinations leads to emergency separation and antipsychotic treatment of a patient who needs reassurance and OCD-specific treatment."
+      }
     }
   ]
 }
