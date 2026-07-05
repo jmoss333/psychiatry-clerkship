@@ -12,6 +12,10 @@
 
 **Acute inpatient management** — Combine medication, skills, and milieu. **SSRIs and SNRIs are first-line** across anxiety disorders, OCD, and PTSD; counsel patients on the delayed onset and the transient early activation. **Avoid standing benzodiazepines on the unit** — they drive dependence, falls, and delirium, and are especially hazardous with comorbid SUD or in older adults; reserve them for specific, time-limited indications (e.g., a structured alcohol or sedative withdrawal protocol). Pair pharmacology with disorder-specific behavioral work: **exposure and response prevention (ERP)** for OCD, **prolonged exposure (PE)** and **cognitive processing therapy (CPT)** for PTSD, and **interoceptive exposure** for panic, introduced in graded form even during a short stay. Wrap all of it in **trauma-informed care** — predictability, explained procedures, offered choices, and minimized restraint/seclusion — which both reduces retraumatization and lowers behavioral escalation.
 
+**When akathisia is identified** — Recognition triggers a management hierarchy; escalating the offending antipsychotic is the cardinal error. First step: **reduce the antipsychotic dose or switch to a lower-dopamine-affinity agent** (e.g., quetiapine, which has lower D2 occupancy at clinical doses) — addressing the mechanism directly is more durable than adding a second drug. When dose reduction is not immediately possible or insufficient: **propranolol 20–40 mg BID** is the pharmacological first-line, with the strongest evidence from multiple small RCTs and Cochrane review (Lima et al., Cochrane Database Syst Rev 2004); avoid in reactive airway disease, significant bradycardia, or heart block. If **parkinsonism co-exists** alongside the akathisia: add benztropine (anticholinergic agents target parkinsonism more reliably than pure akathisia). A **benzodiazepine** (typically clonazepam 0.5–1 mg) can provide adjunctive relief when symptoms remain severe after propranolol, but is third-line specifically for akathisia. Mirtazapine 15 mg has emerging evidence from small trials. The management hierarchy — dose reduction or switch → propranolol → benztropine if parkinsonism co-exists → benzodiazepine adjunct — ensures the intervention matches the mechanism.
+
+> **AI-drafted section — pending Dr. Moss's review/attestation before learner use.**
+
 **What the student does**
 - Screen new admissions for an anxiety, OCD, or PTSD history and document whether symptoms predate the acute crisis.
 - At the bedside, evaluate restlessness deliberately: ask about an inner urge to move and inspect for akathisia before labeling a patient "anxious."
@@ -24,6 +28,7 @@
 **High-yield pearls**
 - Anxiety is a symptom before it is a diagnosis — clear the medical and withdrawal mimics first.
 - Akathisia is the great inpatient impostor; treat the cause, not with more dopamine blockade.
+- Akathisia management hierarchy: reduce dose or switch the antipsychotic → **propranolol** (first-line pharmacological, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct.
 - SSRIs/SNRIs are first-line; benzodiazepines are a liability on the unit, not a maintenance plan.
 - Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.
 - The scale to know for OCD is the **Y-BOCS** (Yale-Brown Obsessive-Compulsive Scale) — the gold-standard clinician-rated measure of OCD severity and treatment response (a symptom checklist plus 10 severity items, obsessions and compulsions scored separately).

@@ -12,6 +12,10 @@
 
 **Acute inpatient management** — For **alcohol withdrawal**, score serially with the **CIWA-Ar** and treat symptom-driven with **benzodiazepines**, escalating vigilance for **seizures and delirium tremens** in high-risk patients. Give **thiamine before glucose** — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy. For **opioid withdrawal**, track severity with the **COWS**, and begin **buprenorphine induction only once objective withdrawal is present (roughly COWS greater than or equal to 8 to 12)** to avoid precipitated withdrawal from displacing residual full agonist too early. For ongoing **alcohol use disorder**, offer **naltrexone or acamprosate**. Frame the whole encounter through the **Volkow brain-disease model** of addiction — naming addiction as a chronic, treatable brain condition rather than a moral failing directly combats stigma — and use **motivational interviewing** to meet ambivalence with curiosity rather than confrontation.
 
+**Benzodiazepine choice in hepatic impairment** — Not all benzodiazepines are equivalent when liver function is compromised, and the distinction has direct management implications. Chlordiazepoxide and diazepam depend on **oxidative CYP450 hepatic metabolism** and produce long-lived active metabolites (desmethyldiazepam, nordiazepam) that accumulate when hepatic clearance is reduced — the result is progressive over-sedation, respiratory depression, and worsening hepatic encephalopathy. **Lorazepam, oxazepam, and temazepam** (the "LOT" drugs) bypass the oxidative step entirely: they are conjugated directly by **glucuronidation**, a pathway that is relatively preserved even in significant cirrhosis, and they produce no clinically meaningful active metabolites. In patients with Child-Pugh B or C cirrhosis (or any patient with overt hepatic encephalopathy, jaundice, or coagulopathy from liver disease), use a LOT drug at conservative initial doses rather than a long-acting oxidatively metabolized benzodiazepine (Schuckit, N Engl J Med 2014; Saitz, N Engl J Med 1998). Phenobarbital is an alternative in refractory withdrawal but carries its own sedation and respiratory risks and typically requires a higher-acuity setting.
+
+> **AI-drafted section — pending Dr. Moss's review/attestation before learner use.**
+
 <a class="tl-chip" href="?tool=withdrawal.html" data-tool="withdrawal.html" data-icon="withdrawal">Score at the bedside — CIWA-Ar / COWS</a>
 
 **What the student does**
@@ -25,6 +29,7 @@
 
 **High-yield pearls**
 - Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.
+- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not.
 - Thiamine before glucose, every time.
 - Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal.
 - A patient who uses substances with new confusion gets a real differential — Wernicke, trauma, infection, hepatic encephalopathy — not a reflex withdrawal label.

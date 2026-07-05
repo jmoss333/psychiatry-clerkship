@@ -389,41 +389,41 @@
         "label": "Open the Psychotic Disorders page",
         "href": "?page=t_psychosis.md"
       },
-      "stem": "A 41-year-old man with treatment-resistant schizophrenia has been on haloperidol for three days. The medical student is paged because he is rigid, febrile to 39.1°C (102.4°F), diaphoretic, and confused. His creatine kinase is critically elevated. Best next step?",
+      "stem": "A 37-year-old man with schizophrenia has been stable on haloperidol 5 mg/day and sertraline 100 mg/day for a comorbid depressive episode. His sertraline was increased to 150 mg two days ago. He now presents with fever (38.9°C), agitation, diaphoresis, and muscle rigidity. CK is mildly elevated at 680 U/L. The differential includes serotonin syndrome and neuroleptic malignant syndrome. Which finding, if present on examination, would most strongly support serotonin syndrome over neuroleptic malignant syndrome?",
       "options": [
         {
           "key": "A",
-          "t": "Increase the haloperidol dose — the agitation and confusion indicate undertreated psychosis",
+          "t": "Uniform lead-pipe resistance throughout the passive range of motion of the upper and lower extremities, with normal deep tendon reflexes.",
           "trap": {
-            "name": "Agitation = antipsychotic",
-            "note": "Increasing a dopamine blocker in neuroleptic malignant syndrome accelerates the emergency — the antipsychotic is the cause, not the treatment."
+            "name": "Lead-pipe rigidity = NMS, not SS",
+            "note": "Lead-pipe rigidity — uniform resistance throughout the passive range of motion — is the hallmark of NMS, produced by dopaminergic pathway dysfunction. Serotonin syndrome produces clonus and hyperreflexia, not lead-pipe rigidity; choosing this option confuses the two syndromes' defining physical features."
           }
         },
         {
           "key": "B",
-          "t": "Give a benzodiazepine to relieve the rigidity and agitation while awaiting attending review",
+          "t": "Creatine kinase (CK) above 5,000 U/L with rising creatinine suggesting early rhabdomyolysis.",
           "trap": {
-            "name": "The reflexive benzodiazepine",
-            "note": "Benzodiazepines may have a supportive role in NMS but are not the primary intervention — stopping the antipsychotic and escalating are the priority."
+            "name": "Markedly elevated CK = NMS signature",
+            "note": "Dramatically elevated CK (often tens of thousands) is a hallmark of NMS, driven by sustained muscular rigidity and potential rhabdomyolysis. CK in serotonin syndrome may be mildly elevated but rarely reaches NMS levels; a markedly elevated CK increases suspicion for NMS, not SS."
           }
         },
         {
           "key": "C",
-          "t": "Stop the antipsychotic immediately and escalate to the attending — this presentation is consistent with neuroleptic malignant syndrome",
-          "c": true
+          "t": "Gradual onset of rigidity and fever developing over 48–72 hours after the haloperidol was started three months ago, with no change in the serotonergic regimen.",
+          "trap": {
+            "name": "Subacute onset + dopamine blocker = NMS pattern",
+            "note": "A gradual onset timed to a dopamine-blocking agent rather than to a serotonergic change is the NMS pattern. Serotonin syndrome typically occurs within hours of a serotonergic dose increase or drug addition — the history in this option (no serotonergic change, onset tied to the antipsychotic) would favor NMS."
+          }
         },
         {
           "key": "D",
-          "t": "Switch to a second-generation antipsychotic — NMS is an FGA-specific adverse effect",
-          "trap": {
-            "name": "Newer = better",
-            "note": "NMS can occur with any dopamine-blocking agent, including second-generation antipsychotics — treatment is to stop the antipsychotic, not switch it."
-          }
+          "t": "Ankle clonus with brisk, brisker-than-baseline deep tendon reflexes throughout the lower extremities.",
+          "c": true
         }
       ],
-      "why": "Agitation = antipsychotic is the most dangerous trap — increasing the drug causing NMS is contraindicated. NMS (fever, lead-pipe rigidity, elevated CK, autonomic instability) is the can't-miss antipsychotic emergency: stop the antipsychotic and escalate. The reflexive benzodiazepine mistakes a supportive adjunct for the primary action. Newer = better misunderstands mechanism — NMS is not FGA-specific.",
-      "pearl": "NMS — fever, lead-pipe rigidity, elevated CK, autonomic instability — is the can't-miss antipsychotic emergency: stop the antipsychotic and escalate immediately.",
-      "evidence": "t_psychosis.md — Neuroleptic malignant syndrome (fever, rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively. psychopharm_primer.md — NMS: 'lead-pipe' rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker."
+      "why": "Lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia → SS. The three distractors all describe NMS features: lead-pipe rigidity (A), dramatically elevated CK (B), and subacute onset tied to the dopamine blocker rather than the serotonergic change (C). Ankle clonus with lower-extremity hyperreflexia (D) is the hallmark physical finding of serotonin syndrome — it reflects serotonin-mediated hyperactivation of spinal reflex arcs and is absent in NMS, where rigidity comes from central dopaminergic dysfunction. The added clinical clues — onset after the sertraline increase, mild rather than dramatic CK — also favor SS over NMS. In practice, both syndromes require stopping the offending agent; the physical exam reflex pattern is the fastest bedside discriminator.",
+      "pearl": "NMS vs. SS at the bedside: lead-pipe rigidity + hyporeflexia → NMS (dopamine blocker, subacute onset); clonus + hyperreflexia → SS (serotonergic agent, rapid onset hours).",
+      "evidence": "psychotic_disorders_inpatient_teaching.md 'Neuroleptic malignant syndrome vs. serotonin syndrome' — The key discriminator: lead-pipe rigidity + hyporeflexia = NMS; clonus + hyperreflexia (especially ankle clonus) = SS. Onset timeline and offending agent class support the differentiation (Boyer and Shannon, N Engl J Med 2005; Strawn et al., Am J Psychiatry 2007)."
     },
     {
       "id": "qb_anx_001",
@@ -3338,7 +3338,7 @@
       ],
       "why": "Contraindication confusion and Long half-life equals smooth coverage are the two active errors. The clinical principle: lorazepam and oxazepam are preferred in hepatic impairment precisely because their glucuronidation pathway is preserved while oxidative metabolism (which processes chlordiazepoxide and diazepam) is impaired in cirrhosis. All drugs equal ignores a clinically important pharmacokinetic distinction.",
       "pearl": "Hepatic impairment + alcohol withdrawal: use lorazepam or oxazepam (glucuronidation preserved); avoid long-acting benzodiazepines that accumulate.",
-      "evidence": "t_sud.md — For alcohol withdrawal, treat symptom-driven with benzodiazepines. [Anchor: general principle requiring hepatic-specific application — the page names benzodiazepines as first-line and identifies the need for 'focused and pragmatic' initial workup including LFTs.]"
+      "evidence": "substance_use_inpatient_teaching.md 'Benzodiazepine choice in hepatic impairment' — Lorazepam, oxazepam, and temazepam (the LOT drugs) bypass oxidative CYP450 metabolism; they are conjugated by glucuronidation, a pathway that is relatively preserved in cirrhosis, and produce no clinically significant active metabolites. Chlordiazepoxide and diazepam rely on hepatic oxidative metabolism and produce long-lived active metabolites that accumulate in significant hepatic impairment, risking progressive over-sedation and worsening hepatic encephalopathy (Schuckit, N Engl J Med 2014; Saitz, N Engl J Med 1998)."
     },
     {
       "id": "qb_sud_014",
@@ -5706,41 +5706,41 @@
         "label": "Open the Anxiety, OCD & Trauma page",
         "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
       },
-      "stem": "A 48-year-old woman admitted for a first manic episode was started on haloperidol 3 days ago. Nursing staff report she has been pacing the unit constantly and cannot sit still, and she tells the student, 'I feel like I'm going to jump out of my skin.' The team plans to increase her haloperidol for 'worsening agitation.' Which is the most accurate assessment?",
+      "stem": "A 29-year-old man with first-episode psychosis was started on haloperidol 3 days ago. He has been pacing the unit continuously, reports an inner urge to move, and the team has correctly identified this as akathisia. The attending decides that haloperidol should be continued for now at the same dose. Which pharmacological intervention has the strongest evidence as first-line treatment for akathisia in this setting?",
       "options": [
         {
           "key": "A",
-          "t": "This presentation is most consistent with akathisia — a drug-induced restlessness characterized by an inner urge to move; increasing dopamine blockade will worsen it, not treat it.",
-          "c": true
-        },
-        {
-          "key": "B",
-          "t": "The patient's agitation reflects incompletely treated mania — increasing haloperidol is the correct next step.",
+          "t": "Benztropine — anticholinergic agents are first-line for all antipsychotic-induced movement disorders, including akathisia.",
           "trap": {
-            "name": "Treat before diagnose",
-            "note": "Haloperidol-induced akathisia mimics agitation from the underlying illness; increasing the dose worsens the akathisia and can produce dangerous outcomes."
+            "name": "Anticholinergic first-line for akathisia",
+            "note": "Benztropine and other anticholinergic agents are first-line for antipsychotic-induced parkinsonism and acute dystonia, but they have weaker evidence for pure akathisia compared to propranolol. Anticholinergics are the correct add-on when parkinsonism co-exists with akathisia, not as the default first-line for akathisia alone."
           }
         },
         {
+          "key": "B",
+          "t": "Propranolol 20–40 mg BID — a non-selective beta-blocker with the strongest evidence base for akathisia from multiple small RCTs and Cochrane review.",
+          "c": true
+        },
+        {
           "key": "C",
-          "t": "This is situational anxiety from the hospitalization itself — reassure the patient and add a benzodiazepine as needed.",
+          "t": "Immediate switch to clozapine — clozapine's low D2 affinity eliminates akathisia risk and is the definitive treatment when any antipsychotic causes akathisia.",
           "trap": {
-            "name": "Anxiety diagnosis by exclusion",
-            "note": "Benzodiazepines may transiently suppress akathisia but do not treat it, and the pacing driven by an inner motor urge is a specific antipsychotic adverse effect that requires recognition and dose adjustment or switch."
+            "name": "Clozapine as immediate first-line",
+            "note": "Clozapine's low D2 affinity does make it a preferred option in patients with severe EPS, but it is not the first intervention for new akathisia — it requires ANC monitoring enrollment, carries significant metabolic and cardiac risks, and is reserved for treatment-resistant or EPS-prone patients. The first pharmacological trial for akathisia is propranolol, not clozapine."
           }
         },
         {
           "key": "D",
-          "t": "The 'jumping out of her skin' sensation indicates serotonin syndrome — check serotonin toxicity criteria immediately.",
+          "t": "Standing diazepam — benzodiazepines are the first-line pharmacological agent for dopamine-blocker-induced restlessness.",
           "trap": {
-            "name": "Serotonin syndrome by symptom pattern",
-            "note": "Serotonin syndrome features hyperreflexia, clonus, diaphoresis, and temperature elevation; akathisia is a dopaminergic adverse effect distinct from serotonin toxicity."
+            "name": "Benzodiazepine first-line for akathisia",
+            "note": "Benzodiazepines (typically clonazepam) provide adjunctive relief and are useful when propranolol is insufficient or contraindicated, but they are third-line specifically for akathisia. Starting with standing diazepam also introduces dependence risk, falls, and sedation; propranolol is both more specific and better-evidenced (Lima et al., Cochrane 2004)."
           }
         }
       ],
-      "why": "Treat before diagnose, Anxiety by exclusion, and Serotonin syndrome by symptom all bypass recognition of akathisia — the page calls it 'the great inpatient impostor.' The inner restlessness of akathisia worsens if you add more dopamine blockade, which is the planned intervention; the correct move is to recognize it and reduce, switch, or add a beta-blocker.",
-      "pearl": "Akathisia is the great inpatient impostor — inner-urge restlessness from antipsychotics worsens with more dopamine blockade; recognize it before adjusting the dose upward.",
-      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Akathisia is the classic miss — restless, driven motor anxiety from antipsychotics that worsens if you reflexively treat it as 'agitation' with more dopamine blockade."
+      "why": "Anticholinergic first-line, Clozapine immediately, and Benzodiazepine first-line all misorient the management hierarchy. Propranolol (B) has the strongest evidence for akathisia: it is effective in multiple small RCTs reviewed in the Cochrane systematic analysis (Lima et al. 2004). The management sequence is: (1) reduce antipsychotic dose or switch if possible — the mechanism fix; (2) propranolol when dose reduction isn't immediately available; (3) benztropine if parkinsonism co-exists; (4) benzodiazepine adjunct if symptoms remain severe. Avoid escalating the antipsychotic — the cardinal error.",
+      "pearl": "Akathisia pharmacotherapy: propranolol 20–40 mg BID is first-line (strongest evidence); add benztropine if parkinsonism co-exists; benzodiazepine is third-line adjunct.",
+      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md 'When akathisia is identified' — Propranolol 20–40 mg BID is the pharmacological first-line for akathisia with the strongest evidence from multiple small RCTs and Cochrane review (Lima et al., Cochrane Database Syst Rev 2004). Management hierarchy: reduce dose or switch → propranolol → benztropine if parkinsonism co-exists → benzodiazepine adjunct."
     },
     {
       "id": "qb_anx_004",

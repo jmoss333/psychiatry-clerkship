@@ -139,11 +139,11 @@ All keyed options trimmed to parallel length with their distractors; extra ratio
 | Severity | Total flagged | Fixed | Flagged for Dr. Moss |
 |---|---|---|---|
 | P0 | 2 | **2** | 0 |
-| P1 | 10 | **9** | 1 (`qb_sud_013`) |
+| P1 | 10 | **10** (9 pass 1 + 1 pass 2) | 0 |
 | P2 key-length | 19 | **19** | 0 |
-| P2 near-duplicate | 9 pairs | **7** resolved | 2 pairs (`qb_anx_001`/`qb_anx_003`; `qb_psy_002`/`qb_psy_008`) |
+| P2 near-duplicate | 9 pairs | **9** resolved (7 pass 1 + 2 pass 2) | 0 |
 | P2 individual | 22 | **22** | 0 |
-| **Total changes** | — | **54** | **4 items / 3 issues** |
+| **Total changes** | — | **57** (54 + 3 pass 2) | **0** |
 
 ---
 
@@ -182,13 +182,67 @@ Both items left unchanged pending Dr. Moss's call.
 
 ---
 
----
-
-## Build gate results (2026-07-05)
+## Build gate results — Pass 1 (2026-07-05)
 
 | Target | Hard failures | Soft warnings | Result |
 |---|---|---|---|
 | `ms3` | 0 | 18 (all pre-existing) | **✓ PASS** |
 | `res` | 0 | 44 + 4 info (all pre-existing) | **✓ PASS** |
 
-Soft warnings are pre-existing: orphan tools not in nav, missing `reviewed.json` entries for new tools, dose literal in `bfcrs.html`. None introduced by this fix pass.
+---
+
+## Pass 2 — Source-page additions + parked-issue resolution (2026-07-05)
+
+Three source pages updated to provide the grounding needed for the three flagged items. All additions are AI-drafted and marked pending Dr. Moss's attestation per page convention.
+
+### Source content added
+
+#### 1. `substance_use_inpatient_teaching.md` — New section: "Benzodiazepine choice in hepatic impairment"
+
+Inserted after the "Acute inpatient management" paragraph. Content:
+- LOT drugs (Lorazepam, Oxazepam, Temazepam) undergo glucuronidation — no oxidative CYP450 step, no active metabolites, relatively preserved in Child-Pugh B/C cirrhosis.
+- Chlordiazepoxide and diazepam rely on oxidative CYP450 metabolism → active metabolites accumulate → progressive oversedation, respiratory depression, hepatic encephalopathy.
+- Phenobarbital noted as alternative in refractory withdrawal, higher-acuity setting.
+- Citations: Schuckit, N Engl J Med 2014; Saitz, N Engl J Med 1998.
+- Pearl added: "LOT drug: glucuronidation preserved in cirrhosis; oxidative CYP450 (chlordiazepoxide, diazepam) not."
+
+#### 2. `psychotic_disorders_inpatient_teaching.md` — New section: "Neuroleptic malignant syndrome vs. serotonin syndrome"
+
+Inserted after the "Acute inpatient management" paragraph. Content:
+- NMS: gradual onset, dopamine-blocking agent, **lead-pipe** rigidity, hyporeflexia, dramatically elevated CK.
+- SS: rapid onset (hours), serotonergic agent (SSRI/SNRI/MAOI/tramadol/linezolid etc.), **clonus + hyperreflexia** (especially ankle clonus), myoclonus, tremor.
+- Bedside discriminator: lead-pipe + hyporeflexia → NMS; clonus + hyperreflexia → SS.
+- Management: both require stopping offending agent; NMS adds dantrolene/bromocriptine; SS adds cyproheptadine in moderate-severe cases.
+- Citations: Boyer and Shannon, N Engl J Med 2005; Strawn et al., Am J Psychiatry 2007.
+- NMS pearl expanded; second pearl added.
+
+#### 3. `anxiety_trauma_ocd_inpatient_teaching.md` — New section: "When akathisia is identified"
+
+Inserted after the "Acute inpatient management" paragraph. Content:
+- Management hierarchy: (1) reduce dose or switch to lower-D2 agent; (2) propranolol 20–40 mg BID (first-line pharmacological, strongest evidence); (3) benztropine if parkinsonism co-exists; (4) benzodiazepine adjunct when severe.
+- Propranolol contraindications noted (reactive airway disease, bradycardia, heart block).
+- Mirtazapine 15 mg noted as emerging evidence.
+- Cardinal error reinforced: escalating the antipsychotic.
+- Citation: Lima et al., Cochrane Database Syst Rev 2004.
+- Pearl added: "Akathisia management hierarchy: reduce/switch → propranolol → benztropine if parkinsonism co-exists → benzodiazepine adjunct."
+
+### Items finalized against new source content
+
+| ID | Resolution |
+|---|---|
+| `qb_sud_013` | **P1 resolved.** Evidence field re-grounded in new "Benzodiazepine choice in hepatic impairment" section (Schuckit 2014, Saitz 1998). |
+| `qb_psy_002` | **P2 near-duplicate resolved.** Re-angled to NMS vs. SS differential: patient on both haloperidol and sertraline; stem asks which finding supports SS — keyed answer is ankle clonus + hyperreflexia (not lead-pipe rigidity, markedly elevated CK, or subacute onset after antipsychotic). Grounded in new "NMS vs. serotonin syndrome" section. |
+| `qb_psy_008` | Unchanged — remains recognition + stop-the-AP item. Pair now pedagogically distinct. |
+| `qb_anx_003` | **P2 near-duplicate resolved.** Re-angled to akathisia treatment: akathisia already diagnosed; options test management hierarchy — keyed answer is propranolol 20–40 mg BID (not anticholinergic-first, immediate clozapine, or standing benzodiazepine). Grounded in new "When akathisia is identified" section. |
+| `qb_anx_001` | Unchanged — remains recognition item. Pair now distinct. |
+
+### Build gate results — Pass 2 (2026-07-05)
+
+| Target | Hard failures | Soft warnings | New source content in build | Result |
+|---|---|---|---|---|
+| `ms3` | 0 | 18 (all pre-existing) | `t_sud.md` ✓ · `t_psychosis.md` ✓ · `t_anxiety.md` ✓ | **✓ PASS** |
+| `res` | 0 | 44 + 4 info (all pre-existing) | `t_sud.md` ✓ · `t_psychosis.md` ✓ · `t_anxiety.md` ✓ | **✓ PASS** |
+
+### "Needs Dr. Moss's call" — cleared
+
+All three flagged issues from pass 1 are now resolved. No items remain in the "Needs Dr. Moss's call" list.
