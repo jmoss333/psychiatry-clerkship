@@ -4199,6 +4199,1490 @@
       "why": "Newer = better, Ignores rTMS, and Misread REMS monitoring all mischaracterize the options. rTMS is FDA-cleared for TRD and OCD, outpatient, anesthesia-free, with a small seizure risk — less potent than ECT but a reasonable option for patients who cannot or will not tolerate anesthesia. Esketamine requires in-office REMS monitoring.",
       "pearl": "rTMS: FDA-cleared for TRD and OCD, no anesthesia, small seizure risk, less potent than ECT — appropriate for patients who decline anesthesia.",
       "evidence": "ect_neuromodulation.md — rTMS: FDA-cleared for treatment-resistant depression (and OCD); outpatient, no anesthesia, no memory effects; main risk is a small seizure risk. Less potent than ECT but far better tolerated."
+    },
+    {
+      "id": "qb_mood_003",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 31-year-old woman presents with her first depressive episode — 3 weeks of depressed mood, anhedonia, and hopelessness. The team is ready to prescribe escitalopram. The student asks whether a bipolar screen should be performed first. Which response is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Screen for prior hypomanic or manic episodes before starting an antidepressant — a bipolar depression misread as unipolar can be pushed into mania or rapid cycling by an antidepressant without a mood stabilizer.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A first depressive episode in a young woman is almost always unipolar — bipolar screening is only warranted after a second episode.",
+          "trap": {
+            "name": "Most common = correct",
+            "note": "Bipolar disorder can present first as a depressive episode — missing an unrecognized bipolar diagnosis and starting an antidepressant alone carries a risk of destabilization."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Start escitalopram and observe — if bipolar disorder is present, treatment-emergent mania will identify it.",
+          "trap": {
+            "name": "Treat before diagnose",
+            "note": "Using antidepressant-induced mania as a diagnostic strategy is not the standard; the bipolar screen should come before the first prescription."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A formal bipolar screen with a structured instrument is required before prescribing — the clinical interview alone is insufficient.",
+          "trap": {
+            "name": "Protocol over clinical judgment",
+            "note": "Structured screens like the MDQ are useful tools, but the screening question can be asked clinically — the key act is asking about prior hypomanic or manic episodes, not requiring a specific instrument."
+          }
+        }
+      ],
+      "why": "Most common = correct and Treat before diagnose drive the two clinical errors. The page states: 'always screen for a past manic or hypomanic episode before calling a depression unipolar — a bipolar depression misread as unipolar can be pushed into mania or rapid cycling by an antidepressant.' This screen is mandatory, not optional.",
+      "pearl": "Screen every depressed patient for past mania before writing for an antidepressant — missing bipolar leads to destabilization.",
+      "evidence": "t_mood.md — Critically, always screen for a past manic or hypomanic episode before calling a depression 'unipolar' — a bipolar depression misread as unipolar can be pushed into mania or rapid cycling by an antidepressant."
+    },
+    {
+      "id": "qb_mood_004",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 38-year-old man presents for admission with a current depressive episode. He reports no prior manic episodes. His wife, who accompanied him, states that 3 years ago he 'went weeks without sleeping, gave away his car, and was fired for erratic behavior.' He does not recall this period as abnormal. Which diagnostic move has the highest yield in clarifying the bipolar question?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Patient self-report is the most reliable — the wife's account may be distorted by relationship conflict.",
+          "trap": {
+            "name": "Self-report over collateral",
+            "note": "Patients with past manic episodes frequently lack insight into the episode's significance or have incomplete recall — collateral is essential precisely because self-report is unreliable for mood episodes."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Obtain collateral history from the wife and prior clinicians — collateral is the single highest-yield diagnostic move for distinguishing bipolar from unipolar disorder.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Administer a structured screening tool (Mood Disorder Questionnaire) — it replaces the need for collateral history.",
+          "trap": {
+            "name": "Protocol over clinical judgment",
+            "note": "Structured screening tools rely on self-report; they do not replace collateral from someone who observed the patient's behavior during a likely manic episode."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Only documented hospitalizations for mania count as evidence — behavioral reports from family members do not meet the diagnostic threshold.",
+          "trap": {
+            "name": "Documentation over clinical evidence",
+            "note": "DSM criteria do not require hospitalization — collateral describing clear manic behavior is valid diagnostic evidence even without a prior formal diagnosis."
+          }
+        }
+      ],
+      "why": "Self-report over collateral and Protocol over clinical judgment both bypass the highest-yield step. The mood page explicitly calls collateral 'the single highest-yield diagnostic move for distinguishing bipolar from unipolar.' This patient's lack of insight into a probable manic episode is classic — the wife's account is the clinical key.",
+      "pearl": "Collateral history is the single highest-yield diagnostic move for bipolar vs unipolar — patients with past mania often lack insight into the episode.",
+      "evidence": "t_mood.md — Collateral history (the single highest-yield diagnostic move for distinguishing bipolar from unipolar)."
+    },
+    {
+      "id": "qb_mood_005",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": [
+        "safety",
+        "dx"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 29-year-old man is admitted with depressed mood, anhedonia, and feelings of worthlessness. On detailed MSE, he also has racing thoughts, psychomotor agitation, and is sleeping only 3 hours per night despite feeling exhausted. He endorses passive suicidal ideation. Which statement about his presentation is most clinically important?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The racing thoughts indicate that mania is the predominant syndrome and the depression is secondary — treat for mania first.",
+          "trap": {
+            "name": "One syndrome at a time",
+            "note": "Mixed features by definition include both depressive and activating symptoms simultaneously — framing this as 'mania predominating' misses the dangerous combination."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The activating symptoms suggest his antidepressant dose is too high and producing anxiety — reduce the dose.",
+          "trap": {
+            "name": "Side effect attribution",
+            "note": "There is no antidepressant on this admission — the activating symptoms are intrinsic mixed features, a high-risk presentation that must be recognized, not attributed to medication."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Mixed features — concurrent depressive and activating symptoms — carry elevated suicide risk and are easy to miss; this combination warrants heightened safety vigilance.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Mixed features can only occur in bipolar disorder — this patient's mixed presentation requires a bipolar I or II diagnosis before initiating treatment.",
+          "trap": {
+            "name": "Bipolar required for mixed",
+            "note": "DSM-5 allows the 'with mixed features' specifier for both bipolar and unipolar depression — the clinical urgency (elevated suicide risk) applies regardless of the final diagnosis."
+          }
+        }
+      ],
+      "why": "One syndrome at a time, Side effect attribution, and Bipolar required for mixed all delay recognition of the dangerous phenotype. Mixed features — concurrent depression and activation — are explicitly called out on the mood page as easy to miss and carrying elevated suicide risk. This patient's passive SI plus mixed features is the classic high-risk presentation.",
+      "pearl": "Mixed features (depression + racing thoughts/agitation/decreased sleep) carry elevated suicide risk and are easy to miss — heighten safety vigilance.",
+      "evidence": "t_mood.md — Mixed features (depressed mood with concurrent activation/agitation) are easy to miss and carry elevated suicide risk."
+    },
+    {
+      "id": "qb_mood_006",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 71-year-old woman with no prior psychiatric history presents with 2 weeks of elevated mood, decreased need for sleep, pressured speech, and grandiosity. Her family calls it her 'first manic episode.' She is on prednisone 40 mg daily for a recent flare of rheumatoid arthritis. Which step is most important before proceeding with a bipolar diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Document the manic episode and start a mood stabilizer — late-onset bipolar is increasingly recognized in older adults.",
+          "trap": {
+            "name": "Late-onset bipolar by default",
+            "note": "New psychiatric presentations in older or medically complex patients require a medical mimic workup; steroid-induced mania is a well-recognized cause that must be excluded."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Start an antipsychotic for the florid manic symptoms — mood stabilizers are too slow for acute management.",
+          "trap": {
+            "name": "Treat before diagnose",
+            "note": "Treating before ruling out a corticosteroid-induced cause misses the treatable etiology; the mood symptoms may resolve with steroid taper or dose reduction."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Order a head MRI — new psychiatric symptoms in older adults indicate intracranial pathology until proven otherwise.",
+          "trap": {
+            "name": "Imaging before differential",
+            "note": "Neuroimaging may ultimately be warranted, but the most proximate etiology here is the corticosteroid exposure — medical mimic workup precedes imaging decisions."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Rule out medical mimics before anchoring on a primary mood diagnosis — corticosteroids are a recognized cause of manic symptoms; evaluate the steroid exposure as a contributing or precipitating cause.",
+          "c": true
+        }
+      ],
+      "why": "Late-onset bipolar by default, Treat before diagnose, and Imaging before differential all skip the foundational step. The mood page lists corticosteroids in the medical mimic differential and explicitly states: 'Rule out medical mimics before anchoring on a primary mood disorder.' A 71-year-old on prednisone with a first-lifetime episode is steroid-induced mania until proven otherwise.",
+      "pearl": "New mood episodes in older or medically complex patients require a medical mimic workup — corticosteroids, thyroid disease, intoxication, CNS pathology.",
+      "evidence": "t_mood.md — Rule out medical mimics before anchoring on a primary mood disorder: thyroid dysfunction, corticosteroids and other medications, intoxication or withdrawal, and CNS processes."
+    },
+    {
+      "id": "qb_mood_007",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "mood",
+      "competency": [
+        "pharm",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 44-year-old man with bipolar I disorder and two prior suicide attempts is starting maintenance therapy. The team is choosing between lithium and lamotrigine. Which argument most strongly favors lithium?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Lithium has both the strongest anti-suicidal evidence and the strongest maintenance evidence in the mood stabilizer class — in a patient with prior attempts, both properties directly apply.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Lamotrigine has equivalent anti-suicidal evidence to lithium — the choice should be based on tolerability alone.",
+          "trap": {
+            "name": "Anti-suicidal = interchangeable",
+            "note": "The page specifically cites lithium's anti-suicidal effect as distinct from other mood stabilizers and worth emphasizing in risk calculations — it is not interchangeable with lamotrigine."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Lithium's anti-suicidal effect is limited to acute suicidality and does not apply to maintenance treatment.",
+          "trap": {
+            "name": "Narrow = second-line",
+            "note": "Lithium's anti-suicidal evidence encompasses both acute and long-term prevention; the page's framing applies specifically to maintenance decisions when risk history matters."
+          }
+        },
+        {
+          "key": "D",
+          "t": "The narrow therapeutic window makes lithium too risky for long-term maintenance — the monitoring burden outweighs its benefits.",
+          "trap": {
+            "name": "Monitoring = disqualifying",
+            "note": "The narrow window requires monitoring, not avoidance; the page treats monitoring as an integral part of lithium use, not as a reason to choose a different agent in a high-risk patient."
+          }
+        }
+      ],
+      "why": "Anti-suicidal = interchangeable, Narrow = second-line, and Monitoring = disqualifying all undervalue lithium in the highest-risk patient. The page specifically names lithium's anti-suicidal effect (Cipriani 2013) and BALANCE maintenance evidence as reasons to 'use it, and monitor it' — the monitoring is the price of the unique therapeutic profile, not a drawback.",
+      "pearl": "Lithium: strongest anti-suicidal evidence (Cipriani 2013) + strongest maintenance evidence (BALANCE trial) — use it in high-risk patients, and monitor it.",
+      "evidence": "t_mood.md — Lithium deserves specific emphasis — it carries a distinct anti-suicidal effect (Cipriani 2013) and is a first-line maintenance mood stabilizer with the strongest long-term evidence (BALANCE trial).",
+      "tier2": {
+        "q": "What was the primary finding of the BALANCE trial regarding lithium and valproate for bipolar maintenance?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Valproate was superior to lithium for preventing depressive relapses in bipolar I disorder."
+          },
+          {
+            "key": "B",
+            "t": "Lithium and valproate had equivalent relapse prevention — the monitoring burden explains why guidelines favor lithium despite equivalent efficacy."
+          },
+          {
+            "key": "C",
+            "t": "Lithium was superior to valproate for preventing relapses in bipolar I disorder, supporting lithium as the preferred long-term maintenance mood stabilizer.",
+            "c": true
+          },
+          {
+            "key": "D",
+            "t": "BALANCE found that combination lithium + valproate was the only regimen that reduced relapse to below 50% at 2 years."
+          }
+        ],
+        "why": "The BALANCE trial (Geddes 2010) randomized patients with bipolar I disorder to lithium, valproate, or combination. Lithium was superior to valproate for relapse prevention, with the combination not clearly superior to lithium alone. This trial provided the most direct head-to-head evidence supporting lithium as the preferred maintenance agent — which explains the page's specific statement that lithium carries 'the strongest long-term evidence (BALANCE trial)' among maintenance mood stabilizers."
+      }
+    },
+    {
+      "id": "qb_mood_008",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": [
+        "pharm",
+        "management"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 67-year-old woman with treatment-resistant MDD is hospitalized. She has failed two adequate antidepressant trials, has active suicidal ideation, refuses all oral intake, and expresses the nihilistic delusion that her intestines have rotted. The team debates a third antidepressant versus ECT. Which framing is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "A third antidepressant combined with an antipsychotic should be tried first — pharmacotherapy is the standard of care before proceeding to procedural interventions.",
+          "trap": {
+            "name": "Pharmacotherapy first at any severity",
+            "note": "ECT is specifically first-line for psychotic, life-threatening, and treatment-resistant depression — deferring it in this clinical picture is not the standard."
+          }
+        },
+        {
+          "key": "B",
+          "t": "ECT is not a last resort — it is first-line for severe, psychotic, catatonic, or life-threatening mood states and in pregnancy; this patient's presentation meets multiple ECT indications simultaneously.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "rTMS is preferred because it avoids anesthesia and has equivalent efficacy to ECT for psychotic depression.",
+          "trap": {
+            "name": "Newer = better",
+            "note": "rTMS is less potent than ECT; it is not established as equivalent for psychotic or severe treatment-resistant depression — ECT is the standard for this clinical picture."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Palliative consultation is appropriate — treatment resistance and refusal of oral intake indicate a terminal trajectory.",
+          "trap": {
+            "name": "Hopeless by default",
+            "note": "Treatment-resistant depression with refusal of oral intake is an ECT indication, not a terminal diagnosis — ECT can produce rapid reversal of this clinical picture."
+          }
+        }
+      ],
+      "why": "Pharmacotherapy first at any severity, Newer = better, and Hopeless by default all delay a definitive, evidence-based treatment. The mood page states explicitly: 'ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy.' Active suicidality, refusal of food/fluids, psychotic features, and treatment resistance are all named ECT indications.",
+      "pearl": "ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening depression; do not defer it when these criteria are met.",
+      "evidence": "t_mood.md — ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy."
+    },
+    {
+      "id": "qb_mood_009",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 45-year-old man with MDD was started on sertraline 50 mg outpatient 4 weeks ago. His PHQ-9 improved from 22 to 18. His outpatient clinician says, 'No response — time to add lithium augmentation.' A student asks what should be verified before changing the plan. Which element of measurement-based, sequential treatment (in the spirit of STAR*D) is most relevant here?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Whether the patient had adequate sleep — insomnia alone can prevent antidepressant response.",
+          "trap": {
+            "name": "Sleep over dose/duration",
+            "note": "Sleep matters, but the first verification step in sequential treatment is whether the agent was dosed adequately and given sufficient time — a partial response at 4 weeks may represent ongoing response, not treatment failure."
+          }
+        },
+        {
+          "key": "B",
+          "t": "The patient's family history — poor family response to SSRIs predicts individual non-response.",
+          "trap": {
+            "name": "Pharmacogenomics before dose",
+            "note": "Family history may inform eventual decisions, but the standard verification before augmentation is whether the current agent was given an adequate dose for an adequate duration."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Whether the dose was adequate and the duration was sufficient before declaring non-response — a PHQ-9 drop from 22 to 18 at 4 weeks may represent ongoing response, not failure; a dose increase may be preferable to augmentation.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Whether the patient prefers augmentation — patient preference drives the treatment decision in measurement-based care.",
+          "trap": {
+            "name": "Preference over protocol",
+            "note": "Patient preference matters but does not override verifying adequate dose and duration — augmenting an underdosed or short-trial agent adds medication burden without establishing whether the current agent failed."
+          }
+        }
+      ],
+      "why": "Sleep over dose/duration, Pharmacogenomics before dose, and Preference over protocol all bypass the foundational step. STAR*D's model: pick an agent, dose it adequately, and track response systematically before switching or augmenting. A partial response at 4 weeks on a 50 mg sertraline dose has not yet established non-response.",
+      "pearl": "Sequential treatment (STAR*D): verify adequate dose and adequate duration before switching or augmenting — a partial response is not non-response.",
+      "evidence": "t_mood.md — Practice measurement-based, sequential treatment in the spirit of STAR*D: pick an agent, dose it adequately, track response with a scale, and switch or augment by protocol rather than by impression."
+    },
+    {
+      "id": "qb_mood_010",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A patient with bipolar I disorder, admitted during a depressive episode, tells the student: 'I don't see why the staff keeps bothering me about sleep — it doesn't affect my moods.' Which response best reflects the clinical evidence?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Sleep disruption affects only energy and concentration, not mood stability — the patient's assessment is essentially correct.",
+          "trap": {
+            "name": "Sleep = energy only",
+            "note": "Sleep loss both worsens depression and precipitates mania in bipolar disorder — protecting sleep and circadian rhythm is active treatment, not just a comfort measure."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Sleep problems are a symptom of bipolar disorder, not a cause — treating the mood disorder will resolve the sleep disruption.",
+          "trap": {
+            "name": "Symptom not driver",
+            "note": "Sleep loss is bidirectional — it is both a symptom and a precipitant of mood episodes; protecting sleep actively accelerates recovery and prevents cycling."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Sleep medications are the priority — behavioral sleep protection is ineffective without pharmacotherapy.",
+          "trap": {
+            "name": "Pharmacotherapy over milieu",
+            "note": "Behavioral and environmental sleep protection is recommended as active treatment — medication may play a role, but the principle is that sleep protection is itself a therapeutic intervention."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Sleep loss both worsens depression and precipitates mania in bipolar disorder — protecting sleep and circadian rhythm is active treatment, not optional self-care.",
+          "c": true
+        }
+      ],
+      "why": "Sleep = energy only, Symptom not driver, and Pharmacotherapy over milieu all diminish the therapeutic importance of sleep. The mood page is explicit: 'protect sleep and circadian rhythm actively, since sleep loss both worsens depression and precipitates mania.' Sleep protection is a treatment modality, not a lifestyle recommendation.",
+      "pearl": "Sleep is treatment in bipolar disorder — sleep loss worsens depression AND precipitates mania; protecting circadian rhythm is an active clinical intervention.",
+      "evidence": "t_mood.md — Protect sleep and circadian rhythm actively, since sleep loss both worsens depression and precipitates mania (Harvey; IPSRT/Frank)."
+    },
+    {
+      "id": "qb_mood_011",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": [
+        "management",
+        "pharm"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 28-year-old woman with bipolar I disorder is admitted for her first acute manic episode. She is not pregnant. She has no prior mood stabilizer exposure. Which is the most appropriate pharmacological framework for acute mania management?",
+      "options": [
+        {
+          "key": "A",
+          "t": "First-line pharmacotherapy for acute mania includes lithium, valproate, or a second-generation antipsychotic; non-pharmacologic milieu adjustments (reduce stimulation, restore sleep) are an essential parallel component.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Start an antidepressant first — addressing the depression component of mixed mania speeds recovery.",
+          "trap": {
+            "name": "Antidepressant for mania",
+            "note": "Antidepressants are not indicated for acute mania — they can worsen cycling and are contraindicated as monotherapy for mixed or manic states."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Benzodiazepine monotherapy is appropriate for a first manic episode — avoid mood stabilizers until the diagnosis is confirmed over multiple episodes.",
+          "trap": {
+            "name": "Defer mood stabilizer",
+            "note": "Mood stabilizers are appropriate to start at first-episode mania; waiting for multiple episodes is not the standard and leaves the patient untreated."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Clozapine should be considered first because of its superior efficacy in refractory mania.",
+          "trap": {
+            "name": "Skip the ladder",
+            "note": "Clozapine is for treatment-resistant schizophrenia and refractory psychosis; it is not first-line for a first manic episode without prior treatment failure."
+          }
+        }
+      ],
+      "why": "Antidepressant for mania, Defer mood stabilizer, and Skip the ladder all misstate the first-line framework. Acute mania is managed with lithium, valproate, or an SGA, combined with milieu interventions — reduce stimulation and restore sleep, since sleep loss itself perpetuates mania.",
+      "pearl": "Acute mania: lithium, valproate, or SGA + reduce stimulation + restore sleep; antidepressants are contraindicated.",
+      "evidence": "t_mood.md — For acute mania, reduce stimulation, restore sleep, and start or optimize a mood stabilizer or antipsychotic."
+    },
+    {
+      "id": "qb_mood_012",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "mood",
+      "competency": [
+        "pharm",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 58-year-old man with bipolar I disorder is stable on lithium 900 mg daily, level 0.8 mEq/L. He recently started ibuprofen for knee pain and reports new-onset hand tremor and mild mental fogginess for the past week. Most appropriate next step?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Reassure the patient — tremor is an expected mild lithium side effect that does not indicate toxicity.",
+          "trap": {
+            "name": "Treat the number, not the patient",
+            "note": "A new tremor with mental fogginess after starting an NSAID in a lithium-treated patient represents a probable drug interaction raising lithium level — check the level, do not dismiss."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Check a lithium level immediately — NSAIDs reduce renal prostaglandin activity and reduce lithium clearance, potentially pushing the level toward toxicity; new neurological symptoms require urgent assessment.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Stop lithium immediately and restart once the pain resolves — the ibuprofen interaction makes continued lithium unsafe.",
+          "trap": {
+            "name": "Overreact to interaction",
+            "note": "Abrupt lithium discontinuation risks rebound mania — the correct step is to check the level and substitute an NSAID-free analgesic; stopping lithium is not the first move."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Ibuprofen has no interaction with lithium — evaluate for a new neurological diagnosis.",
+          "trap": {
+            "name": "No drug interaction",
+            "note": "NSAIDs reduce renal prostaglandin activity, decrease renal lithium excretion, and raise serum lithium levels — this is a well-documented, clinically significant interaction."
+          }
+        }
+      ],
+      "why": "Treat the number not the patient, Overreact to interaction, and No drug interaction represent a spectrum of errors around a common drug interaction. The correct action is checking the level urgently — not dismissing the symptoms, not stopping lithium abruptly. The clinical situation maps directly to the page's warning about NSAIDs pushing lithium toward toxicity.",
+      "pearl": "New neurological symptoms (tremor, fogginess) in a lithium-treated patient after starting an NSAID → check level urgently; NSAIDs reduce lithium clearance.",
+      "evidence": "t_mood.md — NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push lithium levels toward toxicity.",
+      "tier2": {
+        "q": "Which drug classes are known to reduce lithium clearance and push levels toward toxicity?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Opioids, SSRIs, and calcium channel blockers — they alter renal tubular function via serotonergic and adrenergic mechanisms."
+          },
+          {
+            "key": "B",
+            "t": "NSAIDs, ACE inhibitors/ARBs, and thiazide diuretics — all reduce renal lithium clearance through distinct mechanisms (prostaglandin inhibition, RAAS suppression, sodium depletion with compensatory lithium reabsorption); dehydration has the same effect.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "Antipsychotics and anticonvulsants — they compete with lithium for renal tubular transporters."
+          },
+          {
+            "key": "D",
+            "t": "Beta-blockers — they reduce cardiac output and thereby reduce renal perfusion and lithium clearance."
+          }
+        ],
+        "why": "The three drug classes and dehydration each reduce lithium clearance through different mechanisms but the clinical result is the same — higher serum lithium levels. NSAIDs inhibit prostaglandin synthesis, reducing renal blood flow and lithium excretion. ACE inhibitors and ARBs reduce angiotensin-driven sodium retention, causing compensatory lithium reabsorption. Thiazides cause sodium depletion, triggering the same compensation. Dehydration for any reason concentrates lithium by reducing urinary output. Any of these alone can push a therapeutic level into toxicity."
+      }
+    },
+    {
+      "id": "qb_mood_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 70-year-old woman is admitted with severe depression. She is convinced her children have died in a car accident — despite video calls with her healthy children — and that her body is 'empty inside.' She is oriented, alert, and attentive. No confusion on exam. Which diagnosis is most consistent with this presentation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Schizophrenia — fixed, persistent false beliefs constitute a primary psychotic disorder.",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "Schizophrenia requires a primary psychotic disorder not confined to mood episodes; in a severely depressed patient with mood-congruent nihilistic delusions, a primary mood disorder with psychotic features is the correct diagnosis."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Delirium with nihilistic ideation — new psychosis in an elderly patient is delirium until proven otherwise.",
+          "trap": {
+            "name": "All psychosis in elderly = delirium",
+            "note": "Delirium features fluctuating consciousness, inattention, and disorganized thinking — this patient is alert, oriented, and attentive; the psychosis here is mood-congruent and consistent with psychotic depression."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Severe major depression with psychotic features — the nihilistic and guilt-laden delusions are mood-congruent and consistent with the depression; orientation and attention are intact.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Schizoaffective disorder — concurrent mood episodes and psychotic features define this diagnosis.",
+          "trap": {
+            "name": "Concurrent = schizoaffective",
+            "note": "Schizoaffective disorder requires psychotic symptoms that persist independent of mood episodes; when psychosis is confined to the mood episode and is mood-congruent, psychotic depression is the diagnosis."
+          }
+        }
+      ],
+      "why": "Psychosis = schizophrenia, All psychosis in elderly = delirium, and Concurrent = schizoaffective all misdiagnose the presentation. Psychotic depression produces mood-congruent delusions (nihilistic, guilt-laden) within the context of a severe depressive episode — the alert, attentive patient without fluctuating consciousness rules out delirium.",
+      "pearl": "Mood-congruent psychotic features (nihilistic/guilt-laden delusions) in severe depression = psychotic depression, not schizophrenia — psychosis confined to the mood episode is the discriminator.",
+      "evidence": "t_mood.md — Severe unipolar depression can include mood-congruent psychosis (nihilistic or guilt-laden delusions)."
+    },
+    {
+      "id": "qb_mood_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": [
+        "pharm",
+        "safety"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 36-year-old man with 'recurrent unipolar depression' has been on sertraline 100 mg for 8 months. His current episode resolved well, but over the past 2 weeks he has developed markedly decreased need for sleep, pressured speech, and impulsive spending. He is not using substances. Which is the most accurate interpretation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The patient is experiencing sertraline discontinuation syndrome — the mania-like symptoms are medication side effects that will resolve spontaneously.",
+          "trap": {
+            "name": "Side effect attribution",
+            "note": "Discontinuation syndrome occurs after stopping or rapidly tapering a drug, not during continued use at a stable dose — this presentation is treatment-emergent mood switching."
+          }
+        },
+        {
+          "key": "B",
+          "t": "He has developed a superimposed stimulant use disorder — the pattern is classic methamphetamine intoxication.",
+          "trap": {
+            "name": "Substance first",
+            "note": "The stem specifies no substance use — attributing a new mood syndrome to undisclosed stimulant use without evidence bypasses the clinical task of recognizing antidepressant destabilization."
+          }
+        },
+        {
+          "key": "C",
+          "t": "This represents sertraline's therapeutic effect — the energy and motivation improvement of depression recovery can resemble hypomania.",
+          "trap": {
+            "name": "Recovery looks like hypomania",
+            "note": "Depression recovery includes restored energy and motivation, but decreased need for sleep, pressured speech, and impulsive spending are not components of normal recovery — they represent mood switching."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder and the antidepressant should not be continued as monotherapy.",
+          "c": true
+        }
+      ],
+      "why": "Side effect attribution, Substance first, and Recovery looks like hypomania all avoid the correct diagnosis. The mood page explicitly states: 'a bipolar depression misread as unipolar can be pushed into mania or rapid cycling by an antidepressant.' This is the clinical manifestation of that process — treatment-emergent mania revealing unrecognized bipolar disorder.",
+      "pearl": "Manic symptoms emerging on antidepressant monotherapy = probable treatment-emergent switch revealing unrecognized bipolar — not side effects, not recovery.",
+      "evidence": "t_mood.md — A bipolar depression misread as unipolar can be pushed into mania or rapid cycling by an antidepressant."
+    },
+    {
+      "id": "qb_mood_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "mood",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 49-year-old man admitted for severe bipolar depression requests discharge on day 6. His mood has partially improved (PHQ-9 from 24 to 17), but he is still sleeping only 4 hours per night, his safety plan is not yet completed, and he does not have an outpatient appointment scheduled. The attending asks the student to frame the clinical decision. Which is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Discharge readiness is functional and safety-based, not calendar-based — incomplete sleep restoration, an incomplete safety plan, and no follow-up appointment are clinical criteria not yet met; continued inpatient care is indicated.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "The partial PHQ-9 improvement indicates adequate response — at day 6 the acute risk has passed and discharge is appropriate.",
+          "trap": {
+            "name": "Score = discharge permission",
+            "note": "A PHQ-9 drop does not constitute discharge readiness in the absence of functional criteria; sleep, safety plan completion, and follow-up are the clinical discharge gates."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The patient has the right to leave against medical advice — sign him out and provide a safety net number.",
+          "trap": {
+            "name": "Autonomy over safety",
+            "note": "AMA discharge is the patient's right when capacity is intact, but the clinical question asks the student to frame discharge readiness — not to override capacity; the correct frame is that the clinical criteria are not yet met."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Six days is within the standard inpatient admission length — continue treatment by the calendar.",
+          "trap": {
+            "name": "Calendar over function",
+            "note": "Calendar-based discharge decisions are explicitly what the page advises against; the standard is functional and safety criteria, not length of stay."
+          }
+        }
+      ],
+      "why": "Score = discharge permission, Autonomy over safety, and Calendar over function all substitute a proxy for clinical readiness. The mood page is explicit: 'Discharge readiness is functional and safety-based, not calendar-based: improving mood and resolving acute risk, adequate sleep and intake, an established and tolerated medication, and a concrete follow-up.' None of these criteria are met.",
+      "pearl": "Discharge readiness in mood disorders is functional and safety-based: sleep restored, safety plan complete, follow-up scheduled — not calendar-driven.",
+      "evidence": "t_mood.md — Discharge readiness is functional and safety-based, not calendar-based: improving mood and resolving acute risk, adequate sleep and intake, an established and tolerated medication, and a concrete follow-up."
+    },
+    {
+      "id": "qb_mood_016",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "mood",
+      "competency": [
+        "pharm",
+        "management"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_mood.md",
+        "ect_neuromodulation.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "A 24-year-old woman in her 14th week of pregnancy presents with severe MDD: active suicidal ideation with a plan, refusal to eat, psychomotor retardation, and a prior excellent response to ECT 4 years ago. The team debates continuing the current antidepressant versus offering ECT. Which statement best reflects the clinical standard?",
+      "options": [
+        {
+          "key": "A",
+          "t": "ECT is contraindicated in pregnancy due to the risk of uterine contractions during the induced seizure.",
+          "trap": {
+            "name": "Absolute contraindication invented",
+            "note": "ECT has no absolute contraindications; pregnancy is not a contraindication — it is explicitly listed as an indication when medications are undesirable."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Continue the antidepressant through pregnancy — the benefits of pharmacotherapy always outweigh teratogenic risks in severe depression.",
+          "trap": {
+            "name": "Pharmacotherapy always first",
+            "note": "The clinical picture (active suicidality with a plan, refusal to eat, prior ECT response) is an ECT indication even without pregnancy; pregnancy specifically makes medications less desirable and ECT more appropriate."
+          }
+        },
+        {
+          "key": "C",
+          "t": "ECT is a preferred treatment option in this presentation — pregnancy is an explicit ECT indication when medications are undesirable, and this patient also has active suicidality, refusal of oral intake, and a prior good ECT response.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Ketamine infusion should be chosen over ECT — it avoids anesthesia and is equally effective for suicidal ideation in pregnancy.",
+          "trap": {
+            "name": "Newer = better",
+            "note": "Ketamine/esketamine has rapid anti-suicidal effects but requires REMS monitoring and is not established as equivalent to ECT for this clinical severity; ECT has the longer safety record in pregnancy."
+          }
+        }
+      ],
+      "why": "Absolute contraindication invented, Pharmacotherapy always first, and Newer = better all distort the evidence. ECT has no absolute contraindications; pregnancy is an ECT indication. This patient has four concurrent indications: active suicidality, refusal of oral intake, pregnancy where medications are less desirable, and prior good ECT response.",
+      "pearl": "ECT in pregnancy: no absolute contraindication, explicitly indicated when medications are undesirable — especially when there is active suicidality, refusal to eat, or prior ECT response.",
+      "evidence": "t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and as a preferred option in pregnancy.",
+      "tier2": {
+        "q": "Why is ECT specifically listed as a preferred option in pregnancy, compared to pharmacotherapy?",
+        "options": [
+          {
+            "key": "A",
+            "t": "ECT carries no teratogenic risk because the electrical current does not cross the placenta."
+          },
+          {
+            "key": "B",
+            "t": "ECT avoids systemic fetal drug exposure — the induced seizure under anesthesia has a well-established safety record in pregnancy with obstetric monitoring, whereas fetal pharmacological exposure carries teratogenic and developmental risks that vary by agent.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "ECT is FDA-approved for use in pregnancy, whereas all antidepressants are FDA category D or X."
+          },
+          {
+            "key": "D",
+            "t": "ECT is faster than pharmacotherapy — rapid treatment is the only advantage, not the avoidance of drug exposure."
+          }
+        ],
+        "why": "The clinical advantage of ECT in pregnancy is that the therapeutic mechanism (induced seizure) does not require systemic pharmacological exposure that crosses the placenta. Many psychotropics have established or potential teratogenic risks, particularly during organogenesis, and all agents have some potential for fetal or neonatal effects. ECT with appropriate obstetric monitoring avoids this entirely. The long safety record of ECT in pregnancy is one reason it appears on the indications list alongside the more familiar severity-based indications."
+      }
+    },
+    {
+      "id": "qb_psy_003",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 22-year-old man presents with 3 weeks of auditory hallucinations, paranoid delusions, and disorganized behavior. The team is ready to diagnose schizophrenia and start an antipsychotic. The student asks whether anything should be done first. Which step is most critical?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Obtain a collateral history from family — schizophrenia cannot be diagnosed without family confirmation.",
+          "trap": {
+            "name": "Collateral = diagnosis",
+            "note": "Collateral is valuable but does not constitute the critical workup step; the priority is excluding secondary medical causes before labeling a primary psychotic disorder."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Start the antipsychotic immediately — early treatment of schizophrenia reduces the duration of untreated psychosis and improves long-term outcomes.",
+          "trap": {
+            "name": "Treat before diagnose",
+            "note": "Reducing duration of untreated psychosis is important, but the first step is excluding secondary/medical psychosis — a delirium or autoimmune encephalitis requires a different treatment."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Start a structured first-episode protocol (RAISE) — coordinated specialty care reduces DUP more effectively than routine treatment.",
+          "trap": {
+            "name": "Protocol before differential",
+            "note": "RAISE and coordinated care are appropriate for confirmed first-episode schizophrenia spectrum disorders; the differential diagnosis step precedes the treatment framework."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Exclude secondary causes of psychosis — delirium, substance-induced psychosis, mood disorder with psychotic features, and autoimmune encephalitis — before labeling a primary psychotic disorder.",
+          "c": true
+        }
+      ],
+      "why": "Collateral = diagnosis, Treat before diagnose, and Protocol before differential all skip the foundational step. The page states: 'Psychosis is a syndrome — exclude delirium, substances, and autoimmune/seizure causes before calling it primary.' In a young adult with new-onset psychosis, the organic yield is highest at the first episode.",
+      "pearl": "Psychosis is a syndrome — exclude delirium, substance-induced, mood disorder with psychotic features, and autoimmune encephalitis before diagnosing primary psychotic disorder.",
+      "evidence": "t_psychosis.md — Always exclude secondary/medical psychosis before settling on a primary disorder. High-yield pearls: Psychosis is a syndrome — exclude delirium, substances, and autoimmune/seizure causes before calling it primary."
+    },
+    {
+      "id": "qb_psy_004",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "next-step"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 19-year-old man presents with his first psychotic episode — 4 weeks of auditory hallucinations, paranoid delusions, and social withdrawal with no prior psychiatric history. Laboratory workup is sent. The team is discussing imaging. When is neuroimaging warranted in first-episode psychosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "First-episode psychosis specifically warrants a more thorough medical workup because the organic yield is highest with no established psychiatric history; MRI is recommended when the exam is focal, onset is atypical or abrupt, age is unusual, there are seizures, or autoimmune encephalitis is on the differential.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Neuroimaging is not indicated in first-episode psychosis — it is expensive and does not alter the psychiatric management plan.",
+          "trap": {
+            "name": "Imaging never changes treatment",
+            "note": "Neuroimaging can detect treatable structural or autoimmune causes of psychosis — the organic yield in first-episode illness is higher than in established schizophrenia, making the workup question more important, not less."
+          }
+        },
+        {
+          "key": "C",
+          "t": "CT is preferred over MRI in first-episode psychosis because it is faster and avoids the need for patient cooperation during sedation.",
+          "trap": {
+            "name": "CT over MRI",
+            "note": "MRI is preferred when neuroimaging is indicated in first-episode psychosis — it has greater sensitivity for structural and inflammatory lesions."
+          }
+        },
+        {
+          "key": "D",
+          "t": "MRI should only be ordered if the psychosis does not respond to antipsychotic treatment after 4 weeks.",
+          "trap": {
+            "name": "Treat before image",
+            "note": "Waiting for treatment failure before investigating structural causes delays potentially urgent interventions — for first-episode psychosis, the workup includes neuroimaging based on clinical features, not treatment response."
+          }
+        }
+      ],
+      "why": "Imaging never changes treatment, CT over MRI, and Treat before image all defer a workup that is most valuable precisely at first-episode presentation. The page states first-episode psychosis 'warrants a medical workup because a treatable organic cause is more likely when there is no established psychiatric history' and specifically recommends MRI in the named scenarios.",
+      "pearl": "First-episode psychosis earns a full medical workup including MRI when there are focal signs, atypical onset, seizures, or concern for autoimmune encephalitis — organic yield is highest here.",
+      "evidence": "t_psychosis.md — First-episode psychosis specifically warrants a medical workup because a treatable organic cause is more likely when there is no established psychiatric history; obtain neuroimaging (MRI preferred) when the exam is focal, onset is atypical or abrupt, age is unusual, or there are seizures."
+    },
+    {
+      "id": "qb_psy_005",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "pharm"
+      ],
+      "difficulty": 1,
+      "hy": true,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A student argues that lurasidone should be prescribed for a first-episode patient because 'it is one of the newest second-generation agents and therefore most effective.' Which framing from CATIE is most relevant here?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The student is correct — second-generation agents show consistently superior efficacy in first-episode trials compared to older agents.",
+          "trap": {
+            "name": "Newer = better",
+            "note": "CATIE found first- and second-generation antipsychotics had broadly comparable effectiveness; the 'newer is better' framing is specifically what CATIE challenged."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Choose the antipsychotic by the patient's specific side-effect risk profile — metabolic, motor, QTc, sedation, and prolactin risks — not by recency or generation.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "CATIE found haloperidol was superior to all second-generation agents for first-episode psychosis — first-generation agents should be chosen first.",
+          "trap": {
+            "name": "Older = better",
+            "note": "CATIE showed broadly comparable effectiveness — not that FGAs were superior; the lesson is that side-effect profile, not generation, drives the choice."
+          }
+        },
+        {
+          "key": "D",
+          "t": "CATIE only applies to chronic schizophrenia — for first-episode psychosis, the newest generation agents should be preferred.",
+          "trap": {
+            "name": "CATIE exception for first episode",
+            "note": "The side-effect-driven selection principle from CATIE is routinely applied to first-episode prescribing — metabolic and EPS risk are particularly relevant in young adults starting long-term treatment."
+          }
+        }
+      ],
+      "why": "Newer = better, Older = better, and CATIE exception for first episode all invert or misapply the CATIE lesson. The conclusion of CATIE: effectiveness is broadly comparable across FGAs and SGAs; the clinically actionable difference is in the side-effect profile matched to the patient's individual vulnerability.",
+      "pearl": "CATIE: antipsychotic choice should be driven by the patient's metabolic, EPS, QTc, and sedation risk — not by generation or recency.",
+      "evidence": "t_psychosis.md — Choose the antipsychotic by side-effect profile, not by 'newer is better': CATIE showed first- and second-generation agents had broadly comparable effectiveness, with differences driven by tolerability."
+    },
+    {
+      "id": "qb_psy_006",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "psychosocial"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 24-year-old man with schizophrenia is brought to the inpatient unit by his parents. He insists there is nothing wrong with him and refuses to engage with the treatment plan. His parents ask: 'Why won't he just accept that he's sick?' Which response best reflects the clinical approach?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Confronting the patient with the evidence that he is ill — the psychoeducation-first approach — produces the fastest improvement in insight.",
+          "trap": {
+            "name": "The righting reflex",
+            "note": "Arguing about whether someone is ill damages the alliance and does not produce insight in anosognosia — it produces defensiveness and treatment refusal."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Anosognosia is a neurobiological deficit in self-awareness, not willful denial — use the LEAP approach (Listen, Empathize, Agree, Partner) to build engagement without requiring the patient to accept the diagnosis first.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Lack of insight is a reliable indicator of poor prognosis — formal involuntary treatment is indicated for any patient who refuses to acknowledge their diagnosis.",
+          "trap": {
+            "name": "No insight = no hope",
+            "note": "Anosognosia is common in schizophrenia and does not automatically indicate poor prognosis or require forced treatment; LEAP provides an evidence-based engagement alternative."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Accept the patient's denial and focus treatment on behavioral symptoms only — attempting to improve insight in schizophrenia is not evidence-based.",
+          "trap": {
+            "name": "Insight is not treatable",
+            "note": "LEAP and other engagement strategies are evidence-based approaches to working with anosognosia; accepting denial without any engagement effort is not the clinical standard."
+          }
+        }
+      ],
+      "why": "The righting reflex and No insight = no hope displace LEAP-based engagement. The page explicitly states: 'many patients have anosognosia, so use Amador's LEAP approach (Listen, Empathize, Agree, Partner) rather than arguing about whether they are ill.' Anosognosia is a neurobiological symptom, not willful denial — debating it produces resistance, not insight.",
+      "pearl": "Anosognosia is not denial — use LEAP (Listen, Empathize, Agree, Partner) to build engagement without requiring the patient to accept the diagnosis first.",
+      "evidence": "t_psychosis.md — Engagement is its own clinical task: many patients have anosognosia, so use Amador's LEAP approach (Listen, Empathize, Agree, Partner) rather than arguing about whether they are ill."
+    },
+    {
+      "id": "qb_psy_007",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "psychosis",
+      "competency": [
+        "pharm",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 37-year-old man with schizophrenia has had an inadequate response to olanzapine (adequate dose and duration) and then risperidone (adequate dose and duration). The team is now choosing a next step. Which is the evidence-based recommendation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Try a third antipsychotic from a different chemical class — a third-line non-clozapine agent should be exhausted before clozapine.",
+          "trap": {
+            "name": "Skip the ladder",
+            "note": "Two adequate antipsychotic trial failures define treatment-resistant schizophrenia; adding a third non-clozapine trial delays an evidence-based treatment without a supporting rationale."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Add an antidepressant — the residual negative symptoms are likely a secondary depression co-occurring with schizophrenia.",
+          "trap": {
+            "name": "Negative symptoms = depression",
+            "note": "Augmenting with an antidepressant before addressing treatment resistance with clozapine is not the evidence-based sequence; negative symptoms in treatment-resistant illness require clozapine consideration first."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Increase the risperidone dose further — super-therapeutic doses overcome treatment resistance.",
+          "trap": {
+            "name": "More = better",
+            "note": "Supratherapeutic antipsychotic dosing increases side effects without established benefit in treatment resistance; clozapine is the evidence-based next step."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Initiate clozapine with baseline ANC and recommended hematologic monitoring per the prescribing information — two failed adequate antipsychotic trials define treatment-resistant schizophrenia.",
+          "c": true
+        }
+      ],
+      "why": "Skip the ladder, Negative symptoms = depression, and More = better all defer the evidence-based intervention. The page states: 'two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information.' This threshold is defined and evidence-based.",
+      "pearl": "Two adequate antipsychotic trial failures = treatment-resistant schizophrenia = clozapine with ANC monitoring; a third non-clozapine trial has no supporting evidence.",
+      "evidence": "t_psychosis.md — Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC (hematologic) monitoring per the prescribing information.",
+      "tier2": {
+        "q": "Beyond agranulocytosis, which additional serious adverse effects of clozapine require active monitoring?",
+        "options": [
+          {
+            "key": "A",
+            "t": "Retinal toxicity and tardive dyskinesia — these are the long-term side effects that require monitoring beyond the first year."
+          },
+          {
+            "key": "B",
+            "t": "Nephrotoxicity and pulmonary fibrosis — clozapine accumulates in renal and pulmonary tissue with prolonged use."
+          },
+          {
+            "key": "C",
+            "t": "Myocarditis (especially in the first weeks), severe constipation and ileus (potentially life-threatening), seizures, and orthostatic hypotension — these require active clinical monitoring beyond the ANC.",
+            "c": true
+          },
+          {
+            "key": "D",
+            "t": "Hepatic failure and peripheral neuropathy — the CYP1A2 metabolism of clozapine produces hepatotoxic intermediates with chronic use."
+          }
+        ],
+        "why": "The ANC is the best-known monitoring requirement because it drove the REMS program, but the page explicitly names four other serious risks: myocarditis (early, potentially fatal — watch for chest pain, dyspnea, and troponin elevation in the first weeks), severe constipation progressing to ileus (can be fatal and is underrecognized), seizures (dose-dependent, lowered threshold), and orthostasis. 'Beyond the ANC: clozapine can cause myocarditis (especially in the first weeks), severe constipation/ileus, seizures, and orthostasis — monitor for these, not just the count.'"
+      }
+    },
+    {
+      "id": "qb_psy_008",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "safety",
+        "next-step"
+      ],
+      "difficulty": 2,
+      "hy": true,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 32-year-old woman with schizophrenia started haloperidol 5 days ago. She is now febrile to 39.9°C, diaphoretic, and rigid. Nursing staff describe her muscle tone as 'like a pipe.' Her CK is 5,400. What is the most important immediate action?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Stop the antipsychotic immediately, transfer to a medical unit for supportive care, and monitor vital signs and CK serially — this is neuroleptic malignant syndrome.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Increase the antipsychotic dose — the psychotic agitation underlying the NMS-like symptoms requires more aggressive dopamine blockade.",
+          "trap": {
+            "name": "Agitation = antipsychotic",
+            "note": "Increasing dopamine blockade in NMS will worsen the syndrome — the antipsychotic must be stopped immediately."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Start empiric antibiotics — fever and rigidity after medication initiation represent a superimposed infection in an immunocompromised patient.",
+          "trap": {
+            "name": "Fever = infection",
+            "note": "Sepsis is in the differential, but fever + lead-pipe rigidity + elevated CK + antipsychotic initiation is NMS until proven otherwise; stopping the antipsychotic cannot wait for culture results."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Administer a benzodiazepine for the agitation and recheck vitals in 4 hours before escalating.",
+          "trap": {
+            "name": "Treat and wait",
+            "note": "Benzodiazepines may play a role in NMS management but do not replace stopping the causative agent immediately; a wait-and-see approach is dangerous in an evolving NMS emergency."
+          }
+        }
+      ],
+      "why": "Agitation = antipsychotic, Fever = infection, and Treat and wait all delay the single most important intervention: stopping the antipsychotic. NMS is the can't-miss antipsychotic emergency — fever + lead-pipe rigidity + elevated CK after dopamine blocker initiation requires immediate drug cessation and medical-level care.",
+      "pearl": "NMS: fever + lead-pipe rigidity + elevated CK after antipsychotic → stop the antipsychotic immediately and transfer to medical care.",
+      "evidence": "t_psychosis.md — Neuroleptic malignant syndrome (fever, rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively."
+    },
+    {
+      "id": "qb_psy_009",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 21-year-old woman develops subacute psychosis, behavioral changes, and seizures over 4 weeks. She also has involuntary mouth movements and facial grimacing, and her family reports fluctuating states of agitation and relative unresponsiveness. Which diagnosis should be actively considered in this presentation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Cannabis-induced psychosis — young adults with psychosis and behavioral changes most commonly have substance-induced illness.",
+          "trap": {
+            "name": "Substance first",
+            "note": "Cannabis can cause psychosis, but the specific combination of subacute psychosis + seizures + dyskinesias + autonomic fluctuation is the profile for anti-NMDA receptor encephalitis, which requires specific workup and treatment."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Anti-NMDA receptor encephalitis — the combination of subacute psychosis with seizures, orofacial dyskinesias, and fluctuating consciousness characterizes this autoimmune syndrome and requires urgent CSF and antibody testing.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Schizophrenia — the presence of psychosis, behavioral change, and movement abnormalities in a young woman is classic for schizophrenia spectrum illness.",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "Schizophrenia does not produce seizures or orofacial dyskinesias as primary features — the subacute course with these specific features points to autoimmune encephalitis, which is treatable."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Bipolar disorder with psychotic features — the fluctuating states and behavioral change represent rapid cycling.",
+          "trap": {
+            "name": "Bipolar by default",
+            "note": "Orofacial dyskinesias and seizures are not features of bipolar disorder — the specific combination here is the anti-NMDA receptor encephalitis profile requiring urgent autoimmune workup."
+          }
+        }
+      ],
+      "why": "Substance first, Psychosis = schizophrenia, and Bipolar by default all produce premature diagnostic closure on a treatable condition. The page specifically names anti-NMDA receptor encephalitis as a can't-miss mimic: 'subacute psychosis with seizures, dyskinesias, autonomic instability' — the triad here maps directly to that presentation.",
+      "pearl": "Subacute psychosis + seizures + orofacial dyskinesias + fluctuating consciousness = anti-NMDA receptor encephalitis until proven — urgent CSF and antibody testing.",
+      "evidence": "t_psychosis.md — Do not miss autoimmune/limbic encephalitis (e.g., anti-NMDA receptor encephalitis — subacute psychosis with seizures, dyskinesias, autonomic instability)."
+    },
+    {
+      "id": "qb_psy_010",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "management",
+        "psychosocial"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 20-year-old man is diagnosed with first-episode schizophrenia. His family asks, 'What kind of treatment should we expect — just medication?' Which response best reflects the evidence-based approach for first-episode psychosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Yes — antipsychotic medication alone is the evidence-based standard for first-episode psychosis; psychosocial interventions are added only after medication stabilization.",
+          "trap": {
+            "name": "Medication alone for first episode",
+            "note": "RAISE demonstrated that medication alone is not the evidence-based approach — coordinated specialty care with active family involvement and early psychosocial intervention from the start improves outcomes."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Clozapine should be initiated immediately for first-episode schizophrenia — early aggressive treatment reduces DUP most effectively.",
+          "trap": {
+            "name": "Skip the ladder",
+            "note": "Clozapine is reserved for treatment-resistant illness after two failed adequate trials; it is not appropriate as a first-line agent for a first episode."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Coordinated specialty care, including antipsychotic medication, active family involvement, early psychosocial intervention, and integrated care — as supported by the RAISE project — is the evidence-based approach for first-episode psychosis.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "The focus for first-episode psychosis should be on medication titration alone; family involvement risks creating dependency and should be avoided in young adults.",
+          "trap": {
+            "name": "Family involvement = dependency",
+            "note": "Family involvement is an active component of the evidence-based RAISE model for first-episode psychosis — it is not a risk factor for poor outcomes."
+          }
+        }
+      ],
+      "why": "Medication alone for first episode, Skip the ladder, and Family involvement = dependency all fail to apply the RAISE evidence. The page explicitly states: 'For first-episode patients, RAISE supports coordinated specialty care with active family involvement and early psychosocial intervention, not medication alone.'",
+      "pearl": "First-episode psychosis: coordinated specialty care (RAISE model) — medication + family involvement + psychosocial intervention from the start, not medication alone.",
+      "evidence": "t_psychosis.md — For first-episode patients, RAISE supports coordinated specialty care with active family involvement and early psychosocial intervention, not medication alone."
+    },
+    {
+      "id": "qb_psy_011",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 78-year-old man with no prior psychiatric history is noted to be 'psychotic' — he is making nonsensical statements, appears to be responding to internal stimuli, and is alternating between agitation and somnolence. He was admitted 2 days ago for a hip fracture repair. Which diagnosis should be considered first?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Late-onset schizophrenia — psychosis with no prior history in an older adult indicates a late-onset primary psychotic disorder.",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "New psychiatric presentations in medically ill older patients are delirium until proven otherwise — alternating agitation and somnolence after surgery is the classic delirium picture."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Bipolar disorder with late-onset psychotic mania — the agitation and apparent hallucinations indicate a mood disorder with psychotic features.",
+          "trap": {
+            "name": "Bipolar by default",
+            "note": "Fluctuating consciousness and somnolence alternating with agitation are delirium features, not bipolar features — the post-surgical context and the fluctuating level of consciousness are the discriminating cues."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Brief psychotic disorder — the onset after a medical stressor meets the criteria for brief psychotic disorder.",
+          "trap": {
+            "name": "Stress-reactive psychosis",
+            "note": "Brief psychotic disorder requires intact consciousness between episodes; the fluctuating somnolence and post-surgical context point to delirium, not a primary psychotic disorder."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Delirium — acute onset after surgery with fluctuating consciousness, inattention, disorganized thinking, and alternating agitation and somnolence is delirium until proven otherwise.",
+          "c": true
+        }
+      ],
+      "why": "Psychosis = schizophrenia, Bipolar by default, and Stress-reactive psychosis all assign a primary psychiatric diagnosis to what is clinically delirium. The page states: 'Think delirium first in any acute, fluctuating presentation with inattention or clouded consciousness.' The alternating agitation and somnolence, post-surgical timing, and older age converge on the delirium diagnosis.",
+      "pearl": "Delirium first in any acute, fluctuating presentation with clouded consciousness — new 'psychosis' after surgery in an older patient is delirium until proven otherwise.",
+      "evidence": "t_psychosis.md — Think delirium first in any acute, fluctuating presentation with inattention or clouded consciousness."
+    },
+    {
+      "id": "qb_psy_012",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 41-year-old man with treatment-resistant schizophrenia on clozapine for 6 months presents with 3 days of fever, severe constipation, and abdominal distension. His ANC is within the monitored range. Which clozapine adverse effect must be immediately considered?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Severe constipation progressing to ileus — this is a potentially fatal clozapine complication that can be overlooked because attention is focused on the ANC; obstipation and abdominal distension require urgent evaluation.",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Agranulocytosis — fever in a clozapine-treated patient always indicates a dropping ANC regardless of the current count.",
+          "trap": {
+            "name": "All fever = agranulocytosis",
+            "note": "A normal ANC largely rules out agranulocytosis as the cause of this fever; the page explicitly lists severe constipation and ileus as serious non-ANC risks of clozapine — abdominal distension points to this diagnosis."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Myocarditis — clozapine-associated myocarditis presents with fever and should be evaluated by cardiac workup first.",
+          "trap": {
+            "name": "Fever = myocarditis",
+            "note": "Myocarditis is a serious early clozapine risk (first weeks), but in a 6-month established patient with constipation and abdominal distension, ileus is the more proximate diagnosis; myocarditis would present with cardiac symptoms, not abdominal ones."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Clozapine toxicity — fever and abdominal symptoms indicate supratherapeutic levels requiring a dose reduction.",
+          "trap": {
+            "name": "Toxicity explains everything",
+            "note": "Clozapine toxicity produces sedation, hypersalivation, and neurological effects; the specific presentation of fever with severe constipation and abdominal distension is the ileus/obstipation complication, not generic toxicity."
+          }
+        }
+      ],
+      "why": "All fever = agranulocytosis, Fever = myocarditis, and Toxicity explains everything all focus on the better-known risks while missing the one the presentation actually points to. The page explicitly states: 'severe constipation/ileus' as a serious clozapine risk that must be monitored 'beyond the ANC.' Ileus from clozapine is underrecognized and can be fatal.",
+      "pearl": "Clozapine beyond the ANC: severe constipation → ileus is a potentially fatal complication; fever + abdominal distension in a clozapine-treated patient requires urgent GI evaluation.",
+      "evidence": "t_psychosis.md — Beyond the ANC: clozapine can cause myocarditis (especially in the first weeks), severe constipation/ileus, seizures, and orthostasis — monitor for these, not just the count."
+    },
+    {
+      "id": "qb_psy_013",
+      "status": "draft",
+      "type": "two-tier",
+      "category": "psychosis",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 28-year-old woman presents with 2 weeks of auditory hallucinations and paranoid delusions coinciding with a severe depressive episode. Between prior mood episodes she has no psychotic symptoms. Which diagnosis is most consistent with this pattern?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Schizophrenia — persistent auditory hallucinations lasting 2 weeks meet duration criteria for schizophrenia.",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "Schizophrenia requires psychotic symptoms independent of mood episodes; when psychosis is confined to a mood episode, a mood disorder with psychotic features is the diagnosis."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Mood disorder with psychotic features — the psychosis is confined to the mood episode and absent between episodes; this pattern distinguishes a primary mood disorder from schizoaffective disorder or schizophrenia.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "Schizoaffective disorder — concurrent psychosis and a mood episode always indicate schizoaffective disorder.",
+          "trap": {
+            "name": "Concurrent = schizoaffective",
+            "note": "Schizoaffective disorder requires psychotic symptoms that persist for at least 2 weeks independent of mood episodes — psychosis confined to mood episodes is a mood disorder with psychotic features."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Brief psychotic disorder — the acute onset within a depressive episode qualifies for a brief psychotic disorder diagnosis.",
+          "trap": {
+            "name": "Brief = distinct diagnosis",
+            "note": "Brief psychotic disorder is used for sudden-onset psychosis without a mood disorder cause — psychosis within a clearly defined mood episode is better classified as mood disorder with psychotic features."
+          }
+        }
+      ],
+      "why": "Psychosis = schizophrenia, Concurrent = schizoaffective, and Brief = distinct diagnosis all misidentify the key discriminating feature: does the psychosis persist independent of mood episodes? When psychosis is confined to mood episodes, the diagnosis is mood disorder with psychotic features, not schizophrenia or schizoaffective.",
+      "pearl": "Psychosis confined to mood episodes = mood disorder with psychotic features; schizoaffective disorder requires ≥2 weeks of psychosis independent of any mood episode.",
+      "evidence": "t_psychosis.md — Distinguish a mood disorder with psychotic features (psychosis confined to mood episodes) from a primary psychotic disorder.",
+      "tier2": {
+        "q": "What is the minimum distinguishing criterion between schizoaffective disorder and a mood disorder with psychotic features?",
+        "options": [
+          {
+            "key": "A",
+            "t": "The number of mood episodes — schizoaffective disorder requires at least three mood episodes with psychosis."
+          },
+          {
+            "key": "B",
+            "t": "Psychotic symptoms that persist for at least 2 weeks in the absence of a major mood episode — this independent psychosis distinguishes schizoaffective disorder from a mood disorder with psychotic features.",
+            "c": true
+          },
+          {
+            "key": "C",
+            "t": "The severity of hallucinations — complex auditory hallucinations with formed voices indicate schizoaffective disorder; simple noises indicate a mood disorder."
+          },
+          {
+            "key": "D",
+            "t": "The presence of negative symptoms — negative symptoms are only found in schizoaffective disorder and schizophrenia, not in mood disorders with psychotic features."
+          }
+        ],
+        "why": "The DSM-5 criterion that distinguishes schizoaffective disorder from mood disorder with psychotic features is straightforward but clinically important: schizoaffective disorder requires a period of at least 2 weeks where delusions or hallucinations are present without any major mood episode (depressive, manic, or mixed). If psychosis is always and only present during mood episodes, the diagnosis is a mood disorder — not schizoaffective. This distinction matters because the treatment focus differs significantly."
+      }
+    },
+    {
+      "id": "qb_psy_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 33-year-old man with schizophrenia has had a modest response to risperidone 4 mg/day for 6 weeks. His attending considers this a non-response and wants to proceed to clozapine. The student questions whether the treatment resistance threshold has been met. What must be true before clozapine is indicated for treatment-resistant schizophrenia?",
+      "options": [
+        {
+          "key": "A",
+          "t": "One failed antipsychotic trial at any dose is sufficient to establish treatment resistance and justify clozapine.",
+          "trap": {
+            "name": "One trial sufficient",
+            "note": "The evidence-based threshold is two adequate antipsychotic trials — adequate meaning therapeutic dose for adequate duration — before clozapine is indicated; one trial does not meet the standard."
+          }
+        },
+        {
+          "key": "B",
+          "t": "Failure of any antipsychotic regardless of dose or duration qualifies — the current trial started 6 weeks ago and is adequate.",
+          "trap": {
+            "name": "Duration sufficient alone",
+            "note": "An 'adequate' trial requires both adequate dose AND adequate duration; risperidone 4 mg/day for 6 weeks may not meet the dose threshold for a fully adequate trial in all patients."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Two adequate antipsychotic trials — at therapeutic doses, for adequate durations — must be documented before treatment-resistant schizophrenia is established and clozapine is considered.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Trial of ECT followed by failure of one antipsychotic qualifies — somatic therapy plus pharmacotherapy failure establishes the threshold.",
+          "trap": {
+            "name": "ECT in the ladder",
+            "note": "The clozapine threshold is defined by two failed antipsychotic trials — ECT is not part of the treatment-resistance definition for schizophrenia in standard guidelines."
+          }
+        }
+      ],
+      "why": "One trial sufficient, Duration sufficient alone, and ECT in the ladder all misstate the threshold. The page defines treatment resistance as 'inadequate response to two adequate antipsychotic trials' — both trials must be at therapeutic doses for adequate durations. One partially-dosed trial does not qualify.",
+      "pearl": "Treatment-resistant schizophrenia = inadequate response to two adequate antipsychotic trials (therapeutic dose, adequate duration) — both criteria must be met before clozapine.",
+      "evidence": "t_psychosis.md — For treatment-resistant schizophrenia (inadequate response to two adequate antipsychotic trials), clozapine is the evidence-based agent."
     }
   ]
 }
