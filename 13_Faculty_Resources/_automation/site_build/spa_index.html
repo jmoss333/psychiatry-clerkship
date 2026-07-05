@@ -566,6 +566,17 @@
     try{ var qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}'); Object.keys(qb).forEach(function(id){ var r=qb[id]; if(r&&!r.correct&&r.pages&&r.pages.length){ r.pages.forEach(function(f){ add(f,'missed in practice bank'); }); } }); }catch(_){ }
     return out;
   }
+  function safeLS(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(_){ return null; } }
+  function studyId(){ try{ var k=localStorage.getItem('cw_study_id'); if(!k){ k='S-'+Math.random().toString(36).slice(2,8).toUpperCase()+'-'+Date.now().toString(36).slice(-4).toUpperCase(); localStorage.setItem('cw_study_id',k); } return k; }catch(_){ return 'S-ANON'; } }
+  window.exportStudy=function(){
+    var payload={ study_id:studyId(), exported_at:new Date().toISOString(), schema:'clerkship-study-v1',
+      progress:safeLS('cw_progress_v1'), srs:safeLS('cw_srs_v1'), quiz:safeLS('cw_quiz_v1') };
+    var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='clerkship_study_'+payload.study_id+'_'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    var s=document.getElementById('studyMsg'); if(s) s.textContent='Exported ✓  anonymous — study ID '+payload.study_id+'. Thank you!';
+  };
   window.renderHome=function(){
     var scan=navScan();
     var rev=0, tot=0; for(var _ck in scan.cov){ rev+=scan.cov[_ck].done; tot+=scan.cov[_ck].tot; }
@@ -588,6 +599,7 @@
     if(weak.length){ h+='<div class="hm-sec"><h2>Focus next · your weak spots</h2>'; weak.slice(0,5).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+esc(x.t)+'</span><span class="sec">'+esc(x.reason)+'</span></button>'; }); h+='</div>'; }
     if(scan.hy.length){ h+='<div class="hm-sec"><h2>High-yield · not yet reviewed</h2>'; scan.hy.slice(0,8).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+x.t+'</span><span class="sec">'+x.sec+'</span></button>'; }); h+='</div>'; }
     var covk=Object.keys(scan.cov); if(covk.length){ h+='<div class="hm-sec"><h2>Coverage by section</h2><div class="hm-bars">'; covk.forEach(function(k){ var c=scan.cov[k]; var p=c.tot?Math.round(c.done/c.tot*100):0; h+='<div class="brow"><span class="lab">'+k+'</span><span class="track"><span class="fill" style="width:'+p+'%"></span></span><span class="pc">'+c.done+'/'+c.tot+'</span></div>'; }); h+='</div></div>'; }
+    h+='<div class="hm-sec"><h2>Help evaluate this site <span style="font-weight:400;color:var(--text-light)">· optional</span></h2><div class="sub" style="margin:0 0 8px">Export your anonymous learning activity for the clerkship study — no name and no patient information, only what you reviewed and answered on this site.</div><button class="hm-li" data-act="studyexport"><span class="t">Export my anonymous progress</span><span class="sec">Export ↓</span></button><div id="studyMsg" class="hm-empty" style="margin-top:6px"></div></div>';
     h+='<div class="hm-sec"><h2>New here?</h2><button class="hm-li" data-act="start"><span class="t">Open the Start-here orientation</span><span class="sec">Start →</span></button></div>';
     h+='</div>'; return h;
   };
@@ -622,7 +634,7 @@
     hydrate(root);
     if(f==='__home__'){
       root.addEventListener('click',function(e){
-        var li=e.target.closest?e.target.closest('.hm-li'):null; if(li){ var act=li.getAttribute('data-act'); if(act==='review'){ navClick('review.html'); return; } if(act==='start'){ navClick('__start__'); return; } var ff=li.getAttribute('data-f'); if(ff)navClick(ff); return; }
+        var li=e.target.closest?e.target.closest('.hm-li'):null; if(li){ var act=li.getAttribute('data-act'); if(act==='review'){ navClick('review.html'); return; } if(act==='start'){ navClick('__start__'); return; } if(act==='studyexport'){ if(window.exportStudy)window.exportStudy(); return; } var ff=li.getAttribute('data-f'); if(ff)navClick(ff); return; }
         var b=e.target.closest?e.target.closest('[data-act]'):null; if(b){ var a=b.getAttribute('data-act'); if(a==='review')navClick('review.html'); }
       });
     } else {
