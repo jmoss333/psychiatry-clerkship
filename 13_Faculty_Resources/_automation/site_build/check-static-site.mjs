@@ -257,12 +257,13 @@ if (!existsSync(srcMapPath)) {
 // A pointer stub means the deploy fetched the LFS *pointer* (~130 bytes of
 // "version https://git-lfs…") instead of the real media bytes — the orientation-video
 // bug. Any shipped file this small that opens with the LFS header is a broken asset.
-// HARD on Netlify (where LFS is fetched — a stub there is a genuine broken deploy).
-// SOFT under GitHub Actions: ci.yml checks out with `lfs: false` on purpose (bandwidth
-// cost — see netlify-ignore.sh) as a pre-merge gate, not the real deploy; every tracked
-// audio/video file is expected to be a stub there, so hard-failing would permanently
-// red every PR.
-const lfsIsExpectedStub = process.env.GITHUB_ACTIONS === 'true';
+// HARD on the real Netlify production deploy (LFS is fetched there — a stub is a
+// genuine broken deploy, e.g. the MS3 site's stale-cache incident found 2026-07-06).
+// SOFT under GitHub Actions (ci.yml checks out with `lfs: false` on purpose — bandwidth
+// cost, see netlify-ignore.sh) and SOFT on Netlify deploy-preview builds (this repo's
+// PR previews don't fetch real LFS bytes either — confirmed 2026-07-06 investigating
+// PR #122). Hard-failing either would permanently red every future PR.
+const lfsIsExpectedStub = process.env.GITHUB_ACTIONS === 'true' || process.env.CONTEXT === 'deploy-preview';
 for (const { fp, size } of allFiles) {
   if (size > 512) continue;
   if (readFileSync(fp, 'latin1').startsWith('version https://git-lfs')) {
