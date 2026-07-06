@@ -12,7 +12,9 @@
 #
 # Gate semantics (check-static-site.mjs): HARD findings (broken nav/search targets,
 # dose literals in rp-*/-trainer tools, invalid JSON, missing <title>/viewport,
-# non-namespaced storage keys) exit non-zero and FAIL the deploy. SOFT findings only
+# non-namespaced storage keys, orphaned content-convention source pages not wired into
+# the build's source map, Git-LFS pointer stubs shipped in place of real media bytes)
+# exit non-zero and FAIL the deploy. SOFT findings only
 # warn — do not set STRICT=1 here or every metadata gap blocks production.
 set -euo pipefail
 
