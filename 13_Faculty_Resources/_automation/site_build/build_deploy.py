@@ -29,6 +29,11 @@ tools=[
  ("13_Faculty_Resources/_automation/site_build/question-bank-practice.html","question-bank-practice.html","Practice Questions — Question Bank"),
  ("13_Faculty_Resources/qbank-attest.html","qbank-attest.html","Question Bank Attestation — Faculty"),
 ]
+# Hidden from the sidebar list + search per Dr. Moss's request (2026-07-06) — superseded by the
+# question bank practice tool. Files still ship (still in `tools` above) and stay fully reachable
+# by direct link / the home "Start review" card / per-page tool docks (all look items up by
+# filename, not by sidebar visibility) — see the `hidden` flag on the nav item below.
+HIDDEN_TOOLS={"shelf-mode.html","review.html","active-recall.html"}
 
 # ---- pre-flight: verify every REQUIRED source asset exists BEFORE we build ----
 # (added 2026-07-03) A renamed/missing required source used to throw FileNotFoundError
@@ -183,8 +188,8 @@ for src,dst,_ in md:
     else: missing.append(src)
 
 nav=[
- {"section":"Start here","items":[{"t":"Orientation Video (start here)","f":"orientation-video.html","k":"tool"},{"t":"Welcome to the Rotation","f":"welcome.md","k":"md"},{"t":"Core Reading List","f":"core_readings.md","k":"md"},{"t":"Orientation Packet","f":"orientation.md","k":"md"}]},
- {"section":"Interactive tools","items":[{"t":n,"f":d,"k":"tool"} for s,d,n in tools]},
+ {"section":"Start here","items":[{"t":"Welcome to the Rotation","f":"welcome.md","k":"md"},{"t":"Core Reading List","f":"core_readings.md","k":"md"},{"t":"Orientation Packet","f":"orientation.md","k":"md"}]},
+ {"section":"Interactive tools","items":[dict({"t":n,"f":d,"k":"tool"},**({"hidden":True} if d in HIDDEN_TOOLS else {})) for s,d,n in tools]},
  {"section":"Six-Week Curriculum","items":[{"t":t,"f":f,"k":"md"} for f,(_,t) in [("week%d.md"%i,(0,["Week 1 — Foundations","Week 2 — Mood/Psychosis/Pharm","Week 3 — Psychotherapy/Personality","Week 4 — Family/Systems/EE","Week 5 — Acute/Emergency","Week 6 — Integration/Exam"][i-1])) for i in range(1,7)]]},
  {"section":"Core Topics","items":[{"t":"Differential Dx Scaffolds","f":"ddx.md","k":"md"},{"t":"Mood","f":"t_mood.md","k":"md"},{"t":"Psychosis","f":"t_psychosis.md","k":"md"},{"t":"Anxiety/Trauma/OCD","f":"t_anxiety.md","k":"md"},{"t":"Personality","f":"t_personality.md","k":"md"},{"t":"Substance Use","f":"t_sud.md","k":"md"},{"t":"Geriatric","f":"t_geri.md","k":"md"},{"t":"Perinatal","f":"t_perinatal.md","k":"md"},{"t":"Neurodevelopmental Disorders","f":"t_neurodev.md","k":"md"},{"t":"Eating Disorders","f":"t_eating.md","k":"md"},{"t":"Neurocognitive (Dementia)","f":"t_neurocog.md","k":"md"},{"t":"Somatic Symptom & Related","f":"t_somatic.md","k":"md"},{"t":"Sleep-Wake Disorders","f":"t_sleep.md","k":"md"},{"t":"Dissociative Disorders","f":"t_dissociative.md","k":"md"},{"t":"Sexual, Paraphilic & Gender","f":"t_sexual.md","k":"md"},{"t":"Impulse-Control & Conduct","f":"t_impulse.md","k":"md"},{"t":"Adjustment Disorders","f":"t_adjustment.md","k":"md"},{"t":"Nutrition & Metabolic Health","f":"nutrition_metabolic.md","k":"md"},{"t":"Osteopathic (OMM) Resources","f":"omm_resources.md","k":"md"}]},
  {"section":"Acute & Safety","items":[{"t":"Catatonia","f":"catatonia.md","k":"md"},{"t":"Delirium","f":"delirium.md","k":"md"},{"t":"Agitation & Restraint","f":"agitation.md","k":"md"}]},
@@ -278,7 +283,6 @@ def build_search_index():
      "decision-aids.html":"algorithms decision aids visual trees flowchart rule out first move escalation ladder agitation restraint nms serotonin syndrome hyperthermia alcohol withdrawal timeline delirium tremens ciwa score bands catatonia psychosis differential dark mode",
      "bfcrs.html":"bush francis catatonia rating scale bfcrs bfcsi catatonia screening immobility stupor mutism posturing catalepsy waxy flexibility negativism mitgehen gegenhalten echopraxia lorazepam challenge severity score",
      "learning-path.html":"learning path home dashboard six week progress streak daily review study plan start here",
-     "orientation-video.html":"orientation video start here inpatient unit welcome introduction onboarding tour first day",
      "question-bank-practice.html":"practice questions question bank comat shelf exam vignette single best answer sba two-tier confidence calibration trap feedback spaced repetition category filter mood psychosis anxiety substance neurocognitive pharmacology safety personality relational ethics",
     }
     postings={}  # token -> {docid: weighted tf}
@@ -288,6 +292,7 @@ def build_search_index():
             d=postings.setdefault(t,{}); d[docid]=d.get(docid,0)+wt
     for sec in nav:
         for it in sec["items"]:
+            if it.get("hidden"): continue
             f=it["f"]; k=it["k"]; title=it["t"]; section=sec["section"]
             heads=""; body=""
             if k=="md":
