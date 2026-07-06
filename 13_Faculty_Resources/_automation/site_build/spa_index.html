@@ -46,6 +46,7 @@
   .navgroup{display:none;margin:1px 0 4px;padding-left:4px}
   .navsec-wrap.open>.navgroup{display:block}
   .navitem{display:block;width:100%;text-align:left;border:none;background:transparent;color:var(--text);padding:6px 9px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.9rem;line-height:1.3}
+  .navitem-hidden{display:none}
   .navitem:hover{background:var(--primary-light)}
   .navitem.on{background:var(--accent);color:#fff}
   .navitem .tool-tag{font-size:.6rem;background:var(--accent-dark);color:#fff;border-radius:999px;padding:1px 6px;margin-left:4px;vertical-align:middle}
@@ -388,7 +389,7 @@
       var _gid='navgrp-'+sec.section.replace(/[^a-z0-9]+/gi,'-').toLowerCase();
       grp.id=_gid; h.setAttribute('aria-controls',_gid);
       sec.items.forEach(function(it){
-        var b=document.createElement('button'); b.className='navitem';
+        var b=document.createElement('button'); b.className='navitem'+(it.hidden?' navitem-hidden':'');
         b.innerHTML=it.t+(it.k==='tool'?' <span class="tool-tag">tool</span>':'');
         b.setAttribute('data-f',it.f); b._item=it; b.onclick=function(){show(it,b)}; grp.appendChild(b);
       });

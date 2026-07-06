@@ -99,6 +99,11 @@ TOOLS=[("mse.html","Mental Status Exam"),("interview-circle.html","The Interview
  ("question-bank-practice.html","Practice Questions — Question Bank"),
  ("review.html","Daily Review (Spaced Repetition)"),
  ("feedback.html","Improve this library — send feedback")]
+# Hidden from the sidebar list + search per Dr. Moss's request (2026-07-06) — superseded by the
+# question bank practice tool. Files still ship (inherited via the MS3 copytree above) and stay
+# fully reachable by direct link / the home "Start review" card / per-page tool docks (all look
+# items up by filename, not by sidebar visibility) — see the `hidden` flag on the nav item below.
+HIDDEN_TOOLS={"shelf-mode.html","review.html","active-recall.html"}
 nav=[
  {"section":"Start here","items":[
    {"t":"Welcome — Resident Rotation","f":"welcome.md","k":"md"},
@@ -109,7 +114,7 @@ nav=[
    {"t":"Inpatient Systems & Med-Legal","f":"systems_medlegal.md","k":"md"},
    {"t":"Supervision, EPAs & Teaching","f":"supervision_teaching.md","k":"md"},
    {"t":"The Psychiatry Canon (200)","f":"canon_200.md","k":"md"}]},
- {"section":"Interactive tools","items":[{"t":n,"f":f,"k":"tool"} for f,n in TOOLS]},
+ {"section":"Interactive tools","items":[dict({"t":n,"f":f,"k":"tool"},**({"hidden":True} if f in HIDDEN_TOOLS else {})) for f,n in TOOLS]},
  {"section":"Core Topics","items":[{"t":"Differential Dx Scaffolds","f":"ddx.md","k":"md"},{"t":"Mood","f":"t_mood.md","k":"md"},{"t":"Psychosis","f":"t_psychosis.md","k":"md"},{"t":"Anxiety/Trauma/OCD","f":"t_anxiety.md","k":"md"},{"t":"Personality","f":"t_personality.md","k":"md"},{"t":"Substance Use","f":"t_sud.md","k":"md"},{"t":"Geriatric","f":"t_geri.md","k":"md"},{"t":"Perinatal","f":"t_perinatal.md","k":"md"},{"t":"Neurodevelopmental Disorders","f":"t_neurodev.md","k":"md"},{"t":"Eating Disorders","f":"t_eating.md","k":"md"},{"t":"Nutrition & Metabolic Health","f":"nutrition_metabolic.md","k":"md"}]},
  {"section":"Acute & Safety","items":[{"t":"Catatonia","f":"catatonia.md","k":"md"},{"t":"Delirium","f":"delirium.md","k":"md"},{"t":"Agitation & Restraint","f":"agitation.md","k":"md"},{"t":"C-L: Emergencies, Tox & Capacity (Numbers)","f":"cl_reference.md","k":"md"},{"t":"Agitation Ladder — PRN Trainer","f":"rp-agitation.html","k":"tool"}]},
  {"section":"Psychopharmacology","items":[{"t":"Psychopharmacology Primer","f":"psychopharm_primer.md","k":"md"},{"t":"Advanced Psychopharmacology","f":"adv_psychopharm.md","k":"md"},{"t":"Protocol Library","f":"protocol_library.md","k":"md"}]},
@@ -146,6 +151,7 @@ def addtok(docid,text,wt):
         d=postings.setdefault(x,{}); d[docid]=d.get(docid,0)+wt
 for sec in nav:
     for it in sec["items"]:
+        if it.get("hidden"): continue
         f=it["f"]; k=it["k"]; title=it["t"]; section=sec["section"]; heads=""; body=""
         if k=="md":
             p=OUT+"/content/"+f
