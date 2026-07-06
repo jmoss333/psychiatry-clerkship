@@ -1,10 +1,10 @@
 {
-  "_note": "Exam-style question bank rendered by the SPA, separate from topic_meta.json. AI-drafted ORIGINAL items aligned with the library's topic pages — never reproductions of NBME/NBOME/USMLE or commercial-bank questions; pending faculty attestation (status stays 'draft' until Dr. Moss attests). Educational; fictional composites only; no PHI. Quality bar: QUESTION_BANK_STANDARD.md · categories/counts: QUESTION_BANK_BLUEPRINT.md · shape: question_bank.schema.json.",
+  "_note": "Exam-style question bank rendered by the SPA, separate from topic_meta.json. AI-drafted ORIGINAL items aligned with the library's topic pages — never reproductions of NBME/NBOME/USMLE or commercial-bank questions. All 144 items attested by Dr. Moss 2026-07-05 via qbank-attest.html. Educational; fictional composites only; no PHI. Quality bar: QUESTION_BANK_STANDARD.md · categories/counts: QUESTION_BANK_BLUEPRINT.md · shape: question_bank.schema.json.",
   "version": 1,
   "items": [
     {
       "id": "qb_sud_001",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "substance",
       "competency": [
@@ -81,7 +81,7 @@
     },
     {
       "id": "qb_rel_001",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "relational",
@@ -136,7 +136,7 @@
     },
     {
       "id": "qb_cog_001",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -189,7 +189,7 @@
     },
     {
       "id": "qb_mood_001",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -243,7 +243,7 @@
     },
     {
       "id": "qb_mood_002",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "mood",
       "competency": [
@@ -320,7 +320,7 @@
     },
     {
       "id": "qb_psy_001",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -373,7 +373,7 @@
     },
     {
       "id": "qb_psy_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -427,7 +427,7 @@
     },
     {
       "id": "qb_anx_001",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -479,7 +479,7 @@
     },
     {
       "id": "qb_anx_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -532,7 +532,7 @@
     },
     {
       "id": "qb_sud_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -585,7 +585,7 @@
     },
     {
       "id": "qb_cog_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -638,7 +638,7 @@
     },
     {
       "id": "qb_pha_001",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "pharm",
       "competency": [
@@ -715,7 +715,7 @@
     },
     {
       "id": "qb_pha_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -768,7 +768,7 @@
     },
     {
       "id": "qb_saf_001",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -821,7 +821,7 @@
     },
     {
       "id": "qb_saf_002",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "safety",
@@ -875,7 +875,7 @@
     },
     {
       "id": "qb_per_001",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -928,7 +928,7 @@
     },
     {
       "id": "qb_per_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -981,7 +981,7 @@
     },
     {
       "id": "qb_chd_001",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -1033,7 +1033,7 @@
     },
     {
       "id": "qb_chd_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -1085,7 +1085,7 @@
     },
     {
       "id": "qb_oth_001",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "otherdx",
       "competency": [
@@ -1139,7 +1139,7 @@
     },
     {
       "id": "qb_oth_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "otherdx",
       "competency": [
@@ -1192,7 +1192,7 @@
     },
     {
       "id": "qb_eth_001",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -1245,7 +1245,7 @@
     },
     {
       "id": "qb_eth_002",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "ethics",
       "competency": [
@@ -1322,7 +1322,7 @@
     },
     {
       "id": "qb_rel_002",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "family-system",
       "category": "relational",
@@ -1375,7 +1375,7 @@
     },
     {
       "id": "qb_cog_003",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1428,7 +1428,7 @@
     },
     {
       "id": "qb_cog_004",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1481,7 +1481,7 @@
     },
     {
       "id": "qb_cog_005",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1534,7 +1534,7 @@
     },
     {
       "id": "qb_cog_006",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "neurocog",
       "competency": [
@@ -1610,7 +1610,7 @@
     },
     {
       "id": "qb_cog_007",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1663,7 +1663,7 @@
     },
     {
       "id": "qb_cog_008",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1716,7 +1716,7 @@
     },
     {
       "id": "qb_cog_009",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1768,7 +1768,7 @@
     },
     {
       "id": "qb_cog_010",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "neurocog",
       "competency": [
@@ -1843,7 +1843,7 @@
     },
     {
       "id": "qb_cog_011",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1896,7 +1896,7 @@
     },
     {
       "id": "qb_cog_012",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1949,7 +1949,7 @@
     },
     {
       "id": "qb_cog_013",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -2001,7 +2001,7 @@
     },
     {
       "id": "qb_cog_014",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "neurocog",
       "competency": [
@@ -2076,7 +2076,7 @@
     },
     {
       "id": "qb_cog_015",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -2128,7 +2128,7 @@
     },
     {
       "id": "qb_cog_016",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -2181,7 +2181,7 @@
     },
     {
       "id": "qb_saf_003",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2234,7 +2234,7 @@
     },
     {
       "id": "qb_saf_004",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2288,7 +2288,7 @@
     },
     {
       "id": "qb_saf_005",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2340,7 +2340,7 @@
     },
     {
       "id": "qb_saf_006",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2393,7 +2393,7 @@
     },
     {
       "id": "qb_saf_007",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2446,7 +2446,7 @@
     },
     {
       "id": "qb_saf_008",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2498,7 +2498,7 @@
     },
     {
       "id": "qb_saf_009",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2552,7 +2552,7 @@
     },
     {
       "id": "qb_saf_010",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2605,7 +2605,7 @@
     },
     {
       "id": "qb_saf_011",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "safety",
@@ -2659,7 +2659,7 @@
     },
     {
       "id": "qb_saf_012",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "safety",
       "competency": [
@@ -2739,7 +2739,7 @@
     },
     {
       "id": "qb_sud_003",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -2792,7 +2792,7 @@
     },
     {
       "id": "qb_sud_004",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -2845,7 +2845,7 @@
     },
     {
       "id": "qb_sud_005",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -2898,7 +2898,7 @@
     },
     {
       "id": "qb_sud_006",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -2950,7 +2950,7 @@
     },
     {
       "id": "qb_sud_007",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -3003,7 +3003,7 @@
     },
     {
       "id": "qb_sud_008",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -3056,7 +3056,7 @@
     },
     {
       "id": "qb_sud_009",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -3108,7 +3108,7 @@
     },
     {
       "id": "qb_sud_010",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "substance",
@@ -3161,7 +3161,7 @@
     },
     {
       "id": "qb_sud_011",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "substance",
       "competency": [
@@ -3236,7 +3236,7 @@
     },
     {
       "id": "qb_sud_012",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -3289,7 +3289,7 @@
     },
     {
       "id": "qb_sud_013",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -3342,7 +3342,7 @@
     },
     {
       "id": "qb_sud_014",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "substance",
       "competency": [
@@ -3417,7 +3417,7 @@
     },
     {
       "id": "qb_pha_003",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3470,7 +3470,7 @@
     },
     {
       "id": "qb_pha_004",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3523,7 +3523,7 @@
     },
     {
       "id": "qb_pha_005",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "pharm",
       "competency": [
@@ -3600,7 +3600,7 @@
     },
     {
       "id": "qb_pha_006",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3654,7 +3654,7 @@
     },
     {
       "id": "qb_pha_007",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3707,7 +3707,7 @@
     },
     {
       "id": "qb_pha_008",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3760,7 +3760,7 @@
     },
     {
       "id": "qb_pha_009",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3812,7 +3812,7 @@
     },
     {
       "id": "qb_pha_010",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3865,7 +3865,7 @@
     },
     {
       "id": "qb_pha_011",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "pharm",
       "competency": [
@@ -3941,7 +3941,7 @@
     },
     {
       "id": "qb_pha_012",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3994,7 +3994,7 @@
     },
     {
       "id": "qb_pha_013",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -4046,7 +4046,7 @@
     },
     {
       "id": "qb_pha_014",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -4100,7 +4100,7 @@
     },
     {
       "id": "qb_pha_015",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -4153,7 +4153,7 @@
     },
     {
       "id": "qb_pha_016",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -4206,7 +4206,7 @@
     },
     {
       "id": "qb_mood_003",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4259,7 +4259,7 @@
     },
     {
       "id": "qb_mood_004",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4311,7 +4311,7 @@
     },
     {
       "id": "qb_mood_005",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4365,7 +4365,7 @@
     },
     {
       "id": "qb_mood_006",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4417,7 +4417,7 @@
     },
     {
       "id": "qb_mood_007",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "mood",
       "competency": [
@@ -4493,7 +4493,7 @@
     },
     {
       "id": "qb_mood_008",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4547,7 +4547,7 @@
     },
     {
       "id": "qb_mood_009",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4599,7 +4599,7 @@
     },
     {
       "id": "qb_mood_010",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4651,7 +4651,7 @@
     },
     {
       "id": "qb_mood_011",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4704,7 +4704,7 @@
     },
     {
       "id": "qb_mood_012",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "mood",
       "competency": [
@@ -4780,7 +4780,7 @@
     },
     {
       "id": "qb_mood_013",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4832,7 +4832,7 @@
     },
     {
       "id": "qb_mood_014",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4885,7 +4885,7 @@
     },
     {
       "id": "qb_mood_015",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4937,7 +4937,7 @@
     },
     {
       "id": "qb_mood_016",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "mood",
       "competency": [
@@ -5014,7 +5014,7 @@
     },
     {
       "id": "qb_psy_003",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -5067,7 +5067,7 @@
     },
     {
       "id": "qb_psy_004",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -5119,7 +5119,7 @@
     },
     {
       "id": "qb_psy_005",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -5172,7 +5172,7 @@
     },
     {
       "id": "qb_psy_006",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -5224,7 +5224,7 @@
     },
     {
       "id": "qb_psy_007",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "psychosis",
       "competency": [
@@ -5300,7 +5300,7 @@
     },
     {
       "id": "qb_psy_008",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -5354,7 +5354,7 @@
     },
     {
       "id": "qb_psy_009",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -5406,7 +5406,7 @@
     },
     {
       "id": "qb_psy_010",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -5459,7 +5459,7 @@
     },
     {
       "id": "qb_psy_011",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -5511,7 +5511,7 @@
     },
     {
       "id": "qb_psy_012",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -5563,7 +5563,7 @@
     },
     {
       "id": "qb_psy_013",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "psychosis",
       "competency": [
@@ -5638,7 +5638,7 @@
     },
     {
       "id": "qb_psy_014",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -5690,7 +5690,7 @@
     },
     {
       "id": "qb_anx_003",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -5744,7 +5744,7 @@
     },
     {
       "id": "qb_anx_004",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -5796,7 +5796,7 @@
     },
     {
       "id": "qb_anx_005",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -5850,7 +5850,7 @@
     },
     {
       "id": "qb_anx_006",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -5902,7 +5902,7 @@
     },
     {
       "id": "qb_anx_007",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -5954,7 +5954,7 @@
     },
     {
       "id": "qb_anx_008",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "anxiety",
       "competency": [
@@ -6030,7 +6030,7 @@
     },
     {
       "id": "qb_anx_009",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -6083,7 +6083,7 @@
     },
     {
       "id": "qb_anx_010",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -6136,7 +6136,7 @@
     },
     {
       "id": "qb_anx_011",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -6188,7 +6188,7 @@
     },
     {
       "id": "qb_anx_012",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "anxiety",
       "competency": [
@@ -6263,7 +6263,7 @@
     },
     {
       "id": "qb_eth_007",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6317,7 +6317,7 @@
     },
     {
       "id": "qb_eth_008",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6371,7 +6371,7 @@
     },
     {
       "id": "qb_eth_003",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6423,7 +6423,7 @@
     },
     {
       "id": "qb_eth_004",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6475,7 +6475,7 @@
     },
     {
       "id": "qb_eth_005",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6527,7 +6527,7 @@
     },
     {
       "id": "qb_eth_006",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6579,7 +6579,7 @@
     },
     {
       "id": "qb_per_005",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -6633,7 +6633,7 @@
     },
     {
       "id": "qb_per_006",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -6686,7 +6686,7 @@
     },
     {
       "id": "qb_per_003",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -6738,7 +6738,7 @@
     },
     {
       "id": "qb_per_004",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -6790,7 +6790,7 @@
     },
     {
       "id": "qb_cdev_001",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -6844,7 +6844,7 @@
     },
     {
       "id": "qb_cdev_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -6896,7 +6896,7 @@
     },
     {
       "id": "qb_cdev_003",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -6948,7 +6948,7 @@
     },
     {
       "id": "qb_cdev_004",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -7000,7 +7000,7 @@
     },
     {
       "id": "qb_rel_003",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "relational",
@@ -7054,7 +7054,7 @@
     },
     {
       "id": "qb_rel_004",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "family-system",
       "category": "relational",
@@ -7108,7 +7108,7 @@
     },
     {
       "id": "qb_rel_005",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "relational",
@@ -7161,7 +7161,7 @@
     },
     {
       "id": "qb_rel_006",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "family-system",
       "category": "relational",
@@ -7215,7 +7215,7 @@
     },
     {
       "id": "qb_rel_007",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "relational",
@@ -7269,7 +7269,7 @@
     },
     {
       "id": "qb_rel_008",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "relational",
@@ -7322,7 +7322,7 @@
     },
     {
       "id": "qb_rel_009",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "transition-of-care",
       "category": "relational",
@@ -7375,7 +7375,7 @@
     },
     {
       "id": "qb_rel_010",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "family-system",
       "category": "relational",
@@ -7428,7 +7428,7 @@
     },
     {
       "id": "qb_rel_011",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "relational",
@@ -7481,7 +7481,7 @@
     },
     {
       "id": "qb_rel_012",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "family-system",
       "category": "relational",
@@ -7535,7 +7535,7 @@
     },
     {
       "id": "qb_rel_013",
-      "status": "draft",
+      "status": "attested",
       "type": "relational",
       "subtype": "family-system",
       "category": "relational",
@@ -7588,7 +7588,7 @@
     },
     {
       "id": "qb_otherdx_001",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
@@ -7665,7 +7665,7 @@
     },
     {
       "id": "qb_otherdx_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "otherdx",
       "competency": [
@@ -7717,7 +7717,7 @@
     },
     {
       "id": "qb_otherdx_003",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
@@ -7794,7 +7794,7 @@
     },
     {
       "id": "qb_otherdx_004",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "otherdx",
       "competency": [
@@ -7846,7 +7846,7 @@
     },
     {
       "id": "qb_otherdx_005",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
@@ -7921,7 +7921,7 @@
     },
     {
       "id": "qb_otherdx_006",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
@@ -7996,7 +7996,7 @@
     },
     {
       "id": "qb_otherdx_007",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
@@ -8071,7 +8071,7 @@
     },
     {
       "id": "qb_otherdx_008",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "otherdx",
       "competency": [
@@ -8123,7 +8123,7 @@
     },
     {
       "id": "qb_otherdx_009",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
