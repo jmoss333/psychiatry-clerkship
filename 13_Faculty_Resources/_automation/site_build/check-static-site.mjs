@@ -253,14 +253,22 @@ if (!existsSync(srcMapPath)) {
     H(`orphaned source page (not wired into build): ${o} — register it in build_deploy.py or rename it out of the content convention`);
 }
 
-/* ---------- 8. Git-LFS pointer stubs (HARD) ---------- */
+/* ---------- 8. Git-LFS pointer stubs ---------- */
 // A pointer stub means the deploy fetched the LFS *pointer* (~130 bytes of
 // "version https://git-lfs…") instead of the real media bytes — the orientation-video
 // bug. Any shipped file this small that opens with the LFS header is a broken asset.
+// HARD on Netlify (where LFS is fetched — a stub there is a genuine broken deploy).
+// SOFT under GitHub Actions: ci.yml checks out with `lfs: false` on purpose (bandwidth
+// cost — see netlify-ignore.sh) as a pre-merge gate, not the real deploy; every tracked
+// audio/video file is expected to be a stub there, so hard-failing would permanently
+// red every PR.
+const lfsIsExpectedStub = process.env.GITHUB_ACTIONS === 'true';
 for (const { fp, size } of allFiles) {
   if (size > 512) continue;
-  if (readFileSync(fp, 'latin1').startsWith('version https://git-lfs'))
-    H(`Git-LFS pointer stub shipped (not real bytes): ${fp.replace(SITE, '.')} — re-fetch LFS objects (deploy without cache) before building`);
+  if (readFileSync(fp, 'latin1').startsWith('version https://git-lfs')) {
+    const msg = `Git-LFS pointer stub shipped (not real bytes): ${fp.replace(SITE, '.')} — re-fetch LFS objects (deploy without cache) before building`;
+    if (lfsIsExpectedStub) S(msg); else H(msg);
+  }
 }
 
 /* ---------- report ---------- */
