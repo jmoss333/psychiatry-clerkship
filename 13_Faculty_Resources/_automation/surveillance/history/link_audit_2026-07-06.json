@@ -1,0 +1,24 @@
+[
+  {
+    "finding_id": "link:reconnectpractice.com::broken-link::660b002e81baed0a",
+    "fingerprint": "link:reconnectpractice.com::broken-link::660b002e81baed0a",
+    "job": "link-source-monitor",
+    "source_id": "link:reconnectpractice.com",
+    "source_name": "reconnectpractice.com",
+    "source_url": "https://reconnectpractice.com/videos/autonomy-and-containment",
+    "source_type": "html",
+    "detected_at": "2026-07-06T07:24:21+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (no response) on 13_Faculty_Resources/_automation/surveillance/STATUS.md: https://reconnectpractice.com/videos/autonomy-and-containment",
+    "evidence": {
+      "http_status": null
+    },
+    "affects": [
+      "13_Faculty_Resources/_automation/surveillance/STATUS.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/_automation/surveillance/STATUS.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/123"
+  }
+]

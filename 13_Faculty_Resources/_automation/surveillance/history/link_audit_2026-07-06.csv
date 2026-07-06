@@ -1,0 +1,2 @@
+detected_at,severity,source_id,change_type,summary,source_url,affects,status
+2026-07-06T07:24:21+00:00,P1,link:reconnectpractice.com,broken-link,Broken link (no response) on 13_Faculty_Resources/_automation/surveillance/STATUS.md: https://reconnectpractice.com/videos/autonomy-and-containment,https://reconnectpractice.com/videos/autonomy-and-containment,13_Faculty_Resources/_automation/surveillance/STATUS.md,issue-open
