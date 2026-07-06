@@ -108,6 +108,7 @@ if (existsSync(rvPath) && parsed[rvPath]) {
 /* ---------- 4b. topic_meta.json cta hrefs must resolve to a shipped tool/page ---------- */
 if (existsSync(tmPath) && parsed[tmPath]) {
   for (const [key, m] of Object.entries(parsed[tmPath])) {
+    if (navMd.size && !navMd.has(key)) continue; // topic_meta.json is shared across sites; only validate ctas for pages this build actually ships
     if (!m || typeof m !== 'object' || !m.cta) continue;
     const ctas = Array.isArray(m.cta) ? m.cta : [m.cta];
     for (const c of ctas) {
