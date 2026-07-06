@@ -105,6 +105,26 @@ if (existsSync(rvPath) && parsed[rvPath]) {
   for (const f of [...navMd, ...navTools]) if (f && !(f in rev)) S(`review status missing (reviewed.json): ${f}`);
 }
 
+/* ---------- 4b. topic_meta.json cta hrefs must resolve to a shipped tool/page ---------- */
+if (existsSync(tmPath) && parsed[tmPath]) {
+  for (const [key, m] of Object.entries(parsed[tmPath])) {
+    if (navMd.size && !navMd.has(key)) continue; // topic_meta.json is shared across sites; only validate ctas for pages this build actually ships
+    if (!m || typeof m !== 'object' || !m.cta) continue;
+    const ctas = Array.isArray(m.cta) ? m.cta : [m.cta];
+    for (const c of ctas) {
+      if (!c || !c.href) continue;
+      const pageMatch = c.href.match(/^\.?\/?\?page=([^&#]+)$/);
+      if (pageMatch) {
+        const target = decodeURIComponent(pageMatch[1]);
+        if (!existsSync(p('content', target))) H(`topic_meta cta for ${key} → missing target: ${c.href}`);
+        continue;
+      }
+      const rel = c.href.replace(/^\.?\//, '');
+      if (!existsSync(p(rel))) H(`topic_meta cta for ${key} → missing target: ${c.href}`);
+    }
+  }
+}
+
 /* ---------- 5. per-tool HTML checks (RC-META, title, viewport, dose, storage) ---------- */
 for (const f of toolFiles) {
   const html = readFileSync(p('tools', f), 'utf8');

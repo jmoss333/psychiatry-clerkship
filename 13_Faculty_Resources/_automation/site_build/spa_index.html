@@ -38,6 +38,13 @@
   input.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
   .search-wrap .sx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:1rem;display:none}
   .navsec-wrap{margin-top:4px}
+  .navgroup-wrap{margin-top:8px}
+  .navgroupsec{display:flex;align-items:center;gap:7px;width:100%;text-align:left;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-mid);font-weight:800;padding:8px 6px;border-radius:6px}
+  .navgroupsec:hover{background:var(--primary-light);color:var(--text)}
+  .navgroupsec .chev{display:inline-block;font-size:.62rem;transition:transform .15s;flex:0 0 auto}
+  .navgroup-wrap.open>.navgroupsec .chev{transform:rotate(90deg)}
+  .navgroupbody{display:none;padding-left:8px;border-left:1px solid var(--border);margin-left:6px}
+  .navgroup-wrap.open>.navgroupbody{display:block}
   .navsec{display:flex;align-items:center;gap:7px;width:100%;text-align:left;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);font-weight:700;padding:7px 6px;border-radius:6px}
   .navsec:hover{background:var(--primary-light);color:var(--text-mid)}
   .navsec .chev{display:inline-block;font-size:.62rem;transition:transform .15s;flex:0 0 auto}
@@ -332,7 +339,7 @@
   function topicCount(){ var n=0; for(var k in TOPIC_META){ if(k.charAt(0)!=='_'&&TOPIC_META[k]&&TOPIC_META[k].quiz) n++; } return n||1; }
   function reviewedCount(p){ p=p||progLoad(); var n=0; for(var k in p){ if(p[k]&&p[k].done) n++; } return n; }
   function seedSRS(file){ try{ var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}}; } var id='TOPIC#'+file; if(!s.cards[id]){ s.cards[id]={ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } }catch(_){ } }
-  function buildTpl(m,file){ var h='<div class="topic-tpl">'; h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; var _p=progLoad(),_dn=_p[file]&&_p[file].done; h+='<span class="revcount">'+reviewedCount(_p)+' of '+topicCount()+' reviewed</span><button type="button" class="markrev'+(_dn?' on':'')+'" data-f="'+esc(file||'')+'" aria-pressed="'+(_dn?'true':'false')+'">'+(_dn?'✓ Reviewed':'☆ Mark reviewed')+'</button>'; h+='</div>'; if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } if(m.cant){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; } if(m.ruleOut&&m.ruleOut.length){ h+='<div class="minitree"><div class="lbl">Rule out first → first move</div><div class="ro">'; for(var j=0;j<m.ruleOut.length;j++){ h+='<span class="c">'+esc(m.ruleOut[j])+'</span>'; } h+='</div>'; if(m.firstMove){ h+='<div class="fm"><b>First move · </b>'+esc(m.firstMove)+'</div>'; } h+='<a href="tools/decision-aids.html" target="_blank" rel="noopener">See the visual decision aids →</a></div>'; } if(m.quiz){ var q=m.quiz; h+='<div class="tyourself"><div class="lbl">Test yourself</div><div class="q">'+esc(q.q)+'</div>'; for(var k=0;k<q.o.length;k++){ h+='<button type="button" class="tyo" data-c="'+(q.o[k].c?'1':'0')+'">'+esc(q.o[k].t)+'</button>'; } h+='<div class="tyfb">'+(q.why?('<b>Why: </b>'+esc(q.why)):'')+'</div></div>'; } if(m.cta&&m.cta.href){ h+='<a class="toolcta" href="'+esc(m.cta.href)+'" target="_blank" rel="noopener">'+esc(m.cta.label||'Open tool')+' →</a>'; } h+='</div>'; return h; }
+  function buildTpl(m,file){ var h='<div class="topic-tpl">'; h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; var _p=progLoad(),_dn=_p[file]&&_p[file].done; h+='<span class="revcount">'+reviewedCount(_p)+' of '+topicCount()+' reviewed</span><button type="button" class="markrev'+(_dn?' on':'')+'" data-f="'+esc(file||'')+'" aria-pressed="'+(_dn?'true':'false')+'">'+(_dn?'✓ Reviewed':'☆ Mark reviewed')+'</button>'; h+='</div>'; if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } if(m.cant){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; } if(m.ruleOut&&m.ruleOut.length){ h+='<div class="minitree"><div class="lbl">Rule out first → first move</div><div class="ro">'; for(var j=0;j<m.ruleOut.length;j++){ h+='<span class="c">'+esc(m.ruleOut[j])+'</span>'; } h+='</div>'; if(m.firstMove){ h+='<div class="fm"><b>First move · </b>'+esc(m.firstMove)+'</div>'; } h+='<a href="tools/decision-aids.html" target="_blank" rel="noopener">See the visual decision aids →</a></div>'; } if(m.quiz){ var q=m.quiz; h+='<div class="tyourself"><div class="lbl">Test yourself</div><div class="q">'+esc(q.q)+'</div>'; for(var k=0;k<q.o.length;k++){ h+='<button type="button" class="tyo" data-c="'+(q.o[k].c?'1':'0')+'">'+esc(q.o[k].t)+'</button>'; } h+='<div class="tyfb">'+(q.why?('<b>Why: </b>'+esc(q.why)):'')+'</div></div>'; } if(m.cta){ var _cx=Array.isArray(m.cta)?m.cta:[m.cta]; for(var _ci=0;_ci<_cx.length;_ci++){ var _c=_cx[_ci]; if(_c&&_c.href){ h+='<a class="toolcta" href="'+esc(_c.href)+'" target="_blank" rel="noopener">'+esc(_c.label||'Open tool')+' →</a>'; } } } h+='</div>'; return h; }
   var modeEl=document.getElementById('modetoggle'), mPath=document.getElementById('mPath'), mLib=document.getElementById('mLib');
   function reflectLibrary(){ if(modeEl) modeEl.classList.add('lib'); if(mLib) mLib.classList.add('on'); if(mPath) mPath.classList.remove('on'); contentEl.classList.remove('pathmode'); contentEl.classList.remove('toolmode'); try{localStorage.setItem('cw_mode','library')}catch(_){ } }
   function showPath(){ if(modeEl) modeEl.classList.remove('lib'); if(mPath) mPath.classList.add('on'); if(mLib) mLib.classList.remove('on'); contentEl.classList.remove('toolmode'); contentEl.classList.add('pathmode'); contentEl.innerHTML='<iframe class="pathframe" src="tools/learning-path.html" title="Learning Path"></iframe>'; try{localStorage.setItem('cw_mode','path')}catch(_){ } }
@@ -352,7 +359,7 @@
     try{ if(currentItem) SCROLL[currentItem.f]=window.scrollY||window.pageYOffset||0; }catch(_){ }
     document.querySelectorAll('.navitem.on').forEach(function(b){b.classList.remove('on');b.removeAttribute('aria-current');});
     if(btn){ btn.classList.add('on'); btn.setAttribute('aria-current','page'); }
-    if(btn){ var _w=btn.closest&&btn.closest('.navsec-wrap'); if(_w){ _w.classList.add('open'); var _hh=_w.querySelector('.navsec'); if(_hh) _hh.setAttribute('aria-expanded','true'); } }
+    if(btn){ var _w=btn.closest&&btn.closest('.navsec-wrap'); if(_w){ _w.classList.add('open'); var _hh=_w.querySelector('.navsec'); if(_hh) _hh.setAttribute('aria-expanded','true'); var _gw=_w.closest&&_w.closest('.navgroup-wrap'); if(_gw){ _gw.classList.add('open'); var _gh=_gw.querySelector('.navgroupsec'); if(_gh) _gh.setAttribute('aria-expanded','true'); } } }
     setDrawer(false);
     try{ if(window.__clearDock) window.__clearDock(); }catch(_){ }
     if(item.k==='special'){
@@ -379,6 +386,23 @@
 
   fetch('nav.json').then(function(r){return r.json()}).then(function(data){
     var navOpen=(function(){try{return JSON.parse(localStorage.getItem('cw_nav_v1'))||{}}catch(_){return {}}})();
+    var navGroupOpen=(function(){try{return JSON.parse(localStorage.getItem('cw_navgroup_v1'))||{}}catch(_){return {}}})();
+    var GROUP_DEFAULT_OPEN={'Get oriented':true};
+    var groupWraps={};
+    function groupBody(name){
+      if(groupWraps[name]) return groupWraps[name];
+      var gw=document.createElement('div'); gw.className='navgroup-wrap';
+      var gh=document.createElement('button'); gh.className='navgroupsec'; gh.type='button';
+      gh.innerHTML='<span class="chev" aria-hidden="true">▸</span><span class="navsec-t"></span>';
+      gh.querySelector('.navsec-t').textContent=name;
+      var gb=document.createElement('div'); gb.className='navgroupbody';
+      var gopen = Object.prototype.hasOwnProperty.call(navGroupOpen,name) ? !!navGroupOpen[name] : !!GROUP_DEFAULT_OPEN[name];
+      gw.classList.toggle('open',gopen); gh.setAttribute('aria-expanded',String(gopen));
+      gh.onclick=function(){ var o=!gw.classList.contains('open'); gw.classList.toggle('open',o); gh.setAttribute('aria-expanded',String(o));
+        var st=(function(){try{return JSON.parse(localStorage.getItem('cw_navgroup_v1'))||{}}catch(_){return {}}})(); st[name]=o; try{localStorage.setItem('cw_navgroup_v1',JSON.stringify(st))}catch(_){ } };
+      gw.appendChild(gh); gw.appendChild(gb); navEl.appendChild(gw);
+      groupWraps[name]=gb; return gb;
+    }
     data.unshift({section:'Overview',items:[{t:'Home',f:'__home__',k:'special'},{t:'Start here',f:'__start__',k:'special'}]});
     data.forEach(function(sec){
       var wrap=document.createElement('div'); wrap.className='navsec-wrap';
@@ -393,11 +417,12 @@
         b.innerHTML=it.t+(it.k==='tool'?' <span class="tool-tag">tool</span>':'');
         b.setAttribute('data-f',it.f); b._item=it; b.onclick=function(){show(it,b)}; grp.appendChild(b);
       });
-      var open = Object.prototype.hasOwnProperty.call(navOpen,sec.section) ? !!navOpen[sec.section] : (sec.section==='Start here'||sec.section==='Overview');
+      var open = Object.prototype.hasOwnProperty.call(navOpen,sec.section) ? !!navOpen[sec.section] : (sec.section==='Start here'||sec.section==='Overview'||!!sec.pinned);
       wrap.classList.toggle('open',open); h.setAttribute('aria-expanded',String(open));
       h.onclick=function(){ var o=!wrap.classList.contains('open'); wrap.classList.toggle('open',o); h.setAttribute('aria-expanded',String(o));
         var st=(function(){try{return JSON.parse(localStorage.getItem('cw_nav_v1'))||{}}catch(_){return {}}})(); st[sec.section]=o; try{localStorage.setItem('cw_nav_v1',JSON.stringify(st))}catch(_){ } };
-      wrap.appendChild(h); wrap.appendChild(grp); navEl.appendChild(wrap);
+      wrap.appendChild(h); wrap.appendChild(grp);
+      (sec.group ? groupBody(sec.group) : navEl).appendChild(wrap);
     });
     function openByFile(f,opts){ var all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===f){ show(all[i]._item, all[i], opts); return true; } } return false; }
     var sp0=new URLSearchParams(location.search); var pf=sp0.get('page')||sp0.get('tool');
@@ -474,12 +499,12 @@
     }
     contentEl.innerHTML=html;
     var bs=contentEl.querySelectorAll('.result');
-    for(var i=0;i<bs.length;i++){ bs[i].onclick=function(){ var d=SI.docs[this.getAttribute('data-i')]; searchEl.value=''; sxEl.style.display='none'; show(d,null); }; }
+    for(var i=0;i<bs.length;i++){ bs[i].onclick=function(){ var d=SI.docs[this.getAttribute('data-i')]; searchEl.value=''; sxEl.style.display='none'; var _nb=document.querySelector('.navitem[data-f="'+d.f+'"]'); if(_nb){_nb.click();}else{show(d,null);} }; }
   }
   var dt;
   searchEl.addEventListener('input',function(){ clearTimeout(dt); var q=searchEl.value; dt=setTimeout(function(){ renderResults(q); },130); });
   searchEl.addEventListener('keydown',function(e){
-    if(e.key==='Enter'){ var res=runSearch(searchEl.value); if(res.length){ var d=res[0].d; searchEl.value=''; sxEl.style.display='none'; show(d,null); } }
+    if(e.key==='Enter'){ var res=runSearch(searchEl.value); if(res.length){ var d=res[0].d; searchEl.value=''; sxEl.style.display='none'; var _nb=document.querySelector('.navitem[data-f="'+d.f+'"]'); if(_nb){_nb.click();}else{show(d,null);} } }
     else if(e.key==='Escape'){ searchEl.value=''; sxEl.style.display='none'; restore(); }
   });
   sxEl.onclick=function(){ searchEl.value=''; sxEl.style.display='none'; searchEl.focus(); restore(); };
