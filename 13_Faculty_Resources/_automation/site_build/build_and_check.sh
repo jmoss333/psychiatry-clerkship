@@ -25,6 +25,8 @@ LIB="$(cd "$HERE/../../.." && pwd)"   # repo root
 MS3_OUT="$LIB/_build/ms3"
 RES_OUT="$LIB/_build/res"
 
+python3 "$LIB/13_Faculty_Resources/_automation/validate_topic_meta.py"
+
 case "$SITE" in
   ms3)
     echo "── build: MS3 → $MS3_OUT"

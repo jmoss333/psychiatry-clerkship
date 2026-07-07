@@ -1,0 +1,93 @@
+{
+  "_note": "Tool metadata for the clerkship SPA. This separates tool review/safety properties from navigation display.",
+  "tools": [
+    {
+      "file": "cssrs.html",
+      "title": "Columbia C-SSRS Screener",
+      "sourcePath": "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html",
+      "category": "acute-safety",
+      "riskLevel": "high",
+      "disclaimerType": "validated-screening-teaching",
+      "storageKeys": [],
+      "evidenceIds": ["cssrs-columbia-lighthouse", "va-dod-suicide-cpg-2024"],
+      "relatedPages": ["pg_suicide.md"]
+    },
+    {
+      "file": "violence.html",
+      "title": "Violence Risk (FRST)",
+      "sourcePath": "04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html",
+      "category": "acute-safety",
+      "riskLevel": "high",
+      "disclaimerType": "structured-clinical-judgment-teaching",
+      "storageKeys": [],
+      "evidenceIds": ["project-beta-deescalation-2012"],
+      "relatedPages": ["pg_suicide.md", "agitation.md"]
+    },
+    {
+      "file": "bfcrs.html",
+      "title": "Bush-Francis Catatonia Scale (BFCRS)",
+      "sourcePath": "04_Acute_and_Safety/Catatonia/bfcrs.html",
+      "category": "acute-safety",
+      "riskLevel": "high",
+      "disclaimerType": "validated-instrument-teaching",
+      "storageKeys": [],
+      "evidenceIds": ["bap-catatonia-2023"],
+      "relatedPages": ["catatonia.md"]
+    },
+    {
+      "file": "withdrawal.html",
+      "title": "Withdrawal: CIWA-Ar/COWS",
+      "sourcePath": "03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html",
+      "category": "acute-safety",
+      "riskLevel": "high",
+      "disclaimerType": "validated-scale-protocol-dependent",
+      "storageKeys": [],
+      "evidenceIds": ["asam-alcohol-withdrawal-2020"],
+      "relatedPages": ["t_sud.md"]
+    },
+    {
+      "file": "screeners.html",
+      "title": "Screeners: PHQ-9 & GAD-7",
+      "sourcePath": "02_Clinical_Skills/Screeners/screeners.html",
+      "category": "clinical-skills",
+      "riskLevel": "moderate",
+      "disclaimerType": "screening-not-diagnosis",
+      "storageKeys": [],
+      "evidenceIds": [],
+      "relatedPages": ["t_mood.md", "t_anxiety.md"]
+    },
+    {
+      "file": "capacity.html",
+      "title": "Decisional Capacity",
+      "sourcePath": "04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html",
+      "category": "acute-safety",
+      "riskLevel": "high",
+      "disclaimerType": "legal-policy-dependent",
+      "storageKeys": [],
+      "evidenceIds": [],
+      "relatedPages": ["exp_consult.md", "ethics_legal.md"]
+    },
+    {
+      "file": "decision-aids.html",
+      "title": "Algorithms & Decision Aids",
+      "sourcePath": "04_Acute_and_Safety/Decision_Aids/decision-aids.html",
+      "category": "acute-safety",
+      "riskLevel": "high",
+      "disclaimerType": "teaching-algorithm-not-order-set",
+      "storageKeys": [],
+      "evidenceIds": ["asam-alcohol-withdrawal-2020", "bap-catatonia-2023", "nice-delirium-cg103", "project-beta-deescalation-2012"],
+      "relatedPages": ["agitation.md", "catatonia.md", "delirium.md", "t_psychosis.md"]
+    },
+    {
+      "file": "communication-practice.html",
+      "title": "What Do You Say Next?",
+      "sourcePath": "02_Clinical_Skills/Communication_Practice/communication-practice.html",
+      "category": "clinical-skills",
+      "riskLevel": "moderate",
+      "disclaimerType": "fictional-simulation-supervision",
+      "storageKeys": ["cw_comm_v1"],
+      "evidenceIds": ["va-dod-suicide-cpg-2024", "project-beta-deescalation-2012"],
+      "relatedPages": ["pg_suicide.md", "t_psychosis.md", "t_personality.md", "exp_family.md", "family_playbook.md"]
+    }
+  ]
+}

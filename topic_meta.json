@@ -40,7 +40,29 @@
     },
     "cta": {
       "label": "Open the Decision Aids",
-      "href": "tools/decision-aids.html"
+      "href": "?tool=decision-aids.html"
+    },
+    "evidenceIds": [
+      "nice-delirium-cg103",
+      "project-beta-deescalation-2012"
+    ],
+    "relatedTools": [
+      "decision-aids.html",
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "family",
+      "5min",
+      "shelf"
+    ],
+    "familyOverlay": "delirium_family_orientation_and_collateral",
+    "safetyLevel": "high",
+    "facultyReview": {
+      "status": "reviewed",
+      "reviewer": "Joshua Moss, MD",
+      "lastReviewed": "2026-07-03"
     }
   },
   "agitation.md": {
@@ -83,7 +105,31 @@
     },
     "cta": {
       "label": "Open the Decision Aids",
-      "href": "tools/decision-aids.html"
+      "href": "?tool=decision-aids.html"
+    },
+    "evidenceIds": [
+      "project-beta-deescalation-2012",
+      "project-beta-psychopharm-agitation-2012",
+      "nice-delirium-cg103"
+    ],
+    "relatedTools": [
+      "violence.html",
+      "decision-aids.html",
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min"
+    ],
+    "communicationCases": [
+      "rupture_limit_setting_001"
+    ],
+    "safetyLevel": "high",
+    "facultyReview": {
+      "status": "reviewed",
+      "reviewer": "Joshua Moss, MD",
+      "lastReviewed": "2026-07-03"
     }
   },
   "catatonia.md": {
@@ -123,7 +169,26 @@
     },
     "cta": {
       "label": "Open the BFCRS scale",
-      "href": "tools/bfcrs.html"
+      "href": "?tool=bfcrs.html"
+    },
+    "evidenceIds": [
+      "bap-catatonia-2023"
+    ],
+    "relatedTools": [
+      "bfcrs.html",
+      "decision-aids.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "safetyLevel": "high",
+    "facultyReview": {
+      "status": "reviewed",
+      "reviewer": "Joshua Moss, MD",
+      "lastReviewed": "2026-07-03"
     }
   },
   "t_psychosis.md": {
@@ -165,8 +230,22 @@
     },
     "cta": {
       "label": "Open the Decision Aids",
-      "href": "tools/decision-aids.html"
-    }
+      "href": "?tool=decision-aids.html"
+    },
+    "relatedTools": [
+      "mse.html",
+      "decision-aids.html",
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "shelf"
+    ],
+    "familyOverlay": "first_episode_psychosis_family_psychoeducation",
+    "communicationCases": [
+      "psychosis_validation_001"
+    ]
   },
   "t_mood.md": {
     "read": 5,
@@ -199,7 +278,7 @@
     },
     "cta": {
       "label": "Open the Screeners (PHQ-9 / GAD-7)",
-      "href": "tools/screeners.html"
+      "href": "?tool=screeners.html"
     }
   },
   "t_anxiety.md": {
@@ -232,7 +311,7 @@
     },
     "cta": {
       "label": "Open the Screeners (PHQ-9 / GAD-7)",
-      "href": "tools/screeners.html"
+      "href": "?tool=screeners.html"
     }
   },
   "t_sud.md": {
@@ -273,7 +352,30 @@
     },
     "cta": {
       "label": "Open CIWA-Ar / COWS",
-      "href": "tools/withdrawal.html"
+      "href": "?tool=withdrawal.html"
+    },
+    "evidenceIds": [
+      "asam-alcohol-withdrawal-2020"
+    ],
+    "relatedTools": [
+      "withdrawal.html",
+      "cssrs.html",
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "communicationCases": [
+      "medication_ambivalence_001"
+    ],
+    "safetyLevel": "high",
+    "facultyReview": {
+      "status": "reviewed",
+      "reviewer": "Joshua Moss, MD",
+      "lastReviewed": "2026-07-01"
     }
   },
   "t_personality.md": {
@@ -303,7 +405,19 @@
         }
       ],
       "why": "Splitting is managed with team consistency and clear limits; medication does not treat the personality disorder itself."
-    }
+    },
+    "relatedTools": [
+      "cssrs.html",
+      "reflection.html",
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "family"
+    ],
+    "communicationCases": [
+      "rupture_limit_setting_001"
+    ]
   },
   "t_neurodev.md": {
     "read": 5,
@@ -344,7 +458,7 @@
     },
     "cta": {
       "label": "Open the Decision Aids",
-      "href": "tools/decision-aids.html"
+      "href": "?tool=decision-aids.html"
     }
   },
   "t_eating.md": {
@@ -386,7 +500,7 @@
     },
     "cta": {
       "label": "Open the Decision Aids",
-      "href": "tools/decision-aids.html"
+      "href": "?tool=decision-aids.html"
     }
   },
   "t_adjustment.md": {
@@ -427,7 +541,7 @@
     },
     "cta": {
       "label": "Open the C-SSRS screener",
-      "href": "tools/cssrs.html"
+      "href": "?tool=cssrs.html"
     }
   },
   "t_dissociative.md": {
@@ -468,7 +582,7 @@
     },
     "cta": {
       "label": "Open the C-SSRS screener",
-      "href": "tools/cssrs.html"
+      "href": "?tool=cssrs.html"
     }
   },
   "t_impulse.md": {
@@ -509,7 +623,7 @@
     },
     "cta": {
       "label": "Open the Violence Risk (FRST) tool",
-      "href": "tools/violence.html"
+      "href": "?tool=violence.html"
     }
   },
   "t_neurocog.md": {
@@ -551,7 +665,7 @@
     },
     "cta": {
       "label": "Open the Decisional Capacity tool",
-      "href": "tools/capacity.html"
+      "href": "?tool=capacity.html"
     }
   },
   "t_sexual.md": {
@@ -675,7 +789,7 @@
     },
     "cta": {
       "label": "Open the MSE trainer",
-      "href": "tools/mse.html"
+      "href": "?tool=mse.html"
     }
   },
   "ethics_legal.md": {
@@ -899,7 +1013,35 @@
     },
     "cta": {
       "label": "Open the Columbia C-SSRS screener",
-      "href": "tools/cssrs.html"
+      "href": "?tool=cssrs.html"
+    },
+    "evidenceIds": [
+      "cssrs-columbia-lighthouse",
+      "va-dod-suicide-cpg-2024",
+      "joint-commission-suicide-prevention"
+    ],
+    "relatedTools": [
+      "cssrs.html",
+      "violence.html",
+      "decision-aids.html",
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "family",
+      "5min",
+      "shelf"
+    ],
+    "familyOverlay": "suicide_safety_family_means_restriction",
+    "communicationCases": [
+      "suicide_direct_question_001"
+    ],
+    "safetyLevel": "high",
+    "facultyReview": {
+      "status": "reviewed",
+      "reviewer": "Joshua Moss, MD",
+      "lastReviewed": "2026-07-03"
     }
   },
   "t_perinatal.md": {
@@ -940,7 +1082,7 @@
     },
     "cta": {
       "label": "Open the Columbia C-SSRS screener",
-      "href": "tools/cssrs.html"
+      "href": "?tool=cssrs.html"
     }
   },
   "nutrition_metabolic.md": {
@@ -1021,7 +1163,7 @@
     },
     "cta": {
       "label": "Open the Capacity tool",
-      "href": "tools/capacity.html"
+      "href": "?tool=capacity.html"
     }
   },
   "psychopharm_primer.md": {
@@ -1064,7 +1206,18 @@
     "cta": {
       "label": "Open the Protocol Library",
       "href": "?page=protocol_library.md"
-    }
+    },
+    "relatedTools": [
+      "communication-practice.html",
+      "decision-aids.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "shelf"
+    ],
+    "communicationCases": [
+      "medication_ambivalence_001"
+    ]
   },
   "ddx.md": {
     "read": 4,
@@ -1097,7 +1250,7 @@
     },
     "cta": {
       "label": "Open the Decision Aids",
-      "href": "tools/decision-aids.html"
+      "href": "?tool=decision-aids.html"
     }
   },
   "pg_interview.md": {
@@ -1131,7 +1284,7 @@
     },
     "cta": {
       "label": "Open the MSE tool",
-      "href": "tools/mse.html"
+      "href": "?tool=mse.html"
     }
   },
   "pg_formulation.md": {
@@ -1264,7 +1417,20 @@
     "cta": {
       "label": "Open the Family Meeting Playbook",
       "href": "?page=family_playbook.md"
-    }
+    },
+    "relatedTools": [
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "safety"
+    ],
+    "familyOverlay": "discharge_barrier_map_family_roles",
+    "communicationCases": [
+      "collateral_questions_001",
+      "family_meeting_opening_001"
+    ]
   },
   "family_modalities.md": {
     "read": 4,
@@ -1330,7 +1496,18 @@
     "cta": {
       "label": "Open the Family Therapy Modalities page",
       "href": "?page=family_modalities.md"
-    }
+    },
+    "relatedTools": [
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "family"
+    ],
+    "familyOverlay": "family_meeting_structure_expressed_emotion",
+    "communicationCases": [
+      "family_meeting_opening_001"
+    ]
   },
   "brief_psychotherapy.md": {
     "read": 4,

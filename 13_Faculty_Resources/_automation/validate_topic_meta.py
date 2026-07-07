@@ -21,6 +21,61 @@ if not os.path.exists(path):
     sys.exit(0)
 
 d = json.load(open(path, encoding="utf-8"))
+repo_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+def require_unique(label, values):
+    seen = set()
+    dup = []
+    for val in values:
+        if val in seen:
+            dup.append(val)
+        seen.add(val)
+    if dup:
+        print("%s INVALID — duplicate id(s): %s" % (label, ", ".join(sorted(set(dup)))))
+        sys.exit(1)
+
+evidence_path = os.path.join(repo_root, "evidence_registry.json")
+evidence_ids = set()
+if os.path.exists(evidence_path):
+    try:
+        ev = json.load(open(evidence_path, encoding="utf-8"))
+        source_ids = [x.get("id") for x in ev.get("sources", []) if isinstance(x, dict) and x.get("id")]
+        require_unique("evidence_registry.json", source_ids)
+        evidence_ids = set(source_ids)
+    except Exception as exc:
+        print("evidence_registry.json INVALID — %s" % exc)
+        sys.exit(1)
+tool_registry_path = os.path.join(repo_root, "tool_registry.json")
+if os.path.exists(tool_registry_path):
+    try:
+        tr = json.load(open(tool_registry_path, encoding="utf-8"))
+        require_unique("tool_registry.json", [x.get("file") for x in tr.get("tools", []) if isinstance(x, dict) and x.get("file")])
+        for tool in tr.get("tools", []):
+            ids = tool.get("evidenceIds", []) if isinstance(tool, dict) else []
+            for eid in ids:
+                if evidence_ids and eid not in evidence_ids:
+                    print("tool_registry.json INVALID — %s references unknown evidence id %s" % (tool.get("file"), eid))
+                    sys.exit(1)
+    except Exception as exc:
+        print("tool_registry.json INVALID — %s" % exc)
+        sys.exit(1)
+communication_cases_path = os.path.join(repo_root, "communication_cases.json")
+if os.path.exists(communication_cases_path):
+    try:
+        cc = json.load(open(communication_cases_path, encoding="utf-8"))
+        require_unique("communication_cases.json", [x.get("id") for x in cc.get("cases", []) if isinstance(x, dict) and x.get("id")])
+        for case in cc.get("cases", []):
+            choices = case.get("choices", []) if isinstance(case, dict) else []
+            if sum(1 for ch in choices if isinstance(ch, dict) and ch.get("quality") == "best") != 1:
+                print("communication_cases.json INVALID — %s must have exactly one best choice" % case.get("id"))
+                sys.exit(1)
+            ids = case.get("evidenceIds", []) if isinstance(case, dict) else []
+            for eid in ids:
+                if evidence_ids and eid not in evidence_ids:
+                    print("communication_cases.json INVALID — %s references unknown evidence id %s" % (case.get("id"), eid))
+                    sys.exit(1)
+    except Exception as exc:
+        print("communication_cases.json INVALID — %s" % exc)
+        sys.exit(1)
 errs = []
 def bad(k, msg): errs.append("%s: %s" % (k, msg))
 
@@ -53,6 +108,28 @@ for k, v in d.items():
                 if any(not isinstance(x, dict) or not x.get("t") for x in o):
                     bad(k, "a quiz option is missing 't'")
             if not isinstance(q.get("why", ""), str) or not q.get("why"): bad(k, "quiz missing 'why'")
+    for name in ("evidenceIds", "relatedTools", "workflowModes", "communicationCases"):
+        if name in v and not (isinstance(v[name], list) and all(isinstance(x, str) for x in v[name])):
+            bad(k, "'%s' must be a list of strings" % name)
+    if "familyOverlay" in v and not isinstance(v["familyOverlay"], str):
+        bad(k, "'familyOverlay' must be a string")
+    if "safetyLevel" in v and v["safetyLevel"] not in ("low", "moderate", "high"):
+        bad(k, "'safetyLevel' must be one of low, moderate, high")
+    if "facultyReview" in v:
+        fr = v["facultyReview"]
+        if not isinstance(fr, dict):
+            bad(k, "'facultyReview' must be an object")
+        elif fr.get("status") not in ("draft", "pending", "reviewed", "retired"):
+            bad(k, "'facultyReview.status' must be draft, pending, reviewed, or retired")
+    for eid in v.get("evidenceIds", []) if isinstance(v.get("evidenceIds"), list) else []:
+        if evidence_ids and eid not in evidence_ids:
+            bad(k, "evidenceIds references unknown source '%s'" % eid)
+    if v.get("safetyLevel") == "high":
+        if not v.get("evidenceIds"):
+            bad(k, "high-risk page requires non-empty evidenceIds")
+        fr = v.get("facultyReview")
+        if not isinstance(fr, dict) or not fr.get("status") or not fr.get("lastReviewed"):
+            bad(k, "high-risk page requires facultyReview.status and facultyReview.lastReviewed")
 
 topics = [k for k in d if k != "_note"]
 if errs:

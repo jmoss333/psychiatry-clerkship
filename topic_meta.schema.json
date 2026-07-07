@@ -31,7 +31,21 @@
           }
         }
       },
-      "cta": {}
+      "cta": {},
+      "evidenceIds": { "type": "array", "items": { "type": "string" } },
+      "relatedTools": { "type": "array", "items": { "type": "string" } },
+      "workflowModes": { "type": "array", "items": { "type": "string" } },
+      "familyOverlay": { "type": "string" },
+      "communicationCases": { "type": "array", "items": { "type": "string" } },
+      "safetyLevel": { "type": "string", "enum": ["low", "moderate", "high"] },
+      "facultyReview": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["draft", "pending", "reviewed", "retired"] },
+          "reviewer": { "type": "string" },
+          "lastReviewed": { "type": "string" }
+        }
+      }
     },
     "dependencies": { "firstMove": ["ruleOut"] }
   }

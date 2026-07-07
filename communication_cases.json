@@ -1,0 +1,197 @@
+{
+  "_note": "Fictional composite communication-practice cases for the MS3 psychiatry clerkship. Do not include PHI. Cases marked draft require faculty review before use as graded material.",
+  "cases": [
+    {
+      "id": "suicide_direct_question_001",
+      "title": "Ask About Suicide Directly",
+      "topic": "Suicide risk",
+      "setting": "Inpatient admission interview",
+      "learnerGoal": "Use plain, direct language without softening or avoiding the question.",
+      "prompt": "A patient admitted after worsening depression says, \"I do not want to be a burden anymore.\" What do you say next?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Are you saying you feel sad, or is this more about stress?",
+          "quality": "missed",
+          "feedback": "This stays vague. It may feel gentle, but it avoids the safety question the patient just opened."
+        },
+        {
+          "id": "b",
+          "text": "When you say you do not want to be a burden, have you had thoughts of killing yourself?",
+          "quality": "best",
+          "feedback": "Best choice. It is direct, nonjudgmental, and connected to the patient's own words."
+        },
+        {
+          "id": "c",
+          "text": "You should not think that way; your family cares about you.",
+          "quality": "harmful",
+          "feedback": "This can shame the patient and close the conversation. Start with direct assessment and validation."
+        }
+      ],
+      "skillTags": ["suicide", "direct-questioning", "safety"],
+      "linkedPages": ["pg_suicide.md"],
+      "evidenceIds": ["cssrs-columbia-lighthouse", "va-dod-suicide-cpg-2024"],
+      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+    },
+    {
+      "id": "psychosis_validation_001",
+      "title": "Validate Psychosis Without Colluding",
+      "topic": "Psychosis",
+      "setting": "Follow-up interview on the unit",
+      "learnerGoal": "Acknowledge fear without agreeing with the delusional belief.",
+      "prompt": "A patient whispers, \"The cameras in the vents are watching me.\" What do you say next?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "There are no cameras. That is not real.",
+          "quality": "missed",
+          "feedback": "This may be factually true, but it can sound dismissive and increase guardedness."
+        },
+        {
+          "id": "b",
+          "text": "That sounds frightening. I do not see cameras, but I want to understand what you are experiencing and help you feel safer here.",
+          "quality": "best",
+          "feedback": "Best choice. It validates emotion, avoids collusion, and invites more assessment."
+        },
+        {
+          "id": "c",
+          "text": "Who put the cameras there?",
+          "quality": "missed",
+          "feedback": "This can deepen the delusional frame. Ask about experience, distress, safety, and meaning instead."
+        }
+      ],
+      "skillTags": ["psychosis", "validation", "alliance"],
+      "linkedPages": ["t_psychosis.md"],
+      "evidenceIds": [],
+      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+    },
+    {
+      "id": "rupture_limit_setting_001",
+      "title": "Repair After A Limit",
+      "topic": "Rupture and repair",
+      "setting": "Inpatient unit hallway",
+      "learnerGoal": "Set a clear limit while preserving dignity and alliance.",
+      "prompt": "After you explain that an early discharge is not planned today, the patient says, \"You people never listen. I am done talking.\" What do you say next?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "If you refuse to talk, that is your choice.",
+          "quality": "missed",
+          "feedback": "This is technically true but relationally cold. It escalates distance after a rupture."
+        },
+        {
+          "id": "b",
+          "text": "I hear that this feels like we are not listening. I cannot promise discharge today, but I can slow down and make sure I understand what matters most to you.",
+          "quality": "best",
+          "feedback": "Best choice. It validates, keeps the limit, and offers repair."
+        },
+        {
+          "id": "c",
+          "text": "You need to calm down before we continue.",
+          "quality": "harmful",
+          "feedback": "This often sounds controlling. Name the emotion and the limit without making calmness a precondition for being heard."
+        }
+      ],
+      "skillTags": ["rupture-repair", "borderline-personality", "limits"],
+      "linkedPages": ["t_personality.md", "agitation.md"],
+      "evidenceIds": ["project-beta-deescalation-2012"],
+      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+    },
+    {
+      "id": "medication_ambivalence_001",
+      "title": "Medication Ambivalence",
+      "topic": "Shared decision-making",
+      "setting": "Medication discussion",
+      "learnerGoal": "Use motivational interviewing instead of persuasion reflex.",
+      "prompt": "A patient says, \"I know the antipsychotic helped, but I hate the weight gain. I am not taking it after discharge.\" What do you say next?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "If you stop it, you will probably be hospitalized again.",
+          "quality": "missed",
+          "feedback": "This may be intended as education, but it starts with threat. Explore values and tradeoffs first."
+        },
+        {
+          "id": "b",
+          "text": "It makes sense that weight gain would make you hesitant. What did you notice the medicine helped with, and what would need to be different for it to feel worth taking?",
+          "quality": "best",
+          "feedback": "Best choice. It reflects ambivalence and elicits the patient's own reasons, concerns, and conditions."
+        },
+        {
+          "id": "c",
+          "text": "There are no side-effect-free medications, so we have to accept some tradeoff.",
+          "quality": "missed",
+          "feedback": "This is too clinician-centered. The next step is collaborative exploration, not closing the decision."
+        }
+      ],
+      "skillTags": ["motivational-interviewing", "medication", "shared-decision-making"],
+      "linkedPages": ["psychopharm_primer.md", "motivational_interviewing.md"],
+      "evidenceIds": [],
+      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+    },
+    {
+      "id": "family_meeting_opening_001",
+      "title": "Open A Family Meeting",
+      "topic": "Family meeting",
+      "setting": "Inpatient family meeting",
+      "learnerGoal": "Create structure, consent boundaries, and a shared goal at the start.",
+      "prompt": "The patient has consented to a family meeting. The family arrives anxious and starts asking rapid-fire questions. What do you say first?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Let me answer each question in order.",
+          "quality": "missed",
+          "feedback": "This is responsive but unstructured. The meeting can become a long Q&A without goals or boundaries."
+        },
+        {
+          "id": "b",
+          "text": "I can see there is a lot you want to understand. Before details, let's agree on the goal, what the patient has consented for us to discuss, and what we need to decide before discharge.",
+          "quality": "best",
+          "feedback": "Best choice. It joins emotionally, names consent, and sets a structure."
+        },
+        {
+          "id": "c",
+          "text": "We cannot discuss much because of confidentiality.",
+          "quality": "missed",
+          "feedback": "Confidentiality matters, but this response shuts down collaboration. State the consent boundary and what can be discussed."
+        }
+      ],
+      "skillTags": ["family-meeting", "confidentiality", "structure"],
+      "linkedPages": ["family_playbook.md", "exp_family.md"],
+      "evidenceIds": [],
+      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+    },
+    {
+      "id": "collateral_questions_001",
+      "title": "Ask Better Collateral Questions",
+      "topic": "Collateral",
+      "setting": "Phone call with family",
+      "learnerGoal": "Ask for baseline, timeline, safety, and functional change rather than global impressions.",
+      "prompt": "You call a patient's sister for collateral. She says, \"He has just not been himself.\" What do you ask next?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Do you think he is safe to come home?",
+          "quality": "missed",
+          "feedback": "This asks for a conclusion before gathering facts. First define baseline, timeline, and concrete risks."
+        },
+        {
+          "id": "b",
+          "text": "What is he like at baseline, what changed, when did it change, and what specific safety concerns have you noticed?",
+          "quality": "best",
+          "feedback": "Best choice. It turns a vague concern into time course, baseline, and safety data."
+        },
+        {
+          "id": "c",
+          "text": "Has he been taking his medication?",
+          "quality": "partial",
+          "feedback": "Medication adherence is useful, but it is too narrow as the first follow-up to a broad change-from-baseline concern."
+        }
+      ],
+      "skillTags": ["collateral", "family", "diagnostic-reasoning"],
+      "linkedPages": ["exp_family.md", "ddx.md"],
+      "evidenceIds": [],
+      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+    }
+  ]
+}

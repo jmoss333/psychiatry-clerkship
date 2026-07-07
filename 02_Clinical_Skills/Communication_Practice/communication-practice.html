@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [RC-META] tool="What Do You Say Next?" version="1.0" built="2026-07-07" category="clinical-skills" audience="trainee,ms3" settings="inpatient,self-study" time="10min" summary="Branching communication-practice tool for fictional psychiatry scenarios. Stores only anonymous case completion state under cw_comm_v1; no PHI." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>What Do You Say Next?</title>
+<style>
+:root{
+  --bg:#f6f3ee;--bg-alt:#faf6f0;--surface:#ffffff;--border:#ddd3c6;
+  --primary:#c25a3c;--primary-dark:#a84830;--primary-light:#f3ebe5;
+  --accent:#2a6b5e;--accent-dark:#1e5248;--accent-light:#edf4f2;
+  --text:#2f2924;--text-mid:#51473d;--text-light:#665a4f;
+  --success:#357160;--success-light:#e7f1ed;--danger:#a34132;--danger-light:#fbece9;
+  --warning:#7a6234;--warning-light:#f5efe2;--focus:#155eef;
+  --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.5}
+.shell{max-width:920px;margin:0 auto;padding:24px 18px 70px}
+.kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:800;color:var(--accent-dark)}
+h1{font-family:var(--font-head);font-size:2rem;color:var(--primary);margin:.1em 0 .2em}
+.sub{color:var(--text-mid);max-width:68ch;margin:0 0 18px}
+.notice{background:var(--warning-light);border:1px solid var(--warning);border-left:4px solid var(--warning);border-radius:10px;padding:11px 13px;font-size:.9rem;color:var(--text-mid);margin:0 0 16px}
+.grid{display:grid;grid-template-columns:minmax(190px,250px) 1fr;gap:16px}
+.list{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px}
+.casebtn{display:block;width:100%;border:1px solid transparent;background:transparent;border-radius:9px;padding:10px;text-align:left;font:inherit;color:var(--text);cursor:pointer}
+.casebtn:hover{background:var(--accent-light)}
+.casebtn.on{background:var(--accent);color:#fff}
+.casebtn .t{display:block;font-weight:800;line-height:1.25}
+.casebtn .m{display:block;font-size:.74rem;opacity:.78;margin-top:2px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 1px 3px rgba(59,51,44,.06)}
+.meta{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+.pill{font-size:.72rem;font-weight:800;border:1px solid var(--border);border-radius:999px;padding:3px 9px;color:var(--text-mid);background:var(--bg-alt)}
+.pill.draft{background:var(--warning-light);border-color:var(--warning);color:var(--warning)}
+.goal{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 9px 9px 0;padding:10px 13px;color:var(--text-mid);margin:0 0 14px}
+.prompt{font-family:var(--font-head);font-size:1.25rem;line-height:1.35;margin:0 0 14px;color:var(--text)}
+.choice{display:block;width:100%;border:1px solid var(--border);background:var(--bg-alt);border-radius:10px;text-align:left;padding:12px 13px;margin:8px 0;cursor:pointer;font:inherit;color:var(--text)}
+.choice:hover{border-color:var(--accent)}
+.choice.best{border-color:var(--success);background:var(--success-light)}
+.choice.partial{border-color:var(--warning);background:var(--warning-light)}
+.choice.missed,.choice.harmful{border-color:var(--danger);background:var(--danger-light)}
+.feedback{margin:12px 0 0;border-radius:10px;padding:12px 13px;background:var(--bg-alt);border:1px solid var(--border);color:var(--text-mid)}
+.feedback b{color:var(--text)}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.links a{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:5px 10px;color:var(--accent-dark);text-decoration:none;font-size:.84rem;font-weight:700}
+.links a:hover{border-color:var(--accent);background:var(--accent-light)}
+.progress{margin-top:12px;font-size:.86rem;color:var(--text-light)}
+.empty{padding:16px;color:var(--text-mid)}
+button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.list{display:flex;gap:8px;overflow-x:auto}.casebtn{min-width:190px}}
+</style>
+</head>
+<body>
+<main id="root" class="shell">
+  <div class="kicker">Clinical Skills · relational practice</div>
+  <h1>What Do You Say Next?</h1>
+  <p class="sub">Short fictional scenarios for practicing psychiatric communication. Pick the next line, read the feedback, then connect the skill back to the topic page.</p>
+  <div class="notice"><b>Safety boundary:</b> fictional practice only. Do not enter patient information. This is not clinical advice, legal advice, or a substitute for supervision, local policy, or validated instruments.</div>
+  <div id="app" class="grid"><div class="empty">Loading cases...</div></div>
+</main>
+<script>
+(function(){
+var app=document.getElementById('app');
+var state={cases:[],current:0,choice:null,attempts:loadAttempts()};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function loadAttempts(){try{return JSON.parse(localStorage.getItem('cw_comm_v1')||'{}')||{};}catch(_){return {};}}
+function saveAttempt(caseId,choice){try{state.attempts[caseId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};localStorage.setItem('cw_comm_v1',JSON.stringify(state.attempts));}catch(_){}}
+function qualityLabel(q){return q==='best'?'Best next line':q==='partial'?'Partly useful':q==='harmful'?'Avoid this line':'Missed opportunity';}
+function navHtml(){return '<div class="list" aria-label="Communication cases">'+state.cases.map(function(c,i){var done=state.attempts[c.id];return '<button type="button" class="casebtn'+(i===state.current?' on':'')+'" data-i="'+i+'"><span class="t">'+esc(c.title)+'</span><span class="m">'+esc(c.topic)+(done?' · practiced':'')+'</span></button>';}).join('')+'</div>';}
+function caseHtml(c){var picked=state.choice;var draft=c.facultyReview&&c.facultyReview.status!=='reviewed';return '<section class="card"><div class="meta"><span class="pill">'+esc(c.setting)+'</span>'+(draft?'<span class="pill draft">Draft case · faculty review needed</span>':'<span class="pill">Reviewed</span>')+c.skillTags.map(function(t){return '<span class="pill">'+esc(t)+'</span>';}).join('')+'</div><div class="goal"><b>Practice goal:</b> '+esc(c.learnerGoal)+'</div><p class="prompt">'+esc(c.prompt)+'</p>'+c.choices.map(function(ch){var cls=picked&&picked.id===ch.id?' '+ch.quality:'';return '<button type="button" class="choice'+cls+'" data-choice="'+esc(ch.id)+'">'+esc(ch.text)+'</button>';}).join('')+(picked?'<div class="feedback"><b>'+qualityLabel(picked.quality)+'.</b> '+esc(picked.feedback)+'</div>':'')+'<div class="links">'+c.linkedPages.map(function(f){return '<a href="../index.html?page='+encodeURIComponent(f)+'">'+esc(f.replace(/\\.md$/,''))+'</a>';}).join('')+'</div><div class="progress">Saved locally in this browser only. Stored: case id, choice id, quality, and date. No free text.</div></section>';}
+function render(){if(!state.cases.length){app.innerHTML='<div class="empty">No communication cases are available.</div>';return;}app.innerHTML=navHtml()+caseHtml(state.cases[state.current]);}
+app.addEventListener('click',function(ev){var cb=ev.target.closest&&ev.target.closest('.casebtn');if(cb){state.current=+cb.getAttribute('data-i')||0;state.choice=null;render();return;}var chb=ev.target.closest&&ev.target.closest('.choice');if(chb){var c=state.cases[state.current];var id=chb.getAttribute('data-choice');state.choice=(c.choices||[]).filter(function(x){return x.id===id;})[0]||null;if(state.choice)saveAttempt(c.id,state.choice);render();}});
+fetch('../communication_cases.json').then(function(r){if(!r.ok)throw new Error('missing cases');return r.json();}).then(function(d){state.cases=(d&&d.cases)||[];render();}).catch(function(){app.innerHTML='<div class="empty">Could not load communication cases. Rebuild the site or check communication_cases.json.</div>';});
+})();
+</script>
+</body>
+</html>

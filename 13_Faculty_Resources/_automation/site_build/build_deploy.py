@@ -104,6 +104,14 @@ _rv=LIB+"/13_Faculty_Resources/reviewed.json"
 shutil.copy2(_rv, OUT+"/reviewed.json") if os.path.exists(_rv) else open(OUT+"/reviewed.json","w").write("{}")
 _tm=LIB+"/topic_meta.json"
 shutil.copy2(_tm, OUT+"/topic_meta.json") if os.path.exists(_tm) else open(OUT+"/topic_meta.json","w").write("{}")
+for _jn, _fallback in [
+    ("evidence_registry.json", '{"sources":[]}'),
+    ("tool_registry.json", '{"tools":[]}'),
+    ("communication_cases.json", '{"cases":[]}')
+]:
+    _jp=os.path.join(LIB,_jn)
+    if os.path.exists(_jp): shutil.copy2(_jp, OUT+"/"+_jn)
+    else: open(OUT+"/"+_jn,"w",encoding="utf-8").write(_fallback)
 # question_bank.json: served at site root so both qbank-attest.html and question-bank-practice.html can fetch ../question_bank.json
 shutil.copy2(LIB+"/question_bank.json", OUT+"/question_bank.json")
 shutil.copy2(LIB+"/13_Faculty_Resources/review-attest.html", OUT+"/tools/review-attest.html")
@@ -206,6 +214,7 @@ def build_search_index():
     TOOLKW={
      "mse.html":"mental status exam appearance behavior speech mood affect thought process content perception cognition insight judgment interview",
      "interview-circle.html":"interview circle radial domain map psychiatric intake history hpi chief complaint substance family social mental status safety risk non-linear conversation clinical skills interviewing not a checklist",
+     "communication-practice.html":"what do you say next communication practice branching dialogue suicide psychosis validation rupture repair medication ambivalence family meeting collateral motivational interviewing relational skills",
      "capacity.html":"decisional capacity informed consent refusal four abilities understand appreciate reason communicate",
      "oral.html":"treatment team rounding prep rounds presentation oral one liner assessment plan handoff gather present practice timer",
      "violence.html":"violence risk aggression frst agitation safety prediction de-escalation",
@@ -274,7 +283,7 @@ if 'rel="icon"' not in _ih: open(OUT+"/index.html","w",encoding="utf-8").write(_
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(OUT+"/404.html","w",encoding="utf-8").write('<!doctype html><meta charset="utf-8"><title>Not found</title><meta name="robots" content="noindex,nofollow"><style>body{font-family:system-ui,sans-serif;background:#f6f3ee;color:#2f2924;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#174d43}</style><div><h1 style="color:#9f3f2a">Page not found</h1><p><a href="/">Return to the clerkship hub</a></p></div>')
-open(OUT+"/_headers","w",encoding="utf-8").write("/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/reviewed.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n")
+open(OUT+"/_headers","w",encoding="utf-8").write("/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reviewed.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n")
 print("polish pass: banners stripped, contrast darkened, <main>+favicon on tools, robots/404/_headers written")
 
 # ---------- DARK MODE PASS (Slice 2): inject dark tokens + pre-paint theme init across every page ----------
