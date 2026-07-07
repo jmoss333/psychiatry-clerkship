@@ -26,15 +26,27 @@ h1{font-family:var(--font-head);font-size:2rem;color:var(--primary);margin:.1em 
 .notice{background:var(--warning-light);border:1px solid var(--warning);border-left:4px solid var(--warning);border-radius:10px;padding:11px 13px;font-size:.9rem;color:var(--text-mid);margin:0 0 16px}
 .grid{display:grid;grid-template-columns:minmax(190px,250px) 1fr;gap:16px}
 .list{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px}
+.sidehead{padding:4px 4px 10px;border-bottom:1px solid var(--border);margin:0 0 8px}
+.sidehead .n{font-weight:900;color:var(--text)}
+.sidehead .d{font-size:.82rem;color:var(--text-light)}
+.bar{height:7px;border-radius:999px;background:var(--bg-alt);border:1px solid var(--border);overflow:hidden;margin-top:8px}
+.bar span{display:block;height:100%;background:var(--accent);width:0}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.filter{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:5px 9px;font:inherit;font-size:.8rem;font-weight:800;color:var(--text-mid);cursor:pointer}
+.filter:hover{background:var(--accent-light);border-color:var(--accent)}
+.filter.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .casebtn{display:block;width:100%;border:1px solid transparent;background:transparent;border-radius:9px;padding:10px;text-align:left;font:inherit;color:var(--text);cursor:pointer}
 .casebtn:hover{background:var(--accent-light)}
 .casebtn.on{background:var(--accent);color:#fff}
 .casebtn .t{display:block;font-weight:800;line-height:1.25}
 .casebtn .m{display:block;font-size:.74rem;opacity:.78;margin-top:2px}
+.casebtn .done{display:inline-block;font-size:.68rem;font-weight:900;border:1px solid currentColor;border-radius:999px;padding:1px 6px;margin-top:6px;opacity:.84}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 1px 3px rgba(59,51,44,.06)}
 .meta{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
 .pill{font-size:.72rem;font-weight:800;border:1px solid var(--border);border-radius:999px;padding:3px 9px;color:var(--text-mid);background:var(--bg-alt)}
 .pill.draft{background:var(--warning-light);border-color:var(--warning);color:var(--warning)}
+.pill.reviewed{background:var(--success-light);border-color:var(--success);color:var(--success)}
+.recommend{background:var(--primary-light);border:1px solid var(--primary);border-left:4px solid var(--primary);border-radius:10px;padding:10px 12px;margin:0 0 14px;color:var(--text-mid);font-size:.92rem}
 .goal{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 9px 9px 0;padding:10px 13px;color:var(--text-mid);margin:0 0 14px}
 .prompt{font-family:var(--font-head);font-size:1.25rem;line-height:1.35;margin:0 0 14px;color:var(--text)}
 .choice{display:block;width:100%;border:1px solid var(--border);background:var(--bg-alt);border-radius:10px;text-align:left;padding:12px 13px;margin:8px 0;cursor:pointer;font:inherit;color:var(--text)}
@@ -44,13 +56,16 @@ h1{font-family:var(--font-head);font-size:2rem;color:var(--primary);margin:.1em 
 .choice.missed,.choice.harmful{border-color:var(--danger);background:var(--danger-light)}
 .feedback{margin:12px 0 0;border-radius:10px;padding:12px 13px;background:var(--bg-alt);border:1px solid var(--border);color:var(--text-mid)}
 .feedback b{color:var(--text)}
+.caseactions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.nextcase{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:999px;padding:7px 12px;font:inherit;font-size:.88rem;font-weight:800;cursor:pointer}
+.nextcase:hover{background:var(--accent-dark)}
 .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .links a{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:5px 10px;color:var(--accent-dark);text-decoration:none;font-size:.84rem;font-weight:700}
 .links a:hover{border-color:var(--accent);background:var(--accent-light)}
 .progress{margin-top:12px;font-size:.86rem;color:var(--text-light)}
 .empty{padding:16px;color:var(--text-mid)}
 button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
-@media(max-width:720px){.grid{grid-template-columns:1fr}.list{display:flex;gap:8px;overflow-x:auto}.casebtn{min-width:190px}}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.list{display:block}.caselist{display:flex;gap:8px;overflow-x:auto}.casebtn{min-width:190px}.filters{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}}
 </style>
 </head>
 <body>
@@ -58,23 +73,36 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offs
   <div class="kicker">Clinical Skills · relational practice</div>
   <h1>What Do You Say Next?</h1>
   <p class="sub">Short fictional scenarios for practicing psychiatric communication. Pick the next line, read the feedback, then connect the skill back to the topic page.</p>
-  <div class="notice"><b>Safety boundary:</b> fictional practice only. Do not enter patient information. This is not clinical advice, legal advice, or a substitute for supervision, local policy, or validated instruments.</div>
+  <div class="notice"><b>Safety boundary:</b> fictional practice only. Do not enter patient information. There are no free-text patient fields; this tool stores only anonymous practice choices in this browser. It is not clinical advice, legal advice, or a substitute for supervision, local policy, or validated instruments.</div>
   <div id="app" class="grid"><div class="empty">Loading cases...</div></div>
 </main>
 <script>
 (function(){
+var FILTERS=[
+  ['all','All'],['suicide','Suicide'],['psychosis','Psychosis'],['family-meeting','Family'],['mania','Mania'],['borderline-personality','BPD'],['medication','Medication'],['guardedness','Guardedness']
+];
 var app=document.getElementById('app');
-var state={cases:[],current:0,choice:null,attempts:loadAttempts(),requestedCase:requestedCaseId()};
+var state={cases:[],current:0,choice:null,filter:'all',attempts:loadAttempts(),requestedCase:requestedCaseId(),matchedRequest:false};
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function requestedCaseId(){try{return new URLSearchParams(location.search).get('case')||'';}catch(_){return '';}}
 function loadAttempts(){try{return JSON.parse(localStorage.getItem('cw_comm_v1')||'{}')||{};}catch(_){return {};}}
 function saveAttempt(caseId,choice){try{state.attempts[caseId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};localStorage.setItem('cw_comm_v1',JSON.stringify(state.attempts));}catch(_){}}
 function qualityLabel(q){return q==='best'?'Best next line':q==='partial'?'Partly useful':q==='harmful'?'Avoid this line':'Missed opportunity';}
-function navHtml(){return '<div class="list" aria-label="Communication cases">'+state.cases.map(function(c,i){var done=state.attempts[c.id];return '<button type="button" class="casebtn'+(i===state.current?' on':'')+'" data-i="'+i+'"><span class="t">'+esc(c.title)+'</span><span class="m">'+esc(c.topic)+(done?' · practiced':'')+'</span></button>';}).join('')+'</div>';}
-function caseHtml(c){var picked=state.choice;var draft=c.facultyReview&&c.facultyReview.status!=='reviewed';return '<section class="card"><div class="meta"><span class="pill">'+esc(c.setting)+'</span>'+(draft?'<span class="pill draft">Draft case · faculty review needed</span>':'<span class="pill">Reviewed</span>')+c.skillTags.map(function(t){return '<span class="pill">'+esc(t)+'</span>';}).join('')+'</div><div class="goal"><b>Practice goal:</b> '+esc(c.learnerGoal)+'</div><p class="prompt">'+esc(c.prompt)+'</p>'+c.choices.map(function(ch){var cls=picked&&picked.id===ch.id?' '+ch.quality:'';return '<button type="button" class="choice'+cls+'" data-choice="'+esc(ch.id)+'">'+esc(ch.text)+'</button>';}).join('')+(picked?'<div class="feedback"><b>'+qualityLabel(picked.quality)+'.</b> '+esc(picked.feedback)+'</div>':'')+'<div class="links">'+c.linkedPages.map(function(f){return '<a href="../index.html?page='+encodeURIComponent(f)+'">'+esc(f.replace(/\\.md$/,''))+'</a>';}).join('')+'</div><div class="progress">Saved locally in this browser only. Stored: case id, choice id, quality, and date. No free text.</div></section>';}
-function render(){if(!state.cases.length){app.innerHTML='<div class="empty">No communication cases are available.</div>';return;}app.innerHTML=navHtml()+caseHtml(state.cases[state.current]);}
-app.addEventListener('click',function(ev){var cb=ev.target.closest&&ev.target.closest('.casebtn');if(cb){state.current=+cb.getAttribute('data-i')||0;state.choice=null;render();return;}var chb=ev.target.closest&&ev.target.closest('.choice');if(chb){var c=state.cases[state.current];var id=chb.getAttribute('data-choice');state.choice=(c.choices||[]).filter(function(x){return x.id===id;})[0]||null;if(state.choice)saveAttempt(c.id,state.choice);render();}});
-fetch('../communication_cases.json').then(function(r){if(!r.ok)throw new Error('missing cases');return r.json();}).then(function(d){state.cases=(d&&d.cases)||[];if(state.requestedCase){for(var i=0;i<state.cases.length;i++){if(state.cases[i].id===state.requestedCase){state.current=i;break;}}}render();}).catch(function(){app.innerHTML='<div class="empty">Could not load communication cases. Rebuild the site or check communication_cases.json.</div>';});
+function doneLabel(q){return q==='best'?'practiced well':q==='partial'?'practiced':q==='harmful'?'retry':'review';}
+function caseMatches(c,f){if(f==='all')return true;var tags=(c.skillTags||[]).join(' ').toLowerCase();var topic=String(c.topic||'').toLowerCase();return tags.indexOf(f)>=0||topic.indexOf(f)>=0;}
+function filteredCases(){return state.cases.filter(function(c){return caseMatches(c,state.filter);});}
+function setCurrentById(id){for(var i=0;i<state.cases.length;i++){if(state.cases[i].id===id){state.current=i;return true;}}return false;}
+function currentCase(){return state.cases[state.current]||state.cases[0];}
+function filterHtml(){return '<div class="filters" role="list" aria-label="Filter communication cases">'+FILTERS.map(function(f){return '<button type="button" class="filter'+(state.filter===f[0]?' on':'')+'" data-filter="'+esc(f[0])+'">'+esc(f[1])+'</button>';}).join('')+'</div>';}
+function progressHtml(){var total=state.cases.length||1;var done=state.cases.filter(function(c){return state.attempts[c.id];}).length;var best=state.cases.filter(function(c){return state.attempts[c.id]&&state.attempts[c.id].quality==='best';}).length;var pct=Math.round(done*100/total);return '<div class="sidehead"><div class="n">'+done+' of '+total+' practiced</div><div class="d">'+best+' best-next-line selections saved locally</div><div class="bar" aria-hidden="true"><span style="width:'+pct+'%"></span></div></div>';}
+function navHtml(){var list=filteredCases();if(!list.length){return '<div class="list">'+progressHtml()+filterHtml()+'<div class="empty">No cases match this filter.</div></div>';}return '<div class="list" aria-label="Communication cases">'+progressHtml()+filterHtml()+'<div class="caselist">'+list.map(function(c){var i=state.cases.indexOf(c);var done=state.attempts[c.id];return '<button type="button" class="casebtn'+(i===state.current?' on':'')+'" data-i="'+i+'"><span class="t">'+esc(c.title)+'</span><span class="m">'+esc(c.topic)+'</span>'+(done?'<span class="done">'+esc(doneLabel(done.quality))+'</span>':'')+'</button>';}).join('')+'</div></div>';}
+function reviewBadge(c){var rv=c.facultyReview||{};if(rv.status==='reviewed')return '<span class="pill reviewed">Reviewed'+(rv.reviewer?' · '+esc(rv.reviewer):'')+(rv.lastReviewed?' · '+esc(rv.lastReviewed):'')+'</span>';return '<span class="pill draft">'+esc((rv.status||'draft').replace(/-/g,' '))+' · faculty review needed</span>';}
+function relatedCase(c){var done=state.attempts;var best=null;for(var i=0;i<state.cases.length;i++){var x=state.cases[i];if(x.id===c.id)continue;var tagHit=(x.skillTags||[]).some(function(t){return (c.skillTags||[]).indexOf(t)>=0;});var pageHit=(x.linkedPages||[]).some(function(p){return (c.linkedPages||[]).indexOf(p)>=0;});if(tagHit||pageHit){if(!done[x.id])return x;if(!best)best=x;}}return best||state.cases[(state.current+1)%state.cases.length];}
+function caseHtml(c){var picked=state.choice;var rec=state.matchedRequest&&c.id===state.requestedCase;var rel=relatedCase(c);return '<section class="card">'+(rec?'<div class="recommend"><b>Recommended from the page you opened.</b> Start here, then try another related case when you finish.</div>':'')+'<div class="meta"><span class="pill">'+esc(c.setting)+'</span>'+reviewBadge(c)+c.skillTags.map(function(t){return '<span class="pill">'+esc(t)+'</span>';}).join('')+'</div><div class="goal"><b>Practice goal:</b> '+esc(c.learnerGoal)+'</div><p class="prompt">'+esc(c.prompt)+'</p>'+c.choices.map(function(ch){var cls=picked&&picked.id===ch.id?' '+ch.quality:'';return '<button type="button" class="choice'+cls+'" data-choice="'+esc(ch.id)+'">'+esc(ch.text)+'</button>';}).join('')+(picked?'<div class="feedback"><b>'+qualityLabel(picked.quality)+'.</b> '+esc(picked.feedback)+'</div>':'')+'<div class="caseactions">'+(rel?'<button type="button" class="nextcase" data-case="'+esc(rel.id)+'">Try another related case</button>':'')+'</div><div class="links">'+c.linkedPages.map(function(f){return '<a href="../index.html?page='+encodeURIComponent(f)+'">'+esc(f.replace(/\\.md$/,''))+'</a>';}).join('')+'</div><div class="progress">Saved locally in this browser only. Stored: case id, choice id, quality, and date. No free text or patient identifiers.</div></section>';}
+function ensureVisibleCurrent(){var list=filteredCases();if(list.length&&list.indexOf(currentCase())<0){state.current=state.cases.indexOf(list[0]);state.choice=null;}}
+function render(){if(!state.cases.length){app.innerHTML='<div class="empty">No communication cases are available.</div>';return;}ensureVisibleCurrent();app.innerHTML=navHtml()+caseHtml(currentCase());}
+app.addEventListener('click',function(ev){var fb=ev.target.closest&&ev.target.closest('.filter');if(fb){state.filter=fb.getAttribute('data-filter')||'all';render();return;}var nb=ev.target.closest&&ev.target.closest('.nextcase');if(nb){setCurrentById(nb.getAttribute('data-case'));state.filter='all';state.choice=null;state.matchedRequest=false;render();return;}var cb=ev.target.closest&&ev.target.closest('.casebtn');if(cb){state.current=+cb.getAttribute('data-i')||0;state.choice=null;state.matchedRequest=false;render();return;}var chb=ev.target.closest&&ev.target.closest('.choice');if(chb){var c=currentCase();var id=chb.getAttribute('data-choice');state.choice=(c.choices||[]).filter(function(x){return x.id===id;})[0]||null;if(state.choice)saveAttempt(c.id,state.choice);render();}});
+fetch('../communication_cases.json').then(function(r){if(!r.ok)throw new Error('missing cases');return r.json();}).then(function(d){state.cases=(d&&d.cases)||[];if(state.requestedCase){state.matchedRequest=setCurrentById(state.requestedCase);}render();}).catch(function(){app.innerHTML='<div class="empty">Could not load communication cases. Rebuild the site or check communication_cases.json.</div>';});
 })();
 </script>
 </body>
