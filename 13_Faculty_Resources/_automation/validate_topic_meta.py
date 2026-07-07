@@ -76,29 +76,35 @@ if os.path.exists(communication_cases_path):
     except Exception as exc:
         print("communication_cases.json INVALID — %s" % exc)
         sys.exit(1)
-reasoning_cases_path = os.path.join(repo_root, "reasoning_cases.json")
-if os.path.exists(reasoning_cases_path):
+def validate_reasoning_cases(reasoning_cases_path):
     try:
         rc = json.load(open(reasoning_cases_path, encoding="utf-8"))
-        require_unique("reasoning_cases.json", [x.get("id") for x in rc.get("cases", []) if isinstance(x, dict) and x.get("id")])
+        label = os.path.basename(reasoning_cases_path)
+        require_unique(label, [x.get("id") for x in rc.get("cases", []) if isinstance(x, dict) and x.get("id")])
         for case in rc.get("cases", []):
             steps = case.get("steps", []) if isinstance(case, dict) else []
             if not steps:
-                print("reasoning_cases.json INVALID — %s must have at least one step" % case.get("id"))
+                print("%s INVALID — %s must have at least one step" % (label, case.get("id")))
                 sys.exit(1)
             for step in steps:
                 choices = step.get("choices", []) if isinstance(step, dict) else []
                 if sum(1 for ch in choices if isinstance(ch, dict) and ch.get("quality") == "best") != 1:
-                    print("reasoning_cases.json INVALID — %s/%s must have exactly one best choice" % (case.get("id"), step.get("id")))
+                    print("%s INVALID — %s/%s must have exactly one best choice" % (label, case.get("id"), step.get("id")))
                     sys.exit(1)
             ids = case.get("evidenceIds", []) if isinstance(case, dict) else []
             for eid in ids:
                 if evidence_ids and eid not in evidence_ids:
-                    print("reasoning_cases.json INVALID — %s references unknown evidence id %s" % (case.get("id"), eid))
+                    print("%s INVALID — %s references unknown evidence id %s" % (label, case.get("id"), eid))
                     sys.exit(1)
     except Exception as exc:
-        print("reasoning_cases.json INVALID — %s" % exc)
+        print("%s INVALID — %s" % (os.path.basename(reasoning_cases_path), exc))
         sys.exit(1)
+for reasoning_cases_path in (
+    os.path.join(repo_root, "reasoning_cases.json"),
+    os.path.join(repo_root, "reasoning_cases_resident.json"),
+):
+    if os.path.exists(reasoning_cases_path):
+        validate_reasoning_cases(reasoning_cases_path)
 errs = []
 def bad(k, msg): errs.append("%s: %s" % (k, msg))
 

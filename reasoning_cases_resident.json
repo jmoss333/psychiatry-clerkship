@@ -1,0 +1,469 @@
+{
+  "_note": "Resident-level fictional composite diagnostic-reasoning cases. This file is copied over reasoning_cases.json in the resident build. Do not include PHI. These cases teach supervised reasoning and team communication, not patient-specific diagnosis or treatment advice.",
+  "cases": [
+    {
+      "id": "mania_psychosis_substance_001",
+      "title": "Mania, Psychosis, Or Substance-Induced?",
+      "setting": "Resident-level admission formulation",
+      "learnerGoal": "Hold competing diagnostic hypotheses, state what would update each one, and connect the formulation to safe inpatient priorities.",
+      "patientBrief": "A 24-year-old is admitted after four nights of little sleep, pressured speech, grand plans, irritability, religious auditory experiences, heavy cannabis use, and one recent stimulant exposure.",
+      "facts": [
+        {"label": "Time course", "text": "Symptoms escalated over one week; sleep decreased before the most disorganized behavior."},
+        {"label": "Syndrome", "text": "Pressured speech, flight of ideas, grandiosity, irritability, increased goal-directed activity, and poor insight."},
+        {"label": "Substances", "text": "Cannabis most days; one stimulant exposure. Tox data are supportive but not explanatory by themselves."},
+        {"label": "Collateral", "text": "Family later describes a prior week of decreased sleep, spending, and conflict that resolved without hospitalization."}
+      ],
+      "steps": [
+        {
+          "id": "problem_representation",
+          "title": "Problem Representation",
+          "prompt": "Which problem representation best avoids both anchoring and diagnostic sprawl?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Young adult with acute manic syndrome, psychotic features, impaired judgment, and substance exposure, with bipolar, substance-induced, medical, and primary psychotic etiologies still being tested.",
+              "quality": "best",
+              "feedback": "Best. It names the syndrome, time course, risk, and uncertainty without converting the first impression into a final diagnosis."
+            },
+            {
+              "id": "b",
+              "text": "Young adult with first-episode psychosis and secondary sleep disruption, with mania to consider if psychosis persists after sobriety.",
+              "quality": "partial",
+              "feedback": "This is plausible, but it reverses the chronology and underweights decreased need for sleep, increased energy, pressured speech, and grandiosity."
+            },
+            {
+              "id": "c",
+              "text": "Likely substance-induced psychosis or mania because cannabis and stimulant exposure are objective data while mood history is collateral.",
+              "quality": "partial",
+              "feedback": "Objective data can still be misleading if interpreted without timing. Substance exposure is a contributor, not a complete formulation."
+            },
+            {
+              "id": "d",
+              "text": "Bipolar I disorder with psychotic features, now confirmed by collateral, with substance use addressed as a discharge issue.",
+              "quality": "missed",
+              "feedback": "Collateral raises the probability of bipolar illness, but confirmation is too strong and substance use remains relevant during admission."
+            }
+          ]
+        },
+        {
+          "id": "differential",
+          "title": "Differential Discipline",
+          "prompt": "How should the resident present the working differential on rounds?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Lead with manic syndrome with psychotic features; explicitly track substance-induced, medical/neurologic, and primary psychotic alternatives and the data that would move each up or down.",
+              "quality": "best",
+              "feedback": "Best. A resident-level differential is dynamic: it names the lead hypothesis and defines how uncertainty will be updated."
+            },
+            {
+              "id": "b",
+              "text": "Use schizoaffective disorder as the neutral diagnosis because it includes both mood and psychotic symptoms.",
+              "quality": "missed",
+              "feedback": "Schizoaffective disorder is not a neutral placeholder. It requires longitudinal evidence about psychosis outside mood episodes."
+            },
+            {
+              "id": "c",
+              "text": "Document bipolar disorder as primary and substance-induced disorder as secondary because collateral is more reliable than tox.",
+              "quality": "partial",
+              "feedback": "This may be where the formulation is heading, but the reasoning should avoid ranking evidence by source alone. Timing and recurrence matter."
+            },
+            {
+              "id": "d",
+              "text": "Keep the differential broad and avoid naming a leading diagnosis until several days of observation are complete.",
+              "quality": "missed",
+              "feedback": "Broad uncertainty can become avoidance. The team still needs a leading syndrome and a provisional risk-informed plan today."
+            }
+          ]
+        },
+        {
+          "id": "management_reasoning",
+          "title": "Management Reasoning",
+          "prompt": "Which resident-level next step best links formulation to inpatient work without overreaching?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Frame the plan around safety, sleep restoration, agitation risk, medical/substance rule-out, collateral, and supervised medication reasoning rather than a single diagnostic label.",
+              "quality": "best",
+              "feedback": "Best. It connects diagnostic reasoning to ward priorities and keeps prescribing decisions supervised and formulation-driven."
+            },
+            {
+              "id": "b",
+              "text": "Delay treatment planning until the substance-induced versus bipolar distinction is resolved.",
+              "quality": "missed",
+              "feedback": "Inpatient care cannot wait for perfect certainty. Safety, sleep, observation, collateral, and medical workup can proceed under uncertainty."
+            },
+            {
+              "id": "c",
+              "text": "Prioritize antipsychotic selection because psychosis is the symptom most likely to prolong hospitalization.",
+              "quality": "partial",
+              "feedback": "Medication selection may matter, but it should not eclipse sleep, mania, substances, medical contributors, safety, and alliance."
+            },
+            {
+              "id": "d",
+              "text": "Use the prior episode to teach the family that this is definitively bipolar disorder and substance use is not causal.",
+              "quality": "harmful",
+              "feedback": "This overstates certainty and can damage alliance. Psychoeducation should acknowledge probability, contributors, and what the team is still learning."
+            }
+          ]
+        }
+      ],
+      "biasChecks": [
+        "Do not let a positive tox screen become a complete explanation.",
+        "Do not let manic symptoms disappear behind the word psychosis.",
+        "Define what data would change your working diagnosis."
+      ],
+      "linkedPages": ["t_mood.md", "t_psychosis.md", "t_sud.md", "pg_formulation.md", "ddx.md"],
+      "evidenceIds": [],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "delirium_vs_psychosis_001",
+      "title": "Delirium Or New Psychosis?",
+      "setting": "Resident-level consultation formulation",
+      "learnerGoal": "Prioritize syndrome recognition, reversible drivers, medication risk, and consult communication when psychosis-like symptoms occur on a medical service.",
+      "patientBrief": "A 72-year-old post-op patient reports insects on the wall. Nursing describes waxing and waning confusion, nighttime worsening, new urinary symptoms, opioid exposure, and diphenhydramine for sleep.",
+      "facts": [
+        {"label": "Attention", "text": "Cannot sustain months backward; drifts off, then becomes frightened and vigilant."},
+        {"label": "Arousal", "text": "Somnolent in the morning, agitated after midnight, and inconsistently oriented."},
+        {"label": "Drivers", "text": "Post-op pain, sleep disruption, possible infection, anticholinergic exposure, and opioids."},
+        {"label": "Baseline", "text": "Family reports mild forgetfulness but independent function before surgery."}
+      ],
+      "steps": [
+        {
+          "id": "syndrome",
+          "title": "Syndrome Recognition",
+          "prompt": "Which formulation is strongest for the consult note?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Acute fluctuating inattention and altered arousal consistent with delirium, likely multifactorial, with visual hallucinations as part of the syndrome.",
+              "quality": "best",
+              "feedback": "Best. It makes delirium the syndrome and treats hallucinations as a feature rather than the organizing diagnosis."
+            },
+            {
+              "id": "b",
+              "text": "Medication-induced psychosis from anticholinergic and opioid exposure, with delirium precautions while awaiting improvement.",
+              "quality": "partial",
+              "feedback": "Medication effects are plausible drivers, but the syndrome is delirium. Naming only medication-induced psychosis may narrow the workup too early."
+            },
+            {
+              "id": "c",
+              "text": "Dementia with behavioral disturbance precipitated by hospitalization, because family reports baseline forgetfulness.",
+              "quality": "partial",
+              "feedback": "Baseline cognition affects vulnerability, but acute fluctuation and inattention should not be reduced to dementia progression."
+            },
+            {
+              "id": "d",
+              "text": "Late-life primary psychosis should lead because hallucinations are vivid and frightening.",
+              "quality": "missed",
+              "feedback": "Late-life psychosis exists, but acute post-op fluctuation and inattention put delirium first."
+            }
+          ]
+        },
+        {
+          "id": "consult_recommendation",
+          "title": "Consult Recommendation",
+          "prompt": "Which recommendation best balances psychiatry input with medical ownership?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Recommend a delirium driver review, deliriogenic medication reduction where feasible, infection/metabolic/hypoxia assessment, sleep-wake support, mobilization, sensory aids, and supervised agitation planning.",
+              "quality": "best",
+              "feedback": "Best. It is practical, multidisciplinary, and avoids framing delirium as only a psychiatry medication problem."
+            },
+            {
+              "id": "b",
+              "text": "Recommend an antipsychotic only if the patient is dangerous, but otherwise defer all workup to the primary team.",
+              "quality": "partial",
+              "feedback": "This respects medical ownership but is too passive. Psychiatry can help structure the reversible-driver review and nonpharmacologic plan."
+            },
+            {
+              "id": "c",
+              "text": "Recommend benzodiazepines for sleep if hallucinations worsen overnight, because sleep deprivation perpetuates delirium.",
+              "quality": "harmful",
+              "feedback": "Benzodiazepines can worsen non-withdrawal delirium. Sleep support should emphasize safer environmental and medical steps unless local supervised indications apply."
+            },
+            {
+              "id": "d",
+              "text": "Recommend transfer to psychiatry once medically stable because hallucinations are now the dominant symptom.",
+              "quality": "missed",
+              "feedback": "The dominant syndrome is still delirium on a medical floor. Transfer framing can delay medical treatment of reversible causes."
+            }
+          ]
+        },
+        {
+          "id": "family_update",
+          "title": "Family Update",
+          "prompt": "What is the best way to explain the reasoning to family?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "This looks like delirium: a sudden, fluctuating brain-state change often driven by medical stressors and medications; the team is looking for reversible causes while keeping the patient safe.",
+              "quality": "best",
+              "feedback": "Best. It validates the frightening symptoms, explains the syndrome, and avoids implying the patient has suddenly developed a primary psychiatric illness."
+            },
+            {
+              "id": "b",
+              "text": "The hallucinations are not psychiatric because they are caused by surgery and medication.",
+              "quality": "partial",
+              "feedback": "The intent is reassuring, but the statement is too certain. Delirium is a neuropsychiatric syndrome with multiple contributors."
+            },
+            {
+              "id": "c",
+              "text": "The patient may have dementia, but we will know after the infection workup returns.",
+              "quality": "missed",
+              "feedback": "Baseline cognition matters, but this explanation does not center acute delirium or the fluctuating attention problem."
+            },
+            {
+              "id": "d",
+              "text": "The patient is psychotic right now, so the family should avoid reinforcing the hallucinations.",
+              "quality": "missed",
+              "feedback": "Do not use a primary-psychosis frame for delirium education. Family can help with reorientation, glasses/hearing aids, familiar voices, and baseline history."
+            }
+          ]
+        }
+      ],
+      "biasChecks": [
+        "Do not let vivid hallucinations outweigh attention and arousal.",
+        "Do not make psychiatry the owner of a medical delirium syndrome.",
+        "Name reversible drivers and what the team can do today."
+      ],
+      "linkedPages": ["delirium.md", "t_neurocog.md", "exp_consult.md", "ddx.md"],
+      "evidenceIds": ["nice-delirium-cg103"],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "catatonia_vs_refusal_001",
+      "title": "Catatonia Or Refusal?",
+      "setting": "Resident-level inpatient risk formulation",
+      "learnerGoal": "Recognize catatonia while carrying dangerous mimics, medication risk, and escalation thresholds.",
+      "patientBrief": "A patient with severe depression is mute, staring, barely eating, and holding an awkward arm posture. Staff wonder whether the patient is refusing care or becoming psychotic again.",
+      "facts": [
+        {"label": "Motor", "text": "Staring, immobility, posturing, negativism, and possible waxy flexibility."},
+        {"label": "Risk", "text": "Poor oral intake, immobility, and concern for dehydration."},
+        {"label": "Context", "text": "Severe mood episode with psychotic guilt themes earlier in admission."},
+        {"label": "Uncertainty", "text": "Vitals are currently stable; medication exposure and medical contributors need review."}
+      ],
+      "steps": [
+        {
+          "id": "language",
+          "title": "Language And Differential",
+          "prompt": "Which chart language best supports resident-level reasoning?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Objective motor syndrome concerning for catatonia: mutism, staring, posturing, negativism, and poor intake; assess with BFCRS and review medical, medication, delirium, and NMS/malignant features.",
+              "quality": "best",
+              "feedback": "Best. It names observed signs, uses structured assessment, and keeps dangerous mimics and complications in view."
+            },
+            {
+              "id": "b",
+              "text": "Psychotic depression with severe psychomotor retardation; catatonia remains possible if BFCRS is positive.",
+              "quality": "partial",
+              "feedback": "This is not unreasonable, but it makes depression the organizing diagnosis before naming the motor syndrome that needs urgent assessment."
+            },
+            {
+              "id": "c",
+              "text": "Behavioral refusal versus catatonia; use oral intake and cooperation with nursing care to distinguish them.",
+              "quality": "missed",
+              "feedback": "Catatonia cannot be separated from refusal by cooperation alone. Objective motor signs and structured assessment are needed."
+            },
+            {
+              "id": "d",
+              "text": "Likely malignant catatonia because poor intake is present, even though autonomic signs are absent.",
+              "quality": "partial",
+              "feedback": "Malignant catatonia must be monitored for, but do not overcall it without fever, autonomic instability, rigidity, or concerning labs."
+            }
+          ]
+        },
+        {
+          "id": "first_move",
+          "title": "First Move",
+          "prompt": "What is the safest resident next step?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Raise catatonia urgently, obtain BFCRS, trend vitals/intake/mobility, review medications and medical drivers, and discuss supervised benzodiazepine challenge and escalation thresholds.",
+              "quality": "best",
+              "feedback": "Best. It combines recognition, measurement, medical safety, medication risk, and supervised treatment reasoning."
+            },
+            {
+              "id": "b",
+              "text": "Hold antipsychotic changes until BFCRS is complete, but otherwise observe because vitals are stable.",
+              "quality": "partial",
+              "feedback": "Avoiding reflexive antipsychotic escalation is good, but observation alone is too passive given intake and immobility risks."
+            },
+            {
+              "id": "c",
+              "text": "Increase antipsychotic coverage for psychotic depression while monitoring for rigidity and fever.",
+              "quality": "harmful",
+              "feedback": "Antipsychotics can worsen catatonia or malignant catatonia/NMS. The resident should elevate catatonia before escalating that pathway."
+            },
+            {
+              "id": "d",
+              "text": "Focus on capacity and refusal documentation because the patient is not eating.",
+              "quality": "missed",
+              "feedback": "Capacity may become relevant, but the immediate diagnostic problem is a potentially treatable motor syndrome with medical risk."
+            }
+          ]
+        },
+        {
+          "id": "escalation",
+          "title": "Escalation Threshold",
+          "prompt": "Which reasoning best defines when the case becomes emergent?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Escalate urgently for fever, autonomic instability, worsening rigidity, rising CK, dehydration, immobility complications, or failure to improve with supervised first-line treatment.",
+              "quality": "best",
+              "feedback": "Best. It names the physiologic and treatment-response signals that should change urgency."
+            },
+            {
+              "id": "b",
+              "text": "Escalate only if the patient becomes violent or actively suicidal.",
+              "quality": "missed",
+              "feedback": "Catatonia can become life-threatening through medical complications even without violence or expressed suicidality."
+            },
+            {
+              "id": "c",
+              "text": "Escalate if the BFCRS score is high, but vitals and oral intake are secondary.",
+              "quality": "partial",
+              "feedback": "BFCRS helps quantify symptoms, but medical instability, intake, immobility, and autonomic signs drive urgency."
+            },
+            {
+              "id": "d",
+              "text": "Escalate when the diagnosis is certain, because premature treatment can obscure the mental status exam.",
+              "quality": "harmful",
+              "feedback": "Waiting for certainty can be dangerous. Catatonia is a clinical syndrome where timely supervised treatment and monitoring matter."
+            }
+          ]
+        }
+      ],
+      "biasChecks": [
+        "Do not treat poor cooperation as evidence against catatonia.",
+        "Do not let stable vitals erase intake and immobility risk.",
+        "Before antipsychotic escalation, ask whether catatonia or NMS is on the table."
+      ],
+      "linkedPages": ["catatonia.md", "bfcrs.html", "delirium.md", "ddx.md"],
+      "evidenceIds": ["bap-catatonia-2023"],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "trauma_bpd_mood_001",
+      "title": "Crisis, Trauma, Mood, Or Personality?",
+      "setting": "Resident-level formulation conference",
+      "learnerGoal": "Build a nonstigmatizing formulation that separates acute risk, trauma, mood syndrome, personality pattern, treatment targets, and team communication.",
+      "patientBrief": "A 28-year-old admitted after self-injury following a breakup reports chronic emptiness, childhood trauma, nightmares, mood reactivity, intermittent suicidal thoughts, and escalating conflict with staff over discharge timing.",
+      "facts": [
+        {"label": "Risk", "text": "Self-injury escalated after perceived abandonment; suicidal thoughts fluctuate with interpersonal stress."},
+        {"label": "Trauma", "text": "Nightmares, avoidance, hypervigilance, and shame themes since childhood abuse."},
+        {"label": "Mood", "text": "Affective shifts over hours; no sustained decreased need for sleep, grandiosity, or increased goal-directed activity."},
+        {"label": "System", "text": "Team members disagree: some favor rapid discharge, others feel the patient is unsafe and being rejected."}
+      ],
+      "steps": [
+        {
+          "id": "separate_layers",
+          "title": "Separate The Layers",
+          "prompt": "Which formulation best separates diagnosis from treatment targets?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Acute self-harm risk after attachment rupture, with PTSD symptoms, affective instability, possible depressive disorder, and borderline personality traits; target safety, sleep, emotion regulation, alliance, and follow-up.",
+              "quality": "best",
+              "feedback": "Best. It separates acute risk, syndromes, longitudinal pattern, and immediate inpatient treatment targets without blame."
+            },
+            {
+              "id": "b",
+              "text": "PTSD and major depression are sufficient diagnoses for now; personality formulation can wait because it may stigmatize care.",
+              "quality": "partial",
+              "feedback": "This protects against stigma, but it may miss relational risk patterns that affect alliance, discharge planning, and team consistency."
+            },
+            {
+              "id": "c",
+              "text": "Borderline personality disorder is the central diagnosis; trauma and depression are common comorbidities but secondary to discharge planning.",
+              "quality": "missed",
+              "feedback": "This overcentralizes the label and risks flattening trauma, mood, acute safety, and collaborative treatment targets."
+            },
+            {
+              "id": "d",
+              "text": "Bipolar spectrum disorder should remain high because mood reactivity and impulsive self-injury can be mixed-state signs.",
+              "quality": "missed",
+              "feedback": "Bipolar disorder can be missed, but the provided time course lacks sustained manic or hypomanic syndrome. Keep it as a question, not the lead."
+            }
+          ]
+        },
+        {
+          "id": "team_split",
+          "title": "Team Communication",
+          "prompt": "How should the resident address the team disagreement?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Name that the team may be reacting differently to the same attachment-risk cycle; align around objective risk, consistent limits, validation, discharge criteria, and one shared message.",
+              "quality": "best",
+              "feedback": "Best. It turns countertransference and team split into a structured clinical intervention."
+            },
+            {
+              "id": "b",
+              "text": "Ask staff to avoid reinforcing maladaptive behavior while the resident finalizes the discharge plan.",
+              "quality": "partial",
+              "feedback": "Limit-setting may matter, but this wording risks blaming the patient and bypassing validation, risk formulation, and shared criteria."
+            },
+            {
+              "id": "c",
+              "text": "Defer discharge until the team feels comfortable, because disagreement itself means the risk is too high.",
+              "quality": "missed",
+              "feedback": "Team discomfort is data, not a disposition criterion. Convert it into objective risk questions and a consistent plan."
+            },
+            {
+              "id": "d",
+              "text": "Avoid discussing personality dynamics with the team because it will worsen stigma.",
+              "quality": "missed",
+              "feedback": "The solution to stigma is precise, compassionate formulation, not silence about dynamics that affect safety and care."
+            }
+          ]
+        },
+        {
+          "id": "discharge_reasoning",
+          "title": "Discharge Reasoning",
+          "prompt": "Which discharge formulation is most clinically useful?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Discharge readiness depends on current suicide risk, means safety, coping plan, alliance repair, follow-up intensity, family/collateral input when appropriate, and a clear crisis plan, not diagnostic certainty alone.",
+              "quality": "best",
+              "feedback": "Best. It links formulation to actionable risk and continuity elements rather than using a diagnosis as the disposition."
+            },
+            {
+              "id": "b",
+              "text": "Because chronic risk is high, discharge should wait until suicidal thoughts resolve completely.",
+              "quality": "missed",
+              "feedback": "Complete symptom elimination is often unrealistic. The question is whether acute risk is reduced and supports are adequate."
+            },
+            {
+              "id": "c",
+              "text": "Because hospitalization may reinforce dependency, discharge should proceed once the legal hold expires.",
+              "quality": "harmful",
+              "feedback": "This overcorrects. Avoiding iatrogenic harm matters, but legal status alone is not a clinical risk formulation."
+            },
+            {
+              "id": "d",
+              "text": "The safest plan is outpatient DBT referral and medication adjustment, with inpatient work focused mostly on documentation.",
+              "quality": "partial",
+              "feedback": "DBT referral and medication review may help, but the inpatient resident must still address acute risk, alliance, family/collateral, and transition safety."
+            }
+          ]
+        }
+      ],
+      "biasChecks": [
+        "Do not let stigma decide whether you name personality patterns.",
+        "Do not let team emotion become the disposition plan.",
+        "Separate chronic baseline risk from acute modifiable risk."
+      ],
+      "linkedPages": ["t_personality.md", "pg_suicide.md", "brief_psychotherapy.md", "pg_formulation.md"],
+      "evidenceIds": [],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    }
+  ]
+}

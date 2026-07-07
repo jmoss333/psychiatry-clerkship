@@ -76,6 +76,8 @@ if os.path.isdir(_vendor_src) and not os.path.exists(_vendor_dst):
 _ms3map=MS3.rstrip("/\\")+".source-map.json"
 _srcs=set(json.load(open(_ms3map,encoding="utf-8"))["sources"]) if os.path.exists(_ms3map) else set()
 _srcs|={s for s,_ in RES_EXTRA}|{s for s,_ in PROTO_TOOLS}
+if os.path.exists(os.path.join(LIB,"reasoning_cases_resident.json")):
+    _srcs.add("reasoning_cases_resident.json")
 open(OUT.rstrip("/\\")+".source-map.json","w",encoding="utf-8").write(json.dumps({"sources":sorted(_srcs)}))
 
 # ---- rebrand index.html (copied, already dark/motion/polished) ----
@@ -97,6 +99,13 @@ if os.path.exists(lp):
     s=s.replace("Inpatient Psychiatry — Learning Path","MMC Psychiatry — Learning Path")
     s=s.replace("MS3 Clerkship · Joshua Moss, MD","Resident Rotation · Joshua Moss, MD")
     open(lp,"w",encoding="utf-8").write(s)
+
+# ---- resident-level reasoning cases: same tool, harder audience-specific payload ----
+_resident_reasoning=os.path.join(LIB,"reasoning_cases_resident.json")
+if os.path.exists(_resident_reasoning):
+    shutil.copy2(_resident_reasoning, OUT+"/reasoning_cases.json")
+else:
+    print("  WARN: resident reasoning cases missing from source:",_resident_reasoning)
 
 # ---- resident nav ----
 TOOLS=[("mse.html","Mental Status Exam"),("interview-circle.html","The Interview Circle"),("communication-practice.html","What Do You Say Next?"),("diagnostic-reasoning.html","Diagnostic Reasoning Workbench"),("capacity.html","Decisional Capacity"),("oral.html","Treatment Team Rounding Prep"),
