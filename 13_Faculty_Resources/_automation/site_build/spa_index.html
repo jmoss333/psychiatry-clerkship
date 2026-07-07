@@ -84,6 +84,7 @@
   .loading{color:var(--text-mid);padding:28px 4px}
   .error{padding:8px 4px}
   .reviewed{display:inline-block;font-size:.76rem;font-weight:700;color:var(--accent-dark);background:var(--accent-light);border:1px solid #cfe1db;border-radius:999px;padding:3px 11px;margin:0 0 12px}
+  .page-review-footer{margin:26px 0 0}
   .md-body{max-width:820px;margin:0 auto;padding:26px 28px 60px}
   .md-body h1{font-family:var(--font-head);color:var(--primary);font-size:2rem;margin:.2em 0 .4em}
   .md-body h2{font-family:var(--font-head);color:var(--text);font-size:1.4rem;margin:1.3em 0 .4em;border-bottom:1px solid var(--border);padding-bottom:4px}
@@ -142,11 +143,18 @@
   .tpl-chip.safety{color:var(--danger);background:var(--danger-light);border-color:var(--danger)}
   .tpl-chip.evidence{color:var(--accent-dark);background:var(--accent-light);border-color:var(--accent)}
   .tpl-chip.review{color:var(--success);background:var(--success-light);border-color:var(--success)}
-  .tpl-meta .revcount{margin-left:auto;align-self:center;font-size:.66rem;color:var(--text-light)}
-  .tpl-meta .markrev{font-size:.68rem;font-weight:700;letter-spacing:.04em;border-radius:999px;padding:3px 11px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-family:inherit}
-  .tpl-meta .markrev:hover{border-color:var(--accent);color:var(--accent-dark)}
-  .tpl-meta .markrev.on{background:var(--success-light);border-color:var(--success);color:var(--success)}
   .practice-panel .tpl-meta{margin:0 0 12px}
+  .page-title-row{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin:.2em 0 .25em}
+  .page-title-row h1{margin:0}
+  .page-title-row .markrev{font-size:.68rem;font-weight:800;letter-spacing:.03em;border-radius:999px;padding:4px 9px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-family:inherit;white-space:nowrap;margin-top:.42rem}
+  .page-title-row .markrev:hover{border-color:var(--accent);color:var(--accent-dark);background:var(--accent-light)}
+  .page-title-row .markrev.on{background:var(--success-light);border-color:var(--success);color:var(--success)}
+  .review-ledger{display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;margin:-2px 0 14px;padding:0;color:var(--text-mid)}
+  .review-ledger .k{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-dark)}
+  .review-ledger .v{font-size:.78rem;color:var(--text-mid);line-height:1.35}
+  .review-ledger .revcount{font-weight:800;color:var(--text)}
+  .review-ledger .review-date{color:var(--text-light)}
+  @media(max-width:560px){.page-title-row{display:block}.page-title-row .markrev{margin:.25rem 0 .1rem}}
   .in30{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:13px 16px;margin:0 0 14px}
   .practice-panel .in30{background:transparent;border-left:none;border-radius:0;padding:0;margin:0}
   .in30 .lbl{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark);margin-bottom:6px}
@@ -406,8 +414,32 @@
   }
   function progLoad(){ try{ return JSON.parse(localStorage.getItem('cw_progress_v1'))||{}; }catch(_){ return {}; } }
   function progSave(o){ try{ localStorage.setItem('cw_progress_v1',JSON.stringify(o)); }catch(_){ } }
-  function topicCount(){ var n=0; for(var k in TOPIC_META){ if(k.charAt(0)!=='_'&&TOPIC_META[k]&&TOPIC_META[k].quiz) n++; } return n||1; }
-  function reviewedCount(p){ p=p||progLoad(); var n=0; for(var k in p){ if(p[k]&&p[k].done) n++; } return n; }
+  function reviewableItems(){ var out=[],seen={}; [].forEach.call(document.querySelectorAll('#nav .navitem'),function(b){ var it=b._item; if(!it||it.k!=='md'||seen[it.f])return; seen[it.f]=1; out.push({f:it.f,t:it.t}); }); return out; }
+  function reviewStats(p){ p=p||progLoad(); var items=reviewableItems(), done=0; if(items.length){ for(var i=0;i<items.length;i++){ if(p[items[i].f]&&p[items[i].f].done)done++; } return {done:done,total:items.length}; } for(var k in p){ if(p[k]&&p[k].done)done++; } return {done:done,total:done||1}; }
+  function reviewedCount(p){ return reviewStats(p).done; }
+  function reviewableTotal(p){ return reviewStats(p).total; }
+  function buildReviewButton(file,p){
+    p=p||progLoad(); var done=!!(p[file]&&p[file].done);
+    return '<button type="button" class="markrev'+(done?' on':'')+'" data-f="'+esc(file||'')+'" aria-pressed="'+(done?'true':'false')+'">'+(done?'✓ Reviewed':'Mark reviewed')+'</button>';
+  }
+  function installTitleReviewButton(file){
+    var h1=contentEl.querySelector('h1'); if(!h1)return null;
+    var row=document.createElement('div'); row.className='page-title-row';
+    h1.parentNode.insertBefore(row,h1); row.appendChild(h1);
+    var b=document.createElement('span'); b.innerHTML=buildReviewButton(file); if(b.firstChild)row.appendChild(b.firstChild);
+    return row;
+  }
+  function buildReviewLedger(file){
+    var p=progLoad(), stats=reviewStats(p), done=!!(p[file]&&p[file].done), at=done&&p[file].at;
+    var h='<div class="review-ledger" data-review-for="'+esc(file||'')+'"><span class="k">Review coverage</span><span class="v"><span class="revcount">'+stats.done+' of '+stats.total+' reviewable pages</span><span class="review-date">'+(at?(' · reviewed '+esc(at)):' · not yet reviewed')+'</span></span></div>';
+    return h;
+  }
+  function refreshReviewLedger(file,p){
+    p=p||progLoad(); var stats=reviewStats(p), done=!!(p[file]&&p[file].done), at=done&&p[file].at;
+    [].forEach.call(contentEl.querySelectorAll('.revcount'),function(el){ el.textContent=stats.done+' of '+stats.total+' reviewable pages'; });
+    [].forEach.call(contentEl.querySelectorAll('.review-date'),function(el){ el.textContent=at?(' · reviewed '+at):' · not yet reviewed'; });
+    [].forEach.call(contentEl.querySelectorAll('.markrev'),function(el){ if(el.getAttribute('data-f')!==file)return; el.classList.toggle('on',done); el.setAttribute('aria-pressed',String(done)); el.textContent=done?'✓ Reviewed':'Mark reviewed'; });
+  }
   function seedSRS(file){ try{ var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}}; } var id='TOPIC#'+file; if(!s.cards[id]){ s.cards[id]={ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } }catch(_){ } }
   function ctaHref(h){ h=h||''; var mt=h.match(/^tools\/([^\/?#]+\.html)$/); return mt?('?tool='+mt[1]):h; }
   function ctaAttrs(h){ return /^\?(page|tool)=/.test(h)?'':' target="_blank" rel="noopener"'; }
@@ -476,7 +508,7 @@
     var h='<details class="topic-tpl practice-panel">';
     h+='<summary class="practice-summary"><span class="practice-tab">On unit</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
-    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; var _p=progLoad(),_dn=_p[file]&&_p[file].done; h+='<span class="revcount">'+reviewedCount(_p)+' of '+topicCount()+' reviewed</span><button type="button" class="markrev'+(_dn?' on':'')+'" data-f="'+esc(file||'')+'" aria-pressed="'+(_dn?'true':'false')+'">'+(_dn?'✓ Reviewed':'☆ Mark reviewed')+'</button>'; h+='</div>';
+    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; h+='</div>';
     h+='<div class="practice-sections">';
     h+='<section class="practice-section"><div class="practice-section-title">In 30 seconds</div>';
     if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
@@ -505,7 +537,7 @@
   window.addEventListener('resize',syncDrawer); syncDrawer();
   function pageTitle(it){ return it ? (it.t+' \u2014 MS3 Psychiatry Clerkship') : 'Inpatient Psychiatry \u2014 MS3 Clerkship'; }
   function setRoute(it, replace, opts){ var extra=(it&&it.k==='tool'&&opts&&opts.toolExtra)?opts.toolExtra:''; var q = it ? ((it.k==='tool'?'?tool=':'?page=')+encodeURIComponent(it.f)+extra) : location.pathname; try{ if(replace) history.replaceState({f:it&&it.f},'',q); else if(location.search!==q) history.pushState({f:it&&it.f},'',q); }catch(_){ } document.title=pageTitle(it); }
-  contentEl.addEventListener('click',function(ev){ var pf=ev.target.closest?ev.target.closest('.pgfb-b'):null; if(pf){ try{localStorage.setItem('cw_fb_ctx', currentItem?currentItem.t:'');}catch(_){ } var _fbn=document.querySelector('.navitem[data-f="feedback.html"]'); if(_fbn) _fbn.click(); return; } var mr=ev.target.closest?ev.target.closest('.markrev'):null; if(mr){ var mf=mr.getAttribute('data-f'); var pp=progLoad(); var nd=!(pp[mf]&&pp[mf].done); if(nd){ pp[mf]={done:true,at:new Date().toISOString().slice(0,10)}; seedSRS(mf); } else { delete pp[mf]; } progSave(pp); mr.classList.toggle('on',nd); mr.setAttribute('aria-pressed',String(nd)); mr.textContent=nd?'✓ Reviewed':'☆ Mark reviewed'; var rcx=mr.parentNode&&mr.parentNode.querySelector('.revcount'); if(rcx) rcx.textContent=reviewedCount(pp)+' of '+topicCount()+' reviewed'; return; } var ty=ev.target.closest?ev.target.closest('.tyo'):null; if(ty){ var wrap=ty.closest('.tyourself'); if(wrap&&!wrap.getAttribute('data-done')){ wrap.setAttribute('data-done','1'); var os=wrap.querySelectorAll('.tyo'); for(var z=0;z<os.length;z++){ if(os[z].getAttribute('data-c')==='1') os[z].classList.add('correct'); } if(ty.getAttribute('data-c')!=='1') ty.classList.add('wrong'); try{ var _qf=currentItem&&currentItem.f; if(_qf){ var _qs=JSON.parse(localStorage.getItem('cw_quiz_v1')||'{}'); var _qe=_qs[_qf]||{seen:0,wrong:0}; _qe.seen++; if(ty.getAttribute('data-c')!=='1')_qe.wrong++; _qe.last=new Date().toISOString().slice(0,10); _qs[_qf]=_qe; localStorage.setItem('cw_quiz_v1',JSON.stringify(_qs)); } }catch(_){ } var fb=wrap.querySelector('.tyfb'); if(fb) fb.classList.add('show'); } return; } var a=ev.target.closest?ev.target.closest('a'):null; if(!a)return; var href=a.getAttribute('href')||''; var m=href.match(/[?&](page|tool)=([^&#]+)/); if(m){ ev.preventDefault(); var f=decodeURIComponent(m[2]); var extra=''; if(m[1]==='tool'){ try{ extra=toolExtraFromParams(new URL(href,location.href).searchParams); }catch(_){} } var all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===f){ show(all[i]._item,all[i],extra?{toolExtra:extra}:undefined); return; } } } });
+  contentEl.addEventListener('click',function(ev){ var pf=ev.target.closest?ev.target.closest('.pgfb-b'):null; if(pf){ try{localStorage.setItem('cw_fb_ctx', currentItem?currentItem.t:'');}catch(_){ } var _fbn=document.querySelector('.navitem[data-f="feedback.html"]'); if(_fbn) _fbn.click(); return; } var mr=ev.target.closest?ev.target.closest('.markrev'):null; if(mr){ var mf=mr.getAttribute('data-f'); var pp=progLoad(); var nd=!(pp[mf]&&pp[mf].done); if(nd){ pp[mf]={done:true,at:new Date().toISOString().slice(0,10)}; seedSRS(mf); } else { delete pp[mf]; } progSave(pp); refreshReviewLedger(mf,pp); return; } var ty=ev.target.closest?ev.target.closest('.tyo'):null; if(ty){ var wrap=ty.closest('.tyourself'); if(wrap&&!wrap.getAttribute('data-done')){ wrap.setAttribute('data-done','1'); var os=wrap.querySelectorAll('.tyo'); for(var z=0;z<os.length;z++){ if(os[z].getAttribute('data-c')==='1') os[z].classList.add('correct'); } if(ty.getAttribute('data-c')!=='1') ty.classList.add('wrong'); try{ var _qf=currentItem&&currentItem.f; if(_qf){ var _qs=JSON.parse(localStorage.getItem('cw_quiz_v1')||'{}'); var _qe=_qs[_qf]||{seen:0,wrong:0}; _qe.seen++; if(ty.getAttribute('data-c')!=='1')_qe.wrong++; _qe.last=new Date().toISOString().slice(0,10); _qs[_qf]=_qe; localStorage.setItem('cw_quiz_v1',JSON.stringify(_qs)); } }catch(_){ } var fb=wrap.querySelector('.tyfb'); if(fb) fb.classList.add('show'); } return; } var a=ev.target.closest?ev.target.closest('a'):null; if(!a)return; var href=a.getAttribute('href')||''; var m=href.match(/[?&](page|tool)=([^&#]+)/); if(m){ ev.preventDefault(); var f=decodeURIComponent(m[2]); var extra=''; if(m[1]==='tool'){ try{ extra=toolExtraFromParams(new URL(href,location.href).searchParams); }catch(_){} } var all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===f){ show(all[i]._item,all[i],extra?{toolExtra:extra}:undefined); return; } } } });
   function show(item, btn, opts){
     try{ if(currentItem) SCROLL[currentItem.f]=window.scrollY||window.pageYOffset||0; }catch(_){ }
     document.querySelectorAll('.navitem.on').forEach(function(b){b.classList.remove('on');b.removeAttribute('aria-current');});
@@ -533,13 +565,13 @@
     fetch('content/'+item.f).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
       contentEl.innerHTML=marked.parse(t);
       if(item.f==='welcome.md'){try{localStorage.setItem('cw_seen_welcome_v1','1');localStorage.setItem('cw_seen_start','1');}catch(_){ }}
-      var _anchor=contentEl.querySelector('h1');
+      var _anchor=installTitleReviewButton(item.f)||contentEl.querySelector('h1');
       function _insertAfterTitle(node){ if(!node)return; if(_anchor&&_anchor.parentNode){ _anchor.parentNode.insertBefore(node,_anchor.nextSibling); _anchor=node; } else contentEl.insertBefore(node,contentEl.firstChild); }
       var rv=REVIEWED&&REVIEWED[item.f];
-      if(rv&&rv.status==='reviewed'){ var st=document.createElement('div'); st.className='reviewed'; st.textContent='\u2713 Reviewed by '+(rv.by||'faculty')+(rv.at?(' \u00b7 '+rv.at):''); _insertAfterTitle(st); }
+      var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
-      makeCollapsible(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); try{if(window.__afterContent)window.__afterContent(item);}catch(_){ } try{contentEl.classList.remove('cc-rise');void contentEl.offsetWidth;contentEl.classList.add('cc-rise');}catch(_){ } var _sy=(opts&&opts.fromHistory&&SCROLL[item.f]!=null)?SCROLL[item.f]:0; window.scrollTo(0,_sy);
+      makeCollapsible(contentEl); if(rv&&rv.status==='reviewed'){ var st=document.createElement('div'); st.className='reviewed page-review-footer'; st.textContent='\u2713 Reviewed by '+(rv.by||'faculty')+(rv.at?(' \u00b7 '+rv.at):''); contentEl.appendChild(st); } var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); try{if(window.__afterContent)window.__afterContent(item);}catch(_){ } try{contentEl.classList.remove('cc-rise');void contentEl.offsetWidth;contentEl.classList.add('cc-rise');}catch(_){ } var _sy=(opts&&opts.fromHistory&&SCROLL[item.f]!=null)?SCROLL[item.f]:0; window.scrollTo(0,_sy);
     }).catch(function(){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+item.t+'. Check your connection and try again.</p></div>'});
   }
 
@@ -740,7 +772,7 @@
   function LS(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }
   function srsState(){ try{ return JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); }catch(_){ return null; } }
   function dueCount(){ var s=srsState(),n=0,od=0; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ n++; if(c.due<sod.getTime())od++; } } } return {due:n,overdue:od}; }
-  function navScan(){ var p=(typeof progLoad==='function')?progLoad():{}, meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}; var hy=[],cov={}; var wraps=document.querySelectorAll('#nav .navsec-wrap'); [].forEach.call(wraps,function(w){ var sec=((w.querySelector('.navsec-t')||{}).textContent)||''; if(sec==='Overview')return; [].forEach.call(w.querySelectorAll('.navitem'),function(b){ var it=b._item; if(!it)return; if(it.k!=='tool'&&it.k!=='special'){ if(!cov[sec])cov[sec]={done:0,tot:0}; cov[sec].tot++; if(p[it.f]&&p[it.f].done)cov[sec].done++; } if(meta[it.f]&&meta[it.f].hy&&!(p[it.f]&&p[it.f].done))hy.push({f:it.f,t:it.t,sec:sec}); }); }); return {hy:hy,cov:cov}; }
+  function navScan(){ var p=(typeof progLoad==='function')?progLoad():{}, meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}; var hy=[],cov={}; var wraps=document.querySelectorAll('#nav .navsec-wrap'); [].forEach.call(wraps,function(w){ var sec=((w.querySelector('.navsec-t')||{}).textContent)||''; if(sec==='Overview')return; [].forEach.call(w.querySelectorAll('.navitem'),function(b){ var it=b._item; if(!it)return; if(it.k==='md'){ if(!cov[sec])cov[sec]={done:0,tot:0}; cov[sec].tot++; if(p[it.f]&&p[it.f].done)cov[sec].done++; } if(meta[it.f]&&meta[it.f].hy&&!(p[it.f]&&p[it.f].done))hy.push({f:it.f,t:it.t,sec:sec}); }); }); return {hy:hy,cov:cov}; }
   function allNavItems(){ var out=[]; [].forEach.call(document.querySelectorAll('#nav .navitem'),function(b){ var it=b._item; if(it&&it.k!=='special')out.push({f:it.f,t:it.t,k:it.k}); }); return out; }
   function dashboardState(){ try{return JSON.parse(localStorage.getItem('cw_dashboard_v1')||'{}')||{};}catch(_){return {};} }
   function dashboardMode(){ var st=dashboardState(); return st.mode||'ward'; }
@@ -772,7 +804,7 @@
   /* ---- Concept B: Progress home ---- */
   function weakTopics(){
     var lookup={}, wraps=document.querySelectorAll('#nav .navsec-wrap');
-    [].forEach.call(wraps,function(w){ var sec=((w.querySelector('.navsec-t')||{}).textContent)||''; [].forEach.call(w.querySelectorAll('.navitem'),function(b){ var it=b._item; if(it&&it.k!=='tool'&&it.k!=='special') lookup[it.f]={t:it.t,sec:sec}; }); });
+    [].forEach.call(wraps,function(w){ var sec=((w.querySelector('.navsec-t')||{}).textContent)||''; [].forEach.call(w.querySelectorAll('.navitem'),function(b){ var it=b._item; if(it&&it.k==='md') lookup[it.f]={t:it.t,sec:sec}; }); });
     var p=(typeof progLoad==='function')?progLoad():{}, out=[], seen={};
     function add(f,reason){ if(!f||seen[f]||!lookup[f]||(p[f]&&p[f].done))return; seen[f]=1; out.push({f:f,t:lookup[f].t,sec:lookup[f].sec,reason:reason}); }
     try{ var q=JSON.parse(localStorage.getItem('cw_quiz_v1')||'{}'); Object.keys(q).forEach(function(f){ if(q[f]&&q[f].wrong>0) add(f,'missed the quiz'); }); }catch(_){ }
@@ -800,11 +832,11 @@
     if(shelf){ var t=new Date(shelf+'T00:00:00').getTime(); if(!isNaN(t)) shelfDays=Math.ceil((t-Date.now())/86400000); }
     var fresh=(rev===0 && dc.due===0 && !last);
     var h='<div class="hm" id="hmRoot"><h1>Your progress</h1>';
-    if(fresh){ h+='<p class="sub">Welcome — nothing tracked yet. Open a topic and tap <strong>Mark reviewed</strong>, or start a review session, and this page fills in.</p>'; }
+    if(fresh){ h+='<p class="sub">Welcome — nothing tracked yet. Open any content page and tap <strong>Mark reviewed</strong>, or start a review session, and this page fills in.</p>'; }
     else{ h+='<p class="sub">Where you are, and the next best thing to do.</p>'; }
     h+=renderWardDashboard();
     h+='<div class="hm-grid">';
-    h+='<div class="hm-card"><div class="k">Topics reviewed</div><div class="hm-row"><div class="hm-ring" style="--p:'+pct+'"><i>'+pct+'%</i></div><div class="v">'+rev+'<small> / '+tot+'</small></div></div></div>';
+    h+='<div class="hm-card"><div class="k">Review coverage</div><div class="hm-row"><div class="hm-ring" style="--p:'+pct+'"><i>'+pct+'%</i></div><div class="v">'+rev+'<small> / '+tot+' pages</small></div></div></div>';
     h+='<div class="hm-card"><div class="k">Due today</div><div class="v">'+dc.due+(dc.overdue?'<small> · '+dc.overdue+' overdue</small>':'')+'</div>'+(dc.due?'<button class="hm-btn" data-act="review">Start review</button>':'<span class="hm-empty">Nothing due — nice.</span>')+'</div>';
     h+='<div class="hm-card"><div class="k">Study streak</div><div class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></div></div>';
     h+='<div class="hm-card"><div class="k">Shelf countdown</div><div class="v">'+(shelfDays!=null?(shelfDays>=0?shelfDays+'<small> days</small>':'<small>past</small>'):'<small>set a date on Start here</small>')+'</div></div>';
