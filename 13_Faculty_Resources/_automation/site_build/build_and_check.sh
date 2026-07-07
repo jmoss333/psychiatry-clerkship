@@ -13,6 +13,7 @@
 # Gate semantics:
 # - check_lfs_media.py gives a targeted Git-LFS media preflight before the broader QA.
 # - check-static-site.mjs handles static integrity and broader safety rules.
+# - check_search_quality.py catches high-value abbreviation/search regressions.
 #
 # HARD findings (broken nav/search targets,
 # dose literals in rp-*/-trainer tools, invalid JSON, missing <title>/viewport,
@@ -39,6 +40,8 @@ case "$SITE" in
     python3 "$HERE/check_lfs_media.py" "$MS3_OUT"
     echo "── QA gate: $MS3_OUT"
     node "$HERE/check-static-site.mjs" "$MS3_OUT"
+    echo "── Search quality: $MS3_OUT"
+    python3 "$HERE/check_search_quality.py" "$MS3_OUT" ms3
     ;;
   res)
     # Resident derives from the MS3 build, so build both; gate the published dir.
@@ -50,6 +53,8 @@ case "$SITE" in
     python3 "$HERE/check_lfs_media.py" "$RES_OUT"
     echo "── QA gate: $RES_OUT"
     node "$HERE/check-static-site.mjs" "$RES_OUT"
+    echo "── Search quality: $RES_OUT"
+    python3 "$HERE/check_search_quality.py" "$RES_OUT" resident
     ;;
   *)
     echo "unknown site '$SITE' (expected ms3|res)" >&2

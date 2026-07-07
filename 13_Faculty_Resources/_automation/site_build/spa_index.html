@@ -616,7 +616,8 @@
       if(SI.postings[term]) toks[term]=1.0;
       var sy=SI.synonyms[term]||[];
       for(var s=0;s<sy.length;s++){ if(SI.postings[sy[s]] && !toks[sy[s]]) toks[sy[s]]=0.6; }
-      if(term.length>=3){ for(var i=0;i<VOCAB.length;i++){ var v=VOCAB[i]; if(v!==term && v.indexOf(term)===0 && !toks[v]) toks[v]=0.5; } }
+      var hasSynonyms=sy.length>0;
+      if(term.length>=3 && !hasSynonyms){ for(var i=0;i<VOCAB.length;i++){ var v=VOCAB[i]; if(v!==term && v.indexOf(term)===0 && !toks[v]) toks[v]=0.5; } }
       var hit={};
       Object.keys(toks).forEach(function(t){
         var w=toks[t], inv=idf(t), post=SI.postings[t];
