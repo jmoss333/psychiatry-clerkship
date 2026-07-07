@@ -104,6 +104,23 @@ const tmPath = p('topic_meta.json');
 if (existsSync(tmPath) && parsed[tmPath]) {
   const meta = parsed[tmPath];
   for (const f of navMd) if (f && !(f in meta)) S(`metadata missing (topic_meta): ${f}`);
+  const missingWorkflow = [...navMd]
+    .filter(f => f && meta[f])
+    .filter(f => {
+      const m = meta[f] || {};
+      const stages = Array.isArray(m.workflowStages) && m.workflowStages.length;
+      const workflow = m.clinicalWorkflow && typeof m.clinicalWorkflow === 'object';
+      return !stages || !workflow;
+    })
+    .sort();
+  const withWorkflow = [...navMd].filter(f => {
+    const m = meta[f] || {};
+    return Array.isArray(m.workflowStages) && m.workflowStages.length && m.clinicalWorkflow && typeof m.clinicalWorkflow === 'object';
+  }).length;
+  if (navMd.size) {
+    I(`workflow metadata coverage: ${withWorkflow}/${navMd.size} nav markdown pages` +
+      (missingWorkflow.length ? ` (missing: ${missingWorkflow.join(', ')})` : ''));
+  }
 }
 const rvPath = p('reviewed.json');
 if (existsSync(rvPath) && parsed[rvPath]) {

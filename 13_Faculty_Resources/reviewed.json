@@ -418,5 +418,17 @@
     "status": "reviewed",
     "at": "2026-07-05",
     "by": "Joshua Moss, MD"
+  },
+  "rp-agitation.html": {
+    "status": "pending",
+    "at": "2026-07-07",
+    "by": "Joshua Moss, MD",
+    "note": "Resident prototype ships with draft-pending-attestation pack and unresolved LOCAL_POLICY tokens."
+  },
+  "rp-brief-psych.html": {
+    "status": "pending",
+    "at": "2026-07-07",
+    "by": "Joshua Moss, MD",
+    "note": "Resident prototype ships with draft-pending-attestation pack and unresolved LOCAL_POLICY tokens."
   }
 }

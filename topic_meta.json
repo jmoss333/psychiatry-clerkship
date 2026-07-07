@@ -1388,6 +1388,49 @@
     "cta": {
       "label": "Read Culture, Disparities & Formulation",
       "href": "?page=cultural_psychiatry.md"
+    },
+    "workflowStages": [
+      "safety",
+      "communication",
+      "family",
+      "team",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "family",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "capacity.html",
+      "violence.html",
+      "cssrs.html"
+    ],
+    "communicationCases": [
+      "suicide_direct_question_001",
+      "collateral_questions_001"
+    ],
+    "safetyLevel": "moderate",
+    "clinicalWorkflow": {
+      "ask": "Clarify the exact ethical or legal question: confidentiality, duty to protect, mandated reporting, capacity, commitment, consent, or refusal.",
+      "mse": "Document observations relevant to capacity, risk, coercion, intoxication, psychosis, mania, delirium, and ability to communicate a stable choice.",
+      "safety": "Escalate identifiable threats, abuse concerns, imminent self-harm, grave disability, or urgent refusal of high-stakes medical care to the supervising team immediately.",
+      "say": "I want to protect your privacy, and I also need to explain the few safety situations where clinicians must involve others.",
+      "collateral": "Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties.",
+      "rounds": "Name the legal frame, the patient-specific facts, the local-policy dependency, and the supervising/faculty decision still needed.",
+      "exam": "Capacity is clinical and decision-specific; competence is legal. Involuntary hospitalization does not automatically authorize involuntary medication.",
+      "actions": [
+        {
+          "label": "Open capacity tool",
+          "href": "?tool=capacity.html"
+        },
+        {
+          "label": "Open violence risk tool",
+          "href": "?tool=violence.html"
+        }
+      ]
     }
   },
   "cultural_psychiatry.md": {
@@ -1428,6 +1471,47 @@
     "cta": {
       "label": "Open Ethics & the Law",
       "href": "?page=ethics_legal.md"
+    },
+    "workflowStages": [
+      "encounter",
+      "diagnosis",
+      "communication",
+      "family",
+      "team"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "mse.html",
+      "interview-circle.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "guardedness_privacy_001",
+      "collateral_questions_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask the patient what they call the problem, what they think caused it, what they fear most, what help they expect, and what would make care feel respectful.",
+      "mse": "Separate culturally shaped expression from psychopathology; describe affect, beliefs, language, and behavior without assuming your own norm is neutral.",
+      "safety": "Use trained interpreters for safety questions, assess discrimination/trauma and structural barriers, and avoid family interpreters for confidential or high-risk topics.",
+      "say": "I do not want to assume my framework fits yours. Can you tell me how you understand what is happening?",
+      "collateral": "Ask about baseline, family meaning, community supports, immigration/language barriers, religious or cultural practices, and what the patient permits sharing.",
+      "rounds": "Present the cultural formulation as clinical reasoning: explanatory model, identity/context, supports, barriers, bias risks, and treatment implications.",
+      "exam": "DSM-5-TR Cultural Formulation Interview, trained interpreters, and diagnostic bias around psychosis vs mood disorders are high-yield.",
+      "actions": [
+        {
+          "label": "Open Interview & MSE",
+          "href": "?page=pg_interview.md"
+        },
+        {
+          "label": "Practice guardedness",
+          "href": "?tool=communication-practice.html&case=guardedness_privacy_001"
+        }
+      ]
     }
   },
   "ect_neuromodulation.md": {
@@ -1462,6 +1546,48 @@
     "cta": {
       "label": "Open the Mood topic",
       "href": "?page=t_mood.md"
+    },
+    "workflowStages": [
+      "treatment",
+      "safety",
+      "communication",
+      "team",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "family",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "bfcrs.html",
+      "decision-aids.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "medication_ambivalence_001",
+      "collateral_questions_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask about psychotic depression, catatonia, severe suicidality, refusal to eat/drink, pregnancy, prior ECT response, cognitive baseline, and anesthesia/cardiac risk.",
+      "mse": "Look for psychomotor retardation, catatonic signs, psychotic guilt, severe mood congruent delusions, cognition, and capacity to consent.",
+      "safety": "Escalate catatonia, malignant catatonia/NMS concern, inability to eat/drink, or severe suicidal depression where rapid definitive treatment may be needed.",
+      "say": "ECT is a medical treatment done under anesthesia; for the right patient it can work faster and more reliably than waiting on medications.",
+      "collateral": "Ask family about prior response, baseline memory, functional decline, fears about ECT, and who can support continuation treatment.",
+      "rounds": "Present indication, urgency, capacity/consent status, medical workup needs, medication adjustments, and continuation plan after response.",
+      "exam": "ECT is most effective for severe, psychotic, catatonic, or life-threatening depression; there are no absolute contraindications, but relative risks require planning.",
+      "actions": [
+        {
+          "label": "Open BFCRS",
+          "href": "?tool=bfcrs.html"
+        },
+        {
+          "label": "Open mood topic",
+          "href": "?page=t_mood.md"
+        }
+      ]
     }
   },
   "t_geri.md": {
@@ -1802,6 +1928,45 @@
     "cta": {
       "label": "Open the Psychopharmacology Primer",
       "href": "?page=psychopharm_primer.md"
+    },
+    "workflowStages": [
+      "treatment",
+      "safety",
+      "communication",
+      "team",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "screeners.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask weight trajectory, appetite, food insecurity, eating patterns, activity, diabetes/lipid history, medication concerns, hydration/salt swings, and access to follow-up labs.",
+      "mse": "Notice sedation, activation, negative symptoms, binge/purge clues, body image distress, cognition, and motivation or ambivalence around change.",
+      "safety": "Check antipsychotic metabolic monitoring, lithium hydration/sodium risks, MAOI tyramine counseling, grapefruit/CYP interactions, food insecurity, and eating-disorder red flags.",
+      "say": "Metabolic health is part of psychiatric care, especially when the medication that helps symptoms can also change weight, glucose, or lipids.",
+      "collateral": "Ask family or outpatient clinicians about baseline weight, shopping/cooking access, medication adherence, activity, food insecurity, and lab follow-up barriers.",
+      "rounds": "Present metabolic baseline, medication risk, labs ordered, nutrition/activity supports, and follow-up responsibility after discharge.",
+      "exam": "Olanzapine and clozapine carry the highest metabolic burden; antipsychotic monitoring includes weight, glucose/A1c, lipids, and blood pressure.",
+      "actions": [
+        {
+          "label": "Open psychopharm primer",
+          "href": "?page=psychopharm_primer.md"
+        },
+        {
+          "label": "Practice medication ambivalence",
+          "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+        }
+      ]
     }
   },
   "exp_consult.md": {
@@ -2252,6 +2417,47 @@
     "cta": {
       "label": "Open the Protocol Library",
       "href": "?page=protocol_library.md"
+    },
+    "workflowStages": [
+      "treatment",
+      "communication",
+      "family",
+      "team",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "decision-aids.html",
+      "communication-practice.html",
+      "oral.html"
+    ],
+    "communicationCases": [
+      "medication_ambivalence_001",
+      "family_conflict_discharge_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "For every intervention, ask the target symptom, target risk, prior response, adverse-effect risk, patient preference, family/system barrier, and discharge implication.",
+      "mse": "Link the plan to observed targets: sleep, psychosis, mania, depression, anxiety, cognition, behavior, alliance, and functional participation.",
+      "safety": "Check monitoring, toxicity, withdrawal, overdose risk, falls, QTc/metabolic/EPS risks, and whether the plan depends on local order sets.",
+      "say": "Let us name what this treatment is meant to help, what could go wrong, and what would tell us it is working.",
+      "collateral": "Ask family or outpatient clinicians about previous trials, adherence barriers, side effects, practical supports, and what made past plans fail.",
+      "rounds": "Present treatment as target plus rationale plus monitoring plus discharge consequence.",
+      "exam": "Treatment questions reward matching diagnosis, acuity, contraindications, side effects, and patient-specific barriers rather than choosing the newest medication.",
+      "actions": [
+        {
+          "label": "Open protocol library",
+          "href": "?page=protocol_library.md"
+        },
+        {
+          "label": "Practice medication ambivalence",
+          "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+        }
+      ]
     }
   },
   "exp_family.md": {
@@ -2540,6 +2746,43 @@
     "cta": {
       "label": "Open the Psychopharmacology Primer",
       "href": "?page=psychopharm_primer.md"
+    },
+    "workflowStages": [
+      "treatment",
+      "safety",
+      "team"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min"
+    ],
+    "relatedTools": [
+      "withdrawal.html",
+      "capacity.html",
+      "cssrs.html",
+      "violence.html",
+      "decision-aids.html"
+    ],
+    "safetyLevel": "moderate",
+    "clinicalWorkflow": {
+      "ask": "Identify which protocol applies, what clinical threshold activates it, and what patient factor makes the standard pathway unsafe or insufficient.",
+      "mse": "Use MSE and bedside findings to support the protocol question: attention for delirium, motor signs for catatonia, arousal for withdrawal, and risk state for safety protocols.",
+      "safety": "Do not use this page as an order set; exact medications, doses, monitoring, and escalation steps must come from the live EHR/local policy and supervising clinician.",
+      "say": "I am going to check the current order set and the team plan rather than relying on memory for protocol details.",
+      "collateral": "Ask nursing, pharmacy, social work, and outpatient clinicians for protocol-relevant history: prior withdrawal severity, clozapine monitoring, safety planning, and discharge barriers.",
+      "rounds": "State the protocol, why it applies, the live order set or policy source, and what exception or monitoring issue needs senior review.",
+      "exam": "Know the conceptual indications and safety logic; local protocol details are not shelf facts and should not be guessed.",
+      "actions": [
+        {
+          "label": "Open withdrawal tool",
+          "href": "?tool=withdrawal.html"
+        },
+        {
+          "label": "Open decision aids",
+          "href": "?tool=decision-aids.html"
+        }
+      ]
     }
   },
   "welcome.md": {
@@ -2752,6 +2995,41 @@
     "cta": {
       "label": "Open the Landmark Trials page",
       "href": "?page=landmark_trials.md"
+    },
+    "workflowStages": [
+      "team",
+      "diagnosis",
+      "safety",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "oral.html",
+      "active-recall.html",
+      "question-bank-practice.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Before rounds, pick one likely attending question from the patient in front of you: diagnosis, risk, medication, family, disposition, or evidence.",
+      "mse": "Tie your answer to today's observed MSE change, not just to a memorized fact.",
+      "safety": "When a question touches suicide, violence, delirium, catatonia, withdrawal, capacity, or medication toxicity, include what would trigger escalation.",
+      "say": "My current answer is..., and the piece of data that would change my mind is...",
+      "collateral": "Use collateral to support or challenge the answer: baseline, time course, adherence, side effects, family safety, and outpatient course.",
+      "rounds": "Answer in one sentence, then add evidence or a clinical pearl only if it changes the plan.",
+      "exam": "Oral rehearsal improves retrieval: say the answer out loud, then test the same concept in the question bank.",
+      "actions": [
+        {
+          "label": "Open rounding prep",
+          "href": "?tool=oral.html"
+        },
+        {
+          "label": "Open practice questions",
+          "href": "?tool=question-bank-practice.html"
+        }
+      ]
     }
   },
   "omm_resources.md": {
