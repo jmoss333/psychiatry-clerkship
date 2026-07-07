@@ -28,10 +28,23 @@
           "feedback": "This can shame the patient and close the conversation. Start with direct assessment and validation."
         }
       ],
-      "skillTags": ["suicide", "direct-questioning", "safety"],
-      "linkedPages": ["pg_suicide.md"],
-      "evidenceIds": ["cssrs-columbia-lighthouse", "va-dod-suicide-cpg-2024"],
-      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+      "skillTags": [
+        "suicide",
+        "direct-questioning",
+        "safety"
+      ],
+      "linkedPages": [
+        "pg_suicide.md"
+      ],
+      "evidenceIds": [
+        "cssrs-columbia-lighthouse",
+        "va-dod-suicide-cpg-2024"
+      ],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
     },
     {
       "id": "psychosis_validation_001",
@@ -60,10 +73,73 @@
           "feedback": "This can deepen the delusional frame. Ask about experience, distress, safety, and meaning instead."
         }
       ],
-      "skillTags": ["psychosis", "validation", "alliance"],
-      "linkedPages": ["t_psychosis.md"],
+      "skillTags": [
+        "psychosis",
+        "validation",
+        "alliance"
+      ],
+      "linkedPages": [
+        "t_psychosis.md"
+      ],
       "evidenceIds": [],
-      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
+    },
+    {
+      "id": "guardedness_privacy_001",
+      "title": "Respond To Guardedness",
+      "topic": "Alliance and guardedness",
+      "setting": "Early inpatient interview",
+      "learnerGoal": "Lower the threat level, name choice, and explain confidentiality limits without pressuring disclosure.",
+      "prompt": "A patient crosses their arms and says, \"I know whatever I say will just be used against me.\" What do you say next?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "No one is using anything against you. I just need you to answer the questions.",
+          "quality": "missed",
+          "feedback": "This argues with the fear and adds pressure. Guardedness usually softens when you name choice and explain the frame."
+        },
+        {
+          "id": "b",
+          "text": "You get to choose what you answer. I do need to tell the team if there is an immediate safety concern, but my goal is to understand what would help you feel safer here.",
+          "quality": "best",
+          "feedback": "Best choice. It respects autonomy, names the safety exception, and keeps the conversation oriented toward safety and care."
+        },
+        {
+          "id": "c",
+          "text": "If you will not talk, the team will have to make decisions without you.",
+          "quality": "harmful",
+          "feedback": "This may be true in some situations, but as an opening response it sounds coercive and can confirm the patient's fear."
+        },
+        {
+          "id": "d",
+          "text": "What are you worried might happen if you tell me more?",
+          "quality": "partial",
+          "feedback": "This can be helpful after you establish choice and confidentiality limits. Alone, it may feel like another demand."
+        }
+      ],
+      "skillTags": [
+        "guardedness",
+        "alliance",
+        "confidentiality",
+        "trauma-informed"
+      ],
+      "linkedPages": [
+        "pg_interview.md",
+        "t_psychosis.md",
+        "agitation.md"
+      ],
+      "evidenceIds": [
+        "project-beta-deescalation-2012"
+      ],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
     },
     {
       "id": "rupture_limit_setting_001",
@@ -92,10 +168,74 @@
           "feedback": "This often sounds controlling. Name the emotion and the limit without making calmness a precondition for being heard."
         }
       ],
-      "skillTags": ["rupture-repair", "borderline-personality", "limits"],
-      "linkedPages": ["t_personality.md", "agitation.md"],
-      "evidenceIds": ["project-beta-deescalation-2012"],
-      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+      "skillTags": [
+        "rupture-repair",
+        "borderline-personality",
+        "limits"
+      ],
+      "linkedPages": [
+        "t_personality.md",
+        "agitation.md"
+      ],
+      "evidenceIds": [
+        "project-beta-deescalation-2012"
+      ],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
+    },
+    {
+      "id": "bpd_rupture_repair_001",
+      "title": "Repair A BPD Rupture",
+      "topic": "Borderline personality and rupture repair",
+      "setting": "Post-rounds check-in",
+      "learnerGoal": "Validate the feeling, own the interactional impact, and return to a consistent plan.",
+      "prompt": "A patient with chronic suicidality says, \"You wrote that I was manipulative. I knew you were just like everyone else.\" What do you say next?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "I did not mean it that way, and that is not what the note says.",
+          "quality": "missed",
+          "feedback": "This may be accurate, but it leads with self-defense. First address the rupture and the patient's experience."
+        },
+        {
+          "id": "b",
+          "text": "I am sorry that what you read landed that way. I can see why it felt hurtful. I want to understand what felt most invalidating, and then we can look together at how to describe the crisis accurately.",
+          "quality": "best",
+          "feedback": "Best choice. It repairs impact without abandoning accuracy, and it invites collaboration on language and meaning."
+        },
+        {
+          "id": "c",
+          "text": "This is exactly the kind of splitting we are trying to avoid.",
+          "quality": "harmful",
+          "feedback": "Using formulation language at the patient in a rupture is shaming and escalates distrust."
+        },
+        {
+          "id": "d",
+          "text": "Let's focus on your discharge plan instead of the note.",
+          "quality": "missed",
+          "feedback": "This avoids the relational injury. Discharge planning will go better after the rupture is named and repaired."
+        }
+      ],
+      "skillTags": [
+        "borderline-personality",
+        "rupture-repair",
+        "validation",
+        "documentation"
+      ],
+      "linkedPages": [
+        "t_personality.md",
+        "pg_suicide.md",
+        "brief_psychotherapy.md"
+      ],
+      "evidenceIds": [],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
     },
     {
       "id": "medication_ambivalence_001",
@@ -122,12 +262,82 @@
           "text": "There are no side-effect-free medications, so we have to accept some tradeoff.",
           "quality": "missed",
           "feedback": "This is too clinician-centered. The next step is collaborative exploration, not closing the decision."
+        },
+        {
+          "id": "d",
+          "text": "Would it be okay if we compare a few options, including changing the dose, switching medicines, and making a monitoring plan for weight and labs?",
+          "quality": "partial",
+          "feedback": "This is useful once the patient feels heard. Start with reflection and evocation, then offer options with permission."
         }
       ],
-      "skillTags": ["motivational-interviewing", "medication", "shared-decision-making"],
-      "linkedPages": ["psychopharm_primer.md", "motivational_interviewing.md"],
+      "skillTags": [
+        "motivational-interviewing",
+        "medication",
+        "shared-decision-making"
+      ],
+      "linkedPages": [
+        "psychopharm_primer.md",
+        "motivational_interviewing.md"
+      ],
       "evidenceIds": [],
-      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
+    },
+    {
+      "id": "mania_limit_sleep_001",
+      "title": "Offer A Sleep-Restoring Plan In Mania",
+      "topic": "Mania and collaborative limits",
+      "setting": "Evening check-in on the unit",
+      "learnerGoal": "Use calm structure, offer choices, and connect sleep to the patient's goal without debating grandiosity.",
+      "prompt": "A manic patient pacing the hallway says, \"I do not need sleep. I need my laptop so I can finish the company launch tonight.\" What do you say next?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "That does not make sense. You are manic and need medication.",
+          "quality": "harmful",
+          "feedback": "This is confrontational and likely to escalate. Avoid debating insight when the immediate goal is safety, sleep, and collaboration."
+        },
+        {
+          "id": "b",
+          "text": "You have a lot of energy and the launch feels urgent. Tonight the safest plan is no laptop and a quieter space. We can choose together between a warm drink, a low-stimulation room, or medicine to help your body sleep.",
+          "quality": "best",
+          "feedback": "Best choice. It validates urgency without colluding, states the limit, and offers concrete choices that point toward sleep."
+        },
+        {
+          "id": "c",
+          "text": "If you keep pacing, security will have to get involved.",
+          "quality": "missed",
+          "feedback": "Threatening consequences too early can escalate. Name the limit and offer choices before moving up the safety ladder, unless there is imminent danger."
+        },
+        {
+          "id": "d",
+          "text": "Tell me more about the company launch.",
+          "quality": "partial",
+          "feedback": "Curiosity can build alliance, but here it risks extending activation. Pair brief listening with a sleep-focused structure."
+        }
+      ],
+      "skillTags": [
+        "mania",
+        "limits",
+        "sleep",
+        "de-escalation"
+      ],
+      "linkedPages": [
+        "t_mood.md",
+        "agitation.md",
+        "psychopharm_primer.md"
+      ],
+      "evidenceIds": [
+        "project-beta-deescalation-2012"
+      ],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
     },
     {
       "id": "family_meeting_opening_001",
@@ -156,10 +366,21 @@
           "feedback": "Confidentiality matters, but this response shuts down collaboration. State the consent boundary and what can be discussed."
         }
       ],
-      "skillTags": ["family-meeting", "confidentiality", "structure"],
-      "linkedPages": ["family_playbook.md", "exp_family.md"],
+      "skillTags": [
+        "family-meeting",
+        "confidentiality",
+        "structure"
+      ],
+      "linkedPages": [
+        "family_playbook.md",
+        "exp_family.md"
+      ],
       "evidenceIds": [],
-      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
     },
     {
       "id": "collateral_questions_001",
@@ -188,10 +409,75 @@
           "feedback": "Medication adherence is useful, but it is too narrow as the first follow-up to a broad change-from-baseline concern."
         }
       ],
-      "skillTags": ["collateral", "family", "diagnostic-reasoning"],
-      "linkedPages": ["exp_family.md", "ddx.md"],
+      "skillTags": [
+        "collateral",
+        "family",
+        "diagnostic-reasoning"
+      ],
+      "linkedPages": [
+        "exp_family.md",
+        "ddx.md"
+      ],
       "evidenceIds": [],
-      "facultyReview": { "status": "draft", "reviewer": "", "lastReviewed": "" }
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
+    },
+    {
+      "id": "family_conflict_discharge_001",
+      "title": "De-escalate Family Conflict Around Discharge",
+      "topic": "Family and discharge planning",
+      "setting": "Inpatient family meeting",
+      "learnerGoal": "Validate fear, protect confidentiality, and shift the room from blame to concrete safety tasks.",
+      "prompt": "A parent says, \"If you discharge him, it will be your fault if something happens.\" The patient looks down and stops talking. What do you say next?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "We would never discharge someone unless we were sure nothing bad could happen.",
+          "quality": "harmful",
+          "feedback": "This promises certainty the team cannot provide. It also sets up false reassurance instead of a realistic risk plan."
+        },
+        {
+          "id": "b",
+          "text": "I hear how scared you are, and I do not want to minimize that. We cannot promise zero risk, but we can slow down, hear what worries you most, and name the specific safety steps that must be in place before discharge.",
+          "quality": "best",
+          "feedback": "Best choice. It validates fear, avoids a false guarantee, and turns conflict into a concrete safety-planning task."
+        },
+        {
+          "id": "c",
+          "text": "The decision is ultimately up to the doctors, so let's move on.",
+          "quality": "missed",
+          "feedback": "This shuts down collateral and increases adversarial tension. The family may hold key safety and feasibility information."
+        },
+        {
+          "id": "d",
+          "text": "Can you tell us exactly what you think he is hiding from us?",
+          "quality": "partial",
+          "feedback": "Specific concerns matter, but this phrasing can shame the patient and intensify triangulation. Invite concerns while preserving the patient's dignity."
+        }
+      ],
+      "skillTags": [
+        "family-meeting",
+        "discharge",
+        "safety-planning",
+        "conflict-de-escalation"
+      ],
+      "linkedPages": [
+        "exp_family.md",
+        "pg_suicide.md",
+        "family_playbook.md"
+      ],
+      "evidenceIds": [
+        "va-dod-suicide-cpg-2024",
+        "joint-commission-suicide-prevention"
+      ],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
     }
   ]
 }

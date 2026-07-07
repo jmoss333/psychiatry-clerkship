@@ -119,7 +119,7 @@ if (existsSync(tmPath) && parsed[tmPath]) {
     const ctas = Array.isArray(m.cta) ? m.cta : [m.cta];
     for (const c of ctas) {
       if (!c || !c.href) continue;
-      const routeMatch = c.href.match(/^\.?\/?\?(page|tool)=([^&#]+)$/);
+      const routeMatch = c.href.match(/^\.?\/?\?(page|tool)=([^&#]+)(?:[&#].*)?$/);
       if (routeMatch) {
         const target = decodeURIComponent(routeMatch[2]);
         const dir = routeMatch[1] === 'tool' ? 'tools' : 'content';

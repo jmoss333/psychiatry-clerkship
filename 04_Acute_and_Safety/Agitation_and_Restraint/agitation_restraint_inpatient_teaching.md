@@ -20,6 +20,15 @@ Climb in order, and document why you moved up.
 4. **Involuntary medication.** Reserved for imminent danger to the patient or others — not for refusal alone, and not for convenience.
 5. **Physical restraint or seclusion.** The genuine last resort, only when lesser measures have failed or are clearly inadequate to prevent imminent harm.
 
+## Practice What To Say Next
+
+Use the communication practice tool to rehearse high-friction moments before
+they happen on the unit:
+
+- [Repair after limit-setting](?tool=communication-practice.html&case=rupture_limit_setting_001).
+- [Offer a sleep-restoring plan in mania](?tool=communication-practice.html&case=mania_limit_sleep_001).
+- [Respond to guardedness without escalating it](?tool=communication-practice.html&case=guardedness_privacy_001).
+
 ## Medication principles
 
 Treat the suspected cause. Prefer the oral, collaborative route over an intramuscular injection whenever the situation allows it — an offered medication the patient accepts is both safer and more therapeutic than a forced one. Avoid benzodiazepines in delirium and in older adults, where they tend to worsen confusion. Use caution when combining agents, and watch closely for over-sedation, which carries its own airway and aspiration risks (Wilson et al. 2012). Do not memorize specific drugs or doses from a teaching page — defer to your institution's agitation order set and your supervising clinician for what to give and how much.

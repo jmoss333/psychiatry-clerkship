@@ -38,6 +38,13 @@ Preparatory: **D**esire, **A**bility, **R**easons, **N**eed. Mobilizing: **C**om
 > **Patient:** "…I guess I don't want a third time."
 > **Student:** "You don't want a third time. *(reflect change talk)* What's one thing that might lower the odds?"
 
+## Practice What To Say Next
+
+Use the communication practice tool to rehearse
+[medication ambivalence without the persuasion reflex](?tool=communication-practice.html&case=medication_ambivalence_001).
+Listen for sustain talk, reflect the concern, and ask what would make the
+choice feel workable to the patient.
+
 ## Where it fits
 Substance use, medication adherence, lifestyle/metabolic change, follow-up engagement. It pairs with — not replaces — diagnosis-specific treatment.
 

@@ -16,6 +16,11 @@
 - Recognize a suspected medication emergency early and escalate to your resident or attending immediately — speed matters more than certainty.
 - Reconcile the medication list at admission and transitions; catch duplications, interactions, and stacked anticholinergic or QTc-prolonging agents.
 
+**Practice what to say next.** Rehearse
+[medication ambivalence about weight gain](?tool=communication-practice.html&case=medication_ambivalence_001)
+so the conversation starts with values, tradeoffs, and options rather than a
+warning or a lecture.
+
 **High-yield pearls.**
 - Choose antipsychotics by side-effect profile (CATIE), not by recency.
 - Lithium is narrow-window and the anti-suicidal anchor — monitor renal and thyroid.
@@ -23,7 +28,7 @@
 - Benzodiazepines: short-term and targeted, never autopilot — falls, delirium, dependence.
 - Clozapine's power comes packaged with ongoing ANC monitoring (per prescribing information; the centralized REMS ended 2025) — and watch for myocarditis, severe constipation/ileus, and seizures. Respect the red flags.
 
-**Pair with** the protocol library, the Withdrawal (CIWA-Ar/COWS) card, and the Mood and Psychosis pages. This is a recognition and framework primer, not a dosing guide — defer all dosing to those references and your institutional protocol.
+**Pair with** the protocol library, the Withdrawal (CIWA-Ar/COWS) card, the Mood and Psychosis pages, and the [What Do You Say Next? medication conversation case](?tool=communication-practice.html&case=medication_ambivalence_001). This is a recognition and framework primer, not a dosing guide — defer all dosing to those references and your institutional protocol.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
@@ -53,4 +58,3 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 20. **Lichtenstein et al.** — ADHD Medication Reduces Criminality (Stimulants)
 
 *Source: a ranked psychopharmacology curriculum (OpenEvidence); AI-drafted, pending faculty attestation — verify citations before clinical use.*
-

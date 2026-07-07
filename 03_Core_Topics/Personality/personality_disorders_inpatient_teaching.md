@@ -20,6 +20,11 @@
 - Track suicidality against the patient's chronic baseline, not in the abstract.
 - Name your countertransference to your resident or attending and use supervision.
 
+**Practice what to say next** — Rehearse
+[repairing rupture after a patient feels dismissed](?tool=communication-practice.html&case=bpd_rupture_repair_001)
+and [repairing after limit-setting](?tool=communication-practice.html&case=rupture_limit_setting_001).
+The goal is validation plus a steady frame, not either/or.
+
 **Disposition & discharge essentials** — Plan discharge from admission. Secure a concrete outpatient follow-up (ideally a structured therapy such as DBT) with a named clinician and date, a written safety plan, means-restriction counseling, and family or support-system involvement when appropriate. Communicate the plan clearly to outpatient providers so continuity is real, not assumed.
 
 **High-yield pearls**
@@ -30,6 +35,6 @@
 - Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any class (Lieslehto 2023); reach for skills, not pills.
 - Your countertransference is clinical data—track it and use supervision.
 
-**Pair with** — the [suicide-risk & safety pocket card](?page=pg_suicide.md), the <a href="tools/reflection.html" target="_blank" rel="noopener">Reflection & Identity tool</a>, and the [Family Therapy Modalities](?page=family_modalities.md) material.
+**Pair with** — the [suicide-risk & safety pocket card](?page=pg_suicide.md), the <a href="tools/reflection.html" target="_blank" rel="noopener">Reflection & Identity tool</a>, the [Family Therapy Modalities](?page=family_modalities.md) material, and the [What Do You Say Next? rupture-repair cases](?tool=communication-practice.html&case=bpd_rupture_repair_001).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
