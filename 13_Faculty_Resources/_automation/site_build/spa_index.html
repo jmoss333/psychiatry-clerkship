@@ -106,7 +106,29 @@
   .r-snip{display:block;font-size:.86rem;color:var(--text-mid);line-height:1.45}
   mark{background:rgba(217,160,60,.34);color:inherit;padding:0 1px;border-radius:2px}
   /* unified topic template (Slice 4) */
-  .topic-tpl{margin:0 0 8px}
+  .topic-tpl{margin:6px 0 18px}
+  .practice-panel{position:relative;border:1px solid #b9d2d0;border-left:7px solid var(--primary);border-radius:14px;background:linear-gradient(135deg,rgba(232,244,242,.92),rgba(255,252,247,.96));box-shadow:0 10px 26px rgba(47,41,36,.09);margin:8px 0 20px;overflow:hidden}
+  .practice-panel::before{content:"";position:absolute;inset:0 auto 0 0;width:7px;background:linear-gradient(180deg,var(--primary),var(--accent));pointer-events:none}
+  .practice-panel>summary{list-style:none}
+  .practice-panel>summary::-webkit-details-marker{display:none}
+  .practice-summary{display:flex;align-items:center;gap:12px;padding:14px 16px 14px 18px;cursor:pointer;background:rgba(255,255,255,.55);border-bottom:1px solid transparent}
+  .practice-panel[open] .practice-summary{border-bottom-color:#cfe1db}
+  .practice-tab{flex:0 0 auto;font-size:.62rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--primary-dark);border-radius:999px;padding:4px 9px}
+  .practice-title{font-family:var(--font-head);font-size:1.08rem;font-weight:700;color:var(--primary);line-height:1.2}
+  .practice-sub{margin-left:auto;font-size:.76rem;color:var(--text-light);white-space:nowrap}
+  .practice-chev{font-size:1.05rem;color:var(--accent-dark);transition:transform .16s ease}
+  .practice-panel[open] .practice-chev{transform:rotate(90deg)}
+  .practice-body{padding:14px 16px 16px}
+  .practice-sections{display:grid;gap:12px}
+  .practice-section{background:rgba(255,255,255,.72);border:1px solid #d9e5e0;border-radius:12px;padding:13px 14px}
+  .practice-section-title{font-size:.7rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--primary-dark);margin:0 0 8px}
+  .practice-muted{font-size:.9rem;color:var(--text-mid);margin:0}
+  .practice-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .practice-action{display:inline-flex;align-items:center;text-decoration:none;font-size:.84rem;font-weight:700;line-height:1.2;color:var(--accent-dark);background:var(--accent-light);border:1px solid #bfd8d3;border-radius:999px;padding:8px 12px}
+  .practice-action:hover{background:var(--surface);border-color:var(--accent)}
+  .practice-action.is-safety{color:var(--primary-dark);background:var(--primary-light);border-color:#bdd5d1}
+  .practice-action.is-case{color:var(--primary);background:#fff;border-color:#d5c9bc}
+  .practice-action.is-review{color:var(--text-mid);background:var(--bg-alt)}
   .tpl-meta{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
   .tpl-chip{font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;border:1px solid var(--border)}
   .tpl-chip.read{color:var(--text-mid);background:var(--bg-alt)}
@@ -118,9 +140,13 @@
   .tpl-meta .markrev{font-size:.68rem;font-weight:700;letter-spacing:.04em;border-radius:999px;padding:3px 11px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-family:inherit}
   .tpl-meta .markrev:hover{border-color:var(--accent);color:var(--accent-dark)}
   .tpl-meta .markrev.on{background:var(--success-light);border-color:var(--success);color:var(--success)}
+  .practice-panel .tpl-meta{margin:0 0 12px}
   .in30{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:13px 16px;margin:0 0 14px}
+  .practice-panel .in30{background:transparent;border-left:none;border-radius:0;padding:0;margin:0}
   .in30 .lbl{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark);margin-bottom:6px}
   .in30 .one{font-family:var(--font-head);font-size:1.12rem;line-height:1.4;margin-bottom:8px;color:var(--text)}
+  .practice-panel .in30 .lbl{display:none}
+  .practice-panel .in30 .one{font-size:1.02rem;margin-bottom:8px}
   .in30 ul{margin:0;padding:0;list-style:none}
   .in30 li{position:relative;padding-left:24px;margin:5px 0;font-size:.95rem}
   .in30 li::before{content:"\2713";position:absolute;left:0;color:var(--accent);font-weight:700}
@@ -136,10 +162,16 @@
   .workflow-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
   .workflow-actions a{display:inline-flex;align-items:center;text-decoration:none;font-size:.84rem;font-weight:700;color:var(--accent-dark);border:1px solid var(--border);border-radius:999px;padding:7px 11px;background:var(--accent-light)}
   .workflow-actions a:hover{border-color:var(--accent);background:var(--surface)}
-  @media(max-width:680px){.workflow-head{display:block}.workflow-stage{justify-content:flex-start;margin-top:8px}.workflow-grid{grid-template-columns:1fr}}
+  .practice-panel .workflow-card{border:none;border-radius:0;background:transparent;padding:0;margin:0}
+  .practice-panel .workflow-head{margin-bottom:9px}
+  .practice-panel .workflow-title{display:none}
+  .practice-panel .workflow-step{background:rgba(247,250,249,.86)}
+  .practice-panel .workflow-actions{display:none}
+  @media(max-width:680px){.practice-summary{display:grid;grid-template-columns:auto 1fr auto;gap:8px}.practice-sub{grid-column:2/4;margin-left:0;white-space:normal}.workflow-head{display:block}.workflow-stage{justify-content:flex-start;margin-top:8px}.workflow-grid{grid-template-columns:1fr}}
   .cantmiss{display:flex;gap:11px;background:var(--danger-light);border-left:3px solid var(--danger);border-radius:0 10px 10px 0;padding:12px 15px;margin:0 0 14px}
   .cantmiss .ico{color:var(--danger);flex:0 0 auto;font-size:1.05rem;line-height:1.4}
   .cantmiss .tx{font-size:.95rem} .cantmiss b{color:var(--danger)}
+  .practice-panel .cantmiss{margin:10px 0 0}
   .minitree{border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin:0 0 14px;background:var(--surface)}
   .minitree .lbl{font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-light);margin-bottom:8px}
   .minitree .ro{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
@@ -147,8 +179,11 @@
   .minitree .fm{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:8px;padding:8px 11px;font-size:.92rem}
   .minitree .fm b{color:var(--accent-dark)}
   .minitree a{display:inline-block;margin-top:8px;font-size:.84rem;color:var(--accent-dark)}
+  .practice-panel .minitree{background:rgba(255,255,255,.72);margin:10px 0 0}
   .tyourself{border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin:0 0 16px;background:var(--surface)}
+  .practice-panel .tyourself{border:none;background:transparent;border-radius:0;padding:0;margin:0}
   .tyourself .lbl{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary-dark);margin-bottom:8px}
+  .practice-panel .tyourself .lbl{display:none}
   .tyourself .q{font-family:var(--font-head);font-size:1.05rem;margin-bottom:10px;color:var(--text)}
   .tyo{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--bg-alt);border-radius:9px;padding:9px 12px;margin:6px 0;cursor:pointer;font:inherit;color:var(--text)}
   .tyo:hover{border-color:var(--accent)}
@@ -384,7 +419,72 @@
   }
   function toolExtraFromParams(sp){ var out=''; try{ sp.forEach(function(v,k){ if(k!=='tool'&&k!=='page') out+='&'+encodeURIComponent(k)+'='+encodeURIComponent(v); }); }catch(_){} return out; }
   function toolFrameSuffix(extra){ return extra?('?'+String(extra).replace(/^&/,'')):''; }
-  function buildTpl(m,file){ var h='<div class="topic-tpl">'; h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; var _p=progLoad(),_dn=_p[file]&&_p[file].done; h+='<span class="revcount">'+reviewedCount(_p)+' of '+topicCount()+' reviewed</span><button type="button" class="markrev'+(_dn?' on':'')+'" data-f="'+esc(file||'')+'" aria-pressed="'+(_dn?'true':'false')+'">'+(_dn?'✓ Reviewed':'☆ Mark reviewed')+'</button>'; h+='</div>'; if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } h+=buildWorkflow(m); if(m.cant){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; } if(m.ruleOut&&m.ruleOut.length){ h+='<div class="minitree"><div class="lbl">Rule out first → first move</div><div class="ro">'; for(var j=0;j<m.ruleOut.length;j++){ h+='<span class="c">'+esc(m.ruleOut[j])+'</span>'; } h+='</div>'; if(m.firstMove){ h+='<div class="fm"><b>First move · </b>'+esc(m.firstMove)+'</div>'; } h+='<a href="?tool=decision-aids.html">See the visual decision aids →</a></div>'; } if(m.quiz){ var q=m.quiz; h+='<div class="tyourself"><div class="lbl">Test yourself</div><div class="q">'+esc(q.q)+'</div>'; for(var k=0;k<q.o.length;k++){ h+='<button type="button" class="tyo" data-c="'+(q.o[k].c?'1':'0')+'">'+esc(q.o[k].t)+'</button>'; } h+='<div class="tyfb">'+(q.why?('<b>Why: </b>'+esc(q.why)):'')+'</div></div>'; } if(m.cta){ var _cx=Array.isArray(m.cta)?m.cta:[m.cta]; for(var _ci=0;_ci<_cx.length;_ci++){ var _c=_cx[_ci]; if(_c&&_c.href){ var _href=ctaHref(_c.href); h+='<a class="toolcta" href="'+esc(_href)+'"'+ctaAttrs(_href)+'>'+esc(_c.label||'Open tool')+' →</a>'; } } } h+='</div>'; return h; }
+  var PRACTICE_LABELS={'mse.html':'Mental Status Exam','interview-circle.html':'Interview Circle','communication-practice.html':'What Do You Say Next?','cssrs.html':'C-SSRS Suicide Screen','withdrawal.html':'CIWA-Ar / COWS','bfcrs.html':'Bush-Francis Catatonia','violence.html':'Violence Risk (FRST)','capacity.html':'Decisional Capacity','screeners.html':'PHQ-9 / GAD-7','oral.html':'Rounding Prep + Timer','decision-aids.html':'Algorithms & Decision Aids','active-recall.html':'Active Recall','shelf-mode.html':'Shelf Mode Exam Sim','review.html':'Daily Review','reflection.html':'Reflection & Identity','question-bank-practice.html':'Practice Questions'};
+  var PRACTICE_SAFE={'cssrs.html':1,'violence.html':1,'withdrawal.html':1,'bfcrs.html':1,'capacity.html':1,'decision-aids.html':1};
+  var PRACTICE_PAGE_TOOLS={ 't_sud.md':['withdrawal.html','cssrs.html'], 'pg_suicide.md':['cssrs.html','violence.html','decision-aids.html'], 'catatonia.md':['bfcrs.html'], 'agitation.md':['violence.html','decision-aids.html'], 'exp_consult.md':['capacity.html','decision-aids.html'], 'cl_reference.md':['decision-aids.html'], 't_mood.md':['screeners.html','active-recall.html'], 't_anxiety.md':['screeners.html'], 't_psychosis.md':['decision-aids.html'], 't_perinatal.md':['cssrs.html'], 't_personality.md':['cssrs.html','reflection.html'], 'brief_psychotherapy.md':['mse.html','decision-aids.html'], 'doc_oral.md':['oral.html'], 'landmark_trials.md':['active-recall.html','shelf-mode.html','review.html'], 'evidence_inpatient.md':['active-recall.html','review.html'], 'shelf.md':['question-bank-practice.html','shelf-mode.html','active-recall.html'], 'reading_map.md':['review.html','active-recall.html'] };
+  var PRACTICE_CASE_LABELS={suicide_direct_question_001:'Ask About Suicide Directly',psychosis_validation_001:'Validate Psychosis Without Colluding',guardedness_privacy_001:'Respond To Guardedness',rupture_limit_setting_001:'Repair After A Limit',bpd_rupture_repair_001:'Repair A BPD Rupture',medication_ambivalence_001:'Medication Ambivalence',mania_limit_sleep_001:'Offer A Sleep-Restoring Plan In Mania',family_meeting_opening_001:'Open A Family Meeting',collateral_questions_001:'Ask Better Collateral Questions',family_conflict_discharge_001:'De-escalate Family Conflict Around Discharge'};
+  function practiceToolLabel(k){ return (typeof LAB!=='undefined'&&LAB[k])?LAB[k]:(PRACTICE_LABELS[k]||String(k||'').replace(/\.html$/,'').replace(/[-_]+/g,' ')); }
+  function practiceIsSafe(k){ return !!((typeof SAFE!=='undefined'&&SAFE[k])||PRACTICE_SAFE[k]); }
+  function practiceCaseLabel(id){ return (typeof CASE_TITLES!=='undefined'&&CASE_TITLES[id])?CASE_TITLES[id]:(PRACTICE_CASE_LABELS[id]||'What Do You Say Next?'); }
+  function hasPracticeTpl(m){
+    return !!(m&&(m.tldr||(Array.isArray(m.points)&&m.points.length)||m.clinicalWorkflow||(Array.isArray(m.workflowStages)&&m.workflowStages.length)||m.cant||(Array.isArray(m.ruleOut)&&m.ruleOut.length)||m.quiz||m.cta||(Array.isArray(m.relatedTools)&&m.relatedTools.length)||(Array.isArray(m.communicationCases)&&m.communicationCases.length)));
+  }
+  function actionToolKey(h){
+    var s=String(h||''), m=s.match(/[?&]tool=([^&#]+)/);
+    if(m)return decodeURIComponent(m[1]);
+    m=s.match(/^tools\/([^\/?#]+\.html)$/);
+    return m?m[1]:'';
+  }
+  function addPracticeAction(out,seen,label,href,cls){
+    if(!href)return;
+    var key=href.replace(/#.*$/,'');
+    if(seen[key])return;
+    seen[key]=1;
+    out.push('<a class="practice-action'+(cls?(' '+cls):'')+'" href="'+esc(href)+'"'+ctaAttrs(href)+'>'+esc(label||'Open')+' →</a>');
+  }
+  function buildPracticeTools(m,file){
+    var out=[], seen={}, rt=[];
+    function addTool(k){ if(k&&rt.indexOf(k)<0)rt.push(k); }
+    ((typeof PAGE_TOOLS!=='undefined'&&PAGE_TOOLS[file])||PRACTICE_PAGE_TOOLS[file]||[]).forEach(addTool);
+    if(m&&Array.isArray(m.relatedTools))m.relatedTools.forEach(addTool);
+    for(var i=0;i<rt.length;i++){ var k=rt[i]; if(k==='communication-practice.html'&&m&&Array.isArray(m.communicationCases)&&m.communicationCases.length)continue; addPracticeAction(out,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k),practiceIsSafe(k)?'is-safety':''); }
+    if(m&&Array.isArray(m.communicationCases)){
+      for(var c=0;c<m.communicationCases.length;c++){ var id=m.communicationCases[c]; addPracticeAction(out,seen,practiceCaseLabel(id),'?tool=communication-practice.html&case='+encodeURIComponent(id),'is-case'); }
+    }
+    if(m&&m.cta){
+      var cx=Array.isArray(m.cta)?m.cta:[m.cta];
+      for(var ci=0;ci<cx.length;ci++){ var ca=cx[ci], ch=ca&&ca.href?ctaHref(ca.href):''; var tk=actionToolKey(ch); addPracticeAction(out,seen,ca&&(ca.label||practiceToolLabel(tk)||'Open tool'),ch,practiceIsSafe(tk)?'is-safety':''); }
+    }
+    var cw=m&&m.clinicalWorkflow;
+    if(cw&&Array.isArray(cw.actions)){
+      for(var a=0;a<cw.actions.length;a++){ var ac=cw.actions[a]||{}, ah=ctaHref(ac.href||''), ak=actionToolKey(ah); addPracticeAction(out,seen,ac.label||practiceToolLabel(ak)||'Open',ah,practiceIsSafe(ak)?'is-safety':''); }
+    }
+    if(!out.length){
+      addPracticeAction(out,seen,'Practice Questions','?tool=question-bank-practice.html','is-review');
+      addPracticeAction(out,seen,'Daily Review','?tool=review.html','is-review');
+    }
+    return '<div class="practice-actions">'+out.join('')+'</div>';
+  }
+  function buildTpl(m,file){
+    if(!hasPracticeTpl(m))return '';
+    var h='<details class="topic-tpl practice-panel"'+((m.safetyLevel==='high'||m.hy)?' open':'')+'>';
+    h+='<summary class="practice-summary"><span class="practice-tab">On unit</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · tools</span><span class="practice-chev" aria-hidden="true">›</span></summary>';
+    h+='<div class="practice-body">';
+    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; var _p=progLoad(),_dn=_p[file]&&_p[file].done; h+='<span class="revcount">'+reviewedCount(_p)+' of '+topicCount()+' reviewed</span><button type="button" class="markrev'+(_dn?' on':'')+'" data-f="'+esc(file||'')+'" aria-pressed="'+(_dn?'true':'false')+'">'+(_dn?'✓ Reviewed':'☆ Mark reviewed')+'</button>'; h+='</div>';
+    h+='<div class="practice-sections">';
+    h+='<section class="practice-section"><div class="practice-section-title">In 30 seconds</div>';
+    if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
+    h+='</section><section class="practice-section"><div class="practice-section-title">On the unit</div>';
+    var wf=buildWorkflow(m), hasUnit=false; if(wf){ h+=wf; hasUnit=true; }
+    if(m.cant){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; hasUnit=true; }
+    if(m.ruleOut&&m.ruleOut.length){ h+='<div class="minitree"><div class="lbl">Rule out first → first move</div><div class="ro">'; for(var j=0;j<m.ruleOut.length;j++){ h+='<span class="c">'+esc(m.ruleOut[j])+'</span>'; } h+='</div>'; if(m.firstMove){ h+='<div class="fm"><b>First move · </b>'+esc(m.firstMove)+'</div>'; } h+='<a href="?tool=decision-aids.html">See the visual decision aids →</a></div>'; hasUnit=true; }
+    if(!hasUnit)h+='<p class="practice-muted">No bedside workflow scaffold yet.</p>';
+    h+='</section><section class="practice-section"><div class="practice-section-title">Test yourself</div>';
+    if(m.quiz){ var q=m.quiz; h+='<div class="tyourself"><div class="lbl">Test yourself</div><div class="q">'+esc(q.q)+'</div>'; for(var k=0;k<q.o.length;k++){ h+='<button type="button" class="tyo" data-c="'+(q.o[k].c?'1':'0')+'">'+esc(q.o[k].t)+'</button>'; } h+='<div class="tyfb">'+(q.why?('<b>Why: </b>'+esc(q.why)):'')+'</div></div>'; }
+    else { h+='<p class="practice-muted">No page-specific question yet. Use the question bank or daily review.</p><div class="practice-actions"><a class="practice-action is-review" href="?tool=question-bank-practice.html">Practice Questions →</a><a class="practice-action is-review" href="?tool=review.html">Daily Review →</a></div>'; }
+    h+='</section><section class="practice-section"><div class="practice-section-title">Tools</div>'+buildPracticeTools(m,file)+'</section>';
+    h+='</div></div></details>'; return h;
+  }
   var modeEl=document.getElementById('modetoggle'), mPath=document.getElementById('mPath'), mLib=document.getElementById('mLib');
   function reflectLibrary(){ if(modeEl) modeEl.classList.add('lib'); if(mLib) mLib.classList.add('on'); if(mPath) mPath.classList.remove('on'); contentEl.classList.remove('pathmode'); contentEl.classList.remove('toolmode'); try{localStorage.setItem('cw_mode','library')}catch(_){ } }
   function showPath(){ if(modeEl) modeEl.classList.remove('lib'); if(mPath) mPath.classList.add('on'); if(mLib) mLib.classList.remove('on'); contentEl.classList.remove('toolmode'); contentEl.classList.add('pathmode'); contentEl.innerHTML='<iframe class="pathframe" src="tools/learning-path.html" title="Learning Path"></iframe>'; try{localStorage.setItem('cw_mode','path')}catch(_){ } }
@@ -425,7 +525,15 @@
     currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)&&!(opts&&opts.noRoute)) setRoute(item, opts&&opts.replace, opts);
     contentEl.innerHTML=skel();
     fetch('content/'+item.f).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
-      contentEl.innerHTML=marked.parse(t); if(item.f==='welcome.md'){try{localStorage.setItem('cw_seen_welcome_v1','1');localStorage.setItem('cw_seen_start','1');}catch(_){ }} var _m=TOPIC_META&&TOPIC_META[item.f]; if(_m){ var _w=document.createElement('div'); _w.innerHTML=buildTpl(_m, item.f); if(_w.firstChild) contentEl.insertBefore(_w.firstChild, contentEl.firstChild); } var rv=REVIEWED&&REVIEWED[item.f]; if(rv&&rv.status==='reviewed'){ var st=document.createElement('div'); st.className='reviewed'; st.textContent='\u2713 Reviewed by '+(rv.by||'faculty')+(rv.at?(' \u00b7 '+rv.at):''); contentEl.insertBefore(st, contentEl.firstChild); } makeCollapsible(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); try{if(window.__afterContent)window.__afterContent(item);}catch(_){ } try{contentEl.classList.remove('cc-rise');void contentEl.offsetWidth;contentEl.classList.add('cc-rise');}catch(_){ } var _sy=(opts&&opts.fromHistory&&SCROLL[item.f]!=null)?SCROLL[item.f]:0; window.scrollTo(0,_sy);
+      contentEl.innerHTML=marked.parse(t);
+      if(item.f==='welcome.md'){try{localStorage.setItem('cw_seen_welcome_v1','1');localStorage.setItem('cw_seen_start','1');}catch(_){ }}
+      var _anchor=contentEl.querySelector('h1');
+      function _insertAfterTitle(node){ if(!node)return; if(_anchor&&_anchor.parentNode){ _anchor.parentNode.insertBefore(node,_anchor.nextSibling); _anchor=node; } else contentEl.insertBefore(node,contentEl.firstChild); }
+      var rv=REVIEWED&&REVIEWED[item.f];
+      if(rv&&rv.status==='reviewed'){ var st=document.createElement('div'); st.className='reviewed'; st.textContent='\u2713 Reviewed by '+(rv.by||'faculty')+(rv.at?(' \u00b7 '+rv.at):''); _insertAfterTitle(st); }
+      var _m=TOPIC_META&&TOPIC_META[item.f];
+      if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
+      makeCollapsible(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); try{if(window.__afterContent)window.__afterContent(item);}catch(_){ } try{contentEl.classList.remove('cc-rise');void contentEl.offsetWidth;contentEl.classList.add('cc-rise');}catch(_){ } var _sy=(opts&&opts.fromHistory&&SCROLL[item.f]!=null)?SCROLL[item.f]:0; window.scrollTo(0,_sy);
     }).catch(function(){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+item.t+'. Check your connection and try again.</p></div>'});
   }
 
