@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [RC-META] tool="Diagnostic Reasoning Workbench" version="1.0" built="2026-07-07" category="clinical-reasoning" audience="trainee,ms3,resident" settings="inpatient,self-study" time="8-12min" summary="Fictional composite diagnostic reasoning cases. Stores anonymous structured practice state under cw_reason_v1; no PHI or free-text patient fields." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Diagnostic Reasoning Workbench</title>
+<style>
+:root{
+  --bg:#f6f3ee;--bg-alt:#faf6f0;--surface:#ffffff;--border:#ddd3c6;
+  --primary:#c25a3c;--primary-dark:#a84830;--primary-light:#f3ebe5;
+  --accent:#2a6b5e;--accent-dark:#1e5248;--accent-light:#edf4f2;
+  --text:#2f2924;--text-mid:#51473d;--text-light:#665a4f;
+  --success:#357160;--success-light:#e7f1ed;--danger:#a34132;--danger-light:#fbece9;
+  --warning:#7a6234;--warning-light:#f5efe2;--focus:#155eef;
+  --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.5}
+.shell{max-width:1060px;margin:0 auto;padding:24px 18px 70px}
+.kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:900;color:var(--accent-dark)}
+.top{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,430px);gap:18px;align-items:start;margin-bottom:16px}
+h1{font-family:var(--font-head);font-size:2.05rem;color:var(--primary);margin:.08em 0 .2em}
+.sub{color:var(--text-mid);max-width:72ch;margin:0}
+.notice{background:var(--warning-light);border:1px solid var(--warning);border-left:4px solid var(--warning);border-radius:10px;padding:10px 12px;font-size:.9rem;color:var(--text-mid)}
+.layout{display:grid;grid-template-columns:minmax(230px,285px) minmax(0,1fr);gap:16px}
+.side,.casecard,.stepcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 1px 3px rgba(59,51,44,.06)}
+.side{padding:10px;align-self:start;position:sticky;top:12px}
+.sidehead{padding:5px 5px 10px;margin-bottom:8px;border-bottom:1px solid var(--border)}
+.sidehead .n{font-weight:900;color:var(--text)}
+.sidehead .d{font-size:.82rem;color:var(--text-light)}
+.bar{height:7px;border-radius:999px;background:var(--bg-alt);border:1px solid var(--border);overflow:hidden;margin-top:8px}
+.bar span{display:block;height:100%;background:var(--accent);width:0}
+.casebtn{display:block;width:100%;border:1px solid transparent;background:transparent;border-radius:10px;padding:10px;text-align:left;font:inherit;color:var(--text);cursor:pointer}
+.casebtn:hover{background:var(--accent-light)}
+.casebtn.on{background:var(--accent);color:#fff}
+.casebtn .t{display:block;font-weight:900;line-height:1.22}
+.casebtn .m{display:block;font-size:.76rem;opacity:.8;margin-top:2px}
+.casebtn .done{display:inline-block;font-size:.68rem;font-weight:900;border:1px solid currentColor;border-radius:999px;padding:1px 6px;margin-top:6px;opacity:.86}
+.main{display:grid;gap:14px}
+.casecard{padding:16px 17px}
+.case-title{font-family:var(--font-head);font-size:1.35rem;font-weight:700;color:var(--primary);margin:0 0 5px}
+.meta{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+.pill{font-size:.72rem;font-weight:850;border:1px solid var(--border);border-radius:999px;padding:3px 9px;color:var(--text-mid);background:var(--bg-alt)}
+.pill.draft{background:var(--warning-light);border-color:var(--warning);color:var(--warning)}
+.pill.reviewed{background:var(--success-light);border-color:var(--success);color:var(--success)}
+.brief{font-family:var(--font-head);font-size:1.12rem;line-height:1.38;color:var(--text);margin:0 0 12px}
+.goal{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 9px 9px 0;padding:10px 13px;color:var(--text-mid);margin:0 0 13px}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fact{border:1px solid var(--border);border-radius:10px;background:var(--bg-alt);padding:9px 10px}
+.fact .k{display:block;text-transform:uppercase;letter-spacing:.08em;font-size:.66rem;font-weight:900;color:var(--accent-dark);margin-bottom:2px}
+.fact .v{font-size:.92rem;color:var(--text-mid)}
+.stepcard{padding:16px 17px}
+.stepbar{display:flex;gap:6px;align-items:center;margin:0 0 13px}
+.dot{height:8px;border-radius:999px;background:var(--border);flex:1}
+.dot.on{background:var(--accent)}
+.step-k{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--text-light);margin-bottom:4px}
+.step-title{font-family:var(--font-head);font-size:1.25rem;color:var(--text);margin:0 0 4px}
+.prompt{font-size:1.03rem;margin:0 0 13px;color:var(--text-mid)}
+.choice{display:block;width:100%;border:1px solid var(--border);background:var(--bg-alt);border-radius:10px;text-align:left;padding:12px 13px;margin:8px 0;cursor:pointer;font:inherit;color:var(--text)}
+.choice:hover{border-color:var(--accent)}
+.choice.selected.best{border-color:var(--success);background:var(--success-light)}
+.choice.selected.partial{border-color:var(--warning);background:var(--warning-light)}
+.choice.selected.missed,.choice.selected.harmful{border-color:var(--danger);background:var(--danger-light)}
+.feedback{margin:12px 0 0;border-radius:10px;padding:12px 13px;background:var(--bg-alt);border:1px solid var(--border);color:var(--text-mid)}
+.feedback b{color:var(--text)}
+.navrow{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:999px;padding:7px 12px;font:inherit;font-size:.88rem;font-weight:900;cursor:pointer}
+.btn:hover{background:var(--accent-dark)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:disabled:hover{background:var(--accent)}
+.btn.secondary{background:var(--surface);color:var(--accent-dark)}
+.btn.secondary:hover{background:var(--accent-light)}
+.btn.secondary:disabled:hover{background:var(--surface)}
+.bias{margin-top:14px;border:1px solid var(--primary);border-left:4px solid var(--primary);background:var(--primary-light);border-radius:10px;padding:10px 12px}
+.bias .k{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.09em;color:var(--primary-dark);margin-bottom:5px}
+.bias ul{margin:0;padding-left:1.1rem;color:var(--text-mid)}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.links a{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:5px 10px;color:var(--accent-dark);text-decoration:none;font-size:.84rem;font-weight:800}
+.links a:hover{border-color:var(--accent);background:var(--accent-light)}
+.storage{margin-top:12px;font-size:.84rem;color:var(--text-light)}
+.empty{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;color:var(--text-mid)}
+button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+@media(max-width:820px){
+  .top{grid-template-columns:1fr}
+  .layout{grid-template-columns:1fr}
+  .side{position:static}
+  .caselist{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+  .casebtn{min-width:220px}
+  .facts{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main id="root" class="shell">
+  <div class="top">
+    <div>
+      <div class="kicker">Clinical reasoning · diagnostic humility</div>
+      <h1>Diagnostic Reasoning Workbench</h1>
+      <p class="sub">Practice turning bedside data into a problem representation, differential, update, and supervised next step.</p>
+    </div>
+    <div class="notice"><b>Boundary:</b> fictional composites only. No patient information, no free text, no diagnosis or treatment advice. Use with supervision and local policy.</div>
+  </div>
+  <div id="app" class="layout"><div class="empty">Loading reasoning cases...</div></div>
+</main>
+<script>
+(function(){
+var app=document.getElementById('app');
+var state={cases:[],current:0,step:0,choice:null,attempts:loadAttempts(),requestedCase:requestedCaseId(),matchedRequest:false};
+var LINK_LABELS={
+  't_mood.md':'Mood','t_psychosis.md':'Psychosis','t_sud.md':'Substance Use','t_personality.md':'Personality',
+  't_neurocog.md':'Neurocognitive','pg_formulation.md':'Formulation','pg_suicide.md':'Suicide Risk',
+  'brief_psychotherapy.md':'Brief Psychotherapy','exp_consult.md':'Consult Questions','ddx.md':'Differential Dx',
+  'delirium.md':'Delirium','catatonia.md':'Catatonia','bfcrs.html':'BFCRS'
+};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function requestedCaseId(){try{return new URLSearchParams(location.search).get('case')||'';}catch(_){return '';}}
+function loadAttempts(){try{return JSON.parse(localStorage.getItem('cw_reason_v1')||'{}')||{};}catch(_){return {};}}
+function saveAttempt(caseId,stepId,choice){try{var rec=state.attempts[caseId]||{steps:{}};rec.steps=rec.steps||{};rec.steps[stepId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};rec.updatedAt=new Date().toISOString().slice(0,10);state.attempts[caseId]=rec;localStorage.setItem('cw_reason_v1',JSON.stringify(state.attempts));}catch(_){}}
+function caseComplete(c){var rec=state.attempts[c.id];var n=(c.steps||[]).length;if(!rec||!rec.steps||!n)return false;return (c.steps||[]).every(function(st){return rec.steps[st.id];});}
+function bestCount(c){var rec=state.attempts[c.id];if(!rec||!rec.steps)return 0;return Object.keys(rec.steps).filter(function(k){return rec.steps[k].quality==='best';}).length;}
+function progressHtml(){var total=state.cases.length||1;var done=state.cases.filter(caseComplete).length;var pct=Math.round(done*100/total);return '<div class="sidehead"><div class="n">'+done+' of '+total+' cases completed</div><div class="d">Structured choices saved locally only</div><div class="bar" aria-hidden="true"><span style="width:'+pct+'%"></span></div></div>';}
+function setCurrentById(id){for(var i=0;i<state.cases.length;i++){if(state.cases[i].id===id){state.current=i;state.step=0;state.choice=null;return true;}}return false;}
+function currentCase(){return state.cases[state.current]||state.cases[0];}
+function currentStep(){var c=currentCase();return c&&c.steps?c.steps[state.step]:null;}
+function navHtml(){return '<aside class="side" aria-label="Reasoning cases">'+progressHtml()+'<div class="caselist">'+state.cases.map(function(c,i){var done=caseComplete(c), best=bestCount(c), total=(c.steps||[]).length;return '<button type="button" class="casebtn'+(i===state.current?' on':'')+'" data-i="'+i+'"><span class="t">'+esc(c.title)+'</span><span class="m">'+esc(c.setting)+'</span>'+(done?'<span class="done">'+best+'/'+total+' strong</span>':'')+'</button>';}).join('')+'</div></aside>';}
+function reviewBadge(c){var rv=c.facultyReview||{};if(rv.status==='reviewed')return '<span class="pill reviewed">Reviewed'+(rv.reviewer?' · '+esc(rv.reviewer):'')+(rv.lastReviewed?' · '+esc(rv.lastReviewed):'')+'</span>';return '<span class="pill draft">'+esc((rv.status||'draft').replace(/-/g,' '))+' · faculty review needed</span>';}
+function caseHtml(c){var facts=(c.facts||[]).map(function(f){return '<div class="fact"><span class="k">'+esc(f.label)+'</span><span class="v">'+esc(f.text)+'</span></div>';}).join('');return '<section class="casecard"><h2 class="case-title">'+esc(c.title)+'</h2><div class="meta"><span class="pill">'+esc(c.setting)+'</span>'+reviewBadge(c)+'</div><p class="brief">'+esc(c.patientBrief)+'</p><div class="goal"><b>Reasoning task:</b> '+esc(c.learnerGoal)+'</div><div class="facts">'+facts+'</div></section>';}
+function qualityLabel(q){return q==='best'?'Strong reasoning':q==='partial'?'Partly useful':q==='harmful'?'Unsafe or stigmatizing frame':'Missed reasoning move';}
+function stepDots(c){return '<div class="stepbar" aria-hidden="true">'+(c.steps||[]).map(function(_,i){return '<span class="dot'+(i<=state.step?' on':'')+'"></span>';}).join('')+'</div>';}
+function stepHtml(c,st){if(!st)return '<section class="stepcard"><p>No steps available for this case.</p></section>';var picked=state.choice;var complete=state.step>=(c.steps.length-1)&&picked;return '<section class="stepcard">'+stepDots(c)+'<div class="step-k">Step '+(state.step+1)+' of '+c.steps.length+'</div><h3 class="step-title">'+esc(st.title)+'</h3><p class="prompt">'+esc(st.prompt)+'</p>'+(st.choices||[]).map(function(ch){var cls=picked&&picked.id===ch.id?' selected '+ch.quality:'';return '<button type="button" class="choice'+cls+'" data-choice="'+esc(ch.id)+'">'+esc(ch.text)+'</button>';}).join('')+(picked?'<div class="feedback"><b>'+qualityLabel(picked.quality)+'.</b> '+esc(picked.feedback)+'</div>':'')+'<div class="navrow"><button type="button" class="btn secondary" data-act="prev"'+(state.step===0?' disabled':'')+'>Previous</button><button type="button" class="btn" data-act="'+(complete?'restart':'next')+'"'+(!picked?' disabled':'')+'>'+(complete?'Restart case':'Next reasoning step')+'</button></div>'+(complete?biasHtml(c):'')+linksHtml(c)+'<div class="storage">Stored locally: case id, step id, choice id, quality, and date. No free-text patient identifiers.</div></section>';}
+function biasHtml(c){return '<div class="bias"><div class="k">Bias check before you leave the case</div><ul>'+(c.biasChecks||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';}
+function linkHref(f){return f&&f.endsWith('.html')?'../index.html?tool='+encodeURIComponent(f):'../index.html?page='+encodeURIComponent(f);}
+function linkLabel(f){return LINK_LABELS[f]||String(f||'').replace(/\\.md$|\\.html$/g,'').replace(/^t_/,'').replace(/^pg_/,'').replace(/_/g,' ').replace(/\b\w/g,function(m){return m.toUpperCase();});}
+function linksHtml(c){return '<div class="links">'+(c.linkedPages||[]).map(function(f){return '<a href="'+linkHref(f)+'">'+esc(linkLabel(f))+'</a>';}).join('')+'</div>';}
+function savedChoiceForStep(c,st){var rec=state.attempts[c.id];var saved=rec&&rec.steps&&rec.steps[st.id];if(!saved)return null;return (st.choices||[]).filter(function(ch){return ch.id===saved.choiceId;})[0]||null;}
+function render(){if(!state.cases.length){app.innerHTML='<div class="empty">No reasoning cases are available.</div>';return;}var c=currentCase(), st=currentStep();if(!state.choice&&st)state.choice=savedChoiceForStep(c,st);app.innerHTML=navHtml()+'<div class="main">'+caseHtml(c)+stepHtml(c,st)+'</div>';}
+app.addEventListener('click',function(ev){var caseBtn=ev.target.closest&&ev.target.closest('.casebtn');if(caseBtn){state.current=+caseBtn.getAttribute('data-i')||0;state.step=0;state.choice=null;state.matchedRequest=false;render();return;}var choiceBtn=ev.target.closest&&ev.target.closest('.choice');if(choiceBtn){var c=currentCase(), st=currentStep(), id=choiceBtn.getAttribute('data-choice');state.choice=(st.choices||[]).filter(function(ch){return ch.id===id;})[0]||null;if(state.choice)saveAttempt(c.id,st.id,state.choice);render();return;}var act=ev.target.closest&&ev.target.closest('[data-act]');if(act){var c=currentCase();if(act.getAttribute('data-act')==='prev'&&state.step>0){state.step--;state.choice=null;}else if(act.getAttribute('data-act')==='restart'){state.step=0;state.choice=null;}else if(act.getAttribute('data-act')==='next'){if(state.step<c.steps.length-1){state.step++;state.choice=null;}}render();}});
+fetch('../reasoning_cases.json').then(function(r){if(!r.ok)throw new Error('missing cases');return r.json();}).then(function(d){state.cases=(d&&d.cases)||[];if(state.requestedCase)state.matchedRequest=setCurrentById(state.requestedCase);render();}).catch(function(){app.innerHTML='<div class="empty">Could not load reasoning cases. Rebuild the site or check reasoning_cases.json.</div>';});
+})();
+</script>
+</body>
+</html>

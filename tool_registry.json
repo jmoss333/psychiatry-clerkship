@@ -88,6 +88,17 @@
       "storageKeys": ["cw_comm_v1"],
       "evidenceIds": ["va-dod-suicide-cpg-2024", "project-beta-deescalation-2012"],
       "relatedPages": ["pg_suicide.md", "t_psychosis.md", "t_personality.md", "exp_family.md", "family_playbook.md"]
+    },
+    {
+      "file": "diagnostic-reasoning.html",
+      "title": "Diagnostic Reasoning Workbench",
+      "sourcePath": "02_Clinical_Skills/Clinical_Reasoning/diagnostic-reasoning.html",
+      "category": "clinical-reasoning",
+      "riskLevel": "moderate",
+      "disclaimerType": "fictional-simulation-supervision",
+      "storageKeys": ["cw_reason_v1"],
+      "evidenceIds": ["bap-catatonia-2023", "nice-delirium-cg103"],
+      "relatedPages": ["ddx.md", "pg_formulation.md", "t_mood.md", "t_psychosis.md", "delirium.md", "catatonia.md", "t_personality.md"]
     }
   ]
 }
