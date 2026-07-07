@@ -106,6 +106,15 @@ Discharge realism:
 
 > "What part of the plan feels hardest to actually do at home?"
 
+## Practice What To Say Next
+
+Use the communication practice tool to rehearse common family and systems
+moments:
+
+- [Open a family meeting](?tool=communication-practice.html&case=family_meeting_opening_001).
+- [Ask better collateral questions](?tool=communication-practice.html&case=collateral_questions_001).
+- [De-escalate family conflict around discharge](?tool=communication-practice.html&case=family_conflict_discharge_001).
+
 ## Discharge Barrier Map
 
 | Domain | Question | Barrier | Plan |

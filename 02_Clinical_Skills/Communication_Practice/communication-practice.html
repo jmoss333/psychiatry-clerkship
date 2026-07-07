@@ -64,8 +64,9 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offs
 <script>
 (function(){
 var app=document.getElementById('app');
-var state={cases:[],current:0,choice:null,attempts:loadAttempts()};
+var state={cases:[],current:0,choice:null,attempts:loadAttempts(),requestedCase:requestedCaseId()};
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function requestedCaseId(){try{return new URLSearchParams(location.search).get('case')||'';}catch(_){return '';}}
 function loadAttempts(){try{return JSON.parse(localStorage.getItem('cw_comm_v1')||'{}')||{};}catch(_){return {};}}
 function saveAttempt(caseId,choice){try{state.attempts[caseId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};localStorage.setItem('cw_comm_v1',JSON.stringify(state.attempts));}catch(_){}}
 function qualityLabel(q){return q==='best'?'Best next line':q==='partial'?'Partly useful':q==='harmful'?'Avoid this line':'Missed opportunity';}
@@ -73,7 +74,7 @@ function navHtml(){return '<div class="list" aria-label="Communication cases">'+
 function caseHtml(c){var picked=state.choice;var draft=c.facultyReview&&c.facultyReview.status!=='reviewed';return '<section class="card"><div class="meta"><span class="pill">'+esc(c.setting)+'</span>'+(draft?'<span class="pill draft">Draft case · faculty review needed</span>':'<span class="pill">Reviewed</span>')+c.skillTags.map(function(t){return '<span class="pill">'+esc(t)+'</span>';}).join('')+'</div><div class="goal"><b>Practice goal:</b> '+esc(c.learnerGoal)+'</div><p class="prompt">'+esc(c.prompt)+'</p>'+c.choices.map(function(ch){var cls=picked&&picked.id===ch.id?' '+ch.quality:'';return '<button type="button" class="choice'+cls+'" data-choice="'+esc(ch.id)+'">'+esc(ch.text)+'</button>';}).join('')+(picked?'<div class="feedback"><b>'+qualityLabel(picked.quality)+'.</b> '+esc(picked.feedback)+'</div>':'')+'<div class="links">'+c.linkedPages.map(function(f){return '<a href="../index.html?page='+encodeURIComponent(f)+'">'+esc(f.replace(/\\.md$/,''))+'</a>';}).join('')+'</div><div class="progress">Saved locally in this browser only. Stored: case id, choice id, quality, and date. No free text.</div></section>';}
 function render(){if(!state.cases.length){app.innerHTML='<div class="empty">No communication cases are available.</div>';return;}app.innerHTML=navHtml()+caseHtml(state.cases[state.current]);}
 app.addEventListener('click',function(ev){var cb=ev.target.closest&&ev.target.closest('.casebtn');if(cb){state.current=+cb.getAttribute('data-i')||0;state.choice=null;render();return;}var chb=ev.target.closest&&ev.target.closest('.choice');if(chb){var c=state.cases[state.current];var id=chb.getAttribute('data-choice');state.choice=(c.choices||[]).filter(function(x){return x.id===id;})[0]||null;if(state.choice)saveAttempt(c.id,state.choice);render();}});
-fetch('../communication_cases.json').then(function(r){if(!r.ok)throw new Error('missing cases');return r.json();}).then(function(d){state.cases=(d&&d.cases)||[];render();}).catch(function(){app.innerHTML='<div class="empty">Could not load communication cases. Rebuild the site or check communication_cases.json.</div>';});
+fetch('../communication_cases.json').then(function(r){if(!r.ok)throw new Error('missing cases');return r.json();}).then(function(d){state.cases=(d&&d.cases)||[];if(state.requestedCase){for(var i=0;i<state.cases.length;i++){if(state.cases[i].id===state.requestedCase){state.current=i;break;}}}render();}).catch(function(){app.innerHTML='<div class="empty">Could not load communication cases. Rebuild the site or check communication_cases.json.</div>';});
 })();
 </script>
 </body>

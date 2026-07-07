@@ -109,6 +109,14 @@ A strong safety plan includes:
 Do not treat a safety plan as a discharge permission slip. It is one component
 of a broader risk and disposition plan.
 
+## Practice What To Say Next
+
+Use the communication practice tool to rehearse the words before you need them
+on the unit:
+
+- [Ask about suicide directly](?tool=communication-practice.html&case=suicide_direct_question_001).
+- [Navigate family conflict during safety/discharge planning](?tool=communication-practice.html&case=family_conflict_discharge_001).
+
 ## What To Escalate Immediately
 
 - Current intent.

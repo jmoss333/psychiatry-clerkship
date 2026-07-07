@@ -103,10 +103,16 @@
       ],
       "why": "Verbal de-escalation is first-line; medication is offered (preferably oral), and restraint is a last resort."
     },
-    "cta": {
-      "label": "Open the Decision Aids",
-      "href": "?tool=decision-aids.html"
-    },
+    "cta": [
+      {
+        "label": "Open the Decision Aids",
+        "href": "?tool=decision-aids.html"
+      },
+      {
+        "label": "Practice de-escalation language",
+        "href": "?tool=communication-practice.html&case=rupture_limit_setting_001"
+      }
+    ],
     "evidenceIds": [
       "project-beta-deescalation-2012",
       "project-beta-psychopharm-agitation-2012",
@@ -123,7 +129,9 @@
       "5min"
     ],
     "communicationCases": [
-      "rupture_limit_setting_001"
+      "rupture_limit_setting_001",
+      "mania_limit_sleep_001",
+      "guardedness_privacy_001"
     ],
     "safetyLevel": "high",
     "facultyReview": {
@@ -228,10 +236,16 @@
       ],
       "why": "Subacute psychosis with neurologic and autonomic features warrants an autoimmune-encephalitis workup before a primary psychiatric label."
     },
-    "cta": {
-      "label": "Open the Decision Aids",
-      "href": "?tool=decision-aids.html"
-    },
+    "cta": [
+      {
+        "label": "Open the Decision Aids",
+        "href": "?tool=decision-aids.html"
+      },
+      {
+        "label": "Practice psychosis communication",
+        "href": "?tool=communication-practice.html&case=psychosis_validation_001"
+      }
+    ],
     "relatedTools": [
       "mse.html",
       "decision-aids.html",
@@ -240,11 +254,13 @@
     "workflowModes": [
       "ward",
       "family",
+      "5min",
       "shelf"
     ],
     "familyOverlay": "first_episode_psychosis_family_psychoeducation",
     "communicationCases": [
-      "psychosis_validation_001"
+      "psychosis_validation_001",
+      "guardedness_privacy_001"
     ]
   },
   "t_mood.md": {
@@ -276,10 +292,29 @@
       ],
       "why": "This is bipolar mania; discontinue the antidepressant and begin an antimanic agent while protecting sleep."
     },
-    "cta": {
-      "label": "Open the Screeners (PHQ-9 / GAD-7)",
-      "href": "?tool=screeners.html"
-    }
+    "cta": [
+      {
+        "label": "Open the Screeners (PHQ-9 / GAD-7)",
+        "href": "?tool=screeners.html"
+      },
+      {
+        "label": "Practice mania limit-setting",
+        "href": "?tool=communication-practice.html&case=mania_limit_sleep_001"
+      }
+    ],
+    "relatedTools": [
+      "screeners.html",
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "communicationCases": [
+      "mania_limit_sleep_001"
+    ]
   },
   "t_anxiety.md": {
     "read": 4,
@@ -406,6 +441,10 @@
       ],
       "why": "Splitting is managed with team consistency and clear limits; medication does not treat the personality disorder itself."
     },
+    "cta": {
+      "label": "Practice rupture repair",
+      "href": "?tool=communication-practice.html&case=bpd_rupture_repair_001"
+    },
     "relatedTools": [
       "cssrs.html",
       "reflection.html",
@@ -416,7 +455,8 @@
       "family"
     ],
     "communicationCases": [
-      "rupture_limit_setting_001"
+      "rupture_limit_setting_001",
+      "bpd_rupture_repair_001"
     ]
   },
   "t_neurodev.md": {
@@ -977,10 +1017,27 @@
       ],
       "why": "A reflection plus a neutral fact and an open question sidesteps the argument and invites change talk. Quoting criteria or issuing warnings is the righting reflex and evokes sustain talk; dropping the subject avoids the conversation the patient actually needs."
     },
-    "cta": {
-      "label": "Open the Substance Use topic",
-      "href": "?page=t_sud.md"
-    }
+    "cta": [
+      {
+        "label": "Open the Substance Use topic",
+        "href": "?page=t_sud.md"
+      },
+      {
+        "label": "Practice medication ambivalence",
+        "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+      }
+    ],
+    "relatedTools": [
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "5min"
+    ],
+    "communicationCases": [
+      "medication_ambivalence_001"
+    ]
   },
   "pg_suicide.md": {
     "read": 4,
@@ -1035,7 +1092,8 @@
     ],
     "familyOverlay": "suicide_safety_family_means_restriction",
     "communicationCases": [
-      "suicide_direct_question_001"
+      "suicide_direct_question_001",
+      "family_conflict_discharge_001"
     ],
     "safetyLevel": "high",
     "facultyReview": {
@@ -1203,10 +1261,16 @@
       ],
       "why": "The discriminating sign is clonus — rapid-onset clonus with hyperreflexia is the fingerprint of serotonin syndrome. NMS presents with lead-pipe rigidity, markedly elevated CK, and hyperthermia developing over hours to days on a dopamine-blocking agent. Both can cause fever, so fever alone does not distinguish them. The MAOI-plus-serotonergic-TCA combination is a classic serotonin syndrome setup."
     },
-    "cta": {
-      "label": "Open the Protocol Library",
-      "href": "?page=protocol_library.md"
-    },
+    "cta": [
+      {
+        "label": "Open the Protocol Library",
+        "href": "?page=protocol_library.md"
+      },
+      {
+        "label": "Practice medication ambivalence",
+        "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+      }
+    ],
     "relatedTools": [
       "communication-practice.html",
       "decision-aids.html"
@@ -1282,10 +1346,28 @@
       ],
       "why": "The MSE separates mood (the patient's subjective report, always quoted in the patient's words) from affect (the clinician's behavioral observation: range, reactivity, congruence). Option 3 shows both correctly. The other options either interpret rather than observe, skip the patient quote, or make a diagnostic statement where a description belongs."
     },
-    "cta": {
-      "label": "Open the MSE tool",
-      "href": "?tool=mse.html"
-    }
+    "cta": [
+      {
+        "label": "Open the MSE tool",
+        "href": "?tool=mse.html"
+      },
+      {
+        "label": "Practice guardedness",
+        "href": "?tool=communication-practice.html&case=guardedness_privacy_001"
+      }
+    ],
+    "relatedTools": [
+      "mse.html",
+      "interview-circle.html",
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min"
+    ],
+    "communicationCases": [
+      "guardedness_privacy_001"
+    ]
   },
   "pg_formulation.md": {
     "read": 4,
@@ -1414,10 +1496,16 @@
       ],
       "why": "'Family is supportive' is a conclusion, not a plan. The discharge barrier map must verify specific domains: where the patient will sleep, who will be there, whether medications are obtainable, whether a 7-day appointment is actually scheduled, and who has confirmed lethal means are secured. Each unconfirmed assumption is a gap in the safety net."
     },
-    "cta": {
-      "label": "Open the Family Meeting Playbook",
-      "href": "?page=family_playbook.md"
-    },
+    "cta": [
+      {
+        "label": "Open the Family Meeting Playbook",
+        "href": "?page=family_playbook.md"
+      },
+      {
+        "label": "Practice family conflict",
+        "href": "?tool=communication-practice.html&case=family_conflict_discharge_001"
+      }
+    ],
     "relatedTools": [
       "communication-practice.html"
     ],
@@ -1429,7 +1517,8 @@
     "familyOverlay": "discharge_barrier_map_family_roles",
     "communicationCases": [
       "collateral_questions_001",
-      "family_meeting_opening_001"
+      "family_meeting_opening_001",
+      "family_conflict_discharge_001"
     ]
   },
   "family_modalities.md": {
@@ -1537,10 +1626,28 @@
       ],
       "why": "The mechanism is behavioral shutdown — withdrawn, anhedonic, inactive. Behavioral activation is the match: it targets this mechanism directly by scheduling activity and requires the lowest cognitive demand, which is why the page flags it as the best inpatient fit. Cognitive restructuring requires cognitive engagement a deeply depressed patient may not have; chain analysis is for a self-harm incident; MI is for motivational ambivalence."
     },
-    "cta": {
-      "label": "Open the Motivational Interviewing page",
-      "href": "?page=motivational_interviewing.md"
-    }
+    "cta": [
+      {
+        "label": "Open the Motivational Interviewing page",
+        "href": "?page=motivational_interviewing.md"
+      },
+      {
+        "label": "Practice rupture repair",
+        "href": "?tool=communication-practice.html&case=bpd_rupture_repair_001"
+      }
+    ],
+    "relatedTools": [
+      "communication-practice.html",
+      "reflection.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min"
+    ],
+    "communicationCases": [
+      "bpd_rupture_repair_001",
+      "medication_ambivalence_001"
+    ]
   },
   "evidence_inpatient.md": {
     "read": 8,
