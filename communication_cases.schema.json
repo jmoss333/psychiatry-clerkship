@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "communication_cases",
+  "type": "object",
+  "required": ["cases"],
+  "properties": {
+    "_note": { "type": "string" },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "topic", "setting", "learnerGoal", "prompt", "choices", "skillTags", "linkedPages", "evidenceIds", "facultyReview"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "title": { "type": "string" },
+          "topic": { "type": "string" },
+          "setting": { "type": "string" },
+          "learnerGoal": { "type": "string" },
+          "prompt": { "type": "string" },
+          "choices": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": ["id", "text", "quality", "feedback"],
+              "properties": {
+                "id": { "type": "string" },
+                "text": { "type": "string" },
+                "quality": { "type": "string", "enum": ["best", "partial", "missed", "harmful"] },
+                "feedback": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "skillTags": { "type": "array", "items": { "type": "string" } },
+          "linkedPages": { "type": "array", "items": { "type": "string" } },
+          "evidenceIds": { "type": "array", "items": { "type": "string" } },
+          "facultyReview": {
+            "type": "object",
+            "required": ["status"],
+            "properties": {
+              "status": { "type": "string", "enum": ["draft", "pending", "reviewed", "retired"] },
+              "reviewer": { "type": "string" },
+              "lastReviewed": { "type": "string" }
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

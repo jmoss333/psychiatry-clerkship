@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "evidence_registry",
+  "type": "object",
+  "required": ["sources"],
+  "properties": {
+    "_note": { "type": "string" },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "organization", "year", "url", "evidenceLevel", "lastReviewed", "facultyReviewStatus", "relatedTopicTags"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "title": { "type": "string" },
+          "organization": { "type": "string" },
+          "year": { "type": ["integer", "string"] },
+          "url": { "type": "string" },
+          "doi": { "type": "string" },
+          "evidenceLevel": { "type": "string" },
+          "lastReviewed": { "type": "string" },
+          "facultyReviewStatus": { "type": "string", "enum": ["draft", "pending", "reviewed", "retired"] },
+          "relatedTopicTags": { "type": "array", "items": { "type": "string" } },
+          "clerkshipRelevance": { "type": "string" },
+          "shelfComatRelevance": { "type": "string" },
+          "clinicalWorkflowRelevance": { "type": "string" },
+          "localPolicyDependent": { "type": "boolean" },
+          "updateCadence": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

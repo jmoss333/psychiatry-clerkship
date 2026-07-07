@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+<!-- [RC-META] tool="Daily Review — Spaced Repetition" version="1.1" built="2026-07-07" category="practice" audience="trainee,ms3" settings="self-study" time="5min" summary="Browser-local spaced-repetition dashboard for clerkship review cards. Educational; fictional composites only; no PHI." -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
@@ -266,7 +267,7 @@ function App(){
       e("div",{className:"stat due"},e("div",{className:"num"},m.due+m.newRemain),e("div",{className:"lab"},"Due now")),
       e("div",{className:"stat streak"},e("div",{className:"num"},store.stats.streak||0),e("div",{className:"lab"},"Day streak")),
       e("div",{className:"stat"},e("div",{className:"num"},m.mature+m.young),e("div",{className:"lab"},"Learned")),
-      e("div",{className:"stat"},e("div",{className:"num"},store.stats.seen?Math.round(100*(store.stats.correct||0)/store.stats.seen):0)+"%",e("div",{className:"lab"},"Retention"))),
+      e("div",{className:"stat"},e("div",{className:"num"},(store.stats.seen?Math.round(100*(store.stats.correct||0)/store.stats.seen):0)+"%"),e("div",{className:"lab"},"Retention"))),
     e("div",{className:"cta"},
       e("button",{className:"btn primary",disabled:!canStart,onClick:function(){start(false);}}, canStart?("Start review — "+(m.due+m.newRemain)+" card"+((m.due+m.newRemain)===1?"":"s")):"All caught up ✓"),
       e("button",{className:"btn ghost",onClick:function(){start(true);}},"Study ahead")),

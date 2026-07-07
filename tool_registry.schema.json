@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "tool_registry",
+  "type": "object",
+  "required": ["tools"],
+  "properties": {
+    "_note": { "type": "string" },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "title", "sourcePath", "category", "riskLevel", "disclaimerType", "storageKeys", "evidenceIds", "relatedPages"],
+        "properties": {
+          "file": { "type": "string" },
+          "title": { "type": "string" },
+          "sourcePath": { "type": "string" },
+          "category": { "type": "string" },
+          "riskLevel": { "type": "string", "enum": ["low", "moderate", "high"] },
+          "disclaimerType": { "type": "string" },
+          "storageKeys": { "type": "array", "items": { "type": "string" } },
+          "evidenceIds": { "type": "array", "items": { "type": "string" } },
+          "relatedPages": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
