@@ -45,11 +45,25 @@ Additional migrated high-use workflow pages:
 - `family_playbook.md`
 - `brief_psychotherapy.md`
 - `doc_oral.md`
+- `ethics_legal.md`
+- `cultural_psychiatry.md`
+- `rounds_questions.md`
+- `exp_tx.md`
+- `protocol_library.md`
+- `ect_neuromodulation.md`
+- `nutrition_metabolic.md`
+
+## Coverage Report
+
+The static QA harness reports workflow metadata coverage as an INFO line:
+
+`workflow metadata coverage: N/M nav markdown pages`
+
+This report is intentionally non-failing. It helps future PRs see the remaining gaps without blocking deploys for orientation pages, reading lists, or resident-only reference pages that may not need the full bedside scaffold.
 
 ## Follow-Up Content Cleanup Candidates
 
-- `exp_consult.md` currently bundles capacity, delirium, catatonia, and withdrawal. The sidebar now exposes several of those as standalone acute workflows; consider renaming this page to "Consult Questions" or splitting it into smaller consult cards.
-- `exp_tx.md`, `psychopharm_primer.md`, `protocol_library.md`, and `decision-aids.html` overlap. Keep the primer conceptual, the protocol library local-policy/faculty reviewed, and decision aids algorithmic.
-- `rounds_questions.md` sits naturally in team workflow but also supports shelf review. Consider adding workflow metadata in a later slice once its content is reviewed.
-- `cultural_psychiatry.md` should eventually receive the same `ask`, `say`, `collateral`, and `rounds` structure, with emphasis on cultural formulation and interpreter use.
-- `ethics_legal.md` should eventually receive high-risk review metadata and local-policy override notes before being surfaced more aggressively in safety mode.
+- `exp_consult.md` now has the clearer sidebar label "Consult Questions: Capacity, Delirium, Catatonia, Withdrawal" while keeping the route stable. A later PR can split it into smaller consult cards if students need faster access.
+- `exp_tx.md`, `psychopharm_primer.md`, `protocol_library.md`, and `decision-aids.html` still overlap. Keep the primer conceptual, the protocol library local-policy/faculty reviewed, and decision aids algorithmic.
+- `ethics_legal.md` has a workflow scaffold but still needs a stronger local-policy metadata layer before being treated as a high-risk legal guidance page.
+- Resident-only pages such as `cl_reference.md`, `systems_medlegal.md`, `adv_psychopharm.md`, and `supervision_teaching.md` are still candidates for workflow metadata if the resident app should mirror the MS3 scaffold fully.
