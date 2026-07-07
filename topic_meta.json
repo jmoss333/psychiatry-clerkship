@@ -63,6 +63,29 @@
       "status": "reviewed",
       "reviewer": "Joshua Moss, MD",
       "lastReviewed": "2026-07-03"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment",
+      "family",
+      "team",
+      "exam"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask baseline cognition, acute onset, fluctuation, sleep-wake reversal, pain, infection, hypoxia, withdrawal, and medication changes.",
+      "mse": "Prioritize attention and arousal; note fluctuation, disorientation, perceptual disturbance, psychomotor subtype, and cognition.",
+      "safety": "Treat as medical emergency: remove deliriogenic medications, correct causes, prevent falls, and avoid benzodiazepines except withdrawal.",
+      "say": "This looks like a brain-not-working-right-now problem, often from a medical cause, and it usually fluctuates during the day.",
+      "collateral": "Ask family/nursing what is baseline, when it changed, whether it fluctuates, and what helps reorient the patient.",
+      "rounds": "Present CAM-style features, likely causes, medication contributors, nonpharmacologic plan, and when medication is needed for dangerous agitation.",
+      "exam": "Delirium is acute/fluctuating inattention; benzodiazepines usually worsen it unless withdrawal is the cause.",
+      "actions": [
+        {
+          "label": "Open decision aids",
+          "href": "?tool=decision-aids.html"
+        }
+      ]
     }
   },
   "agitation.md": {
@@ -138,6 +161,31 @@
       "status": "reviewed",
       "reviewer": "Joshua Moss, MD",
       "lastReviewed": "2026-07-03"
+    },
+    "workflowStages": [
+      "safety",
+      "communication",
+      "treatment",
+      "team"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask briefly about pain, fear, intoxication/withdrawal, psychosis, needs, and what would help the patient regain control.",
+      "mse": "Track arousal, attention, psychosis, intoxication, akathisia, delirium signs, and capacity to engage.",
+      "safety": "Protect exits, call help early, reduce stimulation, check vitals/glucose, and use restraint only as last resort under policy.",
+      "say": "I want to help, and I also need everyone to stay safe. Let us lower the volume and talk about one next step.",
+      "collateral": "Ask staff/family what triggered escalation, what has worked before, trauma triggers, and medication reactions.",
+      "rounds": "Present driver of agitation, medical rule-out, de-escalation attempts, medication offered, and monitoring/restraint status if used.",
+      "exam": "Verbal de-escalation is first-line when safe; treat the driver and avoid reflexive sedation.",
+      "actions": [
+        {
+          "label": "Practice de-escalation language",
+          "href": "?tool=communication-practice.html&case=rupture_limit_setting_001"
+        },
+        {
+          "label": "Open violence risk tool",
+          "href": "?tool=violence.html"
+        }
+      ]
     }
   },
   "catatonia.md": {
@@ -197,6 +245,28 @@
       "status": "reviewed",
       "reviewer": "Joshua Moss, MD",
       "lastReviewed": "2026-07-03"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment",
+      "team",
+      "exam"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask about onset, mood/psychosis, antipsychotic exposure, fever/autonomic signs, seizures, medical illness, and prior catatonia.",
+      "mse": "Describe motor signs objectively: mutism, stupor, posturing, waxy flexibility, negativism, echophenomena, rigidity, and staring.",
+      "safety": "Hold antipsychotics until malignant catatonia/NMS is addressed; monitor hydration, nutrition, DVT, autonomic instability, and airway risk.",
+      "say": "The stillness and speech change can be part of a treatable motor syndrome, so we are going to assess it carefully.",
+      "collateral": "Ask family/staff what changed, whether the patient eats/drinks, baseline movement/speech, and prior response to lorazepam or ECT.",
+      "rounds": "Present BFCRS signs, medical/NMS rule-out, lorazepam challenge plan, supportive care, and ECT escalation threshold.",
+      "exam": "Lorazepam challenge is diagnostic and therapeutic; antipsychotics can worsen malignant catatonia/NMS.",
+      "actions": [
+        {
+          "label": "Open BFCRS",
+          "href": "?tool=bfcrs.html"
+        }
+      ]
     }
   },
   "t_psychosis.md": {
@@ -261,7 +331,34 @@
     "communicationCases": [
       "psychosis_validation_001",
       "guardedness_privacy_001"
-    ]
+    ],
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment",
+      "communication",
+      "family",
+      "exam"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Clarify hallucinations, delusions, disorganization, negative symptoms, mood episodes, trauma, substances, medical/neurologic symptoms, and timeline.",
+      "mse": "Describe thought process, thought content, response to internal stimuli, affect, behavior, cognition, insight, and judgment without loaded language.",
+      "safety": "Assess command hallucinations, paranoia-driven defensive behavior, inability to care for self, access to weapons, and medication adverse effects.",
+      "say": "I may not see it the same way, but I can tell this feels frightening, and I want to understand what you are experiencing.",
+      "collateral": "Ask about first episode vs baseline, substance exposure, medical symptoms, functional decline, family history, and what helps the patient feel safe.",
+      "rounds": "State primary vs secondary psychosis differential, medical workup, safety drivers, antipsychotic choice, and family engagement plan.",
+      "exam": "First-episode psychosis is a workup; do not anchor on schizophrenia when delirium, substances, seizures, or autoimmune encephalitis fit better.",
+      "actions": [
+        {
+          "label": "Practice psychosis validation",
+          "href": "?tool=communication-practice.html&case=psychosis_validation_001"
+        },
+        {
+          "label": "Open decision aids",
+          "href": "?tool=decision-aids.html"
+        }
+      ]
+    }
   },
   "t_mood.md": {
     "read": 5,
@@ -314,7 +411,33 @@
     ],
     "communicationCases": [
       "mania_limit_sleep_001"
-    ]
+    ],
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment",
+      "communication",
+      "exam"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Anchor depressive, manic, and mixed symptoms to time course; ask about sleep, energy, impulsivity, psychosis, substances, antidepressants, and past episodes.",
+      "mse": "Look for psychomotor change, pressured or slowed speech, affect reactivity, thought speed, grandiosity, guilt, psychosis, and cognition.",
+      "safety": "Assess suicide, psychosis, inability to sleep, impulsive spending/sex/driving, access to means, and postpartum status when relevant.",
+      "say": "It is important that we screen for past mania before choosing a depression medication, because the wrong medication can worsen bipolar illness.",
+      "collateral": "Ask family about decreased need for sleep, episodic behavior change, spending, irritability, psychosis, medication adherence, and baseline functioning.",
+      "rounds": "Present unipolar vs bipolar evidence, safety acuity, psychosis/catatonia features, and why today's medication plan fits the risk profile.",
+      "exam": "Always screen for mania before antidepressants; acute mania means stop antidepressant and start an antimanic agent while protecting sleep.",
+      "actions": [
+        {
+          "label": "Practice mania limit-setting",
+          "href": "?tool=communication-practice.html&case=mania_limit_sleep_001"
+        },
+        {
+          "label": "Open screeners",
+          "href": "?tool=screeners.html"
+        }
+      ]
+    }
   },
   "t_anxiety.md": {
     "read": 4,
@@ -347,6 +470,45 @@
     "cta": {
       "label": "Open the Screeners (PHQ-9 / GAD-7)",
       "href": "?tool=screeners.html"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment",
+      "communication",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "screeners.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "guardedness_privacy_001",
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Separate panic, generalized worry, obsessions/compulsions, trauma re-experiencing, avoidance, substances, and medical mimics.",
+      "mse": "Look for autonomic arousal, avoidance, reassurance seeking, compulsions, dissociation, sleep disruption, and concentration changes.",
+      "safety": "Ask about suicide, self-harm, substance use, benzodiazepine dependence, domestic violence, and trauma-related vulnerability.",
+      "say": "We can ask about trauma at your pace; you do not have to give details for me to understand what feels unsafe now.",
+      "collateral": "Ask what avoidance or rituals are impairing function and whether symptoms are episodic, trauma-linked, or substance-linked.",
+      "rounds": "Present the anxiety/OCD/PTSD syndrome, ruled-out mimics, functional impairment, and why the plan avoids reflexive benzodiazepines.",
+      "exam": "OCD is ERP plus higher-dose SSRI; PTSD is trauma-focused therapy; scheduled benzodiazepines are not first-line for PTSD.",
+      "actions": [
+        {
+          "label": "Open screeners",
+          "href": "?tool=screeners.html"
+        },
+        {
+          "label": "Practice medication ambivalence",
+          "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+        }
+      ]
     }
   },
   "t_sud.md": {
@@ -411,6 +573,32 @@
       "status": "reviewed",
       "reviewer": "Joshua Moss, MD",
       "lastReviewed": "2026-07-01"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment",
+      "communication",
+      "exam"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask last use, amount, route, withdrawal history, seizures/DTs, overdose, medications for addiction, readiness, and concurrent psychiatric symptoms.",
+      "mse": "Look for intoxication, withdrawal, delirium, tremor, diaphoresis, psychosis, mood symptoms, cognition, and pain.",
+      "safety": "Monitor alcohol/benzodiazepine withdrawal, opioid overdose risk, suicidality, violence risk when intoxicated, and medical instability.",
+      "say": "Would it be okay if we talk about what the substance is doing for you and what it is costing you right now?",
+      "collateral": "Clarify withdrawal timeline, overdose history, access to substances after discharge, family supports, and barriers to medication treatment.",
+      "rounds": "Present withdrawal timing, CIWA/COWS trend, thiamine, medication-for-addiction options, and discharge linkage.",
+      "exam": "Alcohol withdrawal is benzodiazepines plus thiamine; opioid use disorder treatment includes buprenorphine or methadone.",
+      "actions": [
+        {
+          "label": "Open withdrawal tool",
+          "href": "?tool=withdrawal.html"
+        },
+        {
+          "label": "Practice medication ambivalence",
+          "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+        }
+      ]
     }
   },
   "t_personality.md": {
@@ -457,7 +645,29 @@
     "communicationCases": [
       "rupture_limit_setting_001",
       "bpd_rupture_repair_001"
-    ]
+    ],
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "communication",
+      "team",
+      "exam"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask about enduring patterns, trauma, relationships, self-harm, abandonment fears, affect shifts, and what has helped during past crises.",
+      "mse": "Track affect intensity, interpersonal stance, impulsivity, dissociation, self-harm cues, and countertransference in the team.",
+      "safety": "Separate chronic baseline risk from acute change; assess means, intoxication, recent losses, threats, and ability to collaborate on a plan.",
+      "say": "I want to take the distress seriously and also keep our plan consistent, so we do not make reactive changes that later feel unhelpful.",
+      "collateral": "Ask about baseline risk, effective limits, crisis plans, outpatient supports, and team-splitting patterns without blaming the patient.",
+      "rounds": "Present a validating formulation, acute risk change, team consistency plan, and symptom-targeted medication rationale.",
+      "exam": "Personality disorders are enduring patterns; inpatient care focuses on safety, consistency, comorbidity, and avoiding reactive polypharmacy.",
+      "actions": [
+        {
+          "label": "Practice rupture repair",
+          "href": "?tool=communication-practice.html&case=bpd_rupture_repair_001"
+        }
+      ]
+    }
   },
   "t_neurodev.md": {
     "read": 5,
@@ -499,6 +709,48 @@
     "cta": {
       "label": "Open the Decision Aids",
       "href": "?tool=decision-aids.html"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "communication",
+      "family",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "decision-aids.html",
+      "communication-practice.html",
+      "bfcrs.html"
+    ],
+    "communicationCases": [
+      "collateral_questions_001",
+      "guardedness_privacy_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask baseline communication, sensory needs, routines, developmental history, supports, pain/constipation/infection, and what changed.",
+      "mse": "Describe communication style, sensory distress, attention, motor findings, affect, behavior, cognition, and possible catatonic signs objectively.",
+      "safety": "Assess self-injury, aggression, exploitation, elopement, medical causes, restraint risk, and caregiver capacity.",
+      "say": "I want to understand what usually helps and what may be overwhelming here, not assume this behavior is just baseline.",
+      "collateral": "Ask caregivers what is new, what communication signals mean, what adaptations work, and what medical issues commonly present as behavior change.",
+      "rounds": "Present baseline vs acute change, adaptations needed, medical rule-out, comorbidity target, and restraint-prevention plan.",
+      "exam": "Avoid diagnostic overshadowing; new agitation or regression requires medical and psychiatric differential diagnosis.",
+      "actions": [
+        {
+          "label": "Practice collateral questions",
+          "href": "?tool=communication-practice.html&case=collateral_questions_001"
+        },
+        {
+          "label": "Open decision aids",
+          "href": "?tool=decision-aids.html"
+        }
+      ]
     }
   },
   "t_eating.md": {
@@ -541,6 +793,39 @@
     "cta": {
       "label": "Open the Decision Aids",
       "href": "?tool=decision-aids.html"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment",
+      "family",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "decision-aids.html",
+      "screeners.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask weight trajectory, restriction, bingeing, purging, exercise, laxatives/diuretics, body image, amenorrhea, substances, and medical symptoms.",
+      "mse": "Look for anxiety, rigidity, body image distortion, secrecy, cognitive slowing, depression, suicidality, and compulsive exercise urges.",
+      "safety": "Check vitals, orthostasis, ECG/QTc, electrolytes including phosphate, suicidality, purging complications, and refeeding risk.",
+      "say": "A normal weight does not rule out a dangerous eating disorder; the medical risk comes from behaviors and recent change too.",
+      "collateral": "Ask family about meals, exercise, purging, weight change, conflict around food, and ability to support supervised nutrition.",
+      "rounds": "Present medical stability, refeeding risk, diagnosis, comorbid mood/OCD risk, nutrition plan, and level-of-care needs.",
+      "exam": "Refeeding hypophosphatemia is dangerous; anorexia has high mortality and fluoxetine treats bulimia, not weight restoration in anorexia.",
+      "actions": [
+        {
+          "label": "Open decision aids",
+          "href": "?tool=decision-aids.html"
+        }
+      ]
     }
   },
   "t_adjustment.md": {
@@ -582,6 +867,40 @@
     "cta": {
       "label": "Open the C-SSRS screener",
       "href": "?tool=cssrs.html"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "communication",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "cssrs.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "suicide_direct_question_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Anchor symptoms to the stressor, onset within three months, impairment, and whether full criteria for MDD, PTSD, anxiety, or substance-induced disorder are met.",
+      "mse": "Look for affect congruence, hopelessness, agitation, sleep change, substance use, and whether symptoms exceed expected coping.",
+      "safety": "Ask directly about suicide and impulsive self-harm even when symptoms seem subthreshold.",
+      "say": "This diagnosis does not mean the distress is minor; it means the symptoms are stress-linked and we still take safety seriously.",
+      "collateral": "Ask what changed after the stressor, supports, coping, substance use, and whether risk has escalated.",
+      "rounds": "Present stressor timeline, excluded full syndromes, functional impairment, safety assessment, and brief therapy/support plan.",
+      "exam": "Adjustment disorder requires stressor-linked distress that does not meet criteria for another disorder and resolves after the stressor ends.",
+      "actions": [
+        {
+          "label": "Open C-SSRS",
+          "href": "?tool=cssrs.html"
+        }
+      ]
     }
   },
   "t_dissociative.md": {
@@ -623,6 +942,42 @@
     "cta": {
       "label": "Open the C-SSRS screener",
       "href": "?tool=cssrs.html"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "communication",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "cssrs.html",
+      "mse.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "guardedness_privacy_001",
+      "suicide_direct_question_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask about depersonalization, derealization, amnesia, identity disruption, trauma, substances, seizures, sleep, and neurologic symptoms.",
+      "mse": "Observe orientation, attention, memory gaps, affective detachment, psychosis markers, and neurologic red flags.",
+      "safety": "Assess suicide, self-harm, exploitation, unsafe wandering, intoxication, and trauma-related destabilization.",
+      "say": "You do not have to describe trauma details now; I want to understand what happens when you lose time or feel unreal.",
+      "collateral": "Ask about episodes, triggers, duration, injuries, substance use, seizures, and baseline functioning.",
+      "rounds": "Present dissociation vs psychosis vs seizure/substance differential, safety risks, and stabilization plan.",
+      "exam": "Rule out seizures, substances, and neurologic causes before diagnosing dissociative disorders.",
+      "actions": [
+        {
+          "label": "Open MSE tool",
+          "href": "?tool=mse.html"
+        }
+      ]
     }
   },
   "t_impulse.md": {
@@ -664,6 +1019,43 @@
     "cta": {
       "label": "Open the Violence Risk (FRST) tool",
       "href": "?tool=violence.html"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "communication",
+      "family",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "violence.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "rupture_limit_setting_001",
+      "collateral_questions_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask what happened before the behavior, developmental history, trauma, ADHD, conduct symptoms, mania, substances, access to weapons, and remorse.",
+      "mse": "Look for arousal, irritability, impulsivity, intoxication, grandiosity, paranoia, attention, and capacity for reflection.",
+      "safety": "Assess imminent violence, weapon access, target specificity, intoxication, command hallucinations, and environmental triggers.",
+      "say": "I want to understand what set this off so we can reduce risk, not just label the behavior.",
+      "collateral": "Ask family/schools/systems about longstanding patterns, recent escalation, triggers, victims, weapons, and supervision capacity.",
+      "rounds": "Present driver of aggression, ruled-out mania/substances/psychosis, violence risk factors, and de-escalation plan.",
+      "exam": "Conduct disorder before age 15 is required for antisocial personality disorder; always rule out mania and substances.",
+      "actions": [
+        {
+          "label": "Open violence risk tool",
+          "href": "?tool=violence.html"
+        }
+      ]
     }
   },
   "t_neurocog.md": {
@@ -706,6 +1098,39 @@
     "cta": {
       "label": "Open the Decisional Capacity tool",
       "href": "?tool=capacity.html"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment",
+      "family",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "capacity.html",
+      "decision-aids.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask onset, course, ADLs/IADLs, medication changes, hallucinations, parkinsonism, vascular history, sleep behaviors, and caregiver burden.",
+      "mse": "Assess arousal, attention, memory, language, visuospatial function, executive function, psychosis, mood, and gait when possible.",
+      "safety": "Assess delirium, driving, cooking, weapons, wandering, exploitation, medication errors, capacity, and caregiver burnout.",
+      "say": "The pattern of change helps us separate delirium, dementia subtype, and depression, which lead to different plans.",
+      "collateral": "Ask caregivers about baseline, functional losses, fluctuations, behavior symptoms, home safety, and realistic supervision.",
+      "rounds": "Present syndrome, subtype clues, reversible workup, capacity/safety issues, caregiver plan, and medication cautions.",
+      "exam": "Lewy body dementia has visual hallucinations/parkinsonism/fluctuations and antipsychotic sensitivity.",
+      "actions": [
+        {
+          "label": "Open capacity tool",
+          "href": "?tool=capacity.html"
+        }
+      ]
     }
   },
   "t_sexual.md": {
@@ -747,6 +1172,35 @@
     "cta": {
       "label": "Open the Psychopharmacology primer",
       "href": "?page=psychopharm_primer.md"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "treatment",
+      "communication",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "communication-practice.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask respectfully about function, distress, medication effects, consent, coercion, trauma, identity, and medical contributors.",
+      "mse": "Assess shame, anxiety, depression, trauma response, psychosis/mania when relevant, and capacity/consent concerns.",
+      "safety": "Assess non-consent, exploitation, violence risk, suicidality in gender dysphoria, and medication/medical contributors.",
+      "say": "I ask everyone these questions because medications, mood, trauma, and safety can all affect sexual health.",
+      "collateral": "Collateral is usually limited by confidentiality; involve others only with permission or when safety/legal duties require it.",
+      "rounds": "Present the specific domain, medication/medical contributors, consent/safety concerns, and respectful treatment plan.",
+      "exam": "Paraphilic disorder requires distress/impairment or harm/risk to others; gender dysphoria is distress from incongruence, not identity itself.",
+      "actions": [
+        {
+          "label": "Open psychopharm primer",
+          "href": "?page=psychopharm_primer.md"
+        }
+      ]
     }
   },
   "t_sleep.md": {
@@ -789,6 +1243,36 @@
     "cta": {
       "label": "Open the Psychopharmacology primer",
       "href": "?page=psychopharm_primer.md"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "mse.html",
+      "screeners.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask sleep schedule, insomnia pattern, decreased need for sleep, nightmares, OSA symptoms, substances, meds, caffeine, and restless legs.",
+      "mse": "Look for fatigue vs manic activation, attention impairment, psychomotor changes, irritability, and delirium risk.",
+      "safety": "Assess mania, delirium, falls, respiratory risk with sedatives, OSA, substance withdrawal, and suicidality when insomnia is severe.",
+      "say": "The goal is to restore the sleep-wake rhythm without using medications that create dependence or worsen confusion.",
+      "collateral": "Ask nursing/family about actual sleep, nighttime behavior, snoring/apnea, nightmares, and daytime naps.",
+      "rounds": "Present sleep syndrome, psychiatric driver, medical contributors, behavioral plan, and medication risk/benefit.",
+      "exam": "CBT-I is first-line for chronic insomnia; decreased need for sleep suggests mania, not simple insomnia.",
+      "actions": [
+        {
+          "label": "Open psychopharm primer",
+          "href": "?page=psychopharm_primer.md"
+        }
+      ]
     }
   },
   "t_somatic.md": {
@@ -830,6 +1314,39 @@
     "cta": {
       "label": "Open the MSE trainer",
       "href": "?tool=mse.html"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "communication",
+      "treatment",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "mse.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "guardedness_privacy_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask symptom timeline, prior workup, illness beliefs, function, reassurance cycles, trauma, mood/anxiety, and substance/medication factors.",
+      "mse": "Look for preoccupation, anxiety, functional impairment, affect, insight, and whether symptoms are intentionally produced or not.",
+      "safety": "Assess suicide, iatrogenic harm from repeated workups, medication misuse, and missed medical red flags.",
+      "say": "I believe the symptoms are real and distressing; our job is to reduce suffering and function loss while avoiding harmful repeat testing.",
+      "collateral": "Ask outpatient clinicians about completed workups, utilization pattern, functional decline, and helpful communication approaches.",
+      "rounds": "Present the medical rule-out, symptom-response pattern, functional impairment, and consistent follow-up plan.",
+      "exam": "Somatic symptom disorder is defined by excessive thoughts/behaviors around symptoms, not by symptoms being medically unexplained.",
+      "actions": [
+        {
+          "label": "Open MSE tool",
+          "href": "?tool=mse.html"
+        }
+      ]
     }
   },
   "ethics_legal.md": {
@@ -987,6 +1504,43 @@
     "cta": {
       "label": "Open the Delirium page",
       "href": "?page=delirium.md"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment",
+      "family",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "capacity.html",
+      "decision-aids.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Establish baseline cognition, acute change, medications, falls, sleep, pain, infection symptoms, function, and caregiver observations.",
+      "mse": "Prioritize arousal, attention, orientation, memory, language, executive function, psychosis, affect, and gait/psychomotor change.",
+      "safety": "Assess delirium, falls, wandering, medication toxicity, self-neglect, driving/weapons, exploitation, and caregiver capacity.",
+      "say": "A sudden change in attention or alertness makes us look for a medical cause before assuming this is dementia or depression.",
+      "collateral": "Ask family what changed from baseline, who manages medications, what home risks exist, and what support is realistic.",
+      "rounds": "Present delirium vs dementia vs depression, reversible causes, medication burden, capacity concerns, and discharge supports.",
+      "exam": "Delirium is acute/fluctuating inattention; dementia is chronic decline; depression can mimic cognitive impairment.",
+      "actions": [
+        {
+          "label": "Open capacity tool",
+          "href": "?tool=capacity.html"
+        },
+        {
+          "label": "Open delirium page",
+          "href": "?page=delirium.md"
+        }
+      ]
     }
   },
   "motivational_interviewing.md": {
@@ -1100,6 +1654,32 @@
       "status": "reviewed",
       "reviewer": "Joshua Moss, MD",
       "lastReviewed": "2026-07-03"
+    },
+    "workflowStages": [
+      "safety",
+      "communication",
+      "family",
+      "team",
+      "exam"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask ideation, plan, intent, preparation, past attempts, access to means, protective factors, and what changed today.",
+      "mse": "Notice hopelessness, agitation, intoxication, psychosis, impulsivity, cognition, and ability to collaborate.",
+      "safety": "Formulate acute vs chronic risk and escalate disposition decisions to the supervising team and local policy.",
+      "say": "I ask directly about suicide because it helps us keep you safe; you will not shock me by answering honestly.",
+      "collateral": "With permission or safety exception, ask about means, recent behavior, prior attempts, supervision, and discharge environment.",
+      "rounds": "Present risk state, risk status, drivers, means access, protective factors, and what supervision or discharge barriers remain.",
+      "exam": "Do not treat scales as disposition tools; risk assessment is a formulation plus supervised plan.",
+      "actions": [
+        {
+          "label": "Open C-SSRS",
+          "href": "?tool=cssrs.html"
+        },
+        {
+          "label": "Practice direct suicide questions",
+          "href": "?tool=communication-practice.html&case=suicide_direct_question_001"
+        }
+      ]
     }
   },
   "t_perinatal.md": {
@@ -1141,6 +1721,47 @@
     "cta": {
       "label": "Open the Columbia C-SSRS screener",
       "href": "?tool=cssrs.html"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment",
+      "family",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "cssrs.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "suicide_direct_question_001",
+      "collateral_questions_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask pregnancy/postpartum timing, mood, anxiety, sleep, intrusive thoughts, psychosis, bipolar history, supports, feeding, and medication exposure.",
+      "mse": "Look for waxing/waning psychosis, disorganization, severe insomnia, anxiety, obsessions, guilt, bonding concerns, and cognitive changes.",
+      "safety": "Assess suicide, infant-harm thoughts, psychosis, inability to sleep, neglect risk, domestic violence, and safe caregiving coverage.",
+      "say": "Intrusive unwanted thoughts can be very frightening; I ask directly so we can tell anxiety from psychosis and keep everyone safe.",
+      "collateral": "Ask partner/family about sleep, behavior change, psychosis, infant safety, medication adherence, and who can provide supervision.",
+      "rounds": "Present postpartum timing, PMAD vs bipolar/postpartum psychosis, maternal-infant safety, medication risk/benefit, and support plan.",
+      "exam": "Postpartum psychosis is an emergency, often bipolar-spectrum, and requires urgent supervised treatment.",
+      "actions": [
+        {
+          "label": "Open C-SSRS",
+          "href": "?tool=cssrs.html"
+        },
+        {
+          "label": "Practice direct suicide questions",
+          "href": "?tool=communication-practice.html&case=suicide_direct_question_001"
+        }
+      ]
     }
   },
   "nutrition_metabolic.md": {
@@ -1222,6 +1843,42 @@
     "cta": {
       "label": "Open the Capacity tool",
       "href": "?tool=capacity.html"
+    },
+    "workflowStages": [
+      "safety",
+      "diagnosis",
+      "team"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "capacity.html",
+      "bfcrs.html",
+      "withdrawal.html",
+      "decision-aids.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "For consult-style questions, define the question first: capacity, delirium, catatonia, withdrawal, or medication safety.",
+      "mse": "Match the MSE to the question: attention for delirium, motor signs for catatonia, four abilities for capacity, autonomic signs for withdrawal.",
+      "safety": "Escalate unstable vitals, delirium, malignant catatonia/NMS concern, severe withdrawal, or refusal with high medical stakes.",
+      "say": "I want to answer the specific consult question and also name what would make this unsafe today.",
+      "collateral": "Ask team/family for baseline, medical course, treatment refusal context, substance timeline, and prior episodes.",
+      "rounds": "State the consult question, key data, decision-specific capacity or syndrome assessment, and next supervised step.",
+      "exam": "Capacity is decision-specific; delirium and withdrawal are medical safety workflows, not purely psychiatric labels.",
+      "actions": [
+        {
+          "label": "Open capacity tool",
+          "href": "?tool=capacity.html"
+        },
+        {
+          "label": "Open withdrawal tool",
+          "href": "?tool=withdrawal.html"
+        }
+      ]
     }
   },
   "psychopharm_primer.md": {
@@ -1281,7 +1938,28 @@
     ],
     "communicationCases": [
       "medication_ambivalence_001"
-    ]
+    ],
+    "workflowStages": [
+      "treatment",
+      "safety",
+      "communication",
+      "exam"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask target symptoms, prior response, adverse effects, medical comorbidities, pregnancy potential, interactions, adherence barriers, and patient goals.",
+      "mse": "Link medication choice to target findings: psychosis, mania, depression, anxiety, sleep, agitation, cognition, and movement symptoms.",
+      "safety": "Check metabolic, QTc, EPS/TD, NMS, serotonin syndrome, lithium toxicity, anticholinergic burden, overdose risk, and monitoring needs.",
+      "say": "Let us choose based on what we are treating and which side effects matter most to you.",
+      "collateral": "Ask outpatient clinicians/family about prior trials, adherence, side effects, pharmacy access, and what changed after missed doses.",
+      "rounds": "Present target symptom, medication rationale, starting dose, monitoring, side-effect counseling, and backup plan.",
+      "exam": "Know signature adverse effects and emergencies: NMS, serotonin syndrome, lithium toxicity, QTc/torsades, and anticholinergic toxicity.",
+      "actions": [
+        {
+          "label": "Practice medication ambivalence",
+          "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+        }
+      ]
+    }
   },
   "ddx.md": {
     "read": 4,
@@ -1315,6 +1993,36 @@
     "cta": {
       "label": "Open the Decision Aids",
       "href": "?tool=decision-aids.html"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "decision-aids.html",
+      "mse.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Start with time course, substances/medications, medical changes, trauma, sleep, and baseline functioning before naming a psychiatric disorder.",
+      "mse": "Separate observed signs from reported symptoms; note arousal, attention, thought process, perception, affect, insight, and judgment.",
+      "safety": "Ask the safety trio directly: suicide, violence, and vulnerability/exploitation.",
+      "say": "I want to keep a broad differential at first so we do not miss a medical or substance-related cause.",
+      "collateral": "Ask family or outpatient clinicians what is new, what is baseline, and what changed right before admission.",
+      "rounds": "Present symptoms, syndrome, leading diagnosis, dangerous alternatives, and what data would change your mind.",
+      "exam": "Shelf questions often hide medical mimics, substance causes, and medication adverse effects inside psychiatric vignettes.",
+      "actions": [
+        {
+          "label": "Open decision aids",
+          "href": "?tool=decision-aids.html"
+        }
+      ]
     }
   },
   "pg_interview.md": {
@@ -1367,7 +2075,27 @@
     ],
     "communicationCases": [
       "guardedness_privacy_001"
-    ]
+    ],
+    "workflowStages": [
+      "encounter",
+      "communication",
+      "safety"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Open with the patient story, then loop through mood, psychosis, anxiety/trauma, substance use, cognition, medical causes, and safety.",
+      "mse": "Observe from the first moment: engagement, psychomotor activity, speech, affect range, thought form, perception, cognition, insight, and judgment.",
+      "safety": "Before closing, ask directly about suicide, violence, grave disability, abuse, and access to means.",
+      "say": "I will ask some direct safety questions because they help us take good care of you here.",
+      "collateral": "Ask permission when possible; explain confidentiality limits and why collateral helps establish baseline and safety.",
+      "rounds": "Report what the patient said, what you observed, what you still need, and what safety questions were answered.",
+      "exam": "Interview questions test next best question, safety closure, and whether you can distinguish patient report from MSE observation.",
+      "actions": [
+        {
+          "label": "Practice guardedness",
+          "href": "?tool=communication-practice.html&case=guardedness_privacy_001"
+        }
+      ]
+    }
   },
   "pg_formulation.md": {
     "read": 4,
@@ -1400,6 +2128,35 @@
     "cta": {
       "label": "Open the Differential Dx Scaffolds",
       "href": "?page=ddx.md"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "treatment",
+      "team"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "mse.html",
+      "oral.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask what made this person vulnerable, what precipitated this admission, what perpetuates symptoms, and what protects recovery.",
+      "mse": "Use the MSE to support or challenge your formulation, not just to fill a template.",
+      "safety": "Formulate risk dynamically: baseline risk, acute change, protective factors, access to means, and supervision needs.",
+      "say": "Here is how I am understanding why this is happening now, and I want to check that with you.",
+      "collateral": "Look for relational patterns, housing/financial stressors, medication access, and family capacity.",
+      "rounds": "Give a one-sentence formulation before your plan: syndrome plus context plus immediate treatment target.",
+      "exam": "Distinguish symptoms, syndromes, diagnoses, formulation, and treatment targets.",
+      "actions": [
+        {
+          "label": "Practice oral presentation",
+          "href": "?tool=oral.html"
+        }
+      ]
     }
   },
   "doc_oral.md": {
@@ -1433,6 +2190,35 @@
     "cta": {
       "label": "Open the Formulation & DDx Pocket Guide",
       "href": "?page=pg_formulation.md"
+    },
+    "workflowStages": [
+      "team",
+      "diagnosis",
+      "safety",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "oral.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Before rounds, ask what changed overnight, what data are missing, what risk changed, and what decision the team needs today.",
+      "mse": "Report MSE findings that support the assessment, especially changes from yesterday and safety-relevant observations.",
+      "safety": "Always include current suicide/violence/vulnerability risk, observation level, restrictions, and discharge barriers when relevant.",
+      "say": "My assessment is... because... and the next decision is...",
+      "collateral": "Include collateral only when it changes diagnosis, risk, treatment, or discharge planning.",
+      "rounds": "Use problem representation, focused interval events, MSE delta, assessment, and prioritized plan.",
+      "exam": "Oral presentations reveal clinical reasoning: what changed, why it matters, and what you will do next.",
+      "actions": [
+        {
+          "label": "Open rounding prep",
+          "href": "?tool=oral.html"
+        }
+      ]
     }
   },
   "exp_tx.md": {
@@ -1519,7 +2305,28 @@
       "collateral_questions_001",
       "family_meeting_opening_001",
       "family_conflict_discharge_001"
-    ]
+    ],
+    "workflowStages": [
+      "family",
+      "safety",
+      "team",
+      "communication"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask who is involved, what support is realistic, what barriers exist, what worries family most, and what safety role they can actually play.",
+      "mse": "Use patient interaction with family to observe affect regulation, psychosis, insight, conflict patterns, and alliance ruptures.",
+      "safety": "Clarify means safety, medication access, supervision, housing, transportation, follow-up, and what would trigger urgent return.",
+      "say": "We can plan better if we name what the family can do, what they cannot do, and what the treatment team remains responsible for.",
+      "collateral": "Ask better collateral questions: baseline, recent change, risk behaviors, adherence, strengths, barriers, and family limits.",
+      "rounds": "Present discharge barriers, family capacity, safety plan, follow-up, and what still must be solved before discharge.",
+      "exam": "Discharge safety is a systems task; a phone number is not the same as a scheduled follow-up plan.",
+      "actions": [
+        {
+          "label": "Practice family conflict",
+          "href": "?tool=communication-practice.html&case=family_conflict_discharge_001"
+        }
+      ]
+    }
   },
   "family_modalities.md": {
     "read": 4,
@@ -1596,7 +2403,27 @@
     "familyOverlay": "family_meeting_structure_expressed_emotion",
     "communicationCases": [
       "family_meeting_opening_001"
-    ]
+    ],
+    "workflowStages": [
+      "family",
+      "communication",
+      "team"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Before the meeting, ask the patient what they want shared, what they fear, and what the family most needs to understand.",
+      "mse": "During the meeting, observe alliance, expressed emotion, blame, fear, grief, and the patient's ability to participate.",
+      "safety": "Clarify confidentiality, means safety, crisis steps, supervision limits, and whether family involvement is helpful or harmful.",
+      "say": "I want to start by making sure we share the same goal: understanding what happened and what needs to be safer after discharge.",
+      "collateral": "Invite family observations without turning the meeting into cross-examination; ask for examples and changes from baseline.",
+      "rounds": "Report meeting goals, what family can support, unresolved conflict, safety commitments, and next system tasks.",
+      "exam": "High expressed emotion worsens relapse risk; psychoeducation and structured family work can reduce relapse in psychosis.",
+      "actions": [
+        {
+          "label": "Practice opening a family meeting",
+          "href": "?tool=communication-practice.html&case=family_meeting_opening_001"
+        }
+      ]
+    }
   },
   "brief_psychotherapy.md": {
     "read": 4,
@@ -1647,7 +2474,27 @@
     "communicationCases": [
       "bpd_rupture_repair_001",
       "medication_ambivalence_001"
-    ]
+    ],
+    "workflowStages": [
+      "communication",
+      "treatment",
+      "encounter"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask what feels most urgent today, what they have tried, what helps even a little, and what would make the next hour safer or more tolerable.",
+      "mse": "Use affect, thought process, defenses, alliance, and readiness to choose supportive, CBT, DBT-informed, or MI micro-skills.",
+      "safety": "Keep bedside therapy within scope: stabilize, validate, problem-solve, and escalate risk or trauma flooding to supervision.",
+      "say": "We may not solve everything today, but we can make the next step clearer and less lonely.",
+      "collateral": "Ask the team what pattern they are seeing and align the intervention with the shared treatment frame.",
+      "rounds": "Present the skill used, patient response, risk change, and what the team should reinforce consistently.",
+      "exam": "Supportive therapy strengthens coping and alliance; DBT-informed inpatient work emphasizes validation plus limits.",
+      "actions": [
+        {
+          "label": "Practice rupture repair",
+          "href": "?tool=communication-practice.html&case=rupture_limit_setting_001"
+        }
+      ]
+    }
   },
   "evidence_inpatient.md": {
     "read": 8,

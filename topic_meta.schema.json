@@ -7,7 +7,7 @@
   "additionalProperties": {
     "type": "object",
     "properties": {
-      "read": { "type": "string" },
+      "read": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
       "hy": { "type": "boolean" },
       "tldr": { "type": "string" },
       "points": { "type": "array", "items": { "type": "string" } },
@@ -35,6 +35,37 @@
       "evidenceIds": { "type": "array", "items": { "type": "string" } },
       "relatedTools": { "type": "array", "items": { "type": "string" } },
       "workflowModes": { "type": "array", "items": { "type": "string" } },
+      "workflowStages": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["encounter", "diagnosis", "safety", "treatment", "communication", "family", "team", "exam"]
+        }
+      },
+      "clinicalWorkflow": {
+        "type": "object",
+        "properties": {
+          "ask": { "type": "string" },
+          "mse": { "type": "string" },
+          "safety": { "type": "string" },
+          "say": { "type": "string" },
+          "collateral": { "type": "string" },
+          "rounds": { "type": "string" },
+          "exam": { "type": "string" },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["label", "href"],
+              "properties": {
+                "label": { "type": "string" },
+                "href": { "type": "string" }
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "familyOverlay": { "type": "string" },
       "communicationCases": { "type": "array", "items": { "type": "string" } },
       "safetyLevel": { "type": "string", "enum": ["low", "moderate", "high"] },

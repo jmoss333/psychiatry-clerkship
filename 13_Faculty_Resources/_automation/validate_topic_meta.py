@@ -108,9 +108,31 @@ for k, v in d.items():
                 if any(not isinstance(x, dict) or not x.get("t") for x in o):
                     bad(k, "a quiz option is missing 't'")
             if not isinstance(q.get("why", ""), str) or not q.get("why"): bad(k, "quiz missing 'why'")
-    for name in ("evidenceIds", "relatedTools", "workflowModes", "communicationCases"):
+    for name in ("evidenceIds", "relatedTools", "workflowModes", "workflowStages", "communicationCases"):
         if name in v and not (isinstance(v[name], list) and all(isinstance(x, str) for x in v[name])):
             bad(k, "'%s' must be a list of strings" % name)
+    allowed_stages = {"encounter", "diagnosis", "safety", "treatment", "communication", "family", "team", "exam"}
+    for stage in v.get("workflowStages", []) if isinstance(v.get("workflowStages"), list) else []:
+        if stage not in allowed_stages:
+            bad(k, "workflowStages contains unknown stage '%s'" % stage)
+    if "clinicalWorkflow" in v:
+        cw = v["clinicalWorkflow"]
+        allowed_cw = {"ask", "mse", "safety", "say", "collateral", "rounds", "exam", "actions"}
+        if not isinstance(cw, dict):
+            bad(k, "'clinicalWorkflow' must be an object")
+        else:
+            for ck, cv in cw.items():
+                if ck not in allowed_cw:
+                    bad(k, "clinicalWorkflow contains unknown key '%s'" % ck)
+                elif ck == "actions":
+                    if not isinstance(cv, list):
+                        bad(k, "clinicalWorkflow.actions must be a list")
+                    else:
+                        for idx, action in enumerate(cv):
+                            if not isinstance(action, dict) or not isinstance(action.get("label"), str) or not isinstance(action.get("href"), str):
+                                bad(k, "clinicalWorkflow.actions[%d] must have string label and href" % idx)
+                elif not isinstance(cv, str):
+                    bad(k, "clinicalWorkflow.%s must be a string" % ck)
     if "familyOverlay" in v and not isinstance(v["familyOverlay"], str):
         bad(k, "'familyOverlay' must be a string")
     if "safetyLevel" in v and v["safetyLevel"] not in ("low", "moderate", "high"):
