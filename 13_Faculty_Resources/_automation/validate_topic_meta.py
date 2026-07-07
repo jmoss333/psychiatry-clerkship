@@ -105,6 +105,40 @@ for reasoning_cases_path in (
 ):
     if os.path.exists(reasoning_cases_path):
         validate_reasoning_cases(reasoning_cases_path)
+family_systems_path = os.path.join(repo_root, "family_systems_scenarios.json")
+if os.path.exists(family_systems_path):
+    try:
+        fs = json.load(open(family_systems_path, encoding="utf-8"))
+        require_unique("family_systems_scenarios.json", [x.get("id") for x in fs.get("scenarios", []) if isinstance(x, dict) and x.get("id")])
+        required_sections = ("prepare", "ask", "say", "avoid", "handoff", "safety")
+        for scenario in fs.get("scenarios", []):
+            sid = scenario.get("id")
+            sections = scenario.get("sections", {}) if isinstance(scenario, dict) else {}
+            if not isinstance(sections, dict):
+                print("family_systems_scenarios.json INVALID — %s sections must be an object" % sid)
+                sys.exit(1)
+            for section in required_sections:
+                val = sections.get(section)
+                if not (isinstance(val, list) and val and all(isinstance(x, str) for x in val)):
+                    print("family_systems_scenarios.json INVALID — %s sections.%s must be a non-empty list of strings" % (sid, section))
+                    sys.exit(1)
+            checks = scenario.get("checks", []) if isinstance(scenario, dict) else []
+            if not (isinstance(checks, list) and checks):
+                print("family_systems_scenarios.json INVALID — %s must have checklist items" % sid)
+                sys.exit(1)
+            require_unique("family_systems_scenarios.json %s checks" % sid, [x.get("id") for x in checks if isinstance(x, dict) and x.get("id")])
+            for check in checks:
+                if not isinstance(check, dict) or not isinstance(check.get("id"), str) or not isinstance(check.get("label"), str):
+                    print("family_systems_scenarios.json INVALID — %s checks must have string id and label" % sid)
+                    sys.exit(1)
+            ids = scenario.get("evidenceIds", []) if isinstance(scenario, dict) else []
+            for eid in ids:
+                if evidence_ids and eid not in evidence_ids:
+                    print("family_systems_scenarios.json INVALID — %s references unknown evidence id %s" % (sid, eid))
+                    sys.exit(1)
+    except Exception as exc:
+        print("family_systems_scenarios.json INVALID — %s" % exc)
+        sys.exit(1)
 errs = []
 def bad(k, msg): errs.append("%s: %s" % (k, msg))
 

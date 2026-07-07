@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [RC-META] tool="Family Systems Practice" version="1.0" built="2026-07-07" category="family-systems" audience="trainee,ms3,resident" settings="inpatient,self-study,rounds-prep" time="5-10min" summary="Structured family/collateral/discharge practice scenarios. Stores anonymous checklist state under cw_family_v1; no PHI or free-text patient fields." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Family Systems Practice</title>
+<style>
+:root{
+  --bg:#f6f3ee;--surface:#fff;--surface-2:#faf7f1;--line:#ded3c5;
+  --ink:#2f2924;--muted:#5f554b;--soft:#74685d;
+  --terracotta:#bd5537;--terracotta-dark:#9e412b;--terracotta-soft:#f5e8e2;
+  --teal:#2b7568;--teal-dark:#1f574d;--teal-soft:#e7f1ee;
+  --gold:#806232;--gold-soft:#f7efe0;--danger:#9f3f2f;--focus:#155eef;--on-brand:#ffffff;
+  --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5}
+.shell{max-width:1120px;margin:0 auto;padding:24px 18px 72px}
+.top{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,430px);gap:18px;align-items:start;margin-bottom:18px}
+.kicker{text-transform:uppercase;letter-spacing:.13em;font-size:.72rem;font-weight:900;color:var(--teal-dark)}
+h1{font-family:var(--font-head);font-size:2.1rem;line-height:1.05;color:var(--terracotta);margin:.08em 0 .24em}
+.sub{max-width:70ch;margin:0;color:var(--muted)}
+.notice{border:1px solid var(--gold);border-left:4px solid var(--gold);border-radius:10px;background:var(--gold-soft);padding:10px 12px;color:var(--muted);font-size:.92rem}
+.layout{display:grid;grid-template-columns:minmax(245px,300px) minmax(0,1fr);gap:16px}
+.side,.panel,.section,.checklist{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 4px rgba(56,48,40,.06);min-width:0}
+.side{align-self:start;position:sticky;top:12px;padding:11px}
+.progress{padding:5px 5px 11px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.progress b{display:block}
+.progress span{display:block;color:var(--soft);font-size:.83rem}
+.bar{height:7px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;width:0;background:var(--teal)}
+.scenario{display:block;width:100%;border:1px solid transparent;background:transparent;border-radius:10px;text-align:left;padding:10px;cursor:pointer;font:inherit;color:var(--ink)}
+.scenario:hover{background:var(--teal-soft)}
+.scenario.on{background:var(--teal);color:#fff}
+.scenario.on strong,.scenario.on span{color:#fff}
+.scenario strong{display:block;line-height:1.18}
+.scenario span{display:block;font-size:.78rem;opacity:.86;margin-top:3px}
+.main{display:grid;gap:14px}
+.panel{padding:17px}
+.title-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+h2{font-family:var(--font-head);font-size:1.42rem;color:var(--terracotta);margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.pill{display:inline-flex;align-items:center;max-width:100%;white-space:normal;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);padding:3px 9px;font-size:.75rem;font-weight:850;color:var(--muted)}
+.pill.draft{border-color:var(--gold);background:var(--gold-soft);color:var(--gold)}
+.goal{margin:14px 0 0;border-left:4px solid var(--teal);background:var(--teal-soft);border-radius:0 10px 10px 0;padding:10px 13px;color:var(--muted)}
+.opening{font-family:var(--font-head);font-size:1.12rem;line-height:1.42;margin:13px 0 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.section{padding:14px}
+.section h3,.checklist h3{margin:0 0 8px;text-transform:uppercase;letter-spacing:.1em;font-size:.72rem;color:var(--teal-dark)}
+.section ul{margin:0;padding-left:1.1rem;color:var(--muted)}
+.section li+li{margin-top:6px}
+.section.say{border-left:4px solid var(--teal)}
+.section.avoid{border-left:4px solid var(--danger)}
+.section.handoff{border-left:4px solid var(--terracotta)}
+.checklist{padding:14px}
+.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.check{border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:10px 11px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;min-height:52px}
+.check:hover{border-color:var(--teal)}
+.check.on{background:var(--teal-soft);border-color:var(--teal);color:var(--teal-dark);font-weight:850}
+.check.on:before{content:"✓ ";font-weight:900}
+.links{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.links a{display:inline-flex;max-width:100%;white-space:normal;border:1px solid var(--line);border-radius:999px;padding:6px 10px;text-decoration:none;color:var(--teal-dark);font-size:.86rem;font-weight:850;background:var(--surface)}
+.links a:hover{border-color:var(--teal);background:var(--teal-soft)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{border:1px solid var(--teal);background:var(--teal);color:#fff;border-radius:999px;padding:7px 12px;font:inherit;font-size:.88rem;font-weight:900;cursor:pointer}
+.btn:hover{background:var(--teal-dark)}
+.btn.secondary{background:var(--surface);color:var(--teal-dark)}
+.btn.secondary:hover{background:var(--teal-soft)}
+.storage{font-size:.84rem;color:var(--soft);margin-top:10px}
+.empty{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:18px;color:var(--muted)}
+button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+@media(max-width:840px){
+  .shell{padding:18px 16px 56px;overflow-x:hidden}
+  .top{grid-template-columns:1fr}
+  .layout{grid-template-columns:1fr}
+  .side{position:static}
+  .scenario-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+  .scenario{min-width:0;height:100%;overflow-wrap:anywhere}
+  h1{font-size:1.88rem}
+  h2{font-size:1.3rem;overflow-wrap:anywhere}
+  .meta{display:grid;grid-template-columns:1fr;align-items:start}
+  .grid,.checks{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="top">
+    <div>
+      <div class="kicker">Family systems - collateral - discharge</div>
+      <h1>Family Systems Practice</h1>
+      <p class="sub">Prepare for collateral calls, family meetings, discharge-role mapping, high-emotion conversations, and confidentiality boundaries on the unit.</p>
+    </div>
+    <div class="notice"><b>Boundary:</b> fictional composites only. No patient information, no free text, no independent safety/discharge decisions. Use with supervision and local policy.</div>
+  </div>
+  <div id="app" class="layout"><div class="empty">Loading family systems scenarios...</div></div>
+</main>
+<script>
+(function(){
+var app=document.getElementById('app');
+var state={items:[],current:0,progress:loadProgress(),requested:requestedScenario()};
+var LABELS={
+  prepare:'Before contact',
+  ask:'Ask',
+  say:'What to say',
+  avoid:'Avoid',
+  handoff:'Team handoff',
+  safety:'Safety and boundaries'
+};
+var PAGE_LABELS={
+  'exp_family.md':'Family & Discharge','family_playbook.md':'Family Meeting Playbook','family_modalities.md':'Family Therapy Modalities',
+  'pg_suicide.md':'Suicide Risk & Safety','pg_formulation.md':'Formulation','ethics_legal.md':'Ethics & Law',
+  't_psychosis.md':'Psychosis','cultural_psychiatry.md':'Culture & Formulation','doc_oral.md':'Documentation & Oral Presentation'
+};
+var CASE_LABELS={
+  collateral_questions_001:'Practice Collateral Questions',
+  family_meeting_opening_001:'Practice Meeting Opening',
+  family_conflict_discharge_001:'Practice Family Conflict',
+  psychosis_validation_001:'Practice Psychosis Validation',
+  guardedness_privacy_001:'Practice Guardedness And Privacy'
+};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function requestedScenario(){try{return new URLSearchParams(location.search).get('scenario')||'';}catch(_){return '';}}
+function loadProgress(){try{return JSON.parse(localStorage.getItem('cw_family_v1')||'{}')||{};}catch(_){return {};}}
+function saveProgress(){try{localStorage.setItem('cw_family_v1',JSON.stringify(state.progress));}catch(_){}}
+function current(){return state.items[state.current]||state.items[0];}
+function setCurrent(id){for(var i=0;i<state.items.length;i++){if(state.items[i].id===id){state.current=i;return true;}}return false;}
+function checksDone(item){var rec=state.progress[item.id]||{}, checks=rec.checks||{}, total=(item.checks||[]).length;if(!total)return 0;return (item.checks||[]).filter(function(c){return checks[c.id];}).length;}
+function overall(){var total=0,done=0;state.items.forEach(function(it){total+=(it.checks||[]).length;done+=checksDone(it);});return {done:done,total:total,pct:total?Math.round(done*100/total):0};}
+function sideHtml(){var p=overall();return '<aside class="side" aria-label="Family systems scenarios"><div class="progress"><b>'+p.done+' of '+p.total+' practice checks</b><span>Structured local progress only</span><div class="bar" aria-hidden="true"><i style="width:'+p.pct+'%"></i></div></div><div class="scenario-list">'+state.items.map(function(it,i){return '<button type="button" class="scenario'+(i===state.current?' on':'')+'" data-i="'+i+'"><strong>'+esc(it.title)+'</strong><span>'+esc(it.setting)+'</span></button>';}).join('')+'</div></aside>';}
+function reviewBadge(it){var rv=it.facultyReview||{};return '<span class="pill draft">'+esc((rv.status||'draft').replace(/-/g,' '))+' - faculty review needed</span>';}
+function introHtml(it){return '<section class="panel"><div class="title-row"><div><h2>'+esc(it.title)+'</h2><div class="meta"><span class="pill">'+esc(it.setting)+'</span><span class="pill">'+esc(it.time||'5 min')+'</span>'+reviewBadge(it)+'</div></div></div><div class="goal"><b>Practice goal:</b> '+esc(it.learnerGoal)+'</div><p class="opening">"'+esc(it.opening)+'"</p>'+linksHtml(it)+'</section>';}
+function sectionHtml(key,arr){if(!arr||!arr.length)return '';var cls=key==='say'?' say':key==='avoid'?' avoid':key==='handoff'?' handoff':'';return '<section class="section'+cls+'"><h3>'+esc(LABELS[key]||key)+'</h3><ul>'+arr.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></section>';}
+function bodyHtml(it){var s=it.sections||{};return '<div class="grid">'+['prepare','ask','say','avoid','handoff','safety'].map(function(k){return sectionHtml(k,s[k]);}).join('')+'</div>';}
+function checklistHtml(it){var rec=state.progress[it.id]||{}, checks=rec.checks||{};return '<section class="checklist"><h3>Before you call it done</h3><div class="checks">'+(it.checks||[]).map(function(c){var on=!!checks[c.id];return '<button type="button" class="check'+(on?' on':'')+'" data-check="'+esc(c.id)+'" aria-pressed="'+String(on)+'">'+esc(c.label)+'</button>';}).join('')+'</div><div class="actions"><button type="button" class="btn secondary" data-act="reset">Reset this scenario</button></div><div class="storage">Stored locally: scenario id, checklist id, checked state, and date. No free text or patient identifiers.</div></section>';}
+function pageHref(f){return f&&f.endsWith('.html')?'../index.html?tool='+encodeURIComponent(f):'../index.html?page='+encodeURIComponent(f);}
+function pageLabel(f){return PAGE_LABELS[f]||String(f||'').replace(/\.md$|\.html$/g,'').replace(/^t_/,'').replace(/^pg_/,'').replace(/_/g,' ').replace(/\b\w/g,function(m){return m.toUpperCase();});}
+function linksHtml(it){var out=[];(it.linkedPages||[]).forEach(function(f){out.push('<a href="'+pageHref(f)+'">'+esc(pageLabel(f))+'</a>');});(it.communicationCases||[]).forEach(function(id){out.push('<a href="../index.html?tool=communication-practice.html&case='+encodeURIComponent(id)+'">'+esc(CASE_LABELS[id]||'Communication Practice')+'</a>');});return out.length?'<div class="links">'+out.join('')+'</div>':'';}
+function render(){if(!state.items.length){app.innerHTML='<div class="empty">No family systems scenarios are available.</div>';return;}var it=current();app.innerHTML=sideHtml()+'<div class="main">'+introHtml(it)+bodyHtml(it)+checklistHtml(it)+'</div>';}
+app.addEventListener('click',function(ev){var sc=ev.target.closest&&ev.target.closest('.scenario');if(sc){state.current=+sc.getAttribute('data-i')||0;render();return;}var ck=ev.target.closest&&ev.target.closest('.check');if(ck){var it=current(), id=ck.getAttribute('data-check'), rec=state.progress[it.id]||{checks:{}};rec.checks=rec.checks||{};rec.checks[id]=!rec.checks[id];rec.updatedAt=new Date().toISOString().slice(0,10);state.progress[it.id]=rec;saveProgress();render();return;}var act=ev.target.closest&&ev.target.closest('[data-act]');if(act&&act.getAttribute('data-act')==='reset'){delete state.progress[current().id];saveProgress();render();}});
+fetch('../family_systems_scenarios.json').then(function(r){if(!r.ok)throw new Error('missing scenarios');return r.json();}).then(function(d){state.items=(d&&d.scenarios)||[];if(state.requested)setCurrent(state.requested);render();}).catch(function(){app.innerHTML='<div class="empty">Could not load family systems scenarios. Rebuild the site or check family_systems_scenarios.json.</div>';});
+})();
+</script>
+</body>
+</html>
