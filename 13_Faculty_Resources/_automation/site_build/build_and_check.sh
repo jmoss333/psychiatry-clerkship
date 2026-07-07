@@ -10,7 +10,11 @@
 #   mmc-psychiatry-residents-sanford (publish _build/res):
 #     bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
 #
-# Gate semantics (check-static-site.mjs): HARD findings (broken nav/search targets,
+# Gate semantics:
+# - check_lfs_media.py gives a targeted Git-LFS media preflight before the broader QA.
+# - check-static-site.mjs handles static integrity and broader safety rules.
+#
+# HARD findings (broken nav/search targets,
 # dose literals in rp-*/-trainer tools, invalid JSON, missing <title>/viewport,
 # non-namespaced storage keys, orphaned content-convention source pages not wired into
 # the build's source map, Git-LFS pointer stubs shipped in place of real media bytes)
@@ -31,6 +35,8 @@ case "$SITE" in
   ms3)
     echo "── build: MS3 → $MS3_OUT"
     OUT_DIR="$MS3_OUT" python3 "$HERE/build_deploy.py"
+    echo "── LFS media preflight: $MS3_OUT"
+    python3 "$HERE/check_lfs_media.py" "$MS3_OUT"
     echo "── QA gate: $MS3_OUT"
     node "$HERE/check-static-site.mjs" "$MS3_OUT"
     ;;
@@ -40,6 +46,8 @@ case "$SITE" in
     OUT_DIR="$MS3_OUT" python3 "$HERE/build_deploy.py"
     echo "── build: Resident → $RES_OUT"
     MS3_DIR="$MS3_OUT" OUT_DIR="$RES_OUT" python3 "$HERE/resident_section.py"
+    echo "── LFS media preflight: $RES_OUT"
+    python3 "$HERE/check_lfs_media.py" "$RES_OUT"
     echo "── QA gate: $RES_OUT"
     node "$HERE/check-static-site.mjs" "$RES_OUT"
     ;;
