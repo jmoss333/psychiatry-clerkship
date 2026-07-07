@@ -234,7 +234,7 @@
   .hm-btn.ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
   .hm-sec{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:0 0 14px}
   .hm-sec h2{font-family:var(--font-head);font-size:1.1rem;margin:0 0 10px;border:none;padding:0;color:var(--text)}
-  .hm-li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;width:100%;text-align:left;background:none;border-left:none;border-right:none;border-top:none;font:inherit;color:var(--text)}
+  .hm-li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;width:100%;text-align:left;background:none;border-left:none;border-right:none;border-top:none;font:inherit;color:var(--text);text-decoration:none}
   .hm-li:last-child{border-bottom:none}
   .hm-li:hover{color:var(--accent-dark)}
   .hm-li .t{flex:1}
@@ -606,19 +606,24 @@
   function dashboardMode(){ var st=dashboardState(); return st.mode||'ward'; }
   function setDashboardMode(mode){ try{localStorage.setItem('cw_dashboard_v1',JSON.stringify({mode:mode,at:new Date().toISOString().slice(0,10)}));}catch(_){ } }
   function itemsForMode(mode){ var meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}, out=[], seen={}; allNavItems().forEach(function(it){ var m=meta[it.f]; if(m&&Array.isArray(m.workflowModes)&&m.workflowModes.indexOf(mode)>=0&&!seen[it.f]){ seen[it.f]=1; out.push(it); } }); return out; }
-  function actionRow(it, note){ return '<button class="hm-li" data-f="'+esc(it.f)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(note||it.k)+'</span></button>'; }
+  var CASE_TITLES={suicide_direct_question_001:'Ask About Suicide Directly',psychosis_validation_001:'Validate Psychosis Without Colluding',guardedness_privacy_001:'Respond To Guardedness',rupture_limit_setting_001:'Repair After A Limit',bpd_rupture_repair_001:'Repair A BPD Rupture',medication_ambivalence_001:'Medication Ambivalence',mania_limit_sleep_001:'Offer A Sleep-Restoring Plan In Mania',family_meeting_opening_001:'Open A Family Meeting',collateral_questions_001:'Ask Better Collateral Questions',family_conflict_discharge_001:'De-escalate Family Conflict Around Discharge'};
+  var CASE_PRIORITY={ward:['guardedness_privacy_001','psychosis_validation_001','medication_ambivalence_001','mania_limit_sleep_001'],family:['family_meeting_opening_001','collateral_questions_001','family_conflict_discharge_001'],safety:['suicide_direct_question_001','family_conflict_discharge_001','rupture_limit_setting_001'],shelf:['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001'],'5min':['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001','family_meeting_opening_001']};
+  function caseAction(id){ return {f:'communication-practice.html',t:CASE_TITLES[id]||'What Do You Say Next?',k:'tool',caseId:id,href:'?tool=communication-practice.html&case='+encodeURIComponent(id)}; }
+  function casesForMode(mode){ var meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}, seen={}, ids=[]; allNavItems().forEach(function(it){ var m=meta[it.f]; if(m&&Array.isArray(m.workflowModes)&&m.workflowModes.indexOf(mode)>=0&&Array.isArray(m.communicationCases)){ m.communicationCases.forEach(function(id){ if(!seen[id]){seen[id]=1;ids.push(id);} }); } }); var pri=CASE_PRIORITY[mode]||[]; ids.sort(function(a,b){ var ai=pri.indexOf(a),bi=pri.indexOf(b); if(ai<0)ai=99;if(bi<0)bi=99; return ai-bi; }); return ids.map(caseAction); }
+  function actionRow(it, note){ var label=note||(it.caseId?'case':it.k); if(it.href){ return '<a class="hm-li" href="'+esc(it.href)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></a>'; } return '<button class="hm-li" data-f="'+esc(it.f)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></button>'; }
   function renderWardDashboard(){
     var mode=dashboardMode(), modes=[['ward','Ward'],['shelf','Shelf'],['family','Family'],['safety','Safety'],['5min','5 minutes']];
     var matches=itemsForMode(mode);
+    var casePicks=casesForMode(mode);
     var defaults={
-      ward:{before:[{f:'doc_oral.md',t:'Rounding Prep',k:'md'},{f:'pg_interview.md',t:'Interview & MSE',k:'md'}],after:[{f:'communication-practice.html',t:'What Do You Say Next?',k:'tool'},{f:'ddx.md',t:'Differential Dx Scaffolds',k:'md'}],leave:[{f:'review.html',t:'Daily Review',k:'tool'},{f:'reflection.html',t:'Reflection & Identity',k:'tool'}]},
+      ward:{before:[{f:'doc_oral.md',t:'Rounding Prep',k:'md'},{f:'pg_interview.md',t:'Interview & MSE',k:'md'}],after:[casePicks[0]||caseAction('guardedness_privacy_001'),{f:'ddx.md',t:'Differential Dx Scaffolds',k:'md'}],leave:[{f:'review.html',t:'Daily Review',k:'tool'},{f:'reflection.html',t:'Reflection & Identity',k:'tool'}]},
       shelf:{before:[{f:'question-bank-practice.html',t:'Practice Questions',k:'tool'},{f:'shelf.md',t:'COMAT & Shelf Review',k:'md'}],after:[{f:'active-recall.html',t:'Active Recall',k:'tool'},{f:'review.html',t:'Daily Review',k:'tool'}],leave:[{f:'reading_map.md',t:'Weekly Reading Map',k:'md'}]},
-      family:{before:[{f:'family_playbook.md',t:'Family Meeting Playbook',k:'md'},{f:'exp_family.md',t:'Family & Discharge',k:'md'}],after:[{f:'communication-practice.html',t:'What Do You Say Next?',k:'tool'}],leave:[{f:'reflection.html',t:'Reflection & Identity',k:'tool'}]},
-      safety:{before:[{f:'pg_suicide.md',t:'Suicide Risk & Safety',k:'md'},{f:'decision-aids.html',t:'Decision Aids',k:'tool'}],after:[{f:'cssrs.html',t:'C-SSRS Suicide Screen',k:'tool'},{f:'withdrawal.html',t:'CIWA-Ar / COWS',k:'tool'}],leave:[{f:'review.html',t:'Daily Review',k:'tool'}]},
-      '5min':{before:[{f:'communication-practice.html',t:'What Do You Say Next?',k:'tool'}],after:[{f:'question-bank-practice.html',t:'Practice Questions',k:'tool'}],leave:[{f:'review.html',t:'Daily Review',k:'tool'}]}
+      family:{before:[{f:'family_playbook.md',t:'Family Meeting Playbook',k:'md'},{f:'exp_family.md',t:'Family & Discharge',k:'md'}],after:(casePicks.length?casePicks.slice(0,2):[caseAction('family_meeting_opening_001')]),leave:[{f:'reflection.html',t:'Reflection & Identity',k:'tool'}]},
+      safety:{before:[{f:'pg_suicide.md',t:'Suicide Risk & Safety',k:'md'},casePicks[0]||caseAction('suicide_direct_question_001')],after:[{f:'cssrs.html',t:'C-SSRS Suicide Screen',k:'tool'},casePicks[1]||caseAction('family_conflict_discharge_001')],leave:[{f:'review.html',t:'Daily Review',k:'tool'}]},
+      '5min':{before:[casePicks[0]||caseAction('suicide_direct_question_001')],after:[casePicks[1]||caseAction('psychosis_validation_001')],leave:[{f:'review.html',t:'Daily Review',k:'tool'}]}
     };
     var pack=defaults[mode]||defaults.ward;
-    if(matches.length){ pack={before:matches.slice(0,2),after:matches.slice(2,4).concat(pack.after).slice(0,2),leave:pack.leave}; }
+    if(matches.length){ pack={before:matches.slice(0,2),after:casePicks.slice(0,1).concat(matches.slice(2,3),pack.after).slice(0,2),leave:pack.leave}; }
     var h='<div class="wd"><div class="wd-head"><h2>Today on the unit</h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'">'+m[1]+'</button>';}).join('')+'</div></div>';
     h+='<div class="wd-grid"><div class="wd-card"><h3>Before rounds</h3>'+pack.before.map(function(x){return actionRow(x,'open');}).join('')+'</div><div class="wd-card"><h3>After rounds</h3>'+pack.after.map(function(x){return actionRow(x,'practice');}).join('')+'</div><div class="wd-card"><h3>Before leaving</h3>'+pack.leave.map(function(x){return actionRow(x,'review');}).join('')+'</div></div></div>';
     return h;
