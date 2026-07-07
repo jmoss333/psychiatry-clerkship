@@ -48,7 +48,8 @@
     ],
     "relatedTools": [
       "decision-aids.html",
-      "communication-practice.html"
+      "communication-practice.html",
+      "diagnostic-reasoning.html"
     ],
     "workflowModes": [
       "ward",
@@ -84,6 +85,10 @@
         {
           "label": "Open decision aids",
           "href": "?tool=decision-aids.html"
+        },
+        {
+          "label": "Practice delirium reasoning",
+          "href": "?tool=diagnostic-reasoning.html&case=delirium_vs_psychosis_001"
         }
       ]
     }
@@ -232,7 +237,8 @@
     ],
     "relatedTools": [
       "bfcrs.html",
-      "decision-aids.html"
+      "decision-aids.html",
+      "diagnostic-reasoning.html"
     ],
     "workflowModes": [
       "ward",
@@ -265,6 +271,10 @@
         {
           "label": "Open BFCRS",
           "href": "?tool=bfcrs.html"
+        },
+        {
+          "label": "Practice catatonia reasoning",
+          "href": "?tool=diagnostic-reasoning.html&case=catatonia_vs_refusal_001"
         }
       ]
     }
@@ -319,7 +329,8 @@
     "relatedTools": [
       "mse.html",
       "decision-aids.html",
-      "communication-practice.html"
+      "communication-practice.html",
+      "diagnostic-reasoning.html"
     ],
     "workflowModes": [
       "ward",
@@ -356,6 +367,10 @@
         {
           "label": "Open decision aids",
           "href": "?tool=decision-aids.html"
+        },
+        {
+          "label": "Practice psychosis reasoning",
+          "href": "?tool=diagnostic-reasoning.html&case=mania_psychosis_substance_001"
         }
       ]
     }
@@ -401,7 +416,8 @@
     ],
     "relatedTools": [
       "screeners.html",
-      "communication-practice.html"
+      "communication-practice.html",
+      "diagnostic-reasoning.html"
     ],
     "workflowModes": [
       "ward",
@@ -435,6 +451,10 @@
         {
           "label": "Open screeners",
           "href": "?tool=screeners.html"
+        },
+        {
+          "label": "Practice mood reasoning",
+          "href": "?tool=diagnostic-reasoning.html&case=mania_psychosis_substance_001"
         }
       ]
     }
@@ -636,7 +656,8 @@
     "relatedTools": [
       "cssrs.html",
       "reflection.html",
-      "communication-practice.html"
+      "communication-practice.html",
+      "diagnostic-reasoning.html"
     ],
     "workflowModes": [
       "ward",
@@ -665,6 +686,10 @@
         {
           "label": "Practice rupture repair",
           "href": "?tool=communication-practice.html&case=bpd_rupture_repair_001"
+        },
+        {
+          "label": "Practice formulation reasoning",
+          "href": "?tool=diagnostic-reasoning.html&case=trauma_bpd_mood_001"
         }
       ]
     }
@@ -2172,7 +2197,8 @@
     ],
     "relatedTools": [
       "decision-aids.html",
-      "mse.html"
+      "mse.html",
+      "diagnostic-reasoning.html"
     ],
     "clinicalWorkflow": {
       "ask": "Start with time course, substances/medications, medical changes, trauma, sleep, and baseline functioning before naming a psychiatric disorder.",
@@ -2186,6 +2212,10 @@
         {
           "label": "Open decision aids",
           "href": "?tool=decision-aids.html"
+        },
+        {
+          "label": "Practice diagnostic reasoning",
+          "href": "?tool=diagnostic-reasoning.html"
         }
       ]
     }
@@ -2306,7 +2336,8 @@
     ],
     "relatedTools": [
       "mse.html",
-      "oral.html"
+      "oral.html",
+      "diagnostic-reasoning.html"
     ],
     "clinicalWorkflow": {
       "ask": "Ask what made this person vulnerable, what precipitated this admission, what perpetuates symptoms, and what protects recovery.",
@@ -2320,6 +2351,10 @@
         {
           "label": "Practice oral presentation",
           "href": "?tool=oral.html"
+        },
+        {
+          "label": "Practice formulation reasoning",
+          "href": "?tool=diagnostic-reasoning.html&case=trauma_bpd_mood_001"
         }
       ]
     }

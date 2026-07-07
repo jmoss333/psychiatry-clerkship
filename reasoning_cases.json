@@ -1,0 +1,422 @@
+{
+  "_note": "Fictional composite diagnostic-reasoning cases for the psychiatry clerkship. Do not include PHI. These cases teach reasoning structure, not patient-specific diagnosis or treatment advice.",
+  "cases": [
+    {
+      "id": "mania_psychosis_substance_001",
+      "title": "Mania, Psychosis, Or Substance-Induced?",
+      "setting": "Inpatient admission after ED transfer",
+      "learnerGoal": "Build a problem representation, keep substance and medical causes in the differential, and update without anchoring.",
+      "patientBrief": "A 24-year-old is admitted after four nights of little sleep, pressured speech, grand plans, irritability, and hearing the voice of God. A roommate reports heavy cannabis use and one recent stimulant exposure.",
+      "facts": [
+        {"label": "Timeline", "text": "Symptoms escalated over one week after several nights of decreased sleep."},
+        {"label": "MSE", "text": "Pressured speech, flight of ideas, grandiosity, irritable affect, and poor insight."},
+        {"label": "Safety", "text": "Tried to leave the ED to meet investors at 2 AM; no clear suicidal intent."},
+        {"label": "Collateral", "text": "Roommate reports cannabis most days and one stimulant pill at a party."}
+      ],
+      "steps": [
+        {
+          "id": "problem_representation",
+          "title": "Problem Representation",
+          "prompt": "Which one-liner best captures the syndrome without prematurely closing?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Young adult with acute decreased need for sleep, increased energy, grandiosity, pressured speech, psychosis, and substance exposure.",
+              "quality": "best",
+              "feedback": "Best. It names the time course, manic syndrome, psychotic features, and the substance exposure that still needs interpretation."
+            },
+            {
+              "id": "b",
+              "text": "Young adult with schizophrenia because there are auditory hallucinations.",
+              "quality": "missed",
+              "feedback": "This anchors on one symptom. Hallucinations can occur in mania, substances, delirium, trauma, and medical illness."
+            },
+            {
+              "id": "c",
+              "text": "Cannabis-induced psychosis until proven otherwise.",
+              "quality": "partial",
+              "feedback": "Substances matter, but the decreased sleep, energy, pressured speech, and grandiosity point to a manic syndrome that cannot be collapsed into cannabis alone."
+            }
+          ]
+        },
+        {
+          "id": "differential",
+          "title": "Differential",
+          "prompt": "What should be highest on the working differential right now?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Bipolar I disorder, current manic episode with psychotic features; rule out substance-induced and medical causes.",
+              "quality": "best",
+              "feedback": "Best. It keeps the leading syndrome and the required rule-outs in view."
+            },
+            {
+              "id": "b",
+              "text": "Primary psychotic disorder only.",
+              "quality": "missed",
+              "feedback": "A primary psychotic disorder remains possible, but the manic syndrome is too prominent to ignore."
+            },
+            {
+              "id": "c",
+              "text": "Personality disorder with attention-seeking behavior.",
+              "quality": "harmful",
+              "feedback": "This is stigmatizing and misses a potentially severe mood episode with safety implications."
+            }
+          ]
+        },
+        {
+          "id": "update",
+          "title": "Update With New Data",
+          "prompt": "Collateral later confirms a prior week-long episode of decreased sleep and impulsive spending without substances. How should you update?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Increase confidence in bipolar spectrum illness while still documenting substance contribution and medical rule-out.",
+              "quality": "best",
+              "feedback": "Best. Prior similar episodes shift the probability toward bipolar illness without pretending substances are irrelevant."
+            },
+            {
+              "id": "b",
+              "text": "Ignore the substance history because bipolar disorder is now certain.",
+              "quality": "missed",
+              "feedback": "Do not convert probability into certainty. Substance use still affects risk, management, and discharge planning."
+            },
+            {
+              "id": "c",
+              "text": "Keep the original substance-induced diagnosis because tox was positive.",
+              "quality": "missed",
+              "feedback": "A positive tox screen is a clue, not a complete explanation. Timeline and recurrence change the formulation."
+            }
+          ]
+        },
+        {
+          "id": "next_step",
+          "title": "Supervised Next Step",
+          "prompt": "What is the student's best next contribution on rounds?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Present the manic syndrome, safety risks, substance/medical rule-outs, sleep restoration need, and questions for collateral.",
+              "quality": "best",
+              "feedback": "Best. The student adds value by making the reasoning explicit and showing what would change the working diagnosis."
+            },
+            {
+              "id": "b",
+              "text": "Recommend a specific medication dose.",
+              "quality": "harmful",
+              "feedback": "Students should not independently prescribe. Focus on formulation, risks, monitoring questions, and supervised treatment reasoning."
+            },
+            {
+              "id": "c",
+              "text": "Wait for the attending to decide the diagnosis.",
+              "quality": "missed",
+              "feedback": "The point is not independent certainty. It is supervised reasoning that the team can critique and improve."
+            }
+          ]
+        }
+      ],
+      "biasChecks": [
+        "Do not anchor on the tox screen.",
+        "Do not treat hallucinations as synonymous with schizophrenia.",
+        "Separate syndrome, likely diagnosis, contributors, and treatment targets."
+      ],
+      "linkedPages": ["t_mood.md", "t_psychosis.md", "t_sud.md", "pg_formulation.md", "ddx.md"],
+      "evidenceIds": [],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "delirium_vs_psychosis_001",
+      "title": "Delirium Or New Psychosis?",
+      "setting": "Consult question on a medical floor",
+      "learnerGoal": "Use attention, arousal, acuity, and fluctuation to avoid mislabeling delirium as primary psychosis.",
+      "patientBrief": "A 72-year-old post-op patient says insects are crawling on the wall. Nursing reports waxing and waning confusion, poor sleep, new urinary symptoms, and recent diphenhydramine.",
+      "facts": [
+        {"label": "Timeline", "text": "New confusion began two days after surgery and fluctuates across the day."},
+        {"label": "Attention", "text": "Cannot recite months backward and drifts off during the interview."},
+        {"label": "Perception", "text": "Reports vivid visual hallucinations, worse at night."},
+        {"label": "Medication", "text": "Received opioid analgesia and diphenhydramine for sleep."}
+      ],
+      "steps": [
+        {
+          "id": "key_cue",
+          "title": "Most Diagnostic Cue",
+          "prompt": "Which cue most strongly changes your reasoning?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Fluctuating inattention and altered arousal.",
+              "quality": "best",
+              "feedback": "Best. Acute fluctuating inattention is the anchor for delirium."
+            },
+            {
+              "id": "b",
+              "text": "The patient reports hallucinations.",
+              "quality": "partial",
+              "feedback": "Hallucinations matter, but visual hallucinations with inattention and fluctuation should push delirium high."
+            },
+            {
+              "id": "c",
+              "text": "The patient is older.",
+              "quality": "missed",
+              "feedback": "Age increases risk, but diagnosis rests on clinical features and time course, not age alone."
+            }
+          ]
+        },
+        {
+          "id": "syndrome",
+          "title": "Syndrome Frame",
+          "prompt": "What syndrome should lead the working formulation?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Delirium, likely multifactorial, with medication and infection contributors to evaluate.",
+              "quality": "best",
+              "feedback": "Best. It frames the syndrome as medical until proven otherwise."
+            },
+            {
+              "id": "b",
+              "text": "Late-onset schizophrenia.",
+              "quality": "missed",
+              "feedback": "Late-onset psychosis exists, but this presentation is acute, fluctuating, inattentive, and medically loaded."
+            },
+            {
+              "id": "c",
+              "text": "Dementia progression.",
+              "quality": "partial",
+              "feedback": "Dementia can increase delirium vulnerability, but sudden fluctuation suggests delirium over baseline neurocognitive disorder."
+            }
+          ]
+        },
+        {
+          "id": "rule_out",
+          "title": "Rule Out First",
+          "prompt": "What should the student emphasize to the team?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Review deliriogenic medications, check infection/metabolic/hypoxia contributors, and use reorientation/sleep-wake measures.",
+              "quality": "best",
+              "feedback": "Best. The student can help by organizing causes and nonpharmacologic prevention."
+            },
+            {
+              "id": "b",
+              "text": "Start by asking whether the hallucinations are mood-congruent.",
+              "quality": "missed",
+              "feedback": "That question can matter in mood psychosis, but delirium features should be addressed first."
+            },
+            {
+              "id": "c",
+              "text": "Ask for a standing benzodiazepine because the patient is anxious.",
+              "quality": "harmful",
+              "feedback": "Benzodiazepines usually worsen non-withdrawal delirium. Escalate dangerous agitation under supervision and local policy."
+            }
+          ]
+        }
+      ],
+      "biasChecks": [
+        "Do not let hallucinations override the attention exam.",
+        "Do not call a patient psychotic before assessing acuity and fluctuation.",
+        "Ask what changed from baseline and when."
+      ],
+      "linkedPages": ["delirium.md", "t_neurocog.md", "exp_consult.md", "ddx.md"],
+      "evidenceIds": ["nice-delirium-cg103"],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "catatonia_vs_refusal_001",
+      "title": "Catatonia Or Refusal?",
+      "setting": "Inpatient psychiatry unit",
+      "learnerGoal": "Describe motor signs objectively and avoid interpreting catatonia as oppositional behavior.",
+      "patientBrief": "A patient with severe depression is mute, staring, barely eating, and holding an awkward arm posture. Staff wonder if the patient is refusing care.",
+      "facts": [
+        {"label": "Motor", "text": "Staring, immobility, posturing, and possible waxy flexibility."},
+        {"label": "Speech", "text": "Mute through most of the interview."},
+        {"label": "Risk", "text": "Poor oral intake and reduced mobility."},
+        {"label": "Context", "text": "Severe mood episode with psychotic guilt themes earlier in admission."}
+      ],
+      "steps": [
+        {
+          "id": "language",
+          "title": "Chart Language",
+          "prompt": "Which documentation phrase best supports diagnostic reasoning?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Mute, immobile, staring, posturing, and minimally responsive; screen for catatonia with BFCRS.",
+              "quality": "best",
+              "feedback": "Best. It describes observable signs and links them to a structured assessment."
+            },
+            {
+              "id": "b",
+              "text": "Patient is uncooperative and refusing to participate.",
+              "quality": "harmful",
+              "feedback": "This moralizes the behavior and can delay recognition of a treatable motor syndrome."
+            },
+            {
+              "id": "c",
+              "text": "Patient seems depressed.",
+              "quality": "partial",
+              "feedback": "Depression may be the underlying illness, but the motor syndrome needs its own assessment."
+            }
+          ]
+        },
+        {
+          "id": "first_move",
+          "title": "First Reasoning Move",
+          "prompt": "What is the safest supervised next step?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Raise catatonia with the team, trend vitals/intake, use BFCRS, and discuss lorazepam challenge per protocol.",
+              "quality": "best",
+              "feedback": "Best. It combines recognition, measurement, medical monitoring, and supervised treatment reasoning."
+            },
+            {
+              "id": "b",
+              "text": "Recommend antipsychotic escalation because psychotic depression is possible.",
+              "quality": "harmful",
+              "feedback": "Antipsychotics can worsen catatonia or malignant catatonia/NMS. Exclude catatonia before that move."
+            },
+            {
+              "id": "c",
+              "text": "Wait until the patient chooses to engage.",
+              "quality": "missed",
+              "feedback": "Catatonia can be life-threatening. Waiting can worsen dehydration, immobility, and malignant progression."
+            }
+          ]
+        },
+        {
+          "id": "diagnostic_humility",
+          "title": "Diagnostic Humility",
+          "prompt": "How should you frame certainty?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "This is concerning for catatonia; we need structured assessment and medical rule-out before treating it as refusal or psychosis alone.",
+              "quality": "best",
+              "feedback": "Best. It is clear, humble, and action-oriented."
+            },
+            {
+              "id": "b",
+              "text": "This is definitely malignant catatonia.",
+              "quality": "partial",
+              "feedback": "Malignant catatonia must be considered if autonomic instability appears, but do not overstate what is not present."
+            },
+            {
+              "id": "c",
+              "text": "Catatonia is rare, so it is unlikely.",
+              "quality": "missed",
+              "feedback": "Catatonia is under-recognized and occurs across mood, psychotic, autistic, and medical conditions."
+            }
+          ]
+        }
+      ],
+      "biasChecks": [
+        "Avoid labeling motor symptoms as refusal.",
+        "Ask whether antipsychotics could worsen the syndrome.",
+        "Track intake, mobility, vitals, and objective motor signs."
+      ],
+      "linkedPages": ["catatonia.md", "bfcrs.html", "delirium.md", "ddx.md"],
+      "evidenceIds": ["bap-catatonia-2023"],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "trauma_bpd_mood_001",
+      "title": "Crisis, Trauma, Mood, Or Personality?",
+      "setting": "Post-admission formulation discussion",
+      "learnerGoal": "Separate symptoms, syndrome, diagnosis, formulation, and treatment targets without stigmatizing.",
+      "patientBrief": "A 28-year-old admitted after self-injury following a breakup reports chronic emptiness, childhood trauma, nightmares, mood reactivity, and intermittent suicidal thoughts.",
+      "facts": [
+        {"label": "Safety", "text": "Self-injury escalated after perceived abandonment; suicidal thoughts fluctuate."},
+        {"label": "Trauma", "text": "Nightmares, hypervigilance, and avoidance since childhood abuse."},
+        {"label": "Mood", "text": "Mood shifts over hours with interpersonal stress; no clear sustained manic episode."},
+        {"label": "Function", "text": "Longstanding unstable relationships and intense fear of rejection."}
+      ],
+      "steps": [
+        {
+          "id": "separate_layers",
+          "title": "Separate The Layers",
+          "prompt": "Which formulation best separates the clinical layers?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Current safety crisis with trauma symptoms and borderline personality traits; evaluate depressive disorder and focus treatment targets on safety, affect regulation, sleep, and follow-up.",
+              "quality": "best",
+              "feedback": "Best. It keeps risk, trauma, personality pattern, differential diagnosis, and treatment targets distinct."
+            },
+            {
+              "id": "b",
+              "text": "Borderline patient acting out after a breakup.",
+              "quality": "harmful",
+              "feedback": "This is stigmatizing and collapses the person into a label. It also misses trauma and mood differential."
+            },
+            {
+              "id": "c",
+              "text": "Major depression only because suicidal thoughts are present.",
+              "quality": "missed",
+              "feedback": "Depression must be assessed, but suicidality is not specific to major depression."
+            }
+          ]
+        },
+        {
+          "id": "uncertainty",
+          "title": "Manage Uncertainty",
+          "prompt": "What uncertainty should you explicitly carry forward?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Whether depressive, PTSD, substance, and personality factors are all contributing to risk and what changes with time and collateral.",
+              "quality": "best",
+              "feedback": "Best. Psychiatric formulation often tracks multiple contributors rather than forcing one premature diagnosis."
+            },
+            {
+              "id": "b",
+              "text": "Whether the patient is being manipulative.",
+              "quality": "harmful",
+              "feedback": "This framing is pejorative and not clinically precise. Replace it with needs, fears, functions, risks, and skills deficits."
+            },
+            {
+              "id": "c",
+              "text": "Whether the patient really has trauma.",
+              "quality": "missed",
+              "feedback": "Do not make disbelief the central uncertainty. Clarify symptoms, impact, safety, and treatment needs."
+            }
+          ]
+        },
+        {
+          "id": "presentation",
+          "title": "Rounds Presentation",
+          "prompt": "Which rounds sentence is strongest?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "I am separating the acute safety target from the longer-term formulation: today we need suicide risk, coping plan, sleep, and follow-up; diagnostically I am considering PTSD, MDD, and borderline personality traits.",
+              "quality": "best",
+              "feedback": "Best. It shows diagnostic humility and connects formulation to immediate inpatient work."
+            },
+            {
+              "id": "b",
+              "text": "This is a classic borderline case.",
+              "quality": "harmful",
+              "feedback": "This sounds dismissive and does not tell the team what to do today."
+            },
+            {
+              "id": "c",
+              "text": "The diagnosis is unclear, so I do not have a plan.",
+              "quality": "missed",
+              "feedback": "Uncertainty is not paralysis. You can still name treatment targets and what data would update the formulation."
+            }
+          ]
+        }
+      ],
+      "biasChecks": [
+        "Do not use diagnosis as a shorthand for blame.",
+        "Separate acute safety targets from longitudinal formulation.",
+        "Carry more than one contributor when the case genuinely has more than one."
+      ],
+      "linkedPages": ["t_personality.md", "pg_suicide.md", "brief_psychotherapy.md", "pg_formulation.md"],
+      "evidenceIds": [],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    }
+  ]
+}
