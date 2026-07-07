@@ -1696,17 +1696,7 @@
     }
   },
   "welcome.md": {
-    "read": 3,
-    "tldr": "A structured six-week arc — Foundations through Integration — with interactive bedside tools, clinical one-pagers, and readings organized so you can navigate by week, topic, or tool whenever it is useful.",
-    "points": [
-      "The six-week arc gives every student the same foundational sequence regardless of start week: interview/MSE, mood/psychosis/pharm, therapy/personality, family/systems, acute/emergency, integration.",
-      "Seven interactive bedside tools are available in the sidebar: MSE builder, capacity assessor, C-SSRS, safety planning, violence-risk (FRST), CIWA-Ar/COWS, and oral-presentation timer.",
-      "Nothing here is required reading — use the hub whenever it is useful to you, organized by week, topic, or tool."
-    ],
-    "cta": {
-      "label": "Open the Orientation Packet",
-      "href": "?page=orientation.md"
-    }
+    "read": 3
   },
   "orientation.md": {
     "read": 5,

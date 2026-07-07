@@ -383,31 +383,31 @@
     setDrawer(false);
     try{ if(window.__clearDock) window.__clearDock(); }catch(_){ }
     if(item.k==='special'){
-      currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)) setRoute(item, opts&&opts.replace, opts);
+      currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)&&!(opts&&opts.noRoute)) setRoute(item, opts&&opts.replace, opts);
       contentEl.classList.remove('toolmode'); contentEl.classList.remove('pathmode');
       contentEl.innerHTML = (item.f==='__start__') ? (window.renderStart?window.renderStart():'') : (window.renderHome?window.renderHome():'');
       try{ if(window.__afterSpecial) window.__afterSpecial(item.f); }catch(_){ }
       window.scrollTo(0,0); return;
     }
     if(item.k==='tool'){
-      currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)) setRoute(item, opts&&opts.replace, opts);
+      currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)&&!(opts&&opts.noRoute)) setRoute(item, opts&&opts.replace, opts);
       contentEl.classList.add('toolmode');
       var _rv=REVIEWED&&REVIEWED[item.f]; var _bar=(_rv&&_rv.status==='reviewed')?('<div class="toolrev">✓ Reviewed by '+esc(_rv.by||'faculty')+(_rv.at?(' · '+_rv.at):'')+'</div>'):'';
       contentEl.classList.toggle('hasrev', !!_bar);
       contentEl.innerHTML=_bar+'<iframe class="toolframe" src="tools/'+item.f+esc(toolFrameSuffix(opts&&opts.toolExtra))+'" title="'+esc(item.t)+'"></iframe>';
       window.scrollTo(0,0); return;
     }
-    currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)) setRoute(item, opts&&opts.replace, opts);
+    currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)&&!(opts&&opts.noRoute)) setRoute(item, opts&&opts.replace, opts);
     contentEl.innerHTML=skel();
     fetch('content/'+item.f).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
-      contentEl.innerHTML=marked.parse(t); var _m=TOPIC_META&&TOPIC_META[item.f]; if(_m){ var _w=document.createElement('div'); _w.innerHTML=buildTpl(_m, item.f); if(_w.firstChild) contentEl.insertBefore(_w.firstChild, contentEl.firstChild); } var rv=REVIEWED&&REVIEWED[item.f]; if(rv&&rv.status==='reviewed'){ var st=document.createElement('div'); st.className='reviewed'; st.textContent='\u2713 Reviewed by '+(rv.by||'faculty')+(rv.at?(' \u00b7 '+rv.at):''); contentEl.insertBefore(st, contentEl.firstChild); } makeCollapsible(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); try{if(window.__afterContent)window.__afterContent(item);}catch(_){ } try{contentEl.classList.remove('cc-rise');void contentEl.offsetWidth;contentEl.classList.add('cc-rise');}catch(_){ } var _sy=(opts&&opts.fromHistory&&SCROLL[item.f]!=null)?SCROLL[item.f]:0; window.scrollTo(0,_sy);
+      contentEl.innerHTML=marked.parse(t); if(item.f==='welcome.md'){try{localStorage.setItem('cw_seen_welcome_v1','1');localStorage.setItem('cw_seen_start','1');}catch(_){ }} var _m=TOPIC_META&&TOPIC_META[item.f]; if(_m){ var _w=document.createElement('div'); _w.innerHTML=buildTpl(_m, item.f); if(_w.firstChild) contentEl.insertBefore(_w.firstChild, contentEl.firstChild); } var rv=REVIEWED&&REVIEWED[item.f]; if(rv&&rv.status==='reviewed'){ var st=document.createElement('div'); st.className='reviewed'; st.textContent='\u2713 Reviewed by '+(rv.by||'faculty')+(rv.at?(' \u00b7 '+rv.at):''); contentEl.insertBefore(st, contentEl.firstChild); } makeCollapsible(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); try{if(window.__afterContent)window.__afterContent(item);}catch(_){ } try{contentEl.classList.remove('cc-rise');void contentEl.offsetWidth;contentEl.classList.add('cc-rise');}catch(_){ } var _sy=(opts&&opts.fromHistory&&SCROLL[item.f]!=null)?SCROLL[item.f]:0; window.scrollTo(0,_sy);
     }).catch(function(){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+item.t+'. Check your connection and try again.</p></div>'});
   }
 
   fetch('nav.json').then(function(r){return r.json()}).then(function(data){
     var navOpen=(function(){try{return JSON.parse(localStorage.getItem('cw_nav_v1'))||{}}catch(_){return {}}})();
     var navGroupOpen=(function(){try{return JSON.parse(localStorage.getItem('cw_navgroup_v1'))||{}}catch(_){return {}}})();
-    var GROUP_DEFAULT_OPEN={'Get oriented':true};
+    var GROUP_DEFAULT_OPEN={};
     var groupWraps={};
     function groupBody(name){
       if(groupWraps[name]) return groupWraps[name];
@@ -423,7 +423,7 @@
       gw.appendChild(gh); gw.appendChild(gb); navEl.appendChild(gw);
       groupWraps[name]=gb; return gb;
     }
-    data.unshift({section:'Overview',items:[{t:'Home',f:'__home__',k:'special'},{t:'Start here',f:'__start__',k:'special'}]});
+    data.unshift({section:'Welcome and Today',pinned:true,items:[{t:'Today / Progress',f:'__home__',k:'special'},{t:'Start-here Checklist',f:'__start__',k:'special'}]});
     data.forEach(function(sec){
       var wrap=document.createElement('div'); wrap.className='navsec-wrap';
       var h=document.createElement('button'); h.className='navsec'; h.type='button';
@@ -446,12 +446,12 @@
     });
     function openByFile(f,opts){ var all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===f){ show(all[i]._item, all[i], opts); return true; } } return false; }
     var sp0=new URLSearchParams(location.search); var pf=sp0.get('page')||sp0.get('tool');
-    var _seenStart=(function(){try{return localStorage.getItem('cw_seen_start')==='1'}catch(_){return false}})();
+    var _seenWelcome=(function(){try{return localStorage.getItem('cw_seen_welcome_v1')==='1'||localStorage.getItem('cw_seen_start')==='1'}catch(_){return false}})();
     if(pf && openByFile(pf,{replace:true,toolExtra:toolExtraFromParams(sp0)})){}
-    else if(!_seenStart && openByFile('__start__',{replace:true})){}
-    else if((function(){try{return localStorage.getItem('cw_mode')==='path'}catch(_){return false}})()){ showPath(); }
+    else if(!_seenWelcome && openByFile('welcome.md',{replace:true,noRoute:true})){}
+    else if(openByFile('__home__',{replace:true})){}
     else { var p0=navEl.querySelector('.navitem'); if(p0) show(p0._item,p0,{replace:true}); }
-    window.addEventListener('popstate',function(){ var s2=new URLSearchParams(location.search); var f2=s2.get('page')||s2.get('tool'); if(f2){ openByFile(f2,{fromHistory:true,toolExtra:toolExtraFromParams(s2)}); } else { var p1=navEl.querySelector('.navitem'); if(p1) show(p1._item,p1,{fromHistory:true}); } });
+    window.addEventListener('popstate',function(){ var s2=new URLSearchParams(location.search); var f2=s2.get('page')||s2.get('tool'); if(f2){ openByFile(f2,{fromHistory:true,toolExtra:toolExtraFromParams(s2)}); } else if(openByFile('__home__',{fromHistory:true})){} else { var p1=navEl.querySelector('.navitem'); if(p1) show(p1._item,p1,{fromHistory:true}); } });
     if(mPath) mPath.onclick=function(){ showPath(); };
     if(mLib) mLib.onclick=function(){ reflectLibrary(); if(currentItem) show(currentItem); else { var p3=navEl.querySelector('.navitem'); if(p3) p3.click(); } };
     window.addEventListener('message',function(ev){ var d=ev.data||{}; if(d.type==='openPage'&&d.f){ var aa=navEl.querySelectorAll('.navitem'); for(var j=0;j<aa.length;j++){ if(aa[j].getAttribute('data-f')===d.f){ aa[j].click(); return; } } } else if(d.type==='openLibrary'){ reflectLibrary(); if(currentItem) show(currentItem); else { var p4=navEl.querySelector('.navitem'); if(p4) p4.click(); } } else if(d.type==='search'){ reflectLibrary(); if(searchEl){ searchEl.value=d.q||''; if(sxEl) sxEl.style.display=(d.q?'block':'none'); renderResults(d.q||''); try{searchEl.focus();}catch(_){ } } } else if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){ document.documentElement.setAttribute('data-theme',d.mode); try{localStorage.setItem('cw_theme',d.mode);}catch(_){ } applyThemeIcon(); } else if(d.type==='ic-size'&&d.h){ var _fr=document.querySelector('#content iframe[src*="interview-circle.html"]'); if(_fr) _fr.style.height=(d.h+6)+'px'; } });
