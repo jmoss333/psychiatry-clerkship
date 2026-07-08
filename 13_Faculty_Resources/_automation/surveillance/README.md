@@ -180,7 +180,9 @@ the authoritative **source URLs** in `source_registry.yaml` (which live in YAML,
 them) and any **DOIs/PMIDs** cited in curriculum text still resolve — via `doi.org` / NCBI eutils.
 Failures become idempotent issues (a no-HTTP-response is capped at P1 to avoid false P0 pages from
 bot-blocking). The scanner skips imported/archive-only citation copies so faculty issues route to
-live curriculum surfaces first. Stdlib-only; no extra secret. Test:
+live curriculum surfaces first. DOI checks stop at the DOI.org redirect layer: a DOI.org 3xx redirect
+counts as resolved, even if the downstream publisher blocks automation with 403. Stdlib-only; no extra
+secret. Test:
 
 ```
 python3 bin/run_citation_check.py --self-test                 # offline logic check
