@@ -34,6 +34,10 @@ Read the [Interview Guide](?page=pg_interview.md) before rounds.
 | Time | Task |
 |---|---|
 | AM | Rounds |
+
+| One | Two | Three |
+| --- | :---: | --- |
+| A | B | C |
 """
     out = markdown_to_plain_text(src)
 
@@ -44,6 +48,10 @@ Read the [Interview Guide](?page=pg_interview.md) before rounds.
     assert "Ask directly about safety." in out
     assert "Time | Task" in out
     assert "AM | Rounds" in out
+    assert "|---|---|" not in out
+    assert "| --- | :---: | --- |" not in out
+    assert "One | Two | Three" in out
+    assert "A | B | C" in out
 
 
 def test_split_markdown_sections_uses_h2_boundaries():

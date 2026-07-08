@@ -34,6 +34,7 @@ _ITALIC_RE = re.compile(r"(\*|_)(.*?)\1")
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 _GENERATED_RE = re.compile(r"^Generated:\s+.+$", re.I)
 _HR_RE = re.compile(r"^\s*-{3,}\s*$")
+_TABLE_DIVIDER_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$")
 
 
 def markdown_to_plain_text(markdown: str) -> str:
@@ -54,7 +55,7 @@ def markdown_to_plain_text(markdown: str) -> str:
         line = _ITALIC_RE.sub(r"\2", line)
         line = _HTML_TAG_RE.sub("", line)
         line = line.replace("`", "")
-        if line.strip() == "|---|---|":
+        if _TABLE_DIVIDER_RE.match(line):
             continue
         if line.startswith("- "):
             line = "- " + line[2:]
