@@ -198,6 +198,9 @@ for k, v in d.items():
                     bad(k, "clinicalWorkflow.%s must be a string" % ck)
     if "familyOverlay" in v and not isinstance(v["familyOverlay"], str):
         bad(k, "'familyOverlay' must be a string")
+    if isinstance(v.get("familyOverlay"), str):
+        if "family-systems.html" not in (v.get("relatedTools") or []):
+            bad(k, "familyOverlay pages must include family-systems.html in relatedTools")
     if "safetyLevel" in v and v["safetyLevel"] not in ("low", "moderate", "high"):
         bad(k, "'safetyLevel' must be one of low, moderate, high")
     if "facultyReview" in v:

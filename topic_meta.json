@@ -38,10 +38,16 @@
       ],
       "why": "This is delirium; the priority is finding the cause and removing contributors (opioids + anticholinergic). Benzodiazepines worsen non-withdrawal delirium."
     },
-    "cta": {
-      "label": "Open the Decision Aids",
-      "href": "?tool=decision-aids.html"
-    },
+    "cta": [
+      {
+        "label": "Open the Decision Aids",
+        "href": "?tool=decision-aids.html"
+      },
+      {
+        "label": "Practice baseline collateral call",
+        "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+      }
+    ],
     "evidenceIds": [
       "nice-delirium-cg103",
       "project-beta-deescalation-2012"
@@ -49,7 +55,8 @@
     "relatedTools": [
       "decision-aids.html",
       "communication-practice.html",
-      "diagnostic-reasoning.html"
+      "diagnostic-reasoning.html",
+      "family-systems.html"
     ],
     "workflowModes": [
       "ward",
@@ -89,6 +96,10 @@
         {
           "label": "Practice delirium reasoning",
           "href": "?tool=diagnostic-reasoning.html&case=delirium_vs_psychosis_001"
+        },
+        {
+          "label": "Practice baseline collateral call",
+          "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
         }
       ]
     }
@@ -139,6 +150,10 @@
       {
         "label": "Practice de-escalation language",
         "href": "?tool=communication-practice.html&case=rupture_limit_setting_001"
+      },
+      {
+        "label": "Ask collateral about triggers",
+        "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
       }
     ],
     "evidenceIds": [
@@ -149,12 +164,14 @@
     "relatedTools": [
       "violence.html",
       "decision-aids.html",
-      "communication-practice.html"
+      "communication-practice.html",
+      "family-systems.html"
     ],
     "workflowModes": [
       "ward",
       "safety",
-      "5min"
+      "5min",
+      "family"
     ],
     "communicationCases": [
       "rupture_limit_setting_001",
@@ -171,7 +188,8 @@
       "safety",
       "communication",
       "treatment",
-      "team"
+      "team",
+      "family"
     ],
     "clinicalWorkflow": {
       "ask": "Ask briefly about pain, fear, intoxication/withdrawal, psychosis, needs, and what would help the patient regain control.",
@@ -189,9 +207,14 @@
         {
           "label": "Open violence risk tool",
           "href": "?tool=violence.html"
+        },
+        {
+          "label": "Ask collateral about triggers and what helps",
+          "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
         }
       ]
-    }
+    },
+    "familyOverlay": "agitation_family_triggers_and_deescalation_context"
   },
   "catatonia.md": {
     "read": 3,
@@ -417,18 +440,24 @@
       {
         "label": "Practice mania limit-setting",
         "href": "?tool=communication-practice.html&case=mania_limit_sleep_001"
+      },
+      {
+        "label": "Map mania collateral and safety roles",
+        "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
       }
     ],
     "relatedTools": [
       "screeners.html",
       "communication-practice.html",
-      "diagnostic-reasoning.html"
+      "diagnostic-reasoning.html",
+      "family-systems.html"
     ],
     "workflowModes": [
       "ward",
       "safety",
       "5min",
-      "shelf"
+      "shelf",
+      "family"
     ],
     "communicationCases": [
       "mania_limit_sleep_001"
@@ -438,7 +467,8 @@
       "safety",
       "treatment",
       "communication",
-      "exam"
+      "exam",
+      "family"
     ],
     "clinicalWorkflow": {
       "ask": "Anchor depressive, manic, and mixed symptoms to time course; ask about sleep, energy, impulsivity, psychosis, substances, antidepressants, and past episodes.",
@@ -460,9 +490,14 @@
         {
           "label": "Practice mood reasoning",
           "href": "?tool=diagnostic-reasoning.html&case=mania_psychosis_substance_001"
+        },
+        {
+          "label": "Map mania collateral and safety roles",
+          "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
         }
       ]
-    }
+    },
+    "familyOverlay": "mood_mania_family_collateral_and_safety"
   },
   "t_anxiety.md": {
     "read": 4,
@@ -572,23 +607,31 @@
       ],
       "why": "Alcohol withdrawal is treated with symptom-triggered benzodiazepines and thiamine before glucose."
     },
-    "cta": {
-      "label": "Open CIWA-Ar / COWS",
-      "href": "?tool=withdrawal.html"
-    },
+    "cta": [
+      {
+        "label": "Open CIWA-Ar / COWS",
+        "href": "?tool=withdrawal.html"
+      },
+      {
+        "label": "Clarify discharge supports",
+        "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
+      }
+    ],
     "evidenceIds": [
       "asam-alcohol-withdrawal-2020"
     ],
     "relatedTools": [
       "withdrawal.html",
       "cssrs.html",
-      "communication-practice.html"
+      "communication-practice.html",
+      "family-systems.html"
     ],
     "workflowModes": [
       "ward",
       "safety",
       "5min",
-      "shelf"
+      "shelf",
+      "family"
     ],
     "communicationCases": [
       "medication_ambivalence_001"
@@ -604,7 +647,8 @@
       "safety",
       "treatment",
       "communication",
-      "exam"
+      "exam",
+      "family"
     ],
     "clinicalWorkflow": {
       "ask": "Ask last use, amount, route, withdrawal history, seizures/DTs, overdose, medications for addiction, readiness, and concurrent psychiatric symptoms.",
@@ -622,9 +666,14 @@
         {
           "label": "Practice medication ambivalence",
           "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+        },
+        {
+          "label": "Clarify family supports and discharge barriers",
+          "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
         }
       ]
-    }
+    },
+    "familyOverlay": "sud_family_discharge_supports_and_boundaries"
   },
   "t_personality.md": {
     "read": 4,
@@ -654,15 +703,22 @@
       ],
       "why": "Splitting is managed with team consistency and clear limits; medication does not treat the personality disorder itself."
     },
-    "cta": {
-      "label": "Practice rupture repair",
-      "href": "?tool=communication-practice.html&case=bpd_rupture_repair_001"
-    },
+    "cta": [
+      {
+        "label": "Practice rupture repair",
+        "href": "?tool=communication-practice.html&case=bpd_rupture_repair_001"
+      },
+      {
+        "label": "Plan boundary-safe family involvement",
+        "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
+      }
+    ],
     "relatedTools": [
       "cssrs.html",
       "reflection.html",
       "communication-practice.html",
-      "diagnostic-reasoning.html"
+      "diagnostic-reasoning.html",
+      "family-systems.html"
     ],
     "workflowModes": [
       "ward",
@@ -677,7 +733,8 @@
       "safety",
       "communication",
       "team",
-      "exam"
+      "exam",
+      "family"
     ],
     "clinicalWorkflow": {
       "ask": "Ask about enduring patterns, trauma, relationships, self-harm, abandonment fears, affect shifts, and what has helped during past crises.",
@@ -695,9 +752,14 @@
         {
           "label": "Practice formulation reasoning",
           "href": "?tool=diagnostic-reasoning.html&case=trauma_bpd_mood_001"
+        },
+        {
+          "label": "Plan boundary-safe family involvement",
+          "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
         }
       ]
-    }
+    },
+    "familyOverlay": "personality_family_boundaries_and_team_consistency"
   },
   "t_neurodev.md": {
     "read": 5,
@@ -736,10 +798,16 @@
       ],
       "why": "Behavior is communication; new agitation or self-injury warrants a medical and functional workup before reflexive sedation — diagnostic overshadowing misses treatable causes."
     },
-    "cta": {
-      "label": "Open the Decision Aids",
-      "href": "?tool=decision-aids.html"
-    },
+    "cta": [
+      {
+        "label": "Open the Decision Aids",
+        "href": "?tool=decision-aids.html"
+      },
+      {
+        "label": "Practice caregiver collateral",
+        "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+      }
+    ],
     "workflowStages": [
       "diagnosis",
       "safety",
@@ -757,7 +825,8 @@
     "relatedTools": [
       "decision-aids.html",
       "communication-practice.html",
-      "bfcrs.html"
+      "bfcrs.html",
+      "family-systems.html"
     ],
     "communicationCases": [
       "collateral_questions_001",
@@ -779,9 +848,14 @@
         {
           "label": "Open decision aids",
           "href": "?tool=decision-aids.html"
+        },
+        {
+          "label": "Practice caregiver collateral questions",
+          "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
         }
       ]
-    }
+    },
+    "familyOverlay": "neurodevelopmental_caregiver_baseline_and_adaptations"
   },
   "t_eating.md": {
     "read": 5,
@@ -1125,10 +1199,16 @@
       ],
       "why": "This is Lewy body dementia; antipsychotics can cause life-threatening neuroleptic sensitivity, so they are avoided or used only with great caution (quetiapine/pimavanserin)."
     },
-    "cta": {
-      "label": "Open the Decisional Capacity tool",
-      "href": "?tool=capacity.html"
-    },
+    "cta": [
+      {
+        "label": "Open the Decisional Capacity tool",
+        "href": "?tool=capacity.html"
+      },
+      {
+        "label": "Practice caregiver collateral",
+        "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+      }
+    ],
     "workflowStages": [
       "diagnosis",
       "safety",
@@ -1145,7 +1225,8 @@
     ],
     "relatedTools": [
       "capacity.html",
-      "decision-aids.html"
+      "decision-aids.html",
+      "family-systems.html"
     ],
     "clinicalWorkflow": {
       "ask": "Ask onset, course, ADLs/IADLs, medication changes, hallucinations, parkinsonism, vascular history, sleep behaviors, and caregiver burden.",
@@ -1159,9 +1240,14 @@
         {
           "label": "Open capacity tool",
           "href": "?tool=capacity.html"
+        },
+        {
+          "label": "Practice caregiver collateral and safety roles",
+          "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
         }
       ]
-    }
+    },
+    "familyOverlay": "neurocognitive_caregiver_safety_and_baseline"
   },
   "t_sexual.md": {
     "read": 5,
