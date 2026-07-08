@@ -135,6 +135,15 @@
   .practice-action:hover{background:var(--surface);border-color:var(--accent)}
   .practice-action.is-safety{color:var(--primary-dark);background:var(--primary-light);border-color:#bdd5d1}
   .practice-action.is-case{color:var(--primary);background:#fff;border-color:#d5c9bc}
+  .practice-drills{border:1px solid #d9c597;background:#fffaf0;border-radius:12px;padding:11px 12px;margin:0 0 12px}
+  .practice-drill-head{font-size:.68rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--warning);margin:0 0 4px}
+  .practice-drill-note{font-size:.88rem;color:var(--text-mid);margin:0}
+  .practice-drill-actions{margin-top:9px}
+  .practice-action.is-drill{align-items:flex-start;flex-direction:column;gap:2px;min-width:178px;color:var(--warning);background:#fff;border-color:#d9c597;border-radius:10px;padding:9px 11px}
+  .practice-action.is-drill:hover{background:#fffaf0;border-color:var(--warning)}
+  .practice-action-kicker{font-size:.62rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--warning)}
+  .practice-action-main{font-weight:800;color:var(--text)}
+  .practice-action-arrow{font-size:.76rem;color:var(--warning)}
   .practice-action.is-review{color:var(--text-mid);background:var(--bg-alt)}
   .tpl-meta{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
   .tpl-chip{font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;border:1px solid var(--border)}
@@ -478,35 +487,40 @@
     var key=href.replace(/#.*$/,'');
     if(seen[key])return;
     seen[key]=1;
-    out.push('<a class="practice-action'+(cls?(' '+cls):'')+'" href="'+esc(href)+'"'+ctaAttrs(href)+'>'+esc(label||'Open')+' →</a>');
+    var body=(cls&&cls.indexOf('is-drill')>=0)?('<span class="practice-action-kicker">Spoken drill</span><span class="practice-action-main">'+esc(label||'Open')+'</span><span class="practice-action-arrow">Open →</span>'):(esc(label||'Open')+' →');
+    out.push('<a class="practice-action'+(cls?(' '+cls):'')+'" href="'+esc(href)+'"'+ctaAttrs(href)+'>'+body+'</a>');
   }
+  function isCommunicationCaseHref(h){ h=String(h||''); return /[?&]tool=communication-practice\.html/.test(h)&&/[?&]case=/.test(h); }
   function buildPracticeTools(m,file){
-    var out=[], seen={}, rt=[];
+    var out=[], drills=[], seen={}, rt=[];
     function addTool(k){ if(k&&rt.indexOf(k)<0)rt.push(k); }
     ((typeof PAGE_TOOLS!=='undefined'&&PAGE_TOOLS[file])||PRACTICE_PAGE_TOOLS[file]||[]).forEach(addTool);
     if(m&&Array.isArray(m.relatedTools))m.relatedTools.forEach(addTool);
     for(var i=0;i<rt.length;i++){ var k=rt[i]; if(k==='communication-practice.html'&&m&&Array.isArray(m.communicationCases)&&m.communicationCases.length)continue; addPracticeAction(out,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k),practiceIsSafe(k)?'is-safety':''); }
     if(m&&Array.isArray(m.communicationCases)){
-      for(var c=0;c<m.communicationCases.length;c++){ var id=m.communicationCases[c]; addPracticeAction(out,seen,practiceCaseLabel(id),'?tool=communication-practice.html&case='+encodeURIComponent(id),'is-case'); }
+      for(var c=0;c<m.communicationCases.length;c++){ var id=m.communicationCases[c]; addPracticeAction(drills,seen,practiceCaseLabel(id),'?tool=communication-practice.html&case='+encodeURIComponent(id),'is-drill'); }
     }
     if(m&&m.cta){
       var cx=Array.isArray(m.cta)?m.cta:[m.cta];
-      for(var ci=0;ci<cx.length;ci++){ var ca=cx[ci], ch=ca&&ca.href?ctaHref(ca.href):''; var tk=actionToolKey(ch); addPracticeAction(out,seen,ca&&(ca.label||practiceToolLabel(tk)||'Open tool'),ch,practiceIsSafe(tk)?'is-safety':''); }
+      for(var ci=0;ci<cx.length;ci++){ var ca=cx[ci], ch=ca&&ca.href?ctaHref(ca.href):''; var tk=actionToolKey(ch), bucket=isCommunicationCaseHref(ch)?drills:out; addPracticeAction(bucket,seen,ca&&(ca.label||practiceToolLabel(tk)||'Open tool'),ch,isCommunicationCaseHref(ch)?'is-drill':(practiceIsSafe(tk)?'is-safety':'')); }
     }
     var cw=m&&m.clinicalWorkflow;
     if(cw&&Array.isArray(cw.actions)){
-      for(var a=0;a<cw.actions.length;a++){ var ac=cw.actions[a]||{}, ah=ctaHref(ac.href||''), ak=actionToolKey(ah); addPracticeAction(out,seen,ac.label||practiceToolLabel(ak)||'Open',ah,practiceIsSafe(ak)?'is-safety':''); }
+      for(var a=0;a<cw.actions.length;a++){ var ac=cw.actions[a]||{}, ah=ctaHref(ac.href||''), ak=actionToolKey(ah), ab=isCommunicationCaseHref(ah)?drills:out; addPracticeAction(ab,seen,ac.label||practiceToolLabel(ak)||'Open',ah,isCommunicationCaseHref(ah)?'is-drill':(practiceIsSafe(ak)?'is-safety':'')); }
     }
-    if(!out.length){
+    if(!out.length&&!drills.length){
       addPracticeAction(out,seen,'Practice Questions','?tool=question-bank-practice.html','is-review');
       addPracticeAction(out,seen,'Daily Review','?tool=review.html','is-review');
     }
-    return '<div class="practice-actions">'+out.join('')+'</div>';
+    var html='';
+    if(drills.length)html+='<div class="practice-drills"><div class="practice-drill-head">Spoken drills</div><p class="practice-drill-note">Say your first line out loud, then compare it with concrete feedback.</p><div class="practice-actions practice-drill-actions">'+drills.join('')+'</div></div>';
+    if(out.length)html+='<div class="practice-actions">'+out.join('')+'</div>';
+    return html;
   }
   function buildTpl(m,file){
     if(!hasPracticeTpl(m))return '';
     var h='<details class="topic-tpl practice-panel">';
-    h+='<summary class="practice-summary"><span class="practice-tab">On unit</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
+    h+='<summary class="practice-summary"><span class="practice-tab">On unit</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
     h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; h+='</div>';
     h+='<div class="practice-sections">';
