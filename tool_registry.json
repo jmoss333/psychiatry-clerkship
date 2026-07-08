@@ -99,6 +99,17 @@
       "storageKeys": ["cw_reason_v1"],
       "evidenceIds": ["bap-catatonia-2023", "nice-delirium-cg103"],
       "relatedPages": ["ddx.md", "pg_formulation.md", "t_mood.md", "t_psychosis.md", "delirium.md", "catatonia.md", "t_personality.md"]
+    },
+    {
+      "file": "family-systems.html",
+      "title": "Family Systems Practice",
+      "sourcePath": "06_Family_and_Relational/family-systems-practice.html",
+      "category": "family-systems",
+      "riskLevel": "moderate",
+      "disclaimerType": "fictional-simulation-supervision-local-policy",
+      "storageKeys": ["cw_family_v1"],
+      "evidenceIds": ["va-dod-suicide-cpg-2024", "project-beta-deescalation-2012"],
+      "relatedPages": ["exp_family.md", "family_playbook.md", "family_modalities.md", "pg_suicide.md", "t_psychosis.md", "ethics_legal.md"]
     }
   ]
 }

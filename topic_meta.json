@@ -330,7 +330,8 @@
       "mse.html",
       "decision-aids.html",
       "communication-practice.html",
-      "diagnostic-reasoning.html"
+      "diagnostic-reasoning.html",
+      "family-systems.html"
     ],
     "workflowModes": [
       "ward",
@@ -371,6 +372,10 @@
         {
           "label": "Practice psychosis reasoning",
           "href": "?tool=diagnostic-reasoning.html&case=mania_psychosis_substance_001"
+        },
+        {
+          "label": "Plan family psychoeducation",
+          "href": "?tool=family-systems.html&scenario=psychosis_family_psychoeducation_001"
         }
       ]
     }
@@ -1410,10 +1415,16 @@
       ],
       "why": "A serious threat against a reasonably identifiable victim triggers the duty to protect (Tarasoff): confidentiality yields, and reasonable steps include warning the victim, notifying police, and continued hospitalization."
     },
-    "cta": {
-      "label": "Read Culture, Disparities & Formulation",
-      "href": "?page=cultural_psychiatry.md"
-    },
+    "cta": [
+      {
+        "label": "Read Culture, Disparities & Formulation",
+        "href": "?page=cultural_psychiatry.md"
+      },
+      {
+        "label": "Practice family boundaries",
+        "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
+      }
+    ],
     "workflowStages": [
       "safety",
       "communication",
@@ -1431,7 +1442,8 @@
     "relatedTools": [
       "capacity.html",
       "violence.html",
-      "cssrs.html"
+      "cssrs.html",
+      "family-systems.html"
     ],
     "communicationCases": [
       "suicide_direct_question_001",
@@ -1454,6 +1466,10 @@
         {
           "label": "Open violence risk tool",
           "href": "?tool=violence.html"
+        },
+        {
+          "label": "Practice family boundaries",
+          "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
         }
       ]
     }
@@ -1493,10 +1509,16 @@
       ],
       "why": "This presentation is consistent with ataque de nervios, a cultural concept of distress that can mimic panic or psychosis; a professional interpreter (never family) and the explanatory model prevent mislabeling."
     },
-    "cta": {
-      "label": "Open Ethics & the Law",
-      "href": "?page=ethics_legal.md"
-    },
+    "cta": [
+      {
+        "label": "Open Ethics & the Law",
+        "href": "?page=ethics_legal.md"
+      },
+      {
+        "label": "Practice family boundaries",
+        "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
+      }
+    ],
     "workflowStages": [
       "encounter",
       "diagnosis",
@@ -1513,7 +1535,8 @@
     "relatedTools": [
       "mse.html",
       "interview-circle.html",
-      "communication-practice.html"
+      "communication-practice.html",
+      "family-systems.html"
     ],
     "communicationCases": [
       "guardedness_privacy_001",
@@ -1535,6 +1558,10 @@
         {
           "label": "Practice guardedness",
           "href": "?tool=communication-practice.html&case=guardedness_privacy_001"
+        },
+        {
+          "label": "Practice family boundaries",
+          "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
         }
       ]
     }
@@ -1786,7 +1813,8 @@
       "cssrs.html",
       "violence.html",
       "decision-aids.html",
-      "communication-practice.html"
+      "communication-practice.html",
+      "family-systems.html"
     ],
     "workflowModes": [
       "ward",
@@ -1829,6 +1857,10 @@
         {
           "label": "Practice direct suicide questions",
           "href": "?tool=communication-practice.html&case=suicide_direct_question_001"
+        },
+        {
+          "label": "Map family safety roles",
+          "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
         }
       ]
     }
@@ -2531,10 +2563,15 @@
       {
         "label": "Practice family conflict",
         "href": "?tool=communication-practice.html&case=family_conflict_discharge_001"
+      },
+      {
+        "label": "Map discharge family roles",
+        "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
       }
     ],
     "relatedTools": [
-      "communication-practice.html"
+      "communication-practice.html",
+      "family-systems.html"
     ],
     "workflowModes": [
       "ward",
@@ -2565,6 +2602,10 @@
         {
           "label": "Practice family conflict",
           "href": "?tool=communication-practice.html&case=family_conflict_discharge_001"
+        },
+        {
+          "label": "Map discharge family roles",
+          "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
         }
       ]
     }
@@ -2597,10 +2638,28 @@
       ],
       "why": "Family psychoeducation has the strongest evidence for schizophrenia relapse prevention (OR 0.18 vs. treatment as usual; 90 RCTs, >10,000 patients). EFT is evidence-based for couples but is not the default for schizophrenia; a single meeting is below the therapeutic dose (≤2 sessions is ineffective); solution-focused therapy is useful when only one meeting is possible but does not have the relapse-prevention evidence base."
     },
-    "cta": {
-      "label": "Open the Family Meeting Playbook",
-      "href": "?page=family_playbook.md"
-    }
+    "cta": [
+      {
+        "label": "Open the Family Meeting Playbook",
+        "href": "?page=family_playbook.md"
+      },
+      {
+        "label": "Practice expressed-emotion reset",
+        "href": "?tool=family-systems.html&scenario=high_expressed_emotion_001"
+      }
+    ],
+    "relatedTools": [
+      "family-systems.html",
+      "communication-practice.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "family"
+    ],
+    "workflowStages": [
+      "family",
+      "communication"
+    ]
   },
   "family_playbook.md": {
     "read": 4,
@@ -2630,12 +2689,19 @@
       ],
       "why": "Phase 5 (close, last 10 min) anchors the meeting: recap the plan in the family's own words, name the follow-up, and hand over a written version. A meeting that ends without a shared next step loses its durability. Over-investing in information delivery at the expense of Phases 3 and 5 is the classic pitfall the page names."
     },
-    "cta": {
-      "label": "Open the Family Therapy Modalities page",
-      "href": "?page=family_modalities.md"
-    },
+    "cta": [
+      {
+        "label": "Open the Family Therapy Modalities page",
+        "href": "?page=family_modalities.md"
+      },
+      {
+        "label": "Practice family meeting prep",
+        "href": "?tool=family-systems.html&scenario=family_meeting_opening_001"
+      }
+    ],
     "relatedTools": [
-      "communication-practice.html"
+      "communication-practice.html",
+      "family-systems.html"
     ],
     "workflowModes": [
       "ward",
@@ -2662,6 +2728,10 @@
         {
           "label": "Practice opening a family meeting",
           "href": "?tool=communication-practice.html&case=family_meeting_opening_001"
+        },
+        {
+          "label": "Practice family meeting prep",
+          "href": "?tool=family-systems.html&scenario=family_meeting_opening_001"
         }
       ]
     }

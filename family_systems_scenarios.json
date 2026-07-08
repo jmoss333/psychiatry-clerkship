@@ -1,0 +1,317 @@
+{
+  "_note": "Fictional composite family/systems practice scenarios for inpatient psychiatry teaching. Do not include PHI. This data teaches conversation structure, collateral gathering, confidentiality boundaries, and supervised discharge planning; it is not patient-specific clinical advice.",
+  "scenarios": [
+    {
+      "id": "collateral_baseline_safety_001",
+      "title": "Collateral Call: Baseline And Safety",
+      "setting": "Before rounds or after admission",
+      "time": "5-8 min",
+      "learnerGoal": "Gather baseline, timeline, safety, adherence, and discharge-barrier data without turning the call into a cross-examination.",
+      "opening": "I am calling from the treatment team. I want to understand what has changed from baseline and what would need to be safer before discharge. I can listen to your concerns, and I will also protect the patient's confidentiality.",
+      "sections": {
+        "prepare": [
+          "Clarify what the patient permits you to share, or confirm a safety/legal exception with the team.",
+          "Know your goal before calling: baseline, timeline, risk, adherence, supports, barriers, or all of the above.",
+          "Start by listening before asking checklist questions."
+        ],
+        "ask": [
+          "What is this person like when they are doing well?",
+          "When did the change begin, and what was the first sign?",
+          "What have you seen that worries you about suicide, violence, substance use, confusion, or ability to care for self?",
+          "What medications, appointments, or prior treatments helped or failed?",
+          "What can family realistically do after discharge, and what cannot they do?"
+        ],
+        "say": [
+          "You may tell me anything you think the team should know. I may not be able to share every detail back.",
+          "Concrete examples help us more than labels. What did you see or hear?",
+          "Support is not the same as supervision. I want to be specific about what is realistic."
+        ],
+        "avoid": [
+          "Do not promise discharge, medication changes, or a family meeting outcome.",
+          "Do not use family as interpreters for confidential or high-risk material.",
+          "Do not document family conclusions without the examples behind them."
+        ],
+        "handoff": [
+          "Baseline: what changed and when.",
+          "Risk: what family observed, including means, threats, preparation, intoxication, or confusion.",
+          "Supports and limits: who can do what, what barriers remain, and what must be confirmed."
+        ],
+        "safety": [
+          "If imminent risk emerges, stop ordinary information-gathering and escalate to the supervising clinician.",
+          "Use the minimum necessary disclosure when family involvement is safety-driven.",
+          "Document permission, limits of confidentiality, and the clinical reason for collateral."
+        ]
+      },
+      "checks": [
+        {"id": "permission", "label": "Permission or safety/legal exception clarified"},
+        {"id": "baseline", "label": "Baseline and timeline obtained"},
+        {"id": "risk", "label": "Risk observations asked with concrete examples"},
+        {"id": "supports", "label": "Family capacity and limits specified"},
+        {"id": "handoff", "label": "Rounds handoff separates facts from impressions"}
+      ],
+      "linkedPages": ["exp_family.md", "pg_formulation.md", "ethics_legal.md"],
+      "communicationCases": ["collateral_questions_001"],
+      "evidenceIds": [],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "family_meeting_opening_001",
+      "title": "Open A Family Meeting",
+      "setting": "Early admission or discharge-planning meeting",
+      "time": "10 min setup",
+      "learnerGoal": "Set a clear shared goal, protect confidentiality, and make family perspective part of treatment rather than an afterthought.",
+      "opening": "Before we start, I want to name the goal for today: understand what happened, hear what each person is worried about, and leave with one shared next step. We will also be careful about what the patient wants shared.",
+      "sections": {
+        "prepare": [
+          "Ask the patient what they want shared, what they do not want shared, and what they hope the meeting accomplishes.",
+          "Assign roles: facilitator, content lead, observer, timekeeper, and person who closes the loop.",
+          "Choose one main meeting goal. Do not try to solve every family issue."
+        ],
+        "ask": [
+          "What are you most worried will happen after discharge?",
+          "What has helped during past crises?",
+          "What tends to make things worse at home?",
+          "What is one concrete thing each person can do, and one thing they cannot do?"
+        ],
+        "say": [
+          "I want to slow us down when we move from facts into blame.",
+          "We can name limits and still stay connected.",
+          "A useful plan names what family can do and what remains the treatment team's responsibility."
+        ],
+        "avoid": [
+          "Do not let education fill the entire meeting.",
+          "Do not allow the patient to be cross-examined.",
+          "Do not end without a shared next step and follow-up contact plan."
+        ],
+        "handoff": [
+          "Meeting goal and whether it was met.",
+          "Family concerns and expressed-emotion patterns observed.",
+          "Agreed safety/discharge roles and unresolved system tasks."
+        ],
+        "safety": [
+          "Pause if the meeting becomes coercive, threatening, or clinically destabilizing.",
+          "Use interpreters rather than family members for language access.",
+          "Clarify what can be shared before discussing diagnosis, risk, medications, or discharge."
+        ]
+      },
+      "checks": [
+        {"id": "patient_goal", "label": "Patient sharing preferences checked"},
+        {"id": "meeting_goal", "label": "One meeting goal named"},
+        {"id": "family_perspective", "label": "Family perspective heard before problem-solving"},
+        {"id": "roles", "label": "Concrete roles and limits named"},
+        {"id": "close", "label": "Meeting closed with shared next step"}
+      ],
+      "linkedPages": ["family_playbook.md", "exp_family.md", "family_modalities.md"],
+      "communicationCases": ["family_meeting_opening_001"],
+      "evidenceIds": [],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "discharge_barrier_map_001",
+      "title": "Discharge Barrier Map",
+      "setting": "Before discharge is presented as likely",
+      "time": "7 min",
+      "learnerGoal": "Turn 'family is supportive' into concrete roles, barriers, safety steps, and follow-up commitments.",
+      "opening": "Support matters, but we need to make it concrete. I want to map where the patient will be, who is available, what risks are secured, and what follow-up is already scheduled.",
+      "sections": {
+        "prepare": [
+          "Review current safety formulation and discharge criteria with the team.",
+          "Know whether family involvement is helpful, limited, or potentially harmful.",
+          "List assumptions that still need confirmation."
+        ],
+        "ask": [
+          "Where will the patient sleep the first night after discharge?",
+          "Who will be physically present, and during what hours?",
+          "Who can confirm medications, sharps, firearms, substances, or other lethal means are secured when relevant?",
+          "How will the patient get to follow-up, and is the appointment scheduled?",
+          "What would make family call the crisis line, outpatient team, or emergency services?"
+        ],
+        "say": [
+          "A safety plan works only if the environment can support it.",
+          "It is okay to say what you cannot safely provide.",
+          "We should not call this a plan until the key assumptions are confirmed."
+        ],
+        "avoid": [
+          "Do not equate caring with capacity.",
+          "Do not write 'family supportive' without specific tasks.",
+          "Do not rely on a phone number when an appointment should be scheduled."
+        ],
+        "handoff": [
+          "Housing, supervision, means safety, medication access, transportation, appointment, crisis steps.",
+          "What has been confirmed, what is still assumed, and who owns each remaining task."
+        ],
+        "safety": [
+          "Means-safety details require supervisor guidance and local policy.",
+          "Do not ask students to independently clear discharge.",
+          "If family says they cannot supervise safely, treat that as clinical data."
+        ]
+      },
+      "checks": [
+        {"id": "housing", "label": "First-night location confirmed"},
+        {"id": "supervision", "label": "Supervision capacity and limits specified"},
+        {"id": "means", "label": "Means-safety role clarified when relevant"},
+        {"id": "followup", "label": "Follow-up scheduled, not just recommended"},
+        {"id": "owner", "label": "Each unresolved barrier has an owner"}
+      ],
+      "linkedPages": ["exp_family.md", "pg_suicide.md", "doc_oral.md"],
+      "communicationCases": ["family_conflict_discharge_001"],
+      "evidenceIds": ["va-dod-suicide-cpg-2024"],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "high_expressed_emotion_001",
+      "title": "High Expressed Emotion In The Room",
+      "setting": "Family meeting with blame, criticism, or over-involvement",
+      "time": "5 min reset",
+      "learnerGoal": "Lower the emotional temperature while preserving the family's fear, grief, and need for information.",
+      "opening": "I can hear how much fear is in the room. I want to slow us down so we can turn that fear into a plan the patient and family can actually use.",
+      "sections": {
+        "prepare": [
+          "Expect criticism, grief, guilt, and exhaustion to appear as blame.",
+          "Plan a reset phrase before the meeting starts.",
+          "Ask your supervisor when to pause or end the meeting."
+        ],
+        "ask": [
+          "What are you most afraid will happen if nothing changes?",
+          "When have things gone even slightly better?",
+          "What would feel like a realistic first step, not a perfect solution?"
+        ],
+        "say": [
+          "I am going to pause us because the goal is not to decide who is at fault.",
+          "The intensity tells me this matters. Let us translate it into warning signs and next steps.",
+          "We can validate the fear without accepting blame as the treatment plan."
+        ],
+        "avoid": [
+          "Do not shame family for being emotional.",
+          "Do not debate every inaccurate statement in the moment.",
+          "Do not let one family member dominate the whole meeting."
+        ],
+        "handoff": [
+          "Expressed-emotion pattern observed: criticism, hostility, over-involvement, warmth, or protection.",
+          "Reset used and whether it worked.",
+          "Plan for psychoeducation, follow-up, or limiting contact if needed."
+        ],
+        "safety": [
+          "Stop the meeting if threats, coercion, intoxication, or clinical destabilization emerge.",
+          "Consider whether family involvement increases risk for this patient.",
+          "Debrief with staff after high-intensity meetings."
+        ]
+      },
+      "checks": [
+        {"id": "emotion", "label": "Fear/grief named before correction"},
+        {"id": "reset", "label": "Reset phrase used"},
+        {"id": "warning", "label": "Emotion translated into warning signs or needs"},
+        {"id": "balance", "label": "Patient dignity protected"},
+        {"id": "debrief", "label": "Team debrief planned"}
+      ],
+      "linkedPages": ["family_modalities.md", "family_playbook.md", "t_psychosis.md"],
+      "communicationCases": ["family_conflict_discharge_001"],
+      "evidenceIds": ["project-beta-deescalation-2012"],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "psychosis_family_psychoeducation_001",
+      "title": "Explain Psychosis To Family",
+      "setting": "First-episode or relapse psychoeducation",
+      "time": "8 min",
+      "learnerGoal": "Explain the syndrome without arguing about delusions, blaming family, or promising certainty too early.",
+      "opening": "The team is seeing symptoms that suggest psychosis, which means the person is experiencing things or beliefs that feel real and frightening. Our job is to reduce danger and distress while we keep checking medical, substance, mood, and stress contributors.",
+      "sections": {
+        "prepare": [
+          "Know what diagnosis is provisional versus established.",
+          "Ask what the patient permits the team to share.",
+          "Prepare one sentence about uncertainty and one sentence about what family can do."
+        ],
+        "ask": [
+          "What changes did you notice before admission?",
+          "What seems to increase fear or suspiciousness?",
+          "What helps the person feel safer without arguing about the belief?",
+          "What concerns do you have about medication, substances, sleep, or follow-up?"
+        ],
+        "say": [
+          "You do not have to agree with a belief to validate that the fear is real.",
+          "Sleep, substances, stress, medical issues, and medication adherence can all change relapse risk.",
+          "The most useful family response is calm, concrete, and non-argumentative."
+        ],
+        "avoid": [
+          "Do not tell family to prove the delusion wrong.",
+          "Do not imply family caused the illness.",
+          "Do not overstate the diagnosis before longitudinal data support it."
+        ],
+        "handoff": [
+          "Family understanding of the working diagnosis.",
+          "Relapse warning signs family noticed.",
+          "Medication, sleep, substance, and follow-up concerns."
+        ],
+        "safety": [
+          "Ask about weapons, threats, command hallucinations, victimized beliefs, and ability to seek help when indicated.",
+          "Use supervisor guidance for what can be shared without consent.",
+          "Escalate any imminent safety concern."
+        ]
+      },
+      "checks": [
+        {"id": "uncertainty", "label": "Provisional diagnosis named accurately"},
+        {"id": "warning_signs", "label": "Family warning signs obtained"},
+        {"id": "response", "label": "Non-argumentative family response taught"},
+        {"id": "risk", "label": "Safety concerns screened when relevant"},
+        {"id": "followup", "label": "Follow-up/support need identified"}
+      ],
+      "linkedPages": ["t_psychosis.md", "family_modalities.md", "exp_family.md"],
+      "communicationCases": ["psychosis_validation_001"],
+      "evidenceIds": [],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "family_involvement_boundaries_001",
+      "title": "When Family Involvement May Harm",
+      "setting": "Confidentiality, coercion, abuse, or high-conflict systems",
+      "time": "5 min supervisor huddle",
+      "learnerGoal": "Avoid the reflex that family involvement is always helpful; decide what contact is permitted, clinically useful, and safe.",
+      "opening": "Family involvement can be treatment, but not automatically. I want to clarify consent, safety, coercion, and what information would actually change care.",
+      "sections": {
+        "prepare": [
+          "Ask the patient privately who they want involved and who they do not want involved.",
+          "Screen for coercion, abuse, retaliation risk, restraining orders, custody/legal issues, and interpreter needs.",
+          "Clarify with the supervisor what can be shared and what can only be received."
+        ],
+        "ask": [
+          "Who helps you feel safer, and who makes things worse?",
+          "What are you worried might happen if we contact this person?",
+          "Is there anyone we should not call or should only call with you present?",
+          "What information from family would change the safety or discharge plan?"
+        ],
+        "say": [
+          "We can receive information without sharing private details back.",
+          "You can change your mind about who is involved unless a safety/legal exception applies.",
+          "Our goal is safety and care, not forcing a family conversation."
+        ],
+        "avoid": [
+          "Do not use family as interpreters.",
+          "Do not assume the loudest caller is the safest support.",
+          "Do not disclose diagnosis, risk, medications, or discharge plans without permission or a clear exception."
+        ],
+        "handoff": [
+          "Who may be contacted, who should not be contacted, and why.",
+          "What information can be received versus shared.",
+          "Safety risks related to family/system contact."
+        ],
+        "safety": [
+          "Escalate abuse, mandated reporting, Tarasoff/duty-to-protect, or imminent risk questions to the supervising clinician.",
+          "Use trained interpreters.",
+          "Document consent, refusal, safety exception, or local-policy rationale."
+        ]
+      },
+      "checks": [
+        {"id": "private", "label": "Patient asked privately about involvement"},
+        {"id": "coercion", "label": "Coercion/abuse/retaliation risk considered"},
+        {"id": "interpreter", "label": "Interpreter needs addressed"},
+        {"id": "share_receive", "label": "Receive vs share boundary clarified"},
+        {"id": "supervisor", "label": "Supervisor/local policy consulted for exceptions"}
+      ],
+      "linkedPages": ["ethics_legal.md", "cultural_psychiatry.md", "exp_family.md"],
+      "communicationCases": ["guardedness_privacy_001"],
+      "evidenceIds": [],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    }
+  ]
+}
