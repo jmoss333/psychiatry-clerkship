@@ -224,7 +224,7 @@ def build_search_index():
      "diagnostic-reasoning.html":"diagnostic reasoning workbench differential diagnosis problem representation illness script bayesian updating diagnostic humility anchoring premature closure syndrome formulation inpatient psychiatry case practice delirium catatonia mania psychosis substance trauma personality",
      "family-systems.html":"family systems practice collateral call family meeting discharge barrier map expressed emotion psychoeducation confidentiality boundaries means safety caregiver support inpatient psychiatry",
      "capacity.html":"decisional capacity informed consent refusal four abilities understand appreciate reason communicate",
-     "oral.html":"treatment team rounding prep rounds presentation oral one liner assessment plan handoff gather present practice timer",
+     "oral.html":"treatment team rounding prep rounds presentation oral one liner assessment plan handoff gather present practice timer collateral update 30 second sixty 60 second micro update",
      "violence.html":"violence risk aggression frst agitation safety prediction de-escalation",
      "cssrs.html":"columbia suicide severity rating scale cssrs suicidal ideation screening safety planning",
      "withdrawal.html":"withdrawal alcohol ciwa opioid cows detox benzodiazepine taper thiamine",

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [RC-META] tool="Treatment Team Rounding Prep" version="2.0" built="2026-06-28" category="clinical-skills" audience="trainee,ms3" settings="inpatient" time="15min" summary="Optional aid for treatment-team rounds: gather the right data before rounds, then present it crisply (the 3-minute oral presentation + practice timer). Fictional composites only; no PHI." -->
+<!-- [RC-META] tool="Treatment Team Rounding Prep" version="2.1" built="2026-07-08" category="clinical-skills" audience="trainee,ms3,resident" settings="inpatient" time="5-15min" summary="Optional aid for treatment-team rounds: gather the right data, present crisply, and rehearse 30-second collateral and 60-second rounds updates. Fictional composites only; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
 <title>Treatment Team Rounding Prep</title>
-<meta name="description" content="An optional aid for inpatient treatment-team rounds: gather the right data before rounds, then present it in three minutes — structure, live section cues, and a practice timer.">
+<meta name="description" content="An optional aid for inpatient treatment-team rounds: gather the right data before rounds, then present it in three minutes or rehearse focused 30-second collateral and 60-second rounds updates.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <style>
@@ -60,6 +60,15 @@
   .do b{color:var(--success)} .dont b{color:var(--danger)}
   .pearl{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);font-size:.9rem;margin-top:var(--sp3)}
   .pearl b{color:var(--warning)}
+  .modegrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp2);margin-bottom:var(--sp3)}
+  .modebtn{text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-md);padding:var(--sp3);font:inherit;cursor:pointer}
+  .modebtn.on{border-color:var(--accent);background:var(--accent-light);box-shadow:0 0 0 2px rgba(42,107,94,.10)}
+  .modebtn b{display:block;color:var(--accent-dark);font-family:var(--font-head);font-size:1.05rem;line-height:1.2;margin-bottom:2px}
+  .modebtn span{display:block;color:var(--text-mid,#64574b);font-size:.86rem;line-height:1.35}
+  .script{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--sp3);font-size:.94rem}
+  .script b{color:var(--accent-dark)}
+  .script code{white-space:normal;font-family:var(--font-body);font-weight:700;color:var(--primary-dark)}
+  @media(max-width:640px){.modegrid{grid-template-columns:1fr}}
   .disclaimer{background:var(--bg-alt);border:1px dashed var(--border);border-radius:var(--radius-md);padding:var(--sp3);font-size:.82rem;color:var(--text-mid,#64574b);margin-top:var(--sp4)}
   .ringwrap{display:flex;justify-content:center;margin:var(--sp2) 0 var(--sp1)}
   .ring{width:150px;height:150px;border-radius:50%;position:relative;transition:background .5s linear}
@@ -101,33 +110,62 @@ var STEPS=[
   {n:7,t:'Plan by problem',sec:30,d:'Problem-based, concrete next steps: meds, monitoring, milieu/family, disposition.',ex:'"1) Mania: resume lithium, recheck level. 2) Sleep: protect with scheduled meds. 3) Family meeting today. 4) Dispo: needs 1 more day of stability."'}
 ];
 var TARGET=STEPS.reduce(function(a,s){return a+s.sec},0);
+var MICRO=[
+  {key:'collateral',title:'30-sec collateral update',target:30,sub:'Use after a collateral call, family call, outpatient-clinician call, or nursing update.',script:'Source -> baseline -> timeline -> risk/discharge -> plan change',steps:[
+    {t:'Source + boundary',sec:5,d:'Who you spoke with and the consent/policy frame.',ex:'"I spoke with his sister with patient permission."'},
+    {t:'Baseline',sec:6,d:'What the patient is like when well.',ex:'"Baseline is organized, employed, and usually sleeps 7 hours."'},
+    {t:'Timeline',sec:6,d:'What changed and when.',ex:'"Sleep dropped 5 days ago, spending increased, then paranoia escalated."'},
+    {t:'Risk / discharge',sec:8,d:'What changes safety or disposition.',ex:'"Family can secure meds, but cannot supervise overnight."'},
+    {t:'Plan implication',sec:5,d:'One sentence on what this changes.',ex:'"This supports mania and makes discharge premature today."'}
+  ]},
+  {key:'rounds',title:'60-sec rounds update',target:60,sub:'Use for a daily patient update when the team already knows the admission story.',script:'Hospital day -> overnight -> one subjective/MSE change -> risk -> plan question',steps:[
+    {t:'Hospital day + problem',sec:8,d:'Orient the team immediately.',ex:'"Hospital day 4 for mania with psychosis."'},
+    {t:'Overnight data',sec:12,d:'Sleep, PRNs, safety events, vitals/labs only if relevant.',ex:'"Slept 5 hours, no IMs, accepted lithium and olanzapine."'},
+    {t:'Patient + MSE delta',sec:15,d:'One patient report and one observed change.',ex:'"Feels slower; speech is less pressured but grandiosity persists."'},
+    {t:'Risk update',sec:12,d:'What is safer, worse, or still unresolved.',ex:'"Violence risk is lower with sleep, but discharge risk remains high."'},
+    {t:'Plan question',sec:13,d:'End with the decision you need from the team.',ex:'"My question is whether to request limited collateral today."'}
+  ]}
+];
 function fmt(s){var m=Math.floor(s/60),x=s%60;return m+':'+(x<10?'0':'')+x;}
 
 function App(){
   var tab=useState('gather'); var setTab=tab[1]; tab=tab[0];
   var sec=useState(0); var setSec=sec[1]; sec=sec[0];
+  var microKey=useState('collateral'); var setMicroKey=microKey[1]; microKey=microKey[0];
+  var microSec=useState(0); var setMicroSec=microSec[1]; microSec=microSec[0];
+  var microRun=useState(false); var setMicroRun=microRun[1]; microRun=microRun[0];
   var run=useState(false); var setRun=run[1]; run=run[0];
   var done=useState({}); var setDone=done[1]; done=done[0];
+  var microDone=useState({}); var setMicroDone=microDone[1]; microDone=microDone[0];
   var prep=useState({}); var setPrep=prep[1]; prep=prep[0];
   var ref=useRef(null);
+  var microRef=useRef(null);
   useEffect(function(){ if(run){ ref.current=setInterval(function(){ setSec(function(s){return s+1}); },1000);} return function(){ if(ref.current) clearInterval(ref.current);} },[run]);
+  useEffect(function(){ if(microRun){ microRef.current=setInterval(function(){ setMicroSec(function(s){return s+1}); },1000);} return function(){ if(microRef.current) clearInterval(microRef.current);} },[microRun]);
   function activeStep(){ var acc=0; for(var i=0;i<STEPS.length;i++){ acc+=STEPS[i].sec; if(sec<acc) return i;} return STEPS.length-1; }
+  function activeMicroStep(steps){ var acc=0; for(var i=0;i<steps.length;i++){ acc+=steps[i].sec; if(microSec<acc) return i;} return steps.length-1; }
   function togglePrep(k){ var x=Object.assign({},prep); x[k]=!x[k]; setPrep(x); }
   function toggleDone(n){ var x=Object.assign({},done); x[n]=!x[n]; setDone(x); }
+  function toggleMicroDone(k){ var x=Object.assign({},microDone); x[k]=!x[k]; setMicroDone(x); }
+  function pickMicro(k){ setMicroRun(false); setMicroSec(0); setMicroDone({}); setMicroKey(k); }
   var over=sec>TARGET; var pct=Math.min(100,(sec/TARGET)*100); var cur=activeStep();
   var deg=Math.min(360,(sec/TARGET)*360); var remain=Math.max(0,TARGET-sec);
   var cue=over?'Over time — wrap up and stop.':('Now: '+STEPS[cur].t+'  ·  target '+fmt(TARGET-sec)+' left');
+  var micro=MICRO.filter(function(m){return m.key===microKey})[0]||MICRO[0];
+  var microCur=activeMicroStep(micro.steps), microOver=microSec>micro.target, microPct=Math.min(100,(microSec/micro.target)*100), microDeg=Math.min(360,(microSec/micro.target)*360), microRemain=Math.max(0,micro.target-microSec);
+  var microCue=microOver?'Over time — stop and trim one sentence.':('Now: '+micro.steps[microCur].t+' · '+fmt(microRemain)+' left');
 
   var header=e('div',{key:'h'},
     e('div',{className:'kicker'},'Clinical Skills · optional aid'),
     e('h1',null,'Treatment Team Rounding Prep'),
     e('span',{className:'opt'},'Optional — use it if it helps'),
-    e('p',{className:'sub'},'Walk into treatment-team rounds with the right data, then present it crisply. Step 1: gather. Step 2: present (the 3-minute structure). Step 3: rehearse against the timer. Nothing here is required — it is a scaffold you can lean on while you build the habit.')
+    e('p',{className:'sub'},'Walk into treatment-team rounds with the right data, then present it crisply. Gather, present, rehearse the 3-minute structure, or practice a focused 30-second collateral update and 60-second rounds update. Nothing here is required — it is a scaffold you can lean on while you build the habit.')
   );
   var tabs=e('div',{className:'tabs',key:'t'},
     e('button',{className:'tab'+(tab==='gather'?' on':''),onClick:function(){setTab('gather')}},'1 · Gather'),
     e('button',{className:'tab'+(tab==='present'?' on':''),onClick:function(){setTab('present')}},'2 · Present'),
-    e('button',{className:'tab'+(tab==='practice'?' on':''),onClick:function(){setTab('practice')}},'3 · Practice timer')
+    e('button',{className:'tab'+(tab==='practice'?' on':''),onClick:function(){setTab('practice')}},'3 · Practice timer'),
+    e('button',{className:'tab'+(tab==='micro'?' on':''),onClick:function(){setTab('micro')}},'4 · Micro updates')
   );
 
   var gather=e('div',{key:'g'},
@@ -201,9 +239,47 @@ function App(){
     )
   );
 
+  var microView=e('div',{key:'m'},
+    e('p',{className:'sub'},'Two short formats for the moments students actually get interrupted on rounds: a 30-second collateral update and a 60-second daily rounds update. Say them out loud; do not type patient information here.'),
+    e('div',{className:'modegrid'},
+      MICRO.map(function(m){return e('button',{type:'button',className:'modebtn'+(m.key===micro.key?' on':''),key:m.key,onClick:function(){pickMicro(m.key)}},e('b',null,m.title),e('span',null,m.sub));})
+    ),
+    e('div',{className:'card'},
+      e('h3',{style:{marginTop:0}},micro.title),
+      e('p',{className:'sub',style:{marginTop:0}},micro.sub),
+      e('div',{className:'script'},e('b',null,'Structure: '),e('code',null,micro.script)),
+      e('div',{className:'ringwrap'},
+        e('div',{className:'ring'+(microOver?' over':''),role:'img',
+          'aria-label':micro.title+': '+fmt(microSec)+' elapsed of a '+fmt(micro.target)+' target'+(microOver?', over time':', '+fmt(microRemain)+' remaining'),
+          style:{background:'conic-gradient('+(microOver?'var(--danger)':'var(--accent)')+' '+microDeg+'deg, var(--primary-light) 0deg)'}},
+          e('div',{className:'ringtxt'},
+            e('div',{className:'ringtime'}, microOver?('+'+fmt(microSec-micro.target)):fmt(microRemain)),
+            e('div',{className:'ringlbl'}, microOver?'over time':'left')))
+      ),
+      e('div',{className:'ringtot'}, fmt(microSec)+' / '+fmt(micro.target)+' elapsed'),
+      e('div',{className:'bar'+(microOver?' over':'')}, e('div',{style:{width:microPct+'%'}})),
+      e('div',{className:'cue'+(microOver?' over':'')}, microCue),
+      e('div',{className:'row'},
+        e('button',{className:'btn btn-primary',onClick:function(){setMicroRun(!microRun)}}, microRun?'Pause':(microSec?'Resume':'Start')),
+        e('button',{className:'btn btn-ghost',onClick:function(){setMicroRun(false);setMicroSec(0);setMicroDone({});}},'Reset'))
+    ),
+    e('div',{className:'card'},
+      e('p',{className:'sub',style:{marginTop:0}},'Tick each section as you say it. The highlighted line is where this update should be right now.'),
+      micro.steps.map(function(s,i){
+        var id=micro.key+'-'+i, st=microDone[id]?'done':(microRun?(i<microCur?'done':(i===microCur?'current':'future')):'future');
+        return e('div',{className:'step'+(i===microCur&&microRun?' active':'')+(microDone[id]?' done':''),key:id,onClick:function(){toggleMicroDone(id)},style:{cursor:'pointer'}},
+          e('span',{style:{display:'flex',alignItems:'center',gap:'9px'}},
+            e('span',{className:'sdot '+st,title:st==='current'?'on now':(st==='done'?'covered':'upcoming')}),
+            e('span',{className:'box'+(microDone[id]?' on':'')}, microDone[id]?'✓':'')),
+          e('div',null, e('h3',null,s.t), e('div',{className:'d'},s.d), e('span',{className:'ex'},s.ex)),
+          e('span',{className:'t'},'~'+s.sec+'s'));
+      })
+    )
+  );
+
   return e('div',{className:'shell'},
     header, tabs,
-    tab==='gather'?gather:(tab==='present'?present:practice),
+    tab==='gather'?gather:(tab==='present'?present:(tab==='practice'?practice:microView)),
     e('div',{className:'disclaimer'},'Optional educational aid for clinical trainees. Examples are fictional composites — no protected health information. The format is a scaffold; follow your team and institution conventions.'),
     e('footer',null,'Treatment Team Rounding Prep · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
   );

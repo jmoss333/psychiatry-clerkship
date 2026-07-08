@@ -114,6 +114,45 @@ Example:
 > he refuses family collateral. My question is whether today is the right time to
 > revisit collateral with a limited call."
 
+## Two Micro-Updates To Practice Out Loud
+
+Use these when the team already knows the admission story and needs the update,
+not the whole chart.
+
+### 30-Second Collateral Update
+
+Structure:
+
+1. Source and permission/policy frame.
+2. Baseline.
+3. Timeline.
+4. Risk or discharge data.
+5. What changes in the plan.
+
+Template:
+
+> "I spoke with [source/role] [with permission / under the team's safety
+> rationale]. Baseline is [X]. The key timeline point is [Y]. Risk/discharge
+> information is [Z]. This changes our plan because [next decision]."
+
+### 60-Second Rounds Update
+
+Structure:
+
+1. Hospital day and active problem.
+2. Overnight events: sleep, PRNs, safety, vitals/labs if relevant.
+3. One patient-reported point and one MSE change.
+4. Risk update.
+5. Plan question.
+
+Template:
+
+> "Hospital day [X] for [problem]. Overnight [sleep/PRNs/safety]. Today the
+> patient reports [one point], and MSE shows [one change]. Risk is [better/worse/
+> unchanged] because [reason]. My plan question is [decision needed]."
+
+Practice both in the [Treatment Team Rounding Prep](?tool=oral.html) tool.
+
 ## Oral Case Presentation Rubric
 
 | Skill | Strong Performance |
