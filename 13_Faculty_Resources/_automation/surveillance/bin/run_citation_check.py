@@ -43,6 +43,8 @@ def classify(url, retries=2):
     change_type in {broken-link, soft-404, redirect, tls-error}.
     Follows redirects but reports a *permanent* (301/308) redirect as actionable.
     429/503 are treated as transient (ok) — never flag rate-limiting as broken.
+    Other 4xx/5xx responses are retried before flagging so a brief CDN edge
+    miss does not immediately become a P0 source outage.
     """
     last = None
     for attempt in range(retries + 1):
@@ -64,6 +66,10 @@ def classify(url, retries=2):
                 return False, "redirect", code, loc, "permanent redirect"
             if code in (302, 303, 307):
                 return True, None, code, (e.headers.get("Location") if e.headers else None), "temporary redirect"
+            if 400 <= code < 600 and attempt < retries:
+                last = ("http", code)
+                time.sleep(1.0 * (attempt + 1))
+                continue
             return False, "broken-link", code, None, "http %s" % code
         except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
             reason = getattr(e, "reason", e)

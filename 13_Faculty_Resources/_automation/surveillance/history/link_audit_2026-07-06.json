@@ -41,8 +41,9 @@
       "14_Tracks/Resident/adv_psychopharmacology.md",
       "14_Tracks/Resident/canon_200.md"
     ],
-    "recommended_action": "Authoritative source URL for `fda-drug-safety` is http 404. Update the `url` in source_registry.yaml (and any citing pages), then re-run. This source feeds guideline surveillance \u2014 fixing it restores monitoring.",
-    "status": "issue-open",
+    "recommended_action": "Live recheck on 2026-07-08 returned HTTP 200 for the FDA Drug Safety Communications page. No curriculum content change or source URL update was warranted; July 6 404 was treated as transient/stale.",
+    "status": "actioned",
+    "resolution": "false-positive: source URL live on 2026-07-08 HEAD/GET recheck",
     "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/124"
   },
   {

@@ -12,7 +12,7 @@
 #   - severity_default seeds the finding's severity; REVIEW_RULES.md can escalate.
 
 version: 1
-updated: 2026-07-03
+updated: 2026-07-08
 owner: "Joshua Moss, MD"
 
 defaults:
@@ -35,8 +35,8 @@ sources:
     cadence: monthly
     watch_for: ["boxed warning", "contraindication", "REMS", "withdrawal", "recall"]
     affects_hint: ["05_Psychopharmacology/**"]
-    verified: false
-    notes: Highest patient-safety yield. Pair with drug-label checks for teaching meds.
+    verified: true
+    notes: Highest patient-safety yield. Pair with drug-label checks for teaching meds. Live HEAD/GET recheck returned 200 on 2026-07-08; July 6 404 treated as transient/stale.
 
   - id: clozapine-rems
     name: Clozapine REMS Program
