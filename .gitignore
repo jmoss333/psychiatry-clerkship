@@ -59,3 +59,7 @@ node_modules/
 # ---- Scratch ----
 *.tmp
 *.bak
+
+# ---- Generated Adobe packet export data ----
+/outputs/adobe_packet_exports/*.csv
+/outputs/adobe_packet_exports/*.json
