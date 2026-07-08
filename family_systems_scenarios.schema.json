@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "family_systems_scenarios",
+  "description": "Fictional composite family/collateral/systems practice scenarios for the clerkship SPA. Runtime state must remain anonymous checklist state only.",
+  "type": "object",
+  "required": ["scenarios"],
+  "properties": {
+    "_note": { "type": "string" },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "setting",
+          "time",
+          "learnerGoal",
+          "opening",
+          "sections",
+          "checks",
+          "linkedPages",
+          "communicationCases",
+          "evidenceIds",
+          "facultyReview"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "title": { "type": "string" },
+          "setting": { "type": "string" },
+          "time": { "type": "string" },
+          "learnerGoal": { "type": "string" },
+          "opening": { "type": "string" },
+          "sections": {
+            "type": "object",
+            "required": ["prepare", "ask", "say", "avoid", "handoff", "safety"],
+            "properties": {
+              "prepare": { "$ref": "#/definitions/stringList" },
+              "ask": { "$ref": "#/definitions/stringList" },
+              "say": { "$ref": "#/definitions/stringList" },
+              "avoid": { "$ref": "#/definitions/stringList" },
+              "handoff": { "$ref": "#/definitions/stringList" },
+              "safety": { "$ref": "#/definitions/stringList" }
+            },
+            "additionalProperties": false
+          },
+          "checks": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id", "label"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+                "label": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "linkedPages": { "type": "array", "items": { "type": "string" } },
+          "communicationCases": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9_]+$" } },
+          "evidenceIds": { "type": "array", "items": { "type": "string" } },
+          "facultyReview": {
+            "type": "object",
+            "required": ["status"],
+            "properties": {
+              "status": { "type": "string", "enum": ["draft", "pending", "reviewed", "retired"] },
+              "reviewer": { "type": "string" },
+              "lastReviewed": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "definitions": {
+    "stringList": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}
