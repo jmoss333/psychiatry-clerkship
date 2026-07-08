@@ -79,9 +79,10 @@
       "14_Tracks/Resident/adv_psychopharmacology.md",
       "14_Tracks/Resident/canon_200.md"
     ],
-    "recommended_action": "Review Spravato (esketamine) REMS; if guidance changed, update the affected teaching page(s) and re-stamp reviewed.json.",
-    "status": "issue-open",
-    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/91"
+    "recommended_action": "Spravato REMS remains active. The original landing page returns HTTP 200 with an empty body to simple fetches; surveillance now monitors the official REMS Program Overview PDF instead.",
+    "status": "actioned",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/91",
+    "resolution": "source-url-refreshed: switched Spravato REMS monitoring to official REMS Program Overview PDF on 2026-07-08"
   },
   {
     "finding_id": "aacap-parameters::removed::a4030c90bee637b5",
