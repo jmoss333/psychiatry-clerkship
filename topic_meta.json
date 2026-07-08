@@ -2881,7 +2881,31 @@
     "workflowStages": [
       "family",
       "communication"
-    ]
+    ],
+    "communicationCases": [
+      "family_meeting_opening_001",
+      "collateral_questions_001",
+      "family_conflict_discharge_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Before inviting family work, ask what the patient wants help explaining, what the family is worried about, and whether family involvement is safe and welcome.",
+      "mse": "Notice interactional data: criticism, warmth, emotional over-involvement, guardedness, shame, and the patient's response to family presence.",
+      "safety": "Family involvement must respect consent, confidentiality, violence risk, coercion, and local policy; do not use relatives as substitutes for clinical supervision or crisis response.",
+      "say": "Name the family intervention in ordinary language: 'This is a structured meeting to lower stress, agree on warning signs, and make the discharge plan realistic.'",
+      "collateral": "Gather timeline, baseline functioning, relapse signatures, adherence barriers, access to lethal means, caregiver capacity, and what has made conflict better or worse.",
+      "rounds": "Report one family-system finding that changes the plan: expressed emotion, discharge feasibility, safety environment, or who needs the next call.",
+      "exam": "Know that family psychoeducation has the strongest relapse-prevention evidence in schizophrenia and requires more than one brief meeting.",
+      "actions": [
+        {
+          "label": "Practice opening a family meeting",
+          "href": "?tool=communication-practice.html&case=family_meeting_opening_001"
+        },
+        {
+          "label": "Use the family systems tool",
+          "href": "?tool=family-systems.html"
+        }
+      ]
+    }
   },
   "family_playbook.md": {
     "read": 4,
@@ -3068,6 +3092,53 @@
     "cta": {
       "label": "Open the Acute Consult module",
       "href": "?page=exp_consult.md"
+    },
+    "workflowStages": [
+      "safety",
+      "treatment",
+      "family",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "family",
+      "shelf"
+    ],
+    "relatedTools": [
+      "decision-aids.html",
+      "active-recall.html",
+      "question-bank-practice.html",
+      "review.html",
+      "family-systems.html"
+    ],
+    "communicationCases": [
+      "suicide_direct_question_001",
+      "family_conflict_discharge_001",
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Use one evidence question from today's patient: What changes safety, disposition, medication choice, or family counseling?",
+      "mse": "Separate observable inpatient outcomes (agitation, sleep, participation, delirium signs) from symptom labels and trial endpoints.",
+      "safety": "Treat guideline and trial summaries as teaching support only; confirm orders, observation level, legal steps, and discharge requirements with the attending and local policy.",
+      "say": "Translate the evidence into one plain-language sentence a patient or family could understand, without overstating certainty.",
+      "collateral": "Ask collateral questions that affect the evidence-based plan: prior response, adherence barriers, safety environment, firearms/ligatures, family capacity, and follow-up realism.",
+      "rounds": "Bring one trial, guideline, or source-backed number only if it changes the plan; otherwise keep the presentation clinically focused.",
+      "exam": "Link each landmark finding to a shelf-style distinction: delirium treatment, suicide prevention, capacity, family psychoeducation, or risk prediction limits.",
+      "actions": [
+        {
+          "label": "Open decision aids",
+          "href": "?tool=decision-aids.html"
+        },
+        {
+          "label": "Review active recall",
+          "href": "?tool=active-recall.html&topic=evidence"
+        },
+        {
+          "label": "Practice family discharge conflict",
+          "href": "?tool=communication-practice.html&case=family_conflict_discharge_001"
+        }
+      ]
     }
   },
   "protocol_library.md": {
@@ -3121,7 +3192,51 @@
     }
   },
   "welcome.md": {
-    "read": 3
+    "read": 3,
+    "tldr": "Start with orientation, then use Today / Progress for repeat visits — the hub is meant to answer what to do before rounds, after rounds, before leaving, and before exam study.",
+    "points": [
+      "First visit: open the orientation packet and learn the safety/supervision boundaries before using bedside tools.",
+      "Repeat visits: use Today / Progress to choose one ward task, one practice drill, and one review item.",
+      "Nothing here replaces supervision; the hub should help you ask better questions and escalate earlier."
+    ],
+    "workflowStages": [
+      "encounter",
+      "team",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "review.html",
+      "communication-practice.html",
+      "oral.html"
+    ],
+    "communicationCases": [
+      "guardedness_privacy_001",
+      "suicide_direct_question_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Before you open a patient page, ask what you need right now: orientation, bedside action, communication rehearsal, rounds prep, or shelf review.",
+      "mse": "Use the MSE tool when you need language for what you actually observed rather than a generic descriptor.",
+      "safety": "If the question is immediate suicide, violence, withdrawal, delirium, catatonia, or capacity, escalate to supervision before studying around it.",
+      "say": "I am using the hub to prepare my questions and presentation, but I will bring safety or treatment decisions to the supervising team.",
+      "collateral": "Keep patient identifiers out of notes, tools, search, AI, or exports; use fictional or fully de-identified practice only.",
+      "rounds": "Pick one page, one tool, and one question to bring to the team rather than trying to read the whole library.",
+      "exam": "Use shelf mode and daily review for retrieval practice; use patient pages to organize the facts.",
+      "actions": [
+        {
+          "label": "Open orientation",
+          "href": "?page=orientation.md"
+        },
+        {
+          "label": "Open daily review",
+          "href": "?tool=review.html"
+        }
+      ]
+    }
   },
   "orientation.md": {
     "read": 5,
@@ -3193,6 +3308,48 @@
     "cta": {
       "label": "Open the Weekly Reading Map",
       "href": "?page=reading_map.md"
+    },
+    "workflowStages": [
+      "encounter",
+      "diagnosis",
+      "safety",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "review.html",
+      "active-recall.html",
+      "question-bank-practice.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "suicide_direct_question_001",
+      "psychosis_validation_001",
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Pick the next core reading by the patient problem in front of you: safety, diagnosis, medication, family/system, or formulation.",
+      "mse": "Pair each diagnosis reading with one observed MSE feature you can describe on rounds.",
+      "safety": "Read the acute/safety spine first when the ward problem involves suicide, agitation, delirium, withdrawal, catatonia, capacity, or violence.",
+      "say": "I am going to read the page that matches this patient's immediate clinical question, then bring one uncertainty back to rounds.",
+      "collateral": "Use readings to sharpen collateral questions: baseline, timeline, adherence, family role, and discharge feasibility.",
+      "rounds": "Turn each reading into one sentence you can use in a patient presentation or plan.",
+      "exam": "After reading, test the same topic with active recall or practice questions within 24 hours.",
+      "actions": [
+        {
+          "label": "Open weekly reading map",
+          "href": "?page=reading_map.md"
+        },
+        {
+          "label": "Open active recall",
+          "href": "?tool=active-recall.html"
+        }
+      ]
     }
   },
   "week1.md": {
@@ -3555,6 +3712,48 @@
     "cta": {
       "label": "Open Week 1",
       "href": "?page=week1.md"
+    },
+    "workflowStages": [
+      "encounter",
+      "communication",
+      "family",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "review.html",
+      "active-recall.html",
+      "communication-practice.html",
+      "family-systems.html"
+    ],
+    "communicationCases": [
+      "guardedness_privacy_001",
+      "family_meeting_opening_001",
+      "collateral_questions_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "For the current week, identify the skill anchor, one patient-linked reading, and one observable task you can actually do on the unit.",
+      "mse": "Use the weekly focus to decide what part of the MSE deserves extra attention this week.",
+      "safety": "When a weekly task touches risk, capacity, withdrawal, delirium, catatonia, or family safety, do it with supervision rather than as a solo checklist.",
+      "say": "This week I am practicing one clinical behavior, not trying to read everything.",
+      "collateral": "Use the family/systems weeks to practice permission, baseline questions, and discharge feasibility with supervision.",
+      "rounds": "Bring one weekly reading into rounds as a clinical question, not a literature summary.",
+      "exam": "The reading map is a spaced sequence; pair each week with review cards or one question-bank session.",
+      "actions": [
+        {
+          "label": "Open Week 1",
+          "href": "?page=week1.md"
+        },
+        {
+          "label": "Open daily review",
+          "href": "?tool=review.html"
+        }
+      ]
     }
   },
   "osce.md": {
@@ -3749,6 +3948,45 @@
     "cta": {
       "label": "Open the Podcast Library",
       "href": "?page=podcast_library.md"
+    },
+    "workflowStages": [
+      "family",
+      "communication",
+      "treatment"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "5min"
+    ],
+    "relatedTools": [
+      "family-systems.html",
+      "communication-practice.html",
+      "reflection.html"
+    ],
+    "communicationCases": [
+      "family_meeting_opening_001",
+      "medication_ambivalence_001",
+      "collateral_questions_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Pick one patient or family question first; then choose a book that fits their stage, literacy, culture, and immediate clinical need.",
+      "mse": "Use narratives to understand meaning, shame, identity, ambivalence, and family burden rather than only diagnostic facts.",
+      "safety": "Do not present a book as treatment, crisis care, or a substitute for the team; avoid recommendations that could increase shame or conflict.",
+      "say": "Offer resources with permission: 'Some families find this useful; would it be okay if I shared it as one optional support?'",
+      "collateral": "Ask whether the family prefers practical guides, lived-experience narratives, or brief handouts before recommending anything.",
+      "rounds": "Mention a book recommendation only when it supports psychoeducation, engagement, or discharge planning.",
+      "exam": "Link books to clinical themes: LEAP and anosognosia, CRAFT and substance use, family burden, trauma narratives, and stigma.",
+      "actions": [
+        {
+          "label": "Practice medication ambivalence",
+          "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+        },
+        {
+          "label": "Open family systems",
+          "href": "?tool=family-systems.html"
+        }
+      ]
     }
   },
   "podcast_library.md": {
@@ -3762,6 +4000,45 @@
     "cta": {
       "label": "Open the Book Library",
       "href": "?page=book_library.md"
+    },
+    "workflowStages": [
+      "communication",
+      "treatment",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "active-recall.html",
+      "review.html",
+      "communication-practice.html",
+      "oral.html"
+    ],
+    "communicationCases": [
+      "guardedness_privacy_001",
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Start from a live clinical question, then choose one short episode or clip that helps you ask a better question today.",
+      "mse": "Use interview and alliance episodes to improve observation of affect, stance, defenses, rupture, and the patient's experience of the interview.",
+      "safety": "Do not listen during patient care or use podcast content as a protocol; confirm safety and medication decisions with faculty and local standards.",
+      "say": "Convert what you learn into one patient-centered phrase or one question you will try on the unit.",
+      "collateral": "Use collateral-focused episodes to sharpen what you ask and what you avoid disclosing without consent.",
+      "rounds": "Bring one concise learning point when it improves the assessment, formulation, or medication conversation.",
+      "exam": "Use podcast notes as an entry point, then test yourself with active recall or the question bank.",
+      "actions": [
+        {
+          "label": "Practice a communication drill",
+          "href": "?tool=communication-practice.html"
+        },
+        {
+          "label": "Open active recall",
+          "href": "?tool=active-recall.html"
+        }
+      ]
     }
   },
   "landmark_trials.md": {
@@ -3775,6 +4052,42 @@
     "cta": {
       "label": "Open the High-Yield Rounds Questions",
       "href": "?page=rounds_questions.md"
+    },
+    "workflowStages": [
+      "exam",
+      "diagnosis",
+      "safety",
+      "treatment"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "active-recall.html",
+      "review.html",
+      "question-bank-practice.html",
+      "oral.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Choose the paper that answers the clinical problem in front of you: capacity, catatonia, lithium-suicide, safety planning, or diagnostic validity.",
+      "mse": "Separate what the study measured from what you observed at bedside; do not let a trial result replace the individual assessment.",
+      "safety": "Use safety papers to support supervision and documentation, not to independently clear or detain a patient.",
+      "say": "Translate one landmark finding into a plain-language explanation only when it helps shared decision-making.",
+      "collateral": "Use paper themes to guide collateral questions about timeline, prior response, safety environment, and treatment adherence.",
+      "rounds": "Offer a 20-second evidence pearl when it changes the differential, risk formulation, or next step.",
+      "exam": "Pair each audio with its active recall deck, then answer one question bank item on the same concept.",
+      "actions": [
+        {
+          "label": "Open active recall",
+          "href": "?tool=active-recall.html&topic=landmark"
+        },
+        {
+          "label": "Open question bank practice",
+          "href": "?tool=question-bank-practice.html"
+        }
+      ]
     }
   },
   "rounds_questions.md": {
@@ -3836,6 +4149,42 @@
     "cta": {
       "label": "Open the Orientation Packet",
       "href": "?page=orientation.md"
+    },
+    "workflowStages": [
+      "treatment",
+      "communication",
+      "team"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min"
+    ],
+    "relatedTools": [
+      "reflection.html",
+      "communication-practice.html",
+      "oral.html"
+    ],
+    "communicationCases": [
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask whether anxiety, insomnia, pain, autonomic arousal, or somatic distress are clinically relevant before considering an OPP frame.",
+      "mse": "Observe posture, tension, breathing, psychomotor activation, and distress while keeping the psychiatric assessment primary.",
+      "safety": "OMM is adjunctive here; it does not replace evidence-based psychiatry, medical workup, emergency care, or attending supervision.",
+      "say": "Ask permission before any body-based discussion or intervention and describe it as optional supportive care.",
+      "collateral": "Clarify prior osteopathic care, trauma history, touch preferences, pain history, and what has helped regulate distress.",
+      "rounds": "Document osteopathic reasoning briefly when it changes the assessment or plan, and defer technique details to trained faculty.",
+      "exam": "Know the competency frame: structural exam, autonomic rationale, adjunctive role, and limits of the evidence base.",
+      "actions": [
+        {
+          "label": "Practice an ambivalence conversation",
+          "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+        },
+        {
+          "label": "Open reflection prompts",
+          "href": "?tool=reflection.html"
+        }
+      ]
     }
   },
   "rotation.md": {
@@ -3849,6 +4198,53 @@
     "cta": {
       "label": "Open Evidence-Based Inpatient Psychiatry",
       "href": "?page=evidence_inpatient.md"
+    },
+    "workflowStages": [
+      "safety",
+      "diagnosis",
+      "team",
+      "family"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "family",
+      "5min"
+    ],
+    "relatedTools": [
+      "oral.html",
+      "diagnostic-reasoning.html",
+      "family-systems.html",
+      "communication-practice.html",
+      "decision-aids.html"
+    ],
+    "communicationCases": [
+      "collateral_questions_001",
+      "family_conflict_discharge_001",
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Anchor each week to one resident-level job: stabilize acute safety, sharpen diagnosis, manage systems/legal work, then lead and teach.",
+      "mse": "Track how MSE findings evolve across the admission and how they change level of care, medications, privileges, and discharge readiness.",
+      "safety": "Escalate early for suicide, violence, withdrawal, delirium, catatonia, capacity, seclusion/restraint, and involuntary-treatment questions.",
+      "say": "Practice giving patients and families a resident-level explanation of the plan that is clear, bounded, and aligned with attending supervision.",
+      "collateral": "Make collateral a daily workflow: baseline, risk, medication history, prior admissions, family capacity, and discharge barriers.",
+      "rounds": "Lead with an assessment that names uncertainty, risk, and the next decision the team must make.",
+      "exam": "Use the four-week map to link ward cases to board-style concepts without letting exam prep crowd out clinical ownership.",
+      "actions": [
+        {
+          "label": "Open diagnostic reasoning",
+          "href": "?tool=diagnostic-reasoning.html"
+        },
+        {
+          "label": "Practice collateral questions",
+          "href": "?tool=communication-practice.html&case=collateral_questions_001"
+        },
+        {
+          "label": "Open oral presentation coach",
+          "href": "?tool=oral.html"
+        }
+      ]
     }
   },
   "adv_psychopharm.md": {
@@ -3883,6 +4279,45 @@
     "cta": {
       "label": "Open the Psychopharmacology Primer",
       "href": "?page=psychopharm_primer.md"
+    },
+    "workflowStages": [
+      "treatment",
+      "safety",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "shelf"
+    ],
+    "relatedTools": [
+      "decision-aids.html",
+      "communication-practice.html",
+      "screeners.html",
+      "withdrawal.html",
+      "review.html"
+    ],
+    "communicationCases": [
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Before escalating, verify the measurement claim: adequate dose, adequate duration, adherence, diagnosis, comorbidity, and a repeated symptom scale.",
+      "mse": "Tie medication changes to target symptoms and observed function, not only the diagnosis name.",
+      "safety": "Own monitoring at order entry: ANC, bowel regimen, metabolic labs, QTc, lithium renal/thyroid/PTH, pregnancy considerations, withdrawal risks, and local protocols.",
+      "say": "Explain escalation plainly: what failed, why this next step is different, what monitoring protects against, and what the patient can refuse or ask.",
+      "collateral": "Ask about prior trials, side effects, adherence barriers, smoking changes, constipation, access, family concerns, and outpatient monitoring feasibility.",
+      "rounds": "Present the medication plan as target symptom, evidence rationale, safety monitoring, and contingency.",
+      "exam": "Know high-yield thresholds and first-line failures: clozapine after two adequate antipsychotic trials, ECT indications, lithium monitoring, serotonin syndrome vs NMS.",
+      "actions": [
+        {
+          "label": "Open decision aids",
+          "href": "?tool=decision-aids.html"
+        },
+        {
+          "label": "Practice medication ambivalence",
+          "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+        }
+      ]
     }
   },
   "cl_reference.md": {
@@ -3925,6 +4360,49 @@
     "cta": {
       "label": "Open Advanced Psychopharmacology",
       "href": "?page=adv_psychopharm.md"
+    },
+    "workflowStages": [
+      "safety",
+      "treatment",
+      "team"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min"
+    ],
+    "relatedTools": [
+      "decision-aids.html",
+      "bfcrs.html",
+      "withdrawal.html",
+      "capacity.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "guardedness_privacy_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Use consult references to recognize the syndrome, stop the offending exposure, stabilize first, and call the right help early.",
+      "mse": "Prioritize tempo, attention, arousal, neuromuscular findings, autonomic instability, rigidity, clonus, tremor, and fluctuating consciousness.",
+      "safety": "These are escalation syndromes; confirm medication, restraint, transfer, antidote, and dialysis decisions with supervising physicians and institutional protocols.",
+      "say": "Keep patient explanations brief and concrete during emergencies: what is happening, what the team is doing now, and who is being called.",
+      "collateral": "Clarify medication timing, dose changes, substances, infection/medical triggers, baseline cognition, and prior reactions.",
+      "rounds": "Present consult problems as syndrome, evidence, immediate risk, next test or treatment, and escalation plan.",
+      "exam": "Differentiate serotonin syndrome, NMS, malignant catatonia, lithium toxicity, delirium, and withdrawal by tempo and exam findings.",
+      "actions": [
+        {
+          "label": "Open BFCRS",
+          "href": "?tool=bfcrs.html"
+        },
+        {
+          "label": "Open withdrawal tools",
+          "href": "?tool=withdrawal.html"
+        },
+        {
+          "label": "Open decision aids",
+          "href": "?tool=decision-aids.html"
+        }
+      ]
     }
   },
   "systems_medlegal.md": {
@@ -3958,6 +4436,52 @@
     "cta": {
       "label": "Open Family & Discharge",
       "href": "?page=exp_family.md"
+    },
+    "workflowStages": [
+      "safety",
+      "family",
+      "team"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "family"
+    ],
+    "relatedTools": [
+      "capacity.html",
+      "cssrs.html",
+      "violence.html",
+      "family-systems.html",
+      "communication-practice.html",
+      "oral.html"
+    ],
+    "communicationCases": [
+      "suicide_direct_question_001",
+      "collateral_questions_001",
+      "family_conflict_discharge_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "For every med-legal question, ask what authority is being used, what risk it addresses, what less-restrictive option was considered, and what local policy requires.",
+      "mse": "Document the mental-status facts that support capacity, risk, voluntariness, insight, judgment, and ability to participate in discharge planning.",
+      "safety": "Never treat a hold as permission for non-emergency medication over objection; confirm statutes, hospital policy, and attending direction.",
+      "say": "Explain limits plainly: what is voluntary, what is required for safety, what information can be shared, and what choices remain available.",
+      "collateral": "Use minimum-necessary disclosure, clarify consent when possible, and gather only information that changes diagnosis, risk, treatment, or discharge.",
+      "rounds": "Present the legal status, decision-making capacity, safety rationale, family contact plan, and disposition barrier as separate items.",
+      "exam": "Know the distinction between capacity and competence, commitment and medication over objection, confidentiality and duty to protect, and risk factors versus formulation.",
+      "actions": [
+        {
+          "label": "Open capacity tool",
+          "href": "?tool=capacity.html"
+        },
+        {
+          "label": "Practice collateral questions",
+          "href": "?tool=communication-practice.html&case=collateral_questions_001"
+        },
+        {
+          "label": "Open family systems",
+          "href": "?tool=family-systems.html"
+        }
+      ]
     }
   },
   "supervision_teaching.md": {
@@ -3991,6 +4515,48 @@
     "cta": {
       "label": "Open Documentation & Oral Presentation",
       "href": "?page=doc_oral.md"
+    },
+    "workflowStages": [
+      "team",
+      "communication",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "family"
+    ],
+    "relatedTools": [
+      "oral.html",
+      "reflection.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "collateral_questions_001",
+      "bpd_rupture_repair_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "At the start of a task, name the expected level of supervision, what you will do independently, and when you will call for help.",
+      "mse": "Teach students to support MSE claims with observed behavior, direct quotes, and what changed from yesterday.",
+      "safety": "Supervision boundaries are patient-safety boundaries; uncertainty, high-risk communication, restraint, legal status, and medication refusal need escalation.",
+      "say": "Use Ask-Tell-Ask for feedback and the One-Minute Preceptor to make the learner reason before you teach.",
+      "collateral": "Coach students to get permission, ask a focused question set, avoid over-disclosure, and return with a 30-second update.",
+      "rounds": "Model a concise assessment, then give one reinforcing point and one correction after the student presents.",
+      "exam": "Use teaching moments to connect bedside reasoning with board-style distinctions without turning rounds into a lecture.",
+      "actions": [
+        {
+          "label": "Open oral presentation coach",
+          "href": "?tool=oral.html"
+        },
+        {
+          "label": "Practice collateral coaching",
+          "href": "?tool=communication-practice.html&case=collateral_questions_001"
+        },
+        {
+          "label": "Open reflection prompts",
+          "href": "?tool=reflection.html"
+        }
+      ]
     }
   },
   "canon_200.md": {
@@ -4004,6 +4570,44 @@
     "cta": {
       "label": "Open Landmark Trials — Listen & Test",
       "href": "?page=landmark_trials.md"
+    },
+    "workflowStages": [
+      "exam",
+      "treatment",
+      "diagnosis"
+    ],
+    "workflowModes": [
+      "shelf",
+      "5min"
+    ],
+    "relatedTools": [
+      "active-recall.html",
+      "review.html",
+      "question-bank-practice.html",
+      "oral.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Choose one paper by the patient, rotation, or scholarly question in front of you; do not try to consume the canon linearly.",
+      "mse": "Use landmark papers to sharpen concepts, then return to the specific patient's observed symptoms, function, and context.",
+      "safety": "Do not use historical or trial summaries as local protocol; verify high-risk clinical decisions with current guidelines and supervision.",
+      "say": "Practice explaining a complex evidence idea in one clear sentence before using it with patients, families, or students.",
+      "collateral": "Let the reading generate better questions about longitudinal course, prior treatment response, family history, trauma, and systems barriers.",
+      "rounds": "Bring a canon paper only when it helps the team make a sharper diagnostic, risk, or treatment decision.",
+      "exam": "Use the Top 25 as a longitudinal board-study spine, then reinforce with active recall and question-bank practice.",
+      "actions": [
+        {
+          "label": "Open landmark trials",
+          "href": "?page=landmark_trials.md"
+        },
+        {
+          "label": "Open active recall",
+          "href": "?tool=active-recall.html&topic=canon"
+        },
+        {
+          "label": "Open question bank practice",
+          "href": "?tool=question-bank-practice.html"
+        }
+      ]
     }
   },
   "collateral_workflow.md": {
