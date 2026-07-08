@@ -170,7 +170,12 @@
   .tpl-chip.safety{color:var(--danger);background:var(--danger-light);border-color:var(--danger)}
   .tpl-chip.evidence{color:var(--accent-dark);background:var(--accent-light);border-color:var(--accent)}
   .tpl-chip.review{color:var(--success);background:var(--success-light);border-color:var(--success)}
+  .tpl-chip.mode{color:var(--text-mid);background:var(--bg-alt)}
+  .tpl-chip.mode.on{color:#fff;background:var(--accent);border-color:var(--accent)}
   .practice-panel .tpl-meta{margin:0 0 12px}
+  .practice-mode-note{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.7);border:1px solid #d9e5e0;border-radius:12px;padding:11px 13px;margin:0 0 12px}
+  .practice-mode-note .k{flex:0 0 auto;font-size:.66rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark)}
+  .practice-mode-note .v{font-size:.9rem;line-height:1.4;color:var(--text-mid)}
   .page-title-row{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin:.2em 0 .25em}
   .page-title-row h1{margin:0}
   .page-title-row .markrev{font-size:.68rem;font-weight:800;letter-spacing:.03em;border-radius:999px;padding:4px 9px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-family:inherit;white-space:nowrap;margin-top:.42rem}
@@ -519,14 +524,35 @@
     out.push('<a class="practice-action'+(cls?(' '+cls):'')+'" href="'+esc(href)+'"'+ctaAttrs(href)+'>'+body+'</a>');
   }
   function isCommunicationCaseHref(h){ h=String(h||''); return /[?&]tool=communication-practice\.html/.test(h)&&/[?&]case=/.test(h); }
-  function buildPracticeTools(m,file){
+  var PRACTICE_MODE_LABELS={ward:'Ward',shelf:'Shelf',family:'Family',safety:'Safety','5min':'5 min'};
+  function practiceModeCfg(mode){ try{ if(window.__dashCfg)return window.__dashCfg(mode); }catch(_){ } return {label:PRACTICE_MODE_LABELS[mode]||'Ward',tools:[],stages:[]}; }
+  function practiceModeText(m,mode){
+    var cw=(m&&m.clinicalWorkflow)||{}, cfg=practiceModeCfg(mode), val='';
+    if(mode==='safety')val=cw.safety||m.cant||cw.ask||'Use this page to clarify risk, escalation, and supervision before acting.';
+    else if(mode==='family')val=cw.collateral||cw.say||'Use this page to prepare collateral, family communication, boundaries, and discharge reality.';
+    else if(mode==='shelf')val=cw.exam||cw.rounds||'Use this page to convert the clinical topic into exam-ready distinctions and active recall.';
+    else if(mode==='5min')val=cw.say||cw.ask||m.tldr||'Use this page for one concrete question, phrase, or review item before the next task.';
+    else val=cw.rounds||cw.ask||'Use this page to prepare for the next encounter, rounds update, or treatment decision.';
+    return cfg.label+' mode: '+val;
+  }
+  function sortPracticeTools(keys,mode){
+    var cfg=practiceModeCfg(mode), pri=(cfg&&cfg.tools)||[];
+    return (keys||[]).slice().sort(function(a,b){ var ai=pri.indexOf(a),bi=pri.indexOf(b); if(ai<0)ai=99;if(bi<0)bi=99; return ai-bi; });
+  }
+  function sortPracticeCases(ids,mode){
+    var pri=(window.__casePriority&&window.__casePriority[mode])?window.__casePriority[mode]:[];
+    return (ids||[]).slice().sort(function(a,b){ var ai=pri.indexOf(a),bi=pri.indexOf(b); if(ai<0)ai=99;if(bi<0)bi=99; return ai-bi; });
+  }
+  function buildPracticeTools(m,file,mode){
     var out=[], drills=[], seen={}, rt=[];
     function addTool(k){ if(k&&rt.indexOf(k)<0)rt.push(k); }
     ((typeof PAGE_TOOLS!=='undefined'&&PAGE_TOOLS[file])||PRACTICE_PAGE_TOOLS[file]||[]).forEach(addTool);
     if(m&&Array.isArray(m.relatedTools))m.relatedTools.forEach(addTool);
+    rt=sortPracticeTools(rt,mode);
     for(var i=0;i<rt.length;i++){ var k=rt[i]; if(k==='communication-practice.html'&&m&&Array.isArray(m.communicationCases)&&m.communicationCases.length)continue; addPracticeAction(out,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k),practiceIsSafe(k)?'is-safety':''); }
     if(m&&Array.isArray(m.communicationCases)){
-      for(var c=0;c<m.communicationCases.length;c++){ var id=m.communicationCases[c]; addPracticeAction(drills,seen,practiceCaseLabel(id),'?tool=communication-practice.html&case='+encodeURIComponent(id),'is-drill'); }
+      var caseIds=sortPracticeCases(m.communicationCases,mode);
+      for(var c=0;c<caseIds.length;c++){ var id=caseIds[c]; addPracticeAction(drills,seen,practiceCaseLabel(id),'?tool=communication-practice.html&case='+encodeURIComponent(id),'is-drill'); }
     }
     if(m&&m.cta){
       var cx=Array.isArray(m.cta)?m.cta:[m.cta];
@@ -547,10 +573,12 @@
   }
   function buildTpl(m,file){
     if(!hasPracticeTpl(m))return '';
+    var mode=(window.__dashboardMode?window.__dashboardMode():'ward'), cfg=practiceModeCfg(mode);
     var h='<details class="topic-tpl practice-panel">';
-    h+='<summary class="practice-summary"><span class="practice-tab">On unit</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
+    h+='<summary class="practice-summary"><span class="practice-tab">'+esc(cfg.label||'On unit')+'</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
-    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; h+='</div>';
+    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; if(Array.isArray(m.workflowModes)){ for(var mi=0;mi<m.workflowModes.length;mi++){ var mm=m.workflowModes[mi]; h+='<span class="tpl-chip mode'+(mm===mode?' on':'')+'">'+esc(PRACTICE_MODE_LABELS[mm]||mm)+'</span>'; } } h+='</div>';
+    h+='<div class="practice-mode-note"><span class="k">Why today</span><span class="v">'+esc(practiceModeText(m,mode))+'</span></div>';
     h+='<div class="practice-sections">';
     h+='<section class="practice-section"><div class="practice-section-title">In 30 seconds</div>';
     if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
@@ -562,7 +590,7 @@
     h+='</section><section class="practice-section"><div class="practice-section-title">Test yourself</div>';
     if(m.quiz){ var q=m.quiz; h+='<div class="tyourself"><div class="lbl">Test yourself</div><div class="q">'+esc(q.q)+'</div>'; for(var k=0;k<q.o.length;k++){ h+='<button type="button" class="tyo" data-c="'+(q.o[k].c?'1':'0')+'">'+esc(q.o[k].t)+'</button>'; } h+='<div class="tyfb">'+(q.why?('<b>Why: </b>'+esc(q.why)):'')+'</div></div>'; }
     else { h+='<p class="practice-muted">No page-specific question yet. Use the question bank or daily review.</p><div class="practice-actions"><a class="practice-action is-review" href="?tool=question-bank-practice.html">Practice Questions →</a><a class="practice-action is-review" href="?tool=review.html">Daily Review →</a></div>'; }
-    h+='</section><section class="practice-section"><div class="practice-section-title">Tools</div>'+buildPracticeTools(m,file)+'</section>';
+    h+='</section><section class="practice-section"><div class="practice-section-title">Tools</div>'+buildPracticeTools(m,file,mode)+'</section>';
     h+='</div></div></details>'; return h;
   }
   var modeEl=document.getElementById('modetoggle'), mPath=document.getElementById('mPath'), mLib=document.getElementById('mLib');
@@ -877,6 +905,9 @@
   var CASE_TITLES={suicide_direct_question_001:'Ask About Suicide Directly',psychosis_validation_001:'Validate Psychosis Without Colluding',guardedness_privacy_001:'Respond To Guardedness',rupture_limit_setting_001:'Repair After A Limit',bpd_rupture_repair_001:'Repair A BPD Rupture',medication_ambivalence_001:'Medication Ambivalence',mania_limit_sleep_001:'Offer A Sleep-Restoring Plan In Mania',family_meeting_opening_001:'Open A Family Meeting',collateral_questions_001:'Ask Better Collateral Questions',family_conflict_discharge_001:'De-escalate Family Conflict Around Discharge'};
   var FAMILY_SCENARIO_TITLES={collateral_baseline_safety_001:'Practice Collateral Call',family_meeting_opening_001:'Prepare Family Meeting',discharge_barrier_map_001:'Map Family Safety Roles',high_expressed_emotion_001:'Reset High-Emotion Family Talk',psychosis_family_psychoeducation_001:'Explain Psychosis To Family',family_involvement_boundaries_001:'Set Family Boundaries'};
   var CASE_PRIORITY={ward:['guardedness_privacy_001','psychosis_validation_001','medication_ambivalence_001','mania_limit_sleep_001'],family:['family_meeting_opening_001','collateral_questions_001','family_conflict_discharge_001'],safety:['suicide_direct_question_001','family_conflict_discharge_001','rupture_limit_setting_001'],shelf:['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001'],'5min':['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001','family_meeting_opening_001']};
+  window.__dashboardMode=dashboardMode;
+  window.__dashCfg=dashCfg;
+  window.__casePriority=CASE_PRIORITY;
   function caseAction(id,note){ return {f:'communication-practice.html',t:CASE_TITLES[id]||'What Do You Say Next?',k:'tool',caseId:id,href:'?tool=communication-practice.html&case='+encodeURIComponent(id),note:note||'spoken drill'}; }
   function familyAction(id,title,note){ return {f:'family-systems.html',t:title||FAMILY_SCENARIO_TITLES[id]||'Family Systems Practice',k:'tool',scenarioId:id,href:'?tool=family-systems.html&scenario='+encodeURIComponent(id),note:note||'family tool'}; }
   function toolAction(k,note){ return {f:k,t:(LAB[k]||PRACTICE_LABELS[k]||String(k||'tool').replace(/\.html$/,'').replace(/[-_]+/g,' ')),k:'tool',href:'?tool='+encodeURIComponent(k),note:note||'tool'}; }
@@ -937,7 +968,7 @@
   }
   window.__renderModeCompanion=renderModeCompanion;
   (function(){ var root=document.getElementById('modeCompanion'); if(!root)return; root.addEventListener('click',function(e){
-    var mb=e.target.closest?e.target.closest('[data-mc-mode]'):null; if(mb){ setDashboardMode(mb.getAttribute('data-mc-mode')); if(currentItem&&currentItem.f==='__home__'&&window.renderHome){ contentEl.innerHTML=window.renderHome(); try{window.__afterSpecial('__home__');}catch(_){ } } return; }
+    var mb=e.target.closest?e.target.closest('[data-mc-mode]'):null; if(mb){ setDashboardMode(mb.getAttribute('data-mc-mode')); if(currentItem&&currentItem.f==='__home__'&&window.renderHome){ contentEl.innerHTML=window.renderHome(); try{window.__afterSpecial('__home__');}catch(_){ } } else if(currentItem&&currentItem.k==='md'){ var nb=null, all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===currentItem.f){ nb=all[i]; break; } } show(currentItem,nb,{replace:true}); } return; }
     var home=e.target.closest?e.target.closest('[data-mc-home]'):null; if(home){ navClick('__home__'); return; }
     var item=e.target.closest?e.target.closest('[data-mc-f]'):null; if(item){ navClick(item.getAttribute('data-mc-f')); }
   }); })();
