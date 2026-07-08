@@ -17,6 +17,26 @@
           "setting": { "type": "string" },
           "learnerGoal": { "type": "string" },
           "prompt": { "type": "string" },
+          "rapidDrill": {
+            "type": "object",
+            "required": ["targetSeconds", "stance", "mustInclude", "avoid", "starter"],
+            "properties": {
+              "targetSeconds": { "type": "integer", "minimum": 10, "maximum": 90 },
+              "stance": { "type": "string" },
+              "mustInclude": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string" }
+              },
+              "avoid": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string" }
+              },
+              "starter": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
           "choices": {
             "type": "array",
             "minItems": 2,
