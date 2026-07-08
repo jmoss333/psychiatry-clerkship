@@ -1909,6 +1909,10 @@
         "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
       }
     ],
+    "workflowStages": [
+      "communication",
+      "treatment"
+    ],
     "relatedTools": [
       "communication-practice.html"
     ],
@@ -1919,7 +1923,26 @@
     ],
     "communicationCases": [
       "medication_ambivalence_001"
-    ]
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask permission before advice: what matters, what worries them, and what would make change feel worth it.",
+      "mse": "Listen for ambivalence, sustain talk, change talk, affective tone, and whether the patient feels judged or understood.",
+      "safety": "If ambivalence involves suicide, violence, withdrawal, intoxication, medication refusal, or discharge risk, escalate the safety question rather than treating it as routine counseling.",
+      "say": "Part of you sees a reason to change, and part of you has good reasons to hesitate. What feels most important right now?",
+      "collateral": "With permission, ask supports what helps engagement and what conversations predict shutdown, relapse, or nonadherence.",
+      "rounds": "Name the patient's own change language and the next collaborative option; do not present motivation as a fixed trait.",
+      "exam": "MI answers reflect, evoke, and ask permission; directive confrontation is usually the trap.",
+      "actions": [
+        {
+          "label": "Practice medication ambivalence",
+          "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
+        },
+        {
+          "label": "Open Substance Use topic",
+          "href": "?page=t_sud.md"
+        }
+      ]
+    }
   },
   "pg_suicide.md": {
     "read": 4,
@@ -3112,6 +3135,51 @@
     "cta": {
       "label": "Open the Weekly Reading Map",
       "href": "?page=reading_map.md"
+    },
+    "workflowStages": [
+      "encounter",
+      "safety",
+      "team"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min"
+    ],
+    "relatedTools": [
+      "interview-circle.html",
+      "mse.html",
+      "cssrs.html",
+      "communication-practice.html",
+      "oral.html"
+    ],
+    "communicationCases": [
+      "suicide_direct_question_001",
+      "guardedness_privacy_001",
+      "collateral_questions_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "For every patient, ask what syndrome is present, what is driving it, what family/discharge context matters, and what must be safer before discharge.",
+      "mse": "Start with observable behavior, speech, mood/affect, thought process/content, perception, cognition, insight, and judgment.",
+      "safety": "Tell the resident or attending immediately for current suicidal intent, threats/escalating agitation, delirium/catatonia signs, or withdrawal concern.",
+      "say": "I am a medical student on the team. I will share safety concerns with my supervising clinicians, and I want to understand what would help you feel safer here.",
+      "collateral": "Ask permission for collateral when possible; if safety requires it, use the minimum necessary information and involve supervision.",
+      "rounds": "Present one patient with syndrome, driver, risk, family/discharge context, and the one question you need help answering.",
+      "exam": "Orientation facts become exam reasoning when you connect safety, capacity, confidentiality, and supervision boundaries.",
+      "actions": [
+        {
+          "label": "Practice direct suicide question",
+          "href": "?tool=communication-practice.html&case=suicide_direct_question_001"
+        },
+        {
+          "label": "Open interview circle",
+          "href": "?tool=interview-circle.html"
+        },
+        {
+          "label": "Open rounding prep",
+          "href": "?tool=oral.html"
+        }
+      ]
     }
   },
   "core_readings.md": {
@@ -3138,6 +3206,50 @@
     "cta": {
       "label": "Open the Interview & MSE Pocket Guide",
       "href": "?page=pg_interview.md"
+    },
+    "workflowStages": [
+      "encounter",
+      "safety",
+      "team"
+    ],
+    "workflowModes": [
+      "ward",
+      "5min",
+      "safety"
+    ],
+    "relatedTools": [
+      "interview-circle.html",
+      "mse.html",
+      "capacity.html",
+      "communication-practice.html",
+      "oral.html"
+    ],
+    "communicationCases": [
+      "guardedness_privacy_001",
+      "collateral_questions_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Open with the patient's story, then make sure safety, substances/withdrawal, medical contributors, and collateral needs are covered before you close.",
+      "mse": "Write one concrete example for each MSE domain instead of only using adjectives.",
+      "safety": "End every first interview knowing suicide risk, violence risk, vulnerability, withdrawal concern, and whether supervision needs immediate escalation.",
+      "say": "You can choose what you answer. I do have to tell the team if there is an immediate safety concern, and my goal is to understand what would help.",
+      "collateral": "Ask what the patient is like at baseline, what changed, when it changed, and what safety or function concerns have appeared.",
+      "rounds": "Give a one-liner, the key MSE findings, the safety read, and one capacity or collateral question.",
+      "exam": "Interview/MSE questions test observation, organization, and whether you ask direct safety questions.",
+      "actions": [
+        {
+          "label": "Open MSE builder",
+          "href": "?tool=mse.html"
+        },
+        {
+          "label": "Practice guardedness",
+          "href": "?tool=communication-practice.html&case=guardedness_privacy_001"
+        },
+        {
+          "label": "Open capacity tool",
+          "href": "?tool=capacity.html"
+        }
+      ]
     }
   },
   "week2.md": {
@@ -3151,6 +3263,52 @@
     "cta": {
       "label": "Open the Psychopharmacology Primer",
       "href": "?page=psychopharm_primer.md"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "treatment",
+      "safety"
+    ],
+    "workflowModes": [
+      "ward",
+      "shelf",
+      "safety",
+      "5min"
+    ],
+    "relatedTools": [
+      "diagnostic-reasoning.html",
+      "bfcrs.html",
+      "screeners.html",
+      "decision-aids.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "psychosis_validation_001",
+      "mania_limit_sleep_001",
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "For every mood or psychosis presentation, ask about mania/hypomania, substances, sleep, medical causes, medication exposure, and catatonia signs.",
+      "mse": "Track mood/affect, thought process, delusions/hallucinations, sleep/energy, psychomotor signs, and attention.",
+      "safety": "Do not miss catatonia, delirium, withdrawal, serotonin syndrome/NMS, command hallucinations, or suicide risk.",
+      "say": "That sounds frightening. I do not see it the same way, but I want to understand what you are experiencing and what would help you feel safer.",
+      "collateral": "Ask family/staff about baseline, time course, sleep, substances, adherence, prior episodes, and what changed right before admission.",
+      "rounds": "Present syndrome, differential, safety concern, medication logic by side-effect profile, and the one mimic you still need to rule out.",
+      "exam": "Mood/psychosis questions often hinge on bipolar screening, substance/medical mimics, catatonia, and medication adverse effects.",
+      "actions": [
+        {
+          "label": "Open reasoning workbench",
+          "href": "?tool=diagnostic-reasoning.html"
+        },
+        {
+          "label": "Open BFCRS",
+          "href": "?tool=bfcrs.html"
+        },
+        {
+          "label": "Practice psychosis validation",
+          "href": "?tool=communication-practice.html&case=psychosis_validation_001"
+        }
+      ]
     }
   },
   "week3.md": {
@@ -3164,6 +3322,51 @@
     "cta": {
       "label": "Open the Brief Psychotherapy page",
       "href": "?page=brief_psychotherapy.md"
+    },
+    "workflowStages": [
+      "communication",
+      "safety",
+      "treatment"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "safety",
+      "5min"
+    ],
+    "relatedTools": [
+      "cssrs.html",
+      "communication-practice.html",
+      "reflection.html",
+      "family-systems.html"
+    ],
+    "communicationCases": [
+      "suicide_direct_question_001",
+      "bpd_rupture_repair_001",
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask what crisis pattern brought the patient in, what has helped before, what invalidates or escalates, and what skill or support is missing after discharge.",
+      "mse": "Track affective reactivity, impulse control, interpersonal stance, self-harm urges, and whether the patient can collaborate in the moment.",
+      "safety": "Collaborative safety planning is supervised clinical work; do not treat a completed form as risk resolution.",
+      "say": "I can see why that landed as hurtful. I want to understand the impact, and then we can work together on the most accurate way to describe the crisis.",
+      "collateral": "Ask supports about baseline risk, effective limits, outpatient continuity, crisis plans, and what tends to rupture trust.",
+      "rounds": "Name the relational pattern, the current safety state, one repair move, and the discharge-continuity need.",
+      "exam": "Psychotherapy/personality questions test validation plus limits, not reassurance or jargon used at the patient.",
+      "actions": [
+        {
+          "label": "Open C-SSRS",
+          "href": "?tool=cssrs.html"
+        },
+        {
+          "label": "Practice rupture repair",
+          "href": "?tool=communication-practice.html&case=bpd_rupture_repair_001"
+        },
+        {
+          "label": "Open reflection tool",
+          "href": "?tool=reflection.html"
+        }
+      ]
     }
   },
   "week4.md": {
@@ -3177,6 +3380,49 @@
     "cta": {
       "label": "Open the Family Meeting Playbook",
       "href": "?page=family_playbook.md"
+    },
+    "workflowStages": [
+      "family",
+      "communication",
+      "team"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "5min"
+    ],
+    "relatedTools": [
+      "family-systems.html",
+      "communication-practice.html",
+      "oral.html"
+    ],
+    "communicationCases": [
+      "family_meeting_opening_001",
+      "collateral_questions_001",
+      "family_conflict_discharge_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Before the meeting, clarify consent, purpose, family concerns, discharge tasks, and what the patient does not want discussed.",
+      "mse": "Notice patient affect, participation, shutdown, activation, and whether family criticism or over-involvement changes the room.",
+      "safety": "Do not let family anxiety or reassurance replace a concrete risk and discharge plan.",
+      "say": "Before details, let's agree on the goal, what the patient has consented for us to discuss, and what needs to be decided before discharge.",
+      "collateral": "Ask for baseline, timeline, safety observations, medication/adherence barriers, and what support is realistic at home.",
+      "rounds": "Report the family meeting goal, consent boundary, key collateral, discharge barrier, and next family/system task.",
+      "exam": "Family questions test confidentiality, expressed emotion, psychoeducation, and whether support actually changes risk.",
+      "actions": [
+        {
+          "label": "Open family systems practice",
+          "href": "?tool=family-systems.html"
+        },
+        {
+          "label": "Practice opening a family meeting",
+          "href": "?tool=communication-practice.html&case=family_meeting_opening_001"
+        },
+        {
+          "label": "Open rounding prep",
+          "href": "?tool=oral.html"
+        }
+      ]
     }
   },
   "week5.md": {
@@ -3190,6 +3436,51 @@
     "cta": {
       "label": "Open the Acute Consult module",
       "href": "?page=exp_consult.md"
+    },
+    "workflowStages": [
+      "safety",
+      "communication",
+      "team"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "5min"
+    ],
+    "relatedTools": [
+      "violence.html",
+      "withdrawal.html",
+      "decision-aids.html",
+      "communication-practice.html",
+      "family-systems.html"
+    ],
+    "communicationCases": [
+      "rupture_limit_setting_001",
+      "mania_limit_sleep_001",
+      "guardedness_privacy_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "For acute concerns, ask what changed, what is the immediate risk, what medical/substance driver could explain it, and what has de-escalated before.",
+      "mse": "Prioritize attention, arousal, motor signs, psychosis, intoxication/withdrawal signs, and observable agitation trajectory.",
+      "safety": "Escalate early for delirium/catatonia concern, withdrawal, escalating threats, severe agitation, restraint/seclusion, or medication-toxicity signs.",
+      "say": "I hear that this feels urgent. Tonight the safest plan is to lower stimulation, keep clear limits, and choose the next calming step together.",
+      "collateral": "Ask nursing/family about baseline, trigger, substances, access to means, prior agitation plans, and what usually helps or worsens things.",
+      "rounds": "Give the acute problem, current safety level, medical mimic, de-escalation step tried, and what would trigger senior/security/medical escalation.",
+      "exam": "Acute questions often test delirium, catatonia, withdrawal, violence risk, and least-restrictive escalation.",
+      "actions": [
+        {
+          "label": "Open violence-risk tool",
+          "href": "?tool=violence.html"
+        },
+        {
+          "label": "Open withdrawal tool",
+          "href": "?tool=withdrawal.html"
+        },
+        {
+          "label": "Practice limit-setting repair",
+          "href": "?tool=communication-practice.html&case=rupture_limit_setting_001"
+        }
+      ]
     }
   },
   "week6.md": {
@@ -3203,6 +3494,54 @@
     "cta": {
       "label": "Open the Shelf Review Guide",
       "href": "?page=shelf.md"
+    },
+    "workflowStages": [
+      "team",
+      "exam",
+      "family",
+      "safety"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "safety",
+      "shelf"
+    ],
+    "relatedTools": [
+      "oral.html",
+      "diagnostic-reasoning.html",
+      "communication-practice.html",
+      "family-systems.html",
+      "question-bank-practice.html",
+      "review.html"
+    ],
+    "communicationCases": [
+      "family_conflict_discharge_001",
+      "collateral_questions_001",
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "For your final patients, ask what diagnosis still feels uncertain, what risk remains modifiable, and what discharge support is still unproven.",
+      "mse": "Use serial MSE changes to support your formulation rather than presenting the admission snapshot as static.",
+      "safety": "Before discharge discussion, name remaining acute risk, chronic risk, means access, follow-up reliability, and what would change the plan.",
+      "say": "We cannot promise zero risk, but we can name the specific safety steps that must be in place before discharge.",
+      "collateral": "Confirm the discharge plan with supports: medications, follow-up, means safety, supervision, transportation, warning signs, and what to do if risk escalates.",
+      "rounds": "Present a full case with formulation, risk reasoning, family/system plan, and the one uncertainty you would track after discharge.",
+      "exam": "Use the patient in front of you as the shelf organizer: syndrome, mimic, treatment, safety/legal issue, and disposition.",
+      "actions": [
+        {
+          "label": "Open rounding prep",
+          "href": "?tool=oral.html"
+        },
+        {
+          "label": "Practice family discharge conflict",
+          "href": "?tool=communication-practice.html&case=family_conflict_discharge_001"
+        },
+        {
+          "label": "Open practice questions",
+          "href": "?tool=question-bank-practice.html"
+        }
+      ]
     }
   },
   "reading_map.md": {
@@ -3229,6 +3568,55 @@
     "cta": {
       "label": "Open the Practice Cases",
       "href": "?page=cases.md"
+    },
+    "workflowStages": [
+      "encounter",
+      "safety",
+      "communication",
+      "team",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "family",
+      "shelf"
+    ],
+    "relatedTools": [
+      "communication-practice.html",
+      "diagnostic-reasoning.html",
+      "family-systems.html",
+      "oral.html",
+      "cssrs.html",
+      "capacity.html"
+    ],
+    "communicationCases": [
+      "suicide_direct_question_001",
+      "family_meeting_opening_001",
+      "collateral_questions_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "For each OSCE station, first identify the task: risk, capacity, catatonia, withdrawal, family meeting, or oral presentation.",
+      "mse": "Use observable MSE findings to justify your next step; stations reward saying what you saw, not only naming a diagnosis.",
+      "safety": "State when you would stop the station and get supervision, medical evaluation, or emergency support.",
+      "say": "I want to ask this directly because safety matters: have you had thoughts of killing yourself?",
+      "collateral": "Use collateral to test baseline, time course, risk, and discharge feasibility rather than asking for global impressions.",
+      "rounds": "Give a concise assessment, your immediate safety action, and the data that would change your plan.",
+      "exam": "Practice stations aloud: opening line, core questions, safety escalation, and summary.",
+      "actions": [
+        {
+          "label": "Practice direct suicide question",
+          "href": "?tool=communication-practice.html&case=suicide_direct_question_001"
+        },
+        {
+          "label": "Open reasoning workbench",
+          "href": "?tool=diagnostic-reasoning.html"
+        },
+        {
+          "label": "Open rounding prep",
+          "href": "?tool=oral.html"
+        }
+      ]
     }
   },
   "cases.md": {
@@ -3242,6 +3630,54 @@
     "cta": {
       "label": "Open the OSCE Stations",
       "href": "?page=osce.md"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "family",
+      "team",
+      "exam"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "family",
+      "shelf"
+    ],
+    "relatedTools": [
+      "diagnostic-reasoning.html",
+      "communication-practice.html",
+      "family-systems.html",
+      "oral.html",
+      "decision-aids.html"
+    ],
+    "communicationCases": [
+      "suicide_direct_question_001",
+      "collateral_questions_001",
+      "family_conflict_discharge_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "For each case, ask what hidden detail would change diagnosis, risk, disposition, or family/system plan.",
+      "mse": "Document the MSE finding that most changes the differential and the one finding that could be misleading.",
+      "safety": "Name the safety question before the diagnosis question when the case includes suicide, violence, withdrawal, delirium, catatonia, or discharge risk.",
+      "say": "What is he like at baseline, what changed, when did it change, and what specific safety concerns have you noticed?",
+      "collateral": "Use collateral to define baseline, timeline, safety, adherence, supports, and discharge barriers.",
+      "rounds": "After the case, present problem representation, differential, risk formulation, collateral gap, and next action.",
+      "exam": "Synthetic cases are practice for illness scripts: syndrome, mimic, first-line treatment, safety/legal issue, and disposition.",
+      "actions": [
+        {
+          "label": "Open reasoning workbench",
+          "href": "?tool=diagnostic-reasoning.html"
+        },
+        {
+          "label": "Practice collateral questions",
+          "href": "?tool=communication-practice.html&case=collateral_questions_001"
+        },
+        {
+          "label": "Open family systems practice",
+          "href": "?tool=family-systems.html"
+        }
+      ]
     }
   },
   "shelf.md": {
@@ -3255,6 +3691,51 @@
     "cta": {
       "label": "Open the High-Yield Rounds Questions",
       "href": "?page=rounds_questions.md"
+    },
+    "workflowStages": [
+      "exam",
+      "diagnosis",
+      "safety"
+    ],
+    "workflowModes": [
+      "shelf",
+      "5min"
+    ],
+    "relatedTools": [
+      "question-bank-practice.html",
+      "shelf-mode.html",
+      "active-recall.html",
+      "review.html",
+      "diagnostic-reasoning.html",
+      "communication-practice.html"
+    ],
+    "communicationCases": [
+      "suicide_direct_question_001",
+      "psychosis_validation_001",
+      "medication_ambivalence_001"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Turn each patient into an exam stem: age, time course, syndrome, key risk, mimic, and next best step.",
+      "mse": "Translate MSE into exam language: attention for delirium, psychomotor change for catatonia/mania, thought process/content for psychosis.",
+      "safety": "Shelf traps often hide safety in plain sight: means access, preparatory behavior, delirium, withdrawal, capacity, and adverse medication effects.",
+      "say": "My answer is..., because the discriminating feature is..., and the tempting wrong answer misses...",
+      "collateral": "Use collateral facts as exam discriminators: baseline, timeline, adherence, substance exposure, family safety, and follow-up feasibility.",
+      "rounds": "Rehearse one 20-second answer before rounds, then test the same concept in the question bank.",
+      "exam": "Study by patient problem, not topic list: syndrome, mimic, treatment, safety/legal, and disposition.",
+      "actions": [
+        {
+          "label": "Open practice questions",
+          "href": "?tool=question-bank-practice.html"
+        },
+        {
+          "label": "Open shelf mode",
+          "href": "?tool=shelf-mode.html"
+        },
+        {
+          "label": "Practice suicide wording",
+          "href": "?tool=communication-practice.html&case=suicide_direct_question_001"
+        }
+      ]
     }
   },
   "book_library.md": {
