@@ -1,6 +1,6 @@
 # Surveillance status
 
-_Generated 2026-07-08T18:30:37+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
+_Generated 2026-07-08T18:36:53+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
 
 ## Summary
 
@@ -33,7 +33,6 @@ _All affected pages attested since their last change._
 | `aacap-parameters` | 2026-07-08 | 0 | ok |
 | `clozapine-rems` | 2026-07-08 | 0 | ok |
 | `fda-drug-safety` | 2026-07-08 | 0 | ok |
-| `link:reconnectpractice.com` | 2026-07-06 | 2 | ok |
 | `samhsa-guidelines` | 2026-07-08 | 0 | ok |
 | `spravato-rems` | 2026-07-08 | 0 | ok |
 

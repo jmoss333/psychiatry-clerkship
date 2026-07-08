@@ -132,4 +132,3 @@ Call your team or go to the ER if:
 **Cross-references:**
 - Psychoeducation bundles: BPD
 - Family resources: BPD Family Guide (FAM)
-- Video companion: Autonomy & Containment — https://reconnectpractice.com/videos/autonomy-and-containment
