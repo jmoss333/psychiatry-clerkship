@@ -8,6 +8,8 @@ Design principle: suggested reading should be short enough to protect clinical l
 
 - [Orientation packet](?page=orientation.md).
 - [Interview / MSE pocket guide](?page=pg_interview.md).
+- [Suicide-risk & safety pocket card](?page=pg_suicide.md).
+- Week 1 safety recognition links: [Agitation & restraint](?page=agitation.md), [Delirium](?page=delirium.md), and the [Withdrawal (CIWA-Ar/COWS) teaching tool](?tool=withdrawal.html).
 - [One landmark summary — Engel biopsychosocial model](?page=landmark_trials.md).
 
 **Optional**
@@ -17,11 +19,11 @@ Design principle: suggested reading should be short enough to protect clinical l
 
 **Skill**
 
-Conduct a focused interview, present MSE findings, and write an admission note.
+Conduct a focused interview, present MSE findings, write an admission note, and name what safety finding would make you interrupt the usual workflow to get the resident or attending now.
 
 **Assignment**
 
-One de-identified MSE plus a one-paragraph formulation.
+One de-identified MSE plus a one-paragraph formulation and one sentence that separates "routine follow-up" from "call now" safety escalation.
 
 ## Week 2 — Mood, Psychosis & Pharmacology
 
@@ -92,16 +94,16 @@ A family-meeting agenda using synthetic or de-identified facts.
 
 - [Consult module — capacity / delirium / catatonia / withdrawal](?page=exp_consult.md).
 - [Agitation & restraint](?page=agitation.md) with the Algorithms & Decision Aids tool.
-- [Suicide-risk & safety pocket card](?page=pg_suicide.md).
+- [Violence risk](?tool=violence.html), [C-SSRS](?tool=cssrs.html), and [Withdrawal: CIWA-Ar/COWS](?tool=withdrawal.html) tools for supervised structured practice.
 
 **Optional**
 
-- [Delirium](?page=delirium.md) teaching page; the Withdrawal (CIWA-Ar/COWS) tool.
+- Revisit the [Suicide-risk & safety pocket card](?page=pg_suicide.md) and [Delirium](?page=delirium.md) teaching page with a real patient presentation in mind.
 - [Stanley–Brown safety-planning summary](?page=landmark_trials.md).
 
 **Skill**
 
-Recognize urgent patterns, run the agitation ladder, and escalate appropriately; manage withdrawal with CIWA-Ar.
+Move beyond Week 1 recognition: formulate the likely driver, use least-restrictive de-escalation when safe, trend structured tools with supervision, and document why the plan did or did not escalate.
 
 **Assignment**
 

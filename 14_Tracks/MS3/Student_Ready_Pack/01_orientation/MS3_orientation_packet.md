@@ -56,11 +56,11 @@ Local times and locations should be inserted by the clerkship director.
 
 | Week | Focus | Observable Skill |
 |---|---|---|
-| 1 | Orientation, interview, MSE | Present a focused psychiatric interview and MSE |
+| 1 | Orientation, safety recognition, interview, MSE | Present a focused interview/MSE and name what you would escalate immediately |
 | 2 | Diagnosis, differential, formulation | Build a differential beyond the primary psychiatric diagnosis |
 | 3 | Treatment | Explain why a medication and one non-medication intervention fit the formulation |
-| 4 | Acute/consult psychiatry | Formulate suicide/violence risk and recognize delirium/catatonia/withdrawal |
-| 5 | Family/discharge/systems | Draft a family-meeting agenda and discharge barrier map |
+| 4 | Family/discharge/systems | Draft a family-meeting agenda and discharge barrier map |
+| 5 | Acute/consult psychiatry deep practice | Formulate suicide/violence risk, recognize delirium/catatonia/withdrawal, and document supervised escalation reasoning |
 | 6 | Integration | Present a full case with formulation, risk reasoning, and plan |
 
 ## How To Think On This Rotation
@@ -137,8 +137,10 @@ You may not:
 - Know where rounds happen.
 - Confirm EMR access.
 - Learn unit safety expectations.
+- Read the Single Safety Rule and identify who you call for suicide intent, escalating agitation, delirium/catatonia concern, or withdrawal concern.
 - Identify assigned patients.
 - Read the interview/MSE pocket guide.
+- Skim the Suicide Risk & Safety card plus the agitation, delirium, and withdrawal spot-and-escalate links in Week 1.
 - Ask what note type, if any, you should draft.
 - Ask when and how feedback happens.
 
@@ -148,6 +150,7 @@ Read:
 
 - Interview/MSE pocket guide.
 - Week 1 section of the reading map.
+- Suicide Risk & Safety card.
 - One short landmark summary: Engel biopsychosocial model or Brown expressed emotion.
 
 Bring:
