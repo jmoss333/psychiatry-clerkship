@@ -1,10 +1,10 @@
 # Surveillance status
 
-_Generated 2026-07-08T16:34:25+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
+_Generated 2026-07-08T16:58:10+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
 
 ## Summary
 
-- **P0 open:** 0  •  **P1 open:** 737  •  **P2 (digest):** 2
+- **P0 open:** 0  •  **P1 open:** 735  •  **P2 (digest):** 2
 - **Pages needing re-review:** 50
 - **Stale sources:** 0
 
@@ -12,15 +12,11 @@ _Generated 2026-07-08T16:34:25+00:00._ See `REVIEW_RULES.md` for severity + SLAs
 
 _None._
 
-## Open P1 (737)
+## Open P1 (735)
 
-- **[clozapine-rems]** 0 characters extracted from Clozapine REMS Program (source down or scraper broken).  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/90))
-  - affects: `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md`, `03_Core_Topics/Nutrition/nutrition_metabolic_inpatient_teaching.md`, `03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md`, `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md`, `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`, `05_Psychopharmacology/Protocol_Library/README.md`, `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md`, `05_Psychopharmacology/README.md`, `05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md`, `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md`, `07_Evidence_and_Reading/Landmark_Trials/INCORPORATION_PLAN.md`, `07_Evidence_and_Reading/Landmark_Trials/LM_crosswalk.md`, `07_Evidence_and_Reading/Landmark_Trials/landmark_trials_page.md`, `07_Evidence_and_Reading/Landmark_Trials/reading_order_by_week.md`, `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`, `12_Media/psychiatry_psychotherapy_podcast_library.md`, `13_Faculty_Resources/Handoffs/HANDOFF_for_fable5_2026-07-01.md`, `13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md`, `13_Faculty_Resources/Handoffs/STATUS_LATEST.md`, `13_Faculty_Resources/Handoffs/codex_qbank_spec_2026-06-29.md`, `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md`, `13_Faculty_Resources/Handoffs/openevidence_library_accuracy_review_2026-06-30.md`, `13_Faculty_Resources/Handoffs/openevidence_library_accuracy_review_2026-07-01.md`, `14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md`, `14_Tracks/MS3/Student_Ready_Pack/09_revision_maps/revision_plan.md`, `14_Tracks/Resident/adv_psychopharmacology.md`, `14_Tracks/Resident/canon_200.md`, `14_Tracks/Resident/resident_welcome.md`, `14_Tracks/Sub-I_MS4/README.md`
 - **[spravato-rems]** 0 characters extracted from Spravato (esketamine) REMS (source down or scraper broken).  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/91))
   - affects: `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md`, `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`, `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md`, `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`, `13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md`, `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md`, `14_Tracks/Resident/adv_psychopharmacology.md`, `14_Tracks/Resident/canon_200.md`
 - **[aacap-parameters]** 0 characters extracted from AACAP Practice Parameters / Clinical Resources (source down or scraper broken).  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/92))
-- **[clozapine-rems]** Clozapine REMS Program citation issue (broken-link) — https://www.newclozapinerems.com/  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/125))
-  - affects: `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md`, `03_Core_Topics/Nutrition/nutrition_metabolic_inpatient_teaching.md`, `03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md`, `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md`, `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`, `05_Psychopharmacology/Protocol_Library/README.md`, `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md`, `05_Psychopharmacology/README.md`, `05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md`, `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md`, `07_Evidence_and_Reading/Landmark_Trials/INCORPORATION_PLAN.md`, `07_Evidence_and_Reading/Landmark_Trials/LM_crosswalk.md`, `07_Evidence_and_Reading/Landmark_Trials/landmark_trials_page.md`, `07_Evidence_and_Reading/Landmark_Trials/reading_order_by_week.md`, `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`, `12_Media/psychiatry_psychotherapy_podcast_library.md`, `13_Faculty_Resources/Handoffs/HANDOFF_for_fable5_2026-07-01.md`, `13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md`, `13_Faculty_Resources/Handoffs/STATUS_LATEST.md`, `13_Faculty_Resources/Handoffs/codex_qbank_spec_2026-06-29.md`, `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md`, `13_Faculty_Resources/Handoffs/openevidence_library_accuracy_review_2026-06-30.md`, `13_Faculty_Resources/Handoffs/openevidence_library_accuracy_review_2026-07-01.md`, `14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md`, `14_Tracks/MS3/Student_Ready_Pack/09_revision_maps/revision_plan.md`, `14_Tracks/Resident/adv_psychopharmacology.md`, `14_Tracks/Resident/canon_200.md`, `14_Tracks/Resident/resident_welcome.md`, `14_Tracks/Sub-I_MS4/README.md`
 - **[doi:10.1001/archgenpsychiatry.2009.144]** DOI 10.1001/archgenpsychiatry.2009.144 citation issue (broken-link) — https://doi.org/10.1001/archgenpsychiatry.2009.144  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/126))
   - affects: `00_START_HERE/notebooklm_upload_2026-07-01/08_CASES_OSCE_SHELF_EXAM.md`, `08_Cases_and_Simulation/_source/DOI_RESOLUTION_REPORT.md`
 - **[doi:10.1001/archgenpsychiatry.2009.179]** DOI 10.1001/archgenpsychiatry.2009.179 citation issue (broken-link) — https://doi.org/10.1001/archgenpsychiatry.2009.179  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/127))
@@ -1548,7 +1544,7 @@ _None._
 | Source | Last checked | Age (days) | Status |
 |---|---|---|---|
 | `aacap-parameters` | 2026-07-06 | 2 | ok |
-| `clozapine-rems` | 2026-07-06 | 2 | ok |
+| `clozapine-rems` | 2026-07-08 | 0 | ok |
 | `doi:10.1001/archgenpsychiatry.2009.144` | 2026-07-06 | 2 | ok |
 | `doi:10.1001/archgenpsychiatry.2009.179` | 2026-07-06 | 2 | ok |
 | `doi:10.1001/archgenpsychiatry.2011.1514` | 2026-07-06 | 2 | ok |

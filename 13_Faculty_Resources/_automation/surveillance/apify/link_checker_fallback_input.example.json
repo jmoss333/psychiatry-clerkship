@@ -3,7 +3,7 @@
   "startUrls": [
     { "url": "https://www.psychiatry.org/psychiatrists/practice/clinical-practice-guidelines" },
     { "url": "https://www.uspreventiveservicestaskforce.org/uspstf/" },
-    { "url": "https://www.newclozapinerems.com/" }
+    { "url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine" }
   ],
   "maxConcurrency": 8,
   "proxyConfiguration": { "useApifyProxy": true }

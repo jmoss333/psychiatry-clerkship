@@ -90,9 +90,10 @@
       "14_Tracks/Resident/resident_welcome.md",
       "14_Tracks/Sub-I_MS4/README.md"
     ],
-    "recommended_action": "Authoritative source URL for `clozapine-rems` is unreachable after retries: [Errno -2] Name or service not known. Update the `url` in source_registry.yaml (and any citing pages), then re-run. This source feeds guideline surveillance \u2014 fixing it restores monitoring. (No HTTP response \u2014 could be bot-blocking; capped to P1. Verify manually before acting.)",
-    "status": "issue-open",
-    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/125"
+    "recommended_action": "The former Clozapine REMS site is not being restored because FDA removed the clozapine REMS effective 2025-06-13. Source registry now points `clozapine-rems` at FDA clozapine safety / REMS-removal communication; no curriculum URL update to the retired REMS site is needed.",
+    "status": "actioned",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/125",
+    "resolution": "retired-source: replaced broken REMS URL with FDA clozapine REMS-removal communication on 2026-07-08"
   },
   {
     "finding_id": "samhsa-guidelines::broken-link::6bae3107ce29193b",
