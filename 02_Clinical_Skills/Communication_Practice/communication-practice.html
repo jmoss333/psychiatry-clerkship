@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [RC-META] tool="What Do You Say Next?" version="1.2" built="2026-07-08" category="clinical-skills" audience="trainee,ms3" settings="inpatient,self-study" time="10min" summary="Branching communication-practice tool with rapid spoken drills and clinical-practice filters for fictional psychiatry scenarios. Stores only anonymous case completion state under cw_comm_v1; no PHI." -->
+<!-- [RC-META] tool="What Do You Say Next?" version="1.3" built="2026-07-08" category="clinical-skills" audience="trainee,ms3" settings="inpatient,self-study" time="10min" summary="Branching communication-practice tool with rapid spoken drills, URL-addressable clinical-practice filters, and fictional psychiatry scenarios. Stores only anonymous case completion state under cw_comm_v1; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -115,9 +115,10 @@ var CASE_FILTERS={
   family_conflict_discharge_001:['family','rupture','safety']
 };
 var app=document.getElementById('app');
-var state={cases:[],current:0,choice:null,filter:'all',attempts:loadAttempts(),requestedCase:requestedCaseId(),matchedRequest:false,drill:{caseId:'',running:false,started:false,done:false,remaining:0,checked:{}},drillTimer:null};
+var state={cases:[],current:0,choice:null,filter:requestedFilter(),attempts:loadAttempts(),requestedCase:requestedCaseId(),matchedRequest:false,drill:{caseId:'',running:false,started:false,done:false,remaining:0,checked:{}},drillTimer:null};
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function requestedCaseId(){try{return new URLSearchParams(location.search).get('case')||'';}catch(_){return '';}}
+function requestedFilter(){try{var f=(new URLSearchParams(location.search).get('filter')||'all').toLowerCase();return FILTERS.some(function(x){return x[0]===f;})?f:'all';}catch(_){return 'all';}}
 function loadAttempts(){try{return JSON.parse(localStorage.getItem('cw_comm_v1')||'{}')||{};}catch(_){return {};}}
 function saveAttempt(caseId,choice){try{state.attempts[caseId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};localStorage.setItem('cw_comm_v1',JSON.stringify(state.attempts));}catch(_){}}
 function qualityLabel(q){return q==='best'?'Best next line':q==='partial'?'Partly useful':q==='harmful'?'Avoid this line':'Missed opportunity';}
@@ -146,7 +147,7 @@ function ensureVisibleCurrent(){var list=filteredCases();if(list.length&&list.in
 function render(){if(!state.cases.length){app.innerHTML='<div class="empty">No communication cases are available.</div>';return;}ensureVisibleCurrent();app.innerHTML=navHtml()+caseHtml(currentCase());}
 app.addEventListener('click',function(ev){var fb=ev.target.closest&&ev.target.closest('.filter');if(fb){state.filter=fb.getAttribute('data-filter')||'all';render();return;}var ds=ev.target.closest&&ev.target.closest('[data-drill-start]');if(ds){startDrill();return;}var df=ev.target.closest&&ev.target.closest('[data-drill-finish]');if(df){finishDrill();return;}var dr=ev.target.closest&&ev.target.closest('[data-drill-reset]');if(dr){resetDrillFor(currentCase());render();return;}var nb=ev.target.closest&&ev.target.closest('.nextcase');if(nb){setCurrentById(nb.getAttribute('data-case'));state.filter='all';state.choice=null;state.matchedRequest=false;resetDrillFor(currentCase());render();return;}var cb=ev.target.closest&&ev.target.closest('.casebtn');if(cb){setCurrentById(cb.getAttribute('data-id'));state.choice=null;state.matchedRequest=false;resetDrillFor(currentCase());render();return;}var chb=ev.target.closest&&ev.target.closest('.choice');if(chb){var c=currentCase();var id=chb.getAttribute('data-choice');state.choice=(c.choices||[]).filter(function(x){return x.id===id;})[0]||null;if(state.choice)saveAttempt(c.id,state.choice);render();}});
 app.addEventListener('change',function(ev){var box=ev.target&&ev.target.matches&&ev.target.matches('[data-drill-check]')?ev.target:null;if(!box)return;state.drill.checked[box.getAttribute('data-drill-check')]=!!box.checked;});
-fetch('../communication_cases.json').then(function(r){if(!r.ok)throw new Error('missing cases');return r.json();}).then(function(d){state.cases=(d&&d.cases)||[];if(state.requestedCase){state.matchedRequest=setCurrentById(state.requestedCase);}render();}).catch(function(){app.innerHTML='<div class="empty">Could not load communication cases. Rebuild the site or check communication_cases.json.</div>';});
+fetch('../communication_cases.json').then(function(r){if(!r.ok)throw new Error('missing cases');return r.json();}).then(function(d){state.cases=(d&&d.cases)||[];if(state.requestedCase){state.matchedRequest=setCurrentById(state.requestedCase);if(state.matchedRequest&&!caseMatches(currentCase(),state.filter)){state.filter=tagsFor(currentCase())[0]||'all';}}render();}).catch(function(){app.innerHTML='<div class="empty">Could not load communication cases. Rebuild the site or check communication_cases.json.</div>';});
 })();
 </script>
 </body>
