@@ -119,6 +119,33 @@ shutil.copy2(LIB+"/question_bank.json", OUT+"/question_bank.json")
 shutil.copy2(LIB+"/13_Faculty_Resources/review-attest.html", OUT+"/tools/review-attest.html")
 shutil.copy2(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learning-path.html")
 
+# ---- local tool runtime vendor: no bedside CDN dependency ----
+# Several React-based tools historically loaded React from cdnjs and went blank when ward
+# Wi-Fi blocked public CDNs. Reuse the already-tracked UMD bundles from the resident
+# prototype and rewrite shipped tool pages to relative files under /tools/vendor/.
+VENDOR_SRC=os.path.join(LIB,"_prototypes","agitation-trainer","vendor")
+VENDOR_DST=os.path.join(OUT,"tools","vendor")
+_vendor_files=["react.min.js","react-dom.min.js"]
+_missing_vendor=[os.path.join(VENDOR_SRC,f) for f in _vendor_files if not os.path.exists(os.path.join(VENDOR_SRC,f))]
+if _missing_vendor:
+    print("BUILD ABORTED — required local vendor runtime missing:")
+    for _p in _missing_vendor: print("   -", os.path.relpath(_p, LIB))
+    raise SystemExit(1)
+os.makedirs(VENDOR_DST,exist_ok=True)
+for _vf in _vendor_files:
+    shutil.copy2(os.path.join(VENDOR_SRC,_vf), os.path.join(VENDOR_DST,_vf))
+
+def _rewrite_tool_vendor_deps(_path):
+    _t=open(_path,encoding="utf-8").read()
+    _o=_t
+    _t=_t.replace("https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js","vendor/react.min.js")
+    _t=_t.replace("https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js","vendor/react-dom.min.js")
+    if _t!=_o:
+        open(_path,"w",encoding="utf-8").write(_t)
+
+for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.join(OUT,"tools")) if _f.endswith(".html")]:
+    _rewrite_tool_vendor_deps(_tool_html)
+
 # md content pages: [source rel, out name, title] — see site_manifest.json
 md=[tuple(x) for x in _manifest["md"]]
 missing=[]
