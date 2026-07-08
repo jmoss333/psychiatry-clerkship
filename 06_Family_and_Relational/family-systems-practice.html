@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [RC-META] tool="Family Systems Practice" version="1.0" built="2026-07-07" category="family-systems" audience="trainee,ms3,resident" settings="inpatient,self-study,rounds-prep" time="5-10min" summary="Structured family/collateral/discharge practice scenarios. Stores anonymous checklist state under cw_family_v1; no PHI or free-text patient fields." -->
+<!-- [RC-META] tool="Family Systems Practice" version="1.1" built="2026-07-08" category="family-systems" audience="trainee,ms3,resident" settings="inpatient,self-study,rounds-prep" time="5-10min" summary="Structured family/collateral/discharge practice scenarios with quick filters. Stores anonymous checklist state under cw_family_v1; no PHI or free-text patient fields." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -32,6 +32,11 @@ h1{font-family:var(--font-head);font-size:2.1rem;line-height:1.05;color:var(--te
 .progress span{display:block;color:var(--soft);font-size:.83rem}
 .bar{height:7px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);overflow:hidden;margin-top:8px}
 .bar i{display:block;height:100%;width:0;background:var(--teal)}
+.filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0 0 8px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+.filter{border:1px solid var(--line);border-radius:999px;background:var(--surface-2);color:var(--muted);padding:6px 8px;font:inherit;font-size:.78rem;font-weight:900;line-height:1.1;cursor:pointer;text-align:center;min-height:34px}
+.filter:hover{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-dark)}
+.filter.on{border-color:var(--terracotta);background:var(--terracotta-soft);color:var(--terracotta-dark)}
+.filter small{display:inline-block;color:inherit;font-size:.72em;font-weight:900;opacity:.78;margin-left:2px}
 .scenario{display:block;width:100%;border:1px solid transparent;background:transparent;border-radius:10px;text-align:left;padding:10px;cursor:pointer;font:inherit;color:var(--ink)}
 .scenario:hover{background:var(--teal-soft)}
 .scenario.on{background:var(--teal);color:#fff}
@@ -78,6 +83,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offs
   .layout{grid-template-columns:1fr}
   .side{position:static}
   .scenario-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+  .filters{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))}
   .scenario{min-width:0;height:100%;overflow-wrap:anywhere}
   h1{font-size:1.88rem}
   h2{font-size:1.3rem;overflow-wrap:anywhere}
@@ -101,7 +107,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offs
 <script>
 (function(){
 var app=document.getElementById('app');
-var state={items:[],current:0,progress:loadProgress(),requested:requestedScenario()};
+var state={items:[],current:0,filter:'all',progress:loadProgress(),requested:requestedScenario()};
 var LABELS={
   prepare:'Before contact',
   ask:'Ask',
@@ -123,15 +129,39 @@ var CASE_LABELS={
   psychosis_validation_001:'Practice Psychosis Validation',
   guardedness_privacy_001:'Practice Guardedness And Privacy'
 };
+var FILTERS=[
+  ['all','All'],
+  ['collateral','Collateral'],
+  ['meeting','Meeting'],
+  ['discharge','Discharge'],
+  ['safety','Safety'],
+  ['culture','Culture']
+];
+var SCENARIO_FILTERS={
+  collateral_baseline_safety_001:['collateral','safety'],
+  family_meeting_opening_001:['meeting'],
+  discharge_barrier_map_001:['discharge','safety'],
+  high_expressed_emotion_001:['meeting','safety'],
+  psychosis_family_psychoeducation_001:['meeting'],
+  family_involvement_boundaries_001:['safety','culture'],
+  caregiver_baseline_adaptations_001:['collateral','safety'],
+  culture_interpreter_family_001:['culture','meeting']
+};
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function requestedScenario(){try{return new URLSearchParams(location.search).get('scenario')||'';}catch(_){return '';}}
 function loadProgress(){try{return JSON.parse(localStorage.getItem('cw_family_v1')||'{}')||{};}catch(_){return {};}}
 function saveProgress(){try{localStorage.setItem('cw_family_v1',JSON.stringify(state.progress));}catch(_){}}
 function current(){return state.items[state.current]||state.items[0];}
 function setCurrent(id){for(var i=0;i<state.items.length;i++){if(state.items[i].id===id){state.current=i;return true;}}return false;}
+function tagsFor(it){return SCENARIO_FILTERS[it&&it.id]||[];}
+function matchesFilter(it,filter){return !filter||filter==='all'||tagsFor(it).indexOf(filter)>=0;}
+function filteredItems(){return state.items.filter(function(it){return matchesFilter(it,state.filter);});}
+function filterCount(filter){return state.items.filter(function(it){return matchesFilter(it,filter);}).length;}
+function ensureCurrentVisible(){var it=current(), list=filteredItems();if(!list.length)return;if(!it||list.indexOf(it)<0)setCurrent(list[0].id);}
 function checksDone(item){var rec=state.progress[item.id]||{}, checks=rec.checks||{}, total=(item.checks||[]).length;if(!total)return 0;return (item.checks||[]).filter(function(c){return checks[c.id];}).length;}
 function overall(){var total=0,done=0;state.items.forEach(function(it){total+=(it.checks||[]).length;done+=checksDone(it);});return {done:done,total:total,pct:total?Math.round(done*100/total):0};}
-function sideHtml(){var p=overall();return '<aside class="side" aria-label="Family systems scenarios"><div class="progress"><b>'+p.done+' of '+p.total+' practice checks</b><span>Structured local progress only</span><div class="bar" aria-hidden="true"><i style="width:'+p.pct+'%"></i></div></div><div class="scenario-list">'+state.items.map(function(it,i){return '<button type="button" class="scenario'+(i===state.current?' on':'')+'" data-i="'+i+'"><strong>'+esc(it.title)+'</strong><span>'+esc(it.setting)+'</span></button>';}).join('')+'</div></aside>';}
+function filtersHtml(){return '<div class="filters" role="group" aria-label="Filter family systems scenarios">'+FILTERS.map(function(f){var on=state.filter===f[0], n=filterCount(f[0]);return '<button type="button" class="filter'+(on?' on':'')+'" data-filter="'+f[0]+'" aria-pressed="'+String(on)+'">'+esc(f[1])+' <small>'+n+'</small></button>';}).join('')+'</div>';}
+function sideHtml(){var p=overall(), list=filteredItems();return '<aside class="side" aria-label="Family systems scenarios"><div class="progress"><b>'+p.done+' of '+p.total+' practice checks</b><span>Structured local progress only</span><div class="bar" aria-hidden="true"><i style="width:'+p.pct+'%"></i></div></div>'+filtersHtml()+'<div class="scenario-list">'+list.map(function(it){var i=state.items.indexOf(it);return '<button type="button" class="scenario'+(i===state.current?' on':'')+'" data-id="'+esc(it.id)+'"><strong>'+esc(it.title)+'</strong><span>'+esc(it.setting)+'</span></button>';}).join('')+'</div></aside>';}
 function reviewBadge(it){var rv=it.facultyReview||{};return '<span class="pill draft">'+esc((rv.status||'draft').replace(/-/g,' '))+' - faculty review needed</span>';}
 function introHtml(it){return '<section class="panel"><div class="title-row"><div><h2>'+esc(it.title)+'</h2><div class="meta"><span class="pill">'+esc(it.setting)+'</span><span class="pill">'+esc(it.time||'5 min')+'</span>'+reviewBadge(it)+'</div></div></div><div class="goal"><b>Practice goal:</b> '+esc(it.learnerGoal)+'</div><p class="opening">"'+esc(it.opening)+'"</p>'+linksHtml(it)+'</section>';}
 function sectionHtml(key,arr){if(!arr||!arr.length)return '';var cls=key==='say'?' say':key==='avoid'?' avoid':key==='handoff'?' handoff':'';return '<section class="section'+cls+'"><h3>'+esc(LABELS[key]||key)+'</h3><ul>'+arr.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></section>';}
@@ -140,8 +170,8 @@ function checklistHtml(it){var rec=state.progress[it.id]||{}, checks=rec.checks|
 function pageHref(f){return f&&f.endsWith('.html')?'../index.html?tool='+encodeURIComponent(f):'../index.html?page='+encodeURIComponent(f);}
 function pageLabel(f){return PAGE_LABELS[f]||String(f||'').replace(/\.md$|\.html$/g,'').replace(/^t_/,'').replace(/^pg_/,'').replace(/_/g,' ').replace(/\b\w/g,function(m){return m.toUpperCase();});}
 function linksHtml(it){var out=[];(it.linkedPages||[]).forEach(function(f){out.push('<a href="'+pageHref(f)+'">'+esc(pageLabel(f))+'</a>');});(it.communicationCases||[]).forEach(function(id){out.push('<a href="../index.html?tool=communication-practice.html&case='+encodeURIComponent(id)+'">'+esc(CASE_LABELS[id]||'Communication Practice')+'</a>');});return out.length?'<div class="links">'+out.join('')+'</div>':'';}
-function render(){if(!state.items.length){app.innerHTML='<div class="empty">No family systems scenarios are available.</div>';return;}var it=current();app.innerHTML=sideHtml()+'<div class="main">'+introHtml(it)+bodyHtml(it)+checklistHtml(it)+'</div>';}
-app.addEventListener('click',function(ev){var sc=ev.target.closest&&ev.target.closest('.scenario');if(sc){state.current=+sc.getAttribute('data-i')||0;render();return;}var ck=ev.target.closest&&ev.target.closest('.check');if(ck){var it=current(), id=ck.getAttribute('data-check'), rec=state.progress[it.id]||{checks:{}};rec.checks=rec.checks||{};rec.checks[id]=!rec.checks[id];rec.updatedAt=new Date().toISOString().slice(0,10);state.progress[it.id]=rec;saveProgress();render();return;}var act=ev.target.closest&&ev.target.closest('[data-act]');if(act&&act.getAttribute('data-act')==='reset'){delete state.progress[current().id];saveProgress();render();}});
+function render(){if(!state.items.length){app.innerHTML='<div class="empty">No family systems scenarios are available.</div>';return;}ensureCurrentVisible();var it=current();app.innerHTML=sideHtml()+'<div class="main">'+introHtml(it)+bodyHtml(it)+checklistHtml(it)+'</div>';}
+app.addEventListener('click',function(ev){var flt=ev.target.closest&&ev.target.closest('[data-filter]');if(flt){state.filter=flt.getAttribute('data-filter')||'all';render();return;}var sc=ev.target.closest&&ev.target.closest('.scenario');if(sc){setCurrent(sc.getAttribute('data-id'));render();return;}var ck=ev.target.closest&&ev.target.closest('.check');if(ck){var it=current(), id=ck.getAttribute('data-check'), rec=state.progress[it.id]||{checks:{}};rec.checks=rec.checks||{};rec.checks[id]=!rec.checks[id];rec.updatedAt=new Date().toISOString().slice(0,10);state.progress[it.id]=rec;saveProgress();render();return;}var act=ev.target.closest&&ev.target.closest('[data-act]');if(act&&act.getAttribute('data-act')==='reset'){delete state.progress[current().id];saveProgress();render();}});
 fetch('../family_systems_scenarios.json').then(function(r){if(!r.ok)throw new Error('missing scenarios');return r.json();}).then(function(d){state.items=(d&&d.scenarios)||[];if(state.requested)setCurrent(state.requested);render();}).catch(function(){app.innerHTML='<div class="empty">Could not load family systems scenarios. Rebuild the site or check family_systems_scenarios.json.</div>';});
 })();
 </script>
