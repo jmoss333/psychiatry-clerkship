@@ -1,22 +1,21 @@
 # Surveillance status
 
-_Generated 2026-07-08T16:58:10+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
+_Generated 2026-07-08T18:00:12+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
 
 ## Summary
 
-- **P0 open:** 0  •  **P1 open:** 735  •  **P2 (digest):** 2
-- **Pages needing re-review:** 50
+- **P0 open:** 0  •  **P1 open:** 734  •  **P2 (digest):** 0
+- **Pages needing re-review:** 23
 - **Stale sources:** 0
 
 ## Open P0 — act now (0)
 
 _None._
 
-## Open P1 (735)
+## Open P1 (734)
 
 - **[spravato-rems]** 0 characters extracted from Spravato (esketamine) REMS (source down or scraper broken).  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/91))
   - affects: `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md`, `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`, `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md`, `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`, `13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md`, `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md`, `14_Tracks/Resident/adv_psychopharmacology.md`, `14_Tracks/Resident/canon_200.md`
-- **[aacap-parameters]** 0 characters extracted from AACAP Practice Parameters / Clinical Resources (source down or scraper broken).  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/92))
 - **[doi:10.1001/archgenpsychiatry.2009.144]** DOI 10.1001/archgenpsychiatry.2009.144 citation issue (broken-link) — https://doi.org/10.1001/archgenpsychiatry.2009.144  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/126))
   - affects: `00_START_HERE/notebooklm_upload_2026-07-01/08_CASES_OSCE_SHELF_EXAM.md`, `08_Cases_and_Simulation/_source/DOI_RESOLUTION_REPORT.md`
 - **[doi:10.1001/archgenpsychiatry.2009.179]** DOI 10.1001/archgenpsychiatry.2009.179 citation issue (broken-link) — https://doi.org/10.1001/archgenpsychiatry.2009.179  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/127))
@@ -1495,47 +1494,20 @@ _None._
 | `00_START_HERE/notebooklm_upload_2026-07-01/10_TRACKS_AND_AUDIENCE_OVERLAYS.md` | 2026-07-06 | — never attested — |
 | `00_START_HERE/notebooklm_upload_2026-07-01/13_OFFICE_EXTRACTS_CORE_TEACHING.md` | 2026-07-06 | — never attested — |
 | `00_START_HERE/notebooklm_upload_2026-07-01/14_OFFICE_EXTRACTS_EVIDENCE_AND_FACULTY.md` | 2026-07-06 | — never attested — |
-| `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 2026-07-06 | — never attested — |
-| `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 2026-07-06 | — never attested — |
-| `03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md` | 2026-07-06 | — never attested — |
-| `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md` | 2026-07-06 | — never attested — |
-| `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md` | 2026-07-06 | — never attested — |
-| `03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md` | 2026-07-06 | — never attested — |
-| `03_Core_Topics/Nutrition/nutrition_metabolic_inpatient_teaching.md` | 2026-07-06 | — never attested — |
+| `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md` | 2026-07-04 | — never attested — |
 | `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md` | 2026-07-06 | — never attested — |
-| `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 2026-07-06 | — never attested — |
-| `03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md` | 2026-07-06 | — never attested — |
-| `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md` | 2026-07-06 | — never attested — |
-| `04_Acute_and_Safety/Delirium/delirium_inpatient_teaching.md` | 2026-07-06 | — never attested — |
-| `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 2026-07-06 | — never attested — |
-| `05_Psychopharmacology/Protocol_Library/README.md` | 2026-07-06 | — never attested — |
-| `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md` | 2026-07-06 | — never attested — |
-| `05_Psychopharmacology/README.md` | 2026-07-06 | — never attested — |
-| `05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md` | 2026-07-06 | — never attested — |
+| `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 2026-07-04 | — never attested — |
+| `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md` | 2026-07-04 | — never attested — |
 | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 2026-07-06 | 2026-07-03 |
 | `07_Evidence_and_Reading/Landmark_Trials/INCORPORATION_PLAN.md` | 2026-07-06 | — never attested — |
 | `07_Evidence_and_Reading/Landmark_Trials/LM_crosswalk.md` | 2026-07-06 | — never attested — |
 | `07_Evidence_and_Reading/Landmark_Trials/landmark_trials_page.md` | 2026-07-06 | — never attested — |
-| `07_Evidence_and_Reading/Landmark_Trials/reading_order_by_week.md` | 2026-07-06 | — never attested — |
-| `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 2026-07-06 | 2026-07-03 |
+| `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 2026-07-04 | 2026-07-03 |
 | `08_Cases_and_Simulation/_source/DOI_RESOLUTION_REPORT.md` | 2026-07-06 | — never attested — |
-| `12_Media/psychiatry_psychotherapy_podcast_library.md` | 2026-07-06 | — never attested — |
-| `13_Faculty_Resources/APA_Downloads_2026-06-29/catalog.html` | 2026-07-06 | — never attested — |
-| `13_Faculty_Resources/Handoffs/HANDOFF_for_fable5_2026-07-01.md` | 2026-07-06 | — never attested — |
-| `13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md` | 2026-07-06 | — never attested — |
-| `13_Faculty_Resources/Handoffs/STATUS_LATEST.md` | 2026-07-06 | — never attested — |
-| `13_Faculty_Resources/Handoffs/Tier3_attestation_sheet_2026-07-01.md` | 2026-07-06 | — never attested — |
-| `13_Faculty_Resources/Handoffs/codex_qbank_spec_2026-06-29.md` | 2026-07-06 | — never attested — |
-| `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md` | 2026-07-06 | — never attested — |
-| `13_Faculty_Resources/Handoffs/openevidence_library_accuracy_review_2026-06-30.md` | 2026-07-06 | — never attested — |
-| `13_Faculty_Resources/Handoffs/openevidence_library_accuracy_review_2026-07-01.md` | 2026-07-06 | — never attested — |
-| `14_Tracks/MS3/Student_Ready_Pack/00_index/README.md` | 2026-07-06 | — never attested — |
-| `14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md` | 2026-07-06 | — never attested — |
-| `14_Tracks/MS3/Student_Ready_Pack/09_revision_maps/revision_plan.md` | 2026-07-06 | — never attested — |
-| `14_Tracks/Resident/adv_psychopharmacology.md` | 2026-07-06 | — never attested — |
+| `13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md` | 2026-07-04 | — never attested — |
+| `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md` | 2026-07-04 | — never attested — |
+| `14_Tracks/Resident/adv_psychopharmacology.md` | 2026-07-04 | — never attested — |
 | `14_Tracks/Resident/canon_200.md` | 2026-07-06 | 2026-07-04 |
-| `14_Tracks/Resident/resident_welcome.md` | 2026-07-06 | — never attested — |
-| `14_Tracks/Sub-I_MS4/README.md` | 2026-07-06 | — never attested — |
 | `_prototypes/agitation-trainer/agitation-trainer.preview.html` | 2026-07-06 | — never attested — |
 | `_prototypes/agitation-trainer/rp-agitation.preview.html` | 2026-07-06 | — never attested — |
 
@@ -1543,7 +1515,7 @@ _None._
 
 | Source | Last checked | Age (days) | Status |
 |---|---|---|---|
-| `aacap-parameters` | 2026-07-06 | 2 | ok |
+| `aacap-parameters` | 2026-07-08 | 0 | ok |
 | `clozapine-rems` | 2026-07-08 | 0 | ok |
 | `doi:10.1001/archgenpsychiatry.2009.144` | 2026-07-06 | 2 | ok |
 | `doi:10.1001/archgenpsychiatry.2009.179` | 2026-07-06 | 2 | ok |
@@ -2280,5 +2252,5 @@ _None._
 | `doi:10.7759/cureus.17425` | 2026-07-06 | 2 | ok |
 | `fda-drug-safety` | 2026-07-08 | 0 | ok |
 | `link:reconnectpractice.com` | 2026-07-06 | 2 | ok |
-| `samhsa-guidelines` | 2026-07-06 | 2 | ok |
+| `samhsa-guidelines` | 2026-07-08 | 0 | ok |
 | `spravato-rems` | 2026-07-04 | 4 | ok |

@@ -55,17 +55,18 @@ def compute(history_dir, reviewed_path):
     findings = _latest_reports(history_dir)
     for f in findings:
         f.setdefault("severity", "P2")
-    open_findings = [f for f in findings
-                     if f["severity"] in ("P0", "P1")
-                     and f.get("status") not in ("dismissed", "actioned")]
+    active_findings = [f for f in findings
+                       if f.get("status") not in ("dismissed", "actioned")]
+    open_findings = [f for f in active_findings
+                     if f["severity"] in ("P0", "P1")]
     p0 = [f for f in open_findings if f["severity"] == "P0"]
     p1 = [f for f in open_findings if f["severity"] == "P1"]
-    p2 = [f for f in findings if f["severity"] == "P2"]
+    p2 = [f for f in active_findings if f["severity"] == "P2"]
 
     # review-overdue: newest finding date per affected page vs reviewed.json
     reviewed = _load(reviewed_path, {})
     newest_by_page = {}
-    for f in findings:
+    for f in active_findings:
         d = (f.get("detected_at") or "")[:10]
         for pg in f.get("affects", []):
             if d > newest_by_page.get(pg, ""):

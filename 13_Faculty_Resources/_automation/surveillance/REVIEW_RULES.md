@@ -58,6 +58,10 @@ Escalation override: any finding whose `affects[]` includes a path in
   returns **0 extracted characters** (or the crawler errors), emit a **P1
   "scraper health"** finding instead of silently reporting "no change." Silence must
   never be mistaken for stability.
+- **Browser-required sources:** if a registry source sets `link_check:
+  browser_required`, stdlib/curl `401`, `403`, or no-response results are treated as
+  checker limitations rather than broken-link findings. A definitive `404`/`410`
+  still flags. Verify these sources with browser/Apify before acting.
 - **Redirect nuance:** `301` on a cited source → P1 update (URL moved); `302` → pass.
 - **Soft-404:** HTTP 200 whose body matches not-found patterns is treated as broken.
 - **Digest batching:** P2 items never page anyone; they accumulate into one monthly
