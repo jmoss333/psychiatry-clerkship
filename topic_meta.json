@@ -2567,7 +2567,8 @@
     "points": [
       "Daily rounds presentations run 60–90 seconds: hospital day, overnight events, one subjective point and one MSE change, a risk update, and a plan question — lead with what changed, not the full history.",
       "Organize the note plan by problem: safety → medications/medical/substance/sleep → psychotherapy/milieu → family/collateral → disposition — so the structure mirrors the clinical priorities.",
-      "The handoff template names the main overnight risks, a trigger-plan pair (if X happens, do Y), and what escalates and what helps with this patient — generic handoffs create coverage gaps."
+      "The handoff template names the main overnight risks, a trigger-plan pair (if X happens, do Y), and what escalates and what helps with this patient — generic handoffs create coverage gaps.",
+      "Practice two micro-updates out loud: a 30-second collateral update and a 60-second rounds update."
     ],
     "cant": "Copying forward yesterday's risk language without updating the reasoning — 'denies SI/HI, low acute risk' on hospital day 7 without noting today's context — erases the clinical event and creates a documentation gap.",
     "quiz": {
@@ -2597,6 +2598,10 @@
       {
         "label": "Use 30-second collateral update",
         "href": "?page=collateral_workflow.md"
+      },
+      {
+        "label": "Practice micro-updates",
+        "href": "?tool=oral.html"
       }
     ],
     "workflowStages": [
@@ -2631,6 +2636,10 @@
         {
           "label": "Use 30-second collateral update",
           "href": "?page=collateral_workflow.md"
+        },
+        {
+          "label": "Practice micro-updates",
+          "href": "?tool=oral.html"
         }
       ]
     }
