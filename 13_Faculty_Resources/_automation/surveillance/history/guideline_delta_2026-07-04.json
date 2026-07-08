@@ -101,8 +101,9 @@
       "prev_hash": ""
     },
     "affects": [],
-    "recommended_action": "Review AACAP Practice Parameters / Clinical Resources; if guidance changed, update the affected teaching page(s) and re-stamp reviewed.json.",
-    "status": "issue-open",
-    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/92"
+    "recommended_action": "AACAP source refreshed to the current official Clinical Practice Guidelines / Practice Parameters page, which states Practice Parameters are discontinued/historical. The prior empty scrape was treated as source-route/browser-checker noise, not a curriculum-content change.",
+    "status": "actioned",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/92",
+    "resolution": "source-url-refreshed: AACAP current clinical practice guidelines/practice parameters page on 2026-07-08"
   }
 ]

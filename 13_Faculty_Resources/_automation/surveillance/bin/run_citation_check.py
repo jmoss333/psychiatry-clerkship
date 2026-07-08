@@ -101,6 +101,18 @@ def _finding(source_id, source_name, url, change_type, code, redirect_to, affect
     }
 
 
+def _browser_required_soft_failure(source, code):
+    """Official sites may block stdlib/curl while resolving in a real browser.
+
+    Treat access-denied/no-response as a checker limitation only for sources that
+    explicitly opt into browser verification. Definitive not-found responses
+    still emit findings.
+    """
+    if source.get("link_check") != "browser_required":
+        return False
+    return code in (401, 403) or code is None
+
+
 def check_registry_sources():
     """Verify each registry source URL still resolves. Returns list of findings."""
     findings = []
@@ -120,6 +132,8 @@ def check_registry_sources():
         ok, ct, code, redir, detail = classify(url)
         time.sleep(THROTTLE_S)
         if ok:
+            continue
+        if _browser_required_soft_failure(s, code):
             continue
         action = ("Authoritative source URL for `%s` is %s. Update the `url` in "
                   "source_registry.yaml (and any citing pages), then re-run. This "
@@ -203,6 +217,10 @@ def self_test():
               "change_type", "severity", "summary", "status"):
         assert k in f, "missing %s" % k
     assert f["job"] == "link-source-monitor"
+    assert _browser_required_soft_failure({"link_check": "browser_required"}, 403)
+    assert _browser_required_soft_failure({"link_check": "browser_required"}, None)
+    assert not _browser_required_soft_failure({"link_check": "browser_required"}, 404)
+    assert not _browser_required_soft_failure({}, 403)
     # backtick neutralization happens downstream in issue_body; here just ensure
     # fingerprints are stable across runs
     assert L.fingerprint("a", "broken-link", "u") == L.fingerprint("a", "broken-link", "u")

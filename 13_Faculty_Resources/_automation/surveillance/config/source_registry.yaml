@@ -9,6 +9,8 @@
 #     diff the copyrighted text (DSM-5-TR, most journals).
 #   - verified: false -> URL not yet confirmed by a link-monitor run. First weekly run
 #     flips this to true (or opens a P1 "source URL unreachable" issue).
+#   - link_check: browser_required -> official source blocks simple urllib/curl with
+#     401/403/no-response; use browser/Apify verification and still flag definitive 404/410.
 #   - severity_default seeds the finding's severity; REVIEW_RULES.md can escalate.
 
 version: 1
@@ -103,29 +105,32 @@ sources:
     notes: Screening grades change and are board-relevant.
 
   - id: samhsa-guidelines
-    name: SAMHSA Guidelines & Advisories
+    name: SAMHSA Evidence-Based Practices Resource Center
     job: guideline-surveillance
-    url: https://www.samhsa.gov/resource-search/all
+    url: https://www.samhsa.gov/libraries/evidence-based-practices-resource-center
     type: html+pdf
     modality: full_text
     severity_default: P2
     cadence: monthly
     watch_for: ["crisis", "988", "treatment improvement protocol", "TIP", "advisory"]
     affects_hint: ["04_Acute_and_Safety/**", "03_Core_Topics/SUD_Withdrawal/**"]
-    verified: false
+    verified: true
+    link_check: browser_required
+    notes: Replaces retired /resource-search/all path. Official SAMHSA pages may return 403 to simple datacenter HTTP clients; verify with browser/Apify before treating access denial as broken.
 
   - id: aacap-parameters
-    name: AACAP Practice Parameters / Clinical Resources
+    name: AACAP Clinical Practice Guidelines / Practice Parameters
     job: guideline-surveillance
-    url: https://www.aacap.org/AACAP/Resources_for_Primary_Care/Practice_Parameters_and_Resource_Centers/Practice_Parameters.aspx
+    url: https://www.aacap.org/AACAP/Practice/Clinical%20Practice%20Guidelines/AACAP/Resources_for_Primary_Care/Practice_Parameters_and_Resource_Centers/Practice_Parameters.aspx
     type: html
     modality: full_text
     severity_default: P2
     cadence: monthly
     watch_for: ["parameter", "updated", "new"]
     affects_hint: ["14_Tracks/CAP_Fellow/**"]
-    verified: false
-    notes: Include only if clerkship covers child/adolescent psychiatry.
+    verified: true
+    link_check: browser_required
+    notes: Current AACAP page states Practice Parameters are discontinued/historical and should be accessed for historical purposes only. Site can hang for simple HTTP clients; verify with browser/Apify before treating no-response as broken.
 
 # ---------------------------------------------------------------------------
 # LINK / SOURCE MONITOR (weekly) — reachability of everything we cite/link

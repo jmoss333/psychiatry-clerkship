@@ -116,8 +116,9 @@
       "13_Faculty_Resources/APA_Downloads_2026-06-29/catalog.html",
       "14_Tracks/MS3/Student_Ready_Pack/00_index/README.md"
     ],
-    "recommended_action": "Authoritative source URL for `samhsa-guidelines` is http 404. Update the `url` in source_registry.yaml (and any citing pages), then re-run. This source feeds guideline surveillance \u2014 fixing it restores monitoring.",
-    "status": "new"
+    "recommended_action": "SAMHSA source refreshed from retired /resource-search/all path to the current Evidence-Based Practices Resource Center. Official SAMHSA pages may return 403 to simple HTTP clients; registry now marks the source browser_required.",
+    "status": "actioned",
+    "resolution": "source-url-refreshed: SAMHSA Evidence-Based Practices Resource Center on 2026-07-08"
   },
   {
     "finding_id": "aacap-parameters::broken-link::1f5155fdfddd2b2c",
@@ -135,8 +136,9 @@
       "http_status": 500
     },
     "affects": [],
-    "recommended_action": "Authoritative source URL for `aacap-parameters` is http 500. Update the `url` in source_registry.yaml (and any citing pages), then re-run. This source feeds guideline surveillance \u2014 fixing it restores monitoring.",
-    "status": "new"
+    "recommended_action": "AACAP source refreshed to the current official Clinical Practice Guidelines / Practice Parameters page. The page is browser-required because simple HTTP clients can hang; definitive not-found responses will still flag.",
+    "status": "actioned",
+    "resolution": "source-url-refreshed: AACAP current clinical practice guidelines/practice parameters page on 2026-07-08"
   },
   {
     "finding_id": "doi:10.1001/archgenpsychiatry.2009.144::broken-link::d8fa7ed9324bd6b1",
