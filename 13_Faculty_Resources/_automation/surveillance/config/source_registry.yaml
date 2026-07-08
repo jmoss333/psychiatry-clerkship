@@ -56,14 +56,15 @@ sources:
   - id: spravato-rems
     name: Spravato (esketamine) REMS
     job: guideline-surveillance
-    url: https://www.spravatorems.com/
-    type: html
+    url: https://www.spravatorems.com/pdfs/REMSProgramOverview
+    type: pdf
     modality: full_text
     severity_default: P1
     cadence: monthly
-    watch_for: ["monitoring", "requirement", "certified", "administration"]
+    watch_for: ["monitoring", "requirement", "certified", "administration", "pulse oximetry"]
     affects_hint: ["05_Psychopharmacology/**", "03_Core_Topics/Mood/**"]
-    verified: false
+    verified: true
+    notes: Official SPRAVATO REMS Program Overview PDF. The REMS landing page returns HTTP 200 with an empty body to simple fetches, which caused a false empty-content alarm; monitor the official PDF for durable text-diff surveillance.
 
   - id: apa-practice-guidelines
     name: APA Practice Guidelines (index)

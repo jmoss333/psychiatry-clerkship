@@ -1,21 +1,19 @@
 # Surveillance status
 
-_Generated 2026-07-08T18:00:12+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
+_Generated 2026-07-08T18:08:22+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
 
 ## Summary
 
-- **P0 open:** 0  •  **P1 open:** 734  •  **P2 (digest):** 0
-- **Pages needing re-review:** 23
+- **P0 open:** 0  •  **P1 open:** 733  •  **P2 (digest):** 0
+- **Pages needing re-review:** 16
 - **Stale sources:** 0
 
 ## Open P0 — act now (0)
 
 _None._
 
-## Open P1 (734)
+## Open P1 (733)
 
-- **[spravato-rems]** 0 characters extracted from Spravato (esketamine) REMS (source down or scraper broken).  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/91))
-  - affects: `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md`, `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`, `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md`, `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`, `13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md`, `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md`, `14_Tracks/Resident/adv_psychopharmacology.md`, `14_Tracks/Resident/canon_200.md`
 - **[doi:10.1001/archgenpsychiatry.2009.144]** DOI 10.1001/archgenpsychiatry.2009.144 citation issue (broken-link) — https://doi.org/10.1001/archgenpsychiatry.2009.144  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/126))
   - affects: `00_START_HERE/notebooklm_upload_2026-07-01/08_CASES_OSCE_SHELF_EXAM.md`, `08_Cases_and_Simulation/_source/DOI_RESOLUTION_REPORT.md`
 - **[doi:10.1001/archgenpsychiatry.2009.179]** DOI 10.1001/archgenpsychiatry.2009.179 citation issue (broken-link) — https://doi.org/10.1001/archgenpsychiatry.2009.179  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/127))
@@ -1494,19 +1492,12 @@ _None._
 | `00_START_HERE/notebooklm_upload_2026-07-01/10_TRACKS_AND_AUDIENCE_OVERLAYS.md` | 2026-07-06 | — never attested — |
 | `00_START_HERE/notebooklm_upload_2026-07-01/13_OFFICE_EXTRACTS_CORE_TEACHING.md` | 2026-07-06 | — never attested — |
 | `00_START_HERE/notebooklm_upload_2026-07-01/14_OFFICE_EXTRACTS_EVIDENCE_AND_FACULTY.md` | 2026-07-06 | — never attested — |
-| `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md` | 2026-07-04 | — never attested — |
 | `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md` | 2026-07-06 | — never attested — |
-| `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 2026-07-04 | — never attested — |
-| `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md` | 2026-07-04 | — never attested — |
 | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 2026-07-06 | 2026-07-03 |
 | `07_Evidence_and_Reading/Landmark_Trials/INCORPORATION_PLAN.md` | 2026-07-06 | — never attested — |
 | `07_Evidence_and_Reading/Landmark_Trials/LM_crosswalk.md` | 2026-07-06 | — never attested — |
 | `07_Evidence_and_Reading/Landmark_Trials/landmark_trials_page.md` | 2026-07-06 | — never attested — |
-| `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 2026-07-04 | 2026-07-03 |
 | `08_Cases_and_Simulation/_source/DOI_RESOLUTION_REPORT.md` | 2026-07-06 | — never attested — |
-| `13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md` | 2026-07-04 | — never attested — |
-| `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md` | 2026-07-04 | — never attested — |
-| `14_Tracks/Resident/adv_psychopharmacology.md` | 2026-07-04 | — never attested — |
 | `14_Tracks/Resident/canon_200.md` | 2026-07-06 | 2026-07-04 |
 | `_prototypes/agitation-trainer/agitation-trainer.preview.html` | 2026-07-06 | — never attested — |
 | `_prototypes/agitation-trainer/rp-agitation.preview.html` | 2026-07-06 | — never attested — |
@@ -2253,4 +2244,4 @@ _None._
 | `fda-drug-safety` | 2026-07-08 | 0 | ok |
 | `link:reconnectpractice.com` | 2026-07-06 | 2 | ok |
 | `samhsa-guidelines` | 2026-07-08 | 0 | ok |
-| `spravato-rems` | 2026-07-04 | 4 | ok |
+| `spravato-rems` | 2026-07-08 | 0 | ok |
