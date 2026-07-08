@@ -2,6 +2,8 @@
 import os
 import sys
 import tempfile
+import csv
+import json
 from pathlib import Path
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -9,6 +11,7 @@ sys.path.insert(0, HERE)
 
 from export_ms3_adobe_packet_data import (
     build_export_rows,
+    export_ms3_adobe_packet_data,
     default_source_specs,
     markdown_to_plain_text,
     split_markdown_sections,
@@ -113,12 +116,54 @@ def test_build_export_rows_returns_packet_sections_and_pocket_cards():
     assert all("source_path" in row for row in packet_rows)
 
 
+def test_export_writes_csv_and_manifest_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "repo"
+        out_dir = Path(tmp) / "out"
+        for rel in [
+            "14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md",
+            "14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md",
+            "14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/formulation_differential_pocket_guide.md",
+            "14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/suicide_risk_and_safety_pocket_card.md",
+            "14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md",
+            "14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md",
+            "14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md",
+            "14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md",
+            "14_Tracks/MS3/Student_Ready_Pack/07_shelf_guide/shelf_review_guide.md",
+        ]:
+            _write(root / rel, "# Sample Source\n\n## Section One\n\nBody text.\n")
+
+        result = export_ms3_adobe_packet_data(root, out_dir, generated_on="2026-07-08")
+
+        packet_csv = out_dir / "ms3_packet_sections.csv"
+        cards_csv = out_dir / "ms3_pocket_cards.csv"
+        manifest_json = out_dir / "ms3_adobe_export_manifest.json"
+
+        assert result["packet_rows"] == 9
+        assert result["card_rows"] == 3
+        assert packet_csv.exists()
+        assert cards_csv.exists()
+        assert manifest_json.exists()
+
+        with packet_csv.open(encoding="utf-8", newline="") as fh:
+            packet_rows = list(csv.DictReader(fh))
+        assert packet_rows[0]["source_title"] == "Sample Source"
+        assert packet_rows[0]["section_heading"] == "Section One"
+
+        manifest = json.loads(manifest_json.read_text(encoding="utf-8"))
+        assert manifest["generated_on"] == "2026-07-08"
+        assert manifest["packet_rows"] == 9
+        assert manifest["card_rows"] == 3
+        assert manifest["review_status"] == "needs_faculty_review"
+
+
 def run_tests():
     tests = [
         test_markdown_to_plain_text_removes_embeds_and_simplifies_links,
         test_split_markdown_sections_uses_h2_boundaries,
         test_default_source_specs_include_core_ms3_outputs,
         test_build_export_rows_returns_packet_sections_and_pocket_cards,
+        test_export_writes_csv_and_manifest_outputs,
     ]
 
     failures = 0

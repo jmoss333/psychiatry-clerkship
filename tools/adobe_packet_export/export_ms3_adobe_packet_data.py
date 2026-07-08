@@ -2,7 +2,11 @@
 """Export MS3 Student Ready Pack content into Adobe-friendly CSV/JSON files."""
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
+import csv
+import datetime as _dt
+import json
 from pathlib import Path
 import re
 
@@ -210,3 +214,92 @@ def build_export_rows(repo_root: Path, generated_on: str) -> tuple[list[dict[str
             )
 
     return packet_rows, card_rows
+
+
+def write_csv(path: Path, rows: list[dict[str, str]]) -> None:
+    """Write rows to CSV with stable column order from the first row."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not rows:
+        path.write_text("", encoding="utf-8")
+        return
+    fieldnames = list(rows[0].keys())
+    with path.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def write_manifest(
+    path: Path,
+    packet_rows: list[dict[str, str]],
+    card_rows: list[dict[str, str]],
+    generated_on: str,
+) -> None:
+    """Write a small manifest so Adobe outputs can be traced back to repo sources."""
+    source_paths = sorted({row["source_path"] for row in packet_rows + card_rows})
+    manifest = {
+        "generated_on": generated_on,
+        "review_status": "needs_faculty_review",
+        "packet_rows": len(packet_rows),
+        "card_rows": len(card_rows),
+        "source_paths": source_paths,
+        "outputs": {
+            "packet_sections_csv": "ms3_packet_sections.csv",
+            "pocket_cards_csv": "ms3_pocket_cards.csv",
+        },
+        "guardrails": [
+            "No PHI or patient-identifiable media.",
+            "Repo Markdown remains canonical.",
+            "Adobe outputs require faculty review before learner-facing use.",
+        ],
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+
+def export_ms3_adobe_packet_data(repo_root: Path, out_dir: Path, generated_on: str) -> dict[str, int | str]:
+    """Export MS3 packet rows, pocket-card rows, and traceability manifest."""
+    packet_rows, card_rows = build_export_rows(repo_root, generated_on)
+    write_csv(out_dir / "ms3_packet_sections.csv", packet_rows)
+    write_csv(out_dir / "ms3_pocket_cards.csv", card_rows)
+    write_manifest(out_dir / "ms3_adobe_export_manifest.json", packet_rows, card_rows, generated_on)
+    return {
+        "out_dir": str(out_dir),
+        "packet_rows": len(packet_rows),
+        "card_rows": len(card_rows),
+    }
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Export MS3 Student Ready Pack data for Adobe templates.")
+    parser.add_argument(
+        "--repo-root",
+        default=str(Path(__file__).resolve().parents[2]),
+        help="Path to the Psychiatry Clerkship Library repo root.",
+    )
+    parser.add_argument(
+        "--out-dir",
+        default="outputs/adobe_packet_exports",
+        help="Output directory for generated CSV/JSON files.",
+    )
+    parser.add_argument(
+        "--generated-on",
+        default=_dt.date.today().isoformat(),
+        help="ISO date stamped into generated rows.",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = _parse_args()
+    repo_root = Path(args.repo_root).resolve()
+    out_dir = (repo_root / args.out_dir).resolve() if not Path(args.out_dir).is_absolute() else Path(args.out_dir)
+    result = export_ms3_adobe_packet_data(repo_root, out_dir, args.generated_on)
+    print(
+        "MS3 Adobe export complete: "
+        f"{result['packet_rows']} packet rows, {result['card_rows']} pocket-card rows -> {result['out_dir']}"
+    )
+
+
+if __name__ == "__main__":
+    main()
