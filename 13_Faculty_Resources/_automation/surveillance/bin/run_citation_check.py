@@ -56,6 +56,14 @@ CITATION_INCLUDE_PREFIXES = (
 )
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+NO_REDIRECT_OPENER = urllib.request.build_opener(_NoRedirect)
+
+
 def classify(url, retries=2):
     """Return (ok, change_type|None, code|None, redirect_to|None, detail).
 
@@ -101,6 +109,43 @@ def classify(url, retries=2):
     if kind == "transient":
         return True, None, detail, None, "rate-limited (not flagged)"
     return False, "broken-link", None, None, "unreachable after retries: %s" % detail
+
+
+def classify_doi(doi, retries=2):
+    """Return DOI reachability without following into publisher bot-blocks.
+
+    DOI.org commonly returns a temporary redirect to the publisher. That redirect
+    proves the DOI resolved; a downstream publisher 403 should not become a
+    broken-citation finding.
+    """
+    url = "https://doi.org/" + doi
+    last = None
+    for attempt in range(retries + 1):
+        try:
+            req = urllib.request.Request(url, method="GET")
+            req.add_header("User-Agent", UA)
+            with NO_REDIRECT_OPENER.open(req, timeout=TIMEOUT_S) as r:
+                final = r.geturl()
+                return True, None, getattr(r, "status", 200), (final if final != url else None), "ok"
+        except urllib.error.HTTPError as e:
+            code = e.code
+            loc = e.headers.get("Location") if e.headers else None
+            if code in (301, 302, 303, 307, 308) and loc:
+                return True, None, code, loc, "doi resolved"
+            if code in (429, 503):
+                last = ("transient", code); time.sleep(1.5 * (attempt + 1)); continue
+            if 400 <= code < 600 and attempt < retries:
+                last = ("http", code); time.sleep(1.0 * (attempt + 1)); continue
+            return False, "broken-link", code, None, "doi.org http %s" % code
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            reason = getattr(e, "reason", e)
+            if "certificate" in str(reason).lower() or "ssl" in str(reason).lower():
+                return False, "tls-error", None, None, str(reason)
+            last = ("neterr", str(reason)); time.sleep(1.0 * (attempt + 1)); continue
+    kind, detail = last or ("neterr", "unknown")
+    if kind == "transient":
+        return True, None, detail, None, "rate-limited (not flagged)"
+    return False, "broken-link", None, None, "doi.org unreachable after retries: %s" % detail
 
 
 def _finding(source_id, source_name, url, change_type, code, redirect_to, affects, action):
@@ -199,6 +244,8 @@ def scan_curriculum_citations(root):
                 continue
             for m in DOI_RE.finditer(text):
                 doi = m.group(0).rstrip(".,);]")
+                if doi.lower().endswith("/full"):
+                    doi = doi[:-5]
                 yield "doi", doi, "https://doi.org/" + doi, rel
             for m in PMID_RE.finditer(text):
                 pmid = m.group(1)
@@ -217,7 +264,8 @@ def check_citations(root):
         check_url = (url if kind == "doi"
                      else "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
                           "?db=pubmed&id=%s&retmode=json" % ident)
-        ok, ct, code, redir, detail = classify(check_url)
+        ok, ct, code, redir, detail = (classify_doi(ident) if kind == "doi"
+                                       else classify(check_url))
         time.sleep(THROTTLE_S)
         if ok:
             continue
@@ -250,6 +298,8 @@ def self_test():
     assert _browser_required_soft_failure({"link_check": "browser_required"}, None)
     assert not _browser_required_soft_failure({"link_check": "browser_required"}, 404)
     assert not _browser_required_soft_failure({}, 403)
+    sample_frontiers = "[article](https://www.frontiersin.org/articles/10.3389/fmed.2024.1358529/full)"
+    assert DOI_RE.search(sample_frontiers).group(0).rstrip(".,);]").endswith("/full")
     assert _skip_citation_path("00_START_HERE/notebooklm_upload_2026-07-01/a.md")
     assert _skip_citation_path("08_Cases_and_Simulation/_source/DOI_REPORT.md")
     assert _skip_citation_path("_prototypes/demo.preview.html")

@@ -62,6 +62,10 @@ def _is_citation(f):
     return str(f.get("source_id", "")).startswith(CITATION_PREFIXES)
 
 
+def _is_citation_source_id(source_id):
+    return str(source_id).startswith(CITATION_PREFIXES)
+
+
 def _is_archive_citation_path(path):
     return path.startswith(CITATION_ARCHIVE_PREFIXES) or any(part in path for part in CITATION_ARCHIVE_PARTS)
 
@@ -131,6 +135,7 @@ def compute(history_dir, reviewed_path):
     # per-source freshness
     last_run = _load(os.path.join(history_dir, "last_run.json"), {})
     freshness = []
+    citation_freshness = []
     try:
         reg = L.load_registry()
         cad = {s["id"]: s.get("cadence", "monthly") for s in reg.get("sources", [])}
@@ -141,8 +146,19 @@ def compute(history_dir, reviewed_path):
         age = _days_since(ts)
         limit = CADENCE_DAYS.get(cad.get(sid, "monthly"), 31)
         stale = age is not None and age > limit
-        freshness.append({"source": sid, "checked": ts[:10] if ts else "—",
-                          "age_days": age, "stale": stale})
+        item = {"source": sid, "checked": ts[:10] if ts else "—",
+                "age_days": age, "stale": stale}
+        if _is_citation_source_id(sid):
+            citation_freshness.append(item)
+        else:
+            freshness.append(item)
+
+    citation_freshness_summary = {
+        "count": len(citation_freshness),
+        "stale": sum(1 for x in citation_freshness if x["stale"]),
+        "last_checked": max((x["checked"] for x in citation_freshness), default="—"),
+        "oldest_checked": min((x["checked"] for x in citation_freshness), default="—"),
+    }
 
     return {"has_runs": bool(findings), "p0": p0, "p1": p1, "p2": p2,
             "p1_non_citations": p1_non_citations,
@@ -150,7 +166,9 @@ def compute(history_dir, reviewed_path):
             "p1_citations_actionable": p1_citations_actionable,
             "p1_citations_archive": p1_citations_archive,
             "citation_pages": citation_pages,
-            "overdue": overdue, "freshness": freshness, "generated": L.utcnow()}
+            "overdue": overdue, "freshness": freshness,
+            "citation_freshness": citation_freshness_summary,
+            "generated": L.utcnow()}
 
 
 # ------------------------------------------------------------------ renderers
@@ -166,6 +184,10 @@ def render_md(s):
            f"•  **P2 (digest):** {len(s['p2'])}",
            f"- **Pages needing re-review:** {len(s['overdue'])}",
            f"- **Stale sources:** {sum(1 for x in s['freshness'] if x['stale'])}", ""]
+    if s["citation_freshness"]["count"]:
+        L_ += [f"- **Citation checks:** {s['citation_freshness']['count']} DOI/PMID IDs tracked  •  "
+               f"latest check {s['citation_freshness']['last_checked']}  •  "
+               f"{s['citation_freshness']['stale']} stale", ""]
     if s["p1_citations"]:
         L_ += [f"- **Citation P1s:** {len(s['p1_citations'])} total  •  "
                f"{len(s['p1_citations_actionable'])} touch live teaching pages  •  "
@@ -231,6 +253,9 @@ def render_md(s):
     for x in s["freshness"]:
         L_ += [f"| `{x['source']}` | {x['checked']} | {x['age_days'] if x['age_days'] is not None else '—'} "
                f"| {'⚠ stale' if x['stale'] else 'ok'} |"]
+    if s["citation_freshness"]["count"]:
+        L_ += ["", "DOI/PMID freshness is summarized above so this table stays focused on "
+               "authoritative source-registry targets."]
     return "\n".join(L_)
 
 
@@ -299,12 +324,15 @@ def render_html(s):
 <span class="k">{chip('P1')} open: <b>{len(s['p1'])}</b></span>
 <span class="k">{chip('P2')} digest: <b>{len(s['p2'])}</b></span>
 <span class="k">Re-review: <b>{len(s['overdue'])}</b></span>
-<span class="k">Stale sources: <b>{sum(1 for x in s['freshness'] if x['stale'])}</b></span></p>
+<span class="k">Stale sources: <b>{sum(1 for x in s['freshness'] if x['stale'])}</b></span>
+<span class="k">Citation IDs: <b>{s['citation_freshness']['count']}</b></span></p>
 <h3>Open P0 — act now</h3><table><tr><th>Sev</th><th>Finding</th><th>Affects</th></tr>{rows(s['p0'])}</table>
 <h3>Open P1 — non-citation</h3><table><tr><th>Sev</th><th>Finding</th><th>Affects</th></tr>{rows(s['p1_non_citations'])}</table>
 {citation_triage()}
 <h3>Pages needing re-review</h3><table><tr><th>Page</th><th>Change detected</th><th>Last attested</th></tr>{over}</table>
-<h3>Source freshness</h3><table><tr><th>Source</th><th>Last checked</th><th>Age (days)</th><th>Status</th></tr>{fresh}</table>
+<h3>Source freshness</h3>
+<p style="color:#5f6368;font-size:13px">DOI/PMID freshness is summarized as {s['citation_freshness']['count']} citation IDs, latest checked {s['citation_freshness']['last_checked']}; this table stays focused on source-registry targets.</p>
+<table><tr><th>Source</th><th>Last checked</th><th>Age (days)</th><th>Status</th></tr>{fresh}</table>
 </body></html>"""
 
 
