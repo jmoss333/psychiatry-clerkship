@@ -793,14 +793,14 @@
     var defaults={
       ward:{before:[{f:'doc_oral.md',t:'Rounding Prep',k:'md'},{f:'pg_interview.md',t:'Interview & MSE',k:'md'}],after:[casePicks[0]||caseAction('guardedness_privacy_001'),{f:'ddx.md',t:'Differential Dx Scaffolds',k:'md'}],leave:[{f:'review.html',t:'Daily Review',k:'tool'},{f:'reflection.html',t:'Reflection & Identity',k:'tool'}]},
       shelf:{before:[{f:'question-bank-practice.html',t:'Practice Questions',k:'tool'},{f:'shelf.md',t:'COMAT & Shelf Review',k:'md'}],after:[{f:'active-recall.html',t:'Active Recall',k:'tool'},{f:'review.html',t:'Daily Review',k:'tool'}],leave:[{f:'reading_map.md',t:'Weekly Reading Map',k:'md'}]},
-      family:{before:[familyAction('family_meeting_opening_001','Prepare Family/Collateral Conversation'),{f:'family_playbook.md',t:'Family Meeting Playbook',k:'md'}],after:[familyAction('collateral_baseline_safety_001'),casePicks[0]||caseAction('family_meeting_opening_001')],leave:[familyAction('discharge_barrier_map_001'),{f:'reflection.html',t:'Reflection & Identity',k:'tool'}]},
+      family:{before:[{f:'collateral_workflow.md',t:'I Need Collateral',k:'md'},familyAction('family_meeting_opening_001','Prepare Family Meeting')],after:[familyAction('collateral_baseline_safety_001'),casePicks[0]||caseAction('family_meeting_opening_001')],leave:[familyAction('discharge_barrier_map_001'),{f:'reflection.html',t:'Reflection & Identity',k:'tool'}]},
       safety:{before:[{f:'pg_suicide.md',t:'Suicide Risk & Safety',k:'md'},casePicks[0]||caseAction('suicide_direct_question_001')],after:[familyAction('discharge_barrier_map_001'),{f:'cssrs.html',t:'C-SSRS Suicide Screen',k:'tool'}],leave:[{f:'review.html',t:'Daily Review',k:'tool'}]},
       '5min':{before:[casePicks[0]||caseAction('suicide_direct_question_001')],after:[familyAction('collateral_baseline_safety_001','Ask Better Collateral Questions'),casePicks[1]||caseAction('psychosis_validation_001')],leave:[{f:'review.html',t:'Daily Review',k:'tool'}]}
     };
     var pack=defaults[mode]||defaults.ward;
     if(matches.length){
       if(mode==='family'){
-        pack={before:[familyAction('family_meeting_opening_001','Prepare Family/Collateral Conversation'),{f:'family_playbook.md',t:'Family Meeting Playbook',k:'md'}],after:compactActions([familyAction('collateral_baseline_safety_001'),casePicks[0]||caseAction('family_meeting_opening_001')]).slice(0,2),leave:[familyAction('discharge_barrier_map_001'),{f:'exp_family.md',t:'Family & Discharge',k:'md'}]};
+        pack={before:[{f:'collateral_workflow.md',t:'I Need Collateral',k:'md'},familyAction('family_meeting_opening_001','Prepare Family Meeting')],after:compactActions([familyAction('collateral_baseline_safety_001'),casePicks[0]||caseAction('family_meeting_opening_001')]).slice(0,2),leave:[familyAction('discharge_barrier_map_001'),{f:'exp_family.md',t:'Family & Discharge',k:'md'}]};
       } else if(mode==='safety'){
         pack={before:matches.slice(0,1).concat(pack.before).slice(0,2),after:compactActions([familyAction('discharge_barrier_map_001'),casePicks[0],pack.after[0]]).slice(0,2),leave:pack.leave};
       } else if(mode==='5min'){
