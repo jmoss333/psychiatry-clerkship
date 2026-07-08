@@ -3242,7 +3242,7 @@
     "read": 5,
     "tldr": "One safety rule above all: if you are worried about immediate safety, tell the resident or attending now — do not wait, do not carry it alone; the four daily questions, PHI discipline, and student boundary rules structure everything else.",
     "points": [
-      "Escalate immediately for: current suicidal intent or new plan, threats or escalating agitation, confusion/fever/rigidity suggesting delirium or catatonia, or any withdrawal concern — these cannot wait for rounds.",
+      "Escalate immediately for: current suicidal intent or new plan, threats or escalating agitation, confusion/fever/rigidity suggesting delirium or catatonia, or any withdrawal concern — these cannot wait for rounds and belong in Week 1 safety recognition.",
       "Use four questions for every patient: what is the syndrome? What medical/substance/sleep/medication factor is driving it? What family/social/discharge context changes the plan? What must be safer before discharge?",
       "Students may interview patients, draft notes, suggest differentials, and observe family meetings with a defined role — but may not make independent safety or discharge decisions, promise anything, or provide unsupervised therapy."
     ],
@@ -3265,6 +3265,7 @@
       "interview-circle.html",
       "mse.html",
       "cssrs.html",
+      "withdrawal.html",
       "communication-practice.html",
       "oral.html"
     ],
@@ -3353,12 +3354,13 @@
     }
   },
   "week1.md": {
-    "read": 3,
-    "tldr": "Week 1 — Foundations: orient to the unit, conduct your first psychiatric interview, structure a mental status exam, write an admission note, and ask one capacity question on rounds.",
+    "read": 4,
+    "tldr": "Week 1 — Foundations: orient to the unit, learn the call-now safety check, conduct your first psychiatric interview, structure a mental status exam, write an admission note, and ask one capacity question on rounds.",
     "points": [
-      "The skill of the week is the Mental Status Exam — use the interactive MSE module and write your first admission note using the Documentation guide.",
+      "The skill of the week is the Mental Status Exam plus the call-now safety check — use the interactive MSE module, write your first admission note, and tell the resident or attending immediately when safety could change today.",
+      "Required Week 1 safety recognition set: suicide intent/plan/preparation/means, escalating agitation, delirium/catatonia signs, and alcohol/benzodiazepine/opioid withdrawal concern.",
       "Suggested landmark readings: Engel 1977 (biopsychosocial), Rosenhan 1973 (labeling), and Appelbaum & Grisso 1988 (capacity) — three papers that shape how the unit thinks about diagnosis and autonomy.",
-      "On the unit this week: shadow an admission and ask one capacity question on rounds — observable, low-stakes, and directly tied to Week 1 competencies."
+      "On the unit this week: shadow an admission, ask one capacity question on rounds, and name one safety concern you would escalate immediately."
     ],
     "cta": {
       "label": "Open the Interview & MSE Pocket Guide",
@@ -3377,18 +3379,22 @@
     "relatedTools": [
       "interview-circle.html",
       "mse.html",
+      "cssrs.html",
+      "violence.html",
+      "withdrawal.html",
       "capacity.html",
       "communication-practice.html",
       "oral.html"
     ],
     "communicationCases": [
+      "suicide_direct_question_001",
       "guardedness_privacy_001",
       "collateral_questions_001"
     ],
     "clinicalWorkflow": {
-      "ask": "Open with the patient's story, then make sure safety, substances/withdrawal, medical contributors, and collateral needs are covered before you close.",
+      "ask": "Open with the patient's story, then make sure suicide risk, violence risk, vulnerability, substances/withdrawal, medical contributors, and collateral needs are covered before you close.",
       "mse": "Write one concrete example for each MSE domain instead of only using adjectives.",
-      "safety": "End every first interview knowing suicide risk, violence risk, vulnerability, withdrawal concern, and whether supervision needs immediate escalation.",
+      "safety": "Escalate immediately for current suicidal intent or preparation, escalating threats/agitation, delirium/catatonia signs, withdrawal concern, or any interaction that feels unsafe.",
       "say": "You can choose what you answer. I do have to tell the team if there is an immediate safety concern, and my goal is to understand what would help.",
       "collateral": "Ask what the patient is like at baseline, what changed, when it changed, and what safety or function concerns have appeared.",
       "rounds": "Give a one-liner, the key MSE findings, the safety read, and one capacity or collateral question.",
@@ -3397,6 +3403,14 @@
         {
           "label": "Open MSE builder",
           "href": "?tool=mse.html"
+        },
+        {
+          "label": "Open suicide safety card",
+          "href": "?page=pg_suicide.md"
+        },
+        {
+          "label": "Open withdrawal tool",
+          "href": "?tool=withdrawal.html"
         },
         {
           "label": "Practice guardedness",
@@ -3584,9 +3598,10 @@
   },
   "week5.md": {
     "read": 3,
-    "tldr": "Week 5 — Acute & Emergency Psychiatry: manage agitation safely through the verbal de-escalation ladder, recognize delirium and catatonia, assess violence risk with structured tools, and reduce means access.",
+    "tldr": "Week 5 — Acute & Emergency Psychiatry deepens the Week 1 recognition set: manage agitation safely through the verbal de-escalation ladder, distinguish delirium/catatonia/withdrawal from psychiatric symptoms, assess violence risk with structured tools, and document supervised escalation reasoning.",
     "points": [
-      "The skills of the week are the agitation ladder and Violence-Risk/Brøset tool, delirium prevention bundles, and the CIWA-Ar/COWS withdrawal card — all are bedside tools available in the hub sidebar.",
+      "The skills of the week are the agitation ladder and Violence-Risk/Brøset tool, delirium prevention and cause search, and supervised CIWA-Ar/COWS trend interpretation — all are bedside tools available in the hub sidebar.",
+      "What is different from Week 1: Week 1 teaches spot it and call now; Week 5 asks you to explain the likely driver, try least-restrictive communication when safe, use structured tools with supervision, and document what would change the plan.",
       "Pocket references to keep on hand: restraint checklist, benzo taper protocol, and clozapine ANC monitoring schedule.",
       "Case of the week: substance plus psychosis plus risk composite — designed to integrate the acute safety calls covered throughout the rotation."
     ],

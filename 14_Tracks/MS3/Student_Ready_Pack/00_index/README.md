@@ -63,9 +63,10 @@ External guideline anchors were checked for currency:
 1. Use `MS3_orientation_packet.md` as the Day 1 student handout.
 2. Use `interview_mse_pocket_guide.md` as the Week 1 pocket reference.
 3. Use `week_by_week_reading_map.md` to assign required and optional material.
-4. Use the expansion module in Week 4 for acute and consult psychiatry.
-5. Use OSCEs and synthetic cases during Weeks 4-6.
-6. Use the revision plan to convert source documents into polished handouts.
+4. Use Week 1 for safety recognition and call-now escalation: suicide, escalating agitation, delirium/catatonia, and withdrawal concern.
+5. Use the expansion module in Week 5 for acute and consult psychiatry deep practice.
+6. Use OSCEs and synthetic cases during Weeks 4-6.
+7. Use the revision plan to convert source documents into polished handouts.
 
 Plain-English build note: this pack is a working curriculum draft. It organizes
 what students need to learn first, points to existing source material, and marks
