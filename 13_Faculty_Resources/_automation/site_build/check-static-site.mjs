@@ -50,6 +50,7 @@ const p = (...a) => join(SITE, ...a);
 const readJSON = (f) => JSON.parse(readFileSync(f, 'utf8'));
 const listHtml = (dir) => existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith('.html')) : [];
 const DOSE = /\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg\/kg)\b/i;
+const CDN_HOST = /\b(?:cdnjs\.cloudflare\.com|unpkg\.com|jsdelivr\.net)\b/i;
 
 if (!existsSync(SITE)) { console.error(`Site dir not found: ${SITE}`); process.exit(1); }
 
@@ -152,6 +153,7 @@ if (existsSync(tmPath) && parsed[tmPath]) {
 /* ---------- 5. per-tool HTML checks (RC-META, title, viewport, dose, storage) ---------- */
 for (const f of toolFiles) {
   const html = readFileSync(p('tools', f), 'utf8');
+  if (CDN_HOST.test(html)) H(`external CDN dependency in tools/${f} — vendor the script locally so bedside/offline use does not blank the tool`);
   if (!/\[RC-META\]/.test(html)) S(`tool missing [RC-META]: ${f}`);
   if (!/<title>/i.test(html)) H(`tool missing <title>: ${f}`);
   if (!/name=["']viewport["']/i.test(html)) H(`tool missing viewport meta: ${f}`);
