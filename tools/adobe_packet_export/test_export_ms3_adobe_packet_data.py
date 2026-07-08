@@ -14,6 +14,7 @@ from export_ms3_adobe_packet_data import (
     export_ms3_adobe_packet_data,
     default_source_specs,
     markdown_to_plain_text,
+    _resolve_cli_paths,
     split_markdown_sections,
 )
 
@@ -150,11 +151,29 @@ def test_export_writes_csv_and_manifest_outputs():
         assert packet_rows[0]["source_title"] == "Sample Source"
         assert packet_rows[0]["section_heading"] == "Section One"
 
+        with cards_csv.open(encoding="utf-8", newline="") as fh:
+            card_rows = list(csv.DictReader(fh))
+        assert card_rows[0]["card_title"] == "Sample Source"
+        assert "Section One" in card_rows[0]["card_text"]
+        assert card_rows[0]["adobe_template_hint"] == "folded_pocket_card"
+        assert len(card_rows) == 3
+
         manifest = json.loads(manifest_json.read_text(encoding="utf-8"))
         assert manifest["generated_on"] == "2026-07-08"
         assert manifest["packet_rows"] == 9
         assert manifest["card_rows"] == 3
         assert manifest["review_status"] == "needs_faculty_review"
+
+
+def test_resolve_cli_paths_expands_tilde_and_resolves_relative_out_dir():
+    repo_root, out_dir = _resolve_cli_paths(str(Path.home()), str(Path("~") / "adobe_packet_exports"))
+    assert repo_root == Path.home()
+    assert out_dir == (Path.home() / "adobe_packet_exports").resolve()
+
+    resolved_repo = Path("/tmp") / "ms3_repo_root"
+    repo_root, out_dir = _resolve_cli_paths(str(resolved_repo), "outputs/adobe_packet_exports")
+    assert repo_root == resolved_repo.resolve()
+    assert out_dir == (resolved_repo / "outputs/adobe_packet_exports").resolve()
 
 
 def run_tests():
@@ -164,6 +183,7 @@ def run_tests():
         test_default_source_specs_include_core_ms3_outputs,
         test_build_export_rows_returns_packet_sections_and_pocket_cards,
         test_export_writes_csv_and_manifest_outputs,
+        test_resolve_cli_paths_expands_tilde_and_resolves_relative_out_dir,
     ]
 
     failures = 0

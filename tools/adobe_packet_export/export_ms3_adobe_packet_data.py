@@ -290,10 +290,17 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _resolve_cli_paths(repo_root_arg: str, out_dir_arg: str) -> tuple[Path, Path]:
+    """Normalize CLI paths consistently for tests and runtime."""
+    repo_root = Path(repo_root_arg).expanduser().resolve()
+    out_dir_raw = Path(out_dir_arg).expanduser()
+    out_dir = out_dir_raw.resolve() if out_dir_raw.is_absolute() else (repo_root / out_dir_raw).resolve()
+    return repo_root, out_dir
+
+
 def main() -> None:
     args = _parse_args()
-    repo_root = Path(args.repo_root).resolve()
-    out_dir = (repo_root / args.out_dir).resolve() if not Path(args.out_dir).is_absolute() else Path(args.out_dir)
+    repo_root, out_dir = _resolve_cli_paths(args.repo_root, args.out_dir)
     result = export_ms3_adobe_packet_data(repo_root, out_dir, args.generated_on)
     print(
         "MS3 Adobe export complete: "
