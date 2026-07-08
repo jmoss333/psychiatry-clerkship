@@ -38,6 +38,24 @@
   input.search{width:100%;padding:8px 28px 8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.9rem;background:#fff;color:var(--text)}
   input.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
   .search-wrap .sx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:1rem;display:none}
+  .mode-companion{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:10px;margin:0 0 12px;box-shadow:0 1px 3px rgba(59,51,44,.08)}
+  .mc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+  .mc-title{font-size:.68rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
+  .mc-home{border:1px solid var(--border);background:var(--bg-alt);color:var(--accent-dark);border-radius:999px;padding:3px 8px;font:inherit;font-size:.68rem;font-weight:800;cursor:pointer}
+  .mc-home:hover{border-color:var(--accent);background:var(--accent-light)}
+  .mc-modes{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 9px}
+  .mc-mode{border:1px solid var(--border);background:var(--bg-alt);color:var(--text-mid);border-radius:999px;padding:3px 7px;font:inherit;font-size:.68rem;font-weight:800;cursor:pointer}
+  .mc-mode.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .mc-section{border-top:1px solid var(--border);padding-top:8px;margin-top:8px}
+  .mc-label{font-size:.62rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin:0 0 4px}
+  .mc-list{display:grid;gap:4px}
+  .mc-item{display:flex;align-items:center;gap:7px;width:100%;border:none;background:transparent;color:var(--text);text-align:left;border-radius:7px;padding:5px 6px;cursor:pointer;font:inherit;font-size:.82rem;line-height:1.2}
+  .mc-item:hover{background:var(--accent-light);color:var(--accent-dark)}
+  .mc-item .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mc-item .tag{flex:0 0 auto;color:var(--text-light);font-size:.6rem;font-weight:900;letter-spacing:.05em;text-transform:uppercase}
+  .mc-item.is-tool .tag{color:var(--accent-dark)}
+  .mc-item.is-safety .tag{color:var(--primary-dark)}
+  .mc-empty{font-size:.78rem;color:var(--text-light);line-height:1.35}
   .navsec-wrap{margin-top:4px}
   .navgroup-wrap{margin-top:8px}
   .navgroupsec{display:flex;align-items:center;gap:7px;width:100%;text-align:left;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-mid);font-weight:800;padding:8px 6px;border-radius:6px}
@@ -379,6 +397,7 @@
       <input id="search" class="search" type="search" placeholder="Search the hub&hellip;" autocomplete="off" spellcheck="false" aria-label="Search the psychiatry clerkship hub">
       <button id="sx" class="sx" title="Clear" aria-label="Clear search">&times;</button>
     </div>
+    <section id="modeCompanion" class="mode-companion" aria-label="Workflow mode recommendations"></section>
     <nav id="nav"></nav>
   </aside>
   <main>
@@ -399,7 +418,7 @@
   applyThemeIcon();
   fetch('reviewed.json').then(function(r){return r.ok?r.json():{}}).then(function(d){REVIEWED=(d&&d.items)?d.items:(d||{});try{if(currentItem&&REVIEWED[currentItem.f]){ if(currentItem.k==='tool'&&!contentEl.querySelector('.toolrev'))show(currentItem); else if(currentItem.k!=='tool'&&!contentEl.querySelector('.reviewed'))show(currentItem); }}catch(_){ }}).catch(function(){});
   var TOPIC_META={};
-  fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; if(currentItem&&TOPIC_META[currentItem.f]&&contentEl&&!contentEl.querySelector('.topic-tpl')) show(currentItem); }).catch(function(){});
+  fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; try{ if(window.__renderModeCompanion) window.__renderModeCompanion(); }catch(_){ } if(currentItem&&TOPIC_META[currentItem.f]&&contentEl&&!contentEl.querySelector('.topic-tpl')) show(currentItem); }).catch(function(){});
   function makeCollapsible(body){
     if(!body) return;
     var kids=[].slice.call(body.children);
@@ -645,6 +664,7 @@
     else if(!_seenWelcome && openByFile('welcome.md',{replace:true,noRoute:true})){}
     else if(openByFile('__home__',{replace:true})){}
     else { var p0=navEl.querySelector('.navitem'); if(p0) show(p0._item,p0,{replace:true}); }
+    try{ if(window.__renderModeCompanion) window.__renderModeCompanion(); }catch(_){ }
     window.addEventListener('popstate',function(){ var s2=new URLSearchParams(location.search); var f2=s2.get('page')||s2.get('tool'); if(f2){ openByFile(f2,{fromHistory:true,toolExtra:toolExtraFromParams(s2)}); } else if(openByFile('__home__',{fromHistory:true})){} else { var p1=navEl.querySelector('.navitem'); if(p1) show(p1._item,p1,{fromHistory:true}); } });
     if(mPath) mPath.onclick=function(){ showPath(); };
     if(mLib) mLib.onclick=function(){ reflectLibrary(); if(currentItem) show(currentItem); else { var p3=navEl.querySelector('.navitem'); if(p3) p3.click(); } };
@@ -799,7 +819,7 @@
   function allNavItems(){ var out=[]; [].forEach.call(document.querySelectorAll('#nav .navitem'),function(b){ var it=b._item; if(it&&it.k!=='special')out.push({f:it.f,t:it.t,k:it.k}); }); return out; }
   function dashboardState(){ try{return JSON.parse(localStorage.getItem('cw_dashboard_v1')||'{}')||{};}catch(_){return {};} }
   function dashboardMode(){ var st=dashboardState(); return st.mode||'ward'; }
-  function setDashboardMode(mode){ try{localStorage.setItem('cw_dashboard_v1',JSON.stringify({mode:mode,at:new Date().toISOString().slice(0,10)}));}catch(_){ } }
+  function setDashboardMode(mode){ try{localStorage.setItem('cw_dashboard_v1',JSON.stringify({mode:mode,at:new Date().toISOString().slice(0,10)}));}catch(_){ } try{renderModeCompanion();}catch(_){ } }
   var DASH_CONFIG={
     ward:{label:'Ward',intent:'Use this when you are about to see patients, present on rounds, or convert a patient problem into a next clinical step.',stages:['team','encounter','diagnosis','treatment','communication','safety'],tools:['oral.html','mse.html','diagnostic-reasoning.html','communication-practice.html','decision-aids.html'],pages:['doc_oral.md','pg_interview.md','ddx.md','pg_formulation.md','rounds_questions.md'],notes:{'doc_oral.md':'rounds','pg_interview.md':'encounter','ddx.md':'diagnosis','pg_formulation.md':'formulation','rounds_questions.md':'rounds'}},
     shelf:{label:'Shelf',intent:'Use this when you want board-style practice connected back to the patients and topics you are seeing on the unit.',stages:['exam','diagnosis','treatment','safety'],tools:['question-bank-practice.html','active-recall.html','review.html','shelf-mode.html','oral.html'],pages:['shelf.md','rounds_questions.md','landmark_trials.md','reading_map.md','core_readings.md'],notes:{'shelf.md':'exam','rounds_questions.md':'oral recall','landmark_trials.md':'evidence','reading_map.md':'reading map','core_readings.md':'core'}},
@@ -899,6 +919,28 @@
     tools.forEach(function(x){ var safe=practiceIsSafe(x.f)?' is-safety':''; h+='<a class="wd-tool'+safe+'" href="'+esc(x.href)+'">'+esc(x.t)+'</a>'; });
     h+='</div>'; return h;
   }
+  function companionButton(x,kind){
+    if(!x||!x.f)return '';
+    var cls='mc-item '+(kind==='tool'?'is-tool ':'')+(practiceIsSafe(x.f)?'is-safety':'');
+    var tag=x.note||x.modeReason||(kind==='tool'?'tool':'page');
+    return '<button type="button" class="'+cls+'" data-mc-f="'+esc(x.f)+'"><span class="t">'+esc(x.t)+'</span><span class="tag">'+esc(tag)+'</span></button>';
+  }
+  function renderModeCompanion(){
+    var root=document.getElementById('modeCompanion'); if(!root)return;
+    var mode=dashboardMode(), cfg=dashCfg(mode), modes=[['ward','Ward'],['shelf','Shelf'],['family','Family'],['safety','Safety'],['5min','5 min']];
+    var matches=itemsForMode(mode), tools=toolsForMode(mode,matches), pages=matches.slice(0,3);
+    var h='<div class="mc-head"><div class="mc-title">'+esc(cfg.label)+' mode</div><button type="button" class="mc-home" data-mc-home="1">Progress</button></div>';
+    h+='<div class="mc-modes">'+modes.map(function(m){return '<button type="button" class="mc-mode'+(mode===m[0]?' on':'')+'" data-mc-mode="'+m[0]+'">'+m[1]+'</button>';}).join('')+'</div>';
+    h+='<div class="mc-section"><div class="mc-label">Pages</div><div class="mc-list">'+(pages.length?pages.map(function(x){return companionButton(x,'page');}).join(''):'<div class="mc-empty">Recommendations load after navigation data is ready.</div>')+'</div></div>';
+    h+='<div class="mc-section"><div class="mc-label">Tools</div><div class="mc-list">'+(tools.length?tools.slice(0,3).map(function(x){return companionButton(x,'tool');}).join(''):'<div class="mc-empty">No mode tools yet.</div>')+'</div></div>';
+    root.innerHTML=h;
+  }
+  window.__renderModeCompanion=renderModeCompanion;
+  (function(){ var root=document.getElementById('modeCompanion'); if(!root)return; root.addEventListener('click',function(e){
+    var mb=e.target.closest?e.target.closest('[data-mc-mode]'):null; if(mb){ setDashboardMode(mb.getAttribute('data-mc-mode')); if(currentItem&&currentItem.f==='__home__'&&window.renderHome){ contentEl.innerHTML=window.renderHome(); try{window.__afterSpecial('__home__');}catch(_){ } } return; }
+    var home=e.target.closest?e.target.closest('[data-mc-home]'):null; if(home){ navClick('__home__'); return; }
+    var item=e.target.closest?e.target.closest('[data-mc-f]'):null; if(item){ navClick(item.getAttribute('data-mc-f')); }
+  }); })();
   function renderWardDashboard(){
     var mode=dashboardMode(), modes=[['ward','Ward'],['shelf','Shelf'],['family','Family'],['safety','Safety'],['5min','5 minutes']];
     var matches=itemsForMode(mode);
