@@ -7,6 +7,32 @@ ROOT=os.path.dirname(LIB)                                 # parent dir that hold
 OUT=os.environ.get("OUT_DIR", os.path.join(ROOT,"clerkship-hub-deploy"))
 SPA=os.path.join(HERE,"spa_index.html")                   # SPA shell (co-located with this script)
 MARKED=os.path.join(HERE,"marked.min.js")                 # vendored marked (co-located)
+MANIFEST=os.path.join(HERE,"site_manifest.json")          # content/tool build manifest
+CLINICAL_CSS=os.path.join(HERE,"clinical-warm.css")       # shared dark-mode tokens
+
+def _relpath(p):
+    for base in (LIB,HERE):
+        try:
+            r=os.path.relpath(p,base)
+            if not r.startswith(".."): return r
+        except ValueError:
+            pass
+    return p
+
+def _abort_missing(missing):
+    if not missing: return
+    print("BUILD ABORTED — %d required source asset(s) missing:" % len(missing))
+    for p in missing: print("   -", _relpath(p))
+    raise SystemExit(1)
+
+def _copy_required(src,dst,missing):
+    if os.path.exists(src):
+        shutil.copy2(src,dst)
+    else:
+        missing.append(src)
+
+_bootstrap_missing=[p for p in [MANIFEST,SPA,MARKED,CLINICAL_CSS] if not os.path.exists(p)]
+_abort_missing(_bootstrap_missing)
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(OUT+"/content"); os.makedirs(OUT+"/tools")
 
@@ -14,7 +40,7 @@ os.makedirs(OUT+"/content"); os.makedirs(OUT+"/tools")
 # site_manifest.json (co-located) is the single source of truth for what ships;
 # the QA gate's orphaned-source check audits the NN_Category/ tree against it.
 # New content pages: register in site_manifest.json AND in nav[] below to ship.
-_manifest=json.load(open(os.path.join(HERE,"site_manifest.json"),encoding="utf-8"))
+_manifest=json.load(open(MANIFEST,encoding="utf-8"))
 tools=[tuple(x) for x in _manifest["tools"]]
 # Hidden from the sidebar list + search per Dr. Moss's request (2026-07-06) — superseded by the
 # question bank practice tool. Files still ship (still in `tools` above) and stay fully reachable
@@ -31,15 +57,13 @@ _required=[os.path.join(LIB,src) for src,_,_ in tools]+[
     LIB+"/13_Faculty_Resources/review-attest.html",
     LIB+"/01_Six_Week_Curriculum/learning-path.html",
     LIB+"/question_bank.json",
-]
-_missing_req=[p for p in _required if not os.path.exists(p)]
-if _missing_req:
-    print("BUILD ABORTED — %d required source asset(s) missing:" % len(_missing_req))
-    for _p in _missing_req: print("   -", os.path.relpath(_p, LIB))
-    raise SystemExit(1)
+]+[os.path.join(LIB,"_prototypes","agitation-trainer","vendor",f) for f in ["react.min.js","react-dom.min.js"]]
+_abort_missing([p for p in _required if not os.path.exists(p)])
 
+_missing_req=[]
 for src,dst,_ in tools:
-    shutil.copy2(os.path.join(LIB,src), OUT+"/tools/"+dst)
+    _copy_required(os.path.join(LIB,src), OUT+"/tools/"+dst, _missing_req)
+_abort_missing(_missing_req)
 
 # ---- orientation video (MS3 "start here") ----
 ORIENT_VIDEO=[
@@ -77,7 +101,9 @@ if os.path.isdir(_vidsrc):
         if os.path.exists(_p): shutil.copy2(_p, OUT+"/media/"+_vf); _vidfound+=1
 print("video library:",_vidfound,"of",len(VIDEO_MEDIA),"assets found in _prototypes/video-library/")
 
-shutil.copy2(LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json", OUT+"/tools/quizzes.json")
+_missing_req=[]
+_copy_required(LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json", OUT+"/tools/quizzes.json", _missing_req)
+_abort_missing(_missing_req)
 _aud=LIB+"/07_Evidence_and_Reading/Landmark_Trials/audio"
 if os.path.isdir(_aud): shutil.copytree(_aud, OUT+"/audio")
 
@@ -115,9 +141,11 @@ for _jn, _fallback in [
     if os.path.exists(_jp): shutil.copy2(_jp, OUT+"/"+_jn)
     else: open(OUT+"/"+_jn,"w",encoding="utf-8").write(_fallback)
 # question_bank.json: served at site root so both qbank-attest.html and question-bank-practice.html can fetch ../question_bank.json
-shutil.copy2(LIB+"/question_bank.json", OUT+"/question_bank.json")
-shutil.copy2(LIB+"/13_Faculty_Resources/review-attest.html", OUT+"/tools/review-attest.html")
-shutil.copy2(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learning-path.html")
+_missing_req=[]
+_copy_required(LIB+"/question_bank.json", OUT+"/question_bank.json", _missing_req)
+_copy_required(LIB+"/13_Faculty_Resources/review-attest.html", OUT+"/tools/review-attest.html", _missing_req)
+_copy_required(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learning-path.html", _missing_req)
+_abort_missing(_missing_req)
 
 # ---- local tool runtime vendor: no bedside CDN dependency ----
 # Several React-based tools historically loaded React from cdnjs and went blank when ward
@@ -126,14 +154,11 @@ shutil.copy2(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learn
 VENDOR_SRC=os.path.join(LIB,"_prototypes","agitation-trainer","vendor")
 VENDOR_DST=os.path.join(OUT,"tools","vendor")
 _vendor_files=["react.min.js","react-dom.min.js"]
-_missing_vendor=[os.path.join(VENDOR_SRC,f) for f in _vendor_files if not os.path.exists(os.path.join(VENDOR_SRC,f))]
-if _missing_vendor:
-    print("BUILD ABORTED — required local vendor runtime missing:")
-    for _p in _missing_vendor: print("   -", os.path.relpath(_p, LIB))
-    raise SystemExit(1)
 os.makedirs(VENDOR_DST,exist_ok=True)
+_missing_req=[]
 for _vf in _vendor_files:
-    shutil.copy2(os.path.join(VENDOR_SRC,_vf), os.path.join(VENDOR_DST,_vf))
+    _copy_required(os.path.join(VENDOR_SRC,_vf), os.path.join(VENDOR_DST,_vf), _missing_req)
+_abort_missing(_missing_req)
 
 def _rewrite_tool_vendor_deps(_path):
     _t=open(_path,encoding="utf-8").read()
@@ -182,9 +207,11 @@ nav=[
 _navorder=["Welcome and Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Evidence and Reference"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
 open(OUT+"/nav.json","w").write(json.dumps(nav))
-shutil.copy2(SPA, OUT+"/index.html")
-shutil.copy2(MARKED, OUT+"/marked.min.js")  # vendored (ward-wifi: no CDN dependency)
-shutil.copy2(os.path.join(HERE,"clinical-warm.css"), OUT+"/clinical-warm.css")  # shared dark-mode tokens (linked into tools below)
+_missing_req=[]
+_copy_required(SPA, OUT+"/index.html", _missing_req)
+_copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
+_copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
+_abort_missing(_missing_req)
 print("tools:",len(tools)," md copied:",len(md)-len(missing)," missing:",missing)
 
 # ---------- SEARCH INDEX (mirrors rc-search foundation: pre-tokenized inverted index + bidirectional synonyms) ----------
