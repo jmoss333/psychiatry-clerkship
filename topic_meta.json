@@ -44,8 +44,8 @@
         "href": "?tool=decision-aids.html"
       },
       {
-        "label": "Practice baseline collateral call",
-        "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+        "label": "Practice caregiver baseline/adaptations",
+        "href": "?tool=family-systems.html&scenario=caregiver_baseline_adaptations_001"
       },
       {
         "label": "Open collateral workflow",
@@ -102,8 +102,8 @@
           "href": "?tool=diagnostic-reasoning.html&case=delirium_vs_psychosis_001"
         },
         {
-          "label": "Practice baseline collateral call",
-          "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+          "label": "Practice caregiver baseline/adaptations",
+          "href": "?tool=family-systems.html&scenario=caregiver_baseline_adaptations_001"
         },
         {
           "label": "Open collateral workflow",
@@ -852,8 +852,8 @@
         "href": "?tool=decision-aids.html"
       },
       {
-        "label": "Practice caregiver collateral",
-        "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+        "label": "Practice caregiver baseline/adaptations",
+        "href": "?tool=family-systems.html&scenario=caregiver_baseline_adaptations_001"
       },
       {
         "label": "Open caregiver collateral workflow",
@@ -902,8 +902,8 @@
           "href": "?tool=decision-aids.html"
         },
         {
-          "label": "Practice caregiver collateral questions",
-          "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+          "label": "Practice caregiver baseline/adaptations",
+          "href": "?tool=family-systems.html&scenario=caregiver_baseline_adaptations_001"
         },
         {
           "label": "Open caregiver collateral workflow",
@@ -1261,8 +1261,8 @@
         "href": "?tool=capacity.html"
       },
       {
-        "label": "Practice caregiver collateral",
-        "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+        "label": "Practice caregiver baseline/adaptations",
+        "href": "?tool=family-systems.html&scenario=caregiver_baseline_adaptations_001"
       },
       {
         "label": "Open caregiver collateral workflow",
@@ -1302,8 +1302,8 @@
           "href": "?tool=capacity.html"
         },
         {
-          "label": "Practice caregiver collateral and safety roles",
-          "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+          "label": "Practice caregiver baseline/adaptations",
+          "href": "?tool=family-systems.html&scenario=caregiver_baseline_adaptations_001"
         },
         {
           "label": "Open caregiver collateral workflow",
@@ -1571,8 +1571,8 @@
         "href": "?page=cultural_psychiatry.md"
       },
       {
-        "label": "Practice family boundaries",
-        "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
+        "label": "Practice interpreter/culture family contact",
+        "href": "?tool=family-systems.html&scenario=culture_interpreter_family_001"
       }
     ],
     "workflowStages": [
@@ -1618,8 +1618,8 @@
           "href": "?tool=violence.html"
         },
         {
-          "label": "Practice family boundaries",
-          "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
+          "label": "Practice interpreter/culture family contact",
+          "href": "?tool=family-systems.html&scenario=culture_interpreter_family_001"
         }
       ]
     }
@@ -1665,8 +1665,8 @@
         "href": "?page=ethics_legal.md"
       },
       {
-        "label": "Practice family boundaries",
-        "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
+        "label": "Practice interpreter/culture family contact",
+        "href": "?tool=family-systems.html&scenario=culture_interpreter_family_001"
       }
     ],
     "workflowStages": [
@@ -1710,8 +1710,8 @@
           "href": "?tool=communication-practice.html&case=guardedness_privacy_001"
         },
         {
-          "label": "Practice family boundaries",
-          "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
+          "label": "Practice interpreter/culture family contact",
+          "href": "?tool=family-systems.html&scenario=culture_interpreter_family_001"
         }
       ]
     }
