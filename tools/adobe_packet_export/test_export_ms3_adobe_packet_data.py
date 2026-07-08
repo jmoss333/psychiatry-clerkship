@@ -55,3 +55,25 @@ Rounds, interviews, notes.
     assert sections[0].body == "Opening paragraph."
     assert sections[1].body == "Tell the resident now."
     assert sections[2].body == "Rounds, interviews, notes."
+
+
+def run_tests():
+    tests = [
+        test_markdown_to_plain_text_removes_embeds_and_simplifies_links,
+        test_split_markdown_sections_uses_h2_boundaries,
+    ]
+
+    failures = 0
+    for test in tests:
+        try:
+            test()
+            print(f"PASS: {test.__name__}")
+        except Exception as exc:
+            failures += 1
+            print(f"FAIL: {test.__name__}: {exc}", file=sys.stderr)
+
+    return failures
+
+
+if __name__ == "__main__":
+    sys.exit(run_tests())
