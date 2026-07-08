@@ -17,8 +17,9 @@
     "affects": [
       "03_Core_Topics/Personality/_source/BPD_Understanding_Your_Diagnosis_PAT.md"
     ],
-    "recommended_action": "Fix or replace the link in `03_Core_Topics/Personality/_source/BPD_Understanding_Your_Diagnosis_PAT.md`; if the source moved, update the citation and re-stamp reviewed.json.",
-    "status": "issue-open",
-    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/88"
+    "recommended_action": "Dead source-only video companion removed from `03_Core_Topics/Personality/_source/BPD_Understanding_Your_Diagnosis_PAT.md` and the NotebookLM import copy. No moved replacement was found.",
+    "status": "actioned",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/88",
+    "resolution": "dead-link-removed: reconnectpractice.com no longer resolves; removed source-only video companion on 2026-07-08"
   }
 ]
