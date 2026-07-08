@@ -314,13 +314,22 @@
   .wd{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:0 0 18px}
   .wd-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
   .wd-head h2{font-family:var(--font-head);font-size:1.12rem;margin:0;border:none;padding:0;color:var(--text)}
+  .wd-intro{margin:-4px 0 12px;color:var(--text-mid);font-size:.93rem;max-width:70ch}
+  .wd-count{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-left:8px}
   .wd-modes{display:flex;flex-wrap:wrap;gap:6px}
   .wd-mode{border:1px solid var(--border);background:var(--bg-alt);color:var(--text-mid);border-radius:999px;padding:5px 10px;font:inherit;font-size:.78rem;font-weight:800;cursor:pointer}
   .wd-mode.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .wd-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 13px;padding:10px 12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:12px}
+  .wd-tools .k{font-size:.68rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-right:2px}
+  .wd-tool{display:inline-flex;align-items:center;text-decoration:none;font-size:.8rem;font-weight:800;color:var(--accent-dark);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:5px 10px}
+  .wd-tool:hover{border-color:var(--accent);background:var(--accent-light)}
+  .wd-tool.is-safety{color:var(--primary-dark);background:var(--primary-light)}
   .wd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
   .wd-card{background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;padding:12px}
   .wd-card h3{font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin:0 0 8px}
   .wd-card .hm-li{padding:7px 0}
+  .wd-card .hm-li .t{line-height:1.25}
+  .wd-card .hm-li .sec{flex:0 0 auto;text-align:right;max-width:42%;line-height:1.25}
   @media(max-width:760px){.wd-grid{grid-template-columns:1fr}}
   .hm-bars .brow{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:.84rem}
   .hm-bars .lab{flex:0 0 42%;color:var(--text-mid)}
@@ -791,39 +800,138 @@
   function dashboardState(){ try{return JSON.parse(localStorage.getItem('cw_dashboard_v1')||'{}')||{};}catch(_){return {};} }
   function dashboardMode(){ var st=dashboardState(); return st.mode||'ward'; }
   function setDashboardMode(mode){ try{localStorage.setItem('cw_dashboard_v1',JSON.stringify({mode:mode,at:new Date().toISOString().slice(0,10)}));}catch(_){ } }
-  function itemsForMode(mode){ var meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}, out=[], seen={}; allNavItems().forEach(function(it){ var m=meta[it.f]; if(m&&Array.isArray(m.workflowModes)&&m.workflowModes.indexOf(mode)>=0&&!seen[it.f]){ seen[it.f]=1; out.push(it); } }); return out; }
+  var DASH_CONFIG={
+    ward:{label:'Ward',intent:'Use this when you are about to see patients, present on rounds, or convert a patient problem into a next clinical step.',stages:['team','encounter','diagnosis','treatment','communication','safety'],tools:['oral.html','mse.html','diagnostic-reasoning.html','communication-practice.html','decision-aids.html'],pages:['doc_oral.md','pg_interview.md','ddx.md','pg_formulation.md','rounds_questions.md'],notes:{'doc_oral.md':'rounds','pg_interview.md':'encounter','ddx.md':'diagnosis','pg_formulation.md':'formulation','rounds_questions.md':'rounds'}},
+    shelf:{label:'Shelf',intent:'Use this when you want board-style practice connected back to the patients and topics you are seeing on the unit.',stages:['exam','diagnosis','treatment','safety'],tools:['question-bank-practice.html','active-recall.html','review.html','shelf-mode.html','oral.html'],pages:['shelf.md','rounds_questions.md','landmark_trials.md','reading_map.md','core_readings.md'],notes:{'shelf.md':'exam','rounds_questions.md':'oral recall','landmark_trials.md':'evidence','reading_map.md':'reading map','core_readings.md':'core'}},
+    family:{label:'Family',intent:'Use this when collateral, caregiver communication, family meetings, boundaries, or discharge reality are driving the case.',stages:['family','communication','safety','team'],tools:['family-systems.html','communication-practice.html','oral.html','reflection.html','decision-aids.html'],pages:['collateral_workflow.md','family_playbook.md','exp_family.md','family_modalities.md','brief_psychotherapy.md'],notes:{'collateral_workflow.md':'collateral','family_playbook.md':'meeting','exp_family.md':'discharge','family_modalities.md':'psychoed','brief_psychotherapy.md':'bedside'}},
+    safety:{label:'Safety',intent:'Use this when risk, capacity, withdrawal, delirium, catatonia, agitation, or legal status could change today’s plan.',stages:['safety','team','encounter','family','treatment'],tools:['cssrs.html','violence.html','bfcrs.html','withdrawal.html','capacity.html','decision-aids.html'],pages:['pg_suicide.md','agitation.md','delirium.md','catatonia.md','systems_medlegal.md'],notes:{'pg_suicide.md':'suicide','agitation.md':'agitation','delirium.md':'delirium','catatonia.md':'catatonia','systems_medlegal.md':'med-legal'}},
+    '5min':{label:'5 minutes',intent:'Use this when you need one quick, useful action before rounds, between patients, or before leaving the unit.',stages:['communication','safety','team','encounter','exam'],tools:['communication-practice.html','review.html','active-recall.html','oral.html','family-systems.html'],pages:['pg_suicide.md','collateral_workflow.md','doc_oral.md','brief_psychotherapy.md','rounds_questions.md'],notes:{'pg_suicide.md':'4 min','collateral_workflow.md':'4 min','doc_oral.md':'quick prep','brief_psychotherapy.md':'bedside','rounds_questions.md':'oral recall'}}
+  };
+  function dashCfg(mode){ return DASH_CONFIG[mode]||DASH_CONFIG.ward; }
+  function arrHas(a,v){ return Array.isArray(a)&&a.indexOf(v)>=0; }
+  function itemMeta(it){ var meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}; return it&&it.f?meta[it.f]:null; }
+  function reviewedItem(f){ try{ var p=(typeof progLoad==='function')?progLoad():{}; return !!(p[f]&&p[f].done); }catch(_){ return false; } }
+  function stageLabel(st){ return WF_STAGE_LABELS[st]||String(st||'').replace(/[-_]+/g,' '); }
+  function modeReason(m,mode){
+    if(!m)return 'matched';
+    if(mode==='5min'&&m.read&&m.read<=5)return m.read+' min';
+    if(mode==='safety'&&(m.safetyLevel==='high'||arrHas(m.workflowStages,'safety')))return 'safety';
+    if(mode==='family'&&(arrHas(m.workflowStages,'family')||m.familyOverlay))return 'family';
+    if(mode==='shelf'&&arrHas(m.workflowStages,'exam'))return 'exam';
+    var cfg=dashCfg(mode), st=m.workflowStages||[];
+    for(var i=0;i<cfg.stages.length;i++){ if(arrHas(st,cfg.stages[i]))return stageLabel(cfg.stages[i]).toLowerCase(); }
+    if(Array.isArray(m.communicationCases)&&m.communicationCases.length)return 'spoken drill';
+    if(m.hy)return 'high-yield';
+    return 'recommended';
+  }
+  function scoreItemForMode(it,mode,pos){
+    var m=itemMeta(it), cfg=dashCfg(mode), score=0;
+    if(!m)return null;
+    if(arrHas(m.workflowModes,mode))score+=80;
+    var pageIdx=Array.isArray(cfg.pages)?cfg.pages.indexOf(it.f):-1;
+    if(pageIdx>=0)score+=(cfg.pages.length-pageIdx)*24;
+    var st=m.workflowStages||[];
+    for(var i=0;i<cfg.stages.length;i++){ if(arrHas(st,cfg.stages[i]))score+=(cfg.stages.length-i)*7; }
+    if(m.hy)score+=8;
+    if(m.safetyLevel==='high')score+=(mode==='safety'?18:5);
+    if(Array.isArray(m.communicationCases)&&m.communicationCases.length)score+=(mode==='family'||mode==='5min'?8:5);
+    if(Array.isArray(m.relatedTools)&&m.relatedTools.length)score+=3;
+    if(mode==='5min'&&m.read)score+=(m.read<=3?18:(m.read<=5?10:(m.read<=8?2:-5)));
+    if(!reviewedItem(it.f))score+=4;
+    score-=pos/100;
+    return {f:it.f,t:it.t,k:it.k,score:score,modeReason:(cfg.notes&&cfg.notes[it.f])||modeReason(m,mode),stages:st,meta:m};
+  }
+  function itemsForMode(mode){
+    var out=[], seen={};
+    allNavItems().forEach(function(it,pos){
+      if(!it||it.k!=='md'||seen[it.f])return;
+      var m=itemMeta(it);
+      if(m&&Array.isArray(m.workflowModes)&&m.workflowModes.indexOf(mode)>=0){
+        var scored=scoreItemForMode(it,mode,pos);
+        if(scored){ seen[it.f]=1; out.push(scored); }
+      }
+    });
+    out.sort(function(a,b){ return b.score-a.score; });
+    return out;
+  }
   var CASE_TITLES={suicide_direct_question_001:'Ask About Suicide Directly',psychosis_validation_001:'Validate Psychosis Without Colluding',guardedness_privacy_001:'Respond To Guardedness',rupture_limit_setting_001:'Repair After A Limit',bpd_rupture_repair_001:'Repair A BPD Rupture',medication_ambivalence_001:'Medication Ambivalence',mania_limit_sleep_001:'Offer A Sleep-Restoring Plan In Mania',family_meeting_opening_001:'Open A Family Meeting',collateral_questions_001:'Ask Better Collateral Questions',family_conflict_discharge_001:'De-escalate Family Conflict Around Discharge'};
   var FAMILY_SCENARIO_TITLES={collateral_baseline_safety_001:'Practice Collateral Call',family_meeting_opening_001:'Prepare Family Meeting',discharge_barrier_map_001:'Map Family Safety Roles',high_expressed_emotion_001:'Reset High-Emotion Family Talk',psychosis_family_psychoeducation_001:'Explain Psychosis To Family',family_involvement_boundaries_001:'Set Family Boundaries'};
   var CASE_PRIORITY={ward:['guardedness_privacy_001','psychosis_validation_001','medication_ambivalence_001','mania_limit_sleep_001'],family:['family_meeting_opening_001','collateral_questions_001','family_conflict_discharge_001'],safety:['suicide_direct_question_001','family_conflict_discharge_001','rupture_limit_setting_001'],shelf:['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001'],'5min':['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001','family_meeting_opening_001']};
-  function caseAction(id){ return {f:'communication-practice.html',t:CASE_TITLES[id]||'What Do You Say Next?',k:'tool',caseId:id,href:'?tool=communication-practice.html&case='+encodeURIComponent(id)}; }
-  function familyAction(id,title){ return {f:'family-systems.html',t:title||FAMILY_SCENARIO_TITLES[id]||'Family Systems Practice',k:'tool',scenarioId:id,href:'?tool=family-systems.html&scenario='+encodeURIComponent(id)}; }
-  function casesForMode(mode){ var meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}, seen={}, ids=[]; allNavItems().forEach(function(it){ var m=meta[it.f]; if(m&&Array.isArray(m.workflowModes)&&m.workflowModes.indexOf(mode)>=0&&Array.isArray(m.communicationCases)){ m.communicationCases.forEach(function(id){ if(!seen[id]){seen[id]=1;ids.push(id);} }); } }); var pri=CASE_PRIORITY[mode]||[]; ids.sort(function(a,b){ var ai=pri.indexOf(a),bi=pri.indexOf(b); if(ai<0)ai=99;if(bi<0)bi=99; return ai-bi; }); return ids.map(caseAction); }
-  function compactActions(arr){ var out=[]; for(var i=0;i<arr.length;i++){ if(arr[i])out.push(arr[i]); } return out; }
-  function actionRow(it, note){ var label=note||(it.caseId?'case':it.k); if(it.href){ return '<a class="hm-li" href="'+esc(it.href)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></a>'; } return '<button class="hm-li" data-f="'+esc(it.f)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></button>'; }
+  function caseAction(id,note){ return {f:'communication-practice.html',t:CASE_TITLES[id]||'What Do You Say Next?',k:'tool',caseId:id,href:'?tool=communication-practice.html&case='+encodeURIComponent(id),note:note||'spoken drill'}; }
+  function familyAction(id,title,note){ return {f:'family-systems.html',t:title||FAMILY_SCENARIO_TITLES[id]||'Family Systems Practice',k:'tool',scenarioId:id,href:'?tool=family-systems.html&scenario='+encodeURIComponent(id),note:note||'family tool'}; }
+  function toolAction(k,note){ return {f:k,t:(LAB[k]||PRACTICE_LABELS[k]||String(k||'tool').replace(/\.html$/,'').replace(/[-_]+/g,' ')),k:'tool',href:'?tool='+encodeURIComponent(k),note:note||'tool'}; }
+  function casesForMode(mode){
+    var seen={}, ranked=[], pri=CASE_PRIORITY[mode]||[];
+    itemsForMode(mode).forEach(function(it,idx){
+      var m=it.meta||itemMeta(it);
+      if(m&&Array.isArray(m.communicationCases)){
+        m.communicationCases.forEach(function(id){ if(!seen[id]){ seen[id]=1; ranked.push({id:id,score:100-idx}); } });
+      }
+    });
+    ranked.sort(function(a,b){ var ai=pri.indexOf(a.id),bi=pri.indexOf(b.id); if(ai<0)ai=99;if(bi<0)bi=99; return (ai-bi)||(b.score-a.score); });
+    return ranked.map(function(x){ return caseAction(x.id,'spoken drill'); });
+  }
+  function toolsForMode(mode,matches){
+    var cfg=dashCfg(mode), counts={}, order={}, out=[];
+    function add(k,boost){ if(!k)return; counts[k]=(counts[k]||0)+(boost||1); if(order[k]===undefined)order[k]=Object.keys(order).length; }
+    cfg.tools.forEach(function(k,i){ add(k,50-i); });
+    (matches||[]).slice(0,18).forEach(function(it){ var m=it.meta||itemMeta(it); if(m&&Array.isArray(m.relatedTools))m.relatedTools.forEach(function(k){ add(k,5); }); });
+    Object.keys(counts).sort(function(a,b){
+      var ai=cfg.tools.indexOf(a),bi=cfg.tools.indexOf(b); if(ai<0)ai=99;if(bi<0)bi=99;
+      return (ai-bi)||(counts[b]-counts[a])||(order[a]-order[b]);
+    }).forEach(function(k){ out.push(toolAction(k,practiceIsSafe(k)?'safety tool':'tool')); });
+    return out.slice(0,5);
+  }
+  function compactActions(arr){ var out=[], seen={}; for(var i=0;i<arr.length;i++){ var x=arr[i]; if(!x)continue; var key=(x.href||x.f||x.t); if(seen[key])continue; seen[key]=1; out.push(x); } return out; }
+  function pagesByStage(matches,stages,limit){
+    var out=[]; (matches||[]).forEach(function(it){ var st=it.stages||[]; for(var i=0;i<stages.length;i++){ if(arrHas(st,stages[i])){ out.push(it); break; } } });
+    if(out.length<limit){ (matches||[]).forEach(function(it){ if(out.indexOf(it)<0)out.push(it); }); }
+    return out.slice(0,limit);
+  }
+  function actionRow(it, note){
+    var label=it.note||it.modeReason||note||(it.caseId?'drill':it.k);
+    if(it.href){ return '<a class="hm-li wd-li" href="'+esc(it.href)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></a>'; }
+    return '<button class="hm-li wd-li" data-f="'+esc(it.f)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></button>';
+  }
+  function toolRow(tools,mode){
+    if(!tools||!tools.length)return '';
+    var h='<div class="wd-tools"><span class="k">Tools for '+esc(dashCfg(mode).label)+'</span>';
+    tools.forEach(function(x){ var safe=practiceIsSafe(x.f)?' is-safety':''; h+='<a class="wd-tool'+safe+'" href="'+esc(x.href)+'">'+esc(x.t)+'</a>'; });
+    h+='</div>'; return h;
+  }
   function renderWardDashboard(){
     var mode=dashboardMode(), modes=[['ward','Ward'],['shelf','Shelf'],['family','Family'],['safety','Safety'],['5min','5 minutes']];
     var matches=itemsForMode(mode);
     var casePicks=casesForMode(mode);
-    var defaults={
-      ward:{before:[{f:'doc_oral.md',t:'Rounding Prep',k:'md'},{f:'pg_interview.md',t:'Interview & MSE',k:'md'}],after:[casePicks[0]||caseAction('guardedness_privacy_001'),{f:'ddx.md',t:'Differential Dx Scaffolds',k:'md'}],leave:[{f:'review.html',t:'Daily Review',k:'tool'},{f:'reflection.html',t:'Reflection & Identity',k:'tool'}]},
-      shelf:{before:[{f:'question-bank-practice.html',t:'Practice Questions',k:'tool'},{f:'shelf.md',t:'COMAT & Shelf Review',k:'md'}],after:[{f:'active-recall.html',t:'Active Recall',k:'tool'},{f:'review.html',t:'Daily Review',k:'tool'}],leave:[{f:'reading_map.md',t:'Weekly Reading Map',k:'md'}]},
-      family:{before:[{f:'collateral_workflow.md',t:'I Need Collateral',k:'md'},familyAction('family_meeting_opening_001','Prepare Family Meeting')],after:[familyAction('collateral_baseline_safety_001'),casePicks[0]||caseAction('family_meeting_opening_001')],leave:[familyAction('discharge_barrier_map_001'),{f:'reflection.html',t:'Reflection & Identity',k:'tool'}]},
-      safety:{before:[{f:'pg_suicide.md',t:'Suicide Risk & Safety',k:'md'},casePicks[0]||caseAction('suicide_direct_question_001')],after:[familyAction('discharge_barrier_map_001'),{f:'cssrs.html',t:'C-SSRS Suicide Screen',k:'tool'}],leave:[{f:'review.html',t:'Daily Review',k:'tool'}]},
-      '5min':{before:[casePicks[0]||caseAction('suicide_direct_question_001')],after:[familyAction('collateral_baseline_safety_001','Ask Better Collateral Questions'),casePicks[1]||caseAction('psychosis_validation_001')],leave:[{f:'review.html',t:'Daily Review',k:'tool'}]}
-    };
-    var pack=defaults[mode]||defaults.ward;
-    if(matches.length){
-      if(mode==='family'){
-        pack={before:[{f:'collateral_workflow.md',t:'I Need Collateral',k:'md'},familyAction('family_meeting_opening_001','Prepare Family Meeting')],after:compactActions([familyAction('collateral_baseline_safety_001'),casePicks[0]||caseAction('family_meeting_opening_001')]).slice(0,2),leave:[familyAction('discharge_barrier_map_001'),{f:'exp_family.md',t:'Family & Discharge',k:'md'}]};
-      } else if(mode==='safety'){
-        pack={before:matches.slice(0,1).concat(pack.before).slice(0,2),after:compactActions([familyAction('discharge_barrier_map_001'),casePicks[0],pack.after[0]]).slice(0,2),leave:pack.leave};
-      } else if(mode==='5min'){
-        pack={before:matches.slice(0,1).concat(pack.before).slice(0,2),after:compactActions([familyAction('collateral_baseline_safety_001','Ask Better Collateral Questions'),casePicks[0]]).slice(0,2),leave:pack.leave};
-      } else {
-        pack={before:matches.slice(0,2),after:casePicks.slice(0,1).concat(matches.slice(2,3),pack.after).slice(0,2),leave:pack.leave};
-      }
+    var tools=toolsForMode(mode,matches);
+    var pack;
+    if(mode==='family'){
+      pack={before:compactActions(pagesByStage(matches,['family','communication'],2).concat([familyAction('family_meeting_opening_001','Prepare Family Meeting','family tool')])).slice(0,2),
+        after:compactActions([familyAction('collateral_baseline_safety_001','Practice Collateral Call','family tool'),casePicks[0]||caseAction('family_meeting_opening_001')]).slice(0,2),
+        leave:compactActions([familyAction('discharge_barrier_map_001','Map Family Safety Roles','family tool')].concat(pagesByStage(matches,['family','safety'],1))).slice(0,2)};
+    } else if(mode==='safety'){
+      pack={before:compactActions(pagesByStage(matches,['safety'],2).concat([casePicks[0]||caseAction('suicide_direct_question_001')])).slice(0,2),
+        after:compactActions([casePicks[0],tools[0],familyAction('discharge_barrier_map_001','Map Family Safety Roles','family tool')]).slice(0,2),
+        leave:compactActions([toolAction('review.html','review'),toolAction('decision-aids.html','safety tool')]).slice(0,2)};
+    } else if(mode==='shelf'){
+      pack={before:compactActions([toolAction('question-bank-practice.html','practice')].concat(pagesByStage(matches,['exam'],1))).slice(0,2),
+        after:compactActions([toolAction('active-recall.html','recall'),toolAction('review.html','review')]).slice(0,2),
+        leave:compactActions(pagesByStage(matches,['exam','diagnosis'],1).concat([toolAction('shelf-mode.html','exam sim')])).slice(0,2)};
+    } else if(mode==='5min'){
+      pack={before:compactActions(pagesByStage(matches,['communication','safety','team'],1).concat([casePicks[0]||caseAction('suicide_direct_question_001')])).slice(0,2),
+        after:compactActions([casePicks[1],familyAction('collateral_baseline_safety_001','Ask Better Collateral Questions','family tool')]).slice(0,2),
+        leave:compactActions([toolAction('review.html','review'),toolAction('active-recall.html','recall')]).slice(0,2)};
+    } else {
+      pack={before:pagesByStage(matches,['team','encounter'],2),
+        after:compactActions([casePicks[0]].concat(pagesByStage(matches,['diagnosis','treatment','communication'],1))).slice(0,2),
+        leave:compactActions([toolAction('review.html','review'),toolAction('reflection.html','reflect')]).slice(0,2)};
     }
-    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit</h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'">'+m[1]+'</button>';}).join('')+'</div></div>';
+    if(!pack.before.length)pack.before=compactActions(matches.slice(0,2));
+    if(!pack.after.length)pack.after=compactActions(casePicks.slice(0,1).concat(matches.slice(2,3),tools.slice(0,1))).slice(0,2);
+    if(!pack.leave.length)pack.leave=[toolAction('review.html','review')];
+    var cfg=dashCfg(mode);
+    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit <span class="wd-count">'+matches.length+' matched</span></h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'">'+m[1]+'</button>';}).join('')+'</div></div>';
+    h+='<p class="wd-intro">'+esc(cfg.intent)+'</p>'+toolRow(tools,mode);
     h+='<div class="wd-grid"><div class="wd-card"><h3>Before rounds</h3>'+pack.before.map(function(x){return actionRow(x,'open');}).join('')+'</div><div class="wd-card"><h3>After rounds</h3>'+pack.after.map(function(x){return actionRow(x,'practice');}).join('')+'</div><div class="wd-card"><h3>Before leaving</h3>'+pack.leave.map(function(x){return actionRow(x,'review');}).join('')+'</div></div></div>';
     return h;
   }
