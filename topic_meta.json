@@ -46,6 +46,10 @@
       {
         "label": "Practice baseline collateral call",
         "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+      },
+      {
+        "label": "Open collateral workflow",
+        "href": "?page=collateral_workflow.md"
       }
     ],
     "evidenceIds": [
@@ -100,6 +104,10 @@
         {
           "label": "Practice baseline collateral call",
           "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+        },
+        {
+          "label": "Open collateral workflow",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     }
@@ -154,6 +162,10 @@
       {
         "label": "Ask collateral about triggers",
         "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+      },
+      {
+        "label": "Open trigger collateral workflow",
+        "href": "?page=collateral_workflow.md"
       }
     ],
     "evidenceIds": [
@@ -211,6 +223,10 @@
         {
           "label": "Ask collateral about triggers and what helps",
           "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+        },
+        {
+          "label": "Open trigger collateral workflow",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     },
@@ -347,6 +363,10 @@
       {
         "label": "Practice psychosis communication",
         "href": "?tool=communication-practice.html&case=psychosis_validation_001"
+      },
+      {
+        "label": "Open psychosis collateral workflow",
+        "href": "?page=collateral_workflow.md"
       }
     ],
     "relatedTools": [
@@ -399,6 +419,10 @@
         {
           "label": "Plan family psychoeducation",
           "href": "?tool=family-systems.html&scenario=psychosis_family_psychoeducation_001"
+        },
+        {
+          "label": "Open psychosis collateral workflow",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     }
@@ -444,6 +468,10 @@
       {
         "label": "Map mania collateral and safety roles",
         "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+      },
+      {
+        "label": "Open mania collateral workflow",
+        "href": "?page=collateral_workflow.md"
       }
     ],
     "relatedTools": [
@@ -494,6 +522,10 @@
         {
           "label": "Map mania collateral and safety roles",
           "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+        },
+        {
+          "label": "Open mania collateral workflow",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     },
@@ -615,6 +647,10 @@
       {
         "label": "Clarify discharge supports",
         "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
+      },
+      {
+        "label": "Open discharge collateral workflow",
+        "href": "?page=collateral_workflow.md"
       }
     ],
     "evidenceIds": [
@@ -670,6 +706,10 @@
         {
           "label": "Clarify family supports and discharge barriers",
           "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
+        },
+        {
+          "label": "Open discharge collateral workflow",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     },
@@ -711,6 +751,10 @@
       {
         "label": "Plan boundary-safe family involvement",
         "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
+      },
+      {
+        "label": "Open boundary-safe collateral workflow",
+        "href": "?page=collateral_workflow.md"
       }
     ],
     "relatedTools": [
@@ -756,6 +800,10 @@
         {
           "label": "Plan boundary-safe family involvement",
           "href": "?tool=family-systems.html&scenario=family_involvement_boundaries_001"
+        },
+        {
+          "label": "Open boundary-safe collateral workflow",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     },
@@ -806,6 +854,10 @@
       {
         "label": "Practice caregiver collateral",
         "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+      },
+      {
+        "label": "Open caregiver collateral workflow",
+        "href": "?page=collateral_workflow.md"
       }
     ],
     "workflowStages": [
@@ -852,6 +904,10 @@
         {
           "label": "Practice caregiver collateral questions",
           "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+        },
+        {
+          "label": "Open caregiver collateral workflow",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     },
@@ -1207,6 +1263,10 @@
       {
         "label": "Practice caregiver collateral",
         "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+      },
+      {
+        "label": "Open caregiver collateral workflow",
+        "href": "?page=collateral_workflow.md"
       }
     ],
     "workflowStages": [
@@ -1244,6 +1304,10 @@
         {
           "label": "Practice caregiver collateral and safety roles",
           "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+        },
+        {
+          "label": "Open caregiver collateral workflow",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     },
@@ -1886,10 +1950,16 @@
       ],
       "why": "Sudden unexplained improvement after severe suicidality is an explicit escalation trigger — it can reflect relief at a decision to act. A safety plan is one component of the risk plan, not a discharge permission slip, and direct questioning does not implant suicidal thoughts."
     },
-    "cta": {
-      "label": "Open the Columbia C-SSRS screener",
-      "href": "?tool=cssrs.html"
-    },
+    "cta": [
+      {
+        "label": "Open the Columbia C-SSRS screener",
+        "href": "?tool=cssrs.html"
+      },
+      {
+        "label": "Open safety collateral workflow",
+        "href": "?page=collateral_workflow.md"
+      }
+    ],
     "evidenceIds": [
       "cssrs-columbia-lighthouse",
       "va-dod-suicide-cpg-2024",
@@ -1947,6 +2017,10 @@
         {
           "label": "Map family safety roles",
           "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
+        },
+        {
+          "label": "Open safety collateral workflow",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     }
@@ -2375,6 +2449,10 @@
       {
         "label": "Practice guardedness",
         "href": "?tool=communication-practice.html&case=guardedness_privacy_001"
+      },
+      {
+        "label": "Open collateral workflow",
+        "href": "?page=collateral_workflow.md"
       }
     ],
     "relatedTools": [
@@ -2384,7 +2462,8 @@
     ],
     "workflowModes": [
       "ward",
-      "5min"
+      "5min",
+      "family"
     ],
     "communicationCases": [
       "guardedness_privacy_001"
@@ -2392,7 +2471,8 @@
     "workflowStages": [
       "encounter",
       "communication",
-      "safety"
+      "safety",
+      "family"
     ],
     "clinicalWorkflow": {
       "ask": "Open with the patient story, then loop through mood, psychosis, anxiety/trauma, substance use, cognition, medical causes, and safety.",
@@ -2406,6 +2486,10 @@
         {
           "label": "Practice guardedness",
           "href": "?tool=communication-practice.html&case=guardedness_privacy_001"
+        },
+        {
+          "label": "Open collateral workflow",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     }
@@ -2505,20 +2589,28 @@
       ],
       "why": "A daily rounds presentation is a structured 60–90 second clinical update — it begins with the hospital day and what changed overnight, not a retelling of the history. The attending already knows the background; they need to know what shifted and what decision is needed today. A plan question names the uncertainty and invites attending input."
     },
-    "cta": {
-      "label": "Open the Formulation & DDx Pocket Guide",
-      "href": "?page=pg_formulation.md"
-    },
+    "cta": [
+      {
+        "label": "Open the Formulation & DDx Pocket Guide",
+        "href": "?page=pg_formulation.md"
+      },
+      {
+        "label": "Use 30-second collateral update",
+        "href": "?page=collateral_workflow.md"
+      }
+    ],
     "workflowStages": [
       "team",
       "diagnosis",
       "safety",
-      "exam"
+      "exam",
+      "family"
     ],
     "workflowModes": [
       "ward",
       "5min",
-      "shelf"
+      "shelf",
+      "family"
     ],
     "relatedTools": [
       "oral.html"
@@ -2535,6 +2627,10 @@
         {
           "label": "Open rounding prep",
           "href": "?tool=oral.html"
+        },
+        {
+          "label": "Use 30-second collateral update",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     }
@@ -2653,6 +2749,10 @@
       {
         "label": "Map discharge family roles",
         "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
+      },
+      {
+        "label": "Open collateral workflow",
+        "href": "?page=collateral_workflow.md"
       }
     ],
     "relatedTools": [
@@ -2692,6 +2792,10 @@
         {
           "label": "Map discharge family roles",
           "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
+        },
+        {
+          "label": "Open collateral workflow",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     }
@@ -2783,6 +2887,10 @@
       {
         "label": "Practice family meeting prep",
         "href": "?tool=family-systems.html&scenario=family_meeting_opening_001"
+      },
+      {
+        "label": "Prepare collateral before the meeting",
+        "href": "?page=collateral_workflow.md"
       }
     ],
     "relatedTools": [
@@ -2818,6 +2926,10 @@
         {
           "label": "Practice family meeting prep",
           "href": "?tool=family-systems.html&scenario=family_meeting_opening_001"
+        },
+        {
+          "label": "Prepare collateral before the meeting",
+          "href": "?page=collateral_workflow.md"
         }
       ]
     }
@@ -3402,6 +3514,96 @@
     "cta": {
       "label": "Open Landmark Trials — Listen & Test",
       "href": "?page=landmark_trials.md"
+    }
+  },
+  "collateral_workflow.md": {
+    "read": 4,
+    "hy": true,
+    "tldr": "Collateral is clinical data, not gossip: get permission when possible, ask only what changes diagnosis/risk/treatment/discharge, share the minimum necessary, and bring one clear update back to the team.",
+    "points": [
+      "Start with a one-sentence purpose: baseline/timeline, safety, treatment history, or discharge reality.",
+      "Use consent and minimum-necessary disclosure; when uncertain, disclose less and ask the supervising team.",
+      "Return with a 30-second team update: source, baseline, timeline, risk data, discharge barrier/support, and what changes in the plan."
+    ],
+    "cant": "Do not promise discharge, share more than consent/local policy permits, or document family opinions as facts without attribution.",
+    "quiz": {
+      "q": "A student calls a parent for collateral and opens by summarizing the full diagnosis and medication plan before asking any questions. What should the student have done first?",
+      "o": [
+        {
+          "t": "Share the diagnosis first so the parent understands the clinical frame"
+        },
+        {
+          "t": "Ask whether the parent agrees with the patient being hospitalized"
+        },
+        {
+          "t": "State role and purpose, clarify disclosure boundaries, then ask targeted baseline/timeline/risk/discharge questions",
+          "c": true
+        },
+        {
+          "t": "Avoid collateral because family reports are often biased"
+        }
+      ],
+      "why": "Collateral calls should start with role, purpose, and confidentiality boundaries. The student can gather clinically useful data without over-disclosing protected information."
+    },
+    "cta": [
+      {
+        "label": "Practice collateral call checklist",
+        "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+      },
+      {
+        "label": "Ask better collateral questions",
+        "href": "?tool=communication-practice.html&case=collateral_questions_001"
+      }
+    ],
+    "relatedTools": [
+      "family-systems.html",
+      "communication-practice.html",
+      "oral.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "family",
+      "safety",
+      "5min"
+    ],
+    "familyOverlay": "collateral_micro_workflow_consent_baseline_safety",
+    "communicationCases": [
+      "collateral_questions_001"
+    ],
+    "workflowStages": [
+      "family",
+      "safety",
+      "communication",
+      "team"
+    ],
+    "safetyLevel": "moderate",
+    "facultyReview": {
+      "status": "draft",
+      "lastReviewed": "2026-07-08",
+      "reviewer": "Pending faculty review"
+    },
+    "clinicalWorkflow": {
+      "ask": "Name the purpose before calling: baseline/timeline, risk, treatment history, or discharge reality.",
+      "mse": "Use collateral to clarify baseline cognition, behavior, affect regulation, psychosis, sleep, substances, and function.",
+      "safety": "Ask about suicide, violence, means access, vulnerability, supervision limits, and what would make discharge unsafe.",
+      "say": "I may not be able to share details without permission, but I can listen and bring relevant information back to the team.",
+      "collateral": "Ask targeted buckets: baseline/timeline, risk/safety, treatment/function, and discharge reality.",
+      "rounds": "Report source, baseline, timeline, risk-relevant data, discharge barrier/support, and what changes in the plan.",
+      "exam": "Collateral is used to test timeline, risk, capacity, delirium/dementia, mania/psychosis, substance use, and discharge realism.",
+      "actions": [
+        {
+          "label": "Practice collateral call checklist",
+          "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+        },
+        {
+          "label": "Ask better collateral questions",
+          "href": "?tool=communication-practice.html&case=collateral_questions_001"
+        },
+        {
+          "label": "Open rounding prep",
+          "href": "?tool=oral.html"
+        }
+      ]
     }
   }
 }
