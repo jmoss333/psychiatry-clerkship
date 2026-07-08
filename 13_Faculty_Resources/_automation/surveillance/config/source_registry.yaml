@@ -39,17 +39,17 @@ sources:
     notes: Highest patient-safety yield. Pair with drug-label checks for teaching meds. Live HEAD/GET recheck returned 200 on 2026-07-08; July 6 404 treated as transient/stale.
 
   - id: clozapine-rems
-    name: Clozapine REMS Program
+    name: FDA Clozapine Safety / REMS Removed
     job: guideline-surveillance
-    url: https://www.newclozapinerems.com/
+    url: https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine
     type: html
     modality: full_text
-    severity_default: P0
+    severity_default: P1
     cadence: monthly
-    watch_for: ["monitoring", "ANC", "enrollment", "requirement", "discontinu"]
+    watch_for: ["REMS", "ANC", "neutropenia", "Medication Guide", "prescribing information", "monitor"]
     affects_hint: ["05_Psychopharmacology/Protocol_Library/**", "03_Core_Topics/Psychosis/**"]
-    verified: false
-    notes: REMS requirements have been in flux; do not encode current rules in teaching—monitor.
+    verified: true
+    notes: FDA removed the clozapine REMS effective 2025-06-13. Prescribers/pharmacies/patients no longer participate in the REMS or report ANC results to REMS before dispensing; ANC monitoring remains recommended per prescribing information.
 
   - id: spravato-rems
     name: Spravato (esketamine) REMS

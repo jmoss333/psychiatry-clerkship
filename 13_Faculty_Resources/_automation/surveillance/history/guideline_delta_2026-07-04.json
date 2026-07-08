@@ -47,9 +47,10 @@
       "14_Tracks/Resident/resident_welcome.md",
       "14_Tracks/Sub-I_MS4/README.md"
     ],
-    "recommended_action": "Review Clozapine REMS Program; if guidance changed, update the affected teaching page(s) and re-stamp reviewed.json.",
-    "status": "issue-open",
-    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/90"
+    "recommended_action": "FDA removed the clozapine REMS effective 2025-06-13. The retired REMS website is no longer an authoritative monitoring target; surveillance now tracks FDA clozapine safety / REMS-removal communication instead.",
+    "status": "actioned",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/90",
+    "resolution": "retired-source: clozapine REMS eliminated; replaced monitor with FDA communication on 2026-07-08"
   },
   {
     "finding_id": "spravato-rems::removed::a4030c90bee637b5",

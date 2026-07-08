@@ -3,25 +3,25 @@
     "finding_id": "example-0001",
     "job": "guideline-surveillance",
     "source_id": "clozapine-rems",
-    "source_name": "Clozapine REMS Program",
-    "source_url": "https://www.newclozapinerems.com/",
+    "source_name": "FDA Clozapine Safety / REMS Removed",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
     "source_type": "html",
     "modality": "full_text",
     "detected_at": "2026-08-01T06:03:00Z",
     "change_type": "modified",
-    "severity": "P0",
-    "summary": "Monitoring-requirement language changed on the REMS site since last scan",
+    "severity": "P1",
+    "summary": "FDA clozapine REMS-removal language changed since last scan",
     "evidence": {
       "prev_hash": "aa11",
       "new_hash": "bb22",
-      "diff_excerpt": "- Prescribers must be certified and patients enrolled.\n+ Centralized REMS requirements have been modified; consult current prescribing information for ANC monitoring.",
+      "diff_excerpt": "- Prescribers do not have to submit ANC results to the REMS program.\n+ Prescribers should continue ANC monitoring according to prescribing information.",
       "snapshot_url": "https://api.apify.com/v2/key-value-stores/EXAMPLE/records/snapshot.html"
     },
     "affects": [
       "05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md",
       "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md"
     ],
-    "recommended_action": "Re-verify the clozapine ANC-monitoring language on the affected pages against current prescribing information; edit if needed and re-attest.",
+    "recommended_action": "Re-verify the clozapine ANC-monitoring language on the affected pages against current FDA communication and prescribing information; edit if needed and re-attest.",
     "status": "new"
   },
   {
