@@ -8,6 +8,19 @@
       "setting": "Inpatient admission interview",
       "learnerGoal": "Use plain, direct language without softening or avoiding the question.",
       "prompt": "A patient admitted after worsening depression says, \"I do not want to be a burden anymore.\" What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 20,
+        "stance": "Ask directly, using the patient's words, while keeping your voice calm and matter-of-fact.",
+        "mustInclude": [
+          "Reflect the burden phrase briefly",
+          "Use the words \"killing yourself\" or \"ending your life\" plainly",
+          "Pause and leave room for an answer"
+        ],
+        "avoid": [
+          "Euphemisms, reassurance before assessment, or arguing that life is worth living"
+        ],
+        "starter": "Begin with \"When you say...\" and then ask the direct safety question."
+      },
       "choices": [
         {
           "id": "a",
@@ -53,6 +66,19 @@
       "setting": "Follow-up interview on the unit",
       "learnerGoal": "Acknowledge fear without agreeing with the delusional belief.",
       "prompt": "A patient whispers, \"The cameras in the vents are watching me.\" What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 20,
+        "stance": "Validate the fear, state your own perception, and invite safety-focused exploration.",
+        "mustInclude": [
+          "Name that the experience sounds frightening",
+          "Avoid agreeing that cameras are present",
+          "Offer to understand what would help the patient feel safer"
+        ],
+        "avoid": [
+          "Debating reality, mocking the belief, or asking questions that deepen the delusional frame"
+        ],
+        "starter": "Try a sentence that starts with the feeling before it addresses the belief."
+      },
       "choices": [
         {
           "id": "a",
@@ -95,6 +121,19 @@
       "setting": "Early inpatient interview",
       "learnerGoal": "Lower the threat level, name choice, and explain confidentiality limits without pressuring disclosure.",
       "prompt": "A patient crosses their arms and says, \"I know whatever I say will just be used against me.\" What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 25,
+        "stance": "Lower pressure by naming choice, confidentiality limits, and your role in safety.",
+        "mustInclude": [
+          "Say the patient can choose what to answer",
+          "Name the immediate-safety exception to confidentiality",
+          "Invite what would make the conversation feel safer"
+        ],
+        "avoid": [
+          "Arguing that no one is using information against them or threatening consequences as the opener"
+        ],
+        "starter": "Use one sentence to give the patient more control before asking for more information."
+      },
       "choices": [
         {
           "id": "a",
@@ -148,6 +187,19 @@
       "setting": "Inpatient unit hallway",
       "learnerGoal": "Set a clear limit while preserving dignity and alliance.",
       "prompt": "After you explain that an early discharge is not planned today, the patient says, \"You people never listen. I am done talking.\" What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 25,
+        "stance": "Repair the rupture without walking back the clinical limit.",
+        "mustInclude": [
+          "Name that the patient feels unheard",
+          "Keep the discharge limit clear",
+          "Offer one concrete way to slow down and listen"
+        ],
+        "avoid": [
+          "Making calmness a condition for being heard or responding with cold technical accuracy"
+        ],
+        "starter": "Try: validate first, limit second, repair offer third."
+      },
       "choices": [
         {
           "id": "a",
@@ -193,6 +245,19 @@
       "setting": "Post-rounds check-in",
       "learnerGoal": "Validate the feeling, own the interactional impact, and return to a consistent plan.",
       "prompt": "A patient with chronic suicidality says, \"You wrote that I was manipulative. I knew you were just like everyone else.\" What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 30,
+        "stance": "Address impact before accuracy, then invite collaboration on language.",
+        "mustInclude": [
+          "Acknowledge that the note felt hurtful or invalidating",
+          "Avoid defending yourself as the first move",
+          "Invite a shared look at how to describe the crisis accurately"
+        ],
+        "avoid": [
+          "Using formulation terms like splitting or manipulation at the patient during the rupture"
+        ],
+        "starter": "Start with the effect of the words, not your intent."
+      },
       "choices": [
         {
           "id": "a",
@@ -244,6 +309,19 @@
       "setting": "Medication discussion",
       "learnerGoal": "Use motivational interviewing instead of persuasion reflex.",
       "prompt": "A patient says, \"I know the antipsychotic helped, but I hate the weight gain. I am not taking it after discharge.\" What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 25,
+        "stance": "Reflect ambivalence before offering options.",
+        "mustInclude": [
+          "Validate the weight-gain concern",
+          "Ask what the medicine helped with",
+          "Ask what would need to change for treatment to feel acceptable"
+        ],
+        "avoid": [
+          "Threats, lectures, or closing the decision before the patient's values are clear"
+        ],
+        "starter": "Try one reflective sentence followed by one open question."
+      },
       "choices": [
         {
           "id": "a",
@@ -293,6 +371,19 @@
       "setting": "Evening check-in on the unit",
       "learnerGoal": "Use calm structure, offer choices, and connect sleep to the patient's goal without debating grandiosity.",
       "prompt": "A manic patient pacing the hallway says, \"I do not need sleep. I need my laptop so I can finish the company launch tonight.\" What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 30,
+        "stance": "Validate urgency, state the safety limit, and offer low-stimulation sleep choices.",
+        "mustInclude": [
+          "Name the patient's energy or urgency without endorsing the grandiose plan",
+          "State the laptop or stimulation limit plainly",
+          "Offer two or three concrete choices that point toward sleep"
+        ],
+        "avoid": [
+          "Debating whether the launch is real, threatening security early, or calling the patient manic as the opener"
+        ],
+        "starter": "Use a calm, concrete structure: urgency, limit, choices."
+      },
       "choices": [
         {
           "id": "a",
@@ -346,6 +437,19 @@
       "setting": "Inpatient family meeting",
       "learnerGoal": "Create structure, consent boundaries, and a shared goal at the start.",
       "prompt": "The patient has consented to a family meeting. The family arrives anxious and starts asking rapid-fire questions. What do you say first?",
+      "rapidDrill": {
+        "targetSeconds": 30,
+        "stance": "Join the anxiety, set consent boundaries, and create a shared agenda before details.",
+        "mustInclude": [
+          "Acknowledge that there is a lot the family wants to understand",
+          "Name what the patient has consented to discuss",
+          "Set one shared goal for the meeting"
+        ],
+        "avoid": [
+          "Launching into answers before structure or shutting the room down with confidentiality alone"
+        ],
+        "starter": "Open by orienting the room before answering the first question."
+      },
       "choices": [
         {
           "id": "a",
@@ -389,6 +493,19 @@
       "setting": "Phone call with family",
       "learnerGoal": "Ask for baseline, timeline, safety, and functional change rather than global impressions.",
       "prompt": "You call a patient's sister for collateral. She says, \"He has just not been himself.\" What do you ask next?",
+      "rapidDrill": {
+        "targetSeconds": 25,
+        "stance": "Turn a vague collateral concern into baseline, timeline, function, and safety data.",
+        "mustInclude": [
+          "Ask what the patient is like at baseline",
+          "Ask what changed and when it changed",
+          "Ask for specific safety or functional concerns"
+        ],
+        "avoid": [
+          "Asking for the family's conclusion before gathering concrete observations"
+        ],
+        "starter": "Use one bundled question that asks for baseline, change, timing, and risk."
+      },
       "choices": [
         {
           "id": "a",
@@ -432,6 +549,19 @@
       "setting": "Inpatient family meeting",
       "learnerGoal": "Validate fear, protect confidentiality, and shift the room from blame to concrete safety tasks.",
       "prompt": "A parent says, \"If you discharge him, it will be your fault if something happens.\" The patient looks down and stops talking. What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 30,
+        "stance": "Validate fear without promising zero risk, then move the room toward concrete safety planning.",
+        "mustInclude": [
+          "Name the parent's fear",
+          "Avoid promising certainty or zero risk",
+          "Invite the specific safety steps that must be in place before discharge"
+        ],
+        "avoid": [
+          "Defensiveness, blame, or questions that shame the patient in front of family"
+        ],
+        "starter": "Start with fear, then shift from blame to the next safety task."
+      },
       "choices": [
         {
           "id": "a",

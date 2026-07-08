@@ -220,7 +220,7 @@ def build_search_index():
     TOOLKW={
      "mse.html":"mental status exam appearance behavior speech mood affect thought process content perception cognition insight judgment interview",
      "interview-circle.html":"interview circle radial domain map psychiatric intake history hpi chief complaint substance family social mental status safety risk non-linear conversation clinical skills interviewing not a checklist",
-     "communication-practice.html":"what do you say next communication practice branching dialogue suicide psychosis validation rupture repair medication ambivalence family meeting collateral motivational interviewing relational skills",
+     "communication-practice.html":"what do you say next communication practice branching dialogue rapid spoken drill say it out loud rehearsal timer 20 second suicide psychosis validation rupture repair medication ambivalence family meeting collateral motivational interviewing relational skills",
      "diagnostic-reasoning.html":"diagnostic reasoning workbench differential diagnosis problem representation illness script bayesian updating diagnostic humility anchoring premature closure syndrome formulation inpatient psychiatry case practice delirium catatonia mania psychosis substance trauma personality",
      "family-systems.html":"family systems practice collateral call family meeting discharge barrier map expressed emotion psychoeducation confidentiality boundaries means safety caregiver support inpatient psychiatry",
      "capacity.html":"decisional capacity informed consent refusal four abilities understand appreciate reason communicate",
