@@ -78,6 +78,9 @@ Every run regenerates the faculty view (via `bin/build_status.py`):
 - **`STATUS.md`** — GitHub renders it in-repo: open P0/P1, pages needing re-review
   (attestation older than the change that affects them), and per-source freshness.
 - **`status.html`** — standalone dashboard; open via `file://` or copy into a faculty area.
+- DOI/PMID findings are triaged separately: live teaching-page citations are grouped
+  by affected page, while imported NotebookLM bundles, `_source` reports, faculty-only
+  files, and prototypes are excluded from page re-review counts.
 
 To trigger a job on demand from Apify (instead of waiting for the cron), point an Apify
 webhook at GitHub's `repository_dispatch` endpoint:
@@ -176,7 +179,8 @@ python3 bin/open_update_pr.py --findings fixtures/guideline_delta_example.json -
 the authoritative **source URLs** in `source_registry.yaml` (which live in YAML, so lychee never sees
 them) and any **DOIs/PMIDs** cited in curriculum text still resolve — via `doi.org` / NCBI eutils.
 Failures become idempotent issues (a no-HTTP-response is capped at P1 to avoid false P0 pages from
-bot-blocking). Stdlib-only; no extra secret. Test:
+bot-blocking). The scanner skips imported/archive-only citation copies so faculty issues route to
+live curriculum surfaces first. Stdlib-only; no extra secret. Test:
 
 ```
 python3 bin/run_citation_check.py --self-test                 # offline logic check

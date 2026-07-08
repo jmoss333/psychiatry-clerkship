@@ -33,7 +33,27 @@ PMID_RE = re.compile(r"\bPMID:?\s*(\d{4,9})\b", re.I)
 SOFT_404 = ("page not found", "404 error", "not be found", "no longer available",
             "has moved", "page you requested")
 SCAN_EXTS = (".md", ".html")
-SKIP_DIRS = {".git", "node_modules", "_automation", "13_Faculty_Resources"}
+SKIP_DIRS = {
+    ".git", ".netlify", "_automation", "_build", "build", "dist",
+    "node_modules", "site", "13_Faculty_Resources",
+}
+CITATION_SKIP_PREFIXES = ("00_START_HERE/notebooklm_upload_", "_prototypes/")
+CITATION_SKIP_PARTS = ("/_source/",)
+CITATION_INCLUDE_PREFIXES = (
+    "01_Six_Week_Curriculum/",
+    "02_Clinical_Skills/",
+    "03_Core_Topics/",
+    "04_Acute_and_Safety/",
+    "05_Psychopharmacology/",
+    "06_Family_and_Relational/",
+    "07_Evidence_and_Reading/",
+    "08_Cases_and_Simulation/",
+    "09_Exam_Prep/",
+    "10_Patient_and_Family_Education/",
+    "11_AI_and_Prompts/",
+    "12_Media/",
+    "14_Tracks/",
+)
 
 
 def classify(url, retries=2):
@@ -154,8 +174,15 @@ def check_registry_sources():
     return findings
 
 
+def _skip_citation_path(rel):
+    """Skip imported/source-only citation copies that should not open faculty issues."""
+    return (not rel.startswith(CITATION_INCLUDE_PREFIXES)
+            or rel.startswith(CITATION_SKIP_PREFIXES)
+            or any(part in rel for part in CITATION_SKIP_PARTS))
+
+
 def scan_curriculum_citations(root):
-    """Yield (kind, ident, url, repo_relative_path) for DOIs/PMIDs in curriculum text."""
+    """Yield (kind, ident, url, repo_relative_path) for DOIs/PMIDs in live curriculum text."""
     root = os.path.abspath(root)
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS and not d.startswith(".")]
@@ -164,6 +191,8 @@ def scan_curriculum_citations(root):
                 continue
             p = os.path.join(dirpath, fn)
             rel = os.path.relpath(p, root)
+            if _skip_citation_path(rel):
+                continue
             try:
                 text = open(p, encoding="utf-8", errors="replace").read()
             except Exception:
@@ -221,6 +250,11 @@ def self_test():
     assert _browser_required_soft_failure({"link_check": "browser_required"}, None)
     assert not _browser_required_soft_failure({"link_check": "browser_required"}, 404)
     assert not _browser_required_soft_failure({}, 403)
+    assert _skip_citation_path("00_START_HERE/notebooklm_upload_2026-07-01/a.md")
+    assert _skip_citation_path("08_Cases_and_Simulation/_source/DOI_REPORT.md")
+    assert _skip_citation_path("_prototypes/demo.preview.html")
+    assert _skip_citation_path("MS3-Psychiatry-Site_Multidisciplinary-Audit_2026-06-28.md")
+    assert not _skip_citation_path("07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md")
     # backtick neutralization happens downstream in issue_body; here just ensure
     # fingerprints are stable across runs
     assert L.fingerprint("a", "broken-link", "u") == L.fingerprint("a", "broken-link", "u")

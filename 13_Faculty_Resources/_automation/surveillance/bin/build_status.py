@@ -24,6 +24,13 @@ FAC_ROOT = os.path.dirname(os.path.dirname(L.SURV_ROOT))          # 13_Faculty_R
 DEFAULT_REVIEWED = os.path.join(FAC_ROOT, "reviewed.json")
 CADENCE_DAYS = {"weekly": 7, "monthly": 31, "on_demand": 3650}
 SEV_COLOR = {"P0": "#b3261e", "P1": "#b26a00", "P2": "#5f6368"}
+CITATION_PREFIXES = ("doi:", "pmid:")
+CITATION_ARCHIVE_PREFIXES = (
+    "00_START_HERE/notebooklm_upload_",
+    "13_Faculty_Resources/",
+    "_prototypes/",
+)
+CITATION_ARCHIVE_PARTS = ("/_source/",)
 
 
 def _load(path, default):
@@ -51,6 +58,42 @@ def _days_since(iso):
         return None
 
 
+def _is_citation(f):
+    return str(f.get("source_id", "")).startswith(CITATION_PREFIXES)
+
+
+def _is_archive_citation_path(path):
+    return path.startswith(CITATION_ARCHIVE_PREFIXES) or any(part in path for part in CITATION_ARCHIVE_PARTS)
+
+
+def _actionable_citation_affects(f):
+    return [p for p in f.get("affects", []) if not _is_archive_citation_path(p)]
+
+
+def _with_actionable_affects(findings):
+    out = []
+    for f in findings:
+        g = dict(f)
+        g["actionable_affects"] = _actionable_citation_affects(f)
+        out.append(g)
+    return out
+
+
+def _citation_page_summary(findings):
+    by_page = {}
+    for f in findings:
+        for page in sorted(set(f.get("actionable_affects", []))):
+            by_page.setdefault(page, []).append(f)
+    rows = []
+    for page, items in by_page.items():
+        rows.append({
+            "page": page,
+            "count": len(items),
+            "examples": sorted(items, key=lambda x: x.get("source_id", ""))[:3],
+        })
+    return sorted(rows, key=lambda x: (-x["count"], x["page"]))
+
+
 def compute(history_dir, reviewed_path):
     findings = _latest_reports(history_dir)
     for f in findings:
@@ -62,13 +105,19 @@ def compute(history_dir, reviewed_path):
     p0 = [f for f in open_findings if f["severity"] == "P0"]
     p1 = [f for f in open_findings if f["severity"] == "P1"]
     p2 = [f for f in active_findings if f["severity"] == "P2"]
+    p1_citations = _with_actionable_affects([f for f in p1 if _is_citation(f)])
+    p1_non_citations = [f for f in p1 if not _is_citation(f)]
+    p1_citations_actionable = [f for f in p1_citations if f["actionable_affects"]]
+    p1_citations_archive = [f for f in p1_citations if not f["actionable_affects"]]
+    citation_pages = _citation_page_summary(p1_citations_actionable)
 
     # review-overdue: newest finding date per affected page vs reviewed.json
     reviewed = _load(reviewed_path, {})
     newest_by_page = {}
     for f in active_findings:
         d = (f.get("detected_at") or "")[:10]
-        for pg in f.get("affects", []):
+        affects = _actionable_citation_affects(f) if _is_citation(f) else f.get("affects", [])
+        for pg in affects:
             if d > newest_by_page.get(pg, ""):
                 newest_by_page[pg] = d
     overdue = []
@@ -96,6 +145,11 @@ def compute(history_dir, reviewed_path):
                           "age_days": age, "stale": stale})
 
     return {"has_runs": bool(findings), "p0": p0, "p1": p1, "p2": p2,
+            "p1_non_citations": p1_non_citations,
+            "p1_citations": p1_citations,
+            "p1_citations_actionable": p1_citations_actionable,
+            "p1_citations_archive": p1_citations_archive,
+            "citation_pages": citation_pages,
             "overdue": overdue, "freshness": freshness, "generated": L.utcnow()}
 
 
@@ -112,6 +166,10 @@ def render_md(s):
            f"•  **P2 (digest):** {len(s['p2'])}",
            f"- **Pages needing re-review:** {len(s['overdue'])}",
            f"- **Stale sources:** {sum(1 for x in s['freshness'] if x['stale'])}", ""]
+    if s["p1_citations"]:
+        L_ += [f"- **Citation P1s:** {len(s['p1_citations'])} total  •  "
+               f"{len(s['p1_citations_actionable'])} touch live teaching pages  •  "
+               f"{len(s['p1_citations_archive'])} archive/import-only", ""]
 
     def block(title, items):
         out = [f"## {title} ({len(items)})", ""]
@@ -130,7 +188,35 @@ def render_md(s):
         return out
 
     L_ += block("Open P0 — act now", s["p0"])
-    L_ += block("Open P1", s["p1"])
+    L_ += block("Open P1 — non-citation", s["p1_non_citations"])
+
+    L_ += ["## Citation triage", ""]
+    if s["p1_citations"]:
+        L_ += [
+            f"- **Active DOI/PMID P1s:** {len(s['p1_citations'])}",
+            f"- **Touch live teaching pages:** {len(s['p1_citations_actionable'])}",
+            f"- **Archive/import/prototype only:** {len(s['p1_citations_archive'])}",
+            "",
+            "### Live pages to review first",
+            "",
+        ]
+        if s["citation_pages"]:
+            L_ += ["| Page | Citation issues | Example issues |", "|---|---:|---|"]
+            for row in s["citation_pages"]:
+                examples = []
+                for f in row["examples"]:
+                    sid = f.get("source_id", "")
+                    link = f.get("github_issue")
+                    examples.append(f"[`{sid}`]({link})" if link else f"`{sid}`")
+                L_.append(f"| `{row['page']}` | {row['count']} | {', '.join(examples)} |")
+        else:
+            L_ += ["_No active citation findings touch live teaching pages._"]
+        L_ += ["", "### Archive-only citation backlog", "",
+               f"{len(s['p1_citations_archive'])} DOI/PMID findings currently affect only imported "
+               "NotebookLM bundles, `_source` reports, faculty-only files, or prototypes. They are "
+               "kept out of page re-review counts; clean them only if promoted into live curriculum.", ""]
+    else:
+        L_ += ["_No active DOI/PMID findings._", ""]
 
     L_ += ["## Pages needing re-review", ""]
     if s["overdue"]:
@@ -165,6 +251,30 @@ def render_html(s):
                   f"<td style='font-size:12px'>{aff}</td></tr>")
         return r
 
+    def citation_triage():
+        if not s["p1_citations"]:
+            return '<h3>Citation triage</h3><p style="color:#5f6368">No active DOI/PMID findings.</p>'
+        if s["citation_pages"]:
+            body = ""
+            for row in s["citation_pages"]:
+                examples = []
+                for f in row["examples"]:
+                    sid = f.get("source_id", "")
+                    issue = f.get("github_issue")
+                    examples.append(f'<a href="{issue}"><code>{sid}</code></a>' if issue else f"<code>{sid}</code>")
+                body += (f"<tr><td><code>{row['page']}</code></td><td>{row['count']}</td>"
+                         f"<td>{', '.join(examples)}</td></tr>")
+        else:
+            body = '<tr><td colspan="3" style="color:#5f6368">No live teaching pages affected.</td></tr>'
+        return (f"<h3>Citation triage</h3>"
+                f"<p><span class='k'>DOI/PMID P1s: <b>{len(s['p1_citations'])}</b></span>"
+                f"<span class='k'>Live-page citations: <b>{len(s['p1_citations_actionable'])}</b></span>"
+                f"<span class='k'>Archive-only: <b>{len(s['p1_citations_archive'])}</b></span></p>"
+                f"<table><tr><th>Live page</th><th>Citation issues</th><th>Examples</th></tr>{body}</table>"
+                f"<p style='color:#5f6368;font-size:13px'>{len(s['p1_citations_archive'])} DOI/PMID findings "
+                "currently affect only imported NotebookLM bundles, _source reports, faculty-only files, "
+                "or prototypes and are excluded from page re-review counts.</p>")
+
     over = "".join(f"<tr><td><code>{o['page']}</code></td><td>{o['finding_date']}</td>"
                    f"<td>{o['reviewed_at']}</td></tr>" for o in s["overdue"]) \
         or '<tr><td colspan="3" style="color:#5f6368">All affected pages attested.</td></tr>'
@@ -191,7 +301,8 @@ def render_html(s):
 <span class="k">Re-review: <b>{len(s['overdue'])}</b></span>
 <span class="k">Stale sources: <b>{sum(1 for x in s['freshness'] if x['stale'])}</b></span></p>
 <h3>Open P0 — act now</h3><table><tr><th>Sev</th><th>Finding</th><th>Affects</th></tr>{rows(s['p0'])}</table>
-<h3>Open P1</h3><table><tr><th>Sev</th><th>Finding</th><th>Affects</th></tr>{rows(s['p1'])}</table>
+<h3>Open P1 — non-citation</h3><table><tr><th>Sev</th><th>Finding</th><th>Affects</th></tr>{rows(s['p1_non_citations'])}</table>
+{citation_triage()}
 <h3>Pages needing re-review</h3><table><tr><th>Page</th><th>Change detected</th><th>Last attested</th></tr>{over}</table>
 <h3>Source freshness</h3><table><tr><th>Source</th><th>Last checked</th><th>Age (days)</th><th>Status</th></tr>{fresh}</table>
 </body></html>"""
@@ -210,7 +321,8 @@ def main():
     html_path = os.path.join(args.out_dir, "status.html")
     open(md_path, "w", encoding="utf-8").write(render_md(s))
     open(html_path, "w", encoding="utf-8").write(render_html(s))
-    print(f"status: P0={len(s['p0'])} P1={len(s['p1'])} P2={len(s['p2'])} "
+    print(f"status: P0={len(s['p0'])} P1={len(s['p1'])} "
+          f"citation_P1={len(s['p1_citations'])} P2={len(s['p2'])} "
           f"overdue={len(s['overdue'])} -> {os.path.basename(md_path)}, {os.path.basename(html_path)}")
 
 
