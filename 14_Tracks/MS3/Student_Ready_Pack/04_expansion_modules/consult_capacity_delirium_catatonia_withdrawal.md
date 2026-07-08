@@ -150,6 +150,7 @@ Alcohol withdrawal red flags:
 - Autonomic instability.
 - Confusion or hallucinosis.
 - Severe tremor or agitation.
+- Wernicke risk: malnutrition, confusion, ataxia, ophthalmoplegia, or heavy alcohol use. Verify thiamine is given before or with glucose/carbohydrate when possible; do not delay emergency glucose for true hypoglycemia.
 
 Opioid withdrawal is usually not life-threatening by itself but is very
 distressing and changes risk, engagement, and discharge planning.
@@ -167,6 +168,7 @@ Student role:
 - Identify risk and escalate.
 - Do not invent a withdrawal protocol.
 - Know whether your unit uses CIWA-Ar, COWS, or other local tools.
+- Name thiamine-before/with-glucose as a red-flag safety check, because carbohydrate loading can worsen thiamine depletion and precipitate Wernicke encephalopathy.
 
 Guideline anchor: ASAM alcohol withdrawal management guideline and pocket guide.
 

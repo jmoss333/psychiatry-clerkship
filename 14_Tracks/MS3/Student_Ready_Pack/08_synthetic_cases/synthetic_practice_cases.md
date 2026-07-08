@@ -47,6 +47,7 @@ stockpiled medication at home.
 
 - "Denies SI" is not enough.
 - Alcohol can increase acute risk and complicate treatment.
+- If withdrawal risk or malnutrition is present, verify thiamine is given before or with glucose/carbohydrate when possible; true hypoglycemia still gets treated immediately.
 - Means restriction must be concrete.
 - Collateral can change risk formulation.
 
@@ -133,6 +134,7 @@ hours ago. Prior withdrawal seizure 5 years ago.
 
 - Quantify "a few."
 - Prior complicated withdrawal changes acuity.
+- Thiamine before/with glucose is a safety check in alcohol withdrawal risk because carbohydrate loading can precipitate Wernicke encephalopathy in thiamine-depleted patients.
 - Psychiatric units still manage medical risk.
 
 ## Case 7 - Discharge Barrier Hidden In Family System
