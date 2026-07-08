@@ -22,6 +22,9 @@ Generated files:
 - `outputs/adobe_packet_exports/ms3_pocket_cards.csv`
 - `outputs/adobe_packet_exports/ms3_adobe_export_manifest.json`
 
+Note: generated CSV/JSON files are machine output and should not be hand-edited.
+If any text correction is needed, re-run the repository export flow after source edits.
+
 ## Suggested Adobe Templates
 
 ### Week Packet Template
@@ -47,6 +50,8 @@ Recommended fields:
 - Footer: `review_status`
 
 ## Required Review Before Distribution
+
+- Faculty attestation is required before any generated PDF is learner-facing.
 
 - Confirm no PHI or patient-identifying details appear in the final PDF.
 - Confirm local-policy language is either removed, locally completed, or visibly marked.
