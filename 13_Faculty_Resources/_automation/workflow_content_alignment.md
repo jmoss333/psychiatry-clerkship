@@ -12,6 +12,8 @@ Use these optional fields in `topic_meta.json`:
 - `communicationCases`: IDs from `communication_cases.json`.
 - `clinicalWorkflow`: the rendered "On the unit" scaffold. Supported keys are `ask`, `mse`, `safety`, `say`, `collateral`, `rounds`, `exam`, and `actions`.
 
+Practice links in `cta` and `clinicalWorkflow.actions` are validated when they target `communication-practice.html&case=...` or `family-systems.html&scenario=...`. Family scenario data lives in `family_systems_scenarios.json`; its documented shape is `family_systems_scenarios.schema.json`.
+
 ## Authoring Pattern
 
 For diagnosis pages, aim to fill all seven clinical workflow prompts:

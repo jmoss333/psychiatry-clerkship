@@ -11,7 +11,7 @@ Enforces the rules the renderer + rubric assume, so a shape error can't ship:
 Exits non-zero and prints every violation.
 Usage:  python3 validate_topic_meta.py [path/to/topic_meta.json]
 """
-import json, os, sys
+import json, os, re, sys
 
 path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "..", "topic_meta.json")
@@ -22,6 +22,7 @@ if not os.path.exists(path):
 
 d = json.load(open(path, encoding="utf-8"))
 repo_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+topic_keys = {k for k in d if k != "_note"}
 def require_unique(label, values):
     seen = set()
     dup = []
@@ -59,19 +60,31 @@ if os.path.exists(tool_registry_path):
         print("tool_registry.json INVALID — %s" % exc)
         sys.exit(1)
 communication_cases_path = os.path.join(repo_root, "communication_cases.json")
+communication_case_ids = set()
 if os.path.exists(communication_cases_path):
     try:
         cc = json.load(open(communication_cases_path, encoding="utf-8"))
-        require_unique("communication_cases.json", [x.get("id") for x in cc.get("cases", []) if isinstance(x, dict) and x.get("id")])
+        communication_case_id_list = [x.get("id") for x in cc.get("cases", []) if isinstance(x, dict) and x.get("id")]
+        require_unique("communication_cases.json", communication_case_id_list)
+        communication_case_ids = set(communication_case_id_list)
         for case in cc.get("cases", []):
+            cid = case.get("id")
             choices = case.get("choices", []) if isinstance(case, dict) else []
             if sum(1 for ch in choices if isinstance(ch, dict) and ch.get("quality") == "best") != 1:
-                print("communication_cases.json INVALID — %s must have exactly one best choice" % case.get("id"))
+                print("communication_cases.json INVALID — %s must have exactly one best choice" % cid)
                 sys.exit(1)
+            linked_pages = case.get("linkedPages", []) if isinstance(case, dict) else []
+            if not (isinstance(linked_pages, list) and all(isinstance(x, str) for x in linked_pages)):
+                print("communication_cases.json INVALID — %s linkedPages must be a list of strings" % cid)
+                sys.exit(1)
+            for page in linked_pages:
+                if page not in topic_keys:
+                    print("communication_cases.json INVALID — %s references unknown linked page %s" % (cid, page))
+                    sys.exit(1)
             ids = case.get("evidenceIds", []) if isinstance(case, dict) else []
             for eid in ids:
                 if evidence_ids and eid not in evidence_ids:
-                    print("communication_cases.json INVALID — %s references unknown evidence id %s" % (case.get("id"), eid))
+                    print("communication_cases.json INVALID — %s references unknown evidence id %s" % (cid, eid))
                     sys.exit(1)
     except Exception as exc:
         print("communication_cases.json INVALID — %s" % exc)
@@ -106,10 +119,13 @@ for reasoning_cases_path in (
     if os.path.exists(reasoning_cases_path):
         validate_reasoning_cases(reasoning_cases_path)
 family_systems_path = os.path.join(repo_root, "family_systems_scenarios.json")
+family_scenario_ids = set()
 if os.path.exists(family_systems_path):
     try:
         fs = json.load(open(family_systems_path, encoding="utf-8"))
-        require_unique("family_systems_scenarios.json", [x.get("id") for x in fs.get("scenarios", []) if isinstance(x, dict) and x.get("id")])
+        family_scenario_id_list = [x.get("id") for x in fs.get("scenarios", []) if isinstance(x, dict) and x.get("id")]
+        require_unique("family_systems_scenarios.json", family_scenario_id_list)
+        family_scenario_ids = set(family_scenario_id_list)
         required_sections = ("prepare", "ask", "say", "avoid", "handoff", "safety")
         for scenario in fs.get("scenarios", []):
             sid = scenario.get("id")
@@ -131,6 +147,22 @@ if os.path.exists(family_systems_path):
                 if not isinstance(check, dict) or not isinstance(check.get("id"), str) or not isinstance(check.get("label"), str):
                     print("family_systems_scenarios.json INVALID — %s checks must have string id and label" % sid)
                     sys.exit(1)
+            linked_pages = scenario.get("linkedPages", []) if isinstance(scenario, dict) else []
+            if not (isinstance(linked_pages, list) and all(isinstance(x, str) for x in linked_pages)):
+                print("family_systems_scenarios.json INVALID — %s linkedPages must be a list of strings" % sid)
+                sys.exit(1)
+            for page in linked_pages:
+                if page not in topic_keys:
+                    print("family_systems_scenarios.json INVALID — %s references unknown linked page %s" % (sid, page))
+                    sys.exit(1)
+            linked_cases = scenario.get("communicationCases", []) if isinstance(scenario, dict) else []
+            if not (isinstance(linked_cases, list) and all(isinstance(x, str) for x in linked_cases)):
+                print("family_systems_scenarios.json INVALID — %s communicationCases must be a list of strings" % sid)
+                sys.exit(1)
+            for cid in linked_cases:
+                if communication_case_ids and cid not in communication_case_ids:
+                    print("family_systems_scenarios.json INVALID — %s references unknown communication case %s" % (sid, cid))
+                    sys.exit(1)
             ids = scenario.get("evidenceIds", []) if isinstance(scenario, dict) else []
             for eid in ids:
                 if evidence_ids and eid not in evidence_ids:
@@ -141,6 +173,28 @@ if os.path.exists(family_systems_path):
         sys.exit(1)
 errs = []
 def bad(k, msg): errs.append("%s: %s" % (k, msg))
+
+def hrefs_from_cta(cta):
+    if isinstance(cta, dict):
+        href = cta.get("href")
+        return [href] if isinstance(href, str) else []
+    if isinstance(cta, list):
+        hrefs = []
+        for item in cta:
+            if isinstance(item, dict) and isinstance(item.get("href"), str):
+                hrefs.append(item["href"])
+        return hrefs
+    return []
+
+def validate_practice_href(topic, href):
+    if not isinstance(href, str):
+        return
+    for sid in re.findall(r"[?&]tool=family-systems\.html&scenario=([a-z0-9_]+)", href):
+        if family_scenario_ids and sid not in family_scenario_ids:
+            bad(topic, "href references unknown family scenario '%s'" % sid)
+    for cid in re.findall(r"[?&]tool=communication-practice\.html&case=([a-z0-9_]+)", href):
+        if communication_case_ids and cid not in communication_case_ids:
+            bad(topic, "href references unknown communication case '%s'" % cid)
 
 for k, v in d.items():
     if k == "_note":
@@ -174,6 +228,9 @@ for k, v in d.items():
     for name in ("evidenceIds", "relatedTools", "workflowModes", "workflowStages", "communicationCases"):
         if name in v and not (isinstance(v[name], list) and all(isinstance(x, str) for x in v[name])):
             bad(k, "'%s' must be a list of strings" % name)
+    for cid in v.get("communicationCases", []) if isinstance(v.get("communicationCases"), list) else []:
+        if communication_case_ids and cid not in communication_case_ids:
+            bad(k, "communicationCases references unknown case '%s'" % cid)
     allowed_stages = {"encounter", "diagnosis", "safety", "treatment", "communication", "family", "team", "exam"}
     for stage in v.get("workflowStages", []) if isinstance(v.get("workflowStages"), list) else []:
         if stage not in allowed_stages:
@@ -194,8 +251,12 @@ for k, v in d.items():
                         for idx, action in enumerate(cv):
                             if not isinstance(action, dict) or not isinstance(action.get("label"), str) or not isinstance(action.get("href"), str):
                                 bad(k, "clinicalWorkflow.actions[%d] must have string label and href" % idx)
+                            elif isinstance(action.get("href"), str):
+                                validate_practice_href(k, action["href"])
                 elif not isinstance(cv, str):
                     bad(k, "clinicalWorkflow.%s must be a string" % ck)
+    for href in hrefs_from_cta(v.get("cta")):
+        validate_practice_href(k, href)
     if "familyOverlay" in v and not isinstance(v["familyOverlay"], str):
         bad(k, "'familyOverlay' must be a string")
     if isinstance(v.get("familyOverlay"), str):
