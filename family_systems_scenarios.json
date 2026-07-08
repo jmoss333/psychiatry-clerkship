@@ -312,6 +312,112 @@
       "communicationCases": ["guardedness_privacy_001"],
       "evidenceIds": [],
       "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "caregiver_baseline_adaptations_001",
+      "title": "Caregiver Baseline And Adaptations",
+      "setting": "Delirium, dementia, autism, intellectual disability, or communication differences",
+      "time": "6 min",
+      "learnerGoal": "Use caregiver knowledge to separate baseline from acute change and translate it into safer unit adaptations.",
+      "opening": "You know what this person is like when they are doing well. I want to understand baseline communication, what has changed, and what helps the hospital feel less overwhelming.",
+      "sections": {
+        "prepare": [
+          "Clarify permission, surrogate status, or the safety/legal reason for caregiver contact with the supervising team.",
+          "Review what you already know about baseline cognition, communication, sensory needs, ADLs, medical triggers, and home supports.",
+          "Decide whether the immediate goal is diagnosis, safety, communication adaptation, discharge feasibility, or all of these."
+        ],
+        "ask": [
+          "What is this person like on a typical good day?",
+          "How do they usually communicate pain, fear, hunger, confusion, or overstimulation?",
+          "What is clearly new compared with baseline: attention, sleep, speech, movement, eating, toileting, aggression, wandering, or self-injury?",
+          "What helps them calm, orient, sleep, take medication, or cooperate with care?",
+          "What medical problems often show up as behavior change for them?"
+        ],
+        "say": [
+          "I do not want to mistake baseline communication for illness, or illness for baseline.",
+          "Specific examples will help us adapt the unit and avoid unnecessary escalation.",
+          "Caregiver expertise informs the plan, but it does not replace the team's clinical responsibility."
+        ],
+        "avoid": [
+          "Do not ask caregivers to provide restraints, interpret confidential questions, or supervise unsafe behavior on the unit.",
+          "Do not label behavior as just dementia, autism, or personality before checking pain, delirium, withdrawal, trauma, and unmet needs.",
+          "Do not promise discharge based only on family willingness."
+        ],
+        "handoff": [
+          "Baseline cognition, communication, function, and sensory needs.",
+          "Acute changes and likely medical, psychiatric, environmental, or medication contributors.",
+          "Adaptations that staff can use today, plus unresolved safety or discharge barriers."
+        ],
+        "safety": [
+          "Escalate acute delirium, catatonia, inability to eat or drink, falls, elopement, abuse, exploitation, or caregiver burnout.",
+          "Use trained interpreters for language access and high-risk questions.",
+          "Document caregiver source, permission/legal frame, and what changed the plan."
+        ]
+      },
+      "checks": [
+        {"id": "permission", "label": "Permission/surrogate/safety frame clarified"},
+        {"id": "baseline", "label": "Baseline communication and function obtained"},
+        {"id": "acute_change", "label": "Acute change separated from baseline"},
+        {"id": "adaptations", "label": "Unit adaptations named for staff"},
+        {"id": "handoff", "label": "Team update links caregiver data to plan"}
+      ],
+      "linkedPages": ["delirium.md", "t_neurocog.md", "t_neurodev.md", "collateral_workflow.md"],
+      "communicationCases": ["collateral_questions_001"],
+      "evidenceIds": ["nice-delirium-cg103"],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "culture_interpreter_family_001",
+      "title": "Culture, Interpreter, And Family Contact",
+      "setting": "Interpreter-mediated or culturally complex family contact",
+      "time": "6 min",
+      "learnerGoal": "Elicit the patient's explanatory model and family role while protecting privacy, language access, and safety.",
+      "opening": "I do not want to assume my framework fits your family. I want to understand what you call the problem, who should be involved, and what we should be careful not to share.",
+      "sections": {
+        "prepare": [
+          "Use a trained interpreter for clinical discussion; do not use relatives for confidential or high-risk questions.",
+          "Ask the patient privately who they want involved and what cultural, spiritual, or family context matters.",
+          "Clarify whether the goal is collateral, psychoeducation, discharge planning, conflict repair, or safety planning."
+        ],
+        "ask": [
+          "What do you and your family call what is happening?",
+          "What do you think caused it, and what kind of help makes sense to you?",
+          "Who usually helps make health decisions, and what do you want shared with them?",
+          "Are there family, faith, immigration, language, stigma, or discrimination concerns that change what feels safe?",
+          "What would respectful care look like today?"
+        ],
+        "say": [
+          "I will speak in short pieces so the interpreter can translate everything accurately.",
+          "Family perspective can help, and the patient's privacy still matters.",
+          "If we disagree about the explanation, we can still agree on the next safety step."
+        ],
+        "avoid": [
+          "Do not ask family to interpret suicide, violence, trauma, abuse, sexual, substance, or psychosis questions.",
+          "Do not treat culture as a diagnosis or assume the family speaks with one voice.",
+          "Do not disclose more than the patient permits unless a safety/legal exception applies."
+        ],
+        "handoff": [
+          "Language access used and whether communication was direct with the patient.",
+          "Patient and family explanatory model, decision roles, and privacy boundaries.",
+          "Cultural/system factors that change alliance, safety, diagnosis, or discharge planning."
+        ],
+        "safety": [
+          "Use supervisor guidance for confidentiality exceptions, mandated reporting, threats, coercion, trafficking, or abuse concerns.",
+          "Use professional interpreters for safety planning and means-safety conversations.",
+          "Document interpreter use, consent boundaries, and the clinical reason for family contact."
+        ]
+      },
+      "checks": [
+        {"id": "interpreter", "label": "Professional interpreter used when needed"},
+        {"id": "private", "label": "Patient sharing preferences checked privately"},
+        {"id": "model", "label": "Explanatory model elicited"},
+        {"id": "family_role", "label": "Family decision role and limits clarified"},
+        {"id": "handoff", "label": "Cultural/system issue tied to plan"}
+      ],
+      "linkedPages": ["cultural_psychiatry.md", "ethics_legal.md", "family_playbook.md"],
+      "communicationCases": ["guardedness_privacy_001", "collateral_questions_001"],
+      "evidenceIds": [],
+      "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
     }
   ]
 }
