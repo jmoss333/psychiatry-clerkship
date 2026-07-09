@@ -3913,8 +3913,8 @@
         }
       ],
       "why": "Seizure monitoring over agranulocytosis, Cardiac over ANC, and Hierarchical misread all displace the correct priority. Clozapine's unique safety architecture is organized around the ANC: agranulocytosis is the life-threatening risk that drove the original REMS requirement, and ongoing hematologic monitoring per the prescribing information remains mandatory.",
-      "pearl": "Clozapine requires baseline ANC + ongoing monitoring per prescribing information — agranulocytosis is the central safety concern; the REMS ended in 2025 but the monitoring requirement continues.",
-      "evidence": "psychopharm_primer.md — Clozapine is the agent for treatment-resistant schizophrenia, reserved precisely because it demands ongoing ANC monitoring for agranulocytosis per its prescribing information (the centralized REMS program ended in 2025).",
+      "pearl": "Clozapine requires baseline ANC + ongoing monitoring per prescribing information — agranulocytosis is the central safety concern; the FDA eliminated the clozapine REMS in 2025 (FDA, 2025); ANC monitoring continues per the prescribing information.",
+      "evidence": "psychopharm_primer.md — Clozapine is the agent for treatment-resistant schizophrenia, reserved precisely because it demands ongoing ANC monitoring for agranulocytosis per its prescribing information (the FDA eliminated the clozapine REMS in 2025).",
       "tier2": {
         "q": "Why is the absolute neutrophil count monitored for clozapine rather than total white blood cell count alone?",
         "options": [
@@ -4666,7 +4666,7 @@
         "label": "Open the Mood Disorders page",
         "href": "?page=t_mood.md"
       },
-      "stem": "A 28-year-old man with bipolar I disorder is admitted for her first acute manic episode. He has no prior mood stabilizer exposure. Which is the most appropriate pharmacological framework for acute mania management?",
+      "stem": "A 28-year-old man with bipolar I disorder is admitted for his first acute manic episode. He has no prior mood stabilizer exposure. Which is the most appropriate pharmacological framework for acute mania management?",
       "options": [
         {
           "key": "A",
@@ -6489,7 +6489,7 @@
         "label": "Open the Ethics & Law page",
         "href": "?page=ethics_legal.md"
       },
-      "stem": "A 62-year-old man with intact cognition is informed of the risks, benefits, and alternatives of a recommended ECT course. He is under no coercion and says, 'I understand what you've told me, and I want to have ECT.' Which component of informed consent has NOT yet been addressed?",
+      "stem": "A 62-year-old man is informed of the risks, benefits, and alternatives of a recommended ECT course; his cognition is grossly intact on interview, though no formal capacity assessment has been documented. He is under no coercion and says, 'I understand what you've told me, and I want to have ECT.' Which component of informed consent has NOT yet been addressed?",
       "options": [
         {
           "key": "A",
@@ -7205,13 +7205,13 @@
         },
         {
           "key": "D",
-          "t": "Expressed emotion (EE) roughly quintuples relapse odds, while family warmth is protective — but EE is modifiable through behavioral family therapy and family psychoeducation, making the family climate a tractable clinical target.",
+          "t": "Expressed emotion (EE) substantially raises relapse odds — roughly doubling to quintupling across studies (Butzlaff & Hooley 1998) — while family warmth is protective, but EE is modifiable through behavioral family therapy and family psychoeducation, making the family climate a tractable clinical target.",
           "c": true
         }
       ],
-      "why": "EE is fixed, EE = schizophrenia only, and EE = out of scope all represent clinical fatalism about a modifiable variable. The page states EE 'roughly quintuples relapse odds (OR ~4.87), while family warmth is protective (OR ~0.35) — and family climate is modifiable, which is why meetings help lower it.'",
-      "pearl": "Expressed emotion (EE) quintuples relapse odds and is MODIFIABLE — behavioral family therapy and psychoeducation specifically target and reduce it; EE is a tractable clinical problem.",
-      "evidence": "family_modalities.md — Expressed emotion: high-EE roughly quintuples relapse odds (OR ~4.87), while family warmth is protective (OR ~0.35). Family climate is modifiable — meetings help lower it."
+      "why": "EE is fixed, EE = schizophrenia only, and EE = out of scope all represent clinical fatalism about a modifiable variable. The page states EE 'roughly doubles to quintuples relapse odds depending on the study (Butzlaff & Hooley 1998 meta-analysis), while family warmth is protective — and family climate is modifiable, which is why meetings help lower it.'",
+      "pearl": "Expressed emotion (EE) substantially raises relapse odds (roughly doubling to quintupling across studies; Butzlaff & Hooley 1998) and is MODIFIABLE — behavioral family therapy and psychoeducation specifically target and reduce it; EE is a tractable clinical problem.",
+      "evidence": "family_modalities.md — Expressed emotion: high-EE roughly doubles to quintuples relapse odds depending on the study (Butzlaff & Hooley 1998 meta-analysis), while family warmth is protective. Family climate is modifiable — meetings help lower it."
     },
     {
       "id": "qb_rel_007",

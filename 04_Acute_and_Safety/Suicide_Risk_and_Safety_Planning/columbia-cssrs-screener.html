@@ -137,7 +137,7 @@ function App(){
       ));
       rows.push(e('div',{className:'node tiernode',key:'tier'},
         e('div',{className:'marker',style:{background:tierC[b.lvl]}}, '!'),
-        e('div',{className:'nodecard',style:{background:tierBg[b.lvl],borderColor:tierC[b.lvl]}},
+        e('div',{className:'nodecard',style:{background:tierBg[b.lvl],borderColor:tierC[b.lvl]},'aria-live':'polite','aria-atomic':true},
           e('div',{className:'nodekick',style:{color:tierC[b.lvl]}}, 'Triage · '+tierLbl[b.lvl]),
           e('div',{style:{fontWeight:600}}, b.txt))
       ));

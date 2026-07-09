@@ -158,7 +158,7 @@ function Scale(props){
       }),
       e('button',{className:'btn',onClick:function(){setV({})}},'Reset')
     ),
-    e('div',{className:'readout'},
+    e('div',{className:'readout','aria-live':'polite','aria-atomic':true},
       e('div',{className:'gaugeCard'},
         e('div',{className:'eyebrow'},'Total score'),
         e('div',{className:'bigscore',style:{color:info.color}}, total),

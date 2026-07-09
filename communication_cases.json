@@ -126,7 +126,7 @@
         "stance": "Lower pressure by naming choice, confidentiality limits, and your role in safety.",
         "mustInclude": [
           "Say the patient can choose what to answer",
-          "Name the immediate-safety exception to confidentiality",
+          "Name the real limits to confidentiality (imminent risk to self/others, mandated reporting) — not routine team sharing",
           "Invite what would make the conversation feel safer"
         ],
         "avoid": [
@@ -143,9 +143,9 @@
         },
         {
           "id": "b",
-          "text": "You get to choose what you answer. I do need to tell the team if there is an immediate safety concern, but my goal is to understand what would help you feel safer here.",
+          "text": "You get to choose what you answer. Our team shares information to care for you, so what you tell me isn't a secret I keep from them — that's not a breach of confidentiality. What I would have to share more widely is an immediate risk to your safety or someone else's, or something the law requires me to report. My goal right now is to understand what would help you feel safer here.",
           "quality": "best",
-          "feedback": "Best choice. It respects autonomy, names the safety exception, and keeps the conversation oriented toward safety and care."
+          "feedback": "Best choice. It respects autonomy, distinguishes routine team care-coordination from the real limits to confidentiality (imminent risk to self or others, mandated reporting, court order), and keeps the conversation oriented toward safety and care."
         },
         {
           "id": "c",
