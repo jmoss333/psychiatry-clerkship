@@ -10082,6 +10082,632 @@
       "why": "Past violence is the strongest single predictor of future violence. Distinguish static factors (history — fixed) from dynamic factors (acute psychosis, intoxication, agitation — modifiable and the treatment target).",
       "pearl": "Past violence is the best predictor; separate static (history) from dynamic (treatable) risk.",
       "evidence": "violence.md — Static vs dynamic risk; past violence as predictor."
+    },
+    {
+      "id": "qb_per_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A 40-year-old executive expects constant admiration, believes he is uniquely special and entitled to the best of everything, and dismisses colleagues as beneath him; he becomes enraged by mild criticism. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Narcissistic personality disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Antisocial personality disorder",
+          "trap": {
+            "name": "Rights-violation trap",
+            "note": "ASPD centers on disregard for and violation of others' rights; NPD centers on grandiosity, entitlement, and need for admiration."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Histrionic personality disorder",
+          "trap": {
+            "name": "Attention-mechanism trap",
+            "note": "Histrionic patients seek attention through emotionality/seductiveness, not grandiosity and entitlement."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Bipolar disorder, manic episode",
+          "trap": {
+            "name": "State-vs-trait trap",
+            "note": "Mania is an episodic mood state; this is an enduring characterological pattern."
+          }
+        }
+      ],
+      "why": "Grandiosity, need for admiration, entitlement, and lack of empathy define narcissistic personality disorder — distinct from antisocial (rights violations) and histrionic (attention through emotionality).",
+      "pearl": "NPD = grandiosity + need for admiration + entitlement + lack of empathy.",
+      "evidence": "t_personality.md — Cluster B: narcissistic personality disorder."
+    },
+    {
+      "id": "qb_per_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A 33-year-old woman cannot make everyday decisions without excessive reassurance, feels helpless when alone, and urgently seeks a new relationship for care whenever one ends. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Dependent personality disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Avoidant personality disorder",
+          "trap": {
+            "name": "Cluster-C mix-up",
+            "note": "Avoidant patients want relationships but avoid them from fear of criticism/rejection; dependent patients cling and urgently seek care."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Borderline personality disorder",
+          "trap": {
+            "name": "BPD conflation",
+            "note": "BPD features identity disturbance, self-harm, and unstable intense relationships, not the pure submissive/clinging dependence described."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Histrionic personality disorder",
+          "trap": {
+            "name": "Attention-seeking trap",
+            "note": "Histrionic is attention-seeking emotionality, not the need to be cared for described here."
+          }
+        }
+      ],
+      "why": "A pervasive, excessive need to be taken care of — submissiveness, difficulty making decisions without reassurance, and urgently seeking a replacement relationship for care — defines dependent personality disorder (Cluster C).",
+      "pearl": "Dependent PD = excessive need to be cared for, submissive/clinging, urgently replaces lost relationships.",
+      "evidence": "t_personality.md — Cluster C: dependent personality disorder."
+    },
+    {
+      "id": "qb_per_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A 29-year-old is uncomfortable when not the center of attention, is dramatic and seductive with staff, shows rapidly shifting shallow emotions, and considers acquaintances closer than they are. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Histrionic personality disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Borderline personality disorder",
+          "trap": {
+            "name": "BPD conflation",
+            "note": "BPD features abandonment fears, identity disturbance, and self-harm; histrionic centers on attention-seeking emotionality and seductiveness."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Narcissistic personality disorder",
+          "trap": {
+            "name": "Grandiosity trap",
+            "note": "Narcissistic patients seek admiration for specialness; histrionic patients seek attention through emotionality."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Dependent personality disorder",
+          "trap": {
+            "name": "Cluster-C mix-up",
+            "note": "Dependent patients seek care and reassurance, not attention through dramatic emotionality."
+          }
+        }
+      ],
+      "why": "Excessive attention-seeking, dramatic and seductive behavior, shallow shifting emotions, and overestimating intimacy define histrionic personality disorder (Cluster B).",
+      "pearl": "Histrionic PD = attention-seeking, dramatic/seductive, shallow shifting emotions.",
+      "evidence": "t_personality.md — Cluster B: histrionic personality disorder."
+    },
+    {
+      "id": "qb_cdev_012",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A 7-year-old refuses school, complains of stomachaches on school mornings that resolve on weekends, and is terrified that something will happen to his mother while apart. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Separation anxiety disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Generalized anxiety disorder",
+          "trap": {
+            "name": "Over-broad trap",
+            "note": "GAD is pervasive worry across domains; here the fear is specifically about separation from an attachment figure."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Oppositional defiant disorder",
+          "trap": {
+            "name": "Defiance mislabel",
+            "note": "This is fear-driven school refusal, not an angry/defiant pattern."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Malingering",
+          "trap": {
+            "name": "Intent trap",
+            "note": "The somatic complaints are anxiety-driven, not consciously feigned for external gain."
+          }
+        }
+      ],
+      "why": "Developmentally inappropriate, excessive fear of separation from attachment figures — with somatic complaints and school refusal, lasting ≥4 weeks in a child — is separation anxiety disorder.",
+      "pearl": "Separation anxiety disorder: excessive separation fear, somatic complaints, school refusal (≥4 weeks in children).",
+      "evidence": "t_neurodev.md — Childhood anxiety: separation anxiety disorder."
+    },
+    {
+      "id": "qb_cdev_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx",
+        "next-step"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A 6-year-old repeatedly soils his underwear; exam reveals a large stool mass and history of painful, infrequent bowel movements. Best diagnosis and initial management?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Encopresis with retentive overflow — treat the underlying constipation (disimpaction and maintenance) plus behavioral measures",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Conduct disorder — the soiling is deliberate defiance",
+          "trap": {
+            "name": "Intent trap",
+            "note": "Retentive encopresis with overflow is not willful defiance; it stems from constipation."
+          }
+        },
+        {
+          "key": "C",
+          "t": "A primary psychotic process",
+          "trap": {
+            "name": "Overpathologizing",
+            "note": "Soiling from constipation is not a psychotic symptom."
+          }
+        },
+        {
+          "key": "D",
+          "t": "No intervention, as this is normal for age",
+          "trap": {
+            "name": "Under-call trap",
+            "note": "Encopresis is diagnosed at chronological age ≥4 and warrants treatment."
+          }
+        }
+      ],
+      "why": "Encopresis (age ≥4) is most often retentive with overflow incontinence; management targets the constipation (disimpaction, maintenance laxatives, toileting routine) plus behavioral support — not punishment.",
+      "pearl": "Encopresis: usually retentive overflow — treat the constipation first, add behavioral measures.",
+      "evidence": "t_neurodev.md — Elimination disorders: encopresis."
+    },
+    {
+      "id": "qb_cdev_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A 6-year-old speaks normally at home but consistently fails to speak at school, where she is otherwise engaged; this has lasted the school year and impairs learning. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Selective mutism",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Autism spectrum disorder",
+          "trap": {
+            "name": "Social-communication trap",
+            "note": "ASD involves pervasive social-communication deficits and restricted/repetitive behaviors; selective mutism is situation-specific with normal speech elsewhere."
+          }
+        },
+        {
+          "key": "C",
+          "t": "A language (communication) disorder",
+          "trap": {
+            "name": "Capacity trap",
+            "note": "The child can speak normally at home; the failure is situational, pointing to an anxiety disorder, not a language deficit."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Oppositional defiant disorder",
+          "trap": {
+            "name": "Defiance mislabel",
+            "note": "The mutism is anxiety-driven, not willful defiance."
+          }
+        }
+      ],
+      "why": "Selective mutism is a consistent failure to speak in specific social situations (e.g., school) despite speaking normally elsewhere, interfering with functioning — an anxiety-spectrum disorder, not a language or defiance problem.",
+      "pearl": "Selective mutism: won't speak in specific settings but speaks normally elsewhere — an anxiety disorder.",
+      "evidence": "t_neurodev.md — Selective mutism."
+    },
+    {
+      "id": "qb_eth_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & the Law page",
+        "href": "?page=ethics_legal.md"
+      },
+      "stem": "During an interview, a child discloses details strongly suggesting physical abuse at home. The parent asks you to keep it confidential. What must you do?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Make a mandated report to child protective services based on reasonable suspicion",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Keep it confidential because the parent requested it",
+          "trap": {
+            "name": "Confidentiality-override trap",
+            "note": "Confidentiality yields to mandatory reporting of suspected child abuse; a parent cannot waive that duty."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Wait until you have definitive proof before reporting",
+          "trap": {
+            "name": "Proof trap",
+            "note": "Reporting requires reasonable suspicion, not proof."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Report only if the child asks you to",
+          "trap": {
+            "name": "Assent trap",
+            "note": "The duty to report does not depend on the child's request."
+          }
+        }
+      ],
+      "why": "Suspected child abuse is a mandatory report based on reasonable suspicion — you do not need proof, and confidentiality (including a parent's request) does not override the duty. Elder/dependent-adult abuse carries similar duties.",
+      "pearl": "Suspected child abuse = mandatory report on reasonable suspicion; confidentiality does not override it.",
+      "evidence": "ethics_legal.md — Mandatory reporting."
+    },
+    {
+      "id": "qb_eth_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & the Law page",
+        "href": "?page=ethics_legal.md"
+      },
+      "stem": "A 15-year-old comes alone requesting evaluation. Which statement about consent for a minor is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Minors generally require parental consent, but exceptions exist — emancipated/mature minors, certain confidential services in many jurisdictions, and the emergency exception",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A minor can never consent to any care without a parent present",
+          "trap": {
+            "name": "Absolutism trap",
+            "note": "Emancipated-minor, specific-service, and emergency exceptions exist; the rule is not absolute."
+          }
+        },
+        {
+          "key": "C",
+          "t": "A minor always has full adult decision-making authority",
+          "trap": {
+            "name": "Over-broad trap",
+            "note": "Minors do not have blanket adult authority; parental consent is the general rule with defined exceptions."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Emergency care must be withheld until a parent is reached",
+          "trap": {
+            "name": "Emergency trap",
+            "note": "Emergency care proceeds under implied consent even before a parent is reached."
+          }
+        }
+      ],
+      "why": "The general rule is parental consent for minors, with important exceptions: emancipated or mature minors, certain sensitive services (varies by jurisdiction), and the emergency exception. Statutes vary, so know local law.",
+      "pearl": "Minors: parental consent is the rule, with emancipated-minor, specific-service, and emergency exceptions (jurisdiction-dependent).",
+      "evidence": "ethics_legal.md — Consent and minors."
+    },
+    {
+      "id": "qb_eth_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & the Law page",
+        "href": "?page=ethics_legal.md"
+      },
+      "stem": "A hospitalized patient invites the student doctor to meet socially and offers a substantial personal gift. What is the appropriate response?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Kindly decline — sexual or romantic involvement with a patient is never acceptable, and significant gifts/dual relationships are boundary crossings to avoid",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Accept, since maintaining rapport is most important",
+          "trap": {
+            "name": "Rapport-over-boundaries trap",
+            "note": "Rapport does not justify boundary violations; the therapeutic frame protects the patient."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Accept the gift but decline the social meeting",
+          "trap": {
+            "name": "Partial-boundary trap",
+            "note": "Significant personal gifts are themselves a boundary crossing to avoid."
+          }
+        },
+        {
+          "key": "D",
+          "t": "It is only a problem after discharge",
+          "trap": {
+            "name": "Timing trap",
+            "note": "The prohibition on sexual/romantic involvement and the caution around gifts/dual relationships apply during care and beyond."
+          }
+        }
+      ],
+      "why": "Professional boundaries protect patients: sexual or romantic involvement with a patient is never acceptable, and significant gifts or dual relationships are boundary crossings to decline gracefully.",
+      "pearl": "Sexual/romantic involvement with a patient is never acceptable; decline significant gifts and dual relationships.",
+      "evidence": "ethics_legal.md — Professional boundaries."
+    },
+    {
+      "id": "qb_otherdx_012",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sleep.md"
+      ],
+      "link": {
+        "label": "Open the Sleep-Wake Disorders page",
+        "href": "?page=t_sleep.md"
+      },
+      "stem": "A 20-year-old has months of overwhelming daytime sleepiness with sudden, brief episodes of bilateral leg weakness triggered by laughter, plus vivid hallucinations while falling asleep and episodes of waking paralysis. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Narcolepsy (type 1, with cataplexy)",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Obstructive sleep apnea",
+          "trap": {
+            "name": "Mechanism trap",
+            "note": "OSA causes fragmented sleep and sleepiness but not cataplexy, the emotion-triggered muscle-tone loss described."
+          }
+        },
+        {
+          "key": "C",
+          "t": "A primary psychotic disorder",
+          "trap": {
+            "name": "Hallucination trap",
+            "note": "Hypnagogic hallucinations at sleep onset are a narcolepsy feature, not a primary psychosis."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Generalized anxiety disorder",
+          "trap": {
+            "name": "Wrong-domain trap",
+            "note": "The tetrad points to narcolepsy, not anxiety."
+          }
+        }
+      ],
+      "why": "The narcolepsy tetrad — excessive daytime sleepiness, cataplexy (emotion-triggered muscle-tone loss), sleep paralysis, and hypnagogic hallucinations — with low CSF orexin/hypocretin defines narcolepsy type 1; MSLT shows short REM latency.",
+      "pearl": "Narcolepsy: sleepiness + cataplexy + sleep paralysis + hypnagogic hallucinations; low orexin.",
+      "evidence": "t_sleep.md — Narcolepsy."
+    },
+    {
+      "id": "qb_otherdx_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_somatic.md"
+      ],
+      "link": {
+        "label": "Open the Somatic Symptom & Related page",
+        "href": "?page=t_somatic.md"
+      },
+      "stem": "A woman develops sudden left-arm paralysis after an argument; exam shows a positive Hoover sign and findings inconsistent with any neuroanatomic lesion, and workup is normal. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Functional neurological symptom disorder (conversion disorder)",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Malingering",
+          "trap": {
+            "name": "Intent trap",
+            "note": "Conversion symptoms are not consciously produced for external gain; the clinical picture and internal inconsistency indicate a functional disorder."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Factitious disorder",
+          "trap": {
+            "name": "Intent trap",
+            "note": "Factitious disorder involves deliberate falsification for the sick role; conversion is not intentionally produced."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Stroke",
+          "trap": {
+            "name": "Exam trap",
+            "note": "A positive Hoover sign and neuroanatomically incompatible findings with normal workup argue against a structural lesion."
+          }
+        }
+      ],
+      "why": "Neurologic symptoms with internal inconsistency incompatible with recognized disease (e.g., positive Hoover sign), not intentionally produced and often following a stressor, define functional neurological symptom (conversion) disorder.",
+      "pearl": "Conversion (functional neurological) disorder: exam-incompatible neuro symptoms, not intentional, often post-stressor.",
+      "evidence": "t_somatic.md — Functional neurological symptom (conversion) disorder."
+    },
+    {
+      "id": "qb_otherdx_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_dissociative.md"
+      ],
+      "link": {
+        "label": "Open the Dissociative Disorders page",
+        "href": "?page=t_dissociative.md"
+      },
+      "stem": "A woman with a severe childhood trauma history has recurrent gaps in memory for everyday events and describes two distinct identity states with different names and behaviors that others have witnessed. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Dissociative identity disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Borderline personality disorder",
+          "trap": {
+            "name": "Identity-disturbance trap",
+            "note": "BPD identity disturbance is an unstable self-image, not distinct alternating identity states with amnesia."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Malingering",
+          "trap": {
+            "name": "Intent trap",
+            "note": "The presentation, corroborated by others and tied to severe trauma, is not simply feigned for gain."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Schizophrenia",
+          "trap": {
+            "name": "Psychosis conflation",
+            "note": "'Split personality' is not schizophrenia; DID involves identity states and amnesia, not primary psychosis."
+          }
+        }
+      ],
+      "why": "Two or more distinct personality states plus recurrent amnesia beyond ordinary forgetting, strongly associated with severe early trauma, defines dissociative identity disorder — commonly confused with (but distinct from) schizophrenia.",
+      "pearl": "DID = ≥2 distinct identity states + amnesia, linked to severe early trauma; not schizophrenia.",
+      "evidence": "t_dissociative.md — Dissociative identity disorder."
     }
   ]
 }
