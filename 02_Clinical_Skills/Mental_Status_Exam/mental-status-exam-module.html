@@ -178,7 +178,7 @@ function App(){
   var learn = e('div',{key:'l'},
     DOMAINS.map(function(d,i){
       return e('div',{className:'domain',key:d.key},
-        e('div',{className:'domain-head',onClick:function(){toggleOpen(d.key)}},
+        e('div',{className:'domain-head',role:'button',tabIndex:0,'aria-expanded':!!open[d.key],onClick:function(){toggleOpen(d.key)},onKeyDown:function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();toggleOpen(d.key)}}},
           e('span',{style:{display:'flex',alignItems:'center',gap:'10px'}},
             e('span',{className:'domain-num'},i+1),
             e('span',{className:'domain-title'},d.title)),
@@ -201,7 +201,7 @@ function App(){
         return e('div',{key:d.key,style:{marginBottom:'14px'}},
           e('span',{className:'label'}, d.title, d.single?' (choose one)':''),
           e('div',{className:'chips'}, d.options.map(function(o){
-            return e('span',{className:'chip'+(s.indexOf(o)>=0?' on':''),key:o,onClick:function(){pick(d.key,o,d.single)}},o);
+            return e('span',{className:'chip'+(s.indexOf(o)>=0?' on':''),key:o,role:d.single?'radio':'checkbox',tabIndex:0,'aria-checked':s.indexOf(o)>=0,onKeyDown:function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();pick(d.key,o,d.single)}},onClick:function(){pick(d.key,o,d.single)}},o);
           }))
         );
       })
