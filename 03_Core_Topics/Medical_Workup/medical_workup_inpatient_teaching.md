@@ -1,6 +1,6 @@
 # Medical Workup & Medical Mimics
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line.** A new psychiatric presentation is a medical workup until proven otherwise — the job on admission is to rule out the medical and substance causes that masquerade as psychiatric illness before you commit to a psychiatric diagnosis.
 

@@ -1,6 +1,6 @@
 # Suicide Risk & Safety Planning on the Inpatient Unit
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line.** Suicide risk assessment is a structured clinical judgment that stratifies risk and drives two decisions — the level of care and a collaborative safety plan — rather than a prediction of an inherently unpredictable event.
 

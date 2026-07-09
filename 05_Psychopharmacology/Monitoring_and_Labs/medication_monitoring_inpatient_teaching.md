@@ -1,6 +1,6 @@
 # Medication Monitoring & Labs
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line.** Every psychotropic with a monitoring requirement has a *baseline* and an *ongoing* schedule — knowing them is both a bedside safety habit and one of the most reliable sources of exam points.
 

@@ -1,6 +1,6 @@
 # Psychotherapies at a Glance
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line.** You will not run a course of psychotherapy on a five-day admission, but you are expected to know what each modality is *for*, recognize which patient it fits, and use its stance in every conversation — the "match the therapy to the problem" reasoning is high-yield on the COMAT/shelf and on rounds.
 

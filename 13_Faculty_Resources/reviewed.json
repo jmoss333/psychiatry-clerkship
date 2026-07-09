@@ -467,18 +467,18 @@
   "by": "Joshua Moss, MD"
  },
  "medical_workup.md": {
-  "status": "pending",
+  "status": "reviewed",
   "at": "2026-07-09",
-  "by": "Pending faculty review"
+  "by": "Joshua Moss, MD"
  },
  "toxidromes.md": {
-  "status": "pending",
+  "status": "reviewed",
   "at": "2026-07-09",
-  "by": "Pending faculty review"
+  "by": "Joshua Moss, MD"
  },
  "med_monitoring.md": {
-  "status": "pending",
+  "status": "reviewed",
   "at": "2026-07-09",
-  "by": "Pending faculty review"
+  "by": "Joshua Moss, MD"
  }
 }

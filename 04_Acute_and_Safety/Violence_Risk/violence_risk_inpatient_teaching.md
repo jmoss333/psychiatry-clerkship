@@ -1,6 +1,6 @@
 # Violence Risk on the Inpatient Unit
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line.** Violence risk assessment estimates the *short-term, situational* likelihood that a patient will harm someone — a dynamic clinical judgment you revise shift to shift, not a character verdict or a permanent label.
 

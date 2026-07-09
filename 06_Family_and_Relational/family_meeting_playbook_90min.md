@@ -1,6 +1,6 @@
 # Family Meeting Playbook (90-min)
 
-> **Review status:** AI-drafted — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-03). Educational; fictional composites only, no PHI.
 
 **In one line** — A structured 90-minute inpatient family meeting: prepare deliberately, join the family, share the picture in plain language, surface and de-shame expressed emotion, then build a concrete plan together. Use it as a scaffold, not a script — the family's needs set the pace.
 

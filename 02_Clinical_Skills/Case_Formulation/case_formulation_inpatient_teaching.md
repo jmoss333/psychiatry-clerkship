@@ -1,6 +1,6 @@
 # Case Formulation on the Inpatient Unit
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line.** A formulation is the sentence the differential can't give you — it answers *why this patient, why now,* and turns a diagnosis into a plan. (For the quick-reference version, see the Formulation & DDx pocket guide; this page is the how-to and a worked example.)
 
