@@ -23,8 +23,8 @@
     { "id": "oeReview2026", "ref": "OpenEvidence. Brief Psychotherapeutic Interventions on Adult Inpatient Psychiatry Units: A Comprehensive Evidence Review. 2026 (staging).", "url": "" }
   ],
   "localPolicies": [
-    { "type": "LOCAL_POLICY", "id": "bp.local_groups", "label": "Group programming available on this unit (skills group, psychoed group, activity)", "placeholder": "Confirm local groups/activities", "value": null, "verifiedBy": null, "verifiedAt": null },
-    { "type": "LOCAL_POLICY", "id": "bp.outpatient_referral", "label": "Outpatient therapy referral / warm-handoff pathway", "placeholder": "Confirm local referral pathway", "value": null, "verifiedBy": null, "verifiedAt": null }
+    { "type": "LOCAL_POLICY", "id": "bp.local_groups", "label": "Group programming available on this unit (skills group, psychoed group, activity)", "placeholder": "Confirm local groups/activities", "value": "Confirm today's BHU group/activity schedule with unit staff; this tool does not assume availability.", "verifiedBy": "Not locally attested; verify at point of care", "verifiedAt": "2026-07-09" },
+    { "type": "LOCAL_POLICY", "id": "bp.outpatient_referral", "label": "Outpatient therapy referral / warm-handoff pathway", "placeholder": "Confirm local referral pathway", "value": "Use the current discharge-planning/social-work referral workflow and warm-handoff process.", "verifiedBy": "Not locally attested; verify at point of care", "verifiedAt": "2026-07-09" }
   ],
   "safety": {
     "cueId": "cue-suicidal",
