@@ -217,10 +217,22 @@ const qbPath = p('question_bank.json');
 if (existsSync(qbPath) && parsed[qbPath]) {
   const qItems = parsed[qbPath].items || [];
   const qSeen = new Map();
+  // Learner links: link.href "?page=X.md" must resolve to a built content/ page, or the
+  // student clicks into a 404. The bank stores the BUILT slug (e.g. t_anxiety.md), not the
+  // source filename — build_deploy.py renames pages on copy, so a source-style name here is
+  // a silent dead link. HARD (same class as a broken nav target). Guards regressions of the
+  // 2026-07 fix that corrected ~44 items pointing at source filenames.
+  const contentSet = new Set(contentFiles);
   qItems.forEach((it, i) => {
     if (!it.id) { H(`question_bank item[${i}] missing id`); return; }
     if (qSeen.has(it.id)) H(`duplicate question_bank id "${it.id}" (items ${qSeen.get(it.id)} and ${i})`);
     else qSeen.set(it.id, i);
+    const href = it.link && it.link.href;
+    if (href) {
+      const m = /[?&]page=([^&#]+\.md)/.exec(href);
+      if (m && !contentSet.has(m[1]))
+        H(`question_bank "${it.id}" link.href points to missing content page "${m[1]}" (use the built slug, not the source filename)`);
+    }
   });
   const stemToks = qItems.map(it =>
     new Set((it.stem || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(w => w.length > 2)));

@@ -8,17 +8,21 @@
 People with serious mental illness die 10–20 years earlier than the general population, mostly from cardiometabolic disease. Several psychotropics drive weight gain, dyslipidemia, and glucose dysregulation; diet and activity are both a *cause* of that risk and part of the *treatment*. Owning metabolic health is part of owning the psychiatric care.
 
 ## Metabolic monitoring you should know cold
-For anyone on an antipsychotic (and many other psychotropics), track at **baseline, ~12 weeks, then annually** (more often if high-risk):
+For anyone starting an antipsychotic, the **ADA/APA 2004 consensus** establishes two separate cadences — one front-loaded for weight (the earliest and most actionable signal), and one less frequent for fasting labs and BP:
 
-| Measure | Why |
-|---|---|
-| Weight / BMI (and waist circumference) | Earliest, most actionable signal |
-| Blood pressure | Metabolic syndrome criterion |
-| Fasting glucose or HbA1c | Antipsychotic-associated diabetes |
-| Fasting lipid panel | Dyslipidemia, esp. triglycerides |
-| Personal/family cardiometabolic history | Risk stratification |
+| Measure | Schedule | Why |
+|---|---|---|
+| **Weight / BMI** (and waist circumference) | Baseline → **4 wk → 8 wk → 12 wk → then quarterly** | Antipsychotic weight gain begins within weeks; monthly checks in the first 3 months catch the window where switching or intervening is most effective |
+| **Blood pressure** | Baseline → 12 wk → annually | Metabolic syndrome criterion |
+| **Fasting glucose or HbA1c** | Baseline → 12 wk → annually | Antipsychotic-associated diabetes |
+| **Fasting lipid panel** | Baseline → 12 wk → annually | Dyslipidemia, esp. triglycerides |
+| Personal/family cardiometabolic history | Baseline | Risk stratification |
 
-This is the **ADA/APA consensus monitoring** standard — see the metabolic-monitoring landmark on the Landmark Trials page.
+The weight/BMI front-loading is intentional: early antipsychotic weight gain is the highest-yield signal and the best opportunity to switch agents or add metformin before the trajectory becomes entrenched. Monitor more frequently for any parameter that is elevated at baseline or worsens during titration.
+
+This is the **ADA/APA consensus monitoring** standard (American Diabetes Association, American Psychiatric Association, et al., Diabetes Care 2004) — see the metabolic-monitoring landmark on the Landmark Trials page.
+
+> **AI-drafted section update — pending Dr. Moss's review/attestation before learner use.**
 
 ## Drug-specific burden (highest → lowest, roughly)
 - **Highest:** olanzapine, clozapine.

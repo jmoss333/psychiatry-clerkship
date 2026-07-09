@@ -1135,7 +1135,7 @@
       ],
       "why": "Faster is safer, Sedation before nutrition, and Normalize first all create delay or metabolic risk. The source's 'start low, go slow' principle is the safety framework: conservative start, daily electrolyte checks, and thiamine before carbohydrate to prevent Wernicke encephalopathy.",
       "pearl": "Refeeding syndrome prevention: start low, go slow, give thiamine before carbohydrate, check phosphate daily.",
-      "evidence": "eating_disorders_inpatient_teaching.md — Refeeding syndrome: the safe posture is 'start low, go slow': begin conservative caloric refeeding, check phosphate/potassium/magnesium at least daily early, supplement phosphate and give thiamine before or with carbohydrate, and advance calories per protocol as electrolytes stay stable."
+      "evidence": "t_eating.md — Refeeding syndrome: the safe posture is 'start low, go slow': begin conservative caloric refeeding, check phosphate/potassium/magnesium at least daily early, supplement phosphate and give thiamine before or with carbohydrate, and advance calories per protocol as electrolytes stay stable."
     },
     {
       "id": "qb_oth_002",
@@ -1188,7 +1188,7 @@
       ],
       "why": "Outpatient sufficient, Medical workup before treatment, and Lucid interval = reassurance all miss the emergency framing. The source states: 'POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The safety assessment must explicitly include the infant.",
       "pearl": "Postpartum psychosis = immediate hospitalization, restrict unsupervised infant access, start lithium or antipsychotic urgently.",
-      "evidence": "perinatal_psychiatry_inpatient_teaching.md — POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently. The safety assessment must explicitly include the infant: assess risk to the baby, the parent's current access to the baby, and available supervision."
+      "evidence": "t_perinatal.md — POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently. The safety assessment must explicitly include the infant: assess risk to the baby, the parent's current access to the baby, and available supervision."
     },
     {
       "id": "qb_eth_001",
@@ -5700,11 +5700,11 @@
       "difficulty": 1,
       "hy": true,
       "pages": [
-        "anxiety_trauma_ocd_inpatient_teaching.md"
+        "t_anxiety.md"
       ],
       "link": {
         "label": "Open the Anxiety, OCD & Trauma page",
-        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+        "href": "?page=t_anxiety.md"
       },
       "stem": "A 29-year-old man with first-episode psychosis was started on haloperidol 3 days ago. He has been pacing the unit continuously, reports an inner urge to move, and the team has correctly identified this as akathisia. The attending decides that haloperidol should be continued for now at the same dose. Which pharmacological intervention has the strongest evidence as first-line treatment for akathisia in this setting?",
       "options": [
@@ -5740,7 +5740,7 @@
       ],
       "why": "Anticholinergic first-line, Clozapine immediately, and Benzodiazepine first-line all misorient the management hierarchy. Propranolol (B) has the strongest evidence for akathisia: it is effective in multiple small RCTs reviewed in the Cochrane systematic analysis (Lima et al. 2004). The management sequence is: (1) reduce antipsychotic dose or switch if possible — the mechanism fix; (2) propranolol when dose reduction isn't immediately available; (3) benztropine if parkinsonism co-exists; (4) benzodiazepine adjunct if symptoms remain severe. Avoid escalating the antipsychotic — the cardinal error.",
       "pearl": "Akathisia pharmacotherapy: propranolol 20–40 mg BID is first-line (strongest evidence); add benztropine if parkinsonism co-exists; benzodiazepine is third-line adjunct.",
-      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md 'When akathisia is identified' — Propranolol 20–40 mg BID is the pharmacological first-line for akathisia with the strongest evidence from multiple small RCTs and Cochrane review (Lima et al., Cochrane Database Syst Rev 2004). Management hierarchy: reduce dose or switch → propranolol → benztropine if parkinsonism co-exists → benzodiazepine adjunct."
+      "evidence": "t_anxiety.md 'When akathisia is identified' — Propranolol 20–40 mg BID is the pharmacological first-line for akathisia with the strongest evidence from multiple small RCTs and Cochrane review (Lima et al., Cochrane Database Syst Rev 2004). Management hierarchy: reduce dose or switch → propranolol → benztropine if parkinsonism co-exists → benzodiazepine adjunct."
     },
     {
       "id": "qb_anx_004",
@@ -5752,11 +5752,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "anxiety_trauma_ocd_inpatient_teaching.md"
+        "t_anxiety.md"
       ],
       "link": {
         "label": "Open the Anxiety, OCD & Trauma page",
-        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+        "href": "?page=t_anxiety.md"
       },
       "stem": "A 52-year-old man is admitted to the inpatient psychiatry unit. He is anxious, diaphoretic, and tremulous. His heart rate is 102. He says he has always been 'an anxious person.' The team prepares to increase his home sertraline. Which step is most important before attributing this presentation to his anxiety disorder?",
       "options": [
@@ -5792,7 +5792,7 @@
       ],
       "why": "Specialist before differential, Anchoring to prior diagnosis, and Single diagnosis before differential all bypass the foundational step. The page's first pearl: 'Anxiety is a symptom before it is a diagnosis — clear the medical and withdrawal mimics first.' In a newly admitted patient with diaphoresis, tremor, and tachycardia, alcohol or sedative withdrawal must top the differential.",
       "pearl": "Anxiety is a symptom before it is a diagnosis — clear medical and withdrawal mimics (thyroid, withdrawal, arrhythmia, hypoglycemia) before treating the disorder.",
-      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Anxiety is a final common pathway, so screen the body first: cardiopulmonary causes, thyroid disease, hypoglycemia, caffeine and stimulant intoxication, and alcohol or benzodiazepine withdrawal."
+      "evidence": "t_anxiety.md — Anxiety is a final common pathway, so screen the body first: cardiopulmonary causes, thyroid disease, hypoglycemia, caffeine and stimulant intoxication, and alcohol or benzodiazepine withdrawal."
     },
     {
       "id": "qb_anx_005",
@@ -5806,11 +5806,11 @@
       "difficulty": 1,
       "hy": true,
       "pages": [
-        "anxiety_trauma_ocd_inpatient_teaching.md"
+        "t_anxiety.md"
       ],
       "link": {
         "label": "Open the Anxiety, OCD & Trauma page",
-        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+        "href": "?page=t_anxiety.md"
       },
       "stem": "A 44-year-old woman with panic disorder and alcohol use disorder in early recovery is admitted for assessment. She is anxious and requesting 'something to help right away.' The student considers adding a standing lorazepam dose for anxiety management. Which response reflects the inpatient standard?",
       "options": [
@@ -5846,7 +5846,7 @@
       ],
       "why": "Benzos for anxiety disorder, One dose is safe, and Inpatient benzos safe short-term all contradict the page's explicit guidance. The page states: 'Avoid standing benzodiazepines on the unit — they drive dependence, falls, and delirium, and are especially hazardous with comorbid SUD or in older adults.' This patient has both risk factors.",
       "pearl": "Standing benzodiazepines are a liability on the inpatient unit — dependence, falls, delirium; especially avoid with SUD or in older adults; use SSRIs + behavioral skills instead.",
-      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Avoid standing benzodiazepines on the unit — they drive dependence, falls, and delirium, and are especially hazardous with comorbid SUD or in older adults."
+      "evidence": "t_anxiety.md — Avoid standing benzodiazepines on the unit — they drive dependence, falls, and delirium, and are especially hazardous with comorbid SUD or in older adults."
     },
     {
       "id": "qb_anx_006",
@@ -5858,11 +5858,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "anxiety_trauma_ocd_inpatient_teaching.md"
+        "t_anxiety.md"
       ],
       "link": {
         "label": "Open the Anxiety, OCD & Trauma page",
-        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+        "href": "?page=t_anxiety.md"
       },
       "stem": "A 32-year-old man with OCD spends 4–6 hours daily performing handwashing and checking rituals that he recognizes as excessive. He asks what the most effective treatment for his OCD is. Which response is most accurate?",
       "options": [
@@ -5898,7 +5898,7 @@
       ],
       "why": "Cognitive restructuring over ERP, ERP confused with PE, and Mindfulness over ERP all substitute adjacent techniques for the specific evidence-based intervention. The page states: 'Definitive treatment is behavioral — ERP for OCD.' The mechanism of ERP (exposure + ritual prevention breaks the anxiety-reduction cycle) is what distinguishes it from general cognitive or mindfulness work.",
       "pearl": "First-line behavioral treatment for OCD is ERP (exposure and response prevention) — not PE (which is PTSD), not generic CBT, not mindfulness alone.",
-      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Pair pharmacology with disorder-specific behavioral work: exposure and response prevention (ERP) for OCD."
+      "evidence": "t_anxiety.md — Pair pharmacology with disorder-specific behavioral work: exposure and response prevention (ERP) for OCD."
     },
     {
       "id": "qb_anx_007",
@@ -5910,11 +5910,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "anxiety_trauma_ocd_inpatient_teaching.md"
+        "t_anxiety.md"
       ],
       "link": {
         "label": "Open the Anxiety, OCD & Trauma page",
-        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+        "href": "?page=t_anxiety.md"
       },
       "stem": "A 29-year-old man is admitted from the emergency department with a possible psychotic disorder. He is noted to perform elaborate ritualized behaviors before eating — arranging his tray precisely, touching items in a fixed sequence, and repeating phrases — and he becomes extremely distressed if interrupted. He describes intrusive thoughts about contamination. He acknowledges the behaviors are excessive and senseless but cannot stop performing them. Which is the most accurate interpretation of this presentation?",
       "options": [
@@ -5950,7 +5950,7 @@
       ],
       "why": "Rituals = psychosis, Stereotypy = catatonia, and Repetitive behavior = ASD all replace OCD with other diagnoses based on surface features. The page notes: 'OCD can masquerade as psychosis when rituals are elaborate.' The discriminating features are ego-dystonicity (patient recognizes the ritual as excessive) and the contamination obsession → relief-seeking ritual chain.",
       "pearl": "Elaborate ego-dystonic rituals + contamination obsessions on a psychiatric unit = OCD masquerading as psychosis — clarify ego-dystonicity before committing to a psychosis diagnosis.",
-      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — OCD can masquerade as psychosis when rituals are elaborate, or as treatment refusal when contamination fears collide with the milieu."
+      "evidence": "t_anxiety.md — OCD can masquerade as psychosis when rituals are elaborate, or as treatment refusal when contamination fears collide with the milieu."
     },
     {
       "id": "qb_anx_008",
@@ -5963,11 +5963,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "anxiety_trauma_ocd_inpatient_teaching.md"
+        "t_anxiety.md"
       ],
       "link": {
         "label": "Open the Anxiety, OCD & Trauma page",
-        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+        "href": "?page=t_anxiety.md"
       },
       "stem": "A student is reviewing a patient with OCD and notes serial Y-BOCS scores in the chart: 32 on admission, 24 at one week, and 20 at two weeks. The attending asks the student to interpret what the Y-BOCS measures and what these scores indicate. Which response is most accurate?",
       "options": [
@@ -6003,7 +6003,7 @@
       ],
       "why": "Y-BOCS = self-report, Broadband anxiety screen, and Behavioral observation only all mischaracterize the instrument. The page specifically names the Y-BOCS as 'the gold-standard clinician-rated measure of OCD severity and treatment response.' Serial tracking — obsessions and compulsions scored separately — is the measure's primary clinical value.",
       "pearl": "Y-BOCS = gold-standard clinician-rated OCD scale; obsessions and compulsions scored separately; use it to track treatment response, not just screen at baseline.",
-      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — The scale to know for OCD is the Y-BOCS (Yale-Brown Obsessive-Compulsive Scale) — the gold-standard clinician-rated measure of OCD severity and treatment response.",
+      "evidence": "t_anxiety.md — The scale to know for OCD is the Y-BOCS (Yale-Brown Obsessive-Compulsive Scale) — the gold-standard clinician-rated measure of OCD severity and treatment response.",
       "tier2": {
         "q": "What is the structure of the Y-BOCS that makes it sensitive to treatment response over time?",
         "options": [
@@ -6039,11 +6039,11 @@
       ],
       "difficulty": 3,
       "pages": [
-        "anxiety_trauma_ocd_inpatient_teaching.md"
+        "t_anxiety.md"
       ],
       "link": {
         "label": "Open the Anxiety, OCD & Trauma page",
-        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+        "href": "?page=t_anxiety.md"
       },
       "stem": "A 34-year-old woman with PTSD is admitted following a psychiatric emergency. During nursing assessment, she becomes acutely distressed, raises her voice, and states, 'Don't touch me — get away from me.' Two staff members consider initiating a hold. The attending pauses and asks the team to consider the clinical frame. Which interpretation best reflects trauma-informed care?",
       "options": [
@@ -6079,7 +6079,7 @@
       ],
       "why": "Refusal = hold criteria, Distress = medication need, and Verbal escalation = imminent assault all trigger coercive responses that retraumatize. The page explicitly states: 'PTSD may surface as hyperarousal, nightmares, or a behavioral reaction to restraint, seclusion, or a same-gender vs. opposite-gender examiner.' Trauma-informed care — 'predictability, explained procedures, offered choices, and minimized restraint/seclusion — reduces retraumatization and lowers behavioral escalation.'",
       "pearl": "PTSD may surface as behavioral distress on the unit; trauma-informed care (predictability, choice, explain procedures, minimize restraint) reduces both retraumatization and escalation.",
-      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Wrap all of it in trauma-informed care — predictability, explained procedures, offered choices, and minimized restraint/seclusion — which both reduces retraumatization and lowers behavioral escalation."
+      "evidence": "t_anxiety.md — Wrap all of it in trauma-informed care — predictability, explained procedures, offered choices, and minimized restraint/seclusion — which both reduces retraumatization and lowers behavioral escalation."
     },
     {
       "id": "qb_anx_010",
@@ -6092,11 +6092,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "anxiety_trauma_ocd_inpatient_teaching.md"
+        "t_anxiety.md"
       ],
       "link": {
         "label": "Open the Anxiety, OCD & Trauma page",
-        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+        "href": "?page=t_anxiety.md"
       },
       "stem": "A 26-year-old combat veteran is admitted for a depressive episode. He is being interviewed by a female medical student when he abruptly terminates the interview and states he cannot continue. He has nightmares, is hypervigilant, and startle-reactive. The student asks the attending how to understand this behavior clinically. Which is most accurate?",
       "options": [
@@ -6132,7 +6132,7 @@
       ],
       "why": "Avoidance = psychosis, Avoidance = non-compliance, and Avoidance = personality disorder all pathologize what is a PTSD-specific behavioral response. The page is explicit: 'PTSD may surface as hyperarousal, nightmares, or a behavioral reaction to restraint, seclusion, or a same-gender vs. opposite-gender examiner.' Accommodation (e.g., offering a male examiner) is the clinical response.",
       "pearl": "PTSD may present on the unit as interview refusal or agitation related to specific triggers (examiner gender, restraint, procedures) — accommodate the trigger rather than pathologizing the refusal.",
-      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — PTSD may surface as hyperarousal, nightmares, or a 'behavioral' reaction to restraint, seclusion, or a same-gender vs. opposite-gender examiner."
+      "evidence": "t_anxiety.md — PTSD may surface as hyperarousal, nightmares, or a 'behavioral' reaction to restraint, seclusion, or a same-gender vs. opposite-gender examiner."
     },
     {
       "id": "qb_anx_011",
@@ -6144,11 +6144,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "anxiety_trauma_ocd_inpatient_teaching.md"
+        "t_anxiety.md"
       ],
       "link": {
         "label": "Open the Anxiety, OCD & Trauma page",
-        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+        "href": "?page=t_anxiety.md"
       },
       "stem": "A 39-year-old woman with PTSD is ready for discharge after a brief inpatient stay. She was started on sertraline. The resident says, 'She's on an SSRI — she's set.' The attending asks the student to identify what is missing from this discharge plan.",
       "options": [
@@ -6184,7 +6184,7 @@
       ],
       "why": "Discharge benzo for anxiety, Medication alone is sufficient, and Maximize dose before discharge all miss the key gap. The page states: 'Confirm the SSRI/SNRI is at a tolerated dose with a clear titration plan, and verify outpatient follow-up that can deliver ERP, PE, or CPT — the medication rarely finishes the job alone.' PE or CPT referral is the explicit discharge requirement.",
       "pearl": "Medication alone rarely finishes the PTSD treatment job — discharge requires a referral to outpatient PE or CPT; confirming the behavioral therapy access is a discharge criterion.",
-      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Confirm the SSRI/SNRI is at a tolerated dose with a clear titration plan, and verify outpatient follow-up that can deliver ERP, PE, or CPT — the medication rarely finishes the job alone."
+      "evidence": "t_anxiety.md — Confirm the SSRI/SNRI is at a tolerated dose with a clear titration plan, and verify outpatient follow-up that can deliver ERP, PE, or CPT — the medication rarely finishes the job alone."
     },
     {
       "id": "qb_anx_012",
@@ -6196,11 +6196,11 @@
       ],
       "difficulty": 3,
       "pages": [
-        "anxiety_trauma_ocd_inpatient_teaching.md"
+        "t_anxiety.md"
       ],
       "link": {
         "label": "Open the Anxiety, OCD & Trauma page",
-        "href": "?page=anxiety_trauma_ocd_inpatient_teaching.md"
+        "href": "?page=t_anxiety.md"
       },
       "stem": "A student is preparing a PTSD psychoeducation handout and wants to explain the difference between prolonged exposure (PE) and cognitive processing therapy (CPT). Both are listed as evidence-based treatments in the patient's discharge plan. Which statement about the distinction is most accurate?",
       "options": [
@@ -6236,7 +6236,7 @@
       ],
       "why": "PE = CPT and Behavioral vs cognitive = entirely separate flatten the distinction. The page names both PE and CPT as first-line behavioral treatments for PTSD. Knowing that PE works through fear extinction via exposure and CPT works through cognitive restructuring of stuck points is the key clinical distinction for recommending or describing the referral.",
       "pearl": "PE = repeated exposure to trauma memory and avoided triggers; CPT = cognitive stuck points about safety/trust/esteem altered by trauma — both are first-line for PTSD, mechanisms differ.",
-      "evidence": "anxiety_trauma_ocd_inpatient_teaching.md — Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.",
+      "evidence": "t_anxiety.md — Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.",
       "tier2": {
         "q": "A patient with PTSD has significant disability from maladaptive beliefs — she believes she is permanently damaged, that the world is entirely unsafe, and that she was responsible for the assault. Which therapy would most directly target these specific cognitions?",
         "options": [
@@ -6273,11 +6273,11 @@
       "difficulty": 1,
       "hy": true,
       "pages": [
-        "ethics_law_confidentiality_inpatient_teaching.md"
+        "ethics_legal.md"
       ],
       "link": {
         "label": "Open the Ethics & Law page",
-        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+        "href": "?page=ethics_legal.md"
       },
       "stem": "During an outpatient psychiatry session, a 34-year-old man with paranoid schizophrenia states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
       "options": [
@@ -6313,7 +6313,7 @@
       ],
       "why": "Family exception, Imminence required, and Legal clearance first all create barriers to a clinically required action. The page states: 'A specific threat to a specific person overrides confidentiality.' The duty to protect may be fulfilled by warning the victim, notifying police, hospitalizing the patient, or intensifying treatment — and specifics vary by state, but the tested principle is clear.",
       "pearl": "Tarasoff: a specific threat to an identifiable victim overrides confidentiality — warn, notify police, or hospitalize; inaction in a credible threat is not a safe option.",
-      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields."
+      "evidence": "ethics_legal.md — A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields."
     },
     {
       "id": "qb_eth_008",
@@ -6327,11 +6327,11 @@
       "difficulty": 1,
       "hy": true,
       "pages": [
-        "ethics_law_confidentiality_inpatient_teaching.md"
+        "ethics_legal.md"
       ],
       "link": {
         "label": "Open the Ethics & Law page",
-        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+        "href": "?page=ethics_legal.md"
       },
       "stem": "A 6-year-old boy is brought to the pediatrician with multiple bruises in various stages of healing. His mother explains that he 'bruises easily.' The student suspects possible physical abuse but is uncertain. There are no obvious fractures, and the child denies being hurt. Which is the correct action?",
       "options": [
@@ -6367,7 +6367,7 @@
       ],
       "why": "Proof required to report, Social work replaces report, and Forensic assessment before report all create delays in a child protection obligation. The page states: 'Reporting requires reasonable suspicion, not proof, and mandated reporters are generally protected when reporting in good faith.' Multiple healing bruises is reasonable suspicion; that is the threshold.",
       "pearl": "Mandatory reporting for child abuse requires reasonable suspicion, not proof — good-faith reporters are protected; report now and let CPS investigate.",
-      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — Report suspected child abuse or neglect and elder/dependent-adult abuse — reporting requires reasonable suspicion, not proof, and mandated reporters are generally protected when reporting in good faith."
+      "evidence": "ethics_legal.md — Report suspected child abuse or neglect and elder/dependent-adult abuse — reporting requires reasonable suspicion, not proof, and mandated reporters are generally protected when reporting in good faith."
     },
     {
       "id": "qb_eth_003",
@@ -6379,11 +6379,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "ethics_law_confidentiality_inpatient_teaching.md"
+        "ethics_legal.md"
       ],
       "link": {
         "label": "Open the Ethics & Law page",
-        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+        "href": "?page=ethics_legal.md"
       },
       "stem": "A 38-year-old man with schizophrenia is involuntarily hospitalized following an acute psychotic episode with danger to others. On day 2, he states that he refuses to take haloperidol. The team wants to medicate him over his objection because 'he's committed.' Which statement is most accurate?",
       "options": [
@@ -6419,7 +6419,7 @@
       ],
       "why": "Commitment = consent to medicate, Route reduces ethical constraint, and Diagnosis = impaired capacity are all versions of the same error. The page is clear: 'Involuntary hospitalization does NOT by itself authorize involuntary medication.' Overriding refusal requires an imminent-danger emergency or a separate legal/adjudicated process. Commitment status and medication consent are independent legal states.",
       "pearl": "Commitment ≠ consent to medicate — involuntary hospitalization does not override medication refusal; a separate emergency or legal process is required.",
-      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — Involuntary hospitalization does NOT by itself authorize involuntary medication. Separate the four legal states: voluntary vs committed, and has-capacity vs court-determined-incompetent."
+      "evidence": "ethics_legal.md — Involuntary hospitalization does NOT by itself authorize involuntary medication. Separate the four legal states: voluntary vs committed, and has-capacity vs court-determined-incompetent."
     },
     {
       "id": "qb_eth_004",
@@ -6431,11 +6431,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "ethics_law_confidentiality_inpatient_teaching.md"
+        "ethics_legal.md"
       ],
       "link": {
         "label": "Open the Ethics & Law page",
-        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+        "href": "?page=ethics_legal.md"
       },
       "stem": "A patient with delirium cannot provide coherent consent for an emergent procedure. The family asks if the patient 'has been declared incompetent.' The resident responds that the patient 'lacks capacity.' The family seems confused by the distinction. Which explanation is most accurate?",
       "options": [
@@ -6471,7 +6471,7 @@
       ],
       "why": "Capacity = competence, Description with keys swapped (B), and Roles reversed all miss the key discriminators. The page states: 'Capacity is decision-specific and clinical (a physician assesses it); competence is a legal determination (a court decides).' Option D captures both discriminators — the clinical/legal distinction AND the decision-specific nature of capacity.",
       "pearl": "Capacity = clinical, decision-specific (physician decides); competence = legal determination (court decides) — they are not interchangeable.",
-      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — Capacity is decision-specific and clinical (a physician assesses it); competence is a legal determination (a court decides)."
+      "evidence": "ethics_legal.md — Capacity is decision-specific and clinical (a physician assesses it); competence is a legal determination (a court decides)."
     },
     {
       "id": "qb_eth_005",
@@ -6483,11 +6483,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "ethics_law_confidentiality_inpatient_teaching.md"
+        "ethics_legal.md"
       ],
       "link": {
         "label": "Open the Ethics & Law page",
-        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+        "href": "?page=ethics_legal.md"
       },
       "stem": "A 62-year-old man with intact cognition is informed of the risks, benefits, and alternatives of a recommended ECT course. He is under no coercion and says, 'I understand what you've told me, and I want to have ECT.' Which component of informed consent has NOT yet been addressed?",
       "options": [
@@ -6523,7 +6523,7 @@
       ],
       "why": "Choice = consent and Emergency exception for ECT overlook the structure of valid consent. Valid consent requires ALL three: capacity + disclosure + voluntariness. Disclosure is confirmed (risks/benefits/alternatives given), voluntariness is confirmed ('under no coercion'), but formal capacity documentation — the four abilities: communicate a choice, understand, appreciate, reason — is described as 'intact cognition' without a documented assessment. This is the gap.",
       "pearl": "Informed consent = capacity + disclosure + voluntariness — all three must be documented; 'intact cognition' is not the same as a documented capacity assessment.",
-      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — Valid consent requires capacity, disclosure (risks/benefits/alternatives), and voluntariness. The four abilities: communicate a choice, understand, appreciate, and reason."
+      "evidence": "ethics_legal.md — Valid consent requires capacity, disclosure (risks/benefits/alternatives), and voluntariness. The four abilities: communicate a choice, understand, appreciate, and reason."
     },
     {
       "id": "qb_eth_006",
@@ -6535,11 +6535,11 @@
       ],
       "difficulty": 3,
       "pages": [
-        "ethics_law_confidentiality_inpatient_teaching.md"
+        "ethics_legal.md"
       ],
       "link": {
         "label": "Open the Ethics & Law page",
-        "href": "?page=ethics_law_confidentiality_inpatient_teaching.md"
+        "href": "?page=ethics_legal.md"
       },
       "stem": "A 15-year-old presents to an outpatient clinic requesting evaluation and treatment for alcohol use disorder. He does not want his parents informed. His parents are alive, married, and have not relinquished guardianship. Which framework applies?",
       "options": [
@@ -6575,7 +6575,7 @@
       ],
       "why": "Minor always requires parental consent, Emancipation by age, and HIPAA overrides minor confidentiality all misstate the legal framework. The page states: 'In many states, care for STIs, contraception, substance use, and some mental-health services' are exceptions to the general parental consent requirement. The correct answer acknowledges the exception while noting state variation.",
       "pearl": "In many states, minors can consent to substance use treatment without parental involvement — this is a recognized statutory exception; state law governs the specifics.",
-      "evidence": "ethics_law_confidentiality_inpatient_teaching.md — Parents/guardians generally consent for minors, with exceptions (emancipated/mature minors and, in many states, care for STIs, contraception, substance use, and some mental-health services)."
+      "evidence": "ethics_legal.md — Parents/guardians generally consent for minors, with exceptions (emancipated/mature minors and, in many states, care for STIs, contraception, substance use, and some mental-health services)."
     },
     {
       "id": "qb_per_005",
@@ -6589,11 +6589,11 @@
       "difficulty": 1,
       "hy": true,
       "pages": [
-        "personality_disorders_inpatient_teaching.md"
+        "t_personality.md"
       ],
       "link": {
         "label": "Open the Personality Disorders page",
-        "href": "?page=personality_disorders_inpatient_teaching.md"
+        "href": "?page=t_personality.md"
       },
       "stem": "A 27-year-old woman with borderline personality disorder is admitted following a suicide attempt by overdose. The treating team is considering starting lorazepam to help manage her emotional lability and distress between therapy sessions. Which evidence-based statement most accurately characterizes this plan?",
       "options": [
@@ -6629,7 +6629,7 @@
       ],
       "why": "Inpatient benzos safe short-term, Low dose = safe, and Benzo for BPD emotional dysregulation all lead to starting a contraindicated drug class. The page is explicit: 'Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any class (Lieslehto 2023); reach for skills, not pills.'",
       "pearl": "Never start or escalate benzodiazepines for BPD symptoms or crisis distress — they carry the highest suicide risk of any psychotropic class in this population; use skills, not pills.",
-      "evidence": "personality_disorders_inpatient_teaching.md — Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, 95% CI 1.45–1.78; Lieslehto 2023) and worsen disinhibition."
+      "evidence": "t_personality.md — Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, 95% CI 1.45–1.78; Lieslehto 2023) and worsen disinhibition."
     },
     {
       "id": "qb_per_006",
@@ -6642,11 +6642,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "personality_disorders_inpatient_teaching.md"
+        "t_personality.md"
       ],
       "link": {
         "label": "Open the Personality Disorders page",
-        "href": "?page=personality_disorders_inpatient_teaching.md"
+        "href": "?page=t_personality.md"
       },
       "stem": "A patient with borderline personality disorder has been admitted for one week. Day-shift nurses describe her as 'demanding and exhausting,' while night-shift nurses call her 'our most engaged patient.' The team recognizes this as splitting. Which response most directly addresses the splitting dynamic?",
       "options": [
@@ -6682,7 +6682,7 @@
       ],
       "why": "Confront the patient, Rotation reduces splitting, and Document the disagreement all fail the unified-team response. The source states: 'Apply consistent, transparent limit-setting and communicate as a unified team — shared notes and handoffs blunt splitting.' Bringing divergent perceptions to rounds is the clinical intervention.",
       "pearl": "Splitting in BPD is treated by team unity — shared notes, consistent limits, and bringing divergent perceptions to rounds; confronting the patient or rotating staff backfires.",
-      "evidence": "personality_disorders_inpatient_teaching.md — Apply consistent, transparent limit-setting and communicate as a unified team — shared notes and handoffs blunt splitting and prevent staff from being divided into 'good' and 'bad.' Bring observed splitting or team-division to rounds so the plan stays unified."
+      "evidence": "t_personality.md — Apply consistent, transparent limit-setting and communicate as a unified team — shared notes and handoffs blunt splitting and prevent staff from being divided into 'good' and 'bad.' Bring observed splitting or team-division to rounds so the plan stays unified."
     },
     {
       "id": "qb_per_003",
@@ -6694,11 +6694,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "personality_disorders_inpatient_teaching.md"
+        "t_personality.md"
       ],
       "link": {
         "label": "Open the Personality Disorders page",
-        "href": "?page=personality_disorders_inpatient_teaching.md"
+        "href": "?page=t_personality.md"
       },
       "stem": "A 24-year-old woman with borderline personality disorder has had 6 psychiatric admissions in the past 2 years, each following an episode of suicidal ideation and non-suicidal self-injury after an interpersonal rupture. She describes ongoing passive suicidal ideation at baseline. Tonight she is calm, the relationship dispute that triggered this admission has somewhat resolved, and her self-harm behaviors have decreased. How should the team conceptualize the discharge planning?",
       "options": [
@@ -6734,7 +6734,7 @@
       ],
       "why": "Admission until SI resolves, Repeated admissions = step up, and Polypharmacy for BPD all fail to apply the chronic-vs-acute distinction. The page is explicit: 'For chronic suicidality, collaborative safety planning is often preferable to repeated or prolonged admission, which can reinforce the hospital as the primary coping strategy.' Discharge planning after acute-on-chronic resolution is the correct frame.",
       "pearl": "Chronic BPD suicidality ≠ acute crisis — distinguish the baseline from escalation; safety planning + outpatient DBT, not serial admissions, manage the chronic pattern.",
-      "evidence": "personality_disorders_inpatient_teaching.md — For chronic suicidality, collaborative safety planning is often preferable to repeated or prolonged admission, which can reinforce the hospital as the primary coping strategy."
+      "evidence": "t_personality.md — For chronic suicidality, collaborative safety planning is often preferable to repeated or prolonged admission, which can reinforce the hospital as the primary coping strategy."
     },
     {
       "id": "qb_per_004",
@@ -6746,11 +6746,11 @@
       ],
       "difficulty": 3,
       "pages": [
-        "personality_disorders_inpatient_teaching.md"
+        "t_personality.md"
       ],
       "link": {
         "label": "Open the Personality Disorders page",
-        "href": "?page=personality_disorders_inpatient_teaching.md"
+        "href": "?page=t_personality.md"
       },
       "stem": "A 31-year-old woman with a documented BPD diagnosis is admitted with severe depressive symptoms, inability to get out of bed, anhedonia, and new passive suicidal ideation. A third-year student says, 'She has BPD — this is probably just her mood lability.' The attending asks the student to reflect on this reasoning. What is the specific error in this approach?",
       "options": [
@@ -6786,7 +6786,7 @@
       ],
       "why": "Age-based BPD exclusion and Sequence error miss the core error. Option C has the correct clinical description but key D is the answer that specifically names the error and its mechanism. The page calls this 'the cardinal error: diagnostic overshadowing — letting a personality label cause you to under-treat a real, acute, treatable illness.'",
       "pearl": "Diagnostic overshadowing in BPD: never let a personality diagnosis suppress investigation of a treatable comorbid mood, psychotic, or substance disorder.",
-      "evidence": "personality_disorders_inpatient_teaching.md — The cardinal error is diagnostic overshadowing: letting a personality label cause you to under-treat a real, acute, treatable illness. A BPD diagnosis does not protect a patient from also having a serious mood, psychotic, or medical condition."
+      "evidence": "t_personality.md — The cardinal error is diagnostic overshadowing: letting a personality label cause you to under-treat a real, acute, treatable illness. A BPD diagnosis does not protect a patient from also having a serious mood, psychotic, or medical condition."
     },
     {
       "id": "qb_cdev_001",
@@ -6800,11 +6800,11 @@
       "difficulty": 1,
       "hy": true,
       "pages": [
-        "neurodevelopmental_disorders_inpatient_teaching.md"
+        "t_neurodev.md"
       ],
       "link": {
         "label": "Open the Neurodevelopmental Disorders page",
-        "href": "?page=neurodevelopmental_disorders_inpatient_teaching.md"
+        "href": "?page=t_neurodev.md"
       },
       "stem": "A 22-year-old man with autism spectrum disorder and intellectual disability who lives in a group home is admitted for acute behavioral escalation — he became agitated and hit a staff member after a change in his daily routine. A nurse says, 'He has ASD — this is probably just how he behaves.' Which response reflects the correct clinical approach?",
       "options": [
@@ -6840,7 +6840,7 @@
       ],
       "why": "Baseline dismissal, Medication before assessment, and Environmental cause only all skip the foundational step. The page's first pearl: 'Diagnostic overshadowing is the cardinal error — new symptoms in ASD/ID earn a workup, not a shrug.' Behavior is communication; medical drivers must be excluded before attributing to baseline or starting a psychotropic.",
       "pearl": "Diagnostic overshadowing in ASD/ID: new behavioral escalation always earns a workup for pain, constipation, infection, dental issues, and medications before attributing to baseline.",
-      "evidence": "neurodevelopmental_disorders_inpatient_teaching.md — Diagnostic overshadowing is the cardinal error — new symptoms in ASD/ID earn a workup, not a shrug. Behavior is communication; look for pain and medical drivers before sedation."
+      "evidence": "t_neurodev.md — Diagnostic overshadowing is the cardinal error — new symptoms in ASD/ID earn a workup, not a shrug. Behavior is communication; look for pain and medical drivers before sedation."
     },
     {
       "id": "qb_cdev_002",
@@ -6852,11 +6852,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "neurodevelopmental_disorders_inpatient_teaching.md"
+        "t_neurodev.md"
       ],
       "link": {
         "label": "Open the Neurodevelopmental Disorders page",
-        "href": "?page=neurodevelopmental_disorders_inpatient_teaching.md"
+        "href": "?page=t_neurodev.md"
       },
       "stem": "An 18-year-old with autism spectrum disorder is admitted for aggressive behavior. His parents ask if medication can 'help with his autism.' The team considers starting risperidone. Which statement about the pharmacological target of risperidone in ASD is most accurate?",
       "options": [
@@ -6892,7 +6892,7 @@
       ],
       "why": "Antipsychotic treats core ASD features, Sufficient dose treats all features, and Prophylactic antipsychotic all misstate the indication. The page is specific: 'Risperidone and aripiprazole are FDA-approved for irritability/aggression associated with autism (they do NOT treat the core social-communication features), so target symptoms explicitly, monitor metabolically, and avoid reflexive standing antipsychotics.'",
       "pearl": "Risperidone/aripiprazole treat autism-associated irritability/aggression (FDA-approved) — they do NOT treat core social-communication features; always document the target symptom.",
-      "evidence": "neurodevelopmental_disorders_inpatient_teaching.md — Antipsychotics (risperidone, aripiprazole) treat autism-associated irritability, not the core social-communication features."
+      "evidence": "t_neurodev.md — Antipsychotics (risperidone, aripiprazole) treat autism-associated irritability, not the core social-communication features."
     },
     {
       "id": "qb_cdev_003",
@@ -6904,11 +6904,11 @@
       ],
       "difficulty": 3,
       "pages": [
-        "neurodevelopmental_disorders_inpatient_teaching.md"
+        "t_neurodev.md"
       ],
       "link": {
         "label": "Open the Neurodevelopmental Disorders page",
-        "href": "?page=neurodevelopmental_disorders_inpatient_teaching.md"
+        "href": "?page=t_neurodev.md"
       },
       "stem": "A 16-year-old boy with a childhood diagnosis of ADHD is admitted following his first episode of several days of markedly decreased sleep, grandiosity, pressured speech, and impulsive behavior. His parents report that his ADHD has 'always been there' but this episode is 'completely different.' His Vanderbilt score from 3 years ago documented inattention and hyperactivity across home and school settings. Which interpretation is most accurate?",
       "options": [
@@ -6944,7 +6944,7 @@
       ],
       "why": "ADHD intensification for episodic change and ADHD excludes bipolar both apply the wrong clinical framework. Option C also describes the correct reasoning but D is more complete in naming the key discriminators. The page explicitly states: 'ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity — episodic ADHD-like symptoms are a mood or substance flag.'",
       "pearl": "ADHD is chronic and cross-situational from childhood; a new episodic presentation with decreased sleep, grandiosity, and pressured speech is a first manic episode flag — not an ADHD exacerbation.",
-      "evidence": "neurodevelopmental_disorders_inpatient_teaching.md — ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity. Episodic 'ADHD-like' symptoms are a mood or substance flag."
+      "evidence": "t_neurodev.md — ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity. Episodic 'ADHD-like' symptoms are a mood or substance flag."
     },
     {
       "id": "qb_cdev_004",
@@ -6956,11 +6956,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "neurodevelopmental_disorders_inpatient_teaching.md"
+        "t_neurodev.md"
       ],
       "link": {
         "label": "Open the Neurodevelopmental Disorders page",
-        "href": "?page=neurodevelopmental_disorders_inpatient_teaching.md"
+        "href": "?page=t_neurodev.md"
       },
       "stem": "A 26-year-old man with autism spectrum disorder is admitted by his group home for a change in behavior. Over the past 10 days he has become mute, stopped eating, and is found in fixed postures for hours at a time. He previously spoke in simple sentences and was active in daily activities. Which diagnosis must be actively evaluated?",
       "options": [
@@ -6996,7 +6996,7 @@
       ],
       "why": "Regression = autism worsening, Mutism = severe depression, and NMS by default all bypass the specific catatonia recognition task. The page explicitly calls out: 'Catatonia is under-recognized in autistic patients — look for it.' New mutism, immobility, and posturing in a previously communicative autistic adult is the classic presentation — it requires a catatonia evaluation (Bush-Francis scale), not dismissal as regression.",
       "pearl": "Catatonia is under-recognized in ASD — new mutism, fixed posturing, and immobility in an autistic patient = catatonia evaluation, not regression or depression attribution.",
-      "evidence": "neurodevelopmental_disorders_inpatient_teaching.md — Catatonia in autism — under-recognized and important; new mutism, immobility, posturing, or stupor in an autistic patient should prompt a catatonia evaluation."
+      "evidence": "t_neurodev.md — Catatonia in autism — under-recognized and important; new mutism, immobility, posturing, or stupor in an autistic patient should prompt a catatonia evaluation."
     },
     {
       "id": "qb_rel_003",
@@ -7010,11 +7010,11 @@
       "difficulty": 1,
       "hy": true,
       "pages": [
-        "motivational_interviewing_inpatient_teaching.md"
+        "motivational_interviewing.md"
       ],
       "link": {
         "label": "Open the Motivational Interviewing page",
-        "href": "?page=motivational_interviewing_inpatient_teaching.md"
+        "href": "?page=motivational_interviewing.md"
       },
       "stem": "A student is seeing a 38-year-old man who is admitted after an alcohol-related incident — his second alcohol-related admission this year. When the student mentions concerns about his drinking, the patient says, 'Look, I drink to handle stress — I don't have a problem. Everyone drinks.' The student's instinct is to explain why the drinking is dangerous and list the health consequences. Which response best reflects motivational interviewing?",
       "options": [
@@ -7050,7 +7050,7 @@
       ],
       "why": "The righting reflex, Advice without readiness, and Planning before evoking all push the patient into a defensive position. MI's core insight: 'People talk themselves into change. Your job is not to supply the arguments but to evoke the patient's own reasons.' Rolling with resistance and reflecting the ambiguity without arguing is the MI move.",
       "pearl": "Resist the righting reflex — don't argue for change; roll with resistance, reflect change talk, and let the patient articulate their own reasons.",
-      "evidence": "motivational_interviewing_inpatient_teaching.md — The one idea: People talk themselves into change. Your job is not to supply the arguments (the 'righting reflex' — resist it) but to evoke the patient's own reasons. Pushing usually produces sustain talk; curiosity produces change talk."
+      "evidence": "motivational_interviewing.md — The one idea: People talk themselves into change. Your job is not to supply the arguments (the 'righting reflex' — resist it) but to evoke the patient's own reasons. Pushing usually produces sustain talk; curiosity produces change talk."
     },
     {
       "id": "qb_rel_004",
@@ -7064,11 +7064,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "family_therapy_modalities_inpatient.md"
+        "family_modalities.md"
       ],
       "link": {
         "label": "Open the Family Therapy Modalities page",
-        "href": "?page=family_therapy_modalities_inpatient.md"
+        "href": "?page=family_modalities.md"
       },
       "stem": "A family asks the treatment team what they can do during their loved one's hospitalization for schizophrenia to help with recovery. The team is considering whether to invest the time in a formal family meeting. Which argument best supports making structured family psychoeducation the default approach?",
       "options": [
@@ -7104,7 +7104,7 @@
       ],
       "why": "Family work = courtesy, Patient/family refusal as barrier, and Stability first all undermine the evidence-based standard. Family psychoeducation has NNT 7 for 12-month relapse prevention — one of the strongest NNTs in inpatient psychiatry. The dose requirement (≥10 sessions over ≥3 months) means starting the work during the admission and securing the outpatient continuation.",
       "pearl": "Family psychoeducation for schizophrenia: NNT 7 for 12-month relapse prevention; ≥10 sessions over ≥3 months; dose matters — start during admission.",
-      "evidence": "family_therapy_modalities_inpatient.md — NNT 7 — treat seven families to prevent one relapse (Pharoah, Cochrane 2010; 53 RCTs). Dose matters: ≤2 sessions is ineffective; NICE recommends ≥10 sessions over ≥3 months."
+      "evidence": "family_modalities.md — NNT 7 — treat seven families to prevent one relapse (Pharoah, Cochrane 2010; 53 RCTs). Dose matters: ≤2 sessions is ineffective; NICE recommends ≥10 sessions over ≥3 months."
     },
     {
       "id": "qb_rel_005",
@@ -7117,11 +7117,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "motivational_interviewing_inpatient_teaching.md"
+        "motivational_interviewing.md"
       ],
       "link": {
         "label": "Open the Motivational Interviewing page",
-        "href": "?page=motivational_interviewing_inpatient_teaching.md"
+        "href": "?page=motivational_interviewing.md"
       },
       "stem": "A student is using the MI readiness ruler with a patient who has poorly controlled diabetes and drinks heavily. He rates the importance of cutting back alcohol as '4 out of 10.' Which follow-up question best uses the readiness ruler to elicit change talk?",
       "options": [
@@ -7157,7 +7157,7 @@
       ],
       "why": "Confrontational reflect, Score = readiness fixed, and Decisional balance as MI all bypass the evocative purpose of the readiness ruler. The MI readiness ruler follow-up sequence: '...why not a 2?' forces change talk by asking the patient to articulate why they're not lower. 'What would move you from a 4 to a 6?' explores the next steps. Both are evocative, not confrontational.",
       "pearl": "MI readiness ruler: after the patient rates importance (e.g., 4/10), ask 'why not a 2?' — this forces the patient to articulate their own change talk rather than pushing your reasons.",
-      "evidence": "motivational_interviewing_inpatient_teaching.md — A 30-second tool: the readiness ruler. 'You said 4 — why not a 2?' (forces change talk). 'What would move you from a 4 to a 6?'"
+      "evidence": "motivational_interviewing.md — A 30-second tool: the readiness ruler. 'You said 4 — why not a 2?' (forces change talk). 'What would move you from a 4 to a 6?'"
     },
     {
       "id": "qb_rel_006",
@@ -7171,11 +7171,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "family_therapy_modalities_inpatient.md"
+        "family_modalities.md"
       ],
       "link": {
         "label": "Open the Family Therapy Modalities page",
-        "href": "?page=family_therapy_modalities_inpatient.md"
+        "href": "?page=family_modalities.md"
       },
       "stem": "The family of a patient with schizophrenia is described in the chart as 'high expressed emotion' — high criticism and high emotional over-involvement. The resident says, 'We can't do much about the family climate — it's just how they are.' Which response is most evidence-based?",
       "options": [
@@ -7211,7 +7211,7 @@
       ],
       "why": "EE is fixed, EE = schizophrenia only, and EE = out of scope all represent clinical fatalism about a modifiable variable. The page states EE 'roughly quintuples relapse odds (OR ~4.87), while family warmth is protective (OR ~0.35) — and family climate is modifiable, which is why meetings help lower it.'",
       "pearl": "Expressed emotion (EE) quintuples relapse odds and is MODIFIABLE — behavioral family therapy and psychoeducation specifically target and reduce it; EE is a tractable clinical problem.",
-      "evidence": "family_therapy_modalities_inpatient.md — Expressed emotion: high-EE roughly quintuples relapse odds (OR ~4.87), while family warmth is protective (OR ~0.35). Family climate is modifiable — meetings help lower it."
+      "evidence": "family_modalities.md — Expressed emotion: high-EE roughly quintuples relapse odds (OR ~4.87), while family warmth is protective (OR ~0.35). Family climate is modifiable — meetings help lower it."
     },
     {
       "id": "qb_rel_007",
@@ -7225,11 +7225,11 @@
       "difficulty": 1,
       "hy": true,
       "pages": [
-        "brief_psychotherapy_inpatient.md"
+        "brief_psychotherapy.md"
       ],
       "link": {
         "label": "Open the Brief Psychotherapy page",
-        "href": "?page=brief_psychotherapy_inpatient.md"
+        "href": "?page=brief_psychotherapy.md"
       },
       "stem": "A 27-year-old woman is being discharged after a suicidal crisis. The resident asks her to 'sign a contract that she won't hurt herself.' The student wonders whether this is the evidence-based approach. Which response reflects the current standard?",
       "options": [
@@ -7265,7 +7265,7 @@
       ],
       "why": "Contract = gold standard, Contract = legal protection, and No evidence either way all misrepresent the evidence. The brief psychotherapy page explicitly states: 'Abandon no-suicide contracts — they don't work.' Safety planning (Stanley-Brown) with follow-up reduces suicidal behaviors by approximately 50%.",
       "pearl": "Safety planning (Stanley-Brown) with follow-up ≈ 50% fewer suicidal behaviors — abandon no-suicide contracts, which have no evidence and create false reassurance.",
-      "evidence": "brief_psychotherapy_inpatient.md — Safety planning (Stanley-Brown) + crisis response planning: Safety Planning Intervention with follow-up ≈ 50% fewer suicidal behaviors (Stanley 2018); abandon no-suicide 'contracts' — they don't work."
+      "evidence": "brief_psychotherapy.md — Safety planning (Stanley-Brown) + crisis response planning: Safety Planning Intervention with follow-up ≈ 50% fewer suicidal behaviors (Stanley 2018); abandon no-suicide 'contracts' — they don't work."
     },
     {
       "id": "qb_rel_008",
@@ -7278,11 +7278,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "brief_psychotherapy_inpatient.md"
+        "brief_psychotherapy.md"
       ],
       "link": {
         "label": "Open the Brief Psychotherapy page",
-        "href": "?page=brief_psychotherapy_inpatient.md"
+        "href": "?page=brief_psychotherapy.md"
       },
       "stem": "A 52-year-old man with severe depression is withdrawn, stays in bed all day, and says 'nothing matters anymore.' The student asks how to perform a brief psychotherapy intervention given a 15-minute window. Which approach is most appropriate for this presentation?",
       "options": [
@@ -7318,7 +7318,7 @@
       ],
       "why": "Insight therapy for shutdown, PE for depression, and Medication before psychotherapy all mismatch mechanism to technique. The brief psychotherapy table: 'Withdrawn, inactive, anhedonic — behavioral shutdown → reach for behavioral activation (BA): schedule one small, valued activity. Superior to TAU for depression (SMD −0.78) and anxiety, on par with CBT; lowest cognitive demand → best inpatient fit.'",
       "pearl": "Behavioral activation is the highest-yield, lowest-effort inpatient move for the shutdown depressed patient — schedule one small valued activity; it requires no cognitive engagement.",
-      "evidence": "brief_psychotherapy_inpatient.md — Behavioral activation (BA) — schedule one small, valued activity. Superior to TAU for depression (SMD −0.78) and anxiety (−0.33), on par with CBT; lowest cognitive demand → best inpatient fit."
+      "evidence": "brief_psychotherapy.md — Behavioral activation (BA) — schedule one small, valued activity. Superior to TAU for depression (SMD −0.78) and anxiety (−0.33), on par with CBT; lowest cognitive demand → best inpatient fit."
     },
     {
       "id": "qb_rel_009",
@@ -7331,11 +7331,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "brief_psychotherapy_inpatient.md"
+        "brief_psychotherapy.md"
       ],
       "link": {
         "label": "Open the Brief Psychotherapy page",
-        "href": "?page=brief_psychotherapy_inpatient.md"
+        "href": "?page=brief_psychotherapy.md"
       },
       "stem": "A patient with recurrent MDD completed three individual therapy sessions during an 8-day hospitalization. At discharge, the student writes in the note: 'CBT skills taught inpatient; patient discharged with psychotherapy complete.' The attending asks the student to reconsider the framing. Which is more accurate?",
       "options": [
@@ -7371,7 +7371,7 @@
       ],
       "why": "Example: 'BA for behavioral shutdown' is the specific thread; naming the clinician prevents the work from being dropped at discharge. Three sessions = complete, Inpatient therapy = ineffective, and Prior CBT = redundant all miss the purpose. The page: 'The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care.' 'Write the handoff so the outpatient clinician can continue the thread — the point of inpatient therapy is to start it and secure the follow-up.'",
       "pearl": "Inpatient psychotherapy starts the thread and secures the handoff — document the technique, name the outpatient clinician, and make the handoff explicit; it does not complete treatment.",
-      "evidence": "brief_psychotherapy_inpatient.md — Write the handoff so the outpatient clinician can continue the thread — the point of inpatient therapy is to start it and secure the follow-up."
+      "evidence": "brief_psychotherapy.md — Write the handoff so the outpatient clinician can continue the thread — the point of inpatient therapy is to start it and secure the follow-up."
     },
     {
       "id": "qb_rel_010",
@@ -7384,11 +7384,11 @@
       ],
       "difficulty": 3,
       "pages": [
-        "family_therapy_modalities_inpatient.md"
+        "family_modalities.md"
       ],
       "link": {
         "label": "Open the Family Therapy Modalities page",
-        "href": "?page=family_therapy_modalities_inpatient.md"
+        "href": "?page=family_modalities.md"
       },
       "stem": "The treatment team reviews its data and finds that structured family meetings occurred in only 8% of admissions over the past year, despite family members being available and willing in most cases. The team discusses why. Which explanation is most consistent with the literature?",
       "options": [
@@ -7424,7 +7424,7 @@
       ],
       "why": "Family refusal, Time as primary barrier, and Billing as dominant barrier all attribute the gap to external factors. The literature finding is counterintuitive and important: 'Reaches a minority of families — structured family work is delivered in only ~0–53% of cases (historically <10%), and the main barrier is clinician avoidance, not patient refusal (Dixon 1999; Eassom 2014).' This is a clinician self-awareness finding.",
       "pearl": "The main barrier to family psychoeducation in inpatient psychiatry is clinician avoidance, not patient or family refusal — the gap is a clinician behavior problem.",
-      "evidence": "family_therapy_modalities_inpatient.md — Reaches a minority of families — structured family work is delivered in only ~0–53% of cases (historically <10%), and the main barrier is clinician avoidance, not patient refusal (Dixon 1999; Eassom 2014)."
+      "evidence": "family_modalities.md — Reaches a minority of families — structured family work is delivered in only ~0–53% of cases (historically <10%), and the main barrier is clinician avoidance, not patient refusal (Dixon 1999; Eassom 2014)."
     },
     {
       "id": "qb_rel_011",
@@ -7437,11 +7437,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "brief_psychotherapy_inpatient.md"
+        "brief_psychotherapy.md"
       ],
       "link": {
         "label": "Open the Brief Psychotherapy page",
-        "href": "?page=brief_psychotherapy_inpatient.md"
+        "href": "?page=brief_psychotherapy.md"
       },
       "stem": "A 24-year-old woman with BPD cuts herself on the unit. The charge nurse says, 'Document it and flag it. Don't talk to her about it — it just encourages the behavior.' The student wonders about the evidence-based approach. Which response is most accurate?",
       "options": [
@@ -7477,7 +7477,7 @@
       ],
       "why": "Engagement reinforces behavior, Self-harm = medication failure, and Punitive documentation all fail to apply the DBT-informed clinical standard. The page states: 'Chain analysis replaces a punitive response to self-harm — understand the behavior, don't just document it.' The chain analysis is a brief, structured, non-punitive conversation about what preceded the self-harm that turns the incident into a formulation.",
       "pearl": "After self-harm: chain analysis (non-punitive, with the patient) replaces documentation-only or punitive responses — it transforms the incident into a formulation and a coping plan.",
-      "evidence": "brief_psychotherapy_inpatient.md — Chain analysis — walk the sequence with the patient, non-punitively. Turns an incident into a formulation and a plan; core DBT move. Chain analysis replaces a punitive response to self-harm — understand the behavior, don't just document it."
+      "evidence": "brief_psychotherapy.md — Chain analysis — walk the sequence with the patient, non-punitively. Turns an incident into a formulation and a plan; core DBT move. Chain analysis replaces a punitive response to self-harm — understand the behavior, don't just document it."
     },
     {
       "id": "qb_rel_012",
@@ -7491,11 +7491,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "family_therapy_modalities_inpatient.md"
+        "family_modalities.md"
       ],
       "link": {
         "label": "Open the Family Therapy Modalities page",
-        "href": "?page=family_therapy_modalities_inpatient.md"
+        "href": "?page=family_modalities.md"
       },
       "stem": "A 32-year-old man with alcohol use disorder has refused treatment for 2 years. His wife is desperate to help and asks the team what she can do. The team is considering a traditional confrontational intervention approach. Which family therapy modality is specifically evidence-based for this scenario?",
       "options": [
@@ -7531,7 +7531,7 @@
       ],
       "why": "Structural for substance refusal, Confrontational intervention, and EFT for treatment refusal all apply less-specific frameworks. CRAFT is the specific modality: 'the family changes its own behavior to invite treatment — no blame.' It trains the wife to use behavioral strategies (reinforcing non-drinking behavior, withdrawing reinforcement of drinking, using teachable moments) that increase the patient's engagement with treatment.",
       "pearl": "CRAFT: the family changes its OWN behavior to invite treatment — no blame, no confrontation; evidence-based for families of treatment-refusing people with SUD.",
-      "evidence": "family_therapy_modalities_inpatient.md — CRAFT (Community Reinforcement & Family Training): the family changes its own behavior to invite treatment — no blame."
+      "evidence": "family_modalities.md — CRAFT (Community Reinforcement & Family Training): the family changes its own behavior to invite treatment — no blame."
     },
     {
       "id": "qb_rel_013",
@@ -7544,11 +7544,11 @@
       ],
       "difficulty": 3,
       "pages": [
-        "brief_psychotherapy_inpatient.md"
+        "brief_psychotherapy.md"
       ],
       "link": {
         "label": "Open the Brief Psychotherapy page",
-        "href": "?page=brief_psychotherapy_inpatient.md"
+        "href": "?page=brief_psychotherapy.md"
       },
       "stem": "A quality-improvement team wants to identify the single inpatient psychological intervention with the strongest readmission-prevention evidence. Which intervention has the hardest numbers?",
       "options": [
@@ -7584,7 +7584,7 @@
       ],
       "why": "Safety planning hardest numbers, BA = strongest overall, and PST hardest numbers each reference real evidence for different outcomes. For readmission prevention specifically, psychoeducation's NNT 5 is the standout: 'Psychoeducation has the hardest inpatient numbers (readmission NNT 5) — and it's free.' This is the quality-improvement answer.",
       "pearl": "Psychoeducation has the hardest inpatient readmission numbers: NNT 5 (Xia, Cochrane 2011) — the highest-evidence, lowest-cost psychological intervention for preventing readmission.",
-      "evidence": "brief_psychotherapy_inpatient.md — Psychoeducation has the hardest inpatient numbers (readmission NNT 5) — and it's free."
+      "evidence": "brief_psychotherapy.md — Psychoeducation has the hardest inpatient numbers (readmission NNT 5) — and it's free."
     },
     {
       "id": "qb_otherdx_001",
@@ -7598,11 +7598,11 @@
       "difficulty": 1,
       "hy": true,
       "pages": [
-        "eating_disorders_inpatient_teaching.md"
+        "t_eating.md"
       ],
       "link": {
         "label": "Open the Eating Disorders page",
-        "href": "?page=eating_disorders_inpatient_teaching.md"
+        "href": "?page=t_eating.md"
       },
       "stem": "A 17-year-old with severe anorexia nervosa has been starved for 4 months and is starting nutritional rehabilitation. On day 3 of refeeding, her phosphate drops to 2.1 mg/dL. She is also mildly confused and has new-onset leg weakness. What is the most important diagnosis to recognize?",
       "options": [
@@ -7638,7 +7638,7 @@
       ],
       "why": "Pre-existing deficiency only, Functional explanation for metabolic emergency, and Thiamine over phosphate all miss the refeeding-specific mechanism. The page calls refeeding syndrome 'the complication that kills' — hypophosphatemia is the hallmark. Note that D (thiamine) is also clinically relevant and the page specifically says 'give thiamine before or with carbohydrate' — but the presenting electrolyte abnormality and timing point to refeeding syndrome as the primary diagnosis.",
       "pearl": "Refeeding syndrome: watch phosphate — the hallmark is hypophosphatemia after starting nutrition in the severely malnourished; start low, go slow; supplement phosphate; give thiamine before carbs.",
-      "evidence": "eating_disorders_inpatient_teaching.md — Refeeding syndrome — the complication that kills: hypophosphatemia is the hallmark; the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Supplement phosphate and give thiamine before or with carbohydrate.",
+      "evidence": "t_eating.md — Refeeding syndrome — the complication that kills: hypophosphatemia is the hallmark; the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Supplement phosphate and give thiamine before or with carbohydrate.",
       "tier2": {
         "q": "Why does hypophosphatemia develop after initiating refeeding in a severely malnourished patient, rather than during the starvation period itself?",
         "options": [
@@ -7673,11 +7673,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "eating_disorders_inpatient_teaching.md"
+        "t_eating.md"
       ],
       "link": {
         "label": "Open the Eating Disorders page",
-        "href": "?page=eating_disorders_inpatient_teaching.md"
+        "href": "?page=t_eating.md"
       },
       "stem": "A 24-year-old woman is referred for 'weight-related anxiety.' She is at normal weight and denies dieting. However, she endorses recurrent binge episodes followed by self-induced vomiting several times weekly, and she reports that her self-worth is almost entirely based on her weight and shape. On exam, you note calluses on her right hand knuckles. Which diagnosis should be suspected?",
       "options": [
@@ -7713,7 +7713,7 @@
       ],
       "why": "Normal weight rules out AN, Binge = BED, and Normal weight = malingering all miss the defining features. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.",
       "pearl": "Normal weight DOES NOT rule out bulimia nervosa — look for binge-purge cycle + Russell's sign (knuckle calluses) + parotid swelling + dental erosion.",
-      "evidence": "eating_disorders_inpatient_teaching.md — Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion."
+      "evidence": "t_eating.md — Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion."
     },
     {
       "id": "qb_otherdx_003",
@@ -7727,11 +7727,11 @@
       "difficulty": 1,
       "hy": true,
       "pages": [
-        "perinatal_psychiatry_inpatient_teaching.md"
+        "t_perinatal.md"
       ],
       "link": {
         "label": "Open the Perinatal Psychiatry page",
-        "href": "?page=perinatal_psychiatry_inpatient_teaching.md"
+        "href": "?page=t_perinatal.md"
       },
       "stem": "A 28-year-old woman who delivered 6 days ago is brought by her husband with confusion, talking to people who aren't there, and expressing beliefs that her baby 'was sent to test her faith.' She had been laughing and crying alternately. She was seen yesterday and appeared fine for two hours. What is the most critical diagnosis to consider?",
       "options": [
@@ -7767,7 +7767,7 @@
       ],
       "why": "Baby blues by default, Postpartum depression default, and Medical cause only all fail to identify postpartum psychosis as the emergency. The page: 'Postpartum psychosis is a psychiatric emergency: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The lucid interval yesterday is explicitly stated to not provide reassurance: 'A lucid interval does not rule out psychosis — the waxing/waning course is part of the illness.'",
       "pearl": "Postpartum psychosis is a psychiatric emergency — abrupt onset, waxing/waning course, infant-focused delusions within days of delivery; a lucid interval does NOT rule it out.",
-      "evidence": "perinatal_psychiatry_inpatient_teaching.md — POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently. A lucid interval does not rule out psychosis — the waxing/waning course is part of the illness, not reassurance.",
+      "evidence": "t_perinatal.md — POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently. A lucid interval does not rule out psychosis — the waxing/waning course is part of the illness, not reassurance.",
       "tier2": {
         "q": "What psychiatric history most strongly predicts postpartum psychosis, and why does this influence the medication decision at discharge?",
         "options": [
@@ -7802,11 +7802,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "somatic_symptom_disorders_inpatient_teaching.md"
+        "t_somatic.md"
       ],
       "link": {
         "label": "Open the Somatic Symptom Disorders page",
-        "href": "?page=somatic_symptom_disorders_inpatient_teaching.md"
+        "href": "?page=t_somatic.md"
       },
       "stem": "A 45-year-old woman is referred for psychiatric consultation for 'medically unexplained' chest pain and fatigue. Her symptoms are real and distressing, her workup is negative, and she spends hours daily researching health threats and 4–5 hours daily focused on her symptoms. Which DSM-5-TR principle is most relevant to the diagnosis?",
       "options": [
@@ -7842,7 +7842,7 @@
       ],
       "why": "SSD = medically unexplained, Multiple organ systems required, and Preoccupation = IAD all misstate the DSM-5-TR diagnosis. The page's first pearl: 'SSD is defined by the excessive response to symptoms, not by whether they're medically explained (a key DSM-5-TR shift from medically unexplained).' This is a tested concept: the diagnosis no longer hinges on medical explanation.",
       "pearl": "SSD (DSM-5-TR): defined by excessive thoughts/feelings/behaviors about symptoms — NOT by whether the symptoms are medically unexplained; a confirmed medical illness can coexist with SSD.",
-      "evidence": "somatic_symptom_disorders_inpatient_teaching.md — SSD is defined by the excessive response to symptoms, not by whether they're medically explained (a key DSM-5-TR shift from 'medically unexplained')."
+      "evidence": "t_somatic.md — SSD is defined by the excessive response to symptoms, not by whether they're medically explained (a key DSM-5-TR shift from 'medically unexplained')."
     },
     {
       "id": "qb_otherdx_005",
@@ -7854,11 +7854,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "somatic_symptom_disorders_inpatient_teaching.md"
+        "t_somatic.md"
       ],
       "link": {
         "label": "Open the Somatic Symptom Disorders page",
-        "href": "?page=somatic_symptom_disorders_inpatient_teaching.md"
+        "href": "?page=t_somatic.md"
       },
       "stem": "A 36-year-old woman is admitted with a 3-day history of right-sided paralysis and inability to walk. Neurological workup is negative. When the examiner tests voluntary right hip extension, extension is absent; however, strong right hip extension is felt involuntarily when the patient flexes the left hip against resistance (positive Hoover sign). Which statement about the diagnosis is most accurate?",
       "options": [
@@ -7894,7 +7894,7 @@
       ],
       "why": "Psychiatric cause required, Full workup before conversion, and Hoover sign unreliable all delay diagnosis or require unnecessary conditions. The page is explicit: 'Conversion/functional neurological disorder is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures. Name conversion by its positive signs — don't make it a diagnosis of exclusion alone.'",
       "pearl": "Functional neurological disorder (conversion) is diagnosed by POSITIVE examination signs (Hoover sign, tremor entrainment, give-way weakness) — not solely by exclusion; DSM-5 removed the psychological precipitant requirement.",
-      "evidence": "somatic_symptom_disorders_inpatient_teaching.md — Conversion/functional neurological disorder is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures. Name conversion by its positive signs — don't make it a diagnosis of exclusion alone.",
+      "evidence": "t_somatic.md — Conversion/functional neurological disorder is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures. Name conversion by its positive signs — don't make it a diagnosis of exclusion alone.",
       "tier2": {
         "q": "Why did DSM-5 remove the requirement for an identified psychological stressor from the diagnosis of functional neurological symptom disorder (conversion)?",
         "options": [
@@ -7929,11 +7929,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "somatic_symptom_disorders_inpatient_teaching.md"
+        "t_somatic.md"
       ],
       "link": {
         "label": "Open the Somatic Symptom Disorders page",
-        "href": "?page=somatic_symptom_disorders_inpatient_teaching.md"
+        "href": "?page=t_somatic.md"
       },
       "stem": "A 42-year-old woman has been hospitalized multiple times for recurrent infections. Staff have noted that her central line infections always follow nursing shifts during which she is left alone with the IV port. A camera reveals that she is injecting herself with contaminated fluid. She appears distressed when confronted and says, 'I just need doctors to take care of me.' There is no evidence of secondary gain (no pending disability, no legal issue). Which diagnosis is most consistent?",
       "options": [
@@ -7969,7 +7969,7 @@
       ],
       "why": "Deliberate = malingering, Recurrent admissions = SSD, and Episodic = functional all apply the wrong framework. The page's diagnostic table: 'Factitious disorder — conscious falsification or induction of illness (self or another) motivated by assuming the sick role, without external reward.' The two-axis rule: 'Separate on two axes: conscious? and external incentive? Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder).'",
       "pearl": "Factitious = conscious, internal motive (sick role); malingering = conscious, external incentive (money/drugs/legal); neither has unconscious somatic symptoms.",
-      "evidence": "somatic_symptom_disorders_inpatient_teaching.md — Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder). Separate on the two axes: conscious? and external incentive?",
+      "evidence": "t_somatic.md — Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder). Separate on the two axes: conscious? and external incentive?",
       "tier2": {
         "q": "A caregiver is suspected of intentionally inducing illness in her 6-year-old child to maintain hospital access and medical attention. Which specific diagnosis and clinical obligation apply?",
         "options": [
@@ -8004,11 +8004,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "cultural_psychiatry_inpatient_teaching.md"
+        "cultural_psychiatry.md"
       ],
       "link": {
         "label": "Open the Cultural Psychiatry page",
-        "href": "?page=cultural_psychiatry_inpatient_teaching.md"
+        "href": "?page=cultural_psychiatry.md"
       },
       "stem": "A 55-year-old Puerto Rican woman is brought to the emergency department by her family. She is hyperventilating, trembling, shouting uncontrollably, and has fallen to the floor. Her family says this has happened before after a stressful family argument. Her vitals are normal and she recovers fully within 30 minutes. Which culturally informed interpretation is most accurate?",
       "options": [
@@ -8044,7 +8044,7 @@
       ],
       "why": "Symptoms match panic, Motor symptoms = functional seizure, and Socially embedded = malingering all bypass cultural inquiry. The page: 'Cultural concepts of distress (e.g., ataque de nervios) can mimic panic or psychosis — ask before you label.' Using Kleinman's explanatory-model questions would surface the patient's interpretation and cultural meaning before assigning a diagnosis.",
       "pearl": "Ataque de nervios: culturally patterned distress in Latino communities — trembling, shouting, hyperventilation, falling, stress-triggered — can be misread as panic, seizure, or psychosis without cultural inquiry.",
-      "evidence": "cultural_psychiatry_inpatient_teaching.md — Cultural concepts of distress (e.g., ataque de nervios, susto) can be mistaken for panic, psychosis, or malingering. Ask before you label.",
+      "evidence": "cultural_psychiatry.md — Cultural concepts of distress (e.g., ataque de nervios, susto) can be mistaken for panic, psychosis, or malingering. Ask before you label.",
       "tier2": {
         "q": "What is the purpose of Kleinman's explanatory-model questions in cross-cultural clinical encounters?",
         "options": [
@@ -8079,11 +8079,11 @@
       ],
       "difficulty": 2,
       "pages": [
-        "cultural_psychiatry_inpatient_teaching.md"
+        "cultural_psychiatry.md"
       ],
       "link": {
         "label": "Open the Cultural Psychiatry page",
-        "href": "?page=cultural_psychiatry_inpatient_teaching.md"
+        "href": "?page=cultural_psychiatry.md"
       },
       "stem": "A 34-year-old Black man presents with paranoid ideation, disorganized thinking, and social withdrawal that began 3 months ago. A student suggests schizophrenia. The attending asks the student to consider a documented cultural bias. Which statement reflects the clinical evidence?",
       "options": [
@@ -8119,7 +8119,7 @@
       ],
       "why": "Severity explains disparity, Epidemiology explains disparity, and Patient behavior explains disparity all misattribute the cause. The page is explicit: 'Black (and some other minority) patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations — a documented bias to guard against.' This is a patient-safety issue that requires active self-monitoring.",
       "pearl": "Documented bias: Black patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — not due to prevalence differences, but clinician diagnostic bias; guard against it.",
-      "evidence": "cultural_psychiatry_inpatient_teaching.md — Black (and some other minority) patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations — a documented bias to guard against."
+      "evidence": "cultural_psychiatry.md — Black (and some other minority) patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations — a documented bias to guard against."
     },
     {
       "id": "qb_otherdx_009",
@@ -8132,11 +8132,11 @@
       ],
       "difficulty": 3,
       "pages": [
-        "perinatal_psychiatry_inpatient_teaching.md"
+        "t_perinatal.md"
       ],
       "link": {
         "label": "Open the Perinatal Psychiatry page",
-        "href": "?page=perinatal_psychiatry_inpatient_teaching.md"
+        "href": "?page=t_perinatal.md"
       },
       "stem": "A 30-year-old mother, 3 weeks postpartum, scores a 14 on the Edinburgh Postnatal Depression Scale (EPDS). She is distressed and anxious. The student says, 'She screened positive for postpartum depression — start sertraline.' The attending asks what the student may have missed. Which is most accurate?",
       "options": [
@@ -8172,7 +8172,7 @@
       ],
       "why": "EPDS not validated, EPDS score mandates hospitalization, and Sertraline contraindicated all misstate the evidence. The page's explicit pearl: 'The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.' The student's error is treating a positive depression screen as a complete psychiatric assessment — the EPDS misses psychosis and mania by design.",
       "pearl": "EPDS screens for depression and anxiety — it does NOT detect psychosis or mania; always ask explicitly about delusions, hallucinations, and manic symptoms in every postpartum patient.",
-      "evidence": "perinatal_psychiatry_inpatient_teaching.md — The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.",
+      "evidence": "t_perinatal.md — The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.",
       "tier2": {
         "q": "A postpartum patient describes recurring intrusive thoughts of accidentally dropping her baby, which she finds horrifying. She does not act on these thoughts and goes out of her way to avoid holding the baby near stairs. What is the correct interpretation, and how does it differ from a concerning psychotic feature?",
         "options": [
