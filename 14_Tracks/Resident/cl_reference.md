@@ -1,6 +1,6 @@
 # Consultation-Liaison — Emergencies, Toxicity & Capacity: Resident Numbers Reference
 
-> ⚠️ **Resident reference —** numbers are evidence-anchored but **must be confirmed against your institutional protocol and are pending Dr. Moss's attestation.** Recognition and escalation, not solo dosing from a teaching page.
+> ⚠️ **Resident reference —** numbers are evidence-anchored but **must be confirmed against your institutional protocol.** Recognition and escalation, not solo dosing from a teaching page.
 
 The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when to escalate*. This page adds the numbers residents are expected to carry on the consult service. Companion to the [Psychopharmacology Primer](?page=psychopharm_primer.md) and [Advanced Psychopharmacology](?page=adv_psychopharm.md).
 

@@ -1,6 +1,6 @@
 # Differential Diagnosis Scaffolds — Adult Inpatient Psychiatry
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **For:** MS3 on the unit. **Use:** when a patient presents with one of the eight core syndromes below, run the scaffold — *medical mimic first, then the psychiatric differential, then the first move.* Fictional composites only; no PHI.
 

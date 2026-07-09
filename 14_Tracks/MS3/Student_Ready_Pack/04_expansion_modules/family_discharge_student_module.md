@@ -21,7 +21,7 @@ not done.
 - **Means safety is a lethality intervention, not a formality.** Firearms are involved in ~50% of US suicides and are lethal in 85–90% of attempts; structured lethal-means counseling (CALM) cut attempts/deaths from 3.3% to 0.83% at 180 days. This is why the "who can confirm items are secured?" phrase below is a clinical act.
 - **Bringing the family in changes outcomes.** Family psychoeducation lowers relapse from ~37% to ~10% (OR 0.18), and family involvement during admission nearly triples the odds of 7-day follow-up (Haselden 2019).
 
-*Numbers are evidence-anchored and pending faculty attestation; use them to explain the "why," not to quote at families.*
+*Numbers are evidence-anchored and reviewed and attested by Joshua Moss, MD (2026-07-09); use them to explain the "why," not to quote at families.*
 
 ## What Students Should Notice
 

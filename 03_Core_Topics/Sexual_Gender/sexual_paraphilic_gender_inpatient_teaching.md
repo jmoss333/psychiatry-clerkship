@@ -1,6 +1,6 @@
 # Sexual Dysfunctions, Paraphilic Disorders & Gender Dysphoria
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — Three distinct topics grouped by the blueprint: **sexual dysfunctions** (where your first move is to check medications and medical causes), **paraphilic disorders** (where the diagnosis turns on *distress/impairment or non-consent*, not on the interest itself), and **gender dysphoria** (distress from gender incongruence — where being transgender is *not* a disorder and affirming, respectful care is the standard).
 

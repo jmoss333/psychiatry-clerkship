@@ -1,6 +1,6 @@
 # Neurodevelopmental Disorders on the Inpatient Unit
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — On the unit, neurodevelopmental disorders — ADHD, autism spectrum disorder (ASD), and intellectual disability (ID) — are usually the *context* a patient arrives with, not the reason for admission; your job is to adapt how you communicate, treat the comorbidity that actually brought them in, and never write new symptoms off as "just their baseline."
 

@@ -1,6 +1,6 @@
 # Motivational Interviewing — A Student's Quick Guide
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **For:** MS3 on the unit. MI is named in the clerkship objectives (psychotherapy principles + applying basic MI). It's the highest-yield communication skill you can practice this rotation — for substance use, medication adherence, and any "I don't want to change" conversation. Educational scaffold; fictional examples only.
 

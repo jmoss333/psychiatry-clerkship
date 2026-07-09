@@ -1,6 +1,6 @@
 # The Psychiatry Canon — 200 Papers
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09).
 
 A residency-level reading canon: the Top 25 essential papers plus subdomain lists across psychopharmacology, psychotherapy, anxiety/OCD, PTSD, suicide, neuroscience & genetics, neuromodulation, addiction, eating disorders, and nosology. Use it across training, not in four weeks — the MS3 site's 50-paper landmark set is the starting subset.
 
@@ -973,4 +973,4 @@ Would you like to explore any specific subdomain in greater depth, or discuss ho
 . McGrath JJ, Al-Hamzawi A, Alonso J, et al. The Lancet. Psychiatry. 2023;10(9):668-681. doi:10.1016/S2215-0366(23)00193-1.
 
 ---
-*Residency-level reference; verify citations against the primary sources. AI-drafted, pending faculty attestation. Joshua Moss, MD | Psychiatrist*
+*Residency-level reference; verify citations against the primary sources. Reviewed and attested by Joshua Moss, MD (2026-07-09). Joshua Moss, MD | Psychiatrist*

@@ -1,6 +1,6 @@
 # Substance Use & Withdrawal on the Inpatient Unit
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — On the inpatient unit, substance use disorders show up as intoxication, withdrawal, or a confounder of every other psychiatric presentation, and your job is to keep the patient physiologically safe while engaging them, without judgment, in treatment that continues after discharge.
 
@@ -14,7 +14,7 @@
 
 **Benzodiazepine choice in hepatic impairment** — Not all benzodiazepines are equivalent when liver function is compromised, and the distinction has direct management implications. Chlordiazepoxide and diazepam depend on **oxidative CYP450 hepatic metabolism** and produce long-lived active metabolites (desmethyldiazepam, nordiazepam) that accumulate when hepatic clearance is reduced — the result is progressive over-sedation, respiratory depression, and worsening hepatic encephalopathy. **Lorazepam, oxazepam, and temazepam** (the "LOT" drugs) bypass the oxidative step entirely: they are conjugated directly by **glucuronidation**, a pathway that is relatively preserved even in significant cirrhosis, and they produce no clinically meaningful active metabolites. In patients with Child-Pugh B or C cirrhosis (or any patient with overt hepatic encephalopathy, jaundice, or coagulopathy from liver disease), use a LOT drug at conservative initial doses rather than a long-acting oxidatively metabolized benzodiazepine (Schuckit, N Engl J Med 2014; Saitz, N Engl J Med 1998). Phenobarbital is an alternative in refractory withdrawal but carries its own sedation and respiratory risks and typically requires a higher-acuity setting.
 
-> **AI-drafted section — pending Dr. Moss's review/attestation before learner use.**
+> **Reviewed and attested by Joshua Moss, MD (2026-07-09).**
 
 <a class="tl-chip" href="?tool=withdrawal.html" data-tool="withdrawal.html" data-icon="withdrawal">Score at the bedside — CIWA-Ar / COWS</a>
 

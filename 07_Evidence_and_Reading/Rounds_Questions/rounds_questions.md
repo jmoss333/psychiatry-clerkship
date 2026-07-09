@@ -993,4 +993,4 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 - **Pearl:** The teaching point is the **unintended consequence** — a warning meant to improve safety was associated with reduced treatment and a possible net increase in harm. Monitor closely early in treatment rather than withholding effective care.
 
 ---
-*Educational rounds-prep reference; concise model answers, not a substitute for the primary sources named. AI-drafted, pending faculty attestation — verify before clinical use. Joshua Moss, MD | Psychiatrist*
+*Educational rounds-prep reference; concise model answers, not a substitute for the primary sources named. Reviewed and attested by Joshua Moss, MD (2026-07-09); verify before clinical use. Joshua Moss, MD | Psychiatrist*

@@ -652,4 +652,4 @@ Would you like to explore any of these domains in greater depth — for example,
 - Solberg LI, Crain AL, Maciosek MV, et al. Annals of Family Medicine. 2015;13(5):412-20. doi:10.1370/afm.1842.
 
 ---
-*Evidence summary for teaching; verify against current guidelines and primary sources before clinical use. AI-drafted, pending faculty attestation. Joshua Moss, MD | Psychiatrist*
+*Evidence summary for teaching; verify against current guidelines and primary sources before clinical use. Reviewed and attested by Joshua Moss, MD (2026-07-09). Joshua Moss, MD | Psychiatrist*

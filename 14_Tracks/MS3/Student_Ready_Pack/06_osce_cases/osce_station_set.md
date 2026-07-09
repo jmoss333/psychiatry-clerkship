@@ -192,7 +192,7 @@ and present clearly.
 
 ## Scored Checklists & Critical-Fail Criteria
 
-*Added 2026-07-04 — AI-drafted, pending Dr. Moss attestation before use. Each station is scored out of 10.
+*Added 2026-07-04 — reviewed and attested by Joshua Moss, MD (2026-07-09). Each station is scored out of 10.
 **A critical-fail auto-fails the station regardless of the numeric score** (mark the station "1" on the entrustment anchor and debrief the safety miss).*
 
 **How to score.** Award the listed points for behaviors performed unprompted; give half credit if the examiner had to prompt. Pass = **≥ 7/10 AND no critical-fail**. Map the total to the entrustment anchors (≤4 → level 1; 5–6 → level 2; 7–8 → level 3; 9–10 → level 4).

@@ -1,6 +1,6 @@
 # Psychopharmacology Primer — Inpatient Essentials
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line.** You don't need to dose like an attending; you need to know the high-yield classes, how drugs are chosen, and the medication emergencies you must never miss. Get those three things and you'll be useful on rounds from day one.
 
@@ -57,4 +57,4 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 19. **Furukawa et al.** — Optimal SSRI Dosing (SSRIs)
 20. **Lichtenstein et al.** — ADHD Medication Reduces Criminality (Stimulants)
 
-*Source: a ranked psychopharmacology curriculum (OpenEvidence); AI-drafted, pending faculty attestation — verify citations before clinical use.*
+*Source: a ranked psychopharmacology curriculum (OpenEvidence); Reviewed and attested by Joshua Moss, MD (2026-07-09); verify citations before clinical use.*

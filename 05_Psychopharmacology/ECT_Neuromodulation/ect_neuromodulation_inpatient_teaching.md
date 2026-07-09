@@ -1,6 +1,6 @@
 # ECT & Neuromodulation (Somatic Therapies)
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — Brain-based treatments are core clerkship content and a common blind spot: **ECT is the most effective treatment for severe, psychotic, or catatonic depression** and is safe in pregnancy and the medically fragile when indicated — and you should be able to name its indications, workup, and side effects, and place TMS, VNS, esketamine/ketamine, and bright light therapy alongside it.
 
