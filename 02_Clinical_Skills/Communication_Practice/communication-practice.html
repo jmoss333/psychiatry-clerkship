@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [RC-META] tool="What Do You Say Next?" version="1.9" built="2026-07-08" category="clinical-skills" audience="trainee,ms3" settings="inpatient,self-study" time="10min" summary="Branching communication-practice tool with rapid spoken drills, random 60-second filter drills, URL-addressable clinical-practice filters, local filter history, a confirmed history reset, and no-entry transfer debriefs with supervision huddle prompts and in-session preset try-today targets. Stores only anonymous case completion state under cw_comm_v1; no PHI." -->
+<!-- [RC-META] tool="What Do You Say Next?" version="2.0" built="2026-07-09" category="clinical-skills" audience="trainee,ms3" settings="inpatient,self-study" time="10min" summary="Branching communication-practice tool with rapid spoken drills, random 60-second filter drills, URL-addressable clinical-practice filters, local filter history, a confirmed history reset, skill-domain progress summary, and no-entry transfer debriefs with supervision huddle prompts and in-session preset try-today targets. Stores only anonymous case completion state under cw_comm_v1; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -33,6 +33,12 @@ h1{font-family:var(--font-head);font-size:2rem;color:var(--primary);margin:.1em 
 .bar span{display:block;height:100%;background:var(--accent);width:0}
 .resethistory{display:block;width:100%;border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:7px 9px;margin-top:9px;text-align:center;font:inherit;font-size:.78rem;font-weight:800;color:var(--text-light);cursor:pointer}
 .resethistory:hover{border-color:var(--danger);background:var(--danger-light);color:var(--danger)}
+.domainbox{border-bottom:1px solid var(--border);padding:1px 4px 10px;margin:0 0 9px}
+.domaintitle{font-size:.62rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--text-light);margin:0 0 6px}
+.domainrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-radius:7px;padding:4px 5px;margin:2px 0;color:var(--text-mid);font-size:.78rem}
+.domainrow.todo{background:var(--primary-light);color:var(--primary-dark)}
+.domainrow .n{font-weight:800;color:inherit}
+.domainrow .c{font-weight:900;color:inherit}
 .filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
 .filter{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:5px 9px;font:inherit;font-size:.8rem;font-weight:800;color:var(--text-mid);cursor:pointer}
 .filter:hover{background:var(--accent-light);border-color:var(--accent)}
@@ -120,6 +126,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offs
 var FILTERS=[
   ['all','All'],['safety','Safety'],['psychosis','Psychosis'],['family','Family'],['medication','Medication'],['rupture','Rupture'],['guarded','Guarded']
 ];
+var DOMAIN_ORDER=[['safety','Safety'],['psychosis','Psychosis'],['family','Family'],['medication','Medication'],['rupture','Rupture'],['guarded','Guarded']];
 var CASE_FILTERS={
   suicide_direct_question_001:['safety'],
   psychosis_validation_001:['psychosis'],
@@ -160,7 +167,8 @@ function currentCase(){return state.cases[state.current]||state.cases[0];}
 function filterHtml(){return '<div class="filters" role="group" aria-label="Filter communication cases">'+FILTERS.map(function(f){var on=state.filter===f[0], n=filterCount(f[0]);return '<button type="button" class="filter'+(on?' on':'')+'" data-filter="'+esc(f[0])+'" aria-pressed="'+String(on)+'">'+esc(f[1])+' <small>'+n+'</small></button>';}).join('')+'</div>';}
 function historyHtml(){var list=filteredCases(), done=practicedCount(list), label=filterLabel();return '<div class="filterhistory" aria-live="polite"><b>'+esc(label)+':</b> '+done+' of '+list.length+' practiced locally</div>';}
 function randomHtml(){var list=filteredCases(), label=filterLabel(), done=practicedCount(list);return '<button type="button" class="randomdrill" data-random-drill aria-label="Start a random 60 second drill from the '+esc(label)+' filter"><span>Random 60-sec drill</span> <small>'+esc(label)+' filter · '+done+'/'+list.length+' practiced locally</small></button>';}
-function progressHtml(){var total=state.cases.length||1;var done=state.cases.filter(function(c){return state.attempts[c.id];}).length;var best=state.cases.filter(function(c){return state.attempts[c.id]&&state.attempts[c.id].quality==='best';}).length;var pct=Math.round(done*100/total);return '<div class="sidehead"><div class="n">'+done+' of '+total+' practiced</div><div class="d">'+best+' best-next-line selections saved locally</div><div class="bar" aria-hidden="true"><span style="width:'+pct+'%"></span></div>'+(done?'<button type="button" class="resethistory" data-reset-history aria-label="Reset What Do You Say Next practice history stored in this browser">Reset local history</button>':'')+'</div>';}
+function domainSummaryHtml(){var rows=DOMAIN_ORDER.map(function(d){var cases=state.cases.filter(function(c){return tagsFor(c).indexOf(d[0])>=0;});var done=practicedCount(cases);return {id:d[0],label:d[1],done:done,total:cases.length};}).filter(function(x){return x.total>0;});if(!rows.length)return '';return '<div class="domainbox" aria-label="Communication skill domain progress"><div class="domaintitle">Skill domains</div>'+rows.map(function(x){return '<div class="domainrow'+(x.done===0?' todo':'')+'"><span class="n">'+esc(x.label)+'</span><span class="c">'+x.done+'/'+x.total+'</span></div>';}).join('')+'</div>';}
+function progressHtml(){var total=state.cases.length||1;var done=state.cases.filter(function(c){return state.attempts[c.id];}).length;var best=state.cases.filter(function(c){return state.attempts[c.id]&&state.attempts[c.id].quality==='best';}).length;var pct=Math.round(done*100/total);return '<div class="sidehead"><div class="n">'+done+' of '+total+' practiced</div><div class="d">'+best+' best-next-line selections saved locally</div><div class="bar" aria-hidden="true"><span style="width:'+pct+'%"></span></div>'+(done?'<button type="button" class="resethistory" data-reset-history aria-label="Reset What Do You Say Next practice history stored in this browser">Reset local history</button>':'')+'</div>'+domainSummaryHtml();}
 function navHtml(){var list=filteredCases();if(!list.length){return '<div class="list">'+progressHtml()+filterHtml()+'<div class="empty">No cases match this filter.</div></div>';}return '<div class="list" aria-label="Communication cases">'+progressHtml()+filterHtml()+historyHtml()+randomHtml()+'<div class="caselist">'+list.map(function(c){var i=state.cases.indexOf(c);var done=state.attempts[c.id];return '<button type="button" class="casebtn'+(i===state.current?' on':'')+'" data-id="'+esc(c.id)+'"><span class="t">'+esc(c.title)+'</span><span class="m">'+esc(c.topic)+'</span>'+(done?'<span class="done">'+esc(doneLabel(done.quality))+'</span>':'')+'</button>';}).join('')+'</div></div>';}
 function reviewBadge(c){var rv=c.facultyReview||{};if(rv.status==='reviewed')return '<span class="pill reviewed">Reviewed'+(rv.reviewer?' · '+esc(rv.reviewer):'')+(rv.lastReviewed?' · '+esc(rv.lastReviewed):'')+'</span>';return '<span class="pill draft">'+esc((rv.status||'draft').replace(/-/g,' '))+' · faculty review needed</span>';}
 function relatedCase(c){var done=state.attempts;var best=null;for(var i=0;i<state.cases.length;i++){var x=state.cases[i];if(x.id===c.id)continue;var tagHit=(x.skillTags||[]).some(function(t){return (c.skillTags||[]).indexOf(t)>=0;});var pageHit=(x.linkedPages||[]).some(function(p){return (c.linkedPages||[]).indexOf(p)>=0;});if(tagHit||pageHit){if(!done[x.id])return x;if(!best)best=x;}}return best||state.cases[(state.current+1)%state.cases.length];}
