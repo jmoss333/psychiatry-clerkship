@@ -2048,6 +2048,171 @@
       ]
     }
   },
+  "suicide.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "Suicide risk assessment is a supervised formulation that turns direct questions, warning signs, means access, and collateral into a safety plan and level-of-care decision.",
+    "points": [
+      "Ask directly about passive death wish, suicidal thoughts, plan, intent, preparation, and access to means.",
+      "Separate static risk factors, dynamic treatment targets, and acute warning signs.",
+      "Use safety planning and means safety; do not use no-suicide contracts or scale scores as disposition tools."
+    ],
+    "cant": "Do not chart only 'denies SI' or treat a C-SSRS score as a discharge decision; escalate acute risk and disposition questions to supervision and local policy.",
+    "cta": [
+      {
+        "label": "Open C-SSRS",
+        "href": "?tool=cssrs.html"
+      },
+      {
+        "label": "Practice direct suicide questions",
+        "href": "?tool=communication-practice.html&case=suicide_direct_question_001"
+      },
+      {
+        "label": "Open suicide pocket card",
+        "href": "?page=pg_suicide.md"
+      }
+    ],
+    "evidenceIds": [
+      "cssrs-columbia-lighthouse",
+      "va-dod-suicide-cpg-2024",
+      "joint-commission-suicide-prevention"
+    ],
+    "relatedTools": [
+      "cssrs.html",
+      "decision-aids.html",
+      "communication-practice.html",
+      "family-systems.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "family",
+      "5min",
+      "shelf"
+    ],
+    "familyOverlay": "suicide_safety_family_means_restriction",
+    "communicationCases": [
+      "suicide_direct_question_001",
+      "family_conflict_discharge_001"
+    ],
+    "safetyLevel": "high",
+    "facultyReview": {
+      "status": "pending",
+      "lastReviewed": "2026-07-09",
+      "reviewer": "Pending faculty review"
+    },
+    "workflowStages": [
+      "safety",
+      "communication",
+      "family",
+      "team",
+      "exam"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask directly about ideation, plan, intent, preparation, past attempts, access to means, protective factors, and what has changed today.",
+      "mse": "Track hopelessness, agitation, insomnia, intoxication, psychosis, impulsivity, cognition, and ability to collaborate.",
+      "safety": "Formulate acute vs chronic risk, means access, warning signs, observation needs, discharge barriers, and escalation triggers with the supervising team.",
+      "say": "I ask directly about suicide because it helps us keep you safe; you will not shock me by answering honestly.",
+      "collateral": "With permission or safety exception, ask about means, recent behavior, prior attempts, supervision, and the discharge environment.",
+      "rounds": "Present risk state, risk status, drivers, means access, protective factors, collateral, and the supervised plan.",
+      "exam": "Direct questions do not implant suicidality; safety plans replace no-suicide contracts, and risk tools do not decide disposition.",
+      "actions": [
+        {
+          "label": "Open C-SSRS",
+          "href": "?tool=cssrs.html"
+        },
+        {
+          "label": "Practice direct suicide questions",
+          "href": "?tool=communication-practice.html&case=suicide_direct_question_001"
+        },
+        {
+          "label": "Map family safety roles",
+          "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
+        }
+      ]
+    }
+  },
+  "violence.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "Violence risk is a short-term, dynamic, supervised safety formulation: identify static history, current drivers, target specificity, and the least-restrictive plan for the unit right now.",
+    "points": [
+      "Separate static baseline risk from dynamic drivers such as psychosis, intoxication, withdrawal, pain, agitation, or environmental triggers.",
+      "Read the escalation curve early: pacing, clenched fists, raised voice, verbal threats, object striking, and blocked exits.",
+      "Use room setup, team support, de-escalation, and offered oral medication before restrictive interventions when safely possible."
+    ],
+    "cant": "Do not interview alone when concerned, block your own exit, ignore a named target, or treat restraint/involuntary medication as anything other than last-resort, policy-bound safety measures.",
+    "cta": [
+      {
+        "label": "Open violence risk tool",
+        "href": "?tool=violence.html"
+      },
+      {
+        "label": "Practice de-escalation language",
+        "href": "?tool=communication-practice.html&case=rupture_limit_setting_001"
+      },
+      {
+        "label": "Ask collateral about triggers",
+        "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+      }
+    ],
+    "evidenceIds": [
+      "nice-violence-aggression-ng10",
+      "apa-violence-risk-assessment-2011",
+      "project-beta-deescalation-2012"
+    ],
+    "relatedTools": [
+      "violence.html",
+      "decision-aids.html",
+      "communication-practice.html",
+      "family-systems.html"
+    ],
+    "workflowModes": [
+      "ward",
+      "safety",
+      "family",
+      "5min"
+    ],
+    "communicationCases": [
+      "rupture_limit_setting_001",
+      "guardedness_privacy_001"
+    ],
+    "safetyLevel": "high",
+    "facultyReview": {
+      "status": "pending",
+      "lastReviewed": "2026-07-09",
+      "reviewer": "Pending faculty review"
+    },
+    "workflowStages": [
+      "safety",
+      "communication",
+      "family",
+      "team"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask about past violence, current target or victim specificity, weapon access, command hallucinations, intoxication/withdrawal, pain, fear, and environmental triggers.",
+      "mse": "Track arousal, pacing, voice volume, irritability, paranoia, command hallucinations, intoxication, attention, impulse control, and ability to collaborate.",
+      "safety": "Interview with team awareness, keep an exit route, reduce stimulation, offer choices and oral medication when safe, and escalate named-target or imminent-risk concerns immediately.",
+      "say": "I want to understand what is making this feel unsafe, and I also need to keep everyone safe while we talk.",
+      "collateral": "Ask staff, family, and records about prior violence, triggers, weapons, what has helped de-escalate, and any named targets.",
+      "rounds": "Present static risk, dynamic drivers, target specificity, unit triggers, de-escalation attempts, and the least-restrictive supervised plan.",
+      "exam": "Violence risk is dynamic and contextual; past violence matters, but the immediate driver and target specificity determine today's plan.",
+      "actions": [
+        {
+          "label": "Open violence risk tool",
+          "href": "?tool=violence.html"
+        },
+        {
+          "label": "Practice de-escalation language",
+          "href": "?tool=communication-practice.html&case=rupture_limit_setting_001"
+        },
+        {
+          "label": "Ask collateral about triggers",
+          "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
+        }
+      ]
+    }
+  },
   "t_perinatal.md": {
     "read": 6,
     "hy": true,

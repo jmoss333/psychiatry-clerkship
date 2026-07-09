@@ -50,6 +50,38 @@
       "updateCadence": "annual"
     },
     {
+      "id": "nice-violence-aggression-ng10",
+      "title": "Violence and aggression: short-term management in mental health, health and community settings",
+      "organization": "National Institute for Health and Care Excellence",
+      "year": 2015,
+      "url": "https://www.nice.org.uk/guidance/ng10",
+      "evidenceLevel": "clinical guideline",
+      "lastReviewed": "2026-07-09",
+      "facultyReviewStatus": "reviewed",
+      "relatedTopicTags": ["violence", "aggression", "de-escalation", "restrictive-interventions"],
+      "clerkshipRelevance": "Supports supervised prevention, de-escalation, least-restrictive intervention, and local-policy escalation for violence and aggression.",
+      "shelfComatRelevance": "Medium",
+      "clinicalWorkflowRelevance": "High",
+      "localPolicyDependent": true,
+      "updateCadence": "annual"
+    },
+    {
+      "id": "apa-violence-risk-assessment-2011",
+      "title": "Resource Document on Psychiatric Violence Risk Assessment",
+      "organization": "American Psychiatric Association",
+      "year": 2011,
+      "url": "https://www.psychiatry.org/psychiatrists/search-directories-databases/resource-documents/2011/psychiatric-violence-risk-assessment",
+      "evidenceLevel": "resource document",
+      "lastReviewed": "2026-07-09",
+      "facultyReviewStatus": "reviewed",
+      "relatedTopicTags": ["violence", "risk-assessment", "structured-clinical-judgment"],
+      "clerkshipRelevance": "Supports teaching violence risk as structured clinical judgment with limits, supervision, and dynamic risk formulation.",
+      "shelfComatRelevance": "Medium",
+      "clinicalWorkflowRelevance": "High",
+      "localPolicyDependent": true,
+      "updateCadence": "annual"
+    },
+    {
       "id": "asam-alcohol-withdrawal-2020",
       "title": "The ASAM Clinical Practice Guideline on Alcohol Withdrawal Management",
       "organization": "American Society of Addiction Medicine",

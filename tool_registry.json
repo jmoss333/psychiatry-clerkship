@@ -10,7 +10,7 @@
       "disclaimerType": "validated-screening-teaching",
       "storageKeys": [],
       "evidenceIds": ["cssrs-columbia-lighthouse", "va-dod-suicide-cpg-2024"],
-      "relatedPages": ["pg_suicide.md"]
+      "relatedPages": ["pg_suicide.md", "suicide.md"]
     },
     {
       "file": "violence.html",
@@ -20,8 +20,8 @@
       "riskLevel": "high",
       "disclaimerType": "structured-clinical-judgment-teaching",
       "storageKeys": [],
-      "evidenceIds": ["project-beta-deescalation-2012"],
-      "relatedPages": ["pg_suicide.md", "agitation.md"]
+      "evidenceIds": ["nice-violence-aggression-ng10", "apa-violence-risk-assessment-2011", "project-beta-deescalation-2012"],
+      "relatedPages": ["violence.md", "pg_suicide.md", "agitation.md"]
     },
     {
       "file": "bfcrs.html",
