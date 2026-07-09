@@ -67,6 +67,8 @@ var state = null;      // {items, qbank, counts}
 var dirty = { content:{}, qbank:{} };
 var tab = "content";
 var qFilter = "all";
+var cKind = "all";     // content filter: all | page | tool
+var cStatus = "all";   // content filter: all | unreviewed | reviewed
 var attester = "Joshua Moss, MD";
 var app = document.getElementById("app");
 
@@ -94,11 +96,13 @@ function badge(status){
   return h("span",{class:"badge "+b[1]}, [b[0]]);
 }
 
-function toggleRow(id, coll, isOn){
-  var sw = h("input",{type:"checkbox","aria-label":"Attest "+id});
-  sw.checked = isOn;
+function toggleRow(id, coll, committed){
+  // Reflect the pending (dirty) value if present, else the committed value; track changes vs committed.
+  var cur = (dirty[coll][id] !== undefined) ? dirty[coll][id] : committed;
+  var sw = h("input",{type:"checkbox","aria-label":"Toggle "+id});
+  sw.checked = cur;
   sw.addEventListener("change", function(){
-    if (sw.checked === isOn) delete dirty[coll][id];
+    if (sw.checked === committed) delete dirty[coll][id];
     else dirty[coll][id] = sw.checked;
     renderSavebar();
   });
@@ -153,18 +157,31 @@ function renderBody(){
   var body = document.getElementById("body");
   body.innerHTML = "";
   if (tab === "content"){
-    ["page","tool"].forEach(function(kind){
-      var list = state.items.filter(function(i){ return i.kind===kind; });
-      body.appendChild(h("div",{class:"kicker",style:"margin:6px 0 8px"},[ kind==="page"?"Content pages":"Interactive tools" ]));
-      list.forEach(function(it){
-        var on = (dirty.content[it.slug] !== undefined) ? dirty.content[it.slug] : (it.status==="reviewed");
-        body.appendChild(h("div",{class:"row"},[
-          toggleRow(it.slug,"content",it.status==="reviewed"),
-          h("div",{class:"t"},[ h("div",{class:"title"},[it.title||it.slug]),
-            h("div",{class:"slug"},[it.slug + (it.by?("  ·  "+it.by+(it.at?(" "+it.at):"")):"")]) ]),
-          badge(it.status)
-        ]));
-      });
+    var kinds = [["all","All types"],["page","Content pages"],["tool","Interactive tools"]];
+    var stats = [["all","All statuses"],["unreviewed","Not reviewed"],["reviewed","Reviewed"]];
+    var kSel = h("select",{"aria-label":"Filter by type"}, kinds.map(function(k){ var o=h("option",{value:k[0]},[k[1]]); if(k[0]===cKind)o.selected=true; return o; }));
+    kSel.addEventListener("change", function(){ cKind=kSel.value; renderBody(); });
+    var sSel = h("select",{"aria-label":"Filter by review status"}, stats.map(function(s){ var o=h("option",{value:s[0]},[s[1]]); if(s[0]===cStatus)o.selected=true; return o; }));
+    sSel.addEventListener("change", function(){ cStatus=sSel.value; renderBody(); });
+    var shown = state.items.filter(function(i){
+      if (cKind !== "all" && i.kind !== cKind) return false;
+      if (cStatus === "reviewed" && i.status !== "reviewed") return false;
+      if (cStatus === "unreviewed" && i.status === "reviewed") return false;
+      return true;
+    });
+    var pend = shown.filter(function(i){ return i.status !== "reviewed"; }).length;
+    body.appendChild(h("div",{class:"toolbar"},[
+      kSel, sSel,
+      h("span",{class:"count"},[shown.length+" shown · "+pend+" not reviewed"]),
+      h("button",{onclick:function(){ shown.forEach(function(i){ if(i.status!=="reviewed") dirty.content[i.slug]=true; }); renderBody(); renderSavebar(); }},["Mark all shown reviewed"])
+    ]));
+    shown.forEach(function(it){
+      body.appendChild(h("div",{class:"row"},[
+        toggleRow(it.slug,"content",it.status==="reviewed"),
+        h("div",{class:"t"},[ h("div",{class:"title"},[it.title||it.slug]),
+          h("div",{class:"slug"},[(it.kind==="tool"?"tool · ":"page · ")+it.slug + (it.by?("  ·  "+it.by+(it.at?(" "+it.at):"")):"")]) ]),
+        badge(it.status)
+      ]));
     });
   } else {
     var cats = ["all"].concat(Array.from(new Set(state.qbank.map(function(q){return q.category;}))).sort());
