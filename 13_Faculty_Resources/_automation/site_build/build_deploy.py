@@ -54,7 +54,6 @@ HIDDEN_TOOLS={"shelf-mode.html","review.html","active-recall.html"}
 # here with the COMPLETE list of missing assets so the fix is obvious.
 _required=[os.path.join(LIB,src) for src,_,_ in tools]+[
     LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
-    LIB+"/13_Faculty_Resources/review-attest.html",
     LIB+"/01_Six_Week_Curriculum/learning-path.html",
     LIB+"/question_bank.json",
 ]+[os.path.join(LIB,"_prototypes","agitation-trainer","vendor",f) for f in ["react.min.js","react-dom.min.js"]]
@@ -143,7 +142,6 @@ for _jn, _fallback in [
 # question_bank.json: served at site root so both qbank-attest.html and question-bank-practice.html can fetch ../question_bank.json
 _missing_req=[]
 _copy_required(LIB+"/question_bank.json", OUT+"/question_bank.json", _missing_req)
-_copy_required(LIB+"/13_Faculty_Resources/review-attest.html", OUT+"/tools/review-attest.html", _missing_req)
 _copy_required(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learning-path.html", _missing_req)
 _abort_missing(_missing_req)
 
@@ -202,7 +200,7 @@ nav=[
  {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
  {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md"),_tool("feedback.html","Improve this library — send feedback")]},
  {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("active-recall.html","Active Recall (Self-Test)"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md")]},
- {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md"),_tool("review-attest.html","Review & Attest"),_tool("qbank-attest.html","Question Bank Attestation")]},
+ {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
 ]
 _navorder=["Welcome and Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Evidence and Reference"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
