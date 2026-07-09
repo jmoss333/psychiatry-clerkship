@@ -1,6 +1,6 @@
 # Brief Psychotherapy on the Unit
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — You will not complete a course of therapy on an inpatient unit, but almost every encounter is a *micro-intervention*. The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care.
 

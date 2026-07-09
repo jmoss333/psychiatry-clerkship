@@ -1,6 +1,6 @@
 # Sleep-Wake Disorders
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — Sleep is both a driver and a mirror of psychiatric illness — restoring the sleep-wake cycle is one of the highest-leverage things you do on the unit, and the exam rewards you for choosing **CBT-I over hypnotics**, screening **OSA in treatment-resistant depression**, and *not* reaching for benzodiazepines or antihistamines in older inpatients.
 

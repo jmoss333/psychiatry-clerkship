@@ -1,6 +1,6 @@
 # Dissociative Disorders
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — Dissociation is a disruption in the normal integration of memory, identity, perception, and awareness — usually trauma-linked — and on the unit your tasks are to rule out the medical and substance causes that mimic it, keep it separate from psychosis and malingering, and stabilize safety before doing any trauma work.
 

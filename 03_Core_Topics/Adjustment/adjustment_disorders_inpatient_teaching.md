@@ -1,6 +1,6 @@
 # Adjustment Disorders
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — An adjustment disorder is **clinically significant distress or impairment that begins within 3 months of an identifiable stressor and resolves within 6 months after the stressor (or its consequences) ends** — it is the diagnosis for someone struggling *more than expected* with a real-life event who does *not* meet criteria for another disorder, and it still carries meaningful, sometimes acute, suicide risk.
 

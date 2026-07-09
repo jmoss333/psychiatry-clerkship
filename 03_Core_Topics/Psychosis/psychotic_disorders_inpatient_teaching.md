@@ -1,6 +1,6 @@
 # Psychotic Disorders on the Inpatient Unit
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — Psychosis is a syndrome, not a diagnosis; your job on the unit is to rule out a medical or substance cause, stabilize safety, start an antipsychotic chosen to fit the patient, and — especially in first-episode illness — build the engagement and family scaffolding that determines long-term trajectory.
 
@@ -14,7 +14,7 @@
 
 **Neuroleptic malignant syndrome vs. serotonin syndrome** — Both produce fever, rigidity, and autonomic instability in a patient on psychotropics, but the distinction matters because the mechanisms, offending agents, and downstream interventions differ. **NMS**: onset is gradual, typically evolving over hours to days after starting or changing a **dopamine-blocking** agent (antipsychotic, metoclopramide, prochlorperazine); rigidity is **lead-pipe** — uniform resistance throughout the passive range of motion; deep tendon reflexes are normal or diminished; CK is often dramatically elevated (thousands to tens of thousands of U/L); the course, untreated, can extend over days to weeks. **Serotonin syndrome (SS)**: onset is rapid, usually within hours of a serotonergic dose increase or a new drug addition; rigidity is accompanied by **clonus** and **hyperreflexia** — especially lower-extremity ankle clonus, which is the hallmark physical finding; myoclonus, tremor, and agitation are common; CK may be mildly elevated but rarely reaches NMS levels; the offending agents include SSRIs, SNRIs, MAOIs, tramadol, fentanyl in high doses, linezolid, methylene blue, and triptans. The bedside discriminator: **lead-pipe rigidity + hyporeflexia → think NMS; clonus + hyperreflexia → think SS** (Boyer and Shannon, N Engl J Med 2005; Strawn et al., Am J Psychiatry 2007). Both syndromes require stopping the offending agent; severe NMS additionally warrants supportive intensive care, serial CK and renal function monitoring, and consideration of dantrolene or bromocriptine; SS resolves more rapidly once the serotonergic agent is removed but may require cyproheptadine in moderate-to-severe cases.
 
-> **AI-drafted section — pending Dr. Moss's review/attestation before learner use.**
+> **Reviewed and attested by Joshua Moss, MD (2026-07-09).**
 
 **Practice what to say next** — Use the communication practice tool to rehearse
 [validating psychosis without colluding](?tool=communication-practice.html&case=psychosis_validation_001)

@@ -1,6 +1,6 @@
 # Anxiety, OCD & Trauma on the Inpatient Unit
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, treat the disorder with antidepressants plus structured behavioral work, and resist the reflex to standing benzodiazepines.
 
@@ -14,7 +14,7 @@
 
 **When akathisia is identified** — Recognition triggers a management hierarchy; escalating the offending antipsychotic is the cardinal error. First step: **reduce the antipsychotic dose or switch to a lower-dopamine-affinity agent** (e.g., quetiapine, which has lower D2 occupancy at clinical doses) — addressing the mechanism directly is more durable than adding a second drug. When dose reduction is not immediately possible or insufficient: **propranolol 20–40 mg BID** is the pharmacological first-line, with the strongest evidence from multiple small RCTs and Cochrane review (Lima et al., Cochrane Database Syst Rev 2004); avoid in reactive airway disease, significant bradycardia, or heart block. If **parkinsonism co-exists** alongside the akathisia: add benztropine (anticholinergic agents target parkinsonism more reliably than pure akathisia). A **benzodiazepine** (typically clonazepam 0.5–1 mg) can provide adjunctive relief when symptoms remain severe after propranolol, but is third-line specifically for akathisia. Mirtazapine 15 mg has emerging evidence from small trials. The management hierarchy — dose reduction or switch → propranolol → benztropine if parkinsonism co-exists → benzodiazepine adjunct — ensures the intervention matches the mechanism.
 
-> **AI-drafted section — pending Dr. Moss's review/attestation before learner use.**
+> **Reviewed and attested by Joshua Moss, MD (2026-07-09).**
 
 **What the student does**
 - Screen new admissions for an anxiety, OCD, or PTSD history and document whether symptoms predate the acute crisis.

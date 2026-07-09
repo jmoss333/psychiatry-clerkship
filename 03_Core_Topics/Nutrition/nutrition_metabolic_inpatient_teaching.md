@@ -1,6 +1,6 @@
 # Nutrition & Metabolic Health in Psychiatry
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **For:** MS3 on the unit. Two clerkship objectives live here — *nutrition in individual psychiatric care* and *nutrition in population mental health (metabolic syndrome prevention)*. Educational; not individualized medical advice.
 
@@ -22,7 +22,7 @@ The weight/BMI front-loading is intentional: early antipsychotic weight gain is 
 
 This is the **ADA/APA consensus monitoring** standard (American Diabetes Association, American Psychiatric Association, et al., Diabetes Care 2004) — see the metabolic-monitoring landmark on the Landmark Trials page.
 
-> **AI-drafted section update — pending Dr. Moss's review/attestation before learner use.**
+> **Reviewed and attested by Joshua Moss, MD (2026-07-09).**
 
 ## Drug-specific burden (highest → lowest, roughly)
 - **Highest:** olanzapine, clozapine.
@@ -52,4 +52,4 @@ Protect regular meals; treat the dietitian as a team member; flag the patient wh
 
 **Pair with** — the [Psychopharmacology primer](?page=psychopharm_primer.md), the metabolic-monitoring and antipsychotic-metabolic landmarks on the [Landmark Trials](?page=landmark_trials.md) page, and the [Motivational Interviewing guide](?page=motivational_interviewing.md).
 
-*Joshua Moss, MD | Psychiatrist · Educational; evidence-anchored, pending attestation. Confirm drug choices/doses against current guidance. No PHI.*
+*Joshua Moss, MD | Psychiatrist · Educational; evidence-anchored; reviewed and attested by Joshua Moss, MD (2026-07-09). Confirm drug choices/doses against current guidance. No PHI.*

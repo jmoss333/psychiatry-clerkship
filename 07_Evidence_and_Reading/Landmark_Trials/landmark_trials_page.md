@@ -232,4 +232,4 @@
 <a href="https://doi.org/10.1056/NEJM199903043400901" target="_blank" rel="noopener">Paper (DOI)</a> · <a href="tools/active-recall.html?deck=The%20HELP%20Trial%3A%20Multicomponent%20Strategies%20for%20Delirium%20Prevention" target="_blank" rel="noopener">Quiz this paper</a>
 
 
-*Joshua Moss, MD | Psychiatrist · Audio overviews via NotebookLM; evidence pending attestation; no PHI.*
+*Joshua Moss, MD | Psychiatrist · Audio overviews via NotebookLM; reviewed and attested by Joshua Moss, MD (2026-07-09); no PHI.*

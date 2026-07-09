@@ -1,6 +1,6 @@
 # Somatic Symptom & Related Disorders
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — This family is about *distress and disability driven by bodily symptoms and health worry* — the diagnosis rests on the excessive thoughts, feelings, and behaviors around the symptoms, not on whether the symptoms are "medically explained," and your job is to treat the suffering without chasing endless workups or telling the patient "it's all in your head."
 

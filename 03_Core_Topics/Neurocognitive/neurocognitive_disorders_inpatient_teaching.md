@@ -1,6 +1,6 @@
 # Major & Mild Neurocognitive Disorders (Dementia)
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — Dementia (DSM-5-TR: *major neurocognitive disorder*) is an acquired, usually progressive decline in one or more cognitive domains that impairs independence — and your first job on the unit is to separate it from delirium and from depression, rule out the reversible mimics, and identify the subtype, because subtype changes what you prescribe and what you must *not*.
 

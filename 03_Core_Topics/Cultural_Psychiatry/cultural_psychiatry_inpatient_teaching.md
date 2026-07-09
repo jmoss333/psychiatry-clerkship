@@ -1,6 +1,6 @@
 # Culture, Disparities & the Cultural Formulation
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — Culture shapes how distress is experienced, expressed, and treated — and ignoring it produces misdiagnosis and inequity — so the core clerkship skills are eliciting the patient's own **explanatory model**, using the **Cultural Formulation Interview**, working correctly with **interpreters**, and recognizing the **disparities and biases** that distort psychiatric care.
 

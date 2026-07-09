@@ -1,6 +1,6 @@
 # Disruptive, Impulse-Control & Conduct Disorders
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — This group is defined by problems with **self-control of emotions and behavior that violate others' rights or bring the person into conflict with social norms** — and the exam rewards you for the developmental thread: **oppositional defiant disorder → conduct disorder → antisocial personality disorder**, and for separating these from mania, substance use, and a treatable mood disorder underneath the behavior.
 

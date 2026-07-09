@@ -1,5 +1,5 @@
 # Inpatient Systems & Med-Legal
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09).
 
 **In one line** — on the adult inpatient unit your documentation, your handling of voluntary/involuntary status, and your disposition planning are clinical acts with legal weight; do them deliberately, and verify every statute-specific detail against current Maine law (Title 34-B) and Maine Medical Center policy before you act on it.
 

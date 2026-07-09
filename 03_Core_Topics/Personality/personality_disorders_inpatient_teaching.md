@@ -1,6 +1,6 @@
 # Personality Disorders on the Inpatient Unit
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — Personality pathology (most often borderline personality disorder, BPD) drives a large share of inpatient distress and crisis, and your job is to treat the acute problem while avoiding the iatrogenic harms of overlong, overmedicalized, or poorly coordinated care.
 

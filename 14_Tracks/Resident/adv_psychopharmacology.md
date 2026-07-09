@@ -1,5 +1,5 @@
 # Advanced Psychopharmacology on the Inpatient Unit
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09).
 
 **In one line** — On a 4-week adult inpatient rotation, your job is not to know every drug but to sequence therapy rationally, recognize when first-line trials have genuinely failed, escalate to definitive treatments without unnecessary delay, and own the safety monitoring that keeps patients alive between doses.
 

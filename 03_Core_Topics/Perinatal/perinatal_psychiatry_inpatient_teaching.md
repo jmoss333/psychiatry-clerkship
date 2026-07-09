@@ -1,6 +1,6 @@
 # Perinatal Psychiatry on the Inpatient Unit
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** — Inpatient perinatal work means treating two patients at once: rapidly distinguishing a postpartum mood or anxiety disorder from postpartum psychosis (an emergency), making every medication decision an explicit risk-benefit conversation, and protecting sleep while you do it.
 

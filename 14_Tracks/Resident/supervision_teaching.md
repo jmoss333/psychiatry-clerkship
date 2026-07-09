@@ -1,5 +1,5 @@
 # Supervision, EPAs & Teaching the Student
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09).
 
 **In one line** — On adult inpatient you sit in the middle of the supervision chain: you earn graduated autonomy from your attending while becoming the first-line supervisor for the MS3 — and both directions run on the same skills of explicit expectations, active feedback, and knowing when to ask for help.
 

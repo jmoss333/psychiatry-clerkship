@@ -1,6 +1,6 @@
 # Catatonia on the Inpatient Unit
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line.** Catatonia is the diagnosis you cannot afford to miss: under-recognized, it occurs across nearly every psychiatric and medical diagnosis, and it can be fatal if you treat it the wrong way.
 
