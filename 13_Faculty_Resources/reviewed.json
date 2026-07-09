@@ -200,14 +200,14 @@
   "by": "Joshua Moss, MD"
  },
  "suicide.md": {
-  "status": "pending",
+  "status": "reviewed",
   "at": "2026-07-09",
-  "by": "Pending faculty review"
+  "by": "Joshua Moss, MD"
  },
  "violence.md": {
-  "status": "pending",
+  "status": "reviewed",
   "at": "2026-07-09",
-  "by": "Pending faculty review"
+  "by": "Joshua Moss, MD"
  },
  "nutrition_metabolic.md": {
   "status": "reviewed",
@@ -420,19 +420,19 @@
   "by": "Joshua Moss, MD"
  },
  "communication-practice.html": {
-  "status": "draft",
-  "at": "2026-07-07",
-  "by": "Pending faculty review"
+  "status": "reviewed",
+  "at": "2026-07-09",
+  "by": "Joshua Moss, MD"
  },
  "diagnostic-reasoning.html": {
-  "status": "draft",
-  "at": "2026-07-07",
-  "by": "Pending faculty review"
+  "status": "reviewed",
+  "at": "2026-07-09",
+  "by": "Joshua Moss, MD"
  },
  "family-systems.html": {
-  "status": "draft",
-  "at": "2026-07-07",
-  "by": "Pending faculty review"
+  "status": "reviewed",
+  "at": "2026-07-09",
+  "by": "Joshua Moss, MD"
  },
  "rp-canon-quiz.html": {
   "status": "reviewed",
@@ -452,18 +452,18 @@
   "note": "Resident prototype ships with draft-pending-attestation pack and unresolved LOCAL_POLICY tokens."
  },
  "collateral_workflow.md": {
-  "status": "draft",
-  "at": "2026-07-08",
-  "by": "Pending faculty review"
+  "status": "reviewed",
+  "at": "2026-07-09",
+  "by": "Joshua Moss, MD"
  },
  "psychotherapy.md": {
-  "status": "pending",
+  "status": "reviewed",
   "at": "2026-07-09",
-  "by": "Pending faculty review"
+  "by": "Joshua Moss, MD"
  },
  "case_formulation.md": {
-  "status": "pending",
+  "status": "reviewed",
   "at": "2026-07-09",
-  "by": "Pending faculty review"
+  "by": "Joshua Moss, MD"
  }
 }
