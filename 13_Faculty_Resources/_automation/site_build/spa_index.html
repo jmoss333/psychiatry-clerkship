@@ -347,6 +347,13 @@
   .wd-tool{display:inline-flex;align-items:center;text-decoration:none;font-size:.8rem;font-weight:800;color:var(--accent-dark);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:5px 10px}
   .wd-tool:hover{border-color:var(--accent);background:var(--accent-light)}
   .wd-tool.is-safety{color:var(--primary-dark);background:var(--primary-light)}
+  .wd-challenge{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin:0 0 13px;padding:12px 13px;background:var(--accent-light);border:1px solid #bfd8d3;border-left:4px solid var(--accent);border-radius:12px}
+  .wd-challenge .k{font-size:.66rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-dark);margin:0 0 2px}
+  .wd-challenge .t{font-weight:800;color:var(--text);line-height:1.25}
+  .wd-challenge .d{font-size:.84rem;color:var(--text-mid);line-height:1.35;margin-top:2px}
+  .wd-challenge .a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--accent);border-radius:999px;background:var(--surface);color:var(--accent-dark);font-size:.8rem;font-weight:900;padding:7px 10px;white-space:nowrap}
+  .wd-challenge .a:hover{background:var(--accent);color:#fff}
+  @media(max-width:620px){.wd-challenge{grid-template-columns:1fr}.wd-challenge .a{justify-self:start}}
   .wd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
   .wd-card{background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;padding:12px}
   .wd-card h3{font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin:0 0 8px}
@@ -906,12 +913,43 @@
   var FAMILY_SCENARIO_TITLES={collateral_baseline_safety_001:'Practice Collateral Call',family_meeting_opening_001:'Prepare Family Meeting',discharge_barrier_map_001:'Map Family Safety Roles',high_expressed_emotion_001:'Reset High-Emotion Family Talk',psychosis_family_psychoeducation_001:'Explain Psychosis To Family',family_involvement_boundaries_001:'Set Family Boundaries',caregiver_baseline_adaptations_001:'Caregiver Baseline And Adaptations',culture_interpreter_family_001:'Culture, Interpreter, And Family Contact'};
   var CASE_PRIORITY={ward:['guardedness_privacy_001','psychosis_validation_001','medication_ambivalence_001','mania_limit_sleep_001'],family:['family_meeting_opening_001','collateral_questions_001','family_conflict_discharge_001'],safety:['suicide_direct_question_001','family_conflict_discharge_001','rupture_limit_setting_001'],shelf:['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001'],'5min':['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001','family_meeting_opening_001']};
   var CASE_FILTER={suicide_direct_question_001:'safety',psychosis_validation_001:'psychosis',guardedness_privacy_001:'guarded',rupture_limit_setting_001:'rupture',bpd_rupture_repair_001:'rupture',medication_ambivalence_001:'medication',mania_limit_sleep_001:'medication',family_meeting_opening_001:'family',collateral_questions_001:'family',family_conflict_discharge_001:'family'};
+  var COMM_DOMAINS={
+    safety:{label:'Safety',caseId:'suicide_direct_question_001',challenge:'Practice one direct, plain-language safety question before you see patients.',cue:'Use direct safety words, then pause.'},
+    psychosis:{label:'Psychosis',caseId:'psychosis_validation_001',challenge:'Practice validating fear without agreeing with the delusional belief.',cue:'Validate emotion, state your observation, invite safety-focused exploration.'},
+    family:{label:'Family',caseId:'family_meeting_opening_001',challenge:'Practice opening a family meeting with structure and consent boundaries.',cue:'Join emotionally, name consent, set a shared goal.'},
+    medication:{label:'Medication',caseId:'medication_ambivalence_001',challenge:'Practice exploring medication ambivalence before offering education.',cue:'Reflect both sides and ask what would make trying feel safer.'},
+    rupture:{label:'Rupture',caseId:'rupture_limit_setting_001',challenge:'Practice repairing a rupture without abandoning the clinical limit.',cue:'Validate impact, keep the limit clear, offer one repair step.'},
+    guarded:{label:'Guardedness',caseId:'guardedness_privacy_001',challenge:'Practice lowering pressure with a guarded patient while naming safety limits.',cue:'Name choice, explain limits, ask what would make talking safer.'}
+  };
+  var COMM_DOMAIN_ORDER=['safety','psychosis','family','medication','rupture','guarded'];
   var MODE_COMM_FILTER={ward:'psychosis',family:'family',safety:'safety',shelf:'psychosis','5min':'safety'};
   window.__dashboardMode=dashboardMode;
   window.__dashCfg=dashCfg;
   window.__casePriority=CASE_PRIORITY;
   function communicationFilter(id,mode){ return CASE_FILTER[id]||MODE_COMM_FILTER[mode]||'all'; }
   function communicationHref(id,mode){ var h='?tool=communication-practice.html&filter='+encodeURIComponent(communicationFilter(id,mode)); return id?h+'&case='+encodeURIComponent(id):h; }
+  function communicationAttempts(){ try{return JSON.parse(localStorage.getItem('cw_comm_v1')||'{}')||{};}catch(_){return {};} }
+  function communicationDomainStats(){
+    var attempts=communicationAttempts(), stats={};
+    COMM_DOMAIN_ORDER.forEach(function(id){ stats[id]={id:id,label:COMM_DOMAINS[id].label,done:0,total:0}; });
+    Object.keys(CASE_FILTER).forEach(function(caseId){ var d=CASE_FILTER[caseId]; if(!stats[d])return; stats[d].total++; if(attempts[caseId])stats[d].done++; });
+    return stats;
+  }
+  function leastPracticedDomain(mode){
+    var stats=communicationDomainStats(), preferred=MODE_COMM_FILTER[mode]||'safety', best=null;
+    COMM_DOMAIN_ORDER.forEach(function(id){
+      var x=stats[id]; if(!x||!x.total)return;
+      var ratio=x.done/x.total, pref=(id===preferred)?-0.01:0;
+      var score=ratio+pref+(COMM_DOMAIN_ORDER.indexOf(id)/1000);
+      if(!best||score<best.score)best={id:id,score:score,done:x.done,total:x.total};
+    });
+    return best||{id:preferred,done:0,total:0};
+  }
+  function relationalChallengeHtml(mode){
+    var least=leastPracticedDomain(mode), cfg=COMM_DOMAINS[least.id]||COMM_DOMAINS.safety;
+    var href=communicationHref(cfg.caseId,mode);
+    return '<div class="wd-challenge" aria-label="Daily relational challenge"><div><div class="k">Daily relational challenge · '+esc(cfg.label)+' '+least.done+'/'+least.total+'</div><div class="t">'+esc(cfg.challenge)+'</div><div class="d">'+esc(cfg.cue)+' Uses only anonymous local practice history.</div></div><a class="a" href="'+esc(href)+'">Practice now</a></div>';
+  }
   function caseAction(id,note,mode){ return {f:'communication-practice.html',t:CASE_TITLES[id]||'What Do You Say Next?',k:'tool',caseId:id,href:communicationHref(id,mode),note:note||'spoken drill'}; }
   function familyAction(id,title,note){ return {f:'family-systems.html',t:title||FAMILY_SCENARIO_TITLES[id]||'Family Systems Practice',k:'tool',scenarioId:id,href:'?tool=family-systems.html&scenario='+encodeURIComponent(id),note:note||'family tool'}; }
   function toolAction(k,note,mode){ return {f:k,t:(LAB[k]||PRACTICE_LABELS[k]||String(k||'tool').replace(/\.html$/,'').replace(/[-_]+/g,' ')),k:'tool',href:k==='communication-practice.html'?communicationHref('',mode):'?tool='+encodeURIComponent(k),note:note||'tool'}; }
@@ -1009,7 +1047,7 @@
     if(!pack.leave.length)pack.leave=[toolAction('review.html','review')];
     var cfg=dashCfg(mode);
     var h='<div class="wd"><div class="wd-head"><h2>Today on the unit <span class="wd-count">'+matches.length+' matched</span></h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'">'+m[1]+'</button>';}).join('')+'</div></div>';
-    h+='<p class="wd-intro">'+esc(cfg.intent)+'</p>'+toolRow(tools,mode);
+    h+='<p class="wd-intro">'+esc(cfg.intent)+'</p>'+relationalChallengeHtml(mode)+toolRow(tools,mode);
     h+='<div class="wd-grid"><div class="wd-card"><h3>Before rounds</h3>'+pack.before.map(function(x){return actionRow(x,'open');}).join('')+'</div><div class="wd-card"><h3>After rounds</h3>'+pack.after.map(function(x){return actionRow(x,'practice');}).join('')+'</div><div class="wd-card"><h3>Before leaving</h3>'+pack.leave.map(function(x){return actionRow(x,'review');}).join('')+'</div></div></div>';
     return h;
   }
