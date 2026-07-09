@@ -9291,6 +9291,797 @@
       "why": "DSM-5-TR added prolonged grief disorder: persistent grief with intense yearning/preoccupation and emotional pain beyond ~12 months in adults, exceeding cultural norms and causing impairment — distinct from normal bereavement and MDD.",
       "pearl": "Prolonged grief disorder (DSM-5-TR): grief-specific yearning/preoccupation persisting >12 months with impairment.",
       "evidence": "t_mood.md — Grief vs prolonged grief disorder vs major depression."
+    },
+    {
+      "id": "qb_sud_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "dx",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 55-year-old man with heavy alcohol use is admitted with confusion, gaze-evoked nystagmus with impaired eye movements, and a wide-based unsteady gait. What is the immediate priority?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Give parenteral thiamine before any glucose",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Give IV dextrose immediately to correct presumed hypoglycemia",
+          "trap": {
+            "name": "Glucose-first trap",
+            "note": "Giving glucose before thiamine in a thiamine-deficient patient can precipitate or worsen Wernicke encephalopathy — thiamine goes first."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Start a benzodiazepine taper and defer thiamine",
+          "trap": {
+            "name": "Wrong-priority trap",
+            "note": "Withdrawal management matters, but the ophthalmoplegia-ataxia-confusion triad demands thiamine now."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Obtain an MRI before any treatment",
+          "trap": {
+            "name": "Delay trap",
+            "note": "Wernicke is a clinical diagnosis treated empirically and urgently; imaging must not delay thiamine."
+          }
+        }
+      ],
+      "why": "The triad of encephalopathy, ophthalmoplegia, and ataxia is Wernicke encephalopathy. Give thiamine before glucose, because a glucose load in a thiamine-deficient patient can precipitate or worsen it.",
+      "pearl": "Wernicke = confusion + ophthalmoplegia + ataxia; give thiamine BEFORE glucose.",
+      "evidence": "t_sud.md — Alcohol: Wernicke encephalopathy and thiamine."
+    },
+    {
+      "id": "qb_sud_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "pharm",
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A patient with alcohol use disorder is medically stable and motivated to cut down, with compensated cirrhosis. Which maintenance pharmacotherapy is a reasonable first-line choice?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Naltrexone (if no contraindication) or acamprosate — both are first-line for alcohol use disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A scheduled long-term benzodiazepine",
+          "trap": {
+            "name": "Dependence trap",
+            "note": "Benzodiazepines treat withdrawal, not maintenance, and carry dependence and overdose risk in this population."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Disulfiram as the automatic first choice for everyone",
+          "trap": {
+            "name": "Adherence trap",
+            "note": "Disulfiram is aversive and adherence-dependent; it is not first-line and requires abstinence and reliability."
+          }
+        },
+        {
+          "key": "D",
+          "t": "No pharmacotherapy is effective for alcohol use disorder",
+          "trap": {
+            "name": "Nihilism trap",
+            "note": "Naltrexone and acamprosate have solid evidence for reducing drinking/relapse."
+          }
+        }
+      ],
+      "why": "Naltrexone (reduces heavy drinking; avoid in acute hepatitis/opioid use) and acamprosate (supports abstinence; usable in liver disease, adjust in renal impairment) are first-line for AUD. Disulfiram is second-line and adherence-dependent.",
+      "pearl": "AUD maintenance: naltrexone or acamprosate first-line; disulfiram is adherence-dependent second-line.",
+      "evidence": "t_sud.md — Alcohol use disorder pharmacotherapy."
+    },
+    {
+      "id": "qb_psy_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 22-year-old has had delusions, hallucinations, and disorganized speech for the past 3 months with functional decline and no mood episode or substance cause. Which diagnosis best fits at this point?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Schizophreniform disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Schizophrenia",
+          "trap": {
+            "name": "Duration trap",
+            "note": "Schizophrenia requires ≥6 months of continuous signs; at 3 months the correct label is schizophreniform."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Brief psychotic disorder",
+          "trap": {
+            "name": "Duration trap",
+            "note": "Brief psychotic disorder resolves within 1 month; this has lasted 3 months."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Delusional disorder",
+          "trap": {
+            "name": "Symptom-profile trap",
+            "note": "Delusional disorder features non-bizarre delusions without prominent hallucinations/disorganization and relatively preserved function."
+          }
+        }
+      ],
+      "why": "Psychotic symptoms lasting 1–6 months with functional decline, no mood/substance cause, is schizophreniform disorder. <1 month = brief psychotic disorder; ≥6 months = schizophrenia.",
+      "pearl": "Psychosis duration: <1 mo = brief psychotic; 1–6 mo = schizophreniform; ≥6 mo = schizophrenia.",
+      "evidence": "t_psychosis.md — Psychotic disorders: the duration spectrum."
+    },
+    {
+      "id": "qb_psy_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A patient has had auditory hallucinations and delusions for two weeks with no significant mood symptoms during that period, but has also had major depressive episodes during most of the illness. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Schizoaffective disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Major depressive disorder with psychotic features",
+          "trap": {
+            "name": "Overlap trap",
+            "note": "In MDD with psychotic features, psychosis occurs ONLY during mood episodes; here psychosis persisted ≥2 weeks WITHOUT mood symptoms."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Schizophrenia",
+          "trap": {
+            "name": "Mood-burden trap",
+            "note": "Schizophrenia does not feature mood episodes for the majority of the illness, which are present here."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Bipolar I with psychotic features",
+          "trap": {
+            "name": "History trap",
+            "note": "No manic episode is described; the mood burden is depressive with independent psychosis."
+          }
+        }
+      ],
+      "why": "Schizoaffective disorder requires a period of ≥2 weeks of psychosis WITHOUT prominent mood symptoms, plus mood episodes present for the majority of the illness. Psychosis confined to mood episodes = mood disorder with psychotic features.",
+      "pearl": "Schizoaffective: ≥2 weeks of psychosis without mood symptoms + mood episodes for most of the illness.",
+      "evidence": "t_psychosis.md — Schizoaffective vs mood disorder with psychotic features."
+    },
+    {
+      "id": "qb_rel_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "relational",
+      "competency": [
+        "management",
+        "psychosocial"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "family_modalities.md"
+      ],
+      "link": {
+        "label": "Open the Family Therapy Modalities page",
+        "href": "?page=family_modalities.md"
+      },
+      "stem": "A young man with schizophrenia is being discharged to his parents. Which family intervention has the best evidence for reducing his relapse risk?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Family psychoeducation (including multifamily groups)",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Advising the family to avoid all discussion of the illness",
+          "trap": {
+            "name": "Avoidance trap",
+            "note": "Silence does not lower expressed emotion or relapse; structured psychoeducation does."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Recommending the patient minimize contact with family indefinitely",
+          "trap": {
+            "name": "Isolation trap",
+            "note": "Cutting off support is not evidence-based; improving the family climate is."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Individual insight-oriented therapy for the patient alone",
+          "trap": {
+            "name": "Wrong-target trap",
+            "note": "Insight therapy is not the intervention shown to reduce relapse via the family pathway."
+          }
+        }
+      ],
+      "why": "Family psychoeducation and multifamily group approaches reduce relapse in schizophrenia, largely by lowering expressed emotion and improving problem-solving and support.",
+      "pearl": "Family psychoeducation reduces schizophrenia relapse — the evidence-based family intervention.",
+      "evidence": "family_modalities.md — Family psychoeducation and relapse prevention."
+    },
+    {
+      "id": "qb_rel_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "relational",
+      "competency": [
+        "psychosocial",
+        "next-step"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "motivational_interviewing.md"
+      ],
+      "link": {
+        "label": "Open the Motivational Interviewing page",
+        "href": "?page=motivational_interviewing.md"
+      },
+      "stem": "A patient with alcohol use disorder says, 'I don't really think my drinking is a problem.' Which response best reflects motivational interviewing?",
+      "options": [
+        {
+          "key": "A",
+          "t": "'What have you noticed about how drinking fits with the things that matter to you?'",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "'You clearly have a serious problem and need to stop now.'",
+          "trap": {
+            "name": "Righting-reflex trap",
+            "note": "Confronting and directing typically increases resistance; MI evokes the patient's own change talk."
+          }
+        },
+        {
+          "key": "C",
+          "t": "'If you don't quit, you'll end up back in the hospital.'",
+          "trap": {
+            "name": "Fear-appeal trap",
+            "note": "Warnings and pressure tend to entrench ambivalence rather than resolve it."
+          }
+        },
+        {
+          "key": "D",
+          "t": "'Fine, it's your choice — let me know if you ever want help.'",
+          "trap": {
+            "name": "Disengagement trap",
+            "note": "Passive withdrawal abandons the alliance; MI stays engaged and curious."
+          }
+        }
+      ],
+      "why": "Motivational interviewing rolls with resistance and evokes the patient's own reasons for change through open, values-linked questions — rather than confronting, warning, or disengaging (the 'righting reflex').",
+      "pearl": "MI evokes change talk with open, values-linked questions; avoid the confronting 'righting reflex.'",
+      "evidence": "motivational_interviewing.md — MI spirit: evoking change talk."
+    },
+    {
+      "id": "qb_rel_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "relational",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "family_modalities.md"
+      ],
+      "link": {
+        "label": "Open the Family Therapy Modalities page",
+        "href": "?page=family_modalities.md"
+      },
+      "stem": "A patient's adult son calls the unit asking for details of his mother's diagnosis and medications. The patient has not authorized this. What is the most appropriate response?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Decline to confirm or share specific clinical information without the patient's consent, while offering general support and education",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Share the diagnosis and medications since he is immediate family",
+          "trap": {
+            "name": "Family-exception myth",
+            "note": "Being family does not by itself authorize disclosure of protected clinical information without consent."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Refuse to speak at all and hang up",
+          "trap": {
+            "name": "Over-restriction trap",
+            "note": "You can engage supportively and provide general education without disclosing protected specifics."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Ask the son to prove identity, then disclose everything",
+          "trap": {
+            "name": "Identity-only trap",
+            "note": "Verifying identity does not substitute for the patient's authorization to disclose."
+          }
+        }
+      ],
+      "why": "Without the patient's consent you should not confirm or share specific clinical information, but you can still listen, provide general education, and coordinate a consented family meeting. Safety exceptions (imminent danger, mandated reporting) are separate.",
+      "pearl": "No consent → no specific disclosure; you may still give general support and education. Family status alone isn't authorization.",
+      "evidence": "family_modalities.md — Confidentiality and families; ethics_legal.md — disclosure."
+    },
+    {
+      "id": "qb_anx_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "pharm",
+        "management"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "t_anxiety.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety/Trauma/OCD page",
+        "href": "?page=t_anxiety.md"
+      },
+      "stem": "A patient with panic disorder and frequent panic attacks wants long-term treatment. Which is the most appropriate first-line pharmacologic option?",
+      "options": [
+        {
+          "key": "A",
+          "t": "An SSRI, typically combined with CBT",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A scheduled benzodiazepine as indefinite monotherapy",
+          "trap": {
+            "name": "Dependence trap",
+            "note": "Benzodiazepines are at most a short-term bridge; they carry dependence and are not first-line maintenance."
+          }
+        },
+        {
+          "key": "C",
+          "t": "An antipsychotic",
+          "trap": {
+            "name": "Off-target trap",
+            "note": "Antipsychotics are not first-line for panic disorder."
+          }
+        },
+        {
+          "key": "D",
+          "t": "No treatment is effective for panic disorder",
+          "trap": {
+            "name": "Nihilism trap",
+            "note": "SSRIs and CBT are effective first-line treatments."
+          }
+        }
+      ],
+      "why": "SSRIs (often with CBT) are first-line for panic disorder. Benzodiazepines are, at most, a short-term bridge given dependence risk.",
+      "pearl": "Panic disorder: SSRI + CBT first-line; benzodiazepines only as a short-term bridge.",
+      "evidence": "t_anxiety.md — Panic disorder treatment."
+    },
+    {
+      "id": "qb_anx_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "pharm",
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_anxiety.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety/Trauma/OCD page",
+        "href": "?page=t_anxiety.md"
+      },
+      "stem": "A patient with OCD has distressing obsessions and time-consuming compulsions. Which is the evidence-based first-line treatment?",
+      "options": [
+        {
+          "key": "A",
+          "t": "An SSRI (often at higher doses) plus exposure and response prevention",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A benzodiazepine as monotherapy",
+          "trap": {
+            "name": "Wrong-mechanism trap",
+            "note": "Benzodiazepines do not treat the core of OCD; ERP and SSRIs do."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Supportive therapy alone without exposure work",
+          "trap": {
+            "name": "Under-treatment trap",
+            "note": "Generic support without ERP is not the evidence-based psychotherapy for OCD."
+          }
+        },
+        {
+          "key": "D",
+          "t": "An antipsychotic as first-line monotherapy",
+          "trap": {
+            "name": "Adjunct-vs-first-line trap",
+            "note": "Antipsychotics are an augmentation strategy in refractory OCD, not first-line monotherapy."
+          }
+        }
+      ],
+      "why": "OCD is treated first-line with an SSRI (frequently at higher doses than for depression) plus exposure and response prevention (ERP). Clomipramine is an effective second-line agent; antipsychotics augment refractory cases.",
+      "pearl": "OCD: SSRI (higher dose) + ERP first-line; clomipramine second-line; antipsychotic augmentation if refractory.",
+      "evidence": "t_anxiety.md — OCD treatment; psychotherapy.md — ERP."
+    },
+    {
+      "id": "qb_anx_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "management",
+        "pharm"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_anxiety.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety/Trauma/OCD page",
+        "href": "?page=t_anxiety.md"
+      },
+      "stem": "A veteran with PTSD has nightmares, hypervigilance, and avoidance. Which approach is first-line, and what should generally be avoided?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Trauma-focused psychotherapy (and/or an SSRI/SNRI) first-line; avoid routine benzodiazepines",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Scheduled benzodiazepines as the mainstay",
+          "trap": {
+            "name": "Harm trap",
+            "note": "Benzodiazepines are generally avoided in PTSD — they don't treat core symptoms and may impair recovery."
+          }
+        },
+        {
+          "key": "C",
+          "t": "An antipsychotic as first-line monotherapy",
+          "trap": {
+            "name": "Off-target trap",
+            "note": "Antipsychotics are not first-line for core PTSD."
+          }
+        },
+        {
+          "key": "D",
+          "t": "No treatment, since PTSD resolves on its own",
+          "trap": {
+            "name": "Nihilism trap",
+            "note": "Effective trauma-focused therapies and pharmacotherapy exist."
+          }
+        }
+      ],
+      "why": "First-line PTSD care is trauma-focused psychotherapy (e.g., CPT, prolonged exposure) and/or an SSRI/SNRI; prazosin can help nightmares. Benzodiazepines are generally avoided.",
+      "pearl": "PTSD: trauma-focused therapy ± SSRI/SNRI first-line; prazosin for nightmares; avoid benzodiazepines.",
+      "evidence": "t_anxiety.md — PTSD treatment."
+    },
+    {
+      "id": "qb_anx_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "dx",
+        "pharm"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_anxiety.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety/Trauma/OCD page",
+        "href": "?page=t_anxiety.md"
+      },
+      "stem": "A student develops intense anxiety only when performing music in public but is comfortable in other social situations. Which best describes the condition and a reasonable option?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Social anxiety disorder, performance-only type — a PRN beta-blocker (or benzodiazepine) can be used for discrete performances",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Generalized anxiety disorder requiring daily long-term medication",
+          "trap": {
+            "name": "Overgeneralization trap",
+            "note": "Anxiety limited to performance is not pervasive GAD; the performance-only subtype can be managed PRN."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Panic disorder",
+          "trap": {
+            "name": "Wrong-dx trap",
+            "note": "There are no recurrent unexpected panic attacks with persistent worry about attacks; this is performance-limited social anxiety."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A normal reaction requiring no discussion",
+          "trap": {
+            "name": "Dismissal trap",
+            "note": "Impairing performance anxiety is a recognized, treatable condition."
+          }
+        }
+      ],
+      "why": "Anxiety confined to performance situations is the performance-only subtype of social anxiety disorder; a PRN beta-blocker (or benzodiazepine) is reasonable for discrete performances, whereas generalized social anxiety is treated with an SSRI plus CBT.",
+      "pearl": "Performance-only social anxiety: PRN beta-blocker for events; generalized: SSRI + CBT.",
+      "evidence": "t_anxiety.md — Social anxiety disorder subtypes."
+    },
+    {
+      "id": "qb_saf_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety",
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "suicide.md"
+      ],
+      "link": {
+        "label": "Open the Suicide Risk & Safety Planning page",
+        "href": "?page=suicide.md"
+      },
+      "stem": "A patient with depression and passive suicidal ideation is being discharged. Which single intervention has the strongest evidence for reducing suicide death?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Means restriction — counseling to remove or secure firearms and lethal medications",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Having the patient sign a no-suicide contract",
+          "trap": {
+            "name": "Contract myth",
+            "note": "No-suicide contracts are not protective and can create false reassurance; a collaborative safety plan is preferred."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Scheduling a routine follow-up in three months only",
+          "trap": {
+            "name": "Gap trap",
+            "note": "A distant single appointment leaves the highest-risk early window uncovered."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Prescribing a large supply of a sedative for sleep",
+          "trap": {
+            "name": "Access trap",
+            "note": "A large lethal supply increases risk; means restriction is the goal."
+          }
+        }
+      ],
+      "why": "Means restriction — especially securing or removing firearms and limiting access to lethal medication — is the most evidence-based single intervention to reduce suicide death. No-suicide contracts are not protective.",
+      "pearl": "Means restriction (firearms above all) is the highest-yield suicide-prevention step; contracts are not protective.",
+      "evidence": "suicide.md — Means restriction; safety planning."
+    },
+    {
+      "id": "qb_saf_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "suicide.md"
+      ],
+      "link": {
+        "label": "Open the Suicide Risk & Safety Planning page",
+        "href": "?page=suicide.md"
+      },
+      "stem": "During which period is a psychiatric patient's suicide risk generally highest?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The immediate post-discharge period after a psychiatric hospitalization",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "The middle of a long stable outpatient course",
+          "trap": {
+            "name": "Low-acuity trap",
+            "note": "Risk is not highest during stable maintenance; transitions carry the peak."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Only while acutely inpatient",
+          "trap": {
+            "name": "Setting trap",
+            "note": "The inpatient stay is comparatively protected; the transition out is the higher-risk window."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Suicide risk is constant and does not vary over time",
+          "trap": {
+            "name": "Flat-risk trap",
+            "note": "Risk is dynamic; the peri- and post-discharge transition is a recognized high-risk window."
+          }
+        }
+      ],
+      "why": "The peri-discharge and especially the immediate post-discharge period is among the highest-risk windows. Discharge planning — follow-up, safety planning, means restriction — is a safety intervention, not paperwork.",
+      "pearl": "Highest-risk window is right after discharge — treat the transition as the intervention.",
+      "evidence": "suicide.md — High-risk windows and discharge planning."
+    },
+    {
+      "id": "qb_saf_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "dx",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "toxidromes.md"
+      ],
+      "link": {
+        "label": "Open the Hyperthermia & Toxidromes page",
+        "href": "?page=toxidromes.md"
+      },
+      "stem": "A patient on an SSRI is started on tramadol and develops agitation, diaphoresis, tremor, and lower-extremity clonus with hyperreflexia. What is the diagnosis, and the key bedside discriminator from NMS?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Serotonin syndrome — clonus and hyperreflexia (vs the lead-pipe rigidity and hyporeflexia of NMS)",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Neuroleptic malignant syndrome",
+          "trap": {
+            "name": "Wrong-syndrome trap",
+            "note": "NMS follows a dopamine blocker and shows lead-pipe rigidity with hyporeflexia, not clonus/hyperreflexia."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Anticholinergic toxicity",
+          "trap": {
+            "name": "Wet-vs-dry trap",
+            "note": "Anticholinergic toxicity is dry and flushed with normal reflexes; this patient is diaphoretic with clonus."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Malignant hyperthermia",
+          "trap": {
+            "name": "Context trap",
+            "note": "Malignant hyperthermia follows volatile anesthetics/succinylcholine, not a serotonergic combination."
+          }
+        }
+      ],
+      "why": "A serotonergic combination (SSRI + tramadol) with clonus, hyperreflexia (legs > arms), tremor, and diaphoresis is serotonin syndrome. The bedside discriminator from NMS is neuromuscular: clonus/hyperreflexia in SS vs lead-pipe rigidity and hyporeflexia in NMS.",
+      "pearl": "Clonus + hyperreflexia + a new serotonergic agent = serotonin syndrome; NMS is lead-pipe rigidity with hyporeflexia.",
+      "evidence": "toxidromes.md — Serotonin syndrome vs NMS discriminators."
+    },
+    {
+      "id": "qb_saf_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "dx",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "violence.md"
+      ],
+      "link": {
+        "label": "Open the Violence Risk page",
+        "href": "?page=violence.md"
+      },
+      "stem": "You are assessing a patient's risk of violence on the unit. Which is the single strongest predictor of future violence?",
+      "options": [
+        {
+          "key": "A",
+          "t": "A history of past violence",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A specific psychiatric diagnosis alone",
+          "trap": {
+            "name": "Diagnosis-label trap",
+            "note": "Diagnosis alone is a weak predictor; past violent behavior is the strongest single predictor."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The patient's stated remorse",
+          "trap": {
+            "name": "Reassurance trap",
+            "note": "Stated remorse does not reliably lower short-term risk."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Male sex by itself",
+          "trap": {
+            "name": "Single-demographic trap",
+            "note": "Demographics contribute modestly; past violence is the dominant predictor."
+          }
+        }
+      ],
+      "why": "Past violence is the strongest single predictor of future violence. Distinguish static factors (history — fixed) from dynamic factors (acute psychosis, intoxication, agitation — modifiable and the treatment target).",
+      "pearl": "Past violence is the best predictor; separate static (history) from dynamic (treatable) risk.",
+      "evidence": "violence.md — Static vs dynamic risk; past violence as predictor."
     }
   ]
 }
