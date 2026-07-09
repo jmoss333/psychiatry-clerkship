@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Faculty Attestation Console</title>
+<style>
+  :root{
+    --bg:#f7f4ef; --card:#fff; --ink:#2b2622; --muted:#6b625a; --line:#e4ddd3;
+    --accent:#6b8f71; --accent-dark:#3f5c45; --accent-light:#e8f0e9;
+    --warn:#b06b3a; --danger:#a4453a; --pend:#8a7b5c; --pend-light:#f3ecdd;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  .wrap{max-width:920px;margin:0 auto;padding:24px 18px 80px}
+  h1{font-size:1.4rem;margin:0 0 2px}
+  .sub{color:var(--muted);margin:0 0 18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+  label{display:block;font-weight:600;font-size:.85rem;margin:0 0 5px}
+  input[type=text],input[type=password]{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff;color:var(--ink)}
+  button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 14px}
+  button.primary{background:var(--accent);border-color:var(--accent-dark);color:#fff;font-weight:600}
+  button.primary:disabled{opacity:.5;cursor:not-allowed}
+  button:focus-visible,input:focus-visible,.row:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .tabs{display:flex;gap:6px;margin:0 0 14px}
+  .tab{padding:8px 14px;border:1px solid var(--line);background:#fff;border-radius:999px}
+  .tab.on{background:var(--accent-dark);border-color:var(--accent-dark);color:#fff;font-weight:600}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px}
+  .toolbar .grow{flex:1}
+  .row{display:flex;align-items:center;gap:12px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:7px;background:#fff}
+  .row .t{flex:1;min-width:0}
+  .row .title{font-weight:600}
+  .row .slug{color:var(--muted);font-size:.8rem;font-family:ui-monospace,Menlo,monospace}
+  .badge{font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+  .b-rev{background:var(--accent-light);color:var(--accent-dark)}
+  .b-pend{background:var(--pend-light);color:var(--pend)}
+  .b-un{background:#eee;color:#777}
+  .b-att{background:var(--accent-light);color:var(--accent-dark)}
+  .b-draft{background:var(--pend-light);color:var(--pend)}
+  .sw{position:relative;width:44px;height:26px;flex:0 0 auto}
+  .sw input{opacity:0;width:44px;height:26px;margin:0;cursor:pointer;position:absolute;z-index:2}
+  .sw .track{position:absolute;inset:0;background:#d9d2c7;border-radius:999px;transition:.15s}
+  .sw .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.15s}
+  .sw input:checked + .track{background:var(--accent)}
+  .sw input:checked + .track + .knob{left:21px}
+  .sw input:focus-visible + .track{outline:3px solid var(--accent);outline-offset:2px}
+  .muted{color:var(--muted)}
+  .dirty{color:var(--warn);font-weight:600}
+  .ok{color:var(--accent-dark);font-weight:600}
+  .err{color:var(--danger);font-weight:600}
+  .hint{font-size:.82rem;color:var(--muted)}
+  .savebar{position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .kicker{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark);font-weight:700}
+  .count{font-size:.85rem;color:var(--muted)}
+  select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;color:var(--ink)}
+  a{color:var(--accent-dark)}
+</style>
+</head>
+<body>
+<div class="wrap" id="app" aria-live="polite"></div>
+<script>
+"use strict";
+var API = "/api/attest";
+var KEYSS = "fac_key";
+var state = null;      // {items, qbank, counts}
+var dirty = { content:{}, qbank:{} };
+var tab = "content";
+var qFilter = "all";
+var attester = "Joshua Moss, MD";
+var app = document.getElementById("app");
+
+function h(tag, attrs, kids){
+  var el = document.createElement(tag);
+  attrs = attrs || {};
+  for (var k in attrs){
+    if (k === "class") el.className = attrs[k];
+    else if (k === "html") el.innerHTML = attrs[k];
+    else if (k.slice(0,2) === "on") el.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] != null) el.setAttribute(k, attrs[k]);
+  }
+  (kids||[]).forEach(function(c){ if (c==null) return; el.appendChild(typeof c==="string"?document.createTextNode(c):c); });
+  return el;
+}
+function getKey(){ try { return sessionStorage.getItem(KEYSS)||""; } catch(_){ return ""; } }
+function setKey(k){ try { sessionStorage.setItem(KEYSS,k); } catch(_){ } }
+function clearKey(){ try { sessionStorage.removeItem(KEYSS); } catch(_){ } }
+function clear(){ while(app.firstChild) app.removeChild(app.firstChild); }
+
+function badge(status){
+  var m = { reviewed:["Reviewed","b-rev"], pending:["Pending","b-pend"], unreviewed:["Not reviewed","b-un"],
+            attested:["Attested","b-att"], draft:["Draft","b-draft"] };
+  var b = m[status] || [status,"b-un"];
+  return h("span",{class:"badge "+b[1]}, [b[0]]);
+}
+
+function toggleRow(id, coll, isOn){
+  var sw = h("input",{type:"checkbox","aria-label":"Attest "+id});
+  sw.checked = isOn;
+  sw.addEventListener("change", function(){
+    if (sw.checked === isOn) delete dirty[coll][id];
+    else dirty[coll][id] = sw.checked;
+    renderSavebar();
+  });
+  return h("label",{class:"sw"},[ sw, h("span",{class:"track"}), h("span",{class:"knob"}) ]);
+}
+
+function renderLogin(msg){
+  clear();
+  var pw = h("input",{type:"password",id:"pw","aria-label":"Faculty key",placeholder:"Faculty key"});
+  app.appendChild(h("div",{},[
+    h("h1",{},["Faculty Attestation Console"]),
+    h("p",{class:"sub"},["Private governance tool — separate from the student site. Sign-offs commit directly to the repository."]),
+    h("div",{class:"card"},[
+      h("label",{for:"pw"},["Faculty key"]),
+      pw,
+      msg? h("p",{class:"err"},[msg]) : h("p",{class:"hint"},["The key is checked by the server; it is never stored in this page beyond this browser session."]),
+      h("div",{style:"margin-top:12px"},[
+        h("button",{class:"primary",onclick:function(){ setKey(pw.value); load(); }},["Unlock"])
+      ])
+    ])
+  ]));
+  pw.addEventListener("keydown", function(e){ if(e.key==="Enter"){ setKey(pw.value); load(); } });
+  pw.focus();
+}
+
+function renderShell(){
+  clear();
+  var c = state.counts;
+  app.appendChild(h("div",{},[
+    h("div",{class:"toolbar"},[
+      h("div",{class:"grow"},[ h("h1",{},["Faculty Attestation Console"]),
+        h("p",{class:"sub",style:"margin:0"},["Commits directly to the repo — the student sites rebuild on save."]) ]),
+      h("button",{onclick:function(){ clearKey(); renderLogin(); }},["Lock"])
+    ]),
+    h("div",{class:"card"},[
+      h("label",{for:"att"},["Attesting as"]),
+      (function(){ var i=h("input",{type:"text",id:"att",value:attester}); i.addEventListener("input",function(){attester=i.value||attester;}); return i; })(),
+      h("p",{class:"hint",style:"margin:8px 0 0"},[
+        "Pages reviewed: "+c.pagesReviewed+" / "+c.pagesTotal+"  ·  Questions attested: "+c.qbankAttested+" / "+c.qbankTotal ])
+    ]),
+    h("div",{class:"tabs"},[
+      h("button",{class:"tab"+(tab==="content"?" on":""),onclick:function(){tab="content";renderBody();}},["Content pages & tools"]),
+      h("button",{class:"tab"+(tab==="qbank"?" on":""),onclick:function(){tab="qbank";renderBody();}},["Question bank"])
+    ]),
+    h("div",{id:"body"}),
+    h("div",{class:"savebar",id:"savebar"})
+  ]));
+  renderBody();
+}
+
+function renderBody(){
+  var body = document.getElementById("body");
+  body.innerHTML = "";
+  if (tab === "content"){
+    ["page","tool"].forEach(function(kind){
+      var list = state.items.filter(function(i){ return i.kind===kind; });
+      body.appendChild(h("div",{class:"kicker",style:"margin:6px 0 8px"},[ kind==="page"?"Content pages":"Interactive tools" ]));
+      list.forEach(function(it){
+        var on = (dirty.content[it.slug] !== undefined) ? dirty.content[it.slug] : (it.status==="reviewed");
+        body.appendChild(h("div",{class:"row"},[
+          toggleRow(it.slug,"content",it.status==="reviewed"),
+          h("div",{class:"t"},[ h("div",{class:"title"},[it.title||it.slug]),
+            h("div",{class:"slug"},[it.slug + (it.by?("  ·  "+it.by+(it.at?(" "+it.at):"")):"")]) ]),
+          badge(it.status)
+        ]));
+      });
+    });
+  } else {
+    var cats = ["all"].concat(Array.from(new Set(state.qbank.map(function(q){return q.category;}))).sort());
+    var sel = h("select",{"aria-label":"Filter by category"}, cats.map(function(c){ var o=h("option",{value:c},[c==="all"?"All categories":c]); if(c===qFilter)o.selected=true; return o; }));
+    sel.addEventListener("change", function(){ qFilter=sel.value; renderBody(); });
+    var shown = state.qbank.filter(function(q){ return qFilter==="all"||q.category===qFilter; });
+    body.appendChild(h("div",{class:"toolbar"},[
+      sel,
+      h("span",{class:"count"},[shown.length+" shown"]),
+      h("button",{onclick:function(){ shown.forEach(function(q){ if(q.status!=="attested") dirty.qbank[q.id]=true; }); renderBody(); renderSavebar(); }},["Attest all shown"])
+    ]));
+    shown.forEach(function(q){
+      body.appendChild(h("div",{class:"row"},[
+        toggleRow(q.id,"qbank",q.status==="attested"),
+        h("div",{class:"t"},[ h("div",{class:"title"},[q.id]),
+          h("div",{class:"slug"},[q.category+" · L"+q.difficulty+" — "+q.stem+"…"]) ]),
+        badge(q.status)
+      ]));
+    });
+  }
+  renderSavebar();
+}
+
+function renderSavebar(){
+  var bar = document.getElementById("savebar");
+  if (!bar) return;
+  bar.innerHTML = "";
+  var coll = tab;
+  var n = Object.keys(dirty[coll]).length;
+  bar.appendChild(h("span",{class:n?"dirty":"muted"},[ n? (n+" unsaved change"+(n>1?"s":"")) : "No unsaved changes" ]));
+  var save = h("button",{class:"primary",onclick:function(){ commit(coll, save); }},["Save "+(coll==="content"?"reviews":"attestations")]);
+  save.disabled = n===0;
+  bar.appendChild(save);
+  bar.appendChild(h("span",{id:"msg",class:"hint"},[]));
+}
+
+function commit(coll, btn){
+  var changes = dirty[coll];
+  var msg = document.getElementById("msg");
+  btn.disabled = true; msg.className="hint"; msg.textContent = "Committing…";
+  fetch(API, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "x-faculty-key":getKey() },
+    body: JSON.stringify({ key:getKey(), attester:attester, target:coll, changes:changes })
+  }).then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+    .then(function(res){
+      if (!res.ok){ msg.className="err"; msg.textContent = "Error: "+(res.j.error||"failed"); btn.disabled=false; return; }
+      dirty[coll] = {};
+      msg.className="ok";
+      msg.innerHTML = "Saved "+res.j.updated+" item(s). Student sites will rebuild. "+
+        (res.j.commit? ('<a href="'+res.j.commit+'" target="_blank" rel="noopener">View commit ↗</a>') : "");
+      load(true);   // refresh state from repo
+    })
+    .catch(function(e){ msg.className="err"; msg.textContent="Network error: "+e.message; btn.disabled=false; });
+}
+
+function load(silent){
+  if (!silent) { clear(); app.appendChild(h("p",{class:"muted"},["Loading…"])); }
+  fetch(API, { headers:{ "x-faculty-key":getKey() } })
+    .then(function(r){ if(r.status===401){ throw {auth:true}; } return r.json(); })
+    .then(function(s){ if(s.error) throw new Error(s.error); state=s; renderShell(); })
+    .catch(function(e){ if(e && e.auth){ clearKey(); renderLogin("Key not accepted — try again."); } else { clear(); app.appendChild(h("p",{class:"err"},["Could not load: "+(e.message||e)])); app.appendChild(h("button",{onclick:function(){load();}},["Retry"])); } });
+}
+
+if (getKey()) load(); else renderLogin();
+</script>
+</body>
+</html>

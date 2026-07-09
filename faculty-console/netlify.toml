@@ -1,0 +1,20 @@
+# Faculty Attestation Console — its OWN Netlify site, separate from the two student sites.
+# In the Netlify UI, create a new site from this same repo with:
+#   Base directory:    faculty-console
+#   Build command:     (leave empty)
+#   Publish directory: faculty-console   (i.e. "." relative to the base)
+#   Functions:         auto-detected from faculty-console/netlify/functions
+# Then set the two required environment variables (see README.md): GITHUB_TOKEN, FACULTY_ATTEST_PASSWORD.
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Private governance tool — never index it.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
