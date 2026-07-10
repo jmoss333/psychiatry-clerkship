@@ -23,6 +23,9 @@ const TOKEN = process.env.GITHUB_TOKEN;
 const KEY = process.env.FACULTY_ATTEST_PASSWORD;
 const ORIGIN = process.env.ALLOWED_ORIGIN || '*';
 const ATTESTER_EMAIL = process.env.ATTESTER_EMAIL || 'faculty@clerkship.local';
+// Student site the console deep-links to for "View" (read the page you're attesting).
+// Override per deployment; defaults to the MS3 site.
+const STUDENT = (process.env.STUDENT_SITE_URL || 'https://une-ms3-psychiatry.netlify.app').replace(/\/+$/, '');
 
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
@@ -99,7 +102,7 @@ async function buildState() {
     status: it.status || 'draft',
     stem: (it.stem || '').slice(0, 120),
   }));
-  return { items, qbank: qitems, counts: {
+  return { student: STUDENT, items, qbank: qitems, counts: {
     pagesReviewed: items.filter((i) => i.status === 'reviewed').length,
     pagesTotal: items.length,
     qbankAttested: qitems.filter((q) => q.status === 'attested').length,
