@@ -45,3 +45,6 @@ jobs:
 
       - name: Build + static QA gate (ms3)
         run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+
+      - name: Build + static QA gate (res)
+        run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res

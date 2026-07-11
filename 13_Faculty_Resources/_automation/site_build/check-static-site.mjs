@@ -27,11 +27,11 @@
  *     (<siteDir>.source-map.json, emitted by build_deploy.py / resident_section.py)
  *   - a shipped file that is a Git-LFS pointer stub instead of real bytes
  *   - a duplicate (or missing) item id in question_bank.json
+ *   - a built content/tool file not referenced by nav (unreachable page)
  * SOFT findings (warn; fail only under STRICT=1):
  *   - near-duplicate question stems in question_bank.json (≥85% token overlap)
  *   - nav markdown files missing from topic_meta.json
  *   - nav items missing from reviewed.json
- *   - orphan tools/content not referenced by nav
  *   - LOCAL_POLICY tokens still unfilled (value:null)  [reported, never fails]
  */
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
@@ -98,8 +98,8 @@ if (existsSync(siPath) && parsed[siPath]) {
 /* ---------- 4. orphans, metadata coverage, review coverage ---------- */
 const contentFiles = existsSync(p('content')) ? readdirSync(p('content')).filter(f => f.endsWith('.md')) : [];
 const toolFiles = listHtml(p('tools'));
-for (const f of contentFiles) if (navMd.size && !navMd.has(f)) S(`orphan content (not in nav): ${f}`);
-for (const f of toolFiles) if (navTools.size && !navTools.has(f)) S(`orphan tool (not in nav): ${f}`);
+for (const f of contentFiles) if (navMd.size && !navMd.has(f)) H(`orphan content (not in nav): ${f} — add to nav in build_deploy.py or resident_section.py`);
+for (const f of toolFiles) if (navTools.size && !navTools.has(f)) H(`orphan tool (not in nav): ${f} — add to nav in build_deploy.py or resident_section.py`);
 
 const tmPath = p('topic_meta.json');
 if (existsSync(tmPath) && parsed[tmPath]) {
