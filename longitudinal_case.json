@@ -1,0 +1,138 @@
+{
+  "_note": "Fictional composite longitudinal simulation for supervised psychiatry learning. Do not enter PHI or use this as patient-specific clinical advice.",
+  "id": "one_patient_six_weeks_001",
+  "title": "One Patient, Six Weeks",
+  "setting": "Adult inpatient psychiatry",
+  "storageKey": "cw_longitudinal_v1",
+  "disclaimer": "Fictional composite only. This simulation teaches observation, communication, formulation, and handoff. It is not a clinical decision tool and does not replace supervision, local policy, or the patient's actual record.",
+  "patient": {
+    "displayName": "Jordan",
+    "description": "A fictional adult admitted after escalating mood symptoms, disrupted sleep, strained family communication, and an uncertain discharge plan.",
+    "frame": "The story changes as new information arrives. Keep syndrome, diagnosis, contributors, treatment targets, safety, and systems context distinct."
+  },
+  "weeks": [
+    {
+      "id": "week1",
+      "label": "Week 1",
+      "title": "Admission: start with the person and the timeline",
+      "focus": ["alliance", "timeline", "MSE"],
+      "patientState": "Jordan arrives guarded and tired after several nights of very little sleep. The chart is brief, the reason for admission is contested, and Jordan asks whether the team has already decided what is wrong.",
+      "learnerTask": "Practice opening the interview, mapping the timeline, and describing the mental status exam before naming a diagnosis.",
+      "checklist": [
+        "I can state what changed, when it changed, and who noticed it.",
+        "I can name one alliance move that gives Jordan more control.",
+        "I can separate observed MSE findings from my interpretation."
+      ],
+      "reflectionPrompt": "What would help Jordan feel that the interview is collaborative rather than an interrogation?",
+      "handoff": "On rounds, present the timeline and MSE first, then state what remains uncertain.",
+      "links": [
+        {"label": "Interview and MSE", "kind": "page", "target": "pg_interview.md"},
+        {"label": "Mental Status Exam", "kind": "tool", "target": "mse.html"}
+      ]
+    },
+    {
+      "id": "week2",
+      "label": "Week 2",
+      "title": "Differential: hold more than one explanation",
+      "focus": ["syndrome", "differential", "medical rule-out"],
+      "patientState": "Jordan reports racing thoughts, unusual confidence, and feeling watched during the worst nights. A family member describes a previous period of reduced sleep, but the timing of substance exposure and medical contributors is still unclear.",
+      "learnerTask": "Build a problem representation, keep primary, substance-related, and medical explanations visible, and identify the next collateral question.",
+      "checklist": [
+        "I can describe the syndrome without prematurely closing on a diagnosis.",
+        "I can name the data that would increase or decrease confidence in each leading explanation.",
+        "I can ask collateral questions that clarify baseline and longitudinal course."
+      ],
+      "reflectionPrompt": "Which new fact would most change your working formulation, and why?",
+      "handoff": "On rounds, label your leading diagnosis as a working hypothesis and state what would update it.",
+      "links": [
+        {"label": "Differential Dx Scaffolds", "kind": "page", "target": "ddx.md"},
+        {"label": "Diagnostic Reasoning Workbench", "kind": "tool", "target": "diagnostic-reasoning.html"},
+        {"label": "Medical Workup and Mimics", "kind": "page", "target": "medical_workup.md"}
+      ]
+    },
+    {
+      "id": "week3",
+      "label": "Week 3",
+      "title": "Treatment: make room for ambivalence",
+      "focus": ["medication conversation", "shared decision-making", "monitoring"],
+      "patientState": "Jordan is sleeping more but is unsure whether the improvement is worth feeling slowed down. Jordan worries that accepting medication means accepting a diagnosis and asks what the team is not saying.",
+      "learnerTask": "Rehearse a medication conversation that explores goals, concerns, alternatives, monitoring, and the role of supervision.",
+      "checklist": [
+        "I can ask what improvement would matter most to Jordan.",
+        "I can explain uncertainty and monitoring without promising a specific outcome.",
+        "I can bring medication questions to the supervising team instead of giving an unsupervised recommendation."
+      ],
+      "reflectionPrompt": "What part of Jordan's ambivalence deserves curiosity before education?",
+      "handoff": "On rounds, report Jordan's goals and concerns alongside observed response and monitoring needs.",
+      "links": [
+        {"label": "Psychopharmacology Primer", "kind": "page", "target": "psychopharm_primer.md"},
+        {"label": "What Do You Say Next?", "kind": "tool", "target": "communication-practice.html"},
+        {"label": "Medication Monitoring and Labs", "kind": "page", "target": "med_monitoring.md"}
+      ]
+    },
+    {
+      "id": "week4",
+      "label": "Week 4",
+      "title": "Family and systems: widen the frame",
+      "focus": ["collateral", "family meeting", "discharge barriers"],
+      "patientState": "Jordan wants to leave soon. A family member is worried and frustrated, but Jordan does not want every detail shared. The team needs collateral, a clear confidentiality frame, and a realistic conversation about supports.",
+      "learnerTask": "Prepare a family meeting that respects Jordan's voice, gathers useful collateral, and identifies what the system must solve before discharge.",
+      "checklist": [
+        "I can explain the purpose and boundaries of family involvement.",
+        "I can ask for observations rather than inviting labels or arguments.",
+        "I can turn family concerns into concrete questions for the team and discharge plan."
+      ],
+      "reflectionPrompt": "How can the family be included without making Jordan feel discussed rather than included?",
+      "handoff": "On rounds, distinguish patient report, collateral observation, team interpretation, and unresolved disagreement.",
+      "links": [
+        {"label": "Collateral Workflow", "kind": "page", "target": "collateral_workflow.md"},
+        {"label": "Family Systems Practice", "kind": "tool", "target": "family-systems.html"},
+        {"label": "Family Meeting Playbook", "kind": "page", "target": "family_playbook.md"},
+        {"label": "Family and Discharge", "kind": "page", "target": "exp_family.md"}
+      ]
+    },
+    {
+      "id": "week5",
+      "label": "Week 5",
+      "title": "Safety: respond directly without losing the relationship",
+      "focus": ["suicide inquiry", "agitation", "supervision"],
+      "patientState": "After a difficult phone call, Jordan says, \"Maybe it would be easier if I just disappeared,\" then asks to leave the unit. The meaning, intent, and immediacy of the statement need careful assessment.",
+      "learnerTask": "Practice direct, calm safety language; identify what must be escalated immediately; and keep the patient connected while the supervising team evaluates next steps.",
+      "checklist": [
+        "I can ask directly about suicidal thoughts, intent, plan, access, and immediate safety.",
+        "I can state what I heard and what I need to discuss with my supervisor now.",
+        "I can avoid treating a screening result as a complete risk formulation."
+      ],
+      "reflectionPrompt": "What would you say first so that Jordan hears concern rather than punishment?",
+      "handoff": "On rounds, describe the patient's words, context, observed behavior, protective factors, uncertainty, and supervision plan.",
+      "links": [
+        {"label": "Suicide Risk and Safety", "kind": "page", "target": "pg_suicide.md"},
+        {"label": "C-SSRS Screener", "kind": "tool", "target": "cssrs.html"},
+        {"label": "Agitation and Restraint", "kind": "page", "target": "agitation.md"},
+        {"label": "Decision Aids", "kind": "tool", "target": "decision-aids.html"}
+      ]
+    },
+    {
+      "id": "week6",
+      "label": "Week 6",
+      "title": "Integration: tell the evolving story",
+      "focus": ["formulation", "handoff", "professional identity"],
+      "patientState": "Jordan is preparing for transition. Symptoms, goals, family concerns, medication questions, and follow-up needs have changed over time. The final task is not to tell a perfect story; it is to make the reasoning and remaining uncertainty visible.",
+      "learnerTask": "Give a concise longitudinal presentation, identify the current treatment targets, and plan a warm handoff that keeps Jordan's voice in the center.",
+      "checklist": [
+        "I can explain how the working formulation changed as new data arrived.",
+        "I can present current risks, strengths, needs, and unanswered questions without overclaiming.",
+        "I can name one relational skill I want to carry into the next rotation."
+      ],
+      "reflectionPrompt": "What did you learn about the difference between being right and being useful to a patient and team?",
+      "handoff": "For the final presentation, connect the timeline, formulation, treatment targets, family/system plan, safety plan, and follow-up ownership.",
+      "links": [
+        {"label": "Documentation and Oral Presentation", "kind": "page", "target": "doc_oral.md"},
+        {"label": "Treatment Team Rounding Prep", "kind": "tool", "target": "oral.html"},
+        {"label": "COMAT and Shelf Review", "kind": "page", "target": "shelf.md"},
+        {"label": "Reflection and Identity", "kind": "tool", "target": "reflection.html"},
+        {"label": "Evidence-Based Inpatient Psychiatry", "kind": "page", "target": "evidence_inpatient.md"}
+      ]
+    }
+  ]
+}
