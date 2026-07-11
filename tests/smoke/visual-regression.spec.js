@@ -125,6 +125,24 @@ test.describe('mobile shell ergonomics', () => {
     await close.click();
     await expect(page.locator('.tl-sheet')).toHaveCount(0);
     await expect(more).toBeFocused();
+
+    await page.locator('#menuBtn').click();
+    await expect(page.locator('#side')).toHaveClass(/open/);
+    await page.locator('#mPath').click();
+    await expect(page.locator('#mobileTitle')).toHaveText('Learning Path');
+    await expect(page.locator('#side')).not.toHaveClass(/open/);
+    await expect(page.locator('#drawerBackdrop')).toBeHidden();
+    await expect(page.locator('.tl-bar')).toHaveCount(0);
+  });
+
+  test('reflows contextual tools when a phone becomes narrower', async ({ page, baseURL }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${baseURL}/?page=t_mood.md`, { waitUntil: 'domcontentloaded' });
+    await waitForSpaReady(page);
+    await expect(page.locator('.tl-bar__item[data-tool]')).toHaveCount(4);
+
+    await page.setViewportSize({ width: 320, height: 844 });
+    await expect(page.locator('.tl-bar__item[data-tool]')).toHaveCount(3);
   });
 
   test('marks a wide Markdown table as an accessible scroll region', async ({ page, baseURL }) => {
@@ -152,5 +170,13 @@ test.describe('mobile shell ergonomics', () => {
     await expect(viewport.locator('table')).toBeVisible();
     expect(await viewport.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
     await expect(tableShell.locator('.table-scroll-hint')).toBeVisible();
+
+    const pageWidths = await page.locator('#content').evaluate((el) => ({
+      content: el.clientWidth,
+      document: document.documentElement.clientWidth,
+      scroll: document.documentElement.scrollWidth,
+    }));
+    expect(pageWidths.content).toBeLessThanOrEqual(pageWidths.document);
+    expect(pageWidths.scroll).toBeLessThanOrEqual(pageWidths.document);
   });
 });
