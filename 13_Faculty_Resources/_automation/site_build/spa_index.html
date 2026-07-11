@@ -866,8 +866,17 @@
     sh.innerHTML='<div class="tl-sheet__head"><h2 id="tlSheetTitle">All tools</h2><button type="button" class="tl-sheet__close" aria-label="Close all tools">Close</button></div><div class="tl-sheet__grid">'+keys.map(function(k){ var s=SAFE[k]?' is-safety':''; return '<a class="tl-sheet__item'+s+'" href="?tool='+k+'" data-tool="'+k+'" aria-label="Open the '+(LAB[k]||k)+' tool">'+svg(ICON[k])+'<span>'+(LAB[k]||k)+'</span></a>'; }).join('')+'</div>';
     document.body.appendChild(bd); document.body.appendChild(sh);
     bd.addEventListener('click',closeSheet);
-    sh.querySelector('.tl-sheet__close').addEventListener('click',closeSheet);
-    requestAnimationFrame(function(){var close=sh.querySelector('.tl-sheet__close');if(close)close.focus();});
+    var close=sh.querySelector('.tl-sheet__close');
+    close.addEventListener('click',closeSheet);
+    sh.addEventListener('keydown',function(e){
+      if(e.key!=='Tab')return;
+      var items=sh.querySelectorAll('.tl-sheet__item');
+      if(!items.length)return;
+      var last=items[items.length-1];
+      if(e.shiftKey&&document.activeElement===close){e.preventDefault();last.focus();}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();close.focus();}
+    });
+    requestAnimationFrame(function(){if(sh.isConnected&&close)close.focus();});
   }
   function mobileToolKeys(keys){
     return keys.slice(0,window.matchMedia('(max-width:360px)').matches?3:4);

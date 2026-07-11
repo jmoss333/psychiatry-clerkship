@@ -109,8 +109,20 @@ test.describe('mobile shell ergonomics', () => {
     const more = page.locator('.tl-bar__more');
     await more.click();
     await expect(page.locator('.tl-sheet')).toBeVisible();
-    await expect(page.locator('.tl-sheet__close')).toBeFocused();
-    await page.locator('.tl-sheet__close').click();
+    const close = page.locator('.tl-sheet__close');
+    await expect(close).toBeFocused();
+
+    const sheetItems = page.locator('.tl-sheet__item');
+    const sheetItemCount = await sheetItems.count();
+    expect(sheetItemCount).toBeGreaterThan(0);
+    const lastSheetItem = sheetItems.nth(sheetItemCount - 1);
+
+    await close.press('Shift+Tab');
+    await expect(lastSheetItem).toBeFocused();
+    await lastSheetItem.press('Tab');
+    await expect(close).toBeFocused();
+
+    await close.click();
     await expect(page.locator('.tl-sheet')).toHaveCount(0);
     await expect(more).toBeFocused();
   });
