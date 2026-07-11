@@ -486,6 +486,8 @@
     }
   }
   function tableLabel(table,index){
+    var section=table.closest&&table.closest('.sec-c'), sectionButton=section&&section.querySelector('.sec-h button');
+    if(sectionButton&&sectionButton.textContent)return sectionButton.textContent.replace(/^[\s▸]+/,'').trim()+' table';
     var heading=table.previousElementSibling;
     while(heading&&heading.tagName!=='H1'&&heading.tagName!=='H2'&&heading.tagName!=='H3')heading=heading.previousElementSibling;
     return (heading&&heading.textContent?heading.textContent.trim()+' table':'Scrollable table '+(index+1));

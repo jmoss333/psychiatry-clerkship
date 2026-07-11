@@ -148,7 +148,7 @@ test.describe('mobile shell ergonomics', () => {
     await expect(tableShell).toHaveClass(/is-scrollable/);
     await expect(viewport).toHaveAttribute('role', 'region');
     await expect(viewport).toHaveAttribute('tabindex', '0');
-    await expect(viewport).toHaveAttribute('aria-label', /table/i);
+    await expect(viewport).toHaveAttribute('aria-label', 'MSE Structure table');
     await expect(viewport.locator('table')).toBeVisible();
     expect(await viewport.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
     await expect(tableShell.locator('.table-scroll-hint')).toBeVisible();
