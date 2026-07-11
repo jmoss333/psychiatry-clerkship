@@ -87,3 +87,42 @@ for (const vp of VIEWPORTS) {
     });
   });
 }
+
+test.describe('mobile shell ergonomics', () => {
+  test.use({ viewport: { width: 320, height: 844 } });
+
+  test('keeps navigation, contextual tools, and the current page usable', async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/?page=t_mood.md`, { waitUntil: 'domcontentloaded' });
+    await waitForSpaReady(page);
+
+    await expect(page.locator('#mobileTitle')).toContainText('Mood Disorders');
+    await expect(page.locator('.tl-bar')).toBeVisible();
+    await expect(page.locator('.tl-bar__item[data-tool]')).toHaveCount(3);
+
+    await page.locator('#menuBtn').click();
+    const drawerPadding = await page.locator('#side').evaluate((el) =>
+      Number.parseFloat(getComputedStyle(el).paddingBottom),
+    );
+    expect(drawerPadding).toBeGreaterThanOrEqual(90);
+    await page.locator('#drawerBackdrop').click();
+
+    const more = page.locator('.tl-bar__more');
+    await more.click();
+    await expect(page.locator('.tl-sheet')).toBeVisible();
+    await expect(page.locator('.tl-sheet__close')).toBeFocused();
+    await page.locator('.tl-sheet__close').click();
+    await expect(page.locator('.tl-sheet')).toHaveCount(0);
+    await expect(more).toBeFocused();
+  });
+
+  test('marks a wide Markdown table as an accessible scroll region', async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/?page=pg_interview.md`, { waitUntil: 'domcontentloaded' });
+    await waitForSpaReady(page);
+
+    const viewport = page.locator('.table-scroll-viewport').first();
+    await expect(viewport).toHaveAttribute('role', 'region');
+    await expect(viewport).toHaveAttribute('tabindex', '0');
+    await expect(viewport).toHaveAttribute('aria-label', /table/i);
+    await expect(viewport.locator('table')).toBeVisible();
+  });
+});
