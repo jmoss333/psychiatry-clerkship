@@ -1,6 +1,6 @@
 # Mobile Reading Shell Smoothing — design
 
-**Date:** 2026-07-11  
+**Date:** 2026-07-11
 **Scope:** The shared MS3/resident SPA shell at `13_Faculty_Resources/_automation/site_build/spa_index.html`. This is a presentation and interaction improvement only; it does not alter clinical teaching content, sources, metadata, or assessment data.
 
 ## Problem
