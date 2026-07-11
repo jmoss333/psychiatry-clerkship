@@ -81,6 +81,8 @@
           "why": { "type": "string", "description": "Dispatches the traps by name, then states the discriminator." },
           "pearl": { "type": "string", "description": "One keepable line — ideally the source page's own pearl." },
           "evidence": { "type": "string", "description": "The anchor exactly as a `pages` source states it — never a new outside citation." },
+          "retired": { "type": "boolean", "description": "Non-destructive retirement flag. When true the item is excluded from the shipped/attestable set (status must be 'draft'); it is never deleted so its stable id and response history survive. Only faculty/reviewer tooling sets this; retired items cannot be re-attested." },
+          "retiredReason": { "type": "string", "description": "One line explaining why the item was retired (e.g., near-duplicate of qb_sud_009)." },
           "tier2": {
             "type": "object",
             "required": ["q", "options", "why"],

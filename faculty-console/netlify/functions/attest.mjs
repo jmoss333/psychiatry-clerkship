@@ -97,11 +97,13 @@ async function buildState() {
     const r = rev[slug] || {};
     items.push({ slug, title, kind: 'tool', status: r.status || 'unreviewed', at: r.at || '', by: r.by || '' });
   }
-  const qitems = (qbank.json.items || []).map((it) => ({
-    id: it.id, category: it.category, difficulty: it.difficulty,
-    status: it.status || 'draft',
-    stem: (it.stem || '').slice(0, 120),
-  }));
+  const qitems = (qbank.json.items || [])
+    .filter((it) => !it.retired)   // retired items are excluded from the attestable set
+    .map((it) => ({
+      id: it.id, category: it.category, difficulty: it.difficulty,
+      status: it.status || 'draft',
+      stem: (it.stem || '').slice(0, 120),
+    }));
   return { student: STUDENT, items, qbank: qitems, counts: {
     pagesReviewed: items.filter((i) => i.status === 'reviewed').length,
     pagesTotal: items.length,
@@ -156,7 +158,7 @@ export default async (request) => {
           let n = 0;
           for (const [id, on] of Object.entries(changes)) {
             const it = byId.get(id);
-            if (!it) continue;
+            if (!it || it.retired) continue;   // retired items cannot be (re-)attested
             it.status = on ? 'attested' : 'draft'; n++;
           }
           const commit = await ghPut(QBANK_PATH, qb, sha, `attest: ${n} question(s) by ${attester} (${at})`, 2);

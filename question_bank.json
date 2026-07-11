@@ -3941,7 +3941,7 @@
     },
     {
       "id": "qb_pha_012",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3990,7 +3990,9 @@
       ],
       "why": "All rigidity equals NMS, All agitation equals serotonin syndrome, and One treatment for all are three forms of diagnostic conflation. The discriminating features: serotonin syndrome = rapid onset, clonus, hyperreflexia, after serotonergic agent combination; NMS = slower onset, lead-pipe rigidity, hyperthermia, elevated CK, after dopamine blocker. Treating them identically mismatches the pharmacologic antidote to the wrong mechanism.",
       "pearl": "Serotonin syndrome: rapid onset, clonus, hyperreflexia (serotonergic agents); NMS: slower, lead-pipe rigidity, hyperthermia, elevated CK (dopamine blockade) — different mechanisms, different treatments.",
-      "evidence": "psychopharm_primer.md — Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased. Neuroleptic malignant syndrome: 'lead-pipe' rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+      "evidence": "psychopharm_primer.md — Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased. Neuroleptic malignant syndrome: 'lead-pipe' rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+      "retired": true,
+      "retiredReason": "Near-duplicate of qb_saf_015 (serotonin-syndrome vs NMS discriminator); qb_saf_015 kept as the cleaner bedside-discriminator item anchoring toxidromes.md."
     },
     {
       "id": "qb_pha_013",
@@ -9343,7 +9345,9 @@
       ],
       "why": "The triad of encephalopathy, ophthalmoplegia, and ataxia is Wernicke encephalopathy. Give thiamine before glucose, because a glucose load in a thiamine-deficient patient can precipitate or worsen it.",
       "pearl": "Wernicke = confusion + ophthalmoplegia + ataxia; give thiamine BEFORE glucose.",
-      "evidence": "t_sud.md — Alcohol: Wernicke encephalopathy and thiamine."
+      "evidence": "t_sud.md — Alcohol: Wernicke encephalopathy and thiamine.",
+      "retired": true,
+      "retiredReason": "Redundant: Wernicke/thiamine-before-glucose is already triple-covered by attested qb_sud_002, qb_sud_003, qb_sud_007."
     },
     {
       "id": "qb_sud_016",
@@ -9396,7 +9400,9 @@
       ],
       "why": "Naltrexone (reduces heavy drinking; avoid in acute hepatitis/opioid use) and acamprosate (supports abstinence; usable in liver disease, adjust in renal impairment) are first-line for AUD. Disulfiram is second-line and adherence-dependent.",
       "pearl": "AUD maintenance: naltrexone or acamprosate first-line; disulfiram is adherence-dependent second-line.",
-      "evidence": "t_sud.md — Alcohol use disorder pharmacotherapy."
+      "evidence": "t_sud.md — Alcohol use disorder pharmacotherapy.",
+      "retired": true,
+      "retiredReason": "Redundant: AUD maintenance (naltrexone/acamprosate first-line) duplicates attested qb_sud_009; fold the compensated-cirrhosis nuance into qb_sud_009 if desired."
     },
     {
       "id": "qb_psy_015",
