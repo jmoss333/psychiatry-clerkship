@@ -662,6 +662,8 @@
     contentEl.innerHTML=skel();
     fetch('content/'+item.f).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
       contentEl.innerHTML=marked.parse(t);
+      var _mobileTitle=document.getElementById('mobileTitle'), _pageHeading=contentEl.querySelector('h1');
+      if(_mobileTitle&&_pageHeading)_mobileTitle.textContent=_pageHeading.textContent;
       if(item.f==='welcome.md'){try{localStorage.setItem('cw_seen_welcome_v1','1');localStorage.setItem('cw_seen_start','1');}catch(_){ }}
       var _anchor=installTitleReviewButton(item.f)||contentEl.querySelector('h1');
       function _insertAfterTitle(node){ if(!node)return; if(_anchor&&_anchor.parentNode){ _anchor.parentNode.insertBefore(node,_anchor.nextSibling); _anchor=node; } else contentEl.insertBefore(node,contentEl.firstChild); }
