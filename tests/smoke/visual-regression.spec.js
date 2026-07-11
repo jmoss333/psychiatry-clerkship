@@ -3,7 +3,7 @@
  *
  * Screenshots the resident site at desktop (1280×800) and mobile (390×844):
  *   - the nav sidebar (key structural element, section headers, items)
- *   - a representative topic page (#content area)
+ *   - a representative topic page's first viewport (#content area)
  *
  * Compares against committed baselines in tests/smoke/baseline/.
  * Uses Playwright's built-in toHaveScreenshot() which calls pixelmatch internally.
@@ -12,6 +12,10 @@
  *
  * First run (no baseline): npm run update-baselines — creates baseline PNGs, then commit them.
  * Subsequent runs: normal test run compares; fail → actual/expected/diff uploaded as CI artifacts.
+ *
+ * The topic capture is intentionally viewport-bounded. Content pages are allowed to grow as
+ * curriculum sections are added; a full-height screenshot would treat every legitimate content
+ * addition as a layout regression. The sidebar remains a full structural screenshot.
  *
  * Runs only against the resident site (project: visual, baseURL = localhost:4201).
  */
@@ -66,7 +70,7 @@ for (const vp of VIEWPORTS) {
       await expect(sidebar).toHaveScreenshot(`sidebar-${vp.label}.png`);
     });
 
-    test('topic page content area', async ({ page, baseURL }) => {
+    test('topic page first viewport', async ({ page, baseURL }) => {
       await page.goto(
         `${baseURL}/?page=${encodeURIComponent(TOPIC_PAGE)}`,
         { waitUntil: 'domcontentloaded', timeout: 20_000 },
@@ -74,6 +78,11 @@ for (const vp of VIEWPORTS) {
       await waitForSpaReady(page);
 
       const content = page.locator('#content');
+      await content.evaluate((el, height) => {
+        el.style.height = `${height}px`;
+        el.style.minHeight = '0';
+        el.style.overflow = 'hidden';
+      }, vp.height);
       await expect(content).toHaveScreenshot(`topic-${vp.label}.png`);
     });
   });
