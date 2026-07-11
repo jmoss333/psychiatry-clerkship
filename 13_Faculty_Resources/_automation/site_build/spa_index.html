@@ -473,14 +473,14 @@
       var bd=document.createElement('div'); bd.className='sec-b';
       g.body.forEach(function(n){ bd.appendChild(n); });
       body.insertBefore(wrap,g.h2); wrap.appendChild(hh); wrap.appendChild(bd); body.removeChild(g.h2);
-      btn.onclick=function(){ var o=!wrap.classList.contains('open'); wrap.classList.toggle('open',o); btn.setAttribute('aria-expanded',String(o)); };
+      btn.onclick=function(){ var o=!wrap.classList.contains('open'); wrap.classList.toggle('open',o); btn.setAttribute('aria-expanded',String(o)); requestAnimationFrame(refreshTableScrollCues); };
       if(!first) first=wrap;
       if(bd.querySelector('iframe')){ wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
     });
     if(first){
       var bar=document.createElement('div'); bar.className='sec-toolbar';
       function mk(lbl,op){ var b=document.createElement('button'); b.type='button'; b.className='sec-all'; b.textContent=lbl;
-        b.onclick=function(){ [].forEach.call(body.querySelectorAll('.sec-c'),function(w){ w.classList.toggle('open',op); var bb=w.querySelector('button[aria-expanded]'); if(bb) bb.setAttribute('aria-expanded',String(op)); }); }; return b; }
+        b.onclick=function(){ [].forEach.call(body.querySelectorAll('.sec-c'),function(w){ w.classList.toggle('open',op); var bb=w.querySelector('button[aria-expanded]'); if(bb) bb.setAttribute('aria-expanded',String(op)); }); requestAnimationFrame(refreshTableScrollCues); }; return b; }
       bar.appendChild(mk('Expand all',true)); bar.appendChild(mk('Collapse all',false));
       body.insertBefore(bar,first);
     }

@@ -131,10 +131,26 @@ test.describe('mobile shell ergonomics', () => {
     await page.goto(`${baseURL}/?page=pg_interview.md`, { waitUntil: 'domcontentloaded' });
     await waitForSpaReady(page);
 
-    const viewport = page.locator('.table-scroll-viewport').first();
+    const tableSections = page.locator('.sec-c').filter({
+      has: page.locator('.table-scroll-viewport'),
+    });
+    const tableSectionCount = await tableSections.count();
+    expect(tableSectionCount).toBeGreaterThan(0);
+
+    const tableSection = tableSections.nth(0);
+    const tableHeader = tableSection.locator('.sec-h button');
+    await expect(tableHeader).toHaveCount(1);
+    await tableHeader.click();
+    await expect(tableSection).toHaveClass(/open/);
+
+    const viewport = tableSection.locator('.table-scroll-viewport');
+    const tableShell = tableSection.locator('.table-scroll');
+    await expect(tableShell).toHaveClass(/is-scrollable/);
     await expect(viewport).toHaveAttribute('role', 'region');
     await expect(viewport).toHaveAttribute('tabindex', '0');
     await expect(viewport).toHaveAttribute('aria-label', /table/i);
     await expect(viewport.locator('table')).toBeVisible();
+    expect(await viewport.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+    await expect(tableShell.locator('.table-scroll-hint')).toBeVisible();
   });
 });
