@@ -1,0 +1,15 @@
+{
+  "name": "psychiatry-clerkship-smoke",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:nav": "playwright test --project=nav-ms3 --project=nav-res",
+    "test:lfs": "playwright test --project=lfs",
+    "test:visual": "playwright test --project=visual",
+    "update-baselines": "playwright test --project=visual --update-snapshots"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.46.1"
+  }
+}
