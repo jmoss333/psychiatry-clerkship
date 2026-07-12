@@ -7,6 +7,7 @@ import json
 import re
 import unicodedata
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -22,6 +23,8 @@ SOURCE_TYPES = {
 }
 IDENTITY_STATES = {"verified", "exception", "pending"}
 ACCESS_LEVELS = {"metadata", "abstract", "fulltext"}
+APPRAISAL_REVIEW_STATES = {"pending-faculty-review", "reviewed"}
+MAPPING_STATES = {"mapped", "needs-faculty-confirmation", "citation-conflict"}
 TIER1_SELECTIONS = {
     "1",
     "2",
@@ -219,6 +222,16 @@ def _is_tier1_source(source: Any) -> bool:
 
 def _nonempty_text(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+def _valid_iso_date(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    try:
+        parsed = date.fromisoformat(value)
+    except ValueError:
+        return False
+    return parsed.isoformat() == value
 
 
 def _record_unique(
@@ -507,6 +520,25 @@ def validate_registry(registry: dict) -> list[ValidationIssue]:
                             f"Tier 1 appraisal field must be non-empty: {field}",
                         )
                     )
+            review_status = appraisal.get("reviewStatus")
+            if not isinstance(review_status, str) or (
+                review_status not in APPRAISAL_REVIEW_STATES
+            ):
+                issues.append(
+                    ValidationIssue(
+                        f"{source_path}.appraisal.reviewStatus",
+                        "Tier 1 appraisal reviewStatus must be one of: pending-faculty-review, reviewed",
+                    )
+                )
+            elif review_status == "reviewed" and not _valid_iso_date(
+                appraisal.get("reviewedAt")
+            ):
+                issues.append(
+                    ValidationIssue(
+                        f"{source_path}.appraisal.reviewedAt",
+                        "Tier 1 reviewed appraisal requires a valid reviewedAt date",
+                    )
+                )
 
         if isinstance(curriculum, dict):
             if not _nonempty_text(curriculum.get("role")):
@@ -535,11 +567,11 @@ def validate_registry(registry: dict) -> list[ValidationIssue]:
                     )
                 )
             mapping_status = curriculum.get("mappingStatus")
-            if not _nonempty_text(mapping_status):
+            if not isinstance(mapping_status, str) or mapping_status not in MAPPING_STATES:
                 issues.append(
                     ValidationIssue(
                         f"{source_path}.curriculum.mappingStatus",
-                        "Tier 1 mapping status must be non-empty",
+                        "Tier 1 mappingStatus must be one of: mapped, needs-faculty-confirmation, citation-conflict",
                     )
                 )
             elif mapping_status == "needs-faculty-confirmation":

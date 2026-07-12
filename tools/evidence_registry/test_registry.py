@@ -90,7 +90,51 @@ def test_canonical_tier1_contract():
     assert {row["curriculum"]["selection"] for row in rows} == TIER1_SELECTIONS
     assert len({row["zotero"]["itemKey"] for row in rows}) == 17
     assert all(row["identity"]["status"] == "verified" for row in rows)
+    assert all(
+        row["appraisal"]["reviewStatus"] == "pending-faculty-review" for row in rows
+    )
     assert all("expectedTags" not in row["zotero"] for row in rows)
+
+
+def test_canonical_pharoah_appraisal_preserves_review_uncertainty():
+    source = index_sources(load_evidence_registry(REGISTRY_PATH))[
+        "pharoah-2010-family-intervention"
+    ]
+    outcomes = source["appraisal"]["outcomes"].lower()
+    limitations = source["appraisal"]["limitations"].lower()
+    assert "may reduce relapse" in outcomes
+    assert "reduced relapse" not in outcomes
+    assert "poor trial methods may overestimate effects" in limitations
+
+
+def test_canonical_tads_appraisal_preserves_safety_exclusions_and_power_limit():
+    source = index_sources(load_evidence_registry(REGISTRY_PATH))["march-2004-tads"]
+    population = source["appraisal"]["population"].lower()
+    limitations = source["appraisal"]["limitations"].lower()
+    assert "high suicide risk" in population and "excluded" in population
+    assert "primary substance-use disorders" in population
+    assert "seven suicide attempts" in limitations
+    assert "inadequately powered for statistical safety comparison" in limitations
+
+
+def test_canonical_felitti_appraisal_distinguishes_respondents_from_analysis_set():
+    source = index_sources(load_evidence_registry(REGISTRY_PATH))["felitti-1998-ace"]
+    population = source["appraisal"]["population"]
+    assert "9,508 respondents" in population
+    assert "8,056 complete cases analyzed" in population
+
+
+def test_canonical_franklin_appraisal_limits_acute_bedside_generalization():
+    source = index_sources(load_evidence_registry(REGISTRY_PATH))[
+        "franklin-2017-suicide-risk-meta-analysis"
+    ]
+    limitations = source["appraisal"]["limitations"].lower()
+    assert "mean follow-up was nearly 10 years" in limitations
+    assert "median 5 years" in limitations
+    assert "fewer than 1%" in limitations and "one month or less" in limitations
+    assert "short-term dynamic signals" in limitations
+    assert "acute bedside" in limitations
+    assert source["curriculum"]["teachingRole"] == "We can't predict; document reasoning"
 
 
 def test_canonical_mapping_decisions_emit_four_nonfatal_warnings():
@@ -241,6 +285,91 @@ def test_missing_pmid_requires_a_verified_doi_for_tier1():
     registry["sources"][2]["citation"]["doi"] = ""
     messages = "\n".join(issue.message for issue in validate_registry(registry))
     assert "missing PMID requires a verified DOI" in messages
+
+
+def test_missing_appraisal_review_status_is_rejected():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    del registry["sources"][0]["appraisal"]["reviewStatus"]
+
+    messages = [
+        issue.message
+        for issue in validate_registry(registry)
+        if issue.path == "sources[0].appraisal.reviewStatus"
+    ]
+    assert messages == [
+        "Tier 1 appraisal reviewStatus must be one of: pending-faculty-review, reviewed"
+    ]
+
+
+def test_bogus_appraisal_review_status_is_rejected():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    registry["sources"][0]["appraisal"]["reviewStatus"] = "self-approved"
+
+    messages = [
+        issue.message
+        for issue in validate_registry(registry)
+        if issue.path == "sources[0].appraisal.reviewStatus"
+    ]
+    assert messages == [
+        "Tier 1 appraisal reviewStatus must be one of: pending-faculty-review, reviewed"
+    ]
+
+
+def test_reviewed_appraisal_requires_reviewed_at():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    appraisal = registry["sources"][0]["appraisal"]
+    appraisal["reviewStatus"] = "reviewed"
+    appraisal.pop("reviewedAt", None)
+
+    messages = [
+        issue.message
+        for issue in validate_registry(registry)
+        if issue.path == "sources[0].appraisal.reviewedAt"
+    ]
+    assert messages == ["Tier 1 reviewed appraisal requires a valid reviewedAt date"]
+
+
+def test_reviewed_appraisal_rejects_invalid_reviewed_at_date():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    appraisal = registry["sources"][0]["appraisal"]
+    appraisal["reviewStatus"] = "reviewed"
+    appraisal["reviewedAt"] = "2026-02-30"
+
+    messages = [
+        issue.message
+        for issue in validate_registry(registry)
+        if issue.path == "sources[0].appraisal.reviewedAt"
+    ]
+    assert messages == ["Tier 1 reviewed appraisal requires a valid reviewedAt date"]
+
+
+def test_reviewed_appraisal_accepts_valid_reviewed_at_date():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    appraisal = registry["sources"][0]["appraisal"]
+    appraisal["reviewStatus"] = "reviewed"
+    appraisal["reviewedAt"] = "2026-07-12"
+
+    assert not any(
+        issue.path in {
+            "sources[0].appraisal.reviewStatus",
+            "sources[0].appraisal.reviewedAt",
+        }
+        for issue in validate_registry(registry)
+    )
+
+
+def test_bogus_mapping_status_is_rejected():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    registry["sources"][0]["curriculum"]["mappingStatus"] = "silently-assigned"
+
+    messages = [
+        issue.message
+        for issue in validate_registry(registry)
+        if issue.path == "sources[0].curriculum.mappingStatus"
+    ]
+    assert messages == [
+        "Tier 1 mappingStatus must be one of: mapped, needs-faculty-confirmation, citation-conflict"
+    ]
 
 
 def test_collect_evidence_references_reads_all_six_consumers():

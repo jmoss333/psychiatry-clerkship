@@ -985,7 +985,7 @@
         "studyDesign": "Cochrane systematic review and fixed-effect meta-analysis of 53 randomized or quasi-randomized trials, with searching updated through September 2008.",
         "population": "People with schizophrenia, schizoaffective disorder, or schizophrenia-like conditions and their families in community settings.",
         "comparator": "Community-oriented family psychosocial intervention versus standard care.",
-        "outcomes": "Family intervention reduced relapse in 32 RCTs with 2,981 participants (RR 0.55, 95% CI 0.50-0.60; NNT 7), may reduce admission and improve medication adherence, and showed no evidence for a suicide effect.",
+        "outcomes": "Family intervention may reduce relapse in 32 RCTs with 2,981 participants (RR 0.55, 95% CI 0.50-0.60; NNT 7), may reduce admission and improve medication adherence, and showed no evidence for a suicide effect.",
         "limitations": "Poor trial methods may overestimate effects; randomization and evaluator blinding were often inadequately described, and small negative studies may have been missed.",
         "reviewStatus": "pending-faculty-review"
       },
@@ -1046,10 +1046,10 @@
       },
       "appraisal": {
         "studyDesign": "Twelve-week, four-arm randomized controlled trial at 13 U.S. academic and community clinics; medication and placebo arms were double-blind and CBT-containing arms were unblinded.",
-        "population": "Volunteer sample of 439 adolescents aged 12-17 years with primary DSM-IV major depressive disorder.",
+        "population": "Volunteer sample of 439 adolescents aged 12-17 years with primary DSM-IV major depressive disorder; adolescents at high suicide risk and those with primary substance-use disorders were excluded.",
         "comparator": "Fluoxetine plus CBT versus fluoxetine alone, CBT alone, and placebo.",
         "outcomes": "Response was 71.0%, 60.6%, 43.2%, and 34.8%, respectively; combined treatment had the best benefit-risk tradeoff. Suicidal thinking improved in all groups; seven participants attempted suicide and none died by suicide.",
-        "limitations": "The volunteer sample, 12-week horizon, and unblinded CBT conditions limit generalizability and durability inference; there was no CBT-plus-placebo arm to distinguish additive from synergistic effects.",
+        "limitations": "Excluding adolescents at high suicide risk and primary substance-use cases limits safety and generalizability; seven suicide attempts were too few, leaving the trial inadequately powered for statistical safety comparison. The 12-week horizon, unblinded CBT conditions, and lack of a CBT-plus-placebo arm also limit inference.",
         "reviewStatus": "pending-faculty-review"
       },
       "governance": {
@@ -1106,7 +1106,7 @@
       },
       "appraisal": {
         "studyDesign": "Questionnaire-based observational analysis using logistic regression to relate retrospectively reported childhood exposures to adult health risks and disease.",
-        "population": "9,508 respondents, 70.5% of 13,494 adult HMO members who had completed a standardized medical evaluation.",
+        "population": "9,508 respondents (70.5% of 13,494 adult HMO members who had completed a standardized medical evaluation), with 8,056 complete cases analyzed.",
         "comparator": "Cumulative adverse-childhood-experience categories from 0-7, including comparison of four or more categories with none.",
         "outcomes": "ACE count showed graded associations with adult health risks and disease; four or more versus no categories was associated with 4- to 12-fold higher risks for alcoholism, drug abuse, depression, and suicide attempt.",
         "limitations": "Retrospective self-report, nonresponse, and an observational baseline analysis permit association rather than causal inference and may limit generalizability beyond this HMO sample.",
@@ -1293,7 +1293,7 @@
         "population": "Participants in longitudinal studies predicting later suicidal ideation, attempt, or death; pooled demographic composition was not reported in the abstract.",
         "comparator": "Risk-factor categories and exposure levels versus later specific suicidal-thought-or-behavior outcomes; no treatment comparator.",
         "outcomes": "Prediction was only slightly better than chance across odds-ratio, hazard-ratio, and diagnostic-accuracy analyses; no broad category predicted far above chance and accuracy did not improve over 50 years.",
-        "limitations": "The underlying literature used homogeneous risk factors, rarely examined combinations, and had narrow methodological limits that prevented adequate tests of most theories.",
+        "limitations": "The underlying literature used homogeneous risk factors, rarely examined combinations, and had narrow methods. Mean follow-up was nearly 10 years (median 5 years), and fewer than 1% of effects used horizons of one month or less; the meta-analysis may therefore miss short-term dynamic signals and should not be overgeneralized to acute bedside prediction.",
         "reviewStatus": "pending-faculty-review"
       },
       "governance": {
