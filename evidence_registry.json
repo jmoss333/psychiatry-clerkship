@@ -960,9 +960,9 @@
       },
       "identity": {
         "status": "verified",
-        "source": "zotero-local-api-pubmed-and-publisher-doi",
+        "source": "zotero-local-api-and-pubmed-agree-cochrane-publisher-disagrees",
         "verifiedAt": "2026-07-12",
-        "note": "Zotero parent P4M5H9VM matched the 2010 PubMed update's title, first author, year, DOI, PMID, and journal."
+        "note": "Zotero parent P4M5H9VM and PubMed PMID 21154340 agree on the 2010 update identity and .pub2 DOI; current Cochrane publisher metadata disagrees. Publisher reconciliation remains reserved for controller and faculty resolution."
       },
       "zotero": {
         "libraryType": "user",

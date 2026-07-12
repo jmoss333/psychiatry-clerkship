@@ -107,6 +107,24 @@ def test_canonical_pharoah_appraisal_preserves_review_uncertainty():
     assert "poor trial methods may overestimate effects" in limitations
 
 
+def test_canonical_pharoah_identity_marks_publisher_conflict_without_claiming_verification():
+    source = index_sources(load_evidence_registry(REGISTRY_PATH))[
+        "pharoah-2010-family-intervention"
+    ]
+    identity = source["identity"]
+    assert (
+        identity["source"]
+        == "zotero-local-api-and-pubmed-agree-cochrane-publisher-disagrees"
+    )
+    assert "publisher-doi" not in identity["source"]
+    assert "Cochrane publisher metadata disagrees" in identity["note"]
+    assert "controller and faculty resolution" in identity["note"]
+    assert identity["status"] == "verified"
+    assert source["citation"]["doi"] == "10.1002/14651858.cd000088.pub2"
+    assert source["citation"]["pmid"] == "21154340"
+    assert source["zotero"]["itemKey"] == "P4M5H9VM"
+
+
 def test_canonical_tads_appraisal_preserves_safety_exclusions_and_power_limit():
     source = index_sources(load_evidence_registry(REGISTRY_PATH))["march-2004-tads"]
     population = source["appraisal"]["population"].lower()
