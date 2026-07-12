@@ -63,3 +63,9 @@ node_modules/
 # ---- Generated Adobe packet export data ----
 /outputs/adobe_packet_exports/*.csv
 /outputs/adobe_packet_exports/*.json
+
+# ---- Generated website PDF library ----
+/outputs/pdf_library/
+
+# ---- Generated faculty and Adobe polish package ----
+/outputs/faculty_polish_top10/
