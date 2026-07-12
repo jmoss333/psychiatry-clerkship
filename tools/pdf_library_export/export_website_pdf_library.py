@@ -141,6 +141,8 @@ _BOLD_RE = re.compile(r"(\*\*|__)(.*?)\1")
 _ITALIC_RE = re.compile(r"(?<!\*)\*([^*]+)\*(?!\*)")
 _CODE_RE = re.compile(r"`([^`]+)`")
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
+_MACHINE_GENERATED_RE = re.compile(r"^Generated:\s+.+$", re.I)
+_H1_RE = re.compile(r"^#\s+\S", re.M)
 _ORDERED_RE = re.compile(r"^\s*(\d+)[.)]\s+(.+)$")
 _BULLET_RE = re.compile(r"^\s*[-*+]\s+(.+)$")
 _TABLE_DIVIDER_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$")
@@ -240,6 +242,18 @@ def inline_markdown_to_text(value: str) -> str:
     return html.escape(text.strip())
 
 
+def format_library_date(generated_on: str) -> str:
+    try:
+        value = _dt.date.fromisoformat(generated_on)
+    except ValueError as exc:
+        raise ValueError(f"generated-on must be an ISO date (YYYY-MM-DD): {generated_on}") from exc
+    return f"{value.strftime('%B')} {value.day}, {value.year}"
+
+
+def markdown_has_h1(markdown: str) -> bool:
+    return bool(_H1_RE.search(markdown))
+
+
 def _is_table_row(line: str) -> bool:
     return line.strip().startswith("|") and line.strip().endswith("|")
 
@@ -310,6 +324,11 @@ def markdown_to_flowables(markdown: str, styles) -> list:
 
         if in_code:
             code_lines.append(line)
+            continue
+
+        if _MACHINE_GENERATED_RE.match(stripped):
+            flush_paragraph()
+            flush_table()
             continue
 
         if stripped.startswith(">"):
