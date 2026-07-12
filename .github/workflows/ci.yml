@@ -39,6 +39,9 @@ jobs:
       - name: Validate — topic_meta.json contract
         run: python3 13_Faculty_Resources/_automation/validate_topic_meta.py
 
+      - name: Validate — longitudinal case contract
+        run: python3 13_Faculty_Resources/_automation/test_longitudinal_case.py
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
