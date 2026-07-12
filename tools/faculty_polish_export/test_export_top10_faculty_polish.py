@@ -24,6 +24,7 @@ from package_data import (
     validate_artifacts,
 )
 from review_pdf import build_combined_review_pdf
+from export_top10_faculty_polish import export_top10_faculty_polish, resolve_cli_paths
 
 
 def _write_fixture_sources(root: Path):
@@ -207,6 +208,37 @@ def test_build_combined_review_pdf_preserves_existing_packet_on_corrupt_input():
         assert existing.read_bytes() == existing_bytes
 
 
+def test_export_top10_faculty_polish_runs_end_to_end():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "repo"
+        out_dir = Path(tmp) / "out"
+        _write_fixture_sources(root)
+
+        result = export_top10_faculty_polish(root, out_dir, "2026-07-11")
+
+        assert result["artifact_count"] == 10
+        assert result["copied_pdf_count"] == 10
+        assert result["source_page_count"] == 10
+        assert result["divider_page_count"] == 10
+        assert result["combined_page_count"] > 20
+        reader = PdfReader(out_dir / "faculty_review_packet.pdf")
+        assert len(reader.pages) == result["combined_page_count"]
+
+        manifest = json.loads((out_dir / "top10_manifest.json").read_text(encoding="utf-8"))
+        assert manifest["pdf_metrics"]["combined_page_count"] == result["combined_page_count"]
+        assert manifest["pdf_metrics"]["source_page_count"] == 10
+
+
+def test_resolve_cli_paths_expands_home_and_relative_output():
+    repo_root, out_dir = resolve_cli_paths(str(Path.home()), "outputs/faculty_polish_top10")
+    assert repo_root == Path.home().resolve()
+    assert out_dir == (Path.home() / "outputs/faculty_polish_top10").resolve()
+
+    repo_root, out_dir = resolve_cli_paths(str(Path.home()), "~/faculty-polish-test")
+    assert repo_root == Path.home().resolve()
+    assert out_dir == (Path.home() / "faculty-polish-test").resolve()
+
+
 def run_tests() -> int:
     tests = [
         test_registry_has_ten_unique_artifacts_in_stable_order,
@@ -216,6 +248,8 @@ def run_tests() -> int:
         test_prepare_package_data_clears_only_stale_curated_pdfs,
         test_build_combined_review_pdf_accounts_for_every_page,
         test_build_combined_review_pdf_preserves_existing_packet_on_corrupt_input,
+        test_export_top10_faculty_polish_runs_end_to_end,
+        test_resolve_cli_paths_expands_home_and_relative_output,
     ]
     failures = 0
     for test in tests:
