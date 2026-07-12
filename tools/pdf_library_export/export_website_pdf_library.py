@@ -13,11 +13,10 @@ import shutil
 import unicodedata
 
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
-from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer
+from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer
 
 
 DEFAULT_MANIFEST = "13_Faculty_Resources/_automation/site_build/site_manifest.json"
@@ -141,6 +140,7 @@ _BOLD_RE = re.compile(r"(\*\*|__)(.*?)\1")
 _ITALIC_RE = re.compile(r"(?<!\*)\*([^*]+)\*(?!\*)")
 _CODE_RE = re.compile(r"`([^`]+)`")
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
+_MACHINE_GENERATED_RE = re.compile(r"^Generated:\s+.+$", re.I)
 _ORDERED_RE = re.compile(r"^\s*(\d+)[.)]\s+(.+)$")
 _BULLET_RE = re.compile(r"^\s*[-*+]\s+(.+)$")
 _TABLE_DIVIDER_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$")
@@ -240,6 +240,27 @@ def inline_markdown_to_text(value: str) -> str:
     return html.escape(text.strip())
 
 
+def format_library_date(generated_on: str) -> str:
+    try:
+        value = _dt.date.fromisoformat(generated_on)
+    except ValueError as exc:
+        raise ValueError(f"generated-on must be an ISO date (YYYY-MM-DD): {generated_on}") from exc
+    return f"{value.strftime('%B')} {value.day}, {value.year}"
+
+
+def markdown_has_h1(markdown: str) -> bool:
+    in_code = False
+    for line in markdown.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_code = not in_code
+            continue
+        heading = _HEADING_RE.match(stripped)
+        if not in_code and heading and len(heading.group(1)) == 1:
+            return True
+    return False
+
+
 def _is_table_row(line: str) -> bool:
     return line.strip().startswith("|") and line.strip().endswith("|")
 
@@ -254,7 +275,7 @@ def _render_table_like_rows(lines: list[str], styles) -> list:
             rows.append("; ".join(cell for cell in cells if cell))
     if not rows:
         return []
-    flowables = [Paragraph(inline_markdown_to_text(rows[0]), styles["TableLine"])]
+    flowables = [Paragraph(inline_markdown_to_text(rows[0]), styles["TableHeaderLine"])]
     for row in rows[1:]:
         flowables.append(Paragraph(inline_markdown_to_text(row), styles["TableLine"]))
     return flowables
@@ -312,9 +333,14 @@ def markdown_to_flowables(markdown: str, styles) -> list:
             code_lines.append(line)
             continue
 
-        if stripped.startswith(">"):
+        while stripped.startswith(">"):
             stripped = stripped[1:].lstrip()
             line = stripped
+
+        if _MACHINE_GENERATED_RE.match(stripped):
+            flush_paragraph()
+            flush_table()
+            continue
 
         heading = _HEADING_RE.match(stripped)
         if heading:
@@ -324,6 +350,16 @@ def markdown_to_flowables(markdown: str, styles) -> list:
             style_name = "Heading1" if level == 1 else "Heading2" if level == 2 else "Heading3"
             flowables.append(Spacer(1, 0.06 * inch))
             flowables.append(Paragraph(inline_markdown_to_text(heading.group(2)), styles[style_name]))
+            if level == 2:
+                flowables.append(
+                    HRFlowable(
+                        width="100%",
+                        thickness=0.45,
+                        color=colors.HexColor("#D7E5E2"),
+                        spaceBefore=0,
+                        spaceAfter=4,
+                    )
+                )
             continue
 
         if not stripped:
@@ -358,34 +394,12 @@ def pdf_styles():
     styles = getSampleStyleSheet()
     styles.add(
         ParagraphStyle(
-            name="TitleCentered",
-            parent=styles["Title"],
-            fontName="Helvetica-Bold",
-            fontSize=18,
-            leading=22,
-            alignment=TA_CENTER,
-            spaceAfter=10,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
-            name="Meta",
-            parent=styles["BodyText"],
-            fontName="Helvetica",
-            fontSize=8,
-            leading=10,
-            textColor=colors.HexColor("#5f5b55"),
-            alignment=TA_CENTER,
-            spaceAfter=12,
-        )
-    )
-    styles.add(
-        ParagraphStyle(
             name="BodyCustom",
             parent=styles["BodyText"],
             fontName="Helvetica",
-            fontSize=10,
-            leading=13,
+            fontSize=10.5,
+            leading=14,
+            textColor=colors.HexColor("#292F32"),
             spaceAfter=4,
         )
     )
@@ -394,8 +408,9 @@ def pdf_styles():
             name="BulletCustom",
             parent=styles["BodyText"],
             fontName="Helvetica",
-            fontSize=10,
-            leading=13,
+            fontSize=10.5,
+            leading=14,
+            textColor=colors.HexColor("#292F32"),
             leftIndent=18,
             firstLineIndent=-10,
             spaceAfter=3,
@@ -415,29 +430,43 @@ def pdf_styles():
     )
     styles.add(
         ParagraphStyle(
-            name="TableLine",
+            name="TableHeaderLine",
             parent=styles["BodyText"],
-            fontName="Helvetica",
-            fontSize=8,
-            leading=10,
-            leftIndent=12,
-            borderColor=colors.HexColor("#ddd3c6"),
-            borderWidth=0.25,
-            borderPadding=4,
+            fontName="Helvetica-Bold",
+            fontSize=8.5,
+            leading=11,
+            textColor=colors.white,
+            backColor=colors.HexColor("#2A6B5E"),
+            borderPadding=5,
             spaceAfter=2,
         )
     )
-    for key, size, leading, color in [
-        ("Heading1", 15, 18, "#a84830"),
-        ("Heading2", 13, 16, "#2a6b5e"),
-        ("Heading3", 11, 14, "#3b332c"),
+    styles.add(
+        ParagraphStyle(
+            name="TableLine",
+            parent=styles["BodyText"],
+            fontName="Helvetica",
+            fontSize=8.5,
+            leading=11,
+            textColor=colors.HexColor("#292F32"),
+            backColor=colors.HexColor("#F3F7F6"),
+            borderColor=colors.HexColor("#D7E5E2"),
+            borderWidth=0.25,
+            borderPadding=5,
+            spaceAfter=2,
+        )
+    )
+    for key, size, leading, color, before, after in [
+        ("Heading1", 20, 24, "#A84830", 4, 12),
+        ("Heading2", 14, 18, "#2A6B5E", 10, 4),
+        ("Heading3", 11.5, 15, "#3B332C", 8, 5),
     ]:
         styles[key].fontName = "Helvetica-Bold"
         styles[key].fontSize = size
         styles[key].leading = leading
         styles[key].textColor = colors.HexColor(color)
-        styles[key].spaceBefore = 6
-        styles[key].spaceAfter = 6
+        styles[key].spaceBefore = before
+        styles[key].spaceAfter = after
     return styles
 
 
@@ -445,47 +474,45 @@ def build_pdf(entry: WebsiteEntry, source_path: Path, pdf_path: Path, generated_
     styles = pdf_styles()
     pdf_path.parent.mkdir(parents=True, exist_ok=True)
     markdown = source_path.read_text(encoding="utf-8")
+    display_date = format_library_date(generated_on)
     doc = SimpleDocTemplate(
         str(pdf_path),
         pagesize=letter,
-        rightMargin=0.6 * inch,
-        leftMargin=0.6 * inch,
-        topMargin=0.58 * inch,
-        bottomMargin=0.58 * inch,
+        rightMargin=0.7 * inch,
+        leftMargin=0.7 * inch,
+        topMargin=0.65 * inch,
+        bottomMargin=0.72 * inch,
         title=entry.title,
         author="Psychiatry Clerkship Library",
     )
 
-    meta = (
-        f"Website slug: {entry.site_slug} | Source: {entry.source_path} | "
-        f"Review status: {REVIEW_STATUS} | Generated: {generated_on}"
-    )
-    story = [
-        Paragraph(inline_markdown_to_text(entry.title), styles["TitleCentered"]),
-        Paragraph(html.escape(normalize_text(meta)), styles["Meta"]),
-    ]
-    story.extend(markdown_to_flowables(markdown, styles))
-    story.append(PageBreak())
-    story.append(Paragraph("Export Note", styles["Heading2"]))
-    story.append(
-        Paragraph(
-            inline_markdown_to_text(
-                "This PDF is generated from the repository Markdown source. "
-                "The Markdown file remains the canonical curriculum source, and this PDF requires faculty review before learner-facing distribution."
-            ),
-            styles["BodyCustom"],
-        )
-    )
+    story = markdown_to_flowables(markdown, styles)
+    if not markdown_has_h1(markdown):
+        story.insert(0, Paragraph(inline_markdown_to_text(entry.title), styles["Heading1"]))
 
-    def footer(canvas, _doc):
+    def draw_page(canvas, document, first_page=False):
+        width, height = letter
         canvas.saveState()
-        canvas.setFont("Helvetica", 8)
-        canvas.setFillColor(colors.HexColor("#5f5b55"))
-        canvas.drawString(0.6 * inch, 0.32 * inch, "Psychiatry Clerkship Library")
-        canvas.drawRightString(7.9 * inch, 0.32 * inch, f"Page {_doc.page}")
+        if first_page:
+            canvas.setFillColor(colors.HexColor("#A84830"))
+            canvas.rect(0, height - 0.08 * inch, width, 0.08 * inch, fill=1, stroke=0)
+        canvas.setStrokeColor(colors.HexColor("#D9DFDF"))
+        canvas.line(0.7 * inch, 0.55 * inch, 7.8 * inch, 0.55 * inch)
+        canvas.setFont("Helvetica", 7.5)
+        canvas.setFillColor(colors.HexColor("#68757B"))
+        canvas.drawString(
+            0.7 * inch,
+            0.34 * inch,
+            f"Created from the Psychiatry Clerkship Library - {display_date}",
+        )
+        canvas.drawRightString(7.8 * inch, 0.34 * inch, f"Page {document.page}")
         canvas.restoreState()
 
-    doc.build(story, onFirstPage=footer, onLaterPages=footer)
+    doc.build(
+        story,
+        onFirstPage=lambda canvas, document: draw_page(canvas, document, True),
+        onLaterPages=draw_page,
+    )
 
 
 def build_index(records: list[PdfRecord], tool_entries: list[WebsiteEntry], generated_on: str) -> str:
@@ -531,6 +558,7 @@ def export_website_pdf_library(
     generated_on: str,
     limit: int | None = None,
 ) -> dict[str, int | str]:
+    format_library_date(generated_on)
     repo_root = repo_root.resolve()
     manifest_path = manifest_path.resolve()
     out_dir = out_dir.resolve()

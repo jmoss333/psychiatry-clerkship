@@ -5,6 +5,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from pypdf import PdfReader
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
@@ -13,9 +15,12 @@ from export_website_pdf_library import (
     REVIEW_STATUS,
     WebsiteEntry,
     _resolve_cli_paths,
+    build_pdf,
     export_website_pdf_library,
+    format_library_date,
     inline_markdown_to_text,
     load_manifest,
+    markdown_has_h1,
     markdown_to_flowables,
     pdf_styles,
     section_for_entry,
@@ -26,6 +31,70 @@ from export_website_pdf_library import (
 def _write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
+
+
+def _paragraph_text(flowables):
+    return [item.getPlainText() for item in flowables if hasattr(item, "getPlainText")]
+
+
+def test_format_library_date_uses_readable_month_day_year():
+    assert format_library_date("2026-07-12") == "July 12, 2026"
+    try:
+        format_library_date("07/12/2026")
+    except ValueError as exc:
+        assert "ISO date" in str(exc)
+    else:
+        raise AssertionError("Expected invalid ISO date to fail")
+
+
+def test_markdown_to_flowables_omits_machine_generated_line():
+    flowables = markdown_to_flowables(
+        "# Guide\n\nGenerated: 2026-06-27\n\nAudience: MS3 students.",
+        pdf_styles(),
+    )
+    text = "\n".join(_paragraph_text(flowables))
+    assert "Guide" in text
+    assert "Audience: MS3 students." in text
+    assert "Generated:" not in text
+
+
+def test_markdown_to_flowables_omits_blockquoted_machine_generated_line():
+    flowables = markdown_to_flowables(
+        "# Guide\n\n> Generated: 2026-06-27\n\nAudience: MS3 students.",
+        pdf_styles(),
+    )
+    text = "\n".join(_paragraph_text(flowables))
+    assert "Guide" in text
+    assert "Audience: MS3 students." in text
+    assert "Generated:" not in text
+
+
+def test_markdown_to_flowables_omits_nested_blockquoted_machine_generated_line():
+    flowables = markdown_to_flowables(
+        "# Guide\n\n> > Generated: 2026-06-27\n\nAudience: MS3 students.",
+        pdf_styles(),
+    )
+    text = "\n".join(_paragraph_text(flowables))
+    assert "Audience: MS3 students." in text
+    assert "Generated:" not in text
+
+
+def test_markdown_has_h1_detects_only_level_one_heading():
+    assert markdown_has_h1("# Primary title\n\n## Section")
+    assert not markdown_has_h1("## Section only")
+
+
+def test_markdown_has_h1_ignores_fenced_code_heading():
+    assert not markdown_has_h1("```markdown\n# Example heading\n```\n\n## Real section")
+
+
+def test_markdown_to_flowables_preserves_machine_generated_line_in_code():
+    flowables = markdown_to_flowables(
+        "```text\nGenerated: 2026-06-27\n```",
+        pdf_styles(),
+    )
+    text = "\n".join(_paragraph_text(flowables))
+    assert "Generated: 2026-06-27" in text
 
 
 def test_inline_markdown_to_text_simplifies_links_and_unicode():
@@ -123,13 +192,85 @@ def test_export_creates_pdf_manifest_and_index():
         assert not stale.exists()
 
 
+def test_export_rejects_invalid_date_before_publishing_output():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "repo"
+        out_dir = Path(tmp) / "out"
+        manifest = root / "site_manifest.json"
+        source = root / "guide.md"
+        stale = out_dir / "pdfs" / "stale.pdf"
+        _write(source, "# Guide\n")
+        _write(manifest, json.dumps({"md": [["guide.md", "guide.md", "Guide"]], "tools": []}))
+        _write(stale, "existing output")
+
+        try:
+            export_website_pdf_library(root, manifest, out_dir, generated_on="07/12/2026")
+        except ValueError as exc:
+            assert "ISO date" in str(exc)
+        else:
+            raise AssertionError("Expected invalid ISO date to fail")
+
+        assert stale.read_text(encoding="utf-8") == "existing output"
+        assert not (out_dir / "website_pdf_library_manifest.json").exists()
+        assert not (out_dir / "index.md").exists()
+
+
+def test_build_pdf_is_content_only_with_title_once_and_dated_footer():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        source = root / "guide.md"
+        output = root / "guide.pdf"
+        body = "\n\n".join(["Curriculum paragraph for students."] * 180)
+        _write(
+            source,
+            "# Clinical Guide\n\nGenerated: 2026-06-27\n\n" + body,
+        )
+        entry = WebsiteEntry("guide.md", "guide.md", "Wrapper Guide", "markdown", 1)
+
+        build_pdf(entry, source, output, generated_on="2026-07-12")
+
+        reader = PdfReader(output)
+        page_text = [page.extract_text() or "" for page in reader.pages]
+        all_text = "\n".join(page_text)
+
+    assert len(page_text) > 1
+    assert all_text.count("Clinical Guide") == 1
+    assert "Wrapper Guide" not in all_text
+    assert "Website slug" not in all_text
+    assert "Source:" not in all_text
+    assert "Review status" not in all_text
+    assert "Generated:" not in all_text
+    assert "Export Note" not in all_text
+    assert all(
+        "Created from the Psychiatry Clerkship Library - July 12, 2026" in text
+        for text in page_text
+    )
+    assert all(f"Page {index}" in text for index, text in enumerate(page_text, start=1))
+
+
+def test_build_pdf_uses_manifest_title_when_markdown_has_no_h1():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        source = root / "section-only.md"
+        output = root / "section-only.pdf"
+        _write(source, "## Section\n\nCurriculum content.")
+        entry = WebsiteEntry("section-only.md", "section-only.md", "Fallback Title", "markdown", 1)
+
+        build_pdf(entry, source, output, generated_on="2026-07-12")
+
+        text = "\n".join(page.extract_text() or "" for page in PdfReader(output).pages)
+
+    assert text.count("Fallback Title") == 1
+    assert "Section" in text
+
+
 def test_default_site_manifest_sources_exist_in_repo():
     repo_root = Path(__file__).resolve().parents[2]
     manifest = repo_root / DEFAULT_MANIFEST
     md_entries, tool_entries = load_manifest(repo_root, manifest)
 
     assert len(md_entries) == 65
-    assert len(tool_entries) == 19
+    assert len(tool_entries) == 20
 
 
 def test_resolve_cli_paths_expands_relative_paths():
@@ -142,12 +283,22 @@ def test_resolve_cli_paths_expands_relative_paths():
 
 def run_tests():
     tests = [
+        test_format_library_date_uses_readable_month_day_year,
+        test_markdown_to_flowables_omits_machine_generated_line,
+        test_markdown_to_flowables_omits_blockquoted_machine_generated_line,
+        test_markdown_to_flowables_omits_nested_blockquoted_machine_generated_line,
+        test_markdown_has_h1_detects_only_level_one_heading,
+        test_markdown_has_h1_ignores_fenced_code_heading,
+        test_markdown_to_flowables_preserves_machine_generated_line_in_code,
         test_inline_markdown_to_text_simplifies_links_and_unicode,
         test_slugify_returns_ascii_file_safe_text,
         test_markdown_to_flowables_strips_wrapped_blockquote_markers,
         test_section_for_entry_matches_website_groups,
         test_load_manifest_fails_on_missing_source,
         test_export_creates_pdf_manifest_and_index,
+        test_export_rejects_invalid_date_before_publishing_output,
+        test_build_pdf_is_content_only_with_title_once_and_dated_footer,
+        test_build_pdf_uses_manifest_title_when_markdown_has_no_h1,
         test_default_site_manifest_sources_exist_in_repo,
         test_resolve_cli_paths_expands_relative_paths,
     ]

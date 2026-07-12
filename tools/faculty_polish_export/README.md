@@ -11,15 +11,15 @@ Use the bundled workspace Python when available:
 ```bash
 /Users/jm/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 \
   tools/faculty_polish_export/export_top10_faculty_polish.py \
-  --generated-on 2026-07-11
+  --generated-on 2026-07-12
 ```
 
 Default output: `outputs/faculty_polish_top10/`
 
 ## Generated package
 
-- `faculty_review_packet.pdf`: cover, faculty checklist, dividers, and all ten source PDFs.
-- `pdfs/`: ten standalone review proofs with stable filenames.
+- `faculty_review_packet.pdf`: internal review cover, faculty checklist, dividers, and all ten content-only source PDFs.
+- `pdfs/`: ten standalone content-only review proofs with stable filenames and dated library footers.
 - `top10_adobe_merge.csv`: editable section-level InDesign merge data.
 - `top10_manifest.json`: source paths, review status, outputs, and measured page counts.
 - `faculty_review_index.md`: review checklist and decisions table.
@@ -34,7 +34,7 @@ If content changes are needed, edit the canonical Markdown source and rerun the 
 
 ## InDesign finishing
 
-The repo currently has no `.indd` or `.idml` template. Use `top10_adobe_merge.csv` and `adobe_indesign_handoff.md` to create or map a template. An actual Adobe data merge requires a reviewed InDesign template and confirmed field mapping.
+The repo currently has no `.indd` or `.idml` template. Use `top10_adobe_merge.csv` and `adobe_indesign_handoff.md` to create or map a template. Visible frames use only the artifact title, section heading, section body, and formatted creation date. Source paths and review state remain internal. An actual Adobe data merge requires Creative Cloud authentication, a reviewed InDesign template, IDML inspection, and explicit approval of the field-mapping JSON.
 
 ## Test
 
