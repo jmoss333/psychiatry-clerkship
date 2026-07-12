@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 2,
+  "owner": "Synthetic test fixture",
+  "updated": "2026-07-12",
+  "surveillance": {
+    "internalOnly": true
+  },
+  "sources": [
+    {
+      "id": "engel-1977-biopsychosocial-model",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic Engel fixture", "authors": [{"family": "Engel", "given": "G."}], "organization": "", "year": 1977, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1126/science.847460", "pmid": "847460", "url": "https://example.invalid/1"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "KL5HP3MU"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "1", "role": "required", "teachingRole": "Synthetic teaching role 1.", "weekNumbers": [1], "topicSlugs": ["fixture-one"], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"},
+      "surveillance": {"query": "internal fixture query"}
+    },
+    {
+      "id": "rosenhan-1973-sane-places",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic Rosenhan fixture", "authors": [{"family": "Rosenhan", "given": "D."}], "organization": "", "year": 1973, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1126/science.179.4070.250", "pmid": "4683124", "url": "https://example.invalid/2"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH002"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "2", "role": "required", "teachingRole": "Synthetic teaching role 2.", "weekNumbers": [1], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "appelbaum-grisso-1988-capacity",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic Appelbaum fixture", "authors": [{"family": "Appelbaum", "given": "P."}], "organization": "", "year": 1988, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1056/nejm198812223192504", "pmid": "3200278", "url": "https://example.invalid/3"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH003"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "3", "role": "required", "teachingRole": "Synthetic teaching role 3.", "weekNumbers": [1], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "stanley-brown-2012-safety-planning",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic Stanley and Brown fixture", "authors": [{"family": "Stanley", "given": "B."}], "organization": "", "year": 2012, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1016/j.cbpra.2011.01.001", "pmid": "", "url": "https://example.invalid/4"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Verified DOI permits a missing PMID."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH004"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "4", "role": "required", "teachingRole": "Synthetic teaching role 4.", "weekNumbers": [3], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "lieberman-2005-catie",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic CATIE fixture", "authors": [{"family": "Lieberman", "given": "J."}], "organization": "", "year": 2005, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1056/nejmoa051688", "pmid": "16172203", "url": "https://example.invalid/5"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH005"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "5", "role": "required", "teachingRole": "Synthetic teaching role 5.", "weekNumbers": [2], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "rush-2006-stard",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic STAR D fixture", "authors": [{"family": "Rush", "given": "A."}], "organization": "", "year": 2006, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1176/ajp.2006.163.11.1905", "pmid": "17074942", "url": "https://example.invalid/6"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH006"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "6", "role": "required", "teachingRole": "Synthetic teaching role 6.", "weekNumbers": [2], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "brown-1972-expressed-emotion",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic Brown fixture", "authors": [{"family": "Brown", "given": "G."}], "organization": "", "year": 1972, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1192/bjp.121.3.241", "pmid": "5073778", "url": "https://example.invalid/7"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH007"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "7", "role": "required", "teachingRole": "Synthetic teaching role 7.", "weekNumbers": [4], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "bush-1996-catatonia-rating-scale",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic Bush fixture", "authors": [{"family": "Bush", "given": "G."}], "organization": "", "year": 1996, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1111/j.1600-0447.1996.tb09814.x", "pmid": "8686483", "url": "https://example.invalid/8"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH008"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "8", "role": "required", "teachingRole": "Synthetic teaching role 8.", "weekNumbers": [2], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "wampold-1997-bona-fide-psychotherapies",
+      "type": "systematic-review",
+      "citation": {"title": "Synthetic Wampold fixture", "authors": [{"family": "Wampold", "given": "B."}], "organization": "", "year": 1997, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1037/0033-2909.122.3.203", "pmid": "", "url": "https://example.invalid/9"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Verified DOI permits a missing PMID."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH009"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "9", "role": "required", "teachingRole": "Synthetic teaching role 9.", "weekNumbers": [3], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "linehan-1991-dbt",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic Linehan fixture", "authors": [{"family": "Linehan", "given": "M."}], "organization": "", "year": 1991, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1001/archpsyc.1991.01810360024003", "pmid": "1845222", "url": "https://example.invalid/10"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH010"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "10", "role": "required", "teachingRole": "Synthetic teaching role 10.", "weekNumbers": [3], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "pharoah-2010-family-intervention",
+      "type": "systematic-review",
+      "citation": {"title": "Synthetic Pharoah fixture", "authors": [{"family": "Pharoah", "given": "F."}], "organization": "", "year": 2010, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1002/14651858.cd000088.pub2", "pmid": "21154340", "url": "https://example.invalid/11"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH011"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "11", "role": "required", "teachingRole": "Synthetic teaching role 11.", "weekNumbers": [4], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "march-2004-tads",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic TADS fixture", "authors": [{"family": "March", "given": "J."}], "organization": "", "year": 2004, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1001/jama.292.7.807", "pmid": "15315995", "url": "https://example.invalid/12"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH012"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "12", "role": "required", "teachingRole": "Synthetic teaching role 12.", "weekNumbers": [], "topicSlugs": [], "pairedTools": [], "mappingStatus": "needs-faculty-confirmation", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "felitti-1998-ace",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic Felitti fixture", "authors": [{"family": "Felitti", "given": "V."}], "organization": "", "year": 1998, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1016/s0749-3797(98)00017-8", "pmid": "9635069", "url": "https://example.invalid/13"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH013"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "13", "role": "required", "teachingRole": "Synthetic teaching role 13.", "weekNumbers": [6], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "caspi-2003-5htt-stress",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic Caspi fixture", "authors": [{"family": "Caspi", "given": "A."}], "organization": "", "year": 2003, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1126/science.1083968", "pmid": "12869766", "url": "https://example.invalid/14a"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH014"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "14a", "role": "required", "teachingRole": "Synthetic teaching role 14a.", "weekNumbers": [], "topicSlugs": [], "pairedTools": [], "mappingStatus": "needs-faculty-confirmation", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "border-2019-candidate-gene",
+      "type": "primary-study",
+      "citation": {"title": "Synthetic Border fixture", "authors": [{"family": "Border", "given": "R."}], "organization": "", "year": 2019, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1176/appi.ajp.2018.18070881", "pmid": "30845820", "url": "https://example.invalid/14b"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH015"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "14b", "role": "required", "teachingRole": "Synthetic teaching role 14b.", "weekNumbers": [], "topicSlugs": [], "pairedTools": [], "mappingStatus": "needs-faculty-confirmation", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "franklin-2017-suicide-risk-meta-analysis",
+      "type": "systematic-review",
+      "citation": {"title": "Synthetic Franklin fixture", "authors": [{"family": "Franklin", "given": "J."}], "organization": "", "year": 2017, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1037/bul0000084", "pmid": "27841450", "url": "https://example.invalid/15"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH016"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "15", "role": "required", "teachingRole": "Synthetic teaching role 15.", "weekNumbers": [5], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    },
+    {
+      "id": "volkow-2016-addiction-brain-disease",
+      "type": "other-authoritative",
+      "citation": {"title": "Synthetic Volkow fixture", "authors": [{"family": "Volkow", "given": "N."}], "organization": "", "year": 2016, "journal": "Fixture Journal", "volume": "", "pages": "", "doi": "10.1056/nejmra1511480", "pmid": "26816013", "url": "https://example.invalid/16"},
+      "identity": {"status": "verified", "source": "synthetic-fixture", "verifiedAt": "2026-07-12", "note": "Synthetic identity for contract testing."},
+      "zotero": {"libraryType": "user", "libraryId": 0, "itemKey": "SYNTH017"},
+      "requiredAccess": "fulltext",
+      "curriculum": {"tier": 1, "selection": "16", "role": "required", "teachingRole": "Synthetic teaching role 16.", "weekNumbers": [5], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
+      "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+    }
+  ]
+}
