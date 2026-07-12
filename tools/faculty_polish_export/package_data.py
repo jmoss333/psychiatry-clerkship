@@ -5,6 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from collections.abc import Sequence
+import csv
+import json
+import shutil
 import sys
 
 
@@ -200,3 +203,217 @@ def build_merge_rows(
                 }
             )
     return rows
+
+
+def reset_curated_pdf_dir(pdf_dir: Path) -> None:
+    """Clear only the exporter's curated PDF directory."""
+    if pdf_dir.exists():
+        shutil.rmtree(pdf_dir)
+    pdf_dir.mkdir(parents=True, exist_ok=True)
+
+
+def copy_curated_pdfs(
+    repo_root: Path,
+    out_dir: Path,
+    artifacts: Sequence[ArtifactSpec],
+) -> list[dict[str, str]]:
+    """Copy selected review PDFs to stable, human-readable filenames."""
+    pdf_dir = out_dir / "pdfs"
+    reset_curated_pdf_dir(pdf_dir)
+    records: list[dict[str, str]] = []
+    for item in artifacts:
+        destination = pdf_dir / item.output_filename
+        shutil.copy2(repo_root / item.source_pdf, destination)
+        records.append(
+            {
+                "artifact_id": item.artifact_id,
+                "source_pdf": item.source_pdf,
+                "curated_pdf": destination.relative_to(out_dir).as_posix(),
+                "review_status": item.review_status,
+            }
+        )
+    return records
+
+
+def _write_merge_csv(path: Path, rows: Sequence[dict[str, str]]) -> None:
+    with path.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=MERGE_FIELDS)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def _faculty_review_index(artifacts: Sequence[ArtifactSpec], generated_on: str) -> str:
+    lines = [
+        "# Top 10 Faculty Review Index",
+        "",
+        f"Generated: {generated_on}",
+        "",
+        "> Status: `needs_faculty_review`. These artifacts are not approved for learner distribution.",
+        "",
+        "Review the PDFs for layout and content. If revision is needed, correct the canonical Markdown and regenerate the package; do not edit generated copies as the curriculum source.",
+        "",
+        "| # | Artifact | Canonical source | Review PDF | Clinical / MS3 | Local policy | PHI | Accessibility | Decision |",
+        "|---:|---|---|---|---|---|---|---|---|",
+    ]
+    for item in artifacts:
+        lines.append(
+            f"| {item.order} | {item.title} | `{item.canonical_source}` | "
+            f"[`{item.output_filename}`](pdfs/{item.output_filename}) | [ ] | [ ] | [ ] | [ ] | "
+            "[ ] Approve / [ ] Revise / [ ] Defer |"
+        )
+    lines.extend(
+        [
+            "",
+            "## Review prompts",
+            "",
+            "- Clinical / MS3: accurate, appropriately scoped, and clear for third-year learners.",
+            "- Local policy: locally specific statements are verified, removed, or visibly marked.",
+            "- PHI: no patient-identifying information is present.",
+            "- Accessibility: headings, reading order, contrast, tables, and warnings remain legible.",
+            "- Decision: record approval only after all four checks are complete.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _adobe_handoff(generated_on: str) -> str:
+    return f"""# Adobe/InDesign Handoff
+
+Generated: {generated_on}
+Status: `needs_faculty_review`
+
+## Plain-language purpose
+
+The curated PDFs are visual review proofs. `top10_adobe_merge.csv` contains editable section text for InDesign. Curriculum corrections belong in the canonical Markdown, followed by regeneration.
+
+## Template families
+
+| `adobe_template_hint` | Use |
+|---|---|
+| `full_packet` | Orientation and six-week reading map |
+| `pocket_card` | Interview/MSE, formulation/DDx, and suicide safety cards |
+| `module_packet` | Acute consult, documentation, family/discharge, and shelf review |
+| `osce_packet` | Student prompts, examiner material, and feedback sections |
+
+## CSV field mapping
+
+- Title frame: `artifact_title`
+- Format label: `production_format`
+- Section label: `section_heading`
+- Body frame: `section_text`
+- Source footer: `canonical_source`
+- Review footer: `review_status`
+- Traceability fields: `artifact_order`, `artifact_id`, `section_order`, `generated_on`, `review_pdf`
+
+Every draft must display `review_status`. Do not distribute a learner-facing PDF while it remains `needs_faculty_review`.
+
+## Regenerate
+
+```bash
+python3 tools/faculty_polish_export/export_top10_faculty_polish.py --generated-on {generated_on}
+```
+
+## Production checks
+
+- Preserve headings and safety warnings when text reflows.
+- Confirm tables, links, and page references remain understandable.
+- Set accessible reading order, document language, bookmarks, and alt text where applicable.
+- Confirm there is no PHI or unverified local-policy language.
+"""
+
+
+def _package_readme(generated_on: str) -> str:
+    return f"""# Top 10 Faculty and Adobe Polish Package
+
+Generated: {generated_on}
+Status: `needs_faculty_review`
+
+This generated folder collects ten high-value MS3 curriculum PDFs for faculty review and Adobe/InDesign finishing. Markdown files in the repository remain canonical.
+
+## Start here
+
+1. Open `faculty_review_packet.pdf` for the combined review copy.
+2. Record decisions in `faculty_review_index.md` or the institution's review system.
+3. Use `top10_adobe_merge.csv` with `adobe_indesign_handoff.md` for layout finishing.
+4. Make curriculum corrections in canonical Markdown and regenerate.
+
+The standalone review proofs are under `pdfs/`. Do not distribute these files to learners until faculty review is complete.
+"""
+
+
+def _manifest(
+    artifacts: Sequence[ArtifactSpec],
+    copied_records: Sequence[dict[str, str]],
+    merge_row_count: int,
+    generated_on: str,
+) -> dict[str, object]:
+    copied_by_id = {record["artifact_id"]: record for record in copied_records}
+    artifact_records = []
+    for item in artifacts:
+        copied = copied_by_id[item.artifact_id]
+        artifact_records.append(
+            {
+                "order": item.order,
+                "artifact_id": item.artifact_id,
+                "title": item.title,
+                "production_format": item.production_format,
+                "adobe_template_hint": item.template_hint,
+                "canonical_source": item.canonical_source,
+                "source_pdf": copied["source_pdf"],
+                "curated_pdf": copied["curated_pdf"],
+                "review_status": item.review_status,
+            }
+        )
+    return {
+        "generated_on": generated_on,
+        "review_status": REVIEW_STATUS,
+        "artifact_count": len(artifacts),
+        "copied_pdf_count": len(copied_records),
+        "merge_row_count": merge_row_count,
+        "artifacts": artifact_records,
+        "outputs": {
+            "readme": "README.md",
+            "faculty_review_index": "faculty_review_index.md",
+            "combined_review_pdf": "faculty_review_packet.pdf",
+            "adobe_merge_csv": "top10_adobe_merge.csv",
+            "adobe_indesign_handoff": "adobe_indesign_handoff.md",
+        },
+        "guardrails": [
+            "No PHI or patient-identifiable information.",
+            "Repository Markdown remains canonical.",
+            "Generated outputs require faculty review before learner-facing use.",
+            "Local-policy language requires local verification.",
+        ],
+    }
+
+
+def prepare_package_data(
+    repo_root: Path,
+    out_dir: Path,
+    generated_on: str,
+    artifacts: Sequence[ArtifactSpec],
+) -> dict[str, object]:
+    """Create curated copies, editable merge data, and review documentation."""
+    validate_artifacts(repo_root, artifacts)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    rows = build_merge_rows(repo_root, artifacts, generated_on)
+    copied_records = copy_curated_pdfs(repo_root, out_dir, artifacts)
+
+    _write_merge_csv(out_dir / "top10_adobe_merge.csv", rows)
+    (out_dir / "faculty_review_index.md").write_text(
+        _faculty_review_index(artifacts, generated_on), encoding="utf-8"
+    )
+    (out_dir / "adobe_indesign_handoff.md").write_text(_adobe_handoff(generated_on), encoding="utf-8")
+    (out_dir / "README.md").write_text(_package_readme(generated_on), encoding="utf-8")
+
+    manifest = _manifest(artifacts, copied_records, len(rows), generated_on)
+    (out_dir / "top10_manifest.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    )
+    return {
+        "out_dir": str(out_dir),
+        "artifact_count": len(artifacts),
+        "copied_pdf_count": len(copied_records),
+        "merge_row_count": len(rows),
+    }
