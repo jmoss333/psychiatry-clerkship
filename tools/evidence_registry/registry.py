@@ -108,6 +108,7 @@ class ValidationIssue:
     path: str
     message: str
     severity: str = "error"
+    code: str | None = None
 
 
 def load_evidence_registry(path: Path) -> dict:
@@ -580,6 +581,7 @@ def validate_registry(registry: dict) -> list[ValidationIssue]:
                         f"{source_path}.curriculum.mappingStatus",
                         f"Tier 1 week assignment needs faculty confirmation: {source_id}",
                         severity="warning",
+                        code="tier1-week-needs-faculty-confirmation",
                     )
                 )
             elif mapping_status == "citation-conflict":
@@ -593,6 +595,7 @@ def validate_registry(registry: dict) -> list[ValidationIssue]:
                         f"{source_path}.curriculum.mappingStatus",
                         message,
                         severity="warning",
+                        code="tier1-citation-conflict",
                     )
                 )
         else:

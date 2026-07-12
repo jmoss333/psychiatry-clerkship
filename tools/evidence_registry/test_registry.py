@@ -408,6 +408,50 @@ def test_bogus_mapping_status_is_rejected():
     ]
 
 
+def test_synthetic_unresolved_week_mapping_emits_stable_warning_contract():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    for row in tier1_sources(registry):
+        row["curriculum"]["mappingStatus"] = "mapped"
+    source_id = "march-2004-tads"
+    source = index_sources(registry)[source_id]
+    source["curriculum"]["mappingStatus"] = "needs-faculty-confirmation"
+
+    warnings = [
+        issue
+        for issue in validate_registry(registry)
+        if issue.code == "tier1-week-needs-faculty-confirmation"
+    ]
+    assert len(warnings) == 1
+    warning = warnings[0]
+    assert warning.severity == "warning"
+    assert warning.path.endswith(".curriculum.mappingStatus")
+    assert warning.message == (
+        f"Tier 1 week assignment needs faculty confirmation: {source_id}"
+    )
+
+
+def test_synthetic_citation_conflict_emits_stable_warning_contract():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    for row in tier1_sources(registry):
+        row["curriculum"]["mappingStatus"] = "mapped"
+    source_id = "engel-1977-biopsychosocial-model"
+    source = index_sources(registry)[source_id]
+    source["curriculum"]["mappingStatus"] = "citation-conflict"
+
+    warnings = [
+        issue
+        for issue in validate_registry(registry)
+        if issue.code == "tier1-citation-conflict"
+    ]
+    assert len(warnings) == 1
+    warning = warnings[0]
+    assert warning.severity == "warning"
+    assert warning.path.endswith(".curriculum.mappingStatus")
+    assert warning.message == (
+        f"Tier 1 citation conflict requires faculty resolution: {source_id}"
+    )
+
+
 def test_collect_evidence_references_reads_all_six_consumers():
     with tempfile.TemporaryDirectory() as directory:
         repo_root = Path(directory)
