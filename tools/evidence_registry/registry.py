@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import unicodedata
@@ -99,6 +100,18 @@ _REFERENCE_FILES = (
 _STABLE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 _ZOTERO_ITEM_KEY_RE = re.compile(r"^[A-Z0-9]{8}$")
 _TIER1_SELECTION_RE = re.compile(r"^(\d+)([a-z]*)$")
+TIER1_START = "<!-- evidence-registry:tier1:start -->"
+TIER1_END = "<!-- evidence-registry:tier1:end -->"
+_GENERATED_WARNING = (
+    "<!-- Generated from evidence_registry.json by "
+    "tools/evidence_registry/registry.py. Do not hand-edit this block. -->"
+)
+_DOWNLOAD_LIST_PATH = Path(
+    "07_Evidence_and_Reading/Landmark_Library/Primary_Source_Download_List.md"
+)
+_CURRICULUM_MAP_PATH = Path(
+    "07_Evidence_and_Reading/Landmark_Library/Tier1_Primary_Source_Curriculum_Map.md"
+)
 
 
 @dataclass(frozen=True)
@@ -209,6 +222,217 @@ def tier1_sources(registry: dict) -> list[dict]:
         if _is_tier1_source(source)
     ]
     return sorted(rows, key=tier1_sort_key)
+
+
+def _markdown_cell(value: Any) -> str:
+    return " ".join(str(value).split()).replace("|", "\\|")
+
+
+def _display_enum(value: Any) -> str:
+    if not isinstance(value, str):
+        return ""
+    if value == "fulltext":
+        return "Full text"
+    return value.replace("-", " ").capitalize()
+
+
+def _author_summary(citation: dict) -> str:
+    authors = citation.get("authors")
+    families = [
+        author.get("family", "").strip()
+        for author in authors
+        if isinstance(author, dict) and isinstance(author.get("family"), str)
+        and author.get("family", "").strip()
+    ] if isinstance(authors, list) else []
+    if not families:
+        organization = citation.get("organization")
+        return organization.strip() if isinstance(organization, str) else ""
+    if len(families) == 1:
+        return families[0]
+    if len(families) == 2:
+        return f"{families[0]} & {families[1]}"
+    return f"{families[0]} et al."
+
+
+def _citation_display(citation: dict) -> str:
+    components = []
+    author = _author_summary(citation)
+    if author:
+        components.append(author)
+    year = citation.get("year")
+    if type(year) is int:
+        components.append(str(year))
+    journal = citation.get("journal")
+    if isinstance(journal, str) and journal.strip():
+        journal_details = f"*{journal.strip()}*"
+        volume = citation.get("volume")
+        pages = citation.get("pages")
+        if isinstance(volume, str) and volume.strip():
+            journal_details += f" {volume.strip()}"
+        if isinstance(pages, str) and pages.strip():
+            journal_details += f":{pages.strip()}"
+        components.append(journal_details)
+
+    doi = normalize_doi(citation.get("doi"))
+    pmid = normalize_pmid(citation.get("pmid"))
+    if doi:
+        components.append(f"[DOI](https://doi.org/{doi})")
+    if pmid:
+        components.append(f"[PubMed](https://pubmed.ncbi.nlm.nih.gov/{pmid}/)")
+    return " · ".join(components)
+
+
+def render_tier1_download_block(records: list[dict]) -> str:
+    """Render the deterministic, metadata-only Tier 1 download-list block."""
+
+    lines = [
+        _GENERATED_WARNING,
+        "## TIER 1 — The rotation core (17 articles across 16 numbered selections)",
+        "",
+        (
+            "Every trainee reads these articles; they anchor the 6-week curriculum "
+            "and the Journal Club packets. Access requirements are curricular targets, "
+            "not live observations of local PDF availability."
+        ),
+        "",
+        "| Selection | Citation | Title | Read for | Required access |",
+        "|---|---|---|---|---|",
+    ]
+    for source in sorted(records, key=tier1_sort_key):
+        citation = source.get("citation")
+        curriculum = source.get("curriculum")
+        citation = citation if isinstance(citation, dict) else {}
+        curriculum = curriculum if isinstance(curriculum, dict) else {}
+        cells = (
+            curriculum.get("selection", ""),
+            _citation_display(citation),
+            citation.get("title", ""),
+            curriculum.get("teachingRole", ""),
+            _display_enum(source.get("requiredAccess")),
+        )
+        lines.append("| " + " | ".join(_markdown_cell(cell) for cell in cells) + " |")
+    return "\n".join(lines) + "\n"
+
+
+def _week_display(curriculum: dict) -> str:
+    week_numbers = curriculum.get("weekNumbers")
+    if not isinstance(week_numbers, list) or not week_numbers:
+        return "Unassigned"
+    return ", ".join(f"Week {week}" for week in week_numbers if type(week) is int)
+
+
+def render_tier1_curriculum_map(records: list[dict]) -> str:
+    """Render the deterministic faculty-only curriculum and Zotero parent map."""
+
+    sorted_records = sorted(records, key=tier1_sort_key)
+    lines = [
+        "# Tier 1 Primary Source Curriculum Map",
+        "",
+        _GENERATED_WARNING,
+        "",
+        (
+            "Faculty-facing map from the canonical evidence registry. Zotero values "
+            "identify parent items only; attachment details and live access state are excluded."
+        ),
+        "",
+        "| Selection | Evidence ID | Week | Role | Mapping status | Teaching role | Zotero parent key |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for source in sorted_records:
+        curriculum = source.get("curriculum")
+        zotero = source.get("zotero")
+        curriculum = curriculum if isinstance(curriculum, dict) else {}
+        zotero = zotero if isinstance(zotero, dict) else {}
+        cells = (
+            curriculum.get("selection", ""),
+            source.get("id", ""),
+            _week_display(curriculum),
+            _display_enum(curriculum.get("role")),
+            _display_enum(curriculum.get("mappingStatus")),
+            curriculum.get("teachingRole", ""),
+            zotero.get("itemKey", ""),
+        )
+        lines.append("| " + " | ".join(_markdown_cell(cell) for cell in cells) + " |")
+
+    notes = []
+    for source in sorted_records:
+        curriculum = source.get("curriculum")
+        if not isinstance(curriculum, dict):
+            continue
+        note = curriculum.get("mappingNote")
+        if isinstance(note, str) and note.strip():
+            notes.append(
+                f"- **{_markdown_cell(curriculum.get('selection', ''))}:** "
+                f"{_markdown_cell(note)}"
+            )
+    if notes:
+        lines.extend(["", "## Mapping notes", "", *notes])
+    return "\n".join(lines) + "\n"
+
+
+def replace_generated_block(
+    text: str,
+    start: str,
+    end: str,
+    replacement: str,
+) -> str:
+    """Replace only the content between one matched pair of sentinel markers."""
+
+    if text.count(start) != 1 or text.count(end) != 1:
+        raise ValueError("generated block must contain exactly one start and one end marker")
+    start_index = text.index(start)
+    end_index = text.index(end, start_index + len(start))
+    inner = replacement.rstrip("\n")
+    return (
+        text[: start_index + len(start)]
+        + "\n"
+        + inner
+        + "\n"
+        + text[end_index:]
+    )
+
+
+def _seed_tier1_block(text: str, replacement: str) -> str:
+    heading = re.search(r"^## TIER 1\b.*$", text, flags=re.MULTILINE)
+    tail = re.search(r"^---\n\n## TIER 2\b", text, flags=re.MULTILINE)
+    if heading is None or tail is None or tail.start() <= heading.start():
+        raise ValueError(
+            "download list has neither Tier 1 sentinels nor the expected Tier 1/Tier 2 headings"
+        )
+    bounded = (
+        TIER1_START
+        + "\n"
+        + replacement.rstrip("\n")
+        + "\n"
+        + TIER1_END
+        + "\n\n"
+    )
+    return text[: heading.start()] + bounded + text[tail.start():]
+
+
+def generated_outputs(repo_root: Path) -> dict[Path, str]:
+    """Compute tracked generated evidence views in memory without writing files."""
+
+    repo_root = Path(repo_root).expanduser().absolute()
+    registry = load_evidence_registry(repo_root / "evidence_registry.json")
+    records = tier1_sources(registry)
+    download_path = repo_root / _DOWNLOAD_LIST_PATH
+    curriculum_map_path = repo_root / _CURRICULUM_MAP_PATH
+    current_download = download_path.read_text(encoding="utf-8")
+    download_block = render_tier1_download_block(records)
+    if TIER1_START in current_download or TIER1_END in current_download:
+        generated_download = replace_generated_block(
+            current_download,
+            TIER1_START,
+            TIER1_END,
+            download_block,
+        )
+    else:
+        generated_download = _seed_tier1_block(current_download, download_block)
+    return {
+        download_path: generated_download,
+        curriculum_map_path: render_tier1_curriculum_map(records),
+    }
 
 
 def _is_tier1_source(source: Any) -> bool:
@@ -745,3 +969,59 @@ def build_public_projection(registry: dict) -> dict:
         "schemaVersion": schema_version if type(schema_version) is int else None,
         "sources": projected_sources,
     }
+
+
+def _cli_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    generate = subparsers.add_parser(
+        "generate", help="generate deterministic Tier 1 evidence views"
+    )
+    generate.add_argument(
+        "--check",
+        action="store_true",
+        help="report stale generated views without writing them",
+    )
+    generate.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path(__file__).resolve().parents[2],
+        help="repository root containing evidence_registry.json",
+    )
+    return parser
+
+
+def _generate_cli(repo_root: Path, check: bool) -> int:
+    repo_root = Path(repo_root).expanduser().resolve()
+    outputs = generated_outputs(repo_root)
+    stale = [
+        path
+        for path, expected_text in outputs.items()
+        if not path.exists() or path.read_text(encoding="utf-8") != expected_text
+    ]
+    if check:
+        if stale:
+            for path in stale:
+                print(f"stale generated evidence view: {path.relative_to(repo_root)}")
+            return 1
+        print("generated evidence views are current")
+        return 0
+
+    for path in stale:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(outputs[path], encoding="utf-8")
+        print(f"wrote generated evidence view: {path.relative_to(repo_root)}")
+    if not stale:
+        print("generated evidence views are current")
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = _cli_parser().parse_args(argv)
+    if args.command == "generate":
+        return _generate_cli(args.repo_root, args.check)
+    raise AssertionError(f"unhandled command: {args.command}")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -10,14 +10,20 @@ import tempfile
 from pathlib import Path
 
 from registry import (
+    TIER1_END,
     TIER1_SELECTIONS,
+    TIER1_START,
     build_public_projection,
     collect_evidence_references,
+    generated_outputs,
     index_sources,
     load_evidence_registry,
     normalize_doi,
     normalize_pmid,
     normalize_title,
+    render_tier1_curriculum_map,
+    render_tier1_download_block,
+    replace_generated_block,
     tier1_sort_key,
     tier1_sources,
     validate_registry,
@@ -52,6 +58,135 @@ REFERENCE_FILES = (
     "family_systems_scenarios.json",
 )
 VALIDATE = Path(__file__).with_name("validate.py")
+REGISTRY_CLI = Path(__file__).with_name("registry.py")
+
+
+def test_tier1_replacement_preserves_manual_tail():
+    original = "head\n<!-- evidence-registry:tier1:start -->\nold\n<!-- evidence-registry:tier1:end -->\nTAIL\n"
+    updated = replace_generated_block(original, TIER1_START, TIER1_END, "new\n")
+    assert updated.endswith("TAIL\n")
+    assert "old" not in updated
+    assert "new" in updated
+
+
+def test_generated_views_have_no_timestamp_or_live_access_state():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    text = render_tier1_curriculum_map(tier1_sources(registry))
+    assert "Generated:" not in text
+    assert "pdf_attached" not in text
+    assert "metadata_only" not in text
+    assert "14a" in text and "14b" in text
+
+
+def test_download_block_is_deterministic_and_uses_registry_access_requirements():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    records = list(reversed(tier1_sources(registry)))
+    before = copy.deepcopy(records)
+
+    first = render_tier1_download_block(records)
+    second = render_tier1_download_block(records)
+
+    assert first == second
+    assert records == before
+    assert "| Selection | Citation | Title | Read for | Required access |" in first
+    assert first.index("| 14a |") < first.index("| 14b |")
+    assert "https://doi.org/10.1126/science.847460" in first
+    assert "https://pubmed.ncbi.nlm.nih.gov/847460/" in first
+    assert "Full text" in first
+    for forbidden in (
+        "Generated:",
+        "pdf_attached",
+        "metadata_only",
+        "itemKey",
+        "KL5HP3MU",
+        "attachment",
+    ):
+        assert forbidden not in first
+
+
+def test_curriculum_map_uses_approved_mapping_data_and_parent_keys_only():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    text = render_tier1_curriculum_map(tier1_sources(registry))
+
+    assert (
+        "| Selection | Evidence ID | Week | Role | Mapping status | Teaching role | Zotero parent key |"
+        in text
+    )
+    assert "| 7 | brown-1972-expressed-emotion | Week 4 | Required | Mapped |" in text
+    assert "| 12 | march-2004-tads | Week 2 | Required | Mapped |" in text
+    assert "| 14a | caspi-2003-5htt-stress | Week 6 | Required | Mapped |" in text
+    assert "| 14b | border-2019-candidate-gene | Week 6 | Required | Mapped |" in text
+    assert "Brown 1962 remains a later contextual companion" in text
+    assert "needs-faculty-confirmation" not in text
+    assert "citation-conflict" not in text
+    for forbidden in ("attachmentKey", "attachmentPath", "filePath"):
+        assert forbidden not in text
+
+
+def test_generated_outputs_preserve_the_download_list_outside_the_tier1_block():
+    with tempfile.TemporaryDirectory() as directory:
+        repo_root = Path(directory)
+        landmark = repo_root / "07_Evidence_and_Reading" / "Landmark_Library"
+        landmark.mkdir(parents=True)
+        (repo_root / "evidence_registry.json").write_text(
+            REGISTRY_PATH.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+        original = (
+            "manual preamble\n\n"
+            "## TIER 1 — old\nold generated rows\n\n"
+            "---\n\n## TIER 2 — manual tail\nTAIL BYTE SENTINEL\n"
+        )
+        download_path = landmark / "Primary_Source_Download_List.md"
+        download_path.write_text(original, encoding="utf-8")
+
+        outputs = generated_outputs(repo_root)
+        updated = outputs[download_path]
+
+    assert updated.startswith("manual preamble\n\n" + TIER1_START)
+    assert updated.endswith("---\n\n## TIER 2 — manual tail\nTAIL BYTE SENTINEL\n")
+    assert updated.count(TIER1_START) == 1
+    assert updated.count(TIER1_END) == 1
+    assert set(path.name for path in outputs) == {
+        "Primary_Source_Download_List.md",
+        "Tier1_Primary_Source_Curriculum_Map.md",
+    }
+
+
+def test_generate_check_reports_stale_paths_without_writing():
+    with tempfile.TemporaryDirectory() as directory:
+        repo_root = Path(directory)
+        landmark = repo_root / "07_Evidence_and_Reading" / "Landmark_Library"
+        landmark.mkdir(parents=True)
+        (repo_root / "evidence_registry.json").write_text(
+            REGISTRY_PATH.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+        download_path = landmark / "Primary_Source_Download_List.md"
+        download_path.write_text(
+            "preamble\n## TIER 1 — old\nold\n\n---\n\n## TIER 2 — tail\n",
+            encoding="utf-8",
+        )
+        before = download_path.read_bytes()
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(REGISTRY_CLI),
+                "generate",
+                "--check",
+                "--repo-root",
+                str(repo_root),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+        assert download_path.read_bytes() == before
+        assert not (landmark / "Tier1_Primary_Source_Curriculum_Map.md").exists()
+
+    assert result.returncode == 1
+    assert "07_Evidence_and_Reading/Landmark_Library/Primary_Source_Download_List.md" in result.stdout
+    assert "07_Evidence_and_Reading/Landmark_Library/Tier1_Primary_Source_Curriculum_Map.md" in result.stdout
 
 
 def test_canonical_usage_notice_is_required_and_preserved():
