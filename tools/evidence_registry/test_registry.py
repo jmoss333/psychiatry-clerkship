@@ -26,6 +26,11 @@ from registry import (
 
 FIXTURE = Path(__file__).with_name("fixtures") / "valid_tier1_registry.json"
 REGISTRY_PATH = Path(__file__).resolve().parents[2] / "evidence_registry.json"
+SCHEMA_PATH = REGISTRY_PATH.with_name("evidence_registry.schema.json")
+USAGE_NOTICE = (
+    "Educational metadata only; faculty review remains required for clinical "
+    "recommendations."
+)
 EXISTING_IDS = {
     "cssrs-columbia-lighthouse",
     "va-dod-suicide-cpg-2024",
@@ -47,6 +52,15 @@ REFERENCE_FILES = (
     "family_systems_scenarios.json",
 )
 VALIDATE = Path(__file__).with_name("validate.py")
+
+
+def test_canonical_usage_notice_is_required_and_preserved():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    assert registry.get("usageNotice") == USAGE_NOTICE
+
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert "usageNotice" in schema["required"]
+    assert schema["properties"]["usageNotice"] == {"const": USAGE_NOTICE}
 
 
 def test_canonical_registry_uses_v2_shape_and_preserves_existing_sources():
