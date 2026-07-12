@@ -83,6 +83,31 @@ def test_canonical_registry_uses_v2_shape_and_preserves_existing_sources():
         assert source["identity"]["status"] == "pending"
 
 
+def test_canonical_tier1_contract():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    rows = tier1_sources(registry)
+    assert len(rows) == 17
+    assert {row["curriculum"]["selection"] for row in rows} == TIER1_SELECTIONS
+    assert len({row["zotero"]["itemKey"] for row in rows}) == 17
+    assert all(row["identity"]["status"] == "verified" for row in rows)
+    assert all("expectedTags" not in row["zotero"] for row in rows)
+
+
+def test_canonical_mapping_decisions_emit_four_nonfatal_warnings():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    warnings = [
+        issue for issue in validate_registry(registry) if issue.severity == "warning"
+    ]
+    assert len(warnings) == 4
+    assert {issue.message for issue in warnings} == {
+        "Brown 1962/1972 citation conflict requires faculty resolution",
+        "Tier 1 week assignment needs faculty confirmation: march-2004-tads",
+        "Tier 1 week assignment needs faculty confirmation: caspi-2003-5htt-stress",
+        "Tier 1 week assignment needs faculty confirmation: border-2019-candidate-gene",
+    }
+    assert all(issue.path.endswith(".curriculum.mappingStatus") for issue in warnings)
+
+
 def test_identifier_normalization():
     assert normalize_doi("https://doi.org/10.1056/NEJMoa051688.") == "10.1056/nejmoa051688"
     assert normalize_pmid("PMID: 16172203") == "16172203"
@@ -123,7 +148,7 @@ def test_public_projection_strips_internal_fields():
 
 def test_valid_fixture_satisfies_contract_and_indexes_all_tier1_sources():
     registry = load_evidence_registry(FIXTURE)
-    assert validate_registry(registry) == []
+    assert [issue for issue in validate_registry(registry) if issue.severity == "error"] == []
     assert len(index_sources(registry)) == 17
     rows = tier1_sources(registry)
     assert len(rows) == 17

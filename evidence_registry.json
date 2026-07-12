@@ -364,6 +364,997 @@
         "shelfComatRelevance": "Medium",
         "clinicalWorkflowRelevance": "High"
       }
+    },
+    {
+      "id": "engel-1977-biopsychosocial-model",
+      "type": "primary-study",
+      "citation": {
+        "title": "The need for a new medical model: a challenge for biomedicine.",
+        "authors": [
+          {"family": "Engel", "given": "G L"}
+        ],
+        "organization": "",
+        "year": 1977,
+        "journal": "Science",
+        "volume": "196",
+        "pages": "129-136",
+        "doi": "10.1126/science.847460",
+        "pmid": "847460",
+        "url": "https://doi.org/10.1126/science.847460"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent KL5HP3MU matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "KL5HP3MU"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "1",
+        "role": "required",
+        "teachingRole": "The biopsychosocial operating system",
+        "weekNumbers": [1],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 1 curriculum names Engel 1977."
+      },
+      "appraisal": {
+        "studyDesign": "Conceptual article proposing the biopsychosocial model as an alternative to the dominant biomedical model.",
+        "population": "Not applicable — conceptual/review article",
+        "comparator": "Not applicable — conceptual/review article",
+        "outcomes": "Not applicable — conceptual/review article",
+        "limitations": "Conceptual proposal rather than an empirical evaluation; the abstract reports no enrolled sample, comparator, or measured outcomes.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "rosenhan-1973-sane-places",
+      "type": "primary-study",
+      "citation": {
+        "title": "On being sane in insane places.",
+        "authors": [
+          {"family": "Rosenhan", "given": "D L"}
+        ],
+        "organization": "",
+        "year": 1973,
+        "journal": "Science",
+        "volume": "179",
+        "pages": "250-258",
+        "doi": "10.1126/science.179.4070.250",
+        "pmid": "4683124",
+        "url": "https://doi.org/10.1126/science.179.4070.250"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-primary-article",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent TSN2F24F matched the primary article and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "TSN2F24F"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "2",
+        "role": "required",
+        "teachingRole": "Diagnostic humility / labeling",
+        "weekNumbers": [1],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 1 curriculum names Rosenhan 1973."
+      },
+      "appraisal": {
+        "studyDesign": "Two-part covert field experiment and institutional observation across psychiatric hospitals.",
+        "population": "Eight known-sane pseudopatients sought admission to 12 hospitals; a later expectancy phase involved staff judgments on 193 genuine admissions when no pseudopatients were sent.",
+        "comparator": "Known-sane status and normal post-admission behavior versus hospital diagnostic judgments; later staff suspicions were compared with the fact that no pseudopatients were presented.",
+        "outcomes": "Pseudopatients were not detected as sane, all except one were admitted with schizophrenia, and stays lasted 7-52 days; in the expectancy phase, staff flagged genuine patients despite zero pseudopatients.",
+        "limitations": "Small purposive and deceptive sample; the article cautions that pseudopatients cannot represent true patients' subjective experiences, and the second phase could not determine the true status of suspected patients.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "appelbaum-grisso-1988-capacity",
+      "type": "primary-study",
+      "citation": {
+        "title": "Assessing patients' capacities to consent to treatment.",
+        "authors": [
+          {"family": "Appelbaum", "given": "P S"},
+          {"family": "Grisso", "given": "T"}
+        ],
+        "organization": "",
+        "year": 1988,
+        "journal": "The New England Journal of Medicine",
+        "volume": "319",
+        "pages": "1635-1638",
+        "doi": "10.1056/nejm198812223192504",
+        "pmid": "3200278",
+        "url": "https://doi.org/10.1056/nejm198812223192504"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent S6MZZGRA matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "S6MZZGRA"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "3",
+        "role": "required",
+        "teachingRole": "The four-abilities capacity model",
+        "weekNumbers": [1],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 1 curriculum names Appelbaum and Grisso 1988."
+      },
+      "appraisal": {
+        "studyDesign": "Conceptual clinical-legal review and practical assessment framework.",
+        "population": "Patients whose ability to accept or refuse a specific treatment is questioned; no enrolled study sample.",
+        "comparator": "Not applicable — conceptual/review article",
+        "outcomes": "Defines four abilities: communicating a choice, understanding information, appreciating the situation and consequences, and manipulating information rationally; it also distinguishes clinical assessment from legal adjudication.",
+        "limitations": "Conceptual and legal framework; the abstract reports no validation cohort, diagnostic-accuracy comparison, or patient outcomes.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "stanley-brown-2012-safety-planning",
+      "type": "primary-study",
+      "citation": {
+        "title": "Safety Planning Intervention: A Brief Intervention to Mitigate Suicide Risk",
+        "authors": [
+          {"family": "Stanley", "given": "Barbara"},
+          {"family": "Brown", "given": "Gregory K."}
+        ],
+        "organization": "",
+        "year": 2012,
+        "journal": "Cognitive and Behavioral Practice",
+        "volume": "19",
+        "pages": "256-264",
+        "doi": "10.1016/j.cbpra.2011.01.001",
+        "pmid": "",
+        "url": "https://doi.org/10.1016/j.cbpra.2011.01.001"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent IDSQYW4X matched the publisher title, first author, year, DOI, and journal; no PMID is assigned."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "IDSQYW4X"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "4",
+        "role": "required",
+        "teachingRole": "The most practical tool on the list",
+        "weekNumbers": [3],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 3 curriculum names the Stanley-Brown safety-planning model."
+      },
+      "appraisal": {
+        "studyDesign": "Descriptive clinical-practice intervention article with a case example; not an outcome trial.",
+        "population": "Suicidal patients evaluated in emergency departments and other acute-care settings are the target population; no analytic sample was enrolled.",
+        "comparator": "Not applicable — conceptual/review article",
+        "outcomes": "Describes a written, prioritized six-component plan covering warning signs, internal coping, social distraction, supportive contacts, professional resources, and lethal-means restriction; no empirical effectiveness outcome was measured.",
+        "limitations": "Descriptive, non-comparative article; it cannot itself establish effectiveness, and subsequent Safety Planning Intervention outcome studies are outside its scope.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "lieberman-2005-catie",
+      "type": "primary-study",
+      "citation": {
+        "title": "Effectiveness of antipsychotic drugs in patients with chronic schizophrenia.",
+        "authors": [
+          {"family": "Lieberman", "given": "Jeffrey A"},
+          {"family": "Stroup", "given": "T Scott"},
+          {"family": "McEvoy", "given": "Joseph P"},
+          {"family": "Swartz", "given": "Marvin S"},
+          {"family": "Rosenheck", "given": "Robert A"},
+          {"family": "Perkins", "given": "Diana O"},
+          {"family": "Keefe", "given": "Richard S E"},
+          {"family": "Davis", "given": "Sonia M"},
+          {"family": "Davis", "given": "Clarence E"},
+          {"family": "Lebowitz", "given": "Barry D"},
+          {"family": "Severe", "given": "Joanne"},
+          {"family": "Hsiao", "given": "John K"}
+        ],
+        "organization": "Clinical Antipsychotic Trials of Intervention Effectiveness (CATIE) Investigators",
+        "year": 2005,
+        "journal": "The New England Journal of Medicine",
+        "volume": "353",
+        "pages": "1209-1223",
+        "doi": "10.1056/nejmoa051688",
+        "pmid": "16172203",
+        "url": "https://doi.org/10.1056/nejmoa051688"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent 2TPA9P9D matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "2TPA9P9D"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "5",
+        "role": "required",
+        "teachingRole": "Pick by profile, not class",
+        "weekNumbers": [2],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 2 curriculum names CATIE."
+      },
+      "appraisal": {
+        "studyDesign": "Multisite, double-blind randomized comparative-effectiveness trial lasting up to 18 months.",
+        "population": "1,493 patients with schizophrenia recruited at 57 U.S. sites; 1,432 received at least one dose.",
+        "comparator": "Olanzapine, perphenazine, quetiapine, risperidone, and, after FDA approval, ziprasidone.",
+        "outcomes": "Seventy-four percent discontinued assigned treatment before 18 months; olanzapine had longer persistence than some agents but greater weight and metabolic effects, while perphenazine had similar effectiveness to several newer agents and more extrapyramidal effects.",
+        "limitations": "Very high discontinuation limits long-term outcome ascertainment; time to discontinuation combines efficacy, tolerability, and other reasons rather than isolating symptom efficacy.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "rush-2006-stard",
+      "type": "primary-study",
+      "citation": {
+        "title": "Acute and longer-term outcomes in depressed outpatients requiring one or several treatment steps: a STAR*D report.",
+        "authors": [
+          {"family": "Rush", "given": "A John"},
+          {"family": "Trivedi", "given": "Madhukar H"},
+          {"family": "Wisniewski", "given": "Stephen R"},
+          {"family": "Nierenberg", "given": "Andrew A"},
+          {"family": "Stewart", "given": "Jonathan W"},
+          {"family": "Warden", "given": "Diane"},
+          {"family": "Niederehe", "given": "George"},
+          {"family": "Thase", "given": "Michael E"},
+          {"family": "Lavori", "given": "Philip W"},
+          {"family": "Lebowitz", "given": "Barry D"},
+          {"family": "McGrath", "given": "Patrick J"},
+          {"family": "Rosenbaum", "given": "Jerrold F"},
+          {"family": "Sackeim", "given": "Harold A"},
+          {"family": "Kupfer", "given": "David J"},
+          {"family": "Luther", "given": "James"},
+          {"family": "Fava", "given": "Maurizio"}
+        ],
+        "organization": "",
+        "year": 2006,
+        "journal": "American Journal of Psychiatry",
+        "volume": "163",
+        "pages": "1905-1917",
+        "doi": "10.1176/ajp.2006.163.11.1905",
+        "pmid": "17074942",
+        "url": "https://doi.org/10.1176/ajp.2006.163.11.1905"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent LGJ9CSR3 matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "LGJ9CSR3"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "6",
+        "role": "required",
+        "teachingRole": "Measurement-based care",
+        "weekNumbers": [2],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 2 curriculum names STAR*D."
+      },
+      "appraisal": {
+        "studyDesign": "Multicenter sequenced effectiveness-trial report covering one to four acute treatment steps and a 12-month naturalistic follow-up.",
+        "population": "Broadly representative adults with nonpsychotic major depressive disorder treated as outpatients; N=3,671 at step 1 and N=123 at step 4.",
+        "comparator": "Outcomes across successive treatment steps among patients who failed to remit or could not tolerate a preceding step; no single fixed parallel comparator spans all four steps.",
+        "outcomes": "QIDS-SR remission rates were 36.8%, 30.6%, 13.7%, and 13.0% across steps 1-4, with reported cumulative remission of 67%; needing more steps was associated with higher relapse during follow-up.",
+        "limitations": "Later-step estimates come from progressively smaller, selected subsets, and the follow-up phase was naturalistic.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "brown-1972-expressed-emotion",
+      "type": "primary-study",
+      "citation": {
+        "title": "Influence of family life on the course of schizophrenic disorders: a replication.",
+        "authors": [
+          {"family": "Brown", "given": "G W"},
+          {"family": "Birley", "given": "J L T"},
+          {"family": "Wing", "given": "J K"}
+        ],
+        "organization": "",
+        "year": 1972,
+        "journal": "The British Journal of Psychiatry",
+        "volume": "121",
+        "pages": "241-258",
+        "doi": "10.1192/bjp.121.3.241",
+        "pmid": "5073778",
+        "url": "https://doi.org/10.1192/bjp.121.3.241"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-primary-article",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent E8BCCFSN matched the primary article and PubMed title, first author, year, DOI, PMID, and journal; the publisher supplies Birley's middle initial T."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "E8BCCFSN"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "7",
+        "role": "required",
+        "teachingRole": "Expressed emotion → relapse",
+        "weekNumbers": [4],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "citation-conflict",
+        "mappingNote": "Tier 1 and Zotero identify Brown, Birley, and Wing 1972; the tracked Week 4 page names Brown 1962. Faculty decision required; neither source was rewritten."
+      },
+      "appraisal": {
+        "studyDesign": "Prospective, nonrandomized nine-month follow-up study in which family emotional measures, prior patient behavior, and later relapse were assessed independently.",
+        "population": "101 patients aged 18-64 with possible or probable schizophrenia, selected from people living with relatives in the Camberwell catchment plus a recent-illness Bexley group.",
+        "comparator": "High versus low relative expressed emotion, with analyses also considering face-to-face contact, medication, prior disturbance, and other clinical and social factors.",
+        "outcomes": "Thirty-five patients relapsed; high relative expressed emotion was associated with relapse during the nine months after discharge, and the association persisted after adjustment for measured background factors.",
+        "limitations": "The exposure could not be randomized; the authors could not determine whether relative expressed emotion caused later behavior, reflected earlier patient behavior, or was reciprocal, and the restricted cohort limits generalizability.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "bush-1996-catatonia-rating-scale",
+      "type": "primary-study",
+      "citation": {
+        "title": "Catatonia. I. Rating scale and standardized examination.",
+        "authors": [
+          {"family": "Bush", "given": "G"},
+          {"family": "Fink", "given": "M"},
+          {"family": "Petrides", "given": "G"},
+          {"family": "Dowling", "given": "F"},
+          {"family": "Francis", "given": "A"}
+        ],
+        "organization": "",
+        "year": 1996,
+        "journal": "Acta Psychiatrica Scandinavica",
+        "volume": "93",
+        "pages": "129-136",
+        "doi": "10.1111/j.1600-0447.1996.tb09814.x",
+        "pmid": "8686483",
+        "url": "https://doi.org/10.1111/j.1600-0447.1996.tb09814.x"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent 5DH2GK2V matched the publisher and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "5DH2GK2V"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "8",
+        "role": "required",
+        "teachingRole": "BFCRS; the dx you can't miss",
+        "weekNumbers": [2],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 2 curriculum names Bush 1996 and the Bush-Francis Catatonia Rating Scale."
+      },
+      "appraisal": {
+        "studyDesign": "Rating-scale and screening-instrument development with interrater reliability and diagnostic-agreement testing, plus a consecutive-admission prevalence assessment.",
+        "population": "Forty-four simultaneous ratings of 28 cases meeting the 14-item screen threshold; separately, 215 consecutive admissions to one academic psychiatric inpatient facility.",
+        "comparator": "Agreement between raters and diagnostic agreement with catatonia criteria proposed by other authors; no treatment comparator.",
+        "outcomes": "A 23-item scale and 14-item screen had total-score interrater reliabilities of 0.93 and 0.95, respectively; 15 of 215 consecutive admissions met catatonia criteria.",
+        "limitations": "Reliability testing involved only 28 cases and prevalence came from one academic inpatient site; diagnostic agreement used existing criteria rather than an independent gold standard or prospective outcomes.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "wampold-1997-bona-fide-psychotherapies",
+      "type": "systematic-review",
+      "citation": {
+        "title": "A meta-analysis of outcome studies comparing bona fide psychotherapies: Empirically, \"all must have prizes.\"",
+        "authors": [
+          {"family": "Wampold", "given": "Bruce E."},
+          {"family": "Mondin", "given": "Gregory W."},
+          {"family": "Moody", "given": "Marcia"},
+          {"family": "Stich", "given": "Frederick"},
+          {"family": "Benson", "given": "Kurt"},
+          {"family": "Ahn", "given": "Hyun-nie"}
+        ],
+        "organization": "",
+        "year": 1997,
+        "journal": "Psychological Bulletin",
+        "volume": "122",
+        "pages": "203-215",
+        "doi": "10.1037/0033-2909.122.3.203",
+        "pmid": "",
+        "url": "https://doi.org/10.1037/0033-2909.122.3.203"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent PDWXBEMZ matched the primary article title, first author, year, DOI, and journal; no PMID is assigned."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "PDWXBEMZ"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "9",
+        "role": "required",
+        "teachingRole": "Common factors",
+        "weekNumbers": [3],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 3 curriculum names Wampold 1997."
+      },
+      "appraisal": {
+        "studyDesign": "Meta-analysis of direct outcome-study comparisons between bona fide psychotherapies drawn from six journals.",
+        "population": "Participants represented in included comparative psychotherapy outcome studies; the abstract does not report a pooled sample size or diagnostic composition.",
+        "comparator": "Bona fide psychotherapies directly compared with other bona fide psychotherapies.",
+        "outcomes": "Between-treatment effect sizes were homogeneous around zero; even under liberal assumptions the upper bound of the true difference was about 0.20, supporting roughly equivalent efficacy across included comparisons.",
+        "limitations": "The evidence base was limited to direct comparisons found in six journals; pooled participant and diagnostic details were not reported in the abstract, so the result should not be generalized to every therapy-problem pairing.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "linehan-1991-dbt",
+      "type": "primary-study",
+      "citation": {
+        "title": "Cognitive-Behavioral Treatment of Chronically Parasuicidal Borderline Patients",
+        "authors": [
+          {"family": "Linehan", "given": "Marsha M."},
+          {"family": "Armstrong", "given": "Hubert E."},
+          {"family": "Suarez", "given": "Alejandra"},
+          {"family": "Allmon", "given": "Douglas"},
+          {"family": "Heard", "given": "Heidi L."}
+        ],
+        "organization": "",
+        "year": 1991,
+        "journal": "Archives of General Psychiatry",
+        "volume": "48",
+        "pages": "1060-1064",
+        "doi": "10.1001/archpsyc.1991.01810360024003",
+        "pmid": "1845222",
+        "url": "https://doi.org/10.1001/archpsyc.1991.01810360024003"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent SHMA7MDE matched the publisher and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "SHMA7MDE"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "10",
+        "role": "required",
+        "teachingRole": "DBT origin; BPD is treatable",
+        "weekNumbers": [3],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 3 curriculum names Linehan 1991."
+      },
+      "appraisal": {
+        "studyDesign": "One-year randomized clinical trial with assessments every four months.",
+        "population": "Chronically parasuicidal women meeting criteria for borderline personality disorder.",
+        "comparator": "Dialectical behavior therapy versus community treatment as usual.",
+        "outcomes": "DBT produced fewer and less medically severe parasuicide events, better retention in individual therapy, and fewer inpatient psychiatric days; groups did not differ on depression, hopelessness, suicidal ideation, or reasons for living.",
+        "limitations": "The narrowly selected all-women, chronically parasuicidal borderline-personality sample and one-year horizon limit generalizability; several symptom measures showed no between-group difference.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "pharoah-2010-family-intervention",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Family intervention for schizophrenia",
+        "authors": [
+          {"family": "Pharoah", "given": "Fiona"},
+          {"family": "Mari", "given": "Jair"},
+          {"family": "Rathbone", "given": "John"},
+          {"family": "Wong", "given": "Winson"}
+        ],
+        "organization": "",
+        "year": 2010,
+        "journal": "Cochrane Database of Systematic Reviews",
+        "volume": "",
+        "pages": "CD000088",
+        "doi": "10.1002/14651858.cd000088.pub2",
+        "pmid": "21154340",
+        "url": "https://doi.org/10.1002/14651858.cd000088.pub2"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent P4M5H9VM matched the 2010 PubMed update's title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "P4M5H9VM"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "11",
+        "role": "required",
+        "teachingRole": "NNT ~7 for relapse",
+        "weekNumbers": [4],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 4 curriculum names Pharoah 2010."
+      },
+      "appraisal": {
+        "studyDesign": "Cochrane systematic review and fixed-effect meta-analysis of 53 randomized or quasi-randomized trials, with searching updated through September 2008.",
+        "population": "People with schizophrenia, schizoaffective disorder, or schizophrenia-like conditions and their families in community settings.",
+        "comparator": "Community-oriented family psychosocial intervention versus standard care.",
+        "outcomes": "Family intervention reduced relapse in 32 RCTs with 2,981 participants (RR 0.55, 95% CI 0.50-0.60; NNT 7), may reduce admission and improve medication adherence, and showed no evidence for a suicide effect.",
+        "limitations": "Poor trial methods may overestimate effects; randomization and evaluator blinding were often inadequately described, and small negative studies may have been missed.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "march-2004-tads",
+      "type": "primary-study",
+      "citation": {
+        "title": "Fluoxetine, Cognitive-Behavioral Therapy, and Their Combination for Adolescents With Depression: Treatment for Adolescents With Depression Study (TADS) Randomized Controlled Trial",
+        "authors": [
+          {"family": "March", "given": "John"},
+          {"family": "Silva", "given": "Susan"},
+          {"family": "Petrycki", "given": "Stephen"},
+          {"family": "Curry", "given": "John"},
+          {"family": "Wells", "given": "Karen"},
+          {"family": "Fairbank", "given": "John"},
+          {"family": "Burns", "given": "Barbara"},
+          {"family": "Domino", "given": "Marisa"},
+          {"family": "McNulty", "given": "Steven"},
+          {"family": "Vitiello", "given": "Benedetto"},
+          {"family": "Severe", "given": "Joanne"}
+        ],
+        "organization": "Treatment for Adolescents With Depression Study (TADS) Team",
+        "year": 2004,
+        "journal": "JAMA",
+        "volume": "292",
+        "pages": "807-820",
+        "doi": "10.1001/jama.292.7.807",
+        "pmid": "15315995",
+        "url": "https://doi.org/10.1001/jama.292.7.807"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent 6DTR4GC8 matched the publisher and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "6DTR4GC8"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "12",
+        "role": "required",
+        "teachingRole": "Combination best for teens",
+        "weekNumbers": [],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "needs-faculty-confirmation",
+        "mappingNote": "Tracked curriculum files do not assign TADS to a week. Zotero suggests Week 2, but that tag is advisory pending faculty confirmation."
+      },
+      "appraisal": {
+        "studyDesign": "Twelve-week, four-arm randomized controlled trial at 13 U.S. academic and community clinics; medication and placebo arms were double-blind and CBT-containing arms were unblinded.",
+        "population": "Volunteer sample of 439 adolescents aged 12-17 years with primary DSM-IV major depressive disorder.",
+        "comparator": "Fluoxetine plus CBT versus fluoxetine alone, CBT alone, and placebo.",
+        "outcomes": "Response was 71.0%, 60.6%, 43.2%, and 34.8%, respectively; combined treatment had the best benefit-risk tradeoff. Suicidal thinking improved in all groups; seven participants attempted suicide and none died by suicide.",
+        "limitations": "The volunteer sample, 12-week horizon, and unblinded CBT conditions limit generalizability and durability inference; there was no CBT-plus-placebo arm to distinguish additive from synergistic effects.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "felitti-1998-ace",
+      "type": "primary-study",
+      "citation": {
+        "title": "Relationship of Childhood Abuse and Household Dysfunction to Many of the Leading Causes of Death in Adults: The Adverse Childhood Experiences (ACE) Study",
+        "authors": [
+          {"family": "Felitti", "given": "Vincent J."},
+          {"family": "Anda", "given": "Robert F."},
+          {"family": "Nordenberg", "given": "Dale"},
+          {"family": "Williamson", "given": "David F."},
+          {"family": "Spitz", "given": "Alison M."},
+          {"family": "Edwards", "given": "Valerie"},
+          {"family": "Koss", "given": "Mary P."},
+          {"family": "Marks", "given": "James S."}
+        ],
+        "organization": "",
+        "year": 1998,
+        "journal": "American Journal of Preventive Medicine",
+        "volume": "14",
+        "pages": "245-258",
+        "doi": "10.1016/s0749-3797(98)00017-8",
+        "pmid": "9635069",
+        "url": "https://doi.org/10.1016/s0749-3797(98)00017-8"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent ZT9DMH79 matched the publisher and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "ZT9DMH79"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "13",
+        "role": "required",
+        "teachingRole": "Reframes every patient",
+        "weekNumbers": [6],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 6 curriculum names Felitti 1998."
+      },
+      "appraisal": {
+        "studyDesign": "Questionnaire-based observational analysis using logistic regression to relate retrospectively reported childhood exposures to adult health risks and disease.",
+        "population": "9,508 respondents, 70.5% of 13,494 adult HMO members who had completed a standardized medical evaluation.",
+        "comparator": "Cumulative adverse-childhood-experience categories from 0-7, including comparison of four or more categories with none.",
+        "outcomes": "ACE count showed graded associations with adult health risks and disease; four or more versus no categories was associated with 4- to 12-fold higher risks for alcoholism, drug abuse, depression, and suicide attempt.",
+        "limitations": "Retrospective self-report, nonresponse, and an observational baseline analysis permit association rather than causal inference and may limit generalizability beyond this HMO sample.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "caspi-2003-5htt-stress",
+      "type": "primary-study",
+      "citation": {
+        "title": "Influence of Life Stress on Depression: Moderation by a Polymorphism in the 5-HTT Gene",
+        "authors": [
+          {"family": "Caspi", "given": "Avshalom"},
+          {"family": "Sugden", "given": "Karen"},
+          {"family": "Moffitt", "given": "Terrie E."},
+          {"family": "Taylor", "given": "Alan"},
+          {"family": "Craig", "given": "Ian W."},
+          {"family": "Harrington", "given": "HonaLee"},
+          {"family": "McClay", "given": "Joseph"},
+          {"family": "Mill", "given": "Jonathan"},
+          {"family": "Martin", "given": "Judy"},
+          {"family": "Braithwaite", "given": "Antony"},
+          {"family": "Poulton", "given": "Richie"}
+        ],
+        "organization": "",
+        "year": 2003,
+        "journal": "Science",
+        "volume": "301",
+        "pages": "386-389",
+        "doi": "10.1126/science.1083968",
+        "pmid": "12869766",
+        "url": "https://doi.org/10.1126/science.1083968"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent ZTWERT6K matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "ZTWERT6K"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "14a",
+        "role": "required",
+        "teachingRole": "Candidate-gene rise…",
+        "weekNumbers": [],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "needs-faculty-confirmation",
+        "mappingNote": "Tracked curriculum files do not assign Caspi 2003 to a week. Zotero suggests Week 6, but that tag is advisory pending faculty confirmation."
+      },
+      "appraisal": {
+        "studyDesign": "Prospective-longitudinal observational study of a representative birth cohort.",
+        "population": "Members of a representative birth cohort assessed for stressful life events, 5-HTT promoter genotype, and depression-related outcomes.",
+        "comparator": "Short-allele carriers with one or two copies versus long-allele homozygotes across levels of stressful life events.",
+        "outcomes": "Short-allele carriers showed more depressive symptoms, diagnosable depression, and suicidality in relation to stressful life events, consistent with a reported gene-by-environment interaction.",
+        "limitations": "This was an observational finding in one cohort; it does not by itself establish causality or independent replication and generalizability.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "border-2019-candidate-gene",
+      "type": "primary-study",
+      "citation": {
+        "title": "No Support for Historical Candidate Gene or Candidate Gene-by-Interaction Hypotheses for Major Depression Across Multiple Large Samples",
+        "authors": [
+          {"family": "Border", "given": "Richard"},
+          {"family": "Johnson", "given": "Emma C."},
+          {"family": "Evans", "given": "Luke M."},
+          {"family": "Smolen", "given": "Andrew"},
+          {"family": "Berley", "given": "Noah"},
+          {"family": "Sullivan", "given": "Patrick F."},
+          {"family": "Keller", "given": "Matthew C."}
+        ],
+        "organization": "",
+        "year": 2019,
+        "journal": "American Journal of Psychiatry",
+        "volume": "176",
+        "pages": "376-387",
+        "doi": "10.1176/appi.ajp.2018.18070881",
+        "pmid": "30845820",
+        "url": "https://doi.org/10.1176/appi.ajp.2018.18070881"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-primary-article",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent XRADQ2TY matched the primary article and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "XRADQ2TY"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "14b",
+        "role": "required",
+        "teachingRole": "…and fall (replication crisis)",
+        "weekNumbers": [],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "needs-faculty-confirmation",
+        "mappingNote": "Tracked curriculum files do not assign Border 2019 to a week. Zotero suggests Week 6, but that tag is advisory pending faculty confirmation."
+      },
+      "appraisal": {
+        "studyDesign": "Preregistered association analyses across large population-based and case-control samples.",
+        "population": "Multiple samples ranging from 62,138 to 443,264 participants across subsamples, using several depression phenotypes and environmental moderators.",
+        "comparator": "Main effects and gene-by-environment effects for 18 historical depression candidate genes, with candidate-gene sets also compared with noncandidate genes.",
+        "outcomes": "No clear candidate-polymorphism association or candidate gene-by-environment effect was found; candidate genes as a set were no more associated with depression than noncandidate genes.",
+        "limitations": "The analysis addresses 18 historical candidate genes and specified phenotypes and moderators; it does not test whether depression has genome-wide polygenic influences.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "franklin-2017-suicide-risk-meta-analysis",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Risk factors for suicidal thoughts and behaviors: A meta-analysis of 50 years of research.",
+        "authors": [
+          {"family": "Franklin", "given": "Joseph C."},
+          {"family": "Ribeiro", "given": "Jessica D."},
+          {"family": "Fox", "given": "Kathryn R."},
+          {"family": "Bentley", "given": "Kate H."},
+          {"family": "Kleiman", "given": "Evan M."},
+          {"family": "Huang", "given": "Xieyining"},
+          {"family": "Musacchio", "given": "Katherine M."},
+          {"family": "Jaroszewski", "given": "Adam C."},
+          {"family": "Chang", "given": "Bernard P."},
+          {"family": "Nock", "given": "Matthew K."}
+        ],
+        "organization": "",
+        "year": 2017,
+        "journal": "Psychological Bulletin",
+        "volume": "143",
+        "pages": "187-232",
+        "doi": "10.1037/bul0000084",
+        "pmid": "27841450",
+        "url": "https://doi.org/10.1037/bul0000084"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent FP88WVWT matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "FP88WVWT"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "15",
+        "role": "required",
+        "teachingRole": "We can't predict; document reasoning",
+        "weekNumbers": [5],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked curriculum maps Franklin 2017 to Week 5."
+      },
+      "appraisal": {
+        "studyDesign": "Random-effects meta-analysis of longitudinal predictors of suicidal thoughts and behaviors across 365 studies, 3,428 effect sizes, and 50 years.",
+        "population": "Participants in longitudinal studies predicting later suicidal ideation, attempt, or death; pooled demographic composition was not reported in the abstract.",
+        "comparator": "Risk-factor categories and exposure levels versus later specific suicidal-thought-or-behavior outcomes; no treatment comparator.",
+        "outcomes": "Prediction was only slightly better than chance across odds-ratio, hazard-ratio, and diagnostic-accuracy analyses; no broad category predicted far above chance and accuracy did not improve over 50 years.",
+        "limitations": "The underlying literature used homogeneous risk factors, rarely examined combinations, and had narrow methodological limits that prevented adequate tests of most theories.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
+    },
+    {
+      "id": "volkow-2016-addiction-brain-disease",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "Neurobiologic Advances from the Brain Disease Model of Addiction",
+        "authors": [
+          {"family": "Volkow", "given": "Nora D."},
+          {"family": "Koob", "given": "George F."},
+          {"family": "McLellan", "given": "A. Thomas"}
+        ],
+        "organization": "",
+        "year": 2016,
+        "journal": "New England Journal of Medicine",
+        "volume": "374",
+        "pages": "363-371",
+        "doi": "10.1056/nejmra1511480",
+        "pmid": "26816013",
+        "url": "https://doi.org/10.1056/nejmra1511480"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-primary-article",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent 9FCMTHM2 matched the primary article and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "9FCMTHM2"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "16",
+        "role": "required",
+        "teachingRole": "Combats stigma",
+        "weekNumbers": [5],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked curriculum maps Volkow 2016 to Week 5."
+      },
+      "appraisal": {
+        "studyDesign": "Narrative and conceptual review of neurobiological evidence supporting the brain-disease model of addiction.",
+        "population": "Not applicable — conceptual/review article",
+        "comparator": "Not applicable — conceptual/review article",
+        "outcomes": "The review synthesizes a three-stage addiction cycle and links it to adaptations in reward, stress, and executive-control circuits that impair behavioral control.",
+        "limitations": "The review has no defined study population, comparator, or pooled clinical-effect estimate; it also notes that the model does not identify an abnormality shared by every person with addiction and does not by itself explain untreated recovery.",
+        "reviewStatus": "pending-faculty-review"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual"
+      }
     }
   ]
 }

@@ -458,6 +458,7 @@ def validate_registry(registry: dict) -> list[ValidationIssue]:
 
     for position, source in tier1_entries:
         source_path = f"sources[{position}]"
+        source_id = source.get("id")
         citation = source.get("citation") if isinstance(source.get("citation"), dict) else {}
         identity = source.get("identity") if isinstance(source.get("identity"), dict) else {}
         curriculum = source.get("curriculum")
@@ -533,11 +534,33 @@ def validate_registry(registry: dict) -> list[ValidationIssue]:
                         "Tier 1 weekNumbers must be a list containing only weeks 1 through 6",
                     )
                 )
-            if not _nonempty_text(curriculum.get("mappingStatus")):
+            mapping_status = curriculum.get("mappingStatus")
+            if not _nonempty_text(mapping_status):
                 issues.append(
                     ValidationIssue(
                         f"{source_path}.curriculum.mappingStatus",
                         "Tier 1 mapping status must be non-empty",
+                    )
+                )
+            elif mapping_status == "needs-faculty-confirmation":
+                issues.append(
+                    ValidationIssue(
+                        f"{source_path}.curriculum.mappingStatus",
+                        f"Tier 1 week assignment needs faculty confirmation: {source_id}",
+                        severity="warning",
+                    )
+                )
+            elif mapping_status == "citation-conflict":
+                message = (
+                    "Brown 1962/1972 citation conflict requires faculty resolution"
+                    if source_id == "brown-1972-expressed-emotion"
+                    else f"Tier 1 citation conflict requires faculty resolution: {source_id}"
+                )
+                issues.append(
+                    ValidationIssue(
+                        f"{source_path}.curriculum.mappingStatus",
+                        message,
+                        severity="warning",
                     )
                 )
         else:
