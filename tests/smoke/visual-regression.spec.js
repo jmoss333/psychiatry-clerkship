@@ -104,7 +104,17 @@ test.describe('mobile shell ergonomics', () => {
       Number.parseFloat(getComputedStyle(el).paddingBottom),
     );
     expect(drawerPadding).toBeGreaterThanOrEqual(90);
-    await page.locator('#drawerBackdrop').click();
+    // #drawerBackdrop spans the full viewport (inset:0), so a default center-click
+    // lands on the drawer itself at narrow widths (aside is min(84vw, 300px), which
+    // exceeds half of any phone-sized viewport). Click a measured point just right of
+    // the drawer's actual edge, near the top, clear of the bottom-anchored tool bar.
+    // Wait for the .2s slide-in transition to settle before measuring its geometry
+    // (same wait used for the drawer screenshot above).
+    await page.waitForTimeout(350);
+    const asideBox = await page.locator('#side').boundingBox();
+    await page.locator('#drawerBackdrop').click({
+      position: { x: (asideBox?.x ?? 0) + (asideBox?.width ?? 0) + 10, y: 10 },
+    });
 
     const more = page.locator('.tl-bar__more');
     await more.click();
