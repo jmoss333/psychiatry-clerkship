@@ -326,14 +326,14 @@ def markdown_to_flowables(markdown: str, styles) -> list:
             code_lines.append(line)
             continue
 
+        if stripped.startswith(">"):
+            stripped = stripped[1:].lstrip()
+            line = stripped
+
         if _MACHINE_GENERATED_RE.match(stripped):
             flush_paragraph()
             flush_table()
             continue
-
-        if stripped.startswith(">"):
-            stripped = stripped[1:].lstrip()
-            line = stripped
 
         heading = _HEADING_RE.match(stripped)
         if heading:
@@ -550,6 +550,7 @@ def export_website_pdf_library(
     generated_on: str,
     limit: int | None = None,
 ) -> dict[str, int | str]:
+    format_library_date(generated_on)
     repo_root = repo_root.resolve()
     manifest_path = manifest_path.resolve()
     out_dir = out_dir.resolve()

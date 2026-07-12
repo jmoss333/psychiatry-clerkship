@@ -55,6 +55,17 @@ def test_markdown_to_flowables_omits_machine_generated_line():
     assert "Generated:" not in text
 
 
+def test_markdown_to_flowables_omits_blockquoted_machine_generated_line():
+    flowables = markdown_to_flowables(
+        "# Guide\n\n> Generated: 2026-06-27\n\nAudience: MS3 students.",
+        pdf_styles(),
+    )
+    text = "\n".join(_paragraph_text(flowables))
+    assert "Guide" in text
+    assert "Audience: MS3 students." in text
+    assert "Generated:" not in text
+
+
 def test_markdown_has_h1_detects_only_level_one_heading():
     assert markdown_has_h1("# Primary title\n\n## Section")
     assert not markdown_has_h1("## Section only")
@@ -164,6 +175,29 @@ def test_export_creates_pdf_manifest_and_index():
         assert not stale.exists()
 
 
+def test_export_rejects_invalid_date_before_publishing_output():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "repo"
+        out_dir = Path(tmp) / "out"
+        manifest = root / "site_manifest.json"
+        source = root / "guide.md"
+        stale = out_dir / "pdfs" / "stale.pdf"
+        _write(source, "# Guide\n")
+        _write(manifest, json.dumps({"md": [["guide.md", "guide.md", "Guide"]], "tools": []}))
+        _write(stale, "existing output")
+
+        try:
+            export_website_pdf_library(root, manifest, out_dir, generated_on="07/12/2026")
+        except ValueError as exc:
+            assert "ISO date" in str(exc)
+        else:
+            raise AssertionError("Expected invalid ISO date to fail")
+
+        assert stale.read_text(encoding="utf-8") == "existing output"
+        assert not (out_dir / "website_pdf_library_manifest.json").exists()
+        assert not (out_dir / "index.md").exists()
+
+
 def test_default_site_manifest_sources_exist_in_repo():
     repo_root = Path(__file__).resolve().parents[2]
     manifest = repo_root / DEFAULT_MANIFEST
@@ -185,6 +219,7 @@ def run_tests():
     tests = [
         test_format_library_date_uses_readable_month_day_year,
         test_markdown_to_flowables_omits_machine_generated_line,
+        test_markdown_to_flowables_omits_blockquoted_machine_generated_line,
         test_markdown_has_h1_detects_only_level_one_heading,
         test_markdown_to_flowables_preserves_machine_generated_line_in_code,
         test_inline_markdown_to_text_simplifies_links_and_unicode,
@@ -193,6 +228,7 @@ def run_tests():
         test_section_for_entry_matches_website_groups,
         test_load_manifest_fails_on_missing_source,
         test_export_creates_pdf_manifest_and_index,
+        test_export_rejects_invalid_date_before_publishing_output,
         test_default_site_manifest_sources_exist_in_repo,
         test_resolve_cli_paths_expands_relative_paths,
     ]
