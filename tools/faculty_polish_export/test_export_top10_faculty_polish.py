@@ -123,8 +123,14 @@ def test_prepare_package_data_writes_curated_and_adobe_outputs():
         assert "correct the canonical Markdown" in review_index
         assert "Clinical / MS3" in review_index
         handoff = (out_dir / "adobe_indesign_handoff.md").read_text(encoding="utf-8")
-        assert "review_status" in handoff
         assert "full_packet" in handoff
+        assert "Visible template fields" in handoff
+        assert "artifact_title" in handoff
+        assert "section_heading" in handoff
+        assert "section_text" in handoff
+        assert "formatted creation date" in handoff
+        assert "Do not map `canonical_source`" in handoff
+        assert "Do not map `review_status`" in handoff
 
 
 def test_prepare_package_data_clears_only_stale_curated_pdfs():

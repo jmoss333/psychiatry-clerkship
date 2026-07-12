@@ -16,7 +16,7 @@ Interactive HTML tools are indexed but not converted to PDF, because static PDFs
 ## Run
 
 ```bash
-python3 tools/pdf_library_export/export_website_pdf_library.py --generated-on 2026-07-11
+python3 tools/pdf_library_export/export_website_pdf_library.py --generated-on 2026-07-12
 ```
 
 Generated files are written to `outputs/pdf_library/`:
@@ -25,6 +25,16 @@ Generated files are written to `outputs/pdf_library/`:
 - `index.md` - human-readable library table.
 - `website_pdf_library_manifest.json` - machine-readable trace from PDF back to repo source and website slug.
 
+## Visible PDF Contract
+
+Standalone PDFs use the repository's rust and teal visual language. Visible pages contain only:
+
+- curriculum content rendered from canonical Markdown;
+- `Created from the Psychiatry Clerkship Library - <Month D, YYYY>` in the footer; and
+- the page number.
+
+The exporter omits wrapper titles, source paths, site slugs, review status, legacy `Generated:` lines, and export-note pages. Internal source and review traceability remain in the JSON manifest and library index. `--generated-on` must be an ISO date (`YYYY-MM-DD`) and deterministically supplies the visible footer date.
+
 ## Review Rule
 
-Every generated PDF is marked `needs_faculty_review`. A generated PDF should not be learner-facing until the source content and final output are reviewed.
+Every generated PDF remains marked `needs_faculty_review` in the non-visible manifest. A generated PDF should not be learner-facing until the source content and final output are reviewed.
