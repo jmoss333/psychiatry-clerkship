@@ -25,6 +25,19 @@ from registry import (
 
 
 FIXTURE = Path(__file__).with_name("fixtures") / "valid_tier1_registry.json"
+REGISTRY_PATH = Path(__file__).resolve().parents[2] / "evidence_registry.json"
+EXISTING_IDS = {
+    "cssrs-columbia-lighthouse",
+    "va-dod-suicide-cpg-2024",
+    "joint-commission-suicide-prevention",
+    "nice-violence-aggression-ng10",
+    "apa-violence-risk-assessment-2011",
+    "asam-alcohol-withdrawal-2020",
+    "bap-catatonia-2023",
+    "nice-delirium-cg103",
+    "project-beta-deescalation-2012",
+    "project-beta-psychopharm-agitation-2012",
+}
 REFERENCE_FILES = (
     "topic_meta.json",
     "tool_registry.json",
@@ -34,6 +47,26 @@ REFERENCE_FILES = (
     "family_systems_scenarios.json",
 )
 VALIDATE = Path(__file__).with_name("validate.py")
+
+
+def test_canonical_registry_uses_v2_shape_and_preserves_existing_sources():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    assert registry.get("schemaVersion") == 2
+
+    source_index = index_sources(registry)
+    assert EXISTING_IDS <= set(source_index)
+
+    for source_id in EXISTING_IDS:
+        source = source_index[source_id]
+        assert {
+            "id",
+            "type",
+            "citation",
+            "identity",
+            "requiredAccess",
+            "governance",
+        } <= set(source)
+        assert source["identity"]["status"] == "pending"
 
 
 def test_identifier_normalization():
