@@ -84,6 +84,10 @@ def test_markdown_has_h1_detects_only_level_one_heading():
     assert not markdown_has_h1("## Section only")
 
 
+def test_markdown_has_h1_ignores_fenced_code_heading():
+    assert not markdown_has_h1("```markdown\n# Example heading\n```\n\n## Real section")
+
+
 def test_markdown_to_flowables_preserves_machine_generated_line_in_code():
     flowables = markdown_to_flowables(
         "```text\nGenerated: 2026-06-27\n```",
@@ -284,6 +288,7 @@ def run_tests():
         test_markdown_to_flowables_omits_blockquoted_machine_generated_line,
         test_markdown_to_flowables_omits_nested_blockquoted_machine_generated_line,
         test_markdown_has_h1_detects_only_level_one_heading,
+        test_markdown_has_h1_ignores_fenced_code_heading,
         test_markdown_to_flowables_preserves_machine_generated_line_in_code,
         test_inline_markdown_to_text_simplifies_links_and_unicode,
         test_slugify_returns_ascii_file_safe_text,

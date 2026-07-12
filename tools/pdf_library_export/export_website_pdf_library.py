@@ -141,7 +141,6 @@ _ITALIC_RE = re.compile(r"(?<!\*)\*([^*]+)\*(?!\*)")
 _CODE_RE = re.compile(r"`([^`]+)`")
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 _MACHINE_GENERATED_RE = re.compile(r"^Generated:\s+.+$", re.I)
-_H1_RE = re.compile(r"^#\s+\S", re.M)
 _ORDERED_RE = re.compile(r"^\s*(\d+)[.)]\s+(.+)$")
 _BULLET_RE = re.compile(r"^\s*[-*+]\s+(.+)$")
 _TABLE_DIVIDER_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$")
@@ -250,7 +249,16 @@ def format_library_date(generated_on: str) -> str:
 
 
 def markdown_has_h1(markdown: str) -> bool:
-    return bool(_H1_RE.search(markdown))
+    in_code = False
+    for line in markdown.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_code = not in_code
+            continue
+        heading = _HEADING_RE.match(stripped)
+        if not in_code and heading and len(heading.group(1)) == 1:
+            return True
+    return False
 
 
 def _is_table_row(line: str) -> bool:
