@@ -411,7 +411,8 @@
         "comparator": "Not applicable — conceptual/review article",
         "outcomes": "Not applicable — conceptual/review article",
         "limitations": "Conceptual proposal rather than an empirical evaluation; the abstract reports no enrolled sample, comparator, or measured outcomes.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -464,7 +465,8 @@
         "comparator": "Known-sane status and normal post-admission behavior versus hospital diagnostic judgments; later staff suspicions were compared with the fact that no pseudopatients were presented.",
         "outcomes": "Pseudopatients were not detected as sane, all except one were admitted with schizophrenia, and stays lasted 7-52 days; in the expectancy phase, staff flagged genuine patients despite zero pseudopatients.",
         "limitations": "Small purposive and deceptive sample; the article cautions that pseudopatients cannot represent true patients' subjective experiences, and the second phase could not determine the true status of suspected patients.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -518,7 +520,8 @@
         "comparator": "Not applicable — conceptual/review article",
         "outcomes": "Defines four abilities: communicating a choice, understanding information, appreciating the situation and consequences, and manipulating information rationally; it also distinguishes clinical assessment from legal adjudication.",
         "limitations": "Conceptual and legal framework; the abstract reports no validation cohort, diagnostic-accuracy comparison, or patient outcomes.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -572,7 +575,8 @@
         "comparator": "Not applicable — conceptual/review article",
         "outcomes": "Describes a written, prioritized six-component plan covering warning signs, internal coping, social distraction, supportive contacts, professional resources, and lethal-means restriction; no empirical effectiveness outcome was measured.",
         "limitations": "Descriptive, non-comparative article; it cannot itself establish effectiveness, and subsequent Safety Planning Intervention outcome studies are outside its scope.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -636,7 +640,8 @@
         "comparator": "Olanzapine, perphenazine, quetiapine, risperidone, and, after FDA approval, ziprasidone.",
         "outcomes": "Seventy-four percent discontinued assigned treatment before 18 months; olanzapine had longer persistence than some agents but greater weight and metabolic effects, while perphenazine had similar effectiveness to several newer agents and more extrapyramidal effects.",
         "limitations": "Very high discontinuation limits long-term outcome ascertainment; time to discontinuation combines efficacy, tolerability, and other reasons rather than isolating symptom efficacy.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -704,7 +709,8 @@
         "comparator": "Outcomes across successive treatment steps among patients who failed to remit or could not tolerate a preceding step; no single fixed parallel comparator spans all four steps.",
         "outcomes": "QIDS-SR remission rates were 36.8%, 30.6%, 13.7%, and 13.0% across steps 1-4, with reported cumulative remission of 67%; needing more steps was associated with higher relapse during follow-up.",
         "limitations": "Later-step estimates come from progressively smaller, selected subsets, and the follow-up phase was naturalistic.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -750,8 +756,8 @@
         "weekNumbers": [4],
         "topicSlugs": [],
         "pairedTools": [],
-        "mappingStatus": "citation-conflict",
-        "mappingNote": "Tier 1 and Zotero identify Brown, Birley, and Wing 1972; the tracked Week 4 page names Brown 1962. Faculty decision required; neither source was rewritten."
+        "mappingStatus": "mapped",
+        "mappingNote": "Faculty approved Brown, Birley, and Wing 1972 as the canonical Tier 1 Week 4 article on 2026-07-12. Brown 1962 remains a later contextual companion and teaching-page reconciliation item; no teaching page was changed in this milestone."
       },
       "appraisal": {
         "studyDesign": "Prospective, nonrandomized nine-month follow-up study in which family emotional measures, prior patient behavior, and later relapse were assessed independently.",
@@ -759,7 +765,8 @@
         "comparator": "High versus low relative expressed emotion, with analyses also considering face-to-face contact, medication, prior disturbance, and other clinical and social factors.",
         "outcomes": "Thirty-five patients relapsed; high relative expressed emotion was associated with relapse during the nine months after discharge, and the association persisted after adjustment for measured background factors.",
         "limitations": "The exposure could not be randomized; the authors could not determine whether relative expressed emotion caused later behavior, reflected earlier patient behavior, or was reciprocal, and the restricted cohort limits generalizability.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -816,7 +823,8 @@
         "comparator": "Agreement between raters and diagnostic agreement with catatonia criteria proposed by other authors; no treatment comparator.",
         "outcomes": "A 23-item scale and 14-item screen had total-score interrater reliabilities of 0.93 and 0.95, respectively; 15 of 215 consecutive admissions met catatonia criteria.",
         "limitations": "Reliability testing involved only 28 cases and prevalence came from one academic inpatient site; diagnostic agreement used existing criteria rather than an independent gold standard or prospective outcomes.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -874,7 +882,8 @@
         "comparator": "Bona fide psychotherapies directly compared with other bona fide psychotherapies.",
         "outcomes": "Between-treatment effect sizes were homogeneous around zero; even under liberal assumptions the upper bound of the true difference was about 0.20, supporting roughly equivalent efficacy across included comparisons.",
         "limitations": "The evidence base was limited to direct comparisons found in six journals; pooled participant and diagnostic details were not reported in the abstract, so the result should not be generalized to every therapy-problem pairing.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -931,7 +940,8 @@
         "comparator": "Dialectical behavior therapy versus community treatment as usual.",
         "outcomes": "DBT produced fewer and less medically severe parasuicide events, better retention in individual therapy, and fewer inpatient psychiatric days; groups did not differ on depression, hopelessness, suicidal ideation, or reasons for living.",
         "limitations": "The narrowly selected all-women, chronically parasuicidal borderline-personality sample and one-year horizon limit generalizability; several symptom measures showed no between-group difference.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -962,7 +972,7 @@
         "status": "verified",
         "source": "zotero-local-api-and-pubmed-agree-cochrane-publisher-disagrees",
         "verifiedAt": "2026-07-12",
-        "note": "Zotero parent P4M5H9VM and PubMed PMID 21154340 agree on the 2010 update identity and .pub2 DOI; current Cochrane publisher metadata disagrees. Publisher reconciliation remains reserved for controller and faculty resolution."
+        "note": "Faculty-approved exception recorded 2026-07-12: retain Zotero parent P4M5H9VM, PubMed PMID 21154340, and the .pub2 DOI because Zotero and PubMed agree on that 2010 update identity; current Cochrane publisher metadata disagrees and lists .pub3. No Zotero record was changed."
       },
       "zotero": {
         "libraryType": "user",
@@ -987,7 +997,8 @@
         "comparator": "Community-oriented family psychosocial intervention versus standard care.",
         "outcomes": "Family intervention may reduce relapse in 32 RCTs with 2,981 participants (RR 0.55, 95% CI 0.50-0.60; NNT 7), may reduce admission and improve medication adherence, and showed no evidence for a suicide effect.",
         "limitations": "Poor trial methods may overestimate effects; randomization and evaluator blinding were often inadequately described, and small negative studies may have been missed.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -1038,11 +1049,11 @@
         "selection": "12",
         "role": "required",
         "teachingRole": "Combination best for teens",
-        "weekNumbers": [],
+        "weekNumbers": [2],
         "topicSlugs": [],
         "pairedTools": [],
-        "mappingStatus": "needs-faculty-confirmation",
-        "mappingNote": "Tracked curriculum files do not assign TADS to a week. Zotero suggests Week 2, but that tag is advisory pending faculty confirmation."
+        "mappingStatus": "mapped",
+        "mappingNote": "Faculty approved TADS for Week 2 on 2026-07-12; no teaching page or Zotero record was changed in this milestone."
       },
       "appraisal": {
         "studyDesign": "Twelve-week, four-arm randomized controlled trial at 13 U.S. academic and community clinics; medication and placebo arms were double-blind and CBT-containing arms were unblinded.",
@@ -1050,7 +1061,8 @@
         "comparator": "Fluoxetine plus CBT versus fluoxetine alone, CBT alone, and placebo.",
         "outcomes": "Response was 71.0%, 60.6%, 43.2%, and 34.8%, respectively; combined treatment had the best benefit-risk tradeoff. Suicidal thinking improved in all groups; seven participants attempted suicide and none died by suicide.",
         "limitations": "Excluding adolescents at high suicide risk and primary substance-use cases limits safety and generalizability; seven suicide attempts were too few, leaving the trial inadequately powered for statistical safety comparison. The 12-week horizon, unblinded CBT conditions, and lack of a CBT-plus-placebo arm also limit inference.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -1110,7 +1122,8 @@
         "comparator": "Cumulative adverse-childhood-experience categories from 0-7, including comparison of four or more categories with none.",
         "outcomes": "ACE count showed graded associations with adult health risks and disease; four or more versus no categories was associated with 4- to 12-fold higher risks for alcoholism, drug abuse, depression, and suicide attempt.",
         "limitations": "Retrospective self-report, nonresponse, and an observational baseline analysis permit association rather than causal inference and may limit generalizability beyond this HMO sample.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -1161,11 +1174,11 @@
         "selection": "14a",
         "role": "required",
         "teachingRole": "Candidate-gene rise…",
-        "weekNumbers": [],
+        "weekNumbers": [6],
         "topicSlugs": [],
         "pairedTools": [],
-        "mappingStatus": "needs-faculty-confirmation",
-        "mappingNote": "Tracked curriculum files do not assign Caspi 2003 to a week. Zotero suggests Week 6, but that tag is advisory pending faculty confirmation."
+        "mappingStatus": "mapped",
+        "mappingNote": "Faculty approved Caspi 2003 for Week 6 on 2026-07-12; no teaching page or Zotero record was changed in this milestone."
       },
       "appraisal": {
         "studyDesign": "Prospective-longitudinal observational study of a representative birth cohort.",
@@ -1173,7 +1186,8 @@
         "comparator": "Short-allele carriers with one or two copies versus long-allele homozygotes across levels of stressful life events.",
         "outcomes": "Short-allele carriers showed more depressive symptoms, diagnosable depression, and suicidality in relation to stressful life events, consistent with a reported gene-by-environment interaction.",
         "limitations": "This was an observational finding in one cohort; it does not by itself establish causality or independent replication and generalizability.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -1220,11 +1234,11 @@
         "selection": "14b",
         "role": "required",
         "teachingRole": "…and fall (replication crisis)",
-        "weekNumbers": [],
+        "weekNumbers": [6],
         "topicSlugs": [],
         "pairedTools": [],
-        "mappingStatus": "needs-faculty-confirmation",
-        "mappingNote": "Tracked curriculum files do not assign Border 2019 to a week. Zotero suggests Week 6, but that tag is advisory pending faculty confirmation."
+        "mappingStatus": "mapped",
+        "mappingNote": "Faculty approved Border 2019 for Week 6 on 2026-07-12; no teaching page or Zotero record was changed in this milestone."
       },
       "appraisal": {
         "studyDesign": "Preregistered association analyses across large population-based and case-control samples.",
@@ -1232,7 +1246,8 @@
         "comparator": "Main effects and gene-by-environment effects for 18 historical depression candidate genes, with candidate-gene sets also compared with noncandidate genes.",
         "outcomes": "No clear candidate-polymorphism association or candidate gene-by-environment effect was found; candidate genes as a set were no more associated with depression than noncandidate genes.",
         "limitations": "The analysis addresses 18 historical candidate genes and specified phenotypes and moderators; it does not test whether depression has genome-wide polygenic influences.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -1294,7 +1309,8 @@
         "comparator": "Risk-factor categories and exposure levels versus later specific suicidal-thought-or-behavior outcomes; no treatment comparator.",
         "outcomes": "Prediction was only slightly better than chance across odds-ratio, hazard-ratio, and diagnostic-accuracy analyses; no broad category predicted far above chance and accuracy did not improve over 50 years.",
         "limitations": "The underlying literature used homogeneous risk factors, rarely examined combinations, and had narrow methods. Mean follow-up was nearly 10 years (median 5 years), and fewer than 1% of effects used horizons of one month or less; the meta-analysis may therefore miss short-term dynamic signals and should not be overgeneralized to acute bedside prediction.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",
@@ -1349,7 +1365,8 @@
         "comparator": "Not applicable — conceptual/review article",
         "outcomes": "The review synthesizes a three-stage addiction cycle and links it to adaptations in reward, stress, and executive-control circuits that impair behavioral control.",
         "limitations": "The review has no defined study population, comparator, or pooled clinical-effect estimate; it also notes that the model does not identify an abnormality shared by every person with addiction and does not by itself explain untreated recovery.",
-        "reviewStatus": "pending-faculty-review"
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
       },
       "governance": {
         "lastReviewed": "2026-07-12",

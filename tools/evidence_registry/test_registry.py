@@ -90,9 +90,8 @@ def test_canonical_tier1_contract():
     assert {row["curriculum"]["selection"] for row in rows} == TIER1_SELECTIONS
     assert len({row["zotero"]["itemKey"] for row in rows}) == 17
     assert all(row["identity"]["status"] == "verified" for row in rows)
-    assert all(
-        row["appraisal"]["reviewStatus"] == "pending-faculty-review" for row in rows
-    )
+    assert all(row["appraisal"]["reviewStatus"] == "reviewed" for row in rows)
+    assert all(row["appraisal"]["reviewedAt"] == "2026-07-12" for row in rows)
     assert all("expectedTags" not in row["zotero"] for row in rows)
 
 
@@ -107,18 +106,23 @@ def test_canonical_pharoah_appraisal_preserves_review_uncertainty():
     assert "poor trial methods may overestimate effects" in limitations
 
 
-def test_canonical_pharoah_identity_marks_publisher_conflict_without_claiming_verification():
+def test_canonical_pharoah_identity_records_faculty_approved_publisher_exception():
     source = index_sources(load_evidence_registry(REGISTRY_PATH))[
         "pharoah-2010-family-intervention"
     ]
     identity = source["identity"]
+    note = identity["note"].lower()
     assert (
         identity["source"]
         == "zotero-local-api-and-pubmed-agree-cochrane-publisher-disagrees"
     )
     assert "publisher-doi" not in identity["source"]
-    assert "Cochrane publisher metadata disagrees" in identity["note"]
-    assert "controller and faculty resolution" in identity["note"]
+    assert "cochrane publisher metadata disagrees" in note
+    assert "faculty-approved exception" in note
+    assert "retain" in note
+    assert ".pub2" in note
+    assert ".pub3" in note
+    assert "2026-07-12" in note
     assert identity["status"] == "verified"
     assert source["citation"]["doi"] == "10.1002/14651858.cd000088.pub2"
     assert source["citation"]["pmid"] == "21154340"
@@ -155,19 +159,33 @@ def test_canonical_franklin_appraisal_limits_acute_bedside_generalization():
     assert source["curriculum"]["teachingRole"] == "We can't predict; document reasoning"
 
 
-def test_canonical_mapping_decisions_emit_four_nonfatal_warnings():
+def test_canonical_gate_a_mapping_decisions_are_recorded_without_warnings():
     registry = load_evidence_registry(REGISTRY_PATH)
+    source_index = index_sources(registry)
+
+    decisions = {
+        "brown-1972-expressed-emotion": ([4], "Brown 1962"),
+        "march-2004-tads": ([2], "faculty approved"),
+        "caspi-2003-5htt-stress": ([6], "faculty approved"),
+        "border-2019-candidate-gene": ([6], "faculty approved"),
+    }
+    for source_id, (week_numbers, note_fragment) in decisions.items():
+        curriculum = source_index[source_id]["curriculum"]
+        assert curriculum["weekNumbers"] == week_numbers
+        assert curriculum["mappingStatus"] == "mapped"
+        assert note_fragment.lower() in curriculum["mappingNote"].lower()
+
+    brown_note = source_index["brown-1972-expressed-emotion"]["curriculum"][
+        "mappingNote"
+    ].lower()
+    assert "canonical tier 1" in brown_note
+    assert "later contextual companion" in brown_note
+    assert "teaching-page reconciliation" in brown_note
+
     warnings = [
         issue for issue in validate_registry(registry) if issue.severity == "warning"
     ]
-    assert len(warnings) == 4
-    assert {issue.message for issue in warnings} == {
-        "Brown 1962/1972 citation conflict requires faculty resolution",
-        "Tier 1 week assignment needs faculty confirmation: march-2004-tads",
-        "Tier 1 week assignment needs faculty confirmation: caspi-2003-5htt-stress",
-        "Tier 1 week assignment needs faculty confirmation: border-2019-candidate-gene",
-    }
-    assert all(issue.path.endswith(".curriculum.mappingStatus") for issue in warnings)
+    assert warnings == []
 
 
 def test_identifier_normalization():
