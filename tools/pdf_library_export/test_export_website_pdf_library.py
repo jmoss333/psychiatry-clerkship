@@ -14,8 +14,10 @@ from export_website_pdf_library import (
     WebsiteEntry,
     _resolve_cli_paths,
     export_website_pdf_library,
+    format_library_date,
     inline_markdown_to_text,
     load_manifest,
+    markdown_has_h1,
     markdown_to_flowables,
     pdf_styles,
     section_for_entry,
@@ -26,6 +28,45 @@ from export_website_pdf_library import (
 def _write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
+
+
+def _paragraph_text(flowables):
+    return [item.getPlainText() for item in flowables if hasattr(item, "getPlainText")]
+
+
+def test_format_library_date_uses_readable_month_day_year():
+    assert format_library_date("2026-07-12") == "July 12, 2026"
+    try:
+        format_library_date("07/12/2026")
+    except ValueError as exc:
+        assert "ISO date" in str(exc)
+    else:
+        raise AssertionError("Expected invalid ISO date to fail")
+
+
+def test_markdown_to_flowables_omits_machine_generated_line():
+    flowables = markdown_to_flowables(
+        "# Guide\n\nGenerated: 2026-06-27\n\nAudience: MS3 students.",
+        pdf_styles(),
+    )
+    text = "\n".join(_paragraph_text(flowables))
+    assert "Guide" in text
+    assert "Audience: MS3 students." in text
+    assert "Generated:" not in text
+
+
+def test_markdown_has_h1_detects_only_level_one_heading():
+    assert markdown_has_h1("# Primary title\n\n## Section")
+    assert not markdown_has_h1("## Section only")
+
+
+def test_markdown_to_flowables_preserves_machine_generated_line_in_code():
+    flowables = markdown_to_flowables(
+        "```text\nGenerated: 2026-06-27\n```",
+        pdf_styles(),
+    )
+    text = "\n".join(_paragraph_text(flowables))
+    assert "Generated: 2026-06-27" in text
 
 
 def test_inline_markdown_to_text_simplifies_links_and_unicode():
@@ -142,6 +183,10 @@ def test_resolve_cli_paths_expands_relative_paths():
 
 def run_tests():
     tests = [
+        test_format_library_date_uses_readable_month_day_year,
+        test_markdown_to_flowables_omits_machine_generated_line,
+        test_markdown_has_h1_detects_only_level_one_heading,
+        test_markdown_to_flowables_preserves_machine_generated_line_in_code,
         test_inline_markdown_to_text_simplifies_links_and_unicode,
         test_slugify_returns_ascii_file_safe_text,
         test_markdown_to_flowables_strips_wrapped_blockquote_markers,
