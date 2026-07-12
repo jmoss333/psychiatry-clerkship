@@ -270,7 +270,7 @@ def test_default_site_manifest_sources_exist_in_repo():
     md_entries, tool_entries = load_manifest(repo_root, manifest)
 
     assert len(md_entries) == 65
-    assert len(tool_entries) == 19
+    assert len(tool_entries) == 20
 
 
 def test_resolve_cli_paths_expands_relative_paths():
