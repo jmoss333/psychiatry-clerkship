@@ -296,17 +296,17 @@ The curated PDFs are visual review proofs. `top10_adobe_merge.csv` contains edit
 | `module_packet` | Acute consult, documentation, family/discharge, and shelf review |
 | `osce_packet` | Student prompts, examiner material, and feedback sections |
 
-## CSV field mapping
+## Visible template fields
 
-- Title frame: `artifact_title`
-- Format label: `production_format`
-- Section label: `section_heading`
-- Body frame: `section_text`
-- Source footer: `canonical_source`
-- Review footer: `review_status`
-- Traceability fields: `artifact_order`, `artifact_id`, `section_order`, `generated_on`, `review_pdf`
+- Document title: `artifact_title`
+- Section heading: `section_heading`
+- Body: `section_text`
+- Footer date: formatted creation date derived from `generated_on`
 
-Every draft must display `review_status`. Do not distribute a learner-facing PDF while it remains `needs_faculty_review`.
+Do not map `canonical_source`, `artifact_id`, or `review_pdf` into visible frames.
+Do not map `review_status` into visible frames. These fields remain internal traceability data.
+
+Do not distribute a learner-facing PDF while its internal record remains `needs_faculty_review`.
 
 ## Regenerate
 
@@ -320,6 +320,7 @@ python3 tools/faculty_polish_export/export_top10_faculty_polish.py --generated-o
 - Confirm tables, links, and page references remain understandable.
 - Set accessible reading order, document language, bookmarks, and alt text where applicable.
 - Confirm there is no PHI or unverified local-policy language.
+- Before an Adobe merge, authenticate Creative Cloud, inspect the template IDML, and obtain explicit approval of the mapping JSON.
 """
 
 
@@ -329,7 +330,7 @@ def _package_readme(generated_on: str) -> str:
 Generated: {generated_on}
 Status: `needs_faculty_review`
 
-This generated folder collects ten high-value MS3 curriculum PDFs for faculty review and Adobe/InDesign finishing. Markdown files in the repository remain canonical.
+This generated folder collects ten high-value MS3 curriculum PDFs for faculty review and Adobe/InDesign finishing. Markdown files in the repository remain canonical. The standalone PDFs contain curriculum content, the library creation date, and page numbers; the combined packet adds internal review cover pages and dividers.
 
 ## Start here
 

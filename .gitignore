@@ -69,3 +69,7 @@ node_modules/
 
 # ---- Generated faculty and Adobe polish package ----
 /outputs/faculty_polish_top10/
+
+# ---- Local design and PDF verification artifacts ----
+/.superpowers/
+/tmp/pdfs/
