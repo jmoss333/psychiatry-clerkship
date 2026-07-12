@@ -18,6 +18,9 @@ venv/
 
 # ---- Node (future-proof) ----
 node_modules/
+/apps/clinical-reasoning-workbench/coverage/
+/apps/clinical-reasoning-workbench/playwright-report/
+/apps/clinical-reasoning-workbench/test-results/
 
 # ---- Generated build output ----
 # The two deployed sites are BUILD ARTIFACTS produced by 13_Faculty_Resources/_automation/site_build/
