@@ -25,6 +25,7 @@ node_modules/
 # They are intentionally not tracked here — source is truth, deploy is generated.
 /_build/
 /_dist/
+/.worktrees/
 
 # ---- Large binary assets (originals; use Git LFS or external storage if you need them versioned) ----
 # Audio / video
