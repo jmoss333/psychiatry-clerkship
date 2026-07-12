@@ -3,6 +3,7 @@
 
 import copy
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -105,6 +106,32 @@ def test_validation_aggregates_shape_enum_key_and_forbidden_field_issues():
     assert "forbidden tracked key" in messages
 
 
+def test_zotero_item_key_rejects_numeric_value_for_general_and_tier1_rules():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    registry["sources"][0]["zotero"]["itemKey"] = 12345678
+
+    messages = [
+        issue.message
+        for issue in validate_registry(registry)
+        if issue.path == "sources[0].zotero.itemKey"
+    ]
+    assert any("8-character uppercase alphanumeric" in message for message in messages)
+    assert "Tier 1 source requires a Zotero parent item key" in messages
+
+
+def test_zotero_item_key_rejects_padded_value_for_general_and_tier1_rules():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    registry["sources"][0]["zotero"]["itemKey"] = " KL5HP3MU "
+
+    messages = [
+        issue.message
+        for issue in validate_registry(registry)
+        if issue.path == "sources[0].zotero.itemKey"
+    ]
+    assert any("8-character uppercase alphanumeric" in message for message in messages)
+    assert "Tier 1 source requires a Zotero parent item key" in messages
+
+
 def test_validation_aggregates_unhashable_enum_values():
     registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
     registry["sources"][0]["type"] = []
@@ -197,6 +224,39 @@ def test_public_projection_omits_malformed_nested_containers():
     assert '"appraisal"' not in encoded
 
 
+def test_public_projection_recursively_filters_nested_secret_fields():
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    source = registry["sources"][0]
+    author = source["citation"]["authors"][0]
+    author["given"] = {"itemKey": "SECRET-GIVEN"}
+    author["zotero"] = {"itemKey": "SECRET-AUTHOR"}
+    author["surveillance"] = "SECRET-AUTHOR-SURVEILLANCE"
+    source["curriculum"]["pairedTools"].append(
+        {"zotero": {"itemKey": "SECRET-TOOL"}}
+    )
+    source["curriculum"]["topicSlugs"].append(
+        {"surveillance": "SECRET-TOPIC"}
+    )
+    before = copy.deepcopy(registry)
+
+    public = build_public_projection(registry)
+    encoded = json.dumps(public)
+    assert registry == before
+    for forbidden_key in ('"itemKey"', '"zotero"', '"surveillance"'):
+        assert forbidden_key not in encoded
+    for sentinel in (
+        "SECRET-GIVEN",
+        "SECRET-AUTHOR",
+        "SECRET-AUTHOR-SURVEILLANCE",
+        "SECRET-TOOL",
+        "SECRET-TOPIC",
+    ):
+        assert sentinel not in encoded
+    assert public["sources"][0]["citation"]["authors"] == [{"family": "Engel"}]
+    assert public["sources"][0]["curriculum"]["pairedTools"] == []
+    assert public["sources"][0]["curriculum"]["topicSlugs"] == ["fixture-one"]
+
+
 def _write_fixture_repo(repo_root: Path, evidence_id: str) -> None:
     (repo_root / "evidence_registry.json").write_text(
         FIXTURE.read_text(encoding="utf-8"), encoding="utf-8"
@@ -221,6 +281,26 @@ def test_offline_cli_accepts_valid_foreign_keys_without_zotero_import():
     assert result.returncode == 0, result.stdout + result.stderr
     assert "17 sources, 17 Tier 1 articles, 16 numbered selections" in result.stdout
     assert "zotero_reconcile" not in VALIDATE.read_text(encoding="utf-8")
+
+
+def test_offline_cli_expands_literal_home_directory():
+    with tempfile.TemporaryDirectory() as directory:
+        home = Path(directory)
+        repo_root = home / "fixture-repo"
+        repo_root.mkdir()
+        _write_fixture_repo(repo_root, "engel-1977-biopsychosocial-model")
+        environment = os.environ.copy()
+        environment["HOME"] = str(home)
+        result = subprocess.run(
+            [sys.executable, str(VALIDATE), "--repo-root", "~/fixture-repo"],
+            check=False,
+            capture_output=True,
+            text=True,
+            env=environment,
+        )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "17 sources, 17 Tier 1 articles, 16 numbered selections" in result.stdout
 
 
 def test_offline_cli_rejects_unknown_foreign_key():

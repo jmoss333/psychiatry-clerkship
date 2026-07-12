@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import copy
 import json
 import re
 import unicodedata
@@ -402,22 +401,23 @@ def validate_registry(registry: dict) -> list[ValidationIssue]:
         if isinstance(zotero, dict):
             raw_item_key = zotero.get("itemKey")
             if raw_item_key not in (None, ""):
-                item_key = str(raw_item_key).strip()
-                normalized_item_key = item_key.upper()
-                if _ZOTERO_ITEM_KEY_RE.fullmatch(item_key) is None:
+                if not isinstance(raw_item_key, str) or _ZOTERO_ITEM_KEY_RE.fullmatch(
+                    raw_item_key
+                ) is None:
                     issues.append(
                         ValidationIssue(
                             f"{source_path}.zotero.itemKey",
                             "Zotero item key must be an 8-character uppercase alphanumeric parent key, not a BibTeX key",
                         )
                     )
-                _record_unique(
-                    issues,
-                    seen_zotero_keys,
-                    normalized_item_key,
-                    "Zotero item key",
-                    f"{source_path}.zotero.itemKey",
-                )
+                else:
+                    _record_unique(
+                        issues,
+                        seen_zotero_keys,
+                        raw_item_key,
+                        "Zotero item key",
+                        f"{source_path}.zotero.itemKey",
+                    )
 
         if _is_tier1_source(source):
             tier1_entries.append((position, source))
@@ -466,7 +466,9 @@ def validate_registry(registry: dict) -> list[ValidationIssue]:
         governance = source.get("governance")
 
         item_key = zotero.get("itemKey") if isinstance(zotero, dict) else None
-        if not _nonempty_text(item_key):
+        if not isinstance(item_key, str) or _ZOTERO_ITEM_KEY_RE.fullmatch(
+            item_key
+        ) is None:
             issues.append(
                 ValidationIssue(
                     f"{source_path}.zotero.itemKey",
@@ -609,12 +611,55 @@ def collect_evidence_references(repo_root: Path) -> list[tuple[str, str]]:
     return references
 
 
-def _copy_allowlisted(mapping: dict, allowed_fields: set[str]) -> dict:
+def _copy_string_fields(mapping: dict, allowed_fields: set[str]) -> dict:
     return {
-        field: copy.deepcopy(mapping[field])
+        field: mapping[field]
         for field in sorted(allowed_fields)
-        if field in mapping
+        if isinstance(mapping.get(field), str)
     }
+
+
+def _build_public_citation(citation: dict) -> dict:
+    projected = _copy_string_fields(
+        citation, PUBLIC_CITATION_FIELDS - {"authors", "year"}
+    )
+    year = citation.get("year")
+    if type(year) is int:
+        projected["year"] = year
+
+    authors = citation.get("authors")
+    if isinstance(authors, list):
+        projected_authors = []
+        for author in authors:
+            if not isinstance(author, dict):
+                continue
+            projected_author = _copy_string_fields(author, {"family", "given"})
+            if projected_author:
+                projected_authors.append(projected_author)
+        projected["authors"] = projected_authors
+    return projected
+
+
+def _build_public_curriculum(curriculum: dict) -> dict:
+    projected = _copy_string_fields(curriculum, {"role"})
+    tier = curriculum.get("tier")
+    if type(tier) is int:
+        projected["tier"] = tier
+
+    list_types = {
+        "weekNumbers": int,
+        "topicSlugs": str,
+        "pairedTools": str,
+    }
+    for field, item_type in list_types.items():
+        values = curriculum.get(field)
+        if not isinstance(values, list):
+            continue
+        if item_type is int:
+            projected[field] = [value for value in values if type(value) is int]
+        else:
+            projected[field] = [value for value in values if isinstance(value, str)]
+    return projected
 
 
 def build_public_projection(registry: dict) -> dict:
@@ -626,24 +671,19 @@ def build_public_projection(registry: dict) -> dict:
         for source in sources:
             if not isinstance(source, dict):
                 continue
-            projected = _copy_allowlisted(source, PUBLIC_SOURCE_FIELDS)
+            projected = _copy_string_fields(
+                source, PUBLIC_SOURCE_FIELDS - {"citation", "curriculum"}
+            )
             citation = source.get("citation")
             if isinstance(citation, dict):
-                projected["citation"] = _copy_allowlisted(
-                    citation, PUBLIC_CITATION_FIELDS
-                )
-            else:
-                projected.pop("citation", None)
+                projected["citation"] = _build_public_citation(citation)
             curriculum = source.get("curriculum")
             if isinstance(curriculum, dict):
-                projected["curriculum"] = _copy_allowlisted(
-                    curriculum, PUBLIC_CURRICULUM_FIELDS
-                )
-            else:
-                projected.pop("curriculum", None)
+                projected["curriculum"] = _build_public_curriculum(curriculum)
             projected_sources.append(projected)
 
+    schema_version = registry.get("schemaVersion")
     return {
-        "schemaVersion": copy.deepcopy(registry.get("schemaVersion")),
+        "schemaVersion": schema_version if type(schema_version) is int else None,
         "sources": projected_sources,
     }

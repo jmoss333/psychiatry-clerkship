@@ -77,7 +77,7 @@ def _print_issues(issues: list[registry_library.ValidationIssue]) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    repo_root = args.repo_root.resolve()
+    repo_root = args.repo_root.expanduser().resolve()
     registry_path = repo_root / "evidence_registry.json"
 
     try:
