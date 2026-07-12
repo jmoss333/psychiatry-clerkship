@@ -110,6 +110,17 @@
       "storageKeys": ["cw_family_v1"],
       "evidenceIds": ["va-dod-suicide-cpg-2024", "project-beta-deescalation-2012"],
       "relatedPages": ["collateral_workflow.md", "exp_family.md", "family_playbook.md", "family_modalities.md", "pg_suicide.md", "t_psychosis.md", "ethics_legal.md", "delirium.md", "t_mood.md", "t_sud.md", "t_personality.md", "t_neurocog.md", "t_neurodev.md", "agitation.md", "cultural_psychiatry.md"]
+    },
+    {
+      "file": "one-patient-six-weeks.html",
+      "title": "One Patient, Six Weeks",
+      "sourcePath": "08_Cases_and_Simulation/one-patient-six-weeks.html",
+      "category": "longitudinal-simulation",
+      "riskLevel": "moderate",
+      "disclaimerType": "fictional-simulation-supervision",
+      "storageKeys": ["cw_longitudinal_v1"],
+      "evidenceIds": [],
+      "relatedPages": ["pg_interview.md", "ddx.md", "medical_workup.md", "psychopharm_primer.md", "med_monitoring.md", "collateral_workflow.md", "family_playbook.md", "exp_family.md", "pg_suicide.md", "agitation.md", "doc_oral.md", "shelf.md", "evidence_inpatient.md"]
     }
   ]
 }

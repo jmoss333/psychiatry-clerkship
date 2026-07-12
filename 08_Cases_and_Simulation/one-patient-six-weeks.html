@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [RC-META] tool="One Patient, Six Weeks" version="1.0" built="2026-07-11" category="longitudinal-simulation" audience="ms3,resident" settings="inpatient,self-study" time="10-20min" summary="Fictional composite longitudinal inpatient psychiatry case with six evolving states, checklist reflection, and links to supervised practice tools. Stores only anonymous checklist state under cw_longitudinal_v1; no PHI or free-text patient fields." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>One Patient, Six Weeks</title>
+<style>
+:root{
+  --bg:#f6f3ee;--surface:#fff;--surface-2:#faf7f1;--line:#ddd2c5;
+  --ink:#2f2924;--muted:#61564c;--soft:#776a5e;
+  --teal:#2b7568;--teal-dark:#1f574d;--teal-soft:#e7f1ee;
+  --terra:#bd5537;--terra-dark:#9e412b;--terra-soft:#f5e8e2;
+  --gold:#806232;--gold-soft:#f7efe0;--focus:#155eef;
+  --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5}
+.shell{max-width:1160px;margin:0 auto;padding:24px 18px 72px}
+.top{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,420px);gap:18px;align-items:start;margin-bottom:18px}
+.kicker{text-transform:uppercase;letter-spacing:.13em;font-size:.72rem;font-weight:900;color:var(--teal-dark)}
+h1{font-family:var(--font-head);font-size:2.2rem;line-height:1.05;color:var(--terra);margin:.08em 0 .22em}
+.sub{max-width:72ch;color:var(--muted);margin:0}
+.notice{border:1px solid var(--gold);border-left:4px solid var(--gold);border-radius:10px;background:var(--gold-soft);padding:11px 13px;color:var(--muted);font-size:.91rem}
+.layout{display:grid;grid-template-columns:minmax(235px,290px) minmax(0,1fr);gap:16px}
+.side,.card,.week-card,.links-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 4px rgba(56,48,40,.06);min-width:0}
+.side{align-self:start;position:sticky;top:12px;padding:11px}
+.progress{padding:5px 5px 12px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.progress b{display:block}
+.progress .small{display:block;color:var(--soft);font-size:.82rem}
+.bar{height:8px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);overflow:hidden;margin-top:8px}
+.bar span{display:block;height:100%;width:0;background:var(--teal);transition:width .2s ease}
+.weekbtn{display:block;width:100%;border:1px solid transparent;background:transparent;border-radius:10px;padding:10px;text-align:left;color:var(--ink);font:inherit;cursor:pointer}
+.weekbtn:hover{background:var(--teal-soft)}
+.weekbtn.current{background:var(--teal);color:#fff}
+.weekbtn.current .weekmeta,.weekbtn.current .done{color:#fff}
+.weekbtn .weektitle{display:block;font-weight:900;line-height:1.2}
+.weekbtn .weekmeta{display:block;color:var(--soft);font-size:.78rem;margin-top:3px}
+.weekbtn .done{display:inline-block;color:var(--teal-dark);font-size:.69rem;font-weight:900;margin-top:5px}
+.main{display:grid;gap:14px}
+.card,.week-card,.links-card{padding:17px}
+.patient-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.patient-title{font-family:var(--font-head);font-size:1.42rem;color:var(--terra);margin:0 0 3px}
+.patient-copy{margin:0;color:var(--muted);max-width:76ch}
+.pillrow{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);padding:3px 9px;color:var(--muted);font-size:.74rem;font-weight:900}
+.pill.review{border-color:var(--gold);background:var(--gold-soft);color:var(--gold)}
+.weekhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.weeklabel{text-transform:uppercase;letter-spacing:.11em;color:var(--teal-dark);font-size:.74rem;font-weight:900}
+.weektitle{font-family:var(--font-head);font-size:1.6rem;line-height:1.12;color:var(--ink);margin:3px 0 0}
+.status{border:1px solid var(--line);border-radius:999px;background:var(--surface-2);padding:4px 9px;font-size:.75rem;font-weight:900;color:var(--soft)}
+.status.done{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-dark)}
+.focus{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 16px}
+.focus .pill{color:var(--teal-dark);border-color:#b9d5ce;background:var(--teal-soft)}
+.state{border-left:4px solid var(--terra);border-radius:0 10px 10px 0;background:var(--terra-soft);padding:11px 13px;color:var(--muted);margin-bottom:14px}
+.state b,.task b{color:var(--ink)}
+.task{font-size:1.07rem;color:var(--ink);margin:0 0 15px}
+.check-title{font-size:.76rem;text-transform:uppercase;letter-spacing:.1em;color:var(--teal-dark);font-weight:900;margin:0 0 7px}
+.checks{display:grid;gap:7px}
+.check{display:flex;align-items:flex-start;gap:9px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);padding:10px;color:var(--muted)}
+.check:hover{border-color:var(--teal)}
+.check input{width:18px;height:18px;flex:none;margin:1px 0 0;accent-color:var(--teal)}
+.check.done{background:var(--teal-soft);color:var(--teal-dark)}
+.prompt{border-top:1px solid var(--line);margin:16px 0 0;padding-top:13px;color:var(--muted)}
+.prompt b{color:var(--ink)}
+.handoff{border:1px solid #b9d5ce;border-left:4px solid var(--teal);border-radius:0 10px 10px 0;background:var(--teal-soft);padding:11px 13px;color:var(--muted);margin-top:14px}
+.handoff b{color:var(--teal-dark)}
+.links-card h3{font-family:var(--font-head);font-size:1.22rem;color:var(--terra);margin:0 0 9px}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--teal-dark);background:var(--surface-2);text-decoration:none;font-size:.84rem;font-weight:900}
+.links a:hover{border-color:var(--teal);background:var(--teal-soft)}
+.navrow{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{border:1px solid var(--teal);background:var(--teal);color:#fff;border-radius:999px;padding:8px 13px;font:inherit;font-size:.87rem;font-weight:900;cursor:pointer}
+.btn:hover{background:var(--teal-dark)}
+.btn.secondary{background:var(--surface);color:var(--teal-dark)}
+.btn.secondary:hover{background:var(--teal-soft)}
+.btn.danger{border-color:var(--line);background:var(--surface);color:var(--soft)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.storage{font-size:.82rem;color:var(--soft);margin-top:12px}
+.live{min-height:1.4em;color:var(--teal-dark);font-size:.84rem;font-weight:700}
+.empty{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;color:var(--muted)}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+@media(max-width:820px){
+  .top{grid-template-columns:1fr}
+  .layout{grid-template-columns:1fr}
+  .side{position:static}
+  .weeklist{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+  .weekbtn{min-width:190px}
+  h1{font-size:1.95rem}
+}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="top">
+    <div>
+      <div class="kicker">Longitudinal case arc</div>
+      <h1>One Patient, Six Weeks</h1>
+      <p class="sub">Follow one fictional inpatient across changing information, relationships, safety questions, treatment conversations, and the final handoff.</p>
+    </div>
+    <div class="notice"><b>Boundary:</b> fictional composite only. Do not enter patient information. This is a learning simulation, not a clinical decision tool or substitute for supervision and local policy.</div>
+  </div>
+  <div id="app"><div class="empty">Loading the longitudinal case...</div></div>
+</main>
+<script>
+(function(){
+  var app=document.getElementById('app');
+  var state={caseData:null,current:requestedWeek(),progress:loadProgress(),review:{status:'pending',by:'Pending faculty review',at:''}};
+
+  function esc(s){return String(s==null?'':s).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c];});}
+  function requestedWeek(){try{var n=parseInt(new URLSearchParams(location.search).get('week')||'1',10);return Math.max(0,Math.min(5,n-1));}catch(_){return 0;}}
+  function loadProgress(){try{var p=JSON.parse(localStorage.getItem('cw_longitudinal_v1')||'{}');return p&&p.version===1?p:{version:1,current:0,completed:{}};}catch(_){return {version:1,current:0,completed:{}};}}
+  function saveProgress(){try{localStorage.setItem('cw_longitudinal_v1',JSON.stringify(state.progress));}catch(_){} }
+  function week(){return state.caseData.weeks[state.current];}
+  function record(id){return state.progress.completed[id]||{checks:{}};}
+  function complete(w){var r=record(w.id);return (w.checklist||[]).length>0&&(w.checklist||[]).every(function(_,i){return !!r.checks['c'+i];});}
+  function completedCount(){return state.caseData.weeks.filter(complete).length;}
+  function setWeek(i){state.current=Math.max(0,Math.min(state.caseData.weeks.length-1,i));state.progress.current=state.current;saveProgress();try{history.replaceState(null,'','?week='+(state.current+1));}catch(_){}render();}
+  function weekList(){return '<div class="weeklist">'+state.caseData.weeks.map(function(w,i){var on=i===state.current,done=complete(w);return '<button type="button" class="weekbtn'+(on?' current':'')+'" data-week="'+i+'"'+(on?' aria-current="step"':'')+'"><span class="weektitle">'+esc(w.label)+': '+esc(w.title)+'</span><span class="weekmeta">'+esc((w.focus||[]).join(' · '))+'</span>'+(done?'<span class="done">Completed</span>':'');}).join('')+'</div>';}
+  function sidebar(){var done=completedCount(),total=state.caseData.weeks.length,pct=Math.round(done*100/total);return '<aside class="side" aria-label="Six-week case timeline"><div class="progress"><b>'+done+' of '+total+' weeks completed</b><span class="small">Checklist progress saved in this browser only</span><div class="bar" role="progressbar" aria-label="Longitudinal case progress" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+pct+'%"></span></div></div>'+weekList()+'</aside>';}
+  function reviewBadge(){var r=state.review||{};if(r.status==='reviewed')return '<span class="pill review">Reviewed'+(r.by?' · '+esc(r.by):'')+(r.at?' · '+esc(r.at):'')+'</span>';return '<span class="pill review">Faculty review pending</span>';}
+  function patientCard(){var p=state.caseData.patient;return '<section class="card"><div class="patient-row"><div><h2 class="patient-title">'+esc(p.displayName)+': a changing story</h2><p class="patient-copy">'+esc(p.description)+'</p></div>'+reviewBadge()+'</div><div class="pillrow"><span class="pill">'+esc(state.caseData.setting)+'</span><span class="pill">Fictional composite</span><span class="pill">No free-text patient data</span></div><p class="storage">'+esc(p.frame)+'</p></section>';}
+  function checklist(w){var r=record(w.id);return '<div><p class="check-title">Before you move on</p><div class="checks">'+w.checklist.map(function(text,i){var on=!!r.checks['c'+i];return '<label class="check'+(on?' done':'')+'"><input type="checkbox" data-check="c'+i+'" '+(on?'checked':'')+'> <span>'+esc(text)+'</span></label>';}).join('')+'</div></div>';}
+  function links(w){return '<section class="links-card"><h3>Practice this part of the story</h3><div class="links">'+w.links.map(function(link){var param=link.kind==='tool'?'tool':'page';return '<a target="_parent" href="../index.html?'+param+'='+encodeURIComponent(link.target)+'">'+esc(link.label)+' <span aria-hidden="true">→</span></a>';}).join('')+'</div><p class="storage">Use the linked page or tool with your supervising team. The simulator does not store notes about a patient.</p></section>';}
+  function weekCard(w){var done=complete(w);var r=record(w.id);return '<section class="week-card"><div class="weekhead"><div><div class="weeklabel">'+esc(w.label)+'</div><h2 class="weektitle">'+esc(w.title)+'</h2></div><span class="status'+(done?' done':'')+'">'+(done?'Completed':'In progress')+'</span></div><div class="focus">'+w.focus.map(function(x){return '<span class="pill">'+esc(x)+'</span>';}).join('')+'</div><div class="state"><b>What changes in the story:</b> '+esc(w.patientState)+'</div><p class="task"><b>Your learning task:</b> '+esc(w.learnerTask)+'</p>'+checklist(w)+'<p class="prompt"><b>Pause and reflect:</b> '+esc(w.reflectionPrompt)+'</p><div class="handoff"><b>Carry it to rounds:</b> '+esc(w.handoff)+'</div><div class="navrow"><button type="button" class="btn secondary" data-prev '+(state.current===0?'disabled':'')+'>Previous week</button><button type="button" class="btn" data-next '+(!done||state.current===state.caseData.weeks.length-1?'disabled':'')+'>'+(state.current===state.caseData.weeks.length-1?'Six-week arc complete':'Next week')+'</button></div><div class="navrow"><button type="button" class="btn danger" data-reset>Reset local journey</button><span class="live" aria-live="polite" id="statusMessage">'+(done?'Week complete.':'Complete the checklist to unlock the next week.')+'</span></div><p class="storage">Stored locally: week number, checklist state, and date. No names, notes, or patient identifiers.</p></section>'+links(w);}
+  function render(){if(!state.caseData){app.innerHTML='<div class="empty">No longitudinal case is available.</div>';return;}var w=week();app.innerHTML='<div class="layout">'+sidebar()+'<div class="main">'+patientCard()+weekCard(w)+'</div></div>';}
+  app.addEventListener('click',function(ev){var weekButton=ev.target.closest&&ev.target.closest('[data-week]');if(weekButton){setWeek(parseInt(weekButton.getAttribute('data-week'),10)||0);return;}if(ev.target.closest&&ev.target.closest('[data-prev]')){setWeek(state.current-1);return;}if(ev.target.closest&&ev.target.closest('[data-next]')){if(complete(week()))setWeek(state.current+1);return;}if(ev.target.closest&&ev.target.closest('[data-reset]')){if(window.confirm('Reset the six-week checklist stored in this browser?')){state.progress={version:1,current:0,completed:{}};setWeek(0);}}});
+  app.addEventListener('change',function(ev){var input=ev.target.closest&&ev.target.closest('[data-check]');if(!input)return;var w=week(),r=record(w.id);r.checks=r.checks||{};r.checks[input.getAttribute('data-check')]=!!input.checked;r.at=new Date().toISOString().slice(0,10);state.progress.completed[w.id]=r;saveProgress();render();});
+  Promise.all([
+    fetch('../longitudinal_case.json').then(function(r){if(!r.ok)throw new Error('missing case');return r.json();}),
+    fetch('../reviewed.json').then(function(r){return r.ok?r.json():{};}).catch(function(){return {};})
+  ]).then(function(rows){var data=rows[0],reviewed=rows[1]||{};state.caseData=data;state.review=reviewed['one-patient-six-weeks.html']||state.review;state.current=Math.max(0,Math.min(data.weeks.length-1,state.progress.current||state.current));render();}).catch(function(){app.innerHTML='<div class="empty">Could not load the longitudinal case. Rebuild the site or check longitudinal_case.json.</div>';});
+})();
+</script>
+</body>
+</html>
