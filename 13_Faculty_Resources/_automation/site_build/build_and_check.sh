@@ -31,6 +31,7 @@ MS3_OUT="$LIB/_build/ms3"
 RES_OUT="$LIB/_build/res"
 
 python3 "$LIB/13_Faculty_Resources/_automation/validate_topic_meta.py"
+python3 "$LIB/13_Faculty_Resources/_automation/validate_attestation_consistency.py"
 
 case "$SITE" in
   ms3)

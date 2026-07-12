@@ -1,6 +1,6 @@
 # Hyperthermia & Toxidromes: NMS, Serotonin Syndrome, Anticholinergic, Malignant Catatonia
 
-> **Review status:** AI-drafted, evidence-anchored — **pending Dr. Moss's review/attestation before learner use.**
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line.** Four hyperthermic emergencies on the psychiatric unit share the same alarming triad — fever, altered mental status, and autonomic instability — but the neuromuscular exam, the skin, and the drug change in the last 72 hours tell them apart, and the treatments diverge sharply.
 

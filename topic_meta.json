@@ -2097,9 +2097,9 @@
     ],
     "safetyLevel": "high",
     "facultyReview": {
-      "status": "pending",
+      "status": "reviewed",
       "lastReviewed": "2026-07-09",
-      "reviewer": "Pending faculty review"
+      "reviewer": "Joshua Moss, MD"
     },
     "workflowStages": [
       "safety",
@@ -2179,9 +2179,9 @@
     ],
     "safetyLevel": "high",
     "facultyReview": {
-      "status": "pending",
+      "status": "reviewed",
       "lastReviewed": "2026-07-09",
-      "reviewer": "Pending faculty review"
+      "reviewer": "Joshua Moss, MD"
     },
     "workflowStages": [
       "safety",
@@ -4852,9 +4852,9 @@
     ],
     "safetyLevel": "moderate",
     "facultyReview": {
-      "status": "draft",
-      "lastReviewed": "2026-07-08",
-      "reviewer": "Pending faculty review"
+      "status": "reviewed",
+      "lastReviewed": "2026-07-09",
+      "reviewer": "Joshua Moss, MD"
     },
     "clinicalWorkflow": {
       "ask": "Name the purpose before calling: baseline/timeline, risk, treatment history, or discharge reality.",
@@ -4907,9 +4907,9 @@
       "treatment"
     ],
     "facultyReview": {
-      "status": "pending",
+      "status": "reviewed",
       "lastReviewed": "2026-07-10",
-      "reviewer": "Pending faculty review"
+      "reviewer": "Joshua Moss, MD"
     }
   },
   "med_monitoring.md": {
@@ -4928,9 +4928,9 @@
       "safety"
     ],
     "facultyReview": {
-      "status": "pending",
+      "status": "reviewed",
       "lastReviewed": "2026-07-10",
-      "reviewer": "Pending faculty review"
+      "reviewer": "Joshua Moss, MD"
     }
   },
   "psychotherapy.md": {
@@ -4949,9 +4949,9 @@
       "exam"
     ],
     "facultyReview": {
-      "status": "pending",
-      "lastReviewed": "2026-07-10",
-      "reviewer": "Pending faculty review"
+      "status": "reviewed",
+      "lastReviewed": "2026-07-09",
+      "reviewer": "Joshua Moss, MD"
     }
   },
   "case_formulation.md": {
@@ -4971,9 +4971,9 @@
       "exam"
     ],
     "facultyReview": {
-      "status": "pending",
-      "lastReviewed": "2026-07-10",
-      "reviewer": "Pending faculty review"
+      "status": "reviewed",
+      "lastReviewed": "2026-07-09",
+      "reviewer": "Joshua Moss, MD"
     }
   },
   "medical_workup.md": {
@@ -5002,9 +5002,9 @@
       "treatment"
     ],
     "facultyReview": {
-      "status": "pending",
+      "status": "reviewed",
       "lastReviewed": "2026-07-10",
-      "reviewer": "Pending faculty review"
+      "reviewer": "Joshua Moss, MD"
     }
   }
 }

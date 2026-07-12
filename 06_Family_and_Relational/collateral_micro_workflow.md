@@ -1,6 +1,6 @@
 # I Need Collateral: 10-Minute Workflow
 
-> **Review status:** AI-drafted - pending faculty review/attestation before learner use.
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
 
 **In one line** - Collateral is clinical data, not gossip: get permission when possible, ask only what changes diagnosis/risk/treatment/discharge, share the minimum necessary, and bring one clear update back to the team.
 
