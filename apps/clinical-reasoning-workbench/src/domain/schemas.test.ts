@@ -209,6 +209,21 @@ test("parses the approved seed and preserves its exact authored contract", () =>
   expect(parsed.timelineItems.map((item) => item.id)).toEqual(
     parsed.facts.map((fact) => `timeline-${fact.id}`),
   );
+  expect(parsed.timelineItems.map((item) => item.factIds)).toEqual([
+    ["F01"],
+    ["F02"],
+    ["F03"],
+    ["F04"],
+    ["F05"],
+    ["F06"],
+    ["F07"],
+    ["F08"],
+    ["F09"],
+    ["F10"],
+  ]);
+  expect(
+    parsed.timelineItems.every((item) => item.episodeId === undefined),
+  ).toBe(true);
   expect(parsed.timelineItems.map((item) => item.lane)).toEqual([
     "function",
     "substance_use",
