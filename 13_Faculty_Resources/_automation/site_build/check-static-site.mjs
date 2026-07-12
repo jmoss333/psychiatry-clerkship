@@ -98,8 +98,8 @@ if (existsSync(siPath) && parsed[siPath]) {
 /* ---------- 4. orphans, metadata coverage, review coverage ---------- */
 const contentFiles = existsSync(p('content')) ? readdirSync(p('content')).filter(f => f.endsWith('.md')) : [];
 const toolFiles = listHtml(p('tools'));
-for (const f of contentFiles) if (navMd.size && !navMd.has(f)) S(`orphan content (not in nav): ${f}`);
-for (const f of toolFiles) if (navTools.size && !navTools.has(f)) S(`orphan tool (not in nav): ${f}`);
+for (const f of contentFiles) if (navMd.size && !navMd.has(f)) H(`orphan content (not in nav): ${f} — add to nav in build_deploy.py or resident_section.py`);
+for (const f of toolFiles) if (navTools.size && !navTools.has(f)) H(`orphan tool (not in nav): ${f} — add to nav in build_deploy.py or resident_section.py`);
 
 const tmPath = p('topic_meta.json');
 if (existsSync(tmPath) && parsed[tmPath]) {

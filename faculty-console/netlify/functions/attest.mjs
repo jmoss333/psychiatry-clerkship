@@ -23,6 +23,9 @@ const TOKEN = process.env.GITHUB_TOKEN;
 const KEY = process.env.FACULTY_ATTEST_PASSWORD;
 const ORIGIN = process.env.ALLOWED_ORIGIN || '*';
 const ATTESTER_EMAIL = process.env.ATTESTER_EMAIL || 'faculty@clerkship.local';
+// Student site the console deep-links to for "View" (read the page you're attesting).
+// Override per deployment; defaults to the MS3 site.
+const STUDENT = (process.env.STUDENT_SITE_URL || 'https://une-ms3-psychiatry.netlify.app').replace(/\/+$/, '');
 
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
@@ -94,12 +97,14 @@ async function buildState() {
     const r = rev[slug] || {};
     items.push({ slug, title, kind: 'tool', status: r.status || 'unreviewed', at: r.at || '', by: r.by || '' });
   }
-  const qitems = (qbank.json.items || []).map((it) => ({
-    id: it.id, category: it.category, difficulty: it.difficulty,
-    status: it.status || 'draft',
-    stem: (it.stem || '').slice(0, 120),
-  }));
-  return { items, qbank: qitems, counts: {
+  const qitems = (qbank.json.items || [])
+    .filter((it) => !it.retired)   // retired items are excluded from the attestable set
+    .map((it) => ({
+      id: it.id, category: it.category, difficulty: it.difficulty,
+      status: it.status || 'draft',
+      stem: (it.stem || '').slice(0, 120),
+    }));
+  return { student: STUDENT, items, qbank: qitems, counts: {
     pagesReviewed: items.filter((i) => i.status === 'reviewed').length,
     pagesTotal: items.length,
     qbankAttested: qitems.filter((q) => q.status === 'attested').length,
@@ -153,7 +158,7 @@ export default async (request) => {
           let n = 0;
           for (const [id, on] of Object.entries(changes)) {
             const it = byId.get(id);
-            if (!it) continue;
+            if (!it || it.retired) continue;   // retired items cannot be (re-)attested
             it.status = on ? 'attested' : 'draft'; n++;
           }
           const commit = await ghPut(QBANK_PATH, qb, sha, `attest: ${n} question(s) by ${attester} (${at})`, 2);

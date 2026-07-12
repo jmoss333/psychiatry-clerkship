@@ -3941,7 +3941,7 @@
     },
     {
       "id": "qb_pha_012",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3990,7 +3990,9 @@
       ],
       "why": "All rigidity equals NMS, All agitation equals serotonin syndrome, and One treatment for all are three forms of diagnostic conflation. The discriminating features: serotonin syndrome = rapid onset, clonus, hyperreflexia, after serotonergic agent combination; NMS = slower onset, lead-pipe rigidity, hyperthermia, elevated CK, after dopamine blocker. Treating them identically mismatches the pharmacologic antidote to the wrong mechanism.",
       "pearl": "Serotonin syndrome: rapid onset, clonus, hyperreflexia (serotonergic agents); NMS: slower, lead-pipe rigidity, hyperthermia, elevated CK (dopamine blockade) — different mechanisms, different treatments.",
-      "evidence": "psychopharm_primer.md — Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased. Neuroleptic malignant syndrome: 'lead-pipe' rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+      "evidence": "psychopharm_primer.md — Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased. Neuroleptic malignant syndrome: 'lead-pipe' rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+      "retired": true,
+      "retiredReason": "Near-duplicate of qb_saf_015 (serotonin-syndrome vs NMS discriminator); qb_saf_015 kept as the cleaner bedside-discriminator item anchoring toxidromes.md."
     },
     {
       "id": "qb_pha_013",
@@ -8196,6 +8198,2522 @@
         ],
         "why": "Postpartum OCD intrusive thoughts are a critically important differential. The page states: 'Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.' Key discrimination: (1) Ego-dystonic: the patient is horrified by the thoughts and does not want to act on them. (2) She avoids, not approaches, situations that could lead to the feared outcome. (3) Command hallucinations are ego-syntonic experiences that the patient may feel compelled to act on. Mislabeling postpartum OCD as command hallucinations leads to emergency separation and antipsychotic treatment of a patient who needs reassurance and OCD-specific treatment."
       }
+    },
+    {
+      "id": "qb_per_007",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A 19-year-old man is admitted after an assault. He has a documented history of truancy, fire-setting, and cruelty to animals beginning at age 12. Which finding is required to diagnose antisocial personality disorder?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Evidence of conduct disorder with onset before age 15",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A current age of at least 16 years",
+          "trap": {
+            "name": "Wrong age threshold",
+            "note": "ASPD requires the patient be at least 18; conduct disorder is the childhood-onset antecedent."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The presence of psychotic symptoms during the aggressive episodes",
+          "trap": {
+            "name": "Psychosis conflation",
+            "note": "ASPD is a personality disorder, not a psychotic illness — psychosis is not a criterion."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A single act of serious violence in adulthood",
+          "trap": {
+            "name": "One-act fallacy",
+            "note": "ASPD requires a pervasive pattern of disregard for others' rights, not one act."
+          }
+        }
+      ],
+      "why": "ASPD requires the person be ≥18 AND show evidence of conduct disorder with onset before age 15 — the childhood antecedent is mandatory.",
+      "pearl": "Antisocial personality disorder: age ≥18 plus evidence of conduct disorder before age 15.",
+      "evidence": "t_personality.md — Cluster B: antisocial personality disorder criteria."
+    },
+    {
+      "id": "qb_per_008",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A 45-year-old man believes coworkers are subtly undermining him and reads hidden hostile meaning into ordinary remarks, present for decades. He has never had hallucinations, sustained delusions, or functional collapse. Most likely diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Paranoid personality disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Delusional disorder, persecutory type",
+          "trap": {
+            "name": "Delusion overreach",
+            "note": "Delusional disorder requires a fixed sustained delusion; pervasive lifelong distrust without one is the personality pattern."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Schizophrenia, paranoid presentation",
+          "trap": {
+            "name": "Psychosis conflation",
+            "note": "Schizophrenia requires frank psychosis and functional decline, absent here."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Schizotypal personality disorder",
+          "trap": {
+            "name": "Cluster A mix-up",
+            "note": "Schizotypal features odd beliefs/magical thinking, not pure pervasive distrust."
+          }
+        }
+      ],
+      "why": "Pervasive, longstanding distrust and suspiciousness without frank delusions or psychosis is paranoid personality disorder (Cluster A).",
+      "pearl": "Pervasive lifelong distrust without frank psychosis = paranoid personality disorder.",
+      "evidence": "t_personality.md — Cluster A: paranoid PD vs psychotic disorders."
+    },
+    {
+      "id": "qb_per_009",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A 30-year-old woman has few relationships, magical thinking, ideas of reference, and odd speech; her social anxiety does not lessen as she gets to know people and stems from paranoid discomfort rather than fear of embarrassment. Which best fits?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Schizotypal personality disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Schizoid personality disorder",
+          "trap": {
+            "name": "No-desire mix-up",
+            "note": "Schizoid patients are indifferent to relationships and lack odd beliefs/magical thinking."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Avoidant personality disorder",
+          "trap": {
+            "name": "Fear-of-rejection mix-up",
+            "note": "Avoidant anxiety is driven by fear of rejection and eases with acceptance; here it is paranoid and persistent."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Social anxiety disorder",
+          "trap": {
+            "name": "State-vs-trait error",
+            "note": "Social anxiety disorder lacks the odd beliefs, ideas of reference, and eccentric cognition."
+          }
+        }
+      ],
+      "why": "Odd beliefs, magical thinking, ideas of reference, and eccentric cognition with persistent paranoid social anxiety define schizotypal PD (Cluster A).",
+      "pearl": "Odd beliefs + magical thinking + persistent paranoid social discomfort = schizotypal.",
+      "evidence": "t_personality.md — Cluster A: schizotypal vs schizoid vs avoidant."
+    },
+    {
+      "id": "qb_per_010",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "next-step",
+        "psychosocial"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A 24-year-old woman with borderline personality disorder and recurrent self-harm asks what treatment is most likely to help long-term. Most appropriate first-line recommendation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "A structured evidence-based psychotherapy such as dialectical behavior therapy",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Long-term benzodiazepines for affective instability",
+          "trap": {
+            "name": "Benzo trap",
+            "note": "Benzodiazepines worsen disinhibition and carry dependence risk; not a BPD treatment."
+          }
+        },
+        {
+          "key": "C",
+          "t": "An antipsychotic as definitive monotherapy",
+          "trap": {
+            "name": "Med-as-cure trap",
+            "note": "No medication is first-line or curative for BPD; pharmacotherapy is adjunctive."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Brief supportive counseling only, as BPD does not respond to therapy",
+          "trap": {
+            "name": "Therapeutic nihilism",
+            "note": "BPD responds well to structured psychotherapy."
+          }
+        }
+      ],
+      "why": "Structured psychotherapy (DBT and related) is first-line for BPD; medications are adjunctive and symptom-targeted, and benzodiazepines are avoided.",
+      "pearl": "BPD: psychotherapy (DBT) first-line; meds adjunctive; avoid benzodiazepines.",
+      "evidence": "t_personality.md — Borderline PD treatment; psychotherapy.md — DBT."
+    },
+    {
+      "id": "qb_per_011",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A 50-year-old accountant is preoccupied with rules, lists, and perfectionism so that tasks are never finished; he sees nothing wrong with this and is proud of his standards. He has no true obsessions or compulsions. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Obsessive-compulsive personality disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Obsessive-compulsive disorder",
+          "trap": {
+            "name": "OCD conflation",
+            "note": "OCD involves ego-dystonic obsessions and anxiety-reducing rituals — absent here."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Generalized anxiety disorder",
+          "trap": {
+            "name": "Worry mislabel",
+            "note": "GAD is pervasive worry, not perfectionistic character."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Narcissistic personality disorder",
+          "trap": {
+            "name": "Cluster B mix-up",
+            "note": "Perfectionism/control is not grandiosity or need for admiration."
+          }
+        }
+      ],
+      "why": "OCPD is an ego-syntonic Cluster C pattern of perfectionism, orderliness, and control without true obsessions or compulsions (which define OCD).",
+      "pearl": "OCPD = ego-syntonic perfectionism/control, no true obsessions/compulsions; OCD is ego-dystonic with rituals.",
+      "evidence": "t_personality.md — Cluster C: OCPD vs OCD."
+    },
+    {
+      "id": "qb_per_012",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "On rounds you are asked to group the personality disorders. Which pairing of cluster and descriptor is correct?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Cluster A = odd/eccentric; Cluster B = dramatic/erratic; Cluster C = anxious/fearful",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Cluster A = anxious; Cluster B = odd; Cluster C = dramatic",
+          "trap": {
+            "name": "Shuffled clusters",
+            "note": "Misassigned — A is odd, B dramatic, C anxious."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Cluster A = dramatic; Cluster B = anxious; Cluster C = odd",
+          "trap": {
+            "name": "Shuffled clusters",
+            "note": "Reversed — A is odd/eccentric."
+          }
+        },
+        {
+          "key": "D",
+          "t": "There is no descriptive grouping of the personality disorders",
+          "trap": {
+            "name": "Denies the schema",
+            "note": "DSM groups the ten PDs into clusters A/B/C."
+          }
+        }
+      ],
+      "why": "DSM clusters: A (paranoid, schizoid, schizotypal) odd/eccentric; B (antisocial, borderline, histrionic, narcissistic) dramatic/erratic; C (avoidant, dependent, OCPD) anxious/fearful.",
+      "pearl": "Cluster A = odd, B = dramatic, C = anxious.",
+      "evidence": "t_personality.md — The three PD clusters."
+    },
+    {
+      "id": "qb_per_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A patient is irritable and demanding during an acute manic episode; the team wonders about a personality disorder. What best distinguishes a personality disorder from this presentation?",
+      "options": [
+        {
+          "key": "A",
+          "t": "A PD is an enduring, pervasive, inflexible pattern present since adolescence/early adulthood and across contexts, not a change during an acute episode",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A PD is diagnosed whenever a patient is difficult on the unit",
+          "trap": {
+            "name": "Difficulty-equals-PD trap",
+            "note": "Difficulty during acute illness is not a PD; diagnostic overshadowing is a real bias."
+          }
+        },
+        {
+          "key": "C",
+          "t": "A PD can be diagnosed reliably during an acute mood or psychotic episode",
+          "trap": {
+            "name": "Timing error",
+            "note": "Traits shouldn't be assessed during an acute state."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A PD is defined by a single dramatic behavior",
+          "trap": {
+            "name": "One-behavior fallacy",
+            "note": "PDs require an enduring, pervasive pattern."
+          }
+        }
+      ],
+      "why": "A personality disorder is an enduring, pervasive, inflexible pattern stable since adolescence/early adulthood and evident across contexts — not behavior confined to an acute episode.",
+      "pearl": "Diagnose personality from an enduring cross-context pattern, never from acute-episode behavior.",
+      "evidence": "t_personality.md — General PD criteria; avoid diagnostic overshadowing."
+    },
+    {
+      "id": "qb_cdev_005",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A 9-year-old is referred for inattention and hyperactivity. Which is required to diagnose ADHD?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Several symptoms present before age 12 and impairment in at least two settings",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Symptoms confined to the classroom only",
+          "trap": {
+            "name": "Single-setting error",
+            "note": "ADHD requires impairment in ≥2 settings; one setting suggests a situational cause."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Onset after age 12 with a normal early childhood",
+          "trap": {
+            "name": "Late-onset error",
+            "note": "Several symptoms must be present before age 12."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A confirmatory brain MRI or EEG",
+          "trap": {
+            "name": "Test-confirmation trap",
+            "note": "ADHD is a clinical diagnosis; no scan confirms it."
+          }
+        }
+      ],
+      "why": "ADHD requires several symptoms before age 12, ≥6 months, with impairment in ≥2 settings; it is a clinical diagnosis.",
+      "pearl": "ADHD: symptoms before age 12, ≥2 settings, clinical diagnosis.",
+      "evidence": "t_neurodev.md — ADHD criteria."
+    },
+    {
+      "id": "qb_cdev_006",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "pharm",
+        "next-step"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A 10-year-old has ADHD with significant impairment despite behavioral supports. First-line pharmacologic treatment?",
+      "options": [
+        {
+          "key": "A",
+          "t": "A stimulant (methylphenidate- or amphetamine-class)",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "An antipsychotic",
+          "trap": {
+            "name": "Off-target trap",
+            "note": "Not first-line for ADHD; metabolic and movement risks."
+          }
+        },
+        {
+          "key": "C",
+          "t": "A benzodiazepine",
+          "trap": {
+            "name": "Sedative trap",
+            "note": "No role in ADHD; can worsen disinhibition."
+          }
+        },
+        {
+          "key": "D",
+          "t": "An SSRI",
+          "trap": {
+            "name": "Wrong-class trap",
+            "note": "SSRIs treat depression/anxiety, not core ADHD."
+          }
+        }
+      ],
+      "why": "Stimulants are first-line and most effective for ADHD; non-stimulants (atomoxetine, alpha-2 agonists) are alternatives.",
+      "pearl": "Stimulants are first-line for ADHD; atomoxetine/alpha-2 agonists are non-stimulant options.",
+      "evidence": "t_neurodev.md — ADHD treatment; med_monitoring.md — stimulant monitoring."
+    },
+    {
+      "id": "qb_cdev_007",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "An 8-year-old is argumentative, loses his temper, and defies adults, but has never been physically aggressive, destroyed property, stolen, or seriously violated others' rights. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Oppositional defiant disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Conduct disorder",
+          "trap": {
+            "name": "CD overreach",
+            "note": "Conduct disorder requires aggression, destruction, deceit/theft, or serious rule violations — none present."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Antisocial personality disorder",
+          "trap": {
+            "name": "Adult-dx error",
+            "note": "ASPD cannot be diagnosed before age 18."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Intermittent explosive disorder",
+          "trap": {
+            "name": "IED mismatch",
+            "note": "IED is recurrent impulsive aggressive outbursts, not the pervasive defiant pattern."
+          }
+        }
+      ],
+      "why": "ODD is angry/irritable mood, argumentative/defiant behavior, and vindictiveness WITHOUT the aggression, destruction, deceit, or serious rule-violations of conduct disorder.",
+      "pearl": "ODD = defiant/argumentative without violating others' rights; conduct disorder adds aggression/destruction/deceit.",
+      "evidence": "t_neurodev.md — ODD vs conduct disorder."
+    },
+    {
+      "id": "qb_cdev_008",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A 4-year-old has marked deficits in social communication and reciprocity plus restricted, repetitive behaviors and insistence on sameness, present since early development. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Autism spectrum disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Social (pragmatic) communication disorder",
+          "trap": {
+            "name": "Missing-the-RRBs trap",
+            "note": "That disorder lacks restricted/repetitive behaviors, which are present here."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Attention-deficit/hyperactivity disorder",
+          "trap": {
+            "name": "Wrong-domain trap",
+            "note": "ADHD is inattention/hyperactivity, not the ASD pattern."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Childhood-onset schizophrenia",
+          "trap": {
+            "name": "Psychosis mislabel",
+            "note": "ASD lacks hallucinations/delusions."
+          }
+        }
+      ],
+      "why": "ASD requires BOTH social-communication deficits AND restricted, repetitive behaviors with early onset; the restricted/repetitive domain separates it from social communication disorder.",
+      "pearl": "Autism = social-communication deficits PLUS restricted/repetitive behaviors, early onset.",
+      "evidence": "t_neurodev.md — Autism spectrum disorder."
+    },
+    {
+      "id": "qb_cdev_009",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A 12-year-old has had multiple motor tics and at least one vocal tic, waxing and waning for 18 months, onset at age 9. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Tourette disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Persistent (chronic) motor OR vocal tic disorder",
+          "trap": {
+            "name": "Single-modality error",
+            "note": "Chronic tic disorder is motor OR vocal; Tourette requires both."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Provisional tic disorder",
+          "trap": {
+            "name": "Duration error",
+            "note": "Provisional = tics <1 year; these have lasted 18 months."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Functional movement disorder",
+          "trap": {
+            "name": "Wrong-category trap",
+            "note": "The chronic multi-tic pattern fits Tourette."
+          }
+        }
+      ],
+      "why": "Tourette requires BOTH multiple motor tics AND ≥1 vocal tic, >1 year, onset before age 18.",
+      "pearl": "Tourette: multiple motor tics AND ≥1 vocal tic, >1 year, onset before 18.",
+      "evidence": "t_neurodev.md — Tic disorders."
+    },
+    {
+      "id": "qb_cdev_010",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "next-step"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A 7-year-old has primary nocturnal enuresis with normal daytime continence and a normal exam. Most appropriate first-line management?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Behavioral measures with an enuresis (bell-and-pad) alarm as the most effective long-term option",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Start desmopressin indefinitely as first-line",
+          "trap": {
+            "name": "Med-first trap",
+            "note": "Desmopressin helps short-term but relapses; the alarm has the best long-term cure."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Begin imipramine as first-line",
+          "trap": {
+            "name": "Outdated/risk trap",
+            "note": "TCAs are third-line given overdose cardiotoxicity."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Restrict all fluids and punish wet nights",
+          "trap": {
+            "name": "Harm trap",
+            "note": "Punitive approaches are ineffective and harmful."
+          }
+        }
+      ],
+      "why": "For primary nocturnal enuresis, reassurance and behavioral measures — the enuresis alarm above all — are first-line with the best long-term outcomes; desmopressin is short-term; TCAs are third-line.",
+      "pearl": "Enuresis: alarm is first-line and best long-term; desmopressin short-term; never punitive.",
+      "evidence": "t_neurodev.md — Enuresis management."
+    },
+    {
+      "id": "qb_cdev_011",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A child is evaluated for intellectual disability. What determines the severity level (mild, moderate, severe, profound)?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The degree of adaptive-functioning impairment across conceptual, social, and practical domains",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "The IQ score alone",
+          "trap": {
+            "name": "IQ-only trap",
+            "note": "DSM-5-TR grades severity by adaptive functioning, not IQ cutoffs alone."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The child's chronological age",
+          "trap": {
+            "name": "Age error",
+            "note": "Age doesn't set severity."
+          }
+        },
+        {
+          "key": "D",
+          "t": "The presence of a genetic diagnosis",
+          "trap": {
+            "name": "Etiology error",
+            "note": "Etiology doesn't set severity."
+          }
+        }
+      ],
+      "why": "Intellectual disability requires deficits in intellectual AND adaptive functioning with developmental-period onset; severity is graded by ADAPTIVE functioning, not IQ alone.",
+      "pearl": "Intellectual disability severity = adaptive functioning, not IQ alone.",
+      "evidence": "t_neurodev.md — Intellectual disability."
+    },
+    {
+      "id": "qb_eth_009",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & the Law page",
+        "href": "?page=ethics_legal.md"
+      },
+      "stem": "A patient with untreated mania insists on leaving; the team considers an involuntary hold. Which criterion must generally be met?",
+      "options": [
+        {
+          "key": "A",
+          "t": "A mental illness together with danger to self, danger to others, or grave disability",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "The team simply believes admission would be beneficial",
+          "trap": {
+            "name": "Paternalism trap",
+            "note": "Perceived benefit alone is not a legal basis for a hold."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The patient disagrees with the diagnosis",
+          "trap": {
+            "name": "Disagreement trap",
+            "note": "Disagreement is not grounds for commitment."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A family member requests it",
+          "trap": {
+            "name": "Third-party trap",
+            "note": "A family request alone does not satisfy criteria."
+          }
+        }
+      ],
+      "why": "Involuntary hospitalization generally requires a mental illness PLUS danger to self, danger to others, or grave disability (statutes vary by jurisdiction).",
+      "pearl": "Involuntary hold = mental illness + (danger to self / others / grave disability).",
+      "evidence": "ethics_legal.md — Involuntary hospitalization."
+    },
+    {
+      "id": "qb_eth_010",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & the Law page",
+        "href": "?page=ethics_legal.md"
+      },
+      "stem": "A resident asks whether a delirious patient is 'competent' to refuse a lumbar puncture. Most accurate framing?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Capacity is a clinical, decision-specific judgment clinicians make; competence is a global legal status determined by a court",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Capacity and competence are identical",
+          "trap": {
+            "name": "Conflation trap",
+            "note": "They differ: capacity clinical/decision-specific; competence legal."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Only a judge can assess a patient's ability to make a medical decision",
+          "trap": {
+            "name": "Over-legalization",
+            "note": "Clinicians assess capacity at the bedside; courts determine competence."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Capacity, once lost, is permanent",
+          "trap": {
+            "name": "Permanence error",
+            "note": "Capacity can fluctuate and is decision-specific."
+          }
+        }
+      ],
+      "why": "Capacity is clinical, decision-specific, and can fluctuate; competence is a legal status decided by a court. The four abilities frame capacity.",
+      "pearl": "Capacity = clinical, decision-specific, fluctuates; competence = legal, court-determined.",
+      "evidence": "ethics_legal.md — Capacity vs competence."
+    },
+    {
+      "id": "qb_eth_011",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & the Law page",
+        "href": "?page=ethics_legal.md"
+      },
+      "stem": "An unconscious patient arrives after an overdose, no surrogate reachable, needing immediate life-saving treatment. Which principle applies?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The emergency exception — implied consent permits treatment necessary to prevent serious harm when the patient can't consent and no surrogate is available",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Treatment must wait for a court-appointed guardian",
+          "trap": {
+            "name": "Delay-harm trap",
+            "note": "Waiting in a life-threatening emergency causes avoidable harm."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Nothing can be done without written consent",
+          "trap": {
+            "name": "Consent-absolutism",
+            "note": "Written consent isn't required for emergency life-saving care."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A prior refusal of a flu shot bars all treatment",
+          "trap": {
+            "name": "Irrelevant-refusal trap",
+            "note": "An unrelated prior refusal doesn't govern emergency care."
+          }
+        }
+      ],
+      "why": "The emergency exception (implied consent) allows treatment necessary to prevent death or serious harm when the patient lacks capacity and no surrogate/advance directive is available.",
+      "pearl": "Emergency exception: implied consent covers life-saving care when the patient can't consent and no surrogate exists.",
+      "evidence": "ethics_legal.md — Consent and the emergency exception."
+    },
+    {
+      "id": "qb_eth_012",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & the Law page",
+        "href": "?page=ethics_legal.md"
+      },
+      "stem": "A patient with intact capacity and a terminal illness refuses a recommended life-prolonging treatment; the team disagrees. Ethically correct action?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Respect the refusal — a patient with capacity may decline even life-sustaining treatment",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Override because the treatment would prolong life",
+          "trap": {
+            "name": "Beneficence-override trap",
+            "note": "Beneficence doesn't override an autonomous capacitated refusal."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Obtain a court order to compel treatment",
+          "trap": {
+            "name": "Coercion trap",
+            "note": "Courts don't compel treatment of a capacitated patient who refuses."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Declare the patient incompetent for refusing",
+          "trap": {
+            "name": "Capacity-punishment trap",
+            "note": "Disagreement isn't incapacity; capacity turns on the four abilities."
+          }
+        }
+      ],
+      "why": "Autonomy governs: a capacitated patient may refuse even life-sustaining treatment, and disagreement with the team does not establish incapacity.",
+      "pearl": "A capacitated patient may refuse even life-sustaining treatment; a 'wrong' choice isn't incapacity.",
+      "evidence": "ethics_legal.md — Autonomy and refusal of treatment."
+    },
+    {
+      "id": "qb_eth_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & the Law page",
+        "href": "?page=ethics_legal.md"
+      },
+      "stem": "A patient permanently lacks capacity and has no advance directive; a surrogate must decide about a procedure. Which standard applies first?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Substituted judgment — decide as the patient would have, based on the patient's known values and prior wishes",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "The surrogate's own preference",
+          "trap": {
+            "name": "Surrogate-substitution trap",
+            "note": "The surrogate represents the patient's wishes, not personal preference."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Best interest, ignoring known prior wishes",
+          "trap": {
+            "name": "Skips-the-hierarchy trap",
+            "note": "Best interest is the fallback when wishes are unknown."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Whatever the physician prefers",
+          "trap": {
+            "name": "Deference trap",
+            "note": "The decision belongs to the surrogate applying the patient's values."
+          }
+        }
+      ],
+      "why": "With no advance directive, the surrogate applies substituted judgment (what the patient would have chosen); best interest is the fallback when the patient's values are unknown.",
+      "pearl": "Order: known wishes/advance directive → substituted judgment → best interest.",
+      "evidence": "ethics_legal.md — Surrogate decision-making."
+    },
+    {
+      "id": "qb_otherdx_010",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_somatic.md"
+      ],
+      "link": {
+        "label": "Open the Somatic Symptom & Related page",
+        "href": "?page=t_somatic.md"
+      },
+      "stem": "A patient repeatedly produces factitious illness — contaminating urine samples and injecting herself to cause infection — with no external reward, apparently to occupy the sick role. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Factitious disorder imposed on self",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Malingering",
+          "trap": {
+            "name": "External-incentive error",
+            "note": "Malingering is intentional symptoms for an EXTERNAL incentive; none here."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Somatic symptom disorder",
+          "trap": {
+            "name": "Intentionality error",
+            "note": "In SSD symptoms are not intentionally produced."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Illness anxiety disorder",
+          "trap": {
+            "name": "Wrong-mechanism trap",
+            "note": "Illness anxiety is preoccupation with having illness, not self-induced disease."
+          }
+        }
+      ],
+      "why": "Factitious disorder is intentional falsification/induction of illness to assume the sick role WITHOUT external incentive; malingering has an external incentive; SSD/illness anxiety are not intentionally produced.",
+      "pearl": "Factitious = deliberate, sick-role, no external gain; malingering = deliberate, external gain; SSD = not intentional.",
+      "evidence": "t_somatic.md — Factitious disorder vs malingering vs SSD."
+    },
+    {
+      "id": "qb_otherdx_011",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_mood.md"
+      ],
+      "link": {
+        "label": "Open the Mood Disorders page",
+        "href": "?page=t_mood.md"
+      },
+      "stem": "Fourteen months after her spouse's death, a woman has persistent intense yearning, preoccupation with the deceased, and emotional pain impairing function, beyond her cultural norms. Which DSM-5-TR diagnosis best fits?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Prolonged grief disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Normal bereavement",
+          "trap": {
+            "name": "Under-call trap",
+            "note": "Grief this intense and impairing beyond ~12 months, exceeding cultural norms, is prolonged grief disorder."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Major depressive disorder",
+          "trap": {
+            "name": "Overlap trap",
+            "note": "Grief centers on yearning/preoccupation with the deceased; they can co-occur but are distinguishable."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Adjustment disorder",
+          "trap": {
+            "name": "Duration/threshold trap",
+            "note": "Adjustment disorder is shorter-term; the persistent ≥12-month grief syndrome is prolonged grief disorder."
+          }
+        }
+      ],
+      "why": "DSM-5-TR added prolonged grief disorder: persistent grief with intense yearning/preoccupation and emotional pain beyond ~12 months in adults, exceeding cultural norms and causing impairment — distinct from normal bereavement and MDD.",
+      "pearl": "Prolonged grief disorder (DSM-5-TR): grief-specific yearning/preoccupation persisting >12 months with impairment.",
+      "evidence": "t_mood.md — Grief vs prolonged grief disorder vs major depression."
+    },
+    {
+      "id": "qb_sud_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "dx",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A 55-year-old man with heavy alcohol use is admitted with confusion, gaze-evoked nystagmus with impaired eye movements, and a wide-based unsteady gait. What is the immediate priority?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Give parenteral thiamine before any glucose",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Give IV dextrose immediately to correct presumed hypoglycemia",
+          "trap": {
+            "name": "Glucose-first trap",
+            "note": "Giving glucose before thiamine in a thiamine-deficient patient can precipitate or worsen Wernicke encephalopathy — thiamine goes first."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Start a benzodiazepine taper and defer thiamine",
+          "trap": {
+            "name": "Wrong-priority trap",
+            "note": "Withdrawal management matters, but the ophthalmoplegia-ataxia-confusion triad demands thiamine now."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Obtain an MRI before any treatment",
+          "trap": {
+            "name": "Delay trap",
+            "note": "Wernicke is a clinical diagnosis treated empirically and urgently; imaging must not delay thiamine."
+          }
+        }
+      ],
+      "why": "The triad of encephalopathy, ophthalmoplegia, and ataxia is Wernicke encephalopathy. Give thiamine before glucose, because a glucose load in a thiamine-deficient patient can precipitate or worsen it.",
+      "pearl": "Wernicke = confusion + ophthalmoplegia + ataxia; give thiamine BEFORE glucose.",
+      "evidence": "t_sud.md — Alcohol: Wernicke encephalopathy and thiamine.",
+      "retired": true,
+      "retiredReason": "Redundant: Wernicke/thiamine-before-glucose is already triple-covered by attested qb_sud_002, qb_sud_003, qb_sud_007."
+    },
+    {
+      "id": "qb_sud_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "substance",
+      "competency": [
+        "pharm",
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sud.md"
+      ],
+      "link": {
+        "label": "Open the Substance Use page",
+        "href": "?page=t_sud.md"
+      },
+      "stem": "A patient with alcohol use disorder is medically stable and motivated to cut down, with compensated cirrhosis. Which maintenance pharmacotherapy is a reasonable first-line choice?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Naltrexone (if no contraindication) or acamprosate — both are first-line for alcohol use disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A scheduled long-term benzodiazepine",
+          "trap": {
+            "name": "Dependence trap",
+            "note": "Benzodiazepines treat withdrawal, not maintenance, and carry dependence and overdose risk in this population."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Disulfiram as the automatic first choice for everyone",
+          "trap": {
+            "name": "Adherence trap",
+            "note": "Disulfiram is aversive and adherence-dependent; it is not first-line and requires abstinence and reliability."
+          }
+        },
+        {
+          "key": "D",
+          "t": "No pharmacotherapy is effective for alcohol use disorder",
+          "trap": {
+            "name": "Nihilism trap",
+            "note": "Naltrexone and acamprosate have solid evidence for reducing drinking/relapse."
+          }
+        }
+      ],
+      "why": "Naltrexone (reduces heavy drinking; avoid in acute hepatitis/opioid use) and acamprosate (supports abstinence; usable in liver disease, adjust in renal impairment) are first-line for AUD. Disulfiram is second-line and adherence-dependent.",
+      "pearl": "AUD maintenance: naltrexone or acamprosate first-line; disulfiram is adherence-dependent second-line.",
+      "evidence": "t_sud.md — Alcohol use disorder pharmacotherapy.",
+      "retired": true,
+      "retiredReason": "Redundant: AUD maintenance (naltrexone/acamprosate first-line) duplicates attested qb_sud_009; fold the compensated-cirrhosis nuance into qb_sud_009 if desired."
+    },
+    {
+      "id": "qb_psy_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A 22-year-old has had delusions, hallucinations, and disorganized speech for the past 3 months with functional decline and no mood episode or substance cause. Which diagnosis best fits at this point?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Schizophreniform disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Schizophrenia",
+          "trap": {
+            "name": "Duration trap",
+            "note": "Schizophrenia requires ≥6 months of continuous signs; at 3 months the correct label is schizophreniform."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Brief psychotic disorder",
+          "trap": {
+            "name": "Duration trap",
+            "note": "Brief psychotic disorder resolves within 1 month; this has lasted 3 months."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Delusional disorder",
+          "trap": {
+            "name": "Symptom-profile trap",
+            "note": "Delusional disorder features non-bizarre delusions without prominent hallucinations/disorganization and relatively preserved function."
+          }
+        }
+      ],
+      "why": "Psychotic symptoms lasting 1–6 months with functional decline, no mood/substance cause, is schizophreniform disorder. <1 month = brief psychotic disorder; ≥6 months = schizophrenia.",
+      "pearl": "Psychosis duration: <1 mo = brief psychotic; 1–6 mo = schizophreniform; ≥6 mo = schizophrenia.",
+      "evidence": "t_psychosis.md — Psychotic disorders: the duration spectrum."
+    },
+    {
+      "id": "qb_psy_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_psychosis.md"
+      ],
+      "link": {
+        "label": "Open the Psychotic Disorders page",
+        "href": "?page=t_psychosis.md"
+      },
+      "stem": "A patient has had auditory hallucinations and delusions for two weeks with no significant mood symptoms during that period, but has also had major depressive episodes during most of the illness. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Schizoaffective disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Major depressive disorder with psychotic features",
+          "trap": {
+            "name": "Overlap trap",
+            "note": "In MDD with psychotic features, psychosis occurs ONLY during mood episodes; here psychosis persisted ≥2 weeks WITHOUT mood symptoms."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Schizophrenia",
+          "trap": {
+            "name": "Mood-burden trap",
+            "note": "Schizophrenia does not feature mood episodes for the majority of the illness, which are present here."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Bipolar I with psychotic features",
+          "trap": {
+            "name": "History trap",
+            "note": "No manic episode is described; the mood burden is depressive with independent psychosis."
+          }
+        }
+      ],
+      "why": "Schizoaffective disorder requires a period of ≥2 weeks of psychosis WITHOUT prominent mood symptoms, plus mood episodes present for the majority of the illness. Psychosis confined to mood episodes = mood disorder with psychotic features.",
+      "pearl": "Schizoaffective: ≥2 weeks of psychosis without mood symptoms + mood episodes for most of the illness.",
+      "evidence": "t_psychosis.md — Schizoaffective vs mood disorder with psychotic features."
+    },
+    {
+      "id": "qb_rel_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "relational",
+      "competency": [
+        "management",
+        "psychosocial"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "family_modalities.md"
+      ],
+      "link": {
+        "label": "Open the Family Therapy Modalities page",
+        "href": "?page=family_modalities.md"
+      },
+      "stem": "A young man with schizophrenia is being discharged to his parents. Which family intervention has the best evidence for reducing his relapse risk?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Family psychoeducation (including multifamily groups)",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Advising the family to avoid all discussion of the illness",
+          "trap": {
+            "name": "Avoidance trap",
+            "note": "Silence does not lower expressed emotion or relapse; structured psychoeducation does."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Recommending the patient minimize contact with family indefinitely",
+          "trap": {
+            "name": "Isolation trap",
+            "note": "Cutting off support is not evidence-based; improving the family climate is."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Individual insight-oriented therapy for the patient alone",
+          "trap": {
+            "name": "Wrong-target trap",
+            "note": "Insight therapy is not the intervention shown to reduce relapse via the family pathway."
+          }
+        }
+      ],
+      "why": "Family psychoeducation and multifamily group approaches reduce relapse in schizophrenia, largely by lowering expressed emotion and improving problem-solving and support.",
+      "pearl": "Family psychoeducation reduces schizophrenia relapse — the evidence-based family intervention.",
+      "evidence": "family_modalities.md — Family psychoeducation and relapse prevention."
+    },
+    {
+      "id": "qb_rel_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "relational",
+      "competency": [
+        "psychosocial",
+        "next-step"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "motivational_interviewing.md"
+      ],
+      "link": {
+        "label": "Open the Motivational Interviewing page",
+        "href": "?page=motivational_interviewing.md"
+      },
+      "stem": "A patient with alcohol use disorder says, 'I don't really think my drinking is a problem.' Which response best reflects motivational interviewing?",
+      "options": [
+        {
+          "key": "A",
+          "t": "'What have you noticed about how drinking fits with the things that matter to you?'",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "'You clearly have a serious problem and need to stop now.'",
+          "trap": {
+            "name": "Righting-reflex trap",
+            "note": "Confronting and directing typically increases resistance; MI evokes the patient's own change talk."
+          }
+        },
+        {
+          "key": "C",
+          "t": "'If you don't quit, you'll end up back in the hospital.'",
+          "trap": {
+            "name": "Fear-appeal trap",
+            "note": "Warnings and pressure tend to entrench ambivalence rather than resolve it."
+          }
+        },
+        {
+          "key": "D",
+          "t": "'Fine, it's your choice — let me know if you ever want help.'",
+          "trap": {
+            "name": "Disengagement trap",
+            "note": "Passive withdrawal abandons the alliance; MI stays engaged and curious."
+          }
+        }
+      ],
+      "why": "Motivational interviewing rolls with resistance and evokes the patient's own reasons for change through open, values-linked questions — rather than confronting, warning, or disengaging (the 'righting reflex').",
+      "pearl": "MI evokes change talk with open, values-linked questions; avoid the confronting 'righting reflex.'",
+      "evidence": "motivational_interviewing.md — MI spirit: evoking change talk."
+    },
+    {
+      "id": "qb_rel_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "relational",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "family_modalities.md"
+      ],
+      "link": {
+        "label": "Open the Family Therapy Modalities page",
+        "href": "?page=family_modalities.md"
+      },
+      "stem": "A patient's adult son calls the unit asking for details of his mother's diagnosis and medications. The patient has not authorized this. What is the most appropriate response?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Decline to confirm or share specific clinical information without the patient's consent, while offering general support and education",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Share the diagnosis and medications since he is immediate family",
+          "trap": {
+            "name": "Family-exception myth",
+            "note": "Being family does not by itself authorize disclosure of protected clinical information without consent."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Refuse to speak at all and hang up",
+          "trap": {
+            "name": "Over-restriction trap",
+            "note": "You can engage supportively and provide general education without disclosing protected specifics."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Ask the son to prove identity, then disclose everything",
+          "trap": {
+            "name": "Identity-only trap",
+            "note": "Verifying identity does not substitute for the patient's authorization to disclose."
+          }
+        }
+      ],
+      "why": "Without the patient's consent you should not confirm or share specific clinical information, but you can still listen, provide general education, and coordinate a consented family meeting. Safety exceptions (imminent danger, mandated reporting) are separate.",
+      "pearl": "No consent → no specific disclosure; you may still give general support and education. Family status alone isn't authorization.",
+      "evidence": "family_modalities.md — Confidentiality and families; ethics_legal.md — disclosure."
+    },
+    {
+      "id": "qb_anx_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "pharm",
+        "management"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "t_anxiety.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety/Trauma/OCD page",
+        "href": "?page=t_anxiety.md"
+      },
+      "stem": "A patient with panic disorder and frequent panic attacks wants long-term treatment. Which is the most appropriate first-line pharmacologic option?",
+      "options": [
+        {
+          "key": "A",
+          "t": "An SSRI, typically combined with CBT",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A scheduled benzodiazepine as indefinite monotherapy",
+          "trap": {
+            "name": "Dependence trap",
+            "note": "Benzodiazepines are at most a short-term bridge; they carry dependence and are not first-line maintenance."
+          }
+        },
+        {
+          "key": "C",
+          "t": "An antipsychotic",
+          "trap": {
+            "name": "Off-target trap",
+            "note": "Antipsychotics are not first-line for panic disorder."
+          }
+        },
+        {
+          "key": "D",
+          "t": "No treatment is effective for panic disorder",
+          "trap": {
+            "name": "Nihilism trap",
+            "note": "SSRIs and CBT are effective first-line treatments."
+          }
+        }
+      ],
+      "why": "SSRIs (often with CBT) are first-line for panic disorder. Benzodiazepines are, at most, a short-term bridge given dependence risk.",
+      "pearl": "Panic disorder: SSRI + CBT first-line; benzodiazepines only as a short-term bridge.",
+      "evidence": "t_anxiety.md — Panic disorder treatment."
+    },
+    {
+      "id": "qb_anx_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "pharm",
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_anxiety.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety/Trauma/OCD page",
+        "href": "?page=t_anxiety.md"
+      },
+      "stem": "A patient with OCD has distressing obsessions and time-consuming compulsions. Which is the evidence-based first-line treatment?",
+      "options": [
+        {
+          "key": "A",
+          "t": "An SSRI (often at higher doses) plus exposure and response prevention",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A benzodiazepine as monotherapy",
+          "trap": {
+            "name": "Wrong-mechanism trap",
+            "note": "Benzodiazepines do not treat the core of OCD; ERP and SSRIs do."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Supportive therapy alone without exposure work",
+          "trap": {
+            "name": "Under-treatment trap",
+            "note": "Generic support without ERP is not the evidence-based psychotherapy for OCD."
+          }
+        },
+        {
+          "key": "D",
+          "t": "An antipsychotic as first-line monotherapy",
+          "trap": {
+            "name": "Adjunct-vs-first-line trap",
+            "note": "Antipsychotics are an augmentation strategy in refractory OCD, not first-line monotherapy."
+          }
+        }
+      ],
+      "why": "OCD is treated first-line with an SSRI (frequently at higher doses than for depression) plus exposure and response prevention (ERP). Clomipramine is an effective second-line agent; antipsychotics augment refractory cases.",
+      "pearl": "OCD: SSRI (higher dose) + ERP first-line; clomipramine second-line; antipsychotic augmentation if refractory.",
+      "evidence": "t_anxiety.md — OCD treatment; psychotherapy.md — ERP."
+    },
+    {
+      "id": "qb_anx_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "management",
+        "pharm"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_anxiety.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety/Trauma/OCD page",
+        "href": "?page=t_anxiety.md"
+      },
+      "stem": "A veteran with PTSD has nightmares, hypervigilance, and avoidance. Which approach is first-line, and what should generally be avoided?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Trauma-focused psychotherapy (and/or an SSRI/SNRI) first-line; avoid routine benzodiazepines",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Scheduled benzodiazepines as the mainstay",
+          "trap": {
+            "name": "Harm trap",
+            "note": "Benzodiazepines are generally avoided in PTSD — they don't treat core symptoms and may impair recovery."
+          }
+        },
+        {
+          "key": "C",
+          "t": "An antipsychotic as first-line monotherapy",
+          "trap": {
+            "name": "Off-target trap",
+            "note": "Antipsychotics are not first-line for core PTSD."
+          }
+        },
+        {
+          "key": "D",
+          "t": "No treatment, since PTSD resolves on its own",
+          "trap": {
+            "name": "Nihilism trap",
+            "note": "Effective trauma-focused therapies and pharmacotherapy exist."
+          }
+        }
+      ],
+      "why": "First-line PTSD care is trauma-focused psychotherapy (e.g., CPT, prolonged exposure) and/or an SSRI/SNRI; prazosin can help nightmares. Benzodiazepines are generally avoided.",
+      "pearl": "PTSD: trauma-focused therapy ± SSRI/SNRI first-line; prazosin for nightmares; avoid benzodiazepines.",
+      "evidence": "t_anxiety.md — PTSD treatment."
+    },
+    {
+      "id": "qb_anx_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": [
+        "dx",
+        "pharm"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_anxiety.md"
+      ],
+      "link": {
+        "label": "Open the Anxiety/Trauma/OCD page",
+        "href": "?page=t_anxiety.md"
+      },
+      "stem": "A student develops intense anxiety only when performing music in public but is comfortable in other social situations. Which best describes the condition and a reasonable option?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Social anxiety disorder, performance-only type — a PRN beta-blocker (or benzodiazepine) can be used for discrete performances",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Generalized anxiety disorder requiring daily long-term medication",
+          "trap": {
+            "name": "Overgeneralization trap",
+            "note": "Anxiety limited to performance is not pervasive GAD; the performance-only subtype can be managed PRN."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Panic disorder",
+          "trap": {
+            "name": "Wrong-dx trap",
+            "note": "There are no recurrent unexpected panic attacks with persistent worry about attacks; this is performance-limited social anxiety."
+          }
+        },
+        {
+          "key": "D",
+          "t": "A normal reaction requiring no discussion",
+          "trap": {
+            "name": "Dismissal trap",
+            "note": "Impairing performance anxiety is a recognized, treatable condition."
+          }
+        }
+      ],
+      "why": "Anxiety confined to performance situations is the performance-only subtype of social anxiety disorder; a PRN beta-blocker (or benzodiazepine) is reasonable for discrete performances, whereas generalized social anxiety is treated with an SSRI plus CBT.",
+      "pearl": "Performance-only social anxiety: PRN beta-blocker for events; generalized: SSRI + CBT.",
+      "evidence": "t_anxiety.md — Social anxiety disorder subtypes."
+    },
+    {
+      "id": "qb_saf_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety",
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "suicide.md"
+      ],
+      "link": {
+        "label": "Open the Suicide Risk & Safety Planning page",
+        "href": "?page=suicide.md"
+      },
+      "stem": "A patient with depression and passive suicidal ideation is being discharged. Which single intervention has the strongest evidence for reducing suicide death?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Means restriction — counseling to remove or secure firearms and lethal medications",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Having the patient sign a no-suicide contract",
+          "trap": {
+            "name": "Contract myth",
+            "note": "No-suicide contracts are not protective and can create false reassurance; a collaborative safety plan is preferred."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Scheduling a routine follow-up in three months only",
+          "trap": {
+            "name": "Gap trap",
+            "note": "A distant single appointment leaves the highest-risk early window uncovered."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Prescribing a large supply of a sedative for sleep",
+          "trap": {
+            "name": "Access trap",
+            "note": "A large lethal supply increases risk; means restriction is the goal."
+          }
+        }
+      ],
+      "why": "Means restriction — especially securing or removing firearms and limiting access to lethal medication — is the most evidence-based single intervention to reduce suicide death. No-suicide contracts are not protective.",
+      "pearl": "Means restriction (firearms above all) is the highest-yield suicide-prevention step; contracts are not protective.",
+      "evidence": "suicide.md — Means restriction; safety planning."
+    },
+    {
+      "id": "qb_saf_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "suicide.md"
+      ],
+      "link": {
+        "label": "Open the Suicide Risk & Safety Planning page",
+        "href": "?page=suicide.md"
+      },
+      "stem": "During which period is a psychiatric patient's suicide risk generally highest?",
+      "options": [
+        {
+          "key": "A",
+          "t": "The immediate post-discharge period after a psychiatric hospitalization",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "The middle of a long stable outpatient course",
+          "trap": {
+            "name": "Low-acuity trap",
+            "note": "Risk is not highest during stable maintenance; transitions carry the peak."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Only while acutely inpatient",
+          "trap": {
+            "name": "Setting trap",
+            "note": "The inpatient stay is comparatively protected; the transition out is the higher-risk window."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Suicide risk is constant and does not vary over time",
+          "trap": {
+            "name": "Flat-risk trap",
+            "note": "Risk is dynamic; the peri- and post-discharge transition is a recognized high-risk window."
+          }
+        }
+      ],
+      "why": "The peri-discharge and especially the immediate post-discharge period is among the highest-risk windows. Discharge planning — follow-up, safety planning, means restriction — is a safety intervention, not paperwork.",
+      "pearl": "Highest-risk window is right after discharge — treat the transition as the intervention.",
+      "evidence": "suicide.md — High-risk windows and discharge planning."
+    },
+    {
+      "id": "qb_saf_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "dx",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "toxidromes.md"
+      ],
+      "link": {
+        "label": "Open the Hyperthermia & Toxidromes page",
+        "href": "?page=toxidromes.md"
+      },
+      "stem": "A patient on an SSRI is started on tramadol and develops agitation, diaphoresis, tremor, and lower-extremity clonus with hyperreflexia. What is the diagnosis, and the key bedside discriminator from NMS?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Serotonin syndrome — clonus and hyperreflexia (vs the lead-pipe rigidity and hyporeflexia of NMS)",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Neuroleptic malignant syndrome",
+          "trap": {
+            "name": "Wrong-syndrome trap",
+            "note": "NMS follows a dopamine blocker and shows lead-pipe rigidity with hyporeflexia, not clonus/hyperreflexia."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Anticholinergic toxicity",
+          "trap": {
+            "name": "Wet-vs-dry trap",
+            "note": "Anticholinergic toxicity is dry and flushed with normal reflexes; this patient is diaphoretic with clonus."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Malignant hyperthermia",
+          "trap": {
+            "name": "Context trap",
+            "note": "Malignant hyperthermia follows volatile anesthetics/succinylcholine, not a serotonergic combination."
+          }
+        }
+      ],
+      "why": "A serotonergic combination (SSRI + tramadol) with clonus, hyperreflexia (legs > arms), tremor, and diaphoresis is serotonin syndrome. The bedside discriminator from NMS is neuromuscular: clonus/hyperreflexia in SS vs lead-pipe rigidity and hyporeflexia in NMS.",
+      "pearl": "Clonus + hyperreflexia + a new serotonergic agent = serotonin syndrome; NMS is lead-pipe rigidity with hyporeflexia.",
+      "evidence": "toxidromes.md — Serotonin syndrome vs NMS discriminators."
+    },
+    {
+      "id": "qb_saf_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "safety",
+      "competency": [
+        "dx",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "violence.md"
+      ],
+      "link": {
+        "label": "Open the Violence Risk page",
+        "href": "?page=violence.md"
+      },
+      "stem": "You are assessing a patient's risk of violence on the unit. Which is the single strongest predictor of future violence?",
+      "options": [
+        {
+          "key": "A",
+          "t": "A history of past violence",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A specific psychiatric diagnosis alone",
+          "trap": {
+            "name": "Diagnosis-label trap",
+            "note": "Diagnosis alone is a weak predictor; past violent behavior is the strongest single predictor."
+          }
+        },
+        {
+          "key": "C",
+          "t": "The patient's stated remorse",
+          "trap": {
+            "name": "Reassurance trap",
+            "note": "Stated remorse does not reliably lower short-term risk."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Male sex by itself",
+          "trap": {
+            "name": "Single-demographic trap",
+            "note": "Demographics contribute modestly; past violence is the dominant predictor."
+          }
+        }
+      ],
+      "why": "Past violence is the strongest single predictor of future violence. Distinguish static factors (history — fixed) from dynamic factors (acute psychosis, intoxication, agitation — modifiable and the treatment target).",
+      "pearl": "Past violence is the best predictor; separate static (history) from dynamic (treatable) risk.",
+      "evidence": "violence.md — Static vs dynamic risk; past violence as predictor."
+    },
+    {
+      "id": "qb_per_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A 40-year-old executive expects constant admiration, believes he is uniquely special and entitled to the best of everything, and dismisses colleagues as beneath him; he becomes enraged by mild criticism. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Narcissistic personality disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Antisocial personality disorder",
+          "trap": {
+            "name": "Rights-violation trap",
+            "note": "ASPD centers on disregard for and violation of others' rights; NPD centers on grandiosity, entitlement, and need for admiration."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Histrionic personality disorder",
+          "trap": {
+            "name": "Attention-mechanism trap",
+            "note": "Histrionic patients seek attention through emotionality/seductiveness, not grandiosity and entitlement."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Bipolar disorder, manic episode",
+          "trap": {
+            "name": "State-vs-trait trap",
+            "note": "Mania is an episodic mood state; this is an enduring characterological pattern."
+          }
+        }
+      ],
+      "why": "Grandiosity, need for admiration, entitlement, and lack of empathy define narcissistic personality disorder — distinct from antisocial (rights violations) and histrionic (attention through emotionality).",
+      "pearl": "NPD = grandiosity + need for admiration + entitlement + lack of empathy.",
+      "evidence": "t_personality.md — Cluster B: narcissistic personality disorder."
+    },
+    {
+      "id": "qb_per_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A 33-year-old woman cannot make everyday decisions without excessive reassurance, feels helpless when alone, and urgently seeks a new relationship for care whenever one ends. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Dependent personality disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Avoidant personality disorder",
+          "trap": {
+            "name": "Cluster-C mix-up",
+            "note": "Avoidant patients want relationships but avoid them from fear of criticism/rejection; dependent patients cling and urgently seek care."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Borderline personality disorder",
+          "trap": {
+            "name": "BPD conflation",
+            "note": "BPD features identity disturbance, self-harm, and unstable intense relationships, not the pure submissive/clinging dependence described."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Histrionic personality disorder",
+          "trap": {
+            "name": "Attention-seeking trap",
+            "note": "Histrionic is attention-seeking emotionality, not the need to be cared for described here."
+          }
+        }
+      ],
+      "why": "A pervasive, excessive need to be taken care of — submissiveness, difficulty making decisions without reassurance, and urgently seeking a replacement relationship for care — defines dependent personality disorder (Cluster C).",
+      "pearl": "Dependent PD = excessive need to be cared for, submissive/clinging, urgently replaces lost relationships.",
+      "evidence": "t_personality.md — Cluster C: dependent personality disorder."
+    },
+    {
+      "id": "qb_per_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "personality",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_personality.md"
+      ],
+      "link": {
+        "label": "Open the Personality Disorders page",
+        "href": "?page=t_personality.md"
+      },
+      "stem": "A 29-year-old is uncomfortable when not the center of attention, is dramatic and seductive with staff, shows rapidly shifting shallow emotions, and considers acquaintances closer than they are. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Histrionic personality disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Borderline personality disorder",
+          "trap": {
+            "name": "BPD conflation",
+            "note": "BPD features abandonment fears, identity disturbance, and self-harm; histrionic centers on attention-seeking emotionality and seductiveness."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Narcissistic personality disorder",
+          "trap": {
+            "name": "Grandiosity trap",
+            "note": "Narcissistic patients seek admiration for specialness; histrionic patients seek attention through emotionality."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Dependent personality disorder",
+          "trap": {
+            "name": "Cluster-C mix-up",
+            "note": "Dependent patients seek care and reassurance, not attention through dramatic emotionality."
+          }
+        }
+      ],
+      "why": "Excessive attention-seeking, dramatic and seductive behavior, shallow shifting emotions, and overestimating intimacy define histrionic personality disorder (Cluster B).",
+      "pearl": "Histrionic PD = attention-seeking, dramatic/seductive, shallow shifting emotions.",
+      "evidence": "t_personality.md — Cluster B: histrionic personality disorder."
+    },
+    {
+      "id": "qb_cdev_012",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A 7-year-old refuses school, complains of stomachaches on school mornings that resolve on weekends, and is terrified that something will happen to his mother while apart. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Separation anxiety disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Generalized anxiety disorder",
+          "trap": {
+            "name": "Over-broad trap",
+            "note": "GAD is pervasive worry across domains; here the fear is specifically about separation from an attachment figure."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Oppositional defiant disorder",
+          "trap": {
+            "name": "Defiance mislabel",
+            "note": "This is fear-driven school refusal, not an angry/defiant pattern."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Malingering",
+          "trap": {
+            "name": "Intent trap",
+            "note": "The somatic complaints are anxiety-driven, not consciously feigned for external gain."
+          }
+        }
+      ],
+      "why": "Developmentally inappropriate, excessive fear of separation from attachment figures — with somatic complaints and school refusal, lasting ≥4 weeks in a child — is separation anxiety disorder.",
+      "pearl": "Separation anxiety disorder: excessive separation fear, somatic complaints, school refusal (≥4 weeks in children).",
+      "evidence": "t_neurodev.md — Childhood anxiety: separation anxiety disorder."
+    },
+    {
+      "id": "qb_cdev_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx",
+        "next-step"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A 6-year-old repeatedly soils his underwear; exam reveals a large stool mass and history of painful, infrequent bowel movements. Best diagnosis and initial management?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Encopresis with retentive overflow — treat the underlying constipation (disimpaction and maintenance) plus behavioral measures",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Conduct disorder — the soiling is deliberate defiance",
+          "trap": {
+            "name": "Intent trap",
+            "note": "Retentive encopresis with overflow is not willful defiance; it stems from constipation."
+          }
+        },
+        {
+          "key": "C",
+          "t": "A primary psychotic process",
+          "trap": {
+            "name": "Overpathologizing",
+            "note": "Soiling from constipation is not a psychotic symptom."
+          }
+        },
+        {
+          "key": "D",
+          "t": "No intervention, as this is normal for age",
+          "trap": {
+            "name": "Under-call trap",
+            "note": "Encopresis is diagnosed at chronological age ≥4 and warrants treatment."
+          }
+        }
+      ],
+      "why": "Encopresis (age ≥4) is most often retentive with overflow incontinence; management targets the constipation (disimpaction, maintenance laxatives, toileting routine) plus behavioral support — not punishment.",
+      "pearl": "Encopresis: usually retentive overflow — treat the constipation first, add behavioral measures.",
+      "evidence": "t_neurodev.md — Elimination disorders: encopresis."
+    },
+    {
+      "id": "qb_cdev_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "childdev",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_neurodev.md"
+      ],
+      "link": {
+        "label": "Open the Neurodevelopmental Disorders page",
+        "href": "?page=t_neurodev.md"
+      },
+      "stem": "A 6-year-old speaks normally at home but consistently fails to speak at school, where she is otherwise engaged; this has lasted the school year and impairs learning. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Selective mutism",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Autism spectrum disorder",
+          "trap": {
+            "name": "Social-communication trap",
+            "note": "ASD involves pervasive social-communication deficits and restricted/repetitive behaviors; selective mutism is situation-specific with normal speech elsewhere."
+          }
+        },
+        {
+          "key": "C",
+          "t": "A language (communication) disorder",
+          "trap": {
+            "name": "Capacity trap",
+            "note": "The child can speak normally at home; the failure is situational, pointing to an anxiety disorder, not a language deficit."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Oppositional defiant disorder",
+          "trap": {
+            "name": "Defiance mislabel",
+            "note": "The mutism is anxiety-driven, not willful defiance."
+          }
+        }
+      ],
+      "why": "Selective mutism is a consistent failure to speak in specific social situations (e.g., school) despite speaking normally elsewhere, interfering with functioning — an anxiety-spectrum disorder, not a language or defiance problem.",
+      "pearl": "Selective mutism: won't speak in specific settings but speaks normally elsewhere — an anxiety disorder.",
+      "evidence": "t_neurodev.md — Selective mutism."
+    },
+    {
+      "id": "qb_eth_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management",
+        "safety"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & the Law page",
+        "href": "?page=ethics_legal.md"
+      },
+      "stem": "During an interview, a child discloses details strongly suggesting physical abuse at home. The parent asks you to keep it confidential. What must you do?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Make a mandated report to child protective services based on reasonable suspicion",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Keep it confidential because the parent requested it",
+          "trap": {
+            "name": "Confidentiality-override trap",
+            "note": "Confidentiality yields to mandatory reporting of suspected child abuse; a parent cannot waive that duty."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Wait until you have definitive proof before reporting",
+          "trap": {
+            "name": "Proof trap",
+            "note": "Reporting requires reasonable suspicion, not proof."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Report only if the child asks you to",
+          "trap": {
+            "name": "Assent trap",
+            "note": "The duty to report does not depend on the child's request."
+          }
+        }
+      ],
+      "why": "Suspected child abuse is a mandatory report based on reasonable suspicion — you do not need proof, and confidentiality (including a parent's request) does not override the duty. Elder/dependent-adult abuse carries similar duties.",
+      "pearl": "Suspected child abuse = mandatory report on reasonable suspicion; confidentiality does not override it.",
+      "evidence": "ethics_legal.md — Mandatory reporting."
+    },
+    {
+      "id": "qb_eth_015",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & the Law page",
+        "href": "?page=ethics_legal.md"
+      },
+      "stem": "A 15-year-old comes alone requesting evaluation. Which statement about consent for a minor is most accurate?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Minors generally require parental consent, but exceptions exist — emancipated/mature minors, certain confidential services in many jurisdictions, and the emergency exception",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "A minor can never consent to any care without a parent present",
+          "trap": {
+            "name": "Absolutism trap",
+            "note": "Emancipated-minor, specific-service, and emergency exceptions exist; the rule is not absolute."
+          }
+        },
+        {
+          "key": "C",
+          "t": "A minor always has full adult decision-making authority",
+          "trap": {
+            "name": "Over-broad trap",
+            "note": "Minors do not have blanket adult authority; parental consent is the general rule with defined exceptions."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Emergency care must be withheld until a parent is reached",
+          "trap": {
+            "name": "Emergency trap",
+            "note": "Emergency care proceeds under implied consent even before a parent is reached."
+          }
+        }
+      ],
+      "why": "The general rule is parental consent for minors, with important exceptions: emancipated or mature minors, certain sensitive services (varies by jurisdiction), and the emergency exception. Statutes vary, so know local law.",
+      "pearl": "Minors: parental consent is the rule, with emancipated-minor, specific-service, and emergency exceptions (jurisdiction-dependent).",
+      "evidence": "ethics_legal.md — Consent and minors."
+    },
+    {
+      "id": "qb_eth_016",
+      "status": "draft",
+      "type": "sba",
+      "category": "ethics",
+      "competency": [
+        "management"
+      ],
+      "difficulty": 1,
+      "pages": [
+        "ethics_legal.md"
+      ],
+      "link": {
+        "label": "Open the Ethics & the Law page",
+        "href": "?page=ethics_legal.md"
+      },
+      "stem": "A hospitalized patient invites the student doctor to meet socially and offers a substantial personal gift. What is the appropriate response?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Kindly decline — sexual or romantic involvement with a patient is never acceptable, and significant gifts/dual relationships are boundary crossings to avoid",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Accept, since maintaining rapport is most important",
+          "trap": {
+            "name": "Rapport-over-boundaries trap",
+            "note": "Rapport does not justify boundary violations; the therapeutic frame protects the patient."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Accept the gift but decline the social meeting",
+          "trap": {
+            "name": "Partial-boundary trap",
+            "note": "Significant personal gifts are themselves a boundary crossing to avoid."
+          }
+        },
+        {
+          "key": "D",
+          "t": "It is only a problem after discharge",
+          "trap": {
+            "name": "Timing trap",
+            "note": "The prohibition on sexual/romantic involvement and the caution around gifts/dual relationships apply during care and beyond."
+          }
+        }
+      ],
+      "why": "Professional boundaries protect patients: sexual or romantic involvement with a patient is never acceptable, and significant gifts or dual relationships are boundary crossings to decline gracefully.",
+      "pearl": "Sexual/romantic involvement with a patient is never acceptable; decline significant gifts and dual relationships.",
+      "evidence": "ethics_legal.md — Professional boundaries."
+    },
+    {
+      "id": "qb_otherdx_012",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_sleep.md"
+      ],
+      "link": {
+        "label": "Open the Sleep-Wake Disorders page",
+        "href": "?page=t_sleep.md"
+      },
+      "stem": "A 20-year-old has months of overwhelming daytime sleepiness with sudden, brief episodes of bilateral leg weakness triggered by laughter, plus vivid hallucinations while falling asleep and episodes of waking paralysis. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Narcolepsy (type 1, with cataplexy)",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Obstructive sleep apnea",
+          "trap": {
+            "name": "Mechanism trap",
+            "note": "OSA causes fragmented sleep and sleepiness but not cataplexy, the emotion-triggered muscle-tone loss described."
+          }
+        },
+        {
+          "key": "C",
+          "t": "A primary psychotic disorder",
+          "trap": {
+            "name": "Hallucination trap",
+            "note": "Hypnagogic hallucinations at sleep onset are a narcolepsy feature, not a primary psychosis."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Generalized anxiety disorder",
+          "trap": {
+            "name": "Wrong-domain trap",
+            "note": "The tetrad points to narcolepsy, not anxiety."
+          }
+        }
+      ],
+      "why": "The narcolepsy tetrad — excessive daytime sleepiness, cataplexy (emotion-triggered muscle-tone loss), sleep paralysis, and hypnagogic hallucinations — with low CSF orexin/hypocretin defines narcolepsy type 1; MSLT shows short REM latency.",
+      "pearl": "Narcolepsy: sleepiness + cataplexy + sleep paralysis + hypnagogic hallucinations; low orexin.",
+      "evidence": "t_sleep.md — Narcolepsy."
+    },
+    {
+      "id": "qb_otherdx_013",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 2,
+      "pages": [
+        "t_somatic.md"
+      ],
+      "link": {
+        "label": "Open the Somatic Symptom & Related page",
+        "href": "?page=t_somatic.md"
+      },
+      "stem": "A woman develops sudden left-arm paralysis after an argument; exam shows a positive Hoover sign and findings inconsistent with any neuroanatomic lesion, and workup is normal. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Functional neurological symptom disorder (conversion disorder)",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Malingering",
+          "trap": {
+            "name": "Intent trap",
+            "note": "Conversion symptoms are not consciously produced for external gain; the clinical picture and internal inconsistency indicate a functional disorder."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Factitious disorder",
+          "trap": {
+            "name": "Intent trap",
+            "note": "Factitious disorder involves deliberate falsification for the sick role; conversion is not intentionally produced."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Stroke",
+          "trap": {
+            "name": "Exam trap",
+            "note": "A positive Hoover sign and neuroanatomically incompatible findings with normal workup argue against a structural lesion."
+          }
+        }
+      ],
+      "why": "Neurologic symptoms with internal inconsistency incompatible with recognized disease (e.g., positive Hoover sign), not intentionally produced and often following a stressor, define functional neurological symptom (conversion) disorder.",
+      "pearl": "Conversion (functional neurological) disorder: exam-incompatible neuro symptoms, not intentional, often post-stressor.",
+      "evidence": "t_somatic.md — Functional neurological symptom (conversion) disorder."
+    },
+    {
+      "id": "qb_otherdx_014",
+      "status": "draft",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": [
+        "dx"
+      ],
+      "difficulty": 3,
+      "pages": [
+        "t_dissociative.md"
+      ],
+      "link": {
+        "label": "Open the Dissociative Disorders page",
+        "href": "?page=t_dissociative.md"
+      },
+      "stem": "A woman with a severe childhood trauma history has recurrent gaps in memory for everyday events and describes two distinct identity states with different names and behaviors that others have witnessed. Best diagnosis?",
+      "options": [
+        {
+          "key": "A",
+          "t": "Dissociative identity disorder",
+          "c": true
+        },
+        {
+          "key": "B",
+          "t": "Borderline personality disorder",
+          "trap": {
+            "name": "Identity-disturbance trap",
+            "note": "BPD identity disturbance is an unstable self-image, not distinct alternating identity states with amnesia."
+          }
+        },
+        {
+          "key": "C",
+          "t": "Malingering",
+          "trap": {
+            "name": "Intent trap",
+            "note": "The presentation, corroborated by others and tied to severe trauma, is not simply feigned for gain."
+          }
+        },
+        {
+          "key": "D",
+          "t": "Schizophrenia",
+          "trap": {
+            "name": "Psychosis conflation",
+            "note": "'Split personality' is not schizophrenia; DID involves identity states and amnesia, not primary psychosis."
+          }
+        }
+      ],
+      "why": "Two or more distinct personality states plus recurrent amnesia beyond ordinary forgetting, strongly associated with severe early trauma, defines dissociative identity disorder — commonly confused with (but distinct from) schizophrenia.",
+      "pearl": "DID = ≥2 distinct identity states + amnesia, linked to severe early trauma; not schizophrenia.",
+      "evidence": "t_dissociative.md — Dissociative identity disorder."
     }
   ]
 }

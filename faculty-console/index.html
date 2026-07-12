@@ -55,6 +55,9 @@
   .count{font-size:.85rem;color:var(--muted)}
   select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;color:var(--ink)}
   a{color:var(--accent-dark)}
+  .view{font-size:.8rem;white-space:nowrap;text-decoration:none;color:var(--accent-dark);border:1px solid var(--line);border-radius:8px;padding:4px 9px;flex:0 0 auto}
+  .view:hover{background:var(--accent-light)}
+  .view:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -89,6 +92,10 @@ function setKey(k){ try { sessionStorage.setItem(KEYSS,k); } catch(_){ } }
 function clearKey(){ try { sessionStorage.removeItem(KEYSS); } catch(_){ } }
 function clear(){ while(app.firstChild) app.removeChild(app.firstChild); }
 
+function viewLink(qs){
+  if (!state || !state.student) return null;
+  return h("a",{class:"view",href:state.student+"/"+qs,target:"_blank",rel:"noopener","aria-label":"Open on the student site in a new tab"},["View ↗"]);
+}
 function badge(status){
   var m = { reviewed:["Reviewed","b-rev"], pending:["Pending","b-pend"], unreviewed:["Not reviewed","b-un"],
             attested:["Attested","b-att"], draft:["Draft","b-draft"] };
@@ -180,6 +187,7 @@ function renderBody(){
         toggleRow(it.slug,"content",it.status==="reviewed"),
         h("div",{class:"t"},[ h("div",{class:"title"},[it.title||it.slug]),
           h("div",{class:"slug"},[(it.kind==="tool"?"tool · ":"page · ")+it.slug + (it.by?("  ·  "+it.by+(it.at?(" "+it.at):"")):"")]) ]),
+        viewLink(it.kind==="tool" ? ("?tool="+it.slug) : ("?page="+it.slug)),
         badge(it.status)
       ]));
     });
@@ -198,6 +206,7 @@ function renderBody(){
         toggleRow(q.id,"qbank",q.status==="attested"),
         h("div",{class:"t"},[ h("div",{class:"title"},[q.id]),
           h("div",{class:"slug"},[q.category+" · L"+q.difficulty+" — "+q.stem+"…"]) ]),
+        viewLink("?tool=question-bank-practice.html"),
         badge(q.status)
       ]));
     });

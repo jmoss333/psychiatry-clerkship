@@ -4879,5 +4879,132 @@
         }
       ]
     }
+  },
+  "toxidromes.md": {
+    "read": 5,
+    "hy": true,
+    "tldr": "Four hyperthermic emergencies share fever + altered mental status + autonomic instability; the neuromuscular exam, the skin, and the last 72 h of medication changes separate them and dictate sharply different treatment.",
+    "points": [
+      "Lead-pipe rigidity + hyporeflexia after a dopamine blocker → NMS; clonus + hyperreflexia, legs>arms, after a serotonergic agent → serotonin syndrome.",
+      "Dry, flushed skin + mydriasis + urinary retention → anticholinergic toxicity; waxy flexibility/posturing without a clear drug trigger → malignant catatonia (ECT is definitive).",
+      "Reconstruct every medication change in the last 72 hours — that history usually names the syndrome."
+    ],
+    "cant": "Never give an antipsychotic to a rigid, febrile patient in NMS or malignant catatonia — antipsychotics are the cause, not the treatment; stop the offending agent, cool and support, and escalate.",
+    "ruleOut": [
+      "Sepsis / CNS infection",
+      "Heat stroke",
+      "NMS",
+      "Serotonin syndrome",
+      "Anticholinergic toxicity",
+      "Malignant catatonia",
+      "Malignant hyperthermia"
+    ],
+    "firstMove": "Stop the likely offending agent, support and cool aggressively, send a CK, and rule out infection/heat stroke — then discriminate by reflexes and skin.",
+    "safetyLevel": "moderate",
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment"
+    ],
+    "facultyReview": {
+      "status": "reviewed",
+      "lastReviewed": "2026-07-10",
+      "reviewer": "Joshua Moss, MD"
+    }
+  },
+  "med_monitoring.md": {
+    "read": 4,
+    "hy": true,
+    "tldr": "Every psychotropic with a monitoring requirement has a baseline and an ongoing schedule; ordering the labs, β-hCG, and EKG before the first dose and tracking the next level is concrete bedside safety work.",
+    "points": [
+      "Lithium: 12-h trough drawn ~5 days after any dose change; target ≈ 0.6–1.0 (up to ~1.2 in acute mania); NSAIDs/thiazides/ACE-inhibitors raise levels.",
+      "Clozapine ANC weekly ×6 mo → every 2 wk ×6 mo → monthly (per prescribing information; FDA eliminated the REMS in 2025); myocarditis is the early killer.",
+      "Valproate and lithium are teratogens — β-hCG before starting; carbamazepine needs CBC/LFTs/sodium, HLA-B*1502 in at-risk ancestry, and watch for SIADH."
+    ],
+    "cant": "Do not treat monitoring as optional or after-the-fact — baseline and ongoing metabolic labs, β-hCG, and a QTc before QT-prolonging agents are part of the prescription.",
+    "safetyLevel": "moderate",
+    "workflowStages": [
+      "treatment",
+      "safety"
+    ],
+    "facultyReview": {
+      "status": "reviewed",
+      "lastReviewed": "2026-07-10",
+      "reviewer": "Joshua Moss, MD"
+    }
+  },
+  "psychotherapy.md": {
+    "read": 4,
+    "hy": true,
+    "tldr": "You won't run a course of therapy on a 5-day admission, but you're expected to match the modality to the problem, recognize the patient it fits, and use the supportive stance in every encounter.",
+    "points": [
+      "BPD/recurrent self-harm → DBT; OCD/phobia → CBT with exposure and response prevention; grief- or transition-linked depression → IPT.",
+      "Supportive psychotherapy is the default inpatient stance; psychodynamic/insight work is the wrong tool for an acutely psychotic, manic, or cognitively impaired patient.",
+      "Psychotherapy and medication are usually additive, not either/or."
+    ],
+    "cant": "Don't attempt uncovering/insight work with an acutely ill patient — it can destabilize; validate and support instead.",
+    "workflowStages": [
+      "treatment",
+      "communication",
+      "exam"
+    ],
+    "facultyReview": {
+      "status": "reviewed",
+      "lastReviewed": "2026-07-09",
+      "reviewer": "Joshua Moss, MD"
+    }
+  },
+  "case_formulation.md": {
+    "read": 4,
+    "hy": true,
+    "tldr": "A formulation answers why this patient, why now — built on the biopsychosocial axis and sharpened by the four P's (predisposing, precipitating, perpetuating, protective) — and turns a diagnosis into a plan.",
+    "points": [
+      "The differential gives the diagnosis; the formulation gives the 'why now' and the plan.",
+      "Always name a precipitant ('why now?') and at least one protective factor — the two cells students most often skip.",
+      "Every perpetuating factor is a treatment target; every protective factor is a lever."
+    ],
+    "cant": "Don't stop at a diagnosis or write an all-biology story — force a psychological and a social contributor into the formulation.",
+    "workflowStages": [
+      "diagnosis",
+      "treatment",
+      "team",
+      "exam"
+    ],
+    "facultyReview": {
+      "status": "reviewed",
+      "lastReviewed": "2026-07-09",
+      "reviewer": "Joshua Moss, MD"
+    }
+  },
+  "medical_workup.md": {
+    "read": 4,
+    "hy": true,
+    "tldr": "A new psychiatric presentation is a medical workup until proven otherwise — rule out the medical and substance mimics before committing to a psychiatric diagnosis.",
+    "points": [
+      "Red flags: first episode at an atypical age, no prior psychiatric history, abnormal vitals or a focal neuro exam, visual hallucinations, and fluctuating attention (delirium until proven otherwise).",
+      "Core new-admission screen: vitals, CBC, CMP, TSH, B12/folate, UA, urine tox + alcohol, β-hCG before medications, and a baseline QTc before QT-prolonging agents.",
+      "Psychosis + movement disorder + seizures/autonomic instability → think anti-NMDA-receptor (autoimmune) encephalitis."
+    ],
+    "cant": "Don't inherit 'psych' as the label on an older or medically ill patient with an acute change — take the vitals and test attention yourself first.",
+    "ruleOut": [
+      "Delirium / medical cause",
+      "Substance intoxication or withdrawal",
+      "Thyroid disease",
+      "B12/folate deficiency",
+      "CNS lesion / seizure",
+      "Autoimmune (anti-NMDA-receptor) encephalitis"
+    ],
+    "firstMove": "Take the vitals and test attention yourself, order the core labs + β-hCG + QTc, and present the medical differential first when the story is 'new, old, and abnormal-vitals.'",
+    "safetyLevel": "moderate",
+    "workflowStages": [
+      "diagnosis",
+      "safety",
+      "treatment"
+    ],
+    "facultyReview": {
+      "status": "reviewed",
+      "lastReviewed": "2026-07-10",
+      "reviewer": "Joshua Moss, MD"
+    }
   }
 }

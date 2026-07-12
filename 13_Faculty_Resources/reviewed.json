@@ -468,17 +468,22 @@
  },
  "medical_workup.md": {
   "status": "reviewed",
-  "at": "2026-07-09",
+  "at": "2026-07-10",
   "by": "Joshua Moss, MD"
  },
  "toxidromes.md": {
   "status": "reviewed",
-  "at": "2026-07-09",
+  "at": "2026-07-10",
   "by": "Joshua Moss, MD"
  },
  "med_monitoring.md": {
   "status": "reviewed",
-  "at": "2026-07-09",
+  "at": "2026-07-10",
+  "by": "Joshua Moss, MD"
+ },
+ "rapid_review.md": {
+  "status": "reviewed",
+  "at": "2026-07-10",
   "by": "Joshua Moss, MD"
  }
 }
