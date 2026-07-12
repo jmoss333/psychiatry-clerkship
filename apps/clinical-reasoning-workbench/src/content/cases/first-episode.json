@@ -1,0 +1,273 @@
+{
+  "id": "first_episode_001",
+  "version": 1,
+  "fictional": true,
+  "learnerTitle": "Synthetic Case 01 · First episode",
+  "facultyReview": {
+    "status": "draft"
+  },
+  "facts": [
+    {
+      "id": "F01",
+      "kind": "function",
+      "text": "Collateral describes academic decline and social withdrawal.",
+      "source": "collateral",
+      "reliability": "moderate",
+      "certainty": "probable",
+      "start": "about 6 months before current presentation",
+      "temporalPrecision": "relative",
+      "tags": []
+    },
+    {
+      "id": "F02",
+      "kind": "substance",
+      "text": "Patient reports increasingly heavy cannabis use.",
+      "source": "patient_report",
+      "reliability": "moderate",
+      "certainty": "confirmed",
+      "start": "about 4 months before current presentation",
+      "temporalPrecision": "relative",
+      "tags": []
+    },
+    {
+      "id": "F03",
+      "kind": "symptom",
+      "text": "Patient reports that neighbors are monitoring him.",
+      "source": "patient_report",
+      "reliability": "moderate",
+      "certainty": "confirmed",
+      "start": "about 3 months before current presentation",
+      "temporalPrecision": "relative",
+      "tags": []
+    },
+    {
+      "id": "F04",
+      "kind": "symptom",
+      "text": "Patient reports sleeping about two hours nightly.",
+      "source": "patient_report",
+      "reliability": "moderate",
+      "certainty": "confirmed",
+      "start": "8 days before current presentation",
+      "temporalPrecision": "day",
+      "tags": []
+    },
+    {
+      "id": "F05",
+      "kind": "symptom",
+      "text": "Patient reports no fatigue despite reduced sleep.",
+      "source": "patient_report",
+      "reliability": "moderate",
+      "certainty": "confirmed",
+      "start": "8 days before current presentation",
+      "temporalPrecision": "day",
+      "tags": []
+    },
+    {
+      "id": "F06",
+      "kind": "function",
+      "text": "Collateral reports increased spending.",
+      "source": "collateral",
+      "reliability": "moderate",
+      "certainty": "probable",
+      "start": "8 days before current presentation",
+      "temporalPrecision": "day",
+      "tags": []
+    },
+    {
+      "id": "F07",
+      "kind": "observation",
+      "text": "Patient makes grandiose statements.",
+      "source": "direct_observation",
+      "reliability": "high",
+      "certainty": "confirmed",
+      "start": "current presentation",
+      "temporalPrecision": "exact",
+      "tags": []
+    },
+    {
+      "id": "F08",
+      "kind": "observation",
+      "text": "Speech is rapid.",
+      "source": "direct_observation",
+      "reliability": "high",
+      "certainty": "confirmed",
+      "start": "current presentation",
+      "temporalPrecision": "exact",
+      "tags": []
+    },
+    {
+      "id": "F09",
+      "kind": "symptom",
+      "text": "Patient expresses persecutory beliefs.",
+      "source": "patient_report",
+      "reliability": "moderate",
+      "certainty": "confirmed",
+      "start": "current presentation",
+      "temporalPrecision": "exact",
+      "tags": []
+    },
+    {
+      "id": "F10",
+      "kind": "observation",
+      "text": "The chart describes the current presentation as agitated.",
+      "source": "chart",
+      "reliability": "moderate",
+      "certainty": "confirmed",
+      "start": "current presentation",
+      "temporalPrecision": "exact",
+      "tags": []
+    }
+  ],
+  "timelineItems": [
+    {
+      "id": "timeline-F01",
+      "factIds": ["F01"],
+      "lane": "function",
+      "label": "Collateral describes academic decline and social withdrawal.",
+      "start": "about 6 months before current presentation",
+      "approximate": true,
+      "learnerEdited": false,
+      "sortOrder": 0
+    },
+    {
+      "id": "timeline-F02",
+      "factIds": ["F02"],
+      "lane": "substance_use",
+      "label": "Patient reports increasingly heavy cannabis use.",
+      "start": "about 4 months before current presentation",
+      "approximate": true,
+      "learnerEdited": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "timeline-F03",
+      "factIds": ["F03"],
+      "lane": "psychosis",
+      "label": "Patient reports that neighbors are monitoring him.",
+      "start": "about 3 months before current presentation",
+      "approximate": true,
+      "learnerEdited": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "timeline-F04",
+      "factIds": ["F04"],
+      "lane": "sleep_energy",
+      "label": "Patient reports sleeping about two hours nightly.",
+      "start": "8 days before current presentation",
+      "approximate": false,
+      "learnerEdited": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "timeline-F05",
+      "factIds": ["F05"],
+      "lane": "sleep_energy",
+      "label": "Patient reports no fatigue despite reduced sleep.",
+      "start": "8 days before current presentation",
+      "approximate": false,
+      "learnerEdited": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "timeline-F06",
+      "factIds": ["F06"],
+      "lane": "function",
+      "label": "Collateral reports increased spending.",
+      "start": "8 days before current presentation",
+      "approximate": false,
+      "learnerEdited": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "timeline-F07",
+      "factIds": ["F07"],
+      "lane": "mood",
+      "label": "Patient makes grandiose statements.",
+      "start": "current presentation",
+      "approximate": false,
+      "learnerEdited": false,
+      "sortOrder": 4
+    },
+    {
+      "id": "timeline-F08",
+      "factIds": ["F08"],
+      "lane": "mood",
+      "label": "Speech is rapid.",
+      "start": "current presentation",
+      "approximate": false,
+      "learnerEdited": false,
+      "sortOrder": 4
+    },
+    {
+      "id": "timeline-F09",
+      "factIds": ["F09"],
+      "lane": "psychosis",
+      "label": "Patient expresses persecutory beliefs.",
+      "start": "current presentation",
+      "approximate": false,
+      "learnerEdited": false,
+      "sortOrder": 4
+    },
+    {
+      "id": "timeline-F10",
+      "factIds": ["F10"],
+      "lane": "mood",
+      "label": "The chart describes the current presentation as agitated.",
+      "start": "current presentation",
+      "approximate": false,
+      "learnerEdited": false,
+      "sortOrder": 4
+    }
+  ],
+  "hypotheses": [
+    {
+      "id": "bipolar_psychotic_features",
+      "label": "Bipolar I disorder with psychotic features",
+      "category": "mood",
+      "position": "plausible",
+      "supportingFactIds": [],
+      "contradictingFactIds": [],
+      "missingInformation": [],
+      "dangerousIfMissed": false,
+      "managementImplications": { "text": "", "factIds": [] },
+      "rationale": { "text": "", "factIds": [] }
+    },
+    {
+      "id": "primary_psychotic_disorder",
+      "label": "Primary psychotic disorder",
+      "category": "psychotic",
+      "position": "plausible",
+      "supportingFactIds": [],
+      "contradictingFactIds": [],
+      "missingInformation": [],
+      "dangerousIfMissed": false,
+      "managementImplications": { "text": "", "factIds": [] },
+      "rationale": { "text": "", "factIds": [] }
+    },
+    {
+      "id": "cannabis_associated_psychosis",
+      "label": "Cannabis-associated psychosis",
+      "category": "substance",
+      "position": "plausible",
+      "supportingFactIds": [],
+      "contradictingFactIds": [],
+      "missingInformation": [],
+      "dangerousIfMissed": false,
+      "managementImplications": { "text": "", "factIds": [] },
+      "rationale": { "text": "", "factIds": [] }
+    },
+    {
+      "id": "medical_neurologic_process",
+      "label": "Medical or neurologic process",
+      "category": "medical",
+      "position": "cannot_exclude",
+      "supportingFactIds": [],
+      "contradictingFactIds": [],
+      "missingInformation": [],
+      "dangerousIfMissed": true,
+      "managementImplications": { "text": "", "factIds": [] },
+      "rationale": { "text": "", "factIds": [] }
+    }
+  ]
+}
