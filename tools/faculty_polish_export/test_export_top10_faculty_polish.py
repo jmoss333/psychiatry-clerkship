@@ -3,12 +3,15 @@ from __future__ import annotations
 
 import csv
 import json
+import logging
 import os
 from pathlib import Path
 import sys
 import tempfile
 
 from reportlab.pdfgen import canvas
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -20,6 +23,7 @@ from package_data import (
     prepare_package_data,
     validate_artifacts,
 )
+from review_pdf import build_combined_review_pdf
 
 
 def _write_fixture_sources(root: Path):
@@ -139,6 +143,70 @@ def test_prepare_package_data_clears_only_stale_curated_pdfs():
         assert neighbor.read_text(encoding="utf-8") == "preserve"
 
 
+def _write_curated_pdfs_with_page_counts(out_dir: Path, artifacts) -> int:
+    pdf_dir = out_dir / "pdfs"
+    pdf_dir.mkdir(parents=True, exist_ok=True)
+    total_pages = 0
+    for page_count, item in enumerate(artifacts, start=1):
+        pdf_path = pdf_dir / item.output_filename
+        pdf = canvas.Canvas(str(pdf_path))
+        for page_number in range(1, page_count + 1):
+            pdf.drawString(72, 720, f"{item.title} - page {page_number}")
+            pdf.showPage()
+        pdf.save()
+        total_pages += page_count
+    return total_pages
+
+
+def test_build_combined_review_pdf_accounts_for_every_page():
+    with tempfile.TemporaryDirectory() as tmp:
+        out_dir = Path(tmp) / "out"
+        artifacts = default_artifacts()
+        source_page_count = _write_curated_pdfs_with_page_counts(out_dir, artifacts)
+
+        result = build_combined_review_pdf(out_dir, artifacts, "2026-07-11")
+        reader = PdfReader(out_dir / "faculty_review_packet.pdf")
+
+        assert source_page_count == 55
+        assert result["source_page_count"] == 55
+        assert result["divider_page_count"] == 10
+        assert result["front_matter_page_count"] >= 2
+        assert len(reader.pages) == (
+            result["source_page_count"]
+            + result["divider_page_count"]
+            + result["front_matter_page_count"]
+        )
+        assert reader.metadata.title == "Top 10 MS3 Faculty Review Packet"
+
+
+def test_build_combined_review_pdf_preserves_existing_packet_on_corrupt_input():
+    with tempfile.TemporaryDirectory() as tmp:
+        out_dir = Path(tmp) / "out"
+        artifacts = default_artifacts()
+        _write_curated_pdfs_with_page_counts(out_dir, artifacts)
+        existing = out_dir / "faculty_review_packet.pdf"
+        pdf = canvas.Canvas(str(existing))
+        pdf.drawString(72, 720, "Existing good packet")
+        pdf.save()
+        existing_bytes = existing.read_bytes()
+        (out_dir / "pdfs" / artifacts[4].output_filename).write_bytes(b"not a PDF")
+
+        pypdf_logger = logging.getLogger("pypdf")
+        previous_level = pypdf_logger.level
+        pypdf_logger.setLevel(logging.CRITICAL)
+        try:
+            try:
+                build_combined_review_pdf(out_dir, artifacts, "2026-07-11")
+            except PdfReadError:
+                pass
+            else:
+                raise AssertionError("Expected corrupt PDF input to fail")
+        finally:
+            pypdf_logger.setLevel(previous_level)
+
+        assert existing.read_bytes() == existing_bytes
+
+
 def run_tests() -> int:
     tests = [
         test_registry_has_ten_unique_artifacts_in_stable_order,
@@ -146,6 +214,8 @@ def run_tests() -> int:
         test_build_merge_rows_preserves_traceability_and_review_status,
         test_prepare_package_data_writes_curated_and_adobe_outputs,
         test_prepare_package_data_clears_only_stale_curated_pdfs,
+        test_build_combined_review_pdf_accounts_for_every_page,
+        test_build_combined_review_pdf_preserves_existing_packet_on_corrupt_input,
     ]
     failures = 0
     for test in tests:
