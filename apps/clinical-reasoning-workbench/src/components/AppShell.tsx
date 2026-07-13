@@ -7,6 +7,7 @@ import {
   useState,
   type KeyboardEvent,
   type PropsWithChildren,
+  type ReactNode,
   type RefObject,
 } from "react";
 import { useWorkspace } from "../state/useWorkspace";
@@ -213,9 +214,15 @@ function Rail({
 type AppShellProps = PropsWithChildren<{
   activeTab: WorkbenchTab;
   onTabChange: (tab: WorkbenchTab) => void;
+  teachingSlot?: ReactNode;
 }>;
 
-export function AppShell({ activeTab, children, onTabChange }: AppShellProps) {
+export function AppShell({
+  activeTab,
+  children,
+  onTabChange,
+  teachingSlot,
+}: AppShellProps) {
   const { closeEvidencePanel, evidencePanelOpen, openEvidencePanel } =
     useWorkspace();
   const [teachingOpen, setTeachingOpen] = useState(false);
@@ -296,7 +303,7 @@ export function AppShell({ activeTab, children, onTabChange }: AppShellProps) {
           onClose={() => setTeachingOpen(false)}
           triggerRef={teachingTriggerRef}
         >
-          <TeachingPanel />
+          <TeachingPanel>{teachingSlot}</TeachingPanel>
         </Rail>
       </div>
     </div>

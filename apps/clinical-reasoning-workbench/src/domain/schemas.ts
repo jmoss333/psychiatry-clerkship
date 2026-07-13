@@ -80,6 +80,7 @@ export type RuntimeContent = {
 };
 
 export const MAX_ID_LENGTH = 100;
+export const MAX_EPISODE_ID_LENGTH = 80;
 export const MAX_FACT_TEXT_LENGTH = 280;
 export const MAX_DESCRIPTION_LENGTH = 500;
 export const MAX_RATIONALE_LENGTH = 800;
@@ -92,6 +93,15 @@ export const StableIdSchema = z
   .min(1, "ID must not be empty")
   .max(MAX_ID_LENGTH, `ID must be at most ${MAX_ID_LENGTH} characters`)
   .refine(hasVisibleText, "ID must not be blank");
+
+export const EpisodeIdSchema = z
+  .string()
+  .min(1, "Episode ID must not be empty")
+  .max(
+    MAX_EPISODE_ID_LENGTH,
+    `Episode ID must be at most ${MAX_EPISODE_ID_LENGTH} characters`,
+  )
+  .refine(hasVisibleText, "Episode ID must not be blank");
 
 export const FactTextSchema = z
   .string()
@@ -239,7 +249,7 @@ export const TimelineItemSchema = z.strictObject({
   start: DescriptionTextSchema.optional(),
   end: DescriptionTextSchema.optional(),
   approximate: z.boolean(),
-  episodeId: StableIdSchema.optional(),
+  episodeId: EpisodeIdSchema.optional(),
   learnerEdited: z.boolean(),
   sortOrder: z.number().int().min(0).max(4),
 });

@@ -6,6 +6,7 @@ import { ChallengeWorkspace } from "./features/challenge/ChallengeWorkspace";
 import { DifferentialWorkspace } from "./features/differential/DifferentialWorkspace";
 import { MseWorkspace } from "./features/mse/MseWorkspace";
 import { TimelineWorkspace } from "./features/timeline/TimelineWorkspace";
+import { ChronologyPanel } from "./features/timeline/ChronologyPanel";
 import { useWorkspace } from "./state/useWorkspace";
 
 export function App() {
@@ -23,7 +24,11 @@ export function App() {
   }
 
   return (
-    <AppShell activeTab={tab} onTabChange={setTab}>
+    <AppShell
+      activeTab={tab}
+      onTabChange={setTab}
+      teachingSlot={tab === "timeline" ? <ChronologyPanel /> : null}
+    >
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === "timeline" ? <TimelineWorkspace /> : null}
         {tab === "mse" ? <MseWorkspace /> : null}

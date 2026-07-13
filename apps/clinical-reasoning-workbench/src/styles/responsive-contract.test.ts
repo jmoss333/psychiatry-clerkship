@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import baseCss from "./base.css?raw";
 import featuresCss from "./features.css?raw";
 import shellCss from "./shell.css?raw";
 import tokensCss from "./tokens.css?raw";
@@ -61,5 +62,35 @@ test("evidence interactions consume the shared 36px desktop and 44px compact tar
   expect(tokensCss).toContain("--control-height: 36px");
   expect(betweenBreakpoints(tokensCss, "1099", "767")).toContain(
     "--control-height: 44px",
+  );
+});
+
+test("timeline keeps a 720px internal semantic table with sticky lane and time headers", () => {
+  expect(featuresCss).toMatch(
+    /\.timeline-grid-scroll\s*\{[\s\S]*?overflow-x: auto/,
+  );
+  expect(featuresCss).toMatch(/\.timeline-grid\s*\{[\s\S]*?min-width: 720px/);
+  expect(featuresCss).toMatch(
+    /\.timeline-grid thead th[\s\S]*?position: sticky[\s\S]*?top: 0/,
+  );
+  expect(featuresCss).toMatch(
+    /\.timeline-grid__lane[\s\S]*?position: sticky[\s\S]*?left: 0/,
+  );
+});
+
+test("timeline actions consume shared targets and FactChips reach 44px in compact layouts", () => {
+  expect(featuresCss).toMatch(
+    /\.timeline-mark__edit\s*\{[\s\S]*?min-height: var\(--control-height\)/,
+  );
+  expect(featuresCss).not.toMatch(
+    /\.timeline-mark__edit\s*\{[\s\S]*?min-height: 32px/,
+  );
+  const compactBaseStart = baseCss.indexOf("@media (max-width: 1099px)");
+  const compactBaseEnd = baseCss.indexOf(
+    "@media (prefers-reduced-motion: reduce)",
+    compactBaseStart,
+  );
+  expect(baseCss.slice(compactBaseStart, compactBaseEnd)).toMatch(
+    /\.fact-chip\s*\{[\s\S]*?min-width: 44px;[\s\S]*?min-height: 44px/,
   );
 });

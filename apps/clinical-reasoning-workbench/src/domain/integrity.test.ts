@@ -260,6 +260,28 @@ test("rejects duplicate Fact links and self-linked temporal relations", () => {
   expect(() => assertWorkspaceIntegrity(selfLink)).toThrow(/self-links/);
 });
 
+test("rejects duplicate exact temporal-relation triples even when IDs differ", () => {
+  const workspace = makeWorkspace();
+  workspace.temporalRelations.push(
+    {
+      id: "relation-001",
+      fromFactId: "F02",
+      toFactId: "F03",
+      kind: "preceded",
+    },
+    {
+      id: "relation-002",
+      fromFactId: "F02",
+      toFactId: "F03",
+      kind: "preceded",
+    },
+  );
+
+  expect(() => assertWorkspaceIntegrity(workspace)).toThrow(
+    /duplicate exact temporal relationship/,
+  );
+});
+
 test("allows a blank staged draft but requires its subject to be the current favorite", () => {
   const workspace = makeWorkspace();
   workspace.hypotheses[0]!.position = "favored";

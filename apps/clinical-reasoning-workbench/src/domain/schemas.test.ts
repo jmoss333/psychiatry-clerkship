@@ -350,16 +350,22 @@ test("uses strict required authored objects without hard-coding seed cardinality
   expect(CaseDefinitionSchema.safeParse(smallerCase).success).toBe(true);
 });
 
-test("bounds stable and episode IDs", () => {
+test("bounds stable IDs at 100 characters and episode IDs at exactly 80", () => {
   const longCaseId = { ...rawCase, id: "i".repeat(MAX_ID_LENGTH + 1) };
   expect(CaseDefinitionSchema.safeParse(longCaseId).success).toBe(false);
+
+  const episodeAtLimit = {
+    ...rawCase,
+    timelineItems: rawCase.timelineItems.map((item, index) =>
+      index === 0 ? { ...item, episodeId: "e".repeat(80) } : item,
+    ),
+  };
+  expect(CaseDefinitionSchema.safeParse(episodeAtLimit).success).toBe(true);
 
   const longEpisodeId = {
     ...rawCase,
     timelineItems: rawCase.timelineItems.map((item, index) =>
-      index === 0
-        ? { ...item, episodeId: "e".repeat(MAX_ID_LENGTH + 1) }
-        : item,
+      index === 0 ? { ...item, episodeId: "e".repeat(81) } : item,
     ),
   };
   expect(CaseDefinitionSchema.safeParse(longEpisodeId).success).toBe(false);

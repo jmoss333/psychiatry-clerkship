@@ -96,6 +96,21 @@ export function assertWorkspaceIntegrity(
       throw new Error(`Temporal relation ${relation.id} self-links`);
     }
   }
+  const relationTriples = new Set<string>();
+  for (const relation of workspace.temporalRelations) {
+    const triple = JSON.stringify([
+      relation.fromFactId,
+      relation.toFactId,
+      relation.kind,
+    ]);
+    if (relationTriples.has(triple)) {
+      throw new Error(
+        `Temporal relations contain duplicate exact temporal relationship ` +
+          `${relation.fromFactId} ${relation.kind} ${relation.toFactId}`,
+      );
+    }
+    relationTriples.add(triple);
+  }
   for (const item of workspace.mseTranslations) {
     requireFacts(`MSE translation ${item.id}`, item.factIds);
   }
