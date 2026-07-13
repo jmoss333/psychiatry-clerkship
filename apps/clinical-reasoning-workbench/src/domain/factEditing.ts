@@ -53,6 +53,18 @@ export const TIMELINE_LANE_OPTIONS: ReadonlyArray<{
   { value: "treatment", label: "Treatment" },
 ];
 
+export const VISIBLE_TIME_COLUMNS = [
+  { value: 0, label: "~6 months" },
+  { value: 1, label: "~4 months" },
+  { value: 2, label: "~3 months" },
+  { value: 3, label: "8 days" },
+  { value: 4, label: "Current" },
+] as const;
+
+const VISIBLE_TIME_COLUMN_VALUES = new Set<number>(
+  VISIBLE_TIME_COLUMNS.map((column) => column.value),
+);
+
 export type FactDraft = {
   id: string;
   text: string;
@@ -251,9 +263,24 @@ export function prepareFactTimelineSave(
     existingTimeline && !factStartWasEdited ? existingTimeline.start : start;
   const timelineEnd =
     existingTimeline && !factEndWasEdited ? existingTimeline.end : end;
+  const timelineBase: Partial<TimelineItem> = existingTimeline
+    ? { ...existingTimeline }
+    : {};
+  delete timelineBase.start;
+  delete timelineBase.end;
+  const sortOrder = Number(draft.sortOrder);
+  if (
+    draft.sortOrder.trim() === "" ||
+    !VISIBLE_TIME_COLUMN_VALUES.has(sortOrder)
+  ) {
+    throw new FactSaveValidationError(
+      "Choose one of the five visible time columns",
+      "sortOrder",
+    );
+  }
   const timelineCandidate = withOptionalRange(
     {
-      ...(existingTimeline ?? {}),
+      ...timelineBase,
       id: existingTimeline?.id ?? generatedTimelineId,
       factIds: existingTimeline?.factIds ?? [factId],
       lane: draft.lane,
@@ -266,8 +293,7 @@ export function prepareFactTimelineSave(
           ? existingTimeline.approximate
           : approximateFromPrecision(factResult.data.temporalPrecision),
       learnerEdited: true,
-      sortOrder:
-        draft.sortOrder.trim() === "" ? Number.NaN : Number(draft.sortOrder),
+      sortOrder,
     },
     timelineStart,
     timelineEnd,

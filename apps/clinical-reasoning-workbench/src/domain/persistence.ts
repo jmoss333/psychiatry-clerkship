@@ -54,7 +54,11 @@ export function saveWorkspace(
 ): void {
   storage.setItem(
     WORKSPACE_KEY,
-    JSON.stringify(assertWorkspaceIntegrity(workspace)),
+    JSON.stringify(
+      assertWorkspaceIntegrity(
+        WorkspaceStateSchema.parse(structuredClone(workspace)),
+      ),
+    ),
   );
 }
 

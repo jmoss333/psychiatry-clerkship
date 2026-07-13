@@ -241,7 +241,7 @@ export const TimelineItemSchema = z.strictObject({
   approximate: z.boolean(),
   episodeId: StableIdSchema.optional(),
   learnerEdited: z.boolean(),
-  sortOrder: z.number().finite(),
+  sortOrder: z.number().int().min(0).max(4),
 });
 
 export const TemporalRelationSchema = z.strictObject({

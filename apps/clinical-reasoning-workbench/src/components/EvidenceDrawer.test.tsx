@@ -2,7 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { WorkspaceState } from "../domain/model";
-import { nextFactId } from "../domain/factEditing";
+import { VISIBLE_TIME_COLUMNS, nextFactId } from "../domain/factEditing";
 import { WORKSPACE_KEY } from "../domain/persistence";
 import {
   makeAcknowledgedWorkspace,
@@ -53,6 +53,16 @@ describe("fact identity, rows, filters, and selection", () => {
         { ...facts[0]!, id: "custom" },
       ]),
     ).toBe("F23");
+  });
+
+  test("exports exactly the five shared visible time columns used by the timeline", () => {
+    expect(VISIBLE_TIME_COLUMNS).toEqual([
+      { value: 0, label: "~6 months" },
+      { value: 1, label: "~4 months" },
+      { value: 2, label: "~3 months" },
+      { value: 3, label: "8 days" },
+      { value: 4, label: "Current" },
+    ]);
   });
 
   test("renders the ten canonical fact rows with complete visible metadata", () => {
@@ -142,6 +152,20 @@ describe("fact identity, rows, filters, and selection", () => {
     expect(f05).toBeChecked();
     expect(storage.getItem(WORKSPACE_KEY)).toBeNull();
     expect(screen.queryByText(/drag/i)).not.toBeInTheDocument();
+  });
+
+  test("announces an empty filter result outside the table structure", async () => {
+    const user = userEvent.setup();
+    renderApp(<EvidenceDrawer />);
+    await user.type(
+      screen.getByRole("searchbox", { name: "Search facts" }),
+      "no matching synthetic fact",
+    );
+
+    const status = screen.getByRole("status", { name: "Fact filter status" });
+    expect(status).toHaveTextContent("No facts match these filters.");
+    expect(drawerTable()).not.toContainElement(status);
+    expect(within(drawerTable()).queryAllByRole("row")).toHaveLength(0);
   });
 
   test("reveals a filtered-out fact, highlights every citation, and focuses and scrolls its exact row", async () => {
@@ -260,6 +284,20 @@ describe("fact acknowledgement and paired fact/timeline editing", () => {
     expect(within(editor).getByLabelText("Fact ID")).toHaveAttribute(
       "readonly",
     );
+    expect(
+      within(editor).getByLabelText("Visible time-column order"),
+    ).toHaveValue("");
+    expect(
+      within(editor).getByLabelText("Visible time-column order"),
+    ).toHaveDisplayValue("Choose a time column");
+    expect(within(editor).getByLabelText("Temporal precision")).toHaveValue(
+      "exact",
+    );
+    expect(
+      within(editor)
+        .getByLabelText("Visible time-column order")
+        .querySelectorAll("option"),
+    ).toHaveLength(6);
     await user.type(
       within(editor).getByLabelText("Fact text"),
       "Synthetic follow-up observation.",
@@ -304,12 +342,9 @@ describe("fact acknowledgement and paired fact/timeline editing", () => {
       within(editor).getByLabelText("Timeline lane"),
       "medical_neurologic",
     );
-    await user.clear(
+    await user.selectOptions(
       within(editor).getByLabelText("Visible time-column order"),
-    );
-    await user.type(
-      within(editor).getByLabelText("Visible time-column order"),
-      "7",
+      "3",
     );
     await user.click(within(editor).getByRole("button", { name: "Save fact" }));
 
@@ -341,7 +376,7 @@ describe("fact acknowledgement and paired fact/timeline editing", () => {
       end: "current presentation",
       approximate: true,
       learnerEdited: true,
-      sortOrder: 7,
+      sortOrder: 3,
     });
   });
 
@@ -361,7 +396,7 @@ describe("fact acknowledgement and paired fact/timeline editing", () => {
       approximate: false,
       episodeId: "episode-1",
       factIds: ["F01", "F02"],
-      sortOrder: 17,
+      sortOrder: 4,
     };
     renderApp(
       <>
@@ -406,7 +441,7 @@ describe("fact acknowledgement and paired fact/timeline editing", () => {
       episodeId: "episode-1",
       factIds: ["F01", "F02"],
       lane: "stressors",
-      sortOrder: 17,
+      sortOrder: 4,
       learnerEdited: true,
     });
   });
@@ -429,8 +464,9 @@ describe("fact acknowledgement and paired fact/timeline editing", () => {
       within(editor).getByLabelText("Fact text"),
       "This edit must remain atomic.",
     );
-    await user.clear(
+    await user.selectOptions(
       within(editor).getByLabelText("Visible time-column order"),
+      "",
     );
     await user.click(within(editor).getByRole("button", { name: "Save fact" }));
 
@@ -567,6 +603,86 @@ describe("fact acknowledgement and paired fact/timeline editing", () => {
     }
   });
 
+  test("clears fact and timeline ranges and preserves the clearing after reload", async () => {
+    const user = userEvent.setup();
+    const workspace = makeAcknowledgedWorkspace();
+    workspace.facts[0] = {
+      ...workspace.facts[0]!,
+      end: "custom fact end",
+    };
+    workspace.timelineItems[0] = {
+      ...workspace.timelineItems[0]!,
+      end: "custom timeline end",
+    };
+    const storage = makeMemoryStorage();
+    const first = renderApp(<EvidenceDrawer />, { workspace, storage });
+
+    await user.click(screen.getByRole("button", { name: "Edit F01" }));
+    const editor = screen.getByRole("dialog", { name: "Edit F01" });
+    await user.clear(within(editor).getByLabelText("Start"));
+    await user.clear(within(editor).getByLabelText("End"));
+    await user.click(within(editor).getByRole("button", { name: "Save fact" }));
+    await waitFor(() => {
+      const parsed = JSON.parse(
+        storage.getItem(WORKSPACE_KEY) ?? "{}",
+      ) as WorkspaceState;
+      expect(parsed.facts[0]).not.toHaveProperty("start");
+      expect(parsed.facts[0]).not.toHaveProperty("end");
+      expect(parsed.timelineItems[0]).not.toHaveProperty("start");
+      expect(parsed.timelineItems[0]).not.toHaveProperty("end");
+    });
+
+    first.unmount();
+    renderApp(<WorkspaceSnapshot />, { storage });
+    const restored = readWorkspace();
+    expect(restored.facts[0]).not.toHaveProperty("start");
+    expect(restored.facts[0]).not.toHaveProperty("end");
+    expect(restored.timelineItems[0]).not.toHaveProperty("start");
+    expect(restored.timelineItems[0]).not.toHaveProperty("end");
+  });
+
+  test("a no-op edit preserves absent precision and the existing approximate flag after reload", async () => {
+    const user = userEvent.setup();
+    const workspace = makeAcknowledgedWorkspace();
+    delete workspace.facts[0]!.temporalPrecision;
+    workspace.timelineItems[0]!.approximate = true;
+    const storage = makeMemoryStorage();
+    const first = renderApp(<EvidenceDrawer />, { workspace, storage });
+
+    await user.click(screen.getByRole("button", { name: "Edit F01" }));
+    const editor = screen.getByRole("dialog", { name: "Edit F01" });
+    expect(within(editor).getByLabelText("Temporal precision")).toHaveValue("");
+    await user.click(within(editor).getByRole("button", { name: "Save fact" }));
+    await waitFor(() => expect(storage.getItem(WORKSPACE_KEY)).not.toBeNull());
+
+    first.unmount();
+    renderApp(<WorkspaceSnapshot />, { storage });
+    const restored = readWorkspace();
+    expect(restored.facts[0]).not.toHaveProperty("temporalPrecision");
+    expect(restored.timelineItems[0]?.approximate).toBe(true);
+  });
+
+  test("falls back to the stable Add control when a successful edit unmounts its trigger", async () => {
+    const user = userEvent.setup();
+    renderApp(<EvidenceDrawer />, { workspace: makeAcknowledgedWorkspace() });
+    await user.selectOptions(
+      screen.getByLabelText("Filter by source"),
+      "collateral",
+    );
+    const editF01 = screen.getByRole("button", { name: "Edit F01" });
+    await user.click(editF01);
+    const editor = screen.getByRole("dialog", { name: "Edit F01" });
+    await user.selectOptions(within(editor).getByLabelText("Source"), "chart");
+    await user.click(within(editor).getByRole("button", { name: "Save fact" }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Add fictional fact" }),
+      ).toHaveFocus(),
+    );
+    expect(screen.queryByRole("button", { name: "Edit F01" })).toBeNull();
+  });
+
   test("traps editor focus and returns it to the exact trigger after Escape", async () => {
     const user = userEvent.setup();
     renderApp(<EvidenceDrawer />, { workspace: makeAcknowledgedWorkspace() });
@@ -633,6 +749,10 @@ describe("fact acknowledgement and paired fact/timeline editing", () => {
     await user.type(
       within(editor).getByLabelText("Timeline label"),
       "Reloaded synthetic timeline item",
+    );
+    await user.selectOptions(
+      within(editor).getByLabelText("Visible time-column order"),
+      "4",
     );
     await user.click(within(editor).getByRole("button", { name: "Save fact" }));
     await waitFor(() => {

@@ -22,6 +22,7 @@ import {
   FACT_SOURCE_OPTIONS,
   RELIABILITY_OPTIONS,
   TIMELINE_LANE_OPTIONS,
+  VISIBLE_TIME_COLUMNS,
   FactSaveValidationError,
   findTimelineForFact,
   nextFactId,
@@ -87,10 +88,6 @@ function makeDraft(
   const timelineItem = fact
     ? findTimelineForFact(workspace, fact.id)
     : undefined;
-  const highestSortOrder = Math.max(
-    -1,
-    ...workspace.timelineItems.map((item) => item.sortOrder),
-  );
   return {
     id: factId,
     text: fact?.text ?? "",
@@ -100,11 +97,11 @@ function makeDraft(
     kind: fact?.kind ?? "observation",
     start: fact?.start ?? "",
     end: fact?.end ?? "",
-    temporalPrecision: fact?.temporalPrecision ?? "exact",
+    temporalPrecision: fact ? (fact.temporalPrecision ?? "") : "exact",
     tags: fact?.tags.join(", ") ?? "",
     timelineLabel: timelineItem?.label ?? "",
     lane: timelineItem?.lane ?? "mood",
-    sortOrder: String(timelineItem?.sortOrder ?? highestSortOrder + 1),
+    sortOrder: timelineItem ? String(timelineItem.sortOrder) : "",
   };
 }
 
@@ -357,13 +354,18 @@ function FactEditor({ editingFactId, onClose }: FactEditorProps) {
           </label>
           <label>
             Visible time-column order
-            <input
-              type="number"
-              step="1"
+            <select
               value={draft.sortOrder}
               {...errorProps("sortOrder")}
               onChange={(event) => update("sortOrder", event.target.value)}
-            />
+            >
+              <option value="">Choose a time column</option>
+              {VISIBLE_TIME_COLUMNS.map((column) => (
+                <option key={column.value} value={column.value}>
+                  {column.label}
+                </option>
+              ))}
+            </select>
           </label>
           {error ? (
             <p
@@ -410,6 +412,7 @@ export function EvidenceDrawer() {
   const [editing, setEditing] = useState<EditingState>(null);
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
   const editorTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const addFactButtonRef = useRef<HTMLButtonElement>(null);
 
   const visibleFacts = useMemo(() => {
     const normalizedSearch = search.trim().toLocaleLowerCase();
@@ -477,7 +480,14 @@ export function EvidenceDrawer() {
     setEditing(null);
     const trigger = editorTriggerRef.current;
     editorTriggerRef.current = null;
-    queueMicrotask(() => trigger?.isConnected && trigger.focus());
+    queueMicrotask(() => {
+      const destination = trigger?.isConnected
+        ? trigger
+        : addFactButtonRef.current?.isConnected
+          ? addFactButtonRef.current
+          : null;
+      destination?.focus();
+    });
   };
 
   const selectedCount = selectedFactIds.length;
@@ -486,6 +496,7 @@ export function EvidenceDrawer() {
     <div className="evidence-drawer">
       <div className="evidence-drawer__toolbar">
         <Button
+          ref={addFactButtonRef}
           variant="primary"
           onClick={(event) => requestEditor(event.currentTarget)}
         >
@@ -561,12 +572,17 @@ export function EvidenceDrawer() {
           {selectedCount} {selectedCount === 1 ? "fact" : "facts"} selected
         </p>
       </div>
+      {visibleFacts.length === 0 ? (
+        <p
+          className="evidence-drawer__empty"
+          role="status"
+          aria-label="Fact filter status"
+          aria-live="polite"
+        >
+          No facts match these filters.
+        </p>
+      ) : null}
       <div className="evidence-table" role="table" aria-label="Case facts">
-        {visibleFacts.length === 0 ? (
-          <p className="evidence-drawer__empty">
-            No facts match these filters.
-          </p>
-        ) : null}
         {visibleFacts.map((fact) => {
           const selected = selectedFactIds.includes(fact.id);
           const temporalLabel = fact.end

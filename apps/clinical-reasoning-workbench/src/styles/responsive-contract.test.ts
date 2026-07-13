@@ -53,9 +53,13 @@ test("767px switches to the 112px two-row header and full sheet rails", () => {
   expect(mobileShell).toMatch(/\.evidence-rail,[\s\S]*?inset: 0;/);
 });
 
-test("compact evidence row actions retain 44px label and button targets", () => {
-  const compactFeatures = betweenBreakpoints(featuresCss, "1099");
-  expect(compactFeatures).toMatch(
-    /\.evidence-row__identity label,[\s\S]*?\.evidence-row__identity \.button[\s\S]*?min-height: 44px/,
+test("evidence interactions consume the shared 36px desktop and 44px compact target", () => {
+  expect(featuresCss).toMatch(
+    /\.evidence-drawer__selected-only,[\s\S]*?\.evidence-row__identity label,[\s\S]*?\.evidence-row__identity \.button[\s\S]*?min-height: var\(--control-height\)/,
+  );
+  expect(featuresCss).not.toContain("min-height: 30px");
+  expect(tokensCss).toContain("--control-height: 36px");
+  expect(betweenBreakpoints(tokensCss, "1099", "767")).toContain(
+    "--control-height: 44px",
   );
 });

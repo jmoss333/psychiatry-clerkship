@@ -92,6 +92,63 @@ test("saveWorkspace validates before changing stored data", () => {
   expect(storage.getItem(WORKSPACE_KEY)).toBe(original);
 });
 
+test.each([
+  [
+    "blank fact text",
+    (workspace: ReturnType<typeof makeWorkspace>) => {
+      workspace.facts[0]!.text = "   ";
+    },
+  ],
+  [
+    "blank timeline text",
+    (workspace: ReturnType<typeof makeWorkspace>) => {
+      workspace.timelineItems[0]!.label = "   ";
+    },
+  ],
+] as const)(
+  "saveWorkspace rejects %s before serialization and preserves a loadable prior value",
+  (_label, invalidate) => {
+    const originalWorkspace = makeWorkspace();
+    const original = JSON.stringify(originalWorkspace);
+    const storage = makeMemoryStorage({ [WORKSPACE_KEY]: original });
+    const invalid = makeWorkspace();
+    invalidate(invalid);
+
+    expect(() => saveWorkspace(storage, invalid)).toThrow(/text is required/);
+    expect(storage.getItem(WORKSPACE_KEY)).toBe(original);
+    expect(loadWorkspace(storage)).toEqual({
+      status: "loaded",
+      workspace: originalWorkspace,
+    });
+  },
+);
+
+test.each([
+  [
+    "blank fact text",
+    (workspace: ReturnType<typeof makeWorkspace>) => {
+      workspace.facts[0]!.text = "   ";
+    },
+  ],
+  [
+    "blank timeline text",
+    (workspace: ReturnType<typeof makeWorkspace>) => {
+      workspace.timelineItems[0]!.label = "   ";
+    },
+  ],
+] as const)(
+  "loadWorkspace rejects and retains stored %s",
+  (_label, invalidate) => {
+    const invalid = makeWorkspace();
+    invalidate(invalid);
+    const raw = JSON.stringify(invalid);
+    const storage = makeMemoryStorage({ [WORKSPACE_KEY]: raw });
+
+    expect(loadWorkspace(storage)).toMatchObject({ status: "invalid" });
+    expect(storage.getItem(WORKSPACE_KEY)).toBe(raw);
+  },
+);
+
 test("reset removal failure throws and retains the stored value", () => {
   const storage = makeThrowingStorage({
     remove: new Error("Removal blocked"),

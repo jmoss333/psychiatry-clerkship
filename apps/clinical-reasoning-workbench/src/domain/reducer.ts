@@ -6,6 +6,7 @@ import type {
   WorkspaceAction,
   WorkspaceState,
 } from "./model";
+import { WorkspaceStateSchema } from "./schemas";
 
 const upsertById = <T extends { id: string }>(items: T[], next: T): T[] => {
   const found = items.some((item) => item.id === next.id);
@@ -146,7 +147,7 @@ function reduceWithoutTimestamp(
     case "setSummary":
       return { ...state, summary: action.clauses };
     case "resetWorkspace":
-      return assertWorkspaceIntegrity(structuredClone(action.workspace));
+      return structuredClone(action.workspace);
   }
 }
 
@@ -158,9 +159,11 @@ export function workspaceReducer(
   const next = reduceWithoutTimestamp(state, action, now);
   const invalidatesSummary =
     action.type !== "setSummary" && action.type !== "resetWorkspace";
-  return assertWorkspaceIntegrity({
-    ...next,
-    summary: invalidatesSummary ? [] : next.summary,
-    updatedAt: now,
-  });
+  return assertWorkspaceIntegrity(
+    WorkspaceStateSchema.parse({
+      ...next,
+      summary: invalidatesSummary ? [] : next.summary,
+      updatedAt: now,
+    }),
+  );
 }

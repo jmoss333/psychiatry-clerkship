@@ -421,6 +421,15 @@ test("enforces fact and timeline text at 280 characters", () => {
   expect(CaseDefinitionSchema.safeParse(longTimeline).success).toBe(false);
 });
 
+test.each([-1, 1.5, 5])(
+  "rejects timeline sortOrder %s outside the five visible time columns",
+  (sortOrder) => {
+    const invalid = parseCaseDefinition(rawCase);
+    invalid.timelineItems[0]!.sortOrder = sortOrder;
+    expect(CaseDefinitionSchema.safeParse(invalid).success).toBe(false);
+  },
+);
+
 test("enforces the 500-character description and evidence-gap bound", () => {
   const atLimit = makeWorkspace();
   atLimit.mseTranslations.push({

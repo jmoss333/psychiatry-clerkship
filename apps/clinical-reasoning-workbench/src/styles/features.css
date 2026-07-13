@@ -42,10 +42,12 @@
 }
 
 .evidence-drawer__selected-only,
-.evidence-row__identity label {
+.evidence-row__identity label,
+.evidence-row__identity .button {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-height: var(--control-height);
 }
 
 .evidence-drawer__selected-only input,
@@ -90,7 +92,6 @@
 }
 
 .evidence-row__identity .button {
-  min-height: 30px;
   padding-inline: var(--space-2);
 }
 
@@ -154,13 +155,6 @@
 
   .fact-editor__wide {
     grid-column: auto;
-  }
-}
-
-@media (max-width: 1099px) {
-  .evidence-row__identity label,
-  .evidence-row__identity .button {
-    min-height: 44px;
   }
 }
 

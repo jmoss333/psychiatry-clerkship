@@ -319,6 +319,52 @@ test("timeline edits are always marked as learner edited", () => {
   expect(next.timelineItems[0]!.learnerEdited).toBe(true);
 });
 
+test("upsertFact rejects blank schema-invalid fact text", () => {
+  const workspace = makeWorkspace();
+  const before = structuredClone(workspace);
+  expect(() =>
+    workspaceReducer(workspace, {
+      type: "upsertFact",
+      fact: { ...workspace.facts[0]!, text: "   " },
+    }),
+  ).toThrow("Fact text is required");
+  expect(workspace).toEqual(before);
+});
+
+test("upsertTimelineItem rejects blank schema-invalid timeline text", () => {
+  const workspace = makeWorkspace();
+  const before = structuredClone(workspace);
+  expect(() =>
+    workspaceReducer(workspace, {
+      type: "upsertTimelineItem",
+      item: { ...workspace.timelineItems[0]!, label: "   " },
+    }),
+  ).toThrow("Timeline text is required");
+  expect(workspace).toEqual(before);
+});
+
+test("upsertTimelineItem rejects a sort order outside the five visible columns", () => {
+  const workspace = makeWorkspace();
+  expect(() =>
+    workspaceReducer(workspace, {
+      type: "upsertTimelineItem",
+      item: { ...workspace.timelineItems[0]!, sortOrder: 5 },
+    }),
+  ).toThrow();
+});
+
+test("resetWorkspace also rejects a schema-invalid replacement", () => {
+  const workspace = makeWorkspace();
+  const replacement = makeWorkspace();
+  replacement.facts[0]!.text = "   ";
+  expect(() =>
+    workspaceReducer(workspace, {
+      type: "resetWorkspace",
+      workspace: replacement,
+    }),
+  ).toThrow("Fact text is required");
+});
+
 test("selecting a favored hypothesis demotes only the prior favorite", () => {
   const seed = makeWorkspace();
   seed.hypotheses[2]!.position = "less_likely";
