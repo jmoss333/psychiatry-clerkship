@@ -3,7 +3,7 @@
 <head>
 <script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="icon" href="/favicon.svg">
-<!-- [RC-META] tool="The Interview Room — AI Standardized Patient" version="0.1.0" built="2026-07-12" category="clinical-skills" audience="ms3,resident" settings="inpatient" time="12min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="draft-pending-attestation" summary="Free-text interview practice with a fictional standardized patient: gated disclosures, rapport model, deterministic coverage map, self-assessment-first debrief with rubric feedback. Mock provider runs fully offline; live LLM provider stubbed behind the same interface (M1: Netlify proxy). NOT clinical decision support. Fictional composites; no PHI; transcripts stay in this browser." -->
+<!-- [RC-META] tool="The Interview Room — AI Standardized Patient" version="0.1.0" built="2026-07-12" category="clinical-skills" audience="ms3,resident" settings="inpatient" time="12min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="attested" summary="Free-text interview practice with a fictional standardized patient: gated disclosures, rapport model, deterministic coverage map, self-assessment-first debrief with rubric feedback. Mock provider runs fully offline; live LLM provider stubbed behind the same interface (M1: Netlify proxy). NOT clinical decision support. Fictional composites; no PHI; transcripts stay in this browser." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Interview Room — AI Standardized Patient</title>
@@ -364,7 +364,6 @@ function App(){
   var header=e('div',null,
     e('div',{className:'kicker'},'Clinical skills · Simulation'),
     e('h1',null,'The Interview Room',
-      e('span',{className:'badge draft'},'Draft — pending faculty review'),
       e('span',{className:'badge mode',role:'button',tabIndex:0,
         onClick:function(){var nx=provMode==='mock'?'live':'mock';setProvMode(nx);
           if(nx==='live'){var ep='';try{ep=localStorage.getItem('cw_sp_endpoint')||'';}catch(x){} if(!ep)openSettings();}},
