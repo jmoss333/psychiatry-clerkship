@@ -772,6 +772,13 @@ function showSummary(){
     .then(function(data){
       BANK = data;
       showSetup();
+      /* adaptive engine handoff: home may set cw_qb_focus to a blueprint category
+         so the learner lands in their weakest area with the filter preselected. */
+      try{ var _focus=localStorage.getItem('cw_qb_focus'); if(_focus){ localStorage.removeItem('cw_qb_focus');
+        var _cs=document.getElementById('f-cat');
+        if(_cs){ for(var _i=0;_i<_cs.options.length;_i++){ if(_cs.options[_i].value===_focus){ _cs.value=_focus; break; } }
+          var _cnt=document.getElementById('itemCount'), _n=(BANK.items||[]).filter(function(it){return it.category===_focus;}).length;
+          if(_cnt) _cnt.textContent=_n+' question'+(_n!==1?'s':'')+' match'; } } }catch(_){ }
     })
     .catch(function(err){
       root.innerHTML='<div class="err-box">'

@@ -1156,11 +1156,27 @@
     try{ var qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}'); Object.keys(qb).forEach(function(id){ var r=qb[id]; if(r&&!r.correct&&r.pages&&r.pages.length){ r.pages.forEach(function(f){ add(f,'missed in practice bank'); }); } }); }catch(_){ }
     return out;
   }
+  /* ---- adaptive weak-topic engine v1: per-shelfBlueprint mastery (derived) ---- */
+  var SHELF_ORDER=['mood','psychosis','anxiety','substance','neurocog','pharm','safety','personality','childdev','otherdx','ethics','relational'];
+  var SHELF_LABEL={mood:'Mood',psychosis:'Psychosis',anxiety:'Anxiety / OCD / Trauma',substance:'Substance & Withdrawal',neurocog:'Neurocognitive',pharm:'Psychopharm',safety:'Acute & Safety',personality:'Personality',childdev:'Child & Development',otherdx:'Somatic / Sleep / Eating (other)',ethics:'Ethics & Law',relational:'Relational'};
+  function blueprintOf(file){ var M=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}; var m=M&&M[file]; return (m&&Array.isArray(m.shelfBlueprint))?m.shelfBlueprint:[]; }
+  /* Mastery is DERIVED each render from cw_qb/quiz/srs (no new source of truth). Blueprint
+     codes == question_bank categories, joined via each item's pages -> shelfBlueprint.
+     Score = shrinkage-to-50 accuracy ((correct+1.5)/(n+3)) minus a small SRS-lapse penalty. */
+  function masteryByBlueprint(){
+    var acc={}; SHELF_ORDER.forEach(function(c){ acc[c]={correct:0,total:0,lapses:0}; });
+    function addObs(cats,correct){ for(var i=0;i<cats.length;i++){ var c=cats[i]; if(acc[c]){ acc[c].total++; if(correct)acc[c].correct++; } } }
+    try{ var qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}'); Object.keys(qb).forEach(function(id){ var r=qb[id]; if(!r||!r.pages||!r.pages.length)return; var seen={}; r.pages.forEach(function(f){ blueprintOf(f).forEach(function(c){ seen[c]=1; }); }); addObs(Object.keys(seen), !!r.correct); }); }catch(_){ }
+    try{ var q=JSON.parse(localStorage.getItem('cw_quiz_v1')||'{}'); Object.keys(q).forEach(function(f){ var e=q[f]; if(!e||!e.seen)return; var cats={}; blueprintOf(f).forEach(function(c){ cats[c]=1; }); var right=Math.max(0,(e.seen||0)-(e.wrong||0)); Object.keys(cats).forEach(function(c){ if(acc[c]){ acc[c].total+=e.seen; acc[c].correct+=right; } }); }); }catch(_){ }
+    var s=srsState(); if(s&&s.cards){ Object.keys(s.cards).forEach(function(id){ if(id.indexOf('TOPIC#')!==0)return; var lp=(s.cards[id]&&s.cards[id].lapses)||0; if(!lp)return; blueprintOf(id.slice(6)).forEach(function(c){ if(acc[c])acc[c].lapses+=lp; }); }); }
+    return SHELF_ORDER.map(function(c){ var a=acc[c]; var n=a.total; var score=null; if(n){ score=Math.round(100*((a.correct+1.5)/(n+3))); score=Math.max(0,score-Math.min(15,a.lapses*3)); } return {c:c,label:SHELF_LABEL[c],score:score,n:n,conf:(n===0?'none':(n<5?'low':'solid'))}; });
+  }
   function safeLS(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(_){ return null; } }
   function studyId(){ try{ var k=localStorage.getItem('cw_study_id'); if(!k){ k='S-'+Math.random().toString(36).slice(2,8).toUpperCase()+'-'+Date.now().toString(36).slice(-4).toUpperCase(); localStorage.setItem('cw_study_id',k); } return k; }catch(_){ return 'S-ANON'; } }
   window.exportStudy=function(){
     var payload={ study_id:studyId(), exported_at:new Date().toISOString(), schema:'clerkship-study-v1',
-      progress:safeLS('cw_progress_v1'), srs:safeLS('cw_srs_v1'), quiz:safeLS('cw_quiz_v1') };
+      progress:safeLS('cw_progress_v1'), srs:safeLS('cw_srs_v1'), quiz:safeLS('cw_quiz_v1'),
+      qb:safeLS('cw_qb_v1'), mastery:(function(){try{return masteryByBlueprint();}catch(_){return null;}})() };
     var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
     a.download='clerkship_study_'+payload.study_id+'_'+new Date().toISOString().slice(0,10)+'.json';
@@ -1191,6 +1207,18 @@
     if(weak.length){ h+='<div class="hm-sec"><h2>Focus next · your weak spots</h2>'; weak.slice(0,5).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+esc(x.t)+'</span><span class="sec">'+esc(x.reason)+'</span></button>'; }); h+='</div>'; }
     if(scan.hy.length){ h+='<div class="hm-sec"><h2>High-yield · not yet reviewed</h2>'; scan.hy.slice(0,8).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+x.t+'</span><span class="sec">'+x.sec+'</span></button>'; }); h+='</div>'; }
     var covk=Object.keys(scan.cov); if(covk.length){ h+='<div class="hm-sec"><h2>Coverage by section</h2><div class="hm-bars">'; covk.forEach(function(k){ var c=scan.cov[k]; var p=c.tot?Math.round(c.done/c.tot*100):0; h+='<div class="brow"><span class="lab">'+k+'</span><span class="track"><span class="fill" style="width:'+p+'%"></span></span><span class="pc">'+c.done+'/'+c.tot+'</span></div>'; }); h+='</div></div>'; }
+    var mb=masteryByBlueprint(); var mbStarted=mb.filter(function(x){return x.score!=null;});
+    h+='<div class="hm-sec"><h2>Mastery by blueprint <span style="font-weight:400;color:var(--text-light)">· from your practice</span></h2>';
+    if(!mbStarted.length){ h+='<div class="sub" style="margin:0 0 8px">Answer practice questions (or topic quizzes) and this fills in — one bar per shelf-blueprint area.</div>'; }
+    h+='<div class="hm-bars">';
+    mb.forEach(function(x){ var pc=(x.score==null)?0:x.score; var lab=(x.score==null)?'not started':(x.score+'%'+(x.conf==='low'?' · few':'')); h+='<div class="brow"><span class="lab">'+esc(x.label)+'</span><span class="track"><span class="fill" style="width:'+pc+'%"></span></span><span class="pc">'+lab+'</span></div>'; });
+    h+='</div></div>';
+    var weakCats=mbStarted.filter(function(x){return x.score<70;}).sort(function(a,b){return a.score-b.score;}).slice(0,3);
+    var notStarted=mb.filter(function(x){return x.score==null;});
+    if(weakCats.length||notStarted.length){ h+='<div class="hm-sec"><h2>Practice your weakest areas</h2>';
+      weakCats.forEach(function(x){ h+='<button class="hm-li" data-practice="'+x.c+'"><span class="t">'+esc(x.label)+'</span><span class="sec">'+x.score+'% · practice →</span></button>'; });
+      if(notStarted.length){ var ns=notStarted[0]; h+='<button class="hm-li" data-practice="'+ns.c+'"><span class="t">'+esc(ns.label)+'</span><span class="sec">not started · try it →</span></button>'; }
+      h+='</div>'; }
     h+='<div class="hm-sec"><h2>Help evaluate this site <span style="font-weight:400;color:var(--text-light)">· optional</span></h2><div class="sub" style="margin:0 0 8px">Export your anonymous learning activity for the clerkship study — no name and no patient information, only what you reviewed and answered on this site.</div><button class="hm-li" data-act="studyexport"><span class="t">Export my anonymous progress</span><span class="sec">Export ↓</span></button><div id="studyMsg" class="hm-empty" style="margin-top:6px"></div></div>';
     h+='<div class="hm-sec"><h2>New here?</h2><button class="hm-li" data-act="start"><span class="t">Open the Start-here orientation</span><span class="sec">Start →</span></button></div>';
     h+='</div>'; return h;
@@ -1226,7 +1254,7 @@
     hydrate(root);
     if(f==='__home__'){
       root.addEventListener('click',function(e){
-        var li=e.target.closest?e.target.closest('.hm-li'):null; if(li){ var act=li.getAttribute('data-act'); if(act==='review'){ navClick('review.html'); return; } if(act==='start'){ navClick('__start__'); return; } if(act==='studyexport'){ if(window.exportStudy)window.exportStudy(); return; } var ff=li.getAttribute('data-f'); if(ff)navClick(ff); return; }
+        var li=e.target.closest?e.target.closest('.hm-li'):null; if(li){ var act=li.getAttribute('data-act'); if(act==='review'){ navClick('review.html'); return; } if(act==='start'){ navClick('__start__'); return; } if(act==='studyexport'){ if(window.exportStudy)window.exportStudy(); return; } var pr=li.getAttribute('data-practice'); if(pr){ try{localStorage.setItem('cw_qb_focus',pr);}catch(_){ } navClick('question-bank-practice.html'); return; } var ff=li.getAttribute('data-f'); if(ff)navClick(ff); return; }
         var dm=e.target.closest?e.target.closest('[data-dash-mode]'):null; if(dm){ setDashboardMode(dm.getAttribute('data-dash-mode')); root.outerHTML=window.renderHome(); window.__afterSpecial('__home__'); return; }
         var b=e.target.closest?e.target.closest('[data-act]'):null; if(b){ var a=b.getAttribute('data-act'); if(a==='review')navClick('review.html'); }
       });
