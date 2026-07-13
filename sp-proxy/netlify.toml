@@ -1,0 +1,10 @@
+# SP Interview proxy — its own tiny Netlify site (same repo, base directory: sp-proxy).
+# Kept SEPARATE from faculty-console so the student passcode and the GitHub-writing
+# token never share an environment (smaller blast radius per key).
+[build]
+  publish = "."
+  command = "npm install --omit=dev"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
