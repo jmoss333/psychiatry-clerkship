@@ -134,7 +134,7 @@ _ATTACHMENT_STATES = {
     None,
     "metadata_only",
     "pdf_attached",
-    "pdf_invalid",
+    "broken_attachment",
     "pdf_verified",
     "pdf_indexed",
 }
@@ -1396,7 +1396,7 @@ def inspect_attachment_children(
     best: dict[str, Any] = {"state": "metadata_only"}
     rank = {
         "metadata_only": 0,
-        "pdf_invalid": 1,
+        "broken_attachment": 1,
         "pdf_attached": 2,
         "pdf_verified": 3,
         "pdf_indexed": 4,
@@ -1416,7 +1416,9 @@ def inspect_attachment_children(
             "contentType": "application/pdf",
         }
         probe = child.get("_fileProbe")
-        if isinstance(probe, dict):
+        if not isinstance(probe, dict):
+            candidate["state"] = "broken_attachment"
+        else:
             byte_count = probe.get("byteCount")
             signature = probe.get("signature")
             if (
@@ -1427,7 +1429,7 @@ def inspect_attachment_children(
                 or not isinstance(signature, str)
                 or not signature.startswith("%PDF-")
             ):
-                candidate["state"] = "pdf_invalid"
+                candidate["state"] = "broken_attachment"
             else:
                 candidate["state"] = (
                     "pdf_indexed" if probe.get("indexed") is True else "pdf_verified"

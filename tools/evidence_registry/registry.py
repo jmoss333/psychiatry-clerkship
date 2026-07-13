@@ -126,6 +126,7 @@ _REFERENCE_FILES = (
 _STABLE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 _ZOTERO_ITEM_KEY_RE = re.compile(r"^[A-Z0-9]{8}$")
 _TIER1_SELECTION_RE = re.compile(r"^(\d+)([a-z]*)$")
+_SCHEMA_PATH = Path(__file__).resolve().parents[2] / "evidence_registry.schema.json"
 TIER1_START = "<!-- evidence-registry:tier1:start -->"
 TIER1_END = "<!-- evidence-registry:tier1:end -->"
 _GENERATED_WARNING = (
@@ -148,6 +149,314 @@ class ValidationIssue:
     message: str
     severity: str = "error"
     code: str | None = None
+
+
+def _json_equal(left: Any, right: Any) -> bool:
+    """Compare JSON values without treating booleans as integers."""
+
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, dict):
+        return set(left) == set(right) and all(
+            _json_equal(left[key], right[key]) for key in left
+        )
+    if isinstance(left, list):
+        return len(left) == len(right) and all(
+            _json_equal(left_item, right_item)
+            for left_item, right_item in zip(left, right)
+        )
+    return left == right
+
+
+def _schema_child_path(path: str, key: str) -> str:
+    return key if path == "$" else f"{path}.{key}"
+
+
+def _schema_type_matches(value: Any, expected: str) -> bool:
+    checks = {
+        "object": lambda candidate: isinstance(candidate, dict),
+        "array": lambda candidate: isinstance(candidate, list),
+        "string": lambda candidate: isinstance(candidate, str),
+        "integer": lambda candidate: type(candidate) is int,
+        "boolean": lambda candidate: type(candidate) is bool,
+        "null": lambda candidate: candidate is None,
+    }
+    check = checks.get(expected)
+    return bool(check and check(value))
+
+
+def _schema_format_matches(value: str, format_name: str) -> bool:
+    if format_name == "date":
+        try:
+            parsed = date.fromisoformat(value)
+        except ValueError:
+            return False
+        return parsed.isoformat() == value
+    if format_name == "uri":
+        if not value or any(character.isspace() for character in value):
+            return False
+        try:
+            parsed = urlsplit(value)
+            hostname = parsed.hostname
+            _ = parsed.port  # Access validates malformed and out-of-range ports.
+        except (UnicodeError, ValueError):
+            return False
+        if not parsed.scheme:
+            return False
+        if parsed.scheme in {"http", "https"}:
+            return bool(parsed.netloc and hostname)
+        return bool(parsed.path)
+    return True
+
+
+def _resolve_local_ref(root_schema: dict, reference: str) -> Any:
+    if not isinstance(reference, str) or not reference.startswith("#/"):
+        raise ValueError("only local JSON Pointer references are supported")
+    target: Any = root_schema
+    for token in reference[2:].split("/"):
+        key = token.replace("~1", "/").replace("~0", "~")
+        if not isinstance(target, dict) or key not in target:
+            raise ValueError(f"unresolved local schema reference: {reference}")
+        target = target[key]
+    return target
+
+
+def _validate_schema_value(
+    value: Any,
+    schema: Any,
+    root_schema: dict,
+    path: str,
+) -> list[ValidationIssue]:
+    """Validate one value against the Draft 7 subset published by this repo."""
+
+    issues: list[ValidationIssue] = []
+    if not isinstance(schema, dict):
+        return [
+            ValidationIssue(
+                path,
+                "published schema node must be an object",
+                code="schema-validation",
+            )
+        ]
+
+    reference = schema.get("$ref")
+    if reference is not None:
+        try:
+            target = _resolve_local_ref(root_schema, reference)
+        except ValueError as exc:
+            return [ValidationIssue(path, str(exc), code="schema-validation")]
+        return _validate_schema_value(value, target, root_schema, path)
+
+    expected_type = schema.get("type")
+    if isinstance(expected_type, str) and not _schema_type_matches(value, expected_type):
+        issues.append(
+            ValidationIssue(
+                path,
+                f"must be of type {expected_type}",
+                code="schema-validation",
+            )
+        )
+        return issues
+
+    if "const" in schema and not _json_equal(value, schema["const"]):
+        issues.append(
+            ValidationIssue(
+                path,
+                f"must equal {schema['const']!r}",
+                code="schema-validation",
+            )
+        )
+    enum_values = schema.get("enum")
+    if isinstance(enum_values, list) and not any(
+        _json_equal(value, option) for option in enum_values
+    ):
+        issues.append(
+            ValidationIssue(
+                path,
+                f"must be one of {enum_values!r}",
+                code="schema-validation",
+            )
+        )
+
+    if isinstance(value, dict):
+        required = schema.get("required")
+        if isinstance(required, list):
+            for key in required:
+                if isinstance(key, str) and key not in value:
+                    issues.append(
+                        ValidationIssue(
+                            _schema_child_path(path, key),
+                            "is required by the published schema",
+                            code="schema-validation",
+                        )
+                    )
+        properties = schema.get("properties")
+        properties = properties if isinstance(properties, dict) else {}
+        for key, child_schema in properties.items():
+            if key in value:
+                issues.extend(
+                    _validate_schema_value(
+                        value[key],
+                        child_schema,
+                        root_schema,
+                        _schema_child_path(path, key),
+                    )
+                )
+        if schema.get("additionalProperties") is False:
+            for key in value:
+                if key not in properties:
+                    issues.append(
+                        ValidationIssue(
+                            _schema_child_path(path, key),
+                            "unexpected property under the published schema",
+                            code="schema-validation",
+                        )
+                    )
+
+    if isinstance(value, list):
+        minimum_items = schema.get("minItems")
+        if type(minimum_items) is int and len(value) < minimum_items:
+            issues.append(
+                ValidationIssue(
+                    path,
+                    f"must contain at least {minimum_items} item(s)",
+                    code="schema-validation",
+                )
+            )
+        if schema.get("uniqueItems") is True:
+            for index, item in enumerate(value):
+                if any(_json_equal(item, prior) for prior in value[:index]):
+                    issues.append(
+                        ValidationIssue(
+                            f"{path}[{index}]",
+                            "must be unique within the array",
+                            code="schema-validation",
+                        )
+                    )
+        item_schema = schema.get("items")
+        if isinstance(item_schema, dict):
+            for index, item in enumerate(value):
+                issues.extend(
+                    _validate_schema_value(
+                        item, item_schema, root_schema, f"{path}[{index}]"
+                    )
+                )
+
+    if isinstance(value, str):
+        minimum_length = schema.get("minLength")
+        if type(minimum_length) is int and len(value) < minimum_length:
+            issues.append(
+                ValidationIssue(
+                    path,
+                    f"must contain at least {minimum_length} character(s)",
+                    code="schema-validation",
+                )
+            )
+        pattern = schema.get("pattern")
+        if isinstance(pattern, str):
+            try:
+                matches = re.search(pattern, value) is not None
+            except re.error as exc:
+                issues.append(
+                    ValidationIssue(
+                        path,
+                        f"published schema has an invalid pattern: {exc}",
+                        code="schema-validation",
+                    )
+                )
+            else:
+                if not matches:
+                    issues.append(
+                        ValidationIssue(
+                            path,
+                            f"must match pattern {pattern}",
+                            code="schema-validation",
+                        )
+                    )
+        format_name = schema.get("format")
+        if isinstance(format_name, str) and not _schema_format_matches(
+            value, format_name
+        ):
+            issues.append(
+                ValidationIssue(
+                    path,
+                    f"must be a valid {format_name}",
+                    code="schema-validation",
+                )
+            )
+
+    if type(value) in {int, float}:
+        minimum = schema.get("minimum")
+        maximum = schema.get("maximum")
+        if type(minimum) in {int, float} and value < minimum:
+            issues.append(
+                ValidationIssue(
+                    path,
+                    f"must be at least {minimum}",
+                    code="schema-validation",
+                )
+            )
+        if type(maximum) in {int, float} and value > maximum:
+            issues.append(
+                ValidationIssue(
+                    path,
+                    f"must be at most {maximum}",
+                    code="schema-validation",
+                )
+            )
+
+    any_of = schema.get("anyOf")
+    if isinstance(any_of, list) and not any(
+        not _validate_schema_value(value, branch, root_schema, path)
+        for branch in any_of
+    ):
+        issues.append(
+            ValidationIssue(
+                path,
+                "must satisfy at least one published anyOf alternative",
+                code="schema-validation",
+            )
+        )
+    all_of = schema.get("allOf")
+    if isinstance(all_of, list):
+        for branch in all_of:
+            issues.extend(_validate_schema_value(value, branch, root_schema, path))
+    condition = schema.get("if")
+    then_schema = schema.get("then")
+    if isinstance(condition, dict) and isinstance(then_schema, dict):
+        if not _validate_schema_value(value, condition, root_schema, path):
+            issues.extend(
+                _validate_schema_value(value, then_schema, root_schema, path)
+            )
+    return issues
+
+
+def validate_against_published_schema(
+    registry: Any, schema_path: Path | None = None
+) -> list[ValidationIssue]:
+    """Apply the repository's published schema without third-party packages."""
+
+    schema_path = _SCHEMA_PATH if schema_path is None else Path(schema_path)
+    try:
+        with schema_path.open(encoding="utf-8") as handle:
+            schema = json.load(handle)
+    except (OSError, ValueError) as exc:
+        return [
+            ValidationIssue(
+                "$schema",
+                f"could not load published evidence schema: {exc}",
+                code="schema-validation",
+            )
+        ]
+    if not isinstance(schema, dict):
+        return [
+            ValidationIssue(
+                "$schema",
+                "published evidence schema must be a JSON object",
+                code="schema-validation",
+            )
+        ]
+    return _validate_schema_value(registry, schema, schema, "$")
 
 
 def load_evidence_registry(path: Path) -> dict:
@@ -911,12 +1220,15 @@ def validate_surveillance_contract(registry: dict) -> list[ValidationIssue]:
     return issues
 
 
-def validate_registry(registry: dict) -> list[ValidationIssue]:
+def validate_registry(
+    registry: dict, schema_path: Path | None = None
+) -> list[ValidationIssue]:
     """Aggregate every offline registry-contract issue without short-circuiting."""
 
-    issues: list[ValidationIssue] = []
+    issues = validate_against_published_schema(registry, schema_path)
     if not isinstance(registry, dict):
-        return [ValidationIssue("$", "registry must be a JSON object")]
+        issues.append(ValidationIssue("$", "registry must be a JSON object"))
+        return issues
 
     if registry.get("schemaVersion") != SCHEMA_VERSION:
         issues.append(

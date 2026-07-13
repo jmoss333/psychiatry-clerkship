@@ -3,7 +3,7 @@ The teaching engine. ✅ Strong; main job is **canonicalization**.
 
 | Subfolder | Status | Note |
 |---|---|---|
-| Landmark_Library | 🔀 Merge → ✅ | Canonical = `teaching/landmark-psychiatry-teaching-guide.md` (100 papers). Notion DB = live view; Google Drive folder = export. **The 17 Tier 1 articles across 16 numbered selections are canonicalized in [`evidence_registry.json`](../evidence_registry.json) and the [faculty curriculum map](Landmark_Library/Tier1_Primary_Source_Curriculum_Map.md).** |
+| Landmark_Library | 🔀 Merge → ✅ | Canonical = `teaching/landmark-psychiatry-teaching-guide.md` (100 papers). Notion DB = live view; Google Drive folder = export. **For evidence metadata and Tier 1 selection, evidence_registry.json alone is the canonical evidence authority. The [faculty curriculum map](Landmark_Library/Tier1_Primary_Source_Curriculum_Map.md) and generated Markdown are derived review views, never co-equal sources of truth.** |
 | Reading_Pathway_6wk | 🔧 Revise | Re-sequence the 17-article / 16-selection pathway to the 6-week arc (see `01_`/§6). |
 | Journal_Club_in_a_Box | ✅ | 6 ready packets (CATIE, EE, Safety Planning, Caspi/Border, Catatonia, Family Intervention) + Facilitator Answer Keys (Google Drive). |
 | Guidelines | ➕ Expand | `~/Inpatient_Psychiatry_Guideline_Surveillance_2023-2026.docx` + APA Highlights plan → execute highlights. |

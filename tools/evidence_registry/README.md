@@ -1,8 +1,9 @@
 # Evidence Registry and Zotero Workflow
 
-The repository is authoritative for curriculum meaning: stable evidence IDs,
-bibliographic decisions, faculty-approved week mappings, appraisals, and review
-governance live in `evidence_registry.json`. Zotero is authoritative for the
+evidence_registry.json alone is the canonical evidence authority for stable
+evidence IDs, bibliographic decisions, faculty-approved week mappings,
+appraisals, and review governance. Generated Markdown and the faculty map are
+derived review views, never co-equal sources of truth. Zotero is authoritative for the
 faculty member's reference items, tags, observed collection membership, and
 licensed attachments. A local report describes Zotero as observed; it never
 becomes curriculum authority and never rewrites a repository week assignment.
@@ -64,6 +65,13 @@ library. It is not a BibTeX citation key. Faculty can open a known parent record
 locally with `zotero://select/library/items/<parentKey>`; this is a workstation
 convenience, not a portable learner link or a curriculum identifier.
 
+As a manual faculty-workstation check, run this command and record the observed
+result in the current SDD task/report checklist. Do not automate it in CI:
+
+```bash
+open 'zotero://select/library/items/KL5HP3MU'
+```
+
 ## Privacy and Git boundary
 
 All snapshots and reports are generated under `outputs/evidence_registry/`,
@@ -78,5 +86,6 @@ remain supported for testing. This prevents a local report from being written
 into tracked source paths by mistake.
 
 Generated local artifacts are non-canonical and must never be staged or
-committed. The tracked evidence registry and its generated Tier 1 Markdown views
-remain the source of truth reviewed through normal repository changes.
+committed. Only `evidence_registry.json` is authoritative; generated Tier 1
+Markdown and map files are derived review views reviewed through normal
+repository changes.

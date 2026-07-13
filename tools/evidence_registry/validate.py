@@ -148,7 +148,9 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
-    issues = registry_library.validate_registry(registry)
+    issues = registry_library.validate_registry(
+        registry, repo_root / "evidence_registry.schema.json"
+    )
 
     try:
         source_index = registry_library.index_sources(registry)

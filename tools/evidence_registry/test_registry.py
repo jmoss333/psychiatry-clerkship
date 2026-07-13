@@ -12,6 +12,7 @@ import os
 import subprocess
 import sys
 import tempfile
+from collections.abc import Callable
 from unittest import mock
 from pathlib import Path
 
@@ -329,6 +330,146 @@ def test_canonical_registry_preserves_all_prior_ids_when_surveillance_is_added()
 
     assert len(registry["sources"]) == 35
     assert EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS == source_ids
+
+
+def test_published_schema_governance_is_required_for_every_canonical_source():
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    required = set(schema["definitions"]["governance"]["required"])
+    assert {"supersededBy", "correctionStatus"} <= required
+
+    registry = load_evidence_registry(REGISTRY_PATH)
+    assert len(registry["sources"]) == 35
+    for position, source in enumerate(registry["sources"]):
+        assert source["governance"]["supersededBy"] == [], position
+        assert source["governance"]["correctionStatus"] == "none-known", position
+        assert registry_library._STABLE_ID_RE.fullmatch(source["id"]), position
+
+
+def test_tier1_governance_cannot_omit_supersession_or_correction_status():
+    for field in ("supersededBy", "correctionStatus"):
+        registry = load_evidence_registry(REGISTRY_PATH)
+        del tier1_sources(registry)[0]["governance"][field]
+        errors = [
+            issue
+            for issue in validate_registry(registry)
+            if issue.severity == "error" and issue.path.endswith(f".governance.{field}")
+        ]
+        assert errors, field
+
+
+def test_surveillance_projection_excludes_governance_without_changing_p0_shape():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    projection = registry_library.build_surveillance_projection(registry)
+    encoded = json.dumps(projection, sort_keys=True)
+
+    assert "supersededBy" not in encoded
+    assert "correctionStatus" not in encoded
+    assert {source["id"] for source in projection["sources"]} == SURVEILLANCE_IDS
+    assert projection["link_monitor"]["high_traffic_paths_P0"] == [
+        "00_START_HERE/**",
+        "04_Acute_and_Safety/**",
+        "index.html",
+    ]
+
+
+def _schema_mutation_cases() -> list[tuple[str, Callable[[dict], object], str]]:
+    def change(path, value):
+        def mutate(registry):
+            target = registry
+            for key in path[:-1]:
+                target = target[key]
+            target[path[-1]] = value
+        return mutate
+
+    def remove(path):
+        def mutate(registry):
+            target = registry
+            for key in path[:-1]:
+                target = target[key]
+            del target[path[-1]]
+        return mutate
+
+    return [
+        ("wrong schema const", change(("schemaVersion",), 3), "schemaVersion"),
+        ("missing title", remove(("sources", 0, "citation", "title")), "citation.title"),
+        ("blank title", change(("sources", 0, "citation", "title"), ""), "citation.title"),
+        (
+            "empty authors and organization",
+            lambda registry: (
+                registry["sources"][0]["citation"].__setitem__("authors", []),
+                registry["sources"][0]["citation"].__setitem__("organization", ""),
+            ),
+            "citation",
+        ),
+        ("blank Tier 1 journal", change(("sources", 10, "citation", "journal"), ""), "citation.journal"),
+        ("year below minimum", change(("sources", 0, "citation", "year"), 0), "citation.year"),
+        ("year wrong type", change(("sources", 0, "citation", "year"), "2024"), "citation.year"),
+        ("boolean year", change(("sources", 0, "citation", "year"), True), "citation.year"),
+        ("empty sources", change(("sources",), []), "sources"),
+        ("unexpected citation key", change(("sources", 0, "citation", "editionGuess"), "first"), "citation.editionGuess"),
+        ("unexpected author key", change(("sources", 10, "citation", "authors", 0, "orcid"), "0000"), "citation.authors[0].orcid"),
+        ("unexpected source key", change(("sources", 0, "shadowAuthority"), True), "sources[0].shadowAuthority"),
+        ("unexpected governance key", change(("sources", 0, "governance", "reviewedByGuess"), "nobody"), "governance.reviewedByGuess"),
+        ("malformed URL", change(("sources", 0, "citation", "url"), "https://["), "citation.url"),
+        ("malformed date", change(("sources", 0, "governance", "lastReviewed"), "2026-02-30"), "governance.lastReviewed"),
+        ("missing citation object", remove(("sources", 0, "citation")), "sources[0].citation"),
+        ("missing identity object", remove(("sources", 0, "identity")), "sources[0].identity"),
+        ("missing governance object", remove(("sources", 0, "governance")), "sources[0].governance"),
+        ("invalid stable source ID", change(("sources", 0, "id"), "Bad_ID"), "sources[0].id"),
+        ("wrong source enum", change(("sources", 0, "type"), "blog-post"), "sources[0].type"),
+        ("wrong array type", change(("sources", 0, "governance", "supersededBy"), "none"), "governance.supersededBy"),
+        ("wrong array item", change(("sources", 0, "governance", "supersededBy"), ["Bad_ID"]), "governance.supersededBy[0]"),
+        ("duplicate array item", change(("sources", 10, "curriculum", "weekNumbers"), [1, 1]), "curriculum.weekNumbers[1]"),
+        ("array item above maximum", change(("sources", 10, "curriculum", "weekNumbers"), [7]), "curriculum.weekNumbers[0]"),
+        ("Tier 1 conditional const", change(("sources", 10, "requiredAccess"), "abstract"), "sources[10].requiredAccess"),
+        ("Tier 1 conditional required object", remove(("sources", 10, "zotero")), "sources[10].zotero"),
+    ]
+
+
+def test_published_schema_mutation_matrix_fails_normal_validate_registry():
+    for name, mutate, expected_path in _schema_mutation_cases():
+        registry = load_evidence_registry(REGISTRY_PATH)
+        mutate(registry)
+        paths = {
+            issue.path
+            for issue in validate_registry(registry)
+            if issue.severity == "error" and issue.code == "schema-validation"
+        }
+        assert any(expected_path in path for path in paths), (name, paths)
+
+
+def test_published_schema_mutation_matrix_fails_normal_cli_without_tracebacks():
+    for name, mutate, expected_path in _schema_mutation_cases():
+        registry = load_evidence_registry(REGISTRY_PATH)
+        mutate(registry)
+        with tempfile.TemporaryDirectory() as directory:
+            repo_root = Path(directory)
+            _write_canonical_repo(repo_root, registry=registry)
+            result = subprocess.run(
+                [sys.executable, str(VALIDATE), "--repo-root", str(repo_root)],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+        assert result.returncode == 1, (name, result.stdout, result.stderr)
+        assert expected_path in result.stdout, (name, result.stdout)
+        assert "Traceback" not in result.stdout + result.stderr, name
+
+
+def test_evidence_readmes_name_registry_as_sole_authority_and_views_as_derived():
+    tools_text = EVIDENCE_README.read_text(encoding="utf-8")
+    section_text = (
+        REPO_ROOT / "07_Evidence_and_Reading" / "README.md"
+    ).read_text(encoding="utf-8")
+    for text in (tools_text, section_text):
+        assert "evidence_registry.json alone is the canonical evidence authority" in text
+        assert "derived review views" in text
+
+
+def test_tools_readme_documents_representative_faculty_deep_link_check():
+    text = EVIDENCE_README.read_text(encoding="utf-8")
+    assert "open 'zotero://select/library/items/KL5HP3MU'" in text
+    assert "manual faculty-workstation check" in text
 
 
 def test_surveillance_projection_preserves_the_legacy_consumer_contract():
@@ -915,6 +1056,7 @@ def test_missing_appraisal_review_status_is_rejected():
         issue.message
         for issue in validate_registry(registry)
         if issue.path == "sources[0].appraisal.reviewStatus"
+        and issue.code != "schema-validation"
     ]
     assert messages == [
         "Tier 1 appraisal reviewStatus must be one of: pending-faculty-review, reviewed"
@@ -929,6 +1071,7 @@ def test_bogus_appraisal_review_status_is_rejected():
         issue.message
         for issue in validate_registry(registry)
         if issue.path == "sources[0].appraisal.reviewStatus"
+        and issue.code != "schema-validation"
     ]
     assert messages == [
         "Tier 1 appraisal reviewStatus must be one of: pending-faculty-review, reviewed"
@@ -945,6 +1088,7 @@ def test_reviewed_appraisal_requires_reviewed_at():
         issue.message
         for issue in validate_registry(registry)
         if issue.path == "sources[0].appraisal.reviewedAt"
+        and issue.code != "schema-validation"
     ]
     assert messages == ["Tier 1 reviewed appraisal requires a valid reviewedAt date"]
 
@@ -959,6 +1103,7 @@ def test_reviewed_appraisal_rejects_invalid_reviewed_at_date():
         issue.message
         for issue in validate_registry(registry)
         if issue.path == "sources[0].appraisal.reviewedAt"
+        and issue.code != "schema-validation"
     ]
     assert messages == ["Tier 1 reviewed appraisal requires a valid reviewedAt date"]
 
@@ -986,6 +1131,7 @@ def test_bogus_mapping_status_is_rejected():
         issue.message
         for issue in validate_registry(registry)
         if issue.path == "sources[0].curriculum.mappingStatus"
+        and issue.code != "schema-validation"
     ]
     assert messages == [
         "Tier 1 mappingStatus must be one of: mapped, needs-faculty-confirmation, citation-conflict"
@@ -1412,7 +1558,7 @@ def test_zotero_note_url_and_html_children_do_not_count_as_pdf():
         assert status["state"] == "metadata_only", case
 
 
-def test_zotero_imported_and_linked_pdf_attachment_states():
+def test_zotero_imported_and_linked_pdf_without_file_probe_are_broken():
     fixture = load_snapshot(
         ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
     )
@@ -1423,21 +1569,33 @@ def test_zotero_imported_and_linked_pdf_attachment_states():
         "KL5HP3MU", fixture["linkedPdf"], explicit=True
     )
 
-    assert imported["state"] == "pdf_attached"
+    assert imported["state"] == "broken_attachment"
     assert imported["contentType"] == "application/pdf"
-    assert linked["state"] == "pdf_attached"
+    assert linked["state"] == "broken_attachment"
     assert linked["contentType"] == "application/pdf"
 
 
-def test_zotero_zero_byte_and_invalid_signature_pdfs_are_rejected():
+def test_zotero_missing_zero_byte_and_invalid_signature_pdfs_are_broken():
     fixture = load_snapshot(
         ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
     )
-    for case in ("zeroBytePdf", "invalidSignaturePdf"):
+    for case in ("zeroBytePdf", "invalidSignaturePdf", "importedPdf"):
         status = inspect_attachment_children(
             "KL5HP3MU", fixture[case], explicit=True
         )
-        assert status["state"] == "pdf_invalid", case
+        assert status["state"] == "broken_attachment", case
+
+
+def test_old_invalid_attachment_terms_are_absent_from_live_code_and_design():
+    paths = [
+        Path(__file__),
+        Path(zotero_bridge.__file__),
+        REPO_ROOT / "docs" / "superpowers" / "specs" / "2026-07-12-evidence-reliability-zotero-design.md",
+    ]
+    old_terms = ("pdf" + "_invalid", "attachment" + "-invalid")
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert all(term not in text for term in old_terms), path
 
 
 def test_zotero_scanned_pdf_can_be_verified_without_indexed_text():
@@ -2261,7 +2419,8 @@ def test_zotero_local_workflow_documents_authority_privacy_and_commands():
     ):
         assert command in text
     for statement in (
-        "repository is authoritative",
+        "evidence_registry.json alone is the canonical evidence authority",
+        "derived review views",
         "read-only",
         "BibTeX",
         "zotero://select/library/items/<parentKey>",
@@ -2333,6 +2492,9 @@ def _write_fixture_repo(repo_root: Path, evidence_id: str) -> None:
     (repo_root / "evidence_registry.json").write_text(
         json.dumps(_fixture_registry_with_canonical_surveillance()), encoding="utf-8"
     )
+    (repo_root / "evidence_registry.schema.json").write_bytes(
+        SCHEMA_PATH.read_bytes()
+    )
     for filename in REFERENCE_FILES:
         (repo_root / filename).write_text(
             json.dumps({"evidenceIds": [evidence_id]}), encoding="utf-8"
@@ -2347,6 +2509,9 @@ def _write_canonical_repo(repo_root: Path, registry: dict | None = None) -> None
     )
     (repo_root / "evidence_registry.json").write_text(
         registry_text, encoding="utf-8"
+    )
+    (repo_root / "evidence_registry.schema.json").write_bytes(
+        SCHEMA_PATH.read_bytes()
     )
     for filename in REFERENCE_FILES:
         (repo_root / filename).write_text("{}\n", encoding="utf-8")
@@ -2447,6 +2612,29 @@ def test_offline_cli_never_imports_yaml_during_normal_validation():
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert "normal validation imported yaml" not in result.stdout + result.stderr
+
+
+def test_offline_cli_validates_against_the_repo_local_published_schema():
+    with tempfile.TemporaryDirectory() as directory:
+        repo_root = Path(directory)
+        _write_canonical_repo(repo_root)
+        schema = json.loads(
+            (repo_root / "evidence_registry.schema.json").read_text(encoding="utf-8")
+        )
+        schema["properties"]["owner"]["minLength"] = 100
+        (repo_root / "evidence_registry.schema.json").write_text(
+            json.dumps(schema), encoding="utf-8"
+        )
+        result = subprocess.run(
+            [sys.executable, str(VALIDATE), "--repo-root", str(repo_root)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "owner" in result.stdout
+    assert "at least 100 character" in result.stdout
 
 
 def test_offline_cli_accepts_valid_foreign_keys_without_zotero_import():

@@ -1,6 +1,7 @@
 {
   "schemaVersion": 2,
   "owner": "Synthetic test fixture",
+  "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
   "updated": "2026-07-12",
   "surveillance": {
     "internalOnly": true
@@ -15,7 +16,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "1", "role": "required", "teachingRole": "Synthetic teaching role 1.", "weekNumbers": [1], "topicSlugs": ["fixture-one"], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"},
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"},
       "surveillance": {"query": "internal fixture query"}
     },
     {
@@ -27,7 +28,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "2", "role": "required", "teachingRole": "Synthetic teaching role 2.", "weekNumbers": [1], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "appelbaum-grisso-1988-capacity",
@@ -38,7 +39,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "3", "role": "required", "teachingRole": "Synthetic teaching role 3.", "weekNumbers": [1], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "stanley-brown-2012-safety-planning",
@@ -49,7 +50,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "4", "role": "required", "teachingRole": "Synthetic teaching role 4.", "weekNumbers": [3], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "lieberman-2005-catie",
@@ -60,7 +61,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "5", "role": "required", "teachingRole": "Synthetic teaching role 5.", "weekNumbers": [2], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "rush-2006-stard",
@@ -71,7 +72,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "6", "role": "required", "teachingRole": "Synthetic teaching role 6.", "weekNumbers": [2], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "brown-1972-expressed-emotion",
@@ -82,7 +83,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "7", "role": "required", "teachingRole": "Synthetic teaching role 7.", "weekNumbers": [4], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "bush-1996-catatonia-rating-scale",
@@ -93,7 +94,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "8", "role": "required", "teachingRole": "Synthetic teaching role 8.", "weekNumbers": [2], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "wampold-1997-bona-fide-psychotherapies",
@@ -104,7 +105,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "9", "role": "required", "teachingRole": "Synthetic teaching role 9.", "weekNumbers": [3], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "linehan-1991-dbt",
@@ -115,7 +116,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "10", "role": "required", "teachingRole": "Synthetic teaching role 10.", "weekNumbers": [3], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "pharoah-2010-family-intervention",
@@ -126,7 +127,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "11", "role": "required", "teachingRole": "Synthetic teaching role 11.", "weekNumbers": [4], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "march-2004-tads",
@@ -137,7 +138,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "12", "role": "required", "teachingRole": "Synthetic teaching role 12.", "weekNumbers": [], "topicSlugs": [], "pairedTools": [], "mappingStatus": "needs-faculty-confirmation", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "felitti-1998-ace",
@@ -148,7 +149,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "13", "role": "required", "teachingRole": "Synthetic teaching role 13.", "weekNumbers": [6], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "caspi-2003-5htt-stress",
@@ -159,7 +160,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "14a", "role": "required", "teachingRole": "Synthetic teaching role 14a.", "weekNumbers": [], "topicSlugs": [], "pairedTools": [], "mappingStatus": "needs-faculty-confirmation", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "border-2019-candidate-gene",
@@ -170,7 +171,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "14b", "role": "required", "teachingRole": "Synthetic teaching role 14b.", "weekNumbers": [], "topicSlugs": [], "pairedTools": [], "mappingStatus": "needs-faculty-confirmation", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "franklin-2017-suicide-risk-meta-analysis",
@@ -181,7 +182,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "15", "role": "required", "teachingRole": "Synthetic teaching role 15.", "weekNumbers": [5], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     },
     {
       "id": "volkow-2016-addiction-brain-disease",
@@ -192,7 +193,7 @@
       "requiredAccess": "fulltext",
       "curriculum": {"tier": 1, "selection": "16", "role": "required", "teachingRole": "Synthetic teaching role 16.", "weekNumbers": [5], "topicSlugs": [], "pairedTools": [], "mappingStatus": "mapped", "mappingNote": "Internal faculty mapping note."},
       "appraisal": {"studyDesign": "Synthetic design", "population": "Synthetic population", "comparator": "Synthetic comparator", "outcomes": "Synthetic outcomes", "limitations": "Synthetic limitations", "reviewStatus": "pending-faculty-review"},
-      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12"}
+      "governance": {"reviewCadence": "annual", "lastReviewed": "2026-07-12", "supersededBy": [], "correctionStatus": "none-known"}
     }
   ]
 }

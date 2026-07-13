@@ -301,7 +301,7 @@ PubMed/Crossref identity metadata
 | Title/author/year disagrees with DOI/PMID metadata | Hard identity failure for required articles; generated learner view is blocked. |
 | Attachment is absent | Observed status remains `metadata_only`; it is never called downloaded or full-text verified. |
 | Attachment check was not explicitly requested | Existing access state is preserved; absence of a check cannot downgrade a record. |
-| Attachment path or PDF is invalid | Report `attachment-invalid`; do not expose the path or copy the file. |
+| Attachment path or PDF is invalid | Report `broken_attachment`; do not expose the path or copy the file. |
 | Week collection is empty or membership differs | Report advisory collection drift. Do not fail CI and do not write Zotero; registry week mappings and Tier 1 tags remain authoritative for this slice. |
 | High-risk claim text changes | Claim validation and content hash fail; page becomes pending review. |
 | Supporting evidence record changes | Evidence hash fails; affected page becomes pending review. |
