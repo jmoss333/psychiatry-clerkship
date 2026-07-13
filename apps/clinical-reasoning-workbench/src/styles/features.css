@@ -1,0 +1,19 @@
+.workspace-main section {
+  min-height: 100%;
+  padding: var(--space-6);
+  background: var(--surface);
+}
+
+.workspace-main section h2 {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: clamp(20px, 2vw, 24px);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+@media (max-width: 767px) {
+  .workspace-main section {
+    padding: var(--space-4);
+  }
+}

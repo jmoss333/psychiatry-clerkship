@@ -1,0 +1,56 @@
+:root {
+  color-scheme: light;
+  --bg: #f6f3ee;
+  --surface: #ffffff;
+  --primary: #c25a3c;
+  --primary-dark: #a84830;
+  --accent: #2a6b5e;
+  --accent-dark: #1e5248;
+  --text: #2f2924;
+  --text-mid: #51473d;
+  --text-light: #665a4f;
+  --border: #ddd3c6;
+  --success: #357160;
+  --warning: #7a6234;
+  --danger: #a34132;
+  --focus: #155eef;
+  --font-title: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --font-ui: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --header-height: 64px;
+  --tabs-height: 48px;
+  --control-height: 36px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1a1816;
+  --surface: #2a2520;
+  --primary: #d4896e;
+  --primary-dark: #dd9277;
+  --accent: #5aad9a;
+  --accent-dark: #6cbcaa;
+  --text: #e8e2da;
+  --text-mid: #b3a596;
+  --text-light: #8a7c6e;
+  --border: #3d3630;
+  --success: #5aad8e;
+  --warning: #c4a45c;
+  --danger: #d46858;
+  --focus: #7aa2ff;
+}
+
+@media (max-width: 1099px) {
+  :root {
+    --header-height: 112px;
+    --control-height: 44px;
+  }
+}
