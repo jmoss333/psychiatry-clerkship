@@ -41,7 +41,8 @@ sp-proxy/
 |---|---|
 | `ANTHROPIC_API_KEY` | your Anthropic key (console.anthropic.com) |
 | `SP_STUDENT_PASSCODE` | strong passcode; **rotate each rotation block** |
-| `SP_PACK_URL` | `https://raw.githubusercontent.com/jmoss333/psychiatry-clerkship/main/_prototypes/sp-interview/sp-interview.pack.json` *(update on promotion out of _prototypes)* |
+| `SP_PACK_URL` | `https://api.github.com/repos/jmoss333/psychiatry-clerkship/contents/_prototypes/sp-interview/sp-interview.pack.json?ref=main` *(update on promotion out of _prototypes)* |
+| `SP_PACK_TOKEN` | fine-grained GitHub PAT, **Contents: read** on this repo only (repo is private) — lets the function read the pack. Rotate as needed. |
 | `SP_MODEL_ACTOR` | pinned actor model — **verify the current model string at docs.claude.com, then record the same string in `pack.engine.modelPinned`** |
 | `SP_MODEL_EVALUATOR` | pinned evaluator model (a stronger tier than the actor) |
 | `SP_ALLOWED_ORIGINS` | `https://une-ms3-psychiatry.netlify.app,https://mmc-psychiatry-residents-sanford.netlify.app` (+ `http://localhost:8888` while testing) |
