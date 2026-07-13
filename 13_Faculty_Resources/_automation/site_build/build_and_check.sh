@@ -43,6 +43,8 @@ case "$SITE" in
     node "$HERE/check-static-site.mjs" "$MS3_OUT"
     echo "── Search quality: $MS3_OUT"
     python3 "$HERE/check_search_quality.py" "$MS3_OUT" ms3
+    echo "── Anki decks → $MS3_OUT/anki (fail-soft)"
+    bash "$HERE/build_anki.sh" "$MS3_OUT" || true
     ;;
   res)
     # Resident derives from the MS3 build, so build both; gate the published dir.
@@ -56,6 +58,8 @@ case "$SITE" in
     node "$HERE/check-static-site.mjs" "$RES_OUT"
     echo "── Search quality: $RES_OUT"
     python3 "$HERE/check_search_quality.py" "$RES_OUT" resident
+    echo "── Anki decks → $RES_OUT/anki (fail-soft)"
+    bash "$HERE/build_anki.sh" "$RES_OUT" || true
     ;;
   *)
     echo "unknown site '$SITE' (expected ms3|res)" >&2
