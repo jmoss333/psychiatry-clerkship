@@ -1,0 +1,161 @@
+{
+  "_note": "Curated cloze occlusion targets for the Concepts Anki deck (export_anki_content.py). Per source slug, an index-aligned list matching the page's 'High-yield pearls' bullets in order. Each pearl's entry is a list of EXACT substrings (of the de-bolded pearl) to hide as cloze deletions; multiple substrings => multiple cloze cards (c1,c2,...). A target not found in its pearl is skipped (drift guard) and the builder warns. Author only occlusions of attested text — never new wording.",
+  "adjustment_disorders_inpatient_teaching": [
+    ["3 months", "6 months"],
+    ["adjustment disorder"],
+    ["traumatic", "any stressor"],
+    ["assess it directly"],
+    ["psychotherapy", "adjunctive"],
+    ["Prolonged grief disorder"]
+  ],
+  "anxiety_trauma_ocd_inpatient_teaching": [
+    ["medical and withdrawal mimics"],
+    ["Akathisia"],
+    ["propranolol"],
+    ["SSRIs/SNRIs"],
+    ["ERP for OCD", "PE/CPT for PTSD", "interoceptive exposure for panic"],
+    ["Y-BOCS"],
+    ["predictability and choice"]
+  ],
+  "cultural_psychiatry_inpatient_teaching": [
+    ["explanatory-model"],
+    ["Cultural Formulation Interview"],
+    ["ataque de nervios"],
+    ["trained interpreters"],
+    ["over-diagnosed with schizophrenia", "under-diagnosed with mood disorders"],
+    ["Social determinants of mental health"]
+  ],
+  "dissociative_disorders_inpatient_teaching": [
+    ["delirium, seizure, TBI, and substances"],
+    ["intact reality testing"],
+    ["trauma-linked"],
+    ["Stabilize and ground first"],
+    ["Psychotherapy"],
+    ["Non-epileptic (dissociative) seizures"]
+  ],
+  "eating_disorders_inpatient_teaching": [
+    ["Refeeding syndrome"],
+    ["Bradycardia"],
+    ["Hypokalemic, hypochloremic metabolic alkalosis"],
+    ["bulimia"],
+    ["Fluoxetine 60 mg", "avoid bupropion", "lisdexamfetamine"],
+    ["AN"],
+    ["water-loading"]
+  ],
+  "ethics_law_confidentiality_inpatient_teaching": [
+    ["Tarasoff"],
+    ["reasonable suspicion"],
+    ["danger to self, danger to others, or grave disability", "least restrictive"],
+    ["involuntary medication"],
+    ["Capacity", "competence"],
+    ["capacity + disclosure + voluntariness"],
+    ["ethics violation"]
+  ],
+  "geriatric_psychiatry_inpatient_teaching": [
+    ["delirium or a medical cause"],
+    ["Inattention"],
+    ["pseudodementia"],
+    ["deprescribing"],
+    ["Non-pharmacologic management"]
+  ],
+  "impulse_control_conduct_inpatient_teaching": [
+    ["before age 15", "must be ≥18"],
+    ["callous-unemotional traits"],
+    ["tension-release"],
+    ["mania"],
+    ["DMDD"],
+    ["Psychosocial/family interventions"]
+  ],
+  "mood_disorders_inpatient_teaching": [
+    ["past mania"],
+    ["delirium"],
+    ["Lithium"],
+    ["Sleep"],
+    ["ECT"],
+    ["0.6–1.2 mEq/L"],
+    ["avoid valproate"]
+  ],
+  "neurocognitive_disorders_inpatient_teaching": [
+    ["delirium"],
+    ["Lewy body disease"],
+    ["Lewy body"],
+    ["Frontotemporal dementia"],
+    ["wet, wacky, wobbly"],
+    ["MoCA"],
+    ["Cholinesterase inhibitors", "memantine"]
+  ],
+  "neurodevelopmental_disorders_inpatient_teaching": [
+    ["Diagnostic overshadowing"],
+    ["pain and medical drivers"],
+    ["irritability"],
+    ["Catatonia"],
+    ["a mood or substance cause"],
+    ["ASRS-v1.1", "NICHQ Vanderbilt"],
+    ["decision-specific"]
+  ],
+  "perinatal_psychiatry_inpatient_teaching": [
+    ["Postpartum psychosis", "bipolar-spectrum"],
+    ["waxing/waning course"],
+    ["EPDS"],
+    ["ego-dystonic"],
+    ["Stopping all medication"]
+  ],
+  "personality_disorders_inpatient_teaching": [
+    ["acute crisis"],
+    ["Splitting"],
+    ["mood, psychotic, or substance disorder"],
+    ["outpatient/safety-planning frame"],
+    ["benzodiazepines"],
+    ["countertransference"]
+  ],
+  "psychotic_disorders_inpatient_teaching": [
+    ["delirium, substances, and autoimmune/seizure causes"],
+    ["medical workup ± neuroimaging"],
+    ["side-effect fit"],
+    ["Anosognosia", "LEAP"],
+    ["clozapine"],
+    ["myocarditis"],
+    ["Neuroleptic malignant syndrome"],
+    ["lead-pipe rigidity + hyporeflexia", "clonus + hyperreflexia"]
+  ],
+  "substance_use_inpatient_teaching": [
+    ["Alcohol and benzodiazepine"],
+    ["Lorazepam, Oxazepam, Temazepam"],
+    ["Thiamine"],
+    ["objective withdrawal"],
+    ["Wernicke, trauma, infection, hepatic encephalopathy"],
+    ["Naloxone plus MOUD linkage"]
+  ],
+  "sexual_paraphilic_gender_inpatient_teaching": [
+    ["bupropion/mirtazapine"],
+    ["distress/impairment or harm to others"],
+    ["safety and reporting duties"],
+    ["distress from incongruence"],
+    ["minority stress"],
+    ["Depression"]
+  ],
+  "sleep_wake_disorders_inpatient_teaching": [
+    ["CBT-I"],
+    ["OSA"],
+    ["narcolepsy type 1"],
+    ["ferritin"],
+    ["REM sleep behavior disorder"],
+    ["benzodiazepines and diphenhydramine"]
+  ],
+  "somatic_symptom_disorders_inpatient_teaching": [
+    ["excessive response"],
+    ["rule-in"],
+    ["internal motive (sick role)", "external incentive"],
+    ["child (or vulnerable-adult) abuse"],
+    ["one clinician, scheduled visits, fewer tests"],
+    ["can coexist"]
+  ],
+  "ect_neuromodulation_inpatient_teaching": [
+    ["catatonia and NMS"],
+    ["raised ICP and unstable cardiac disease"],
+    ["benzodiazepines/anticonvulsants"],
+    ["rTMS"],
+    ["Ketamine/esketamine"],
+    ["nonseasonal"]
+  ]
+}

@@ -27,6 +27,7 @@ import argparse
 import glob
 import hashlib
 import html
+import json
 import os
 import re
 
@@ -138,6 +139,51 @@ def extract(path):
             "oneliner": oneliner, "pearls": pearls}
 
 
+_PEARL_CARDS = None
+
+
+def pearl_cards():
+    """Curated cloze occlusion targets (pearl_cards.json, co-located)."""
+    global _PEARL_CARDS
+    if _PEARL_CARDS is None:
+        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pearl_cards.json")
+        try:
+            _PEARL_CARDS = json.load(open(p, encoding="utf-8"))
+        except Exception:
+            _PEARL_CARDS = {}
+    return _PEARL_CARDS
+
+
+def _strip_links(s):
+    s = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", s)   # [text](url) -> text
+    s = re.sub(r"</?[^>]+>", "", s)                   # stray html
+    return s
+
+
+def occlude(text, targets):
+    """text = de-bolded pearl. Wrap each found target (first occurrence, left-to-right,
+    non-overlapping) as a sequential cloze deletion. Targets that don't appear verbatim
+    are skipped (drift guard). Returns (cloze_html, n_clozes)."""
+    marks = []
+    for t in targets:
+        idx = text.find(t)
+        if idx >= 0:
+            marks.append((idx, idx + len(t), t))
+    if not marks:
+        return None, 0
+    marks.sort()
+    out, cur, ci = [], 0, 0
+    for (s, e, t) in marks:
+        if s < cur:
+            continue  # overlaps a prior target — skip
+        out.append(html.escape(_strip_links(text[cur:s])))
+        ci += 1
+        out.append("{{c%d::%s}}" % (ci, html.escape(t)))
+        cur = e
+    out.append(html.escape(_strip_links(text[cur:])))
+    return "".join(out), ci
+
+
 def build_deck(repo, deck_id=DECK_ID, deck_name=DECK_NAME):
     """Build (and return) the concepts genanki.Deck plus a stats dict.
     Importable by export_anki_all.py so the combined package reuses this logic."""
@@ -168,30 +214,32 @@ def build_deck(repo, deck_id=DECK_ID, deck_name=DECK_NAME):
             ))
             n_one += 1
 
-        for i, pearl in enumerate(rec["pearls"], 1):
-            pearl_clean = clean_md_inline(re.sub(r"\*\*(.+?)\*\*", r"**\1**", pearl))
-            if re.search(r"\*\*.+?\*\*", pearl_clean):
-                text, nc = bold_to_cloze(pearl_clean)
-                if nc:
-                    deck.add_note(genanki.Note(
-                        model=CLOZE_MODEL,
-                        fields=[f"{rec['slug']}::pearl{i}",
-                                html.escape(rec["topic"]), text, src],
-                        tags=base_tags + ["Type::pearl", "Format::cloze"],
-                        guid=guid(rec["slug"], "pearl", pearl_clean),
-                    ))
-                    n_cloze += 1
-                    continue
-            deck.add_note(genanki.Note(
-                model=BASIC_MODEL,
-                fields=[f"{rec['slug']}::pearl{i}",
-                        html.escape(rec["topic"]),
-                        f"High-yield pearl #{i} (recall):",
-                        html.escape(pearl_clean.replace("**", "")), src],
-                tags=base_tags + ["Type::pearl", "Format::basic"],
-                guid=guid(rec["slug"], "pearl", pearl_clean),
-            ))
-            n_basic += 1
+        cur_targets = pearl_cards().get(rec["slug"]) or []
+        for idx, pearl in enumerate(rec["pearls"]):
+            debolded = pearl.replace("**", "")
+            gk = guid(rec["slug"], "pearl", debolded)
+            uid = f"{rec['slug']}::pearl{idx + 1}"
+            tlist = cur_targets[idx] if idx < len(cur_targets) else []
+            text, nfound = (occlude(debolded, tlist) if tlist else (None, 0))
+            if not nfound and re.search(r"\*\*.+?\*\*", pearl):
+                text, nfound = bold_to_cloze(pearl)   # fallback: author-bolded terms
+            if nfound:
+                deck.add_note(genanki.Note(
+                    model=CLOZE_MODEL,
+                    fields=[uid, html.escape(rec["topic"]), text, src],
+                    tags=base_tags + ["Type::pearl", "Format::cloze"],
+                    guid=gk))
+                n_cloze += 1
+            else:
+                # fallback (should be rare — curated map covers all attested pearls)
+                deck.add_note(genanki.Note(
+                    model=BASIC_MODEL,
+                    fields=[uid, html.escape(rec["topic"]),
+                            "Recall the key point:",
+                            html.escape(_strip_links(debolded)), src],
+                    tags=base_tags + ["Type::pearl", "Format::basic"],
+                    guid=gk))
+                n_basic += 1
 
     stats = {"pages": n_files, "summary": n_one, "cloze": n_cloze,
              "basic": n_basic, "total": n_one + n_cloze + n_basic}
@@ -211,8 +259,8 @@ def main():
     genanki.Package(deck).write_to_file(apkg)
     print(f"Attested content pages used: {s['pages']}")
     print(f"  summary cards:      {s['summary']}")
-    print(f"  pearl cloze cards:  {s['cloze']}  (from author-bolded facts)")
-    print(f"  pearl basic cards:  {s['basic']}")
+    print(f"  pearl cloze cards:  {s['cloze']}  (curated occlusions + author-bolded fallback)")
+    print(f"  pearl basic cards:  {s['basic']}  (fallback — should be 0)")
     print(f"  TOTAL concept cards:{s['total']}")
     print(f"  .apkg: {apkg}")
 

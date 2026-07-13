@@ -36,9 +36,7 @@ after `check-static-site.mjs`, the `anki/` folder is invisible to the QA harness
 ## Concepts deck — how cards are made (no LLM generation)
 Cards are **extracted** from already-attested structured elements, never synthesized from prose — so every card stays inside the platform's attestation chain. A page contributes cards only if it carries the "attested by …" review line.
 - **"In one line — …"** → one Basic summary card per topic.
-- **"High-yield pearls"** bullets → one card each:
-  - pearl with **bold** spans → **cloze** card that hides exactly the author-bolded facts (your emphasis is the deletion — no model judgment).
-  - pearl with no bold → Basic recall/consolidation card.
+- **"High-yield pearls"** bullets → **cloze** cards. The occlusion target (the clinical term blanked out) is curated per pearl in `pearl_cards.json` — the deletion is chosen editorially so every front is a real recall prompt (e.g. "___, not hypnotics, is first-line for chronic insomnia"), never a generic "pearl #N". Multiple targets on one pearl → multiple cloze cards. Only *occlusion of attested text* is allowed: the builder skips any target not found verbatim in the pearl (drift guard) and falls back to author-bolded terms, then a plain recall card. To re-curate, edit `pearl_cards.json` (index-aligned to each page's pearl bullets) and rebuild.
 - Tags: `Deck::Concepts`, `Source::<page>`, `Type::summary|pearl`, `Format::cloze|basic`, `Status::attested`.
 - Stable GUIDs = source slug + hash of card text: unrelated edits don't churn review history; a deliberate reword mints a fresh card.
 
