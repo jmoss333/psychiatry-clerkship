@@ -1,0 +1,24 @@
+[
+  {
+    "finding_id": "link:www.samhsa.gov::broken-link::6bae3107ce29193b",
+    "fingerprint": "link:www.samhsa.gov::broken-link::6bae3107ce29193b",
+    "job": "link-source-monitor",
+    "source_id": "link:www.samhsa.gov",
+    "source_name": "www.samhsa.gov",
+    "source_url": "https://www.samhsa.gov/resource-search/all",
+    "source_type": "html",
+    "detected_at": "2026-07-13T07:00:39+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/_automation/surveillance/history/digest_2026-07.md: https://www.samhsa.gov/resource-search/all",
+    "evidence": {
+      "http_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/_automation/surveillance/history/digest_2026-07.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/_automation/surveillance/history/digest_2026-07.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/211"
+  }
+]
