@@ -109,6 +109,15 @@ _ISSUE_CODES = {
     "missing-tier1-tag",
 }
 _IDENTITY_FIELDS = {"DOI", "PMID", "title", "first author", "year", "journal"}
+_RECORD_STATUSES = {
+    "matched",
+    "missing-tier1-tag",
+    "identity-conflict",
+    "stored-key-missing",
+    "ambiguous",
+    "not-found",
+}
+_MATCH_METHODS = {"stored-key", "doi", "pmid", "title-author-year", "none"}
 _ATTACHMENT_MODES = {"imported_file", "linked_file"}
 _ATTACHMENT_STATES = {
     None,
@@ -227,11 +236,34 @@ class ReconciliationIssue:
     evidence_id: str = ""
 
 
+@dataclass(frozen=True)
+class ReconciliationRecord:
+    """One path-free Tier 1 adjudication row, including rejected identities."""
+
+    evidence_id: str
+    item_key: str
+    method: str
+    status: str
+    attachment: dict[str, Any]
+    identity_differences: list[dict[str, str]] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "evidenceId": self.evidence_id,
+            "itemKey": self.item_key,
+            "method": self.method,
+            "status": self.status,
+            "attachment": copy.deepcopy(self.attachment),
+            "identityDifferences": copy.deepcopy(self.identity_differences),
+        }
+
+
 @dataclass
 class ReconciliationResult:
     """Identity matches plus non-mutating reconciliation findings."""
 
     matches: list[dict[str, Any]] = field(default_factory=list)
+    records: list[ReconciliationRecord] = field(default_factory=list)
     errors: list[ReconciliationIssue] = field(default_factory=list)
     warnings: list[ReconciliationIssue] = field(default_factory=list)
 
@@ -243,6 +275,7 @@ class ReconciliationResult:
         return {
             "matched": self.matches,
             "matchedCount": self.matched_count,
+            "records": [record.to_dict() for record in self.records],
             "errors": [asdict(issue) for issue in self.errors],
             "warnings": [asdict(issue) for issue in self.warnings],
         }
@@ -656,21 +689,27 @@ def _sanitize_library_snapshot(value: dict) -> dict:
     items = value["items"]
     if not isinstance(collections, list) or not isinstance(items, list):
         raise ValueError("snapshot collections and items must be lists")
+    cleaned_items = [_sanitize_parent_item(row) for row in items]
     cleaned: dict[str, Any] = {
         "snapshotVersion": 1,
         "library": {"type": "user", "id": 0},
         "collections": [_sanitize_collection(row) for row in collections],
-        "items": [_sanitize_parent_item(row) for row in items],
+        "items": cleaned_items,
     }
     if "attachmentStatuses" in value:
         statuses = value["attachmentStatuses"]
         if not isinstance(statuses, dict):
             raise ValueError("attachmentStatuses must be an object")
-        cleaned["attachmentStatuses"] = {
-            _safe_item_key(key, "attachment status parent key"):
-                _sanitize_attachment_status(status)
-            for key, status in statuses.items()
-        }
+        parent_keys = {row["key"] for row in cleaned_items}
+        cleaned_statuses: dict[str, dict] = {}
+        for key, status in statuses.items():
+            parent_key = _safe_item_key(key, "attachment status parent key")
+            if parent_key not in parent_keys:
+                raise ValueError(
+                    "attachment status key must identify a sanitized bibliographic parent"
+                )
+            cleaned_statuses[parent_key] = _sanitize_attachment_status(status)
+        cleaned["attachmentStatuses"] = cleaned_statuses
     return cleaned
 
 
@@ -778,24 +817,122 @@ def _sanitize_match(value: dict) -> dict:
     }
 
 
+def _sanitize_identity_difference(value: dict) -> dict:
+    if not isinstance(value, dict):
+        raise ValueError("identity difference must be an object")
+    _require_exact_fields(
+        value,
+        allowed={"field", "expected", "observed"},
+        required={"field", "expected", "observed"},
+        context="identity difference",
+    )
+    field_name = _safe_string(value["field"], "identity difference field")
+    if field_name not in _IDENTITY_FIELDS:
+        raise ValueError("identity difference field is invalid")
+    return {
+        "field": field_name,
+        "expected": _safe_string(value["expected"], "expected identity value"),
+        "observed": _safe_string(value["observed"], "observed identity value"),
+    }
+
+
+def _sanitize_record(value: dict) -> dict:
+    if not isinstance(value, dict):
+        raise ValueError("reconciliation record must be an object")
+    _require_exact_fields(
+        value,
+        allowed={
+            "evidenceId",
+            "itemKey",
+            "method",
+            "status",
+            "attachment",
+            "identityDifferences",
+        },
+        required={
+            "evidenceId",
+            "itemKey",
+            "method",
+            "status",
+            "attachment",
+            "identityDifferences",
+        },
+        context="reconciliation record",
+    )
+    evidence_id = _safe_string(value["evidenceId"], "record evidence id")
+    if _STABLE_ID_RE.fullmatch(evidence_id) is None:
+        raise ValueError("record evidence id is invalid")
+    item_key = _safe_string(value["itemKey"], "record parent item key")
+    if item_key:
+        item_key = _safe_item_key(item_key, "record parent item key")
+    method = _safe_string(value["method"], "record match method")
+    if method not in _MATCH_METHODS:
+        raise ValueError("record match method is invalid")
+    status = _safe_string(value["status"], "record status")
+    if status not in _RECORD_STATUSES:
+        raise ValueError("record status is invalid")
+    differences = value["identityDifferences"]
+    if not isinstance(differences, list):
+        raise ValueError("record identityDifferences must be a list")
+    cleaned_differences = [
+        _sanitize_identity_difference(row) for row in differences
+    ]
+    if status == "identity-conflict" and not cleaned_differences:
+        raise ValueError("identity-conflict record requires identity differences")
+    if status != "identity-conflict" and cleaned_differences:
+        raise ValueError("only identity-conflict records may contain differences")
+    if status in {
+        "matched",
+        "missing-tier1-tag",
+        "identity-conflict",
+        "stored-key-missing",
+    } and not item_key:
+        raise ValueError(f"{status} record requires a parent item key")
+    return {
+        "evidenceId": evidence_id,
+        "itemKey": item_key,
+        "method": method,
+        "status": status,
+        "attachment": _sanitize_attachment_status(value["attachment"]),
+        "identityDifferences": cleaned_differences,
+    }
+
+
 def _sanitize_report(value: dict) -> dict:
     _require_exact_fields(
         value,
-        allowed={"matched", "matchedCount", "errors", "warnings"},
-        required={"matched", "matchedCount", "errors", "warnings"},
+        allowed={"matched", "matchedCount", "records", "errors", "warnings"},
+        required={"matched", "matchedCount", "records", "errors", "warnings"},
         context="reconciliation report",
     )
     matched = value["matched"]
+    records = value["records"]
     errors = value["errors"]
     warnings = value["warnings"]
-    if not all(isinstance(rows, list) for rows in (matched, errors, warnings)):
+    if not all(
+        isinstance(rows, list) for rows in (matched, records, errors, warnings)
+    ):
         raise ValueError("reconciliation report rows must be lists")
     count = value["matchedCount"]
     if not isinstance(count, int) or isinstance(count, bool) or count != len(matched):
         raise ValueError("matchedCount must equal the number of report matches")
+    cleaned_matches = [_sanitize_match(row) for row in matched]
+    cleaned_records = [_sanitize_record(row) for row in records]
+    record_ids = [row["evidenceId"] for row in cleaned_records]
+    if len(record_ids) != len(set(record_ids)):
+        raise ValueError("reconciliation record evidence IDs must be unique")
+    matched_ids = {row["evidenceId"] for row in cleaned_matches}
+    accepted_ids = {
+        row["evidenceId"]
+        for row in cleaned_records
+        if row["status"] in {"matched", "missing-tier1-tag"}
+    }
+    if matched_ids != accepted_ids:
+        raise ValueError("matched rows must equal accepted reconciliation records")
     return {
-        "matched": [_sanitize_match(row) for row in matched],
+        "matched": cleaned_matches,
         "matchedCount": count,
+        "records": cleaned_records,
         "errors": [_sanitize_issue(row) for row in errors],
         "warnings": [_sanitize_issue(row) for row in warnings],
     }
@@ -881,27 +1018,59 @@ def _source_first_author(source: dict) -> str:
     return ""
 
 
-def _identity_differences(source: dict, item: dict) -> list[str]:
+def _identity_difference_details(source: dict, item: dict) -> list[dict[str, str]]:
     citation = source.get("citation")
     citation = citation if isinstance(citation, dict) else {}
     data = _item_data(item)
     comparisons = (
-        ("DOI", normalize_doi(citation.get("doi")), normalize_doi(data.get("DOI"))),
-        ("PMID", normalize_pmid(citation.get("pmid")), _item_pmid(item)),
-        ("title", normalize_title(citation.get("title")), normalize_title(data.get("title"))),
+        (
+            "DOI",
+            normalize_doi(citation.get("doi")),
+            normalize_doi(data.get("DOI")),
+            str(citation.get("doi") or ""),
+            str(data.get("DOI") or ""),
+        ),
+        (
+            "PMID",
+            normalize_pmid(citation.get("pmid")),
+            _item_pmid(item),
+            str(citation.get("pmid") or ""),
+            _item_pmid(item),
+        ),
+        (
+            "title",
+            normalize_title(citation.get("title")),
+            normalize_title(data.get("title")),
+            str(citation.get("title") or ""),
+            str(data.get("title") or ""),
+        ),
         (
             "first author",
             normalize_title(_source_first_author(source)),
             normalize_title(creator_family(data.get("creators", []))),
+            _source_first_author(source),
+            creator_family(data.get("creators", [])),
         ),
-        ("year", publication_year(citation.get("year")), publication_year(data.get("date"))),
+        (
+            "year",
+            publication_year(citation.get("year")),
+            publication_year(data.get("date")),
+            publication_year(citation.get("year")),
+            publication_year(data.get("date")),
+        ),
         (
             "journal",
             normalize_title(citation.get("journal")),
             normalize_title(data.get("publicationTitle")),
+            str(citation.get("journal") or ""),
+            str(data.get("publicationTitle") or ""),
         ),
     )
-    return [name for name, expected, observed in comparisons if expected and expected != observed]
+    return [
+        {"field": name, "expected": expected_raw, "observed": observed_raw}
+        for name, expected, observed, expected_raw, observed_raw in comparisons
+        if expected and expected != observed
+    ]
 
 
 def _title_author_year(source: dict) -> tuple[str, str, str]:
@@ -1081,11 +1250,23 @@ def reconcile_registry(
             item = by_key.get(stored_key)
             method = "stored-key"
             if item is None:
+                attachment = prior_statuses.get(stored_key)
+                if not isinstance(attachment, dict):
+                    attachment = {"state": None}
                 result.errors.append(
                     ReconciliationIssue(
                         "stored-key-missing",
                         f"stored Zotero parent key is absent: {stored_key}",
                         evidence_id,
+                    )
+                )
+                result.records.append(
+                    ReconciliationRecord(
+                        evidence_id,
+                        stored_key,
+                        method,
+                        "stored-key-missing",
+                        copy.deepcopy(attachment),
                     )
                 )
                 continue
@@ -1099,6 +1280,15 @@ def reconcile_registry(
                         evidence_id,
                     )
                 )
+                result.records.append(
+                    ReconciliationRecord(
+                        evidence_id,
+                        "",
+                        method,
+                        "ambiguous",
+                        {"state": None},
+                    )
+                )
                 continue
             if item is None:
                 result.errors.append(
@@ -1106,15 +1296,39 @@ def reconcile_registry(
                         "not-found", "no unique Zotero identity candidate", evidence_id
                     )
                 )
+                result.records.append(
+                    ReconciliationRecord(
+                        evidence_id,
+                        "",
+                        "none",
+                        "not-found",
+                        {"state": None},
+                    )
+                )
                 continue
 
-        differences = _identity_differences(source, item)
+        item_key = item.get("key", "")
+        attachment = prior_statuses.get(item_key)
+        if not isinstance(attachment, dict):
+            attachment = {"state": None}
+        difference_details = _identity_difference_details(source, item)
+        differences = [row["field"] for row in difference_details]
         if differences:
             result.errors.append(
                 ReconciliationIssue(
                     "identity-conflict",
                     "Zotero parent identity differs in: " + ", ".join(differences),
                     evidence_id,
+                )
+            )
+            result.records.append(
+                ReconciliationRecord(
+                    evidence_id,
+                    item_key,
+                    method,
+                    "identity-conflict",
+                    copy.deepcopy(attachment),
+                    difference_details,
                 )
             )
             continue
@@ -1129,10 +1343,6 @@ def reconcile_registry(
                 )
             )
 
-        item_key = item.get("key", "")
-        attachment = prior_statuses.get(item_key)
-        if not isinstance(attachment, dict):
-            attachment = {"state": None}
         result.matches.append(
             {
                 "evidenceId": evidence_id,
@@ -1140,6 +1350,15 @@ def reconcile_registry(
                 "method": method,
                 "attachment": copy.deepcopy(attachment),
             }
+        )
+        result.records.append(
+            ReconciliationRecord(
+                evidence_id,
+                item_key,
+                method,
+                "missing-tier1-tag" if missing_tags else "matched",
+                copy.deepcopy(attachment),
+            )
         )
     return result
 
@@ -1283,10 +1502,16 @@ def _report_rows(report: dict) -> list[dict[str, str]]:
         {
             "evidence_id": row["evidenceId"],
             "zotero_parent_item_key": row["itemKey"],
+            "reconciliation_status": row["status"],
             "match_method": row["method"],
             "attachment_state": row["attachment"].get("state") or "not_inspected",
+            "identity_differences": json.dumps(
+                row["identityDifferences"],
+                ensure_ascii=True,
+                separators=(",", ":"),
+            ),
         }
-        for row in report["matched"]
+        for row in report["records"]
     ]
 
 
@@ -1300,11 +1525,11 @@ def _render_report_markdown(report: dict, rows: list[dict[str, str]]) -> str:
         f"- Errors: {len(report['errors'])}",
         f"- Warnings: {len(report['warnings'])}",
         "",
-        "| Evidence ID | Zotero parent item key | Match method | Attachment state |",
-        "|---|---|---|---|",
+        "| Evidence ID | Zotero parent item key | Reconciliation status | Match method | Attachment state | Identity differences (canonical vs Zotero) |",
+        "|---|---|---|---|---|---|",
     ]
     lines.extend(
-        "| {evidence_id} | {zotero_parent_item_key} | {match_method} | {attachment_state} |".format(
+        "| {evidence_id} | {zotero_parent_item_key} | {reconciliation_status} | {match_method} | {attachment_state} | {identity_differences} |".format(
             **row
         )
         for row in rows
@@ -1325,8 +1550,10 @@ def _render_report_csv(rows: list[dict[str, str]]) -> str:
     fieldnames = (
         "evidence_id",
         "zotero_parent_item_key",
+        "reconciliation_status",
         "match_method",
         "attachment_state",
+        "identity_differences",
     )
     writer = csv.DictWriter(output, fieldnames=fieldnames, lineterminator="\n")
     writer.writeheader()
@@ -1336,6 +1563,30 @@ def _render_report_csv(rows: list[dict[str, str]]) -> str:
 
 class XlsxDependencyError(RuntimeError):
     """The optional local workbook dependency is unavailable."""
+
+
+class OutputBoundaryError(ValueError):
+    """A requested local report destination could enter tracked repository data."""
+
+
+_OUTPUT_BOUNDARY_MESSAGE = (
+    "output_dir must be outside the repository or under outputs/evidence_registry/"
+)
+
+
+def _validated_output_dir(output_dir: Path | str) -> Path:
+    destination = Path(output_dir).expanduser().resolve()
+    repo_root = Path(__file__).resolve().parents[2]
+    try:
+        destination.relative_to(repo_root)
+    except ValueError:
+        return destination
+    allowed = (repo_root / "outputs" / "evidence_registry").resolve()
+    try:
+        destination.relative_to(allowed)
+    except ValueError as exc:
+        raise OutputBoundaryError(_OUTPUT_BOUNDARY_MESSAGE) from exc
+    return destination
 
 
 def _render_report_xlsx(rows: list[dict[str, str]]) -> bytes:
@@ -1353,8 +1604,10 @@ def _render_report_xlsx(rows: list[dict[str, str]]) -> bytes:
     headers = (
         "Evidence ID",
         "Zotero parent item key",
+        "Reconciliation status",
         "Match method",
         "Attachment state",
+        "Identity differences (canonical vs Zotero)",
     )
     worksheet.append(headers)
     for row in rows:
@@ -1362,8 +1615,10 @@ def _render_report_xlsx(rows: list[dict[str, str]]) -> bytes:
             (
                 row["evidence_id"],
                 row["zotero_parent_item_key"],
+                row["reconciliation_status"],
                 row["match_method"],
                 row["attachment_state"],
+                row["identity_differences"],
             )
         )
     worksheet.freeze_panes = "A2"
@@ -1383,7 +1638,10 @@ def write_reports(
 
     if not isinstance(result, ReconciliationResult):
         raise TypeError("result must be a ReconciliationResult")
+    destination = _validated_output_dir(output_dir)
     report = sanitize_snapshot(result.to_dict())
+    if len(report["records"]) != 17:
+        raise ValueError("Tier 1 reconciliation reports require exactly 17 records")
     rows = _report_rows(report)
     rendered: dict[str, str | bytes] = {
         "reconciliation_report.json": json.dumps(report, indent=2, sort_keys=True)
@@ -1396,7 +1654,6 @@ def write_reports(
             _render_report_xlsx(rows)
         )
 
-    destination = Path(output_dir).expanduser()
     destination.mkdir(parents=True, exist_ok=True)
     paths: list[Path] = []
     for filename, content in rendered.items():
@@ -1410,9 +1667,9 @@ def write_reports(
 
 
 def _write_current_snapshot(snapshot: dict, output_dir: Path | str) -> Path:
+    destination = _validated_output_dir(output_dir)
     safe_snapshot = sanitize_snapshot(snapshot)
     rendered = json.dumps(safe_snapshot, indent=2, sort_keys=True) + "\n"
-    destination = Path(output_dir).expanduser()
     destination.mkdir(parents=True, exist_ok=True)
     path = destination / "current_snapshot.json"
     path.write_text(rendered, encoding="utf-8")
@@ -1436,7 +1693,7 @@ def _print_written(paths: list[Path]) -> None:
 def _preserve_prior_attachment_statuses(
     snapshot: dict, output_dir: Path | str
 ) -> dict:
-    current_path = Path(output_dir).expanduser() / "current_snapshot.json"
+    current_path = _validated_output_dir(output_dir) / "current_snapshot.json"
     if not current_path.exists():
         return snapshot
     previous = sanitize_snapshot(load_snapshot(current_path))
@@ -1523,6 +1780,7 @@ def main(argv: list[str] | None = None) -> int:
             print("api: reachable")
             print("connector: reachable")
             return 0
+        args.output_dir = _validated_output_dir(args.output_dir)
         if args.command == "snapshot":
             fresh = _preserve_prior_attachment_statuses(
                 snapshot_library(config), args.output_dir
@@ -1545,7 +1803,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.attachments and args.snapshot is None:
                 _write_current_snapshot(snapshot, args.output_dir)
         return 1 if result.errors else 0
-    except XlsxDependencyError as exc:
+    except (XlsxDependencyError, OutputBoundaryError) as exc:
         print(str(exc), file=sys.stderr)
         return 2
     except (OSError, ValueError, urllib.error.URLError):

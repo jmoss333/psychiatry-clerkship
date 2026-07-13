@@ -43,6 +43,12 @@ dependency is unavailable, install it locally with:
 python3 -m pip install -r tools/evidence_registry/requirements-local.txt
 ```
 
+Every report format contains one adjudication row for each of the 17 Tier 1
+records, including records that fail strict matching. An identity-conflict row
+keeps the parent key and shows the exact safe field plus canonical registry and
+observed Zotero values; it does not count as a match and does not authorize an
+alias or metadata change.
+
 ## Identity and faculty-local links
 
 A Zotero parent item key such as `KL5HP3MU` identifies one record in the local
@@ -57,6 +63,11 @@ which Git ignores. They may contain stable evidence IDs, parent item keys,
 bibliographic metadata, tags, collection keys, and path-free attachment states.
 They must not contain attachment child keys, absolute or `file://` paths,
 file-view URLs, PDFs, extracted/indexed full text, or licensed article content.
+
+The CLI rejects any output directory inside the repository unless it is exactly
+`outputs/evidence_registry/` or a descendant. External temporary directories
+remain supported for testing. This prevents a local report from being written
+into tracked source paths by mistake.
 
 Generated local artifacts are non-canonical and must never be staged or
 committed. The tracked evidence registry and its generated Tier 1 Markdown views

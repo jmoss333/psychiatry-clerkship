@@ -5,6 +5,7 @@ import argparse
 import copy
 import builtins
 import contextlib
+import csv
 import io
 import json
 import os
@@ -1032,7 +1033,11 @@ def test_zotero_status_never_prints_server_payload_or_exception_details():
     stdout = io.StringIO()
     stderr = io.StringIO()
     with tempfile.TemporaryDirectory() as directory, mock.patch.object(
-        zotero_bridge, "api_get", side_effect=ValueError("/Users/example/private")
+        zotero_bridge,
+        "api_get",
+        side_effect=zotero_bridge.urllib.error.URLError(
+            ConnectionRefusedError(61, "Connection refused")
+        ),
     ), mock.patch.object(zotero_bridge, "write_reports") as report_writer, \
          mock.patch.object(zotero_bridge, "_write_current_snapshot") as snapshot_writer, \
          contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
@@ -1123,6 +1128,7 @@ def test_zotero_sanitizer_rejects_reviewer_privacy_payloads():
     error_report = {
         "matched": [],
         "matchedCount": 0,
+        "records": [],
         "errors": [
             {
                 "code": "unsafe",
@@ -1170,6 +1176,21 @@ def test_zotero_sanitizer_allowlists_parent_and_attachment_status_schemas():
             pass
         else:
             raise AssertionError(f"unsafe attachment status accepted: {unsafe_status}")
+
+
+def test_zotero_attachment_status_keys_must_be_snapshot_parent_keys():
+    snapshot = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    snapshot["attachmentStatuses"] = {
+        "CHILD123": {"state": "pdf_attached", "contentType": "application/pdf"}
+    }
+    try:
+        sanitize_snapshot(snapshot)
+    except ValueError as exc:
+        assert str(exc) == (
+            "attachment status key must identify a sanitized bibliographic parent"
+        )
+    else:
+        raise AssertionError("non-parent attachment status key was accepted")
 
 
 def test_zotero_config_must_exactly_match_the_task5_authority():
@@ -1252,6 +1273,7 @@ def test_zotero_report_rejects_arbitrary_issue_code_and_message():
         payload = {
             "matched": [],
             "matchedCount": 0,
+            "records": [],
             "errors": [issue],
             "warnings": [],
         }
@@ -1340,6 +1362,67 @@ def test_zotero_reports_are_sanitized_and_contain_only_parent_linkage():
         "licensed article text",
     ):
         assert forbidden not in encoded
+
+
+def test_zotero_gate_b_reports_all_17_records_with_safe_identity_differences():
+    registry = _canonical_tier1_registry()
+    snapshot = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    drift_keys = {
+        "KL5HP3MU",
+        "TSN2F24F",
+        "LGJ9CSR3",
+        "E8BCCFSN",
+        "P4M5H9VM",
+        "ZTWERT6K",
+        "XRADQ2TY",
+        "9FCMTHM2",
+    }
+    for item in snapshot["items"]:
+        if item["key"] in drift_keys:
+            item["data"]["publicationTitle"] = f"Observed Journal {item['key']}"
+
+    result = reconcile_registry(registry, snapshot, _zotero_config())
+    assert result.matched_count == 9
+    with tempfile.TemporaryDirectory() as directory:
+        paths = write_reports(result, Path(directory))
+        report = json.loads(
+            next(path for path in paths if path.suffix == ".json").read_text(
+                encoding="utf-8"
+            )
+        )
+        csv_path = next(path for path in paths if path.suffix == ".csv")
+        with csv_path.open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle))
+        markdown = next(path for path in paths if path.suffix == ".md").read_text(
+            encoding="utf-8"
+        )
+
+    assert len(report["records"]) == 17
+    assert len(rows) == 17
+    engel = next(
+        row
+        for row in report["records"]
+        if row["evidenceId"] == "engel-1977-biopsychosocial-model"
+    )
+    assert engel["itemKey"] == "KL5HP3MU"
+    assert engel["status"] == "identity-conflict"
+    assert engel["attachment"]["state"] is None
+    assert engel["identityDifferences"] == [
+        {
+            "field": "journal",
+            "expected": "Science",
+            "observed": "Observed Journal KL5HP3MU",
+        }
+    ]
+    engel_csv = next(
+        row for row in rows if row["evidence_id"] == engel["evidenceId"]
+    )
+    assert engel_csv["zotero_parent_item_key"] == "KL5HP3MU"
+    assert engel_csv["reconciliation_status"] == "identity-conflict"
+    assert "journal" in engel_csv["identity_differences"]
+    assert "Science" in engel_csv["identity_differences"]
+    assert "Observed Journal KL5HP3MU" in engel_csv["identity_differences"]
+    assert "Observed Journal KL5HP3MU" in markdown
 
 
 def test_zotero_local_workbook_requirement_is_exact_and_isolated():
@@ -1555,6 +1638,65 @@ def test_zotero_local_workflow_documents_authority_privacy_and_commands():
         "outputs/evidence_registry/",
     ):
         assert statement in text
+
+
+def test_zotero_output_directory_boundary_rejects_tracked_repo_paths():
+    message = (
+        "output_dir must be outside the repository or under "
+        "outputs/evidence_registry/"
+    )
+    for unsafe in (
+        REPO_ROOT,
+        REPO_ROOT / "tools",
+        REPO_ROOT / "outputs" / "other-report",
+    ):
+        try:
+            zotero_bridge._validated_output_dir(unsafe)
+        except ValueError as exc:
+            assert str(exc) == message
+        else:
+            raise AssertionError(f"tracked repository output was accepted: {unsafe}")
+
+    allowed = REPO_ROOT / "outputs" / "evidence_registry" / "nested"
+    assert zotero_bridge._validated_output_dir(allowed) == allowed.resolve()
+    with tempfile.TemporaryDirectory() as directory:
+        external = Path(directory) / "reports"
+        assert zotero_bridge._validated_output_dir(external) == external.resolve()
+
+
+def test_zotero_snapshot_and_report_cli_reject_tracked_output_directories():
+    message = (
+        "output_dir must be outside the repository or under "
+        "outputs/evidence_registry/\n"
+    )
+    cases = (
+        ["snapshot", "--output-dir", str(REPO_ROOT)],
+        [
+            "report",
+            "--snapshot",
+            str(ZOTERO_FIXTURES / "zotero_snapshot_valid.json"),
+            "--output-dir",
+            str(REPO_ROOT / "tools"),
+        ],
+    )
+    for arguments in cases:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with mock.patch.object(
+            zotero_bridge,
+            "snapshot_library",
+            return_value=load_snapshot(
+                ZOTERO_FIXTURES / "zotero_snapshot_valid.json"
+            ),
+        ) as snapshot_reader, contextlib.redirect_stdout(
+            stdout
+        ), contextlib.redirect_stderr(stderr):
+            exit_code = zotero_bridge.main(arguments)
+
+        assert exit_code == 2
+        assert stdout.getvalue() == ""
+        assert stderr.getvalue() == message
+        snapshot_reader.assert_not_called()
 
 
 def _write_fixture_repo(repo_root: Path, evidence_id: str) -> None:
