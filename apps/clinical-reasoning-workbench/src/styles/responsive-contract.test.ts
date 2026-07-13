@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import featuresCss from "./features.css?raw";
 import shellCss from "./shell.css?raw";
 import tokensCss from "./tokens.css?raw";
 
@@ -50,4 +51,11 @@ test("767px switches to the 112px two-row header and full sheet rails", () => {
   expect(compactTokens).toContain("--control-height: 44px");
   expect(mobileShell).toContain("grid-template-rows: 56px 56px");
   expect(mobileShell).toMatch(/\.evidence-rail,[\s\S]*?inset: 0;/);
+});
+
+test("compact evidence row actions retain 44px label and button targets", () => {
+  const compactFeatures = betweenBreakpoints(featuresCss, "1099");
+  expect(compactFeatures).toMatch(
+    /\.evidence-row__identity label,[\s\S]*?\.evidence-row__identity \.button[\s\S]*?min-height: 44px/,
+  );
 });

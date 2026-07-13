@@ -98,14 +98,16 @@ export const FactTextSchema = z
   .max(
     MAX_FACT_TEXT_LENGTH,
     `Fact text must be at most ${MAX_FACT_TEXT_LENGTH} characters`,
-  );
+  )
+  .refine(hasVisibleText, "Fact text is required");
 
 export const TimelineTextSchema = z
   .string()
   .max(
     MAX_FACT_TEXT_LENGTH,
     `Timeline text must be at most ${MAX_FACT_TEXT_LENGTH} characters`,
-  );
+  )
+  .refine(hasVisibleText, "Timeline text is required");
 
 export const DescriptionTextSchema = z
   .string()

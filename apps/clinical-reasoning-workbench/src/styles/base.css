@@ -39,6 +39,26 @@ select {
   min-height: var(--control-height);
 }
 
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+select {
+  min-height: var(--control-height);
+  padding: 0 var(--space-2);
+}
+
+textarea {
+  min-height: 92px;
+  padding: var(--space-2);
+  resize: vertical;
+}
+
 button {
   cursor: pointer;
 }
@@ -141,6 +161,50 @@ button {
 
 .source-reliability--low {
   color: var(--danger);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  padding: var(--space-4);
+  overflow: auto;
+  place-items: center;
+  background: rgb(47 41 36 / 42%);
+}
+
+.modal-dialog {
+  width: min(100%, 520px);
+  max-height: calc(100dvh - 2 * var(--space-4));
+  padding: var(--space-6);
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgb(47 41 36 / 24%);
+}
+
+.modal-dialog h2 {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-title);
+  font-size: 22px;
+}
+
+.modal-dialog p {
+  margin: 0;
+}
+
+.modal-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.field-error {
+  color: var(--danger);
+  font-weight: 600;
 }
 
 @media (max-width: 1099px) {

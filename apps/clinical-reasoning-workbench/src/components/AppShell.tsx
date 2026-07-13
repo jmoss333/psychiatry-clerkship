@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useWorkspace } from "../state/useWorkspace";
 import { Header } from "./Header";
+import { EvidenceDrawer } from "./EvidenceDrawer";
 import { TabNav, type WorkbenchTab } from "./TabNav";
 import { TeachingPanel } from "./TeachingPanel";
 import { Button } from "./ui/Button";
@@ -275,7 +276,7 @@ export function AppShell({ activeTab, children, onTabChange }: AppShellProps) {
           onClose={closeEvidencePanel}
           triggerRef={evidenceTriggerRef}
         >
-          <div className="rail-slot" aria-hidden="true" />
+          <EvidenceDrawer />
         </Rail>
         <main
           id="workspace-main"

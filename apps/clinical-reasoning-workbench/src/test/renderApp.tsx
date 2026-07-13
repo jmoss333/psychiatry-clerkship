@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import type { RuntimeContent } from "../content/loadContent";
 import type { WorkspaceState } from "../domain/model";
 import type { PreviewSelection } from "../domain/query";
+import { SyntheticDataGateProvider } from "../state/SyntheticDataGateProvider";
 import { WorkspaceProvider } from "../state/WorkspaceProvider";
 
 export type RenderAppOptions = {
@@ -24,7 +25,7 @@ export function renderApp(
       previewSelection={options.previewSelection}
       content={options.content}
     >
-      {ui}
+      <SyntheticDataGateProvider>{ui}</SyntheticDataGateProvider>
     </WorkspaceProvider>,
   );
 }

@@ -9,6 +9,10 @@ export function makeWorkspace(
   return createSeedWorkspace(parseCaseDefinition(rawCase), level);
 }
 
+export function makeAcknowledgedWorkspace(): WorkspaceState {
+  return { ...makeWorkspace(), syntheticDataAcknowledged: true };
+}
+
 export function makeMemoryStorage(seed: Record<string, string> = {}): Storage {
   const values = new Map(Object.entries(seed));
   return {

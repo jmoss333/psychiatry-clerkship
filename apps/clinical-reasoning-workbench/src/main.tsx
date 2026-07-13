@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { ContentErrorScreen } from "./components/ContentErrorScreen";
 import { loadRuntimeContent } from "./content/loadContent";
+import { SyntheticDataGateProvider } from "./state/SyntheticDataGateProvider";
 import { WorkspaceProvider } from "./state/WorkspaceProvider";
 import "./styles/base.css";
 
@@ -13,7 +14,9 @@ try {
   root.render(
     <StrictMode>
       <WorkspaceProvider content={content}>
-        <App />
+        <SyntheticDataGateProvider>
+          <App />
+        </SyntheticDataGateProvider>
       </WorkspaceProvider>
     </StrictMode>,
   );

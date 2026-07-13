@@ -213,7 +213,15 @@ describe("responsive rails and shared evidence primitives", () => {
     expect(document.querySelector(".workspace-main")).toHaveAttribute("inert");
 
     await user.tab();
-    expect(close).toHaveFocus();
+    expect(
+      within(dialog).getByRole("button", { name: "Add fictional fact" }),
+    ).toHaveFocus();
+
+    close.focus();
+    await user.tab({ shift: true });
+    expect(
+      within(dialog).getByRole("button", { name: "Edit F10" }),
+    ).toHaveFocus();
 
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog", { name: "Case facts" })).toBeNull();
