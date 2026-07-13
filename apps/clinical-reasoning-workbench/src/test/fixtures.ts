@@ -8,3 +8,48 @@ export function makeWorkspace(
 ): WorkspaceState {
   return createSeedWorkspace(parseCaseDefinition(rawCase), level);
 }
+
+export function makeMemoryStorage(seed: Record<string, string> = {}): Storage {
+  const values = new Map(Object.entries(seed));
+  return {
+    get length() {
+      return values.size;
+    },
+    clear: () => values.clear(),
+    getItem: (key) => values.get(key) ?? null,
+    key: (index) => [...values.keys()][index] ?? null,
+    removeItem: (key) => {
+      values.delete(key);
+    },
+    setItem: (key, value) => {
+      values.set(key, value);
+    },
+  };
+}
+
+export function makeThrowingStorage(failure: {
+  get?: Error;
+  set?: Error;
+  remove?: Error;
+}): Storage {
+  const storage = makeMemoryStorage();
+  return {
+    get length() {
+      return storage.length;
+    },
+    clear: () => storage.clear(),
+    getItem: (key) => {
+      if (failure.get) throw failure.get;
+      return storage.getItem(key);
+    },
+    key: (index) => storage.key(index),
+    removeItem: (key) => {
+      if (failure.remove) throw failure.remove;
+      storage.removeItem(key);
+    },
+    setItem: (key, value) => {
+      if (failure.set) throw failure.set;
+      storage.setItem(key, value);
+    },
+  };
+}
