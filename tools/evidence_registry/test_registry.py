@@ -2,11 +2,14 @@
 """Focused, dependency-free contract tests for the evidence registry library."""
 
 import copy
+import contextlib
+import io
 import json
 import os
 import subprocess
 import sys
 import tempfile
+from unittest import mock
 from pathlib import Path
 
 from registry import (
@@ -29,13 +32,16 @@ from registry import (
     validate_registry,
 )
 from zotero_reconcile import (
+    api_get,
     creator_family,
     inspect_attachment_children,
     load_snapshot,
     publication_year,
     reconcile_registry,
     sanitize_snapshot,
+    snapshot_library,
 )
+import zotero_reconcile as zotero_bridge
 
 
 FIXTURE = Path(__file__).with_name("fixtures") / "valid_tier1_registry.json"
@@ -926,7 +932,7 @@ def test_zotero_snapshot_sanitization_rejects_sensitive_data_recursively():
         else:
             raise AssertionError(f"unsafe snapshot was accepted: {unsafe!r}")
 
-    safe = {"items": [{"key": "KL5HP3MU", "url": "https://example.org"}]}
+    safe = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
     assert sanitize_snapshot(safe) == safe
     assert sanitize_snapshot(safe) is not safe
 
@@ -944,6 +950,199 @@ def test_zotero_snapshot_sanitization_rejects_generic_key_in_child_context():
         pass
     else:
         raise AssertionError("attachment child keys must never enter a snapshot")
+
+
+def test_zotero_transport_accepts_only_exact_configured_origin():
+    for base_url in (
+        "http://localhost:23119",
+        "http://[::1]:23119",
+        "http://127.0.0.1:23119/",
+        "http://127.0.0.1:23120",
+        "https://127.0.0.1:23119",
+    ):
+        try:
+            api_get("/api/", base_url)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"non-canonical Zotero origin accepted: {base_url}")
+
+
+def test_zotero_transport_disables_environment_proxies_and_remains_get_only():
+    captured: dict = {}
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return b"{}"
+
+    class FakeOpener:
+        def open(self, request, timeout):
+            captured["request"] = request
+            captured["timeout"] = timeout
+            return FakeResponse()
+
+    with mock.patch.dict(
+        os.environ,
+        {"HTTP_PROXY": "http://malicious.example:8080", "NO_PROXY": ""},
+        clear=False,
+    ), mock.patch.object(
+        zotero_bridge.urllib.request,
+        "build_opener",
+        return_value=FakeOpener(),
+    ) as build_opener:
+        assert api_get("/api/", "http://127.0.0.1:23119") == {}
+
+    handlers = build_opener.call_args.args
+    proxy_handlers = [
+        handler
+        for handler in handlers
+        if isinstance(handler, zotero_bridge.urllib.request.ProxyHandler)
+    ]
+    assert len(proxy_handlers) == 1
+    assert proxy_handlers[0].proxies == {}
+    assert captured["request"].get_method() == "GET"
+    assert captured["request"].get_header("Zotero-api-version") == "3"
+
+
+def test_zotero_status_never_prints_server_payload_or_exception_details():
+    malicious = {"message": "file:///Users/example/secret.pdf"}
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    with mock.patch.object(zotero_bridge, "api_get", return_value=malicious), \
+         contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        exit_code = zotero_bridge.main(["status"])
+
+    assert exit_code == 0
+    assert stdout.getvalue() == "api: reachable\nconnector: reachable\n"
+    assert stderr.getvalue() == ""
+    assert "Users" not in stdout.getvalue()
+
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    with mock.patch.object(
+        zotero_bridge, "api_get", side_effect=ValueError("/Users/example/private")
+    ), contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        exit_code = zotero_bridge.main(["status"])
+
+    assert exit_code == 2
+    assert stdout.getvalue() == ""
+    assert stderr.getvalue() == "api_unavailable\n"
+    assert "Users" not in stderr.getvalue()
+
+
+def test_zotero_snapshot_library_filters_top_level_children_before_projection():
+    config = _zotero_config()
+    fixture = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    parent = copy.deepcopy(fixture["items"][0])
+    attachment = copy.deepcopy(parent)
+    attachment["key"] = "ATCH1234"
+    attachment["data"]["itemType"] = "attachment"
+    attachment["data"]["title"] = "file:///Users/example/private.pdf"
+    note = copy.deepcopy(parent)
+    note["key"] = "NOTE1234"
+    note["data"]["itemType"] = "note"
+    note["data"]["title"] = "OCR LICENSED TEXT SENTINEL"
+
+    with mock.patch.object(
+        zotero_bridge,
+        "api_get",
+        return_value=fixture["collections"],
+    ), mock.patch.object(
+        zotero_bridge,
+        "fetch_all",
+        return_value=[parent, attachment, note],
+    ):
+        snapshot = snapshot_library(config)
+
+    assert [row["key"] for row in snapshot["items"]] == ["KL5HP3MU"]
+    encoded = json.dumps(snapshot)
+    assert "ATCH1234" not in encoded
+    assert "NOTE1234" not in encoded
+    assert "Users" not in encoded
+    assert "LICENSED TEXT" not in encoded
+
+
+def test_zotero_sanitizer_rejects_reviewer_privacy_payloads():
+    valid = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    payloads: list[tuple[str, dict]] = []
+
+    standalone_attachment = copy.deepcopy(valid)
+    attachment = copy.deepcopy(standalone_attachment["items"][0])
+    attachment["key"] = "ATCH1234"
+    attachment["data"]["itemType"] = "attachment"
+    standalone_attachment["items"].append(attachment)
+    payloads.append(("standalone attachment row key", standalone_attachment))
+
+    for label, field, value in (
+        ("embedded file URL", "title", "prefix file:///Users/example/a.pdf suffix"),
+        ("embedded local path", "title", "failed at /Users/example/a.pdf"),
+        ("tight embedded local path", "title", "failed:/Users/example/a.pdf"),
+        ("attachment identifier", "attachmentID", "ATCH1234"),
+        ("OCR sentinel", "ocr", "LICENSED OCR SENTINEL"),
+        ("relative path", "relativePath", "storage/article.pdf"),
+        ("indexed text", "indexedTextContent", "LICENSED INDEXED TEXT"),
+        ("encoded file URL", "title", "file%3A%2F%2F%2FUsers%2Fexample%2Fa.pdf"),
+    ):
+        payload = copy.deepcopy(valid)
+        payload["items"][0]["data"][field] = value
+        payloads.append((label, payload))
+
+    error_report = {
+        "matched": [],
+        "matchedCount": 0,
+        "errors": [
+            {
+                "code": "unsafe",
+                "message": "could not read /Users/example/private.pdf",
+                "evidence_id": "engel-1977-biopsychosocial-model",
+            }
+        ],
+        "warnings": [],
+    }
+    payloads.append(("error path", error_report))
+
+    for label, payload in payloads:
+        try:
+            sanitize_snapshot(payload)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"unsafe {label} payload was accepted")
+
+
+def test_zotero_sanitizer_allowlists_parent_and_attachment_status_schemas():
+    valid = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    valid["attachmentStatuses"] = {
+        "KL5HP3MU": {
+            "state": "pdf_verified",
+            "contentType": "application/pdf",
+            "byteCount": 4096,
+            "modifiedAt": "2026-07-11T09:30:00Z",
+            "verifiedAt": "2026-07-12T12:00:00Z",
+        }
+    }
+    sanitized = sanitize_snapshot(valid)
+    assert sanitized["items"][0]["key"] == "KL5HP3MU"
+    assert sanitized["attachmentStatuses"]["KL5HP3MU"]["state"] == "pdf_verified"
+
+    for unsafe_status in (
+        {"state": "guessed"},
+        {"state": "pdf_verified", "byteCount": "4096"},
+        {"state": "pdf_verified", "attachmentID": "ATCH1234"},
+        {"state": "pdf_verified", "error": "/Users/example/private.pdf"},
+    ):
+        try:
+            sanitize_snapshot(unsafe_status)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"unsafe attachment status accepted: {unsafe_status}")
 
 
 def test_zotero_identity_helpers_are_stable_for_api_shapes():

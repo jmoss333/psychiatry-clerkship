@@ -46,23 +46,80 @@ _READ_ONLY_ROUTES = (
 )
 _SENSITIVE_KEYS = {
     "attachments",
+    "attachmentid",
     "attachmentkey",
     "attachmentpath",
+    "auth",
+    "authorization",
     "children",
     "childkey",
+    "content",
+    "cookie",
+    "cookies",
+    "error",
     "extractedtext",
     "filepath",
     "fileurl",
     "fileviewurl",
     "fulltext",
+    "header",
+    "headers",
+    "html",
     "indexedtext",
+    "indexedtextcontent",
+    "licensedtext",
     "localpath",
+    "note",
+    "ocr",
+    "ocrtext",
+    "path",
+    "raw",
+    "relativepath",
     "storagepath",
+    "token",
 }
 _ABSOLUTE_WINDOWS_PATH = re.compile(r"^(?:[A-Za-z]:[\\/]|\\\\)")
+_EMBEDDED_WINDOWS_PATH = re.compile(r"[A-Za-z]:[\\/]")
+_LOCAL_POSIX_PATH = re.compile(
+    r"/(?:Users|Volumes|private|tmp|var|home|etc)(?:/|$)",
+    re.IGNORECASE,
+)
+_RELATIVE_PATH = re.compile(r"(?:\.\.?/|storage/)", re.IGNORECASE)
 _PMID_RE = re.compile(r"(?:^|\s)PMID\s*:\s*(\d+)(?:\s|$)", re.IGNORECASE)
 _YEAR_RE = re.compile(r"(?<!\d)((?:1[5-9]|20|21)\d{2})(?!\d)")
+_TIMESTAMP_RE = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
+)
+_STABLE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+_ISSUE_CODE_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 _ATTACHMENT_MODES = {"imported_file", "linked_file"}
+_ATTACHMENT_STATES = {
+    None,
+    "metadata_only",
+    "pdf_attached",
+    "pdf_invalid",
+    "pdf_verified",
+    "pdf_indexed",
+}
+_ATTACHMENT_STATUS_FIELDS = {
+    "state",
+    "contentType",
+    "byteCount",
+    "modifiedAt",
+    "verifiedAt",
+    "checkedAt",
+}
+_PARENT_DATA_FIELDS = {
+    "itemType",
+    "title",
+    "creators",
+    "date",
+    "publicationTitle",
+    "DOI",
+    "archiveLocation",
+    "tags",
+    "collections",
+}
 
 
 @dataclass(frozen=True)
@@ -101,20 +158,9 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 def _validate_base_url(base_url: str) -> str:
-    parsed = urllib.parse.urlsplit(base_url)
-    if (
-        parsed.scheme != "http"
-        or parsed.hostname not in {"127.0.0.1", "localhost", "::1"}
-        or parsed.username is not None
-        or parsed.password is not None
-        or parsed.query
-        or parsed.fragment
-        or parsed.path not in {"", "/"}
-    ):
-        raise ValueError("Zotero base URL must be a loopback HTTP origin")
-    if parsed.port != 23119:
-        raise ValueError("Zotero local API must use port 23119")
-    return base_url.rstrip("/")
+    if base_url != "http://127.0.0.1:23119":
+        raise ValueError("Zotero base URL must use the configured local API origin")
+    return base_url
 
 
 def _validate_read_only_route(path: str) -> None:
@@ -134,7 +180,10 @@ def api_get(path: str, base_url: str, timeout: float = 5.0) -> object:
         headers={"Zotero-API-Version": API_VERSION},
         method="GET",
     )
-    opener = urllib.request.build_opener(_NoRedirect())
+    opener = urllib.request.build_opener(
+        urllib.request.ProxyHandler({}),
+        _NoRedirect(),
+    )
     try:
         response = opener.open(request, timeout=timeout)
     except urllib.error.HTTPError as exc:
@@ -222,7 +271,12 @@ def snapshot_library(config: dict) -> dict:
         isinstance(row, dict) for row in collections
     ):
         raise ValueError("Zotero collection response must be a list of objects")
-    items = fetch_all("/api/users/0/items/top", base_url)
+    raw_items = fetch_all("/api/users/0/items/top", base_url)
+    items = [
+        item
+        for item in raw_items
+        if _item_data(item).get("itemType") not in {"attachment", "note"}
+    ]
     snapshot = {
         "snapshotVersion": 1,
         "library": copy.deepcopy(config["library"]),
@@ -237,40 +291,359 @@ def _normalized_key(value: object) -> str:
 
 
 def _unsafe_string(value: str) -> bool:
-    stripped = value.strip()
+    decoded = value
+    for _ in range(3):
+        unquoted = urllib.parse.unquote(decoded)
+        if unquoted == decoded:
+            break
+        decoded = unquoted
+    stripped = decoded.strip()
     lowered = stripped.casefold()
     return bool(
-        lowered.startswith("file:")
-        or lowered.startswith("zotero://open-pdf")
-        or stripped.startswith(("/", "~/"))
+        "file:" in lowered
+        or "zotero://open-pdf" in lowered
+        or stripped.startswith("~/")
         or _ABSOLUTE_WINDOWS_PATH.match(stripped)
+        or _EMBEDDED_WINDOWS_PATH.search(stripped)
+        or _LOCAL_POSIX_PATH.search(stripped)
+        or _RELATIVE_PATH.search(stripped)
     )
 
 
+def _privacy_preflight(value: Any, trail: tuple[str, ...] = ()) -> None:
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            normalized = _normalized_key(key)
+            if normalized in _SENSITIVE_KEYS or normalized.endswith("filepath"):
+                location = ".".join((*trail, str(key)))
+                raise ValueError(f"unsafe snapshot field: {location}")
+            _privacy_preflight(nested, (*trail, str(key)))
+        return
+    if isinstance(value, list):
+        for index, nested in enumerate(value):
+            _privacy_preflight(nested, (*trail, str(index)))
+        return
+    if isinstance(value, str) and _unsafe_string(value):
+        location = ".".join(trail)
+        raise ValueError(f"unsafe local location in snapshot field: {location}")
+
+
+def _require_exact_fields(
+    value: dict,
+    *,
+    allowed: set[str],
+    required: set[str],
+    context: str,
+) -> None:
+    unexpected = set(value) - allowed
+    missing = required - set(value)
+    if unexpected:
+        raise ValueError(
+            f"unexpected {context} fields: {', '.join(sorted(map(str, unexpected)))}"
+        )
+    if missing:
+        raise ValueError(
+            f"missing {context} fields: {', '.join(sorted(map(str, missing)))}"
+        )
+
+
+def _safe_string(value: Any, context: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError(f"{context} must be a string")
+    return value
+
+
+def _safe_item_key(value: Any, context: str) -> str:
+    if not isinstance(value, str) or re.fullmatch(_ITEM_KEY_RE, value) is None:
+        raise ValueError(f"{context} must be an 8-character Zotero parent key")
+    return value
+
+
+def _sanitize_attachment_status(value: dict) -> dict:
+    if not isinstance(value, dict):
+        raise ValueError("attachment status must be an object")
+    _require_exact_fields(
+        value,
+        allowed=_ATTACHMENT_STATUS_FIELDS,
+        required={"state"},
+        context="attachment status",
+    )
+    state = value["state"]
+    if state not in _ATTACHMENT_STATES:
+        raise ValueError("attachment status state is invalid")
+    cleaned: dict[str, Any] = {"state": state}
+    if "contentType" in value:
+        if value["contentType"] != "application/pdf":
+            raise ValueError("attachment contentType must be application/pdf")
+        cleaned["contentType"] = "application/pdf"
+    if "byteCount" in value:
+        count = value["byteCount"]
+        if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+            raise ValueError("attachment byteCount must be a nonnegative integer")
+        cleaned["byteCount"] = count
+    for field_name in ("modifiedAt", "verifiedAt", "checkedAt"):
+        if field_name not in value:
+            continue
+        timestamp = value[field_name]
+        if not isinstance(timestamp, str) or _TIMESTAMP_RE.fullmatch(timestamp) is None:
+            raise ValueError(f"attachment {field_name} must be an ISO-8601 timestamp")
+        cleaned[field_name] = timestamp
+    return cleaned
+
+
+def _sanitize_creator(value: dict) -> dict:
+    if not isinstance(value, dict):
+        raise ValueError("Zotero creator must be an object")
+    allowed = {"creatorType", "firstName", "lastName", "name"}
+    _require_exact_fields(
+        value, allowed=allowed, required={"creatorType"}, context="creator"
+    )
+    cleaned = {"creatorType": _safe_string(value["creatorType"], "creatorType")}
+    for field_name in ("firstName", "lastName", "name"):
+        if field_name in value:
+            cleaned[field_name] = _safe_string(value[field_name], field_name)
+    return cleaned
+
+
+def _sanitize_tag(value: Any) -> str | dict:
+    if isinstance(value, str):
+        return value
+    if not isinstance(value, dict):
+        raise ValueError("Zotero tag must be a string or object")
+    _require_exact_fields(
+        value, allowed={"tag", "type"}, required={"tag"}, context="tag"
+    )
+    cleaned: dict[str, Any] = {"tag": _safe_string(value["tag"], "tag")}
+    if "type" in value:
+        tag_type = value["type"]
+        if not isinstance(tag_type, int) or isinstance(tag_type, bool):
+            raise ValueError("Zotero tag type must be an integer")
+        cleaned["type"] = tag_type
+    return cleaned
+
+
+def _sanitize_parent_item(value: dict) -> dict:
+    if not isinstance(value, dict):
+        raise ValueError("Zotero parent item must be an object")
+    _require_exact_fields(
+        value,
+        allowed={"key", "data", "meta"},
+        required={"key", "data"},
+        context="parent item",
+    )
+    item_key = _safe_item_key(value["key"], "parent item key")
+    data = value["data"]
+    if not isinstance(data, dict):
+        raise ValueError("Zotero parent data must be an object")
+    _require_exact_fields(
+        data,
+        allowed=_PARENT_DATA_FIELDS,
+        required=_PARENT_DATA_FIELDS,
+        context="parent bibliographic data",
+    )
+    item_type = _safe_string(data["itemType"], "itemType")
+    if not item_type or item_type in {"attachment", "note"}:
+        raise ValueError("sanitized snapshots may contain bibliographic parents only")
+    creators = data["creators"]
+    tags = data["tags"]
+    collections = data["collections"]
+    if not isinstance(creators, list):
+        raise ValueError("creators must be a list")
+    if not isinstance(tags, list):
+        raise ValueError("tags must be a list")
+    if not isinstance(collections, list):
+        raise ValueError("item collections must be a list")
+    cleaned_data = {
+        "itemType": item_type,
+        "title": _safe_string(data["title"], "title"),
+        "creators": [_sanitize_creator(row) for row in creators],
+        "date": _safe_string(data["date"], "date"),
+        "publicationTitle": _safe_string(
+            data["publicationTitle"], "publicationTitle"
+        ),
+        "DOI": _safe_string(data["DOI"], "DOI"),
+        "archiveLocation": _safe_string(
+            data["archiveLocation"], "archiveLocation"
+        ),
+        "tags": [_sanitize_tag(row) for row in tags],
+        "collections": [
+            _safe_item_key(row, "item collection key") for row in collections
+        ],
+    }
+    cleaned: dict[str, Any] = {"key": item_key, "data": cleaned_data}
+    if "meta" in value:
+        meta = value["meta"]
+        if not isinstance(meta, dict):
+            raise ValueError("parent item meta must be an object")
+        _require_exact_fields(
+            meta,
+            allowed={"numChildren"},
+            required={"numChildren"},
+            context="parent item meta",
+        )
+        count = meta["numChildren"]
+        if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+            raise ValueError("numChildren must be a nonnegative integer")
+        cleaned["meta"] = {"numChildren": count}
+    return cleaned
+
+
+def _sanitize_collection(value: dict) -> dict:
+    if not isinstance(value, dict):
+        raise ValueError("Zotero collection must be an object")
+    _require_exact_fields(
+        value,
+        allowed={"key", "data"},
+        required={"key", "data"},
+        context="collection",
+    )
+    data = value["data"]
+    if not isinstance(data, dict):
+        raise ValueError("collection data must be an object")
+    _require_exact_fields(
+        data,
+        allowed={"name", "parentCollection"},
+        required={"name"},
+        context="collection data",
+    )
+    cleaned_data: dict[str, Any] = {
+        "name": _safe_string(data["name"], "collection name")
+    }
+    if "parentCollection" in data:
+        parent = data["parentCollection"]
+        if parent is False or parent is None:
+            cleaned_data["parentCollection"] = parent
+        else:
+            cleaned_data["parentCollection"] = _safe_item_key(
+                parent, "parent collection key"
+            )
+    return {
+        "key": _safe_item_key(value["key"], "collection key"),
+        "data": cleaned_data,
+    }
+
+
+def _sanitize_library_snapshot(value: dict) -> dict:
+    _require_exact_fields(
+        value,
+        allowed={
+            "snapshotVersion",
+            "library",
+            "collections",
+            "items",
+            "attachmentStatuses",
+        },
+        required={"snapshotVersion", "library", "collections", "items"},
+        context="snapshot",
+    )
+    if value["snapshotVersion"] != 1:
+        raise ValueError("snapshotVersion must be 1")
+    library = value["library"]
+    if library != {"type": "user", "id": 0}:
+        raise ValueError("snapshot library must be Zotero user library 0")
+    collections = value["collections"]
+    items = value["items"]
+    if not isinstance(collections, list) or not isinstance(items, list):
+        raise ValueError("snapshot collections and items must be lists")
+    cleaned: dict[str, Any] = {
+        "snapshotVersion": 1,
+        "library": {"type": "user", "id": 0},
+        "collections": [_sanitize_collection(row) for row in collections],
+        "items": [_sanitize_parent_item(row) for row in items],
+    }
+    if "attachmentStatuses" in value:
+        statuses = value["attachmentStatuses"]
+        if not isinstance(statuses, dict):
+            raise ValueError("attachmentStatuses must be an object")
+        cleaned["attachmentStatuses"] = {
+            _safe_item_key(key, "attachment status parent key"):
+                _sanitize_attachment_status(status)
+            for key, status in statuses.items()
+        }
+    return cleaned
+
+
+def _sanitize_issue(value: dict) -> dict:
+    if not isinstance(value, dict):
+        raise ValueError("report issue must be an object")
+    _require_exact_fields(
+        value,
+        allowed={"code", "message", "evidence_id"},
+        required={"code", "message", "evidence_id"},
+        context="report issue",
+    )
+    code = _safe_string(value["code"], "issue code")
+    evidence_id = _safe_string(value["evidence_id"], "issue evidence id")
+    if _ISSUE_CODE_RE.fullmatch(code) is None:
+        raise ValueError("report issue code is invalid")
+    if evidence_id and _STABLE_ID_RE.fullmatch(evidence_id) is None:
+        raise ValueError("report issue evidence id is invalid")
+    return {
+        "code": code,
+        "message": _safe_string(value["message"], "issue message"),
+        "evidence_id": evidence_id,
+    }
+
+
+def _sanitize_match(value: dict) -> dict:
+    if not isinstance(value, dict):
+        raise ValueError("report match must be an object")
+    _require_exact_fields(
+        value,
+        allowed={"evidenceId", "itemKey", "method", "attachment"},
+        required={"evidenceId", "itemKey", "method", "attachment"},
+        context="report match",
+    )
+    evidence_id = _safe_string(value["evidenceId"], "match evidence id")
+    if _STABLE_ID_RE.fullmatch(evidence_id) is None:
+        raise ValueError("report match evidence id is invalid")
+    method = _safe_string(value["method"], "match method")
+    if method not in {"stored-key", "doi", "pmid", "title-author-year"}:
+        raise ValueError("report match method is invalid")
+    return {
+        "evidenceId": evidence_id,
+        "itemKey": _safe_item_key(value["itemKey"], "match parent item key"),
+        "method": method,
+        "attachment": _sanitize_attachment_status(value["attachment"]),
+    }
+
+
+def _sanitize_report(value: dict) -> dict:
+    _require_exact_fields(
+        value,
+        allowed={"matched", "matchedCount", "errors", "warnings"},
+        required={"matched", "matchedCount", "errors", "warnings"},
+        context="reconciliation report",
+    )
+    matched = value["matched"]
+    errors = value["errors"]
+    warnings = value["warnings"]
+    if not all(isinstance(rows, list) for rows in (matched, errors, warnings)):
+        raise ValueError("reconciliation report rows must be lists")
+    count = value["matchedCount"]
+    if not isinstance(count, int) or isinstance(count, bool) or count != len(matched):
+        raise ValueError("matchedCount must equal the number of report matches")
+    return {
+        "matched": [_sanitize_match(row) for row in matched],
+        "matchedCount": count,
+        "errors": [_sanitize_issue(row) for row in errors],
+        "warnings": [_sanitize_issue(row) for row in warnings],
+    }
+
+
 def sanitize_snapshot(snapshot: dict) -> dict:
-    """Return a detached snapshot copy or fail closed on local/full-text data."""
+    """Validate and copy one documented snapshot, status, or report schema."""
 
     if not isinstance(snapshot, dict):
         raise ValueError("snapshot must be a JSON object")
-
-    def visit(value: Any, trail: tuple[str, ...]) -> Any:
-        if isinstance(value, dict):
-            cleaned: dict[str, Any] = {}
-            for key, nested in value.items():
-                normalized = _normalized_key(key)
-                if normalized in _SENSITIVE_KEYS or normalized.endswith("filepath"):
-                    location = ".".join((*trail, str(key)))
-                    raise ValueError(f"unsafe snapshot field: {location}")
-                cleaned[str(key)] = visit(nested, (*trail, str(key)))
-            return cleaned
-        if isinstance(value, list):
-            return [visit(nested, (*trail, str(index))) for index, nested in enumerate(value)]
-        if isinstance(value, str) and _unsafe_string(value):
-            location = ".".join(trail)
-            raise ValueError(f"unsafe local location in snapshot field: {location}")
-        return copy.deepcopy(value)
-
-    return visit(snapshot, ())
+    _privacy_preflight(snapshot)
+    if {"snapshotVersion", "library", "collections", "items"} <= set(snapshot):
+        return _sanitize_library_snapshot(snapshot)
+    if {"matched", "matchedCount", "errors", "warnings"} <= set(snapshot):
+        return _sanitize_report(snapshot)
+    if "state" in snapshot:
+        return _sanitize_attachment_status(snapshot)
+    raise ValueError("object does not match a documented safe output schema")
 
 
 def load_snapshot(path: Path | str) -> dict:
@@ -789,10 +1162,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         config = _load_config(args.config)
         if args.command == "status":
-            api_status = api_get("/api/", config["baseUrl"])
-            connector_status = api_get("/connector/ping", config["baseUrl"])
-            print(f"api: {api_status}")
-            print(f"connector: {connector_status}")
+            api_get("/api/", config["baseUrl"])
+            api_get("/connector/ping", config["baseUrl"])
+            print("api: reachable")
+            print("connector: reachable")
             return 0
         if args.command == "snapshot":
             print(json.dumps(snapshot_library(config), indent=2, sort_keys=True))
@@ -806,8 +1179,8 @@ def main(argv: list[str] | None = None) -> int:
         else:
             _print_result(result)
         return 1 if result.errors else 0
-    except (OSError, ValueError, urllib.error.URLError) as exc:
-        print(f"api_unavailable: {exc}", file=sys.stderr)
+    except (OSError, ValueError, urllib.error.URLError):
+        print("api_unavailable", file=sys.stderr)
         return 2
 
 
