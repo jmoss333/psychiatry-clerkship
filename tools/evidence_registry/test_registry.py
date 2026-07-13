@@ -28,6 +28,14 @@ from registry import (
     tier1_sources,
     validate_registry,
 )
+from zotero_reconcile import (
+    creator_family,
+    inspect_attachment_children,
+    load_snapshot,
+    publication_year,
+    reconcile_registry,
+    sanitize_snapshot,
+)
 
 
 FIXTURE = Path(__file__).with_name("fixtures") / "valid_tier1_registry.json"
@@ -59,6 +67,25 @@ REFERENCE_FILES = (
 )
 VALIDATE = Path(__file__).with_name("validate.py")
 REGISTRY_CLI = Path(__file__).with_name("registry.py")
+ZOTERO_CONFIG_PATH = Path(__file__).with_name("zotero_config.json")
+ZOTERO_RECONCILE = Path(__file__).with_name("zotero_reconcile.py")
+ZOTERO_FIXTURES = Path(__file__).with_name("fixtures")
+
+
+def _zotero_config() -> dict:
+    return json.loads(ZOTERO_CONFIG_PATH.read_text(encoding="utf-8"))
+
+
+def _canonical_tier1_registry() -> dict:
+    registry = load_evidence_registry(REGISTRY_PATH)
+    registry["sources"] = tier1_sources(registry)
+    return registry
+
+
+def _one_source_registry(source_id: str = "engel-1977-biopsychosocial-model") -> dict:
+    registry = _canonical_tier1_registry()
+    registry["sources"] = [index_sources(registry)[source_id]]
+    return registry
 
 
 def test_tier1_replacement_preserves_manual_tail():
@@ -671,6 +698,283 @@ def test_public_projection_recursively_filters_nested_secret_fields():
     assert public["sources"][0]["citation"]["authors"] == [{"family": "Engel"}]
     assert public["sources"][0]["curriculum"]["pairedTools"] == []
     assert public["sources"][0]["curriculum"]["topicSlugs"] == ["fixture-one"]
+
+
+def test_zotero_valid_snapshot_matches_all_tier1_with_advisory_empty_weeks():
+    result = reconcile_registry(
+        _canonical_tier1_registry(),
+        load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json"),
+        _zotero_config(),
+    )
+
+    assert result.matched_count == 17
+    assert result.errors == []
+    assert {warning.code for warning in result.warnings} == {
+        "week-collection-advisory"
+    }
+    assert len(result.warnings) == 6
+
+
+def test_zotero_stored_key_identity_drift_is_hard_error_without_relinking():
+    result = reconcile_registry(
+        _one_source_registry(),
+        load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_identity_drift.json"),
+        _zotero_config(),
+    )
+
+    assert "identity-conflict" in {error.code for error in result.errors}
+    assert result.matched_count == 0
+
+
+def test_zotero_stored_key_verifies_every_required_identity_field():
+    snapshot = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    item = next(item for item in snapshot["items"] if item["key"] == "KL5HP3MU")
+    mutations = (
+        ("DOI", "10.0000/not-the-registered-doi"),
+        ("archiveLocation", "PMID:99999999"),
+        ("title", "A different title"),
+        ("creators", [{"creatorType": "author", "lastName": "NotEngel"}]),
+        ("date", "1978"),
+        ("publicationTitle", "A Different Journal"),
+    )
+
+    for field, value in mutations:
+        changed = copy.deepcopy(snapshot)
+        changed_item = next(
+            row for row in changed["items"] if row["key"] == "KL5HP3MU"
+        )
+        changed_item["data"][field] = value
+        result = reconcile_registry(_one_source_registry(), changed, _zotero_config())
+        assert "identity-conflict" in {
+            error.code for error in result.errors
+        }, field
+        assert result.matched_count == 0, field
+
+
+def test_zotero_missing_expected_tag_is_error_but_extra_tags_are_allowed():
+    snapshot = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    one_item = next(item for item in snapshot["items"] if item["key"] == "KL5HP3MU")
+    one_item["data"]["tags"].append({"tag": "faculty-local"})
+    assert reconcile_registry(
+        _one_source_registry(), snapshot, _zotero_config()
+    ).errors == []
+
+    one_item["data"]["tags"] = [
+        tag for tag in one_item["data"]["tags"] if tag["tag"] != "landmark"
+    ]
+    result = reconcile_registry(_one_source_registry(), snapshot, _zotero_config())
+    assert "missing-tier1-tag" in {error.code for error in result.errors}
+
+
+def test_zotero_config_is_only_expected_tag_authority():
+    config = _zotero_config()
+    assert set(config["expectedTier1Tags"]) == {
+        "Tier 1",
+        "MS3-required",
+        "landmark",
+    }
+    assert all(
+        "expectedTags" not in row.get("zotero", {})
+        for row in tier1_sources(load_evidence_registry(REGISTRY_PATH))
+    )
+
+
+def test_zotero_fallback_order_is_doi_then_pmid_then_unique_bibliography():
+    valid = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    item = next(row for row in valid["items"] if row["key"] == "KL5HP3MU")
+
+    doi_registry = _one_source_registry()
+    doi_registry["sources"][0]["zotero"].pop("itemKey")
+    doi_result = reconcile_registry(
+        doi_registry, {**valid, "items": [item]}, _zotero_config()
+    )
+    assert doi_result.matches[0]["method"] == "doi"
+
+    pmid_registry = copy.deepcopy(doi_registry)
+    pmid_registry["sources"][0]["citation"]["doi"] = ""
+    pmid_result = reconcile_registry(
+        pmid_registry, {**valid, "items": [item]}, _zotero_config()
+    )
+    assert pmid_result.matches[0]["method"] == "pmid"
+
+    title_registry = copy.deepcopy(pmid_registry)
+    title_registry["sources"][0]["citation"]["pmid"] = ""
+    title_result = reconcile_registry(
+        title_registry, {**valid, "items": [item]}, _zotero_config()
+    )
+    assert title_result.matches[0]["method"] == "title-author-year"
+
+
+def test_zotero_fallback_never_guesses_between_two_title_candidates():
+    registry = _one_source_registry()
+    registry["sources"][0]["zotero"].pop("itemKey")
+    registry["sources"][0]["citation"]["doi"] = ""
+    registry["sources"][0]["citation"]["pmid"] = ""
+    result = reconcile_registry(
+        registry,
+        load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_ambiguous.json"),
+        _zotero_config(),
+    )
+
+    assert "ambiguous" in {error.code for error in result.errors}
+    assert result.matched_count == 0
+
+
+def test_zotero_week_observations_never_rewrite_registry_mapping():
+    registry = _one_source_registry()
+    before = copy.deepcopy(registry)
+    snapshot = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    item = next(row for row in snapshot["items"] if row["key"] == "KL5HP3MU")
+    item["data"]["collections"] = ["ZD6GBSYZ", "LUUFRIE9"]
+
+    reconcile_registry(registry, snapshot, _zotero_config())
+    assert registry == before
+    assert registry["sources"][0]["curriculum"]["weekNumbers"] == [1]
+
+
+def test_zotero_note_url_and_html_children_do_not_count_as_pdf():
+    fixture = load_snapshot(
+        ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
+    )
+    for case in ("noteOnly", "linkedUrl", "htmlSnapshot"):
+        status = inspect_attachment_children(
+            "KL5HP3MU", fixture[case], explicit=True
+        )
+        assert status["state"] == "metadata_only", case
+
+
+def test_zotero_imported_and_linked_pdf_attachment_states():
+    fixture = load_snapshot(
+        ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
+    )
+    imported = inspect_attachment_children(
+        "KL5HP3MU", fixture["importedPdf"], explicit=True
+    )
+    linked = inspect_attachment_children(
+        "KL5HP3MU", fixture["linkedPdf"], explicit=True
+    )
+
+    assert imported["state"] == "pdf_attached"
+    assert imported["contentType"] == "application/pdf"
+    assert linked["state"] == "pdf_attached"
+    assert linked["contentType"] == "application/pdf"
+
+
+def test_zotero_zero_byte_and_invalid_signature_pdfs_are_rejected():
+    fixture = load_snapshot(
+        ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
+    )
+    for case in ("zeroBytePdf", "invalidSignaturePdf"):
+        status = inspect_attachment_children(
+            "KL5HP3MU", fixture[case], explicit=True
+        )
+        assert status["state"] == "pdf_invalid", case
+
+
+def test_zotero_scanned_pdf_can_be_verified_without_indexed_text():
+    fixture = load_snapshot(
+        ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
+    )
+    status = inspect_attachment_children(
+        "KL5HP3MU", fixture["validScannedPdf"], explicit=True
+    )
+
+    assert status["state"] == "pdf_verified"
+    assert status["byteCount"] == 4096
+    assert set(status) == {
+        "state", "contentType", "byteCount", "modifiedAt", "verifiedAt"
+    }
+
+
+def test_zotero_indexed_pdf_reports_indexed_state_separately():
+    fixture = load_snapshot(
+        ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
+    )
+    status = inspect_attachment_children(
+        "KL5HP3MU", fixture["validIndexedPdf"], explicit=True
+    )
+
+    assert status["state"] == "pdf_indexed"
+    assert status["byteCount"] == 8192
+
+
+def test_zotero_skipped_attachment_inspection_preserves_prior_observed_state():
+    fixture = load_snapshot(
+        ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
+    )
+    status = inspect_attachment_children(
+        "KL5HP3MU", fixture["priorVerified"], explicit=False
+    )
+
+    assert status == fixture["priorVerified"][0]["priorObserved"]
+
+
+def test_zotero_snapshot_sanitization_rejects_sensitive_data_recursively():
+    unsafe_values = (
+        {"nested": {"filePath": "/Users/example/paper.pdf"}},
+        {"records": [{"attachmentKey": "ABCD1234"}]},
+        {"nested": {"url": "file:///Users/example/paper.pdf"}},
+        {"deep": [{"extractedText": "licensed article text"}]},
+        {"deep": [{"fullText": "licensed article text"}]},
+        {"path": "/private/tmp/article.pdf"},
+    )
+    for unsafe in unsafe_values:
+        try:
+            sanitize_snapshot(unsafe)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"unsafe snapshot was accepted: {unsafe!r}")
+
+    safe = {"items": [{"key": "KL5HP3MU", "url": "https://example.org"}]}
+    assert sanitize_snapshot(safe) == safe
+    assert sanitize_snapshot(safe) is not safe
+
+
+def test_zotero_snapshot_sanitization_rejects_generic_key_in_child_context():
+    unsafe = {
+        "items": [],
+        "children": [
+            {"key": "CHLD1234", "data": {"itemType": "attachment"}}
+        ],
+    }
+    try:
+        sanitize_snapshot(unsafe)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("attachment child keys must never enter a snapshot")
+
+
+def test_zotero_identity_helpers_are_stable_for_api_shapes():
+    assert creator_family(
+        [{"creatorType": "editor", "lastName": "Ignore"},
+         {"creatorType": "author", "lastName": "Engel"}]
+    ) == "Engel"
+    assert creator_family([{"creatorType": "author", "name": "WHO"}]) == "WHO"
+    assert publication_year("Published online 2004-08-18") == "2004"
+    assert publication_year(1977) == "1977"
+    assert publication_year(None) == ""
+
+
+def test_zotero_fixture_cli_reports_17_matches_and_advisory_weeks():
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ZOTERO_RECONCILE),
+            "check",
+            "--snapshot",
+            str(ZOTERO_FIXTURES / "zotero_snapshot_valid.json"),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "matched: 17" in result.stdout
+    assert "errors: 0" in result.stdout
+    assert "week-collection-advisory" in result.stdout
 
 
 def _write_fixture_repo(repo_root: Path, evidence_id: str) -> None:

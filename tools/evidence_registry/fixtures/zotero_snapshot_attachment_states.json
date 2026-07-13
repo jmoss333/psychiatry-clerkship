@@ -1,0 +1,32 @@
+{
+  "noteOnly": [
+    {"key": "NOTE1111", "data": {"itemType": "note", "note": "fixture note"}}
+  ],
+  "linkedUrl": [
+    {"key": "URLL1111", "data": {"itemType": "attachment", "linkMode": "linked_url", "contentType": "application/pdf", "url": "https://example.org/article.pdf"}}
+  ],
+  "htmlSnapshot": [
+    {"key": "HTML1111", "data": {"itemType": "attachment", "linkMode": "imported_url", "contentType": "text/html"}}
+  ],
+  "importedPdf": [
+    {"key": "PDFI1111", "data": {"itemType": "attachment", "linkMode": "imported_file", "contentType": "application/pdf"}}
+  ],
+  "linkedPdf": [
+    {"key": "PDFL1111", "data": {"itemType": "attachment", "linkMode": "linked_file", "contentType": "application/pdf"}}
+  ],
+  "zeroBytePdf": [
+    {"key": "ZERO1111", "data": {"itemType": "attachment", "linkMode": "imported_file", "contentType": "application/pdf"}, "_fileProbe": {"exists": true, "byteCount": 0, "signature": "%PDF-", "indexed": false, "verifiedAt": "2026-07-12T12:00:00Z"}}
+  ],
+  "invalidSignaturePdf": [
+    {"key": "BADS1111", "data": {"itemType": "attachment", "linkMode": "linked_file", "contentType": "application/pdf"}, "_fileProbe": {"exists": true, "byteCount": 4096, "signature": "NOT-PDF", "indexed": false, "verifiedAt": "2026-07-12T12:00:00Z"}}
+  ],
+  "validScannedPdf": [
+    {"key": "SCAN1111", "data": {"itemType": "attachment", "linkMode": "imported_file", "contentType": "application/pdf"}, "_fileProbe": {"exists": true, "byteCount": 4096, "signature": "%PDF-", "indexed": false, "modifiedAt": "2026-07-11T09:30:00Z", "verifiedAt": "2026-07-12T12:00:00Z"}}
+  ],
+  "validIndexedPdf": [
+    {"key": "INDX1111", "data": {"itemType": "attachment", "linkMode": "imported_file", "contentType": "application/pdf"}, "_fileProbe": {"exists": true, "byteCount": 8192, "signature": "%PDF-", "indexed": true, "modifiedAt": "2026-07-11T10:00:00Z", "verifiedAt": "2026-07-12T12:00:00Z"}}
+  ],
+  "priorVerified": [
+    {"priorObserved": {"state": "pdf_verified", "contentType": "application/pdf", "byteCount": 4096, "modifiedAt": "2026-07-11T09:30:00Z", "verifiedAt": "2026-07-12T12:00:00Z"}}
+  ]
+}
