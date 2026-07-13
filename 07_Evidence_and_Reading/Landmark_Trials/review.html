@@ -280,7 +280,7 @@ function App(){
         e("input",{type:"range",min:5,max:30,step:1,value:store.settings.newPerDay||12,onChange:function(ev){setNewPerDay(+ev.target.value);}}),
         e("b",null,store.settings.newPerDay||12)),
       e("div",{className:"linkrow"},
-        e("a",{className:"chip",href:"../index.html?tool=active-recall.html"},"Browse full quiz bank"),
+        e("a",{className:"chip",href:"../index.html?tool=shelf-mode.html"},"Browse full quiz bank"),
         e("button",{className:"chip danger",onClick:resetAll},"Reset progress"))),
     e("div",{className:"sig"},"Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.",e("br"),"Spacing schedule is stored only in this browser.")
   );
