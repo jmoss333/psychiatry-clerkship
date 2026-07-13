@@ -1042,11 +1042,11 @@ def test_zotero_snapshot_library_filters_top_level_children_before_projection():
     parent = copy.deepcopy(fixture["items"][0])
     attachment = copy.deepcopy(parent)
     attachment["key"] = "ATCH1234"
-    attachment["data"]["itemType"] = "attachment"
+    attachment["data"]["itemType"] = "Attachment"
     attachment["data"]["title"] = "file:///Users/example/private.pdf"
     note = copy.deepcopy(parent)
     note["key"] = "NOTE1234"
-    note["data"]["itemType"] = "note"
+    note["data"]["itemType"] = "nOtE"
     note["data"]["title"] = "OCR LICENSED TEXT SENTINEL"
 
     with mock.patch.object(
@@ -1075,7 +1075,7 @@ def test_zotero_sanitizer_rejects_reviewer_privacy_payloads():
     standalone_attachment = copy.deepcopy(valid)
     attachment = copy.deepcopy(standalone_attachment["items"][0])
     attachment["key"] = "ATCH1234"
-    attachment["data"]["itemType"] = "attachment"
+    attachment["data"]["itemType"] = "Attachment"
     standalone_attachment["items"].append(attachment)
     payloads.append(("standalone attachment row key", standalone_attachment))
 
@@ -1088,6 +1088,16 @@ def test_zotero_sanitizer_rejects_reviewer_privacy_payloads():
         ("relative path", "relativePath", "storage/article.pdf"),
         ("indexed text", "indexedTextContent", "LICENSED INDEXED TEXT"),
         ("encoded file URL", "title", "file%3A%2F%2F%2FUsers%2Fexample%2Fa.pdf"),
+        ("quadruple encoded file URL", "title", "file%2525253Asecret"),
+        ("embedded home path", "title", "failed at ~/Library/item.pdf"),
+        (
+            "macOS library path",
+            "title",
+            "failed:/Library/Application Support/Zotero/item.pdf",
+        ),
+        ("generic POSIX root", "title", "failed:/opt/zotero/item.pdf"),
+        ("custom POSIX root", "title", "failed:/custom/root/item.pdf"),
+        ("embedded UNC path", "title", r"failed:\\server\share\item.pdf"),
     ):
         payload = copy.deepcopy(valid)
         payload["items"][0]["data"][field] = value
@@ -1143,6 +1153,117 @@ def test_zotero_sanitizer_allowlists_parent_and_attachment_status_schemas():
             pass
         else:
             raise AssertionError(f"unsafe attachment status accepted: {unsafe_status}")
+
+
+def test_zotero_config_must_exactly_match_the_task5_authority():
+    valid_snapshot = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    registry = _canonical_tier1_registry()
+    boolean_weeks = copy.deepcopy(_zotero_config()["weekCollections"])
+    boolean_weeks[0]["week"] = True
+    mutations = (
+        ("baseUrl", "http://localhost:23119"),
+        ("apiVersion", "4"),
+        ("library", {"type": "user", "id": 1}),
+        ("library", {"type": "user", "id": False}),
+        ("rootCollection", {"key": "ZD6GBSYZ", "name": "REVIEWER_SENTINEL"}),
+        (
+            "weekCollections",
+            [{"week": 1, "key": "BADK1234", "name": "REVIEWER_SENTINEL"}],
+        ),
+        ("weekCollections", boolean_weeks),
+        ("expectedTier1Tags", ["Tier 1", "MS3-required", "REVIEWER_SENTINEL"]),
+    )
+    for field, value in mutations:
+        config = _zotero_config()
+        config[field] = value
+        try:
+            reconcile_registry(registry, valid_snapshot, config)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"non-canonical configuration accepted: {field}")
+
+    extra = _zotero_config()
+    extra["unexpected"] = "REVIEWER_SENTINEL"
+    try:
+        reconcile_registry(registry, valid_snapshot, extra)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("configuration with extra fields was accepted")
+
+
+def test_zotero_config_failure_cannot_echo_arbitrary_text_from_cli():
+    config = _zotero_config()
+    config["rootCollection"]["name"] = "REVIEWER_SENTINEL"
+    with tempfile.TemporaryDirectory() as directory:
+        config_path = Path(directory) / "zotero_config.json"
+        config_path.write_text(json.dumps(config), encoding="utf-8")
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            exit_code = zotero_bridge.main(
+                [
+                    "--config",
+                    str(config_path),
+                    "check",
+                    "--snapshot",
+                    str(ZOTERO_FIXTURES / "zotero_snapshot_valid.json"),
+                ]
+            )
+
+    assert exit_code == 2
+    assert stdout.getvalue() == ""
+    assert stderr.getvalue() == "api_unavailable\n"
+    assert "REVIEWER_SENTINEL" not in stdout.getvalue() + stderr.getvalue()
+
+
+def test_zotero_report_rejects_arbitrary_issue_code_and_message():
+    issues = (
+        {
+            "code": "arbitrary-safe-slug",
+            "message": "REVIEWER_SENTINEL",
+            "evidence_id": "engel-1977-biopsychosocial-model",
+        },
+        {
+            "code": "collection-config-error",
+            "message": "configured Zotero collection is missing: ZZZZ9999",
+            "evidence_id": "",
+        },
+    )
+    for issue in issues:
+        payload = {
+            "matched": [],
+            "matchedCount": 0,
+            "errors": [issue],
+            "warnings": [],
+        }
+        try:
+            sanitize_snapshot(payload)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"arbitrary report issue was accepted: {issue}")
+
+
+def test_zotero_normal_bibliographic_parent_keys_survive_type_whitelist():
+    snapshot = sanitize_snapshot(
+        load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    )
+    assert len(snapshot["items"]) == 17
+    assert {row["data"]["itemType"] for row in snapshot["items"]} == {
+        "journalArticle"
+    }
+    assert "KL5HP3MU" in {row["key"] for row in snapshot["items"]}
+
+
+def test_zotero_sanitizer_allows_legitimate_citation_urls_and_identifiers():
+    snapshot = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    snapshot["items"][0]["data"]["title"] = (
+        "Citation https://example.org/articles/123 with DOI 10.1002/example.1"
+    )
+    sanitized = sanitize_snapshot(snapshot)
+    assert sanitized["items"][0]["key"] == "KL5HP3MU"
 
 
 def test_zotero_identity_helpers_are_stable_for_api_shapes():

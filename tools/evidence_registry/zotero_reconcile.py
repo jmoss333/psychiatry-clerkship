@@ -80,11 +80,16 @@ _SENSITIVE_KEYS = {
 }
 _ABSOLUTE_WINDOWS_PATH = re.compile(r"^(?:[A-Za-z]:[\\/]|\\\\)")
 _EMBEDDED_WINDOWS_PATH = re.compile(r"[A-Za-z]:[\\/]")
+_UNC_PATH = re.compile(r"\\{2}[^\\/\s]+[\\/][^\s]+")
 _LOCAL_POSIX_PATH = re.compile(
-    r"/(?:Users|Volumes|private|tmp|var|home|etc)(?:/|$)",
+    r"/(?:Users|Volumes|Library|System|Applications|private|tmp|var|home|etc|usr|opt|bin|sbin|dev|proc|run|srv|root)(?:/|$)",
     re.IGNORECASE,
 )
-_RELATIVE_PATH = re.compile(r"(?:\.\.?/|storage/)", re.IGNORECASE)
+_GENERIC_POSIX_PATH = re.compile(
+    r"(?:^|[\s:=(\[{\"'])/[A-Za-z0-9._~-]+(?:/[^\s]*)?"
+)
+_RELATIVE_PATH = re.compile(r"(?:~/(?:[^\s]+)?|\.\.?/|storage/)", re.IGNORECASE)
+_REMOTE_URL = re.compile(r"https?://[^\s]+", re.IGNORECASE)
 _PMID_RE = re.compile(r"(?:^|\s)PMID\s*:\s*(\d+)(?:\s|$)", re.IGNORECASE)
 _YEAR_RE = re.compile(r"(?<!\d)((?:1[5-9]|20|21)\d{2})(?!\d)")
 _TIMESTAMP_RE = re.compile(
@@ -92,6 +97,16 @@ _TIMESTAMP_RE = re.compile(
 )
 _STABLE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 _ISSUE_CODE_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+_ISSUE_CODES = {
+    "collection-config-error",
+    "week-collection-advisory",
+    "stored-key-missing",
+    "ambiguous",
+    "not-found",
+    "identity-conflict",
+    "missing-tier1-tag",
+}
+_IDENTITY_FIELDS = {"DOI", "PMID", "title", "first author", "year", "journal"}
 _ATTACHMENT_MODES = {"imported_file", "linked_file"}
 _ATTACHMENT_STATES = {
     None,
@@ -119,6 +134,85 @@ _PARENT_DATA_FIELDS = {
     "archiveLocation",
     "tags",
     "collections",
+}
+_BIBLIOGRAPHIC_ITEM_TYPES = {
+    value.casefold()
+    for value in (
+        "artwork",
+        "audioRecording",
+        "bill",
+        "blogPost",
+        "book",
+        "bookSection",
+        "case",
+        "computerProgram",
+        "conferencePaper",
+        "dataset",
+        "dictionaryEntry",
+        "document",
+        "email",
+        "encyclopediaArticle",
+        "film",
+        "forumPost",
+        "hearing",
+        "instantMessage",
+        "interview",
+        "journalArticle",
+        "letter",
+        "magazineArticle",
+        "manuscript",
+        "map",
+        "newspaperArticle",
+        "patent",
+        "podcast",
+        "preprint",
+        "presentation",
+        "radioBroadcast",
+        "report",
+        "statute",
+        "thesis",
+        "tvBroadcast",
+        "videoRecording",
+        "webpage",
+    )
+}
+_TASK5_CONFIG = {
+    "baseUrl": "http://127.0.0.1:23119",
+    "apiVersion": "3",
+    "library": {"type": "user", "id": 0},
+    "rootCollection": {
+        "key": "ZD6GBSYZ",
+        "name": "Psychiatry Clerkship Library",
+    },
+    "weekCollections": [
+        {"week": 1, "key": "5KLVFZDV", "name": "Week 1 - Foundations"},
+        {
+            "week": 2,
+            "key": "DS6JSHHX",
+            "name": "Week 2 - Mood Psychosis Pharm",
+        },
+        {
+            "week": 3,
+            "key": "HIKYWT9S",
+            "name": "Week 3 - Psychotherapy Personality",
+        },
+        {
+            "week": 4,
+            "key": "K78U3AD4",
+            "name": "Week 4 - Family Systems EE",
+        },
+        {
+            "week": 5,
+            "key": "F7SMP42D",
+            "name": "Week 5 - Acute Emergency",
+        },
+        {
+            "week": 6,
+            "key": "LUUFRIE9",
+            "name": "Week 6 - Integration Exam",
+        },
+    ],
+    "expectedTier1Tags": ["Tier 1", "MS3-required", "landmark"],
 }
 
 
@@ -275,7 +369,7 @@ def snapshot_library(config: dict) -> dict:
     items = [
         item
         for item in raw_items
-        if _item_data(item).get("itemType") not in {"attachment", "note"}
+        if _is_bibliographic_item_type(_item_data(item).get("itemType"))
     ]
     snapshot = {
         "snapshotVersion": 1,
@@ -291,22 +385,30 @@ def _normalized_key(value: object) -> str:
 
 
 def _unsafe_string(value: str) -> bool:
+    if len(value) > 16_384:
+        return True
     decoded = value
-    for _ in range(3):
+    stable = False
+    for _ in range(8):
         unquoted = urllib.parse.unquote(decoded)
         if unquoted == decoded:
+            stable = True
             break
         decoded = unquoted
+    if not stable and urllib.parse.unquote(decoded) != decoded:
+        return True
     stripped = decoded.strip()
+    non_remote = _REMOTE_URL.sub("", stripped)
     lowered = stripped.casefold()
     return bool(
         "file:" in lowered
         or "zotero://open-pdf" in lowered
-        or stripped.startswith("~/")
-        or _ABSOLUTE_WINDOWS_PATH.match(stripped)
-        or _EMBEDDED_WINDOWS_PATH.search(stripped)
         or _LOCAL_POSIX_PATH.search(stripped)
-        or _RELATIVE_PATH.search(stripped)
+        or _ABSOLUTE_WINDOWS_PATH.match(non_remote)
+        or _EMBEDDED_WINDOWS_PATH.search(non_remote)
+        or _UNC_PATH.search(non_remote)
+        or _GENERIC_POSIX_PATH.search(non_remote)
+        or _RELATIVE_PATH.search(non_remote)
     )
 
 
@@ -351,6 +453,13 @@ def _safe_string(value: Any, context: str) -> str:
     if not isinstance(value, str):
         raise ValueError(f"{context} must be a string")
     return value
+
+
+def _is_bibliographic_item_type(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and value.casefold() in _BIBLIOGRAPHIC_ITEM_TYPES
+    )
 
 
 def _safe_item_key(value: Any, context: str) -> str:
@@ -442,7 +551,7 @@ def _sanitize_parent_item(value: dict) -> dict:
         context="parent bibliographic data",
     )
     item_type = _safe_string(data["itemType"], "itemType")
-    if not item_type or item_type in {"attachment", "note"}:
+    if not _is_bibliographic_item_type(item_type):
         raise ValueError("sanitized snapshots may contain bibliographic parents only")
     creators = data["creators"]
     tags = data["tags"]
@@ -573,16 +682,75 @@ def _sanitize_issue(value: dict) -> dict:
         context="report issue",
     )
     code = _safe_string(value["code"], "issue code")
+    message = _safe_string(value["message"], "issue message")
     evidence_id = _safe_string(value["evidence_id"], "issue evidence id")
-    if _ISSUE_CODE_RE.fullmatch(code) is None:
+    if _ISSUE_CODE_RE.fullmatch(code) is None or code not in _ISSUE_CODES:
         raise ValueError("report issue code is invalid")
     if evidence_id and _STABLE_ID_RE.fullmatch(evidence_id) is None:
         raise ValueError("report issue evidence id is invalid")
+    if not _safe_issue_message(code, message, evidence_id):
+        raise ValueError("report issue message is invalid")
     return {
         "code": code,
-        "message": _safe_string(value["message"], "issue message"),
+        "message": message,
         "evidence_id": evidence_id,
     }
+
+
+def _safe_key_suffix(message: str, prefix: str) -> bool:
+    return message.startswith(prefix) and re.fullmatch(
+        _ITEM_KEY_RE, message[len(prefix):]
+    ) is not None
+
+
+def _safe_issue_message(code: str, message: str, evidence_id: str) -> bool:
+    if code == "collection-config-error":
+        collection_keys = {
+            _TASK5_CONFIG["rootCollection"]["key"],
+            *(row["key"] for row in _TASK5_CONFIG["weekCollections"]),
+        }
+        return not evidence_id and any(
+            message == f"{prefix}{key}"
+            for prefix in (
+                "configured Zotero collection is missing: ",
+                "configured Zotero collection name mismatch: ",
+            )
+            for key in collection_keys
+        )
+    if code == "week-collection-advisory":
+        return not evidence_id and message in {
+            "Zotero week collection is empty; "
+            f"registry mapping remains authoritative: {row['key']}"
+            for row in _TASK5_CONFIG["weekCollections"]
+        }
+    if not evidence_id:
+        return False
+    if code == "stored-key-missing":
+        return _safe_key_suffix(message, "stored Zotero parent key is absent: ")
+    if code == "ambiguous":
+        return message in {
+            f"multiple Zotero candidates at {method}; no identity was guessed"
+            for method in ("doi", "pmid", "title-author-year")
+        }
+    if code == "not-found":
+        return message == "no unique Zotero identity candidate"
+    if code == "identity-conflict":
+        prefix = "Zotero parent identity differs in: "
+        if not message.startswith(prefix):
+            return False
+        fields = message[len(prefix):].split(", ")
+        return bool(fields) and len(fields) == len(set(fields)) and set(fields) <= _IDENTITY_FIELDS
+    if code == "missing-tier1-tag":
+        prefix = "Zotero parent is missing expected tags: "
+        if not message.startswith(prefix):
+            return False
+        tags = message[len(prefix):].split(", ")
+        return (
+            bool(tags)
+            and len(tags) == len(set(tags))
+            and set(tags) <= set(_TASK5_CONFIG["expectedTier1Tags"])
+        )
+    return False
 
 
 def _sanitize_match(value: dict) -> dict:
@@ -812,23 +980,23 @@ def _collection_name(collection: dict) -> str:
 
 
 def _validate_config(config: dict) -> None:
-    if not isinstance(config, dict):
-        raise ValueError("Zotero configuration must be an object")
-    _validate_base_url(config.get("baseUrl", ""))
-    if str(config.get("apiVersion")) != API_VERSION:
-        raise ValueError("Zotero API version must be 3")
-    library = config.get("library")
-    if library != {"type": "user", "id": 0}:
-        raise ValueError("only Zotero user library 0 is supported")
-    if not isinstance(config.get("rootCollection"), dict):
-        raise ValueError("rootCollection configuration is required")
-    if not isinstance(config.get("weekCollections"), list):
-        raise ValueError("weekCollections configuration is required")
-    expected_tags = config.get("expectedTier1Tags")
-    if not isinstance(expected_tags, list) or not all(
-        isinstance(tag, str) and tag for tag in expected_tags
-    ):
-        raise ValueError("expectedTier1Tags must be a list of nonempty strings")
+    if not _exact_value(config, _TASK5_CONFIG):
+        raise ValueError("Zotero configuration must exactly match the Task 5 authority")
+
+
+def _exact_value(actual: Any, expected: Any) -> bool:
+    if type(actual) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return set(actual) == set(expected) and all(
+            _exact_value(actual[key], expected[key]) for key in expected
+        )
+    if isinstance(expected, list):
+        return len(actual) == len(expected) and all(
+            _exact_value(actual_row, expected_row)
+            for actual_row, expected_row in zip(actual, expected)
+        )
+    return actual == expected
 
 
 def _collection_findings(
