@@ -110,7 +110,16 @@
      "href": "?page=collateral_workflow.md"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "neurocog"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA3",
+   "EPA10"
+  ]
  },
  "agitation.md": {
   "read": 4,
@@ -230,7 +239,15 @@
     }
    ]
   },
-  "familyOverlay": "agitation_family_triggers_and_deescalation_context"
+  "familyOverlay": "agitation_family_triggers_and_deescalation_context",
+  "shelfBlueprint": [
+   "safety"
+  ],
+  "epa": [
+   "EPA2",
+   "EPA4",
+   "EPA10"
+  ]
  },
  "catatonia.md": {
   "read": 3,
@@ -316,7 +333,15 @@
      "href": "?tool=diagnostic-reasoning.html&case=catatonia_vs_refusal_001"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "neurocog"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA10"
+  ]
  },
  "t_psychosis.md": {
   "read": 5,
@@ -425,7 +450,15 @@
      "href": "?page=collateral_workflow.md"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "psychosis"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA4"
+  ]
  },
  "t_mood.md": {
   "read": 5,
@@ -529,7 +562,15 @@
     }
    ]
   },
-  "familyOverlay": "mood_mania_family_collateral_and_safety"
+  "familyOverlay": "mood_mania_family_collateral_and_safety",
+  "shelfBlueprint": [
+   "mood"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA4"
+  ]
  },
  "t_anxiety.md": {
   "read": 4,
@@ -601,7 +642,14 @@
      "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "anxiety"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2"
+  ]
  },
  "t_sud.md": {
   "read": 4,
@@ -713,7 +761,15 @@
     }
    ]
   },
-  "familyOverlay": "sud_family_discharge_supports_and_boundaries"
+  "familyOverlay": "sud_family_discharge_supports_and_boundaries",
+  "shelfBlueprint": [
+   "substance"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA10"
+  ]
  },
  "t_personality.md": {
   "read": 4,
@@ -807,7 +863,14 @@
     }
    ]
   },
-  "familyOverlay": "personality_family_boundaries_and_team_consistency"
+  "familyOverlay": "personality_family_boundaries_and_team_consistency",
+  "shelfBlueprint": [
+   "personality"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2"
+  ]
  },
  "t_neurodev.md": {
   "read": 5,
@@ -911,7 +974,14 @@
     }
    ]
   },
-  "familyOverlay": "neurodevelopmental_caregiver_baseline_and_adaptations"
+  "familyOverlay": "neurodevelopmental_caregiver_baseline_and_adaptations",
+  "shelfBlueprint": [
+   "childdev"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2"
+  ]
  },
  "t_eating.md": {
   "read": 5,
@@ -986,7 +1056,15 @@
      "href": "?tool=decision-aids.html"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "otherdx"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA10"
+  ]
  },
  "t_adjustment.md": {
   "read": 4,
@@ -1061,7 +1139,14 @@
      "href": "?tool=cssrs.html"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "otherdx"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2"
+  ]
  },
  "t_dissociative.md": {
   "read": 4,
@@ -1138,7 +1223,14 @@
      "href": "?tool=mse.html"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "otherdx"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2"
+  ]
  },
  "t_impulse.md": {
   "read": 5,
@@ -1216,7 +1308,14 @@
      "href": "?tool=violence.html"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "childdev"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2"
+  ]
  },
  "t_neurocog.md": {
   "read": 6,
@@ -1311,7 +1410,15 @@
     }
    ]
   },
-  "familyOverlay": "neurocognitive_caregiver_safety_and_baseline"
+  "familyOverlay": "neurocognitive_caregiver_safety_and_baseline",
+  "shelfBlueprint": [
+   "neurocog"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA3"
+  ]
  },
  "t_sexual.md": {
   "read": 5,
@@ -1381,7 +1488,14 @@
      "href": "?page=psychopharm_primer.md"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "otherdx"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2"
+  ]
  },
  "t_sleep.md": {
   "read": 5,
@@ -1453,7 +1567,14 @@
      "href": "?page=psychopharm_primer.md"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "otherdx"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2"
+  ]
  },
  "t_somatic.md": {
   "read": 5,
@@ -1527,7 +1648,14 @@
      "href": "?tool=mse.html"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "otherdx"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2"
+  ]
  },
  "ethics_legal.md": {
   "read": 5,
@@ -1622,7 +1750,14 @@
      "href": "?tool=family-systems.html&scenario=culture_interpreter_family_001"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "ethics"
+  ],
+  "epa": [
+   "EPA2",
+   "EPA11"
+  ]
  },
  "cultural_psychiatry.md": {
   "read": 4,
@@ -1714,7 +1849,14 @@
      "href": "?tool=family-systems.html&scenario=culture_interpreter_family_001"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "relational"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA9"
+  ]
  },
  "ect_neuromodulation.md": {
   "read": 5,
@@ -1790,7 +1932,15 @@
      "href": "?page=t_mood.md"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "mood",
+   "pharm"
+  ],
+  "epa": [
+   "EPA2",
+   "EPA4"
+  ]
  },
  "t_geri.md": {
   "read": 5,
@@ -1869,7 +2019,15 @@
      "href": "?page=delirium.md"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "neurocog"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA3"
+  ]
  },
  "motivational_interviewing.md": {
   "read": 4,
@@ -1942,7 +2100,13 @@
      "href": "?page=t_sud.md"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "relational"
+  ],
+  "epa": [
+   "EPA9"
+  ]
  },
  "pg_suicide.md": {
   "read": 4,
@@ -2046,7 +2210,15 @@
      "href": "?page=collateral_workflow.md"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "safety"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA10"
+  ]
  },
  "suicide.md": {
   "read": 5,
@@ -2130,7 +2302,15 @@
      "href": "?tool=family-systems.html&scenario=discharge_barrier_map_001"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "safety"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA10"
+  ]
  },
  "violence.md": {
   "read": 5,
@@ -2211,7 +2391,15 @@
      "href": "?tool=family-systems.html&scenario=collateral_baseline_safety_001"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "safety"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA10"
+  ]
  },
  "t_perinatal.md": {
   "read": 6,
@@ -2293,7 +2481,15 @@
      "href": "?tool=communication-practice.html&case=suicide_direct_question_001"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "otherdx"
+  ],
+  "epa": [
+   "EPA1",
+   "EPA2",
+   "EPA10"
+  ]
  },
  "nutrition_metabolic.md": {
   "read": 5,
@@ -2372,7 +2568,14 @@
      "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "otherdx"
+  ],
+  "epa": [
+   "EPA2",
+   "EPA4"
+  ]
  },
  "exp_consult.md": {
   "read": 5,
@@ -2449,7 +2652,16 @@
      "href": "?tool=withdrawal.html"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "neurocog",
+   "ethics"
+  ],
+  "epa": [
+   "EPA2",
+   "EPA8",
+   "EPA11"
+  ]
  },
  "psychopharm_primer.md": {
   "read": 6,
@@ -2529,7 +2741,14 @@
      "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "pharm"
+  ],
+  "epa": [
+   "EPA2",
+   "EPA4"
+  ]
  },
  "ddx.md": {
   "read": 4,
@@ -2598,7 +2817,10 @@
      "href": "?tool=diagnostic-reasoning.html"
     }
    ]
-  }
+  },
+  "epa": [
+   "EPA2"
+  ]
  },
  "pg_interview.md": {
   "read": 5,
@@ -2680,7 +2902,10 @@
      "href": "?page=collateral_workflow.md"
     }
    ]
-  }
+  },
+  "epa": [
+   "EPA1"
+  ]
  },
  "pg_formulation.md": {
   "read": 4,
@@ -2747,7 +2972,10 @@
      "href": "?tool=diagnostic-reasoning.html&case=trauma_bpd_mood_001"
     }
    ]
-  }
+  },
+  "epa": [
+   "EPA2"
+  ]
  },
  "doc_oral.md": {
   "read": 5,
@@ -2830,7 +3058,14 @@
      "href": "?tool=oral.html"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "relational"
+  ],
+  "epa": [
+   "EPA5",
+   "EPA6"
+  ]
  },
  "exp_tx.md": {
   "read": 4,
@@ -2904,7 +3139,11 @@
      "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
     }
    ]
-  }
+  },
+  "epa": [
+   "EPA2",
+   "EPA4"
+  ]
  },
  "exp_family.md": {
   "read": 5,
@@ -2995,7 +3234,13 @@
      "href": "?page=collateral_workflow.md"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "relational"
+  ],
+  "epa": [
+   "EPA9"
+  ]
  },
  "family_modalities.md": {
   "read": 4,
@@ -3070,7 +3315,13 @@
      "href": "?tool=family-systems.html"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "relational"
+  ],
+  "epa": [
+   "EPA9"
+  ]
  },
  "family_playbook.md": {
   "read": 4,
@@ -3153,7 +3404,13 @@
      "href": "?page=collateral_workflow.md"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "relational"
+  ],
+  "epa": [
+   "EPA9"
+  ]
  },
  "brief_psychotherapy.md": {
   "read": 4,
@@ -3224,7 +3481,13 @@
      "href": "?tool=communication-practice.html&case=rupture_limit_setting_001"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "relational"
+  ],
+  "epa": [
+   "EPA9"
+  ]
  },
  "evidence_inpatient.md": {
   "read": 8,
@@ -3304,7 +3567,10 @@
      "href": "?tool=communication-practice.html&case=family_conflict_discharge_001"
     }
    ]
-  }
+  },
+  "epa": [
+   "EPA7"
+  ]
  },
  "protocol_library.md": {
   "read": 3,
@@ -3354,7 +3620,15 @@
      "href": "?tool=decision-aids.html"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "substance",
+   "pharm"
+  ],
+  "epa": [
+   "EPA4",
+   "EPA10"
+  ]
  },
  "welcome.md": {
   "read": 3,
@@ -3516,7 +3790,10 @@
      "href": "?tool=active-recall.html"
     }
    ]
-  }
+  },
+  "epa": [
+   "EPA7"
+  ]
  },
  "week1.md": {
   "read": 4,
@@ -3934,7 +4211,10 @@
      "href": "?tool=review.html"
     }
    ]
-  }
+  },
+  "epa": [
+   "EPA7"
+  ]
  },
  "osce.md": {
   "read": 4,
@@ -4167,7 +4447,10 @@
      "href": "?tool=family-systems.html"
     }
    ]
-  }
+  },
+  "epa": [
+   "EPA7"
+  ]
  },
  "podcast_library.md": {
   "read": 8,
@@ -4219,7 +4502,10 @@
      "href": "?tool=active-recall.html"
     }
    ]
-  }
+  },
+  "epa": [
+   "EPA7"
+  ]
  },
  "landmark_trials.md": {
   "read": 6,
@@ -4268,7 +4554,13 @@
      "href": "?tool=question-bank-practice.html"
     }
    ]
-  }
+  },
+  "shelfBlueprint": [
+   "pharm"
+  ],
+  "epa": [
+   "EPA7"
+  ]
  },
  "rounds_questions.md": {
   "read": 8,
@@ -4316,7 +4608,10 @@
      "href": "?tool=question-bank-practice.html"
     }
    ]
-  }
+  },
+  "epa": [
+   "EPA6"
+  ]
  },
  "omm_resources.md": {
   "read": 3,
@@ -4878,7 +5173,11 @@
      "href": "?tool=oral.html"
     }
    ]
-  }
+  },
+  "epa": [
+   "EPA8",
+   "EPA9"
+  ]
  },
  "toxidromes.md": {
   "read": 5,
@@ -4910,7 +5209,16 @@
    "status": "reviewed",
    "lastReviewed": "2026-07-10",
    "reviewer": "Joshua Moss, MD"
-  }
+  },
+  "shelfBlueprint": [
+   "neurocog",
+   "pharm"
+  ],
+  "epa": [
+   "EPA2",
+   "EPA3",
+   "EPA10"
+  ]
  },
  "med_monitoring.md": {
   "read": 4,
@@ -4931,7 +5239,14 @@
    "status": "reviewed",
    "lastReviewed": "2026-07-10",
    "reviewer": "Joshua Moss, MD"
-  }
+  },
+  "shelfBlueprint": [
+   "pharm"
+  ],
+  "epa": [
+   "EPA3",
+   "EPA4"
+  ]
  },
  "psychotherapy.md": {
   "read": 4,
@@ -4952,7 +5267,10 @@
    "status": "reviewed",
    "lastReviewed": "2026-07-09",
    "reviewer": "Joshua Moss, MD"
-  }
+  },
+  "epa": [
+   "EPA2"
+  ]
  },
  "case_formulation.md": {
   "read": 4,
@@ -4974,7 +5292,10 @@
    "status": "reviewed",
    "lastReviewed": "2026-07-09",
    "reviewer": "Joshua Moss, MD"
-  }
+  },
+  "epa": [
+   "EPA2"
+  ]
  },
  "medical_workup.md": {
   "read": 4,
@@ -5005,7 +5326,14 @@
    "status": "reviewed",
    "lastReviewed": "2026-07-10",
    "reviewer": "Joshua Moss, MD"
-  }
+  },
+  "shelfBlueprint": [
+   "neurocog"
+  ],
+  "epa": [
+   "EPA2",
+   "EPA3"
+  ]
  },
  "anki.md": {
   "read": 2,
