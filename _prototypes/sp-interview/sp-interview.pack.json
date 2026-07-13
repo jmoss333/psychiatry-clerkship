@@ -15,7 +15,7 @@
     "publishTarget": "08_Cases_and_Simulation/sp-interview.html + sp-interview.pack.json (after attestation)"
   },
   "engine": {
-    "modelPinned": "UNSET — assign at M1",
+    "modelPinned": "claude-haiku-4-5-20251001",
     "maxTurns": 40,
     "rapportStart": 0,
     "rapportMin": -3,
