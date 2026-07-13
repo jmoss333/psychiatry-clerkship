@@ -319,10 +319,11 @@
       ],
       "properties": {
         "job": {
-          "type": "string"
+          "const": "guideline-surveillance"
         },
         "type": {
-          "type": "string"
+          "type": "string",
+          "enum": ["html", "pdf", "html+pdf", "login"]
         },
         "modality": {
           "type": "string",
@@ -330,10 +331,10 @@
         },
         "severity_default": {
           "type": "string",
-          "enum": ["P0", "P1", "P2", "P3"]
+          "enum": ["P0", "P1", "P2"]
         },
         "cadence": {
-          "type": "string"
+          "const": "monthly"
         },
         "watch_for": {
           "$ref": "#/definitions/stringArray"
@@ -362,7 +363,8 @@
       "required": ["proxy", "retry_before_flag", "snapshot", "respect_robots"],
       "properties": {
         "proxy": {
-          "type": "string"
+          "type": "string",
+          "enum": ["datacenter", "residential"]
         },
         "retry_before_flag": {
           "type": "integer",
@@ -421,20 +423,20 @@
       ],
       "properties": {
         "job": {
-          "type": "string"
+          "const": "link-source-monitor"
         },
         "cadence": {
-          "type": "string"
+          "const": "weekly"
         },
         "engine": {
-          "type": "string"
+          "const": "github_action_lychee"
         },
         "treat_as_finding": {
           "$ref": "#/definitions/findingTreatments"
         },
         "severity_default": {
           "type": "string",
-          "enum": ["P0", "P1", "P2", "P3"]
+          "enum": ["P0", "P1", "P2"]
         },
         "high_traffic_paths_P0": {
           "$ref": "#/definitions/stringArray"
@@ -468,13 +470,13 @@
       ],
       "properties": {
         "job": {
-          "type": "string"
+          "const": "resource-intake"
         },
         "cadence": {
-          "type": "string"
+          "const": "on_demand"
         },
         "engine": {
-          "type": "string"
+          "const": "apify_website_content_crawler"
         },
         "inclusion": {
           "$ref": "#/definitions/resourceInclusion"
@@ -485,7 +487,7 @@
         },
         "severity_default": {
           "type": "string",
-          "enum": ["P0", "P1", "P2", "P3"]
+          "enum": ["P0", "P1", "P2"]
         },
         "notes": {
           "type": "string"

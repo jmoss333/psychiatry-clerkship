@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any, Iterator
+from urllib.parse import urlsplit
 
 
 SCHEMA_VERSION = 2
@@ -56,6 +57,20 @@ SURVEILLANCE_SOURCE_IDS = {
     "spravato-rems",
     "uspstf-mental-health",
 }
+SURVEILLANCE_SEVERITIES = {"P0", "P1", "P2"}
+SURVEILLANCE_SOURCE_TYPES = {"html", "pdf", "html+pdf", "login"}
+SURVEILLANCE_MODALITIES = {"full_text", "signal_only"}
+SURVEILLANCE_SOURCE_REQUIRED_FIELDS = {
+    "job",
+    "type",
+    "modality",
+    "severity_default",
+    "cadence",
+    "watch_for",
+    "affects_hint",
+    "verified",
+}
+SURVEILLANCE_SOURCE_OPTIONAL_FIELDS = {"notes", "legal_note", "link_check"}
 FORBIDDEN_TRACKED_KEYS = {
     "attachmentKey",
     "attachmentPath",
@@ -504,6 +519,379 @@ def _selection_root(selection: str) -> str:
     return "14" if selection in {"14a", "14b"} else selection
 
 
+def _validate_exact_object(
+    value: Any,
+    path: str,
+    required: set[str],
+    optional: set[str],
+    issues: list[ValidationIssue],
+) -> dict:
+    if not isinstance(value, dict):
+        issues.append(ValidationIssue(path, "must be an object"))
+        return {}
+    for field in sorted(required - set(value)):
+        issues.append(ValidationIssue(path, f"missing required field: {field}"))
+    for field in sorted(set(value) - required - optional):
+        issues.append(ValidationIssue(path, f"unexpected field: {field}"))
+    return value
+
+
+def _validate_string_list(
+    value: Any, path: str, label: str, issues: list[ValidationIssue]
+) -> None:
+    if not isinstance(value, list):
+        issues.append(ValidationIssue(path, f"{label} must be a list"))
+        return
+    if any(not _nonempty_text(item) for item in value):
+        issues.append(
+            ValidationIssue(path, f"{label} entries must be non-empty strings")
+        )
+
+
+def _validate_severity(
+    value: Any, path: str, issues: list[ValidationIssue]
+) -> None:
+    if not isinstance(value, str) or value not in SURVEILLANCE_SEVERITIES:
+        issues.append(
+            ValidationIssue(
+                path,
+                f"invalid severity_default: {value!r}; expected P0, P1, or P2",
+            )
+        )
+
+
+def _validate_surveillance_source(
+    source: dict, position: int, issues: list[ValidationIssue]
+) -> None:
+    source_path = f"sources[{position}]"
+    surveillance_path = f"{source_path}.surveillance"
+    config = _validate_exact_object(
+        source.get("surveillance"),
+        surveillance_path,
+        SURVEILLANCE_SOURCE_REQUIRED_FIELDS,
+        SURVEILLANCE_SOURCE_OPTIONAL_FIELDS,
+        issues,
+    )
+
+    source_id = source.get("id")
+    if not isinstance(source_id, str) or source_id not in SURVEILLANCE_SOURCE_IDS:
+        issues.append(
+            ValidationIssue(
+                f"{source_path}.id",
+                f"unexpected surveillance source id: {source_id!r}",
+            )
+        )
+    citation = source.get("citation")
+    citation = citation if isinstance(citation, dict) else {}
+    if not _nonempty_text(citation.get("title")):
+        issues.append(
+            ValidationIssue(
+                f"{source_path}.citation.title",
+                "monitoring source name must be a non-empty string",
+            )
+        )
+    url = citation.get("url")
+    parsed_url = urlsplit(url) if isinstance(url, str) else None
+    if (
+        parsed_url is None
+        or parsed_url.scheme != "https"
+        or not parsed_url.netloc
+    ):
+        issues.append(
+            ValidationIssue(
+                f"{source_path}.citation.url",
+                "monitoring URL must be an absolute HTTPS URL",
+            )
+        )
+
+    if config.get("job") != "guideline-surveillance":
+        issues.append(
+            ValidationIssue(
+                f"{surveillance_path}.job",
+                "job must equal guideline-surveillance",
+            )
+        )
+    if not isinstance(config.get("type"), str) or (
+        config.get("type") not in SURVEILLANCE_SOURCE_TYPES
+    ):
+        issues.append(
+            ValidationIssue(
+                f"{surveillance_path}.type",
+                f"invalid monitored source type: {config.get('type')!r}",
+            )
+        )
+    if not isinstance(config.get("modality"), str) or (
+        config.get("modality") not in SURVEILLANCE_MODALITIES
+    ):
+        issues.append(
+            ValidationIssue(
+                f"{surveillance_path}.modality",
+                f"invalid modality: {config.get('modality')!r}",
+            )
+        )
+    _validate_severity(
+        config.get("severity_default"),
+        f"{surveillance_path}.severity_default",
+        issues,
+    )
+    if config.get("cadence") != "monthly":
+        issues.append(
+            ValidationIssue(
+                f"{surveillance_path}.cadence",
+                "cadence must equal monthly",
+            )
+        )
+    _validate_string_list(
+        config.get("watch_for"),
+        f"{surveillance_path}.watch_for",
+        "watch_for",
+        issues,
+    )
+    _validate_string_list(
+        config.get("affects_hint"),
+        f"{surveillance_path}.affects_hint",
+        "affects_hint",
+        issues,
+    )
+    if type(config.get("verified")) is not bool:
+        issues.append(
+            ValidationIssue(
+                f"{surveillance_path}.verified",
+                "verified must be a boolean",
+            )
+        )
+    for field in ("notes", "legal_note"):
+        if field in config and not isinstance(config[field], str):
+            issues.append(
+                ValidationIssue(
+                    f"{surveillance_path}.{field}", f"{field} must be a string"
+                )
+            )
+    if "link_check" in config and config["link_check"] != "browser_required":
+        issues.append(
+            ValidationIssue(
+                f"{surveillance_path}.link_check",
+                "link_check must equal browser_required",
+            )
+        )
+
+
+def validate_surveillance_contract(registry: dict) -> list[ValidationIssue]:
+    """Validate the complete dependency-free surveillance authority contract."""
+
+    issues: list[ValidationIssue] = []
+    settings = _validate_exact_object(
+        registry.get("surveillance") if isinstance(registry, dict) else None,
+        "surveillance",
+        {"version", "updated", "owner", "defaults", "link_monitor", "resource_intake"},
+        set(),
+        issues,
+    )
+    if settings.get("version") != 1 or type(settings.get("version")) is not int:
+        issues.append(ValidationIssue("surveillance.version", "version must equal 1"))
+    if not _valid_iso_date(settings.get("updated")):
+        issues.append(
+            ValidationIssue("surveillance.updated", "updated must be an ISO date")
+        )
+    if not _nonempty_text(settings.get("owner")):
+        issues.append(
+            ValidationIssue("surveillance.owner", "owner must be a non-empty string")
+        )
+
+    defaults = _validate_exact_object(
+        settings.get("defaults"),
+        "surveillance.defaults",
+        {"proxy", "retry_before_flag", "snapshot", "respect_robots"},
+        set(),
+        issues,
+    )
+    if not isinstance(defaults.get("proxy"), str) or (
+        defaults.get("proxy") not in {"datacenter", "residential"}
+    ):
+        issues.append(
+            ValidationIssue(
+                "surveillance.defaults.proxy",
+                f"invalid proxy: {defaults.get('proxy')!r}",
+            )
+        )
+    retry_count = defaults.get("retry_before_flag")
+    if type(retry_count) is not int or retry_count < 0:
+        issues.append(
+            ValidationIssue(
+                "surveillance.defaults.retry_before_flag",
+                "retry_before_flag must be a non-negative integer",
+            )
+        )
+    for field in ("snapshot", "respect_robots"):
+        if type(defaults.get(field)) is not bool:
+            issues.append(
+                ValidationIssue(
+                    f"surveillance.defaults.{field}", f"{field} must be a boolean"
+                )
+            )
+
+    link_monitor = _validate_exact_object(
+        settings.get("link_monitor"),
+        "surveillance.link_monitor",
+        {
+            "job",
+            "cadence",
+            "engine",
+            "treat_as_finding",
+            "severity_default",
+            "high_traffic_paths_P0",
+        },
+        set(),
+        issues,
+    )
+    exact_link_values = {
+        "job": "link-source-monitor",
+        "cadence": "weekly",
+        "engine": "github_action_lychee",
+    }
+    for field, expected in exact_link_values.items():
+        if link_monitor.get(field) != expected:
+            issues.append(
+                ValidationIssue(
+                    f"surveillance.link_monitor.{field}",
+                    f"{field} must equal {expected}",
+                )
+            )
+    _validate_severity(
+        link_monitor.get("severity_default"),
+        "surveillance.link_monitor.severity_default",
+        issues,
+    )
+    _validate_string_list(
+        link_monitor.get("high_traffic_paths_P0"),
+        "surveillance.link_monitor.high_traffic_paths_P0",
+        "high_traffic_paths_P0",
+        issues,
+    )
+    treatments = _validate_exact_object(
+        link_monitor.get("treat_as_finding"),
+        "surveillance.link_monitor.treat_as_finding",
+        {
+            "hard_404",
+            "soft_404",
+            "permanent_redirect_301",
+            "temporary_redirect_302",
+            "rate_limited_429",
+            "tls_error",
+        },
+        set(),
+        issues,
+    )
+    for field in (
+        "hard_404",
+        "soft_404",
+        "permanent_redirect_301",
+        "temporary_redirect_302",
+        "rate_limited_429",
+        "tls_error",
+    ):
+        if type(treatments.get(field)) is not bool:
+            issues.append(
+                ValidationIssue(
+                    f"surveillance.link_monitor.treat_as_finding.{field}",
+                    f"{field} must be a boolean",
+                )
+            )
+
+    resource_intake = _validate_exact_object(
+        settings.get("resource_intake"),
+        "surveillance.resource_intake",
+        {
+            "job",
+            "cadence",
+            "engine",
+            "inclusion",
+            "max_candidates_per_run",
+            "severity_default",
+            "notes",
+        },
+        set(),
+        issues,
+    )
+    exact_resource_values = {
+        "job": "resource-intake",
+        "cadence": "on_demand",
+        "engine": "apify_website_content_crawler",
+    }
+    for field, expected in exact_resource_values.items():
+        if resource_intake.get(field) != expected:
+            issues.append(
+                ValidationIssue(
+                    f"surveillance.resource_intake.{field}",
+                    f"{field} must equal {expected}",
+                )
+            )
+    _validate_severity(
+        resource_intake.get("severity_default"),
+        "surveillance.resource_intake.severity_default",
+        issues,
+    )
+    max_candidates = resource_intake.get("max_candidates_per_run")
+    if type(max_candidates) is not int or max_candidates < 1:
+        issues.append(
+            ValidationIssue(
+                "surveillance.resource_intake.max_candidates_per_run",
+                "max_candidates_per_run must be a positive integer",
+            )
+        )
+    if not isinstance(resource_intake.get("notes"), str):
+        issues.append(
+            ValidationIssue(
+                "surveillance.resource_intake.notes", "notes must be a string"
+            )
+        )
+    inclusion = _validate_exact_object(
+        resource_intake.get("inclusion"),
+        "surveillance.resource_intake.inclusion",
+        {"require_domains", "exclude_if_present_in"},
+        set(),
+        issues,
+    )
+    _validate_string_list(
+        inclusion.get("require_domains"),
+        "surveillance.resource_intake.inclusion.require_domains",
+        "require_domains",
+        issues,
+    )
+    if not _nonempty_text(inclusion.get("exclude_if_present_in")):
+        issues.append(
+            ValidationIssue(
+                "surveillance.resource_intake.inclusion.exclude_if_present_in",
+                "exclude_if_present_in must be a non-empty string",
+            )
+        )
+
+    sources = registry.get("sources") if isinstance(registry, dict) else None
+    surveillance_sources: list[tuple[int, dict]] = []
+    if isinstance(sources, list):
+        surveillance_sources = [
+            (position, source)
+            for position, source in enumerate(sources)
+            if isinstance(source, dict) and "surveillance" in source
+        ]
+    source_ids = [source.get("id") for _, source in surveillance_sources]
+    if (
+        len(source_ids) != len(SURVEILLANCE_SOURCE_IDS)
+        or not all(isinstance(source_id, str) for source_id in source_ids)
+        or set(source_ids) != SURVEILLANCE_SOURCE_IDS
+    ):
+        issues.append(
+            ValidationIssue(
+                "sources",
+                "surveillance authority must contain exactly the eight monitored source IDs",
+            )
+        )
+    for position, source in surveillance_sources:
+        _validate_surveillance_source(source, position, issues)
+
+    return issues
+
+
 def validate_registry(registry: dict) -> list[ValidationIssue]:
     """Aggregate every offline registry-contract issue without short-circuiting."""
 
@@ -518,6 +906,8 @@ def validate_registry(registry: dict) -> list[ValidationIssue]:
                 f"schemaVersion must equal {SCHEMA_VERSION}",
             )
         )
+
+    issues.extend(validate_surveillance_contract(registry))
 
     for path, key in _find_forbidden_keys(registry):
         issues.append(ValidationIssue(path, f"forbidden tracked key: {key}"))
@@ -984,6 +1374,14 @@ def build_public_projection(registry: dict) -> dict:
 
 def build_surveillance_projection(registry: dict) -> dict:
     """Build the detached legacy-shaped configuration used by collectors."""
+
+    contract_issues = validate_surveillance_contract(registry)
+    if contract_issues:
+        first_issue = contract_issues[0]
+        raise ValueError(
+            f"surveillance projection contract invalid at {first_issue.path}: "
+            f"{first_issue.message}"
+        )
 
     settings = registry.get("surveillance")
     settings = settings if isinstance(settings, dict) else {}

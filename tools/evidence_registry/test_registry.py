@@ -139,6 +139,20 @@ def _one_source_registry(source_id: str = "engel-1977-biopsychosocial-model") ->
     return registry
 
 
+def _fixture_registry_with_canonical_surveillance() -> dict:
+    registry = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    canonical = load_evidence_registry(REGISTRY_PATH)
+    for source in registry["sources"]:
+        source.pop("surveillance", None)
+    registry["surveillance"] = copy.deepcopy(canonical["surveillance"])
+    registry["sources"].extend(
+        copy.deepcopy(
+            [source for source in canonical["sources"] if "surveillance" in source]
+        )
+    )
+    return registry
+
+
 def test_tier1_replacement_preserves_manual_tail():
     original = "head\n<!-- evidence-registry:tier1:start -->\nold\n<!-- evidence-registry:tier1:end -->\nTAIL\n"
     updated = replace_generated_block(original, TIER1_START, TIER1_END, "new\n")
@@ -329,6 +343,178 @@ def test_surveillance_projection_rejects_missing_monitored_sources_or_cadence():
             assert "surveillance projection" in str(exc)
         else:
             raise AssertionError("incomplete surveillance authority was projected")
+
+
+def _surveillance_source(registry: dict, source_id: str = "fda-drug-safety") -> dict:
+    return index_sources(registry)[source_id]
+
+
+def _surveillance_issue_text(registry: dict) -> str:
+    return "\n".join(
+        f"{issue.path}: {issue.message}" for issue in validate_registry(registry)
+    )
+
+
+def _assert_surveillance_contract_rejected(registry: dict, fragment: str) -> None:
+    issue_text = _surveillance_issue_text(registry)
+    assert fragment in issue_text, issue_text
+    try:
+        registry_library.build_surveillance_projection(registry)
+    except ValueError as exc:
+        assert "surveillance" in str(exc)
+    else:
+        raise AssertionError("malformed surveillance authority was projected")
+
+
+def test_surveillance_source_contract_rejects_missing_misspelled_and_invalid_fields():
+    cases = []
+
+    missing_job = load_evidence_registry(REGISTRY_PATH)
+    del _surveillance_source(missing_job)["surveillance"]["job"]
+    cases.append((missing_job, "missing required field: job"))
+
+    misspelled_job = load_evidence_registry(REGISTRY_PATH)
+    _surveillance_source(misspelled_job)["surveillance"]["job"] = (
+        "guidelines-surveillance"
+    )
+    cases.append((misspelled_job, "must equal guideline-surveillance"))
+
+    invalid_type = load_evidence_registry(REGISTRY_PATH)
+    _surveillance_source(invalid_type)["surveillance"]["type"] = "api"
+    cases.append((invalid_type, "invalid monitored source type"))
+
+    missing_watch = load_evidence_registry(REGISTRY_PATH)
+    del _surveillance_source(missing_watch)["surveillance"]["watch_for"]
+    cases.append((missing_watch, "missing required field: watch_for"))
+
+    bad_boolean = load_evidence_registry(REGISTRY_PATH)
+    _surveillance_source(bad_boolean)["surveillance"]["verified"] = "true"
+    cases.append((bad_boolean, "verified must be a boolean"))
+
+    bad_url = load_evidence_registry(REGISTRY_PATH)
+    _surveillance_source(bad_url)["citation"]["url"] = "not-a-url"
+    cases.append((bad_url, "monitoring URL must be an absolute HTTPS URL"))
+
+    unexpected = load_evidence_registry(REGISTRY_PATH)
+    _surveillance_source(unexpected)["surveillance"]["watch_forr"] = []
+    cases.append((unexpected, "unexpected field: watch_forr"))
+
+    for registry, fragment in cases:
+        _assert_surveillance_contract_rejected(registry, fragment)
+
+
+def test_global_surveillance_contract_rejects_bad_default_link_and_resource_settings():
+    cases = []
+
+    bad_default = load_evidence_registry(REGISTRY_PATH)
+    bad_default["surveillance"]["defaults"]["proxy"] = "unbounded-proxy"
+    cases.append((bad_default, "invalid proxy"))
+
+    missing_default = load_evidence_registry(REGISTRY_PATH)
+    del missing_default["surveillance"]["defaults"]["snapshot"]
+    cases.append((missing_default, "missing required field: snapshot"))
+
+    bad_link_job = load_evidence_registry(REGISTRY_PATH)
+    bad_link_job["surveillance"]["link_monitor"]["job"] = "link-monitor"
+    cases.append((bad_link_job, "must equal link-source-monitor"))
+
+    bad_link_nested = load_evidence_registry(REGISTRY_PATH)
+    del bad_link_nested["surveillance"]["link_monitor"]["treat_as_finding"][
+        "tls_error"
+    ]
+    cases.append((bad_link_nested, "missing required field: tls_error"))
+
+    bad_resource_job = load_evidence_registry(REGISTRY_PATH)
+    bad_resource_job["surveillance"]["resource_intake"]["job"] = (
+        "resources-intake"
+    )
+    cases.append((bad_resource_job, "must equal resource-intake"))
+
+    bad_resource_nested = load_evidence_registry(REGISTRY_PATH)
+    bad_resource_nested["surveillance"]["resource_intake"]["inclusion"][
+        "require_domains"
+    ] = "psychiatry.org"
+    cases.append((bad_resource_nested, "require_domains must be a list"))
+
+    unexpected = load_evidence_registry(REGISTRY_PATH)
+    unexpected["surveillance"]["resource_intake"]["maximum_candidates"] = 25
+    cases.append((unexpected, "unexpected field: maximum_candidates"))
+
+    for registry, fragment in cases:
+        _assert_surveillance_contract_rejected(registry, fragment)
+
+
+def test_surveillance_severity_contract_matches_finding_schema_and_rejects_p3():
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    finding_schema = json.loads(
+        (
+            REPO_ROOT
+            / "13_Faculty_Resources"
+            / "_automation"
+            / "surveillance"
+            / "config"
+            / "finding.schema.json"
+        ).read_text(encoding="utf-8")
+    )
+    finding_severities = set(finding_schema["properties"]["severity"]["enum"])
+    canonical_severities = {
+        name: set(schema["definitions"][name]["properties"]["severity_default"]["enum"])
+        for name in ("sourceSurveillance", "linkMonitor", "resourceIntake")
+    }
+
+    assert finding_severities == {"P0", "P1", "P2"}
+    assert all(values == finding_severities for values in canonical_severities.values())
+    assert all("P3" not in values for values in canonical_severities.values())
+
+    for location in ("source", "link", "resource"):
+        registry = load_evidence_registry(REGISTRY_PATH)
+        if location == "source":
+            _surveillance_source(registry)["surveillance"]["severity_default"] = "P3"
+        elif location == "link":
+            registry["surveillance"]["link_monitor"]["severity_default"] = "P3"
+        else:
+            registry["surveillance"]["resource_intake"]["severity_default"] = "P3"
+        _assert_surveillance_contract_rejected(registry, "invalid severity_default")
+
+
+def test_surveillance_validator_aggregates_unhashable_enum_values():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    source_config = _surveillance_source(registry)["surveillance"]
+    source_config["type"] = []
+    source_config["modality"] = {}
+    source_config["severity_default"] = []
+    registry["surveillance"]["defaults"]["proxy"] = []
+
+    messages = _surveillance_issue_text(registry)
+    assert "invalid monitored source type" in messages
+    assert "invalid modality" in messages
+    assert "invalid severity_default" in messages
+    assert "invalid proxy" in messages
+
+
+def test_normal_cli_and_loader_hard_fail_on_malformed_surveillance_contract():
+    with tempfile.TemporaryDirectory() as directory:
+        repo_root = Path(directory)
+        registry = load_evidence_registry(REGISTRY_PATH)
+        del _surveillance_source(registry)["surveillance"]["job"]
+        _write_canonical_repo(repo_root, registry=registry)
+
+        result = subprocess.run(
+            [sys.executable, str(VALIDATE), "--repo-root", str(repo_root)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        try:
+            surveillance_library.load_registry(repo_root / "evidence_registry.json")
+        except ValueError as exc:
+            loader_error = str(exc)
+        else:
+            raise AssertionError("load_registry accepted malformed surveillance")
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "missing required field: job" in result.stdout
+    assert "surveillance" in loader_error
 
 
 def test_surveillance_schema_requires_the_migrated_authority_metadata():
@@ -550,9 +736,9 @@ def test_public_projection_strips_internal_fields():
 
 
 def test_valid_fixture_satisfies_contract_and_indexes_all_tier1_sources():
-    registry = load_evidence_registry(FIXTURE)
+    registry = _fixture_registry_with_canonical_surveillance()
     assert [issue for issue in validate_registry(registry) if issue.severity == "error"] == []
-    assert len(index_sources(registry)) == 17
+    assert len(index_sources(registry)) == 25
     rows = tier1_sources(registry)
     assert len(rows) == 17
     assert {row["curriculum"]["selection"] for row in rows} == TIER1_SELECTIONS
@@ -1923,7 +2109,7 @@ def test_zotero_snapshot_and_report_cli_reject_tracked_output_directories():
 
 def _write_fixture_repo(repo_root: Path, evidence_id: str) -> None:
     (repo_root / "evidence_registry.json").write_text(
-        FIXTURE.read_text(encoding="utf-8"), encoding="utf-8"
+        json.dumps(_fixture_registry_with_canonical_surveillance()), encoding="utf-8"
     )
     for filename in REFERENCE_FILES:
         (repo_root / filename).write_text(
@@ -1931,9 +2117,14 @@ def _write_fixture_repo(repo_root: Path, evidence_id: str) -> None:
         )
 
 
-def _write_canonical_repo(repo_root: Path) -> None:
+def _write_canonical_repo(repo_root: Path, registry: dict | None = None) -> None:
+    registry_text = (
+        REGISTRY_PATH.read_text(encoding="utf-8")
+        if registry is None
+        else json.dumps(registry)
+    )
     (repo_root / "evidence_registry.json").write_text(
-        REGISTRY_PATH.read_text(encoding="utf-8"), encoding="utf-8"
+        registry_text, encoding="utf-8"
     )
     for filename in REFERENCE_FILES:
         (repo_root / filename).write_text("{}\n", encoding="utf-8")
@@ -2048,7 +2239,7 @@ def test_offline_cli_accepts_valid_foreign_keys_without_zotero_import():
         )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "17 sources, 17 Tier 1 articles, 16 numbered selections" in result.stdout
+    assert "25 sources, 17 Tier 1 articles, 16 numbered selections" in result.stdout
     assert "zotero_reconcile" not in VALIDATE.read_text(encoding="utf-8")
 
 
@@ -2069,7 +2260,7 @@ def test_offline_cli_expands_literal_home_directory():
         )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "17 sources, 17 Tier 1 articles, 16 numbered selections" in result.stdout
+    assert "25 sources, 17 Tier 1 articles, 16 numbered selections" in result.stdout
 
 
 def test_offline_cli_rejects_unknown_foreign_key():
