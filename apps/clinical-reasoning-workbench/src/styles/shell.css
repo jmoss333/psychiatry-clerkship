@@ -306,21 +306,20 @@
 
 @media (max-width: 1099px) {
   .header {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: 56px 56px;
+    display: flex;
     padding: 0 var(--space-4);
+    overflow-x: auto;
+    scrollbar-width: thin;
   }
 
   .header__identity {
-    align-self: stretch;
+    flex: 0 0 auto;
+    overflow: visible;
   }
 
   .header__utilities {
-    align-self: stretch;
+    flex: 0 0 auto;
     justify-content: flex-start;
-    padding: 0 0 var(--space-2);
-    overflow-x: auto;
-    scrollbar-width: thin;
   }
 
   .workspace-grid {
@@ -330,7 +329,7 @@
   .evidence-rail,
   .teaching-rail {
     position: fixed;
-    inset: calc(var(--header-height) + var(--tabs-height)) 0 0 auto;
+    inset: var(--header-height) 0 0 auto;
     z-index: 40;
     width: min(360px, 100vw);
     border: 0;
@@ -348,10 +347,26 @@
 }
 
 @media (max-width: 767px) {
+  .header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 56px 56px;
+    overflow: hidden;
+  }
+
   .header__identity {
     display: grid;
+    align-self: stretch;
     align-content: center;
+    overflow: hidden;
     gap: 0;
+  }
+
+  .header__utilities {
+    align-self: stretch;
+    padding: 0 0 var(--space-2);
+    overflow-x: auto;
+    scrollbar-width: thin;
   }
 
   .header__identity h1 {

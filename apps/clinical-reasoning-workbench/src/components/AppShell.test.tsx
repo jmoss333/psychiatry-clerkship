@@ -2,6 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { App } from "../App";
+import { AppShell } from "./AppShell";
 import { FactChip } from "./ui/FactChip";
 import { LinkedText } from "./ui/LinkedText";
 import { SourceReliability } from "./ui/SourceReliability";
@@ -228,6 +229,37 @@ describe("responsive rails and shared evidence primitives", () => {
     expect(screen.queryByRole("dialog", { name: "Case facts" })).toBeNull();
     expect(trigger).toHaveFocus();
   });
+
+  test.each(["Escape", "X"] as const)(
+    "returns evidence-overlay focus to the invoking FactChip after %s close",
+    async (closeMethod) => {
+      installCompactViewport(true);
+      const user = userEvent.setup();
+      renderApp(
+        <AppShell activeTab="timeline" onTabChange={() => undefined}>
+          <FactChip factId="F01" />
+        </AppShell>,
+        { storage: makeMemoryStorage() },
+      );
+
+      const chip = screen.getByRole("button", { name: "F01" });
+      await user.click(chip);
+      const dialog = screen.getByRole("dialog", { name: "Case facts" });
+
+      if (closeMethod === "Escape") {
+        await user.keyboard("{Escape}");
+      } else {
+        await user.click(
+          within(dialog).getByRole("button", { name: "Close Case facts" }),
+        );
+      }
+
+      expect(
+        screen.queryByRole("dialog", { name: "Case facts" }),
+      ).not.toBeInTheDocument();
+      expect(chip).toHaveFocus();
+    },
+  );
 
   test("uses the shared fact controller and preserves LinkedText fact order", async () => {
     installCompactViewport(false);

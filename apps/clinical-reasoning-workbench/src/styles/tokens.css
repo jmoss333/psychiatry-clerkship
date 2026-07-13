@@ -4,6 +4,8 @@
   --surface: #ffffff;
   --primary: #c25a3c;
   --primary-dark: #a84830;
+  --action-bg: #a84830;
+  --action-fg: #ffffff;
   --accent: #2a6b5e;
   --accent-dark: #1e5248;
   --text: #2f2924;
@@ -36,6 +38,8 @@
   --surface: #2a2520;
   --primary: #d4896e;
   --primary-dark: #dd9277;
+  --action-bg: #d4896e;
+  --action-fg: #2f2924;
   --accent: #5aad9a;
   --accent-dark: #6cbcaa;
   --text: #e8e2da;
@@ -50,7 +54,12 @@
 
 @media (max-width: 1099px) {
   :root {
-    --header-height: 112px;
     --control-height: 44px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --header-height: 112px;
   }
 }

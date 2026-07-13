@@ -93,13 +93,56 @@ function Rail({
 }: RailProps) {
   const panelRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const wasOpenRef = useRef(false);
   const visible = !compact || open;
 
   useEffect(() => {
-    if (!compact || !open) return;
-    const trigger = triggerRef.current;
-    closeRef.current?.focus();
-    return () => trigger?.focus();
+    if (!compact) return;
+    const rememberFocusedElement = (event: FocusEvent) => {
+      const target = event.target;
+      if (
+        !open &&
+        target instanceof HTMLElement &&
+        !panelRef.current?.contains(target)
+      ) {
+        returnFocusRef.current = target;
+      }
+    };
+    document.addEventListener("focusin", rememberFocusedElement);
+    return () =>
+      document.removeEventListener("focusin", rememberFocusedElement);
+  }, [compact, open]);
+
+  useEffect(() => {
+    const overlayIsOpen = compact && open;
+    const overlayWasOpen = wasOpenRef.current;
+    const panel = panelRef.current;
+
+    if (overlayIsOpen && !overlayWasOpen) {
+      const activeElement =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+      if (activeElement && !panel?.contains(activeElement)) {
+        returnFocusRef.current = activeElement;
+      }
+      if (!panel?.contains(document.activeElement)) {
+        closeRef.current?.focus();
+      }
+    } else if (!overlayIsOpen && overlayWasOpen) {
+      const remembered = returnFocusRef.current;
+      const fallback = triggerRef.current;
+      const destination = remembered?.isConnected
+        ? remembered
+        : fallback?.isConnected
+          ? fallback
+          : null;
+      destination?.focus();
+      returnFocusRef.current = null;
+    }
+
+    wasOpenRef.current = overlayIsOpen;
   }, [compact, open, triggerRef]);
 
   const containFocus = (event: KeyboardEvent<HTMLElement>) => {
