@@ -221,7 +221,7 @@ async function callAnthropic(model, system, messages, maxTokens) {
 
 /* ---------------------------------- handler ---------------------------------- */
 export default async (request) => {
-  if (request.method === 'OPTIONS') return new Response('', { status: 204, headers: cors(request) });
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(request) });
   if (!API_KEY || !KEY || !PACK_URL) return json(request, 500, { error: 'server not configured (need ANTHROPIC_API_KEY, SP_STUDENT_PASSCODE, SP_PACK_URL)' });
   if (!authed(request)) return json(request, 401, { error: 'unauthorized' });
 
