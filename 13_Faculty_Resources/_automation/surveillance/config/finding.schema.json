@@ -21,7 +21,7 @@
     },
     "source_id": {
       "type": "string",
-      "description": "Foreign key into config/source_registry.yaml (e.g. 'fda-drug-safety'). For link-monitor findings on arbitrary outbound links, use 'link:<domain>'."
+      "description": "Foreign key into evidence_registry.json (e.g. 'fda-drug-safety'). For link-monitor findings on arbitrary outbound links, use 'link:<domain>'."
     },
     "source_name": { "type": "string" },
     "source_url": { "type": "string", "format": "uri" },

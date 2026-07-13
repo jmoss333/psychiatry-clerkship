@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import re
 import unicodedata
@@ -44,6 +45,16 @@ TIER1_SELECTIONS = {
     "14b",
     "15",
     "16",
+}
+SURVEILLANCE_SOURCE_IDS = {
+    "aacap-parameters",
+    "apa-practice-guidelines",
+    "clozapine-rems",
+    "dsm-5-tr",
+    "fda-drug-safety",
+    "samhsa-guidelines",
+    "spravato-rems",
+    "uspstf-mental-health",
 }
 FORBIDDEN_TRACKED_KEYS = {
     "attachmentKey",
@@ -968,6 +979,68 @@ def build_public_projection(registry: dict) -> dict:
     return {
         "schemaVersion": schema_version if type(schema_version) is int else None,
         "sources": projected_sources,
+    }
+
+
+def build_surveillance_projection(registry: dict) -> dict:
+    """Build the detached legacy-shaped configuration used by collectors."""
+
+    settings = registry.get("surveillance")
+    settings = settings if isinstance(settings, dict) else {}
+    required_settings = {
+        "version",
+        "updated",
+        "owner",
+        "defaults",
+        "link_monitor",
+        "resource_intake",
+    }
+    missing_settings = required_settings - set(settings)
+    if missing_settings:
+        raise ValueError(
+            "surveillance projection is missing settings: "
+            + ", ".join(sorted(missing_settings))
+        )
+    link_monitor = settings.get("link_monitor")
+    if not isinstance(link_monitor, dict) or not isinstance(
+        link_monitor.get("cadence"), str
+    ):
+        raise ValueError("surveillance projection requires link_monitor.cadence")
+
+    projected_sources: list[dict] = []
+    sources = registry.get("sources")
+    if isinstance(sources, list):
+        for source in sources:
+            if not isinstance(source, dict) or not isinstance(
+                source.get("surveillance"), dict
+            ):
+                continue
+            citation = source.get("citation")
+            citation = citation if isinstance(citation, dict) else {}
+            projected = {
+                "id": source.get("id"),
+                "name": citation.get("title"),
+                "url": citation.get("url"),
+            }
+            projected.update(copy.deepcopy(source["surveillance"]))
+            projected_sources.append(projected)
+
+    projected_ids = [source.get("id") for source in projected_sources]
+    if len(projected_ids) != len(SURVEILLANCE_SOURCE_IDS) or set(
+        projected_ids
+    ) != SURVEILLANCE_SOURCE_IDS:
+        raise ValueError(
+            "surveillance projection must contain exactly the eight monitored source IDs"
+        )
+
+    return {
+        "version": settings.get("version"),
+        "updated": settings.get("updated"),
+        "owner": settings.get("owner"),
+        "defaults": copy.deepcopy(settings.get("defaults")),
+        "sources": projected_sources,
+        "link_monitor": copy.deepcopy(settings.get("link_monitor")),
+        "resource_intake": copy.deepcopy(settings.get("resource_intake")),
     }
 
 

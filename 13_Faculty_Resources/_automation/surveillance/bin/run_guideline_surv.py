@@ -2,7 +2,7 @@
 """
 run_guideline_surv.py — detect changes at authoritative guideline sources.
 
-For each source in source_registry.yaml with job == guideline-surveillance:
+For each canonical evidence-registry source projected with job == guideline-surveillance:
   1. Fetch cleaned text via apify/website-content-crawler (run-sync-get-dataset-items).
   2. Normalize -> hash. Compare to the stored baseline (history/baselines/<id>.json).
   3. First time: establish baseline, emit nothing. Changed: emit a finding.

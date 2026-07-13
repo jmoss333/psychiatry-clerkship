@@ -34,6 +34,7 @@ from registry import (
     tier1_sources,
     validate_registry,
 )
+import registry as registry_library
 from zotero_reconcile import (
     api_get,
     creator_family,
@@ -69,6 +70,35 @@ EXISTING_IDS = {
     "project-beta-deescalation-2012",
     "project-beta-psychopharm-agitation-2012",
 }
+TIER1_IDS = {
+    "appelbaum-grisso-1988-capacity",
+    "border-2019-candidate-gene",
+    "brown-1972-expressed-emotion",
+    "bush-1996-catatonia-rating-scale",
+    "caspi-2003-5htt-stress",
+    "engel-1977-biopsychosocial-model",
+    "felitti-1998-ace",
+    "franklin-2017-suicide-risk-meta-analysis",
+    "lieberman-2005-catie",
+    "linehan-1991-dbt",
+    "march-2004-tads",
+    "pharoah-2010-family-intervention",
+    "rosenhan-1973-sane-places",
+    "rush-2006-stard",
+    "stanley-brown-2012-safety-planning",
+    "volkow-2016-addiction-brain-disease",
+    "wampold-1997-bona-fide-psychotherapies",
+}
+SURVEILLANCE_IDS = {
+    "aacap-parameters",
+    "apa-practice-guidelines",
+    "clozapine-rems",
+    "dsm-5-tr",
+    "fda-drug-safety",
+    "samhsa-guidelines",
+    "spravato-rems",
+    "uspstf-mental-health",
+}
 REFERENCE_FILES = (
     "topic_meta.json",
     "tool_registry.json",
@@ -84,6 +114,13 @@ ZOTERO_RECONCILE = Path(__file__).with_name("zotero_reconcile.py")
 ZOTERO_FIXTURES = Path(__file__).with_name("fixtures")
 LOCAL_REQUIREMENTS = Path(__file__).with_name("requirements-local.txt")
 EVIDENCE_README = Path(__file__).with_name("README.md")
+SURVEILLANCE_BIN = (
+    REPO_ROOT / "13_Faculty_Resources" / "_automation" / "surveillance" / "bin"
+)
+sys.path.insert(0, str(SURVEILLANCE_BIN))
+import build_status as surveillance_status
+import lib_surveillance as surveillance_library
+import run_citation_check as citation_checker
 
 
 def _zotero_config() -> dict:
@@ -257,6 +294,116 @@ def test_canonical_registry_uses_v2_shape_and_preserves_existing_sources():
             "governance",
         } <= set(source)
         assert source["identity"]["status"] == "pending"
+
+
+def test_canonical_registry_preserves_all_prior_ids_when_surveillance_is_added():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    source_ids = set(index_sources(registry))
+
+    assert len(registry["sources"]) == 35
+    assert EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS == source_ids
+
+
+def test_surveillance_projection_preserves_the_legacy_consumer_contract():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    projection = registry_library.build_surveillance_projection(registry)
+
+    assert {source["id"] for source in projection["sources"]} == SURVEILLANCE_IDS
+    assert projection["link_monitor"]["cadence"] == "weekly"
+    assert projection["resource_intake"]["max_candidates_per_run"] == 25
+
+
+def test_surveillance_projection_rejects_missing_monitored_sources_or_cadence():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    without_sources = copy.deepcopy(registry)
+    without_sources["sources"] = [
+        source for source in without_sources["sources"] if "surveillance" not in source
+    ]
+    without_cadence = copy.deepcopy(registry)
+    del without_cadence["surveillance"]["link_monitor"]["cadence"]
+
+    for broken in (without_sources, without_cadence):
+        try:
+            registry_library.build_surveillance_projection(broken)
+        except ValueError as exc:
+            assert "surveillance projection" in str(exc)
+        else:
+            raise AssertionError("incomplete surveillance authority was projected")
+
+
+def test_surveillance_schema_requires_the_migrated_authority_metadata():
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    surveillance = schema["definitions"]["globalSurveillance"]
+
+    assert set(surveillance["required"]) == {
+        "version",
+        "updated",
+        "owner",
+        "defaults",
+        "link_monitor",
+        "resource_intake",
+    }
+    assert surveillance["properties"]["version"] == {"const": 1}
+    assert surveillance["properties"]["updated"] == {"$ref": "#/definitions/date"}
+    assert surveillance["properties"]["owner"] == {
+        "type": "string",
+        "minLength": 1,
+    }
+
+
+def test_surveillance_loader_preserves_interface_and_reads_canonical_json():
+    assert Path(surveillance_library.REGISTRY).resolve() == REGISTRY_PATH.resolve()
+
+    projection = surveillance_library.load_registry()
+    assert {source["id"] for source in projection["sources"]} == SURVEILLANCE_IDS
+    assert projection["link_monitor"]["cadence"] == "weekly"
+    assert projection["resource_intake"]["max_candidates_per_run"] == 25
+
+
+def test_citation_checker_propagates_canonical_registry_load_failure():
+    with mock.patch.object(
+        citation_checker.L,
+        "load_registry",
+        side_effect=RuntimeError("canonical registry unavailable"),
+    ):
+        try:
+            citation_checker.check_registry_sources()
+        except RuntimeError as exc:
+            assert str(exc) == "canonical registry unavailable"
+        else:
+            raise AssertionError("citation checker silently skipped a registry failure")
+
+
+def test_status_builder_propagates_canonical_registry_load_failure():
+    with tempfile.TemporaryDirectory() as directory, mock.patch.object(
+        surveillance_status.L,
+        "load_registry",
+        side_effect=RuntimeError("canonical registry unavailable"),
+    ):
+        try:
+            surveillance_status.compute(Path(directory), Path(directory) / "reviewed.json")
+        except RuntimeError as exc:
+            assert str(exc) == "canonical registry unavailable"
+        else:
+            raise AssertionError("status builder silently defaulted registry cadence")
+
+
+def test_citation_self_test_proves_canonical_projection():
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SURVEILLANCE_BIN / "run_citation_check.py"),
+            "--self-test",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "DOIs=2 PMIDs=2" in result.stdout
+    assert "fingerprints stable" in result.stdout
+    assert "canonical registry projection OK" in result.stdout
 
 
 def test_canonical_tier1_contract():
@@ -1782,6 +1929,111 @@ def _write_fixture_repo(repo_root: Path, evidence_id: str) -> None:
         (repo_root / filename).write_text(
             json.dumps({"evidenceIds": [evidence_id]}), encoding="utf-8"
         )
+
+
+def _write_canonical_repo(repo_root: Path) -> None:
+    (repo_root / "evidence_registry.json").write_text(
+        REGISTRY_PATH.read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    for filename in REFERENCE_FILES:
+        (repo_root / filename).write_text("{}\n", encoding="utf-8")
+
+
+def _write_json_yaml_shim(directory: Path) -> None:
+    (directory / "yaml.py").write_text(
+        "import json\n"
+        "def safe_load(stream):\n"
+        "    return json.load(stream)\n",
+        encoding="utf-8",
+    )
+
+
+def test_compare_legacy_surveillance_cli_reports_exact_match():
+    with tempfile.TemporaryDirectory() as directory:
+        repo_root = Path(directory)
+        _write_canonical_repo(repo_root)
+        projection = registry_library.build_surveillance_projection(
+            load_evidence_registry(REGISTRY_PATH)
+        )
+        legacy_path = repo_root / "legacy-surveillance.json"
+        legacy_path.write_text(json.dumps(projection), encoding="utf-8")
+        _write_json_yaml_shim(repo_root)
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = str(repo_root)
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(VALIDATE),
+                "--repo-root",
+                str(repo_root),
+                "--compare-legacy-surveillance",
+                str(legacy_path),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            env=environment,
+        )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "legacy surveillance projection matches canonical registry" in result.stdout
+
+
+def test_compare_legacy_surveillance_cli_prints_sorted_unified_diff():
+    with tempfile.TemporaryDirectory() as directory:
+        repo_root = Path(directory)
+        _write_canonical_repo(repo_root)
+        projection = registry_library.build_surveillance_projection(
+            load_evidence_registry(REGISTRY_PATH)
+        )
+        projection["resource_intake"]["max_candidates_per_run"] = 24
+        legacy_path = repo_root / "legacy-surveillance.json"
+        legacy_path.write_text(json.dumps(projection), encoding="utf-8")
+        _write_json_yaml_shim(repo_root)
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = str(repo_root)
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(VALIDATE),
+                "--repo-root",
+                str(repo_root),
+                "--compare-legacy-surveillance",
+                str(legacy_path),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            env=environment,
+        )
+
+    assert result.returncode == 1
+    assert "--- legacy surveillance" in result.stdout
+    assert "+++ canonical surveillance" in result.stdout
+    assert '-    "max_candidates_per_run": 24' in result.stdout
+    assert '+    "max_candidates_per_run": 25' in result.stdout
+
+
+def test_offline_cli_never_imports_yaml_during_normal_validation():
+    with tempfile.TemporaryDirectory() as directory:
+        repo_root = Path(directory)
+        _write_fixture_repo(repo_root, "engel-1977-biopsychosocial-model")
+        (repo_root / "yaml.py").write_text(
+            'raise AssertionError("normal validation imported yaml")\n',
+            encoding="utf-8",
+        )
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = str(repo_root)
+        result = subprocess.run(
+            [sys.executable, str(VALIDATE), "--repo-root", str(repo_root)],
+            check=False,
+            capture_output=True,
+            text=True,
+            env=environment,
+        )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "normal validation imported yaml" not in result.stdout + result.stderr
 
 
 def test_offline_cli_accepts_valid_foreign_keys_without_zotero_import():

@@ -13,7 +13,7 @@ Surfaces:
     newer than its reviewed.json attestation (or it has none). (REVIEW_RULES.md §4)
   - Per-source freshness vs. registry cadence (stale = not checked within cadence)
 
-Runs cleanly on empty history ("no runs yet"). Stdlib + pyyaml (registry only).
+Runs cleanly on empty history ("no runs yet"). Stdlib only.
 
 Usage:  python3 build_status.py [--history-dir ...] [--out-dir ...] [--reviewed ...]
 """
@@ -136,12 +136,9 @@ def compute(history_dir, reviewed_path):
     last_run = _load(os.path.join(history_dir, "last_run.json"), {})
     freshness = []
     citation_freshness = []
-    try:
-        reg = L.load_registry()
-        cad = {s["id"]: s.get("cadence", "monthly") for s in reg.get("sources", [])}
-        cad["link-monitor"] = "weekly"
-    except Exception:
-        cad = {}
+    reg = L.load_registry()
+    cad = {s["id"]: s["cadence"] for s in reg["sources"]}
+    cad["link-monitor"] = reg["link_monitor"]["cadence"]
     for sid, ts in sorted(last_run.items()):
         age = _days_since(ts)
         limit = CADENCE_DAYS.get(cad.get(sid, "monthly"), 31)

@@ -28,9 +28,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps
-        run: pip install --quiet pyyaml
-
       - name: Crawl candidates -> findings
         env:
           APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}

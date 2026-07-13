@@ -1,5 +1,5 @@
 {
-  "_note": "Reverse index: which curriculum files depend on which external source. When a source in source_registry.yaml changes, the sync inverts this map to populate a finding's affects[] and route it to the exact teaching pages. Hand-editable and auto-augmented by bin/build_citation_index.py (scans curriculum for source references). Keys are repo-relative paths; values.cites are source_id values from source_registry.yaml.",
+  "_note": "Reverse index: which curriculum files depend on which external source. When a source in evidence_registry.json changes, the sync inverts this map to populate a finding's affects[] and route it to the exact teaching pages. Hand-editable and auto-augmented by bin/build_citation_index.py (scans curriculum for source references). Keys are repo-relative paths; values.cites are source IDs from evidence_registry.json.",
   "_schema": "path -> { cites: [source_id], notes?: string, auto?: bool }",
   "generated": "2026-07-03",
   "generated_by": "seed + auto-scan (build_citation_index.py)",

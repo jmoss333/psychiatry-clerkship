@@ -1,7 +1,7 @@
 name: Surveillance — Citation Validity
 
-# Weekly: verify the authoritative SOURCE URLs in source_registry.yaml (which live
-# in YAML and are never seen by the lychee link crawler) and any DOIs/PMIDs cited in
+# Weekly: verify the authoritative SOURCE URLs projected from evidence_registry.json
+# (not part of the built link surface) and any DOIs/PMIDs cited in
 # curriculum text still resolve. Failures become idempotent GitHub issues (P2 batched
 # to the monthly digest). Complements the lychee link-monitor; does not replace it.
 #
@@ -33,9 +33,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Install deps
-        run: pip install --quiet pyyaml
 
       - name: Check source URLs + cited DOIs/PMIDs -> findings
         run: >-

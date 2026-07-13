@@ -495,7 +495,25 @@
     },
     "globalSurveillance": {
       "type": "object",
+      "required": [
+        "version",
+        "updated",
+        "owner",
+        "defaults",
+        "link_monitor",
+        "resource_intake"
+      ],
       "properties": {
+        "version": {
+          "const": 1
+        },
+        "updated": {
+          "$ref": "#/definitions/date"
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
         "defaults": {
           "$ref": "#/definitions/surveillanceDefaults"
         },

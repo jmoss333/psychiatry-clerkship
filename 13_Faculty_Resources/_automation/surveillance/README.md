@@ -20,7 +20,7 @@ _automation/surveillance/
 ├── README.md                      ← this file
 ├── ADR-001-curriculum-surveillance.md
 ├── REVIEW_RULES.md                ← severity, idempotency, human gate, SLAs
-├── bin/                           ← the pipeline (stdlib Python; pyyaml only in collectors)
+├── bin/                           ← the pipeline (stdlib Python)
 │   ├── lib_surveillance.py        ← shared: affects resolution, escalation, fingerprint, rendering
 │   ├── sync_findings.py           ← findings → idempotent GitHub issues + reports (the core)
 │   ├── run_link_monitor.py        ← parse lychee JSON → findings
@@ -31,7 +31,6 @@ _automation/surveillance/
 │   └── run_citation_check.py      ← live source-URL + DOI/PMID validity → findings (Phase 2)
 ├── apify/                         ← paste-into-console input examples (3)
 ├── config/
-│   ├── source_registry.yaml       ← SINGLE SOURCE OF TRUTH for all 3 jobs
 │   ├── finding.schema.json        ← normalized output every job emits
 │   └── citation_index.json        ← curriculum file → sources it depends on
 └── history/                       ← dated datasets (git-native audit trail)
@@ -41,6 +40,8 @@ _automation/surveillance/
     ├── digest_YYYY-MM.md          ← batched P2 items
     ├── baselines/<source_id>.json ← guideline baselines (hash; +text for full_text sources)
     └── last_run.json              ← per-source last_checked stamps
+
+evidence_registry.json → canonical source + surveillance authority at repository root
 
 .github/workflows/  →  surveillance-link-monitor.yml (weekly),
                        surveillance-guideline.yml (monthly),
@@ -111,8 +112,8 @@ Enabled by three workflows in `.github/workflows/`. To go live:
 1. **Set repo secret** (Settings → Secrets and variables → Actions): `APIFY_TOKEN`.
    `GITHUB_TOKEN` is provided to Actions automatically (workflows request `issues: write`
    + `contents: write`).
-2. **Classify each source’s `modality`** in `source_registry.yaml` (open HTML vs PDF vs
-   login). Unknowns stay `signal_only` — the safe default.
+2. **Classify each source’s `surveillance.modality`** in `evidence_registry.json`
+   (open HTML vs PDF vs login). Keep unknown new sources `signal_only` until classified.
 3. **Baseline the guideline job**: Actions → *Surveillance — Guideline Monitor* → Run
    workflow. First run records hashes and opens no issues.
 4. **First link run** confirms the registry URLs (flips `verified` / files unreachable).
@@ -176,8 +177,9 @@ python3 bin/open_update_pr.py --findings fixtures/guideline_delta_example.json -
 ```
 
 **2. Live citation validity (`run_citation_check.py`).** Weekly (`surveillance-citations.yml`), verifies
-the authoritative **source URLs** in `source_registry.yaml` (which live in YAML, so lychee never sees
-them) and any **DOIs/PMIDs** cited in curriculum text still resolve — via `doi.org` / NCBI eutils.
+the authoritative **source URLs** projected from `evidence_registry.json` (which is not part of the
+built link surface, so lychee never sees them) and any **DOIs/PMIDs** cited in curriculum text still
+resolve — via `doi.org` / NCBI eutils.
 Failures become idempotent issues (a no-HTTP-response is capped at P1 to avoid false P0 pages from
 bot-blocking). The scanner skips imported/archive-only citation copies so faculty issues route to
 live curriculum surfaces first. DOI checks stop at the DOI.org redirect layer: a DOI.org 3xx redirect

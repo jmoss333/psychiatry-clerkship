@@ -97,7 +97,7 @@ duplicate-issue idempotency, false sense of currency).
 ## Open item (only blocker to full data-flow design)
 
 Per-source **modality** classification (open HTML vs PDF vs login/paywalled). Unknown
-sources default to `signal_only` in `config/source_registry.yaml` until classified;
+new sources default to `signal_only` in `evidence_registry.json` until classified;
 the first `link-source-monitor` run confirms reachability and content type.
 
 
@@ -119,7 +119,7 @@ This preserves the ADR's core invariant: **surveillance never edits teaching con
 suggestion for a human* is not an edit.
 
 **Live citation validity (`run_citation_check.py`).** The lychee link-monitor crawls links in
-built HTML/markdown; it cannot see the authoritative source URLs that live in `source_registry.yaml`,
+built HTML/markdown; it cannot see the authoritative source URLs projected from `evidence_registry.json`,
 nor validate DOIs/PMIDs as citations. A dedicated weekly job checks both (doi.org / NCBI eutils),
 emitting the same `finding` schema so it reuses `sync_findings.py` unchanged. To avoid alert fatigue
 (a known risk in `REVIEW_RULES.md`), a *no-HTTP-response* result — commonly datacenter-IP bot-blocking

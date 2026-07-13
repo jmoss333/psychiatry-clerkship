@@ -3,7 +3,7 @@
 run_resource_intake.py — gather candidate resources (P2) for faculty review.
 
 Scoped, manual-trigger crawl via apify/website-content-crawler restricted to the
-allow-listed domains in source_registry.yaml (resource_intake.inclusion). Emits P2
+allow-listed domains in evidence_registry.json (surveillance.resource_intake.inclusion). Emits P2
 "candidate" findings (never issues — they batch into the monthly digest), deduped
 against domains already cited in citation_index.json, capped by max_candidates.
 

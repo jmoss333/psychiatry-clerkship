@@ -4,6 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import datetime
+import difflib
+import json
 from pathlib import Path
 
 try:
@@ -25,7 +28,60 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="also compare tracked generated views with deterministic outputs",
     )
+    parser.add_argument(
+        "--compare-legacy-surveillance",
+        type=Path,
+        metavar="PATH",
+        help="one-time exact comparison with the retired YAML surveillance registry",
+    )
     return parser
+
+
+def _json_compatible(value):
+    """Normalize PyYAML's implicit date scalar to the canonical JSON value."""
+
+    if isinstance(value, (datetime.date, datetime.datetime)):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {key: _json_compatible(child) for key, child in value.items()}
+    if isinstance(value, list):
+        return [_json_compatible(child) for child in value]
+    return value
+
+
+def _compare_legacy_surveillance(registry: dict, legacy_path: Path) -> bool:
+    try:
+        import yaml  # type: ignore[import-not-found]  # Explicit one-time branch only.
+    except ImportError as exc:
+        print(f"error: cannot compare legacy surveillance without PyYAML: {exc}")
+        return False
+
+    try:
+        with Path(legacy_path).expanduser().open(encoding="utf-8") as handle:
+            legacy = _json_compatible(yaml.safe_load(handle))
+    except (OSError, ValueError, yaml.YAMLError) as exc:
+        print(f"error: could not load legacy surveillance registry: {exc}")
+        return False
+
+    canonical = registry_library.build_surveillance_projection(registry)
+    if legacy == canonical:
+        print("legacy surveillance projection matches canonical registry")
+        return True
+
+    legacy_json = json.dumps(legacy, indent=2, sort_keys=True).splitlines()
+    canonical_json = json.dumps(canonical, indent=2, sort_keys=True).splitlines()
+    print(
+        "\n".join(
+            difflib.unified_diff(
+                legacy_json,
+                canonical_json,
+                fromfile="legacy surveillance",
+                tofile="canonical surveillance",
+                lineterm="",
+            )
+        )
+    )
+    return False
 
 
 def _check_generated_views(repo_root: Path) -> list[registry_library.ValidationIssue]:
@@ -121,8 +177,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.check_generated:
         issues.extend(_check_generated_views(repo_root))
 
+    comparison_matches = True
+    if args.compare_legacy_surveillance is not None:
+        comparison_matches = _compare_legacy_surveillance(
+            registry, args.compare_legacy_surveillance
+        )
+
     _print_issues(issues)
-    if any(issue.severity == "error" for issue in issues):
+    if any(issue.severity == "error" for issue in issues) or not comparison_matches:
         return 1
 
     tier1 = registry_library.tier1_sources(registry)
