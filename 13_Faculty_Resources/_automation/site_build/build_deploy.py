@@ -146,6 +146,33 @@ _copy_required(LIB+"/question_bank.json", OUT+"/question_bank.json", _missing_re
 _copy_required(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learning-path.html", _missing_req)
 _abort_missing(_missing_req)
 
+# ---- diagnostic pretest pool (adaptive engine v2): 1 attested, scoreable item per
+# blueprint category. Slim pool so the SPA home never loads the full bank. Selection:
+# prefer difficulty-2, then high-yield, then lowest id (deterministic). ----
+_PRETEST_CATS=["mood","psychosis","anxiety","substance","neurocog","pharm",
+               "safety","personality","childdev","otherdx","ethics","relational"]
+try:
+    _qb=json.load(open(LIB+"/question_bank.json",encoding="utf-8"))
+    def _one_correct(it): return sum(1 for o in it.get("options",[]) if o.get("c") is True)==1
+    _pool=[]
+    for _cat in _PRETEST_CATS:
+        _cand=[i for i in _qb.get("items",[]) if i.get("category")==_cat
+               and i.get("status")=="attested" and _one_correct(i)]
+        if not _cand: continue
+        _cand.sort(key=lambda i:(abs((i.get("difficulty") or 2)-2), 0 if i.get("hy") else 1, i.get("id","")))
+        _it=_cand[0]
+        _pool.append({"id":_it["id"],"cat":_cat,"pages":_it.get("pages",[]),
+            "stem":_it.get("stem",""),
+            "options":[{"key":o.get("key"),"t":o.get("t",""),"c":bool(o.get("c"))}
+                       for o in _it.get("options",[])],
+            "why":_it.get("why",""),"pearl":_it.get("pearl","")})
+    json.dump({"v":1,"generated":"build","items":_pool},
+              open(OUT+"/pretest_pool.json","w",encoding="utf-8"))
+    print("pretest pool:",len(_pool),"of",len(_PRETEST_CATS),"categories")
+except Exception as _e:
+    open(OUT+"/pretest_pool.json","w",encoding="utf-8").write('{"v":1,"items":[]}')
+    print("pretest pool: WARN could not build (%s)" % _e)
+
 # ---- local tool runtime vendor: no bedside CDN dependency ----
 # Several React-based tools historically loaded React from cdnjs and went blank when ward
 # Wi-Fi blocked public CDNs. Reuse the already-tracked UMD bundles from the resident
