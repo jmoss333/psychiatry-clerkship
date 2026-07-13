@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="icon" href="/favicon.svg">
+<!-- [RC-META] tool="The Interview Room — AI Standardized Patient" version="0.1.0" built="2026-07-12" category="clinical-skills" audience="ms3,resident" settings="inpatient" time="12min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="draft-pending-attestation" summary="Free-text interview practice with a fictional standardized patient: gated disclosures, rapport model, deterministic coverage map, self-assessment-first debrief with rubric feedback. Mock provider runs fully offline; live LLM provider stubbed behind the same interface (M1: Netlify proxy). NOT clinical decision support. Fictional composites; no PHI; transcripts stay in this browser." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Interview Room — AI Standardized Patient</title>
+<meta name="description" content="Interview practice with a fictional standardized patient. Educational only; not clinical decision support.">
+<script src="./vendor/react.min.js"></script>
+<script src="./vendor/react-dom.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#665a4f;
+    --success:#357160; --success-light:#e7f1ed;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --danger:#a34132; --danger-light:#fbece9;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+  }
+  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(980px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) 90px}
+  h1{font-family:var(--font-head);font-size:1.9rem;color:var(--primary);margin:0 0 4px}
+  h2{font-family:var(--font-head);font-size:1.25rem;margin:0 0 var(--sp2)}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  .themebtn{position:fixed;top:12px;right:12px;width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;z-index:30}
+  .disc{border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.84rem;margin-bottom:var(--sp3)}
+  .disc.sim{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--accent)}
+  .disc.phi{background:var(--warning-light);color:var(--warning);border:1px solid var(--warning)}
+  .disc.footer{position:fixed;left:0;right:0;bottom:0;background:var(--danger-light);color:var(--danger);border-top:1px solid var(--danger);font-size:.8rem;padding:8px 14px;text-align:center;margin:0;z-index:20}
+  .btn{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-weight:600;cursor:pointer;font:inherit;background:var(--surface);color:var(--accent-dark);min-height:44px}
+  .btn.primary{background:var(--primary-dark);color:var(--on-brand);border-color:var(--primary-dark)}
+  .btn.ghost{border-style:dashed}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .badge{display:inline-block;font-size:.7rem;font-weight:700;border-radius:var(--radius-pill);padding:3px 10px;margin-left:8px;vertical-align:middle}
+  .badge.draft{background:var(--warning-light);color:var(--warning);border:1px dashed var(--warning)}
+  .badge.mode{background:var(--info-light);color:var(--info);border:1px solid var(--info);cursor:pointer}
+  .chat{display:flex;flex-direction:column;gap:var(--sp2);max-height:52vh;overflow-y:auto;padding:var(--sp2);background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-md)}
+  .msg{max-width:78%;padding:10px 14px;border-radius:var(--radius-md);font-size:.95rem;white-space:pre-wrap}
+  .msg.pt{align-self:flex-start;background:var(--surface);border:1px solid var(--border)}
+  .msg.me{align-self:flex-end;background:var(--accent-light);border:1px solid var(--accent)}
+  .msg .who{display:block;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-bottom:2px}
+  .inrow{display:flex;gap:var(--sp2);margin-top:var(--sp2)}
+  .inrow textarea{flex:1;font:inherit;font-size:.95rem;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);resize:vertical;min-height:52px}
+  .meta{font-size:.78rem;color:var(--text-light);display:flex;gap:var(--sp3);flex-wrap:wrap;margin-top:var(--sp1)}
+  .grid{display:grid;grid-template-columns:1fr 260px;gap:var(--sp3)}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .side{font-size:.84rem}
+  .side ul{list-style:none;margin:0;padding:0}
+  .side li{padding:5px 0;border-bottom:1px dashed var(--border)}
+  .st{display:inline-block;width:1.2em}
+  .cov-observed{color:var(--success)} .cov-partial{color:var(--warning)} .cov-missed{color:var(--danger)} .cov-na{color:var(--text-light)}
+  .rub{border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--sp3);margin-bottom:var(--sp2)}
+  .rub h3{margin:0 0 4px;font-size:1rem}
+  .pill{display:inline-block;font-size:.7rem;font-weight:700;border-radius:var(--radius-pill);padding:2px 10px;margin-left:8px}
+  .pill.observed{background:var(--success-light);color:var(--success)}
+  .pill.partial{background:var(--warning-light);color:var(--warning)}
+  .pill.missed{background:var(--danger-light);color:var(--danger)}
+  .critical{background:var(--danger-light);border:1px solid var(--danger);color:var(--danger);border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.9rem;margin-bottom:var(--sp3)}
+  .well{background:var(--info-light);border:1px solid var(--info);color:var(--info);border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.84rem;margin-top:var(--sp3)}
+  .hint{background:var(--warning-light);border:1px dashed var(--warning);color:var(--warning);border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.9rem;margin-top:var(--sp2)}
+  .sa textarea{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);min-height:64px;margin-bottom:var(--sp2)}
+  .linkish{color:var(--accent-dark);text-decoration:underline;cursor:default}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  :focus-visible{outline:3px solid var(--focus,#155eef);outline-offset:2px}
+</style>
+</head>
+<body>
+<button class="themebtn" id="themebtn" aria-label="Toggle light/dark theme">◐</button>
+<main class="shell" id="root"></main>
+<div class="disc footer" role="note">Fictional simulation for supervised learning — <b>not clinical decision support</b> and not a real patient record. Do not enter real-patient information.</div>
+<div id="live" class="visually-hidden" aria-live="polite"></div>
+<script>
+(function(){
+"use strict";
+var e=React.createElement, useState=React.useState, useEffect=React.useEffect, useRef=React.useRef;
+function announce(m){try{document.getElementById('live').textContent=m;}catch(x){}}
+
+/* ============================== PHI heuristic ============================== */
+var PHI_PATTERNS=[/\b\d{6,}\b/, /\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/, /\bmrn\b/i, /\bmy patient\b/i, /\bdate of birth\b/i, /\bdob\b/i];
+function looksLikePhi(t){for(var i=0;i<PHI_PATTERNS.length;i++){if(PHI_PATTERNS[i].test(t))return true;}return false;}
+
+/* ============================ Provider interface ===========================
+   Provider.start(caseDef, opts) -> session
+   Provider.respond(session, text) -> {reply, state:{intents,flags,rapport,unlocked,critical}}
+   Provider.evaluate(session, selfAssess) -> feedback object (or null -> use deterministic debrief only)
+============================================================================ */
+
+/* ---- MockProvider: deterministic, offline, the permanent free tier ---- */
+function MockProvider(){}
+MockProvider.prototype.name='Mock (offline)';
+MockProvider.prototype.start=function(caseDef,opts){
+  var rx={}; caseDef.intents.forEach(function(it){rx[it.id]=it.patterns.map(function(p){return new RegExp(p,'i');});});
+  return {caseDef:caseDef, opts:opts, rx:rx, rapport:0, unlocked:{}, covered:{}, flags:[], closedRun:0,
+          varIdx:{}, turns:[], reflections:0, hintUses:0, openInviteUsed:false, greetUsed:false};
+};
+MockProvider.prototype._match=function(s,text){
+  var hits=[]; var rx=s.rx;
+  s.caseDef.intents.forEach(function(it){ if(rx[it.id].some(function(r){return r.test(text);})) hits.push(it.id); });
+  return hits;
+};
+MockProvider.prototype._tier=function(s){
+  var shift=(s.opts.difficulty==='realistic')?s.caseDef.difficulty.realistic.guardedShift:0;
+  return (s.rapport-shift)>=1?'open':'guarded';
+};
+MockProvider.prototype._pick=function(s,key,tier){
+  var bank=s.caseDef.responses[key]||s.caseDef.responses._default;
+  var arr=bank[tier]||bank.any||bank.guarded||bank.open;
+  if(!arr||!arr.length){bank=s.caseDef.responses._default;arr=bank[tier]||bank.guarded;}
+  var k=key+':'+tier; s.varIdx[k]=(s.varIdx[k]||0);
+  var out=arr[s.varIdx[k]%arr.length]; s.varIdx[k]++;
+  return out;
+};
+MockProvider.prototype._recentFlag=function(s,names){
+  var last=s.turns.slice(-2);
+  return last.some(function(t){return (t.flags||[]).some(function(f){return names.indexOf(f)>=0;});});
+};
+MockProvider.prototype.respond=function(s,text){
+  var hits=this._match(s,text);
+  var flags=hits.filter(function(h){return ['judgmental','premature_reassurance','ooc_attempt'].indexOf(h)>=0;});
+  // rapport
+  var rr=s.caseDef.rapportRules, self=this;
+  rr.raises.forEach(function(r){
+    if(hits.indexOf(r.intent)>=0){
+      if(r.onlyFirstTime){ if(r.intent==='open_invite'&&s.openInviteUsed)return; if(r.intent==='open_invite')s.openInviteUsed=true; }
+      if(r.intent==='greeting_agenda'){ if(s.greetUsed)return; s.greetUsed=true; }
+      s.rapport=Math.min(4,s.rapport+r.delta);
+      if(r.intent==='reflection')s.reflections++;
+    }
+  });
+  rr.lowers.forEach(function(r){ if(r.intent&&hits.indexOf(r.intent)>=0){s.rapport=Math.max(-3,s.rapport+r.delta);} });
+  // closed-run heuristic: a question turn with no open/reflection intent
+  var isQ=/\?\s*$/.test(text.trim());
+  var isOpenish=hits.indexOf('open_invite')>=0||hits.indexOf('reflection')>=0;
+  if(isQ&&!isOpenish){s.closedRun++;}else{s.closedRun=0;}
+  var runRule=rr.lowers.filter(function(r){return r.closedRun;})[0];
+  if(runRule&&s.closedRun===runRule.closedRun){s.rapport=Math.max(-3,s.rapport+runRule.delta);}
+  // coverage
+  hits.forEach(function(h){s.covered[h]=true;});
+  // choose reply — flags first
+  var reply=null, critical=null;
+  if(flags.length){ reply=this._pick(s,flags[0],'any'); }
+  // gates
+  var g=s.caseDef.gated, tier=this._tier(s);
+  if(!reply){
+    var si=g[0]; // si_active
+    if(hits.indexOf('si_direct')>=0){
+      if(s.unlocked[si.id]){ reply=si.repeatAsk; }
+      else if(s.rapport>=si.requiresRapport && !this._recentFlag(s,si.blockedByRecentFlags||[])){
+        s.unlocked[si.id]=true; reply=si.reveal; critical='disclosure';
+      } else { reply=si.deflectLowRapport; }
+    } else if(hits.indexOf('si_euphemism')>=0 && !s.unlocked[si.id]){
+      reply=si.deflectEuphemism;
+    }
+    if(!reply){
+      for(var i=1;i<g.length;i++){
+        var gd=g[i];
+        if(hits.indexOf(gd.requiresIntents[0])>=0){
+          if(s.unlocked[gd.requiresGate]){ s.unlocked[gd.id]=true; reply=gd.reveal; }
+          else { reply=gd.deflectIfLocked; }
+          break;
+        }
+      }
+    }
+  }
+  if(!reply){
+    var content=hits.filter(function(h){return ['judgmental','premature_reassurance','ooc_attempt','si_direct','si_euphemism','si_plan','si_means','si_intent_protective','reflection'].indexOf(h)<0;});
+    if(hits.indexOf('reflection')>=0 && !content.length){ reply=this._pick(s,'reflection',tier); }
+    else if(content.length){
+      var fresh=content.filter(function(c){return !(s.varIdx[c+':'+tier]);});
+      reply=this._pick(s,(fresh[0]||content[0]),tier);
+    } else { reply=this._pick(s,'_default',tier); }
+  }
+  var st={intents:hits,flags:flags,rapport:s.rapport,unlocked:Object.keys(s.unlocked),critical:critical};
+  s.turns.push({me:text,pt:reply,flags:flags,intents:hits,rapport:s.rapport});
+  return Promise.resolve({reply:reply,state:st});
+};
+MockProvider.prototype.evaluate=function(){return Promise.resolve(null);}; // deterministic debrief handles it
+
+/* ---- ProxyProvider: M1 stub. Same interface; points at a Netlify function. ---- */
+function ProxyProvider(endpoint,passcode){this.endpoint=endpoint;this.passcode=passcode;this.mock=new MockProvider();}
+ProxyProvider.prototype.name='Live (proxy)';
+ProxyProvider.prototype.start=function(caseDef,opts){var s=this.mock.start(caseDef,opts);s._live=true;return s;};
+ProxyProvider.prototype.respond=function(s,text){
+  var self=this;
+  return fetch(this.endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-student-key':this.passcode},
+    body:JSON.stringify({caseId:s.caseDef.id,turns:s.turns.map(function(t){return{me:t.me,pt:t.pt};}),message:text})})
+  .then(function(r){if(!r.ok)throw new Error('proxy '+r.status);return r.json();})
+  .then(function(j){ s.turns.push({me:text,pt:j.reply,flags:j.state.flags||[],intents:j.state.intents||[],rapport:j.state.rapport});
+    (j.state.intents||[]).forEach(function(i){s.covered[i]=true;}); s.rapport=j.state.rapport;
+    (j.state.unlocked||[]).forEach(function(u){s.unlocked[u]=true;});
+    return j; })
+  .catch(function(err){ announce('Live provider unavailable — falling back to offline patient.');
+    s._fellBack=true; return self.mock.respond(s,text); });
+};
+ProxyProvider.prototype.evaluate=function(s,sa){
+  return fetch(this.endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-student-key':this.passcode},
+    body:JSON.stringify({caseId:s.caseDef.id,mode:'evaluate',turns:s.turns.map(function(t){return{me:t.me,pt:t.pt};}),selfAssess:sa})})
+  .then(function(r){if(!r.ok)throw new Error('proxy '+r.status);return r.json();})
+  .catch(function(){return null;});
+};
+
+/* ============================ Deterministic debrief ============================ */
+function computeCoverage(s){
+  var out=[]; var cd=s.caseDef;
+  cd.checklist.forEach(function(c){
+    var status;
+    if(c.dependsOnGate && !s.unlocked[c.dependsOnGate]){ status='na'; }
+    else{
+      var got=c.intents.filter(function(i){return s.covered[i];}).length;
+      if(got===c.intents.length)status='observed';
+      else if(got>0)status='partial';
+      else if(c.partialIfOnly && c.partialIfOnly.some(function(i){return s.covered[i];}))status='partial';
+      else status='missed';
+    }
+    out.push({id:c.id,label:c.label,status:status,critical:!!c.critical});
+  });
+  return out;
+}
+function computeRubric(s,cov){
+  function covPct(cat){
+    var items=s.caseDef.intents.filter(function(i){return i.category===cat&&i.coverage==='core';});
+    var got=items.filter(function(i){return s.covered[i.id];}).length;
+    return items.length?got/items.length:0;
+  }
+  var flagsAll=[]; s.turns.forEach(function(t){flagsAll=flagsAll.concat(t.flags||[]);});
+  var r={};
+  r.alliance=(s.reflections>=2&&s.rapport>=2)?'observed':(s.reflections>=1||s.rapport>=1)?'partial':'missed';
+  var dp=covPct('data'); r.data=dp>=0.8?'observed':dp>=0.5?'partial':'missed';
+  var direct=!!s.covered['si_direct'], euph=!!s.covered['si_euphemism'];
+  var badFlags=flagsAll.filter(function(f){return f!=='ooc_attempt';}).length;
+  r.technique=(direct&&badFlags===0&&s.covered['open_invite'])?'observed':(direct||euph)?'partial':'missed';
+  var org=(s.covered['greeting_agenda']?1:0)+(s.covered['summary_close']?1:0);
+  r.organization=org===2?'observed':org===1?'partial':'missed';
+  return r;
+}
+function buildNarrative(s,cov,rub){
+  var strengths=[],growth=[];
+  if(s.reflections>=2)strengths.push('You reflected and validated more than once — Dana’s guardedness dropped when you did. That is the mechanism, not a nicety.');
+  if(s.covered['si_direct'])strengths.push('You asked about suicide in plain language. That is exactly why she told you the truth.');
+  if(s.covered['work_stressor'])strengths.push('You found the job loss — the organizing stressor most interviewers miss.');
+  if(s.covered['greeting_agenda'])strengths.push('You set a collaborative frame at the start, and she noticed.');
+  if(s.covered['summary_close'])strengths.push('You closed with a summary rather than letting the encounter just stop.');
+  if(!s.covered['si_direct']&&s.covered['si_euphemism'])growth.push({t:'You approached suicide with a euphemism and she tested you instead of answering. Next time, try her own words plus the plain question: “When you say you’re a burden — have you had thoughts of killing yourself?”',link:'pg_suicide.md'});
+  if(!s.covered['si_direct']&&!s.covered['si_euphemism'])growth.push({t:'Suicide never came up. With this presentation it must — directly and plainly. Next time, try asking early, once any rapport exists: “Have you had thoughts of killing yourself?”',link:'pg_suicide.md'});
+  if(s.unlocked['si_active']&&!(s.covered['si_plan']&&s.covered['si_means']&&s.covered['si_intent_protective']))growth.push({t:'After her disclosure, the follow-through was incomplete. Next time, walk the chain: plan, means and access, intent, and what keeps her going.',link:'pg_suicide.md'});
+  if(s.reflections<2)growth.push({t:'Long question runs made this feel like an intake form. Next time, try one reflection for every two or three questions — watch what it buys you.',link:'pg_interview.md'});
+  if(!s.covered['work_stressor'])growth.push({t:'You collected symptoms but not the story — something happened two months ago and it never surfaced. Next time, try “What changed around the time this started?”',link:'pg_interview.md'});
+  if(!s.covered['summary_close'])growth.push({t:'The encounter ended without a summary. Next time, try playing back what you heard and naming the hard part calmly before you leave the room.',link:'pg_interview.md'});
+  if(!s.covered['psychosis_screen'])growth.push({t:'No psychosis screen. Two plain questions cover it.',link:'t_mood.md'});
+  while(strengths.length<2)strengths.push('You stayed in the encounter and kept asking — reps are how this skill is built.');
+  return {strengths:strengths.slice(0,2),growth:growth.slice(0,2)};
+}
+
+/* ================================== UI ================================== */
+function Disclaimer(){return e('div',{className:'disc sim',role:'note'},
+  e('b',null,'Fictional simulation. '),'Dana is not a real person and this is not a real record. Practice space for supervised learning — discuss what you find here with your team. ',
+  e('b',null,'Do not type real-patient information'),' (no names, MRNs, dates of birth, or details of actual patients).');}
+
+function App(){
+  var st=useState({screen:'loading',pack:null,err:null}); var S=st[0],setS=st[1];
+  var enc=useState(null); var E=enc[0],setE=enc[1];   // {provider,session,msgs,ended,hint,phiHold}
+  var inp=useState(''); var input=inp[0],setInput=inp[1];
+  var sa=useState({a:'',b:'',c:''}); var SA=sa[0],setSA=sa[1];
+  var mode=useState('mock'); var provMode=mode[0],setProvMode=mode[1];
+  var busy=useState(false); var isBusy=busy[0],setBusy=busy[1];
+  var shs=useState(false); var showSettings=shs[0],setShowSettings=shs[1];
+  var cfs=useState(null); var cfg=cfs[0],setCfg=cfs[1];
+  var chatRef=useRef(null);
+  function loadCfg(){ var ep='',pc=''; try{ep=localStorage.getItem('cw_sp_endpoint')||'';pc=localStorage.getItem('cw_sp_passcode')||'';}catch(x){} return {ep:ep,pc:pc,msg:''}; }
+  function openSettings(){ setCfg(loadCfg()); setShowSettings(true); }
+  function saveAndTest(){
+    var ep=(cfg.ep||'').trim();
+    try{localStorage.setItem('cw_sp_endpoint',ep);localStorage.setItem('cw_sp_passcode',cfg.pc||'');}catch(x){}
+    setCfg(Object.assign({},cfg,{msg:'Testing…'}));
+    fetch(ep,{headers:{'x-student-key':cfg.pc||''}})
+      .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j,status:r.status};});})
+      .then(function(res){setCfg(function(c){return Object.assign({},c,{msg:res.ok?('✓ Connected — pack v'+res.j.packVersion+' ('+res.j.packStatus+'), actor '+res.j.actorModel):('✗ '+(res.j&&res.j.error?res.j.error:('HTTP '+res.status)))});});})
+      .catch(function(err){setCfg(function(c){return Object.assign({},c,{msg:'✗ Could not reach endpoint ('+err.message+')'});});});
+  }
+
+  useEffect(function(){
+    if(window.__SP_PACK__){setS({screen:'select',pack:window.__SP_PACK__,err:null});return;}
+    fetch('./sp-interview.pack.json',{cache:'no-store'})
+      .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+      .then(function(p){setS({screen:'select',pack:p,err:null});})
+      .catch(function(x){setS({screen:'loading',pack:null,err:'Could not load sp-interview.pack.json ('+x.message+'). Serve this folder over http, or open sp-interview.preview.html.'});});
+  },[]);
+  useEffect(function(){ if(chatRef.current){chatRef.current.scrollTop=chatRef.current.scrollHeight;} });
+
+  useEffect(function(){
+    var b=document.getElementById('themebtn');
+    if(!b)return; var h=function(){var cur=document.documentElement.getAttribute('data-theme');var nx=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',nx);try{localStorage.setItem('cw_theme',nx);}catch(x){}};
+    b.addEventListener('click',h); return function(){b.removeEventListener('click',h);};
+  },[]);
+
+  function makeProvider(){
+    if(provMode==='live'){
+      var ep=null,pc=null; try{ep=localStorage.getItem('cw_sp_endpoint');pc=localStorage.getItem('cw_sp_passcode');}catch(x){}
+      if(ep){return new ProxyProvider(ep,pc||'');}
+      announce('Live endpoint not configured; using offline patient.');
+    }
+    return new MockProvider();
+  }
+  function begin(caseDef,difficulty){
+    var p=makeProvider(); var sess=p.start(caseDef,{difficulty:difficulty});
+    setE({provider:p,session:sess,caseDef:caseDef,difficulty:difficulty,
+          msgs:[{who:'pt',text:caseDef.persona.opening}],hint:null,phiHold:null,feedback:null});
+    setSA({a:'',b:'',c:''});
+    setS(Object.assign({},S,{screen:'encounter'}));
+    announce('Encounter started with '+caseDef.persona.displayName);
+  }
+  function send(force){
+    var text=input.trim(); if(!text||isBusy)return;
+    if(!force&&looksLikePhi(text)){ setE(Object.assign({},E,{phiHold:text})); return; }
+    setBusy(true); setInput('');
+    var msgs=E.msgs.concat([{who:'me',text:text}]);
+    setE(Object.assign({},E,{msgs:msgs,phiHold:null,hint:null}));
+    E.provider.respond(E.session,text).then(function(r){
+      setE(function(prev){return Object.assign({},prev,{msgs:prev.msgs.concat([{who:'pt',text:r.reply}])});});
+      setBusy(false);
+      if(E.session.turns.length>=(S.pack.engine.maxTurns||40)){endEncounter();}
+    });
+  }
+  function getHint(){
+    var cov=computeCoverage(E.session); var hints=E.caseDef.hints||{};
+    var open=cov.filter(function(c){return c.status!=='observed'&&c.status!=='na'&&hints[c.id];});
+    var h=open.length?hints[open[0].id]:'You have covered the map — consider summarizing and closing.';
+    E.session.hintUses=(E.session.hintUses||0)+1;
+    setE(Object.assign({},E,{hint:h}));
+  }
+  function endEncounter(){ setS(Object.assign({},S,{screen:'selfassess'})); announce('Encounter ended. Self-assessment before feedback.'); }
+  function toDebrief(){
+    setS(Object.assign({},S,{screen:'debrief'}));
+    E.provider.evaluate(E.session,SA).then(function(fb){ if(fb){setE(function(p){return Object.assign({},p,{feedback:fb});});} });
+  }
+  function downloadTranscript(){
+    var s=E.session,cd=E.caseDef;
+    var lines=['The Interview Room — practice transcript (FICTIONAL SIMULATION — not a clinical record)',
+      'Case: '+cd.title+'  ·  Difficulty: '+E.difficulty+'  ·  Provider: '+E.provider.name,'Date: '+new Date().toISOString().slice(0,10),''];
+    lines.push('[0] '+cd.persona.displayName.toUpperCase()+': '+cd.persona.opening);
+    s.turns.forEach(function(t,i){lines.push('['+(i+1)+'] STUDENT: '+t.me);lines.push('['+(i+1)+'] '+cd.persona.displayName.toUpperCase()+': '+t.pt);});
+    lines.push('','--- Coverage ---');
+    computeCoverage(s).forEach(function(c){lines.push(c.status.toUpperCase().padEnd(9)+' '+c.label);});
+    lines.push('','Self-assessment:','1. '+SA.a,'2. '+SA.b,'3. '+SA.c,'','Bring this to your supervisor — the conversation about it is the point.');
+    var blob=new Blob([lines.join('\n')],{type:'text/plain'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sp-interview-'+cd.id+'-'+Date.now()+'.txt';a.click();
+  }
+
+  /* ---------- screens ---------- */
+  if(S.screen==='loading'){return e('div',null,e('h1',null,'The Interview Room'),S.err?e('div',{className:'disc phi'},S.err):e('p',null,'Loading…'));}
+
+  var header=e('div',null,
+    e('div',{className:'kicker'},'Clinical skills · Simulation'),
+    e('h1',null,'The Interview Room',
+      e('span',{className:'badge draft'},'Draft — pending faculty review'),
+      e('span',{className:'badge mode',role:'button',tabIndex:0,
+        onClick:function(){var nx=provMode==='mock'?'live':'mock';setProvMode(nx);
+          if(nx==='live'){var ep='';try{ep=localStorage.getItem('cw_sp_endpoint')||'';}catch(x){} if(!ep)openSettings();}},
+        title:'Mock runs offline. Live uses the sp-proxy endpoint (key stays on the server).'},
+        provMode==='mock'?'● Mock patient (offline)':'● Live patient (LLM proxy)'),
+      provMode==='live'?e('span',{className:'badge mode',role:'button',tabIndex:0,onClick:openSettings,title:'Configure live endpoint + passcode'},'⚙ setup'):null),
+    e('p',{style:{color:'var(--text-mid)',marginTop:0}},'Interview a fictional standardized patient. Free text — say what you would actually say.'),
+    (showSettings&&cfg)?e('div',{className:'card'},
+      e('h2',null,'Live mode setup'),
+      e('p',{style:{fontSize:'.85rem',color:'var(--text-mid)',marginTop:0}},'Paste the sp-proxy endpoint URL and the passcode from Dr. Moss. Both are stored only in this browser; the API key never leaves the server.'),
+      e('label',{style:{fontWeight:600,fontSize:'.85rem'},htmlFor:'cfg_ep'},'Endpoint URL'),
+      e('input',{id:'cfg_ep',type:'url',placeholder:'https://<sp-proxy-site>.netlify.app/api/sp',value:cfg.ep,
+        style:{width:'100%',font:'inherit',fontSize:'.9rem',padding:'8px',border:'1px solid var(--border)',borderRadius:'6px',background:'var(--surface)',color:'var(--text)',marginBottom:'10px'},
+        onChange:function(ev){setCfg(Object.assign({},cfg,{ep:ev.target.value}));}}),
+      e('label',{style:{fontWeight:600,fontSize:'.85rem'},htmlFor:'cfg_pc'},'Passcode'),
+      e('input',{id:'cfg_pc',type:'password',value:cfg.pc,autoComplete:'off',
+        style:{width:'100%',font:'inherit',fontSize:'.9rem',padding:'8px',border:'1px solid var(--border)',borderRadius:'6px',background:'var(--surface)',color:'var(--text)',marginBottom:'10px'},
+        onChange:function(ev){setCfg(Object.assign({},cfg,{pc:ev.target.value}));}}),
+      cfg.msg?e('p',{style:{fontSize:'.85rem',fontWeight:600,color:cfg.msg.indexOf('✓')===0?'var(--success)':'var(--warning)'}},cfg.msg):null,
+      e('div',{style:{display:'flex',gap:'10px'}},
+        e('button',{className:'btn primary',onClick:saveAndTest,disabled:!(cfg.ep||'').trim()},'Save & test connection'),
+        e('button',{className:'btn',onClick:function(){setShowSettings(false);}},'Close'))):null);
+
+  if(S.screen==='select'){
+    return e('div',null,header,e(Disclaimer),
+      S.pack.cases.map(function(cd){
+        return e('div',{className:'card',key:cd.id},
+          e('h2',null,cd.title),
+          e('p',{style:{marginTop:0}},e('b',null,cd.setting),' · ~',cd.estMinutes,' min'),
+          e('p',null,cd.learnerGoal),
+          e('p',{style:{fontSize:'.8rem',color:'var(--text-light)'}},'Skills: '+cd.skillTags.join(', ')),
+          e('div',{style:{display:'flex',gap:'10px',flexWrap:'wrap'}},
+            e('button',{className:'btn primary',onClick:function(){begin(cd,'supported');}},'Start — Supported (coverage map visible)'),
+            e('button',{className:'btn',onClick:function(){begin(cd,'realistic');}},'Start — Realistic (blank room)')));
+      }));
+  }
+
+  if(S.screen==='encounter'){
+    var cd=E.caseDef, sess=E.session;
+    var sidebar=(E.difficulty==='supported')?e('div',{className:'card side'},
+      e('h2',null,'Coverage'),
+      e('ul',null,computeCoverage(sess).map(function(c){
+        var sym=c.status==='observed'?'●':c.status==='partial'?'◐':c.status==='na'?'–':'○';
+        return e('li',{key:c.id},e('span',{className:'st cov-'+c.status,'aria-hidden':true},sym),c.label);
+      })),
+      e('p',{style:{fontSize:'.72rem',color:'var(--text-light)'}},'● asked · ◐ partial · ○ not yet · – not reached')):null;
+    return e('div',null,header,
+      e('div',{className:'grid'},
+        e('div',null,
+          e('div',{className:'card'},
+            e('h2',null,cd.persona.displayName,' ',e('span',{style:{fontWeight:400,fontSize:'.85rem',color:'var(--text-light)'}},'· '+cd.setting)),
+            e('div',{className:'chat',ref:chatRef,'aria-label':'Conversation'},
+              E.msgs.map(function(m,i){return e('div',{className:'msg '+(m.who==='pt'?'pt':'me'),key:i},
+                e('span',{className:'who'},m.who==='pt'?cd.persona.displayName:'You'),m.text);}),
+              isBusy?e('div',{className:'msg pt'},e('span',{className:'who'},cd.persona.displayName),'…'):null),
+            E.phiHold?e('div',{className:'disc phi',role:'alertdialog'},
+              e('b',null,'This looks like it may contain real-patient information'),' (a number, date, or reference to your patient). This tool is for fictional practice only. ',
+              e('div',{style:{marginTop:'8px',display:'flex',gap:'10px'}},
+                e('button',{className:'btn',onClick:function(){setInput(E.phiHold);setE(Object.assign({},E,{phiHold:null}));}},'Edit message'),
+                e('button',{className:'btn ghost',onClick:function(){setInput(E.phiHold);setE(Object.assign({},E,{phiHold:null}));setTimeout(function(){send(true);},0);}},'It’s fictional — send'))) : null,
+            E.hint?e('div',{className:'hint'},e('b',null,'Coach: '),E.hint):null,
+            e('div',{className:'inrow'},
+              e('textarea',{value:input,'aria-label':'Your next words to the patient',placeholder:'Say what you would actually say…',
+                maxLength:1200,/* === sp-proxy MAX_MSG_CHARS: keeps client & server deriving state over identical text (a single interview turn is far shorter) */
+                onChange:function(ev){setInput(ev.target.value);},
+                onKeyDown:function(ev){if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();send(false);}}}),
+              e('button',{className:'btn primary',disabled:isBusy||!input.trim(),onClick:function(){send(false);}},'Say it')),
+            e('div',{className:'meta'},
+              e('span',null,'Turn '+sess.turns.length+' / '+(S.pack.engine.maxTurns||40)),
+              e('span',null,'Provider: '+E.provider.name+(sess._fellBack?' (fell back to offline)':'')),
+              e('span',null,'Enter to send · Shift+Enter for a new line')),
+            e('div',{style:{display:'flex',gap:'10px',marginTop:'12px',flexWrap:'wrap'}},
+              e('button',{className:'btn ghost',onClick:getHint},'Pause / get unstuck'),
+              e('button',{className:'btn',onClick:endEncounter},'End encounter'))),
+          e(Disclaimer)),
+        sidebar));
+  }
+
+  if(S.screen==='selfassess'){
+    var qs=[['a','What was this patient most afraid of?'],
+            ['b','What did you not ask that you wish you had?'],
+            ['c','Commit to it: your one-line problem representation.']];
+    return e('div',null,header,
+      e('div',{className:'card sa'},
+        e('h2',null,'Before any feedback — your read'),
+        e('p',{style:{color:'var(--text-mid)'}},'Commit first. The debrief means more when it responds to your own assessment.'),
+        qs.map(function(q){return e('div',{key:q[0]},
+          e('label',{style:{fontWeight:600,fontSize:'.9rem'},htmlFor:'sa_'+q[0]},q[1]),
+          e('textarea',{id:'sa_'+q[0],value:SA[q[0]],onChange:function(ev){var o={};o[q[0]]=ev.target.value;setSA(Object.assign({},SA,o));}}));}),
+        e('button',{className:'btn primary',disabled:!(SA.a.trim()&&SA.b.trim()&&SA.c.trim()),onClick:toDebrief},'Show my debrief')));
+  }
+
+  if(S.screen==='debrief'){
+    var sess2=E.session, cov=computeCoverage(sess2), rub=computeRubric(sess2,cov), nar=buildNarrative(sess2,cov,rub);
+    var siItem=cov.filter(function(c){return c.id==='c_si';})[0];
+    var criticalMiss=siItem&&siItem.status!=='observed';
+    var labels={alliance:'Alliance & rapport',data:'Data gathering',technique:'Communication technique',organization:'Organization & closing'};
+    return e('div',null,header,
+      e('div',{className:'disc sim'},e('b',null,'Formative only.'),' This debrief is practice feedback from a simulation — it is not a grade and is stored only in this browser. Bring the transcript to your supervisor.'),
+      criticalMiss?e('div',{className:'critical'},e('b',null,'Critical: '),
+        siItem.status==='partial'
+          ?'Suicide was approached only by euphemism — Dana tested the question and never answered it. She was having active thoughts. Ask plainly: “have you had thoughts of killing yourself?”'
+          :'Suicide was never asked about. Dana was having active thoughts of not waking up and had looked at a means at home — and left the interview without anyone knowing. This is the one question that can’t be skipped.'):null,
+      e('div',{className:'card'},
+        e('h2',null,'Coverage map'),
+        e('ul',{style:{listStyle:'none',padding:0}},cov.map(function(c){
+          var sym=c.status==='observed'?'●':c.status==='partial'?'◐':c.status==='na'?'–':'○';
+          return e('li',{key:c.id,style:{padding:'4px 0'}},
+            e('span',{className:'st cov-'+c.status,'aria-hidden':true},sym),' ',c.label,
+            e('span',{className:'pill '+(c.status==='na'?'partial':c.status)},c.status==='na'?'not reached':c.status));}))),
+      e('div',{className:'card'},
+        e('h2',null,'Rubric'),
+        Object.keys(rub).map(function(k){
+          var dom=E.caseDef.rubric.domains.filter(function(d){return d.id===k;})[0];
+          return e('div',{className:'rub',key:k},
+            e('h3',null,labels[k],e('span',{className:'pill '+rub[k]},rub[k])),
+            e('ul',{style:{margin:'4px 0 0',paddingLeft:'20px',fontSize:'.85rem',color:'var(--text-mid)'}},
+              dom.anchors.map(function(a,i){return e('li',{key:i},a);})));})),
+      e('div',{className:'card'},
+        e('h2',null,'Two strengths, two next steps'),
+        e('p',{style:{fontWeight:600,marginBottom:4}},'Strengths'),
+        e('ul',null,nar.strengths.map(function(s,i){return e('li',{key:i},s);})),
+        e('p',{style:{fontWeight:600,marginBottom:4}},'Next time'),
+        e('ul',null,nar.growth.map(function(g,i){return e('li',{key:i},g.t,' ',e('span',{className:'linkish'},'→ '+g.link));})),
+        (E.feedback&&E.feedback.error)?e('p',{style:{fontSize:'.8rem',color:'var(--text-light)'}},'Live evaluator unavailable — deterministic debrief shown.'):null,
+        e('div',{className:'well'},'A note for you, not the patient: interviews like this one — even simulated — can sit with you afterward. That’s normal, and worth saying out loud. Bring it to Dr. Moss or your team if it does.'),
+        e('div',{style:{display:'flex',gap:'10px',marginTop:'16px',flexWrap:'wrap'}},
+          e('button',{className:'btn primary',onClick:downloadTranscript},'Download transcript for supervision'),
+          e('button',{className:'btn',onClick:function(){begin(E.caseDef,E.difficulty==='supported'?'realistic':'supported');}},
+            E.difficulty==='supported'?'Re-run — Realistic':'Re-run — Supported'),
+          e('button',{className:'btn ghost',onClick:function(){setS(Object.assign({},S,{screen:'select'}));}},'Back to cases'))),
+      (E.feedback&&!E.feedback.error&&E.feedback.domains)?e('div',{className:'card'},
+        e('h2',null,'Evaluator feedback (live)'),
+        ['alliance','data','technique','organization'].map(function(k){
+          var d=E.feedback.domains[k]; if(!d)return null;
+          return e('div',{className:'rub',key:'fb_'+k},
+            e('h3',null,labels[k],e('span',{className:'pill '+(d.rating||'partial')},d.rating||'—')),
+            e('p',{style:{margin:'4px 0 0',fontSize:'.9rem'}},d.note||''));}),
+        (E.feedback.strengths&&E.feedback.strengths.length)?e('div',null,
+          e('p',{style:{fontWeight:600,marginBottom:4}},'Strengths (from your transcript)'),
+          e('ul',null,E.feedback.strengths.map(function(s,i){return e('li',{key:i},s);}))):null,
+        (E.feedback.growth&&E.feedback.growth.length)?e('div',null,
+          e('p',{style:{fontWeight:600,marginBottom:4}},'Next time'),
+          e('ul',null,E.feedback.growth.map(function(g,i){return e('li',{key:i},g.t,' ',g.link?e('span',{className:'linkish'},'→ '+g.link):null);}))):null,
+        E.feedback.selfAssessmentNote?e('div',{className:'well'},e('b',null,'On your self-assessment: '),E.feedback.selfAssessmentNote):null):null,
+      e('div',{className:'card'},
+        e('h2',null,'Teaching points (faculty-authored)'),
+        e('ul',null,E.caseDef.debriefTeachingPoints.map(function(t,i){return e('li',{key:i,style:{marginBottom:'6px'}},t);}))));
+  }
+  return null;
+}
+try{window.__SP_TEST__={MockProvider:MockProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,looksLikePhi:looksLikePhi};}catch(x){}
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+})();
+</script>
+</body>
+</html>
