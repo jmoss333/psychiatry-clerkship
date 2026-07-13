@@ -1177,6 +1177,7 @@
     if(fresh){ h+='<p class="sub">Welcome — nothing tracked yet. Open any content page and tap <strong>Mark reviewed</strong>, or start a review session, and this page fills in.</p>'; }
     else{ h+='<p class="sub">Where you are, and the next best thing to do.</p>'; }
     h+=renderWardDashboard();
+    h+='<div class="hm-sec" style="border:1px solid var(--accent);background:var(--accent-light);border-radius:14px;padding:14px 16px;margin:0 0 16px"><h2 style="margin-top:0">Study on the go · Anki decks</h2><div class="sub" style="margin:0 0 8px">Take the question bank and high-yield concepts with you as spaced-repetition flashcards for your phone.</div><button class="hm-li" data-f="anki.md" style="border-bottom:none"><span class="t"><strong>Get the Anki decks</strong></span><span class="sec">Open →</span></button></div>';
     h+='<div class="hm-grid">';
     h+='<div class="hm-card"><div class="k">Review coverage</div><div class="hm-row"><div class="hm-ring" style="--p:'+pct+'"><i>'+pct+'%</i></div><div class="v">'+rev+'<small> / '+tot+' pages</small></div></div></div>';
     h+='<div class="hm-card"><div class="k">Due today</div><div class="v">'+dc.due+(dc.overdue?'<small> · '+dc.overdue+' overdue</small>':'')+'</div>'+(dc.due?'<button class="hm-btn" data-act="review">Start review</button>':'<span class="hm-empty">Nothing due — nice.</span>')+'</div>';

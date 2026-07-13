@@ -491,5 +491,11 @@
   "at": "2026-07-11",
   "by": "Pending faculty review",
   "note": "Fictional composite longitudinal simulation; attest before learner release."
+ },
+ "anki.md": {
+  "status": "pending",
+  "at": "2026-07-12",
+  "by": "Joshua Moss, MD",
+  "note": "Awaiting faculty attestation. Navigation/download page for the Anki decks; the cards themselves are extracted only from already-attested content (no AI-generated cards). Ships watermarked until attested via the faculty console."
  }
 }
