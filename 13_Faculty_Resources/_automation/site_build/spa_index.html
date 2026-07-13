@@ -1171,12 +1171,19 @@
     var s=srsState(); if(s&&s.cards){ Object.keys(s.cards).forEach(function(id){ if(id.indexOf('TOPIC#')!==0)return; var lp=(s.cards[id]&&s.cards[id].lapses)||0; if(!lp)return; blueprintOf(id.slice(6)).forEach(function(c){ if(acc[c])acc[c].lapses+=lp; }); }); }
     return SHELF_ORDER.map(function(c){ var a=acc[c]; var n=a.total; var score=null; if(n){ score=Math.round(100*((a.correct+1.5)/(n+3))); score=Math.max(0,score-Math.min(15,a.lapses*3)); } return {c:c,label:SHELF_LABEL[c],score:score,n:n,conf:(n===0?'none':(n<5?'low':'solid'))}; });
   }
+  /* confidence calibration (derived): how accurate are answers at each stated confidence? */
+  function calibrationSummary(){
+    var lv={guess:{n:0,correct:0},likely:{n:0,correct:0},certain:{n:0,correct:0}}, certWrong=0, total=0;
+    try{ var qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}'); Object.keys(qb).forEach(function(id){ var r=qb[id]; if(!r||!r.confidence||!lv[r.confidence])return; total++; lv[r.confidence].n++; if(r.correct)lv[r.confidence].correct++; if(r.confidence==='certain'&&!r.correct)certWrong++; }); }catch(_){ }
+    return {lv:lv,certWrong:certWrong,total:total};
+  }
   function safeLS(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(_){ return null; } }
   function studyId(){ try{ var k=localStorage.getItem('cw_study_id'); if(!k){ k='S-'+Math.random().toString(36).slice(2,8).toUpperCase()+'-'+Date.now().toString(36).slice(-4).toUpperCase(); localStorage.setItem('cw_study_id',k); } return k; }catch(_){ return 'S-ANON'; } }
   window.exportStudy=function(){
     var payload={ study_id:studyId(), exported_at:new Date().toISOString(), schema:'clerkship-study-v1',
       progress:safeLS('cw_progress_v1'), srs:safeLS('cw_srs_v1'), quiz:safeLS('cw_quiz_v1'),
-      qb:safeLS('cw_qb_v1'), mastery:(function(){try{return masteryByBlueprint();}catch(_){return null;}})() };
+      qb:safeLS('cw_qb_v1'), mastery:(function(){try{return masteryByBlueprint();}catch(_){return null;}})(),
+      calibration:(function(){try{return calibrationSummary();}catch(_){return null;}})() };
     var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
     a.download='clerkship_study_'+payload.study_id+'_'+new Date().toISOString().slice(0,10)+'.json';
@@ -1219,6 +1226,17 @@
       weakCats.forEach(function(x){ h+='<button class="hm-li" data-practice="'+x.c+'"><span class="t">'+esc(x.label)+'</span><span class="sec">'+x.score+'% · practice →</span></button>'; });
       if(notStarted.length){ var ns=notStarted[0]; h+='<button class="hm-li" data-practice="'+ns.c+'"><span class="t">'+esc(ns.label)+'</span><span class="sec">not started · try it →</span></button>'; }
       h+='</div>'; }
+    var cal=calibrationSummary();
+    if(cal.total>=1){ var lvl=[['certain','Certain'],['likely','Likely'],['guess','Guess']];
+      h+='<div class="hm-sec"><h2>Confidence calibration <span style="font-weight:400;color:var(--text-light)">· are you right when you feel sure?</span></h2><div class="hm-bars">';
+      lvl.forEach(function(pair){ var e=cal.lv[pair[0]]; var acc=e.n?Math.round(100*e.correct/e.n):0; var lab=e.n?(acc+'% · '+e.n):'—'; h+='<div class="brow"><span class="lab">'+pair[1]+'</span><span class="track"><span class="fill" style="width:'+(e.n?acc:0)+'%"></span></span><span class="pc">'+lab+'</span></div>'; });
+      h+='</div>';
+      var cert=cal.lv.certain, g=cal.lv.guess;
+      if(cal.certWrong>0){ h+='<div class="sub" style="margin:8px 0 0">You were <strong>confidently wrong</strong> on '+cal.certWrong+' item'+(cal.certWrong===1?'':'s')+' — those are the highest-yield to revisit.</div>'; }
+      else if(cert.n>=3 && Math.round(100*cert.correct/cert.n)>=90){ h+='<div class="sub" style="margin:8px 0 0">Well calibrated — when you’re certain, you’re right.</div>'; }
+      if(g.n>=3 && Math.round(100*g.correct/g.n)>=70){ h+='<div class="sub" style="margin:6px 0 0">You know more than you think — right '+Math.round(100*g.correct/g.n)+'% of the time even when guessing.</div>'; }
+      h+='</div>';
+    }
     h+='<div class="hm-sec"><h2>Help evaluate this site <span style="font-weight:400;color:var(--text-light)">· optional</span></h2><div class="sub" style="margin:0 0 8px">Export your anonymous learning activity for the clerkship study — no name and no patient information, only what you reviewed and answered on this site.</div><button class="hm-li" data-act="studyexport"><span class="t">Export my anonymous progress</span><span class="sec">Export ↓</span></button><div id="studyMsg" class="hm-empty" style="margin-top:6px"></div></div>';
     h+='<div class="hm-sec"><h2>New here?</h2><button class="hm-li" data-act="start"><span class="t">Open the Start-here orientation</span><span class="sec">Start →</span></button></div>';
     h+='</div>'; return h;
