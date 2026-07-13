@@ -1097,6 +1097,10 @@ def test_zotero_sanitizer_rejects_reviewer_privacy_payloads():
         ),
         ("generic POSIX root", "title", "failed:/opt/zotero/item.pdf"),
         ("custom POSIX root", "title", "failed:/custom/root/item.pdf"),
+        ("double-slash POSIX root", "title", "//custom/place/private.pdf"),
+        ("backtick-delimited POSIX root", "title", "`/custom/place/private.pdf`"),
+        ("hyphen-delimited POSIX root", "title", "failed-/custom/place/private.pdf"),
+        ("Unicode POSIX root", "title", "failed=/秘密/private.pdf"),
         ("embedded UNC path", "title", r"failed:\\server\share\item.pdf"),
     ):
         payload = copy.deepcopy(valid)

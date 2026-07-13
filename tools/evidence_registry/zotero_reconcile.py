@@ -86,7 +86,7 @@ _LOCAL_POSIX_PATH = re.compile(
     re.IGNORECASE,
 )
 _GENERIC_POSIX_PATH = re.compile(
-    r"(?:^|[\s:=(\[{\"'])/[A-Za-z0-9._~-]+(?:/[^\s]*)?"
+    r"(?<![\w/])/+(?!/)[^\s/]+(?:/[^\s]*)?"
 )
 _RELATIVE_PATH = re.compile(r"(?:~/(?:[^\s]+)?|\.\.?/|storage/)", re.IGNORECASE)
 _REMOTE_URL = re.compile(r"https?://[^\s]+", re.IGNORECASE)
