@@ -14,6 +14,21 @@
   "linkedPdf": [
     {"key": "PDFL1111", "data": {"itemType": "attachment", "linkMode": "linked_file", "contentType": "application/pdf"}}
   ],
+  "missingFilePdf": [
+    {"key": "MISS1111", "data": {"itemType": "attachment", "linkMode": "imported_file", "contentType": "application/pdf"}, "_fileProbe": {"exists": false, "verifiedAt": "2026-07-12T12:00:00Z"}}
+  ],
+  "incompleteProbePdf": [
+    {"key": "INCO1111", "data": {"itemType": "attachment", "linkMode": "linked_file", "contentType": "application/pdf"}, "_fileProbe": {"exists": true, "verifiedAt": "2026-07-12T12:00:00Z"}}
+  ],
+  "invalidByteCountPdf": [
+    {"key": "BYTE1111", "data": {"itemType": "attachment", "linkMode": "imported_file", "contentType": "application/pdf"}, "_fileProbe": {"exists": true, "byteCount": true, "signature": "%PDF-", "indexed": false, "verifiedAt": "2026-07-12T12:00:00Z"}}
+  ],
+  "invalidSignatureTypePdf": [
+    {"key": "SIGT1111", "data": {"itemType": "attachment", "linkMode": "linked_file", "contentType": "application/pdf"}, "_fileProbe": {"exists": true, "byteCount": 4096, "signature": null, "indexed": false, "verifiedAt": "2026-07-12T12:00:00Z"}}
+  ],
+  "malformedProbePdf": [
+    {"key": "MALP1111", "data": {"itemType": "attachment", "linkMode": "imported_file", "contentType": "application/pdf"}, "_fileProbe": "probe-failed"}
+  ],
   "zeroBytePdf": [
     {"key": "ZERO1111", "data": {"itemType": "attachment", "linkMode": "imported_file", "contentType": "application/pdf"}, "_fileProbe": {"exists": true, "byteCount": 0, "signature": "%PDF-", "indexed": false, "verifiedAt": "2026-07-12T12:00:00Z"}}
   ],

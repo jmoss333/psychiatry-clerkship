@@ -1547,43 +1547,47 @@ def test_zotero_week_observations_never_rewrite_registry_mapping():
     assert registry["sources"][0]["curriculum"]["weekNumbers"] == [1]
 
 
-def test_zotero_note_url_and_html_children_do_not_count_as_pdf():
+def test_zotero_attachment_state_transition_matrix():
     fixture = load_snapshot(
         ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
     )
-    for case in ("noteOnly", "linkedUrl", "htmlSnapshot"):
+    expected_states = {
+        "noteOnly": "metadata_only",
+        "linkedUrl": "metadata_only",
+        "htmlSnapshot": "metadata_only",
+        "importedPdf": "pdf_attached",
+        "linkedPdf": "pdf_attached",
+        "missingFilePdf": "broken_attachment",
+        "incompleteProbePdf": "broken_attachment",
+        "invalidByteCountPdf": "broken_attachment",
+        "invalidSignatureTypePdf": "broken_attachment",
+        "malformedProbePdf": "broken_attachment",
+        "zeroBytePdf": "broken_attachment",
+        "invalidSignaturePdf": "broken_attachment",
+        "validScannedPdf": "pdf_verified",
+        "validIndexedPdf": "pdf_indexed",
+    }
+    for case, expected_state in expected_states.items():
         status = inspect_attachment_children(
             "KL5HP3MU", fixture[case], explicit=True
         )
-        assert status["state"] == "metadata_only", case
+        assert status["state"] == expected_state, case
+        if expected_state == "metadata_only":
+            assert "contentType" not in status, case
+        else:
+            assert status["contentType"] == "application/pdf", case
 
 
-def test_zotero_imported_and_linked_pdf_without_file_probe_are_broken():
+def test_zotero_skipped_file_verification_keeps_unknown_or_prior_state():
     fixture = load_snapshot(
         ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
     )
-    imported = inspect_attachment_children(
-        "KL5HP3MU", fixture["importedPdf"], explicit=True
-    )
-    linked = inspect_attachment_children(
-        "KL5HP3MU", fixture["linkedPdf"], explicit=True
-    )
-
-    assert imported["state"] == "broken_attachment"
-    assert imported["contentType"] == "application/pdf"
-    assert linked["state"] == "broken_attachment"
-    assert linked["contentType"] == "application/pdf"
-
-
-def test_zotero_missing_zero_byte_and_invalid_signature_pdfs_are_broken():
-    fixture = load_snapshot(
-        ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
-    )
-    for case in ("zeroBytePdf", "invalidSignaturePdf", "importedPdf"):
-        status = inspect_attachment_children(
-            "KL5HP3MU", fixture[case], explicit=True
-        )
-        assert status["state"] == "broken_attachment", case
+    assert inspect_attachment_children(
+        "KL5HP3MU", fixture["importedPdf"], explicit=False
+    ) == {"state": None}
+    assert inspect_attachment_children(
+        "KL5HP3MU", fixture["priorVerified"], explicit=False
+    ) == fixture["priorVerified"][0]["priorObserved"]
 
 
 def test_old_invalid_attachment_terms_are_absent_from_live_code_and_design():
@@ -1623,17 +1627,6 @@ def test_zotero_indexed_pdf_reports_indexed_state_separately():
 
     assert status["state"] == "pdf_indexed"
     assert status["byteCount"] == 8192
-
-
-def test_zotero_skipped_attachment_inspection_preserves_prior_observed_state():
-    fixture = load_snapshot(
-        ZOTERO_FIXTURES / "zotero_snapshot_attachment_states.json"
-    )
-    status = inspect_attachment_children(
-        "KL5HP3MU", fixture["priorVerified"], explicit=False
-    )
-
-    assert status == fixture["priorVerified"][0]["priorObserved"]
 
 
 def test_zotero_snapshot_sanitization_rejects_sensitive_data_recursively():

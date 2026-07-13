@@ -300,6 +300,7 @@ PubMed/Crossref identity metadata
 | DOI/PMID maps to more than one item | Hard ambiguity error; faculty or evidence steward selects the item explicitly. |
 | Title/author/year disagrees with DOI/PMID metadata | Hard identity failure for required articles; generated learner view is blocked. |
 | Attachment is absent | Observed status remains `metadata_only`; it is never called downloaded or full-text verified. |
+| Qualifying imported/linked PDF child is present but no file probe was supplied | Report `pdf_attached`; absence of verification is not evidence that the attachment is broken. |
 | Attachment check was not explicitly requested | Existing access state is preserved; absence of a check cannot downgrade a record. |
 | Attachment path or PDF is invalid | Report `broken_attachment`; do not expose the path or copy the file. |
 | Week collection is empty or membership differs | Report advisory collection drift. Do not fail CI and do not write Zotero; registry week mappings and Tier 1 tags remain authoritative for this slice. |

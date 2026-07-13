@@ -1415,10 +1415,11 @@ def inspect_attachment_children(
             "state": "pdf_attached",
             "contentType": "application/pdf",
         }
+        probe_supplied = "_fileProbe" in child
         probe = child.get("_fileProbe")
-        if not isinstance(probe, dict):
+        if probe_supplied and not isinstance(probe, dict):
             candidate["state"] = "broken_attachment"
-        else:
+        elif isinstance(probe, dict):
             byte_count = probe.get("byteCount")
             signature = probe.get("signature")
             if (
