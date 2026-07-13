@@ -118,6 +118,17 @@ _RECORD_STATUSES = {
     "not-found",
 }
 _MATCH_METHODS = {"stored-key", "doi", "pmid", "title-author-year", "none"}
+_JOURNAL_IDENTITY_ALIASES = {
+    "science new york n y": "science",
+    "the american journal of psychiatry": "american journal of psychiatry",
+    "the british journal of psychiatry the journal of mental science": (
+        "the british journal of psychiatry"
+    ),
+    "the cochrane database of systematic reviews": (
+        "cochrane database of systematic reviews"
+    ),
+    "the new england journal of medicine": "new england journal of medicine",
+}
 _ATTACHMENT_MODES = {"imported_file", "linked_file"}
 _ATTACHMENT_STATES = {
     None,
@@ -989,6 +1000,13 @@ def publication_year(value: str | int | None) -> str:
     return match.group(1) if match else ""
 
 
+def normalize_journal(value: str | None) -> str:
+    """Apply only faculty-approved aliases after standard title normalization."""
+
+    normalized = normalize_title(value)
+    return _JOURNAL_IDENTITY_ALIASES.get(normalized, normalized)
+
+
 def _item_data(item: dict) -> dict:
     data = item.get("data")
     return data if isinstance(data, dict) else {}
@@ -1060,8 +1078,8 @@ def _identity_difference_details(source: dict, item: dict) -> list[dict[str, str
         ),
         (
             "journal",
-            normalize_title(citation.get("journal")),
-            normalize_title(data.get("publicationTitle")),
+            normalize_journal(citation.get("journal")),
+            normalize_journal(data.get("publicationTitle")),
             str(citation.get("journal") or ""),
             str(data.get("publicationTitle") or ""),
         ),

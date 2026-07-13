@@ -49,6 +49,14 @@ keeps the parent key and shows the exact safe field plus canonical registry and
 observed Zotero values; it does not count as a match and does not authorize an
 alias or metadata change.
 
+Following Gate B faculty approval on 2026-07-12, journal comparison accepts only
+five exact post-normalization aliases: the reviewed observed forms for Science,
+American Journal of Psychiatry, British Journal of Psychiatry, Cochrane
+Database of Systematic Reviews, and New England Journal of Medicine. The bridge
+does not generally strip
+leading articles, parentheticals, subtitles, or journal qualifiers. Canonical
+registry citations and Zotero metadata remain unchanged.
+
 ## Identity and faculty-local links
 
 A Zotero parent item key such as `KL5HP3MU` identifies one record in the local

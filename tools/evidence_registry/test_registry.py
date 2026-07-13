@@ -39,6 +39,7 @@ from zotero_reconcile import (
     creator_family,
     inspect_attachment_children,
     load_snapshot,
+    normalize_journal,
     publication_year,
     reconcile_registry,
     sanitize_snapshot,
@@ -1314,6 +1315,80 @@ def test_zotero_identity_helpers_are_stable_for_api_shapes():
     assert publication_year("Published online 2004-08-18") == "2004"
     assert publication_year(1977) == "1977"
     assert publication_year(None) == ""
+
+
+def test_zotero_journal_normalization_accepts_only_gate_b_aliases():
+    accepted = {
+        "Science (New York, N.Y.)": "science",
+        "The American journal of psychiatry": "american journal of psychiatry",
+        "The British journal of psychiatry : the journal of mental science": (
+            "the british journal of psychiatry"
+        ),
+        "The Cochrane database of systematic reviews": (
+            "cochrane database of systematic reviews"
+        ),
+        "The New England journal of medicine": (
+            "new england journal of medicine"
+        ),
+    }
+    for observed, expected in accepted.items():
+        assert normalize_journal(observed) == expected
+
+    assert normalize_journal("Science Translational Medicine") == (
+        "science translational medicine"
+    )
+    assert normalize_journal("BJPsych Open") == "bjpsych open"
+    assert normalize_journal("The American Journal of Psychiatry Supplement") == (
+        "the american journal of psychiatry supplement"
+    )
+    assert normalize_journal("A Genuinely Different Journal") == (
+        "a genuinely different journal"
+    )
+
+
+def test_zotero_gate_b_journal_aliases_resolve_current_eight_but_not_near_misses():
+    registry = _canonical_tier1_registry()
+    snapshot = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    observed = {
+        "KL5HP3MU": "Science (New York, N.Y.)",
+        "TSN2F24F": "Science (New York, N.Y.)",
+        "LGJ9CSR3": "The American journal of psychiatry",
+        "E8BCCFSN": (
+            "The British journal of psychiatry : the journal of mental science"
+        ),
+        "P4M5H9VM": "The Cochrane database of systematic reviews",
+        "ZTWERT6K": "Science (New York, N.Y.)",
+        "XRADQ2TY": "The American journal of psychiatry",
+        "9FCMTHM2": "The New England journal of medicine",
+    }
+    for item in snapshot["items"]:
+        if item["key"] in observed:
+            item["data"]["publicationTitle"] = observed[item["key"]]
+
+    result = reconcile_registry(registry, snapshot, _zotero_config())
+    assert result.matched_count == 17
+    assert result.errors == []
+    assert all(record.status == "matched" for record in result.records)
+
+    near_misses = (
+        "Science Translational Medicine",
+        "BJPsych Open",
+        "A Genuinely Different Journal",
+    )
+    for journal in near_misses:
+        changed = copy.deepcopy(snapshot)
+        engel = next(row for row in changed["items"] if row["key"] == "KL5HP3MU")
+        engel["data"]["publicationTitle"] = journal
+        drift = reconcile_registry(registry, changed, _zotero_config())
+        engel_record = next(
+            row
+            for row in drift.records
+            if row.evidence_id == "engel-1977-biopsychosocial-model"
+        )
+        assert engel_record.status == "identity-conflict", journal
+        assert engel_record.identity_differences == [
+            {"field": "journal", "expected": "Science", "observed": journal}
+        ]
 
 
 def test_zotero_fixture_cli_reports_17_matches_and_advisory_weeks():
