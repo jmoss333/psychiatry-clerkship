@@ -278,7 +278,7 @@ function App(){
   var shs=useState(false); var showSettings=shs[0],setShowSettings=shs[1];
   var cfs=useState(null); var cfg=cfs[0],setCfg=cfs[1];
   var chatRef=useRef(null);
-  function loadCfg(){ var ep='',pc=''; try{ep=localStorage.getItem('cw_sp_endpoint')||'';pc=localStorage.getItem('cw_sp_passcode')||'';}catch(x){} return {ep:ep,pc:pc,msg:''}; }
+  function loadCfg(){ var ep='',pc=''; try{ep=localStorage.getItem('cw_sp_endpoint')||'https://sp-interview-proxy.netlify.app/api/sp';pc=localStorage.getItem('cw_sp_passcode')||'';}catch(x){} return {ep:ep,pc:pc,msg:''}; }
   function openSettings(){ setCfg(loadCfg()); setShowSettings(true); }
   function saveAndTest(){
     var ep=(cfg.ep||'').trim();
