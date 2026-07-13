@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Focused, dependency-free contract tests for the evidence registry library."""
 
+import argparse
 import copy
+import builtins
 import contextlib
 import io
 import json
@@ -40,12 +42,14 @@ from zotero_reconcile import (
     reconcile_registry,
     sanitize_snapshot,
     snapshot_library,
+    write_reports,
 )
 import zotero_reconcile as zotero_bridge
 
 
 FIXTURE = Path(__file__).with_name("fixtures") / "valid_tier1_registry.json"
 REGISTRY_PATH = Path(__file__).resolve().parents[2] / "evidence_registry.json"
+REPO_ROOT = REGISTRY_PATH.parent
 SCHEMA_PATH = REGISTRY_PATH.with_name("evidence_registry.schema.json")
 USAGE_NOTICE = (
     "Educational metadata only; faculty review remains required for clinical "
@@ -76,6 +80,8 @@ REGISTRY_CLI = Path(__file__).with_name("registry.py")
 ZOTERO_CONFIG_PATH = Path(__file__).with_name("zotero_config.json")
 ZOTERO_RECONCILE = Path(__file__).with_name("zotero_reconcile.py")
 ZOTERO_FIXTURES = Path(__file__).with_name("fixtures")
+LOCAL_REQUIREMENTS = Path(__file__).with_name("requirements-local.txt")
+EVIDENCE_README = Path(__file__).with_name("README.md")
 
 
 def _zotero_config() -> dict:
@@ -1025,15 +1031,22 @@ def test_zotero_status_never_prints_server_payload_or_exception_details():
 
     stdout = io.StringIO()
     stderr = io.StringIO()
-    with mock.patch.object(
+    with tempfile.TemporaryDirectory() as directory, mock.patch.object(
         zotero_bridge, "api_get", side_effect=ValueError("/Users/example/private")
-    ), contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+    ), mock.patch.object(zotero_bridge, "write_reports") as report_writer, \
+         mock.patch.object(zotero_bridge, "_write_current_snapshot") as snapshot_writer, \
+         contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        before = set(Path(directory).iterdir())
         exit_code = zotero_bridge.main(["status"])
+        after = set(Path(directory).iterdir())
 
     assert exit_code == 2
     assert stdout.getvalue() == ""
     assert stderr.getvalue() == "api_unavailable\n"
     assert "Users" not in stderr.getvalue()
+    assert before == after == set()
+    report_writer.assert_not_called()
+    snapshot_writer.assert_not_called()
 
 
 def test_zotero_snapshot_library_filters_top_level_children_before_projection():
@@ -1299,6 +1312,249 @@ def test_zotero_fixture_cli_reports_17_matches_and_advisory_weeks():
     assert "matched: 17" in result.stdout
     assert "errors: 0" in result.stdout
     assert "week-collection-advisory" in result.stdout
+
+
+def test_zotero_reports_are_sanitized_and_contain_only_parent_linkage():
+    result = reconcile_registry(
+        _canonical_tier1_registry(),
+        load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json"),
+        _zotero_config(),
+    )
+    with tempfile.TemporaryDirectory() as directory:
+        paths = write_reports(result, Path(directory))
+        assert {path.name for path in paths} == {
+            "reconciliation_report.json",
+            "reconciliation_report.md",
+            "Tier1_Primary_Source_Download_Checklist.csv",
+        }
+        encoded = "\n".join(path.read_text(encoding="utf-8") for path in paths)
+
+    assert "engel-1977-biopsychosocial-model" in encoded
+    assert "KL5HP3MU" in encoded
+    for forbidden in (
+        "/Users/",
+        "file://",
+        "attachmentKey",
+        "fullText",
+        "indexedText",
+        "licensed article text",
+    ):
+        assert forbidden not in encoded
+
+
+def test_zotero_local_workbook_requirement_is_exact_and_isolated():
+    assert LOCAL_REQUIREMENTS.read_text(encoding="utf-8") == "openpyxl>=3.1,<4\n"
+    assert "openpyxl" not in ZOTERO_RECONCILE.read_text(encoding="utf-8").split(
+        "def _render_report_xlsx", 1
+    )[0]
+
+
+def test_zotero_xlsx_dependency_failure_is_exact_and_writes_nothing():
+    result = reconcile_registry(
+        _canonical_tier1_registry(),
+        load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json"),
+        _zotero_config(),
+    )
+    original_import = builtins.__import__
+
+    def reject_openpyxl(name, *args, **kwargs):
+        if name == "openpyxl":
+            raise ImportError("test dependency refusal")
+        return original_import(name, *args, **kwargs)
+
+    with tempfile.TemporaryDirectory() as directory:
+        output_dir = Path(directory) / "reports"
+        with mock.patch("builtins.__import__", side_effect=reject_openpyxl):
+            try:
+                write_reports(result, output_dir, include_xlsx=True)
+            except RuntimeError as exc:
+                assert str(exc) == (
+                    "XLSX output requires: python3 -m pip install -r "
+                    "tools/evidence_registry/requirements-local.txt"
+                )
+            else:
+                raise AssertionError("missing openpyxl must fail actionably")
+        assert not output_dir.exists()
+
+
+def test_zotero_xlsx_cli_emits_only_the_actionable_dependency_error():
+    original_import = builtins.__import__
+
+    def reject_openpyxl(name, *args, **kwargs):
+        if name == "openpyxl":
+            raise ImportError("test dependency refusal")
+        return original_import(name, *args, **kwargs)
+
+    with tempfile.TemporaryDirectory() as directory:
+        output_dir = Path(directory) / "reports"
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with mock.patch("builtins.__import__", side_effect=reject_openpyxl), \
+             contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            exit_code = zotero_bridge.main(
+                [
+                    "report",
+                    "--snapshot",
+                    str(ZOTERO_FIXTURES / "zotero_snapshot_valid.json"),
+                    "--output-dir",
+                    str(output_dir),
+                    "--xlsx",
+                ]
+            )
+
+        assert not output_dir.exists()
+
+    assert exit_code == 2
+    assert stdout.getvalue() == ""
+    assert stderr.getvalue() == (
+        "XLSX output requires: python3 -m pip install -r "
+        "tools/evidence_registry/requirements-local.txt\n"
+    )
+
+
+def test_zotero_fixture_report_cli_writes_only_ignored_local_artifacts():
+    with tempfile.TemporaryDirectory() as directory:
+        output_dir = Path(directory) / "evidence_registry"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ZOTERO_RECONCILE),
+                "report",
+                "--snapshot",
+                str(ZOTERO_FIXTURES / "zotero_snapshot_valid.json"),
+                "--output-dir",
+                str(output_dir),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        names = {path.name for path in output_dir.iterdir()} if output_dir.exists() else set()
+        encoded = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in output_dir.iterdir()
+            if path.suffix in {".json", ".md", ".csv"}
+        ) if output_dir.exists() else ""
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert names == {
+        "current_snapshot.json",
+        "reconciliation_report.json",
+        "reconciliation_report.md",
+        "Tier1_Primary_Source_Download_Checklist.csv",
+    }
+    assert "current_snapshot.json" in result.stdout
+    assert "reconciliation_report.md" in result.stdout
+    assert "/Users/" not in encoded
+    assert "file://" not in encoded
+    assert "attachmentKey" not in encoded
+    assert "fullText" not in encoded
+
+
+def test_zotero_fresh_metadata_preserves_prior_sanitized_attachment_states():
+    prior = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    prior["attachmentStatuses"] = {
+        "KL5HP3MU": {
+            "state": "pdf_verified",
+            "contentType": "application/pdf",
+            "byteCount": 4096,
+            "verifiedAt": "2026-07-12T12:00:00Z",
+        }
+    }
+    fresh = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    with tempfile.TemporaryDirectory() as directory:
+        output_dir = Path(directory)
+        (output_dir / "current_snapshot.json").write_text(
+            json.dumps(prior), encoding="utf-8"
+        )
+        args = argparse.Namespace(
+            snapshot=None,
+            attachments=False,
+            output_dir=output_dir,
+        )
+        with mock.patch.object(
+            zotero_bridge, "snapshot_library", return_value=fresh
+        ):
+            observed = zotero_bridge._snapshot_for_check(
+                args, _zotero_config(), _canonical_tier1_registry()
+            )
+
+    assert observed["attachmentStatuses"] == prior["attachmentStatuses"]
+
+
+def test_zotero_attachment_check_preserves_prior_state_for_identity_blocked_parent():
+    prior = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    prior["attachmentStatuses"] = {
+        "KL5HP3MU": {
+            "state": "pdf_verified",
+            "contentType": "application/pdf",
+            "byteCount": 4096,
+            "verifiedAt": "2026-07-12T12:00:00Z",
+        }
+    }
+    fresh = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    engel = next(row for row in fresh["items"] if row["key"] == "KL5HP3MU")
+    engel["data"]["publicationTitle"] = "Identity drift sentinel"
+    with tempfile.TemporaryDirectory() as directory:
+        output_dir = Path(directory)
+        (output_dir / "current_snapshot.json").write_text(
+            json.dumps(prior), encoding="utf-8"
+        )
+        args = argparse.Namespace(
+            snapshot=None,
+            attachments=True,
+            output_dir=output_dir,
+        )
+        with mock.patch.object(
+            zotero_bridge, "snapshot_library", return_value=fresh
+        ), mock.patch.object(
+            zotero_bridge, "_live_attachment_statuses", return_value={}
+        ):
+            observed = zotero_bridge._snapshot_for_check(
+                args, _zotero_config(), _canonical_tier1_registry()
+            )
+
+    assert observed["attachmentStatuses"]["KL5HP3MU"] == prior[
+        "attachmentStatuses"
+    ]["KL5HP3MU"]
+
+
+def test_zotero_writer_accepts_large_snapshots_after_field_level_sanitization():
+    snapshot = load_snapshot(ZOTERO_FIXTURES / "zotero_snapshot_valid.json")
+    snapshot["items"] = snapshot["items"] * 3
+    assert len(json.dumps(snapshot)) > 16_384
+    assert sanitize_snapshot(snapshot) == snapshot
+
+    with tempfile.TemporaryDirectory() as directory:
+        path = zotero_bridge._write_current_snapshot(snapshot, Path(directory))
+        written = json.loads(path.read_text(encoding="utf-8"))
+
+    assert len(written["items"]) == 51
+    assert "KL5HP3MU" in {row["key"] for row in written["items"]}
+
+
+def test_zotero_local_workflow_documents_authority_privacy_and_commands():
+    assert "/outputs/evidence_registry/" in (REPO_ROOT / ".gitignore").read_text(
+        encoding="utf-8"
+    )
+    text = EVIDENCE_README.read_text(encoding="utf-8")
+    for command in (
+        "validate.py --check-generated",
+        "zotero_reconcile.py status",
+        "zotero_reconcile.py snapshot",
+        "zotero_reconcile.py check",
+        "zotero_reconcile.py check --attachments",
+        "zotero_reconcile.py report --xlsx",
+    ):
+        assert command in text
+    for statement in (
+        "repository is authoritative",
+        "read-only",
+        "BibTeX",
+        "zotero://select/library/items/<parentKey>",
+        "outputs/evidence_registry/",
+    ):
+        assert statement in text
 
 
 def _write_fixture_repo(repo_root: Path, evidence_id: str) -> None:

@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import copy
+import io
 import json
 import re
 import sys
@@ -1276,6 +1278,176 @@ def _print_result(result: ReconciliationResult) -> None:
     print(f"warnings: {len(result.warnings)}")
 
 
+def _report_rows(report: dict) -> list[dict[str, str]]:
+    return [
+        {
+            "evidence_id": row["evidenceId"],
+            "zotero_parent_item_key": row["itemKey"],
+            "match_method": row["method"],
+            "attachment_state": row["attachment"].get("state") or "not_inspected",
+        }
+        for row in report["matched"]
+    ]
+
+
+def _render_report_markdown(report: dict, rows: list[dict[str, str]]) -> str:
+    lines = [
+        "# Tier 1 Zotero Reconciliation Report",
+        "",
+        "This ignored local report records observed Zotero metadata only. The repository evidence registry remains curriculum authority.",
+        "",
+        f"- Matched parent records: {report['matchedCount']}",
+        f"- Errors: {len(report['errors'])}",
+        f"- Warnings: {len(report['warnings'])}",
+        "",
+        "| Evidence ID | Zotero parent item key | Match method | Attachment state |",
+        "|---|---|---|---|",
+    ]
+    lines.extend(
+        "| {evidence_id} | {zotero_parent_item_key} | {match_method} | {attachment_state} |".format(
+            **row
+        )
+        for row in rows
+    )
+    for heading, issues in (("Errors", report["errors"]), ("Warnings", report["warnings"])):
+        lines.extend(("", f"## {heading}", ""))
+        if not issues:
+            lines.append("None.")
+            continue
+        for issue in issues:
+            evidence = f" ({issue['evidence_id']})" if issue["evidence_id"] else ""
+            lines.append(f"- `{issue['code']}`{evidence}: {issue['message']}")
+    return "\n".join(lines) + "\n"
+
+
+def _render_report_csv(rows: list[dict[str, str]]) -> str:
+    output = io.StringIO(newline="")
+    fieldnames = (
+        "evidence_id",
+        "zotero_parent_item_key",
+        "match_method",
+        "attachment_state",
+    )
+    writer = csv.DictWriter(output, fieldnames=fieldnames, lineterminator="\n")
+    writer.writeheader()
+    writer.writerows(rows)
+    return output.getvalue()
+
+
+class XlsxDependencyError(RuntimeError):
+    """The optional local workbook dependency is unavailable."""
+
+
+def _render_report_xlsx(rows: list[dict[str, str]]) -> bytes:
+    try:
+        from openpyxl import Workbook
+    except ImportError as exc:
+        raise XlsxDependencyError(
+            "XLSX output requires: python3 -m pip install -r "
+            "tools/evidence_registry/requirements-local.txt"
+        ) from exc
+
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = "Tier 1"
+    headers = (
+        "Evidence ID",
+        "Zotero parent item key",
+        "Match method",
+        "Attachment state",
+    )
+    worksheet.append(headers)
+    for row in rows:
+        worksheet.append(
+            (
+                row["evidence_id"],
+                row["zotero_parent_item_key"],
+                row["match_method"],
+                row["attachment_state"],
+            )
+        )
+    worksheet.freeze_panes = "A2"
+    worksheet.auto_filter.ref = worksheet.dimensions
+    stream = io.BytesIO()
+    workbook.save(stream)
+    workbook.close()
+    return stream.getvalue()
+
+
+def write_reports(
+    result: ReconciliationResult,
+    output_dir: Path | str,
+    include_xlsx: bool = False,
+) -> list[Path]:
+    """Write path-free local reconciliation views under an ignored directory."""
+
+    if not isinstance(result, ReconciliationResult):
+        raise TypeError("result must be a ReconciliationResult")
+    report = sanitize_snapshot(result.to_dict())
+    rows = _report_rows(report)
+    rendered: dict[str, str | bytes] = {
+        "reconciliation_report.json": json.dumps(report, indent=2, sort_keys=True)
+        + "\n",
+        "reconciliation_report.md": _render_report_markdown(report, rows),
+        "Tier1_Primary_Source_Download_Checklist.csv": _render_report_csv(rows),
+    }
+    if include_xlsx:
+        rendered["Tier1_Primary_Source_Download_Checklist.xlsx"] = (
+            _render_report_xlsx(rows)
+        )
+
+    destination = Path(output_dir).expanduser()
+    destination.mkdir(parents=True, exist_ok=True)
+    paths: list[Path] = []
+    for filename, content in rendered.items():
+        path = destination / filename
+        if isinstance(content, str):
+            path.write_text(content, encoding="utf-8")
+        else:
+            path.write_bytes(content)
+        paths.append(path)
+    return paths
+
+
+def _write_current_snapshot(snapshot: dict, output_dir: Path | str) -> Path:
+    safe_snapshot = sanitize_snapshot(snapshot)
+    rendered = json.dumps(safe_snapshot, indent=2, sort_keys=True) + "\n"
+    destination = Path(output_dir).expanduser()
+    destination.mkdir(parents=True, exist_ok=True)
+    path = destination / "current_snapshot.json"
+    path.write_text(rendered, encoding="utf-8")
+    return path
+
+
+def _add_output_argument(parser: argparse.ArgumentParser, default: Path) -> None:
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=default,
+        help="ignored local report directory",
+    )
+
+
+def _print_written(paths: list[Path]) -> None:
+    for path in paths:
+        print(f"wrote: {path.name}")
+
+
+def _preserve_prior_attachment_statuses(
+    snapshot: dict, output_dir: Path | str
+) -> dict:
+    current_path = Path(output_dir).expanduser() / "current_snapshot.json"
+    if not current_path.exists():
+        return snapshot
+    previous = sanitize_snapshot(load_snapshot(current_path))
+    statuses = previous.get("attachmentStatuses")
+    if not isinstance(statuses, dict):
+        return snapshot
+    merged = copy.deepcopy(snapshot)
+    merged["attachmentStatuses"] = copy.deepcopy(statuses)
+    return merged
+
+
 def _common_snapshot_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--snapshot", type=Path, help="read a detached JSON snapshot")
     parser.add_argument(
@@ -1295,13 +1467,24 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--registry", type=Path, default=repo_root / "evidence_registry.json"
     )
+    output_dir = repo_root / "outputs" / "evidence_registry"
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("status", help="probe the local read-only API")
-    subparsers.add_parser("snapshot", help="print a metadata-only library snapshot")
+    snapshot = subparsers.add_parser(
+        "snapshot", help="write an ignored metadata-only library snapshot"
+    )
+    _add_output_argument(snapshot, output_dir)
     check = subparsers.add_parser("check", help="reconcile registry and Zotero metadata")
     _common_snapshot_arguments(check)
+    _add_output_argument(check, output_dir)
     report = subparsers.add_parser("report", help="print a sanitized JSON reconciliation")
     _common_snapshot_arguments(report)
+    _add_output_argument(report, output_dir)
+    report.add_argument(
+        "--xlsx",
+        action="store_true",
+        help="also write the optional Tier 1-only workbook",
+    )
     return parser
 
 
@@ -1309,7 +1492,9 @@ def _snapshot_for_check(args: argparse.Namespace, config: dict, registry: dict) 
     if args.snapshot is not None:
         snapshot = sanitize_snapshot(load_snapshot(args.snapshot))
     else:
-        snapshot = snapshot_library(config)
+        snapshot = _preserve_prior_attachment_statuses(
+            snapshot_library(config), args.output_dir
+        )
     if args.attachments and args.snapshot is None:
         first = reconcile_registry(registry, snapshot, config)
         matched_keys = [
@@ -1319,9 +1504,12 @@ def _snapshot_for_check(args: argparse.Namespace, config: dict, registry: dict) 
             and re.fullmatch(_ITEM_KEY_RE, row["itemKey"])
         ]
         snapshot = copy.deepcopy(snapshot)
-        snapshot["attachmentStatuses"] = _live_attachment_statuses(
-            matched_keys, config
+        prior_statuses = snapshot.get("attachmentStatuses")
+        merged_statuses = (
+            copy.deepcopy(prior_statuses) if isinstance(prior_statuses, dict) else {}
         )
+        merged_statuses.update(_live_attachment_statuses(matched_keys, config))
+        snapshot["attachmentStatuses"] = merged_statuses
     return sanitize_snapshot(snapshot)
 
 
@@ -1336,17 +1524,30 @@ def main(argv: list[str] | None = None) -> int:
             print("connector: reachable")
             return 0
         if args.command == "snapshot":
-            print(json.dumps(snapshot_library(config), indent=2, sort_keys=True))
+            fresh = _preserve_prior_attachment_statuses(
+                snapshot_library(config), args.output_dir
+            )
+            path = _write_current_snapshot(fresh, args.output_dir)
+            _print_written([path])
             return 0
 
         registry = _load_registry(args.registry)
         snapshot = _snapshot_for_check(args, config, registry)
         result = reconcile_registry(registry, snapshot, config)
         if args.command == "report":
-            print(json.dumps(sanitize_snapshot(result.to_dict()), indent=2, sort_keys=True))
+            report_paths = write_reports(
+                result, args.output_dir, include_xlsx=args.xlsx
+            )
+            snapshot_path = _write_current_snapshot(snapshot, args.output_dir)
+            _print_written([snapshot_path, *report_paths])
         else:
             _print_result(result)
+            if args.attachments and args.snapshot is None:
+                _write_current_snapshot(snapshot, args.output_dir)
         return 1 if result.errors else 0
+    except XlsxDependencyError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
     except (OSError, ValueError, urllib.error.URLError):
         print("api_unavailable", file=sys.stderr)
         return 2

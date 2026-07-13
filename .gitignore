@@ -70,3 +70,6 @@ node_modules/
 
 # ---- Generated faculty and Adobe polish package ----
 /outputs/faculty_polish_top10/
+
+# ---- Local Zotero reconciliation artifacts (metadata only; never curriculum authority) ----
+/outputs/evidence_registry/
