@@ -228,6 +228,24 @@ for k, v in d.items():
     for name in ("evidenceIds", "relatedTools", "workflowModes", "workflowStages", "communicationCases"):
         if name in v and not (isinstance(v[name], list) and all(isinstance(x, str) for x in v[name])):
             bad(k, "'%s' must be a list of strings" % name)
+    # curriculum crosswalk (see CROSSWALK_TAXONOMY.md): controlled-vocab lists
+    SHELF_VOCAB = {"mood", "psychosis", "anxiety", "substance", "neurocog", "pharm",
+                   "safety", "personality", "childdev", "otherdx", "ethics", "relational"}
+    EPA_VOCAB = {"EPA%d" % i for i in range(1, 14)}
+    if "shelfBlueprint" in v:
+        sb = v["shelfBlueprint"]
+        if not (isinstance(sb, list) and sb and all(isinstance(x, str) for x in sb)):
+            bad(k, "'shelfBlueprint' must be a non-empty list of strings")
+        else:
+            for c in sb:
+                if c not in SHELF_VOCAB: bad(k, "'shelfBlueprint' has unknown code '%s'" % c)
+    if "epa" in v:
+        ep = v["epa"]
+        if not (isinstance(ep, list) and ep and all(isinstance(x, str) for x in ep)):
+            bad(k, "'epa' must be a non-empty list of strings")
+        else:
+            for c in ep:
+                if c not in EPA_VOCAB: bad(k, "'epa' has unknown code '%s'" % c)
     for cid in v.get("communicationCases", []) if isinstance(v.get("communicationCases"), list) else []:
         if communication_case_ids and cid not in communication_case_ids:
             bad(k, "communicationCases references unknown case '%s'" % cid)

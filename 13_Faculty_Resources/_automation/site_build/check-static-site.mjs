@@ -129,6 +129,37 @@ if (existsSync(rvPath) && parsed[rvPath]) {
   for (const f of [...navMd, ...navTools]) if (f && !(f in rev)) S(`review status missing (reviewed.json): ${f}`);
 }
 
+/* ---------- 4a2. curriculum crosswalk coverage gaps (SOFT) ----------
+ * For each shelfBlueprint code, warn if no ATTESTED nav page is tagged with it, or no
+ * ATTESTED question-bank item is in that category. Soft on purpose: the epa/shelf mapping
+ * ships as a proposed teaching default (CROSSWALK_TAXONOMY.md); promote to hard once faculty
+ * attests the crosswalk. Blueprint codes == question_bank categories, so the two join directly. */
+{
+  const SHELF_VOCAB = ['mood','psychosis','anxiety','substance','neurocog','pharm',
+    'safety','personality','childdev','otherdx','ethics','relational'];
+  const meta = (existsSync(tmPath) && parsed[tmPath]) ? parsed[tmPath] : null;
+  const rev = (existsSync(rvPath) && parsed[rvPath]) ? parsed[rvPath] : {};
+  const qbP = p('question_bank.json');
+  const qb = (existsSync(qbP) && parsed[qbP]) ? (parsed[qbP].items || []) : null;
+  const isAttestedPage = (slug) => rev[slug] && rev[slug].status === 'reviewed';
+  if (meta && navMd.size) {
+    const pageCov = Object.create(null), itemCov = Object.create(null);
+    for (const c of SHELF_VOCAB) { pageCov[c] = 0; itemCov[c] = 0; }
+    for (const slug of navMd) {
+      const m = meta[slug]; if (!m || !Array.isArray(m.shelfBlueprint)) continue;
+      if (!isAttestedPage(slug)) continue;
+      for (const c of m.shelfBlueprint) if (c in pageCov) pageCov[c]++;
+    }
+    if (qb) for (const it of qb) if (it && it.status === 'attested' && it.category in itemCov) itemCov[it.category]++;
+    let tagged = 0; for (const slug of navMd) { const m = meta[slug]; if (m && Array.isArray(m.shelfBlueprint) && m.shelfBlueprint.length) tagged++; }
+    I(`crosswalk coverage: ${tagged} nav pages carry shelfBlueprint tags across ${SHELF_VOCAB.length} blueprint codes`);
+    for (const c of SHELF_VOCAB) {
+      if (pageCov[c] === 0) S(`blueprint gap: no attested page tagged shelfBlueprint "${c}"`);
+      if (qb && itemCov[c] === 0) S(`blueprint gap: no attested question-bank item in category "${c}"`);
+    }
+  }
+}
+
 /* ---------- 4b. topic_meta.json cta hrefs must resolve to a shipped tool/page ---------- */
 if (existsSync(tmPath) && parsed[tmPath]) {
   for (const [key, m] of Object.entries(parsed[tmPath])) {
