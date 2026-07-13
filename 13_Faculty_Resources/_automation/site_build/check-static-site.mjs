@@ -160,6 +160,26 @@ if (existsSync(rvPath) && parsed[rvPath]) {
   }
 }
 
+/* ---------- 4a3. diagnostic pretest pool (SOFT) ----------
+ * Build emits pretest_pool.json (1 attested, scoreable item per blueprint category).
+ * Warn if it doesn't cover all 12 codes or an item isn't scoreable. Soft: the SPA
+ * degrades gracefully (a missing category is just not probed). */
+{
+  const ppP = p('pretest_pool.json');
+  if (existsSync(ppP) && parsed[ppP]) {
+    const items = parsed[ppP].items || [];
+    const SHELF_VOCAB = ['mood','psychosis','anxiety','substance','neurocog','pharm',
+      'safety','personality','childdev','otherdx','ethics','relational'];
+    const seen = new Set(items.map(it => it && it.cat));
+    const missing = SHELF_VOCAB.filter(c => !seen.has(c));
+    if (missing.length) S(`pretest pool missing categories: ${missing.join(', ')}`);
+    for (const it of items) {
+      const nc = (it.options || []).filter(o => o && o.c === true).length;
+      if (nc !== 1) S(`pretest pool item "${it && it.id}" (${it && it.cat}) not scoreable (${nc} correct options)`);
+    }
+  }
+}
+
 /* ---------- 4b. topic_meta.json cta hrefs must resolve to a shipped tool/page ---------- */
 if (existsSync(tmPath) && parsed[tmPath]) {
   for (const [key, m] of Object.entries(parsed[tmPath])) {

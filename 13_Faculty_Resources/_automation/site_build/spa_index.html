@@ -357,6 +357,12 @@
   .hm-li .t{flex:1}
   .hm-li .sec{font-size:.68rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em}
   .hm-empty{color:var(--text-mid);font-size:.94rem}
+  .pt-q{margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid var(--border)}
+  .pt-stem{font-weight:600;margin:0 0 8px}
+  .pt-opt{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--bg-alt);border-radius:8px;padding:8px 10px;margin:4px 0;font:inherit;color:var(--text);cursor:pointer}
+  .pt-opt:hover{border-color:var(--accent)}
+  .pt-opt.sel{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark)}
+  .hm-inl{background:none;border:none;color:var(--accent-dark);cursor:pointer;font:inherit;text-decoration:underline;padding:0}
   .wd{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:0 0 18px}
   .wd-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
   .wd-head h2{font-family:var(--font-head);font-size:1.12rem;margin:0;border:none;padding:0;color:var(--text)}
@@ -1182,7 +1188,8 @@
     var payload={ study_id:studyId(), exported_at:new Date().toISOString(), schema:'clerkship-study-v1',
       progress:safeLS('cw_progress_v1'), srs:safeLS('cw_srs_v1'), quiz:safeLS('cw_quiz_v1'),
       qb:safeLS('cw_qb_v1'), mastery:(function(){try{return masteryByBlueprint();}catch(_){return null;}})(),
-      calibration:(function(){try{return calibrationSummary();}catch(_){return null;}})() };
+      calibration:(function(){try{return calibrationSummary();}catch(_){return null;}})(),
+      pretest:safeLS('cw_pretest_v1'), plan:safeLS('cw_plan_v1') };
     var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
     a.download='clerkship_study_'+payload.study_id+'_'+new Date().toISOString().slice(0,10)+'.json';
@@ -1219,6 +1226,8 @@
     h+='<div class="hm-bars">';
     mb.forEach(function(x){ var pc=(x.score==null)?0:x.score; var lab=(x.score==null)?'not started':(x.score+'%'+(x.conf==='low'?' · few':'')); h+='<div class="brow"><span class="lab">'+esc(x.label)+'</span><span class="track"><span class="fill" style="width:'+pc+'%"></span></span><span class="pc">'+lab+'</span></div>'; });
     h+='</div></div>';
+    if(safeLS('cw_plan_v1')){ h+='<button class="hm-li" data-pt="plan"><span class="t">View your personalized 6-week plan</span><span class="sec">Plan →</span></button>'; }
+    else if(!safeLS('cw_pretest_v1')){ h+='<button class="hm-li" data-pt="pretest"><span class="t">Take the 2-minute placement</span><span class="sec">Start →</span></button>'; }
     var weakCats=mbStarted.filter(function(x){return x.score<70;}).sort(function(a,b){return a.score-b.score;}).slice(0,3);
     var notStarted=mb.filter(function(x){return x.score==null;});
     if(weakCats.length||notStarted.length){ h+='<div class="hm-sec"><h2>Practice your weakest areas</h2>';
@@ -1242,6 +1251,29 @@
   };
 
   /* ---- Concept A: Start here ---- */
+  /* ===== adaptive engine v2: diagnostic pretest → personalized 6-week plan =====
+     Emphasis overlay (week order fixed); 12-item attested pretest seeds masteryByBlueprint. */
+  var WEEK_MAP=[
+    {w:1,title:'Week 1 — Foundations & Orientation',cats:['safety'],page:'week1.md'},
+    {w:2,title:'Week 2 — Mood, Psychosis & Pharmacology',cats:['mood','psychosis','pharm','neurocog'],page:'week2.md'},
+    {w:3,title:'Week 3 — Psychotherapy, Personality & Relationship',cats:['personality','anxiety','relational'],page:'week3.md'},
+    {w:4,title:'Week 4 — Family, Systems & Expressed Emotion',cats:['relational'],page:'week4.md'},
+    {w:5,title:'Week 5 — Acute & Emergency',cats:['safety','neurocog','substance'],page:'week5.md'},
+    {w:6,title:'Week 6 — Integration, Disposition & Exam',cats:['otherdx','ethics'],page:'week6.md'}
+  ];
+  var PRETEST_POOL=null, ptAnswers={};
+  function ptLabels(cats){ return cats.map(function(c){return SHELF_LABEL[c]||c;}).join(', '); }
+  function masteryBarsHtml(mb){ var h='<div class="hm-bars">'; mb.forEach(function(x){ var pc=(x.score==null)?0:x.score; var lab=(x.score==null)?'not started':(x.score+'%'+(x.conf==='low'?' · few':'')); h+='<div class="brow"><span class="lab">'+esc(x.label)+'</span><span class="track"><span class="fill" style="width:'+pc+'%"></span></span><span class="pc">'+lab+'</span></div>'; }); return h+'</div>'; }
+  function buildPlan(){ var mb=masteryByBlueprint(), weak={}; mb.forEach(function(x){ if(x.score==null||x.score<70) weak[x.c]=1; }); var weeks=WEEK_MAP.map(function(wm){ return {week:wm.w,title:wm.title,page:wm.page,allCats:wm.cats,focus:wm.cats.filter(function(c){return weak[c];})}; }); return {generatedAt:new Date().toISOString(),shelfDate:(LS('cw_shelf_date')||''),weeks:weeks}; }
+  function shelfIntensityHtml(shelf){ if(!shelf) return '<div class="sub" style="margin:0 0 10px">Set a shelf/exam date on <button class="hm-inl" data-pt="start">Start-here</button> to tune intensity.</div>'; var t=new Date(shelf+'T00:00:00').getTime(); if(isNaN(t))return ''; var days=Math.ceil((t-Date.now())/86400000); if(days<0) return '<div class="sub" style="margin:0 0 10px">Shelf date passed — use this plan for review.</div>'; var msg=days<=14?('Shelf in '+days+' day'+(days===1?'':'s')+' — compress: hit each week’s focus areas and practice daily.'):('Shelf in '+days+' days — steady pace through the weeks.'); return '<div class="sub" style="margin:0 0 10px">'+msg+'</div>'; }
+  function renderPlanCards(plan){ var h=shelfIntensityHtml(plan.shelfDate); plan.weeks.forEach(function(wk){ h+='<div class="wd-card" style="margin:0 0 12px"><h3 style="text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--text);margin:0 0 6px">'+esc(wk.title)+'</h3>'; if(wk.focus&&wk.focus.length){ h+='<div class="sub" style="margin:0 0 8px">Focus first: <strong>'+esc(ptLabels(wk.focus))+'</strong></div>'; wk.focus.forEach(function(c){ h+='<button class="hm-li" data-practice="'+c+'" style="border-bottom:none"><span class="t">Practice '+esc(SHELF_LABEL[c]||c)+'</span><span class="sec">→</span></button>'; }); } else { h+='<div class="sub" style="margin:0 0 4px">On track — maintain.</div>'; } h+='<button class="hm-li" data-f="'+wk.page+'" style="border-bottom:none"><span class="t">Open '+esc(wk.title.split(' — ')[0])+'</span><span class="sec">read →</span></button></div>'; }); return h; }
+  function startPretest(){ setDrawer(false); if(contentEl){ contentEl.className='content'; } contentEl.innerHTML='<div class="hm" id="ptRoot"><h1>2-minute placement</h1><p class="sub">Loading…</p></div>'; bindPretestUI(); var go=function(pool){ PRETEST_POOL=pool; ptAnswers={}; renderPretestForm(); }; if(PRETEST_POOL){ go(PRETEST_POOL); return; } fetch('pretest_pool.json').then(function(r){return r.ok?r.json():{items:[]};}).then(function(d){ go((d&&d.items)||[]); }).catch(function(){ go([]); }); }
+  function renderPretestForm(){ var root=document.getElementById('ptRoot'); if(!root)return; var items=PRETEST_POOL||[]; if(!items.length){ root.innerHTML='<h1>Placement unavailable</h1><p class="sub">The question pool didn’t load — browse the library or follow the path instead.</p>'; return; } var h='<h1>2-minute placement</h1><p class="sub">One question per topic area — pick the best answer. This points you at weak spots; it’s a starting estimate, not a grade.</p>'; items.forEach(function(it,qi){ h+='<div class="pt-q" data-qi="'+qi+'"><div class="pt-stem">'+(qi+1)+'. '+esc(it.stem)+'</div>'; (it.options||[]).forEach(function(o){ h+='<button class="pt-opt" data-qi="'+qi+'" data-key="'+esc(o.key)+'"><b>'+esc(o.key)+'.</b> '+esc(o.t)+'</button>'; }); h+='</div>'; }); h+='<div style="margin-top:6px"><button class="hm-btn" data-pt="submit">See my results</button> <span id="ptCount" class="hm-empty"></span></div>'; root.innerHTML=h; updatePtCount(); }
+  function updatePtCount(){ var el=document.getElementById('ptCount'); if(!el)return; var n=0,t=(PRETEST_POOL||[]).length,k; for(k in ptAnswers){ if(ptAnswers.hasOwnProperty(k))n++; } el.textContent=n+' of '+t+' answered'; }
+  function submitPretest(){ var items=PRETEST_POOL||[], answers=[], byCat={}, qb={}; try{qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}');}catch(_){qb={};} items.forEach(function(it,qi){ var k=ptAnswers[qi]; if(!k)return; var opt=null; (it.options||[]).forEach(function(o){if(o.key===k)opt=o;}); var correct=!!(opt&&opt.c); answers.push({id:it.id,cat:it.cat,correct:correct}); if(!byCat[it.cat])byCat[it.cat]={n:0,correct:0}; byCat[it.cat].n++; if(correct)byCat[it.cat].correct++; qb[it.id]={correct:correct,pages:it.pages||[],cat:it.cat,confidence:null,source:'pretest',at:new Date().toISOString().slice(0,10)}; }); try{localStorage.setItem('cw_qb_v1',JSON.stringify(qb));}catch(_){ } try{localStorage.setItem('cw_pretest_v1',JSON.stringify({takenAt:new Date().toISOString(),answers:answers,byCat:byCat}));}catch(_){ } var plan=buildPlan(); try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ } renderPretestResults(plan); }
+  function renderPretestResults(plan){ var root=document.getElementById('ptRoot'); if(!root)return; var mb=masteryByBlueprint(); var h='<h1>Your placement</h1><p class="sub">A starting estimate from your answers — it refines as you practice. Weak areas are flagged in your plan below.</p>'; h+='<div class="hm-sec"><h2>Mastery by blueprint</h2>'+masteryBarsHtml(mb)+'</div>'; h+='<div class="hm-sec"><h2>Your personalized 6-week plan</h2>'+renderPlanCards(plan)+'</div>'; h+='<div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div>'; root.innerHTML=h; }
+  function renderStoredPlan(){ var plan=null; try{plan=JSON.parse(localStorage.getItem('cw_plan_v1')||'null');}catch(_){ } if(!plan){ startPretest(); return; } setDrawer(false); if(contentEl){ contentEl.className='content'; } contentEl.innerHTML='<div class="hm" id="planRoot"><h1>Your 6-week plan</h1><p class="sub">Personalized from your placement — the week order is fixed; your weak areas are flagged to hit first.</p><div class="hm-sec">'+renderPlanCards(plan)+'</div><div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div></div>'; bindPretestUI(); }
+  function bindPretestUI(){ if(window.__ptBound)return; window.__ptBound=1; contentEl.addEventListener('click',function(ev){ var scope=ev.target.closest?ev.target.closest('#ptRoot,#planRoot'):null; if(!scope)return; var opt=ev.target.closest?ev.target.closest('.pt-opt'):null; if(opt){ var qi=opt.getAttribute('data-qi'); ptAnswers[qi]=opt.getAttribute('data-key'); var sibs=scope.querySelectorAll('.pt-opt[data-qi="'+qi+'"]'); for(var i=0;i<sibs.length;i++)sibs[i].classList.remove('sel'); opt.classList.add('sel'); updatePtCount(); return; } var b=ev.target.closest?ev.target.closest('[data-pt]'):null; if(b){ var a=b.getAttribute('data-pt'); if(a==='submit')submitPretest(); else if(a==='pretest')startPretest(); else if(a==='plan')renderStoredPlan(); else if(a==='home')navClick('__home__'); else if(a==='start')navClick('__start__'); return; } var pr=ev.target.closest?ev.target.closest('.hm-li[data-practice]'):null; if(pr){ try{localStorage.setItem('cw_qb_focus',pr.getAttribute('data-practice'));}catch(_){ } navClick('question-bank-practice.html'); return; } var pg=ev.target.closest?ev.target.closest('.hm-li[data-f]'):null; if(pg){ navClick(pg.getAttribute('data-f')); return; } }); }
   window.renderStart=function(){
     var track=LS('cw_track')||'MS3'; var wk=parseInt(LS('cw_start_week')||'1',10)||1; var shelf=LS('cw_shelf_date')||'';
     var fd={}; try{ fd=JSON.parse(LS('cw_firstday')||'{}')||{}; }catch(_){ fd={}; }
@@ -1251,7 +1283,8 @@
     var h='<div class="st" id="stRoot"><h1>Welcome to the rotation</h1>';
     h+='<p class="sub">Two ways to use this hub. <strong>Follow the Path</strong> gives you a guided week-by-week route; <strong>Browse the Library</strong> lets you jump straight to any topic or tool. You can switch anytime from the sidebar.</p>';
     h+='<div class="st-modes"><button class="st-mode" data-act="path"><h3>▶ Follow the Path</h3><p>A structured 6-week route — start at Week 1 and go in order.</p></button>';
-    h+='<button class="st-mode" data-act="lib"><h3>▤ Browse the Library</h3><p>Go straight to a topic, tool, or your progress home.</p></button></div>';
+    h+='<button class="st-mode" data-act="lib"><h3>▤ Browse the Library</h3><p>Go straight to a topic, tool, or your progress home.</p></button>';
+    h+='<button class="st-mode" data-act="pretest"><h3>◎ Take the 2-minute placement</h3><p>One question per topic area — get a personalized 6-week plan aimed at your weak spots.</p></button></div>';
     h+='<div class="st-sec-h">Set your rotation</div><div class="st-row">';
     h+='<div class="st-field"><label for="stTrack">Track</label><select id="stTrack"><option value="MS3"'+(track==='MS3'?' selected':'')+'>MS3 student</option><option value="Resident"'+(track==='Resident'?' selected':'')+'>Resident</option></select></div>';
     h+='<div class="st-field"><label for="stWeek">Starting week</label><select id="stWeek">'+wkOpts+'</select></div>';
@@ -1271,7 +1304,7 @@
     hydrate(root);
     if(f==='__home__'){
       root.addEventListener('click',function(e){
-        var li=e.target.closest?e.target.closest('.hm-li'):null; if(li){ var act=li.getAttribute('data-act'); if(act==='review'){ navClick('review.html'); return; } if(act==='start'){ navClick('__start__'); return; } if(act==='studyexport'){ if(window.exportStudy)window.exportStudy(); return; } var pr=li.getAttribute('data-practice'); if(pr){ try{localStorage.setItem('cw_qb_focus',pr);}catch(_){ } navClick('question-bank-practice.html'); return; } var ff=li.getAttribute('data-f'); if(ff)navClick(ff); return; }
+        var li=e.target.closest?e.target.closest('.hm-li'):null; if(li){ var act=li.getAttribute('data-act'); if(act==='review'){ navClick('review.html'); return; } if(act==='start'){ navClick('__start__'); return; } if(act==='studyexport'){ if(window.exportStudy)window.exportStudy(); return; } var pr=li.getAttribute('data-practice'); if(pr){ try{localStorage.setItem('cw_qb_focus',pr);}catch(_){ } navClick('question-bank-practice.html'); return; } var pt=li.getAttribute('data-pt'); if(pt){ if(pt==='plan')renderStoredPlan(); else if(pt==='pretest')startPretest(); return; } var ff=li.getAttribute('data-f'); if(ff)navClick(ff); return; }
         var dm=e.target.closest?e.target.closest('[data-dash-mode]'):null; if(dm){ setDashboardMode(dm.getAttribute('data-dash-mode')); root.outerHTML=window.renderHome(); window.__afterSpecial('__home__'); return; }
         var b=e.target.closest?e.target.closest('[data-act]'):null; if(b){ var a=b.getAttribute('data-act'); if(a==='review')navClick('review.html'); }
       });
@@ -1279,7 +1312,7 @@
       root.addEventListener('click',function(e){
         var it=e.target.closest?e.target.closest('.it[data-check]'):null;
         if(it && !(e.target.closest&&e.target.closest('a'))){ var key=it.getAttribute('data-check'); var st={}; try{ st=JSON.parse(LS('cw_firstday')||'{}')||{}; }catch(_){ st={}; } st[key]=!st[key]; try{ localStorage.setItem('cw_firstday',JSON.stringify(st)); }catch(_){ } it.classList.toggle('on',!!st[key]); var bx=it.querySelector('.bx'); if(bx)bx.textContent=st[key]?'✓':''; return; }
-        var m=e.target.closest?e.target.closest('[data-act]'):null; if(m){ var act=m.getAttribute('data-act'); if(act==='path'){ if(typeof showPath==='function')showPath(); } else if(act==='lib'){ navClick('__home__'); } else if(act==='home'){ navClick('__home__'); } }
+        var m=e.target.closest?e.target.closest('[data-act]'):null; if(m){ var act=m.getAttribute('data-act'); if(act==='path'){ if(typeof showPath==='function')showPath(); } else if(act==='lib'){ navClick('__home__'); } else if(act==='home'){ navClick('__home__'); } else if(act==='pretest'){ startPretest(); } }
       });
       var tk=root.querySelector('#stTrack'); if(tk)tk.addEventListener('change',function(){ try{localStorage.setItem('cw_track',tk.value);}catch(_){ } });
       var wkk=root.querySelector('#stWeek'); if(wkk)wkk.addEventListener('change',function(){ try{localStorage.setItem('cw_start_week',wkk.value);}catch(_){ } });
