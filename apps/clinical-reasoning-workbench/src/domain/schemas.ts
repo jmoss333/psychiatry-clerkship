@@ -1,6 +1,84 @@
 import { z } from "zod";
 import type { CaseDefinition } from "./model";
 
+export type MseTerm = {
+  id: string;
+  label: string;
+  domain: string;
+  definition: string;
+  observableSupport: string;
+  limitation: string;
+  alternatives: string[];
+  discriminatingQuestion: string | null;
+  evidenceIds: string[];
+};
+
+export type LanguageRule = {
+  id: string;
+  phrase: string;
+  why: string;
+  alternatives: string[];
+};
+
+export type CognitiveTriggerKey =
+  | "reviewed_fewer_than_three"
+  | "no_favored_contradiction"
+  | "medical_row_unexamined"
+  | "substance_or_medical_unexamined"
+  | "fewer_than_two_supports"
+  | "only_support_low_or_unknown";
+
+export type CognitivePrompt = {
+  id: string;
+  trigger: CognitiveTriggerKey;
+  prompt: string;
+};
+
+export type ReasoningCheck = {
+  id: string;
+  status: "ok" | "watch";
+  prompt: string;
+};
+
+export type LinterFinding = LanguageRule & { originalText: string };
+
+export type TeachingCopy = Record<
+  "ms3" | "resident",
+  {
+    defaultDefinitionsExpanded: boolean;
+    msePanelTitle: string;
+    differentialPanelTitle: string;
+    challengePanelTitle: string;
+    factLinkPrompt: string;
+  }
+>;
+
+export type VersionedAuthoredContent<T> = {
+  contentVersion: 1;
+  facultyReview: {
+    status: "draft" | "pending" | "reviewed";
+    reviewedAt?: string;
+    reviewedBy?: string;
+  };
+  items: T;
+};
+
+export type RuntimeContent = {
+  caseDefinition: CaseDefinition;
+  mseTerms: MseTerm[];
+  languageRules: LanguageRule[];
+  cognitivePrompts: CognitivePrompt[];
+  teachingCopy: TeachingCopy;
+  reviewStatus: Record<
+    | "first-episode.json"
+    | "mse-lexicon.json"
+    | "language-linter-rules.json"
+    | "cognitive-forcing-prompts.json"
+    | "teaching-copy.json",
+    "draft" | "pending" | "reviewed"
+  >;
+};
+
 export const MAX_ID_LENGTH = 100;
 export const MAX_FACT_TEXT_LENGTH = 280;
 export const MAX_DESCRIPTION_LENGTH = 500;
@@ -310,6 +388,98 @@ export const FacultyReviewSchema = z.strictObject({
   status: FacultyReviewStatusSchema,
   reviewedAt: IsoDateTimeSchema.optional(),
   reviewedBy: DescriptionTextSchema.optional(),
+});
+
+const VersionFieldsSchema = z.strictObject({
+  contentVersion: z.literal(1),
+  facultyReview: FacultyReviewSchema,
+});
+
+const MseTermSchema = z.strictObject({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  domain: z.string().min(1),
+  definition: z.string().min(1),
+  observableSupport: z.string().min(1),
+  limitation: z.string().min(1),
+  alternatives: z.array(z.string().min(1)).min(1),
+  discriminatingQuestion: z.string().min(1).nullable(),
+  evidenceIds: z
+    .array(z.string().min(1))
+    .length(
+      0,
+      "academic evidenceIds must remain empty until a registry is available",
+    ),
+});
+
+const LanguageRuleSchema = z.strictObject({
+  id: z.string().min(1),
+  phrase: z.string().min(1),
+  why: z.string().min(1),
+  alternatives: z.array(z.string().min(1)).min(1),
+});
+
+const CognitivePromptSchema = z.strictObject({
+  id: z.string().min(1),
+  trigger: z.enum([
+    "reviewed_fewer_than_three",
+    "no_favored_contradiction",
+    "medical_row_unexamined",
+    "substance_or_medical_unexamined",
+    "fewer_than_two_supports",
+    "only_support_low_or_unknown",
+  ]),
+  prompt: z.string().min(1),
+});
+
+const TeachingLevelSchema = z.strictObject({
+  defaultDefinitionsExpanded: z.boolean(),
+  msePanelTitle: z.string().min(1),
+  differentialPanelTitle: z.string().min(1),
+  challengePanelTitle: z.string().min(1),
+  factLinkPrompt: z.string().min(1),
+});
+
+const requireUniqueContentIds = (
+  items: { id: string }[],
+  ctx: z.core.$RefinementCtx<unknown>,
+) => {
+  const seen = new Set<string>();
+  for (const item of items) {
+    if (seen.has(item.id)) {
+      ctx.addIssue({
+        code: "custom",
+        message: `duplicate content ID ${item.id}`,
+      });
+    }
+    seen.add(item.id);
+  }
+};
+
+export const MseLexiconFileSchema = VersionFieldsSchema.extend({
+  items: z.array(MseTermSchema).superRefine((items, ctx) => {
+    if (items.length !== 23) {
+      ctx.addIssue({
+        code: "custom",
+        message: "expected exactly 23 terms",
+      });
+    }
+  }),
+}).superRefine((value, ctx) => requireUniqueContentIds(value.items, ctx));
+
+export const LanguageRulesFileSchema = VersionFieldsSchema.extend({
+  items: z.array(LanguageRuleSchema).length(6),
+}).superRefine((value, ctx) => requireUniqueContentIds(value.items, ctx));
+
+export const CognitivePromptsFileSchema = VersionFieldsSchema.extend({
+  items: z.array(CognitivePromptSchema).length(6),
+}).superRefine((value, ctx) => requireUniqueContentIds(value.items, ctx));
+
+export const TeachingCopyFileSchema = VersionFieldsSchema.extend({
+  items: z.strictObject({
+    ms3: TeachingLevelSchema,
+    resident: TeachingLevelSchema,
+  }),
 });
 
 function addCollectionIdIssues<T extends { id: string }>(

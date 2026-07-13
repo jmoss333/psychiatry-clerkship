@@ -7,9 +7,15 @@ import {
   useState,
 } from "react";
 import type { Dispatch, PropsWithChildren } from "react";
-import rawCase from "../content/cases/first-episode.json";
-import { createSeedWorkspace } from "../content/loadContent";
-import { assertWorkspaceIntegrity } from "../domain/integrity";
+import {
+  createSeedWorkspace,
+  loadRuntimeContent,
+  type RuntimeContent,
+} from "../content/loadContent";
+import {
+  assertWorkspaceContentReferences,
+  assertWorkspaceIntegrity,
+} from "../domain/integrity";
 import type { WorkspaceAction, WorkspaceState } from "../domain/model";
 import {
   loadWorkspace,
@@ -19,7 +25,7 @@ import {
 import { parsePreviewQuery } from "../domain/query";
 import type { PreviewSelection } from "../domain/query";
 import { workspaceReducer } from "../domain/reducer";
-import { WorkspaceStateSchema, parseCaseDefinition } from "../domain/schemas";
+import { WorkspaceStateSchema } from "../domain/schemas";
 import { WorkspaceContext } from "./useWorkspace";
 
 const READ_UNAVAILABLE_MESSAGE =
@@ -32,6 +38,7 @@ export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export type WorkspaceContextValue = {
   workspace: WorkspaceState;
+  content: RuntimeContent;
   dispatch: Dispatch<WorkspaceAction>;
   selectedFactIds: string[];
   selectFacts: (factIds: string[]) => void;
@@ -50,6 +57,7 @@ export type WorkspaceProviderProps = PropsWithChildren<{
   initialWorkspace?: WorkspaceState;
   storage?: Storage;
   previewSelection?: PreviewSelection;
+  content?: RuntimeContent;
 }>;
 
 type ResolvedStorage = {
@@ -64,6 +72,13 @@ type InitialProviderState = {
   saveStatus: SaveStatus;
   readUnavailable: boolean;
 };
+
+let bundledRuntimeContent: RuntimeContent | undefined;
+
+function getBundledRuntimeContent(): RuntimeContent {
+  bundledRuntimeContent ??= loadRuntimeContent();
+  return bundledRuntimeContent;
+}
 
 function makeUnavailableStorage(cause: unknown): Storage {
   const error =
@@ -95,39 +110,53 @@ function resolveStorage(provided: Storage | undefined): ResolvedStorage {
   }
 }
 
-function validateWorkspace(workspace: WorkspaceState): WorkspaceState {
-  return assertWorkspaceIntegrity(
-    WorkspaceStateSchema.parse(structuredClone(workspace)),
+function validateWorkspace(
+  workspace: WorkspaceState,
+  content: RuntimeContent,
+): WorkspaceState {
+  return assertWorkspaceContentReferences(
+    assertWorkspaceIntegrity(
+      WorkspaceStateSchema.parse(structuredClone(workspace)),
+    ),
+    content,
   );
 }
 
 function applyLevelOverride(
   workspace: WorkspaceState,
   selection: PreviewSelection,
+  content: RuntimeContent,
 ): WorkspaceState {
-  const validated = validateWorkspace(workspace);
+  const validated = validateWorkspace(workspace, content);
   if (!selection.levelOverride) return validated;
-  return assertWorkspaceIntegrity({
-    ...validated,
-    learnerLevel: selection.levelOverride,
-  });
+  return assertWorkspaceContentReferences(
+    assertWorkspaceIntegrity({
+      ...validated,
+      learnerLevel: selection.levelOverride,
+    }),
+    content,
+  );
+}
+
+function readableErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Stored workspace is invalid";
 }
 
 function initializeProvider(
   initialWorkspace: WorkspaceState | undefined,
   resolvedStorage: ResolvedStorage,
   selection: PreviewSelection,
-): InitialProviderState & {
-  caseDefinition: ReturnType<typeof parseCaseDefinition>;
-} {
-  const caseDefinition = parseCaseDefinition(rawCase);
+  content: RuntimeContent,
+): InitialProviderState {
   const freshWorkspace = () =>
-    createSeedWorkspace(caseDefinition, selection.levelOverride ?? "ms3");
+    createSeedWorkspace(
+      content.caseDefinition,
+      selection.levelOverride ?? "ms3",
+    );
 
   if (initialWorkspace) {
     return {
-      caseDefinition,
-      workspace: applyLevelOverride(initialWorkspace, selection),
+      workspace: applyLevelOverride(initialWorkspace, selection, content),
       loadError: null,
       persistenceError: resolvedStorage.accessUnavailable
         ? READ_UNAVAILABLE_MESSAGE
@@ -139,7 +168,6 @@ function initializeProvider(
 
   if (resolvedStorage.accessUnavailable) {
     return {
-      caseDefinition,
       workspace: freshWorkspace(),
       loadError: null,
       persistenceError: READ_UNAVAILABLE_MESSAGE,
@@ -150,32 +178,27 @@ function initializeProvider(
 
   const loaded = loadWorkspace(resolvedStorage.storage);
   if (loaded.status === "loaded") {
-    if (
-      loaded.workspace.caseId !== caseDefinition.id ||
-      loaded.workspace.caseVersion !== caseDefinition.version
-    ) {
+    try {
       return {
-        caseDefinition,
+        workspace: applyLevelOverride(loaded.workspace, selection, content),
+        loadError: null,
+        persistenceError: null,
+        saveStatus: "idle",
+        readUnavailable: false,
+      };
+    } catch (error) {
+      return {
         workspace: freshWorkspace(),
-        loadError: `Stored workspace ${loaded.workspace.caseId}@${loaded.workspace.caseVersion} does not match ${caseDefinition.id}@${caseDefinition.version}.`,
+        loadError: readableErrorMessage(error),
         persistenceError: null,
         saveStatus: "idle",
         readUnavailable: false,
       };
     }
-    return {
-      caseDefinition,
-      workspace: applyLevelOverride(loaded.workspace, selection),
-      loadError: null,
-      persistenceError: null,
-      saveStatus: "idle",
-      readUnavailable: false,
-    };
   }
 
   if (loaded.status === "unavailable") {
     return {
-      caseDefinition,
       workspace: freshWorkspace(),
       loadError: null,
       persistenceError: READ_UNAVAILABLE_MESSAGE,
@@ -186,7 +209,6 @@ function initializeProvider(
 
   if (loaded.status === "invalid") {
     return {
-      caseDefinition,
       workspace: freshWorkspace(),
       loadError: loaded.message,
       persistenceError: null,
@@ -196,7 +218,6 @@ function initializeProvider(
   }
 
   return {
-    caseDefinition,
     workspace: freshWorkspace(),
     loadError: null,
     persistenceError: null,
@@ -210,18 +231,26 @@ export function WorkspaceProvider({
   initialWorkspace,
   storage,
   previewSelection,
+  content: contentFixture,
 }: WorkspaceProviderProps) {
   const [configuration] = useState(() => {
+    const content = contentFixture ?? getBundledRuntimeContent();
     const selection =
       previewSelection ?? parsePreviewQuery(window.location.search);
     const resolvedStorage = resolveStorage(storage);
     return {
+      content,
       selection,
       resolvedStorage,
-      initial: initializeProvider(initialWorkspace, resolvedStorage, selection),
+      initial: initializeProvider(
+        initialWorkspace,
+        resolvedStorage,
+        selection,
+        content,
+      ),
     };
   });
-  const { initial, resolvedStorage, selection } = configuration;
+  const { content, initial, resolvedStorage, selection } = configuration;
 
   const [workspace, reducerDispatch] = useReducer(
     workspaceReducer,
@@ -258,7 +287,10 @@ export function WorkspaceProvider({
     const snapshot = structuredClone(workspace);
     const timer = window.setTimeout(() => {
       try {
-        saveWorkspace(resolvedStorage.storage, snapshot);
+        saveWorkspace(
+          resolvedStorage.storage,
+          assertWorkspaceContentReferences(snapshot, content),
+        );
         if (readUnavailable.current) {
           setSaveStatus("error");
           setPersistenceError(READ_UNAVAILABLE_MESSAGE);
@@ -276,7 +308,7 @@ export function WorkspaceProvider({
       }
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [resolvedStorage.storage, workspace]);
+  }, [content, resolvedStorage.storage, workspace]);
 
   const factIds = useMemo(
     () => new Set(workspace.facts.map((fact) => fact.id)),
@@ -331,7 +363,7 @@ export function WorkspaceProvider({
     reducerDispatch({
       type: "resetWorkspace",
       workspace: createSeedWorkspace(
-        initial.caseDefinition,
+        content.caseDefinition,
         selection.levelOverride ?? "ms3",
       ),
     });
@@ -341,11 +373,12 @@ export function WorkspaceProvider({
     setSelectedFactIds([]);
     setEvidencePanelOpen(false);
     setEvidenceFocusRequest(null);
-  }, [initial.caseDefinition, loadError, resolvedStorage.storage, selection]);
+  }, [content.caseDefinition, loadError, resolvedStorage.storage, selection]);
 
   const value = useMemo<WorkspaceContextValue>(
     () => ({
       workspace,
+      content,
       dispatch,
       selectedFactIds,
       selectFacts,
@@ -361,6 +394,7 @@ export function WorkspaceProvider({
     }),
     [
       workspace,
+      content,
       dispatch,
       selectedFactIds,
       selectFacts,

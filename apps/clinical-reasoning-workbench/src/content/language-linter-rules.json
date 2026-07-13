@@ -1,0 +1,54 @@
+{
+  "contentVersion": 1,
+  "facultyReview": { "status": "draft" },
+  "items": [
+    {
+      "id": "manipulative",
+      "phrase": "manipulative",
+      "why": "Loaded shorthand obscures the observed behavior, context, and need.",
+      "alternatives": [
+        "Describe the specific behavior, context, and apparent function without assigning motive."
+      ]
+    },
+    {
+      "id": "attention_seeking",
+      "phrase": "attention-seeking",
+      "why": "The phrase assigns motive and can stigmatize distress or help-seeking.",
+      "alternatives": [
+        "Sought staff support repeatedly when distressed.",
+        "State what support was requested and what preceded it."
+      ]
+    },
+    {
+      "id": "poor_historian",
+      "phrase": "poor historian",
+      "why": "The phrase blames the patient and does not explain why the history is limited.",
+      "alternatives": [
+        "History is limited by inconsistent recall; collateral is needed.",
+        "Timeline is limited by disorganization, intoxication, anxiety, or another named barrier."
+      ]
+    },
+    {
+      "id": "noncompliant",
+      "phrase": "noncompliant",
+      "why": "The phrase hides the reason a recommendation was not followed.",
+      "alternatives": ["Missed doses because…", "Declined because…"]
+    },
+    {
+      "id": "normal_affect",
+      "phrase": "normal affect",
+      "why": "Affect should be described by range, intensity, reactivity, stability, and congruence.",
+      "alternatives": [
+        "Describe observed range, reactivity, stability, and congruence."
+      ]
+    },
+    {
+      "id": "denies_psychosis",
+      "phrase": "denies psychosis",
+      "why": "Psychosis is not a single yes-or-no symptom and patient report must remain separate from observation.",
+      "alternatives": [
+        "Document the hallucination, delusion, disorganization, and behavior questions asked, then record patient report and observation separately."
+      ]
+    }
+  ]
+}

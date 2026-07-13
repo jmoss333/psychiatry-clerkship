@@ -1,0 +1,20 @@
+{
+  "contentVersion": 1,
+  "facultyReview": { "status": "draft" },
+  "items": {
+    "ms3": {
+      "defaultDefinitionsExpanded": true,
+      "msePanelTitle": "Translate observation into precise language",
+      "differentialPanelTitle": "Build a falsifiable differential",
+      "challengePanelTitle": "Test the favored explanation",
+      "factLinkPrompt": "Link every interpretation to a case fact."
+    },
+    "resident": {
+      "defaultDefinitionsExpanded": false,
+      "msePanelTitle": "Separate observation, inference, and limitation",
+      "differentialPanelTitle": "Prioritize falsifiers and dangerous alternatives",
+      "challengePanelTitle": "State what would change your position",
+      "factLinkPrompt": "Link falsifiers, management implications, and next discriminators to case facts."
+    }
+  }
+}

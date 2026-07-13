@@ -1,0 +1,36 @@
+{
+  "contentVersion": 1,
+  "facultyReview": { "status": "draft" },
+  "items": [
+    {
+      "id": "premature_closure",
+      "trigger": "reviewed_fewer_than_three",
+      "prompt": "Review at least three hypotheses before closing the differential."
+    },
+    {
+      "id": "confirmation_bias",
+      "trigger": "no_favored_contradiction",
+      "prompt": "Add at least one contradictory or tension-creating fact for the favored hypothesis."
+    },
+    {
+      "id": "diagnostic_overshadowing",
+      "trigger": "medical_row_unexamined",
+      "prompt": "Examine the medical or neurologic row before attributing findings to a psychiatric explanation."
+    },
+    {
+      "id": "substance_medical_causes",
+      "trigger": "substance_or_medical_unexamined",
+      "prompt": "Review both substance-associated and medical or neurologic explanations."
+    },
+    {
+      "id": "unsupported_confidence",
+      "trigger": "fewer_than_two_supports",
+      "prompt": "Add at least two supporting facts before treating the favored hypothesis as well supported."
+    },
+    {
+      "id": "single_low_reliability_source",
+      "trigger": "only_support_low_or_unknown",
+      "prompt": "Seek a supporting fact from an additional or more reliable source."
+    }
+  ]
+}

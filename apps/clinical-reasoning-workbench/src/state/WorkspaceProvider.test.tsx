@@ -5,8 +5,13 @@ import {
   renderHook,
   screen,
 } from "@testing-library/react";
-import type { PropsWithChildren } from "react";
+import { StrictMode, type PropsWithChildren } from "react";
 import { afterEach, expect, test, vi } from "vitest";
+import * as contentModule from "../content/loadContent";
+import {
+  loadRuntimeContent,
+  type RuntimeContent,
+} from "../content/loadContent";
 import type { WorkspaceState } from "../domain/model";
 import { WORKSPACE_KEY } from "../domain/persistence";
 import type { PreviewSelection } from "../domain/query";
@@ -36,6 +41,7 @@ function ProviderProbe() {
     closeEvidencePanel,
     revealFact,
     resetInvalidWorkspace,
+    content,
   } = useWorkspace();
   return (
     <>
@@ -44,6 +50,13 @@ function ProviderProbe() {
         {String(workspace.syntheticDataAcknowledged)}
       </output>
       <output aria-label="First fact">{workspace.facts[0]?.text}</output>
+      <output aria-label="Case reference">
+        {workspace.caseId}@{workspace.caseVersion}
+      </output>
+      <output aria-label="MSE content count">{content.mseTerms.length}</output>
+      <output aria-label="MSE panel title">
+        {content.teachingCopy.ms3.msePanelTitle}
+      </output>
       <output aria-label="Save status">{saveStatus}</output>
       <output aria-label="Selected facts">{selectedFactIds.join(",")}</output>
       <output aria-label="Evidence panel open">
@@ -92,6 +105,24 @@ function ProviderProbe() {
       <button type="button" onClick={resetInvalidWorkspace}>
         Reset invalid workspace
       </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch({
+            type: "saveMseTranslation",
+            translation: {
+              id: "invalid-term-translation",
+              factIds: ["F08"],
+              rawObservation: "Speech is rapid.",
+              descriptiveWording: "Speech rate is increased.",
+              termIds: ["unknown_restored_term"],
+              limitationOrAlternative: "Interruptibility was not assessed.",
+            },
+          })
+        }
+      >
+        Save unknown term
+      </button>
     </>
   );
 }
@@ -125,7 +156,42 @@ function makeTrackingStorage(seed: Record<string, string> = {}) {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
   window.history.replaceState({}, "", "/");
+});
+
+test("parses bundled runtime content once even when StrictMode repeats initialization", () => {
+  const loadSpy = vi.spyOn(contentModule, "loadRuntimeContent");
+  render(
+    <StrictMode>
+      <WorkspaceProvider
+        storage={makeMemoryStorage()}
+        previewSelection={NO_LEVEL}
+      >
+        <ProviderProbe />
+      </WorkspaceProvider>
+    </StrictMode>,
+  );
+
+  expect(loadSpy).toHaveBeenCalledTimes(1);
+  expect(screen.getByLabelText("MSE content count")).toHaveTextContent("23");
+  fireEvent.click(screen.getByRole("button", { name: "Select facts" }));
+  expect(loadSpy).toHaveBeenCalledTimes(1);
+});
+
+test("renderApp injects and exposes the same validated runtime content", () => {
+  const content = loadRuntimeContent();
+  content.teachingCopy.ms3.msePanelTitle = "Injected teaching title";
+  renderApp(<ProviderProbe />, {
+    content,
+    storage: makeMemoryStorage(),
+    previewSelection: NO_LEVEL,
+  });
+
+  expect(screen.getByLabelText("MSE panel title")).toHaveTextContent(
+    "Injected teaching title",
+  );
+  expect(screen.getByLabelText("MSE content count")).toHaveTextContent("23");
 });
 
 test("initialWorkspace takes precedence over storage and is not mutated by a level override", () => {
@@ -524,5 +590,96 @@ test("non-persisted evidence UI state starts clean after remount", () => {
 test("useWorkspace throws its exact error outside the provider", () => {
   expect(() => renderHook(() => useWorkspace())).toThrow(
     "useWorkspace must be used inside WorkspaceProvider",
+  );
+});
+
+test("cross-checks an explicit initial workspace against injected content", () => {
+  const content = loadRuntimeContent();
+  content.caseDefinition.version = 2;
+  const consoleError = vi
+    .spyOn(console, "error")
+    .mockImplementation(() => undefined);
+  try {
+    expect(() =>
+      renderApp(<ProviderProbe />, {
+        workspace: makeWorkspace(),
+        content,
+        storage: makeMemoryStorage(),
+        previewSelection: NO_LEVEL,
+      }),
+    ).toThrow(/first_episode_001@1.*first_episode_001@2/);
+  } finally {
+    consoleError.mockRestore();
+  }
+});
+
+test("retains a restored unknown term and enters invalid recovery", () => {
+  const stored = makeWorkspace("resident");
+  stored.mseTranslations.push({
+    id: "restored-translation",
+    factIds: ["F08"],
+    rawObservation: "Speech is rapid.",
+    descriptiveWording: "Speech rate is increased.",
+    termIds: ["unknown_restored_term"],
+    limitationOrAlternative: "Interruptibility was not assessed.",
+  });
+  const raw = JSON.stringify(stored);
+  const storage = makeMemoryStorage({ [WORKSPACE_KEY]: raw });
+
+  renderApp(<ProviderProbe />, {
+    storage,
+    previewSelection: NO_LEVEL,
+  });
+
+  expect(screen.getByLabelText("Load error")).toHaveTextContent(
+    /restored-translation references unknown term unknown_restored_term/,
+  );
+  expect(storage.getItem(WORKSPACE_KEY)).toBe(raw);
+  expect(screen.getByLabelText("Learner level")).toHaveTextContent("ms3");
+});
+
+test("validates MSE terms against content immediately before every save", () => {
+  vi.useFakeTimers();
+  const { storage, writes } = makeTrackingStorage();
+  renderApp(<ProviderProbe />, { storage, previewSelection: NO_LEVEL });
+
+  fireEvent.click(screen.getByRole("button", { name: "Save unknown term" }));
+  expect(screen.getByLabelText("Save status")).toHaveTextContent("saving");
+  act(() => vi.runAllTimers());
+
+  expect(writes).toEqual([]);
+  expect(storage.getItem(WORKSPACE_KEY)).toBeNull();
+  expect(screen.getByLabelText("Save status")).toHaveTextContent("error");
+  expect(screen.getByRole("alert")).toHaveTextContent(
+    "Local saving is unavailable; work will be lost on reload.",
+  );
+});
+
+test("resets invalid storage from the injected content case definition", () => {
+  const content: RuntimeContent = loadRuntimeContent();
+  content.caseDefinition.id = "faculty_fixture_case";
+  content.caseDefinition.version = 7;
+  content.caseDefinition.facts[0]!.text = "Injected reset fact.";
+  const raw = JSON.stringify(makeWorkspace());
+  const storage = makeMemoryStorage({ [WORKSPACE_KEY]: raw });
+
+  renderApp(<ProviderProbe />, {
+    content,
+    storage,
+    previewSelection: NO_LEVEL,
+  });
+  expect(screen.getByLabelText("Load error")).toHaveTextContent(/@/);
+
+  fireEvent.click(
+    screen.getByRole("button", { name: "Reset invalid workspace" }),
+  );
+
+  expect(storage.getItem(WORKSPACE_KEY)).toBeNull();
+  expect(screen.queryByLabelText("Load error")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Case reference")).toHaveTextContent(
+    "faculty_fixture_case@7",
+  );
+  expect(screen.getByLabelText("First fact")).toHaveTextContent(
+    "Injected reset fact.",
   );
 });

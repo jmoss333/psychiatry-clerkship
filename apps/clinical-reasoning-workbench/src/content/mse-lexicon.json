@@ -1,0 +1,302 @@
+{
+  "contentVersion": 1,
+  "facultyReview": { "status": "draft" },
+  "items": [
+    {
+      "id": "guarded",
+      "label": "Guarded",
+      "domain": "behavior",
+      "definition": "Reluctant or cautious disclosure during the interview.",
+      "observableSupport": "Brief or selective answers, repeated hesitation, or explicit reluctance to share after the purpose is explained.",
+      "limitation": "May reflect fear, mistrust, trauma, culture, privacy concerns, or the interview setting; it does not establish deception.",
+      "alternatives": [
+        "Concise communication",
+        "Fear or mistrust in the interview setting"
+      ],
+      "discriminatingQuestion": "Was the patient reluctant to disclose after clarification and reassurance, or simply concise?",
+      "evidenceIds": []
+    },
+    {
+      "id": "hypervigilant",
+      "label": "Hypervigilant",
+      "domain": "behavior",
+      "definition": "Sustained, heightened attention to possible threat.",
+      "observableSupport": "Persistent threat-focused scanning, exaggerated monitoring, or difficulty disengaging attention from possible danger.",
+      "limitation": "Describe the environment and consider realistic safety concerns, trauma activation, substances, or delirium.",
+      "alternatives": ["Realistic environmental scanning", "Distractibility"],
+      "discriminatingQuestion": "Was the scanning sustained and threat-focused, and could attention be redirected?",
+      "evidenceIds": []
+    },
+    {
+      "id": "psychomotor_agitation",
+      "label": "Psychomotor agitation",
+      "domain": "behavior",
+      "definition": "Observable increase in motor activity associated with internal tension or activation.",
+      "observableSupport": "Pacing, repeated position changes, hand-wringing, or other increased movement that is difficult to settle.",
+      "limitation": "Distinguish from purposeful activity, akathisia, pain, intoxication, and environmental discomfort.",
+      "alternatives": [
+        "Akathisia",
+        "Pain or environmental discomfort",
+        "Purposeful activity"
+      ],
+      "discriminatingQuestion": "Was the movement restless and difficult to settle, or purposeful and goal-directed?",
+      "evidenceIds": []
+    },
+    {
+      "id": "psychomotor_retardation",
+      "label": "Psychomotor retardation",
+      "domain": "behavior",
+      "definition": "Observable slowing of movement, speech, and response initiation.",
+      "observableSupport": "Reduced spontaneous movement, slowed gait or gestures, and delayed motor or verbal responses.",
+      "limitation": "Consider medication effects, neurologic illness, catatonia, fatigue, and cultural communication style.",
+      "alternatives": ["Sedation or fatigue", "Neurologic slowing"],
+      "discriminatingQuestion": "Was slowing present across movement and response initiation rather than speech rate alone?",
+      "evidenceIds": []
+    },
+    {
+      "id": "rapid_speech",
+      "label": "Rapid speech",
+      "domain": "speech",
+      "definition": "Speech delivered at an increased rate.",
+      "observableSupport": "Words are produced faster than expected while speech may remain interruptible and organized.",
+      "limitation": "Rate alone does not establish pressure, mania, or disorganization.",
+      "alternatives": [
+        "Pressured speech",
+        "Anxiety-related increased rate",
+        "Baseline communication style"
+      ],
+      "discriminatingQuestion": "Could the patient be interrupted, or did speech continue despite attempts to interject?",
+      "evidenceIds": []
+    },
+    {
+      "id": "pressured_speech",
+      "label": "Pressured speech",
+      "domain": "speech",
+      "definition": "Increased speech output with a driven quality and reduced interruptibility.",
+      "observableSupport": "Speech continues despite attempts to interject, with few pauses and an apparent compulsion to keep talking.",
+      "limitation": "Document rate, amount, pauses, and interruptibility; do not infer it from talkativeness alone.",
+      "alternatives": ["Rapid but interruptible speech", "Talkativeness"],
+      "discriminatingQuestion": "Could the patient be interrupted, or did speech continue despite attempts to interject?",
+      "evidenceIds": []
+    },
+    {
+      "id": "speech_latency",
+      "label": "Speech latency",
+      "domain": "speech",
+      "definition": "Delay between a question or conversational cue and the start of a response.",
+      "observableSupport": "Repeated, measurable pauses before answers begin.",
+      "limitation": "May reflect depression, psychosis, cognition, language processing, anxiety, hearing, or deliberate reflection.",
+      "alternatives": [
+        "Deliberate reflection",
+        "Language-processing or hearing difficulty"
+      ],
+      "discriminatingQuestion": "Was the delay consistent across questions and longer than expected for reflection or language processing?",
+      "evidenceIds": []
+    },
+    {
+      "id": "restricted_affect",
+      "label": "Restricted affect",
+      "domain": "affect",
+      "definition": "Mild-to-moderate reduction in the range or intensity of observed emotional expression.",
+      "observableSupport": "Some variation remains, but facial, vocal, or gestural expression is narrower than expected for context.",
+      "limitation": "Describe range, reactivity, and context; avoid treating cultural restraint as pathology.",
+      "alternatives": ["Cultural restraint", "Blunted affect"],
+      "discriminatingQuestion": "Was expression narrowed with meaningful reactivity still present?",
+      "evidenceIds": []
+    },
+    {
+      "id": "blunted_affect",
+      "label": "Blunted affect",
+      "domain": "affect",
+      "definition": "Marked reduction in the intensity and range of emotional expression.",
+      "observableSupport": "Facial, vocal, and gestural expression show little change despite emotionally varied content.",
+      "limitation": "Differentiate from sedation, neurologic illness, depression, and cultural style.",
+      "alternatives": ["Restricted affect", "Sedation or neurologic illness"],
+      "discriminatingQuestion": "Was emotional expression markedly reduced but still observable?",
+      "evidenceIds": []
+    },
+    {
+      "id": "flat_affect",
+      "label": "Flat affect",
+      "domain": "affect",
+      "definition": "Near absence of observable emotional expression.",
+      "observableSupport": "Minimal facial movement, vocal prosody, gesture, or reactivity across the encounter.",
+      "limitation": "Reserve for near-absence; do not use as a synonym for restricted or blunted affect.",
+      "alternatives": ["Blunted affect", "Sedation"],
+      "discriminatingQuestion": "Was emotional expression nearly absent rather than merely reduced?",
+      "evidenceIds": []
+    },
+    {
+      "id": "labile_affect",
+      "label": "Labile affect",
+      "domain": "affect",
+      "definition": "Rapid or marked shifts in observed emotional expression.",
+      "observableSupport": "Affect changes abruptly in intensity or quality during the encounter.",
+      "limitation": "Describe triggers, duration, and congruence; normal reactivity is not lability.",
+      "alternatives": [
+        "Context-appropriate reactivity",
+        "Anxiety-related shifts"
+      ],
+      "discriminatingQuestion": "Were shifts abrupt or disproportionate rather than understandable responses to changing content?",
+      "evidenceIds": []
+    },
+    {
+      "id": "circumstantial",
+      "label": "Circumstantial",
+      "domain": "thought_process",
+      "definition": "Overinclusive, indirect thought that eventually returns to the original point.",
+      "observableSupport": "Excessive detail and detours occur, but the question is ultimately answered.",
+      "limitation": "Distinguish from a detailed communication style and from tangentiality.",
+      "alternatives": [
+        "Detailed communication style",
+        "Tangential thought process"
+      ],
+      "discriminatingQuestion": "Did the patient eventually return to and answer the original question?",
+      "evidenceIds": []
+    },
+    {
+      "id": "tangential",
+      "label": "Tangential",
+      "domain": "thought_process",
+      "definition": "Thought moves away from the question and does not return to answer it.",
+      "observableSupport": "Responses follow related side paths without reaching the requested point.",
+      "limitation": "Check comprehension, language, anxiety, and interview structure before labeling.",
+      "alternatives": [
+        "Circumstantial thought process",
+        "Question misunderstanding"
+      ],
+      "discriminatingQuestion": "Did the patient eventually return to and answer the original question?",
+      "evidenceIds": []
+    },
+    {
+      "id": "flight_of_ideas",
+      "label": "Flight of ideas",
+      "domain": "thought_process",
+      "definition": "Rapid shifts between topics with connections that remain understandable.",
+      "observableSupport": "Ideas change quickly through associations, wordplay, or distractibility while a link can still be followed.",
+      "limitation": "Distinguish from loose associations, ordinary enthusiasm, and a fast interview pace.",
+      "alternatives": ["Loose associations", "Rapid but goal-directed speech"],
+      "discriminatingQuestion": "Were transitions rapid but understandable, or weak and difficult to follow?",
+      "evidenceIds": []
+    },
+    {
+      "id": "loose_associations",
+      "label": "Loose associations",
+      "domain": "thought_process",
+      "definition": "Ideas shift with weak, illogical, or difficult-to-follow connections.",
+      "observableSupport": "The relationship between successive statements is unclear despite clarification.",
+      "limitation": "Consider language differences, hearing, cognition, and interviewer misunderstanding.",
+      "alternatives": [
+        "Language difference",
+        "Cognitive impairment or interviewer misunderstanding"
+      ],
+      "discriminatingQuestion": "Were connections weak or illogical even after clarification?",
+      "evidenceIds": []
+    },
+    {
+      "id": "thought_blocking",
+      "label": "Thought blocking",
+      "domain": "thought_process",
+      "definition": "Abrupt interruption of a train of thought before completion.",
+      "observableSupport": "Speech stops suddenly and the person cannot readily resume the prior idea.",
+      "limitation": "Distinguish from distraction, hesitation, memory lapse, and choosing not to answer.",
+      "alternatives": ["Distraction", "Hesitation or memory lapse"],
+      "discriminatingQuestion": "Did thought stop abruptly with difficulty recovering the prior idea?",
+      "evidenceIds": []
+    },
+    {
+      "id": "perseveration",
+      "label": "Perseveration",
+      "domain": "thought_process",
+      "definition": "Inappropriate repetition of a response, word, action, or topic after the context has changed.",
+      "observableSupport": "The same answer or theme recurs despite new questions or redirection.",
+      "limitation": "Distinguish from a clinically central concern that the patient intentionally revisits.",
+      "alternatives": [
+        "Intentional return to a central concern",
+        "Cognitive rigidity"
+      ],
+      "discriminatingQuestion": "Did the same response persist despite a clear change in question or task?",
+      "evidenceIds": []
+    },
+    {
+      "id": "internal_preoccupation",
+      "label": "Internal preoccupation",
+      "domain": "perception",
+      "definition": "Observed behavior suggesting attention is directed toward internal experiences.",
+      "observableSupport": "Long unexplained pauses, looking toward unseen stimuli, or apparent response to something not evident in the room.",
+      "limitation": "This is an inference, not proof of hallucinations; document the behavior and the patient's report separately.",
+      "alternatives": ["Distraction", "Anxiety or deliberate reflection"],
+      "discriminatingQuestion": "What behavior was directly observed, and what internal experience did the patient report?",
+      "evidenceIds": []
+    },
+    {
+      "id": "delusion",
+      "label": "Delusion",
+      "domain": "thought_content",
+      "definition": "A firmly held belief maintained despite strong counterevidence and not better understood within the person's cultural context.",
+      "observableSupport": "Document content, conviction, preoccupation, impact, response to counterevidence, and cultural context.",
+      "limitation": "Do not label an unfamiliar, culturally shared, plausible, or insufficiently explored belief as delusional.",
+      "alternatives": [
+        "Culturally shared belief",
+        "Overvalued idea",
+        "Insufficiently explored plausible belief"
+      ],
+      "discriminatingQuestion": "How fixed is the belief, how does it respond to counterevidence, and is it culturally shared?",
+      "evidenceIds": []
+    },
+    {
+      "id": "obsession",
+      "label": "Obsession",
+      "domain": "thought_content",
+      "definition": "Recurrent intrusive thoughts, urges, or images experienced as unwanted and distressing.",
+      "observableSupport": "The person identifies the experience as intrusive, attempts to resist or neutralize it, or changes behavior because of it.",
+      "limitation": "Distinguish from rumination, delusion, worry, and an overvalued idea.",
+      "alternatives": [
+        "Worry or rumination",
+        "Overvalued idea",
+        "Delusional belief"
+      ],
+      "discriminatingQuestion": "Is the thought experienced as intrusive and unwanted, or as true and justified?",
+      "evidenceIds": []
+    },
+    {
+      "id": "overvalued_idea",
+      "label": "Overvalued idea",
+      "domain": "thought_content",
+      "definition": "A strongly held, emotionally important belief that is less fixed than a delusion.",
+      "observableSupport": "The belief dominates attention or behavior but retains some responsiveness to doubt or counterevidence.",
+      "limitation": "Assess cultural context, plausibility, conviction, and flexibility rather than using the term as a midpoint by default.",
+      "alternatives": ["Culturally shared belief", "Obsession", "Delusion"],
+      "discriminatingQuestion": "Can the person acknowledge meaningful doubt or alternatives to the belief?",
+      "evidenceIds": []
+    },
+    {
+      "id": "insight",
+      "label": "Insight",
+      "domain": "insight",
+      "definition": "Awareness and understanding of symptoms, circumstances, contributors, and need for help.",
+      "observableSupport": "Describe which aspects the person recognizes and which they do not.",
+      "limitation": "Insight is multidimensional; avoid a global good-or-poor label without evidence.",
+      "alternatives": [
+        "Partial or domain-specific awareness",
+        "Disagreement with the team despite intact understanding"
+      ],
+      "discriminatingQuestion": "What does the patient understand about the experience, its impact, and the need for help?",
+      "evidenceIds": []
+    },
+    {
+      "id": "judgment",
+      "label": "Judgment",
+      "domain": "judgment",
+      "definition": "Ability to make reasoned, safe decisions in context.",
+      "observableSupport": "Anchor the description to recent real-world choices and the reasoning behind them.",
+      "limitation": "Do not infer judgment from diagnosis, agreement with the team, or hypothetical questions alone.",
+      "alternatives": [
+        "Limited information or constrained options",
+        "Different values despite reasoned decision-making"
+      ],
+      "discriminatingQuestion": "What recent decision best demonstrates how options, consequences, and safety were weighed?",
+      "evidenceIds": []
+    }
+  ]
+}

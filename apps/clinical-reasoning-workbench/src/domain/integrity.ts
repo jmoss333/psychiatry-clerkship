@@ -4,6 +4,7 @@ import type {
   FactLinkedText,
   WorkspaceState,
 } from "./model";
+import type { RuntimeContent } from "./schemas";
 
 export function assertWorkspaceIntegrity(
   workspace: WorkspaceState,
@@ -184,6 +185,33 @@ export function assertWorkspaceIntegrity(
   );
   if (favored.length > 1) {
     throw new Error("Only one hypothesis may be favored");
+  }
+  return workspace;
+}
+
+export function assertWorkspaceContentReferences(
+  workspace: WorkspaceState,
+  content: RuntimeContent,
+): WorkspaceState {
+  if (
+    workspace.caseId !== content.caseDefinition.id ||
+    workspace.caseVersion !== content.caseDefinition.version
+  ) {
+    throw new Error(
+      `Workspace case ${workspace.caseId}@${workspace.caseVersion} does not match ` +
+        `${content.caseDefinition.id}@${content.caseDefinition.version}`,
+    );
+  }
+
+  const termIds = new Set(content.mseTerms.map((term) => term.id));
+  for (const translation of workspace.mseTranslations) {
+    for (const termId of translation.termIds) {
+      if (!termIds.has(termId)) {
+        throw new Error(
+          `MSE translation ${translation.id} references unknown term ${termId}`,
+        );
+      }
+    }
   }
   return workspace;
 }
