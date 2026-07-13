@@ -3535,7 +3535,6 @@
   ],
   "relatedTools": [
    "decision-aids.html",
-   "active-recall.html",
    "question-bank-practice.html",
    "review.html",
    "family-systems.html"
@@ -3557,10 +3556,6 @@
     {
      "label": "Open decision aids",
      "href": "?tool=decision-aids.html"
-    },
-    {
-     "label": "Review active recall",
-     "href": "?tool=active-recall.html&topic=evidence"
     },
     {
      "label": "Practice family discharge conflict",
@@ -3763,7 +3758,6 @@
   ],
   "relatedTools": [
    "review.html",
-   "active-recall.html",
    "question-bank-practice.html",
    "communication-practice.html"
   ],
@@ -3784,10 +3778,6 @@
     {
      "label": "Open weekly reading map",
      "href": "?page=reading_map.md"
-    },
-    {
-     "label": "Open active recall",
-     "href": "?tool=active-recall.html"
     }
    ]
   },
@@ -4184,7 +4174,6 @@
   ],
   "relatedTools": [
    "review.html",
-   "active-recall.html",
    "communication-practice.html",
    "family-systems.html"
   ],
@@ -4363,7 +4352,6 @@
   "relatedTools": [
    "question-bank-practice.html",
    "shelf-mode.html",
-   "active-recall.html",
    "review.html",
    "diagnostic-reasoning.html",
    "communication-practice.html"
@@ -4475,7 +4463,6 @@
    "shelf"
   ],
   "relatedTools": [
-   "active-recall.html",
    "review.html",
    "communication-practice.html",
    "oral.html"
@@ -4496,10 +4483,6 @@
     {
      "label": "Practice a communication drill",
      "href": "?tool=communication-practice.html"
-    },
-    {
-     "label": "Open active recall",
-     "href": "?tool=active-recall.html"
     }
    ]
   },
@@ -4509,11 +4492,11 @@
  },
  "landmark_trials.md": {
   "read": 6,
-  "tldr": "Fifty landmark papers as 90–120 second audio overviews with paired Active Recall self-test decks — listen to the four Foundations papers first (Engel, Rosenhan, Robins-Guze, Insel), then follow your patients to the theme that fits.",
+  "tldr": "Fifty landmark papers as 90–120 second audio overviews with board-style self-test in Shelf Mode and Daily Review — listen to the four Foundations papers first (Engel, Rosenhan, Robins-Guze, Insel), then follow your patients to the theme that fits.",
   "points": [
-   "Each audio is 90–120 seconds with a paired self-test quiz — designed for the walk between the unit and the staff room, not a dedicated study block.",
+   "Each audio is 90–120 seconds — short enough for the walk between the unit and the staff room, not a dedicated study block.",
    "The Acute & Safety cluster (6 papers) covers Appelbaum capacity, Bush-Francis catatonia, lithium-suicide (Cipriani 2013), safety planning (Stanley 2012), and the limits of risk-factor prediction (Franklin 2017) — the most rotation-relevant papers.",
-   "Papers tagged 'Quiz this paper' link to an Active Recall deck that extends beyond the individual trial into the broader clinical question — use both the audio and the self-test for shelf preparation."
+   "The same trials feed the board-style questions in Shelf Mode and Daily Review, which extend beyond the individual trial into the broader clinical question — pair the audio with those for shelf preparation."
   ],
   "cta": {
    "label": "Open the High-Yield Rounds Questions",
@@ -4531,7 +4514,6 @@
    "shelf"
   ],
   "relatedTools": [
-   "active-recall.html",
    "review.html",
    "question-bank-practice.html",
    "oral.html"
@@ -4543,12 +4525,8 @@
    "say": "Translate one landmark finding into a plain-language explanation only when it helps shared decision-making.",
    "collateral": "Use paper themes to guide collateral questions about timeline, prior response, safety environment, and treatment adherence.",
    "rounds": "Offer a 20-second evidence pearl when it changes the differential, risk formulation, or next step.",
-   "exam": "Pair each audio with its active recall deck, then answer one question bank item on the same concept.",
+   "exam": "Pair each audio with board-style self-test in Shelf Mode or Daily Review, then answer one question bank item on the same concept.",
    "actions": [
-    {
-     "label": "Open active recall",
-     "href": "?tool=active-recall.html&topic=landmark"
-    },
     {
      "label": "Open question bank practice",
      "href": "?tool=question-bank-practice.html"
@@ -4587,7 +4565,6 @@
   ],
   "relatedTools": [
    "oral.html",
-   "active-recall.html",
    "question-bank-practice.html"
   ],
   "clinicalWorkflow": {
@@ -5056,7 +5033,6 @@
    "5min"
   ],
   "relatedTools": [
-   "active-recall.html",
    "review.html",
    "question-bank-practice.html",
    "oral.html"
@@ -5073,10 +5049,6 @@
     {
      "label": "Open landmark trials",
      "href": "?page=landmark_trials.md"
-    },
-    {
-     "label": "Open active recall",
-     "href": "?tool=active-recall.html&topic=canon"
     },
     {
      "label": "Open question bank practice",

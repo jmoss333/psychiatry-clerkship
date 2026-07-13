@@ -46,7 +46,7 @@ tools=[tuple(x) for x in _manifest["tools"]]
 # question bank practice tool. Files still ship (still in `tools` above) and stay fully reachable
 # by direct link / the home "Start review" card / per-page tool docks (all look items up by
 # filename, not by sidebar visibility) — see the `hidden` flag on the nav item below.
-HIDDEN_TOOLS={"shelf-mode.html","review.html","active-recall.html"}
+HIDDEN_TOOLS={"shelf-mode.html","review.html"}
 
 # ---- pre-flight: verify every REQUIRED source asset exists BEFORE we build ----
 # (added 2026-07-03) A renamed/missing required source used to throw FileNotFoundError
@@ -199,11 +199,12 @@ nav=[
  {"section":"Make a Plan","items":[_md("Psychopharmacology Primer","psychopharm_primer.md"),_md("Medication Monitoring & Labs","med_monitoring.md"),_md("Protocol Library","protocol_library.md"),_md("ECT & Neuromodulation","ect_neuromodulation.md"),_md("Treatment Basics","exp_tx.md"),_tool("decision-aids.html","Algorithms & Decision Aids"),_md("Nutrition & Metabolic Health","nutrition_metabolic.md"),_md("Osteopathic (OMM) Resources","omm_resources.md")]},
  {"section":"Communicate with Patients","items":[_tool("communication-practice.html","What Do You Say Next?"),_md("Psychotherapies at a Glance","psychotherapy.md"),_md("Motivational Interviewing","motivational_interviewing.md"),_md("Brief Psychotherapy on the Unit","brief_psychotherapy.md"),_tool("reflection.html","Reflection & Identity")]},
  {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
- {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md"),_tool("feedback.html","Improve this library — send feedback")]},
- {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","One Patient, Six Weeks"),_tool("active-recall.html","Active Recall (Self-Test)"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
+ {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md")]},
+ {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","One Patient, Six Weeks"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
  {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
+ {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback")]},
 ]
-_navorder=["Welcome and Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Evidence and Reference"]
+_navorder=["Welcome and Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
 open(OUT+"/nav.json","w").write(json.dumps(nav))
 _missing_req=[]
@@ -284,7 +285,6 @@ def build_search_index():
      "withdrawal.html":"withdrawal alcohol ciwa opioid cows detox benzodiazepine taper thiamine",
      "reflection.html":"reflection professional identity formation reflective writing pif",
      "screeners.html":"phq-9 phq9 gad-7 gad7 depression anxiety screener screening score severity validated instrument cutoff",
-     "active-recall.html":"active recall self test quiz quizzes board review landmark trials flashcards spaced repetition questions practice",
      "shelf-mode.html":"shelf mode comat shelf exam simulation timed vignette question bank board review mixed blueprint mock test practice questions",
      "review.html":"daily review spaced repetition srs flashcards sm-2 retention schedule due cards study streak memory test enhanced learning forgetting curve anki",
      "feedback.html":"feedback improve library suggest resource report broken link error confusing helpful rating comment survey suggestion box contact",
