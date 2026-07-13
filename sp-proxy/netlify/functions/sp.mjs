@@ -36,6 +36,7 @@
 const API_KEY = process.env.ANTHROPIC_API_KEY;
 const KEY = process.env.SP_STUDENT_PASSCODE;
 const PACK_URL = process.env.SP_PACK_URL;
+const PACK_TOKEN = process.env.SP_PACK_TOKEN; // fine-grained GitHub PAT (Contents: read) so the function can read the pack from a PRIVATE repo via the GitHub API
 const MODEL_ACTOR = process.env.SP_MODEL_ACTOR || 'claude-haiku-4-5-20251001';
 const MODEL_EVAL = process.env.SP_MODEL_EVALUATOR || MODEL_ACTOR;
 const ORIGINS = (process.env.SP_ALLOWED_ORIGINS || '*').split(',').map(s => s.trim());
@@ -94,7 +95,9 @@ async function bumpQuota() {
 let packCache = { at: 0, pack: null };
 async function getPack() {
   if (packCache.pack && Date.now() - packCache.at < 5 * 60 * 1000) return packCache.pack;
-  const r = await fetch(PACK_URL, { headers: { 'User-Agent': 'sp-proxy' } });
+  const packHeaders = { 'User-Agent': 'sp-proxy' };
+  if (PACK_TOKEN) { packHeaders['Authorization'] = 'Bearer ' + PACK_TOKEN; packHeaders['Accept'] = 'application/vnd.github.raw'; }
+  const r = await fetch(PACK_URL, { headers: packHeaders });
   if (!r.ok) throw new Error(`pack fetch → ${r.status}`);
   const pack = await r.json();
   packCache = { at: Date.now(), pack };
