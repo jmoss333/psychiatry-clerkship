@@ -48,7 +48,7 @@
   .mc-mode.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .mc-section{border-top:1px solid var(--border);padding-top:8px;margin-top:8px}
   .mc-label{font-size:.62rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin:0 0 4px}
-  .mc-list{display:grid;gap:4px}
+  .mc-list{display:grid;gap:4px;grid-template-columns:minmax(0,1fr)}
   .mc-item{display:flex;align-items:center;gap:7px;width:100%;border:none;background:transparent;color:var(--text);text-align:left;border-radius:7px;padding:5px 6px;cursor:pointer;font:inherit;font-size:.82rem;line-height:1.2}
   .mc-item:hover{background:var(--accent-light);color:var(--accent-dark)}
   .mc-item .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -71,11 +71,12 @@
   .navsec-t{flex:1;min-width:0}
   .navgroup{display:none;margin:1px 0 4px;padding-left:4px}
   .navsec-wrap.open>.navgroup{display:block}
-  .navitem{display:block;width:100%;text-align:left;border:none;background:transparent;color:var(--text);padding:6px 9px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.9rem;line-height:1.3}
+  .navitem{display:flex;align-items:center;gap:4px;width:100%;text-align:left;border:none;background:transparent;color:var(--text);padding:6px 9px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.9rem;line-height:1.3}
+  .navitem .nt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .navitem-hidden{display:none}
   .navitem:hover{background:var(--primary-light)}
   .navitem.on{background:var(--accent);color:#fff}
-  .navitem .tool-tag{font-size:.6rem;background:var(--accent-dark);color:#fff;border-radius:999px;padding:1px 6px;margin-left:4px;vertical-align:middle}
+  .navitem .tool-tag{flex:0 0 auto;font-size:.6rem;background:var(--accent-dark);color:#fff;border-radius:999px;padding:1px 6px;vertical-align:middle}
   .navitem.on .tool-tag{background:#fff;color:var(--accent-dark)}
   main{padding:0}
   .banner{background:var(--warning-light);border-bottom:1px solid var(--border);color:var(--text);font-size:.82rem;padding:8px 34px 8px 28px;position:relative}
@@ -269,7 +270,8 @@
     .layout{grid-template-columns:1fr}
     main,#content{min-width:0}
     .mobile-chrome{position:sticky;top:0;z-index:18;display:grid;grid-template-columns:minmax(44px,auto) minmax(0,1fr) minmax(44px,auto);align-items:center;gap:8px;min-height:56px;padding:calc(6px + env(safe-area-inset-top,0px)) 12px 6px;background:var(--bg);border-bottom:1px solid var(--border)}
-    .menubtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:none;border-radius:9px;padding:8px 12px;background:var(--primary-dark);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+    .menubtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;border:none;border-radius:9px;padding:8px 12px;background:var(--primary-dark);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+    .menubtn span{display:none}
     .mobile-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;color:var(--text);font-family:var(--font-head);font-size:1rem;font-weight:600}
     .mobile-chrome-spacer{display:block;min-width:44px;min-height:44px}
     aside{position:fixed;left:0;top:0;width:84%;max-width:300px;z-index:20;height:100vh;height:100dvh;padding-bottom:18px;overflow-y:auto;overscroll-behavior:contain;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 30px rgba(0,0,0,.2)}
@@ -435,7 +437,7 @@
   </aside>
   <main>
     <div class="mobile-chrome" id="mobileChrome">
-      <button class="menubtn" id="menuBtn" type="button" aria-controls="side" aria-expanded="false">&#9776;<span>Menu</span></button>
+      <button class="menubtn" id="menuBtn" type="button" aria-label="Menu" aria-controls="side" aria-expanded="false">&#9776;<span>Menu</span></button>
       <span class="mobile-title" id="mobileTitle" aria-live="polite">Inpatient Psychiatry</span>
       <span class="mobile-chrome-spacer" aria-hidden="true"></span>
     </div>
@@ -741,8 +743,8 @@
       grp.id=_gid; h.setAttribute('aria-controls',_gid);
       sec.items.forEach(function(it){
         var b=document.createElement('button'); b.className='navitem'+(it.hidden?' navitem-hidden':'');
-        b.innerHTML=it.t+(it.k==='tool'?' <span class="tool-tag">tool</span>':'');
-        b.setAttribute('data-f',it.f); b._item=it; b.onclick=function(){show(it,b)}; grp.appendChild(b);
+        b.innerHTML='<span class="nt">'+it.t+'</span>'+(it.k==='tool'?' <span class="tool-tag">tool</span>':'');
+        b.setAttribute('data-f',it.f); b.setAttribute('title',it.t); b._item=it; b.onclick=function(){show(it,b)}; grp.appendChild(b);
       });
       var open = Object.prototype.hasOwnProperty.call(navOpen,sec.section) ? !!navOpen[sec.section] : (sec.section==='Start here'||sec.section==='Overview'||!!sec.pinned);
       wrap.classList.toggle('open',open); h.setAttribute('aria-expanded',String(open));
