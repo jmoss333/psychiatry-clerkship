@@ -36,6 +36,15 @@ jobs:
       - name: Unit — media guard
         run: python3 13_Faculty_Resources/_automation/site_build/test_media_guard.py
 
+      - name: Unit — evidence registry
+        run: python3 tools/evidence_registry/test_registry.py
+
+      - name: Validate — evidence registry and generated views
+        run: python3 tools/evidence_registry/validate.py --check-generated
+
+      - name: Unit — citation surveillance
+        run: python3 13_Faculty_Resources/_automation/surveillance/bin/run_citation_check.py --self-test
+
       - name: Validate — topic_meta.json contract
         run: python3 13_Faculty_Resources/_automation/validate_topic_meta.py
 

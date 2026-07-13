@@ -30,6 +30,7 @@ LIB="$(cd "$HERE/../../.." && pwd)"   # repo root
 MS3_OUT="$LIB/_build/ms3"
 RES_OUT="$LIB/_build/res"
 
+python3 "$LIB/tools/evidence_registry/validate.py" --repo-root "$LIB" --check-generated
 python3 "$LIB/13_Faculty_Resources/_automation/validate_topic_meta.py"
 
 case "$SITE" in

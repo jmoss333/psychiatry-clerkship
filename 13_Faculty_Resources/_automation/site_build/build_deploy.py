@@ -1,4 +1,5 @@
-import os, shutil, json
+import os, shutil, json, sys
+from pathlib import Path
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location instead of a
 # hard-coded sandbox mount, so the build runs under any Cowork session or the real filesystem.
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -129,8 +130,15 @@ _rv=LIB+"/13_Faculty_Resources/reviewed.json"
 shutil.copy2(_rv, OUT+"/reviewed.json") if os.path.exists(_rv) else open(OUT+"/reviewed.json","w").write("{}")
 _tm=LIB+"/topic_meta.json"
 shutil.copy2(_tm, OUT+"/topic_meta.json") if os.path.exists(_tm) else open(OUT+"/topic_meta.json","w").write("{}")
+_evidence_tools=os.path.join(LIB,"tools","evidence_registry")
+if _evidence_tools not in sys.path:
+    sys.path.insert(0,_evidence_tools)
+from registry import build_public_projection, load_evidence_registry
+_canonical_evidence=load_evidence_registry(Path(LIB)/"evidence_registry.json")
+with open(os.path.join(OUT,"evidence_registry.json"),"w",encoding="utf-8") as _fh:
+    json.dump(build_public_projection(_canonical_evidence),_fh,indent=2,sort_keys=True)
+    _fh.write("\n")
 for _jn, _fallback in [
-    ("evidence_registry.json", '{"sources":[]}'),
     ("tool_registry.json", '{"tools":[]}'),
     ("communication_cases.json", '{"cases":[]}'),
     ("reasoning_cases.json", '{"cases":[]}'),

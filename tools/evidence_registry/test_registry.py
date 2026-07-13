@@ -114,6 +114,19 @@ ZOTERO_RECONCILE = Path(__file__).with_name("zotero_reconcile.py")
 ZOTERO_FIXTURES = Path(__file__).with_name("fixtures")
 LOCAL_REQUIREMENTS = Path(__file__).with_name("requirements-local.txt")
 EVIDENCE_README = Path(__file__).with_name("README.md")
+BUILD_DEPLOY = (
+    REPO_ROOT
+    / "13_Faculty_Resources"
+    / "_automation"
+    / "site_build"
+    / "build_deploy.py"
+)
+TOPIC_VALIDATOR = (
+    REPO_ROOT
+    / "13_Faculty_Resources"
+    / "_automation"
+    / "validate_topic_meta.py"
+)
 SURVEILLANCE_BIN = (
     REPO_ROOT / "13_Faculty_Resources" / "_automation" / "surveillance" / "bin"
 )
@@ -1107,6 +1120,153 @@ def test_public_projection_recursively_filters_nested_secret_fields():
     assert public["sources"][0]["citation"]["authors"] == [{"family": "Engel"}]
     assert public["sources"][0]["curriculum"]["pairedTools"] == []
     assert public["sources"][0]["curriculum"]["topicSlugs"] == ["fixture-one"]
+
+
+def _recursive_keys(value):
+    if isinstance(value, dict):
+        for key, child in value.items():
+            yield key
+            yield from _recursive_keys(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _recursive_keys(child)
+
+
+def _run_site_build(output_dir: Path, working_directory: Path) -> subprocess.CompletedProcess:
+    environment = os.environ.copy()
+    environment["OUT_DIR"] = str(output_dir)
+    return subprocess.run(
+        [sys.executable, str(BUILD_DEPLOY)],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=working_directory,
+        env=environment,
+    )
+
+
+def test_site_build_writes_deterministic_safe_public_registry():
+    with tempfile.TemporaryDirectory() as directory:
+        temporary = Path(directory)
+        first_output = temporary / "first"
+        second_output = temporary / "second"
+        first = _run_site_build(first_output, temporary)
+        second = _run_site_build(second_output, temporary)
+
+        assert first.returncode == 0, first.stdout + first.stderr
+        assert second.returncode == 0, second.stdout + second.stderr
+        first_bytes = (first_output / "evidence_registry.json").read_bytes()
+        second_bytes = (second_output / "evidence_registry.json").read_bytes()
+
+    assert first_bytes == second_bytes
+    assert first_bytes.endswith(b"\n")
+
+    public = json.loads(first_bytes)
+    canonical = load_evidence_registry(REGISTRY_PATH)
+    assert set(public) == {"schemaVersion", "sources"}
+    assert len(public["sources"]) == 35
+    assert {source["id"] for source in public["sources"]} == set(
+        index_sources(canonical)
+    )
+
+    allowed_source_fields = {
+        "id", "type", "citation", "requiredAccess", "curriculum"
+    }
+    allowed_citation_fields = {
+        "title", "authors", "organization", "year", "journal", "volume",
+        "pages", "doi", "pmid", "url",
+    }
+    allowed_curriculum_fields = {
+        "tier", "role", "weekNumbers", "topicSlugs", "pairedTools"
+    }
+    for source in public["sources"]:
+        assert set(source) <= allowed_source_fields
+        assert {"id", "type", "citation", "requiredAccess"} <= set(source)
+        assert set(source["citation"]) <= allowed_citation_fields
+        for author in source["citation"].get("authors", []):
+            assert set(author) <= {"family", "given"}
+        if "curriculum" in source:
+            assert set(source["curriculum"]) <= allowed_curriculum_fields
+
+    keys = set(_recursive_keys(public))
+    forbidden_keys = {
+        "itemKey", "expectedTags", "surveillance", "appraisal", "governance",
+        "attachment", "attachmentKey", "attachmentPath", "attachmentState",
+        "mappingNotes", "mappingStatus", "filePath", "localPath", "fullText",
+        "indexedText", "secret", "token", "password", "apiKey",
+    }
+    assert keys.isdisjoint(forbidden_keys)
+
+    encoded = first_bytes.decode("utf-8")
+    zotero_parent_keys = {
+        source["zotero"]["itemKey"]
+        for source in canonical["sources"]
+        if isinstance(source.get("zotero"), dict)
+        and isinstance(source["zotero"].get("itemKey"), str)
+    }
+    assert zotero_parent_keys
+    assert all(parent_key not in encoded for parent_key in zotero_parent_keys)
+
+
+def _run_topic_validator_fixture(sources: list[dict], evidence_id: str):
+    directory = tempfile.TemporaryDirectory()
+    repo_root = Path(directory.name)
+    automation = repo_root / "13_Faculty_Resources" / "_automation"
+    evidence_tools = repo_root / "tools" / "evidence_registry"
+    outside = repo_root / "outside"
+    automation.mkdir(parents=True)
+    evidence_tools.mkdir(parents=True)
+    outside.mkdir()
+    (automation / "validate_topic_meta.py").write_bytes(TOPIC_VALIDATOR.read_bytes())
+    (evidence_tools / "registry.py").write_bytes(
+        (REGISTRY_PATH.parent / "tools" / "evidence_registry" / "registry.py").read_bytes()
+    )
+    (outside / "registry.py").write_text(
+        'raise AssertionError("validator imported registry from cwd")\n',
+        encoding="utf-8",
+    )
+    (repo_root / "evidence_registry.json").write_text(
+        json.dumps({"schemaVersion": 2, "sources": sources}),
+        encoding="utf-8",
+    )
+    (repo_root / "topic_meta.json").write_text(
+        json.dumps({"fixture-topic": {"evidenceIds": [evidence_id]}}),
+        encoding="utf-8",
+    )
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(outside)
+    result = subprocess.run(
+        [sys.executable, str(automation / "validate_topic_meta.py")],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=outside,
+        env=environment,
+    )
+    directory.cleanup()
+    return result
+
+
+def test_topic_validator_rejects_empty_canonical_registry():
+    result = _run_topic_validator_fixture([], "missing-evidence-id")
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "evidence registry contains no sources" in result.stdout
+
+
+def test_topic_validator_still_rejects_unknown_evidence_foreign_key():
+    result = _run_topic_validator_fixture(
+        [{"id": "known-evidence-id"}], "missing-evidence-id"
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "evidenceIds references unknown source 'missing-evidence-id'" in result.stdout
+
+
+def test_topic_validator_uses_repository_relative_registry_import():
+    result = _run_topic_validator_fixture(
+        [{"id": "known-evidence-id"}], "known-evidence-id"
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "topic_meta.json OK — 1 topics, contract satisfied." in result.stdout
 
 
 def test_zotero_valid_snapshot_matches_all_tier1_with_advisory_empty_weeks():
