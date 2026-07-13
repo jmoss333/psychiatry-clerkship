@@ -560,6 +560,30 @@ def _validate_severity(
         )
 
 
+def _valid_https_monitoring_url(value: Any) -> bool:
+    if not isinstance(value, str) or not value or any(
+        character.isspace() for character in value
+    ):
+        return False
+    try:
+        parsed = urlsplit(value)
+        hostname = parsed.hostname
+        port = parsed.port
+        username = parsed.username
+        password = parsed.password
+    except (UnicodeError, ValueError):
+        return False
+    if parsed.scheme != "https" or not parsed.netloc or not hostname:
+        return False
+    if username is not None or password is not None:
+        return False
+    if port is not None and not 1 <= port <= 65535:
+        return False
+    if parsed.netloc.endswith(":"):
+        return False
+    return True
+
+
 def _validate_surveillance_source(
     source: dict, position: int, issues: list[ValidationIssue]
 ) -> None:
@@ -591,12 +615,7 @@ def _validate_surveillance_source(
             )
         )
     url = citation.get("url")
-    parsed_url = urlsplit(url) if isinstance(url, str) else None
-    if (
-        parsed_url is None
-        or parsed_url.scheme != "https"
-        or not parsed_url.netloc
-    ):
+    if not _valid_https_monitoring_url(url):
         issues.append(
             ValidationIssue(
                 f"{source_path}.citation.url",

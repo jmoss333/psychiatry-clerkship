@@ -492,6 +492,68 @@ def test_surveillance_validator_aggregates_unhashable_enum_values():
     assert "invalid proxy" in messages
 
 
+def test_surveillance_url_validation_aggregates_malformed_authorities():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    invalid_urls = {
+        "fda-drug-safety": "https://[",
+        "clozapine-rems": "https://example.com:99999/path",
+        "spravato-rems": "https:///missing-host?topic=mental-health",
+        "apa-practice-guidelines": "https://user:secret@example.com/path",
+        "dsm-5-tr": "http://www.appi.org/products/dsm",
+        "samhsa-guidelines": "https://?topic=mental-health",
+        "aacap-parameters": "https://#practice-parameters",
+    }
+    for source_id, url in invalid_urls.items():
+        _surveillance_source(registry, source_id)["citation"]["url"] = url
+
+    issues = [
+        issue
+        for issue in validate_registry(registry)
+        if issue.path.endswith(".citation.url")
+        and issue.message == "monitoring URL must be an absolute HTTPS URL"
+    ]
+
+    assert len(issues) == len(invalid_urls)
+    assert _surveillance_source(registry, "uspstf-mental-health")["citation"][
+        "url"
+    ].endswith("?topic_status=P")
+
+
+def test_invalid_ipv6_and_port_fail_closed_in_cli_projection_and_loader():
+    for invalid_url in ("https://[", "https://example.com:99999/path"):
+        registry = load_evidence_registry(REGISTRY_PATH)
+        _surveillance_source(registry)["citation"]["url"] = invalid_url
+
+        try:
+            registry_library.build_surveillance_projection(registry)
+        except ValueError as exc:
+            assert "monitoring URL must be an absolute HTTPS URL" in str(exc)
+        else:
+            raise AssertionError("projection accepted an invalid monitoring URL")
+
+        with tempfile.TemporaryDirectory() as directory:
+            repo_root = Path(directory)
+            _write_canonical_repo(repo_root, registry=registry)
+            result = subprocess.run(
+                [sys.executable, str(VALIDATE), "--repo-root", str(repo_root)],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            try:
+                surveillance_library.load_registry(
+                    repo_root / "evidence_registry.json"
+                )
+            except ValueError as exc:
+                loader_error = str(exc)
+            else:
+                raise AssertionError("load_registry accepted an invalid monitoring URL")
+
+        assert result.returncode == 1, result.stdout + result.stderr
+        assert "monitoring URL must be an absolute HTTPS URL" in result.stdout
+        assert "monitoring URL must be an absolute HTTPS URL" in loader_error
+
+
 def test_normal_cli_and_loader_hard_fail_on_malformed_surveillance_contract():
     with tempfile.TemporaryDirectory() as directory:
         repo_root = Path(directory)
