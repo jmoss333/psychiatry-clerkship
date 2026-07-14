@@ -2,6 +2,8 @@ from copy import deepcopy
 from dataclasses import FrozenInstanceError
 import json
 from pathlib import Path
+import sqlite3
+from zipfile import ZipFile
 
 from jsonschema import Draft7Validator, FormatChecker
 import pytest
@@ -154,6 +156,36 @@ APPLICATION_COVERAGE = {
     "W06|Disposition": 0,
 }
 
+LEGACY_QBANK_QFMT = '<div class="stem">{{Question}}</div>{{Options}}'
+LEGACY_QBANK_AFMT = (
+    '<div class="stem">{{Question}}</div>{{Options}}<hr id="answer">{{Answer}}'
+    '{{#Why}}<div class="why">{{Why}}</div>{{/Why}}'
+    '{{#Pearl}}<div class="pearl">💡 {{Pearl}}</div>{{/Pearl}}'
+    '{{#Evidence}}<div class="evidence">📄 {{Evidence}}</div>{{/Evidence}}'
+    '{{#Link}}<div class="link">🔗 {{Link}}</div>{{/Link}}'
+    "{{#Meta}}<div>{{Meta}}</div>{{/Meta}}"
+)
+LEGACY_QBANK_CSS = """
+.card { font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+        font-size: 17px; line-height: 1.5; color: #1a1a1a;
+        background: #fbf7f0; text-align: left; padding: 14px 18px; }
+.stem { margin-bottom: 12px; }
+.opts { margin: 0 0 6px 0; padding: 0; list-style: none; }
+.opts li { margin: 4px 0; }
+.answer { font-weight: 700; color: #1f6f54; }
+.tag { display:inline-block; font-size:12px; font-weight:600; color:#8a5a1a;
+       background:#f2e6d2; border-radius:4px; padding:1px 7px; margin:2px 4px 2px 0; }
+.trap { color:#8a2b2b; }
+.trap b { color:#8a2b2b; }
+.why { margin-top:10px; }
+.pearl { margin-top:10px; padding:8px 12px; background:#eaf3ee;
+         border-left:3px solid #1f6f54; border-radius:4px; }
+.evidence { margin-top:10px; font-size:14px; color:#555; }
+.link { margin-top:10px; font-size:14px; }
+.draft { color:#8a2b2b; font-weight:700; }
+hr { border:none; border-top:1px solid #d9cdb8; margin:12px 0; }
+"""
+
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -244,6 +276,25 @@ def make_approved_core_card(**overrides) -> dict:
     return card
 
 
+def make_fully_reviewed_core_card() -> dict:
+    card = make_approved_core_card(
+        risk={"level": "High", "facets": ["Emergency", "LocalPolicy"]}
+    )
+    card["review"].update(
+        {
+            "localPolicySource": "Named policy, owner, version 2026-07-14",
+            "localPolicySha256": "e" * 64,
+            "localPolicyReviewedBy": "Named Policy Owner",
+            "localPolicyReviewedAt": "2026-07-14",
+            "sequenceBasis": "faculty_override",
+            "sequenceRationale": "Reviewed sequencing rationale.",
+            "sequenceReviewedBy": "Named Faculty Reviewer",
+            "sequenceReviewedAt": "2026-07-14",
+        }
+    )
+    return card
+
+
 def make_application_card(**overrides) -> dict:
     card = make_core_card(
         id="ms3_w02_application_001",
@@ -302,9 +353,9 @@ def make_legacy_template_contract() -> dict:
         "templateId": None,
         "templateName": "Card 1",
         "templateOrdinal": 0,
-        "qfmt": "{{Question}}",
-        "afmt": "{{FrontSide}}<hr>{{Answer}}",
-        "css": ".card { color: #111; }",
+        "qfmt": LEGACY_QBANK_QFMT,
+        "afmt": LEGACY_QBANK_AFMT,
+        "css": LEGACY_QBANK_CSS,
         "templateVersion": "pcl-qbank-legacy-v1",
     }
 
@@ -496,6 +547,12 @@ def test_canonical_json_preserves_array_order():
     assert canonical_json_sha256([1, 2]) != canonical_json_sha256([2, 1])
 
 
+@pytest.mark.parametrize("non_finite", [float("nan"), float("inf"), float("-inf")])
+def test_canonical_json_rejects_non_finite_numbers(non_finite):
+    with pytest.raises(ValueError, match="Out of range float values"):
+        canonical_json_bytes({"value": non_finite})
+
+
 def test_registry_roots_are_initialized_and_validate():
     for name, expected_keys in ROOT_CONTRACTS.items():
         registry = load_json(REGISTRY_DIR / f"{name}.json")
@@ -650,6 +707,52 @@ def test_rendered_fields_reject_raw_markdown(cards_schema, field, raw_markdown):
     assert_schema_invalid({"schemaVersion": 1, "cards": [card]}, cards_schema)
 
 
+@pytest.mark.parametrize(
+    "field", ["front", "answer", "explanation", "caveat", "qbank.primaryTrap"]
+)
+@pytest.mark.parametrize(
+    "raw_markdown",
+    [
+        "Setext heading\n---",
+        "Setext heading\n===",
+        "- unordered item",
+        "1. ordered item",
+        "> blockquote",
+        "Use ~~strikethrough~~ here.",
+    ],
+)
+def test_every_learner_rendered_field_rejects_block_markdown(
+    cards_schema, field, raw_markdown
+):
+    card = make_application_card() if field == "qbank.primaryTrap" else make_core_card()
+    if field == "qbank.primaryTrap":
+        card["qbank"]["primaryTrap"] = raw_markdown
+    else:
+        card[field] = raw_markdown
+    assert_schema_invalid({"schemaVersion": 1, "cards": [card]}, cards_schema)
+
+
+@pytest.mark.parametrize(
+    ("field", "safe_prose"),
+    [
+        ("front", "How does a -5 point change affect Condition Alpha?"),
+        ("answer", "A -5 point change."),
+        ("explanation", "A -5 point change preserves ordinary punctuation."),
+        ("caveat", "Use supervised judgment for a -5 point change."),
+        ("qbank.primaryTrap", "Confusing a -5 point change with no change."),
+    ],
+)
+def test_markdown_filter_preserves_minus_signs_and_safe_prose(
+    cards_schema, field, safe_prose
+):
+    card = make_application_card() if field == "qbank.primaryTrap" else make_core_card()
+    if field == "qbank.primaryTrap":
+        card["qbank"]["primaryTrap"] = safe_prose
+    else:
+        card[field] = safe_prose
+    assert_schema_valid({"schemaVersion": 1, "cards": [card]}, cards_schema)
+
+
 def test_source_url_must_be_absolute_https(cards_schema):
     card = make_core_card()
     card["source"]["url"] = "/?page=safety-planning#immediate-escalation"
@@ -660,6 +763,40 @@ def test_approved_high_risk_core_card_has_complete_named_reviews(cards_schema):
     assert_schema_valid(
         {"schemaVersion": 1, "cards": [make_approved_core_card()]}, cards_schema
     )
+
+
+@pytest.mark.parametrize("empty_name", ["", " \t\n"])
+@pytest.mark.parametrize(
+    ("container", "field"),
+    [
+        ("provenance", "authoringTool"),
+        ("provenance", "humanEditor"),
+        ("review", "cardApprovedBy"),
+        ("review", "evidenceCitation"),
+        ("review", "evidenceRecord"),
+        ("review", "evidenceReviewedBy"),
+        ("review", "localPolicySource"),
+        ("review", "localPolicyReviewedBy"),
+        ("review", "sequenceRationale"),
+        ("review", "sequenceReviewedBy"),
+    ],
+)
+def test_card_governance_names_reject_empty_or_whitespace_only(
+    cards_schema, container, field, empty_name
+):
+    card = make_fully_reviewed_core_card()
+    card[container][field] = empty_name
+    assert_schema_invalid({"schemaVersion": 1, "cards": [card]}, cards_schema)
+
+
+@pytest.mark.parametrize("empty_name", ["", " \t\n"])
+@pytest.mark.parametrize("field", ["primaryPage", "primaryAnchor"])
+def test_application_qbank_source_names_reject_empty_or_whitespace_only(
+    cards_schema, field, empty_name
+):
+    card = make_application_card()
+    card["qbank"][field] = empty_name
+    assert_schema_invalid({"schemaVersion": 1, "cards": [card]}, cards_schema)
 
 
 @pytest.mark.parametrize("state", ["quarantined", "retired"])
@@ -938,6 +1075,70 @@ def test_qbank_render_review_binds_exact_legacy_render(qbank_reviews_schema):
     )
 
 
+def test_legacy_template_projection_matches_independent_fixture(
+    legacy_qbank_path, tmp_path
+):
+    database_path = tmp_path / "legacy.anki2"
+    with ZipFile(legacy_qbank_path) as package:
+        database_path.write_bytes(package.read("collection.anki2"))
+    with sqlite3.connect(database_path) as database:
+        models = json.loads(database.execute("SELECT models FROM col").fetchone()[0])
+    model = models[str(LEGACY_QBANK_MODEL_ID)]
+    template = model["tmpls"][0]
+    projection = make_legacy_template_contract()
+
+    assert projection["qfmt"] == template["qfmt"]
+    assert projection["afmt"] == template["afmt"]
+    assert projection["css"] == model["css"]
+    assert [field["id"] for field in projection["fields"]] == [None] * 9
+    assert projection["templateId"] is None
+
+
+@pytest.mark.parametrize("field", ["qfmt", "afmt", "css"])
+def test_legacy_template_projection_rejects_byte_drift(
+    qbank_reviews_schema, field
+):
+    review = make_qbank_render_review()
+    review["legacyTemplateContract"][field] += " "
+    assert_schema_invalid(
+        {"schemaVersion": 1, "reviews": [review]}, qbank_reviews_schema
+    )
+
+
+@pytest.mark.parametrize("empty_name", ["", " \t\n"])
+@pytest.mark.parametrize(
+    "field",
+    [
+        "primaryPage",
+        "primaryAnchor",
+        "evidenceCitation",
+        "evidenceRecord",
+        "evidenceReviewedBy",
+        "localPolicySource",
+        "localPolicyReviewedBy",
+        "facultyApprovedBy",
+    ],
+)
+def test_qbank_governance_names_reject_empty_or_whitespace_only(
+    qbank_reviews_schema, field, empty_name
+):
+    review = make_qbank_render_review(
+        risk={"level": "High", "facets": ["Medication", "LocalPolicy"]}
+    )
+    review.update(
+        {
+            "localPolicySource": "Named policy, owner, version 2026-07-14",
+            "localPolicySha256": "a" * 64,
+            "localPolicyReviewedBy": "Named Policy Owner",
+            "localPolicyReviewedAt": "2026-07-14",
+        }
+    )
+    review[field] = empty_name
+    assert_schema_invalid(
+        {"schemaVersion": 1, "reviews": [review]}, qbank_reviews_schema
+    )
+
+
 @pytest.mark.parametrize(
     "field",
     [
@@ -1086,6 +1287,18 @@ def test_quarantine_acceptance_is_named_and_closed(quarantine_schema):
     assert_schema_valid(
         {"schemaVersion": 1, "accepted": [make_quarantine_decision()]},
         quarantine_schema,
+    )
+
+
+@pytest.mark.parametrize("empty_name", ["", " \t\n"])
+@pytest.mark.parametrize("field", ["reviewOwner", "reviewedBy"])
+def test_quarantine_owner_and_reviewer_reject_empty_or_whitespace_only(
+    quarantine_schema, field, empty_name
+):
+    decision = make_quarantine_decision()
+    decision[field] = empty_name
+    assert_schema_invalid(
+        {"schemaVersion": 1, "accepted": [decision]}, quarantine_schema
     )
 
 

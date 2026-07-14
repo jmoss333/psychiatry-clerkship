@@ -31,13 +31,13 @@
       "type": "string",
       "minLength": 1,
       "not": {
-        "pattern": "(?:\\*\\*|__|`|\\[[^\\]]+\\]\\([^\\)]+\\)|(?:^|\\s)[*_][^*_\\n]+[*_](?:\\s|[.,;:!?]|$)|^\\s*#{1,6}\\s+)"
+        "pattern": "(?:\\*\\*|__|`|\\[[^\\]]+\\]\\([^\\)]+\\)|(?:^|\\s)[*_][^*_\\r\\n]+[*_](?:\\s|[.,;:!?]|$)|~~[^~\\r\\n]+~~|(?:^|\\r?\\n)\\s*(?:#{1,6}\\s+|[-+*]\\s+|[0-9]+[.)]\\s+|>\\s?)|(?:^|\\r?\\n)[^\\r\\n]+\\r?\\n\\s*(?:={3,}|-{3,})\\s*(?:\\r?\\n|$))"
       }
     },
     "renderedOptionalText": {
       "type": "string",
       "not": {
-        "pattern": "(?:\\*\\*|__|`|\\[[^\\]]+\\]\\([^\\)]+\\)|(?:^|\\s)[*_][^*_\\n]+[*_](?:\\s|[.,;:!?]|$)|^\\s*#{1,6}\\s+)"
+        "pattern": "(?:\\*\\*|__|`|\\[[^\\]]+\\]\\([^\\)]+\\)|(?:^|\\s)[*_][^*_\\r\\n]+[*_](?:\\s|[.,;:!?]|$)|~~[^~\\r\\n]+~~|(?:^|\\r?\\n)\\s*(?:#{1,6}\\s+|[-+*]\\s+|[0-9]+[.)]\\s+|>\\s?)|(?:^|\\r?\\n)[^\\r\\n]+\\r?\\n\\s*(?:={3,}|-{3,})\\s*(?:\\r?\\n|$))"
       }
     },
     "front": {
@@ -155,10 +155,10 @@
             "Disposition"
           ]
         },
-        "primaryPage": {"type": "string", "minLength": 1},
-        "primaryAnchor": {"type": "string", "minLength": 1},
+        "primaryPage": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "primaryAnchor": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "approvedItemSha256": {"$ref": "#/definitions/sha256"},
-        "primaryTrap": {"type": "string", "minLength": 1},
+        "primaryTrap": {"$ref": "#/definitions/renderedText"},
         "sourceAnchorSha256": {"$ref": "#/definitions/sha256"}
       }
     },
@@ -170,18 +170,18 @@
         "authoringMethod": {"enum": ["human", "ai_assisted"]},
         "authoringTool": {
           "oneOf": [
-            {"type": "string", "minLength": 1},
+            {"type": "string", "minLength": 1, "pattern": "\\S"},
             {"type": "null"}
           ]
         },
-        "humanEditor": {"type": "string", "minLength": 1},
+        "humanEditor": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "humanEditedAt": {"$ref": "#/definitions/isoDate"}
       },
       "allOf": [
         {
           "if": {"properties": {"authoringMethod": {"const": "human"}}},
           "then": {"properties": {"authoringTool": {"type": "null"}}},
-          "else": {"properties": {"authoringTool": {"type": "string", "minLength": 1}}}
+          "else": {"properties": {"authoringTool": {"type": "string", "minLength": 1, "pattern": "\\S"}}}
         }
       ]
     },
@@ -190,22 +190,22 @@
       "additionalProperties": false,
       "required": ["sequenceBasis"],
       "properties": {
-        "cardApprovedBy": {"type": "string", "minLength": 1},
+        "cardApprovedBy": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "cardApprovedAt": {"$ref": "#/definitions/isoDate"},
         "approvedCardSha256": {"$ref": "#/definitions/sha256"},
-        "evidenceCitation": {"type": "string", "minLength": 1},
-        "evidenceRecord": {"type": "string", "minLength": 1},
+        "evidenceCitation": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "evidenceRecord": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "evidenceSha256": {"$ref": "#/definitions/sha256"},
-        "evidenceReviewedBy": {"type": "string", "minLength": 1},
+        "evidenceReviewedBy": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "evidenceReviewedAt": {"$ref": "#/definitions/isoDate"},
-        "localPolicySource": {"type": "string", "minLength": 1},
+        "localPolicySource": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "localPolicySha256": {"$ref": "#/definitions/sha256"},
-        "localPolicyReviewedBy": {"type": "string", "minLength": 1},
+        "localPolicyReviewedBy": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "localPolicyReviewedAt": {"$ref": "#/definitions/isoDate"},
         "reviewDue": {"$ref": "#/definitions/isoDate"},
         "sequenceBasis": {"enum": ["weekly_map", "faculty_override"]},
-        "sequenceRationale": {"type": "string", "minLength": 1},
-        "sequenceReviewedBy": {"type": "string", "minLength": 1},
+        "sequenceRationale": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "sequenceReviewedBy": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "sequenceReviewedAt": {"$ref": "#/definitions/isoDate"}
       }
     },

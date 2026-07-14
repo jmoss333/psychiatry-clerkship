@@ -160,9 +160,15 @@
         "templateId": {"type": "null"},
         "templateName": {"const": "Card 1"},
         "templateOrdinal": {"const": 0},
-        "qfmt": {"type": "string", "minLength": 1},
-        "afmt": {"type": "string", "minLength": 1},
-        "css": {"type": "string"},
+        "qfmt": {
+          "const": "<div class=\"stem\">{{Question}}</div>{{Options}}"
+        },
+        "afmt": {
+          "const": "<div class=\"stem\">{{Question}}</div>{{Options}}<hr id=\"answer\">{{Answer}}{{#Why}}<div class=\"why\">{{Why}}</div>{{/Why}}{{#Pearl}}<div class=\"pearl\">💡 {{Pearl}}</div>{{/Pearl}}{{#Evidence}}<div class=\"evidence\">📄 {{Evidence}}</div>{{/Evidence}}{{#Link}}<div class=\"link\">🔗 {{Link}}</div>{{/Link}}{{#Meta}}<div>{{Meta}}</div>{{/Meta}}"
+        },
+        "css": {
+          "const": "\n.card { font-family: -apple-system, Segoe UI, Roboto, sans-serif;\n        font-size: 17px; line-height: 1.5; color: #1a1a1a;\n        background: #fbf7f0; text-align: left; padding: 14px 18px; }\n.stem { margin-bottom: 12px; }\n.opts { margin: 0 0 6px 0; padding: 0; list-style: none; }\n.opts li { margin: 4px 0; }\n.answer { font-weight: 700; color: #1f6f54; }\n.tag { display:inline-block; font-size:12px; font-weight:600; color:#8a5a1a;\n       background:#f2e6d2; border-radius:4px; padding:1px 7px; margin:2px 4px 2px 0; }\n.trap { color:#8a2b2b; }\n.trap b { color:#8a2b2b; }\n.why { margin-top:10px; }\n.pearl { margin-top:10px; padding:8px 12px; background:#eaf3ee;\n         border-left:3px solid #1f6f54; border-radius:4px; }\n.evidence { margin-top:10px; font-size:14px; color:#555; }\n.link { margin-top:10px; font-size:14px; }\n.draft { color:#8a2b2b; font-weight:700; }\nhr { border:none; border-top:1px solid #d9cdb8; margin:12px 0; }\n"
+        },
         "templateVersion": {"const": "pcl-qbank-legacy-v1"}
       }
     },
@@ -187,8 +193,8 @@
       "properties": {
         "qbankId": {"type": "string", "pattern": "^qb_[a-z0-9_]+$"},
         "identity": {"enum": ["base", "tier2"]},
-        "primaryPage": {"type": "string", "minLength": 1},
-        "primaryAnchor": {"type": "string", "minLength": 1},
+        "primaryPage": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "primaryAnchor": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "approvedItemSha256": {"$ref": "#/definitions/sha256"},
         "sourceAnchorSha256": {"$ref": "#/definitions/sha256"},
         "templateVersion": {"const": "pcl-qbank-legacy-v1"},
@@ -196,17 +202,17 @@
         "renderedNoteSha256": {"$ref": "#/definitions/sha256"},
         "legacyTemplateContract": {"$ref": "#/definitions/legacyTemplateContract"},
         "risk": {"$ref": "#/definitions/risk"},
-        "evidenceCitation": {"type": "string", "minLength": 1},
-        "evidenceRecord": {"type": "string", "minLength": 1},
+        "evidenceCitation": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "evidenceRecord": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "evidenceSha256": {"$ref": "#/definitions/sha256"},
-        "evidenceReviewedBy": {"type": "string", "minLength": 1},
+        "evidenceReviewedBy": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "evidenceReviewedAt": {"$ref": "#/definitions/isoDate"},
-        "localPolicySource": {"type": "string", "minLength": 1},
+        "localPolicySource": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "localPolicySha256": {"$ref": "#/definitions/sha256"},
-        "localPolicyReviewedBy": {"type": "string", "minLength": 1},
+        "localPolicyReviewedBy": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "localPolicyReviewedAt": {"$ref": "#/definitions/isoDate"},
         "reviewDue": {"$ref": "#/definitions/isoDate"},
-        "facultyApprovedBy": {"type": "string", "minLength": 1},
+        "facultyApprovedBy": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "facultyApprovedAt": {"$ref": "#/definitions/isoDate"}
       },
       "allOf": [

@@ -47,9 +47,9 @@
           ]
         },
         "firstSeenCommit": {"type": "string", "pattern": "^[0-9a-f]{7,40}$"},
-        "reviewOwner": {"type": "string", "minLength": 1},
+        "reviewOwner": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "disposition": {"enum": ["exclude", "withdraw", "retire"]},
-        "reviewedBy": {"type": "string", "minLength": 1},
+        "reviewedBy": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "reviewedAt": {"$ref": "#/definitions/isoDate"},
         "affectedReleaseId": {"type": "string", "minLength": 1},
         "withdrawalTemplateVersion": {"type": "string", "minLength": 1},
