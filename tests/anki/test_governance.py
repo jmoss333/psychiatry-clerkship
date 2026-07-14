@@ -1,4 +1,5 @@
 from copy import deepcopy
+from dataclasses import replace
 from datetime import date
 import json
 from pathlib import Path
@@ -14,6 +15,7 @@ from pcl_anki.governance import (
     evaluate_card,
     evaluate_qbank_note,
     reconcile_quarantines,
+    validate_release_coverage,
 )
 from pcl_anki.render import build_qbank_notes, render_card
 
@@ -627,6 +629,218 @@ def ledger_entry(finding, **changes):
     }
     value.update(changes)
     return value
+
+
+def test_same_canonical_quarantined_card_flows_through_detection_to_coverage(
+    passing_release_factory,
+):
+    bundle = passing_release_factory()
+    target = bundle.core_cards[0]
+    quarantined = bundle.quarantine_card
+    assert quarantined["state"] == "quarantined"
+    detection_inputs = replace_inputs(
+        bundle.inputs,
+        cards=(target, quarantined),
+        detected_quarantines=(),
+        quarantine=(),
+    )
+
+    findings = detect_quarantines(
+        detection_inputs,
+        (render_card(target), render_card(quarantined)),
+        CANDIDATE_DATE,
+    )
+    matching = tuple(finding for finding in findings if finding.uid == quarantined["id"])
+    assert len(matching) == 1
+
+    fresh = reconcile_quarantines(matching, ())
+    assert fresh.new == matching
+    fresh_inputs = replace_inputs(
+        bundle.inputs, detected_quarantines=matching, quarantine=()
+    )
+    fresh_decision = evaluate_card(quarantined, fresh_inputs, CANDIDATE_DATE)
+    assert "QUARANTINE_UNACCEPTED" in codes(fresh_decision.issues)
+    fresh_coverage = validate_release_coverage(
+        bundle.cards,
+        bundle.contract,
+        detected_quarantines=matching,
+        quarantine=(),
+        release_history=bundle.inputs.release_history,
+    )
+    assert "QUARANTINE_UNACCEPTED" in codes(fresh_coverage)
+
+    changed_entry = ledger_entry(
+        matching[0], sourcePath="synthetic/changed-source.md"
+    )
+    changed = reconcile_quarantines(matching, (changed_entry,))
+    assert changed.changed == matching
+    changed_inputs = replace_inputs(
+        bundle.inputs,
+        detected_quarantines=matching,
+        quarantine=(changed_entry,),
+    )
+    changed_decision = evaluate_card(
+        quarantined, changed_inputs, CANDIDATE_DATE
+    )
+    assert "QUARANTINE_UNACCEPTED" in codes(changed_decision.issues)
+    assert "QUARANTINE_UNACCEPTED" in codes(
+        validate_release_coverage(
+            bundle.cards,
+            bundle.contract,
+            detected_quarantines=matching,
+            quarantine=(changed_entry,),
+            release_history=bundle.inputs.release_history,
+        )
+    )
+
+    accepted_entry = ledger_entry(matching[0])
+    accepted = reconcile_quarantines(matching, (accepted_entry,))
+    assert accepted.accepted == matching
+    accepted_inputs = replace_inputs(
+        bundle.inputs,
+        detected_quarantines=matching,
+        quarantine=(accepted_entry,),
+    )
+    accepted_decision = evaluate_card(
+        quarantined, accepted_inputs, CANDIDATE_DATE
+    )
+    assert accepted_decision.eligible is False
+    assert not any(issue.severity == "hard" for issue in accepted_decision.issues)
+    assert validate_release_coverage(
+        bundle.cards,
+        bundle.contract,
+        detected_quarantines=matching,
+        quarantine=(accepted_entry,),
+        release_history=bundle.inputs.release_history,
+    ) == []
+
+
+def two_findings_for_one_card(bundle):
+    candidate = deepcopy(bundle.core_cards[0])
+    first_target = deepcopy(bundle.core_cards[1])
+    second_target = deepcopy(bundle.core_cards[2])
+    for index, card in enumerate((candidate, first_target, second_target), start=1):
+        card["front"] = "one shared normalized prompt"
+        card["answer"] = f"unique direct answer {index}"
+        card["reinforces"] = None
+        bundle.approve_card(card)
+    inputs = replace_inputs(
+        bundle.inputs, cards=(candidate, first_target, second_target)
+    )
+    findings = detect_quarantines(
+        inputs,
+        tuple(render_card(card) for card in (candidate, first_target, second_target)),
+        CANDIDATE_DATE,
+    )
+    candidate_findings = tuple(
+        finding
+        for finding in findings
+        if finding.uid == candidate["id"]
+        and finding.reason_code == "FRONT_EXACT_DUPLICATE"
+    )
+    assert len(candidate_findings) == 2
+    assert len({finding.subject_sha256 for finding in candidate_findings}) == 2
+    return candidate_findings
+
+
+def test_reconciliation_preserves_multiple_exact_findings_for_one_card(
+    passing_release_factory,
+):
+    bundle = passing_release_factory()
+    findings = two_findings_for_one_card(bundle)
+
+    partial = reconcile_quarantines(findings, (ledger_entry(findings[0]),))
+    assert partial.accepted == (findings[0],)
+    assert (*partial.new, *partial.changed) == (findings[1],)
+
+    complete = reconcile_quarantines(
+        findings, tuple(ledger_entry(finding) for finding in findings)
+    )
+    assert complete.accepted == findings
+    assert complete.new == complete.changed == ()
+
+
+def test_quarantined_card_requires_every_current_exact_finding_accepted(
+    passing_release_factory,
+):
+    bundle = passing_release_factory()
+    quarantined = bundle.quarantine_card
+    first_target = bundle.core_cards[0]
+    second_target = bundle.core_cards[1]
+    quarantined["front"] = "alpha beta gamma delta epsilon"
+    first_target["front"] = "alpha beta gamma delta"
+    second_target["front"] = "alpha beta gamma epsilon"
+    for card in (quarantined, first_target, second_target):
+        bundle.approve_card(card)
+    detection_inputs = replace_inputs(
+        bundle.inputs, cards=(quarantined, first_target, second_target)
+    )
+    detected = detect_quarantines(
+        detection_inputs,
+        tuple(
+            render_card(card)
+            for card in (quarantined, first_target, second_target)
+        ),
+        CANDIDATE_DATE,
+    )
+    findings = tuple(
+        finding
+        for finding in detected
+        if finding.uid == quarantined["id"]
+        and finding.reason_code == "FRONT_JACCARD_DUPLICATE"
+    )
+    assert len(findings) == 2
+
+    partial_ledger = (ledger_entry(findings[0]),)
+    partial_inputs = replace_inputs(
+        bundle.inputs,
+        detected_quarantines=findings,
+        quarantine=partial_ledger,
+    )
+    partial = evaluate_card(quarantined, partial_inputs, CANDIDATE_DATE)
+    assert "QUARANTINE_UNACCEPTED" in codes(partial.issues)
+
+    complete_ledger = tuple(ledger_entry(finding) for finding in findings)
+    complete_inputs = replace_inputs(
+        bundle.inputs,
+        detected_quarantines=findings,
+        quarantine=complete_ledger,
+    )
+    complete = evaluate_card(quarantined, complete_inputs, CANDIDATE_DATE)
+    assert not any(issue.severity == "hard" for issue in complete.issues)
+    assert validate_release_coverage(
+        bundle.cards,
+        bundle.contract,
+        detected_quarantines=findings,
+        quarantine=complete_ledger,
+        release_history=bundle.inputs.release_history,
+    ) == []
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda finding: replace(finding, subject_sha256="f" * 64),
+        lambda finding: replace(finding, reason_code="CHANGED_REASON"),
+        lambda finding: replace(finding, source_path="synthetic/changed-source.md"),
+        lambda finding: replace(finding, first_seen_commit="b" * 40),
+    ],
+    ids=["subject", "reason", "source", "first-seen"],
+)
+def test_one_changed_finding_is_changed_without_collapsing_its_sibling(
+    passing_release_factory, mutation
+):
+    bundle = passing_release_factory()
+    original = two_findings_for_one_card(bundle)
+    changed = mutation(original[0])
+    detected = (changed, original[1])
+    ledger = tuple(ledger_entry(finding) for finding in original)
+
+    result = reconcile_quarantines(detected, ledger)
+
+    assert result.accepted == (original[1],)
+    assert result.changed == (changed,)
+    assert result.new == ()
 
 
 def test_quarantine_reconciliation_distinguishes_new_changed_accepted_and_resolved():

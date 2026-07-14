@@ -288,10 +288,7 @@ def passing_release_factory(tmp_path):
             evidence_records=deepcopy(records_template["evidenceRecords"]),
             policy_records=deepcopy(records_template["policyRecords"]),
         )
-        detection_quarantine_card = deepcopy(quarantine_card)
-        detection_quarantine_card["state"] = "approved"
-        approve_card(detection_quarantine_card)
-        detection_cards = (core_cards[0], detection_quarantine_card)
+        detection_cards = (core_cards[0], quarantine_card)
         rendered_notes = tuple(
             render_card(
                 card,

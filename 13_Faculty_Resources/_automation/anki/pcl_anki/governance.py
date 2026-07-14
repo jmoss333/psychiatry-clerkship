@@ -472,10 +472,33 @@ def _affirmative_supervision_caveat(value: object) -> bool:
     visible = re.sub(r"<[^>]+>", " ", visible)
     for raw_clause in re.split(r"[.;!?]+", visible):
         clause = _normalize_duplicate_text(raw_clause)
-        for match in _AFFIRMATIVE_SUPERVISION_RE.finditer(clause):
-            prefix_tokens = clause[: match.start()].split()[-3:]
-            if not ({"not", "never", "without", "dont"} & set(prefix_tokens)):
-                return True
+        clause_tokens = set(clause.split())
+        if clause_tokens & {
+            "0",
+            "absence",
+            "absent",
+            "cannot",
+            "dont",
+            "lack",
+            "lacking",
+            "lacks",
+            "never",
+            "nil",
+            "no",
+            "none",
+            "not",
+            "unavailable",
+            "unsupervised",
+            "without",
+            "zero",
+        } or re.search(
+            r"\b(?:can|couldn?|shouldn?|wouldn?|mustn?|won|isn?|aren?|"
+            r"wasn?|weren?|doesn?|didn?)\s+t\b",
+            clause,
+        ):
+            continue
+        if _AFFIRMATIVE_SUPERVISION_RE.search(clause):
+            return True
     return False
 
 
@@ -489,13 +512,45 @@ def _ledger_entries(ledger: object) -> tuple[Mapping, ...]:
 
 def _decision_key(value: Mapping | QuarantineFinding) -> tuple[object, ...]:
     if isinstance(value, QuarantineFinding):
-        return (value.namespace, value.uid, value.identity, value.reason_code)
+        return (
+            value.namespace,
+            value.uid,
+            value.identity,
+            value.reason_code,
+            value.subject_sha256,
+        )
     return (
         value.get("namespace"),
         value.get("uid"),
         value.get("identity"),
         value.get("reasonCode"),
+        value.get("subjectSha256"),
     )
+
+
+def _finding_card_key(value: Mapping | QuarantineFinding) -> tuple[object, ...]:
+    if isinstance(value, QuarantineFinding):
+        return value.namespace, value.uid, value.identity
+    return value.get("namespace"), value.get("uid"), value.get("identity")
+
+
+def _quarantine_set_accepted(
+    result: QuarantineResult, findings: Iterable[QuarantineFinding]
+) -> bool:
+    """Require every current exact finding for a card to reconcile as accepted."""
+
+    findings = tuple(findings)
+    if not findings:
+        return False
+    card_keys = {_finding_card_key(finding) for finding in findings}
+    if any(
+        _finding_card_key(finding) in card_keys
+        for finding in (*result.new, *result.changed)
+    ):
+        return False
+    required = Counter(_decision_key(finding) for finding in findings)
+    accepted = Counter(_decision_key(finding) for finding in result.accepted)
+    return all(accepted[key] >= count for key, count in required.items())
 
 
 def _historical_membership(
@@ -662,9 +717,8 @@ def evaluate_card(card: Mapping, inputs: object, candidate_date: date) -> CardDe
         _input(inputs, "quarantine", ()),
         release_history=_input(inputs, "release_history", None),
     )
-    accepted_keys = {_decision_key(finding) for finding in quarantine_result.accepted}
-    matching_accepted = bool(matching_findings) and all(
-        _decision_key(finding) in accepted_keys for finding in matching_findings
+    matching_accepted = _quarantine_set_accepted(
+        quarantine_result, matching_findings
     )
     if state == "quarantined":
         issues.append(
@@ -846,10 +900,7 @@ def evaluate_qbank_note(
             _input(inputs, "quarantine", ()),
             release_history=_input(inputs, "release_history", None),
         )
-        accepted_keys = {_decision_key(finding) for finding in result.accepted}
-        accepted = all(
-            _decision_key(finding) in accepted_keys for finding in matching_findings
-        )
+        accepted = _quarantine_set_accepted(result, matching_findings)
         issues.append(
             _issue(
                 "QBANK_QUARANTINED",
@@ -1009,6 +1060,11 @@ def detect_quarantines(
 
     del candidate_date  # Reserved for future time-sensitive finding detectors.
     notes = tuple(rendered_notes)
+    current_by_key = {
+        (note.namespace, note.uid, note.identity): note
+        for note in notes
+        if not note.withdrawn
+    }
     active_by_key = {
         (note.namespace, note.uid, note.identity): note
         for note in notes
@@ -1047,12 +1103,13 @@ def detect_quarantines(
     cards = [
         card
         for card in _input(inputs, "cards", ())
-        if isinstance(card, Mapping) and card.get("state") == "approved"
+        if isinstance(card, Mapping)
+        and card.get("state") in {"approved", "quarantined"}
     ]
     live: list[tuple[Mapping, RenderedNote]] = []
     for card in cards:
         namespace = "application" if card.get("kind") == "application" else "core"
-        note = active_by_key.get((namespace, card.get("id"), "base"))
+        note = current_by_key.get((namespace, card.get("id"), "base"))
         review = card.get("review") if isinstance(card.get("review"), Mapping) else {}
         if note is not None and review.get("approvedCardSha256") == note.render_sha256:
             live.append((card, note))
@@ -1066,10 +1123,19 @@ def detect_quarantines(
             value[1].identity,
         )
     )
-    for index, (candidate, candidate_note) in enumerate(live):
-        for target, target_note in live[index + 1 :]:
-            if target.get("id") == candidate.get("id"):
+    for index, (left, left_note) in enumerate(live):
+        for right, right_note in live[index + 1 :]:
+            if right.get("id") == left.get("id"):
                 continue
+            if (
+                right.get("state") == "quarantined"
+                and left.get("state") != "quarantined"
+            ):
+                candidate, candidate_note = right, right_note
+                target, target_note = left, left_note
+            else:
+                candidate, candidate_note = left, left_note
+                target, target_note = right, right_note
             candidate_target = _live_core_target(candidate, cards)
             target_candidate = _live_core_target(target, cards)
             waived = (
@@ -1085,14 +1151,14 @@ def detect_quarantines(
                 ("front", front_threshold, "FRONT_EXACT_DUPLICATE", "FRONT_JACCARD_DUPLICATE"),
                 ("answer", answer_threshold, "ANSWER_EXACT_DUPLICATE", "ANSWER_JACCARD_DUPLICATE"),
             ):
-                left = _normalize_duplicate_text(candidate.get(field, ""))
-                right = _normalize_duplicate_text(target.get(field, ""))
-                if not left or not right:
+                candidate_text = _normalize_duplicate_text(candidate.get(field, ""))
+                target_text = _normalize_duplicate_text(target.get(field, ""))
+                if not candidate_text or not target_text:
                     continue
                 reason = None
-                if left == right:
+                if candidate_text == target_text:
                     reason = exact_code
-                elif _jaccard(left, right) >= threshold:
+                elif _jaccard(candidate_text, target_text) >= threshold:
                     reason = jaccard_code
                 if reason:
                     key = (
@@ -1108,7 +1174,7 @@ def detect_quarantines(
                             target_note,
                             reason,
                             field,
-                            right,
+                            target_text,
                             inputs,
                             withdrawals.get(key),
                         )
@@ -1154,23 +1220,53 @@ def reconcile_quarantines(
 
     detected = tuple(detected)
     entries = _ledger_entries(ledger)
-    ledger_by_key = {_decision_key(entry): entry for entry in entries}
-    detected_keys = {_decision_key(finding) for finding in detected}
     new: list[QuarantineFinding] = []
     changed: list[QuarantineFinding] = []
     accepted: list[QuarantineFinding] = []
+    used_entries: set[int] = set()
+    unmatched: list[QuarantineFinding] = []
     for finding in detected:
-        entry = ledger_by_key.get(_decision_key(finding))
-        if entry is None:
-            new.append(finding)
-        elif _valid_ledger_decision(entry, finding, release_history):
+        entry_index = next(
+            (
+                index
+                for index, entry in enumerate(entries)
+                if index not in used_entries
+                and _decision_key(entry) == _decision_key(finding)
+            ),
+            None,
+        )
+        if entry_index is None:
+            unmatched.append(finding)
+            continue
+        used_entries.add(entry_index)
+        if _valid_ledger_decision(entries[entry_index], finding, release_history):
             accepted.append(finding)
         else:
             changed.append(finding)
+
+    for finding in unmatched:
+        same_card = [
+            index
+            for index, entry in enumerate(entries)
+            if index not in used_entries
+            and _finding_card_key(entry) == _finding_card_key(finding)
+        ]
+        same_reason = [
+            index
+            for index in same_card
+            if entries[index].get("reasonCode") == finding.reason_code
+        ]
+        candidates = same_reason or same_card
+        if not candidates:
+            new.append(finding)
+            continue
+        used_entries.add(candidates[0])
+        changed.append(finding)
+
     resolved = [
         _ledger_finding(entry)
-        for entry in entries
-        if _decision_key(entry) not in detected_keys
+        for index, entry in enumerate(entries)
+        if index not in used_entries
     ]
     return QuarantineResult(
         new=tuple(new),
@@ -1327,6 +1423,7 @@ def validate_release_coverage(
                 )
             )
     else:
+        detected_quarantines = tuple(detected_quarantines)
         quarantine_result = reconcile_quarantines(
             detected_quarantines,
             quarantine,
@@ -1340,14 +1437,15 @@ def validate_release_coverage(
         excluded_keys = {
             (finding.namespace, finding.uid, finding.identity) for finding in excluded
         }
-        accepted_keys = {
-            (finding.namespace, finding.uid, finding.identity)
-            for finding in quarantine_result.accepted
-        }
         for card in quarantined_cards:
             namespace = "application" if card.get("kind") == "application" else "core"
             key = (namespace, card.get("id"), "base")
-            if key not in accepted_keys:
+            current_findings = tuple(
+                finding
+                for finding in detected_quarantines
+                if _finding_card_key(finding) == key
+            )
+            if not _quarantine_set_accepted(quarantine_result, current_findings):
                 issues.append(
                     _issue(
                         "QUARANTINE_UNACCEPTED",

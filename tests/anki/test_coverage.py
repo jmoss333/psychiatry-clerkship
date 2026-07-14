@@ -260,17 +260,51 @@ def test_role_safety_minimal_pairs_allow_recognition_notification_and_negation(
     assert "ROLE_SAFETY_UNSAFE_INDEPENDENT_ACTION" not in codes(issues)
 
 
+@pytest.mark.parametrize(
+    "caveat",
+    [
+        "Do not notify the attending.",
+        "Use with no supervision.",
+        "Proceed under zero supervision.",
+        "Use with <b>no</b> supervision!",
+        "Proceed under—zero—supervision.",
+        "You cannot notify the attending.",
+        "You can't notify the attending.",
+        "Proceed with nil supervision.",
+    ],
+)
 def test_negated_supervision_language_does_not_satisfy_required_caveat(
-    passing_release_factory,
+    passing_release_factory, caveat
 ):
     bundle = passing_release_factory()
     card = bundle.core_cards[0]
     card["family"] = "StudentAction"
-    card["caveat"] = "Do not notify the attending."
+    card["caveat"] = caveat
 
     issues = validate_release_coverage(bundle.cards, bundle.contract)
 
     assert "ROLE_SAFETY_CAVEAT_REQUIRED" in codes(issues)
+
+
+@pytest.mark.parametrize(
+    "caveat",
+    [
+        "Notify the attending.",
+        "Use with direct faculty supervision.",
+        "<b>Escalate</b> to the resident!",
+    ],
+)
+def test_affirmative_supervision_minimal_pairs_satisfy_required_caveat(
+    passing_release_factory, caveat
+):
+    bundle = passing_release_factory()
+    card = bundle.core_cards[0]
+    card["family"] = "StudentAction"
+    card["caveat"] = caveat
+
+    issues = validate_release_coverage(bundle.cards, bundle.contract)
+
+    assert "ROLE_SAFETY_CAVEAT_REQUIRED" not in codes(issues)
 
 
 @pytest.mark.parametrize(
