@@ -185,6 +185,12 @@
     "application": "pcl-ms3-application-v2",
     "legacyQbank": "pcl-qbank-legacy-v1"
   },
+  "templateContractSha256": {
+    "coreBasic": "7b59204c571c255e0ea255a9ca7437df83dd34c2da449a7f9e070350ea077000",
+    "coreCloze": "766db66cf2cc6cea1c92214f2bf0b307339b048a160b110567bf3e7d27c8b230",
+    "application": "9e7f539149b849303b705ef471f0be071836f210213a8b4957e553deb7d5dc1e",
+    "legacyQbank": "2ff09e6c2bab1843f3fa8e6230eb0e14903304b380cca6ed92a28c8cef3b1ce7"
+  },
   "knownSafetyHolds": [
     {
       "qbankUid": "qb_pha_002",

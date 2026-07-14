@@ -68,6 +68,7 @@ ROOT_CONTRACTS = {
         "releaseDate",
         "releaseEpoch",
         "templateVersions",
+        "templateContractSha256",
         "knownSafetyHolds",
         "frontJaccardReviewThreshold",
         "answerJaccardReviewThreshold",

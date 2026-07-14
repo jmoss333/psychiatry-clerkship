@@ -1,5 +1,5 @@
 {
-  "_note": "Exam-style question bank rendered by the SPA, separate from topic_meta.json. AI-drafted ORIGINAL items aligned with the library's topic pages — never reproductions of NBME/NBOME/USMLE or commercial-bank questions. All 144 items attested by Dr. Moss 2026-07-05 via qbank-attest.html. Educational; fictional composites only; no PHI. Quality bar: QUESTION_BANK_STANDARD.md · categories/counts: QUESTION_BANK_BLUEPRINT.md · shape: question_bank.schema.json.",
+  "_note": "Exam-style question bank rendered by the SPA, separate from topic_meta.json. Current state: 143 active attested items and 49 draft records, including 3 retired items. Eligibility is derived exclusively from each item's status and retired fields; this descriptive note is not an eligibility gate. AI-drafted ORIGINAL items align with the library's topic pages — never reproductions of NBME/NBOME/USMLE or commercial-bank questions. Educational; fictional composites only; no PHI. Quality bar: QUESTION_BANK_STANDARD.md · categories/counts: QUESTION_BANK_BLUEPRINT.md · shape: question_bank.schema.json.",
   "version": 1,
   "items": [
     {
