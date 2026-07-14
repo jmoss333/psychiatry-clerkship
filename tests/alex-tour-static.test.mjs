@@ -250,6 +250,23 @@ test('uses verified contrast for small clay text', () => {
   assert.match(html, /\.governance-banner\s*\{[^}]*color:\s*var\(--clay-text\)/s);
 });
 
+test('uses a self-contained data favicon with no runtime asset path', () => {
+  const links = [...html.matchAll(/<link\b[^>]*>/g)].map((match) => match[0]);
+  const icons = links.filter((tag) => (
+    new Set((attribute(tag, 'rel') || '').split(/\s+/)).has('icon')
+  ));
+  assert.equal(icons.length, 1, 'Exactly one favicon link is required');
+  const href = attribute(icons[0], 'href') || '';
+  assert.match(href, /^data:image\/svg\+xml,/);
+  assert.doesNotMatch(href, /^(?:\/|https?:)/);
+  const svg = decodeURIComponent(href.slice('data:image/svg+xml,'.length));
+  assert.match(svg, /<svg\b/);
+  assert.match(svg, /#18323A/i);
+  assert.match(svg, /#2F6F68/i);
+  assert.doesNotMatch(html, /href="\/favicon\.ico"/i);
+  assert.ok(netlify.includes("img-src 'self' data:"));
+});
+
 test('uses one hashed style and one hashed script block', () => {
   const styles = [...html.matchAll(/<style>([\s\S]*?)<\/style>/g)];
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
