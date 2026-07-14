@@ -45,6 +45,11 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], baseURL: RES_URL },
     },
     {
+      name: 'source-ms3',
+      testMatch: 'source-anchor.spec.js',
+      use: { ...devices['Desktop Chrome'], baseURL: MS3_URL },
+    },
+    {
       name: 'lfs',
       testMatch: 'lfs-integrity.spec.js',
       use: { ...devices['Desktop Chrome'] },

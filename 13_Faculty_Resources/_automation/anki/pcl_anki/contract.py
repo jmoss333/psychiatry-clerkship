@@ -1,11 +1,12 @@
 """Permanent Anki identities shared by build, inspection, and release tooling."""
 
 from dataclasses import dataclass
+from datetime import date
 from hashlib import sha256
 import json
 from pathlib import Path
 import re
-from typing import Literal
+from typing import Literal, Mapping
 import unicodedata
 
 import genanki
@@ -21,6 +22,43 @@ class Issue:
     severity: Severity
     subject: str
     message: str
+
+
+@dataclass(frozen=True)
+class ManifestIndex:
+    path_to_slug: Mapping[str, str]
+    slug_to_path: Mapping[str, str]
+    slug_to_title: Mapping[str, str]
+
+
+@dataclass(frozen=True)
+class WeekMap:
+    slug_to_first_week: Mapping[str, int]
+    tool_to_first_week: Mapping[str, int]
+
+
+@dataclass(frozen=True)
+class Section:
+    anchor: str
+    title: str
+    level: int
+    start_line: int
+    end_line: int
+    raw_text: str
+    normalized_text: str
+
+
+@dataclass(frozen=True)
+class SourceResolution:
+    path: str
+    slug: str
+    anchor: str
+    url: str
+    quote: str
+    quote_sha256: str
+    section_sha256: str
+    reviewed_at: date
+    introduced_week: int | None
 
 
 # Frozen legacy qbank identities. The shipped model intentionally has no
