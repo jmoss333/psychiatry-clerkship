@@ -17,8 +17,8 @@ only.
 
 ## Publication
 
-- Preferred URL: `https://psychiatry-workforce-tour.netlify.app/`
-- Fallback URL: `https://faculty-governed-psychiatry-tour.netlify.app/`
+- Production URL: `https://psychiatry-workforce-tour.netlify.app`
+- Netlify site ID: `89d110aa-c3b2-488e-8180-ebc9687c4b4e`
 - Base directory: `13_Faculty_Resources/Outreach/alex-tour`
 - Build command: none
 - Publish directory: `.`
