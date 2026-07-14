@@ -82,6 +82,36 @@ class RenderedNote:
     withdrawn: bool
 
 
+@dataclass(frozen=True)
+class CardDecision:
+    namespace: Namespace
+    uid: str
+    identity: Identity
+    eligible: bool
+    rendered: RenderedNote | None
+    issues: tuple[Issue, ...]
+
+
+@dataclass(frozen=True)
+class QuarantineFinding:
+    namespace: Namespace
+    uid: str
+    identity: Identity
+    reason_code: str
+    subject_sha256: str
+    source_path: str | None
+    first_seen_commit: str
+    withdrawal_render_sha256: str | None = None
+
+
+@dataclass(frozen=True)
+class QuarantineResult:
+    new: tuple[QuarantineFinding, ...]
+    changed: tuple[QuarantineFinding, ...]
+    accepted: tuple[QuarantineFinding, ...]
+    resolved: tuple[QuarantineFinding, ...]
+
+
 # Frozen legacy qbank identities. The shipped model intentionally has no
 # per-field or per-template IDs.
 LEGACY_QBANK_MODEL_ID = 1607392901
