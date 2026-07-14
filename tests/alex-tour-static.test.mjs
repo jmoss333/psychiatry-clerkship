@@ -44,6 +44,11 @@ const netlify = fs.readFileSync(configPath, 'utf8');
 
 function normalizeText(value) {
   return value
+    .replace(/<(style|script)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(
+      /<([a-z][\w:-]*)\b[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/\1>/gi,
+      ' ',
+    )
     .replace(/<[^>]+>/g, ' ')
     .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
@@ -60,6 +65,23 @@ function attribute(tag, name) {
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('base64');
+}
+
+function relativeLuminance(hex) {
+  const channels = hex
+    .slice(1)
+    .match(/../g)
+    .map((value) => Number.parseInt(value, 16) / 255)
+    .map((value) => (
+      value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4
+    ));
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrastRatio(first, second) {
+  const values = [relativeLuminance(first), relativeLuminance(second)]
+    .sort((left, right) => right - left);
+  return (values[0] + 0.05) / (values[1] + 0.05);
 }
 
 test('contains exactly one canonical anchor for every destination', () => {
@@ -115,13 +137,12 @@ test('preserves the approved route and questions', () => {
   ]) {
     assert.ok(html.includes(heading), `Missing route heading: ${heading}`);
   }
-  for (const question of questions) {
-    assert.equal(
-      pageText.split(question).length - 1,
-      1,
-      `Question changed or duplicated: ${question}`,
-    );
-  }
+  const questionList = html.match(/<ol class="question-list">([\s\S]*?)<\/ol>/);
+  assert.ok(questionList, 'Rendered collaboration-question list missing');
+  const renderedQuestions = [...questionList[1].matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)]
+    .map((match) => normalizeText(match[1]));
+  assert.deepEqual(renderedQuestions, questions, 'Rendered question items changed');
+  assert.doesNotMatch(pageText, /initialRecords|prefers-reduced-motion/);
 });
 
 test('keeps the governance preview synthetic and read only', () => {
@@ -189,6 +210,44 @@ test('preserves the three contextual prototype labels', () => {
   ]) {
     assert.equal(pageText.split(label).length - 1, 1, `Prototype label changed: ${label}`);
   }
+
+  const expectedNames = new Map([
+    ['therapy-match', 'Open TherapyMatch Maine'],
+    ['mental-health-library', 'Open Mental Health Education Library'],
+    ['family-therapy-companion', 'Open Family Therapy Seminar Companion'],
+  ]);
+  const anchors = [...html.matchAll(/(<a\b[^>]*>)([\s\S]*?)<\/a>/g)];
+  for (const [destination, expectedName] of expectedNames) {
+    const matches = anchors.filter(
+      (match) => attribute(match[1], 'data-destination') === destination,
+    );
+    assert.equal(matches.length, 1, `${destination} link must appear once`);
+    assert.equal(normalizeText(matches[0][2]), expectedName);
+  }
+});
+
+test('updates a governance toggle in place to preserve keyboard focus', () => {
+  const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1] || '';
+  assert.match(script, /function updateToggle\(toggle, record\)/);
+  const listener = script.match(
+    /toggle\.addEventListener\('click', \(\) => \{([\s\S]*?)\n\s*\}\);/,
+  );
+  assert.ok(listener, 'Governance toggle listener missing');
+  assert.match(listener[1], /record\.demoReviewed = !record\.demoReviewed/);
+  assert.match(listener[1], /updateToggle\(toggle, record\)/);
+  assert.doesNotMatch(listener[1], /renderRecords/);
+});
+
+test('uses verified contrast for small clay text', () => {
+  const paper = html.match(/--paper:\s*(#[0-9A-F]{6});/i)?.[1];
+  const clayText = html.match(/--clay-text:\s*(#[0-9A-F]{6});/i)?.[1];
+  assert.ok(paper && clayText, 'Small-text contrast tokens missing');
+  assert.ok(
+    contrastRatio(clayText, paper) >= 4.5,
+    `${clayText} does not meet 4.5:1 on ${paper}`,
+  );
+  assert.match(html, /\.runbook h3\s*\{[^}]*color:\s*var\(--clay-text\)/s);
+  assert.match(html, /\.governance-banner\s*\{[^}]*color:\s*var\(--clay-text\)/s);
 });
 
 test('uses one hashed style and one hashed script block', () => {

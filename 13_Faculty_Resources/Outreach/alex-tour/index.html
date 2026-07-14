@@ -14,6 +14,7 @@
       --teal: #2F6F68;
       --fog: #DCE9E7;
       --clay: #B75C3D;
+      --clay-text: #98462F;
       --paper: #FBFCFA;
       --slate: #5B686B;
       --line: #AFCBC6;
@@ -473,7 +474,7 @@
 
     .runbook h3 {
       margin: 0;
-      color: var(--clay);
+      color: var(--clay-text);
       font-size: 0.78rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -613,7 +614,7 @@
       padding: 0.65rem 0.75rem;
       border: 1px solid rgba(183, 92, 61, 0.52);
       background: var(--paper);
-      color: var(--clay);
+      color: var(--clay-text);
       font-size: 0.8rem;
       font-weight: 780;
     }
@@ -1534,7 +1535,7 @@
                href="https://therapymatch-maine.netlify.app/"
                data-destination="therapy-match" target="_blank"
                rel="noopener noreferrer">
-              Open <span aria-hidden="true">↗</span>
+              Open TherapyMatch Maine <span aria-hidden="true">↗</span>
             </a>
           </div>
           <div class="prototype-row">
@@ -1549,7 +1550,7 @@
                href="https://mental-health-education-library.netlify.app/"
                data-destination="mental-health-library" target="_blank"
                rel="noopener noreferrer">
-              Open <span aria-hidden="true">↗</span>
+              Open Mental Health Education Library <span aria-hidden="true">↗</span>
             </a>
           </div>
           <div class="prototype-row">
@@ -1564,7 +1565,7 @@
                href="https://family-therapy-seminar-companion.netlify.app/"
                data-destination="family-therapy-companion" target="_blank"
                rel="noopener noreferrer">
-              Open <span aria-hidden="true">↗</span>
+              Open Family Therapy Seminar Companion <span aria-hidden="true">↗</span>
             </a>
           </div>
         </div>
@@ -1679,6 +1680,13 @@
         );
       }
 
+      function updateToggle(toggle, record) {
+        toggle.setAttribute('aria-pressed', String(record.demoReviewed));
+        toggle.textContent = record.demoReviewed
+          ? 'Reviewed in demonstration'
+          : 'Mark reviewed locally';
+      }
+
       function renderRecords() {
         const container = document.getElementById('governance-records');
         container.replaceChildren();
@@ -1700,13 +1708,10 @@
           const toggle = document.createElement('button');
           toggle.type = 'button';
           toggle.className = 'demo-toggle';
-          toggle.setAttribute('aria-pressed', String(record.demoReviewed));
-          toggle.textContent = record.demoReviewed
-            ? 'Reviewed in demonstration'
-            : 'Mark reviewed locally';
+          updateToggle(toggle, record);
           toggle.addEventListener('click', () => {
             record.demoReviewed = !record.demoReviewed;
-            renderRecords();
+            updateToggle(toggle, record);
           });
           article.appendChild(toggle);
           container.appendChild(article);
