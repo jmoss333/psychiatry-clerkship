@@ -104,11 +104,11 @@ RELEASE_ARTIFACT_FILENAMES = (
 
 
 def core_guid(card_id: str) -> str:
-    return genanki.guid_for("pcl-ms3-core-v2", card_id)
+    return genanki.guid_for(CORE_GUID_NAMESPACE, card_id)
 
 
 def application_guid(card_id: str) -> str:
-    return genanki.guid_for("pcl-ms3-application-v2", card_id)
+    return genanki.guid_for(APPLICATION_GUID_NAMESPACE, card_id)
 
 
 def legacy_qbank_guid(item_id: str, identity: str = "base") -> str:

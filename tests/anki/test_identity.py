@@ -4,12 +4,15 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+import subprocess
+import sys
 from zipfile import ZipFile
 
 import anki
 import genanki
 import pytest
 
+import pcl_anki.contract as contract
 from pcl_anki.contract import (
     APPLICATION_ARTIFACT_FILENAME,
     APPLICATION_DECK_ID,
@@ -49,6 +52,10 @@ from pcl_anki.contract import (
     core_guid,
     legacy_qbank_guid,
 )
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+RUN_PYTHON = REPO_ROOT / "13_Faculty_Resources" / "_automation" / "anki" / "run_python.sh"
 
 
 EXPECTED_CORE_BASIC_FIELDS = (
@@ -100,6 +107,11 @@ def _model_json_from_package(package_path: Path, tmp_path: Path) -> dict[str, di
 def _add_note(deck: genanki.Deck, model: genanki.Model) -> None:
     fields = ["{{c1::neutral}}" if field["name"] == "Text" else "neutral" for field in model.fields]
     deck.add_note(genanki.Note(model=model, fields=fields))
+
+
+def _write_executable(path: Path, body: str) -> None:
+    path.write_text(body, encoding="utf-8")
+    path.chmod(0o755)
 
 
 @pytest.fixture
@@ -162,6 +174,64 @@ def test_default_runner_uses_production_anki():
     assert version("anki") == "26.5"
 
 
+def test_runner_rejects_non_cpython_311(tmp_path):
+    fake_pypy = tmp_path / "pypy3.11"
+    _write_executable(
+        fake_pypy,
+        """#!/usr/bin/env bash
+case "${2:-}" in
+  *sys.implementation*) exit 1 ;;
+  *realpath*) printf '%s\\n' "$0"; exit 0 ;;
+  *platform.python_version*) printf '3.11.8\\n'; exit 0 ;;
+esac
+if [[ "${1:-}" == "-m" && "${2:-}" == "venv" ]]; then
+  exit 73
+fi
+exit 0
+""",
+    )
+    environment = os.environ.copy()
+    environment.pop("ANKI_LOCK", None)
+    environment["PCL_ANKI_PYTHON"] = str(fake_pypy)
+
+    result = subprocess.run(
+        ["bash", str(RUN_PYTHON), "-c", "pass"],
+        env=environment,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "Rejected interpreter" in result.stderr
+    assert "CPython 3.11 is required" in result.stderr
+
+
+def test_runner_accepts_explicit_cpython_path_containing_spaces(tmp_path):
+    wrapper_directory = tmp_path / "python wrappers"
+    wrapper_directory.mkdir()
+    wrapper = wrapper_directory / "cpython 3.11"
+    _write_executable(
+        wrapper,
+        """#!/usr/bin/env bash
+exec "$PCL_REAL_CPYTHON" "$@"
+""",
+    )
+    environment = os.environ.copy()
+    environment.pop("ANKI_LOCK", None)
+    environment["PCL_ANKI_PYTHON"] = str(wrapper)
+    environment["PCL_REAL_CPYTHON"] = sys.executable
+
+    result = subprocess.run(
+        ["bash", str(RUN_PYTHON), "-c", "print('space-path-ok')"],
+        env=environment,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "space-path-ok"
+
+
 def test_legacy_qbank_identity_is_frozen():
     assert LEGACY_QBANK_MODEL_ID == 1607392901
     assert LEGACY_QBANK_MODEL_NAME == "PCL Vignette (Moss)"
@@ -187,6 +257,8 @@ def test_legacy_qbank_identity_is_frozen():
 
 
 def test_v2_identity_is_frozen():
+    assert contract.CORE_GUID_NAMESPACE == "pcl-ms3-core-v2"
+    assert contract.APPLICATION_GUID_NAMESPACE == "pcl-ms3-application-v2"
     assert (CORE_DECK_ID, CORE_DECK_NAME) == (
         2059400201,
         "Psychiatry Clerkship MS3 (Moss)::Core Recall",
@@ -224,6 +296,20 @@ def test_v2_identity_is_frozen():
         29615640114988655,
         "Card 1",
         0,
+    )
+
+
+def test_v2_guid_helpers_consume_exported_namespaces(monkeypatch):
+    monkeypatch.setattr(contract, "CORE_GUID_NAMESPACE", "test-core-namespace")
+    monkeypatch.setattr(
+        contract, "APPLICATION_GUID_NAMESPACE", "test-application-namespace"
+    )
+
+    assert contract.core_guid("neutral-001") == genanki.guid_for(
+        "test-core-namespace", "neutral-001"
+    )
+    assert contract.application_guid("neutral-002") == genanki.guid_for(
+        "test-application-namespace", "neutral-002"
     )
 
 

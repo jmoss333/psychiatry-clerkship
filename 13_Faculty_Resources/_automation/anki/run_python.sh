@@ -36,7 +36,7 @@ if [[ -n "${PCL_ANKI_PYTHON:-}" ]]; then
 elif command -v python3.11 >/dev/null 2>&1; then
   PYTHON="$(command -v python3.11)"
 elif command -v python3 >/dev/null 2>&1 && \
-    python3 -c 'import sys; raise SystemExit(sys.version_info[:2] != (3, 11))'; then
+    python3 -c 'import sys; raise SystemExit(sys.implementation.name != "cpython" or sys.version_info[:2] != (3, 11))'; then
   PYTHON="$(command -v python3)"
 elif command -v uv >/dev/null 2>&1; then
   uv python install 3.11.9 >&2
@@ -49,13 +49,13 @@ EOF
   exit 2
 fi
 
-if ! "$PYTHON" -c 'import sys; raise SystemExit(sys.version_info[:2] != (3, 11))'; then
+if ! "$PYTHON" -c 'import sys; raise SystemExit(sys.implementation.name != "cpython" or sys.version_info[:2] != (3, 11))'; then
   echo "Rejected interpreter '$PYTHON': CPython 3.11 is required." >&2
   exit 2
 fi
 
-PYTHON="$($PYTHON -c 'import os, sys; print(os.path.realpath(sys.executable))')"
-PYTHON_VERSION="$($PYTHON -c 'import platform; print(platform.python_version())')"
+PYTHON="$("$PYTHON" -c 'import os, sys; print(os.path.realpath(sys.executable))')"
+PYTHON_VERSION="$("$PYTHON" -c 'import platform; print(platform.python_version())')"
 LOCK_SHA256="$(shasum -a 256 "$LOCK_FILE" | awk '{print $1}')"
 ENVIRONMENT_SHA256="$(printf '%s\n%s\n' "$PYTHON_VERSION" "$LOCK_SHA256" | shasum -a 256 | awk '{print $1}')"
 VENV_DIR="$REPO_ROOT/_build/anki-venv/$ENVIRONMENT_SHA256"
