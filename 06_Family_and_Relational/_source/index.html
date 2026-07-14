@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<!-- Family Therapy Approaches with Adults — Interactive Companion
-     Single-file, zero-dependency. Answers persist in this browser only (localStorage).
-     Joshua Moss, MD · Psychiatry Seminars · June 16, 2026 -->
+<!-- Family Therapy Approaches with Adults
+     Joshua Moss, MD · Evergreen Faculty Teaching Companion · Updated July 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -54,6 +53,14 @@
     background: var(--ft-terra); margin-right: 10px;
   }
   .ft-session { font-size: 0.8rem; color: var(--ft-sage-light); letter-spacing: 0.06em; }
+  .ft-provenance {
+    display: inline-block;
+    margin-top: 3px;
+    color: #D7E1DD;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
   .ft-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .ft-btn {
     font-family: var(--ft-sans); font-size: 0.78rem; font-weight: 600;
@@ -316,7 +323,10 @@
 <header class="ft-header">
   <div>
     <h1><span class="ft-chip"></span>Family Therapy Approaches with Adults</h1>
-    <div class="ft-session">PSYCHIATRY SEMINARS · TUE JUNE 16, 2026 · 3:30 PM · McG CLASSROOM · PGY-3 &amp; CAP · DR. J. MOSS</div>
+    <div class="ft-session">
+      EVERGREEN FACULTY TEACHING COMPANION · UPDATED JULY 2026<br>
+      <span class="ft-provenance">Developed from a June 2026 family-therapy seminar.</span>
+    </div>
   </div>
   <div class="ft-actions">
     <button class="ft-btn" id="ft-btn-download" aria-label="Download my answers as a text file">Download answers</button>
@@ -325,7 +335,10 @@
   </div>
 </header>
 
-<p class="ft-maphint">Click any node to open it. Work the three cases before the seminar or during it — your answers save automatically <strong>on this device only</strong>.</p>
+<p class="ft-maphint">
+  Click any node to open it. Use the three cases for preparation, teaching, or review —
+  your answers save automatically <strong>on this device only</strong>.
+</p>
 
 <div class="ft-mapwrap">
   <svg id="ft-map" class="ft-map" viewBox="0 0 1200 760" role="group" aria-label="Seminar map: click a topic to open it"></svg>
@@ -730,7 +743,7 @@
     cg.appendChild(svgEl('text', {
       x: CENTER.x, y: CENTER.y + 34, 'text-anchor': 'middle',
       'font-family': 'inherit', 'font-size': '11', fill: '#A7BEAE', 'letter-spacing': '1'
-    }, 'JUNE 16 · 3:30 PM · McG CLASSROOM'));
+    }, 'EVERGREEN · UPDATED JULY 2026'));
     svg.appendChild(cg);
 
     SECTIONS.forEach(function (sec) {
@@ -899,7 +912,8 @@
     root.innerHTML = '';
     root.appendChild(el('h1', {}, 'Family Therapy Approaches with Adults — My Companion'));
     root.appendChild(el('div', { class: 'ft-p-session' },
-      'Psychiatry Seminars · June 16, 2026 · 3:30 PM · McG Classroom · PGY-3 & CAP · Dr. J. Moss'));
+      'Evergreen faculty teaching companion · Updated July 2026 · ' +
+      'Developed from a June 2026 family-therapy seminar.'));
     SECTIONS.forEach(function (sec) {
       root.appendChild(el('h2', {}, sec.title));
       sec.blocks.forEach(function (blk) {
@@ -940,7 +954,8 @@
 
   function buildAnswersText() {
     var out = ['FAMILY THERAPY APPROACHES WITH ADULTS — MY ANSWERS',
-      'June 16, 2026 seminar companion', ''];
+      'Evergreen faculty teaching companion · Updated July 2026',
+      'Developed from a June 2026 family-therapy seminar.', ''];
     SECTIONS.forEach(function (sec) {
       var fields = fieldsOf(sec);
       if (!fields.length) { return; }
