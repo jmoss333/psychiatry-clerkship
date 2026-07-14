@@ -308,6 +308,122 @@ def test_affirmative_supervision_minimal_pairs_satisfy_required_caveat(
 
 
 @pytest.mark.parametrize(
+    "caveat",
+    [
+        "Neither notify the attending nor consult the supervisor.",
+        "Avoid review with the attending.",
+    ],
+    ids=["reviewer-neither-nor", "reviewer-avoid"],
+)
+def test_scoped_negative_governors_reject_supervision_matches(
+    passing_release_factory, caveat
+):
+    bundle = passing_release_factory()
+    card = bundle.core_cards[0]
+    card["family"] = "StudentAction"
+    card["caveat"] = caveat
+
+    issues = validate_release_coverage(bundle.cards, bundle.contract)
+
+    assert "ROLE_SAFETY_CAVEAT_REQUIRED" in codes(issues)
+
+
+@pytest.mark.parametrize(
+    "caveat",
+    [
+        "Notify the attending if you lack certainty.",
+        "If the attending is unavailable, notify the resident.",
+    ],
+    ids=["reviewer-unrelated-lack", "reviewer-unavailable-attending"],
+)
+def test_unrelated_negative_words_do_not_cancel_affirmative_supervision(
+    passing_release_factory, caveat
+):
+    bundle = passing_release_factory()
+    card = bundle.core_cards[0]
+    card["family"] = "StudentAction"
+    card["caveat"] = caveat
+
+    issues = validate_release_coverage(bundle.cards, bundle.contract)
+
+    assert "ROLE_SAFETY_CAVEAT_REQUIRED" not in codes(issues)
+
+
+@pytest.mark.parametrize(
+    "caveat",
+    [
+        "Decline to notify the attending.",
+        "Refuse to consult the supervisor.",
+        "Neither escalate to the resident nor review with the attending.",
+        "Proceed with inadequate supervision.",
+        "Proceed under insufficient faculty supervision.",
+    ],
+)
+def test_negative_governor_and_attached_modifier_equivalents_are_rejected(
+    passing_release_factory, caveat
+):
+    bundle = passing_release_factory()
+    card = bundle.core_cards[0]
+    card["family"] = "StudentAction"
+    card["caveat"] = caveat
+
+    issues = validate_release_coverage(bundle.cards, bundle.contract)
+
+    assert "ROLE_SAFETY_CAVEAT_REQUIRED" in codes(issues)
+
+
+@pytest.mark.parametrize(
+    "caveat",
+    [
+        "Review with the attending before acting.",
+        "Consult the supervisor about inadequate documentation.",
+        "Escalate to the resident if information is insufficient.",
+        "Notify the attending even if you refuse the proposed plan.",
+    ],
+)
+def test_affirmative_matches_survive_unrelated_negative_vocabulary(
+    passing_release_factory, caveat
+):
+    bundle = passing_release_factory()
+    card = bundle.core_cards[0]
+    card["family"] = "StudentAction"
+    card["caveat"] = caveat
+
+    issues = validate_release_coverage(bundle.cards, bundle.contract)
+
+    assert "ROLE_SAFETY_CAVEAT_REQUIRED" not in codes(issues)
+
+
+@pytest.mark.parametrize(
+    "caveat",
+    [
+        "You shouldn't notify the attending.",
+        "You couldn't consult the supervisor.",
+        "You wouldn't escalate to the resident.",
+        "You mustn't review with the attending.",
+        "<b>You won't</b> notify the attending.",
+        "The student doesn't notify the attending.",
+        "The student didn't consult the supervisor.",
+        "The student isn't under supervision.",
+        "The students aren't under supervision.",
+        "The student wasn't under supervision.",
+        "The students weren't under supervision.",
+    ],
+)
+def test_scoped_parser_preserves_negative_contraction_safeguards(
+    passing_release_factory, caveat
+):
+    bundle = passing_release_factory()
+    card = bundle.core_cards[0]
+    card["family"] = "StudentAction"
+    card["caveat"] = caveat
+
+    issues = validate_release_coverage(bundle.cards, bundle.contract)
+
+    assert "ROLE_SAFETY_CAVEAT_REQUIRED" in codes(issues)
+
+
+@pytest.mark.parametrize(
     "mutation",
     [
         lambda card: card.__setitem__("family", "StudentAction"),

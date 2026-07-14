@@ -463,6 +463,52 @@ _AFFIRMATIVE_SUPERVISION_RE = re.compile(
     r"|supervising\s+(?:clinician|physician|attending|resident|team)"
     r")\b"
 )
+_NEGATIVE_GOVERNOR_RE = re.compile(
+    r"(?:\b(?:neither|nor|never|not|cannot|without|avoid)"
+    r"|\b(?:decline|refuse)(?:\s+to)?"
+    r"|\b(?:do|does|did|should|must|may|can|could|would|will)\s+not"
+    r"|\b(?:don|doesn|didn|shouldn|mustn|couldn|wouldn|isn|aren|wasn|"
+    r"weren|can|won)\s+t)"
+    r"(?:\s+(?:ever|directly|independently|immediately))*\s*$"
+)
+_NEGATIVE_RELATION_MODIFIERS = frozenset(
+    {
+        "absent",
+        "inadequate",
+        "insufficient",
+        "nil",
+        "no",
+        "not",
+        "unavailable",
+        "unsupervised",
+        "zero",
+    }
+)
+_NEGATIVE_RELATION_PREFIX_RE = re.compile(
+    r"\b(?:absent|inadequate|insufficient|nil|no|unavailable|unsupervised|zero)\s*$"
+)
+_NEGATIVE_RELATION_SUFFIX_RE = re.compile(
+    r"^\s*(?:(?:is|remains)\s+)?(?:not\s+available|absent|inadequate|"
+    r"insufficient|unavailable|unsupervised)\b"
+)
+
+
+def _supervision_match_is_negated(clause: str, match: re.Match) -> bool:
+    """Limit negation to the governor or modifier attached to one match."""
+
+    prefix = clause[: match.start()]
+    if _NEGATIVE_GOVERNOR_RE.search(prefix):
+        return True
+
+    matched = match.group(0)
+    relation = matched.startswith(("under ", "with ", "supervising "))
+    if not relation:
+        return False
+    if set(matched.split()) & _NEGATIVE_RELATION_MODIFIERS:
+        return True
+    if _NEGATIVE_RELATION_PREFIX_RE.search(prefix):
+        return True
+    return bool(_NEGATIVE_RELATION_SUFFIX_RE.search(clause[match.end() :]))
 
 
 def _affirmative_supervision_caveat(value: object) -> bool:
@@ -472,33 +518,9 @@ def _affirmative_supervision_caveat(value: object) -> bool:
     visible = re.sub(r"<[^>]+>", " ", visible)
     for raw_clause in re.split(r"[.;!?]+", visible):
         clause = _normalize_duplicate_text(raw_clause)
-        clause_tokens = set(clause.split())
-        if clause_tokens & {
-            "0",
-            "absence",
-            "absent",
-            "cannot",
-            "dont",
-            "lack",
-            "lacking",
-            "lacks",
-            "never",
-            "nil",
-            "no",
-            "none",
-            "not",
-            "unavailable",
-            "unsupervised",
-            "without",
-            "zero",
-        } or re.search(
-            r"\b(?:can|couldn?|shouldn?|wouldn?|mustn?|won|isn?|aren?|"
-            r"wasn?|weren?|doesn?|didn?)\s+t\b",
-            clause,
-        ):
-            continue
-        if _AFFIRMATIVE_SUPERVISION_RE.search(clause):
-            return True
+        for match in _AFFIRMATIVE_SUPERVISION_RE.finditer(clause):
+            if not _supervision_match_is_negated(clause, match):
+                return True
     return False
 
 
