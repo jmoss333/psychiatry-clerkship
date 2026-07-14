@@ -111,11 +111,28 @@ class QuarantineFinding:
 
 
 @dataclass(frozen=True)
+class WithdrawalDecisionProof:
+    """Exact Task-5 reconciliation proof for a neutral safety update."""
+
+    finding: QuarantineFinding
+    disposition: Literal["withdraw", "retire"]
+    affected_release_id: str
+    withdrawal_template_version: str
+    approved_withdrawal_sha256: str
+    review_owner: str
+    reviewed_by: str
+    reviewed_at: date
+    decision_sha256: str
+
+
+@dataclass(frozen=True)
 class QuarantineResult:
     new: tuple[QuarantineFinding, ...]
     changed: tuple[QuarantineFinding, ...]
     accepted: tuple[QuarantineFinding, ...]
     resolved: tuple[QuarantineFinding, ...]
+    withdrawal_proofs: tuple[WithdrawalDecisionProof, ...] = ()
+    resolved_withdrawal_proofs: tuple[WithdrawalDecisionProof, ...] = ()
 
 
 @dataclass(frozen=True)

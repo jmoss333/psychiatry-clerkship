@@ -35,9 +35,13 @@ from pcl_anki.contract import (
     LEGACY_QBANK_MODEL_NAME,
     LEGACY_QBANK_TEMPLATE_NAME,
     LEGACY_QBANK_TEMPLATE_ORDINAL,
+    QuarantineFinding,
     legacy_qbank_guid,
 )
-from pcl_anki.governance import WITHDRAWAL_TEMPLATE_VERSION
+from pcl_anki.governance import (
+    WITHDRAWAL_TEMPLATE_VERSION,
+    reconcile_quarantines,
+)
 from pcl_anki.history import (
     audit_shipped_identities,
     bootstrap_legacy_history,
@@ -159,6 +163,9 @@ def _decision(history: HistoryRegistry, entry: dict, **overrides) -> dict:
         "uid": entry["uid"],
         "identity": entry["identity"],
         "reasonCode": "SYNTHETIC_SAFETY_WITHDRAWAL",
+        "subjectSha256": "e" * 64,
+        "sourcePath": None,
+        "firstSeenCommit": "ad7dd2851f4621a4177cd4ce34438af3751620d6",
         "disposition": "withdraw",
         "reviewOwner": "Named Faculty Owner",
         "reviewedBy": "Named Faculty Reviewer",
@@ -169,6 +176,28 @@ def _decision(history: HistoryRegistry, entry: dict, **overrides) -> dict:
     }
     decision.update(overrides)
     return decision
+
+
+def _proof(history: HistoryRegistry, entry: dict):
+    decision = _decision(history, entry)
+    finding = QuarantineFinding(
+        namespace=entry["namespace"],
+        uid=entry["uid"],
+        identity=entry["identity"],
+        reason_code=decision["reasonCode"],
+        subject_sha256=decision["subjectSha256"],
+        source_path=decision["sourcePath"],
+        first_seen_commit=decision["firstSeenCommit"],
+        withdrawal_render_sha256=decision["approvedWithdrawalSha256"],
+    )
+    result = reconcile_quarantines(
+        (finding,),
+        {"accepted": [decision]},
+        release_history={"releases": history.releases},
+    )
+    assert result.accepted == (finding,)
+    assert len(result.withdrawal_proofs) == 1
+    return result.withdrawal_proofs[0]
 
 
 def _all_entries() -> tuple[dict, ...]:
@@ -248,7 +277,7 @@ def test_unshipped_quarantine_or_retired_tombstone_emits_no_note():
 def test_shipped_core_application_qbank_base_and_tier2_keep_original_identity(index):
     entry = _all_entries()[index]
     history = _history((entry,))
-    withdrawal = build_withdrawals(history, (_decision(history, entry),))[0]
+    withdrawal = build_withdrawals(history, (_proof(history, entry),))[0]
 
     assert withdrawal.namespace == entry["namespace"]
     assert withdrawal.uid == entry["uid"]
@@ -295,6 +324,51 @@ def test_wrong_or_stale_render_hash_is_not_releasable():
     assert build_withdrawals(history, (decision,)) == ()
 
 
+def test_raw_ledger_decision_is_preview_only_even_when_exact():
+    entry = _all_entries()[0]
+    history = _history((entry,))
+    decision = _decision(history, entry)
+
+    assert len(preview_withdrawals(history, (decision,))) == 1
+    assert build_withdrawals(history, (decision,)) == ()
+
+
+def test_multiple_withdrawal_proofs_for_one_identity_fail_closed():
+    entry = _all_entries()[0]
+    history = _history((entry,))
+    proof = _proof(history, entry)
+
+    assert build_withdrawals(history, (proof, proof)) == ()
+
+
+def test_task5_rejected_stale_raw_decision_cannot_become_task6_withdrawal():
+    entry = _all_entries()[0]
+    history = _history((entry,))
+    decision = _decision(history, entry, subjectSha256="f" * 64)
+    finding = QuarantineFinding(
+        namespace=entry["namespace"],
+        uid=entry["uid"],
+        identity=entry["identity"],
+        reason_code=decision["reasonCode"],
+        subject_sha256="e" * 64,
+        source_path=None,
+        first_seen_commit="ad7dd2851f4621a4177cd4ce34438af3751620d6",
+        withdrawal_render_sha256=decision["approvedWithdrawalSha256"],
+    )
+    decision.update(
+        sourcePath=finding.source_path,
+        firstSeenCommit=finding.first_seen_commit,
+    )
+
+    result = reconcile_quarantines(
+        (finding,), {"accepted": [decision]}, release_history={"releases": history.releases}
+    )
+
+    assert result.accepted == ()
+    assert result.changed == (finding,)
+    assert build_withdrawals(history, (decision,)) == ()
+
+
 def test_neutral_render_hash_excludes_non_rendered_reason_and_release_metadata():
     entry = _all_entries()[0]
     history = _history((entry,))
@@ -319,7 +393,7 @@ def test_qb_pha_002_neutral_withdrawal_preserves_nine_fields_and_exact_guid():
         ),
     )
     withdrawal = build_withdrawals(
-        decision_history, (_decision(decision_history, entry),)
+        decision_history, (_proof(decision_history, entry),)
     )[0]
 
     assert withdrawal.guid == "x9m9qM{_w7"
@@ -387,7 +461,7 @@ def test_identity_relationships_require_retired_different_superseded_target():
 def test_withdrawals_are_distinct_from_active_notes_and_csv_inputs():
     entry = _all_entries()[0]
     history = _history((entry,))
-    withdrawals = build_withdrawals(history, (_decision(history, entry),))
+    withdrawals = build_withdrawals(history, (_proof(history, entry),))
     active_notes = tuple(note for note in withdrawals if note.active)
     csv_rows = tuple(note for note in withdrawals if note.active and note.namespace != "qbank")
     assert active_notes == ()

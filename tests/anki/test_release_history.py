@@ -22,6 +22,7 @@ from pcl_anki.contract import (
     MigrationResult,
     PackageSnapshot,
     QuarantineResult,
+    QuarantineFinding,
     RenderedNote,
     canonical_json_bytes,
     legacy_qbank_guid,
@@ -31,13 +32,16 @@ from pcl_anki.history import (
     LegacyBootstrapError,
     HistoryError,
     bootstrap_legacy_history,
+    build_withdrawals,
     history_to_dict,
     load_history,
     prepare_history_baseline,
+    preview_withdrawals,
     propose_history_append,
     validate_history,
     write_history,
 )
+from pcl_anki.governance import WITHDRAWAL_TEMPLATE_VERSION, reconcile_quarantines
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -351,11 +355,15 @@ def test_validate_history_keeps_base_and_tier2_unique_and_rejects_duplicates():
 def test_validate_history_rejects_release_or_membership_duplicates_and_reactivation():
     entry = _identity()
     withdrawn = _release("release-n", (entry,), status="withdrawn")
+    withdrawn["memberships"][0].update(
+        withdrawalDisposition="quarantined",
+        governanceDecisionSha256="d" * 64,
+    )
     reactivated = _release("release-n-plus-1", (entry,), status="active", digest="c")
     history = _registry(entries=(entry,), releases=(withdrawn, reactivated))
     codes = _codes(validate_history(history))
     assert "HISTORY_WITHDRAWAL_NEVER_SHIPPED" in codes
-    assert "HISTORY_WITHDRAWN_REACTIVATED" in codes
+    assert "HISTORY_QUARANTINE_REACTIVATION_UNREVIEWED" in codes
 
     duplicate_release = replace(history, releases=(withdrawn, deepcopy(withdrawn)))
     assert "HISTORY_RELEASE_DUPLICATE" in _codes(validate_history(duplicate_release))
@@ -364,6 +372,44 @@ def test_validate_history_rejects_release_or_membership_duplicates_and_reactivat
     assert "HISTORY_MEMBERSHIP_DUPLICATE" in _codes(
         validate_history(_registry(entries=(entry,), releases=(duplicate_member,)))
     )
+
+
+def test_null_approval_is_limited_to_the_bootstrap_release_membership():
+    entry = _identity()
+    entry["origin"] = "legacy_pre_governance"
+    entry["firstShippedReleaseId"] = "legacy-qbank-2026-07-12"
+    bootstrap = _release("release-n", (entry,))
+    bootstrap["releaseId"] = "legacy-qbank-2026-07-12"
+    bootstrap["memberships"][0]["approvedCardSha256"] = None
+    later = deepcopy(_release("release-n-plus-1", (entry,), digest="c"))
+    later["memberships"][0]["approvedCardSha256"] = None
+    history = _registry(entries=(entry,), releases=(bootstrap, later))
+
+    assert "HISTORY_GOVERNED_APPROVAL_MISSING" in _codes(validate_history(history))
+
+
+def test_reviewed_corrected_quarantine_can_reactivate_but_retirement_cannot():
+    entry = _identity()
+    active = _release("release-n", (entry,))
+    quarantined = _release("release-n-plus-1", (entry,), status="withdrawn", digest="c")
+    quarantined["memberships"][0].update(
+        withdrawalDisposition="quarantined",
+        governanceDecisionSha256="d" * 64,
+    )
+    corrected = _release("release-n-plus-2", (entry,), digest="e")
+    corrected["releaseEpoch"] = quarantined["releaseEpoch"] + 1
+    corrected["memberships"][0].update(
+        reactivatesReleaseId="release-n-plus-1",
+        reactivationDecisionSha256="d" * 64,
+    )
+    reviewed = _registry(
+        entries=(entry,), releases=(active, quarantined, corrected)
+    )
+    assert validate_history(reviewed) == []
+
+    retired = deepcopy(reviewed)
+    retired.releases[1]["memberships"][0]["withdrawalDisposition"] = "retired"
+    assert "HISTORY_RETIRED_REACTIVATED" in _codes(validate_history(retired))
 
 
 def _candidate_note() -> RenderedNote:
@@ -478,6 +524,145 @@ def test_history_proposal_refuses_a_withdrawal_without_prior_shipped_identity():
         propose_history_append(
             inspection, migration, candidate, HistoryRegistry((), ())
         )
+
+
+def test_history_proposal_reconstructs_neutral_withdrawal_and_rejects_old_content():
+    inspection, migration, candidate = _proposal_inputs()
+    first = propose_history_append(
+        inspection, migration, candidate, HistoryRegistry((), ())
+    )
+    current = HistoryRegistry(first.new_identity_entries, (first.release_record,))
+    old_clinical_content = replace(
+        candidate.core_active[0],
+        fields=(
+            "ms3_w01_safety_001",
+            "OLD CLINICAL CONTENT",
+            "OLD CLINICAL ANSWER",
+            "",
+            "",
+            "",
+            "",
+            "Meta",
+        ),
+        tags=(
+            "PsychClerkship",
+            "Status::withdrawn",
+            "UID::ms3_w01_safety_001",
+        ),
+        front_html="OLD CLINICAL CONTENT",
+        back_html="OLD CLINICAL ANSWER",
+        render_sha256="a" * 64,
+        active=False,
+        withdrawn=True,
+    )
+    candidate = replace(
+        candidate,
+        release_id="release-beta",
+        release_date=date(2026, 7, 16),
+        release_epoch=candidate.release_epoch + 1,
+        core_active=(),
+        withdrawals=(old_clinical_content,),
+    )
+
+    with pytest.raises(HistoryError, match="canonical neutral withdrawal"):
+        propose_history_append(inspection, migration, candidate, current)
+
+
+def test_history_proposal_records_task5_proof_and_allows_reviewed_correction():
+    inspection, migration, candidate = _proposal_inputs()
+    first = propose_history_append(
+        inspection, migration, candidate, HistoryRegistry((), ())
+    )
+    current = HistoryRegistry(first.new_identity_entries, (first.release_record,))
+    entry = current.identity_entries[0]
+    decision = {
+        "namespace": "core",
+        "uid": candidate.core_active[0].uid,
+        "identity": "base",
+        "reasonCode": "SYNTHETIC_SAFETY_WITHDRAWAL",
+        "subjectSha256": "a" * 64,
+        "sourcePath": "synthetic/source.md",
+        "firstSeenCommit": "ad7dd2851f4621a4177cd4ce34438af3751620d6",
+        "reviewOwner": "Named Faculty Owner",
+        "disposition": "withdraw",
+        "reviewedBy": "Named Faculty Reviewer",
+        "reviewedAt": "2026-07-16",
+        "affectedReleaseId": "release-alpha",
+        "withdrawalTemplateVersion": WITHDRAWAL_TEMPLATE_VERSION,
+    }
+    preview = preview_withdrawals(current, (decision,))[0]
+    decision["approvedWithdrawalSha256"] = preview.render_sha256
+    finding = QuarantineFinding(
+        namespace="core",
+        uid=candidate.core_active[0].uid,
+        identity="base",
+        reason_code=decision["reasonCode"],
+        subject_sha256=decision["subjectSha256"],
+        source_path=decision["sourcePath"],
+        first_seen_commit=decision["firstSeenCommit"],
+        withdrawal_render_sha256=preview.render_sha256,
+    )
+    reconciled = reconcile_quarantines(
+        (finding,),
+        {"accepted": [decision]},
+        release_history={"releases": current.releases},
+    )
+    canonical = build_withdrawals(current, reconciled.withdrawal_proofs)[0]
+    note = RenderedNote(
+        namespace=canonical.namespace,
+        uid=canonical.uid,
+        identity=canonical.identity,
+        guid=canonical.guid,
+        deck_id=canonical.deck_id,
+        model_id=canonical.model_id,
+        template_ordinal=canonical.template_ordinal,
+        fields=canonical.fields,
+        tags=canonical.tags,
+        front_html=canonical.fields[1],
+        back_html=canonical.fields[2],
+        template_contract_sha256=canonical.template_contract_sha256,
+        render_sha256=canonical.render_sha256,
+        active=False,
+        withdrawn=True,
+    )
+    withdrawal_candidate = replace(
+        candidate,
+        release_id="release-beta",
+        release_date=date(2026, 7, 16),
+        release_epoch=candidate.release_epoch + 1,
+        core_active=(),
+        withdrawals=(note,),
+        quarantine=reconciled,
+    )
+    withdrawal_append = propose_history_append(
+        inspection, migration, withdrawal_candidate, current
+    )
+    member = withdrawal_append.release_record["memberships"][0]
+    assert member["withdrawalDisposition"] == "quarantined"
+    assert member["governanceDecisionSha256"] == reconciled.withdrawal_proofs[0].decision_sha256
+
+    withdrawn_history = HistoryRegistry(
+        current.identity_entries,
+        (*current.releases, withdrawal_append.release_record),
+    )
+    resolved = reconcile_quarantines(
+        (),
+        {"accepted": [decision]},
+        release_history={"releases": withdrawn_history.releases},
+    )
+    corrected = replace(
+        candidate,
+        release_id="release-gamma",
+        release_date=date(2026, 7, 17),
+        release_epoch=candidate.release_epoch + 2,
+        quarantine=resolved,
+    )
+    corrected_append = propose_history_append(
+        inspection, migration, corrected, withdrawn_history
+    )
+    corrected_member = corrected_append.release_record["memberships"][0]
+    assert corrected_member["reactivatesReleaseId"] == "release-beta"
+    assert corrected_member["reactivationDecisionSha256"] == member["governanceDecisionSha256"]
 
 
 def _git(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[str]:

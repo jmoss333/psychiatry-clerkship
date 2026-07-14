@@ -193,6 +193,10 @@
         },
         "shippedCardSha256": {"$ref": "#/definitions/sha256"},
         "templateVersion": {"type": "string", "minLength": 1},
+        "withdrawalDisposition": {"enum": ["quarantined", "retired"]},
+        "governanceDecisionSha256": {"$ref": "#/definitions/sha256"},
+        "reactivatesReleaseId": {"type": "string", "minLength": 1},
+        "reactivationDecisionSha256": {"$ref": "#/definitions/sha256"},
         "artifacts": {
           "type": "array",
           "minItems": 1,
@@ -203,9 +207,43 @@
         {
           "if": {"properties": {"status": {"const": "withdrawn"}}},
           "then": {
+            "required": [
+              "withdrawalDisposition",
+              "governanceDecisionSha256"
+            ],
             "properties": {
               "approvedCardSha256": {"$ref": "#/definitions/sha256"}
+            },
+            "not": {
+              "anyOf": [
+                {"required": ["reactivatesReleaseId"]},
+                {"required": ["reactivationDecisionSha256"]}
+              ]
             }
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {"required": ["withdrawalDisposition"]},
+                {"required": ["governanceDecisionSha256"]}
+              ]
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "reactivatesReleaseId",
+                  "reactivationDecisionSha256"
+                ]
+              },
+              {
+                "not": {
+                  "anyOf": [
+                    {"required": ["reactivatesReleaseId"]},
+                    {"required": ["reactivationDecisionSha256"]}
+                  ]
+                }
+              }
+            ]
           }
         }
       ]

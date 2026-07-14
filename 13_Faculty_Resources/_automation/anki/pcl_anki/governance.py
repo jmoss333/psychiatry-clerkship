@@ -19,6 +19,7 @@ from pcl_anki.contract import (
     QuarantineFinding,
     QuarantineResult,
     RenderedNote,
+    WithdrawalDecisionProof,
     canonical_json_sha256,
 )
 from pcl_anki.qbank import (
@@ -636,6 +637,84 @@ def _valid_ledger_decision(
     )
 
 
+def _withdrawal_decision_proof(
+    entry: Mapping,
+    finding: QuarantineFinding,
+    release_history: object,
+    *,
+    require_current_render: bool,
+) -> WithdrawalDecisionProof | None:
+    """Mint a proof only from an exact, named, historically grounded decision."""
+
+    disposition = entry.get("disposition")
+    if disposition not in {"withdraw", "retire"}:
+        return None
+    affected_release_id = entry.get("affectedReleaseId")
+    template_version = entry.get("withdrawalTemplateVersion")
+    approved_sha256 = entry.get("approvedWithdrawalSha256")
+    if not all(
+        _named(value)
+        for value in (
+            affected_release_id,
+            template_version,
+            approved_sha256,
+            entry.get("reviewOwner"),
+            entry.get("reviewedBy"),
+            entry.get("reviewedAt"),
+        )
+    ):
+        return None
+    reviewed_at = _parse_date(entry.get("reviewedAt"))
+    if (
+        reviewed_at is None
+        or template_version != WITHDRAWAL_TEMPLATE_VERSION
+        or _SHA256_RE.fullmatch(str(approved_sha256)) is None
+        or not _historical_membership(release_history, affected_release_id, finding)
+    ):
+        return None
+    if require_current_render and approved_sha256 != finding.withdrawal_render_sha256:
+        return None
+    payload = {
+        "namespace": finding.namespace,
+        "uid": finding.uid,
+        "identity": finding.identity,
+        "reasonCode": finding.reason_code,
+        "subjectSha256": finding.subject_sha256,
+        "sourcePath": finding.source_path,
+        "firstSeenCommit": finding.first_seen_commit,
+        "reviewOwner": entry["reviewOwner"],
+        "disposition": disposition,
+        "reviewedBy": entry["reviewedBy"],
+        "reviewedAt": entry["reviewedAt"],
+        "affectedReleaseId": affected_release_id,
+        "withdrawalTemplateVersion": template_version,
+        "approvedWithdrawalSha256": approved_sha256,
+    }
+    proof_finding = finding
+    if not require_current_render:
+        proof_finding = QuarantineFinding(
+            namespace=finding.namespace,
+            uid=finding.uid,
+            identity=finding.identity,
+            reason_code=finding.reason_code,
+            subject_sha256=finding.subject_sha256,
+            source_path=finding.source_path,
+            first_seen_commit=finding.first_seen_commit,
+            withdrawal_render_sha256=approved_sha256,
+        )
+    return WithdrawalDecisionProof(
+        finding=proof_finding,
+        disposition=disposition,
+        affected_release_id=affected_release_id,
+        withdrawal_template_version=template_version,
+        approved_withdrawal_sha256=approved_sha256,
+        review_owner=entry["reviewOwner"],
+        reviewed_by=entry["reviewedBy"],
+        reviewed_at=reviewed_at,
+        decision_sha256=canonical_json_sha256(payload),
+    )
+
+
 def evaluate_card(card: Mapping, inputs: object, candidate_date: date) -> CardDecision:
     """Evaluate one Core/Application card while preserving authoring previews."""
 
@@ -1245,6 +1324,7 @@ def reconcile_quarantines(
     new: list[QuarantineFinding] = []
     changed: list[QuarantineFinding] = []
     accepted: list[QuarantineFinding] = []
+    withdrawal_proofs: list[WithdrawalDecisionProof] = []
     used_entries: set[int] = set()
     unmatched: list[QuarantineFinding] = []
     for finding in detected:
@@ -1263,6 +1343,14 @@ def reconcile_quarantines(
         used_entries.add(entry_index)
         if _valid_ledger_decision(entries[entry_index], finding, release_history):
             accepted.append(finding)
+            proof = _withdrawal_decision_proof(
+                entries[entry_index],
+                finding,
+                release_history,
+                require_current_render=True,
+            )
+            if proof is not None:
+                withdrawal_proofs.append(proof)
         else:
             changed.append(finding)
 
@@ -1290,11 +1378,27 @@ def reconcile_quarantines(
         for index, entry in enumerate(entries)
         if index not in used_entries
     ]
+    resolved_withdrawal_proofs = tuple(
+        proof
+        for index, entry in enumerate(entries)
+        if index not in used_entries
+        for proof in (
+            _withdrawal_decision_proof(
+                entry,
+                _ledger_finding(entry),
+                release_history,
+                require_current_render=False,
+            ),
+        )
+        if proof is not None
+    )
     return QuarantineResult(
         new=tuple(new),
         changed=tuple(changed),
         accepted=tuple(accepted),
         resolved=tuple(resolved),
+        withdrawal_proofs=tuple(withdrawal_proofs),
+        resolved_withdrawal_proofs=resolved_withdrawal_proofs,
     )
 
 

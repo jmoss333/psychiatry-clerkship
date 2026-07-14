@@ -931,11 +931,15 @@ def test_valid_withdrawal_requires_exact_current_neutral_render_hash():
             }
         ]
     }
-    assert reconcile_quarantines(
+    reconciled = reconcile_quarantines(
         (finding,), {"accepted": [valid]}, release_history=history
-    ).accepted == (
-        finding,
     )
+    assert reconciled.accepted == (finding,)
+    assert len(reconciled.withdrawal_proofs) == 1
+    proof = reconciled.withdrawal_proofs[0]
+    assert proof.finding == finding
+    assert proof.approved_withdrawal_sha256 == finding.withdrawal_render_sha256
+    assert proof.affected_release_id == "synthetic-release-n"
 
     valid["approvedWithdrawalSha256"] = "f" * 64
     drift = reconcile_quarantines(

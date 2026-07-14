@@ -1478,6 +1478,48 @@ def test_withdrawal_membership_requires_non_null_neutral_render_approval(
     assert_schema_invalid(history, history_schema)
 
 
+def test_withdrawal_membership_records_closed_append_only_disposition(history_schema):
+    membership = make_release_membership(
+        status="withdrawn",
+        withdrawalDisposition="quarantined",
+        governanceDecisionSha256="9" * 64,
+    )
+    release = make_release_record(memberships=[membership])
+    history = {"schemaVersion": 1, "identityEntries": [], "releases": [release]}
+    assert_schema_valid(history, history_schema)
+
+
+@pytest.mark.parametrize(
+    "field", ["withdrawalDisposition", "governanceDecisionSha256"]
+)
+def test_withdrawal_membership_requires_disposition_proof(history_schema, field):
+    values = {
+        "status": "withdrawn",
+        "withdrawalDisposition": "quarantined",
+        "governanceDecisionSha256": "9" * 64,
+    }
+    del values[field]
+    membership = make_release_membership(**values)
+    release = make_release_record(memberships=[membership])
+    history = {"schemaVersion": 1, "identityEntries": [], "releases": [release]}
+    assert_schema_invalid(history, history_schema)
+
+
+def test_active_reactivation_metadata_is_an_exact_pair(history_schema):
+    complete = make_release_membership(
+        reactivatesReleaseId="release-alpha",
+        reactivationDecisionSha256="9" * 64,
+    )
+    history = {
+        "schemaVersion": 1,
+        "identityEntries": [],
+        "releases": [make_release_record(memberships=[complete])],
+    }
+    assert_schema_valid(history, history_schema)
+    del complete["reactivationDecisionSha256"]
+    assert_schema_invalid(history, history_schema)
+
+
 def test_release_config_contains_exact_crosswalks(release_config):
     assert release_config["coverage"]["core"] == CORE_COVERAGE
     assert release_config["coverage"]["application"] == APPLICATION_COVERAGE

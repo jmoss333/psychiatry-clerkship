@@ -55,6 +55,7 @@ from pcl_anki.contract import (
     MigrationResult,
     RenderedNote,
     Withdrawal,
+    WithdrawalDecisionProof,
     canonical_json_bytes,
     canonical_json_sha256,
     legacy_qbank_guid,
@@ -263,7 +264,7 @@ def validate_history(
 
     release_ids: set[object] = set()
     last_epoch = -1
-    statuses: dict[tuple[object, object, object], str] = {}
+    statuses: dict[tuple[object, object, object], tuple[Mapping, object]] = {}
     for release_index, release in enumerate(current.releases):
         release_id = release.get("releaseId")
         if release_id in release_ids:
@@ -308,7 +309,8 @@ def validate_history(
                 )
                 continue
             status = member.get("status")
-            if status == "withdrawn" and key not in statuses:
+            prior_state = statuses.get(key)
+            if status == "withdrawn" and prior_state is None:
                 issues.append(
                     _issue(
                         "HISTORY_WITHDRAWAL_NEVER_SHIPPED",
@@ -316,26 +318,72 @@ def validate_history(
                         "a withdrawal may only update an identity shipped by an earlier release",
                     )
                 )
-            if statuses.get(key) == "withdrawn" and status == "active":
+            if prior_state is not None and status == "active":
+                prior_member, prior_release_id = prior_state
+                if prior_member.get("status") == "withdrawn":
+                    if prior_member.get("withdrawalDisposition") == "retired":
+                        issues.append(
+                            _issue(
+                                "HISTORY_RETIRED_REACTIVATED",
+                                key,
+                                "a permanently retired identity can never reactivate",
+                            )
+                        )
+                    elif (
+                        member.get("reactivatesReleaseId") != prior_release_id
+                        or member.get("reactivationDecisionSha256")
+                        != prior_member.get("governanceDecisionSha256")
+                        or member.get("approvedCardSha256") is None
+                    ):
+                        issues.append(
+                            _issue(
+                                "HISTORY_QUARANTINE_REACTIVATION_UNREVIEWED",
+                                key,
+                                "corrected quarantine reactivation needs the prior reviewed decision and a new approval",
+                            )
+                        )
+                elif any(
+                    name in member
+                    for name in (
+                        "reactivatesReleaseId",
+                        "reactivationDecisionSha256",
+                    )
+                ):
+                    issues.append(
+                        _issue(
+                            "HISTORY_REACTIVATION_WITHOUT_WITHDRAWAL",
+                            key,
+                            "reactivation metadata may only follow a quarantined withdrawal",
+                        )
+                    )
+            if (
+                prior_state is not None
+                and prior_state[0].get("withdrawalDisposition") == "retired"
+                and status == "withdrawn"
+                and member.get("withdrawalDisposition") != "retired"
+            ):
                 issues.append(
                     _issue(
-                        "HISTORY_WITHDRAWN_REACTIVATED",
+                        "HISTORY_RETIRED_DISPOSITION_CHANGED",
                         key,
-                        "withdrawn identities cannot be reactivated under the same ID",
+                        "a retired disposition is permanent",
                     )
                 )
             if status in {"active", "withdrawn"}:
-                statuses[key] = status
+                statuses[key] = (member, release_id)
             identity_entry = identities[key]
-            if (
-                member.get("approvedCardSha256") is None
-                and identity_entry.get("origin") != "legacy_pre_governance"
-            ):
+            bootstrap_null = (
+                release_index == 0
+                and release_id == LEGACY_RELEASE_ID
+                and identity_entry.get("origin") == "legacy_pre_governance"
+                and identity_entry.get("firstShippedReleaseId") == LEGACY_RELEASE_ID
+            )
+            if member.get("approvedCardSha256") is None and not bootstrap_null:
                 issues.append(
                     _issue(
                         "HISTORY_GOVERNED_APPROVAL_MISSING",
                         key,
-                        "only the independently bootstrapped legacy shipment may lack approval",
+                        "only membership in the independently bootstrapped legacy release may lack approval",
                     )
                 )
     return issues
@@ -880,6 +928,45 @@ def propose_history_append(
         raise HistoryError("inspection receipt lacks stable package/CSV/receipt contracts")
 
     existing = {_identity_key(entry): entry for entry in current.identity_entries}
+    proof_by_key = {
+        (
+            proof.finding.namespace,
+            proof.finding.uid,
+            proof.finding.identity,
+        ): proof
+        for proof in candidate.quarantine.withdrawal_proofs
+    }
+    if len(proof_by_key) != len(candidate.quarantine.withdrawal_proofs):
+        raise HistoryError("candidate contains ambiguous duplicate withdrawal proofs")
+    canonical_withdrawals = {
+        (value.namespace, value.uid, value.identity): value
+        for value in build_withdrawals(current, candidate.quarantine.withdrawal_proofs)
+    }
+    candidate_withdrawal_keys = {
+        (note.namespace, note.uid, note.identity) for note in candidate.withdrawals
+    }
+    never_shipped = candidate_withdrawal_keys - set(existing)
+    if never_shipped:
+        raise HistoryError(
+            f"candidate contains never-shipped withdrawal identity {sorted(never_shipped)[0]}"
+        )
+    if candidate_withdrawal_keys != set(canonical_withdrawals):
+        raise HistoryError(
+            "candidate withdrawals do not equal the canonical neutral withdrawal proof set"
+        )
+    accepted_findings = set(candidate.quarantine.accepted)
+    for note in candidate.withdrawals:
+        key = (note.namespace, note.uid, note.identity)
+        proof = proof_by_key.get(key)
+        canonical = canonical_withdrawals[key]
+        if proof is None or proof.finding not in accepted_findings:
+            raise HistoryError(
+                f"candidate lacks corresponding accepted withdrawal proof {key}"
+            )
+        if not _rendered_withdrawal_matches(note, canonical):
+            raise HistoryError(
+                f"candidate does not match canonical neutral withdrawal {key}"
+            )
     notes = tuple(
         sorted(
             (
@@ -957,25 +1044,61 @@ def propose_history_append(
             )
         else:
             artifact_names = ("psychiatry_clerkship_qbank.apkg",)
-        memberships.append(
-            {
-                "namespace": note.namespace,
-                "uid": note.uid,
-                "identity": note.identity,
-                "status": "withdrawn" if note.withdrawn else "active",
-                "approvedCardSha256": note.render_sha256,
-                "shippedCardSha256": shipped_hash,
-                "templateVersion": contract["templateVersion"],
-                "artifacts": [
-                    {
-                        "filename": filename,
-                        "deckId": note.deck_id,
-                        "deckName": contract["deck"]["name"],
-                    }
-                    for filename in artifact_names
-                ],
-            }
-        )
+        membership = {
+            "namespace": note.namespace,
+            "uid": note.uid,
+            "identity": note.identity,
+            "status": "withdrawn" if note.withdrawn else "active",
+            "approvedCardSha256": note.render_sha256,
+            "shippedCardSha256": shipped_hash,
+            "templateVersion": contract["templateVersion"],
+            "artifacts": [
+                {
+                    "filename": filename,
+                    "deckId": note.deck_id,
+                    "deckName": contract["deck"]["name"],
+                }
+                for filename in artifact_names
+            ],
+        }
+        if note.withdrawn:
+            proof = proof_by_key[key]
+            membership.update(
+                withdrawalDisposition=(
+                    "quarantined" if proof.disposition == "withdraw" else "retired"
+                ),
+                governanceDecisionSha256=proof.decision_sha256,
+            )
+        else:
+            prior_state = _latest_membership(current, key)
+            if prior_state is not None and prior_state[1].get("status") == "withdrawn":
+                prior_release, prior_member = prior_state
+                if prior_member.get("withdrawalDisposition") == "retired":
+                    raise HistoryError(f"retired identity cannot reactivate {key}")
+                resolved = next(
+                    (
+                        proof
+                        for proof in candidate.quarantine.resolved_withdrawal_proofs
+                        if (
+                            proof.finding.namespace,
+                            proof.finding.uid,
+                            proof.finding.identity,
+                        )
+                        == key
+                        and proof.decision_sha256
+                        == prior_member.get("governanceDecisionSha256")
+                    ),
+                    None,
+                )
+                if resolved is None:
+                    raise HistoryError(
+                        f"corrected quarantine lacks reviewed reactivation proof {key}"
+                    )
+                membership.update(
+                    reactivatesReleaseId=prior_release.get("releaseId"),
+                    reactivationDecisionSha256=resolved.decision_sha256,
+                )
+        memberships.append(membership)
     release = {
         "releaseId": candidate.release_id,
         "releaseDate": candidate.release_date.isoformat(),
@@ -1087,6 +1210,26 @@ def withdrawal_render_sha256(withdrawal: Withdrawal) -> str:
     return canonical_json_sha256(_withdrawal_payload(withdrawal))
 
 
+def _rendered_withdrawal_matches(note: RenderedNote, value: Withdrawal) -> bool:
+    """Compare every package-relevant field with the canonical neutral update."""
+
+    return (
+        note.namespace == value.namespace
+        and note.uid == value.uid
+        and note.identity == value.identity
+        and note.guid == value.guid
+        and note.deck_id == value.deck_id
+        and note.model_id == value.model_id
+        and note.template_ordinal == value.template_ordinal
+        and note.fields == value.fields
+        and note.tags == value.tags
+        and note.template_contract_sha256 == value.template_contract_sha256
+        and note.render_sha256 == value.render_sha256
+        and note.active is value.active
+        and note.withdrawn is value.withdrawn
+    )
+
+
 def _preview(entry: Mapping, decision: Mapping, affected_release_id: str) -> Withdrawal:
     model_id = entry["model"]["id"]
     template_hash_key = {
@@ -1184,15 +1327,46 @@ def _reviewed_withdrawal(decision: Mapping, preview: Withdrawal) -> bool:
 
 
 def build_withdrawals(
-    history: HistoryRegistry, decisions: Sequence[Mapping]
+    history: HistoryRegistry, decisions: Sequence[WithdrawalDecisionProof]
 ) -> tuple[Withdrawal, ...]:
-    """Return only named, exact-render-approved same-GUID neutral withdrawals."""
+    """Build only exact neutral updates proven by Task-5 reconciliation."""
 
-    decision_by_key = {_identity_key(decision): decision for decision in decisions}
+    proofs = tuple(
+        proof for proof in decisions if isinstance(proof, WithdrawalDecisionProof)
+    )
+    proof_keys = tuple(
+        (proof.finding.namespace, proof.finding.uid, proof.finding.identity)
+        for proof in proofs
+    )
+    if len(set(proof_keys)) != len(proof_keys):
+        return ()
+    preview_decisions = tuple(
+        {
+            "namespace": proof.finding.namespace,
+            "uid": proof.finding.uid,
+            "identity": proof.finding.identity,
+            "reasonCode": proof.finding.reason_code,
+            "affectedReleaseId": proof.affected_release_id,
+        }
+        for proof in proofs
+    )
+    proof_by_key = {
+        (
+            proof.finding.namespace,
+            proof.finding.uid,
+            proof.finding.identity,
+        ): proof
+        for proof in proofs
+    }
     return tuple(
         preview
-        for preview in preview_withdrawals(history, decisions)
-        if _reviewed_withdrawal(decision_by_key[_identity_key(preview.__dict__)], preview)
+        for preview in preview_withdrawals(history, preview_decisions)
+        if (
+            (proof := proof_by_key[_identity_key(preview.__dict__)])
+            and proof.withdrawal_template_version == WITHDRAWAL_TEMPLATE_VERSION
+            and proof.approved_withdrawal_sha256 == preview.render_sha256
+            and proof.finding.withdrawal_render_sha256 == preview.render_sha256
+        )
     )
 
 
