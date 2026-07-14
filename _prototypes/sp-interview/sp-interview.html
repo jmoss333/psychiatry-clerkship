@@ -3,7 +3,7 @@
 <head>
 <script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="icon" href="/favicon.svg">
-<!-- [RC-META] tool="The Interview Room — AI Standardized Patient" version="0.1.0" built="2026-07-12" category="clinical-skills" audience="ms3,resident" settings="inpatient" time="12min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="attested" summary="Free-text interview practice with a fictional standardized patient: gated disclosures, rapport model, deterministic coverage map, self-assessment-first debrief with rubric feedback. Mock provider runs fully offline; live LLM provider stubbed behind the same interface (M1: Netlify proxy). NOT clinical decision support. Fictional composites; no PHI; transcripts stay in this browser." -->
+<!-- [RC-META] tool="The Interview Room — AI Standardized Patient" version="0.2.0" built="2026-07-14" category="clinical-skills" audience="ms3,resident" settings="inpatient" time="12min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="draft-pending-attestation" summary="Redesigned interface: coverage as an on-demand step-out (field notes + adaptive coach) instead of a live checklist; formative attending-voice debrief; paced voice mirror per persona; persistent-but-quiet fiction framing. Engine unchanged: gated disclosures, rapport model, deterministic coverage map, self-assessment-first debrief. Mock provider runs fully offline; live LLM provider behind the same interface. NOT clinical decision support. Fictional composites; no PHI; transcripts stay in this browser." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Interview Room — AI Standardized Patient</title>
@@ -20,66 +20,182 @@
     --warning:#7a6234; --warning-light:#f5efe2;
     --danger:#a34132; --danger-light:#fbece9;
     --info:#41618a; --info-light:#eaf0f6;
+    --focus:#41618a; --ink:#3b332c; --ink-on:#f6f3ee;
     --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
     --shadow-sm:0 1px 3px rgba(59,51,44,.06);
     --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
     --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
     --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
   }
-  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
+  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--ink:#e8e2da;--ink-on:#211d1a;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
   *,*::before,*::after{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
-  .shell{width:min(980px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) 90px}
-  h1{font-family:var(--font-head);font-size:1.9rem;color:var(--primary);margin:0 0 4px}
-  h2{font-family:var(--font-head);font-size:1.25rem;margin:0 0 var(--sp2)}
-  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
-  .themebtn{position:fixed;top:12px;right:12px;width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;z-index:30}
-  .disc{border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.84rem;margin-bottom:var(--sp3)}
-  .disc.sim{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--accent)}
-  .disc.phi{background:var(--warning-light);color:var(--warning);border:1px solid var(--warning)}
-  .disc.footer{position:fixed;left:0;right:0;bottom:0;background:var(--danger-light);color:var(--danger);border-top:1px solid var(--danger);font-size:.8rem;padding:8px 14px;text-align:center;margin:0;z-index:20}
-  .btn{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-weight:600;cursor:pointer;font:inherit;background:var(--surface);color:var(--accent-dark);min-height:44px}
-  .btn.primary{background:var(--primary-dark);color:var(--on-brand);border-color:var(--primary-dark)}
-  .btn.ghost{border-style:dashed}
-  .btn:disabled{opacity:.45;cursor:not-allowed}
-  .badge{display:inline-block;font-size:.7rem;font-weight:700;border-radius:var(--radius-pill);padding:3px 10px;margin-left:8px;vertical-align:middle}
+  a{color:var(--accent-dark)} a:hover{color:var(--primary-dark)}
+  .shell{width:min(1020px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) 60px}
+  h1{font-family:var(--font-head);font-size:1.85rem;color:var(--primary);margin:0;line-height:1.2}
+  h2{font-family:var(--font-head);font-size:1.2rem;margin:0 0 var(--sp1)}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark)}
+  .titlerow{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:2px}
+  .lede{color:var(--text-mid);margin:4px 0 0;max-width:62ch}
+  .badge{display:inline-block;font-size:.7rem;font-weight:700;border-radius:var(--radius-pill);padding:4px 12px;vertical-align:middle;min-height:0}
   .badge.draft{background:var(--warning-light);color:var(--warning);border:1px dashed var(--warning)}
-  .badge.mode{background:var(--info-light);color:var(--info);border:1px solid var(--info);cursor:pointer}
-  .chat{display:flex;flex-direction:column;gap:var(--sp2);max-height:52vh;overflow-y:auto;padding:var(--sp2);background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-md)}
-  .msg{max-width:78%;padding:10px 14px;border-radius:var(--radius-md);font-size:.95rem;white-space:pre-wrap}
+  .badge.mode{background:var(--info-light);color:var(--info);border:1px solid var(--info);cursor:pointer;font:inherit;font-size:.7rem;font-weight:700}
+  .ribbon{display:flex;align-items:flex-start;gap:10px;margin:var(--sp3) 0 0;padding:var(--sp2) 14px;background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:.83rem;color:var(--accent-dark);line-height:1.5}
+  .ribbon .mark{font-family:var(--font-head);font-style:italic;padding-top:1px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-top:var(--sp3)}
+  .themebtn{position:fixed;top:12px;right:12px;width:44px;height:44px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;z-index:40;box-shadow:var(--shadow-sm)}
+  .btn{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-weight:600;cursor:pointer;font:inherit;font-size:.9rem;background:var(--surface);color:var(--accent-dark);min-height:44px}
+  .btn.primary{background:var(--primary-dark);color:var(--on-brand);border-color:var(--primary-dark)}
+  .btn.primary:hover{background:var(--primary)}
+  .btn.ghost{border-style:dashed}
+  .btn.door{border:1px dashed var(--accent);color:var(--accent-dark)}
+  .btn.door:hover{background:var(--accent-light)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .microlabel{margin:0 0 6px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light)}
+  /* case select */
+  .casegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:var(--sp3);margin-top:var(--sp3);align-items:stretch}
+  .case{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:12px;margin:0}
+  .case h2{font-size:1.5rem;color:var(--primary-dark);margin:0;line-height:1.2}
+  .case .occasion{margin:3px 0 0;font-family:var(--font-head);font-size:.9rem;font-style:italic;color:var(--text-mid)}
+  .case .setting{margin:8px 0 0;font-size:.8rem;color:var(--text-mid)}
+  .case .goal{margin:0;font-size:.88rem;line-height:1.5}
+  .voicerow{display:flex;gap:10px;align-items:flex-start;border-top:1px dashed var(--border);padding-top:12px;font-size:.8rem;color:var(--text-mid);line-height:1.45}
+  .voicerow b{font-weight:600;color:var(--accent-dark)}
+  .bars{display:inline-flex;align-items:flex-end;gap:2px;height:20px;flex:none;padding-top:2px}
+  .bars span{width:3px;background:var(--accent);border-radius:2px;opacity:.75}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:.7rem;font-weight:600;color:var(--text-mid);border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px 10px;background:var(--bg-alt)}
+  .begincol{margin-top:auto;padding-top:6px}
+  .begin{display:flex;flex-direction:column;gap:8px}
+  .begin .btn{text-align:left;width:100%}
+  .begin .sub{display:block;font-weight:400;font-size:.74rem}
+  .begin .primary .sub{opacity:.85}
+  .begin .btn:not(.primary) .sub{color:var(--text-light)}
+  /* encounter */
+  .room{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;margin-top:var(--sp3);position:relative}
+  .roomhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:var(--sp3) var(--sp4);border-bottom:1px solid var(--border)}
+  .roomhead h2{font-size:1.3rem;margin:0;line-height:1.2}
+  .roomhead .setting{margin:2px 0 0;font-size:.8rem;color:var(--text-light)}
+  .roomhead .modeline{margin:2px 0 0;font-size:.76rem;color:var(--text-mid)}
+  .roomtools{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .spkchip{display:inline-flex;align-items:center;gap:8px;font-size:.74rem;color:var(--accent-dark);font-weight:600}
+  .spkbars{display:inline-flex;align-items:flex-end;gap:2px;height:18px;transition:opacity .3s}
+  .spkbars span{width:3px;height:16px;background:var(--accent);border-radius:2px;transform-origin:bottom}
+  .voicebtn{min-height:44px;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-mid);font-weight:600;font-size:.82rem;cursor:pointer;font-family:inherit}
+  .voicebtn.on{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark)}
+  .chat{display:flex;flex-direction:column;gap:var(--sp2);max-height:52vh;min-height:260px;overflow-y:auto;padding:var(--sp3);background:var(--bg-alt)}
+  .msg{max-width:78%;padding:10px 14px;border-radius:var(--radius-md);font-size:.92rem;line-height:1.55;white-space:pre-wrap}
   .msg.pt{align-self:flex-start;background:var(--surface);border:1px solid var(--border)}
   .msg.me{align-self:flex-end;background:var(--accent-light);border:1px solid var(--accent)}
-  .msg .who{display:block;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-bottom:2px}
-  .inrow{display:flex;gap:var(--sp2);margin-top:var(--sp2)}
-  .inrow textarea{flex:1;font:inherit;font-size:.95rem;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);resize:vertical;min-height:52px}
-  .meta{font-size:.78rem;color:var(--text-light);display:flex;gap:var(--sp3);flex-wrap:wrap;margin-top:var(--sp1)}
-  .grid{display:grid;grid-template-columns:1fr 260px;gap:var(--sp3)}
-  @media(max-width:760px){.grid{grid-template-columns:1fr}}
-  .side{font-size:.84rem}
-  .side ul{list-style:none;margin:0;padding:0}
-  .side li{padding:5px 0;border-bottom:1px dashed var(--border)}
-  .st{display:inline-block;width:1.2em}
-  .cov-observed{color:var(--success)} .cov-partial{color:var(--warning)} .cov-missed{color:var(--danger)} .cov-na{color:var(--text-light)}
-  .rub{border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--sp3);margin-bottom:var(--sp2)}
-  .rub h3{margin:0 0 4px;font-size:1rem}
-  .pill{display:inline-block;font-size:.7rem;font-weight:700;border-radius:var(--radius-pill);padding:2px 10px;margin-left:8px}
-  .pill.observed{background:var(--success-light);color:var(--success)}
-  .pill.partial{background:var(--warning-light);color:var(--warning)}
-  .pill.missed{background:var(--danger-light);color:var(--danger)}
-  .critical{background:var(--danger-light);border:1px solid var(--danger);color:var(--danger);border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.9rem;margin-bottom:var(--sp3)}
-  .well{background:var(--info-light);border:1px solid var(--info);color:var(--info);border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.84rem;margin-top:var(--sp3)}
-  .hint{background:var(--warning-light);border:1px dashed var(--warning);color:var(--warning);border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.9rem;margin-top:var(--sp2)}
-  .sa textarea{width:100%;font:inherit;font-size:.95rem;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);min-height:64px;margin-bottom:var(--sp2)}
-  .linkish{color:var(--accent-dark);text-decoration:underline;cursor:default}
+  .msg.speaking{box-shadow:0 0 0 2px var(--accent-light),0 0 0 3px var(--accent)}
+  .msg .who{display:block;font-size:.64rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-bottom:2px}
+  .typing{display:inline-flex;gap:3px;padding-top:4px}
+  .typing span{width:6px;height:6px;border-radius:99px;background:var(--text-light);animation:blinkdots 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+  .composer{padding:12px var(--sp3) var(--sp3)}
+  .inrow{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+  .inrow textarea{flex:1 1 240px;font:inherit;font-size:.92rem;padding:11px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);resize:vertical;min-height:52px}
+  .inrow textarea.listening{border-color:var(--primary)}
+  .mic{min-height:52px;min-width:52px;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-mid);font-weight:600;font-size:.82rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+  .mic.live{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark);animation:listenpulse 1.6s ease-out infinite}
+  .mic .stopglyph{width:10px;height:10px;background:currentColor;border-radius:2px;display:inline-block}
+  .sayit{min-height:52px}
+  .listenrow{margin:8px 0 0;display:flex;align-items:center;gap:10px}
+  .listenrow .bars2{display:inline-flex;align-items:flex-end;gap:2px;height:14px}
+  .listenrow .bars2 span{width:3px;height:14px;background:var(--primary);border-radius:2px;transform-origin:bottom;animation:spkbar .9s ease-in-out infinite}
+  .listenrow .bars2 span:nth-child(2){animation-delay:-.25s}.listenrow .bars2 span:nth-child(3){animation-delay:-.5s}
+  .listenrow p{margin:0;font-size:.78rem;color:var(--primary-dark);font-weight:600}
+  .metaline{display:flex;gap:8px 18px;flex-wrap:wrap;margin-top:8px;font-size:.72rem;color:var(--text-light)}
+  .metaline .fict{font-style:italic}
+  .doorrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;border-top:1px dashed var(--border);padding-top:12px;align-items:center}
+  .doorrow .quiet{font-size:.72rem;color:var(--text-light);font-style:italic}
+  .phi{margin:12px var(--sp3) 0;padding:12px var(--sp3);background:var(--warning-light);border:1px solid var(--warning);border-radius:var(--radius-md);font-size:.84rem;color:var(--warning)}
+  .phi .acts{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
+  /* step-out */
+  .overlay{position:absolute;inset:0;background:rgba(59,51,44,.28);border-radius:var(--radius-lg);display:flex;align-items:flex-start;justify-content:center;padding:var(--sp4) 12px;z-index:20;backdrop-filter:blur(1.5px)}
+  .panel{width:min(560px,100%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:0 12px 40px rgba(35,28,22,.25);animation:fadeup .25s ease both;max-height:100%;overflow-y:auto}
+  .panelhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .panelhead h2{font-size:1.25rem;margin:0}
+  .panelhead .notascore{font-size:.7rem;color:var(--text-light);margin-left:auto}
+  .waitline{margin:8px 0 0;font-size:.82rem;color:var(--text-light);font-style:italic}
+  .notes{margin-top:14px}
+  .notes .n{display:flex;gap:8px;font-size:.85rem;line-height:1.45;padding:3px 0}
+  .notes .n .mk{width:1.1em;flex:none}
+  .mk.obs{color:var(--success)} .mk.part{color:var(--warning)} .mk.miss{color:var(--danger)} .mk.na{color:var(--text-light)}
+  .notyet{margin-top:14px;border-top:1px dashed var(--border);padding-top:12px}
+  .notyet p{margin:0;font-size:.85rem;color:var(--text-mid);line-height:1.5}
+  .coach{margin-top:14px;background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 var(--radius-md) var(--radius-md) 0;padding:var(--sp2) 14px}
+  .coach .microlabel{color:var(--accent-dark);margin:0}
+  .coach p.line{margin:6px 0 0;font-family:var(--font-head);font-style:italic;font-size:.97rem;line-height:1.55;color:var(--accent-dark)}
+  .panelfoot{display:flex;align-items:center;gap:12px;margin-top:var(--sp3);flex-wrap:wrap}
+  .panelfoot .esc{font-size:.72rem;color:var(--text-light)}
+  /* self-assessment */
+  .sa{margin:40px auto 0;width:min(640px,100%);animation:fadeup .4s ease both}
+  .sa h2{font-size:1.6rem;margin:6px 0 8px}
+  .sa .why{color:var(--text-mid);margin:0 0 26px;font-size:.94rem;line-height:1.55}
+  .sa .q{margin-bottom:22px}
+  .sa label{display:block;font-family:var(--font-head);font-size:1.05rem;font-weight:600;line-height:1.4}
+  .sa label .num{color:var(--primary);margin-right:8px}
+  .sa textarea{width:100%;margin-top:8px;font:inherit;font-size:.92rem;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);min-height:76px;resize:vertical}
+  .sa .commit{display:flex;align-items:center;gap:14px;margin-top:4px;flex-wrap:wrap}
+  .sa .commit .hint{font-size:.76rem;color:var(--text-light)}
+  /* debrief */
+  .formative{margin:var(--sp3) 0 0;font-size:.82rem;color:var(--text-mid)}
+  .formative b{font-family:var(--font-head);color:var(--text)}
+  .crit{background:var(--ink);color:var(--ink-on);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm);margin-top:var(--sp3)}
+  .crit .kick{margin:0;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+  .crit h2{font-size:1.45rem;margin:8px 0 0;line-height:1.3;max-width:30ch}
+  .crit .body{margin:16px 0 0;font-size:.94rem;line-height:1.6;max-width:66ch}
+  .crit .rehearse{margin-top:18px;max-width:66ch}
+  .crit .rehearse .lbl{margin:0;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+  .crit .rehearse .line{margin:6px 0 0;font-family:var(--font-head);font-style:italic;font-size:1.02rem;line-height:1.5}
+  .crit .foot{display:flex;gap:10px 16px;margin-top:20px;flex-wrap:wrap;align-items:center}
+  .crit .foot .btn{border-color:var(--primary);background:var(--primary);color:var(--on-brand)}
+  .crit .foot .ref{font-size:.78rem;opacity:.75}
+  .crit .foot .myth{flex-basis:100%;font-size:.78rem;opacity:.7}
+  .sagrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .sacell{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px}
+  .sacell .q{margin:0;font-size:.72rem;font-weight:700;color:var(--text-light)}
+  .sacell .a{margin:6px 0 0;font-size:.84rem;font-style:italic;line-height:1.5}
+  .saecho{margin:14px 0 0;font-size:.88rem;color:var(--text-mid);line-height:1.55;border-left:3px solid var(--accent);padding-left:12px}
+  .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--sp3);margin-top:var(--sp3)}
+  .two .card{margin-top:0}
+  .sitem{margin:0 0 12px;font-size:.9rem;line-height:1.55;border-left:3px solid var(--success);padding-left:12px}
+  .gitem{border-left:3px solid var(--warning);padding-left:12px;margin:0 0 12px}
+  .gitem p{margin:0;font-size:.9rem;line-height:1.55}
+  .gitem .ref{margin:4px 0 0;font-size:.76rem;color:var(--accent-dark)}
+  .rubgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .rub{border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 16px}
+  .rub .dom{font-family:var(--font-head);font-size:.97rem;font-weight:600;margin:0}
+  .rub .word{margin:4px 0 8px;font-size:.78rem;font-weight:600}
+  .rub .word.obs{color:var(--success)} .rub .word.part{color:var(--warning)} .rub .word.miss{color:var(--text-mid)}
+  .rub ul{margin:0;padding-left:18px;font-size:.78rem;color:var(--text-mid);line-height:1.5}
+  .covlist{list-style:none;margin:0;padding:0}
+  .covlist li{display:flex;gap:8px;font-size:.85rem;line-height:1.5;padding:4px 0}
+  .covlist .mk{width:1.1em;flex:none}
+  .covlist .word{color:var(--text-light);font-size:.76rem;margin-left:6px}
+  .covlist .dim{color:var(--text-light)}
+  .steppednote{margin:14px 0 0;font-size:.78rem;color:var(--text-mid);border-top:1px dashed var(--border);padding-top:10px}
+  .teach p{margin:0 0 10px;font-size:.88rem;line-height:1.55;color:var(--text-mid)}
+  .teach p .pin{color:var(--primary);font-family:var(--font-head)}
+  .aftercare{margin:16px 0 0;padding:12px 14px;background:var(--info-light);border-radius:var(--radius-md);font-size:.82rem;color:var(--info);line-height:1.55}
+  .actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .cfgin{width:100%;font:inherit;font-size:.9rem;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);margin:4px 0 12px;min-height:44px}
   .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-  :focus-visible{outline:3px solid var(--focus,#155eef);outline-offset:2px}
+  :focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+  @keyframes spkbar{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+  @keyframes spkflat{0%,100%{transform:scaleY(.2)}50%{transform:scaleY(.55)}}
+  @keyframes spkhalt{0%,18%{transform:scaleY(.9)}24%,60%{transform:scaleY(.15)}70%,82%{transform:scaleY(.7)}90%,100%{transform:scaleY(.15)}}
+  @keyframes listenpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--primary) 35%,transparent)}70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:0 0 0 0 transparent}}
+  @keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes blinkdots{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  @media (max-width:480px){ .card,.case,.roomhead,.composer{padding-left:var(--sp3);padding-right:var(--sp3)} .crit{padding:20px} }
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
 </style>
 </head>
 <body>
 <button class="themebtn" id="themebtn" aria-label="Toggle light/dark theme">◐</button>
 <main class="shell" id="root"></main>
-<div class="disc footer" role="note">Fictional simulation for supervised learning — <b>not clinical decision support</b> and not a real patient record. Do not enter real-patient information.</div>
 <div id="live" class="visually-hidden" aria-live="polite"></div>
 <script>
 (function(){
@@ -92,12 +208,7 @@ var PHI_PATTERNS=[/\b\d{6,}\b/, /\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/, /\bmrn\
 function looksLikePhi(t){for(var i=0;i<PHI_PATTERNS.length;i++){if(PHI_PATTERNS[i].test(t))return true;}return false;}
 
 /* ============================ Provider interface ===========================
-   Provider.start(caseDef, opts) -> session
-   Provider.respond(session, text) -> {reply, state:{intents,flags,rapport,unlocked,critical}}
-   Provider.evaluate(session, selfAssess) -> feedback object (or null -> use deterministic debrief only)
-============================================================================ */
-
-/* ---- MockProvider: deterministic, offline, the permanent free tier ---- */
+   Unchanged from v0.1.0 — the redesign is the view layer only.               */
 function MockProvider(){}
 MockProvider.prototype.name='Mock (offline)';
 MockProvider.prototype.start=function(caseDef,opts){
@@ -106,7 +217,7 @@ MockProvider.prototype.start=function(caseDef,opts){
   var prio={data:0,safety:0,organization:1,technique:2,alliance:3};
   var catPrio={}; caseDef.intents.forEach(function(it){catPrio[it.id]=(prio[it.category]!==undefined)?prio[it.category]:9;});
   return {caseDef:caseDef, opts:opts, rx:rx, flagIds:flagIds, catPrio:catPrio, rapport:0, unlocked:{}, covered:{}, flags:[], closedRun:0,
-          varIdx:{}, turns:[], reflections:0, hintUses:0, openInviteUsed:false, greetUsed:false};
+          varIdx:{}, turns:[], reflections:0, hintUses:0, stepOuts:0, openInviteUsed:false, greetUsed:false};
 };
 MockProvider.prototype._match=function(s,text){
   var hits=[]; var rx=s.rx;
@@ -132,8 +243,7 @@ MockProvider.prototype._recentFlag=function(s,names){
 MockProvider.prototype.respond=function(s,text){
   var hits=this._match(s,text);
   var flags=hits.filter(function(h){return s.flagIds.indexOf(h)>=0;});
-  // rapport
-  var rr=s.caseDef.rapportRules, self=this;
+  var rr=s.caseDef.rapportRules;
   rr.raises.forEach(function(r){
     if(hits.indexOf(r.intent)>=0){
       if(r.onlyFirstTime){ if(r.intent==='open_invite'&&s.openInviteUsed)return; if(r.intent==='open_invite')s.openInviteUsed=true; }
@@ -143,34 +253,32 @@ MockProvider.prototype.respond=function(s,text){
     }
   });
   rr.lowers.forEach(function(r){ if(r.intent&&hits.indexOf(r.intent)>=0){s.rapport=Math.max(-3,s.rapport+r.delta);} });
-  // closed-run heuristic: a question turn with no open/reflection intent
   var isQ=/\?\s*$/.test(text.trim());
   var isOpenish=hits.indexOf('open_invite')>=0||hits.indexOf('reflection')>=0;
   if(isQ&&!isOpenish){s.closedRun++;}else{s.closedRun=0;}
   var runRule=rr.lowers.filter(function(r){return r.closedRun;})[0];
   if(runRule&&s.closedRun===runRule.closedRun){s.rapport=Math.max(-3,s.rapport+runRule.delta);}
-  // coverage
   hits.forEach(function(h){s.covered[h]=true;});
-  // choose reply — flags first
   var reply=null, critical=null;
   if(flags.length){ reply=this._pick(s,flags[0],'any'); }
-  // gates — fully pack-driven; evaluated in pack order (no hardcoded intent ids)
   var g=s.caseDef.gated, tier=this._tier(s);
   if(!reply){
     for(var i=0;i<g.length && !reply;i++){
       var gd=g[i];
       var reqHit=(gd.requiresIntents||[]).some(function(ri){return hits.indexOf(ri)>=0;});
-      if(gd.requiresGate){                                   // sub-gate: parent must be open
+      if(gd.requiresGate){
         if(reqHit){
           if(s.unlocked[gd.requiresGate]){ s.unlocked[gd.id]=true; reply=gd.reveal; }
           else { reply=gd.deflectIfLocked; }
         }
-      } else if(reqHit){                                     // top-level gate
+      } else if(reqHit){
         if(s.unlocked[gd.id]){ reply=gd.repeatAsk||null; }
         else if(s.rapport>=(gd.requiresRapport||0) && !this._recentFlag(s,gd.blockedByRecentFlags||[])){
           s.unlocked[gd.id]=true; reply=gd.reveal; critical='disclosure';
         } else { reply=gd.deflectLowRapport||gd.deflectIfLocked; }
       } else if(gd.euphemismIntent && hits.indexOf(gd.euphemismIntent)>=0 && !s.unlocked[gd.id]){
+        // Euphemism deflection: pack-driven via gd.euphemismIntent — one reply, no unlock. Mirrors
+        // sp.mjs deriveState so client/server gate state stay bit-identical (parity.test.mjs).
         reply=gd.deflectEuphemism;
       }
     }
@@ -188,9 +296,8 @@ MockProvider.prototype.respond=function(s,text){
   s.turns.push({me:text,pt:reply,flags:flags,intents:hits,rapport:s.rapport});
   return Promise.resolve({reply:reply,state:st});
 };
-MockProvider.prototype.evaluate=function(){return Promise.resolve(null);}; // deterministic debrief handles it
+MockProvider.prototype.evaluate=function(){return Promise.resolve(null);};
 
-/* ---- ProxyProvider: M1 stub. Same interface; points at a Netlify function. ---- */
 function ProxyProvider(endpoint,passcode){this.endpoint=endpoint;this.passcode=passcode;this.mock=new MockProvider();}
 ProxyProvider.prototype.name='Live (proxy)';
 ProxyProvider.prototype.start=function(caseDef,opts){var s=this.mock.start(caseDef,opts);s._live=true;return s;};
@@ -267,14 +374,83 @@ function buildNarrative(s,cov,rub){
   return {strengths:strengths.slice(0,2),growth:growth.slice(0,2)};
 }
 
+/* ===================== Redesign: pacing, coach, coverage prose ===================== */
+/* Per-persona speech pace, derived from the pack's authored persona.voice field.
+   The rhythm is clinical content: pressured speech reveals fast and dense; guarded
+   psychosis reveals in clusters with long silences; depression reveals flat and even. */
+function paceFor(caseDef){
+  var v=(caseDef.persona.voice||'').toLowerCase();
+  if(/rapid|pressured|run-on/.test(v)) return {w:75,ch:4,sent:170,cl:60,ell:220,stage:450,caps:140,rate:1.15,anim:'spkflat spkbar',dur:'.45s',label:'pressured, fast',bars:[14,20,17,20,18]};
+  if(/pause|halting|careful|tests you/.test(v)) return {w:300,ch:2,sent:1050,cl:520,ell:1650,stage:2100,caps:0,rate:0.85,anim:'spkhalt',dur:'2.1s',label:'halting, careful',bars:[17,5,4,16,5]};
+  return {w:260,ch:2,sent:620,cl:280,ell:950,stage:1300,caps:0,rate:0.95,anim:'spkflat',dur:'1.7s',label:'measured, flat',bars:[9,12,10,12,9]};
+}
+function buildSpeechSteps(text,P){
+  var steps=[],acc='';
+  text.split(/(\*[^*]+\*)/).forEach(function(part){ if(!part||!part.trim())return;
+    if(/^\*[^*]+\*$/.test(part)){ acc=(acc?acc+' ':'')+part; steps.push({text:acc,delay:P.stage,hold:true}); return; }
+    var words=part.split(/\s+/).filter(Boolean);
+    for(var i=0;i<words.length;i+=P.ch){ var chunk=words.slice(i,i+P.ch).join(' ');
+      acc=(acc?acc+' ':'')+chunk;
+      var d=Math.min(P.ch,words.length-i)*P.w;
+      if(/(\.\.\.|…)/.test(chunk))d+=P.ell;
+      else if(/[.!?]["”]?$/.test(chunk))d+=P.sent;
+      else if(/[,;:—–]$/.test(chunk))d+=P.cl;
+      if(P.caps&&/\b[A-Z]{3,}\b/.test(chunk))d+=P.caps;
+      steps.push({text:acc,delay:d,hold:d>=600});
+    }
+  });
+  return steps;
+}
+/* Adaptive coach: process before content, stakes before list order, escalating specificity. */
+function getCoach(sess){
+  var recent=sess.turns.slice(-2), flags=[];
+  recent.forEach(function(t){flags=flags.concat(t.flags||[]);});
+  if(flags.indexOf('judgmental')>=0)
+    return sess.caseDef.persona.displayName+' went quiet after that last one. Before your next question, try giving their own words back — no advice attached.';
+  if(flags.indexOf('premature_reassurance')>=0)
+    return 'Reassurance landed before assessment, and it cost you. Ask what would need to be true for things to feel okay — don’t promise it.';
+  if(sess.closedRun>=3)
+    return 'That’s '+sess.closedRun+' closed questions in a row — it’s starting to feel like a form to them. One reflection buys back the room.';
+  var cov=computeCoverage(sess), hints=sess.caseDef.hints||{};
+  var open=cov.filter(function(c){return c.status!=='observed'&&c.status!=='na'&&hints[c.id];});
+  open.sort(function(a,b){return (b.critical?1:0)-(a.critical?1:0);});
+  if(!open.length) return 'You have covered the territory — consider summarizing and closing, and don’t leave anything hard hanging.';
+  var h=hints[open[0].id];
+  if(sess.stepOuts>1) return h+' Say it in their own words first, then one plain question — and wait.';
+  return h;
+}
+function coverageProse(cov){
+  var missed=cov.filter(function(c){return c.status==='missed';}).map(function(c){return c.label.replace(/\s*\(.*\)$/,'');});
+  var partial=cov.filter(function(c){return c.status==='partial';}).map(function(c){return c.label.replace(/\s*\(.*\)$/,'');});
+  var out=[];
+  if(partial.length)out.push('Started but not finished: '+partial.join('; ')+'.');
+  if(missed.length)out.push('Not yet visited: '+missed.join('; ')+'.');
+  if(!out.length)out.push('You have been everywhere the map knows about. What remains is depth, not territory.');
+  return out.join(' ');
+}
+var STATUS_WORD={observed:'reached',partial:'partly',missed:'not this time',na:'not reached'};
+var STATUS_CLS={observed:'obs',partial:'part',missed:'miss',na:'na'};
+var STATUS_MK={observed:'●',partial:'◐',missed:'○',na:'○'};
+
 /* ================================== UI ================================== */
-function Disclaimer(){return e('div',{className:'disc sim',role:'note'},
-  e('b',null,'Fictional simulation. '),'Dana is not a real person and this is not a real record. Practice space for supervised learning — discuss what you find here with your team. ',
-  e('b',null,'Do not type real-patient information'),' (no names, MRNs, dates of birth, or details of actual patients).');}
+function Ribbon(props){
+  return e('div',{className:'ribbon',role:'note'},
+    e('span',{className:'mark','aria-hidden':true},'✳'),
+    e('span',null,e('b',{style:{fontFamily:'var(--font-head)'}},'Fictional simulation. '),props.line,' ',
+      e('b',null,'Do not enter real-patient information'),' — no names, MRNs, dates of birth, or details of actual patients.'));
+}
+function Bars(props){ // static cadence preview
+  return e('span',{className:'bars','aria-hidden':true},props.h.map(function(px,i){return e('span',{key:i,style:{height:px+'px'}});}));
+}
+function SpeakBars(props){ // animated speaking indicator
+  var st={animation:props.anim.split(' ').pop()+' '+props.dur+' ease-in-out infinite'};
+  return e('span',{className:'spkbars','aria-hidden':true,style:{opacity:props.dim?.3:1}},
+    [0,-0.18,-0.36,-0.09].map(function(d,i){return e('span',{key:i,style:Object.assign({},st,{animationDelay:d+'s'})});}));
+}
 
 function App(){
   var st=useState({screen:'loading',pack:null,err:null}); var S=st[0],setS=st[1];
-  var enc=useState(null); var E=enc[0],setE=enc[1];   // {provider,session,msgs,ended,hint,phiHold}
+  var enc=useState(null); var E=enc[0],setE=enc[1];
   var inp=useState(''); var input=inp[0],setInput=inp[1];
   var sa=useState({a:'',b:'',c:''}); var SA=sa[0],setSA=sa[1];
   var mode=useState('live'); var provMode=mode[0],setProvMode=mode[1];
@@ -283,43 +459,45 @@ function App(){
   var cfs=useState(null); var cfg=cfs[0],setCfg=cfs[1];
   var vm=useState(function(){try{return localStorage.getItem('cw_sp_voice')==='1';}catch(x){return false;}}); var voiceMode=vm[0],setVoiceMode=vm[1];
   var lis=useState(false); var listening=lis[0],setListening=lis[1];
-  var chatRef=useRef(null); var recRef=useRef(null);
-  // Web Speech API — browser-native, no infra. STT (ask by voice) + TTS (patient speaks back).
+  var spkS=useState(null); var spk=spkS[0],setSpk=spkS[1];       // {idx,text,pausing}
+  var soS=useState(false); var stepOut=soS[0],setStepOut=soS[1];
+  var chatRef=useRef(null), recRef=useRef(null), spkTimer=useRef(null), returnRef=useRef(null), doorRef=useRef(null);
   var SR=(typeof window!=='undefined')&&(window.SpeechRecognition||window.webkitSpeechRecognition);
   var ttsOK=(typeof window!=='undefined')&&('speechSynthesis' in window);
   var voiceSupported=!!(SR||ttsOK);
-  function toggleVoice(){ var nx=!voiceMode; setVoiceMode(nx); try{localStorage.setItem('cw_sp_voice',nx?'1':'0');}catch(x){} if(!nx&&ttsOK){try{window.speechSynthesis.cancel();}catch(x){}} announce(nx?'Voice mode on':'Voice mode off'); }
-  function speak(text){ if(!voiceMode||!ttsOK||!text)return; try{ window.speechSynthesis.cancel();
-    var clean=String(text).replace(/\*[^*]*\*/g,' ').replace(/\s+/g,' ').trim(); if(!clean)return;  // drop *stage directions*
-    var u=new SpeechSynthesisUtterance(clean); u.rate=1; u.pitch=1; u.lang='en-US'; window.speechSynthesis.speak(u); }catch(x){} }
+
+  function cancelSpeech(){ if(spkTimer.current){clearTimeout(spkTimer.current);spkTimer.current=null;} setSpk(null); if(ttsOK){try{window.speechSynthesis.cancel();}catch(x){}} }
+  function speak(idx,text,cd){
+    if(!voiceMode||!text)return;
+    var base=cd||(E&&E.caseDef); if(!base)return;
+    var P=paceFor(base);
+    if(ttsOK){try{ window.speechSynthesis.cancel();
+      var clean=String(text).replace(/\*[^*]*\*/g,' ').replace(/\s+/g,' ').trim();
+      if(clean){ var u=new SpeechSynthesisUtterance(clean); u.rate=P.rate; u.pitch=1; u.lang='en-US'; window.speechSynthesis.speak(u); } }catch(x){}}
+    var steps=buildSpeechSteps(text,P), k=0;
+    if(spkTimer.current)clearTimeout(spkTimer.current);
+    (function run(){ if(k>=steps.length){setSpk(null);return;}
+      var s=steps[k++]; setSpk({idx:idx,text:s.text,pausing:!!s.hold});
+      spkTimer.current=setTimeout(run,s.delay);
+    })();
+  }
+  function toggleVoice(){ var nx=!voiceMode; setVoiceMode(nx); try{localStorage.setItem('cw_sp_voice',nx?'1':'0');}catch(x){}
+    if(!nx){cancelSpeech();setListening(false);} announce(nx?'Voice mode on — patient speech is mirrored as paced text; text stays the record.':'Voice mode off.'); }
   function startListening(){ if(!SR||listening)return; var rec; try{rec=new SR();}catch(x){return;} recRef.current=rec;
-    rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1; setListening(true); announce('Listening — speak your question');
-    rec.onresult=function(ev){ try{ var t=ev.results[0][0].transcript; setInput(t); setTimeout(function(){ send(false,t); },0); }catch(x){} };
-    rec.onerror=function(){ setListening(false); }; rec.onend=function(){ setListening(false); };
+    cancelSpeech();
+    rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1; setListening(true);
+    announce('Listening — take your time. Your words appear in the text box; nothing sends until you press Say it.');
+    rec.onresult=function(ev){ try{ var t=ev.results[0][0].transcript; setInput(function(p){return p?(p+' '+t):t;}); }catch(x){} };
+    rec.onerror=function(){ setListening(false); }; rec.onend=function(){ setListening(false); announce('Mic off — review your words, then press Say it.'); };
     try{rec.start();}catch(x){ setListening(false); } }
   function stopListening(){ try{ if(recRef.current)recRef.current.stop(); }catch(x){} setListening(false); }
-  function clearLegacyPasscode(){
-    try{localStorage.removeItem('cw_sp_passcode');}catch(x){}
-  }
-  function readPasscode(){
-    try{return sessionStorage.getItem('cw_sp_passcode')||'';}catch(x){return '';}
-  }
-  function writePasscode(value){
-    try{
-      if(value){sessionStorage.setItem('cw_sp_passcode',value);}
-      else{sessionStorage.removeItem('cw_sp_passcode');}
-    }catch(x){}
-  }
-  function loadCfg(){
-    var ep='',pc='';
-    clearLegacyPasscode();
-    try{
-      ep=localStorage.getItem('cw_sp_endpoint')||
-        'https://sp-interview-proxy.netlify.app/api/sp';
-    }catch(x){}
-    pc=readPasscode();
-    return {ep:ep,pc:pc,msg:''};
-  }
+
+  function clearLegacyPasscode(){ try{localStorage.removeItem('cw_sp_passcode');}catch(x){} }
+  function readPasscode(){ try{return sessionStorage.getItem('cw_sp_passcode')||'';}catch(x){return '';} }
+  function writePasscode(v){ try{ if(v){sessionStorage.setItem('cw_sp_passcode',v);} else{sessionStorage.removeItem('cw_sp_passcode');} }catch(x){} }
+  function loadCfg(){ var ep=''; clearLegacyPasscode();
+    try{ep=localStorage.getItem('cw_sp_endpoint')||'https://sp-interview-proxy.netlify.app/api/sp';}catch(x){}
+    return {ep:ep,pc:readPasscode(),msg:''}; }
   function openSettings(){ setCfg(loadCfg()); setShowSettings(true); }
   function saveAndTest(){
     var ep=(cfg.ep||'').trim();
@@ -331,15 +509,10 @@ function App(){
       .then(function(res){setCfg(function(c){return Object.assign({},c,{msg:res.ok?('✓ Connected — pack v'+res.j.packVersion+' ('+res.j.packStatus+'), actor '+res.j.actorModel):('✗ '+(res.j&&res.j.error?res.j.error:('HTTP '+res.status)))});});})
       .catch(function(err){setCfg(function(c){return Object.assign({},c,{msg:'✗ Could not reach endpoint ('+err.message+')'});});});
   }
-  function clearPasscode(){
-    writePasscode('');
-    clearLegacyPasscode();
+  function clearPasscode(){ writePasscode(''); clearLegacyPasscode();
     if(E&&E.provider&&('passcode' in E.provider)){E.provider.passcode='';}
-    setCfg(function(c){
-      return Object.assign({},c,{pc:'',msg:'Passcode cleared for this browser tab.'});
-    });
-    announce('Passcode cleared for this browser tab.');
-  }
+    setCfg(function(c){return Object.assign({},c,{pc:'',msg:'Passcode cleared for this browser tab.'});});
+    announce('Passcode cleared for this browser tab.'); }
 
   useEffect(function(){
     if(window.__SP_PACK__){setS({screen:'select',pack:window.__SP_PACK__,err:null});return;}
@@ -348,12 +521,9 @@ function App(){
       .then(function(p){setS({screen:'select',pack:p,err:null});})
       .catch(function(x){setS({screen:'loading',pack:null,err:'Could not load sp-interview.pack.json ('+x.message+'). Serve this folder over http, or open sp-interview.preview.html.'});});
   },[]);
-  useEffect(function(){
-    clearLegacyPasscode();
-    if(provMode==='live'&&!readPasscode()){openSettings();}
-  },[]);
+  useEffect(function(){ clearLegacyPasscode(); if(provMode==='live'&&!readPasscode()){openSettings();} },[]);
   useEffect(function(){ if(chatRef.current){chatRef.current.scrollTop=chatRef.current.scrollHeight;} });
-
+  useEffect(function(){ if(stepOut&&returnRef.current){try{returnRef.current.focus();}catch(x){}} },[stepOut]);
   useEffect(function(){
     var b=document.getElementById('themebtn');
     if(!b)return; var h=function(){var cur=document.documentElement.getAttribute('data-theme');var nx=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',nx);try{localStorage.setItem('cw_theme',nx);}catch(x){}};
@@ -362,45 +532,45 @@ function App(){
 
   function makeProvider(){
     if(provMode==='live'){
-      var ep=null,pc=null;
-      try{ep=localStorage.getItem('cw_sp_endpoint');}catch(x){}
-      pc=readPasscode();
+      var ep=null; try{ep=localStorage.getItem('cw_sp_endpoint');}catch(x){}
+      var pc=readPasscode();
       if(ep){return new ProxyProvider(ep,pc||'');}
       announce('Live endpoint not configured; using offline patient.');
     }
     return new MockProvider();
   }
   function begin(caseDef,difficulty){
+    cancelSpeech();
     var p=makeProvider(); var sess=p.start(caseDef,{difficulty:difficulty});
     setE({provider:p,session:sess,caseDef:caseDef,difficulty:difficulty,
-          msgs:[{who:'pt',text:caseDef.persona.opening}],hint:null,phiHold:null,feedback:null});
-    setSA({a:'',b:'',c:''});
+          msgs:[{who:'pt',text:caseDef.persona.opening}],phiHold:null,feedback:null});
+    setSA({a:'',b:'',c:''}); setStepOut(false); setInput('');
     setS(Object.assign({},S,{screen:'encounter'}));
-    announce('Encounter started with '+caseDef.persona.displayName);
-    speak(caseDef.persona.opening);
+    announce('Encounter started with '+caseDef.persona.displayName+', '+difficulty+' mode.');
+    if(voiceMode)setTimeout(function(){speak(0,caseDef.persona.opening,caseDef);},50);
   }
-  function send(force,explicit){
-    var text=(typeof explicit==='string'?explicit:input).trim(); if(!text||isBusy)return;
+  function send(force){
+    var text=input.trim(); if(!text||isBusy)return;
     if(!force&&looksLikePhi(text)){ setE(Object.assign({},E,{phiHold:text})); return; }
-    if(ttsOK){try{window.speechSynthesis.cancel();}catch(x){}}
+    cancelSpeech(); stopListening();
     setBusy(true); setInput('');
     var msgs=E.msgs.concat([{who:'me',text:text}]);
-    setE(Object.assign({},E,{msgs:msgs,phiHold:null,hint:null}));
+    setE(Object.assign({},E,{msgs:msgs,phiHold:null}));
     E.provider.respond(E.session,text).then(function(r){
-      setE(function(prev){return Object.assign({},prev,{msgs:prev.msgs.concat([{who:'pt',text:r.reply}])});});
-      speak(r.reply);
+      var idx=null;
+      setE(function(prev){ var m2=prev.msgs.concat([{who:'pt',text:r.reply}]); idx=m2.length-1; return Object.assign({},prev,{msgs:m2}); });
+      announce(E.caseDef.persona.displayName+' replied: '+r.reply);
       setBusy(false);
+      if(voiceMode)setTimeout(function(){speak(idx,r.reply);},30);
       if(E.session.turns.length>=(S.pack.engine.maxTurns||40)){endEncounter();}
     });
   }
-  function getHint(){
-    var cov=computeCoverage(E.session); var hints=E.caseDef.hints||{};
-    var open=cov.filter(function(c){return c.status!=='observed'&&c.status!=='na'&&hints[c.id];});
-    var h=open.length?hints[open[0].id]:'You have covered the map — consider summarizing and closing.';
-    E.session.hintUses=(E.session.hintUses||0)+1;
-    setE(Object.assign({},E,{hint:h}));
-  }
-  function endEncounter(){ if(ttsOK){try{window.speechSynthesis.cancel();}catch(x){}} stopListening(); setS(Object.assign({},S,{screen:'selfassess'})); announce('Encounter ended. Self-assessment before feedback.'); }
+  function openDoor(){ E.session.stepOuts=(E.session.stepOuts||0)+1; E.session.hintUses=(E.session.hintUses||0)+1;
+    cancelSpeech(); setStepOut(true); announce('Stepped out. '+E.caseDef.persona.displayName+' waits.'); }
+  function closeDoor(){ setStepOut(false); announce('Back in the room.');
+    setTimeout(function(){ if(doorRef.current)try{doorRef.current.focus();}catch(x){} },30); }
+  function endEncounter(){ cancelSpeech(); stopListening(); setStepOut(false);
+    setS(Object.assign({},S,{screen:'selfassess'})); announce('Encounter ended. Your read comes before any feedback.'); }
   function toDebrief(){
     setS(Object.assign({},S,{screen:'debrief'}));
     E.provider.evaluate(E.session,SA).then(function(fb){ if(fb){setE(function(p){return Object.assign({},p,{feedback:fb});});} });
@@ -411,176 +581,263 @@ function App(){
       'Case: '+cd.title+'  ·  Difficulty: '+E.difficulty+'  ·  Provider: '+E.provider.name,'Date: '+new Date().toISOString().slice(0,10),''];
     lines.push('[0] '+cd.persona.displayName.toUpperCase()+': '+cd.persona.opening);
     s.turns.forEach(function(t,i){lines.push('['+(i+1)+'] STUDENT: '+t.me);lines.push('['+(i+1)+'] '+cd.persona.displayName.toUpperCase()+': '+t.pt);});
-    lines.push('','--- Coverage ---');
-    computeCoverage(s).forEach(function(c){lines.push(c.status.toUpperCase().padEnd(9)+' '+c.label);});
+    lines.push('','--- Where the interview went ---');
+    computeCoverage(s).forEach(function(c){lines.push((STATUS_WORD[c.status]||c.status).toUpperCase().padEnd(12)+' '+c.label);});
+    if(s.stepOuts)lines.push('','Stepped out '+s.stepOuts+'x (notes + coach).');
     lines.push('','Self-assessment:','1. '+SA.a,'2. '+SA.b,'3. '+SA.c,'','Bring this to your supervisor — the conversation about it is the point.');
     var blob=new Blob([lines.join('\n')],{type:'text/plain'});
     var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sp-interview-'+cd.id+'-'+Date.now()+'.txt';a.click();
   }
 
-  /* ---------- screens ---------- */
-  if(S.screen==='loading'){return e('div',null,e('h1',null,'The Interview Room'),S.err?e('div',{className:'disc phi'},S.err):e('p',null,'Loading…'));}
+  /* ---------- shared chrome ---------- */
+  if(S.screen==='loading'){return e('div',null,e('h1',null,'The Interview Room'),S.err?e('div',{className:'phi',style:{margin:'16px 0 0'}},S.err):e('p',null,'Loading…'));}
+
+  var ribbonLine=(S.screen==='encounter'||S.screen==='debrief')&&E
+    ? E.caseDef.persona.displayName+' is not a real person, and this is not a real record. Practice space for supervised learning.'
+    : 'These patients are not real people, and nothing here is a real record. Practice space for supervised learning — discuss what you find with your team.';
 
   var header=e('div',null,
-    e('div',{className:'kicker'},'Clinical skills · Simulation'),
-    e('h1',null,'The Interview Room',
-      e('span',{className:'badge mode',role:'button',tabIndex:0,
+    e('span',{className:'kicker'},'Clinical skills · Simulation'),
+    e('div',{className:'titlerow'},
+      e('h1',null,'The Interview Room'),
+      e('span',{className:'badge draft'},'Redesigned — pending faculty review'),
+      e('button',{className:'badge mode',
         onClick:function(){var nx=provMode==='mock'?'live':'mock';setProvMode(nx);
           if(nx==='live'){var ep='';try{ep=localStorage.getItem('cw_sp_endpoint')||'';}catch(x){} if(!ep)openSettings();}},
         title:'Mock runs offline. Live uses the sp-proxy endpoint (key stays on the server).'},
         provMode==='mock'?'● Mock patient (offline)':'● Live patient (LLM proxy)'),
-      provMode==='live'?e('span',{className:'badge mode',role:'button',tabIndex:0,onClick:openSettings,title:'Configure live endpoint + passcode'},'⚙ setup'):null),
-    e('p',{style:{color:'var(--text-mid)',marginTop:0}},'Interview a fictional standardized patient. Free text — say what you would actually say.'),
+      provMode==='live'?e('button',{className:'badge mode',onClick:openSettings,title:'Configure live endpoint + passcode'},'⚙ setup'):null),
+    e('p',{className:'lede'},'Interview a fictional standardized patient. Free text — say what you would actually say.'),
+    e(Ribbon,{line:ribbonLine}),
     (showSettings&&cfg)?e('div',{className:'card'},
       e('h2',null,'Live mode setup'),
-      e('p',{style:{fontSize:'.85rem',color:'var(--text-mid)',marginTop:0}},'Paste the sp-proxy endpoint URL and the passcode from Dr. Moss. The endpoint is saved in this browser; the API key never leaves the server.'),
-      e('label',{style:{fontWeight:600,fontSize:'.85rem'},htmlFor:'cfg_ep'},'Endpoint URL'),
-      e('input',{id:'cfg_ep',type:'url',placeholder:'https://<sp-proxy-site>.netlify.app/api/sp',value:cfg.ep,
-        style:{width:'100%',font:'inherit',fontSize:'.9rem',padding:'8px',border:'1px solid var(--border)',borderRadius:'6px',background:'var(--surface)',color:'var(--text)',marginBottom:'10px'},
+      e('p',{style:{fontSize:'.82rem',color:'var(--text-mid)',marginTop:0}},'Paste the sp-proxy endpoint URL and the passcode from Dr. Moss. The endpoint is saved in this browser. The passcode is kept only for this browser tab. The API key never leaves the server.'),
+      e('label',{style:{fontWeight:600,fontSize:'.82rem'},htmlFor:'cfg_ep'},'Endpoint URL'),
+      e('input',{id:'cfg_ep',type:'url',className:'cfgin',placeholder:'https://<sp-proxy-site>.netlify.app/api/sp',value:cfg.ep,
         onChange:function(ev){setCfg(Object.assign({},cfg,{ep:ev.target.value}));}}),
-      e('label',{style:{fontWeight:600,fontSize:'.85rem'},htmlFor:'cfg_pc'},'Passcode'),
-      e('input',{id:'cfg_pc',type:'password',value:cfg.pc,autoComplete:'off',
-        style:{width:'100%',font:'inherit',fontSize:'.9rem',padding:'8px',border:'1px solid var(--border)',borderRadius:'6px',background:'var(--surface)',color:'var(--text)',marginBottom:'10px'},
+      e('label',{style:{fontWeight:600,fontSize:'.82rem'},htmlFor:'cfg_pc'},'Passcode'),
+      e('input',{id:'cfg_pc',type:'password',className:'cfgin',value:cfg.pc,autoComplete:'off',
         onChange:function(ev){setCfg(Object.assign({},cfg,{pc:ev.target.value}));}}),
-      e('p',{style:{fontSize:'.8rem',color:'var(--text-mid)',marginTop:0}},
-        'The passcode is kept only for this browser tab. Close the tab or select Clear passcode to remove it.'),
-      cfg.msg?e('p',{style:{fontSize:'.85rem',fontWeight:600,color:cfg.msg.indexOf('✓')===0?'var(--success)':'var(--warning)'}},cfg.msg):null,
+      cfg.msg?e('p',{style:{fontSize:'.82rem',fontWeight:600,color:cfg.msg.indexOf('✓')===0?'var(--success)':'var(--warning)'}},cfg.msg):null,
       e('div',{style:{display:'flex',gap:'10px',flexWrap:'wrap'}},
         e('button',{className:'btn primary',onClick:saveAndTest,disabled:!(cfg.ep||'').trim()},'Save & test connection'),
         e('button',{className:'btn',type:'button',onClick:clearPasscode},'Clear passcode'),
         e('button',{className:'btn',onClick:function(){setShowSettings(false);}},'Close'))):null);
 
+  /* ---------- select ---------- */
   if(S.screen==='select'){
-    return e('div',null,header,e(Disclaimer),
-      S.pack.cases.map(function(cd){
-        return e('div',{className:'card',key:cd.id},
-          e('h2',null,cd.title),
-          e('p',{style:{marginTop:0}},e('b',null,cd.setting),' · ~',cd.estMinutes,' min'),
-          e('p',null,cd.learnerGoal),
-          e('p',{style:{fontSize:'.8rem',color:'var(--text-light)'}},'Skills: '+cd.skillTags.join(', ')),
-          e('div',{style:{display:'flex',gap:'10px',flexWrap:'wrap'}},
-            e('button',{className:'btn primary',onClick:function(){begin(cd,'supported');}},'Start — Supported (coverage map visible)'),
-            e('button',{className:'btn',onClick:function(){begin(cd,'realistic');}},'Start — Realistic (blank room)')));
-      }));
-  }
-
-  if(S.screen==='encounter'){
-    var cd=E.caseDef, sess=E.session;
-    var sidebar=(E.difficulty==='supported')?e('div',{className:'card side'},
-      e('h2',null,'Coverage'),
-      e('ul',null,computeCoverage(sess).map(function(c){
-        var sym=c.status==='observed'?'●':c.status==='partial'?'◐':c.status==='na'?'–':'○';
-        return e('li',{key:c.id},e('span',{className:'st cov-'+c.status,'aria-hidden':true},sym),c.label);
-      })),
-      e('p',{style:{fontSize:'.72rem',color:'var(--text-light)'}},'● asked · ◐ partial · ○ not yet · – not reached')):null;
     return e('div',null,header,
-      e('div',{className:'grid'},
-        e('div',null,
-          e('div',{className:'card'},
-            e('h2',null,cd.persona.displayName,' ',e('span',{style:{fontWeight:400,fontSize:'.85rem',color:'var(--text-light)'}},'· '+cd.setting)),
-            e('div',{className:'chat',ref:chatRef,'aria-label':'Conversation'},
-              E.msgs.map(function(m,i){return e('div',{className:'msg '+(m.who==='pt'?'pt':'me'),key:i},
-                e('span',{className:'who'},m.who==='pt'?cd.persona.displayName:'You'),m.text);}),
-              isBusy?e('div',{className:'msg pt'},e('span',{className:'who'},cd.persona.displayName),'…'):null),
-            E.phiHold?e('div',{className:'disc phi',role:'alertdialog'},
-              e('b',null,'This looks like it may contain real-patient information'),' (a number, date, or reference to your patient). This tool is for fictional practice only. ',
-              e('div',{style:{marginTop:'8px',display:'flex',gap:'10px'}},
-                e('button',{className:'btn',onClick:function(){setInput(E.phiHold);setE(Object.assign({},E,{phiHold:null}));}},'Edit message'),
-                e('button',{className:'btn ghost',onClick:function(){setInput(E.phiHold);setE(Object.assign({},E,{phiHold:null}));setTimeout(function(){send(true);},0);}},'It’s fictional — send'))) : null,
-            E.hint?e('div',{className:'hint'},e('b',null,'Coach: '),E.hint):null,
-            e('div',{className:'inrow'},
-              e('textarea',{value:input,maxLength:1200,/* === sp-proxy MAX_MSG_CHARS: keeps client & server deriving state over identical text (a single interview turn is far shorter) */'aria-label':'Your next words to the patient',placeholder:voiceMode&&SR?'Tap the mic and speak, or type…':'Say what you would actually say…',
-                onChange:function(ev){setInput(ev.target.value);},
-                onKeyDown:function(ev){if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();send(false);}}}),
-              (voiceMode&&SR)?e('button',{className:'btn'+(listening?' primary':''),disabled:isBusy,'aria-label':listening?'Stop listening':'Speak your question',
-                onClick:function(){listening?stopListening():startListening();}},listening?'◼ Listening…':'🎙 Speak'):null,
-              e('button',{className:'btn primary',disabled:isBusy||!input.trim(),onClick:function(){send(false);}},'Say it')),
-            e('div',{className:'meta'},
-              e('span',null,'Turn '+sess.turns.length+' / '+(S.pack.engine.maxTurns||40)),
-              e('span',null,'Provider: '+E.provider.name+(sess._fellBack?' (fell back to offline)':'')),
-              e('span',null,voiceMode?'Voice mode on — patient speaks aloud'+(SR?'; mic to ask':'; type to ask'):'Enter to send · Shift+Enter for a new line')),
-            e('div',{style:{display:'flex',gap:'10px',marginTop:'12px',flexWrap:'wrap'}},
-              e('button',{className:'btn ghost',onClick:getHint},'Pause / get unstuck'),
-              voiceSupported?e('button',{className:'btn'+(voiceMode?' primary':''),'aria-pressed':voiceMode,onClick:toggleVoice,
-                title:'Patient speaks aloud'+(SR?', and you can ask by voice':'')+'. Uses your browser’s built-in speech.'},voiceMode?'🔊 Voice: on':'🔈 Voice: off'):null,
-              e('button',{className:'btn',onClick:endEncounter},'End encounter'))),
-          e(Disclaimer)),
-        sidebar));
+      e('div',{className:'casegrid'},
+        S.pack.cases.map(function(cd){
+          var P=paceFor(cd), tp=cd.title.split(' — ');
+          return e('div',{className:'case',key:cd.id},
+            e('div',null,
+              e('p',{className:'microlabel',style:{marginBottom:'4px'}},'Practice encounter · ~'+cd.estMinutes+' min'),
+              e('h2',null,tp[0]),
+              tp[1]?e('p',{className:'occasion'},tp[1]):null,
+              e('p',{className:'setting'},cd.setting)),
+            e('p',{className:'goal'},cd.learnerGoal),
+            e('div',{className:'voicerow'},
+              e(Bars,{h:P.bars}),
+              e('p',{style:{margin:0}},e('b',null,P.label.charAt(0).toUpperCase()+P.label.slice(1)+'. '),e('span',{style:{fontStyle:'italic'}},cd.persona.voice))),
+            e('div',{className:'chips'},cd.skillTags.map(function(t,i){return e('span',{className:'chip',key:i},t);})),
+            e('div',{className:'begincol'},
+              e('p',{className:'microlabel'},'Choose your room'),
+              e('div',{className:'begin'},
+                e('button',{className:'btn primary',onClick:function(){begin(cd,'supported');}},'Begin — Supported',e('span',{className:'sub'},'a door to step out — your notes + a coach')),
+                e('button',{className:'btn',onClick:function(){begin(cd,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door — alone with the patient, like the real thing')))));
+        })));
   }
 
+  /* ---------- encounter ---------- */
+  if(S.screen==='encounter'){
+    var cd=E.caseDef, sess=E.session, P=paceFor(cd);
+    var supported=E.difficulty==='supported';
+    return e('div',null,header,
+      e('div',{className:'room'},
+        e('div',{className:'roomhead'},
+          e('div',{style:{minWidth:0}},
+            e('h2',null,cd.persona.displayName),
+            e('p',{className:'setting'},cd.setting),
+            e('p',{className:'modeline'},supported?'Supported — you can step out for your notes and a coach':'Realistic — a blank room, like the real thing')),
+          e('div',{className:'roomtools'},
+            spk?e('span',{className:'spkchip'},
+              e(SpeakBars,{anim:P.anim,dur:P.dur,dim:spk.pausing}),
+              e('span',null,spk.pausing?(cd.persona.displayName+' pauses…'):(cd.persona.displayName+' is speaking · '+P.label))):null,
+            voiceSupported?e('button',{className:'voicebtn'+(voiceMode?' on':''),'aria-pressed':voiceMode,onClick:toggleVoice,
+              title:'Patient speech is mirrored as paced text'+(ttsOK?' and spoken aloud':'')+(SR?'; you can ask by voice':'')+'. Text stays the record.'},
+              voiceMode?'Voice on':'Voice off'):null)),
+        e('div',{className:'chat',ref:chatRef,role:'log','aria-label':'Conversation transcript'},
+          E.msgs.map(function(m,i){
+            var speaking=spk&&spk.idx===i&&m.who==='pt';
+            return e('div',{className:'msg '+(m.who==='pt'?'pt':'me')+(speaking?' speaking':''),key:i},
+              e('span',{className:'who'},m.who==='pt'?cd.persona.displayName:'You'),
+              speaking?spk.text:m.text);}),
+          isBusy?e('div',{className:'msg pt'},e('span',{className:'who'},cd.persona.displayName),
+            e('span',{className:'typing','aria-hidden':true},e('span'),e('span'),e('span'))):null),
+        E.phiHold?e('div',{className:'phi',role:'alertdialog','aria-label':'Possible real-patient information'},
+          e('b',null,'This looks like it may contain real-patient information'),' — a number, date, or reference to your patient. This room is for fictional practice only.',
+          e('div',{className:'acts'},
+            e('button',{className:'btn',onClick:function(){setInput(E.phiHold);setE(Object.assign({},E,{phiHold:null}));}},'Edit message'),
+            e('button',{className:'btn ghost',onClick:function(){setInput(E.phiHold);setE(Object.assign({},E,{phiHold:null}));setTimeout(function(){send(true);},0);}},'It’s fictional — send'))):null,
+        e('div',{className:'composer'},
+          e('div',{className:'inrow'},
+            e('textarea',{value:input,maxLength:1200,className:listening?'listening':'','aria-label':'Your next words to the patient',
+              placeholder:(voiceMode&&SR)?'Tap the mic and speak, or type…':'Say what you would actually say…',rows:2,
+              onChange:function(ev){setInput(ev.target.value);},
+              onKeyDown:function(ev){if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();send(false);}}}),
+            (voiceMode&&SR)?e('button',{className:'mic'+(listening?' live':''),'aria-pressed':listening,'aria-label':listening?'Stop listening':'Speak your question',
+              onClick:function(){listening?stopListening():startListening();}},
+              listening?e('span',{className:'stopglyph','aria-hidden':true}):e('svg',{width:16,height:16,viewBox:'0 0 16 16',fill:'none','aria-hidden':true},
+                e('rect',{x:5.5,y:1.5,width:5,height:8,rx:2.5,stroke:'currentColor',strokeWidth:1.5}),
+                e('path',{d:'M3 7.5V8a5 5 0 0 0 10 0v-.5M8 13v2',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round'})),
+              e('span',null,listening?'Stop':'Speak')):null,
+            e('button',{className:'btn primary sayit',disabled:isBusy||!input.trim(),onClick:function(){send(false);}},'Say it')),
+          listening?e('div',{className:'listenrow'},
+            e('span',{className:'bars2','aria-hidden':true},e('span'),e('span'),e('span')),
+            e('p',null,'Listening — take your time. Your words land in the box first; nothing sends until you press “Say it.”')):null,
+          e('div',{className:'metaline'},
+            e('span',null,'Turn '+sess.turns.length+' / '+(S.pack.engine.maxTurns||40)),
+            e('span',null,'Provider: '+E.provider.name+(sess._fellBack?' (fell back to offline)':'')),
+            e('span',null,'Enter to send · Shift+Enter for a new line'),
+            e('span',{className:'fict'},'Fictional practice — no real-patient details')),
+          e('div',{className:'doorrow'},
+            supported?e('button',{className:'btn door',ref:doorRef,onClick:openDoor},(sess.stepOuts||0)>0?'Step out again':'Step out a moment'):null,
+            e('button',{className:'btn',onClick:endEncounter},'End encounter'),
+            !supported?e('span',{className:'quiet'},'Realistic — no map, no coach. Your debrief will have both.'):null)),
+        stepOut?e('div',{className:'overlay',onKeyDown:function(ev){if(ev.key==='Escape')closeDoor();}},
+          e('div',{className:'panel',role:'dialog','aria-modal':true,'aria-label':'Stepped out of the room'},
+            e('div',{className:'panelhead'},
+              e('h2',null,'Stepping out — '+cd.persona.displayName+' waits.'),
+              e('span',{className:'notascore'},'a pause, not a score')),
+            e('p',{className:'waitline'},'Through the door: '+cd.persona.displayName+' waits.'),
+            e('div',{className:'notes'},
+              e('p',{className:'microlabel'},'Your notes so far'),
+              (function(){ var cov=computeCoverage(sess);
+                var got=cov.filter(function(c){return c.status==='observed'||c.status==='partial';});
+                if(!got.length)return e('p',{style:{margin:0,fontSize:'.85rem',color:'var(--text-mid)',fontStyle:'italic'}},'Nothing on the page yet — the interview is young. That is not a problem to fix; it is a room to sit in.');
+                return got.map(function(c){return e('div',{className:'n',key:c.id},
+                  e('span',{className:'mk '+STATUS_CLS[c.status],'aria-hidden':true},STATUS_MK[c.status]),
+                  e('span',null,e('b',null,c.label),c.status==='partial'?' — started, not finished':''));});})()),
+            e('div',{className:'notyet'},
+              e('p',{className:'microlabel'},'Where you haven’t been'),
+              e('p',null,coverageProse(computeCoverage(sess)))),
+            e('div',{className:'coach'},
+              e('p',{className:'microlabel'},(sess.stepOuts||0)>1?'From the hallway — your coach · again, so: more specific':'From the hallway — your coach'),
+              e('p',{className:'line'},getCoach(sess))),
+            e('div',{className:'panelfoot'},
+              e('button',{className:'btn primary',ref:returnRef,style:{background:'var(--accent-dark)',borderColor:'var(--accent-dark)'},onClick:closeDoor},'Return to the room'),
+              e('span',{className:'esc'},'Esc also returns · stepping out is noted in your debrief, never against you')))):null));
+  }
+
+  /* ---------- self-assessment ---------- */
   if(S.screen==='selfassess'){
     var qs=[['a','What was this patient most afraid of?'],
             ['b','What did you not ask that you wish you had?'],
             ['c','Commit to it: your one-line problem representation.']];
+    var ready=SA.a.trim()&&SA.b.trim()&&SA.c.trim();
     return e('div',null,header,
-      e('div',{className:'card sa'},
-        e('h2',null,'Before any feedback — your read'),
-        e('p',{style:{color:'var(--text-mid)'}},'Commit first. The debrief means more when it responds to your own assessment.'),
-        qs.map(function(q){return e('div',{key:q[0]},
-          e('label',{style:{fontWeight:600,fontSize:'.9rem'},htmlFor:'sa_'+q[0]},q[1]),
+      e('div',{className:'sa'},
+        e('p',{className:'microlabel'},'The room is empty · before any feedback'),
+        e('h2',null,'Your read, first.'),
+        e('p',{className:'why'},'Commit before you see anything. The debrief responds to what you write here — it isn’t a form, and nothing is graded.'),
+        qs.map(function(q,i){return e('div',{className:'q',key:q[0]},
+          e('label',{htmlFor:'sa_'+q[0]},e('span',{className:'num'},String(i+1)),q[1]),
           e('textarea',{id:'sa_'+q[0],value:SA[q[0]],onChange:function(ev){var o={};o[q[0]]=ev.target.value;setSA(Object.assign({},SA,o));}}));}),
-        e('button',{className:'btn primary',disabled:!(SA.a.trim()&&SA.b.trim()&&SA.c.trim()),onClick:toDebrief},'Show my debrief')));
+        e('div',{className:'commit'},
+          e('button',{className:'btn primary',disabled:!ready,onClick:toDebrief},'I’ve committed — show the debrief'),
+          e('span',{className:'hint'},ready?'Nothing here is graded — it seeds the conversation.':'All three first — the debrief responds to your read.'))));
   }
 
+  /* ---------- debrief ---------- */
   if(S.screen==='debrief'){
     var sess2=E.session, cov=computeCoverage(sess2), rub=computeRubric(sess2,cov), nar=buildNarrative(sess2,cov,rub);
-    var siItem=cov.filter(function(c){return c.critical;})[0]||cov.filter(function(c){return c.id==='c_si';})[0];
-    var criticalMiss=siItem&&siItem.status!=='observed';
+    var who2=E.caseDef.persona.displayName;
+    var critItem=cov.filter(function(c){return c.critical;})[0]||cov.filter(function(c){return c.id==='c_si';})[0];
+    var criticalMiss=critItem&&critItem.status!=='observed'&&critItem.status!=='na';
+    var critKey=(critItem&&critItem.status==='partial')?'partial':'missed';
+    // Critical-miss copy lives per-case in the attestable pack (caseDef.criticalMiss). The generic
+    // string only guards a future case that omits it — all shipped cases (Dana/Marcus/Ray) supply it.
+    var critText=criticalMiss?(((E.caseDef.criticalMiss||{})[critKey])
+      ||'The safety question at the center of this case was missed or only approached indirectly — return to it plainly.'):null;
+    // Is the missed critical gate the suicide screen? The re-run rehearse line, the pg_suicide ref,
+    // and the "asking doesn't plant the thought" reframe are SI-specific — render them only for
+    // SI-critical cases (Dana, Marcus). Ray's critical gate is command-hallucination screening, so it
+    // shows its own pack copy without SI coaching that would be clinically wrong for a psychosis case.
+    var critChk=critItem?(E.caseDef.checklist.filter(function(c){return c.id===critItem.id;})[0]||null):null;
+    var isSI=!!(critChk&&(critChk.intents||[]).indexOf('si_direct')>=0);
     var labels={alliance:'Alliance & rapport',data:'Data gathering',technique:'Communication technique',organization:'Organization & closing'};
+    var words={observed:'Observed',partial:'Partly there',missed:'Not this time'};
+    var wcls={observed:'obs',partial:'part',missed:'miss'};
     return e('div',null,header,
-      e('div',{className:'disc sim'},e('b',null,'Formative only.'),' This debrief is practice feedback from a simulation — it is not a grade and is stored only in this browser. Bring the transcript to your supervisor.'),
-      criticalMiss?e('div',{className:'critical'},e('b',null,'Critical: '),
-        ((E.caseDef.criticalMiss||{})[siItem.status==='partial'?'partial':'missed'])
-          ||'The safety question was missed or left at a euphemism. Ask plainly: “have you had thoughts of killing yourself?”'):null,
+      e('p',{className:'formative'},e('b',null,'Formative only.'),' Practice feedback from a simulation — not a grade, stored only in this browser. Bring the transcript to your supervisor; the conversation about it is the point.'),
+      criticalMiss?e('div',{className:'crit'},
+        e('p',{className:'kick'},'Your attending sits forward'),
+        e('h2',null,isSI
+          ?(critItem.status==='partial'?'Before anything else — the question that stopped at a euphemism.':'Before anything else — the question that wasn’t asked.')
+          :(critItem.status==='partial'?'Before anything else — the safety screen that stopped short.':'Before anything else — the safety screen that didn’t happen.')),
+        e('p',{className:'body'},critText),
+        isSI?e('div',{className:'rehearse'},
+          e('p',{className:'lbl'},'For the re-run — the patient’s words first, then the plain question'),
+          e('p',{className:'line'},'“Have you had thoughts of killing yourself?”')):null,
+        e('div',{className:'foot'},
+          e('button',{className:'btn',onClick:function(){begin(E.caseDef,E.difficulty);}},'Re-run this encounter'),
+          isSI?e('span',{className:'ref'},'→ pg_suicide.md · asking directly, in plain language'):null,
+          isSI?e('span',{className:'myth'},'Asking doesn’t plant the thought. Not asking leaves them alone with it.'):null)):null,
       e('div',{className:'card'},
-        e('h2',null,'Coverage map'),
-        e('ul',{style:{listStyle:'none',padding:0}},cov.map(function(c){
-          var sym=c.status==='observed'?'●':c.status==='partial'?'◐':c.status==='na'?'–':'○';
-          return e('li',{key:c.id,style:{padding:'4px 0'}},
-            e('span',{className:'st cov-'+c.status,'aria-hidden':true},sym),' ',c.label,
-            e('span',{className:'pill '+(c.status==='na'?'partial':c.status)},c.status==='na'?'not reached':c.status));}))),
+        e('h2',null,'Your read, then the room’s'),
+        e('p',{style:{margin:'0 0 14px',fontSize:'.78rem',color:'var(--text-light)'}},'What you committed to, before any feedback.'),
+        e('div',{className:'sagrid'},
+          [['Most afraid of',SA.a],['Wish you had asked',SA.b],['Your one-liner',SA.c]].map(function(p,i){
+            return e('div',{className:'sacell',key:i},e('p',{className:'q'},p[0]),e('p',{className:'a'},'“'+(p[1]||'—')+'”'));})),
+        e('p',{className:'saecho'},(E.feedback&&E.feedback.selfAssessmentNote)
+          ?E.feedback.selfAssessmentNote
+          :'Hold your read next to the transcript — especially what '+who2+' protected, tested, or asked you to forget. Where your one-liner and the patient’s own words differ, that gap is the next interview.')),
+      e('div',{className:'two'},
+        e('div',{className:'card'},
+          e('h2',null,'What worked'),
+          ((E.feedback&&E.feedback.strengths&&E.feedback.strengths.length)?E.feedback.strengths:nar.strengths).slice(0,2).map(function(s,i){
+            return e('p',{className:'sitem',key:i},typeof s==='string'?s:s.t);})),
+        e('div',{className:'card'},
+          e('h2',null,'Work on next'),
+          ((E.feedback&&E.feedback.growth&&E.feedback.growth.length)?E.feedback.growth:nar.growth).slice(0,2).map(function(g,i){
+            return e('div',{className:'gitem',key:i},e('p',null,g.t||String(g)),g.link?e('p',{className:'ref'},'→ '+g.link):null);}))),
       e('div',{className:'card'},
-        e('h2',null,'Rubric'),
-        Object.keys(rub).map(function(k){
-          var dom=E.caseDef.rubric.domains.filter(function(d){return d.id===k;})[0];
-          return e('div',{className:'rub',key:k},
-            e('h3',null,labels[k],e('span',{className:'pill '+rub[k]},rub[k])),
-            e('ul',{style:{margin:'4px 0 0',paddingLeft:'20px',fontSize:'.85rem',color:'var(--text-mid)'}},
-              dom.anchors.map(function(a,i){return e('li',{key:i},a);})));})),
+        e('h2',null,'How the interview held together'),
+        e('p',{style:{margin:'0 0 14px',fontSize:'.78rem',color:'var(--text-light)'}},'Four things your attending watches for — observed this time, or not yet.'),
+        e('div',{className:'rubgrid'},
+          Object.keys(rub).map(function(k){
+            var dom=E.caseDef.rubric.domains.filter(function(d){return d.id===k;})[0];
+            var fb=(E.feedback&&E.feedback.domains&&E.feedback.domains[k])||null;
+            return e('div',{className:'rub',key:k},
+              e('p',{className:'dom'},labels[k]),
+              e('p',{className:'word '+wcls[rub[k]]},e('span',{'aria-hidden':true},STATUS_MK[rub[k]==='missed'?'na':rub[k]]+' '),words[rub[k]]),
+              fb&&fb.note?e('p',{style:{margin:0,fontSize:'.8rem',color:'var(--text-mid)',lineHeight:1.5}},fb.note)
+                :e('ul',null,dom.anchors.map(function(a,i){return e('li',{key:i},a);})));}))),
       e('div',{className:'card'},
-        e('h2',null,'Two strengths, two next steps'),
-        e('p',{style:{fontWeight:600,marginBottom:4}},'Strengths'),
-        e('ul',null,nar.strengths.map(function(s,i){return e('li',{key:i},s);})),
-        e('p',{style:{fontWeight:600,marginBottom:4}},'Next time'),
-        e('ul',null,nar.growth.map(function(g,i){return e('li',{key:i},g.t,' ',e('span',{className:'linkish'},'→ '+g.link));})),
-        (E.feedback&&E.feedback.error)?e('p',{style:{fontSize:'.8rem',color:'var(--text-light)'}},'Live evaluator unavailable — deterministic debrief shown.'):null,
-        e('div',{className:'well'},'A note for you, not the patient: interviews like this one — even simulated — can sit with you afterward. That’s normal, and worth saying out loud. Bring it to Dr. Moss or your team if it does.'),
-        e('div',{style:{display:'flex',gap:'10px',marginTop:'16px',flexWrap:'wrap'}},
+        e('h2',null,'Where the interview went'),
+        e('p',{style:{margin:'0 0 10px',fontSize:'.78rem',color:'var(--text-light)'}},'A record of the territory — not a score.'),
+        e('ul',{className:'covlist'},cov.map(function(c){
+          return e('li',{key:c.id,className:c.status==='missed'||c.status==='na'?'dim':''},
+            e('span',{className:'mk '+STATUS_CLS[c.status],'aria-hidden':true},STATUS_MK[c.status]),
+            e('span',null,c.label,
+              e('span',{className:'word'},c.status==='na'?'not reached':STATUS_WORD[c.status]),
+              (c.critical&&criticalMiss)?e('span',{className:'word'},'· ↑ covered above'):null));})),
+        (E.difficulty==='supported'&&(sess2.stepOuts||0)>0)?e('p',{className:'steppednote'},
+          'You stepped out '+sess2.stepOuts+(sess2.stepOuts===1?' time':' times')+' — that’s the tool working, not a mark against you. Notice what was unresolved each time you reached for the door.'):null),
+      e('div',{className:'card teach'},
+        e('h2',null,'From your faculty'),
+        E.caseDef.debriefTeachingPoints.map(function(t,i){return e('p',{key:i},e('span',{className:'pin'},'§ '),t);}),
+        e('div',{className:'aftercare'},'A note for you, not the patient: interviews like this one — even simulated — can sit with you afterward. That’s normal, and worth saying out loud. Bring it to Dr. Moss or your team if it does.'),
+        e('div',{className:'actions'},
           e('button',{className:'btn primary',onClick:downloadTranscript},'Download transcript for supervision'),
           e('button',{className:'btn',onClick:function(){begin(E.caseDef,E.difficulty==='supported'?'realistic':'supported');}},
-            E.difficulty==='supported'?'Re-run — Realistic':'Re-run — Supported'),
-          e('button',{className:'btn ghost',onClick:function(){setS(Object.assign({},S,{screen:'select'}));}},'Back to cases'))),
-      (E.feedback&&!E.feedback.error&&E.feedback.domains)?e('div',{className:'card'},
-        e('h2',null,'Evaluator feedback (live)'),
-        ['alliance','data','technique','organization'].map(function(k){
-          var d=E.feedback.domains[k]; if(!d)return null;
-          return e('div',{className:'rub',key:'fb_'+k},
-            e('h3',null,labels[k],e('span',{className:'pill '+(d.rating||'partial')},d.rating||'—')),
-            e('p',{style:{margin:'4px 0 0',fontSize:'.9rem'}},d.note||''));}),
-        (E.feedback.strengths&&E.feedback.strengths.length)?e('div',null,
-          e('p',{style:{fontWeight:600,marginBottom:4}},'Strengths (from your transcript)'),
-          e('ul',null,E.feedback.strengths.map(function(s,i){return e('li',{key:i},s);}))):null,
-        (E.feedback.growth&&E.feedback.growth.length)?e('div',null,
-          e('p',{style:{fontWeight:600,marginBottom:4}},'Next time'),
-          e('ul',null,E.feedback.growth.map(function(g,i){return e('li',{key:i},g.t,' ',g.link?e('span',{className:'linkish'},'→ '+g.link):null);}))):null,
-        E.feedback.selfAssessmentNote?e('div',{className:'well'},e('b',null,'On your self-assessment: '),E.feedback.selfAssessmentNote):null):null,
-      e('div',{className:'card'},
-        e('h2',null,'Teaching points (faculty-authored)'),
-        e('ul',null,E.caseDef.debriefTeachingPoints.map(function(t,i){return e('li',{key:i,style:{marginBottom:'6px'}},t);}))));
+            E.difficulty==='supported'?'Re-run — Realistic (blank room)':'Re-run — Supported (with the door)'),
+          e('button',{className:'btn ghost',onClick:function(){setS(Object.assign({},S,{screen:'select'}));}},'Back to cases'))));
   }
   return null;
 }
-try{window.__SP_TEST__={MockProvider:MockProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,looksLikePhi:looksLikePhi};}catch(x){}
+try{window.__SP_TEST__={MockProvider:MockProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach};}catch(x){}
 ReactDOM.createRoot(document.getElementById('root')).render(e(App));
 })();
 </script>
