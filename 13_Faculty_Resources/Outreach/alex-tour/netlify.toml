@@ -1,0 +1,12 @@
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-pX0aivz5FuLzKve2Hny6z0FurziMTCAiuLIAexq7bFY='; style-src 'self' 'sha256-M5MgkY+vuGmK3ehN2DnQy+yvsptv0GZ+XE6WcxFZM3w='; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    X-Robots-Tag = "noindex, nofollow"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
