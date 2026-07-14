@@ -64,6 +64,12 @@ class SourceResolution:
 
 
 @dataclass(frozen=True)
+class HistoryRegistry:
+    identity_entries: tuple[dict, ...]
+    releases: tuple[dict, ...]
+
+
+@dataclass(frozen=True)
 class RenderedNote:
     namespace: Namespace
     uid: str
@@ -110,6 +116,95 @@ class QuarantineResult:
     changed: tuple[QuarantineFinding, ...]
     accepted: tuple[QuarantineFinding, ...]
     resolved: tuple[QuarantineFinding, ...]
+
+
+@dataclass(frozen=True)
+class Withdrawal:
+    namespace: Namespace
+    uid: str
+    identity: Identity
+    guid: str
+    deck_id: int
+    deck_name: str
+    model_id: int
+    model_name: str
+    template_id: int | None
+    template_name: str
+    template_ordinal: int
+    field_names: tuple[str, ...]
+    field_ids: tuple[int | None, ...]
+    fields: tuple[str, ...]
+    tags: tuple[str, ...]
+    template_contract_sha256: str
+    render_sha256: str
+    reason_code: str
+    affected_release_id: str
+    active: bool
+    withdrawn: bool
+
+
+@dataclass(frozen=True)
+class CandidateRelease:
+    release_id: str | None
+    release_date: date | None
+    release_epoch: int
+    governed_input_sha256: str
+    evaluated_at: date
+    core_active: tuple[RenderedNote, ...]
+    application_active: tuple[RenderedNote, ...]
+    qbank_active: tuple[RenderedNote, ...]
+    withdrawals: tuple[RenderedNote, ...]
+    quarantine: QuarantineResult
+    coverage: Mapping[str, object]
+    issues: tuple[Issue, ...]
+
+
+@dataclass(frozen=True)
+class PackageNote:
+    guid: str
+    model_id: int
+    fields: tuple[str, ...]
+    tags: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class PackageCard:
+    note_guid: str
+    deck_id: int
+    ordinal: int
+    queue: int
+
+
+@dataclass(frozen=True)
+class PackageSnapshot:
+    path: Path
+    models: Mapping[int, dict]
+    decks: Mapping[int, dict]
+    notes: tuple[PackageNote, ...]
+    cards: tuple[PackageCard, ...]
+
+
+@dataclass(frozen=True)
+class InspectionResult:
+    snapshots: Mapping[str, PackageSnapshot]
+    receipt: Mapping[str, object]
+    identity_fingerprints: Mapping[tuple[str, str, str], str]
+    artifact_sha256: Mapping[str, str]
+    issues: tuple[Issue, ...]
+
+
+@dataclass(frozen=True)
+class MigrationResult:
+    seed_release_id: str
+    seed_mode: Literal["legacy", "predecessor", "candidate_redeploy"]
+    contract_sha256: str
+    issues: tuple[Issue, ...]
+
+
+@dataclass(frozen=True)
+class HistoryAppend:
+    new_identity_entries: tuple[dict, ...]
+    release_record: dict
 
 
 # Frozen legacy qbank identities. The shipped model intentionally has no

@@ -564,13 +564,18 @@ def test_registry_roots_are_initialized_and_validate():
         assert validation_errors(registry, schema) == []
 
 
-def test_empty_governance_registries_do_not_invent_decisions():
+def test_governance_registries_do_not_invent_decisions_and_history_is_bootstrapped():
     assert load_json(REGISTRY_DIR / "cards.json")["cards"] == []
     assert load_json(REGISTRY_DIR / "qbank_render_reviews.json")["reviews"] == []
     assert load_json(REGISTRY_DIR / "quarantine.json")["accepted"] == []
     history = load_json(REGISTRY_DIR / "release_history.json")
-    assert history["identityEntries"] == []
-    assert history["releases"] == []
+    assert len(history["identityEntries"]) == 168
+    assert {entry["origin"] for entry in history["identityEntries"]} == {
+        "legacy_pre_governance"
+    }
+    assert [release["releaseId"] for release in history["releases"]] == [
+        "legacy-qbank-2026-07-12"
+    ]
 
 
 def test_every_governed_object_schema_is_closed():
