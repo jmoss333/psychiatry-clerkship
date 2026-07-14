@@ -273,7 +273,7 @@ function App(){
   var enc=useState(null); var E=enc[0],setE=enc[1];   // {provider,session,msgs,ended,hint,phiHold}
   var inp=useState(''); var input=inp[0],setInput=inp[1];
   var sa=useState({a:'',b:'',c:''}); var SA=sa[0],setSA=sa[1];
-  var mode=useState('mock'); var provMode=mode[0],setProvMode=mode[1];
+  var mode=useState('live'); var provMode=mode[0],setProvMode=mode[1];
   var busy=useState(false); var isBusy=busy[0],setBusy=busy[1];
   var shs=useState(false); var showSettings=shs[0],setShowSettings=shs[1];
   var cfs=useState(null); var cfg=cfs[0],setCfg=cfs[1];
@@ -297,6 +297,7 @@ function App(){
       .then(function(p){setS({screen:'select',pack:p,err:null});})
       .catch(function(x){setS({screen:'loading',pack:null,err:'Could not load sp-interview.pack.json ('+x.message+'). Serve this folder over http, or open sp-interview.preview.html.'});});
   },[]);
+  useEffect(function(){ var pc=''; try{pc=localStorage.getItem('cw_sp_passcode')||'';}catch(x){} if(provMode==='live'&&!pc){openSettings();} },[]);
   useEffect(function(){ if(chatRef.current){chatRef.current.scrollTop=chatRef.current.scrollHeight;} });
 
   useEffect(function(){
