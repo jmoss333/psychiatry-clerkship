@@ -59,6 +59,7 @@ node_modules/
 # ---- Scratch ----
 *.tmp
 *.bak
+/.worktrees/
 
 # ---- Generated Adobe packet export data ----
 /outputs/adobe_packet_exports/*.csv
