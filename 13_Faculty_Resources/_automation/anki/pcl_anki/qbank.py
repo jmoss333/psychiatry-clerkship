@@ -206,10 +206,59 @@ def _correct_count(options: object) -> int:
     )
 
 
+def _required_learner_visible_text_issues(item: Mapping) -> list[Issue]:
+    """Reject required strings that would render as an empty learner surface."""
+
+    issues: list[Issue] = []
+
+    def require_text(value: object, field: str) -> None:
+        if not isinstance(value, str) or not value.strip():
+            issues.append(
+                _issue(
+                    item,
+                    "QBANK_VISIBLE_TEXT_EMPTY",
+                    field,
+                    "required learner-visible text must contain a non-whitespace character",
+                )
+            )
+
+    for field in ("stem", "why", "pearl", "evidence"):
+        require_text(item.get(field), field)
+
+    link = item.get("link")
+    if isinstance(link, Mapping):
+        require_text(link.get("href"), "link.href")
+        if "label" in link:
+            require_text(link.get("label"), "link.label")
+
+    options = item.get("options")
+    if isinstance(options, list):
+        for index, option in enumerate(options):
+            if not isinstance(option, Mapping):
+                continue
+            require_text(option.get("t"), f"options[{index}].t")
+            trap = option.get("trap")
+            if isinstance(trap, Mapping):
+                require_text(trap.get("name"), f"options[{index}].trap.name")
+                require_text(trap.get("note"), f"options[{index}].trap.note")
+
+    tier2 = item.get("tier2")
+    if isinstance(tier2, Mapping):
+        require_text(tier2.get("q"), "tier2.q")
+        require_text(tier2.get("why"), "tier2.why")
+        tier2_options = tier2.get("options")
+        if isinstance(tier2_options, list):
+            for index, option in enumerate(tier2_options):
+                if isinstance(option, Mapping):
+                    require_text(option.get("t"), f"tier2.options[{index}].t")
+    return issues
+
+
 def validate_qbank_render_structure(item: Mapping) -> list[Issue]:
     """Validate every structural rule required before base/Tier-2 rendering."""
 
     issues: list[Issue] = []
+    issues.extend(_required_learner_visible_text_issues(item))
     options = item.get("options")
     issues.extend(_option_key_issues(item, options, tier2=False))
     if _correct_count(options) != 1:

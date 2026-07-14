@@ -8,6 +8,8 @@ from zipfile import ZipFile
 
 import pytest
 
+from anki.collection import Collection
+
 from pcl_anki.contract import (
     APPLICATION_DECK_ID,
     APPLICATION_FIELDS,
@@ -32,9 +34,11 @@ from pcl_anki.qbank import (
     build_deck,
     link_html,
     meta_html,
+    qbank_item_sha256,
     render_options,
     tags_for,
 )
+import pcl_anki.render as render_module
 from pcl_anki.render import (
     APPLICATION_AFMT,
     APPLICATION_MODEL,
@@ -180,7 +184,7 @@ def make_application_card() -> dict:
                 "taskBundle": "Diagnosis",
                 "primaryPage": "safety-planning",
                 "primaryAnchor": "immediate-escalation",
-                "approvedItemSha256": "b" * 64,
+                "approvedItemSha256": qbank_item_sha256(make_application_item()),
                 "primaryTrap": "Anchoring on Café <beta>",
                 "sourceAnchorSha256": "c" * 64,
             },
@@ -188,6 +192,79 @@ def make_application_card() -> dict:
         }
     )
     return card
+
+
+def make_application_item() -> dict:
+    return {
+        "id": "qb_neutral_001",
+        "status": "attested",
+        "type": "sba",
+        "category": "safety",
+        "competency": ["dx"],
+        "difficulty": 2,
+        "hy": True,
+        "pages": ["safety-planning"],
+        "stem": "A neutral finding appears. What is the best explanation?",
+        "options": [
+            {"key": "A", "t": "Condition <Alpha> & Beta", "c": True},
+            {
+                "key": "B",
+                "t": "Alternative <Beta> & Gamma",
+                "trap": {
+                    "name": "Anchoring on Café <beta>",
+                    "note": "It misses the timing <clue> & pattern.",
+                },
+            },
+            {
+                "key": "C",
+                "t": "Alternative Gamma",
+                "trap": {
+                    "name": "Availability bias",
+                    "note": "It ignores the neutral discriminator.",
+                },
+            },
+            {
+                "key": "D",
+                "t": "Alternative Delta",
+                "trap": {
+                    "name": "Premature closure",
+                    "note": "It stops before checking the pattern.",
+                },
+            },
+        ],
+        "why": "The timing and pattern distinguish the neutral condition.",
+        "pearl": "Use the decisive discriminator.",
+        "evidence": "Neutral reviewed source passage.",
+    }
+
+
+def anki_backend_cloze_html(rendered, tmp_path: Path) -> tuple[str, str]:
+    """Render the frozen cloze fields through the installed supported Anki backend."""
+
+    collection = Collection(str(tmp_path / "cloze-render-parity.anki2"))
+    try:
+        notetype = collection.models.new("PCL cloze render parity probe")
+        notetype["type"] = 1
+        notetype["css"] = V2_CSS
+        for name, _field_id in CORE_CLOZE_FIELDS:
+            collection.models.add_field(notetype, collection.models.new_field(name))
+        template = collection.models.new_template("Cloze")
+        template["qfmt"] = CORE_CLOZE_QFMT
+        template["afmt"] = CORE_CLOZE_AFMT
+        collection.models.add_template(notetype, template)
+        collection.models.add(notetype)
+
+        note = collection.new_note(notetype)
+        for (name, _field_id), value in zip(
+            CORE_CLOZE_FIELDS, rendered.fields, strict=True
+        ):
+            note[name] = value
+        collection.add_note(note, collection.decks.id("PCL render parity probe"))
+        card = collection.get_card(collection.find_cards("")[0])
+        output = card.render_output()
+        return output.question_text, output.answer_text
+    finally:
+        collection.close()
 
 
 def package_notes(path: Path, tmp_path: Path) -> dict[str, tuple[tuple[str, ...], tuple[str, ...]]]:
@@ -288,25 +365,67 @@ def test_core_basic_render_is_nonempty_sorted_escaped_once_and_source_linked():
     )
 
 
-def test_cloze_render_and_genanki_note_schedule_exactly_one_card():
+def test_cloze_render_and_genanki_note_schedule_exactly_one_card(tmp_path):
     rendered = render_card(make_core_card(kind="cloze"))
     note = to_genanki_note(rendered)
 
+    backend_front, backend_back = anki_backend_cloze_html(rendered, tmp_path)
+
     assert rendered.model_id == CORE_CLOZE_MODEL_ID
     assert rendered.fields[1].count("{{c1::") == 1
-    assert "[...]" in rendered.front_html
-    assert "Finding &lt;Alpha&gt; &amp; Beta" in rendered.back_html
+    assert rendered.front_html == backend_front
+    assert rendered.back_html == backend_back
+    assert (
+        '<span class="cloze" data-cloze="Finding&#x20;&amp;lt&#x3B;Alpha&amp;gt&#x3B;'
+        '&#x20;&amp;amp&#x3B;&#x20;Beta" data-ordinal="1">[...]</span>'
+        in rendered.front_html
+    )
+    assert (
+        '<span class="cloze" data-ordinal="1">Finding &lt;Alpha&gt; &amp; Beta</span>'
+        in rendered.back_html
+    )
     assert len(note.cards) == 1
+
+    payload = rendered_note_approval_payload(rendered, make_core_card(kind="cloze"))
+    assert payload["front"] == backend_front
+    assert payload["back"] == backend_back
+    assert rendered.render_sha256 == canonical_json_sha256(payload)
+
+
+@pytest.mark.parametrize(
+    "cloze_text",
+    [
+        "{{c1::a/b-c_d.e,f:g!h?i::punctuation clue}}",
+        "{{c1::Café α—beta & gamma::hint <one> & two}}",
+    ],
+)
+def test_cloze_preview_matches_supported_anki_for_punctuation_and_unicode(
+    tmp_path, cloze_text
+):
+    card = make_core_card(kind="cloze")
+    card["front"] = f"The decisive marker is {cloze_text}."
+    rendered = render_card(card)
+
+    assert (rendered.front_html, rendered.back_html) == anki_backend_cloze_html(
+        rendered, tmp_path
+    )
 
 
 def test_application_render_has_exact_active_tags_and_collapsed_secondary_detail():
     card = make_application_card()
-    rendered = render_card(card)
+    item = make_application_item()
+    rendered = render_card(card, qbank_item=item)
 
     assert rendered.namespace == "application"
     assert rendered.deck_id == APPLICATION_DECK_ID
     assert rendered.model_id == APPLICATION_MODEL_ID
-    assert rendered.fields[5] == ""
+    assert rendered.fields[5]
+    assert "Alternative &lt;Beta&gt; &amp; Gamma" in rendered.fields[5]
+    assert "Anchoring on Café &lt;beta&gt;" in rendered.fields[5]
+    assert "It misses the timing &lt;clue&gt; &amp; pattern." in rendered.fields[5]
+    assert "Condition &lt;Alpha&gt; &amp; Beta" not in rendered.fields[5]
+    assert "Why the alternatives fail" in rendered.back_html
+    assert rendered.fields[5] in rendered.back_html
     assert "<strong>Decisive clue:</strong>" in rendered.back_html
     assert "<strong>Major trap:</strong>" in rendered.back_html
     assert "Anchoring on Café &lt;beta&gt;" in rendered.back_html
@@ -315,6 +434,20 @@ def test_application_render_has_exact_active_tags_and_collapsed_secondary_detail
     assert "Trap::anchoring_on_cafe_beta" in rendered.tags
     assert "Reinforces::ms3_w01_safety_001" in rendered.tags
     assert "Deck::Core" not in rendered.tags
+
+    changed_item = deepcopy(item)
+    changed_item["options"][1]["trap"]["note"] = "A changed governed explanation."
+    with pytest.raises(ValueError, match="approvedItemSha256"):
+        render_card(card, qbank_item=changed_item)
+    changed_card = deepcopy(card)
+    changed_card["qbank"]["approvedItemSha256"] = qbank_item_sha256(changed_item)
+    changed_rendered = render_card(changed_card, qbank_item=changed_item)
+    assert changed_rendered.fields[5] != rendered.fields[5]
+    assert changed_rendered.back_html != rendered.back_html
+    assert changed_rendered.render_sha256 != rendered.render_sha256
+
+    with pytest.raises(ValueError, match="governed qbank item"):
+        render_card(card)
 
 
 def test_card_approval_hash_consumes_exact_display_sequence_and_relationship_payload():
@@ -327,7 +460,8 @@ def test_card_approval_hash_consumes_exact_display_sequence_and_relationship_pay
             "sequenceReviewedAt": "2026-07-14",
         }
     )
-    rendered = render_card(card)
+    item = make_application_item()
+    rendered = render_card(card, qbank_item=item)
     payload = card_approval_payload(
         card,
         rendered.front_html,
@@ -352,7 +486,7 @@ def test_card_approval_hash_consumes_exact_display_sequence_and_relationship_pay
 
     changed = deepcopy(card)
     changed["review"]["sequenceRationale"] = "Changed rationale."
-    assert render_card(changed).render_sha256 != rendered.render_sha256
+    assert render_card(changed, qbank_item=item).render_sha256 != rendered.render_sha256
 
 
 def test_weekly_map_sequence_payload_keeps_absent_override_fields_explicitly_null():
@@ -366,6 +500,17 @@ def test_weekly_map_sequence_payload_keeps_absent_override_fields_explicitly_nul
     }
     assert payload["reinforces"] is None
     assert payload["supersedes"] is None
+
+
+def test_render_uses_the_single_shared_typed_contract_boundary():
+    import pcl_anki.contract as contract
+
+    assert hasattr(contract, "Namespace")
+    assert hasattr(contract, "Identity")
+    assert hasattr(contract, "RenderedNote")
+    assert render_module.Namespace is contract.Namespace
+    assert render_module.Identity is contract.Identity
+    assert render_module.RenderedNote is contract.RenderedNote
 
 
 def test_legacy_template_contract_uses_null_id_sentinels_and_rejects_added_ids():

@@ -14,6 +14,8 @@ from jsonschema import Draft7Validator, FormatChecker
 
 
 Severity = Literal["hard", "review", "info"]
+Namespace = Literal["core", "application", "qbank"]
+Identity = Literal["base", "tier2"]
 
 
 @dataclass(frozen=True)
@@ -59,6 +61,25 @@ class SourceResolution:
     section_sha256: str
     reviewed_at: date
     introduced_week: int | None
+
+
+@dataclass(frozen=True)
+class RenderedNote:
+    namespace: Namespace
+    uid: str
+    identity: Identity
+    guid: str
+    deck_id: int
+    model_id: int
+    template_ordinal: int
+    fields: tuple[str, ...]
+    tags: tuple[str, ...]
+    front_html: str
+    back_html: str
+    template_contract_sha256: str
+    render_sha256: str
+    active: bool
+    withdrawn: bool
 
 
 # Frozen legacy qbank identities. The shipped model intentionally has no
@@ -220,6 +241,8 @@ def application_guid(card_id: str) -> str:
     return genanki.guid_for(APPLICATION_GUID_NAMESPACE, card_id)
 
 
-def legacy_qbank_guid(item_id: str, identity: str = "base") -> str:
+def legacy_qbank_guid(item_id: str, identity: Identity = "base") -> str:
+    if identity not in {"base", "tier2"}:
+        raise ValueError("identity must be base or tier2")
     key = item_id if identity == "base" else item_id + "::t2"
     return genanki.guid_for(key)

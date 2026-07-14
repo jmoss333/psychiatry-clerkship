@@ -9,6 +9,7 @@ import pytest
 from pcl_anki.contract import canonical_json_sha256
 from pcl_anki.qbank import (
     QB_HASH_FIELDS,
+    QbankValidationError,
     eligible_qbank_items,
     qbank_item_payload,
     qbank_item_sha256,
@@ -17,6 +18,7 @@ from pcl_anki.qbank import (
     validate_qbank_item,
     validate_question_bank,
 )
+from pcl_anki.render import build_qbank_notes
 from pcl_anki.sources import SourceResolutionError, load_manifest
 
 
@@ -254,6 +256,43 @@ def test_current_qbank_is_structurally_valid_and_counts_come_from_items(
     assert "49 draft records" in qbank["_note"]
     assert "3 retired items" in qbank["_note"]
     assert "status" in qbank["_note"] and "retired" in qbank["_note"]
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda item: item.__setitem__("stem", "   \t"),
+        lambda item: item.__setitem__("why", "   \t"),
+        lambda item: item.__setitem__("pearl", "   \t"),
+        lambda item: item.__setitem__("evidence", "   \t"),
+        lambda item: item["link"].__setitem__("href", "   \t"),
+        lambda item: item["link"].__setitem__("label", "   \t"),
+        lambda item: item["options"][0].__setitem__("t", "   \t"),
+        lambda item: next(
+            option for option in item["options"] if option.get("c") is not True
+        )["trap"].__setitem__("name", "   \t"),
+        lambda item: next(
+            option for option in item["options"] if option.get("c") is not True
+        )["trap"].__setitem__("note", "   \t"),
+        lambda item: item["tier2"].__setitem__("q", "   \t"),
+        lambda item: item["tier2"].__setitem__("why", "   \t"),
+        lambda item: item["tier2"]["options"][0].__setitem__("t", "   \t"),
+    ],
+)
+def test_required_learner_visible_qbank_text_fails_closed_before_eligibility_or_render(
+    qbank, qbank_schema, manifest, mutate
+):
+    changed = deepcopy(qbank)
+    item = next(item for item in changed["items"] if item["id"] == "qb_pha_011")
+    mutate(item)
+
+    with pytest.raises(QbankValidationError) as eligibility_error:
+        eligible_qbank_items(changed, qbank_schema, manifest)
+    assert "QBANK_VISIBLE_TEXT_EMPTY" in issue_codes(eligibility_error.value.issues)
+
+    with pytest.raises(QbankValidationError) as render_error:
+        build_qbank_notes(item, qbank_schema)
+    assert "QBANK_VISIBLE_TEXT_EMPTY" in issue_codes(render_error.value.issues)
 
 
 def test_only_configured_current_qbank_safety_hold_is_detected(qbank):

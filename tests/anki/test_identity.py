@@ -6,6 +6,7 @@ from pathlib import Path
 import sqlite3
 import subprocess
 import sys
+from typing import get_type_hints
 from zipfile import ZipFile
 
 import anki
@@ -254,6 +255,10 @@ def test_legacy_qbank_identity_is_frozen():
     assert legacy_qbank_guid("qb_pha_002", "tier2") == genanki.guid_for(
         "qb_pha_002::t2"
     )
+    for invalid in ("", "t2", "retired", "BASE"):
+        with pytest.raises(ValueError, match="base or tier2"):
+            legacy_qbank_guid("qb_pha_002", invalid)
+    assert get_type_hints(legacy_qbank_guid)["identity"] is contract.Identity
 
 
 def test_v2_identity_is_frozen():

@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import dataclass
 import html
 import json
 from pathlib import Path
 import re
-from typing import Literal, Mapping
+from typing import Mapping
 import unicodedata
 
 import genanki
@@ -36,6 +35,7 @@ from pcl_anki.contract import (
     CORE_CLOZE_TEMPLATE_ORDINAL,
     CORE_DECK_ID,
     CORE_DECK_NAME,
+    Identity,
     Issue,
     LEGACY_QBANK_DECK_ID,
     LEGACY_QBANK_DECK_NAME,
@@ -44,6 +44,8 @@ from pcl_anki.contract import (
     LEGACY_QBANK_MODEL_NAME,
     LEGACY_QBANK_TEMPLATE_NAME,
     LEGACY_QBANK_TEMPLATE_ORDINAL,
+    Namespace,
+    RenderedNote,
     application_guid,
     canonical_json_sha256,
     core_guid,
@@ -58,14 +60,12 @@ from pcl_anki.qbank import (
     link_html as legacy_link_html,
     meta_html as legacy_meta_html,
     QbankValidationError,
+    qbank_item_payload,
+    qbank_item_sha256,
     validate_qbank_item_schema,
     validate_qbank_render_structure,
 )
 from pcl_anki.sources import sequence_review_payload
-
-
-Namespace = Literal["core", "application", "qbank"]
-Identity = Literal["base", "tier2"]
 
 
 CORE_BASIC_QFMT = (
@@ -266,25 +266,6 @@ TEMPLATE_CONTRACT_SHA256 = {
 }
 
 
-@dataclass(frozen=True)
-class RenderedNote:
-    namespace: Namespace
-    uid: str
-    identity: Identity
-    guid: str
-    deck_id: int
-    model_id: int
-    template_ordinal: int
-    fields: tuple[str, ...]
-    tags: tuple[str, ...]
-    front_html: str
-    back_html: str
-    template_contract_sha256: str
-    render_sha256: str
-    active: bool
-    withdrawn: bool
-
-
 def validate_configured_template_contracts(config: Mapping) -> list[Issue]:
     """Compare mechanical configured hashes with byte-exact runtime recomputation."""
 
@@ -376,14 +357,37 @@ def _active_tags(card: Mapping) -> tuple[str, ...]:
     return tuple(sorted(tags))
 
 
+def _anki_cloze_data_attribute(answer: str) -> str:
+    """Mirror Anki's cloze-answer encoding for its front-side data attribute."""
+
+    encoded = []
+    for character in answer:
+        if character.isascii() and character.isalnum():
+            encoded.append(character)
+        elif character == "&":
+            encoded.append("&amp;")
+        elif ord(character) <= 0xFF:
+            encoded.append(f"&#x{ord(character):02X};")
+        else:
+            encoded.append(character)
+    return "".join(encoded)
+
+
 def _cloze_display(text: str, *, front: bool) -> str:
     pattern = re.compile(r"\{\{c1::(.*?)(?:::(.*?))?\}\}")
 
     def replace(match: re.Match) -> str:
         answer, hint = match.group(1), match.group(2)
         if front:
-            return f"[{hint}]" if hint else "[...]"
-        return f'<span class="cloze">{answer}</span>'
+            display = f"[{hint}]" if hint else "[...]"
+            return (
+                '<span class="cloze" data-cloze="'
+                + _anki_cloze_data_attribute(answer)
+                + '" data-ordinal="1">'
+                + display
+                + "</span>"
+            )
+        return f'<span class="cloze" data-ordinal="1">{answer}</span>'
 
     return pattern.sub(replace, text)
 
@@ -529,7 +533,41 @@ def build_core_note(card: Mapping) -> RenderedNote:
     )
 
 
-def build_application_note(card: Mapping) -> RenderedNote:
+def _application_detail(card: Mapping, qbank_item: Mapping) -> str:
+    """Render escaped incorrect-option explanations from the governed item projection."""
+
+    issues = validate_qbank_render_structure(qbank_item)
+    if issues:
+        raise QbankValidationError(issues)
+    qbank = card.get("qbank") if isinstance(card.get("qbank"), Mapping) else {}
+    if qbank.get("id") != qbank_item.get("id"):
+        raise ValueError("Application qbank.id must match the governed qbank item")
+    if qbank.get("approvedItemSha256") != qbank_item_sha256(qbank_item):
+        raise ValueError("Application approvedItemSha256 must match the governed qbank item")
+
+    projected = qbank_item_payload(qbank_item)
+    distractors = []
+    for option in projected["options"]:
+        if option.get("c") is True:
+            continue
+        trap = option["trap"]
+        distractors.append(
+            "<li><strong>"
+            + html.escape(str(option["key"]))
+            + ". "
+            + html.escape(str(option["t"]))
+            + "</strong><br>"
+            + html.escape(str(trap["name"]))
+            + ": "
+            + html.escape(str(trap["note"]))
+            + "</li>"
+        )
+    if not distractors:
+        raise ValueError("Application qbank item must contain incorrect alternatives")
+    return '<ul class="pcl-distractors">' + "".join(distractors) + "</ul>"
+
+
+def build_application_note(card: Mapping, qbank_item: Mapping) -> RenderedNote:
     """Build one Application note from the fixed v2 contract."""
 
     if card.get("kind") != "application":
@@ -541,7 +579,7 @@ def build_application_note(card: Mapping) -> RenderedNote:
         "Answer": html.escape(str(card["answer"])),
         "Discriminator": html.escape(str(card["explanation"])),
         "Trap": html.escape(str(card["qbank"]["primaryTrap"])),
-        "Detail": "",
+        "Detail": _application_detail(card, qbank_item),
         "Caveat": html.escape(str(card.get("caveat", ""))),
         "SourceQuote": html.escape(str(source["quote"])),
         "SourceLink": _source_link(source),
@@ -560,11 +598,13 @@ def build_application_note(card: Mapping) -> RenderedNote:
     )
 
 
-def render_card(card: Mapping) -> RenderedNote:
+def render_card(card: Mapping, *, qbank_item: Mapping | None = None) -> RenderedNote:
     """Single active Core/Application rendering path used by review and packaging."""
 
+    if card.get("kind") == "application" and qbank_item is None:
+        raise ValueError("Application rendering requires the governed qbank item")
     return (
-        build_application_note(card)
+        build_application_note(card, qbank_item)
         if card.get("kind") == "application"
         else build_core_note(card)
     )
