@@ -42,6 +42,33 @@ test('SPA heading fragments match the shared Python golden vectors', async ({ pa
 });
 
 
+test('rendered headings honor fenced code and indented ATX Markdown', async ({ page }) => {
+  await page.route('**/content/exp_consult.md', async (route) => {
+    await route.fulfill({
+      contentType: 'text/markdown',
+      body: `# Synthetic Source
+
+\`\`\`markdown
+## Fenced Heading
+\`\`\`
+
+   ## Indented [Safety planning][ref]
+
+Visible section.
+
+[ref]: https://example.test
+`,
+    });
+  });
+
+  await page.goto('/?page=exp_consult.md#indented-safety-planning');
+  await page.waitForSelector('#content h1');
+
+  await expect(page.locator('#indented-safety-planning')).toHaveCount(1);
+  await expect(page.locator('#fenced-heading')).toHaveCount(0);
+});
+
+
 test('source fragment opens its collapsed section and survives back navigation', async ({ page }) => {
   await page.goto(`/?page=${SOURCE_PAGE}#${SOURCE_ANCHOR}`);
   await page.waitForSelector('#content h1');
@@ -57,5 +84,36 @@ test('source fragment opens its collapsed section and survives back navigation',
   await page.waitForSelector(`#${SOURCE_ANCHOR}`);
 
   await expect(page).toHaveURL(new RegExp(`#${SOURCE_ANCHOR}$`));
+  await expectAnchorVisible(page);
+});
+
+
+test('delayed metadata rerenders preserve fragment, history, collapse, and viewport', async ({ page }) => {
+  let releaseReviewed;
+  let releaseTopicMeta;
+  await page.route('**/reviewed.json', async (route) => {
+    await new Promise((resolve) => { releaseReviewed = resolve; });
+    await route.continue();
+  });
+  await page.route('**/topic_meta.json', async (route) => {
+    await new Promise((resolve) => { releaseTopicMeta = resolve; });
+    await route.continue();
+  });
+
+  await page.goto(`/?page=${SOURCE_PAGE}#${SOURCE_ANCHOR}`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await page.waitForSelector(`#${SOURCE_ANCHOR}`);
+  await expect.poll(() => Boolean(releaseReviewed && releaseTopicMeta)).toBe(true);
+  const historyLength = await page.evaluate(() => history.length);
+  await expectAnchorVisible(page);
+
+  releaseReviewed();
+  releaseTopicMeta();
+  await page.waitForSelector('.reviewed.page-review-footer');
+  await page.waitForSelector('.topic-tpl');
+
+  await expect(page).toHaveURL(new RegExp(`#${SOURCE_ANCHOR}$`));
+  expect(await page.evaluate(() => history.length)).toBe(historyLength);
   await expectAnchorVisible(page);
 });

@@ -7,7 +7,7 @@ from datetime import date
 from hashlib import sha256
 import html
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import unicodedata
 from urllib.parse import quote, unquote
@@ -21,8 +21,12 @@ from pcl_anki.contract import (
 )
 
 
-ATX_HEADING = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t]*$")
-SETEXT_HEADING = re.compile(r"^[ \t]*(=+|-+)[ \t]*$")
+ATX_HEADING = re.compile(
+    r"^[ ]{0,3}(#{1,6})(?:[ \t]+(.*?)[ \t]*|[ \t]*)$"
+)
+SETEXT_HEADING = re.compile(r"^[ ]{0,3}(=+|-+)[ \t]*$")
+SETEXT_TITLE = re.compile(r"^[ ]{0,3}(\S.*?)[ \t]*$")
+FENCE_START = re.compile(r"^[ ]{0,3}(`{3,}|~{3,})(.*)$")
 WEEK_HEADING = re.compile(r"^#{1,6}[ \t]+Week[ \t]+([1-6])\b", re.IGNORECASE)
 ROUTE_LINK = re.compile(r"[?&](page|tool)=([^&#)\s]+)")
 PENDING_REVIEW = re.compile(
@@ -37,6 +41,7 @@ SEQUENCE_REVIEW_FIELDS = (
     "sequenceReviewedBy",
     "sequenceReviewedAt",
 )
+CANONICAL_BASE_URL = "https://une-ms3-psychiatry.netlify.app/"
 
 
 class SourceResolutionError(ValueError):
@@ -69,6 +74,7 @@ def _load_json_mapping(value: Mapping | Path | str, subject: str) -> Mapping:
 def _visible_heading_text(text: str) -> str:
     text = re.sub(r"\s+#+\s*$", "", text.strip())
     text = re.sub(r"!?(\[([^\]]*)\])\([^)]*\)", lambda match: match.group(2), text)
+    text = re.sub(r"!?\[([^\]]*)\]\s*\[[^\]]*\]", r"\1", text)
     text = re.sub(r"<[^>]+>", "", text)
     text = html.unescape(text)
     text = re.sub(r"\\([\\`*{}\[\]()#+\-.!_>~|])", r"\1", text)
@@ -92,18 +98,42 @@ def heading_slug(text: str) -> str:
 def _heading_records(lines: list[str]) -> list[tuple[int, int, int, str]]:
     records: list[tuple[int, int, int, str]] = []
     index = 0
+    fence_character: str | None = None
+    fence_length = 0
     while index < len(lines):
+        if fence_character is not None:
+            closing = re.match(
+                rf"^[ ]{{0,3}}{re.escape(fence_character)}{{{fence_length},}}[ \t]*$",
+                lines[index],
+            )
+            if closing:
+                fence_character = None
+                fence_length = 0
+            index += 1
+            continue
+        fence = FENCE_START.match(lines[index])
+        if fence:
+            marker = fence.group(1)
+            fence_character = marker[0]
+            fence_length = len(marker)
+            index += 1
+            continue
         atx = ATX_HEADING.match(lines[index])
         if atx:
-            title = re.sub(r"[ \t]+#+[ \t]*$", "", atx.group(2)).strip()
+            title = re.sub(
+                r"[ \t]+#+[ \t]*$", "", (atx.group(2) or "")
+            ).strip()
             records.append((index, index + 1, len(atx.group(1)), title))
             index += 1
             continue
         if index + 1 < len(lines):
             setext = SETEXT_HEADING.match(lines[index + 1])
-            if setext and lines[index].strip():
+            setext_title = SETEXT_TITLE.match(lines[index])
+            if setext and setext_title:
                 level = 1 if setext.group(1).startswith("=") else 2
-                records.append((index, index + 2, level, lines[index].strip()))
+                records.append(
+                    (index, index + 2, level, setext_title.group(1).strip())
+                )
                 index += 2
                 continue
         index += 1
@@ -140,6 +170,27 @@ def parse_markdown_sections(text: str) -> tuple[Section, ...]:
     return tuple(sections)
 
 
+def _canonical_manifest_path(value: str, subject: str) -> str:
+    raw_parts = value.split("/")
+    path = PurePosixPath(value)
+    if (
+        not value
+        or "\\" in value
+        or "\x00" in value
+        or path.is_absolute()
+        or re.match(r"^[A-Za-z]:", value)
+        or any(part in {"", ".", ".."} for part in raw_parts)
+        or path.as_posix() != value
+        or path.suffix != ".md"
+    ):
+        _fail(
+            "MANIFEST_PATH_INVALID",
+            subject,
+            "Markdown path must be canonical, relative, slash-separated, and traversal-free",
+        )
+    return value
+
+
 def load_manifest(path: Path | str) -> ManifestIndex:
     """Load the Markdown manifest, rejecting every duplicate path or slug."""
 
@@ -157,7 +208,7 @@ def load_manifest(path: Path | str) -> ManifestIndex:
     slug_to_title: dict[str, str] = {}
     for index, row in enumerate(rows):
         if not isinstance(row, list) or len(row) != 3 or not all(
-            isinstance(value, str) and value for value in row
+            isinstance(value, str) for value in row
         ):
             _fail(
                 "MANIFEST_INVALID",
@@ -165,6 +216,13 @@ def load_manifest(path: Path | str) -> ManifestIndex:
                 "expected [source path, output slug, title]",
             )
         source_path, slug, title = row
+        _canonical_manifest_path(source_path, f"md[{index}][0]")
+        if not slug or not title:
+            _fail(
+                "MANIFEST_INVALID",
+                f"md[{index}]",
+                "slug and title must be nonempty strings",
+            )
         if source_path in path_to_slug:
             _fail(
                 "MANIFEST_DUPLICATE_PATH",
@@ -316,19 +374,40 @@ def _validate_authority_prefixes(
             "at least one authority prefix is required",
         )
     for prefix in prefixes:
-        if not isinstance(prefix, str) or not prefix:
+        if (
+            not isinstance(prefix, str)
+            or not prefix.endswith("/")
+            or "\\" in prefix
+            or any(part in {"", ".", ".."} for part in prefix[:-1].split("/"))
+            or PurePosixPath(prefix[:-1]).is_absolute()
+            or PurePosixPath(prefix[:-1]).as_posix() != prefix[:-1]
+        ):
             _fail(
                 "AUTHORITY_CONFIG_INVALID",
                 "primaryAuthorityPathPrefixes",
-                "prefixes must be nonempty strings",
+                "prefixes must be canonical relative directories ending in slash",
             )
-        if not (repo_root / prefix.rstrip("/")).is_dir():
+        root_resolved = repo_root.resolve()
+        prefix_resolved = (root_resolved / prefix[:-1]).resolve()
+        try:
+            prefix_resolved.relative_to(root_resolved)
+        except ValueError:
+            _fail(
+                "AUTHORITY_PREFIX_ESCAPE",
+                prefix,
+                "configured authority directory resolves outside the repository",
+            )
+        if not prefix_resolved.is_dir():
             _fail(
                 "AUTHORITY_PREFIX_MISSING",
                 prefix,
                 "configured primary-authority directory does not exist",
             )
-        if not any(path.startswith(prefix) for path in manifest.path_to_slug):
+        prefix_parts = PurePosixPath(prefix[:-1])
+        if not any(
+            PurePosixPath(path).is_relative_to(prefix_parts)
+            for path in manifest.path_to_slug
+        ):
             _fail(
                 "AUTHORITY_PREFIX_UNMAPPED",
                 prefix,
@@ -406,7 +485,13 @@ def resolve_source(
             source_path,
             "case and OSCE material is context-only, not primary authority",
         )
-    if not any(source_path.startswith(prefix) for prefix in primary_prefixes):
+    source_parts = PurePosixPath(source_path)
+    matching_prefixes = [
+        prefix
+        for prefix in primary_prefixes
+        if source_parts.is_relative_to(PurePosixPath(prefix[:-1]))
+    ]
+    if not matching_prefixes:
         _fail(
             "SOURCE_NOT_PRIMARY_AUTHORITY",
             source_path,
@@ -427,7 +512,25 @@ def resolve_source(
             "source is listed for faculty re-attestation",
         )
 
-    markdown_path = root / source_path
+    root_resolved = root.resolve()
+    markdown_path = (root_resolved / source_path).resolve()
+    try:
+        markdown_path.relative_to(root_resolved)
+    except ValueError:
+        _fail(
+            "SOURCE_REPO_ESCAPE",
+            source_path,
+            "source resolves outside the repository root",
+        )
+    authority_root = (root_resolved / matching_prefixes[0][:-1]).resolve()
+    try:
+        markdown_path.relative_to(authority_root)
+    except ValueError:
+        _fail(
+            "SOURCE_AUTHORITY_ESCAPE",
+            source_path,
+            "source resolves outside its configured authority directory",
+        )
     try:
         markdown = markdown_path.read_text(encoding="utf-8")
     except OSError as error:
@@ -489,17 +592,19 @@ def resolve_source(
         _fail("WEEK_MAP_INVALID", "sequenceMapPath", "configured path is required")
     week_map = load_week_map(root / sequence_path, manifest)
     introduced_week = week_map.slug_to_first_week.get(slug)
-    base_url = config.get(
-        "canonicalBaseUrl", "https://une-ms3-psychiatry.netlify.app/"
-    )
-    if not isinstance(base_url, str) or not base_url.startswith("https://"):
-        _fail("SOURCE_INPUT_INVALID", "canonicalBaseUrl", "HTTPS base URL required")
+    base_url = config.get("canonicalBaseUrl")
+    if base_url != CANONICAL_BASE_URL:
+        _fail(
+            "CANONICAL_BASE_URL_MISMATCH",
+            "canonicalBaseUrl",
+            f"expected exact value {CANONICAL_BASE_URL!r}",
+        )
 
     return SourceResolution(
         path=source_path,
         slug=slug,
         anchor=anchor,
-        url=f"{base_url.rstrip('/')}/?page={quote(slug)}#{anchor}",
+        url=f"{CANONICAL_BASE_URL}?page={quote(slug)}#{anchor}",
         quote=normalized_quote,
         quote_sha256=sha256(normalized_quote.encode("utf-8")).hexdigest(),
         section_sha256=sha256(section.normalized_text.encode("utf-8")).hexdigest(),

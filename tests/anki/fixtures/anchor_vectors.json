@@ -18,5 +18,10 @@
     "heading": "[Shared decision-making](https://example.test) & `consent`",
     "expected": "shared-decision-making-consent",
     "style": "atx"
+  },
+  {
+    "heading": "[Safety planning][ref] & `follow-up`",
+    "expected": "safety-planning-follow-up",
+    "style": "atx"
   }
 ]

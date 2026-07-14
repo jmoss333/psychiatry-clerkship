@@ -181,6 +181,37 @@ Peer body.
     assert "Peer body." not in setext.raw_text
 
 
+def test_markdown_sections_ignore_fenced_headings_and_allow_indented_atx():
+    text = """# Real Document
+
+```markdown
+## Fenced ATX
+Fenced Setext
+-------------
+```
+
+   ## Indented [Safety planning][ref] ##
+Visible body.
+
+~~~
+### Also Fenced
+~~~
+
+[ref]: https://example.test
+"""
+
+    sections = parse_markdown_sections(text)
+
+    assert [(section.title, section.anchor, section.level) for section in sections] == [
+        ("Real Document", "real-document", 1),
+        (
+            "Indented [Safety planning][ref]",
+            "indented-safety-planning",
+            2,
+        ),
+    ]
+
+
 def test_load_manifest_builds_unique_bidirectional_maps(source_repo):
     manifest = load_manifest(source_repo["manifest_path"])
 
@@ -191,6 +222,32 @@ def test_load_manifest_builds_unique_bidirectional_maps(source_repo):
         source_repo["slug"]: source_repo["source_path"]
     }
     assert manifest.slug_to_title == {source_repo["slug"]: "Synthetic Topic"}
+
+
+@pytest.mark.parametrize(
+    "unsafe_path",
+    [
+        "",
+        ".",
+        "..",
+        "/absolute/topic.md",
+        "03_Core_Topics/../outside.md",
+        "03_Core_Topics/../../outside.md",
+        "03_Core_Topics\\Mood\\topic.md",
+        "03_Core_Topics//Mood/topic.md",
+        "./03_Core_Topics/Mood/topic.md",
+    ],
+)
+def test_load_manifest_rejects_noncanonical_or_escaping_paths(
+    source_repo, unsafe_path
+):
+    manifest = json.loads(source_repo["manifest_path"].read_text(encoding="utf-8"))
+    manifest["md"][0][0] = unsafe_path
+    write_json(source_repo["manifest_path"], manifest)
+
+    with pytest.raises(SourceResolutionError) as raised:
+        load_manifest(source_repo["manifest_path"])
+    assert raised.value.code == "MANIFEST_PATH_INVALID"
 
 
 @pytest.mark.parametrize("duplicate_index", [0, 1])
@@ -358,6 +415,25 @@ def test_unicode_crlf_and_whitespace_only_quote_changes_normalize_equivalently(
     assert resolved.quote_sha256 == sha256(
         resolved.quote.encode("utf-8")
     ).hexdigest()
+
+
+@pytest.mark.parametrize("escape_repo", [False, True])
+def test_resolve_source_rejects_symlink_escape_from_authority_or_repo(
+    source_repo, escape_repo
+):
+    if escape_repo:
+        outside = source_repo["root"].parent / (
+            source_repo["root"].name + "-outside.md"
+        )
+        expected_code = "SOURCE_REPO_ESCAPE"
+    else:
+        outside = source_repo["root"] / "outside-authority.md"
+        expected_code = "SOURCE_AUTHORITY_ESCAPE"
+    write_text(outside, source_repo["markdown"])
+    source_repo["source_file"].unlink()
+    source_repo["source_file"].symlink_to(outside)
+
+    resolution_error(source_repo, expected_code)
 
 
 def test_surveillance_presence_requires_reattest(source_repo):
@@ -544,3 +620,19 @@ def test_full_qbank_source_is_exempt_from_week_map_membership(source_repo):
         )
         is None
     )
+
+
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        "https://example.test/",
+        "https://une-ms3-psychiatry.netlify.app",
+        "http://une-ms3-psychiatry.netlify.app/",
+    ],
+)
+def test_resolve_source_requires_exact_canonical_base_url(source_repo, base_url):
+    config = json.loads(source_repo["config_path"].read_text(encoding="utf-8"))
+    config["canonicalBaseUrl"] = base_url
+    write_json(source_repo["config_path"], config)
+
+    resolution_error(source_repo, "CANONICAL_BASE_URL_MISMATCH")
