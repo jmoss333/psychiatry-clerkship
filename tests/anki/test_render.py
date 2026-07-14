@@ -411,6 +411,52 @@ def test_cloze_preview_matches_supported_anki_for_punctuation_and_unicode(
     )
 
 
+@pytest.mark.parametrize(
+    ("cloze_text", "expected_front", "expected_back"),
+    [
+        (
+            "{{c1::Cafe\u0301}}",
+            '<span class="cloze" data-cloze="Caf&#xE9;" data-ordinal="1">[...]</span>',
+            '<span class="cloze" data-ordinal="1">Café</span>',
+        ),
+        (
+            "{{c1::line one\nline two}}",
+            '<span class="cloze" data-cloze="line&#x20;one&#x0A;line&#x20;two" '
+            'data-ordinal="1">[...]</span>',
+            '<span class="cloze" data-ordinal="1">line one\nline two</span>',
+        ),
+    ],
+)
+def test_cloze_preview_nfc_and_multiline_contract_matches_supported_anki(
+    tmp_path, cloze_text, expected_front, expected_back
+):
+    card = make_core_card(kind="cloze")
+    card["front"] = f"The marker is {cloze_text}."
+    rendered = render_card(card)
+
+    assert (rendered.front_html, rendered.back_html) == anki_backend_cloze_html(
+        rendered, tmp_path
+    )
+    assert expected_front in rendered.front_html
+    assert expected_back in rendered.back_html
+
+
+@pytest.mark.parametrize(
+    "cloze_text",
+    [
+        "{{c1::line one\r\nline two}}",
+        "{{c1::tab\tvalue}}",
+        "{{c1::nul\x00value}}",
+    ],
+)
+def test_cloze_preview_rejects_unsupported_controls_fail_closed(cloze_text):
+    card = make_core_card(kind="cloze")
+    card["front"] = f"The marker is {cloze_text}."
+
+    with pytest.raises(ValueError, match="unsupported control"):
+        render_card(card)
+
+
 def test_application_render_has_exact_active_tags_and_collapsed_secondary_detail():
     card = make_application_card()
     item = make_application_item()

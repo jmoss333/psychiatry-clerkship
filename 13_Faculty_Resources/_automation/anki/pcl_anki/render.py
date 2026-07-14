@@ -373,8 +373,22 @@ def _anki_cloze_data_attribute(answer: str) -> str:
     return "".join(encoded)
 
 
+def _normalize_cloze_source(text: str) -> str:
+    """NFC-normalize cloze text and reject controls Anki may rewrite silently."""
+
+    normalized = unicodedata.normalize("NFC", text)
+    unsupported = [
+        character
+        for character in normalized
+        if unicodedata.category(character) == "Cc" and character != "\n"
+    ]
+    if unsupported:
+        raise ValueError("cloze text contains an unsupported control character")
+    return normalized
+
+
 def _cloze_display(text: str, *, front: bool) -> str:
-    pattern = re.compile(r"\{\{c1::(.*?)(?:::(.*?))?\}\}")
+    pattern = re.compile(r"\{\{c1::(.*?)(?:::(.*?))?\}\}", re.DOTALL)
 
     def replace(match: re.Match) -> str:
         answer, hint = match.group(1), match.group(2)
@@ -519,7 +533,10 @@ def build_core_note(card: Mapping) -> RenderedNote:
             back_html=_render_template(CORE_BASIC_AFMT, field_map),
             contract_key="coreBasic",
         )
-    field_map = {"Text": html.escape(str(card["front"])), **shared}
+    field_map = {
+        "Text": html.escape(_normalize_cloze_source(str(card["front"]))),
+        **shared,
+    }
     fields = tuple(field_map[name] for name, _field_id in CORE_CLOZE_FIELDS)
     return _card_rendered_note(
         card,
