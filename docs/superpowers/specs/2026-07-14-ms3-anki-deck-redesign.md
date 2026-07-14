@@ -2,7 +2,7 @@
 
 Date: 2026-07-14
 Repo: Psychiatry Clerkship Library
-Status: Approved in conversation; awaiting written specification review
+Status: Approved for implementation planning
 
 ## Plain-language summary
 
@@ -44,8 +44,8 @@ Current-state findings that this design addresses:
 - Anki generation occurs after the site QA gate and is fail-soft. CI does not install
   `genanki`, so a green site build can silently serve an older committed binary.
 - Attestation for Concepts is based on finding the phrase `attested by` in Markdown,
-  not on reconciling the source path through `site_manifest.json` and
-  `reviewed.json`.
+  not on reconciling the source path through `13_Faculty_Resources/_automation/site_build/site_manifest.json` and
+  `13_Faculty_Resources/reviewed.json`.
 - At least one attested qbank item, `qb_pha_002`, retains stale “mandatory” clozapine
   ANC wording while its current reviewed source says monitoring continues per the
   prescribing information after elimination of the clozapine REMS. This item must be
@@ -238,12 +238,13 @@ Each Core or Application v2 record contains these common fields:
 | `explanation` | At most two sentences explaining the discriminator or reason |
 | `caveat` | Supervision, evidence, or local-policy boundary when required |
 | `source.path` | Canonical repo-relative source path |
-| `source.slug` | Deployed slug resolved through `site_manifest.json` |
+| `source.slug` | Deployed slug resolved through `13_Faculty_Resources/_automation/site_build/site_manifest.json` |
 | `source.anchor` | Stable section heading or fragment containing the supporting passage |
 | `source.url` | Absolute URL derived from the configured canonical MS3 learner-site base URL plus the deployed slug and anchor; never a local machine path |
 | `source.quote` | Exact normalized reviewed source passage supporting the card |
 | `source.quoteSha256` | Hash of the normalized source passage at approval |
 | `render.templateVersion` | Permanent version identifier for the rendered note contract |
+| `render.templateContractSha256` | Hash of the exact model, deck, ordered fields, template, qfmt/afmt, CSS, and template version used for the reviewed render |
 | `provenance.authoringMethod` | `human` or `ai_assisted` |
 | `provenance.authoringTool` | Tool/model and version when AI-assisted; otherwise `null` |
 | `provenance.humanEditor` | Named human editor responsible for the proposed card |
@@ -261,6 +262,10 @@ Each Core or Application v2 record contains these common fields:
 | `review.localPolicyReviewedBy` | Named policy owner; required when `LocalPolicy` is present |
 | `review.localPolicyReviewedAt` | Required when `LocalPolicy` is present |
 | `review.reviewDue` | Required for every `High` card and every card with `LocalPolicy` |
+| `review.sequenceBasis` | `weekly_map` or `faculty_override` for Core/Application records |
+| `review.sequenceRationale` | Required when `sequenceBasis` is `faculty_override` |
+| `review.sequenceReviewedBy` | Named faculty reviewer; required for a sequencing override |
+| `review.sequenceReviewedAt` | Required for a sequencing override |
 | `reinforces` | Optional stable ID for an intentional reinforcement relationship |
 | `supersedes` | Optional retired stable ID replaced by this new concept; never reactivates the old ID |
 
@@ -268,10 +273,23 @@ Core records fix `kind` to `basic` or `cloze` and use one of the seven Core fami
 `state` may become `approved` only after the reviewer has seen and approved the actual
 rendered front/back pair. Metadata-only or source-page review is not card approval.
 `review.approvedCardSha256` is SHA-256 over canonical JSON containing the rendered
-front, rendered back, tags, `id`, `kind`, `family`, Week, Domain, task, risk object,
-source object, qbank object when present, and `render.templateVersion`. Any change to
-one of those inputs invalidates the approval hash and quarantines the card until the
-new render is explicitly approved.
+front, rendered back, sorted tags, `id`, `kind`, `family`, Week, Domain, task, risk
+object, source object, qbank object when present, `review.sequenceBasis`,
+`review.sequenceRationale`, `review.sequenceReviewedBy`,
+`review.sequenceReviewedAt`, `reinforces`, `supersedes`, `render.templateVersion`, and
+`render.templateContractSha256`. Inapplicable sequence-override values project as
+explicit nulls, as do absent relationship fields. Any change to one of those inputs
+invalidates the approval hash and quarantines the card until the new render is
+explicitly approved.
+
+`render.templateContractSha256` is SHA-256 over the UTF-8 bytes of canonical JSON
+with lexicographically sorted object keys, no insignificant whitespace, preserved
+array order, and these exact values from the actual generated note contract: model
+ID/name; deck ID/name; the ordered array of field ID/name pairs; template
+ID/name/ordinal; qfmt; afmt; CSS; and `render.templateVersion`. qfmt, afmt, and CSS
+are hashed byte-for-byte without whitespace or newline normalization. Generation and
+package inspection independently recompute this projection; the configured value,
+packaged value, and every approved-card payload must agree.
 
 Each Application record shares the common fields above, fixes `kind` to `application`
 and `family` to `ApplicationVignette`, and adds:
@@ -279,11 +297,25 @@ and `family` to `ApplicationVignette`, and adds:
 | Field | Contract |
 |---|---|
 | `qbank.id` | Stable source qbank ID |
+| `qbank.taskBundle` | Exactly one of `Diagnosis`, `NextStep`, `Safety`, `Pharmacology`, `Psychosocial`, or `Disposition` |
 | `qbank.primaryPage` | Reviewed page nominated as the authority for the decisive answer |
 | `qbank.primaryAnchor` | Exact reviewed anchor supporting the decisive answer |
 | `qbank.approvedItemSha256` | Hash over the canonical learner-visible qbank fields at approval |
 | `qbank.primaryTrap` | One named misconception displayed on the back and tagged |
 | `qbank.sourceAnchorSha256` | Hash of the reviewed source anchor used by the qbank item |
+
+For Application records, `reinforces` is required and must resolve to a live,
+approved Core ID whose Week is no later than the Application Week. The common source
+and qbank source must name the same authority: `source.slug` equals
+`qbank.primaryPage`, `source.anchor` equals `qbank.primaryAnchor`, and that slug
+resolves to exactly one Markdown source path in `13_Faculty_Resources/_automation/site_build/site_manifest.json`.
+
+For Core/Application sequencing, a source first introduced in the six-week reading
+map may be used in that Week or a later Week. When an otherwise eligible primary
+source is absent from the reading map, the card requires a named faculty sequencing
+override and rationale in its own review object; those fields enter the exact card
+approval hash. Full-qbank notes have no Week contract and are exempt from this
+sequencing rule.
 
 Anki GUIDs derive only from the stable v2 card ID plus a fixed model namespace. They
 do not derive from wording. Changing copy therefore updates the existing card after
@@ -299,6 +331,15 @@ notes and break the promised review-history continuity. Model, template, and fie
 IDs are fixed after first release because Anki cannot reliably update an existing
 note when its note type identity changes.
 
+The frozen legacy qbank model intentionally has no serialized per-field or
+per-template `id` keys, and generation must not add them. Its template-contract
+projection therefore uses explicit `null` sentinels for those absent IDs while still
+binding the model/deck IDs and names, the nine ordered field names, template name
+`Card 1` and ordinal `0`, exact qfmt/afmt/CSS bytes, and template version. An
+unexpected newly present legacy field/template ID is contract drift. In contrast,
+the v2 Core/Application field and template IDs are explicit serialized keys in the
+Anki model JSON and must match their fixed values.
+
 For each shipped Core/Application v2 ID, `kind`, model ID, note-type identity,
 template/card ordinal, field identities, and field order are immutable. A Basic-to-
 Cloze, Cloze-to-Basic, or other note-type change retires the old ID and creates a new
@@ -307,10 +348,11 @@ ID with `supersedes`; reapproval under the old ID is not sufficient.
 The source qbank remains canonical for full-qbank clinical content, but item
 attestation alone is not rendered-card approval. A committed qbank-render approval
 registry stores base and Tier 2 note identities, approved item hash, template version,
-exact rendered-card hash, risk object, required evidence/policy review references,
-faculty approver, and approval date. Every active full-qbank note must match that
-registry; the first governed release requires review of each actual rendered note,
-and any mismatch quarantines only the affected note.
+template-contract hash using the legacy null-ID projection, exact rendered-card hash,
+risk object, required evidence/policy review references, faculty approver, and
+approval date. Every active full-qbank note must match that registry; the first
+governed release requires review of each actual rendered note, and any mismatch
+quarantines only the affected note.
 
 Risk level and governance facets are orthogonal so that a card can be both high-risk
 and institution-specific:
@@ -332,7 +374,7 @@ or expired requirement quarantines the card.
 
 A source is eligible only when all of these are true:
 
-1. The source path is registered in `site_manifest.json`.
+1. The source path is registered in `13_Faculty_Resources/_automation/site_build/site_manifest.json`.
 2. Its deployed slug is marked `reviewed` in `13_Faculty_Resources/reviewed.json`.
 3. The source has no learner-facing pending-review banner that conflicts with the
    registry.
@@ -397,13 +439,32 @@ The implementation creates four reviewed, committed inputs under
   shipped.
 
 `release_history.json` is how the build knows whether a missing, quarantined, or
-retired identity needs a withdrawal update. Each entry records namespace, canonical
-ID, exact GUID, base-or-Tier-2 identity, model/deck/template/field identities,
-artifact, release identifier and date, approved card hash, and source commit. Entries
-may be appended but never edited or deleted. A release candidate stages its proposed
-new history entries in the same reviewed release change as the six artifacts; site
-staging still copies only those six artifacts. Mutation of prior history fails the
-release.
+retired identity needs a withdrawal update. It separates one immutable identity
+contract per namespace/canonical ID/base-or-Tier-2 key (GUID and
+model/deck/template/field identities) from append-only per-release membership
+snapshots. Membership records carry active/withdrawn state, artifact, approved/render
+hashes, release identifier/date, and a governed-input digest covering the exact
+registries, sources, qbank, reviews, templates, generator/staging code, dependency
+lock, and learner page used for the candidate. This lets a same-GUID copy update append
+a new approved/render hash without mutating or duplicating the identity contract.
+Entries may be appended but never edited or deleted. The digest excludes
+`release_history.json` to avoid a circular hash; the base-branch comparison protects
+prior history and the candidate-match check protects the new append. Release
+recomputes both the digest and packages. This remains valid across squash/rebase merges
+when bytes are unchanged but fails on any governed byte drift. Site staging still
+copies only the six artifacts.
+
+The one-time bootstrap from the 2026-07-12 legacy qbank package must not invent a
+card approval that did not exist. Those identity contracts use
+`origin: legacy_pre_governance`; their first release memberships set
+`approvedCardSha256` to `null` and record a `shippedCardSha256` computed from the
+actual packaged note. Every governed release after that bootstrap requires the
+ordinary non-null approval hash in its membership snapshot.
+The bootstrap also inspects the legacy `ALL` package because the same qbank GUIDs
+shipped there under a combined-only historical deck ID. A bootstrap membership may
+record multiple historical artifact/deck locations for the same GUID; the governed qbank
+identity remains the frozen standalone deck contract, and migration tests must prove
+that a same-GUID withdrawal updates collections seeded from either legacy package.
 
 ## Card standard
 
@@ -427,6 +488,17 @@ release.
 3. Required supervision, evidence, regulatory, or local-policy caveat.
 4. Collapsed exact source passage and working absolute learner-site link.
 5. Optional collapsed qbank distractor detail on Application cards.
+
+### Duplicate and reinforcement rule
+
+Compare the front and direct-answer fields independently. Normalize each to Unicode
+NFKC, case-fold, remove HTML/Markdown markup and non-alphanumeric punctuation, and
+collapse whitespace. Exact normalized equality is a hard duplicate. Otherwise,
+token-set Jaccard similarity at or above `0.80` is a faculty-review quarantine. The
+same threshold applies independently to fronts and answers. A duplicate may proceed
+only when `reinforces` points to the exact live approved card being deliberately
+reinforced and the relationship remains inside the card approval hash; unrelated or
+self-referential links do not waive the finding.
 
 The back does not repeat the full stem or show an undifferentiated wall of every
 distractor explanation.
@@ -455,18 +527,30 @@ Attested eligible qbank ------+--> canonical card specification
 Six-week sequencing ----------+           +--> schema + quality validation
                                           +--> source/hash reconciliation
                                           +--> governance review
-                                                     |
-                           +-------------------------+--------------------+
-                           |                                              |
-                        eligible                                      quarantined
-                           |                                              |
-                    build candidates                            faculty report only
-                           |
-                    inspect real packages
-                           |
-                    stage explicit allowlist
-                           |
-                    site/download smoke tests
+                                                |
+                           +--------------------+--------------------+
+                           |                                         |
+                        eligible                                 quarantined
+                           |                                         |
+                    active candidates                  +-------------+-------------+
+                           |                            |                           |
+                           |                  new/unreviewed/unshipped     accepted + shipped +
+                           |                            |                  exact withdrawal review
+                           |                   exclude/report/block                |
+                           |                                                neutral withdrawal
+                           +-------------------------------------------------------+
+                                                    |
+                                             build candidates
+                                                    |
+                                             inspect + migrate
+                                                    |
+                                             review history append
+                                                    |
+                                             rebuild + gates 1-8
+                                                    |
+                                             atomic stage (gate 9)
+                                                    |
+                                             site/receipt gates 10-11
 ```
 
 Workflow steps:
@@ -487,10 +571,13 @@ Workflow steps:
     environment.
 11. Inspect the SQLite collection inside each `.apkg` and run a two-release import
     migration fixture through the pinned supported Anki importer.
-12. Stage only the explicit production allowlist after every release gate passes.
-13. Run MS3 and resident build/download smoke checks.
-14. Publish a release receipt alongside the learner downloads and append the shipped
-    identities to release history without mutating prior entries.
+12. Generate, review, and apply the append-only identity/release-history proposal.
+13. Rebuild in release mode, recompute the governed-input digest, re-inspect/migrate,
+    and require exact canonical package/history agreement.
+14. Require release gates 1-8 to pass, then stage only the explicit production
+    allowlist atomically as gate 9.
+15. Run MS3 and resident build/download smoke checks and receipt verification as gates
+    10-11, then publish only when all eleven pass.
 
 ## Quarantine policy
 
@@ -515,6 +602,11 @@ Quarantine behavior:
 
 - A newly quarantined card that has never shipped appears in no learner package or
   CSV.
+- A withdrawal is not authorized mechanically. The named accepted quarantine or
+  retirement decision must include disposition `withdraw`, reason, affected release,
+  reviewer/date, frozen withdrawal-template version, and approval hash for the exact
+  neutral rendered notice shown in the faculty clinic. Changing that render requires a
+  new review. The release membership stores that non-null approved render hash.
 - If a stable Core v2, Application, or qbank ID shipped previously, the next package
   includes a neutral withdrawal update under the same GUID. Its clinical front/back
   are replaced by a withdrawal notice, it is tagged `Status::withdrawn`, it is
@@ -541,9 +633,11 @@ Quarantine behavior:
 - Retired cards remain tombstones and never return through automatic extraction or
   re-attestation. A materially new replacement receives a new ID and may point to the
   retired ID with `supersedes`.
-- The initial accepted quarantine includes `qb_pha_002` until its stale mandatory-ANC
-  wording is corrected and re-attested; because it shipped previously, the candidate
-  qbank package must neutralize it with a withdrawal update. `qb_pha_011` is not
+- The initial quarantine proposal includes `qb_pha_002`; exclusion/withdrawal remains
+  blocked until a named faculty reviewer records an accepted disposition. Once
+  accepted, its stale mandatory-ANC wording remains excluded until corrected and
+  re-attested; because it shipped previously, the candidate qbank package must
+  neutralize it with a withdrawal update. `qb_pha_011` is not
   quarantined because its current wording already reflects post-REMS monitoring per
   prescribing information.
 
@@ -598,13 +692,15 @@ recorded in the canonical card specification and governance fields.
 
 ### 2. Governance and provenance tests
 
-- Source path resolves through `site_manifest.json`.
-- Source slug is currently `reviewed` in `reviewed.json`.
+- Source path resolves through `13_Faculty_Resources/_automation/site_build/site_manifest.json`.
+- Source slug is currently `reviewed` in `13_Faculty_Resources/reviewed.json`.
 - Source anchor resolves, the normalized source passage occurs exactly once within it,
   and its hash matches.
 - Application item is attested, non-retired, structurally valid, and hash-matched.
 - Recomputed rendered-card hashes match the exact faculty-approved hashes; changing
   any governed input without reapproval fails.
+- Changing `reinforces`, `supersedes`, or any sequence-review field without
+  reapproval changes the approval hash and fails.
 - Every active base and Tier 2 full-qbank note matches its render-approval registry.
 - High-risk cards carry the required evidence source/version, reviewed repo record,
   evidence hash, named reviewer, review date, and unexpired due date.
@@ -630,6 +726,9 @@ recorded in the canonical card specification and governance fields.
   determine legal disposition, or titrate beyond the approved student role.
 - Exact and near-duplicate fronts/answers fail unless `reinforces` documents the
   deliberate relationship.
+- Front and answer duplicate tests independently cover normalized exact equality,
+  Jaccard values immediately below and at `0.80`, and valid/invalid `reinforces`
+  links.
 - Application cards do not expose choices on the front.
 - Named traps are present only when grounded in the attested qbank item.
 - Every Application card maps to related Core work and carries the Week tag used by
@@ -673,6 +772,15 @@ Open each generated `.apkg` and verify:
   without resetting learner scheduling;
 - combined package equals the union of its approved standalone decks;
 - release receipt fingerprints match the packaged note content.
+- the actual packaged model/deck/ordered-field/template/qfmt/afmt/CSS projection
+  recomputes to `render.templateContractSha256` and the approved-card payload;
+- independently tampering in SQLite with a model/deck name, field ID/name/order,
+  template ID/name/ordinal/qfmt/afmt, or CSS changes the contract hash and package
+  fingerprint and invalidates the approval.
+- for the legacy qbank, absent field/template IDs recompute as explicit `null`
+  sentinels; adding an ID, changing any ordered field/template name or ordinal, or
+  changing qfmt/afmt/CSS invalidates its template-contract hash and qbank-render
+  approval without changing the frozen model to add IDs.
 
 ### 6. Site and download tests
 
@@ -699,8 +807,10 @@ A learner release proceeds only when all gates pass:
 1. **Specification gate:** every selected Core/Application card validates against the
    canonical schema and card contract; every active full-qbank note validates against
    the qbank schema and render-approval registry.
-2. **Clinical governance gate:** every exact rendered card has a matching card-context
-   approval hash; all required evidence and local-policy reviews are current.
+2. **Clinical governance gate:** every exact active rendered card has a matching
+   card-context approval hash, every withdrawal maintenance note has the matching
+   named withdrawal-review hash, and all required evidence/local-policy reviews are
+   current.
 3. **Quarantine gate:** there are no unreviewed new or changed quarantines.
 4. **Coverage gate:** v2 totals and every approved Week, Domain, task-bundle, and
    crosswalk cell pass.
@@ -714,8 +824,8 @@ A learner release proceeds only when all gates pass:
 9. **Staging gate:** only the explicit production allowlist is copied atomically.
 10. **Site gate:** MS3 and resident builds, download smoke checks, CSV labeling, and
    required withdrawal alerts pass.
-11. **Receipt gate:** staged package fingerprints, counts, source commit, inputs, and
-   quarantine summary match the release receipt.
+11. **Receipt gate:** staged package fingerprints, counts, governed-input digest,
+   inputs, and quarantine summary match the release receipt.
 
 The build fails closed. A failed deck build prevents a new site deployment, leaving
 the previously valid deployed site intact. It never publishes an older binary under a
@@ -777,8 +887,8 @@ standalone package without duplicate notes or alternate deck identities.
 - Move Anki generation inside the gated build and remove fail-soft fallback.
 - Repair explicit staging, CSV delivery, truthful documentation, and package receipts.
 - Freeze the exact legacy qbank identities and test a seeded legacy-package update.
-- Record the initial `qb_pha_002` quarantine, same-GUID withdrawal update, and site
-  alert.
+- Obtain and record the named `qb_pha_002` quarantine disposition, same-GUID
+  withdrawal update, and site alert.
 
 ### Milestone 2: Faculty-review pilot
 
@@ -803,11 +913,12 @@ standalone package without duplicate notes or alternate deck identities.
 
 ### Milestone 4: Learner release
 
-- Run every release gate on a clean candidate build.
-- Update the Anki learner page with accurate files, counts, workflow, migration
-  instructions, and provenance.
-- Publish Core, Application, Complete, full qbank, CSV, and release receipt.
-- Verify the live MS3 downloads and confirm the resident boundary.
+- Update, review, and re-attest the governed Anki learner page with accurate files,
+  counts, workflow, migration instructions, withdrawal alerts, and provenance.
+- Prepare/inspect/migrate the clean candidate, review/apply its history append, then
+  rebuild and pass release gates 1-8.
+- Atomically stage Core, Application, Complete, full qbank, CSV, and receipt as gate 9.
+- Pass live MS3/resident site and receipt gates 10-11 before publication is complete.
 
 ## Acceptance criteria
 
