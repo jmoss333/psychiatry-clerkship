@@ -53,13 +53,14 @@ from pcl_anki.contract import (
     LEGACY_QBANK_TEMPLATE_NAME,
     LEGACY_QBANK_TEMPLATE_ORDINAL,
     MigrationResult,
+    QuarantineResult,
     RenderedNote,
     Withdrawal,
-    WithdrawalDecisionProof,
     canonical_json_bytes,
     canonical_json_sha256,
     legacy_qbank_guid,
 )
+from pcl_anki.governance import revalidate_quarantine_result
 from pcl_anki.qbank import LEGACY_QBANK_AFMT, LEGACY_QBANK_CSS, LEGACY_QBANK_QFMT
 from pcl_anki.render import TEMPLATE_CONTRACT_SHA256
 
@@ -928,19 +929,56 @@ def propose_history_append(
         raise HistoryError("inspection receipt lacks stable package/CSV/receipt contracts")
 
     existing = {_identity_key(entry): entry for entry in current.identity_entries}
+    if any(not isinstance(value, Withdrawal) for value in candidate.withdrawals):
+        raise HistoryError(
+            "candidate withdrawals require the verified Withdrawal representation"
+        )
+    candidate_notes = (
+        *candidate.core_active,
+        *candidate.application_active,
+        *candidate.qbank_active,
+        *candidate.withdrawals,
+    )
+    candidate_keys = {
+        (note.namespace, note.uid, note.identity) for note in candidate_notes
+    }
+    latest_memberships: dict[tuple[object, ...], Mapping] = {}
+    for historical_release in current.releases:
+        for member in historical_release.get("memberships", ()):
+            latest_memberships[_identity_key(member)] = member
+    latest_active = {
+        key
+        for key, member in latest_memberships.items()
+        if member.get("status") == "active"
+    }
+    omitted_active = latest_active - candidate_keys
+    if omitted_active:
+        raise HistoryError(
+            "candidate omits latest-active shipped identity "
+            f"{sorted(omitted_active)[0]}"
+        )
+    reconciled = revalidate_quarantine_result(
+        candidate.quarantine,
+        release_history={"releases": current.releases},
+    )
+    if candidate.withdrawals and reconciled is None:
+        raise HistoryError(
+            "candidate withdrawal lacks exact governed reconciliation inputs"
+        )
+    proofs = reconciled.withdrawal_proofs if reconciled is not None else ()
     proof_by_key = {
         (
             proof.finding.namespace,
             proof.finding.uid,
             proof.finding.identity,
         ): proof
-        for proof in candidate.quarantine.withdrawal_proofs
+        for proof in proofs
     }
-    if len(proof_by_key) != len(candidate.quarantine.withdrawal_proofs):
+    if len(proof_by_key) != len(proofs):
         raise HistoryError("candidate contains ambiguous duplicate withdrawal proofs")
     canonical_withdrawals = {
         (value.namespace, value.uid, value.identity): value
-        for value in build_withdrawals(current, candidate.quarantine.withdrawal_proofs)
+        for value in build_withdrawals(current, candidate.quarantine)
     }
     candidate_withdrawal_keys = {
         (note.namespace, note.uid, note.identity) for note in candidate.withdrawals
@@ -954,7 +992,7 @@ def propose_history_append(
         raise HistoryError(
             "candidate withdrawals do not equal the canonical neutral withdrawal proof set"
         )
-    accepted_findings = set(candidate.quarantine.accepted)
+    accepted_findings = set(reconciled.accepted if reconciled is not None else ())
     for note in candidate.withdrawals:
         key = (note.namespace, note.uid, note.identity)
         proof = proof_by_key.get(key)
@@ -963,18 +1001,13 @@ def propose_history_append(
             raise HistoryError(
                 f"candidate lacks corresponding accepted withdrawal proof {key}"
             )
-        if not _rendered_withdrawal_matches(note, canonical):
+        if note != canonical:
             raise HistoryError(
                 f"candidate does not match canonical neutral withdrawal {key}"
             )
     notes = tuple(
         sorted(
-            (
-                *candidate.core_active,
-                *candidate.application_active,
-                *candidate.qbank_active,
-                *candidate.withdrawals,
-            ),
+            candidate_notes,
             key=lambda note: (note.namespace, note.uid, note.identity),
         )
     )
@@ -1075,10 +1108,14 @@ def propose_history_append(
                 prior_release, prior_member = prior_state
                 if prior_member.get("withdrawalDisposition") == "retired":
                     raise HistoryError(f"retired identity cannot reactivate {key}")
+                if reconciled is None:
+                    raise HistoryError(
+                        "candidate reactivation lacks exact governed reconciliation inputs"
+                    )
                 resolved = next(
                     (
                         proof
-                        for proof in candidate.quarantine.resolved_withdrawal_proofs
+                        for proof in reconciled.resolved_withdrawal_proofs
                         if (
                             proof.finding.namespace,
                             proof.finding.uid,
@@ -1087,6 +1124,30 @@ def propose_history_append(
                         == key
                         and proof.decision_sha256
                         == prior_member.get("governanceDecisionSha256")
+                        and proof.disposition == "withdraw"
+                        and any(
+                            resolved_finding.namespace == proof.finding.namespace
+                            and resolved_finding.uid == proof.finding.uid
+                            and resolved_finding.identity == proof.finding.identity
+                            and resolved_finding.reason_code
+                            == proof.finding.reason_code
+                            and resolved_finding.subject_sha256
+                            == proof.finding.subject_sha256
+                            and resolved_finding.source_path
+                            == proof.finding.source_path
+                            and resolved_finding.first_seen_commit
+                            == proof.finding.first_seen_commit
+                            for resolved_finding in reconciled.resolved
+                        )
+                        and not any(
+                            detected.namespace == proof.finding.namespace
+                            and detected.uid == proof.finding.uid
+                            and detected.identity == proof.finding.identity
+                            and detected.reason_code == proof.finding.reason_code
+                            and detected.subject_sha256
+                            == proof.finding.subject_sha256
+                            for detected in reconciled.detected_snapshot
+                        )
                     ),
                     None,
                 )
@@ -1210,26 +1271,6 @@ def withdrawal_render_sha256(withdrawal: Withdrawal) -> str:
     return canonical_json_sha256(_withdrawal_payload(withdrawal))
 
 
-def _rendered_withdrawal_matches(note: RenderedNote, value: Withdrawal) -> bool:
-    """Compare every package-relevant field with the canonical neutral update."""
-
-    return (
-        note.namespace == value.namespace
-        and note.uid == value.uid
-        and note.identity == value.identity
-        and note.guid == value.guid
-        and note.deck_id == value.deck_id
-        and note.model_id == value.model_id
-        and note.template_ordinal == value.template_ordinal
-        and note.fields == value.fields
-        and note.tags == value.tags
-        and note.template_contract_sha256 == value.template_contract_sha256
-        and note.render_sha256 == value.render_sha256
-        and note.active is value.active
-        and note.withdrawn is value.withdrawn
-    )
-
-
 def _preview(entry: Mapping, decision: Mapping, affected_release_id: str) -> Withdrawal:
     model_id = entry["model"]["id"]
     template_hash_key = {
@@ -1308,7 +1349,7 @@ def _named(value: object) -> bool:
 
 
 def _reviewed_withdrawal(decision: Mapping, preview: Withdrawal) -> bool:
-    if decision.get("disposition") != "withdraw":
+    if decision.get("disposition") not in {"withdraw", "retire"}:
         return False
     if not all(
         _named(decision.get(name))
@@ -1327,13 +1368,17 @@ def _reviewed_withdrawal(decision: Mapping, preview: Withdrawal) -> bool:
 
 
 def build_withdrawals(
-    history: HistoryRegistry, decisions: Sequence[WithdrawalDecisionProof]
+    history: HistoryRegistry, decisions: QuarantineResult
 ) -> tuple[Withdrawal, ...]:
-    """Build only exact neutral updates proven by Task-5 reconciliation."""
+    """Re-run Task 5 and build only exact neutral updates from governed inputs."""
 
-    proofs = tuple(
-        proof for proof in decisions if isinstance(proof, WithdrawalDecisionProof)
+    reconciled = revalidate_quarantine_result(
+        decisions,
+        release_history={"releases": history.releases},
     )
+    if reconciled is None:
+        return ()
+    proofs = reconciled.withdrawal_proofs
     proof_keys = tuple(
         (proof.finding.namespace, proof.finding.uid, proof.finding.identity)
         for proof in proofs

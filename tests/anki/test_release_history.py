@@ -514,13 +514,13 @@ def test_history_proposal_refuses_any_upstream_hard_issue(source):
         propose_history_append(inspection, migration, candidate, HistoryRegistry((), ()))
 
 
-def test_history_proposal_refuses_a_withdrawal_without_prior_shipped_identity():
+def test_history_proposal_refuses_unverified_withdrawal_representation():
     inspection, migration, candidate = _proposal_inputs()
     withdrawal = replace(
         candidate.core_active[0], active=False, withdrawn=True, render_sha256="a" * 64
     )
     candidate = replace(candidate, core_active=(), withdrawals=(withdrawal,))
-    with pytest.raises(HistoryError, match="never-shipped withdrawal"):
+    with pytest.raises(HistoryError, match="verified Withdrawal representation"):
         propose_history_append(
             inspection, migration, candidate, HistoryRegistry((), ())
         )
@@ -564,17 +564,16 @@ def test_history_proposal_reconstructs_neutral_withdrawal_and_rejects_old_conten
         withdrawals=(old_clinical_content,),
     )
 
-    with pytest.raises(HistoryError, match="canonical neutral withdrawal"):
+    with pytest.raises(HistoryError, match="verified Withdrawal representation"):
         propose_history_append(inspection, migration, candidate, current)
 
 
-def test_history_proposal_records_task5_proof_and_allows_reviewed_correction():
+def _reviewed_withdrawal_setup():
     inspection, migration, candidate = _proposal_inputs()
     first = propose_history_append(
         inspection, migration, candidate, HistoryRegistry((), ())
     )
     current = HistoryRegistry(first.new_identity_entries, (first.release_record,))
-    entry = current.identity_entries[0]
     decision = {
         "namespace": "core",
         "uid": candidate.core_active[0].uid,
@@ -607,8 +606,8 @@ def test_history_proposal_records_task5_proof_and_allows_reviewed_correction():
         {"accepted": [decision]},
         release_history={"releases": current.releases},
     )
-    canonical = build_withdrawals(current, reconciled.withdrawal_proofs)[0]
-    note = RenderedNote(
+    canonical = build_withdrawals(current, reconciled)[0]
+    rendered = RenderedNote(
         namespace=canonical.namespace,
         uid=canonical.uid,
         identity=canonical.identity,
@@ -625,13 +624,235 @@ def test_history_proposal_records_task5_proof_and_allows_reviewed_correction():
         active=False,
         withdrawn=True,
     )
+    return (
+        inspection,
+        migration,
+        candidate,
+        current,
+        decision,
+        finding,
+        reconciled,
+        canonical,
+        rendered,
+    )
+
+
+def test_shipped_retire_requires_exact_neutral_overwrite_approval():
+    inspection, migration, candidate, current, decision, finding, _, _, _ = (
+        _reviewed_withdrawal_setup()
+    )
+    retirement = {
+        key: value
+        for key, value in decision.items()
+        if key
+        not in {
+            "affectedReleaseId",
+            "withdrawalTemplateVersion",
+            "approvedWithdrawalSha256",
+        }
+    }
+    retirement["disposition"] = "retire"
+
+    result = reconcile_quarantines(
+        (finding,),
+        {"accepted": [retirement]},
+        release_history={"releases": current.releases},
+    )
+
+    assert result.accepted == ()
+    assert result.changed == (finding,)
+    assert result.withdrawal_proofs == ()
+    omitted = replace(
+        candidate,
+        release_id="release-beta",
+        release_date=date(2026, 7, 16),
+        release_epoch=candidate.release_epoch + 1,
+        core_active=(),
+        quarantine=result,
+    )
+    with pytest.raises(HistoryError, match="latest-active shipped identity"):
+        propose_history_append(inspection, migration, omitted, current)
+
+
+def test_history_proposal_rejects_omitted_latest_active_shipped_identity():
+    inspection, migration, candidate, current, *_ = _reviewed_withdrawal_setup()
+    omitted = replace(
+        candidate,
+        release_id="release-beta",
+        release_date=date(2026, 7, 16),
+        release_epoch=candidate.release_epoch + 1,
+        core_active=(),
+    )
+
+    with pytest.raises(HistoryError, match="latest-active shipped identity"):
+        propose_history_append(inspection, migration, omitted, current)
+
+
+def test_exact_shipped_retirement_records_permanent_disposition():
+    (
+        inspection,
+        migration,
+        candidate,
+        current,
+        decision,
+        finding,
+        _,
+        _,
+        _,
+    ) = _reviewed_withdrawal_setup()
+    retirement = {**decision, "disposition": "retire"}
+    reconciled = reconcile_quarantines(
+        (finding,),
+        {"accepted": [retirement]},
+        release_history={"releases": current.releases},
+    )
+    canonical = build_withdrawals(current, reconciled)[0]
+    retired = replace(
+        candidate,
+        release_id="release-beta",
+        release_date=date(2026, 7, 16),
+        release_epoch=candidate.release_epoch + 1,
+        core_active=(),
+        withdrawals=(canonical,),
+        quarantine=reconciled,
+    )
+
+    append = propose_history_append(inspection, migration, retired, current)
+
+    assert append.release_record["memberships"][0]["withdrawalDisposition"] == "retired"
+
+
+def test_fabricated_nominal_proof_without_governed_inputs_cannot_withdraw():
+    (
+        inspection,
+        migration,
+        candidate,
+        current,
+        _,
+        finding,
+        reconciled,
+        canonical,
+        _,
+    ) = _reviewed_withdrawal_setup()
+    forged = replace(reconciled.withdrawal_proofs[0], decision_sha256="f" * 64)
+    fabricated = QuarantineResult(
+        new=(),
+        changed=(),
+        accepted=(finding,),
+        resolved=(),
+        withdrawal_proofs=(forged,),
+    )
+    candidate = replace(
+        candidate,
+        release_id="release-beta",
+        release_date=date(2026, 7, 16),
+        release_epoch=candidate.release_epoch + 1,
+        core_active=(),
+        withdrawals=(canonical,),
+        quarantine=fabricated,
+    )
+
+    with pytest.raises(HistoryError, match="governed reconciliation inputs"):
+        propose_history_append(inspection, migration, candidate, current)
+
+
+def test_current_proof_cannot_be_reused_as_forged_resolved_reactivation():
+    (
+        inspection,
+        migration,
+        candidate,
+        current,
+        _,
+        finding,
+        reconciled,
+        canonical,
+        _,
+    ) = _reviewed_withdrawal_setup()
     withdrawal_candidate = replace(
         candidate,
         release_id="release-beta",
         release_date=date(2026, 7, 16),
         release_epoch=candidate.release_epoch + 1,
         core_active=(),
-        withdrawals=(note,),
+        withdrawals=(canonical,),
+        quarantine=reconciled,
+    )
+    withdrawal_append = propose_history_append(
+        inspection, migration, withdrawal_candidate, current
+    )
+    withdrawn_history = HistoryRegistry(
+        current.identity_entries,
+        (*current.releases, withdrawal_append.release_record),
+    )
+    forged_resolved = QuarantineResult(
+        new=(),
+        changed=(),
+        accepted=(),
+        resolved=(finding,),
+        resolved_withdrawal_proofs=reconciled.withdrawal_proofs,
+    )
+    corrected = replace(
+        candidate,
+        release_id="release-gamma",
+        release_date=date(2026, 7, 17),
+        release_epoch=candidate.release_epoch + 2,
+        quarantine=forged_resolved,
+    )
+
+    with pytest.raises(HistoryError, match="governed reconciliation inputs"):
+        propose_history_append(inspection, migration, corrected, withdrawn_history)
+
+
+def test_withdrawal_rendered_note_cannot_hide_old_front_or_back_content():
+    (
+        inspection,
+        migration,
+        candidate,
+        current,
+        _,
+        _,
+        reconciled,
+        _,
+        rendered,
+    ) = _reviewed_withdrawal_setup()
+    old_preview = replace(
+        rendered,
+        front_html="OLD CLINICAL CONTENT",
+        back_html="OLD CLINICAL ANSWER",
+    )
+    candidate = replace(
+        candidate,
+        release_id="release-beta",
+        release_date=date(2026, 7, 16),
+        release_epoch=candidate.release_epoch + 1,
+        core_active=(),
+        withdrawals=(old_preview,),
+        quarantine=reconciled,
+    )
+
+    with pytest.raises(HistoryError, match="verified Withdrawal representation"):
+        propose_history_append(inspection, migration, candidate, current)
+
+
+def test_history_proposal_records_task5_proof_and_allows_reviewed_correction():
+    (
+        inspection,
+        migration,
+        candidate,
+        current,
+        decision,
+        _,
+        reconciled,
+        canonical,
+        _,
+    ) = _reviewed_withdrawal_setup()
+    withdrawal_candidate = replace(
+        candidate,
+        release_id="release-beta",
+        release_date=date(2026, 7, 16),
+        release_epoch=candidate.release_epoch + 1,
+        core_active=(),
+        withdrawals=(canonical,),
         quarantine=reconciled,
     )
     withdrawal_append = propose_history_append(
@@ -639,7 +860,10 @@ def test_history_proposal_records_task5_proof_and_allows_reviewed_correction():
     )
     member = withdrawal_append.release_record["memberships"][0]
     assert member["withdrawalDisposition"] == "quarantined"
-    assert member["governanceDecisionSha256"] == reconciled.withdrawal_proofs[0].decision_sha256
+    assert (
+        member["governanceDecisionSha256"]
+        == reconciled.withdrawal_proofs[0].decision_sha256
+    )
 
     withdrawn_history = HistoryRegistry(
         current.identity_entries,
@@ -662,7 +886,10 @@ def test_history_proposal_records_task5_proof_and_allows_reviewed_correction():
     )
     corrected_member = corrected_append.release_record["memberships"][0]
     assert corrected_member["reactivatesReleaseId"] == "release-beta"
-    assert corrected_member["reactivationDecisionSha256"] == member["governanceDecisionSha256"]
+    assert (
+        corrected_member["reactivationDecisionSha256"]
+        == member["governanceDecisionSha256"]
+    )
 
 
 def _git(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[str]:

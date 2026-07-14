@@ -949,6 +949,53 @@ def test_valid_withdrawal_requires_exact_current_neutral_render_hash():
     assert drift.changed == (finding,)
 
 
+def test_unshipped_retirement_remains_a_no_note_exclusion():
+    finding = make_finding(withdrawal_render_sha256=None)
+    retirement = ledger_entry(finding, disposition="retire")
+
+    result = reconcile_quarantines(
+        (finding,),
+        {"accepted": [retirement]},
+        release_history={"releases": []},
+    )
+
+    assert result.accepted == (finding,)
+    assert result.withdrawal_proofs == ()
+
+
+def test_shipped_retirement_mints_exact_neutral_overwrite_proof():
+    finding = make_finding()
+    retirement = ledger_entry(
+        finding,
+        disposition="retire",
+        affectedReleaseId="synthetic-release-n",
+        withdrawalTemplateVersion=WITHDRAWAL_TEMPLATE_VERSION,
+        approvedWithdrawalSha256=finding.withdrawal_render_sha256,
+    )
+    history = {
+        "releases": [
+            {
+                "releaseId": "synthetic-release-n",
+                "memberships": [
+                    {
+                        "namespace": finding.namespace,
+                        "uid": finding.uid,
+                        "identity": finding.identity,
+                    }
+                ],
+            }
+        ]
+    }
+
+    result = reconcile_quarantines(
+        (finding,), {"accepted": [retirement]}, release_history=history
+    )
+
+    assert result.accepted == (finding,)
+    assert len(result.withdrawal_proofs) == 1
+    assert result.withdrawal_proofs[0].disposition == "retire"
+
+
 def test_withdrawal_without_exact_historical_membership_is_blocked():
     finding = make_finding()
     decision = ledger_entry(

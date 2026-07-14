@@ -6,6 +6,7 @@ from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from datetime import date
 import html
+import json
 from pathlib import Path
 import re
 import subprocess
@@ -604,6 +605,45 @@ def _historical_membership(
     )
 
 
+def _history_is_available(release_history: object) -> bool:
+    return isinstance(release_history, Mapping) and isinstance(
+        release_history.get("releases"), Sequence
+    )
+
+
+def _identity_shipped(
+    release_history: object, finding: QuarantineFinding
+) -> bool:
+    if not _history_is_available(release_history):
+        return False
+    return any(
+        isinstance(release, Mapping)
+        and any(
+            isinstance(member, Mapping)
+            and member.get("namespace") == finding.namespace
+            and member.get("uid") == finding.uid
+            and member.get("identity") == finding.identity
+            for member in release.get("memberships", ())
+        )
+        for release in release_history.get("releases", ())
+    )
+
+
+def _exact_neutral_decision(
+    entry: Mapping, finding: QuarantineFinding, release_history: object
+) -> bool:
+    return (
+        _named(entry.get("affectedReleaseId"))
+        and _historical_membership(
+            release_history, entry.get("affectedReleaseId"), finding
+        )
+        and entry.get("withdrawalTemplateVersion") == WITHDRAWAL_TEMPLATE_VERSION
+        and finding.withdrawal_render_sha256 is not None
+        and entry.get("approvedWithdrawalSha256")
+        == finding.withdrawal_render_sha256
+    )
+
+
 def _valid_ledger_decision(
     entry: Mapping, finding: QuarantineFinding, release_history: object
 ) -> bool:
@@ -622,19 +662,14 @@ def _valid_ledger_decision(
     if _parse_date(entry.get("reviewedAt")) is None:
         return False
     disposition = entry.get("disposition")
-    if disposition in {"exclude", "retire"}:
+    if disposition == "exclude":
         return True
-    if disposition != "withdraw":
+    if disposition == "retire" and _history_is_available(release_history):
+        if not _identity_shipped(release_history, finding):
+            return True
+    if disposition not in {"withdraw", "retire"}:
         return False
-    return (
-        _named(entry.get("affectedReleaseId"))
-        and _historical_membership(
-            release_history, entry.get("affectedReleaseId"), finding
-        )
-        and entry.get("withdrawalTemplateVersion") == WITHDRAWAL_TEMPLATE_VERSION
-        and finding.withdrawal_render_sha256 is not None
-        and entry.get("approvedWithdrawalSha256") == finding.withdrawal_render_sha256
-    )
+    return _exact_neutral_decision(entry, finding, release_history)
 
 
 def _withdrawal_decision_proof(
@@ -1311,6 +1346,20 @@ def _ledger_finding(entry: Mapping) -> QuarantineFinding:
     )
 
 
+def _governed_ledger_json(entries: Sequence[Mapping]) -> str:
+    """Freeze the exact ledger rows used for reconciliation as canonical JSON."""
+
+    try:
+        return json.dumps(
+            {"accepted": [dict(entry) for entry in entries]},
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    except (TypeError, ValueError):
+        return ""
+
+
 def reconcile_quarantines(
     detected: Iterable[QuarantineFinding],
     ledger: object,
@@ -1399,7 +1448,32 @@ def reconcile_quarantines(
         resolved=tuple(resolved),
         withdrawal_proofs=tuple(withdrawal_proofs),
         resolved_withdrawal_proofs=resolved_withdrawal_proofs,
+        detected_snapshot=detected,
+        governed_ledger_json=_governed_ledger_json(entries),
     )
+
+
+def revalidate_quarantine_result(
+    result: QuarantineResult, *, release_history: object
+) -> QuarantineResult | None:
+    """Re-run Task 5 from its frozen inputs and reject altered transport outputs."""
+
+    if not isinstance(result, QuarantineResult) or not result.governed_ledger_json:
+        return None
+    try:
+        ledger = json.loads(result.governed_ledger_json)
+    except (TypeError, json.JSONDecodeError):
+        return None
+    if not isinstance(ledger, Mapping):
+        return None
+    if _governed_ledger_json(_ledger_entries(ledger)) != result.governed_ledger_json:
+        return None
+    fresh = reconcile_quarantines(
+        result.detected_snapshot,
+        ledger,
+        release_history=release_history,
+    )
+    return fresh if fresh == result else None
 
 
 def compute_core_coverage(cards: Iterable[Mapping]) -> Counter[tuple[int, str]]:

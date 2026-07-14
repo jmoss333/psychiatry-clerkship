@@ -178,7 +178,7 @@ def _decision(history: HistoryRegistry, entry: dict, **overrides) -> dict:
     return decision
 
 
-def _proof(history: HistoryRegistry, entry: dict):
+def _reconciliation(history: HistoryRegistry, entry: dict):
     decision = _decision(history, entry)
     finding = QuarantineFinding(
         namespace=entry["namespace"],
@@ -197,7 +197,7 @@ def _proof(history: HistoryRegistry, entry: dict):
     )
     assert result.accepted == (finding,)
     assert len(result.withdrawal_proofs) == 1
-    return result.withdrawal_proofs[0]
+    return result
 
 
 def _all_entries() -> tuple[dict, ...]:
@@ -277,7 +277,7 @@ def test_unshipped_quarantine_or_retired_tombstone_emits_no_note():
 def test_shipped_core_application_qbank_base_and_tier2_keep_original_identity(index):
     entry = _all_entries()[index]
     history = _history((entry,))
-    withdrawal = build_withdrawals(history, (_proof(history, entry),))[0]
+    withdrawal = build_withdrawals(history, _reconciliation(history, entry))[0]
 
     assert withdrawal.namespace == entry["namespace"]
     assert withdrawal.uid == entry["uid"]
@@ -336,9 +336,30 @@ def test_raw_ledger_decision_is_preview_only_even_when_exact():
 def test_multiple_withdrawal_proofs_for_one_identity_fail_closed():
     entry = _all_entries()[0]
     history = _history((entry,))
-    proof = _proof(history, entry)
+    result = _reconciliation(history, entry)
+    duplicated = replace(
+        result,
+        withdrawal_proofs=(
+            result.withdrawal_proofs[0],
+            result.withdrawal_proofs[0],
+        ),
+    )
 
-    assert build_withdrawals(history, (proof, proof)) == ()
+    assert build_withdrawals(history, duplicated) == ()
+
+
+def test_altered_transport_proof_is_rejected_when_recomputed_from_snapshot():
+    entry = _all_entries()[0]
+    history = _history((entry,))
+    result = _reconciliation(history, entry)
+    altered = replace(
+        result,
+        withdrawal_proofs=(
+            replace(result.withdrawal_proofs[0], review_owner="Forged Reviewer"),
+        ),
+    )
+
+    assert build_withdrawals(history, altered) == ()
 
 
 def test_task5_rejected_stale_raw_decision_cannot_become_task6_withdrawal():
@@ -393,7 +414,7 @@ def test_qb_pha_002_neutral_withdrawal_preserves_nine_fields_and_exact_guid():
         ),
     )
     withdrawal = build_withdrawals(
-        decision_history, (_proof(decision_history, entry),)
+        decision_history, _reconciliation(decision_history, entry)
     )[0]
 
     assert withdrawal.guid == "x9m9qM{_w7"
@@ -461,7 +482,7 @@ def test_identity_relationships_require_retired_different_superseded_target():
 def test_withdrawals_are_distinct_from_active_notes_and_csv_inputs():
     entry = _all_entries()[0]
     history = _history((entry,))
-    withdrawals = build_withdrawals(history, (_proof(history, entry),))
+    withdrawals = build_withdrawals(history, _reconciliation(history, entry))
     active_notes = tuple(note for note in withdrawals if note.active)
     csv_rows = tuple(note for note in withdrawals if note.active and note.namespace != "qbank")
     assert active_notes == ()

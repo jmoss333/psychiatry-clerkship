@@ -133,6 +133,8 @@ class QuarantineResult:
     resolved: tuple[QuarantineFinding, ...]
     withdrawal_proofs: tuple[WithdrawalDecisionProof, ...] = ()
     resolved_withdrawal_proofs: tuple[WithdrawalDecisionProof, ...] = ()
+    detected_snapshot: tuple[QuarantineFinding, ...] = ()
+    governed_ledger_json: str = ""
 
 
 @dataclass(frozen=True)
@@ -170,7 +172,7 @@ class CandidateRelease:
     core_active: tuple[RenderedNote, ...]
     application_active: tuple[RenderedNote, ...]
     qbank_active: tuple[RenderedNote, ...]
-    withdrawals: tuple[RenderedNote, ...]
+    withdrawals: tuple[Withdrawal, ...]
     quarantine: QuarantineResult
     coverage: Mapping[str, object]
     issues: tuple[Issue, ...]
