@@ -1,7 +1,9 @@
 from copy import deepcopy
+from datetime import date
 from hashlib import sha256
 import json
 from pathlib import Path
+import subprocess
 import sys
 from types import SimpleNamespace
 
@@ -24,11 +26,12 @@ def legacy_all_path() -> Path:
 
 
 @pytest.fixture
-def passing_release_factory():
+def passing_release_factory(tmp_path):
     """Expand compact, non-clinical templates into the exact release matrix."""
 
-    from pcl_anki.contract import canonical_json_sha256
-    from pcl_anki.qbank import qbank_item_sha256
+    from pcl_anki.contract import ManifestIndex, canonical_json_sha256
+    from pcl_anki.governance import detect_quarantines, reconcile_quarantines
+    from pcl_anki.qbank import qbank_item_sha256, resolve_primary_qbank_source
     from pcl_anki.render import (
         TEMPLATE_CONTRACTS,
         TEMPLATE_CONTRACT_SHA256,
@@ -43,6 +46,45 @@ def passing_release_factory():
     release_config = json.loads(
         (REPO_ROOT / "13_Faculty_Resources" / "anki" / "release_config.json").read_text()
     )
+    question_bank_schema = json.loads((REPO_ROOT / "question_bank.schema.json").read_text())
+
+    synthetic_repo = tmp_path / "synthetic-release-repo"
+    synthetic_dir = synthetic_repo / "synthetic"
+    synthetic_dir.mkdir(parents=True)
+    (synthetic_dir / "synthetic-source.md").write_text(
+        (fixture_dir / "synthetic-source.md").read_text(), encoding="utf-8"
+    )
+    (synthetic_dir / "week-map.md").write_text(
+        "# Synthetic Sequence\n\n## Week 1\n\n"
+        "[Condition Alpha](https://une-ms3-psychiatry.netlify.app/?page=synthetic-source.md)\n",
+        encoding="utf-8",
+    )
+    synthetic_registry = synthetic_repo / "13_Faculty_Resources" / "anki"
+    synthetic_registry.mkdir(parents=True)
+    synthetic_config = deepcopy(release_config)
+    synthetic_config.update(
+        primaryAuthorityPathPrefixes=["synthetic/"],
+        contextOnlyPathPrefixes=[],
+        sequencingOnlyPaths=[],
+        sequenceMapPath="synthetic/week-map.md",
+    )
+    (synthetic_registry / "release_config.json").write_text(
+        json.dumps(synthetic_config), encoding="utf-8"
+    )
+    manifest = ManifestIndex(
+        path_to_slug={"synthetic/synthetic-source.md": "synthetic-source.md"},
+        slug_to_path={"synthetic-source.md": "synthetic/synthetic-source.md"},
+        slug_to_title={"synthetic-source.md": "Synthetic Source"},
+    )
+    reviewed = {
+        "items": {
+            "synthetic-source.md": {"status": "reviewed", "at": "2026-07-01"},
+            "synthetic/synthetic-source.md": {
+                "status": "reviewed",
+                "at": "2026-07-01",
+            },
+        }
+    }
 
     core_families = (
         "Discriminator",
@@ -89,6 +131,20 @@ def passing_release_factory():
 
     def factory():
         qbank_item = deepcopy(qbank_template)
+        question_bank = {
+            "_note": "Synthetic nonclinical qbank root",
+            "version": 1,
+            "items": [qbank_item],
+        }
+        source_inputs = SimpleNamespace(
+            repo_root=synthetic_repo,
+            manifest=manifest,
+            reviewed=reviewed,
+            surveillance={"slugs": []},
+        )
+        source_resolution = resolve_primary_qbank_source(
+            qbank_item, "synthetic-source.md", "condition-alpha", source_inputs
+        )
         core_cards = []
         sequence = 0
         for cell, count in release_config["coverage"]["core"].items():
@@ -143,7 +199,15 @@ def passing_release_factory():
                     "primaryAnchor": "condition-alpha",
                     "approvedItemSha256": qbank_item_sha256(qbank_item),
                     "primaryTrap": "Synthetic trap beta",
-                    "sourceAnchorSha256": "d" * 64,
+                    "sourceAnchorSha256": source_resolution.section_sha256,
+                }
+                card["source"] = {
+                    "path": source_resolution.path,
+                    "slug": source_resolution.slug,
+                    "anchor": source_resolution.anchor,
+                    "url": source_resolution.url,
+                    "quote": source_resolution.quote,
+                    "quoteSha256": source_resolution.quote_sha256,
                 }
                 approve_card(card, qbank_item)
                 application_cards.append(card)
@@ -157,9 +221,8 @@ def passing_release_factory():
             family="WordsToSay",
             state="quarantined",
         )
-        quarantine_note = approve_card(quarantine_card)
-        accepted_quarantine = deepcopy(records_template["acceptedQuarantine"])
-        accepted_quarantine["subjectSha256"] = quarantine_note.render_sha256
+        quarantine_card["front"] = core_cards[0]["front"]
+        approve_card(quarantine_card)
 
         qbank_note = build_qbank_notes(qbank_item)[0]
         qbank_review = {
@@ -168,7 +231,7 @@ def passing_release_factory():
             "primaryPage": "synthetic-source.md",
             "primaryAnchor": "condition-alpha",
             "approvedItemSha256": qbank_item_sha256(qbank_item),
-            "sourceAnchorSha256": "d" * 64,
+            "sourceAnchorSha256": source_resolution.section_sha256,
             "templateVersion": TEMPLATE_CONTRACTS["legacyQbank"]["templateVersion"],
             "templateContractSha256": TEMPLATE_CONTRACT_SHA256["legacyQbank"],
             "renderedNoteSha256": qbank_note.render_sha256,
@@ -179,19 +242,91 @@ def passing_release_factory():
         }
 
         cards = tuple([*core_cards, *application_cards, quarantine_card])
-        inputs = SimpleNamespace(
+        (synthetic_registry / "cards.json").write_text(
+            json.dumps({"schemaVersion": 1, "cards": list(cards)}, indent=2),
+            encoding="utf-8",
+        )
+        (synthetic_repo / "question_bank.json").write_text(
+            json.dumps(question_bank, indent=2), encoding="utf-8"
+        )
+        if not (synthetic_repo / ".git").exists():
+            subprocess.run(["git", "init", "-q"], cwd=synthetic_repo, check=True)
+        subprocess.run(["git", "add", "."], cwd=synthetic_repo, check=True)
+        staged = subprocess.run(
+            ["git", "diff", "--cached", "--quiet"], cwd=synthetic_repo
+        )
+        if staged.returncode == 1:
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Synthetic Fixture",
+                    "-c",
+                    "user.email=fixture@example.invalid",
+                    "commit",
+                    "-qm",
+                    "synthetic canonical registries",
+                ],
+                cwd=synthetic_repo,
+                check=True,
+            )
+        elif staged.returncode != 0:
+            raise RuntimeError("could not inspect synthetic canonical registries")
+        provisional_inputs = SimpleNamespace(
             mode="authoring",
-            repo_root=REPO_ROOT,
+            repo_root=synthetic_repo,
             cards=cards,
-            qbank_items=(qbank_item,),
+            question_bank=question_bank,
+            question_bank_schema=question_bank_schema,
+            manifest=manifest,
             qbank_reviews=(qbank_review,),
-            quarantine=(accepted_quarantine,),
+            quarantine=(),
             release_history=deepcopy(records_template["history"]),
-            release_config=deepcopy(release_config),
-            reviewed=deepcopy(records_template["reviewed"]),
+            release_config=deepcopy(synthetic_config),
+            reviewed=deepcopy(reviewed),
+            surveillance={"slugs": []},
             evidence_records=deepcopy(records_template["evidenceRecords"]),
             policy_records=deepcopy(records_template["policyRecords"]),
-            first_seen_commit="ad7dd2851f4621a4177cd4ce34438af3751620d6",
+        )
+        detection_quarantine_card = deepcopy(quarantine_card)
+        detection_quarantine_card["state"] = "approved"
+        approve_card(detection_quarantine_card)
+        detection_cards = (core_cards[0], detection_quarantine_card)
+        rendered_notes = tuple(
+            render_card(
+                card,
+                qbank_item=qbank_item if card.get("kind") == "application" else None,
+            )
+            for card in detection_cards
+        )
+        detection_inputs = SimpleNamespace(
+            **{**vars(provisional_inputs), "cards": detection_cards}
+        )
+        detected_quarantines = detect_quarantines(
+            detection_inputs, rendered_notes, date(2026, 7, 14)
+        )
+        quarantine_finding = next(
+            finding
+            for finding in detected_quarantines
+            if finding.uid == quarantine_card["id"]
+        )
+        accepted_quarantine = deepcopy(records_template["acceptedQuarantine"])
+        accepted_quarantine.update(
+            reasonCode=quarantine_finding.reason_code,
+            subjectSha256=quarantine_finding.subject_sha256,
+            sourcePath=quarantine_finding.source_path,
+            firstSeenCommit=quarantine_finding.first_seen_commit,
+        )
+        inputs = SimpleNamespace(
+            **{
+                **vars(provisional_inputs),
+                "quarantine": (accepted_quarantine,),
+                "detected_quarantines": detected_quarantines,
+            }
+        )
+        quarantine_result = reconcile_quarantines(
+            detected_quarantines,
+            inputs.quarantine,
         )
         return SimpleNamespace(
             core_cards=core_cards,
@@ -201,6 +336,9 @@ def passing_release_factory():
             qbank_item=qbank_item,
             qbank_review=qbank_review,
             quarantine=accepted_quarantine,
+            detected_quarantines=detected_quarantines,
+            quarantine_result=quarantine_result,
+            source_resolution=source_resolution,
             contract=deepcopy(release_config["coverage"]),
             config=deepcopy(release_config),
             records=deepcopy(records_template),

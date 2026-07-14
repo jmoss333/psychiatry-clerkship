@@ -59,7 +59,13 @@ def test_passing_fixture_is_exact_36_plus_36_cells_and_144_plus_48_totals(
     assert len(application) <= 36  # zero-valued exact cells remain explicit in the contract.
     assert sum(core.values()) == 144
     assert sum(application.values()) == 48
-    assert validate_release_coverage(bundle.cards, bundle.contract) == []
+    assert validate_release_coverage(
+        bundle.cards,
+        bundle.contract,
+        detected_quarantines=bundle.detected_quarantines,
+        quarantine=bundle.inputs.quarantine,
+        release_history=bundle.inputs.release_history,
+    ) == []
 
 
 @pytest.mark.parametrize("namespace", ["core", "application"])
@@ -121,8 +127,22 @@ def test_accepted_quarantine_is_excluded_and_exact_coverage_still_holds(
 
     assert bundle.quarantine_card["state"] == "quarantined"
     assert bundle.quarantine["uid"] == bundle.quarantine_card["id"]
-    assert validate_release_coverage(bundle.cards, bundle.contract) == []
+    assert validate_release_coverage(
+        bundle.cards,
+        bundle.contract,
+        detected_quarantines=bundle.detected_quarantines,
+        quarantine=bundle.inputs.quarantine,
+        release_history=bundle.inputs.release_history,
+    ) == []
     assert sum(compute_core_coverage(bundle.cards).values()) == 144
+
+
+def test_coverage_cannot_bypass_quarantine_reconciliation(passing_release_factory):
+    bundle = passing_release_factory()
+
+    issues = validate_release_coverage(bundle.cards, bundle.contract)
+
+    assert "QUARANTINE_RECONCILIATION_REQUIRED" in codes(issues)
 
 
 def test_accepted_quarantine_cannot_break_even_one_quota_cell(passing_release_factory):
@@ -203,6 +223,8 @@ def test_every_core_family_and_task_must_appear(passing_release_factory, kind):
         "You should independently restrain the invented subject.",
         "The student must determine legal disposition.",
         "You can titrate the invented token.",
+        "You, as the student, should prescribe the invented token.",
+        "<b>You</b> may discharge the invented subject.",
     ],
 )
 def test_direct_answer_rejects_independent_ms3_actions(
@@ -236,6 +258,19 @@ def test_role_safety_minimal_pairs_allow_recognition_notification_and_negation(
     issues = validate_release_coverage(bundle.cards, bundle.contract)
 
     assert "ROLE_SAFETY_UNSAFE_INDEPENDENT_ACTION" not in codes(issues)
+
+
+def test_negated_supervision_language_does_not_satisfy_required_caveat(
+    passing_release_factory,
+):
+    bundle = passing_release_factory()
+    card = bundle.core_cards[0]
+    card["family"] = "StudentAction"
+    card["caveat"] = "Do not notify the attending."
+
+    issues = validate_release_coverage(bundle.cards, bundle.contract)
+
+    assert "ROLE_SAFETY_CAVEAT_REQUIRED" in codes(issues)
 
 
 @pytest.mark.parametrize(

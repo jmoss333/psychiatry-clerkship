@@ -21,13 +21,20 @@ from pcl_anki.contract import (
     RenderedNote,
     canonical_json_sha256,
 )
-from pcl_anki.qbank import qbank_item_sha256
+from pcl_anki.qbank import (
+    QbankValidationError,
+    eligible_qbank_items,
+    qbank_item_sha256,
+    resolve_primary_qbank_source,
+    validate_application_qbank,
+)
 from pcl_anki.render import (
     TEMPLATE_CONTRACTS,
     TEMPLATE_CONTRACT_SHA256,
     build_qbank_notes,
     render_card,
 )
+from pcl_anki.sources import SourceResolutionError
 
 
 WITHDRAWAL_TEMPLATE_VERSION = "pcl-neutral-withdrawal-v1"
@@ -75,14 +82,10 @@ CORE_TASKS = frozenset(
 ROLE_CAVEAT_FAMILIES = frozenset(
     {"StudentAction", "Escalation", "Monitor", "Disposition"}
 )
-_SUPERVISION_RE = re.compile(
-    r"\b(?:supervis\w*|attending|resident|clinical\s+team|teaching\s+team|"
-    r"escalat\w*|notif(?:y|ies|ied)|consult\w*)\b",
-    re.IGNORECASE,
-)
 _UNSAFE_ACTION_RE = re.compile(
-    r"\b(?:the\s+student|you)\s+(?:should|must|can)\s+"
-    r"(?!not\b|never\b|avoid\b)(?:independently\s+)?"
+    r"\b(?:the\s+student|you(?:\s+as\s+the\s+student)?)\s+"
+    r"(?:should|must|can|may)\s+"
+    r"(?!not\b|never\b|avoid\b|do\s+not\b)(?:independently\s+)?"
     r"(?:prescribe|discharge|medically\s+clear|restrain|"
     r"determine\s+(?:the\s+)?legal\s+disposition|titrate)\b",
     re.IGNORECASE,
@@ -311,11 +314,59 @@ def _risk_review_issues(
     return issues
 
 
-def _find_qbank_item(inputs: object, item_id: object) -> Mapping | None:
-    for item in _input(inputs, "qbank_items", ()):
-        if isinstance(item, Mapping) and item.get("id") == item_id:
-            return item
-    return None
+def _canonical_qbank_item(
+    inputs: object, item_id: object, *, namespace: str
+) -> tuple[Mapping | None, list[Issue]]:
+    """Select only the canonical current eligible qbank item."""
+
+    subject = str(item_id or "<missing-id>")
+    prefix = "QBANK" if namespace == "QBANK" else f"{namespace}_QBANK"
+    question_bank = _input(inputs, "question_bank", None)
+    schema = _input(inputs, "question_bank_schema", None)
+    manifest = _input(inputs, "manifest", None)
+    if not isinstance(question_bank, Mapping) or not isinstance(schema, Mapping) or manifest is None:
+        return None, [
+            _issue(
+                f"{prefix}_INPUT_REQUIRED",
+                subject,
+                "canonical question bank, schema, and manifest are required",
+            )
+        ]
+
+    raw_items = question_bank.get("items", ())
+    if not isinstance(raw_items, Sequence) or isinstance(raw_items, (str, bytes)):
+        raw_items = ()
+    canonical = next(
+        (
+            item
+            for item in raw_items
+            if isinstance(item, Mapping) and item.get("id") == item_id
+        ),
+        None,
+    )
+    try:
+        eligible = eligible_qbank_items(question_bank, schema, manifest)
+    except (QbankValidationError, ValueError) as error:
+        validation_issues = list(getattr(error, "issues", ()))
+        if not validation_issues:
+            validation_issues = [
+                _issue(
+                    f"{prefix}_INVALID",
+                    subject,
+                    str(error),
+                )
+            ]
+        return canonical, validation_issues
+    selected = next((item for item in eligible if item.get("id") == item_id), None)
+    if selected is None:
+        return canonical, [
+            _issue(
+                f"{prefix}_NOT_ELIGIBLE",
+                subject,
+                "the canonical item must be attested, current, and non-retired",
+            )
+        ]
+    return selected, []
 
 
 def _live_core_target(card: Mapping, cards: Iterable[Mapping]) -> Mapping | None:
@@ -373,7 +424,7 @@ def validate_role_safety(cards: Iterable[Mapping]) -> list[Issue]:
         if not isinstance(card, Mapping) or card.get("state") != "approved":
             continue
         subject = str(card.get("id", "<missing-id>"))
-        answer = str(card.get("answer", ""))
+        answer = _normalize_duplicate_text(card.get("answer", ""))
         if _UNSAFE_ACTION_RE.search(answer):
             issues.append(
                 _issue(
@@ -389,7 +440,9 @@ def validate_role_safety(cards: Iterable[Mapping]) -> list[Issue]:
             or risk.get("level") == "High"
             or bool(facets & {"Legal", "Regulatory"})
         )
-        if caveat_required and not _SUPERVISION_RE.search(str(card.get("caveat", ""))):
+        if caveat_required and not _affirmative_supervision_caveat(
+            card.get("caveat", "")
+        ):
             issues.append(
                 _issue(
                     "ROLE_SAFETY_CAVEAT_REQUIRED",
@@ -398,6 +451,32 @@ def validate_role_safety(cards: Iterable[Mapping]) -> list[Issue]:
                 )
             )
     return issues
+
+
+_AFFIRMATIVE_SUPERVISION_RE = re.compile(
+    r"\b(?:"
+    r"notif(?:y|ies|ied)\s+(?:the\s+)?(?:attending|resident|supervisor|clinical\s+team|teaching\s+team|team)"
+    r"|escalat\w*(?:\s+to)?\s+(?:the\s+)?(?:attending|resident|supervisor|clinical\s+team|teaching\s+team|team)"
+    r"|consult\w*(?:\s+with)?\s+(?:the\s+)?(?:attending|resident|supervisor|clinical\s+team|teaching\s+team|team)"
+    r"|review\s+with\s+(?:the\s+)?(?:attending|resident|supervisor|clinical\s+team|teaching\s+team|team)"
+    r"|(?:under|with)\s+(?:\w+\s+){0,2}supervision"
+    r"|supervising\s+(?:clinician|physician|attending|resident|team)"
+    r")\b"
+)
+
+
+def _affirmative_supervision_caveat(value: object) -> bool:
+    """Require affirmative supervision language, not a negated mention."""
+
+    visible = html.unescape(str(value))
+    visible = re.sub(r"<[^>]+>", " ", visible)
+    for raw_clause in re.split(r"[.;!?]+", visible):
+        clause = _normalize_duplicate_text(raw_clause)
+        for match in _AFFIRMATIVE_SUPERVISION_RE.finditer(clause):
+            prefix_tokens = clause[: match.start()].split()[-3:]
+            if not ({"not", "never", "without", "dont"} & set(prefix_tokens)):
+                return True
+    return False
 
 
 def _ledger_entries(ledger: object) -> tuple[Mapping, ...]:
@@ -419,7 +498,37 @@ def _decision_key(value: Mapping | QuarantineFinding) -> tuple[object, ...]:
     )
 
 
-def _valid_ledger_decision(entry: Mapping, finding: QuarantineFinding) -> bool:
+def _historical_membership(
+    release_history: object, release_id: object, finding: QuarantineFinding
+) -> bool:
+    if not isinstance(release_history, Mapping) or not _named(release_id):
+        return False
+    releases = release_history.get("releases", ())
+    if not isinstance(releases, Sequence) or isinstance(releases, (str, bytes)):
+        return False
+    release = next(
+        (
+            value
+            for value in releases
+            if isinstance(value, Mapping) and value.get("releaseId") == release_id
+        ),
+        None,
+    )
+    if not isinstance(release, Mapping):
+        return False
+    memberships = release.get("memberships", ())
+    return isinstance(memberships, Sequence) and any(
+        isinstance(member, Mapping)
+        and member.get("namespace") == finding.namespace
+        and member.get("uid") == finding.uid
+        and member.get("identity") == finding.identity
+        for member in memberships
+    )
+
+
+def _valid_ledger_decision(
+    entry: Mapping, finding: QuarantineFinding, release_history: object
+) -> bool:
     if entry.get("subjectSha256") != finding.subject_sha256:
         return False
     if (
@@ -441,25 +550,13 @@ def _valid_ledger_decision(entry: Mapping, finding: QuarantineFinding) -> bool:
         return False
     return (
         _named(entry.get("affectedReleaseId"))
+        and _historical_membership(
+            release_history, entry.get("affectedReleaseId"), finding
+        )
         and entry.get("withdrawalTemplateVersion") == WITHDRAWAL_TEMPLATE_VERSION
         and finding.withdrawal_render_sha256 is not None
         and entry.get("approvedWithdrawalSha256") == finding.withdrawal_render_sha256
     )
-
-
-def _accepted_quarantine(note: RenderedNote, inputs: object) -> bool:
-    for entry in _ledger_entries(_input(inputs, "quarantine", ())):
-        if (
-            entry.get("namespace") == note.namespace
-            and entry.get("uid") == note.uid
-            and entry.get("identity") == note.identity
-            and entry.get("subjectSha256") == note.render_sha256
-            and entry.get("disposition") in {"exclude", "retire", "withdraw"}
-            and _named(entry.get("reviewedBy"))
-            and _parse_date(entry.get("reviewedAt")) is not None
-        ):
-            return True
-    return False
 
 
 def evaluate_card(card: Mapping, inputs: object, candidate_date: date) -> CardDecision:
@@ -471,8 +568,11 @@ def evaluate_card(card: Mapping, inputs: object, candidate_date: date) -> CardDe
     qbank_item = None
     if namespace == "application":
         qbank = card.get("qbank") if isinstance(card.get("qbank"), Mapping) else {}
-        qbank_item = _find_qbank_item(inputs, qbank.get("id"))
-        if qbank_item is None:
+        canonical_item, eligibility_issues = _canonical_qbank_item(
+            inputs, qbank.get("id"), namespace="APPLICATION"
+        )
+        issues.extend(eligibility_issues)
+        if canonical_item is None:
             issues.append(
                 _issue(
                     "APPLICATION_QBANK_ITEM_REQUIRED",
@@ -480,9 +580,31 @@ def evaluate_card(card: Mapping, inputs: object, candidate_date: date) -> CardDe
                     "Application rendering requires the exact canonical qbank item",
                 )
             )
+        else:
+            try:
+                source_resolution = resolve_primary_qbank_source(
+                    canonical_item,
+                    qbank.get("primaryPage"),
+                    qbank.get("primaryAnchor"),
+                    inputs,
+                )
+            except SourceResolutionError as error:
+                issues.append(_issue(error.code, error.subject, error.message))
+            except (TypeError, ValueError) as error:
+                issues.append(_issue("QBANK_SOURCE_INVALID", subject, str(error)))
+            else:
+                issues.extend(
+                    validate_application_qbank(card, canonical_item, source_resolution)
+                )
+        if not eligibility_issues:
+            qbank_item = canonical_item
 
     rendered = None
-    if not any(issue.code in {"APPLICATION_TASK_BUNDLE_REQUIRED", "APPLICATION_QBANK_ITEM_REQUIRED"} for issue in issues):
+    if not any(
+        issue.code in {"APPLICATION_TASK_BUNDLE_REQUIRED", "APPLICATION_QBANK_ITEM_REQUIRED"}
+        or issue.code.startswith("APPLICATION_QBANK_")
+        for issue in issues
+    ):
         try:
             rendered = render_card(card, qbank_item=qbank_item)
         except (KeyError, TypeError, ValueError) as error:
@@ -523,6 +645,27 @@ def evaluate_card(card: Mapping, inputs: object, candidate_date: date) -> CardDe
             )
 
     state = card.get("state")
+    detected = tuple(
+        finding
+        for finding in _input(inputs, "detected_quarantines", ())
+        if isinstance(finding, QuarantineFinding)
+    )
+    matching_findings = tuple(
+        finding
+        for finding in detected
+        if finding.namespace == namespace
+        and finding.uid == subject
+        and finding.identity == "base"
+    )
+    quarantine_result = reconcile_quarantines(
+        detected,
+        _input(inputs, "quarantine", ()),
+        release_history=_input(inputs, "release_history", None),
+    )
+    accepted_keys = {_decision_key(finding) for finding in quarantine_result.accepted}
+    matching_accepted = bool(matching_findings) and all(
+        _decision_key(finding) in accepted_keys for finding in matching_findings
+    )
     if state == "quarantined":
         issues.append(
             _issue(
@@ -532,7 +675,7 @@ def evaluate_card(card: Mapping, inputs: object, candidate_date: date) -> CardDe
                 severity="review",
             )
         )
-        if rendered is None or not _accepted_quarantine(rendered, inputs):
+        if not matching_accepted:
             issues.append(
                 _issue(
                     "QUARANTINE_UNACCEPTED",
@@ -544,6 +687,22 @@ def evaluate_card(card: Mapping, inputs: object, candidate_date: date) -> CardDe
         issues.append(
             _issue(
                 "CARD_RETIRED", subject, "retired cards are tombstones", severity="info"
+            )
+        )
+        if matching_findings and not matching_accepted:
+            issues.append(
+                _issue(
+                    "QUARANTINE_UNACCEPTED",
+                    subject,
+                    "a retired quarantine record still requires exact reconciliation",
+                )
+            )
+    elif matching_findings:
+        issues.append(
+            _issue(
+                "QUARANTINE_STATE_REQUIRED",
+                subject,
+                "a detected quarantine finding must remain excluded from the active release",
             )
         )
     elif state != "approved":
@@ -575,10 +734,24 @@ def evaluate_qbank_note(
     """Evaluate one base/Tier-2 qbank render independently of item attestation."""
 
     subject = str(item.get("id", "<missing-id>"))
-    issues: list[Issue] = []
+    canonical_item, issues = _canonical_qbank_item(
+        inputs, item.get("id"), namespace="QBANK"
+    )
+    issues = list(issues)
+    render_item = canonical_item if canonical_item is not None else item
+    if canonical_item is not None and qbank_item_sha256(item) != qbank_item_sha256(
+        canonical_item
+    ):
+        issues.append(
+            _issue(
+                "QBANK_CANONICAL_ITEM_DRIFT",
+                subject,
+                "the supplied item differs from the canonical registry item",
+            )
+        )
     rendered = None
     try:
-        notes = build_qbank_notes(item)
+        notes = build_qbank_notes(render_item)
         rendered = next((note for note in notes if note.identity == identity), None)
         if rendered is None:
             issues.append(
@@ -590,15 +763,6 @@ def evaluate_qbank_note(
             )
     except (KeyError, TypeError, ValueError) as error:
         issues.append(_issue("QBANK_RENDER_INVALID", subject, str(error)))
-
-    if item.get("status") != "attested" or item.get("retired") is True:
-        issues.append(
-            _issue(
-                "QBANK_NOT_ATTESTED",
-                subject,
-                "only current attested non-retired items are eligible",
-            )
-        )
 
     review = next(
         (
@@ -623,7 +787,7 @@ def evaluate_qbank_note(
         exact = (
             _named(review.get("facultyApprovedBy"))
             and _parse_date(review.get("facultyApprovedAt")) is not None
-            and review.get("approvedItemSha256") == qbank_item_sha256(item)
+            and review.get("approvedItemSha256") == qbank_item_sha256(render_item)
             and review.get("templateVersion") == expected_version
             and review.get("templateContractSha256")
             == TEMPLATE_CONTRACT_SHA256["legacyQbank"]
@@ -643,14 +807,66 @@ def evaluate_qbank_note(
             )
         )
 
-    page = review.get("primaryPage") if isinstance(review, Mapping) else None
-    source = {"path": page, "slug": page}
-    issues.extend(
-        _reviewed_source_issues(
-            source, _input(inputs, "reviewed", {}), f"{subject}:{identity}"
-        )
+    if isinstance(review, Mapping) and canonical_item is not None:
+        try:
+            source_resolution = resolve_primary_qbank_source(
+                canonical_item,
+                review.get("primaryPage"),
+                review.get("primaryAnchor"),
+                inputs,
+            )
+        except SourceResolutionError as error:
+            issues.append(_issue(error.code, error.subject, error.message))
+        except (TypeError, ValueError) as error:
+            issues.append(_issue("QBANK_SOURCE_INVALID", subject, str(error)))
+        else:
+            if review.get("sourceAnchorSha256") != source_resolution.section_sha256:
+                issues.append(
+                    _issue(
+                        "QBANK_SOURCE_ANCHOR_DRIFT",
+                        f"{subject}:{identity}",
+                        "sourceAnchorSha256 must bind the full normalized primary section",
+                    )
+                )
+    detected = tuple(
+        finding
+        for finding in _input(inputs, "detected_quarantines", ())
+        if isinstance(finding, QuarantineFinding)
     )
-    eligible = rendered is not None and not _hard(issues)
+    matching_findings = tuple(
+        finding
+        for finding in detected
+        if finding.namespace == "qbank"
+        and finding.uid == subject
+        and finding.identity == identity
+    )
+    if matching_findings:
+        result = reconcile_quarantines(
+            detected,
+            _input(inputs, "quarantine", ()),
+            release_history=_input(inputs, "release_history", None),
+        )
+        accepted_keys = {_decision_key(finding) for finding in result.accepted}
+        accepted = all(
+            _decision_key(finding) in accepted_keys for finding in matching_findings
+        )
+        issues.append(
+            _issue(
+                "QBANK_QUARANTINED",
+                f"{subject}:{identity}",
+                "a detected qbank quarantine remains excluded from release",
+                severity="review",
+            )
+        )
+        if not accepted:
+            issues.append(
+                _issue(
+                    "QUARANTINE_UNACCEPTED",
+                    f"{subject}:{identity}",
+                    "new or changed quarantine requires an exact accepted ledger decision",
+                )
+            )
+    eligible = rendered is not None and not matching_findings and not _hard(issues)
     return _finish(
         CardDecision(
             namespace="qbank",
@@ -681,12 +897,20 @@ def _jaccard(left: str, right: str) -> float:
     return len(left_tokens & right_tokens) / len(union) if union else 0.0
 
 
-def _first_seen(inputs: object, uid: str, source_path: str | None) -> str:
-    configured = _input(inputs, "first_seen_commit", None)
-    if _named(configured):
-        return configured
+def _first_seen(
+    inputs: object,
+    namespace: str,
+    uid: str,
+    identity: str,
+    source_path: str | None,
+) -> str:
+    del source_path  # Provenance is derived only from canonical registries.
     repo = Path(_input(inputs, "repo_root", Path.cwd()))
-    path = source_path or "question_bank.json"
+    registry_path = (
+        "question_bank.json"
+        if namespace == "qbank"
+        else "13_Faculty_Resources/anki/cards.json"
+    )
     try:
         result = subprocess.run(
             [
@@ -697,7 +921,7 @@ def _first_seen(inputs: object, uid: str, source_path: str | None) -> str:
                 "-S",
                 f'"id": "{uid}"',
                 "--",
-                path,
+                registry_path,
             ],
             cwd=repo,
             check=True,
@@ -705,53 +929,73 @@ def _first_seen(inputs: object, uid: str, source_path: str | None) -> str:
             text=True,
         )
         commit = next((line for line in result.stdout.splitlines() if line), "")
-        if commit:
+        if re.fullmatch(r"[0-9a-f]{40}", commit):
             return commit
     except (OSError, subprocess.CalledProcessError):
         pass
-    try:
-        return subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=repo,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-    except (OSError, subprocess.CalledProcessError):
-        return "0000000"
+    raise ValueError(
+        f"FIRST_SEEN_PROVENANCE_REQUIRED: {namespace}:{uid}:{identity}"
+    )
 
 
 def _finding(
-    card: Mapping,
+    candidate: Mapping,
     target: Mapping,
-    note: RenderedNote,
+    candidate_note: RenderedNote,
+    target_note: RenderedNote,
     reason_code: str,
     field: str,
     normalized: str,
     inputs: object,
     withdrawal_hash: str | None,
 ) -> QuarantineFinding:
-    source = card.get("source") if isinstance(card.get("source"), Mapping) else {}
+    source = (
+        candidate.get("source")
+        if isinstance(candidate.get("source"), Mapping)
+        else {}
+    )
     source_path = source.get("path") if isinstance(source.get("path"), str) else None
+    candidate_review = (
+        candidate.get("review") if isinstance(candidate.get("review"), Mapping) else {}
+    )
+    target_review = (
+        target.get("review") if isinstance(target.get("review"), Mapping) else {}
+    )
     return QuarantineFinding(
-        namespace=note.namespace,
-        uid=note.uid,
-        identity=note.identity,
+        namespace=candidate_note.namespace,
+        uid=candidate_note.uid,
+        identity=candidate_note.identity,
         reason_code=reason_code,
         subject_sha256=canonical_json_sha256(
             {
                 "field": field,
                 "normalized": normalized,
-                "target": target.get("id"),
-                "targetApproval": (
-                    target.get("review", {}).get("approvedCardSha256")
-                    if isinstance(target.get("review"), Mapping)
-                    else None
-                ),
+                "candidate": {
+                    "namespace": candidate_note.namespace,
+                    "uid": candidate_note.uid,
+                    "identity": candidate_note.identity,
+                    "renderSha256": candidate_note.render_sha256,
+                    "approvedCardSha256": candidate_review.get(
+                        "approvedCardSha256"
+                    ),
+                },
+                "target": {
+                    "namespace": target_note.namespace,
+                    "uid": target_note.uid,
+                    "identity": target_note.identity,
+                    "renderSha256": target_note.render_sha256,
+                    "approvedCardSha256": target_review.get("approvedCardSha256"),
+                },
             }
         ),
         source_path=source_path,
-        first_seen_commit=_first_seen(inputs, note.uid, source_path),
+        first_seen_commit=_first_seen(
+            inputs,
+            candidate_note.namespace,
+            candidate_note.uid,
+            candidate_note.identity,
+            source_path,
+        ),
         withdrawal_render_sha256=withdrawal_hash,
     )
 
@@ -793,7 +1037,9 @@ def detect_quarantines(
                     reason_code=str(hold.get("reasonCode")),
                     subject_sha256=note.render_sha256,
                     source_path="question_bank.json",
-                    first_seen_commit=_first_seen(inputs, note.uid, "question_bank.json"),
+                    first_seen_commit=_first_seen(
+                        inputs, "qbank", note.uid, note.identity, "question_bank.json"
+                    ),
                     withdrawal_render_sha256=withdrawals.get(key),
                 )
             )
@@ -813,19 +1059,34 @@ def detect_quarantines(
 
     front_threshold = float(config.get("frontJaccardReviewThreshold", 0.8)) if isinstance(config, Mapping) else 0.8
     answer_threshold = float(config.get("answerJaccardReviewThreshold", 0.8)) if isinstance(config, Mapping) else 0.8
-    for index, (card, note) in enumerate(live):
-        for target, _target_note in live[:index]:
-            if target.get("id") == card.get("id"):
+    live.sort(
+        key=lambda value: (
+            value[1].namespace,
+            value[1].uid,
+            value[1].identity,
+        )
+    )
+    for index, (candidate, candidate_note) in enumerate(live):
+        for target, target_note in live[index + 1 :]:
+            if target.get("id") == candidate.get("id"):
                 continue
-            waived = _live_core_target(card, cards) is target
+            candidate_target = _live_core_target(candidate, cards)
+            target_candidate = _live_core_target(target, cards)
+            waived = (
+                isinstance(candidate_target, Mapping)
+                and candidate_target.get("id") == target.get("id")
+            ) or (
+                isinstance(target_candidate, Mapping)
+                and target_candidate.get("id") == candidate.get("id")
+            )
             if waived:
                 continue
             for field, threshold, exact_code, jaccard_code in (
                 ("front", front_threshold, "FRONT_EXACT_DUPLICATE", "FRONT_JACCARD_DUPLICATE"),
                 ("answer", answer_threshold, "ANSWER_EXACT_DUPLICATE", "ANSWER_JACCARD_DUPLICATE"),
             ):
-                left = _normalize_duplicate_text(target.get(field, ""))
-                right = _normalize_duplicate_text(card.get(field, ""))
+                left = _normalize_duplicate_text(candidate.get(field, ""))
+                right = _normalize_duplicate_text(target.get(field, ""))
                 if not left or not right:
                     continue
                 reason = None
@@ -834,12 +1095,17 @@ def detect_quarantines(
                 elif _jaccard(left, right) >= threshold:
                     reason = jaccard_code
                 if reason:
-                    key = (note.namespace, note.uid, note.identity)
+                    key = (
+                        candidate_note.namespace,
+                        candidate_note.uid,
+                        candidate_note.identity,
+                    )
                     findings.append(
                         _finding(
-                            card,
+                            candidate,
                             target,
-                            note,
+                            candidate_note,
+                            target_note,
                             reason,
                             field,
                             right,
@@ -872,13 +1138,17 @@ def _ledger_finding(entry: Mapping) -> QuarantineFinding:
         reason_code=str(entry.get("reasonCode", "INVALID_LEDGER_DECISION")),
         subject_sha256=str(entry.get("subjectSha256", "0" * 64)),
         source_path=entry.get("sourcePath"),
-        first_seen_commit=str(entry.get("firstSeenCommit", "0000000")),
-        withdrawal_render_sha256=entry.get("approvedWithdrawalSha256"),
+        first_seen_commit=str(entry.get("firstSeenCommit", "")),
+        # Approval metadata is never treated as independent render evidence.
+        withdrawal_render_sha256=None,
     )
 
 
 def reconcile_quarantines(
-    detected: Iterable[QuarantineFinding], ledger: object
+    detected: Iterable[QuarantineFinding],
+    ledger: object,
+    *,
+    release_history: object = None,
 ) -> QuarantineResult:
     """Classify exact accepted decisions without inventing faculty authority."""
 
@@ -893,7 +1163,7 @@ def reconcile_quarantines(
         entry = ledger_by_key.get(_decision_key(finding))
         if entry is None:
             new.append(finding)
-        elif _valid_ledger_decision(entry, finding):
+        elif _valid_ledger_decision(entry, finding, release_history):
             accepted.append(finding)
         else:
             changed.append(finding)
@@ -962,6 +1232,11 @@ def _cell_label(cell: tuple[int, str]) -> str:
     return f"W{cell[0]:02d}|{cell[1]}"
 
 
+def _card_note_key(card: Mapping) -> tuple[str, object, str]:
+    namespace = "application" if card.get("kind") == "application" else "core"
+    return namespace, card.get("id"), "base"
+
+
 def _matrix_issues(
     observed: Counter[tuple[int, str]],
     expected: Counter[tuple[int, str]],
@@ -1023,22 +1298,94 @@ def _matrix_issues(
     return issues
 
 
-def validate_release_coverage(cards: Iterable[Mapping], contract: Mapping) -> list[Issue]:
+def validate_release_coverage(
+    cards: Iterable[Mapping],
+    contract: Mapping,
+    *,
+    detected_quarantines: Iterable[QuarantineFinding] | None = None,
+    quarantine: object = None,
+    release_history: object = None,
+) -> list[Issue]:
     """Require exact production matrices plus role/family/task safeguards."""
 
     cards = tuple(cards)
+    issues: list[Issue] = []
+    quarantined_cards = tuple(
+        card
+        for card in cards
+        if isinstance(card, Mapping) and card.get("state") == "quarantined"
+    )
+    excluded_keys: set[tuple[object, ...]] = set()
+    quarantine_result: QuarantineResult | None = None
+    if detected_quarantines is None:
+        if quarantined_cards:
+            issues.append(
+                _issue(
+                    "QUARANTINE_RECONCILIATION_REQUIRED",
+                    "coverage",
+                    "coverage exclusion requires the exact reconciliation result",
+                )
+            )
+    else:
+        quarantine_result = reconcile_quarantines(
+            detected_quarantines,
+            quarantine,
+            release_history=release_history,
+        )
+        excluded = (
+            *quarantine_result.new,
+            *quarantine_result.changed,
+            *quarantine_result.accepted,
+        )
+        excluded_keys = {
+            (finding.namespace, finding.uid, finding.identity) for finding in excluded
+        }
+        accepted_keys = {
+            (finding.namespace, finding.uid, finding.identity)
+            for finding in quarantine_result.accepted
+        }
+        for card in quarantined_cards:
+            namespace = "application" if card.get("kind") == "application" else "core"
+            key = (namespace, card.get("id"), "base")
+            if key not in accepted_keys:
+                issues.append(
+                    _issue(
+                        "QUARANTINE_UNACCEPTED",
+                        card.get("id", "<missing-id>"),
+                        "coverage cannot exclude an unreconciled quarantine record",
+                    )
+                )
+        for finding in (*quarantine_result.new, *quarantine_result.changed):
+            issues.append(
+                _issue(
+                    "QUARANTINE_UNACCEPTED",
+                    f"{finding.namespace}:{finding.uid}:{finding.identity}",
+                    "new or changed quarantine findings block release coverage",
+                )
+            )
+
+    coverage_cards = tuple(
+        card
+        for card in cards
+        if not (
+            isinstance(card, Mapping)
+            and _card_note_key(card) in excluded_keys
+        )
+    )
     if "coverage" in contract and isinstance(contract.get("coverage"), Mapping):
         contract = contract["coverage"]
-    core = compute_core_coverage(cards)
-    application = compute_application_coverage(cards)
+    core = compute_core_coverage(coverage_cards)
+    application = compute_application_coverage(coverage_cards)
     expected_core = _expected_counter(contract, "core")
     expected_application = _expected_counter(contract, "application")
-    issues = _matrix_issues(
-        core,
-        expected_core,
-        namespace="core",
-        dimensions=CORE_DOMAINS,
-        exact_total=144,
+    issues.extend(
+        _matrix_issues(
+            core,
+            expected_core,
+            namespace="core",
+            dimensions=CORE_DOMAINS,
+            exact_total=144,
+        )
     )
     issues.extend(
         _matrix_issues(
@@ -1051,7 +1398,7 @@ def validate_release_coverage(cards: Iterable[Mapping], contract: Mapping) -> li
     )
     approved_core = [
         card
-        for card in cards
+        for card in coverage_cards
         if isinstance(card, Mapping)
         and card.get("state") == "approved"
         and card.get("kind") in {"basic", "cloze"}
@@ -1087,14 +1434,14 @@ def validate_release_coverage(cards: Iterable[Mapping], contract: Mapping) -> li
                 )
     approved_applications = [
         card
-        for card in cards
+        for card in coverage_cards
         if isinstance(card, Mapping)
         and card.get("state") == "approved"
         and card.get("kind") == "application"
     ]
     for card in approved_applications:
-        issues.extend(_application_issues(card, cards))
-    issues.extend(validate_role_safety(cards))
+        issues.extend(_application_issues(card, coverage_cards))
+    issues.extend(validate_role_safety(coverage_cards))
     return issues
 
 
