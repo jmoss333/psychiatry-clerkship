@@ -1,0 +1,475 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://une-ms3-psychiatry.netlify.app/schemas/anki/cards.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "cards"],
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "cards": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/card"}
+    }
+  },
+  "definitions": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "isoDate": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "stableIdOrNull": {
+      "oneOf": [
+        {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        {"type": "null"}
+      ]
+    },
+    "renderedText": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "pattern": "(?:\\*\\*|__|`|\\[[^\\]]+\\]\\([^\\)]+\\)|(?:^|\\s)[*_][^*_\\n]+[*_](?:\\s|[.,;:!?]|$)|^\\s*#{1,6}\\s+)"
+      }
+    },
+    "renderedOptionalText": {
+      "type": "string",
+      "not": {
+        "pattern": "(?:\\*\\*|__|`|\\[[^\\]]+\\]\\([^\\)]+\\)|(?:^|\\s)[*_][^*_\\n]+[*_](?:\\s|[.,;:!?]|$)|^\\s*#{1,6}\\s+)"
+      }
+    },
+    "front": {
+      "allOf": [
+        {"$ref": "#/definitions/renderedText"},
+        {
+          "not": {
+            "pattern": "(?i)^\\s*(?:in one line\\?|high[- ]yield pearl\\s*#?\\d+|which statement is true\\?)"
+          }
+        },
+        {
+          "not": {
+            "pattern": "(?i)\\b(?:not|except|least likely|false|incorrect)\\b"
+          }
+        }
+      ]
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "facets"],
+      "properties": {
+        "level": {"enum": ["Routine", "High"]},
+        "facets": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "Medication",
+              "Emergency",
+              "Pregnancy",
+              "Legal",
+              "Regulatory",
+              "Numerical",
+              "EvidenceSensitive",
+              "LocalPolicy"
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "facets": {
+                "contains": {
+                  "enum": [
+                    "Medication",
+                    "Emergency",
+                    "Pregnancy",
+                    "Legal",
+                    "Regulatory",
+                    "Numerical",
+                    "EvidenceSensitive"
+                  ]
+                }
+              }
+            }
+          },
+          "then": {"properties": {"level": {"const": "High"}}}
+        }
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "slug", "anchor", "url", "quote", "quoteSha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+\\.md$"
+        },
+        "slug": {"type": "string", "minLength": 1},
+        "anchor": {"type": "string", "minLength": 1},
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "quote": {"type": "string", "minLength": 1},
+        "quoteSha256": {"$ref": "#/definitions/sha256"}
+      }
+    },
+    "render": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["templateVersion", "templateContractSha256"],
+      "properties": {
+        "templateVersion": {"type": "string", "minLength": 1},
+        "templateContractSha256": {"$ref": "#/definitions/sha256"}
+      }
+    },
+    "qbank": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "taskBundle",
+        "primaryPage",
+        "primaryAnchor",
+        "approvedItemSha256",
+        "primaryTrap",
+        "sourceAnchorSha256"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^qb_[a-z0-9_]+$"},
+        "taskBundle": {
+          "enum": [
+            "Diagnosis",
+            "NextStep",
+            "Safety",
+            "Pharmacology",
+            "Psychosocial",
+            "Disposition"
+          ]
+        },
+        "primaryPage": {"type": "string", "minLength": 1},
+        "primaryAnchor": {"type": "string", "minLength": 1},
+        "approvedItemSha256": {"$ref": "#/definitions/sha256"},
+        "primaryTrap": {"type": "string", "minLength": 1},
+        "sourceAnchorSha256": {"$ref": "#/definitions/sha256"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authoringMethod", "authoringTool"],
+      "properties": {
+        "authoringMethod": {"enum": ["human", "ai_assisted"]},
+        "authoringTool": {
+          "oneOf": [
+            {"type": "string", "minLength": 1},
+            {"type": "null"}
+          ]
+        },
+        "humanEditor": {"type": "string", "minLength": 1},
+        "humanEditedAt": {"$ref": "#/definitions/isoDate"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"authoringMethod": {"const": "human"}}},
+          "then": {"properties": {"authoringTool": {"type": "null"}}},
+          "else": {"properties": {"authoringTool": {"type": "string", "minLength": 1}}}
+        }
+      ]
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sequenceBasis"],
+      "properties": {
+        "cardApprovedBy": {"type": "string", "minLength": 1},
+        "cardApprovedAt": {"$ref": "#/definitions/isoDate"},
+        "approvedCardSha256": {"$ref": "#/definitions/sha256"},
+        "evidenceCitation": {"type": "string", "minLength": 1},
+        "evidenceRecord": {"type": "string", "minLength": 1},
+        "evidenceSha256": {"$ref": "#/definitions/sha256"},
+        "evidenceReviewedBy": {"type": "string", "minLength": 1},
+        "evidenceReviewedAt": {"$ref": "#/definitions/isoDate"},
+        "localPolicySource": {"type": "string", "minLength": 1},
+        "localPolicySha256": {"$ref": "#/definitions/sha256"},
+        "localPolicyReviewedBy": {"type": "string", "minLength": 1},
+        "localPolicyReviewedAt": {"$ref": "#/definitions/isoDate"},
+        "reviewDue": {"$ref": "#/definitions/isoDate"},
+        "sequenceBasis": {"enum": ["weekly_map", "faculty_override"]},
+        "sequenceRationale": {"type": "string", "minLength": 1},
+        "sequenceReviewedBy": {"type": "string", "minLength": 1},
+        "sequenceReviewedAt": {"$ref": "#/definitions/isoDate"}
+      }
+    },
+    "card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "state",
+        "kind",
+        "family",
+        "audience",
+        "week",
+        "domain",
+        "task",
+        "risk",
+        "front",
+        "answer",
+        "explanation",
+        "caveat",
+        "source",
+        "render",
+        "provenance",
+        "review",
+        "reinforces",
+        "supersedes"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "state": {"enum": ["draft", "approved", "quarantined", "retired"]},
+        "kind": {"enum": ["basic", "cloze", "application"]},
+        "family": {
+          "enum": [
+            "Discriminator",
+            "StudentAction",
+            "Escalation",
+            "Monitor",
+            "WordsToSay",
+            "TherapyMatch",
+            "Disposition",
+            "ApplicationVignette"
+          ]
+        },
+        "audience": {"const": "MS3"},
+        "week": {"type": "integer", "minimum": 1, "maximum": 6},
+        "domain": {
+          "enum": [
+            "Diagnosis",
+            "Psychopharmacology",
+            "Safety",
+            "Communication",
+            "PsychotherapyFormulation",
+            "DispositionHandoff"
+          ]
+        },
+        "task": {
+          "enum": [
+            "Recognize",
+            "Discriminate",
+            "Ask",
+            "Say",
+            "Escalate",
+            "Monitor",
+            "Handoff"
+          ]
+        },
+        "risk": {"$ref": "#/definitions/risk"},
+        "front": {"$ref": "#/definitions/front"},
+        "answer": {
+          "allOf": [
+            {"$ref": "#/definitions/renderedText"},
+            {"not": {"pattern": "^(?:\\s*\\S+\\s+){45}\\S+"}}
+          ]
+        },
+        "explanation": {
+          "allOf": [
+            {"$ref": "#/definitions/renderedText"},
+            {"not": {"pattern": "^(?:\\s*\\S+\\s+){60}\\S+"}},
+            {"pattern": "^[^.!?]*(?:[.!?]\\s+[^.!?]*)?[.!?]?$"}
+          ]
+        },
+        "caveat": {"$ref": "#/definitions/renderedOptionalText"},
+        "source": {"$ref": "#/definitions/source"},
+        "render": {"$ref": "#/definitions/render"},
+        "provenance": {"$ref": "#/definitions/provenance"},
+        "review": {"$ref": "#/definitions/review"},
+        "qbank": {"$ref": "#/definitions/qbank"},
+        "reinforces": {"$ref": "#/definitions/stableIdOrNull"},
+        "supersedes": {"$ref": "#/definitions/stableIdOrNull"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"state": {"const": "approved"}}},
+          "then": {
+            "properties": {
+              "provenance": {"required": ["humanEditor", "humanEditedAt"]},
+              "review": {
+                "required": [
+                  "cardApprovedBy",
+                  "cardApprovedAt",
+                  "approvedCardSha256"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {"const": "approved"},
+              "risk": {"properties": {"level": {"const": "High"}}}
+            }
+          },
+          "then": {
+            "properties": {
+              "review": {
+                "required": [
+                  "evidenceCitation",
+                  "evidenceRecord",
+                  "evidenceSha256",
+                  "evidenceReviewedBy",
+                  "evidenceReviewedAt",
+                  "reviewDue"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {"const": "approved"},
+              "risk": {
+                "properties": {
+                  "facets": {"contains": {"const": "LocalPolicy"}}
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "review": {
+                "required": [
+                  "localPolicySource",
+                  "localPolicySha256",
+                  "localPolicyReviewedBy",
+                  "localPolicyReviewedAt",
+                  "reviewDue"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "review": {
+                "properties": {"sequenceBasis": {"const": "faculty_override"}}
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "review": {
+                "required": [
+                  "sequenceRationale",
+                  "sequenceReviewedBy",
+                  "sequenceReviewedAt"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"kind": {"const": "basic"}}},
+          "then": {
+            "not": {"required": ["qbank"]},
+            "properties": {
+              "family": {
+                "enum": [
+                  "Discriminator",
+                  "StudentAction",
+                  "Escalation",
+                  "Monitor",
+                  "WordsToSay",
+                  "TherapyMatch",
+                  "Disposition"
+                ]
+              },
+              "front": {
+                "allOf": [
+                  {"$ref": "#/definitions/front"},
+                  {"not": {"pattern": "^(?:\\s*\\S+\\s+){35}\\S+"}},
+                  {"not": {"pattern": "\\{\\{c[0-9]+::"}}
+                ]
+              },
+              "render": {
+                "properties": {
+                  "templateVersion": {"const": "pcl-ms3-core-basic-v2"}
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"kind": {"const": "cloze"}}},
+          "then": {
+            "not": {"required": ["qbank"]},
+            "properties": {
+              "family": {
+                "enum": [
+                  "Discriminator",
+                  "StudentAction",
+                  "Escalation",
+                  "Monitor",
+                  "WordsToSay",
+                  "TherapyMatch",
+                  "Disposition"
+                ]
+              },
+              "front": {
+                "allOf": [
+                  {"$ref": "#/definitions/front"},
+                  {"not": {"pattern": "^(?:\\s*\\S+\\s+){35}\\S+"}},
+                  {
+                    "pattern": "^(?:(?!\\{\\{c[0-9]+::)[\\s\\S])*\\{\\{c1::[^{}]+\\}\\}(?:(?!\\{\\{c[0-9]+::)[\\s\\S])*$"
+                  }
+                ]
+              },
+              "render": {
+                "properties": {
+                  "templateVersion": {"const": "pcl-ms3-core-cloze-v2"}
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"kind": {"const": "application"}}},
+          "then": {
+            "required": ["qbank"],
+            "properties": {
+              "family": {"const": "ApplicationVignette"},
+              "front": {
+                "allOf": [
+                  {"$ref": "#/definitions/front"},
+                  {"not": {"pattern": "^(?:\\s*\\S+\\s+){90}\\S+"}},
+                  {"not": {"pattern": "\\b(?:[A-E][.)]|\\([A-E]\\))\\s+"}},
+                  {"not": {"pattern": "\\{\\{c[0-9]+::"}}
+                ]
+              },
+              "render": {
+                "properties": {
+                  "templateVersion": {"const": "pcl-ms3-application-v2"}
+                }
+              },
+              "reinforces": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

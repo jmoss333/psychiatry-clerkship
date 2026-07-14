@@ -1,0 +1,22 @@
+[
+  {
+    "heading": "Safety, Capacity & Follow-up!",
+    "expected": "safety-capacity-follow-up",
+    "style": "atx"
+  },
+  {
+    "heading": "Café déjà vu",
+    "expected": "cafe-deja-vu",
+    "style": "setext"
+  },
+  {
+    "heading": "  Medication   Monitoring  ",
+    "expected": "medication-monitoring",
+    "style": "atx"
+  },
+  {
+    "heading": "[Shared decision-making](https://example.test) & `consent`",
+    "expected": "shared-decision-making-consent",
+    "style": "atx"
+  }
+]

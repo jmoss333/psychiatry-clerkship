@@ -1,0 +1,245 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://une-ms3-psychiatry.netlify.app/schemas/anki/release_history.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "identityEntries", "releases"],
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "identityEntries": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/identityEntry"}
+    },
+    "releases": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/release"}
+    }
+  },
+  "definitions": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "isoDate": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": {"type": "integer", "minimum": 1},
+        "name": {"type": "string", "minLength": 1}
+      }
+    },
+    "deck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": {"type": "integer", "minimum": 1},
+        "name": {"type": "string", "minLength": 1}
+      }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "id"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "id": {
+          "oneOf": [
+            {"type": "integer", "minimum": 1},
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "template": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "ordinal"],
+      "properties": {
+        "id": {
+          "oneOf": [
+            {"type": "integer", "minimum": 1},
+            {"type": "null"}
+          ]
+        },
+        "name": {"type": "string", "minLength": 1},
+        "ordinal": {"type": "integer", "minimum": 0}
+      }
+    },
+    "identityEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespace",
+        "uid",
+        "identity",
+        "guid",
+        "kind",
+        "model",
+        "deck",
+        "fields",
+        "template",
+        "firstShippedReleaseId",
+        "origin"
+      ],
+      "properties": {
+        "namespace": {"enum": ["core", "application", "qbank"]},
+        "uid": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "identity": {"enum": ["base", "tier2"]},
+        "guid": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["basic", "cloze", "application", "qbank"]},
+        "model": {"$ref": "#/definitions/model"},
+        "deck": {"$ref": "#/definitions/deck"},
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/definitions/field"}
+        },
+        "template": {"$ref": "#/definitions/template"},
+        "firstShippedReleaseId": {"type": "string", "minLength": 1},
+        "origin": {"enum": ["legacy_pre_governance", "governed"]}
+      }
+    },
+    "packageSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contentFingerprintSha256",
+        "activeNoteCount",
+        "withdrawalNoteCount",
+        "totalNoteCount",
+        "scheduledCardCount"
+      ],
+      "properties": {
+        "contentFingerprintSha256": {"$ref": "#/definitions/sha256"},
+        "activeNoteCount": {"type": "integer", "minimum": 0},
+        "withdrawalNoteCount": {"type": "integer", "minimum": 0},
+        "totalNoteCount": {"type": "integer", "minimum": 0},
+        "scheduledCardCount": {"type": "integer", "minimum": 0}
+      }
+    },
+    "packages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "psychiatry_clerkship_ms3_core.apkg",
+        "psychiatry_clerkship_ms3_application.apkg",
+        "psychiatry_clerkship_ms3_complete.apkg",
+        "psychiatry_clerkship_qbank.apkg"
+      ],
+      "properties": {
+        "psychiatry_clerkship_ms3_core.apkg": {"$ref": "#/definitions/packageSnapshot"},
+        "psychiatry_clerkship_ms3_application.apkg": {"$ref": "#/definitions/packageSnapshot"},
+        "psychiatry_clerkship_ms3_complete.apkg": {"$ref": "#/definitions/packageSnapshot"},
+        "psychiatry_clerkship_qbank.apkg": {"$ref": "#/definitions/packageSnapshot"}
+      }
+    },
+    "csv": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filename", "sha256", "sizeBytes"],
+      "properties": {
+        "filename": {"const": "psychiatry_clerkship_ms3_cards.csv"},
+        "sha256": {"$ref": "#/definitions/sha256"},
+        "sizeBytes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "artifactMembership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filename", "deckId", "deckName"],
+      "properties": {
+        "filename": {
+          "enum": [
+            "psychiatry_clerkship_ms3_core.apkg",
+            "psychiatry_clerkship_ms3_application.apkg",
+            "psychiatry_clerkship_ms3_complete.apkg",
+            "psychiatry_clerkship_qbank.apkg",
+            "psychiatry_clerkship_library.apkg",
+            "psychiatry_clerkship_library_ALL.apkg"
+          ]
+        },
+        "deckId": {"type": "integer", "minimum": 1},
+        "deckName": {"type": "string", "minLength": 1},
+        "artifactSha256": {"$ref": "#/definitions/sha256"}
+      }
+    },
+    "membership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespace",
+        "uid",
+        "identity",
+        "status",
+        "approvedCardSha256",
+        "shippedCardSha256",
+        "templateVersion",
+        "artifacts"
+      ],
+      "properties": {
+        "namespace": {"enum": ["core", "application", "qbank"]},
+        "uid": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "identity": {"enum": ["base", "tier2"]},
+        "status": {"enum": ["active", "withdrawn"]},
+        "approvedCardSha256": {
+          "oneOf": [
+            {"$ref": "#/definitions/sha256"},
+            {"type": "null"}
+          ]
+        },
+        "shippedCardSha256": {"$ref": "#/definitions/sha256"},
+        "templateVersion": {"type": "string", "minLength": 1},
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/definitions/artifactMembership"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "withdrawn"}}},
+          "then": {
+            "properties": {
+              "approvedCardSha256": {"$ref": "#/definitions/sha256"}
+            }
+          }
+        }
+      ]
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "releaseId",
+        "releaseDate",
+        "releaseEpoch",
+        "governedInputSha256",
+        "packages",
+        "csv",
+        "receiptContractSha256",
+        "migrationSeedReleaseId",
+        "migrationContractSha256",
+        "memberships"
+      ],
+      "properties": {
+        "releaseId": {"type": "string", "minLength": 1},
+        "releaseDate": {"$ref": "#/definitions/isoDate"},
+        "releaseEpoch": {"type": "integer", "minimum": 0},
+        "governedInputSha256": {"$ref": "#/definitions/sha256"},
+        "packages": {"$ref": "#/definitions/packages"},
+        "csv": {"$ref": "#/definitions/csv"},
+        "receiptContractSha256": {"$ref": "#/definitions/sha256"},
+        "migrationSeedReleaseId": {"type": "string", "minLength": 1},
+        "migrationContractSha256": {"$ref": "#/definitions/sha256"},
+        "memberships": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/membership"}
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,26 @@
 """Permanent Anki identities shared by build, inspection, and release tooling."""
 
+from dataclasses import dataclass
+from hashlib import sha256
+import json
+from pathlib import Path
+import re
+from typing import Literal
+import unicodedata
+
 import genanki
+from jsonschema import Draft7Validator, FormatChecker
+
+
+Severity = Literal["hard", "review", "info"]
+
+
+@dataclass(frozen=True)
+class Issue:
+    code: str
+    severity: Severity
+    subject: str
+    message: str
 
 
 # Frozen legacy qbank identities. The shipped model intentionally has no
@@ -101,6 +121,56 @@ RELEASE_ARTIFACT_FILENAMES = (
     COMPLETE_ARTIFACT_FILENAME,
     QBANK_ARTIFACT_FILENAME,
 )
+
+
+def normalize_source(text: str) -> str:
+    """Return the exact normalized source text used for governance hashes."""
+
+    text = unicodedata.normalize("NFC", text)
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def canonical_json_bytes(value: object) -> bytes:
+    """Serialize a value using the governed canonical JSON representation."""
+
+    return json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
+
+
+def canonical_json_sha256(value: object) -> str:
+    """Hash the governed canonical JSON representation of a value."""
+
+    return sha256(canonical_json_bytes(value)).hexdigest()
+
+
+def _json_subject(path: object) -> str:
+    subject = "$"
+    for part in path:
+        subject += f"[{part}]" if isinstance(part, int) else f".{part}"
+    return subject
+
+
+def validate_registry(path: Path, schema_path: Path) -> list[Issue]:
+    """Validate one registry against its closed schema."""
+
+    value = json.loads(Path(path).read_text(encoding="utf-8"))
+    schema = json.loads(Path(schema_path).read_text(encoding="utf-8"))
+    validator = Draft7Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(value), key=lambda error: list(error.path))
+    return [
+        Issue(
+            code=error.schema.get("x-issue-code", "SCHEMA_VALIDATION_ERROR"),
+            severity="hard",
+            subject=_json_subject(error.absolute_path),
+            message=error.message,
+        )
+        for error in errors
+    ]
 
 
 def core_guid(card_id: str) -> str:

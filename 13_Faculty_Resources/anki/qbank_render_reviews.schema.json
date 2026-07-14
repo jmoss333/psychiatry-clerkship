@@ -1,0 +1,249 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://une-ms3-psychiatry.netlify.app/schemas/anki/qbank_render_reviews.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "reviews"],
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "reviews": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/review"}
+    }
+  },
+  "definitions": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "isoDate": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "facets"],
+      "properties": {
+        "level": {"enum": ["Routine", "High"]},
+        "facets": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "Medication",
+              "Emergency",
+              "Pregnancy",
+              "Legal",
+              "Regulatory",
+              "Numerical",
+              "EvidenceSensitive",
+              "LocalPolicy"
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "facets": {
+                "contains": {
+                  "enum": [
+                    "Medication",
+                    "Emergency",
+                    "Pregnancy",
+                    "Legal",
+                    "Regulatory",
+                    "Numerical",
+                    "EvidenceSensitive"
+                  ]
+                }
+              }
+            }
+          },
+          "then": {"properties": {"level": {"const": "High"}}}
+        }
+      ]
+    },
+    "legacyFieldUid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "id"],
+      "properties": {"name": {"const": "UID"}, "id": {"type": "null"}}
+    },
+    "legacyFieldQuestion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "id"],
+      "properties": {"name": {"const": "Question"}, "id": {"type": "null"}}
+    },
+    "legacyFieldOptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "id"],
+      "properties": {"name": {"const": "Options"}, "id": {"type": "null"}}
+    },
+    "legacyFieldAnswer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "id"],
+      "properties": {"name": {"const": "Answer"}, "id": {"type": "null"}}
+    },
+    "legacyFieldWhy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "id"],
+      "properties": {"name": {"const": "Why"}, "id": {"type": "null"}}
+    },
+    "legacyFieldPearl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "id"],
+      "properties": {"name": {"const": "Pearl"}, "id": {"type": "null"}}
+    },
+    "legacyFieldEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "id"],
+      "properties": {"name": {"const": "Evidence"}, "id": {"type": "null"}}
+    },
+    "legacyFieldLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "id"],
+      "properties": {"name": {"const": "Link"}, "id": {"type": "null"}}
+    },
+    "legacyFieldMeta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "id"],
+      "properties": {"name": {"const": "Meta"}, "id": {"type": "null"}}
+    },
+    "legacyTemplateContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "modelId",
+        "modelName",
+        "deckId",
+        "deckName",
+        "fields",
+        "templateId",
+        "templateName",
+        "templateOrdinal",
+        "qfmt",
+        "afmt",
+        "css",
+        "templateVersion"
+      ],
+      "properties": {
+        "modelId": {"const": 1607392901},
+        "modelName": {"const": "PCL Vignette (Moss)"},
+        "deckId": {"const": 2059400191},
+        "deckName": {"const": "Psychiatry Clerkship Library (Moss)"},
+        "fields": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "additionalItems": false,
+          "items": [
+            {"$ref": "#/definitions/legacyFieldUid"},
+            {"$ref": "#/definitions/legacyFieldQuestion"},
+            {"$ref": "#/definitions/legacyFieldOptions"},
+            {"$ref": "#/definitions/legacyFieldAnswer"},
+            {"$ref": "#/definitions/legacyFieldWhy"},
+            {"$ref": "#/definitions/legacyFieldPearl"},
+            {"$ref": "#/definitions/legacyFieldEvidence"},
+            {"$ref": "#/definitions/legacyFieldLink"},
+            {"$ref": "#/definitions/legacyFieldMeta"}
+          ]
+        },
+        "templateId": {"type": "null"},
+        "templateName": {"const": "Card 1"},
+        "templateOrdinal": {"const": 0},
+        "qfmt": {"type": "string", "minLength": 1},
+        "afmt": {"type": "string", "minLength": 1},
+        "css": {"type": "string"},
+        "templateVersion": {"const": "pcl-qbank-legacy-v1"}
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qbankId",
+        "identity",
+        "primaryPage",
+        "primaryAnchor",
+        "approvedItemSha256",
+        "sourceAnchorSha256",
+        "templateVersion",
+        "templateContractSha256",
+        "renderedNoteSha256",
+        "legacyTemplateContract",
+        "risk",
+        "facultyApprovedBy",
+        "facultyApprovedAt"
+      ],
+      "properties": {
+        "qbankId": {"type": "string", "pattern": "^qb_[a-z0-9_]+$"},
+        "identity": {"enum": ["base", "tier2"]},
+        "primaryPage": {"type": "string", "minLength": 1},
+        "primaryAnchor": {"type": "string", "minLength": 1},
+        "approvedItemSha256": {"$ref": "#/definitions/sha256"},
+        "sourceAnchorSha256": {"$ref": "#/definitions/sha256"},
+        "templateVersion": {"const": "pcl-qbank-legacy-v1"},
+        "templateContractSha256": {"$ref": "#/definitions/sha256"},
+        "renderedNoteSha256": {"$ref": "#/definitions/sha256"},
+        "legacyTemplateContract": {"$ref": "#/definitions/legacyTemplateContract"},
+        "risk": {"$ref": "#/definitions/risk"},
+        "evidenceCitation": {"type": "string", "minLength": 1},
+        "evidenceRecord": {"type": "string", "minLength": 1},
+        "evidenceSha256": {"$ref": "#/definitions/sha256"},
+        "evidenceReviewedBy": {"type": "string", "minLength": 1},
+        "evidenceReviewedAt": {"$ref": "#/definitions/isoDate"},
+        "localPolicySource": {"type": "string", "minLength": 1},
+        "localPolicySha256": {"$ref": "#/definitions/sha256"},
+        "localPolicyReviewedBy": {"type": "string", "minLength": 1},
+        "localPolicyReviewedAt": {"$ref": "#/definitions/isoDate"},
+        "reviewDue": {"$ref": "#/definitions/isoDate"},
+        "facultyApprovedBy": {"type": "string", "minLength": 1},
+        "facultyApprovedAt": {"$ref": "#/definitions/isoDate"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"risk": {"properties": {"level": {"const": "High"}}}}},
+          "then": {
+            "required": [
+              "evidenceCitation",
+              "evidenceRecord",
+              "evidenceSha256",
+              "evidenceReviewedBy",
+              "evidenceReviewedAt",
+              "reviewDue"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "risk": {
+                "properties": {
+                  "facets": {"contains": {"const": "LocalPolicy"}}
+                }
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "localPolicySource",
+              "localPolicySha256",
+              "localPolicyReviewedBy",
+              "localPolicyReviewedAt",
+              "reviewDue"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

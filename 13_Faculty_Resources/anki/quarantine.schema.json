@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://une-ms3-psychiatry.netlify.app/schemas/anki/quarantine.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "accepted"],
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "accepted": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/decision"}
+    }
+  },
+  "definitions": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "isoDate": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespace",
+        "uid",
+        "identity",
+        "reasonCode",
+        "subjectSha256",
+        "sourcePath",
+        "firstSeenCommit",
+        "reviewOwner",
+        "disposition",
+        "reviewedBy",
+        "reviewedAt"
+      ],
+      "properties": {
+        "namespace": {"enum": ["core", "application", "qbank"]},
+        "uid": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "identity": {"enum": ["base", "tier2"]},
+        "reasonCode": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"},
+        "subjectSha256": {"$ref": "#/definitions/sha256"},
+        "sourcePath": {
+          "oneOf": [
+            {"type": "string", "minLength": 1},
+            {"type": "null"}
+          ]
+        },
+        "firstSeenCommit": {"type": "string", "pattern": "^[0-9a-f]{7,40}$"},
+        "reviewOwner": {"type": "string", "minLength": 1},
+        "disposition": {"enum": ["exclude", "withdraw", "retire"]},
+        "reviewedBy": {"type": "string", "minLength": 1},
+        "reviewedAt": {"$ref": "#/definitions/isoDate"},
+        "affectedReleaseId": {"type": "string", "minLength": 1},
+        "withdrawalTemplateVersion": {"type": "string", "minLength": 1},
+        "approvedWithdrawalSha256": {"$ref": "#/definitions/sha256"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"disposition": {"const": "withdraw"}}},
+          "then": {
+            "required": [
+              "affectedReleaseId",
+              "withdrawalTemplateVersion",
+              "approvedWithdrawalSha256"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

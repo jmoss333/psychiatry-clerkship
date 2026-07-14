@@ -1,0 +1,408 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://une-ms3-psychiatry.netlify.app/schemas/anki/release_config.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "canonicalBaseUrl",
+    "siteMode",
+    "minimumSupportedDesktopAnki",
+    "currentTestedAnki",
+    "permanentIdentities",
+    "coverage",
+    "productionAllowlist",
+    "releaseId",
+    "releaseDate",
+    "releaseEpoch",
+    "templateVersions",
+    "knownSafetyHolds",
+    "frontJaccardReviewThreshold",
+    "answerJaccardReviewThreshold",
+    "duplicateNormalization",
+    "sequenceMapPath",
+    "primaryAuthorityPathPrefixes",
+    "contextOnlyPathPrefixes",
+    "sequencingOnlyPaths"
+  ],
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "canonicalBaseUrl": {"const": "https://une-ms3-psychiatry.netlify.app/"},
+    "siteMode": {"enum": ["maintenance", "release"]},
+    "minimumSupportedDesktopAnki": {"const": "23.10"},
+    "currentTestedAnki": {"const": "26.5"},
+    "permanentIdentities": {"$ref": "#/definitions/permanentIdentities"},
+    "coverage": {"$ref": "#/definitions/coverage"},
+    "productionAllowlist": {
+      "type": "array",
+      "const": [
+        "psychiatry_clerkship_ms3_core.apkg",
+        "psychiatry_clerkship_ms3_application.apkg",
+        "psychiatry_clerkship_ms3_complete.apkg",
+        "psychiatry_clerkship_qbank.apkg",
+        "psychiatry_clerkship_ms3_cards.csv",
+        "anki_release_receipt.json"
+      ]
+    },
+    "releaseId": {
+      "oneOf": [{"type": "string", "minLength": 1}, {"type": "null"}]
+    },
+    "releaseDate": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        {"type": "null"}
+      ]
+    },
+    "releaseEpoch": {
+      "oneOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]
+    },
+    "templateVersions": {"$ref": "#/definitions/templateVersions"},
+    "knownSafetyHolds": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {"$ref": "#/definitions/safetyHold"}
+    },
+    "frontJaccardReviewThreshold": {"const": 0.8},
+    "answerJaccardReviewThreshold": {"const": 0.8},
+    "duplicateNormalization": {"$ref": "#/definitions/duplicateNormalization"},
+    "sequenceMapPath": {
+      "const": "14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md"
+    },
+    "primaryAuthorityPathPrefixes": {
+      "type": "array",
+      "const": [
+        "02_Clinical_Skills/",
+        "03_Core_Topics/",
+        "04_Acute_and_Safety/",
+        "05_Psychopharmacology/",
+        "06_Family_and_Relational/",
+        "07_Evidence_and_Reading/",
+        "14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/",
+        "14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/",
+        "14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/"
+      ]
+    },
+    "contextOnlyPathPrefixes": {
+      "type": "array",
+      "const": [
+        "14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/",
+        "14_Tracks/MS3/Student_Ready_Pack/08_synthetic_cases/"
+      ]
+    },
+    "sequencingOnlyPaths": {
+      "type": "array",
+      "const": [
+        "14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md",
+        "09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md",
+        "14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md",
+        "14_Tracks/MS3/Student_Ready_Pack/07_shelf_guide/shelf_review_guide.md",
+        "14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"siteMode": {"const": "maintenance"}}},
+      "then": {
+        "properties": {
+          "releaseId": {"type": "null"},
+          "releaseDate": {"type": "null"},
+          "releaseEpoch": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"siteMode": {"const": "release"}}},
+      "then": {
+        "properties": {
+          "releaseId": {
+            "type": "string",
+            "minLength": 1,
+            "x-issue-code": "RELEASE_ID_REQUIRED"
+          },
+          "releaseDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "x-issue-code": "RELEASE_DATE_REQUIRED"
+          },
+          "releaseEpoch": {
+            "type": "integer",
+            "minimum": 0,
+            "x-issue-code": "RELEASE_EPOCH_REQUIRED"
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "legacyIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "modelId",
+        "modelName",
+        "deckId",
+        "deckName",
+        "fields",
+        "templateId",
+        "templateName",
+        "templateOrdinal",
+        "baseGuidFormula",
+        "tier2GuidFormula"
+      ],
+      "properties": {
+        "modelId": {"const": 1607392901},
+        "modelName": {"const": "PCL Vignette (Moss)"},
+        "deckId": {"const": 2059400191},
+        "deckName": {"const": "Psychiatry Clerkship Library (Moss)"},
+        "fields": {
+          "type": "array",
+          "const": [
+            {"name": "UID", "id": null},
+            {"name": "Question", "id": null},
+            {"name": "Options", "id": null},
+            {"name": "Answer", "id": null},
+            {"name": "Why", "id": null},
+            {"name": "Pearl", "id": null},
+            {"name": "Evidence", "id": null},
+            {"name": "Link", "id": null},
+            {"name": "Meta", "id": null}
+          ]
+        },
+        "templateId": {"type": "null"},
+        "templateName": {"const": "Card 1"},
+        "templateOrdinal": {"const": 0},
+        "baseGuidFormula": {"const": "genanki.guid_for(item_id)"},
+        "tier2GuidFormula": {"const": "genanki.guid_for(item_id + '::t2')"}
+      }
+    },
+    "coreBasicIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "modelId",
+        "modelName",
+        "deckId",
+        "deckName",
+        "fields",
+        "templateId",
+        "templateName",
+        "templateOrdinal",
+        "guidNamespace"
+      ],
+      "properties": {
+        "modelId": {"const": 1740112001},
+        "modelName": {"const": "PCL MS3 Core Basic v2"},
+        "deckId": {"const": 2059400201},
+        "deckName": {"const": "Psychiatry Clerkship MS3 (Moss)::Core Recall"},
+        "fields": {
+          "type": "array",
+          "const": [
+            {"name": "UID", "id": 7715026946512367336},
+            {"name": "Front", "id": 1581891087570822773},
+            {"name": "Answer", "id": 3648809565985408987},
+            {"name": "Explanation", "id": 2174348647067507977},
+            {"name": "Caveat", "id": 3436125447725103097},
+            {"name": "SourceQuote", "id": 2553051568381521149},
+            {"name": "SourceLink", "id": 2854218784170519640},
+            {"name": "Meta", "id": 1744796410914045706}
+          ]
+        },
+        "templateId": {"const": 8777453155042897990},
+        "templateName": {"const": "Card 1"},
+        "templateOrdinal": {"const": 0},
+        "guidNamespace": {"const": "pcl-ms3-core-v2"}
+      }
+    },
+    "coreClozeIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "modelId",
+        "modelName",
+        "deckId",
+        "deckName",
+        "fields",
+        "templateId",
+        "templateName",
+        "templateOrdinal",
+        "guidNamespace"
+      ],
+      "properties": {
+        "modelId": {"const": 1740112002},
+        "modelName": {"const": "PCL MS3 Core Cloze v2"},
+        "deckId": {"const": 2059400201},
+        "deckName": {"const": "Psychiatry Clerkship MS3 (Moss)::Core Recall"},
+        "fields": {
+          "type": "array",
+          "const": [
+            {"name": "UID", "id": 1799494823268918589},
+            {"name": "Text", "id": 7771538009428565766},
+            {"name": "Answer", "id": 4332612271198974114},
+            {"name": "Explanation", "id": 7364136103503060308},
+            {"name": "Caveat", "id": 7788919485417581378},
+            {"name": "SourceQuote", "id": 1452385292661756254},
+            {"name": "SourceLink", "id": 6557169000714987829},
+            {"name": "Meta", "id": 5637910376665094000}
+          ]
+        },
+        "templateId": {"const": 3287951719162080235},
+        "templateName": {"const": "Cloze"},
+        "templateOrdinal": {"const": 0},
+        "guidNamespace": {"const": "pcl-ms3-core-v2"}
+      }
+    },
+    "applicationIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "modelId",
+        "modelName",
+        "deckId",
+        "deckName",
+        "fields",
+        "templateId",
+        "templateName",
+        "templateOrdinal",
+        "guidNamespace"
+      ],
+      "properties": {
+        "modelId": {"const": 1740112003},
+        "modelName": {"const": "PCL MS3 Clinical Application v2"},
+        "deckId": {"const": 2059400202},
+        "deckName": {"const": "Psychiatry Clerkship MS3 (Moss)::Clinical Application"},
+        "fields": {
+          "type": "array",
+          "const": [
+            {"name": "UID", "id": 1131999658638281388},
+            {"name": "Question", "id": 3636781603027082657},
+            {"name": "Answer", "id": 9202232928613487235},
+            {"name": "Discriminator", "id": 403813941556652594},
+            {"name": "Trap", "id": 3236073075272291878},
+            {"name": "Detail", "id": 5987568621819550144},
+            {"name": "Caveat", "id": 3260351373777911252},
+            {"name": "SourceQuote", "id": 8755104689011360910},
+            {"name": "SourceLink", "id": 1306800255169644962},
+            {"name": "Meta", "id": 14791453266034096}
+          ]
+        },
+        "templateId": {"const": 29615640114988655},
+        "templateName": {"const": "Card 1"},
+        "templateOrdinal": {"const": 0},
+        "guidNamespace": {"const": "pcl-ms3-application-v2"}
+      }
+    },
+    "permanentIdentities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["legacyQbank", "coreBasic", "coreCloze", "application"],
+      "properties": {
+        "legacyQbank": {"$ref": "#/definitions/legacyIdentity"},
+        "coreBasic": {"$ref": "#/definitions/coreBasicIdentity"},
+        "coreCloze": {"$ref": "#/definitions/coreClozeIdentity"},
+        "application": {"$ref": "#/definitions/applicationIdentity"}
+      }
+    },
+    "coreCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "W01|Diagnosis", "W01|Psychopharmacology", "W01|Safety", "W01|Communication", "W01|PsychotherapyFormulation", "W01|DispositionHandoff",
+        "W02|Diagnosis", "W02|Psychopharmacology", "W02|Safety", "W02|Communication", "W02|PsychotherapyFormulation", "W02|DispositionHandoff",
+        "W03|Diagnosis", "W03|Psychopharmacology", "W03|Safety", "W03|Communication", "W03|PsychotherapyFormulation", "W03|DispositionHandoff",
+        "W04|Diagnosis", "W04|Psychopharmacology", "W04|Safety", "W04|Communication", "W04|PsychotherapyFormulation", "W04|DispositionHandoff",
+        "W05|Diagnosis", "W05|Psychopharmacology", "W05|Safety", "W05|Communication", "W05|PsychotherapyFormulation", "W05|DispositionHandoff",
+        "W06|Diagnosis", "W06|Psychopharmacology", "W06|Safety", "W06|Communication", "W06|PsychotherapyFormulation", "W06|DispositionHandoff"
+      ],
+      "properties": {
+        "W01|Diagnosis": {"const": 5}, "W01|Psychopharmacology": {"const": 1}, "W01|Safety": {"const": 7}, "W01|Communication": {"const": 8}, "W01|PsychotherapyFormulation": {"const": 2}, "W01|DispositionHandoff": {"const": 5},
+        "W02|Diagnosis": {"const": 8}, "W02|Psychopharmacology": {"const": 10}, "W02|Safety": {"const": 5}, "W02|Communication": {"const": 2}, "W02|PsychotherapyFormulation": {"const": 2}, "W02|DispositionHandoff": {"const": 3},
+        "W03|Diagnosis": {"const": 4}, "W03|Psychopharmacology": {"const": 2}, "W03|Safety": {"const": 4}, "W03|Communication": {"const": 3}, "W03|PsychotherapyFormulation": {"const": 8}, "W03|DispositionHandoff": {"const": 1},
+        "W04|Diagnosis": {"const": 1}, "W04|Psychopharmacology": {"const": 1}, "W04|Safety": {"const": 2}, "W04|Communication": {"const": 7}, "W04|PsychotherapyFormulation": {"const": 5}, "W04|DispositionHandoff": {"const": 2},
+        "W05|Diagnosis": {"const": 5}, "W05|Psychopharmacology": {"const": 7}, "W05|Safety": {"const": 10}, "W05|Communication": {"const": 3}, "W05|PsychotherapyFormulation": {"const": 1}, "W05|DispositionHandoff": {"const": 2},
+        "W06|Diagnosis": {"const": 1}, "W06|Psychopharmacology": {"const": 1}, "W06|Safety": {"const": 2}, "W06|Communication": {"const": 1}, "W06|PsychotherapyFormulation": {"const": 2}, "W06|DispositionHandoff": {"const": 11}
+      }
+    },
+    "applicationCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "W01|Diagnosis", "W01|NextStep", "W01|Safety", "W01|Pharmacology", "W01|Psychosocial", "W01|Disposition",
+        "W02|Diagnosis", "W02|NextStep", "W02|Safety", "W02|Pharmacology", "W02|Psychosocial", "W02|Disposition",
+        "W03|Diagnosis", "W03|NextStep", "W03|Safety", "W03|Pharmacology", "W03|Psychosocial", "W03|Disposition",
+        "W04|Diagnosis", "W04|NextStep", "W04|Safety", "W04|Pharmacology", "W04|Psychosocial", "W04|Disposition",
+        "W05|Diagnosis", "W05|NextStep", "W05|Safety", "W05|Pharmacology", "W05|Psychosocial", "W05|Disposition",
+        "W06|Diagnosis", "W06|NextStep", "W06|Safety", "W06|Pharmacology", "W06|Psychosocial", "W06|Disposition"
+      ],
+      "properties": {
+        "W01|Diagnosis": {"const": 2}, "W01|NextStep": {"const": 1}, "W01|Safety": {"const": 2}, "W01|Pharmacology": {"const": 0}, "W01|Psychosocial": {"const": 2}, "W01|Disposition": {"const": 1},
+        "W02|Diagnosis": {"const": 4}, "W02|NextStep": {"const": 1}, "W02|Safety": {"const": 1}, "W02|Pharmacology": {"const": 3}, "W02|Psychosocial": {"const": 1}, "W02|Disposition": {"const": 0},
+        "W03|Diagnosis": {"const": 2}, "W03|NextStep": {"const": 1}, "W03|Safety": {"const": 1}, "W03|Pharmacology": {"const": 1}, "W03|Psychosocial": {"const": 2}, "W03|Disposition": {"const": 1},
+        "W04|Diagnosis": {"const": 1}, "W04|NextStep": {"const": 1}, "W04|Safety": {"const": 0}, "W04|Pharmacology": {"const": 0}, "W04|Psychosocial": {"const": 2}, "W04|Disposition": {"const": 2},
+        "W05|Diagnosis": {"const": 2}, "W05|NextStep": {"const": 2}, "W05|Safety": {"const": 3}, "W05|Pharmacology": {"const": 2}, "W05|Psychosocial": {"const": 0}, "W05|Disposition": {"const": 1},
+        "W06|Diagnosis": {"const": 1}, "W06|NextStep": {"const": 2}, "W06|Safety": {"const": 1}, "W06|Pharmacology": {"const": 2}, "W06|Psychosocial": {"const": 0}, "W06|Disposition": {"const": 0}
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["core", "application"],
+      "properties": {
+        "core": {"$ref": "#/definitions/coreCoverage"},
+        "application": {"$ref": "#/definitions/applicationCoverage"}
+      }
+    },
+    "templateVersions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["coreBasic", "coreCloze", "application", "legacyQbank"],
+      "properties": {
+        "coreBasic": {"const": "pcl-ms3-core-basic-v2"},
+        "coreCloze": {"const": "pcl-ms3-core-cloze-v2"},
+        "application": {"const": "pcl-ms3-application-v2"},
+        "legacyQbank": {"const": "pcl-qbank-legacy-v1"}
+      }
+    },
+    "safetyHold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["qbankUid", "reasonCode"],
+      "properties": {
+        "qbankUid": {"const": "qb_pha_002"},
+        "reasonCode": {"const": "QBANK_STALE_SAFETY_WORDING"}
+      }
+    },
+    "duplicateNormalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unicodeNormalization",
+        "caseFold",
+        "removeHtml",
+        "removeMarkdown",
+        "removeNonAlphanumericPunctuation",
+        "collapseWhitespace",
+        "exactEqualityAction",
+        "jaccardAtOrAboveThresholdAction",
+        "reinforcesWaiver"
+      ],
+      "properties": {
+        "unicodeNormalization": {"const": "NFKC"},
+        "caseFold": {"const": true},
+        "removeHtml": {"const": true},
+        "removeMarkdown": {"const": true},
+        "removeNonAlphanumericPunctuation": {"const": true},
+        "collapseWhitespace": {"const": true},
+        "exactEqualityAction": {"const": "hard_duplicate"},
+        "jaccardAtOrAboveThresholdAction": {"const": "faculty_review_quarantine"},
+        "reinforcesWaiver": {"const": "exact_live_approved_target_only"}
+      }
+    }
+  }
+}
