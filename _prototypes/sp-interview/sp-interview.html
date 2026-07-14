@@ -102,7 +102,10 @@ function MockProvider(){}
 MockProvider.prototype.name='Mock (offline)';
 MockProvider.prototype.start=function(caseDef,opts){
   var rx={}; caseDef.intents.forEach(function(it){rx[it.id]=it.patterns.map(function(p){return new RegExp(p,'i');});});
-  return {caseDef:caseDef, opts:opts, rx:rx, rapport:0, unlocked:{}, covered:{}, flags:[], closedRun:0,
+  var flagIds=caseDef.intents.filter(function(it){return it.category==='flag';}).map(function(it){return it.id;});
+  var prio={data:0,safety:0,organization:1,technique:2,alliance:3};
+  var catPrio={}; caseDef.intents.forEach(function(it){catPrio[it.id]=(prio[it.category]!==undefined)?prio[it.category]:9;});
+  return {caseDef:caseDef, opts:opts, rx:rx, flagIds:flagIds, catPrio:catPrio, rapport:0, unlocked:{}, covered:{}, flags:[], closedRun:0,
           varIdx:{}, turns:[], reflections:0, hintUses:0, openInviteUsed:false, greetUsed:false};
 };
 MockProvider.prototype._match=function(s,text){
@@ -128,7 +131,7 @@ MockProvider.prototype._recentFlag=function(s,names){
 };
 MockProvider.prototype.respond=function(s,text){
   var hits=this._match(s,text);
-  var flags=hits.filter(function(h){return ['judgmental','premature_reassurance','ooc_attempt'].indexOf(h)>=0;});
+  var flags=hits.filter(function(h){return s.flagIds.indexOf(h)>=0;});
   // rapport
   var rr=s.caseDef.rapportRules, self=this;
   rr.raises.forEach(function(r){
@@ -151,34 +154,33 @@ MockProvider.prototype.respond=function(s,text){
   // choose reply — flags first
   var reply=null, critical=null;
   if(flags.length){ reply=this._pick(s,flags[0],'any'); }
-  // gates
+  // gates — fully pack-driven; evaluated in pack order (no hardcoded intent ids)
   var g=s.caseDef.gated, tier=this._tier(s);
   if(!reply){
-    var si=g[0]; // si_active
-    if(hits.indexOf('si_direct')>=0){
-      if(s.unlocked[si.id]){ reply=si.repeatAsk; }
-      else if(s.rapport>=si.requiresRapport && !this._recentFlag(s,si.blockedByRecentFlags||[])){
-        s.unlocked[si.id]=true; reply=si.reveal; critical='disclosure';
-      } else { reply=si.deflectLowRapport; }
-    } else if(hits.indexOf('si_euphemism')>=0 && !s.unlocked[si.id]){
-      reply=si.deflectEuphemism;
-    }
-    if(!reply){
-      for(var i=1;i<g.length;i++){
-        var gd=g[i];
-        if(hits.indexOf(gd.requiresIntents[0])>=0){
+    for(var i=0;i<g.length && !reply;i++){
+      var gd=g[i];
+      var reqHit=(gd.requiresIntents||[]).some(function(ri){return hits.indexOf(ri)>=0;});
+      if(gd.requiresGate){                                   // sub-gate: parent must be open
+        if(reqHit){
           if(s.unlocked[gd.requiresGate]){ s.unlocked[gd.id]=true; reply=gd.reveal; }
           else { reply=gd.deflectIfLocked; }
-          break;
         }
+      } else if(reqHit){                                     // top-level gate
+        if(s.unlocked[gd.id]){ reply=gd.repeatAsk||null; }
+        else if(s.rapport>=(gd.requiresRapport||0) && !this._recentFlag(s,gd.blockedByRecentFlags||[])){
+          s.unlocked[gd.id]=true; reply=gd.reveal; critical='disclosure';
+        } else { reply=gd.deflectLowRapport||gd.deflectIfLocked; }
+      } else if(gd.euphemismIntent && hits.indexOf(gd.euphemismIntent)>=0 && !s.unlocked[gd.id]){
+        reply=gd.deflectEuphemism;
       }
     }
   }
   if(!reply){
-    var content=hits.filter(function(h){return ['judgmental','premature_reassurance','ooc_attempt','si_direct','si_euphemism','si_plan','si_means','si_intent_protective','reflection'].indexOf(h)<0;});
+    var content=hits.filter(function(h){return s.flagIds.indexOf(h)<0 && h!=='reflection';});
     if(hits.indexOf('reflection')>=0 && !content.length){ reply=this._pick(s,'reflection',tier); }
     else if(content.length){
-      var fresh=content.filter(function(c){return !(s.varIdx[c+':'+tier]);});
+      content.sort(function(a,b){var pa=(s.catPrio[a]!==undefined)?s.catPrio[a]:9,pb=(s.catPrio[b]!==undefined)?s.catPrio[b]:9;return pa-pb;});
+      var fresh=content.filter(function(c){return !(s.varIdx[c+':'+tier]) && s.caseDef.responses[c];});
       reply=this._pick(s,(fresh[0]||content[0]),tier);
     } else { reply=this._pick(s,'_default',tier); }
   }
@@ -247,7 +249,9 @@ function computeRubric(s,cov){
 }
 function buildNarrative(s,cov,rub){
   var strengths=[],growth=[];
-  if(s.reflections>=2)strengths.push('You reflected and validated more than once — Dana’s guardedness dropped when you did. That is the mechanism, not a nicety.');
+  var who=s.caseDef.persona.displayName;
+  function hasIntent(id){return s.caseDef.intents.some(function(it){return it.id===id;});}
+  if(s.reflections>=2)strengths.push('You reflected and validated more than once — '+who+'’s guardedness dropped when you did. That is the mechanism, not a nicety.');
   if(s.covered['si_direct'])strengths.push('You asked about suicide in plain language. That is exactly why she told you the truth.');
   if(s.covered['work_stressor'])strengths.push('You found the job loss — the organizing stressor most interviewers miss.');
   if(s.covered['greeting_agenda'])strengths.push('You set a collaborative frame at the start, and she noticed.');
@@ -256,9 +260,9 @@ function buildNarrative(s,cov,rub){
   if(!s.covered['si_direct']&&!s.covered['si_euphemism'])growth.push({t:'Suicide never came up. With this presentation it must — directly and plainly. Next time, try asking early, once any rapport exists: “Have you had thoughts of killing yourself?”',link:'pg_suicide.md'});
   if(s.unlocked['si_active']&&!(s.covered['si_plan']&&s.covered['si_means']&&s.covered['si_intent_protective']))growth.push({t:'After her disclosure, the follow-through was incomplete. Next time, walk the chain: plan, means and access, intent, and what keeps her going.',link:'pg_suicide.md'});
   if(s.reflections<2)growth.push({t:'Long question runs made this feel like an intake form. Next time, try one reflection for every two or three questions — watch what it buys you.',link:'pg_interview.md'});
-  if(!s.covered['work_stressor'])growth.push({t:'You collected symptoms but not the story — something happened two months ago and it never surfaced. Next time, try “What changed around the time this started?”',link:'pg_interview.md'});
+  if(hasIntent('work_stressor')&&!s.covered['work_stressor'])growth.push({t:'You collected symptoms but not the story — something happened two months ago and it never surfaced. Next time, try “What changed around the time this started?”',link:'pg_interview.md'});
   if(!s.covered['summary_close'])growth.push({t:'The encounter ended without a summary. Next time, try playing back what you heard and naming the hard part calmly before you leave the room.',link:'pg_interview.md'});
-  if(!s.covered['psychosis_screen'])growth.push({t:'No psychosis screen. Two plain questions cover it.',link:'t_mood.md'});
+  if(hasIntent('psychosis_screen')&&!s.covered['psychosis_screen'])growth.push({t:'No psychosis screen. Two plain questions cover it.',link:'t_mood.md'});
   while(strengths.length<2)strengths.push('You stayed in the encounter and kept asking — reps are how this skill is built.');
   return {strengths:strengths.slice(0,2),growth:growth.slice(0,2)};
 }
@@ -277,7 +281,23 @@ function App(){
   var busy=useState(false); var isBusy=busy[0],setBusy=busy[1];
   var shs=useState(false); var showSettings=shs[0],setShowSettings=shs[1];
   var cfs=useState(null); var cfg=cfs[0],setCfg=cfs[1];
-  var chatRef=useRef(null);
+  var vm=useState(function(){try{return localStorage.getItem('cw_sp_voice')==='1';}catch(x){return false;}}); var voiceMode=vm[0],setVoiceMode=vm[1];
+  var lis=useState(false); var listening=lis[0],setListening=lis[1];
+  var chatRef=useRef(null); var recRef=useRef(null);
+  // Web Speech API — browser-native, no infra. STT (ask by voice) + TTS (patient speaks back).
+  var SR=(typeof window!=='undefined')&&(window.SpeechRecognition||window.webkitSpeechRecognition);
+  var ttsOK=(typeof window!=='undefined')&&('speechSynthesis' in window);
+  var voiceSupported=!!(SR||ttsOK);
+  function toggleVoice(){ var nx=!voiceMode; setVoiceMode(nx); try{localStorage.setItem('cw_sp_voice',nx?'1':'0');}catch(x){} if(!nx&&ttsOK){try{window.speechSynthesis.cancel();}catch(x){}} announce(nx?'Voice mode on':'Voice mode off'); }
+  function speak(text){ if(!voiceMode||!ttsOK||!text)return; try{ window.speechSynthesis.cancel();
+    var clean=String(text).replace(/\*[^*]*\*/g,' ').replace(/\s+/g,' ').trim(); if(!clean)return;  // drop *stage directions*
+    var u=new SpeechSynthesisUtterance(clean); u.rate=1; u.pitch=1; u.lang='en-US'; window.speechSynthesis.speak(u); }catch(x){} }
+  function startListening(){ if(!SR||listening)return; var rec; try{rec=new SR();}catch(x){return;} recRef.current=rec;
+    rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1; setListening(true); announce('Listening — speak your question');
+    rec.onresult=function(ev){ try{ var t=ev.results[0][0].transcript; setInput(t); setTimeout(function(){ send(false,t); },0); }catch(x){} };
+    rec.onerror=function(){ setListening(false); }; rec.onend=function(){ setListening(false); };
+    try{rec.start();}catch(x){ setListening(false); } }
+  function stopListening(){ try{ if(recRef.current)recRef.current.stop(); }catch(x){} setListening(false); }
   function loadCfg(){ var ep='',pc=''; try{ep=localStorage.getItem('cw_sp_endpoint')||'https://sp-interview-proxy.netlify.app/api/sp';pc=localStorage.getItem('cw_sp_passcode')||'';}catch(x){} return {ep:ep,pc:pc,msg:''}; }
   function openSettings(){ setCfg(loadCfg()); setShowSettings(true); }
   function saveAndTest(){
@@ -321,15 +341,18 @@ function App(){
     setSA({a:'',b:'',c:''});
     setS(Object.assign({},S,{screen:'encounter'}));
     announce('Encounter started with '+caseDef.persona.displayName);
+    speak(caseDef.persona.opening);
   }
-  function send(force){
-    var text=input.trim(); if(!text||isBusy)return;
+  function send(force,explicit){
+    var text=(typeof explicit==='string'?explicit:input).trim(); if(!text||isBusy)return;
     if(!force&&looksLikePhi(text)){ setE(Object.assign({},E,{phiHold:text})); return; }
+    if(ttsOK){try{window.speechSynthesis.cancel();}catch(x){}}
     setBusy(true); setInput('');
     var msgs=E.msgs.concat([{who:'me',text:text}]);
     setE(Object.assign({},E,{msgs:msgs,phiHold:null,hint:null}));
     E.provider.respond(E.session,text).then(function(r){
       setE(function(prev){return Object.assign({},prev,{msgs:prev.msgs.concat([{who:'pt',text:r.reply}])});});
+      speak(r.reply);
       setBusy(false);
       if(E.session.turns.length>=(S.pack.engine.maxTurns||40)){endEncounter();}
     });
@@ -341,7 +364,7 @@ function App(){
     E.session.hintUses=(E.session.hintUses||0)+1;
     setE(Object.assign({},E,{hint:h}));
   }
-  function endEncounter(){ setS(Object.assign({},S,{screen:'selfassess'})); announce('Encounter ended. Self-assessment before feedback.'); }
+  function endEncounter(){ if(ttsOK){try{window.speechSynthesis.cancel();}catch(x){}} stopListening(); setS(Object.assign({},S,{screen:'selfassess'})); announce('Encounter ended. Self-assessment before feedback.'); }
   function toDebrief(){
     setS(Object.assign({},S,{screen:'debrief'}));
     E.provider.evaluate(E.session,SA).then(function(fb){ if(fb){setE(function(p){return Object.assign({},p,{feedback:fb});});} });
@@ -427,17 +450,20 @@ function App(){
                 e('button',{className:'btn ghost',onClick:function(){setInput(E.phiHold);setE(Object.assign({},E,{phiHold:null}));setTimeout(function(){send(true);},0);}},'It’s fictional — send'))) : null,
             E.hint?e('div',{className:'hint'},e('b',null,'Coach: '),E.hint):null,
             e('div',{className:'inrow'},
-              e('textarea',{value:input,'aria-label':'Your next words to the patient',placeholder:'Say what you would actually say…',
-                maxLength:1200,/* === sp-proxy MAX_MSG_CHARS: keeps client & server deriving state over identical text (a single interview turn is far shorter) */
+              e('textarea',{value:input,maxLength:1200,/* === sp-proxy MAX_MSG_CHARS: keeps client & server deriving state over identical text (a single interview turn is far shorter) */'aria-label':'Your next words to the patient',placeholder:voiceMode&&SR?'Tap the mic and speak, or type…':'Say what you would actually say…',
                 onChange:function(ev){setInput(ev.target.value);},
                 onKeyDown:function(ev){if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();send(false);}}}),
+              (voiceMode&&SR)?e('button',{className:'btn'+(listening?' primary':''),disabled:isBusy,'aria-label':listening?'Stop listening':'Speak your question',
+                onClick:function(){listening?stopListening():startListening();}},listening?'◼ Listening…':'🎙 Speak'):null,
               e('button',{className:'btn primary',disabled:isBusy||!input.trim(),onClick:function(){send(false);}},'Say it')),
             e('div',{className:'meta'},
               e('span',null,'Turn '+sess.turns.length+' / '+(S.pack.engine.maxTurns||40)),
               e('span',null,'Provider: '+E.provider.name+(sess._fellBack?' (fell back to offline)':'')),
-              e('span',null,'Enter to send · Shift+Enter for a new line')),
+              e('span',null,voiceMode?'Voice mode on — patient speaks aloud'+(SR?'; mic to ask':'; type to ask'):'Enter to send · Shift+Enter for a new line')),
             e('div',{style:{display:'flex',gap:'10px',marginTop:'12px',flexWrap:'wrap'}},
               e('button',{className:'btn ghost',onClick:getHint},'Pause / get unstuck'),
+              voiceSupported?e('button',{className:'btn'+(voiceMode?' primary':''),'aria-pressed':voiceMode,onClick:toggleVoice,
+                title:'Patient speaks aloud'+(SR?', and you can ask by voice':'')+'. Uses your browser’s built-in speech.'},voiceMode?'🔊 Voice: on':'🔈 Voice: off'):null,
               e('button',{className:'btn',onClick:endEncounter},'End encounter'))),
           e(Disclaimer)),
         sidebar));
@@ -459,15 +485,14 @@ function App(){
 
   if(S.screen==='debrief'){
     var sess2=E.session, cov=computeCoverage(sess2), rub=computeRubric(sess2,cov), nar=buildNarrative(sess2,cov,rub);
-    var siItem=cov.filter(function(c){return c.id==='c_si';})[0];
+    var siItem=cov.filter(function(c){return c.critical;})[0]||cov.filter(function(c){return c.id==='c_si';})[0];
     var criticalMiss=siItem&&siItem.status!=='observed';
     var labels={alliance:'Alliance & rapport',data:'Data gathering',technique:'Communication technique',organization:'Organization & closing'};
     return e('div',null,header,
       e('div',{className:'disc sim'},e('b',null,'Formative only.'),' This debrief is practice feedback from a simulation — it is not a grade and is stored only in this browser. Bring the transcript to your supervisor.'),
       criticalMiss?e('div',{className:'critical'},e('b',null,'Critical: '),
-        siItem.status==='partial'
-          ?'Suicide was approached only by euphemism — Dana tested the question and never answered it. She was having active thoughts. Ask plainly: “have you had thoughts of killing yourself?”'
-          :'Suicide was never asked about. Dana was having active thoughts of not waking up and had looked at a means at home — and left the interview without anyone knowing. This is the one question that can’t be skipped.'):null,
+        ((E.caseDef.criticalMiss||{})[siItem.status==='partial'?'partial':'missed'])
+          ||'The safety question was missed or left at a euphemism. Ask plainly: “have you had thoughts of killing yourself?”'):null,
       e('div',{className:'card'},
         e('h2',null,'Coverage map'),
         e('ul',{style:{listStyle:'none',padding:0}},cov.map(function(c){

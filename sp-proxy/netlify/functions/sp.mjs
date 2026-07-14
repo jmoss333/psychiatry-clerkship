@@ -115,11 +115,12 @@ function matchIntents(compiled, text) {
 function deriveState(caseDef, studentMsgs) {
   const compiled = compileIntents(caseDef);
   const rr = caseDef.rapportRules;
+  const flagIds = caseDef.intents.filter(it => it.category === 'flag').map(it => it.id);
   const s = { rapport: 0, covered: {}, unlocked: {}, closedRun: 0, reflections: 0,
               greetUsed: false, openInviteUsed: false, flagHistory: [], lastIntents: [], lastFlags: [] };
   for (const text of studentMsgs) {
     const hits = matchIntents(compiled, text);
-    const flags = hits.filter(h => ['judgmental', 'premature_reassurance', 'ooc_attempt'].includes(h));
+    const flags = hits.filter(h => flagIds.includes(h));
     for (const r of rr.raises) {
       if (!hits.includes(r.intent)) continue;
       if (r.intent === 'greeting_agenda') { if (s.greetUsed) continue; s.greetUsed = true; }
@@ -134,31 +135,29 @@ function deriveState(caseDef, studentMsgs) {
     const runRule = rr.lowers.find(r => r.closedRun);
     if (runRule && s.closedRun === runRule.closedRun) s.rapport = Math.max(-3, s.rapport + runRule.delta);
     hits.forEach(h => { s.covered[h] = true; });
-    // gates — MIRROR THE CLIENT MockProvider's one-reply-per-turn cascade exactly, or the server
-    // diverges from the untrusted client reference and breaks parity invariant #1. The client
-    // (sp-interview.html respond): a flagged turn answers with a flag line and never touches a
-    // gate; an si_direct / si_euphemism turn is consumed by the SI branch and never falls through
-    // to the secondary gates; and the secondary loop breaks after the first match (one gate/turn).
+    // gates — fully pack-driven, and an EXACT mirror of the client MockProvider cascade:
+    // a flagged turn is answered by the flag line and never touches a gate; gates are
+    // evaluated in pack order and at most ONE gate consumes a turn; a gate whose branch
+    // produces no reply on the client (e.g. repeatAsk undefined) does not consume the turn.
     if (!flags.length) {
       const recentFlags = s.flagHistory.slice(-2).flat();
-      const g0 = caseDef.gated[0];
-      let handled = false;
-      if (hits.includes('si_direct')) {
-        handled = true; // SI branch always produces the reply → secondary gates skipped this turn
-        if (!s.unlocked[g0.id] && s.rapport >= g0.requiresRapport
-            && !(g0.blockedByRecentFlags || []).some(f => recentFlags.includes(f))) {
-          s.unlocked[g0.id] = true;
-        }
-      } else if (hits.includes('si_euphemism') && !s.unlocked[g0.id]) {
-        handled = true; // euphemism is deflected, not answered — no unlock, secondary skipped
-      }
-      if (!handled) {
-        for (let i = 1; i < caseDef.gated.length; i++) {
-          const gd = caseDef.gated[i];
-          if (hits.includes(gd.requiresIntents[0])) {
-            if (s.unlocked[gd.requiresGate]) s.unlocked[gd.id] = true;
-            break; // client replies once per turn → at most one secondary gate advances
+      let consumed = false;
+      for (const gd of caseDef.gated) {
+        if (consumed) break;
+        const reqHit = (gd.requiresIntents || []).some(ri => hits.includes(ri));
+        if (gd.requiresGate) {
+          if (reqHit) {
+            if (s.unlocked[gd.requiresGate]) { s.unlocked[gd.id] = true; consumed = true; }
+            else consumed = !!gd.deflectIfLocked;
           }
+        } else if (reqHit) {
+          if (s.unlocked[gd.id]) { consumed = !!gd.repeatAsk; }
+          else if (s.rapport >= (gd.requiresRapport || 0)
+              && !(gd.blockedByRecentFlags || []).some(f => recentFlags.includes(f))) {
+            s.unlocked[gd.id] = true; consumed = true;
+          } else { consumed = !!(gd.deflectLowRapport || gd.deflectIfLocked); }
+        } else if (gd.euphemismIntent && hits.includes(gd.euphemismIntent) && !s.unlocked[gd.id]) {
+          consumed = !!gd.deflectEuphemism;
         }
       }
     }
@@ -191,7 +190,7 @@ function actorSystem(caseDef, s) {
         deflection: g.deflectLowRapport || g.deflectIfLocked || g.deflectEuphemism || 'deflect naturally' });
   const personaBlock = JSON.stringify({
     persona: caseDef.persona,
-    hiddenAgendaToneOnly: 'You carry shame and fear of being a burden; you test whether the interviewer will flinch or judge. Do not state this openly.',
+    hiddenAgendaToneOnly: caseDef.hiddenAgendaTone || '',
     symptomInventory: caseDef.responses,
     inventoryRule: 'The scripted lines above are your ground truth. Paraphrase naturally in your own words; NEVER invent symptoms, history, names, or facts beyond them.',
     gates,
@@ -243,10 +242,11 @@ export default async (request) => {
     const turns = Array.isArray(body.turns) ? body.turns.slice(0, MAX_TURNS) : [];
     if (turns.length >= MAX_TURNS && body.mode !== 'evaluate') return json(request, 429, { error: 'turn cap reached — end the encounter' });
 
-    // Reject an empty converse message BEFORE charging daily quota: the counter meters LLM calls,
-    // and an empty message never reaches callAnthropic (re-checked at the converse guard below).
-    if (body.mode !== 'evaluate' && !String(body.message || '').trim()) return json(request, 400, { error: 'empty message' });
-
+    let message = '';
+    if (body.mode !== 'evaluate') {
+      message = String(body.message || '').slice(0, MAX_MSG_CHARS);
+      if (!message.trim()) return json(request, 400, { error: 'empty message' });
+    }
     const used = await bumpQuota();
     if (used > DAILY_LIMIT) return json(request, 429, { error: 'daily limit reached — try again tomorrow (or use the offline patient)' });
 
@@ -265,9 +265,7 @@ export default async (request) => {
       return json(request, 200, feedback);
     }
 
-    // converse
-    const message = String(body.message || '').slice(0, MAX_MSG_CHARS);
-    if (!message.trim()) return json(request, 400, { error: 'empty message' });
+    // converse (message already validated above, before quota)
     const studentMsgs = turns.map(t => String(t.me || '').slice(0, MAX_MSG_CHARS)).concat([message]);
     const s = deriveState(caseDef, studentMsgs);
     const msgs = [];
