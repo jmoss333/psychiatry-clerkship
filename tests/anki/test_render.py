@@ -457,6 +457,52 @@ def test_cloze_preview_rejects_unsupported_controls_fail_closed(cloze_text):
         render_card(card)
 
 
+def set_cloze_display_field(card: dict, field: str, value: str) -> None:
+    if field == "front":
+        card["front"] = f"The marker is {{{{c1::{value}}}}}."
+    elif field == "source.quote":
+        card["source"]["quote"] = value
+    else:
+        card[field] = value
+
+
+@pytest.mark.parametrize(
+    "field",
+    ["front", "answer", "explanation", "caveat", "source.quote"],
+)
+def test_every_learner_cloze_field_is_nfc_and_matches_supported_anki(
+    tmp_path, field
+):
+    card = make_core_card(kind="cloze")
+    set_cloze_display_field(card, field, "Cafe\u0301")
+    rendered = render_card(card)
+    backend_front, backend_back = anki_backend_cloze_html(rendered, tmp_path)
+
+    assert rendered.front_html == backend_front
+    assert rendered.back_html == backend_back
+    assert "\u0301" not in rendered.front_html
+    assert "\u0301" not in rendered.back_html
+    assert "Café" in (rendered.front_html + rendered.back_html)
+
+    payload = rendered_note_approval_payload(rendered, card)
+    assert payload["front"] == backend_front
+    assert payload["back"] == backend_back
+    assert rendered.render_sha256 == canonical_json_sha256(payload)
+
+
+@pytest.mark.parametrize(
+    "field",
+    ["front", "answer", "explanation", "caveat", "source.quote"],
+)
+@pytest.mark.parametrize("control", ["\r", "\x00"])
+def test_every_learner_cloze_field_rejects_cr_and_nul_fail_closed(field, control):
+    card = make_core_card(kind="cloze")
+    set_cloze_display_field(card, field, f"left{control}right")
+
+    with pytest.raises(ValueError, match="unsupported control"):
+        render_card(card)
+
+
 def test_application_render_has_exact_active_tags_and_collapsed_secondary_detail():
     card = make_application_card()
     item = make_application_item()

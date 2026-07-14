@@ -373,8 +373,8 @@ def _anki_cloze_data_attribute(answer: str) -> str:
     return "".join(encoded)
 
 
-def _normalize_cloze_source(text: str) -> str:
-    """NFC-normalize cloze text and reject controls Anki may rewrite silently."""
+def _normalize_display_text(text: str) -> str:
+    """NFC-normalize display text and reject controls Anki may rewrite silently."""
 
     normalized = unicodedata.normalize("NFC", text)
     unsupported = [
@@ -385,6 +385,12 @@ def _normalize_cloze_source(text: str) -> str:
     if unsupported:
         raise ValueError("cloze text contains an unsupported control character")
     return normalized
+
+
+def _escape_display_text(value: object) -> str:
+    """Normalize learner-provided text before escaping it exactly once."""
+
+    return html.escape(_normalize_display_text(str(value)))
 
 
 def _cloze_display(text: str, *, front: bool) -> str:
@@ -513,15 +519,15 @@ def build_core_note(card: Mapping) -> RenderedNote:
     source = card["source"]
     shared = {
         "UID": html.escape(str(card["id"])),
-        "Answer": html.escape(str(card["answer"])),
-        "Explanation": html.escape(str(card["explanation"])),
-        "Caveat": html.escape(str(card.get("caveat", ""))),
-        "SourceQuote": html.escape(str(source["quote"])),
+        "Answer": _escape_display_text(card["answer"]),
+        "Explanation": _escape_display_text(card["explanation"]),
+        "Caveat": _escape_display_text(card.get("caveat", "")),
+        "SourceQuote": _escape_display_text(source["quote"]),
         "SourceLink": _source_link(source),
         "Meta": _meta(card),
     }
     if kind == "basic":
-        field_map = {"Front": html.escape(str(card["front"])), **shared}
+        field_map = {"Front": _escape_display_text(card["front"]), **shared}
         fields = tuple(field_map[name] for name, _field_id in CORE_BASIC_FIELDS)
         return _card_rendered_note(
             card,
@@ -534,7 +540,7 @@ def build_core_note(card: Mapping) -> RenderedNote:
             contract_key="coreBasic",
         )
     field_map = {
-        "Text": html.escape(_normalize_cloze_source(str(card["front"]))),
+        "Text": _escape_display_text(card["front"]),
         **shared,
     }
     fields = tuple(field_map[name] for name, _field_id in CORE_CLOZE_FIELDS)
