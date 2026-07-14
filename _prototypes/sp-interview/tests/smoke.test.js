@@ -8,7 +8,8 @@ let src=m[0].replace(/^<script>\n/,'').replace(/\n<\/script>$/,'');
 // stubs
 global.window={};
 global.document={getElementById:()=>({addEventListener(){},removeEventListener(){},textContent:''}),documentElement:{getAttribute:()=>null,setAttribute(){}},createElement:()=>({click(){},set href(v){},set download(v){}})};
-global.localStorage={getItem:()=>null,setItem(){}};
+global.localStorage={getItem:()=>null,setItem(){},removeItem(){}};
+global.sessionStorage={getItem:()=>null,setItem(){},removeItem(){}};
 global.React={createElement:()=>null,useState:(v)=>[v,()=>{}],useEffect:()=>{},useRef:()=>({current:null})};
 global.ReactDOM={createRoot:()=>({render(){}})};
 global.fetch=()=>Promise.reject(new Error('no net'));

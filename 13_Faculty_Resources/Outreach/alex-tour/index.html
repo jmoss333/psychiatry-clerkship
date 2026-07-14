@@ -1,0 +1,1752 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description"
+        content="A six-minute guided tour of faculty-governed psychiatry workforce education.">
+  <title>Faculty-governed psychiatry workforce education | Joshua Moss, MD</title>
+  <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2318323A'/%3E%3Cpath d='M16 48V16h10v20h22' fill='none' stroke='%232F6F68' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='48' cy='36' r='7' fill='%23DCE9E7' stroke='%232F6F68' stroke-width='3'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: light;
+      --harbor: #18323A;
+      --teal: #2F6F68;
+      --fog: #DCE9E7;
+      --clay: #B75C3D;
+      --clay-text: #98462F;
+      --paper: #FBFCFA;
+      --slate: #5B686B;
+      --line: #AFCBC6;
+      --measure: 72rem;
+      --radius: 0.75rem;
+      --shadow: 0 1rem 3rem rgba(24, 50, 58, 0.09);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--harbor);
+      font-size: 1rem;
+      line-height: 1.65;
+      text-rendering: optimizeLegibility;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    a {
+      color: var(--teal);
+      text-underline-offset: 0.2em;
+      text-decoration-thickness: 0.08em;
+    }
+
+    a:hover {
+      color: var(--harbor);
+    }
+
+    button {
+      min-height: 2.75rem;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--clay);
+      outline-offset: 4px;
+    }
+
+    .skip-link {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 20;
+      padding: 0.75rem 1rem;
+      background: var(--paper);
+      color: var(--harbor);
+      transform: translateY(-200%);
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    .site-header {
+      min-height: 43rem;
+      overflow: hidden;
+      background: var(--harbor);
+      color: var(--paper);
+    }
+
+    .hero-shell,
+    .route-shell,
+    .section-shell,
+    .footer-shell {
+      width: min(calc(100% - 3rem), var(--measure));
+      margin-inline: auto;
+    }
+
+    .hero-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      padding-block: 1.5rem;
+      border-bottom: 1px solid rgba(220, 233, 231, 0.28);
+    }
+
+    .link-context {
+      margin: 0;
+      padding: 0.45rem 0.7rem;
+      border: 1px solid rgba(175, 203, 198, 0.7);
+      color: var(--fog);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .hero-facts {
+      display: flex;
+      gap: 0;
+      margin: 0;
+    }
+
+    .hero-facts div {
+      min-width: 8.5rem;
+      padding-inline: 1.35rem;
+      border-left: 1px solid rgba(220, 233, 231, 0.32);
+    }
+
+    .hero-facts dt {
+      color: var(--line);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero-facts dd {
+      margin: 0.1rem 0 0;
+      font-size: 0.95rem;
+      font-weight: 650;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.55fr);
+      gap: 4rem;
+      align-items: center;
+      min-height: 31rem;
+      padding-block: 4rem 3rem;
+    }
+
+    .hero-copy h1 {
+      max-width: 16ch;
+      margin: 0;
+      font-size: clamp(3rem, 5.6vw, 5.6rem);
+      font-weight: 640;
+      letter-spacing: -0.052em;
+      line-height: 1.02;
+    }
+
+    .hero-copy h1::after {
+      content: "";
+      display: inline-block;
+      width: 0.16em;
+      height: 0.16em;
+      margin-left: 0.07em;
+      border-radius: 50%;
+      background: #61B8AD;
+      vertical-align: 0.05em;
+    }
+
+    .hero-lead {
+      max-width: 43rem;
+      margin: 2rem 0 0;
+      color: var(--fog);
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      line-height: 1.55;
+    }
+
+    .hero-byline {
+      margin: 1.1rem 0 0;
+      color: var(--line);
+      font-size: 0.92rem;
+      font-weight: 650;
+      letter-spacing: 0.02em;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .primary-action,
+    .external-link {
+      display: inline-flex;
+      min-height: 2.75rem;
+      align-items: center;
+      justify-content: center;
+      gap: 0.65rem;
+      padding: 0.72rem 1rem;
+      border: 1px solid transparent;
+      font-size: 0.9rem;
+      font-weight: 720;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+    }
+
+    .primary-action {
+      background: #69BFB4;
+      color: #102C33;
+    }
+
+    .primary-action:hover {
+      background: var(--paper);
+      color: var(--harbor);
+    }
+
+    .quiet-disclosure {
+      max-width: 38rem;
+      margin: 1.2rem 0 0;
+      color: var(--line);
+      font-size: 0.78rem;
+    }
+
+    .hero-art {
+      position: relative;
+      min-height: 24rem;
+      color: #5DB0A7;
+    }
+
+    .hero-art::after {
+      content: "";
+      position: absolute;
+      top: 6.4rem;
+      right: -9rem;
+      width: 24rem;
+      height: 7rem;
+      background: rgba(220, 233, 231, 0.09);
+      clip-path: polygon(0 38%, 100% 0, 100% 100%, 0 62%);
+    }
+
+    .lighthouse {
+      position: absolute;
+      right: 1rem;
+      bottom: 0;
+      width: min(100%, 24rem);
+      height: auto;
+      filter: drop-shadow(0 0 1.5rem rgba(93, 176, 167, 0.12));
+    }
+
+    .hero-itinerary {
+      display: grid;
+      grid-template-columns: 9rem repeat(3, minmax(0, 1fr));
+      margin: 0;
+      padding: 0;
+      border-top: 1px solid rgba(220, 233, 231, 0.28);
+      list-style: none;
+    }
+
+    .hero-itinerary li {
+      min-height: 6.5rem;
+      padding: 1.25rem 1.5rem;
+      border-left: 1px solid rgba(220, 233, 231, 0.22);
+      color: var(--fog);
+      font-size: 0.86rem;
+    }
+
+    .hero-itinerary li:first-child {
+      border-left: 0;
+      color: #72C6BC;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero-itinerary strong {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: var(--paper);
+      font-size: 0.95rem;
+      font-weight: 650;
+    }
+
+    .route-shell {
+      padding-block: 5.5rem 4rem;
+    }
+
+    .route-layout {
+      display: grid;
+      grid-template-columns: 13rem minmax(0, 1fr);
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .route-intro {
+      position: sticky;
+      top: 2rem;
+    }
+
+    .section-label,
+    .eyebrow {
+      margin: 0;
+      color: var(--teal);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-label::after,
+    .eyebrow::after {
+      content: "";
+      display: block;
+      width: 2rem;
+      height: 0.14rem;
+      margin-top: 0.8rem;
+      background: var(--teal);
+    }
+
+    .route-intro p:last-child {
+      margin: 1.2rem 0 0;
+      color: var(--slate);
+      font-size: 0.88rem;
+    }
+
+    .route-sequence {
+      position: relative;
+      min-width: 0;
+    }
+
+    .route-sequence::before {
+      content: "";
+      position: absolute;
+      top: 2.5rem;
+      bottom: 4rem;
+      left: 3.25rem;
+      width: 0.32rem;
+      border-radius: 1rem;
+      background: var(--teal);
+      transform-origin: top;
+    }
+
+    .route-ready .route-sequence::before {
+      animation: draw-route 1.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .route-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: 6.5rem minmax(0, 1fr);
+      gap: 2rem;
+      padding: 1.5rem 0 5.75rem;
+    }
+
+    .route-marker {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      padding-top: 0.25rem;
+    }
+
+    .route-number {
+      display: grid;
+      width: 4.35rem;
+      height: 4.35rem;
+      place-items: center;
+      border: 0.35rem solid var(--paper);
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 0 1px var(--teal);
+      color: white;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 1.55rem;
+      font-weight: 720;
+    }
+
+    .time-marker {
+      position: absolute;
+      top: -0.8rem;
+      left: -3.65rem;
+      min-width: 3.5rem;
+      padding: 0.24rem 0.35rem;
+      background: var(--harbor);
+      color: var(--paper);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.68rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .route-copy {
+      min-width: 0;
+      padding-top: 0.2rem;
+    }
+
+    .route-copy h2 {
+      margin: 0;
+      font-size: clamp(1.65rem, 3vw, 2.35rem);
+      font-weight: 610;
+      letter-spacing: -0.035em;
+      line-height: 1.15;
+    }
+
+    .route-copy h2::after {
+      content: "";
+      display: block;
+      width: 2.4rem;
+      height: 0.16rem;
+      margin-top: 1rem;
+      background: var(--teal);
+    }
+
+    .route-copy > p {
+      max-width: 44rem;
+      margin: 1.4rem 0 0;
+      color: var(--slate);
+    }
+
+    .observations {
+      max-width: 47rem;
+      margin: 1.45rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .observations li {
+      position: relative;
+      margin-top: 0.75rem;
+      padding-left: 1.7rem;
+    }
+
+    .observations li::before {
+      content: "";
+      position: absolute;
+      top: 0.63em;
+      left: 0;
+      width: 0.6rem;
+      height: 0.6rem;
+      border: 2px solid var(--teal);
+      transform: rotate(45deg);
+    }
+
+    .external-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-top: 1.75rem;
+    }
+
+    .external-link {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    .external-link:hover {
+      background: var(--teal);
+      color: white;
+    }
+
+    .runbook {
+      margin-top: 2rem;
+      padding: 1.4rem 0 0;
+      border-top: 2px solid var(--clay);
+    }
+
+    .runbook h3 {
+      margin: 0;
+      color: var(--clay-text);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .runbook ol {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0;
+      margin: 1rem 0 0;
+      padding: 0;
+      border-top: 1px solid var(--line);
+      list-style: none;
+      counter-reset: setup-step;
+    }
+
+    .runbook li {
+      position: relative;
+      min-height: 5.5rem;
+      padding: 1rem 1rem 1rem 3.2rem;
+      border-bottom: 1px solid var(--line);
+      counter-increment: setup-step;
+    }
+
+    .runbook li:nth-child(odd) {
+      border-right: 1px solid var(--line);
+    }
+
+    .runbook li::before {
+      content: counter(setup-step, decimal-leading-zero);
+      position: absolute;
+      top: 1rem;
+      left: 0.75rem;
+      color: var(--teal);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .endpoint-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 1.2rem;
+    }
+
+    #sp-endpoint {
+      display: block;
+      min-width: 0;
+      padding: 0.82rem 0.9rem;
+      overflow-wrap: anywhere;
+      border: 1px solid var(--line);
+      background: var(--fog);
+      color: var(--harbor);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+    }
+
+    .control-button {
+      padding: 0.65rem 0.9rem;
+      border: 1px solid var(--teal);
+      border-radius: 0;
+      background: transparent;
+      color: var(--teal);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 760;
+    }
+
+    .control-button:hover,
+    .control-button[aria-pressed="true"] {
+      background: var(--teal);
+      color: white;
+    }
+
+    .safety-note {
+      padding-left: 1rem;
+      border-left: 0.22rem solid var(--clay);
+      color: var(--harbor) !important;
+      font-size: 0.9rem;
+    }
+
+    .governance-checkpoint {
+      padding-top: 0;
+    }
+
+    .route-bend {
+      position: absolute;
+      z-index: 1;
+      top: -1rem;
+      bottom: 3rem;
+      left: 3.25rem;
+      width: 3.65rem;
+      border: 0.32rem solid var(--teal);
+      border-left: 0;
+      border-radius: 0 4rem 4rem 0;
+      background: var(--paper);
+      pointer-events: none;
+    }
+
+    .governance-checkpoint .route-marker {
+      transform: translateX(3.65rem);
+    }
+
+    .governance-checkpoint .route-number {
+      border-width: 0.25rem;
+      border-color: var(--clay);
+      background: var(--harbor);
+      box-shadow: 0 0 0 0.22rem var(--paper), 0 0 0 0.38rem var(--clay);
+      font-size: 1rem;
+    }
+
+    .governance-checkpoint .route-copy {
+      position: relative;
+      z-index: 2;
+      margin-left: 1.5rem;
+      padding: 1.5rem;
+      border-left: 0.25rem solid var(--clay);
+      background: var(--fog);
+      box-shadow: var(--shadow);
+    }
+
+    .governance-checkpoint h2 {
+      color: var(--clay);
+      font-size: clamp(1.35rem, 2.4vw, 1.8rem);
+      font-weight: 760;
+      letter-spacing: -0.02em;
+    }
+
+    .governance-checkpoint h2::after {
+      background: var(--clay);
+    }
+
+    .governance-banner {
+      margin: 1.25rem 0 0;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid rgba(183, 92, 61, 0.52);
+      background: var(--paper);
+      color: var(--clay-text);
+      font-size: 0.8rem;
+      font-weight: 780;
+    }
+
+    .pipeline {
+      color: var(--harbor) !important;
+      font-size: 0.9rem;
+      font-weight: 650;
+    }
+
+    .governance-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.4rem;
+    }
+
+    .governance-columns h3 {
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    .governance-columns p {
+      margin: 0.55rem 0 0;
+      color: var(--slate);
+      font-size: 0.85rem;
+    }
+
+    .governance-demo {
+      margin-top: 1.5rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      padding-block: 1rem;
+    }
+
+    .filter-row .control-button {
+      min-width: 4rem;
+    }
+
+    .governance-records {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .governance-record {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.9rem 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .governance-record h4 {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    .governance-record p {
+      margin: 0.18rem 0 0;
+      color: var(--slate);
+      font-size: 0.76rem;
+    }
+
+    .demo-toggle {
+      min-height: 2.75rem;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--teal);
+      border-radius: 0;
+      background: var(--paper);
+      color: var(--teal);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 760;
+    }
+
+    .demo-toggle[aria-pressed="true"] {
+      background: var(--teal);
+      color: white;
+    }
+
+    .demo-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .section-band {
+      border-top: 1px solid var(--line);
+    }
+
+    .section-shell {
+      padding-block: 4.5rem;
+    }
+
+    .section-heading {
+      display: grid;
+      grid-template-columns: 13rem minmax(0, 1fr);
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      max-width: 21ch;
+      font-size: clamp(2rem, 4vw, 3.35rem);
+      font-weight: 610;
+      letter-spacing: -0.042em;
+      line-height: 1.08;
+    }
+
+    .prototype-ledger {
+      margin: 2.5rem 0 0 17rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .prototype-row {
+      display: grid;
+      grid-template-columns: minmax(15rem, 1.2fr) minmax(12rem, 1fr) auto;
+      gap: 1rem;
+      align-items: center;
+      min-height: 5.4rem;
+      padding-block: 0.85rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .prototype-row p {
+      margin: 0;
+    }
+
+    .prototype-name {
+      font-weight: 720;
+    }
+
+    .prototype-label {
+      color: var(--slate);
+      font-size: 0.82rem;
+    }
+
+    .prototype-row .external-link {
+      min-width: 6.5rem;
+    }
+
+    .questions {
+      background: #FFFFFF;
+    }
+
+    .question-list {
+      margin: 2.5rem 0 0 17rem;
+      padding: 0;
+      border-top: 1px solid var(--line);
+      list-style: none;
+      counter-reset: collaboration-question;
+    }
+
+    .question-list li {
+      position: relative;
+      min-height: 7rem;
+      padding: 1.5rem 1rem 1.5rem 5.5rem;
+      border-bottom: 1px solid var(--line);
+      counter-increment: collaboration-question;
+      font-size: clamp(1.05rem, 2.2vw, 1.4rem);
+      font-weight: 680;
+      line-height: 1.4;
+    }
+
+    .question-list li::before {
+      content: counter(collaboration-question);
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      color: var(--teal);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 2.5rem;
+      font-weight: 500;
+    }
+
+    .question-list li::after {
+      content: "";
+      position: absolute;
+      top: 1rem;
+      bottom: 1rem;
+      left: 4.2rem;
+      width: 1px;
+      background: var(--line);
+    }
+
+    .print-row {
+      display: flex;
+      justify-content: flex-end;
+      margin: 1.5rem 0 0 17rem;
+    }
+
+    footer {
+      background: var(--harbor);
+      color: var(--fog);
+    }
+
+    .footer-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 2rem;
+      align-items: end;
+      padding-block: 2.7rem;
+    }
+
+    .footer-shell p {
+      margin: 0;
+    }
+
+    .footer-signature {
+      color: var(--paper);
+      font-weight: 720;
+    }
+
+    .footer-note {
+      margin-top: 0.45rem !important;
+      color: var(--line);
+      font-size: 0.78rem;
+    }
+
+    .footer-mode {
+      color: var(--line);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes draw-route {
+      from {
+        transform: scaleY(0);
+      }
+      to {
+        transform: scaleY(1);
+      }
+    }
+
+    @media (max-width: 60rem) {
+      .hero-grid {
+        grid-template-columns: minmax(0, 1fr) 18rem;
+        gap: 1.5rem;
+      }
+
+      .hero-facts div {
+        min-width: 7rem;
+        padding-inline: 0.8rem;
+      }
+
+      .route-layout,
+      .section-heading {
+        grid-template-columns: 10rem minmax(0, 1fr);
+        gap: 2.5rem;
+      }
+
+      .prototype-ledger,
+      .question-list,
+      .print-row {
+        margin-left: 12.5rem;
+      }
+    }
+
+    @media (max-width: 48rem) {
+      .hero-shell,
+      .route-shell,
+      .section-shell,
+      .footer-shell {
+        width: min(calc(100% - 2rem), var(--measure));
+      }
+
+      .site-header {
+        min-height: auto;
+      }
+
+      .hero-topline {
+        align-items: flex-start;
+      }
+
+      .hero-facts {
+        display: none;
+      }
+
+      .hero-grid {
+        display: block;
+        min-height: auto;
+        padding-block: 3.5rem;
+      }
+
+      .hero-copy h1 {
+        max-width: 12ch;
+        font-size: clamp(2.75rem, 13vw, 4.5rem);
+      }
+
+      .hero-art {
+        min-height: 14rem;
+        margin-top: 1rem;
+        opacity: 0.72;
+      }
+
+      .hero-art::after {
+        display: none;
+      }
+
+      .lighthouse {
+        right: 50%;
+        width: 16rem;
+        transform: translateX(50%);
+      }
+
+      .hero-itinerary {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-itinerary li,
+      .hero-itinerary li:first-child {
+        min-height: auto;
+        padding: 1rem 0;
+        border-top: 1px solid rgba(220, 233, 231, 0.22);
+        border-left: 0;
+      }
+
+      .route-shell {
+        padding-block: 4rem 2rem;
+      }
+
+      .route-layout,
+      .section-heading {
+        display: block;
+      }
+
+      .route-intro {
+        position: static;
+        margin-bottom: 2.5rem;
+      }
+
+      .route-sequence::before {
+        left: 1.35rem;
+      }
+
+      .route-item {
+        grid-template-columns: 2.7rem minmax(0, 1fr);
+        gap: 1.25rem;
+        padding-bottom: 4.5rem;
+      }
+
+      .route-number {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-width: 0.22rem;
+        font-size: 1rem;
+      }
+
+      .time-marker {
+        top: -1.9rem;
+        left: -0.5rem;
+        min-width: 3.4rem;
+      }
+
+      .route-bend {
+        display: none;
+      }
+
+      .governance-checkpoint .route-marker {
+        transform: none;
+      }
+
+      .governance-checkpoint .route-copy {
+        margin-left: 0;
+        padding: 1.15rem;
+      }
+
+      .runbook ol,
+      .governance-columns {
+        grid-template-columns: 1fr;
+      }
+
+      .runbook li:nth-child(odd) {
+        border-right: 0;
+      }
+
+      .endpoint-row {
+        grid-template-columns: 1fr;
+      }
+
+      .governance-record {
+        grid-template-columns: 1fr;
+      }
+
+      .section-shell {
+        padding-block: 3.5rem;
+      }
+
+      .section-heading h2 {
+        margin-top: 1.5rem;
+      }
+
+      .prototype-ledger,
+      .question-list,
+      .print-row {
+        margin-left: 0;
+      }
+
+      .prototype-row {
+        grid-template-columns: 1fr;
+        gap: 0.3rem;
+        padding-block: 1.2rem;
+      }
+
+      .prototype-row .external-link {
+        width: 100%;
+        margin-top: 0.5rem;
+      }
+
+      .question-list li {
+        min-height: 8rem;
+        padding-right: 0;
+        padding-left: 4rem;
+      }
+
+      .question-list li::before {
+        left: 0;
+        font-size: 2rem;
+      }
+
+      .question-list li::after {
+        left: 3rem;
+      }
+
+      .print-row {
+        justify-content: stretch;
+      }
+
+      .print-row button {
+        width: 100%;
+      }
+
+      .footer-shell {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @media print {
+      @page {
+        size: letter portrait;
+        margin: 0.5in;
+      }
+
+      body {
+        background: white;
+        color: black;
+        font-size: 9pt;
+      }
+
+      .skip-link,
+      .hero-topline,
+      .hero-art,
+      .hero-itinerary,
+      .hero-actions,
+      .quiet-disclosure,
+      .route-intro p:last-child,
+      .route-marker,
+      .route-sequence::before,
+      .route-copy > p,
+      .observations,
+      .external-actions,
+      .runbook,
+      #governance-preview,
+      .related-prototypes,
+      .print-row,
+      .footer-note,
+      .footer-mode,
+      #tour-status {
+        display: none !important;
+      }
+
+      .site-header,
+      footer {
+        min-height: auto;
+        background: white;
+        color: black;
+      }
+
+      .hero-shell,
+      .route-shell,
+      .section-shell,
+      .footer-shell {
+        width: 100%;
+      }
+
+      .hero-grid {
+        display: block;
+        min-height: auto;
+        padding: 0 0 0.22in;
+        border-bottom: 1px solid black;
+      }
+
+      .hero-copy h1 {
+        max-width: none;
+        color: black;
+        font-size: 22pt;
+      }
+
+      .hero-copy h1::after {
+        background: black;
+      }
+
+      .hero-lead {
+        margin-top: 0.08in;
+        color: black;
+        font-size: 10pt;
+      }
+
+      .hero-byline {
+        margin-top: 0.06in;
+        color: black;
+      }
+
+      .route-shell {
+        padding-block: 0.2in 0.1in;
+      }
+
+      .route-layout {
+        display: block;
+      }
+
+      .route-intro {
+        position: static;
+      }
+
+      .route-intro .section-label {
+        color: black;
+      }
+
+      .route-sequence {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.12in;
+        margin-top: 0.12in;
+      }
+
+      .route-item {
+        display: block;
+        padding: 0.09in;
+        border: 1px solid black;
+      }
+
+      .route-copy {
+        padding: 0;
+      }
+
+      .route-copy h2 {
+        font-size: 11pt;
+        letter-spacing: 0;
+      }
+
+      .route-copy h2::after,
+      .section-label::after,
+      .eyebrow::after {
+        display: none;
+      }
+
+      .questions {
+        border-top: 1px solid black;
+      }
+
+      .section-shell {
+        padding-block: 0.18in 0;
+      }
+
+      .section-heading {
+        display: block;
+      }
+
+      .section-heading .eyebrow {
+        color: black;
+      }
+
+      .section-heading h2 {
+        margin-top: 0.05in;
+        font-size: 16pt;
+      }
+
+      .question-list {
+        margin: 0.12in 0 0;
+        border-color: black;
+      }
+
+      .question-list li {
+        min-height: 0;
+        padding: 0.12in 0.1in 0.12in 0.45in;
+        border-color: black;
+        font-size: 11pt;
+      }
+
+      .question-list li::before {
+        top: 0.08in;
+        left: 0.06in;
+        color: black;
+        font-size: 16pt;
+      }
+
+      .question-list li::after {
+        top: 0.08in;
+        bottom: 0.08in;
+        left: 0.34in;
+        background: black;
+      }
+
+      .footer-shell {
+        display: block;
+        padding-block: 0.16in 0;
+        border-top: 1px solid black;
+      }
+
+      .footer-signature {
+        color: black;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#tour">Skip to the tour</a>
+  <header class="site-header" aria-label="Alex Tour introduction">
+    <div class="hero-shell">
+      <div class="hero-topline">
+        <p class="link-context">Public by link · read-only tour</p>
+        <dl class="hero-facts" aria-label="Tour facts">
+          <div>
+            <dt>Estimated time</dt>
+            <dd>06:00</dd>
+          </div>
+          <div>
+            <dt>Guided itinerary</dt>
+            <dd>3 stops</dd>
+          </div>
+          <div>
+            <dt>Focus</dt>
+            <dd>Workforce education</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>Faculty-governed psychiatry workforce education</h1>
+          <p class="hero-lead">
+            A six-minute guided tour from supervised learning to accountable scale.
+          </p>
+          <p class="hero-byline">Joshua Moss, MD | Psychiatrist</p>
+          <div class="hero-actions">
+            <a class="primary-action" href="#resident-education">
+              Start the six-minute tour
+            </a>
+          </div>
+          <p class="quiet-disclosure">
+            Working prototypes for discussion. No patient data. No implied institutional
+            endorsement.
+          </p>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <svg class="lighthouse" viewBox="0 0 360 380" role="img">
+            <g fill="none" stroke="currentColor" stroke-linecap="round"
+               stroke-linejoin="round" stroke-width="2">
+              <path d="M178 35v-18m-10 28 10-10 10 10m-31 18h42l-8-18h-26z"/>
+              <path d="M163 63h30v24h-30zm-7 24h44v13h-44z"/>
+              <path d="M165 100 151 268h54l-14-168zm-22 168h70v18h-70z"/>
+              <path d="M175 133h8v22h-8zm-4 68h16v36h-16z"/>
+              <path d="M114 304c34-20 54-15 72 0 25-24 48-16 70 1"/>
+              <path d="M63 321c45-23 80-8 105 0 29 9 70 3 116-4"/>
+              <path d="M30 339c48-17 89-5 124 1 37 7 85 7 154-5"/>
+              <path d="M8 357c59-14 105-4 150 1 52 6 104 2 194-12"/>
+              <path d="M205 63 350 29 350 99z" opacity=".22" fill="currentColor"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <ol class="hero-itinerary" aria-label="Tour preview">
+        <li>Your route</li>
+        <li><strong>01 · 00:00</strong>Resident education</li>
+        <li><strong>02 · 02:00</strong>MS3 education and simulation</li>
+        <li><strong>03 · 04:00</strong>Patient and family infrastructure</li>
+      </ol>
+    </div>
+  </header>
+
+  <main id="tour">
+    <div class="route-shell">
+      <div class="route-layout">
+        <aside class="route-intro" aria-label="Tour route">
+          <p class="section-label">Your route</p>
+          <p>
+            One curriculum architecture, three learner-facing translations, and a visible
+            governance checkpoint.
+          </p>
+        </aside>
+
+        <div class="route-sequence">
+          <section id="resident-education" class="route-item">
+            <div class="route-marker" aria-hidden="true">
+              <span class="time-marker">00:00</span>
+              <span class="route-number">1</span>
+            </div>
+            <div class="route-copy">
+              <h2>Resident education — two minutes</h2>
+              <p>
+                The resident library connects supervised learning to the clinical work of
+                inpatient psychiatry and progressive independence.
+              </p>
+              <ul class="observations">
+                <li>Workflow-oriented navigation connects teaching to ward tasks.</li>
+                <li>Clinical reasoning and simulation sit beside reference content.</li>
+                <li>
+                  Visible review status distinguishes faculty-attested material from work in
+                  progress.
+                </li>
+              </ul>
+              <div class="external-actions">
+                <a class="external-link"
+                   href="https://mmc-psychiatry-residents-sanford.netlify.app/"
+                   data-destination="resident-library" target="_blank"
+                   rel="noopener noreferrer">
+                  Open the resident education library <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+            </div>
+          </section>
+
+          <section id="ms3-education" class="route-item">
+            <div class="route-marker" aria-hidden="true">
+              <span class="time-marker">02:00</span>
+              <span class="route-number">2</span>
+            </div>
+            <div class="route-copy">
+              <h2>MS3 education and simulation — two minutes</h2>
+              <p>
+                The same curriculum architecture becomes a six-week undergraduate journey, with
+                an interactive fictional patient encounter for supervised practice.
+              </p>
+              <div class="external-actions">
+                <a class="external-link"
+                   href="https://une-ms3-psychiatry.netlify.app/"
+                   data-destination="ms3-library" target="_blank"
+                   rel="noopener noreferrer">
+                  Open the MS3 clerkship library <span aria-hidden="true">↗</span>
+                </a>
+                <a class="external-link"
+                   href="https://une-ms3-psychiatry.netlify.app/?tool=sp-interview.html"
+                   data-destination="sp-interview" target="_blank"
+                   rel="noopener noreferrer">
+                  Open The Interview Room <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+
+              <div class="runbook" aria-labelledby="interview-room-setup">
+                <h3 id="interview-room-setup">The Interview Room · setup sequence</h3>
+                <ol>
+                  <li>Open <strong>The Interview Room.</strong></li>
+                  <li>
+                    Select <strong>⚙ setup.</strong> On a fresh tab it opens automatically; the
+                    instruction remains useful on a returning tab.
+                  </li>
+                  <li>Confirm <strong>Live patient (LLM proxy)</strong> mode.</li>
+                  <li>Confirm the prefilled endpoint shown below.</li>
+                  <li>Enter the passcode sent separately by Joshua.</li>
+                  <li>Select <strong>Save &amp; test connection.</strong></li>
+                  <li>
+                    After <strong>Connected,</strong> choose <strong>Supported</strong> or
+                    <strong>Realistic.</strong>
+                  </li>
+                </ol>
+                <div class="endpoint-row">
+                  <code id="sp-endpoint"
+                        tabindex="0">https://sp-interview-proxy.netlify.app/api/sp</code>
+                  <button id="copy-endpoint" class="control-button" type="button">
+                    Copy endpoint
+                  </button>
+                </div>
+                <p class="safety-note">
+                  Fictional supervised-learning simulation — not clinical decision support.
+                  Do not enter real-patient information. The passcode is sent separately and is
+                  not stored by this tour.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section id="governance-preview" class="route-item governance-checkpoint">
+            <div class="route-bend" aria-hidden="true"></div>
+            <div class="route-marker" aria-hidden="true">
+              <span class="route-number">✓</span>
+            </div>
+            <div class="route-copy">
+              <p class="eyebrow">Faculty-governance checkpoint</p>
+              <h2>Review becomes visible, auditable learner trust</h2>
+              <p class="governance-banner">
+                Read-only demonstration — synthetic records; no repository access.
+              </p>
+              <p class="pipeline">
+                Faculty reviews source → attestation state is recorded → auditable repository
+                commit → learner sites rebuild → review status is visible to learners
+              </p>
+
+              <div class="governance-columns">
+                <div>
+                  <h3>What the pilot proves</h3>
+                  <p>
+                    Governance is separate from the learner view; the repository remains the
+                    source of truth; saves are auditable; faculty can preview learner-facing
+                    material.
+                  </p>
+                </div>
+                <div>
+                  <h3>What responsible scale would add</h3>
+                  <p>
+                    Organizational SSO or OAuth; role-based permissions; confirmation for bulk
+                    actions; complete question and evidence review; protected or staged writes;
+                    resident and MS3 preview links.
+                  </p>
+                </div>
+              </div>
+
+              <div class="governance-demo" aria-label="Synthetic governance demonstration">
+                <div class="filter-row" aria-label="Filter demonstration records">
+                  <button class="control-button" type="button" aria-pressed="true"
+                          data-governance-filter="All">All</button>
+                  <button class="control-button" type="button" aria-pressed="false"
+                          data-governance-filter="Pages">Pages</button>
+                  <button class="control-button" type="button" aria-pressed="false"
+                          data-governance-filter="Tools">Tools</button>
+                  <button class="control-button" type="button" aria-pressed="false"
+                          data-governance-filter="Question bank">Question bank</button>
+                </div>
+                <div id="governance-records" class="governance-records"
+                     aria-live="polite"></div>
+                <div class="demo-controls">
+                  <button id="reset-governance" class="control-button" type="button">
+                    Reset demonstration
+                  </button>
+                  <a class="external-link"
+                     href="https://clerkship-faculty-attest.netlify.app/"
+                     data-destination="faculty-console" target="_blank"
+                     rel="noopener noreferrer">
+                    Production console — faculty credential required
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="patient-family-infrastructure" class="route-item">
+            <div class="route-marker" aria-hidden="true">
+              <span class="time-marker">04:00</span>
+              <span class="route-number">3</span>
+            </div>
+            <div class="route-copy">
+              <h2>Patient and family infrastructure — two minutes</h2>
+              <p>
+                ReConnect translates the same clinical knowledge into accessible patient, family,
+                and clinician support. In this tour it is downstream infrastructure—not a
+                separate product pitch.
+              </p>
+              <div class="external-actions">
+                <a class="external-link"
+                   href="https://reconnect-tools.netlify.app/"
+                   data-destination="reconnect-tools" target="_blank"
+                   rel="noopener noreferrer">
+                  Open patient and family tools <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <section class="section-band related-prototypes" aria-labelledby="related-heading">
+      <div class="section-shell">
+        <div class="section-heading">
+          <p class="eyebrow">Related prototypes</p>
+          <h2 id="related-heading">Three contextual extensions for the conversation</h2>
+        </div>
+        <div class="prototype-ledger">
+          <div class="prototype-row">
+            <div>
+              <p class="prototype-name">TherapyMatch Maine</p>
+              <p class="prototype-label">
+                Working prototype — access and referral navigation
+              </p>
+            </div>
+            <p class="prototype-label">For access, referral navigation, or a pilot discussion.</p>
+            <a class="external-link"
+               href="https://therapymatch-maine.netlify.app/"
+               data-destination="therapy-match" target="_blank"
+               rel="noopener noreferrer">
+              Open TherapyMatch Maine <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <div class="prototype-row">
+            <div>
+              <p class="prototype-name">Mental Health Education Library</p>
+              <p class="prototype-label">
+                Working library — patient and family education
+              </p>
+            </div>
+            <p class="prototype-label">For accessible patient and family learning materials.</p>
+            <a class="external-link"
+               href="https://mental-health-education-library.netlify.app/"
+               data-destination="mental-health-library" target="_blank"
+               rel="noopener noreferrer">
+              Open Mental Health Education Library <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <div class="prototype-row">
+            <div>
+              <p class="prototype-name">Family Therapy Seminar Companion</p>
+              <p class="prototype-label">
+                Teaching companion — family systems and supervision
+              </p>
+            </div>
+            <p class="prototype-label">For family-systems teaching and supervised discussion.</p>
+            <a class="external-link"
+               href="https://family-therapy-seminar-companion.netlify.app/"
+               data-destination="family-therapy-companion" target="_blank"
+               rel="noopener noreferrer">
+              Open Family Therapy Seminar Companion <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-band questions" aria-labelledby="questions-heading">
+      <div class="section-shell">
+        <div class="section-heading">
+          <p class="eyebrow">Collaboration questions</p>
+          <h2 id="questions-heading">Three choices to shape a responsible pilot</h2>
+        </div>
+        <ol class="question-list">
+          <li>
+            Where should a workforce-education pilot begin: residents, MS3 learners, or faculty
+            development?
+          </li>
+          <li>
+            Could faculty attestation, visible review status, and auditable repository history be
+            adapted to MaineHealth's governance requirements?
+          </li>
+          <li>
+            What 60–90-day pilot could demonstrate learning value without creating substantial
+            faculty or operational burden?
+          </li>
+        </ol>
+        <div class="print-row">
+          <button id="print-prompt" class="control-button" type="button">
+            Print the meeting prompt
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-shell">
+      <div>
+        <p class="footer-signature">Joshua Moss, MD | Psychiatrist</p>
+        <p class="footer-note">
+          Working prototypes for discussion. No patient data. No implied institutional
+          endorsement.
+        </p>
+      </div>
+      <p class="footer-mode">Six minutes · three stops · read only</p>
+    </div>
+  </footer>
+
+  <div id="tour-status" class="sr-only" aria-live="polite"></div>
+  <script>
+    (function () {
+      'use strict';
+
+      const initialRecords = [
+        {
+          id: 'mood-overview',
+          type: 'Pages',
+          audience: 'MS3',
+          title: 'Mood disorders overview',
+          status: 'Faculty reviewed',
+        },
+        {
+          id: 'interview-room',
+          type: 'Tools',
+          audience: 'MS3 + resident',
+          title: 'Standardized-patient interview',
+          status: 'Ready for review',
+        },
+        {
+          id: 'safety-question',
+          type: 'Question bank',
+          audience: 'MS3',
+          title: 'Suicide risk interview item',
+          status: 'Evidence check pending',
+        },
+        {
+          id: 'acute-care',
+          type: 'Pages',
+          audience: 'Resident',
+          title: 'Acute-care preparation pathway',
+          status: 'Faculty reviewed',
+        },
+      ];
+
+      const destinations = [...document.querySelectorAll('a[data-destination]')];
+      destinations.forEach((link) => {
+        link.addEventListener('click', () => {
+          document.getElementById('tour-status').textContent =
+            'Opening ' + link.textContent.trim() + ' in a new tab.';
+        });
+      });
+
+      const copyButton = document.getElementById('copy-endpoint');
+      copyButton.addEventListener('click', async () => {
+        const endpoint = document.getElementById('sp-endpoint').textContent.trim();
+        try {
+          await navigator.clipboard.writeText(endpoint);
+          copyButton.textContent = 'Endpoint copied';
+          document.getElementById('tour-status').textContent = 'Endpoint copied.';
+        } catch (error) {
+          copyButton.textContent = 'Select the endpoint to copy manually';
+          document.getElementById('sp-endpoint').focus();
+        }
+      });
+
+      let records = initialRecords.map((record) => ({ ...record, demoReviewed: false }));
+      let activeFilter = 'All';
+
+      function visibleRecords() {
+        return records.filter(
+          (record) => activeFilter === 'All' || record.type === activeFilter,
+        );
+      }
+
+      function updateToggle(toggle, record) {
+        toggle.setAttribute('aria-pressed', String(record.demoReviewed));
+        toggle.textContent = record.demoReviewed
+          ? 'Reviewed in demonstration'
+          : 'Mark reviewed locally';
+      }
+
+      function renderRecords() {
+        const container = document.getElementById('governance-records');
+        container.replaceChildren();
+        visibleRecords().forEach((record) => {
+          const article = document.createElement('article');
+          article.className = 'governance-record';
+
+          const text = document.createElement('div');
+          const heading = document.createElement('h4');
+          heading.textContent = record.title;
+          text.appendChild(heading);
+
+          const detail = document.createElement('p');
+          detail.textContent =
+            record.type + ' · ' + record.audience + ' · ' + record.status;
+          text.appendChild(detail);
+          article.appendChild(text);
+
+          const toggle = document.createElement('button');
+          toggle.type = 'button';
+          toggle.className = 'demo-toggle';
+          updateToggle(toggle, record);
+          toggle.addEventListener('click', () => {
+            record.demoReviewed = !record.demoReviewed;
+            updateToggle(toggle, record);
+          });
+          article.appendChild(toggle);
+          container.appendChild(article);
+        });
+      }
+
+      document.querySelectorAll('[data-governance-filter]').forEach((button) => {
+        button.addEventListener('click', () => {
+          activeFilter = button.dataset.governanceFilter;
+          document.querySelectorAll('[data-governance-filter]').forEach((candidate) => {
+            candidate.setAttribute('aria-pressed', String(candidate === button));
+          });
+          renderRecords();
+        });
+      });
+
+      document.getElementById('reset-governance').addEventListener('click', () => {
+        records = initialRecords.map((record) => ({ ...record, demoReviewed: false }));
+        activeFilter = 'All';
+        document.querySelectorAll('[data-governance-filter]').forEach((button) => {
+          button.setAttribute(
+            'aria-pressed',
+            String(button.dataset.governanceFilter === 'All'),
+          );
+        });
+        renderRecords();
+        document.getElementById('tour-status').textContent = 'Demonstration reset.';
+      });
+
+      document.getElementById('print-prompt').addEventListener('click', () => window.print());
+      document.documentElement.classList.add('route-ready');
+      renderRecords();
+    }());
+  </script>
+</body>
+</html>

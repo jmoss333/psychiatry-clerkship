@@ -299,16 +299,44 @@ function App(){
     rec.onerror=function(){ setListening(false); }; rec.onend=function(){ setListening(false); };
     try{rec.start();}catch(x){ setListening(false); } }
   function stopListening(){ try{ if(recRef.current)recRef.current.stop(); }catch(x){} setListening(false); }
-  function loadCfg(){ var ep='',pc=''; try{ep=localStorage.getItem('cw_sp_endpoint')||'https://sp-interview-proxy.netlify.app/api/sp';pc=localStorage.getItem('cw_sp_passcode')||'';}catch(x){} return {ep:ep,pc:pc,msg:''}; }
+  function clearLegacyPasscode(){
+    try{localStorage.removeItem('cw_sp_passcode');}catch(x){}
+  }
+  function readPasscode(){
+    try{return sessionStorage.getItem('cw_sp_passcode')||'';}catch(x){return '';}
+  }
+  function writePasscode(value){
+    try{
+      if(value){sessionStorage.setItem('cw_sp_passcode',value);}
+      else{sessionStorage.removeItem('cw_sp_passcode');}
+    }catch(x){}
+  }
+  function loadCfg(){
+    var ep='',pc='';
+    clearLegacyPasscode();
+    try{ep=localStorage.getItem('cw_sp_endpoint')||'';}catch(x){}
+    pc=readPasscode();
+    return {ep:ep,pc:pc,msg:''};
+  }
   function openSettings(){ setCfg(loadCfg()); setShowSettings(true); }
   function saveAndTest(){
     var ep=(cfg.ep||'').trim();
-    try{localStorage.setItem('cw_sp_endpoint',ep);localStorage.setItem('cw_sp_passcode',cfg.pc||'');}catch(x){}
+    try{localStorage.setItem('cw_sp_endpoint',ep);}catch(x){}
+    writePasscode(cfg.pc||'');
     setCfg(Object.assign({},cfg,{msg:'Testing…'}));
     fetch(ep,{headers:{'x-student-key':cfg.pc||''}})
       .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j,status:r.status};});})
       .then(function(res){setCfg(function(c){return Object.assign({},c,{msg:res.ok?('✓ Connected — pack v'+res.j.packVersion+' ('+res.j.packStatus+'), actor '+res.j.actorModel):('✗ '+(res.j&&res.j.error?res.j.error:('HTTP '+res.status)))});});})
       .catch(function(err){setCfg(function(c){return Object.assign({},c,{msg:'✗ Could not reach endpoint ('+err.message+')'});});});
+  }
+  function clearPasscode(){
+    writePasscode('');
+    clearLegacyPasscode();
+    if(E&&E.provider&&('passcode' in E.provider)){E.provider.passcode='';}
+    setCfg(function(c){
+      return Object.assign({},c,{pc:'',msg:'Passcode cleared for this browser tab.'});
+    });
+    announce('Passcode cleared for this browser tab.');
   }
 
   useEffect(function(){
@@ -318,7 +346,7 @@ function App(){
       .then(function(p){setS({screen:'select',pack:p,err:null});})
       .catch(function(x){setS({screen:'loading',pack:null,err:'Could not load sp-interview.pack.json ('+x.message+'). Serve this folder over http, or open sp-interview.preview.html.'});});
   },[]);
-  useEffect(function(){ var pc=''; try{pc=localStorage.getItem('cw_sp_passcode')||'';}catch(x){} if(provMode==='live'&&!pc){openSettings();} },[]);
+  useEffect(function(){clearLegacyPasscode();},[]);
   useEffect(function(){ if(chatRef.current){chatRef.current.scrollTop=chatRef.current.scrollHeight;} });
 
   useEffect(function(){
@@ -329,7 +357,9 @@ function App(){
 
   function makeProvider(){
     if(provMode==='live'){
-      var ep=null,pc=null; try{ep=localStorage.getItem('cw_sp_endpoint');pc=localStorage.getItem('cw_sp_passcode');}catch(x){}
+      var ep=null,pc=null;
+      try{ep=localStorage.getItem('cw_sp_endpoint');}catch(x){}
+      pc=readPasscode();
       if(ep){return new ProxyProvider(ep,pc||'');}
       announce('Live endpoint not configured; using offline patient.');
     }
@@ -398,7 +428,7 @@ function App(){
     e('p',{style:{color:'var(--text-mid)',marginTop:0}},'Interview a fictional standardized patient. Free text — say what you would actually say.'),
     (showSettings&&cfg)?e('div',{className:'card'},
       e('h2',null,'Live mode setup'),
-      e('p',{style:{fontSize:'.85rem',color:'var(--text-mid)',marginTop:0}},'Paste the sp-proxy endpoint URL and the passcode from Dr. Moss. Both are stored only in this browser; the API key never leaves the server.'),
+      e('p',{style:{fontSize:'.85rem',color:'var(--text-mid)',marginTop:0}},'Paste the sp-proxy endpoint URL and the passcode from Dr. Moss. The endpoint is saved in this browser; the API key never leaves the server.'),
       e('label',{style:{fontWeight:600,fontSize:'.85rem'},htmlFor:'cfg_ep'},'Endpoint URL'),
       e('input',{id:'cfg_ep',type:'url',placeholder:'https://<sp-proxy-site>.netlify.app/api/sp',value:cfg.ep,
         style:{width:'100%',font:'inherit',fontSize:'.9rem',padding:'8px',border:'1px solid var(--border)',borderRadius:'6px',background:'var(--surface)',color:'var(--text)',marginBottom:'10px'},
@@ -407,9 +437,12 @@ function App(){
       e('input',{id:'cfg_pc',type:'password',value:cfg.pc,autoComplete:'off',
         style:{width:'100%',font:'inherit',fontSize:'.9rem',padding:'8px',border:'1px solid var(--border)',borderRadius:'6px',background:'var(--surface)',color:'var(--text)',marginBottom:'10px'},
         onChange:function(ev){setCfg(Object.assign({},cfg,{pc:ev.target.value}));}}),
+      e('p',{style:{fontSize:'.8rem',color:'var(--text-mid)',marginTop:0}},
+        'The passcode is kept only for this browser tab. Close the tab or select Clear passcode to remove it.'),
       cfg.msg?e('p',{style:{fontSize:'.85rem',fontWeight:600,color:cfg.msg.indexOf('✓')===0?'var(--success)':'var(--warning)'}},cfg.msg):null,
-      e('div',{style:{display:'flex',gap:'10px'}},
+      e('div',{style:{display:'flex',gap:'10px',flexWrap:'wrap'}},
         e('button',{className:'btn primary',onClick:saveAndTest,disabled:!(cfg.ep||'').trim()},'Save & test connection'),
+        e('button',{className:'btn',type:'button',onClick:clearPasscode},'Clear passcode'),
         e('button',{className:'btn',onClick:function(){setShowSettings(false);}},'Close'))):null);
 
   if(S.screen==='select'){
