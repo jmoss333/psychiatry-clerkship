@@ -506,13 +506,18 @@ git commit -m "feat(sp-interview): add deterministic voice controller"
 createHttp({ studentKey, operationsKey, allowedOrigins, production });
 readEnv(name);
 createPackLoader({ url, token, fetchImpl, now, ttlMs: 300000 });
-resolveReviewedCase({ pack, caseId });
-reviewedCaseSummaries(pack);
-managedVoiceEligibility({ pack, packHash, caseDef, now });
+// loader.load() => frozen { pack, packHash, fetchedAt }
+resolveReviewedCase({ pack, caseId, now });
+reviewedCaseSummaries(pack, { now });
+managedVoiceEligibility({ pack, packHash, caseDef, now, runtime });
 createTicketCodec({ secret, clock, randomBytes });
 createRedemptionLedger({ store, namespace, clock, maxCasAttempts: 5 });
 spokenText(reply);
 ```
+
+`createHttp` returns `preflight`, `requireStudent`, `requireOperations`, `json`, and `error`.
+`createTicketCodec` returns `issue` and `verify`; the redemption ledger returns `claim` and
+`complete`. Only real `OperationalError` objects may cross the HTTP boundary.
 
 - [ ] **Step 1: Pin reproducible dependencies**
 
@@ -521,9 +526,12 @@ Set `@netlify/blobs` exactly to `10.7.9`, add `"test":"node --test tests/*.test.
 
 - [ ] **Step 2: Write red HTTP and pack-governance tests**
 
-Assert allowed/disallowed origins, production wildcard rejection, separate student/operations keys,
+Assert allowed/disallowed origins, explicit Boolean production mode, wildcard/loopback/opaque/
+noncanonical production rejection, separate student/operations keys,
 no CORS on usage responses, raw-byte SHA-256 pack hashing, five-minute caching, reviewed-only case
-summaries, `400 unknown_case`, `403 case_not_reviewed`, and independent managed-voice eligibility.
+summaries with real nonfuture reviewer dates, `400 unknown_case`, `403 case_not_reviewed`, and
+independent managed-voice eligibility. Prove the cached pack and returned snapshot are recursively
+frozen so content cannot diverge from its raw-byte hash.
 
 - [ ] **Step 3: Write red ticket tests**
 
@@ -532,11 +540,18 @@ altered reply, wrong pack/attestation/profile/case, 16-byte `jti`, and exact sta
 payload contains schema, rotation, encounter, turn, `jti`, case, pack hash, attestation hash, profile
 hash/version, provider/model/voice, reply hash, issued time, and expiry.
 
+The clock returns epoch milliseconds; ticket times are integer epoch seconds, `exp=iat+120`, and
+validity is strictly `now < exp`. HMAC covers the canonical base64url payload, the secret is at least
+32 UTF-8 bytes, hashes are primitive lowercase-hex strings, and `replyHash` hashes the exact UTF-8
+visual reply before stage stripping.
+
 Use the conditional fake Blob store to assert ten concurrent claims produce exactly one claim and
 nine stable `speech_in_progress` errors. After `complete`, every later claim returns
 `speech_already_redeemed`. The ledger stores only ticket IDs, lifecycle status, expiry, and
-content-free usage metadata; it never stores reply or audio content. `claim` uses `onlyIfNew`, while
-`complete` uses the claim ETag with `onlyIfMatch`.
+content-free usage metadata; it never stores raw JTI, ticket, reply/hash, audio, transcript, case,
+encounter, or error text. Usage is only integer `synthesis_characters`. `claim` uses `onlyIfNew`,
+while `complete` uses only the acquiring claim ETag with `onlyIfMatch` and never adopts a changed
+in-progress ETag.
 
 - [ ] **Step 4: Verify red**
 
@@ -552,12 +567,17 @@ node --test sp-proxy/tests/sp-speech-ticket.test.mjs
 - [ ] **Step 5: Implement the shared modules**
 
 Use `crypto.timingSafeEqual` over fixed-length SHA-256 digests for credentials. Hash raw pack bytes
-before `JSON.parse`. Return typed operational errors with `{status, code, message}`. Reject managed
-voice unless every reviewed hash/pin and next-review date matches. `readEnv(name)` calls
+before `JSON.parse`, then recursively freeze it. Return branded operational errors with
+`{status,code,message}`. Reject managed voice unless every reviewed case/reviewer/date,
+engine/profile self-hash, runtime stack/provider/model/voice pin, rate, privacy record, and strict
+next-review date matches. Return a technical attestation binding without claiming approval.
+`readEnv(name)` calls
 `globalThis.Netlify.env.get(name)` when available and otherwise reads `process.env[name]` for tests.
 The redemption ledger exposes `claim(payload)` and
 `complete(claim,{status:'succeeded'|'provider_failed',usage})`; concurrent versus terminal states map
-exactly to `speech_in_progress` and `speech_already_redeemed`.
+exactly to `speech_in_progress` and `speech_already_redeemed`. Every ledger read explicitly requests
+strong consistency. Because Blobs 10.7.9 drops conditional options from `setJSON`, serialize JSON and
+use raw `Store.set` with `onlyIfNew`/`onlyIfMatch`; tests mirror that installed API behavior.
 
 - [ ] **Step 6: Verify green**
 
@@ -603,10 +623,12 @@ await ledger.getBand();
 await ledger.getUsage();
 ```
 
-- [ ] **Step 1: Write the conditional fake store and red ledger tests**
+- [ ] **Step 1: Extend the conditional fake store and write red ledger tests**
 
-The fake implements only `getWithMetadata`, `set`, `onlyIfNew`, and `onlyIfMatch`. Test initial
-creation, ETag conflicts, five bounded retries, duplicate keys, failed-before-provider retry,
+The fake implements `getWithMetadata(key,{type:'json',consistency:'strong'})` and raw
+`set(key,JSON.stringify(record),{onlyIfNew|onlyIfMatch})`; conditional conflicts return
+`{modified:false}`. Test initial creation, strong reads, ETag ownership/conflicts, five bounded
+retries, duplicate keys, failed-before-provider retry,
 provider-started no-retry, settlement, unknown rate card, unavailable store, `$16` warning, `$20`
 cap, and ten simultaneous reservations.
 
@@ -618,8 +640,11 @@ const results = await Promise.allSettled(
     maximumMicros: 2500000,
   })),
 );
-const stored = await fakeStore.getWithMetadata('test/rotation-1');
-assert.equal(JSON.parse(stored.data).authorizedMicros, 20000000);
+const stored = await fakeStore.getWithMetadata(
+  'test/rotation-1',
+  { type: 'json', consistency: 'strong' },
+);
+assert.equal(stored.data.authorizedMicros, 20000000);
 assert.equal(results.filter((result) => result.status === 'fulfilled').length, 8);
 ```
 
@@ -631,7 +656,8 @@ Run: `node --test sp-proxy/tests/sp-budget.test.mjs`
 
 Store one JSON record per `namespace/rotationId`, use integer micro-dollars, and reserve maximum cost
 before `markProviderStarted`. Do not fall back to process memory. Keep terminal idempotency records
-for the rotation and cumulative units after pruning details.
+for the rotation and cumulative units after pruning details. Use explicit strong reads and raw
+conditional writes; never use Blobs 10.7.9 `setJSON` for CAS.
 
 The record schema is:
 
