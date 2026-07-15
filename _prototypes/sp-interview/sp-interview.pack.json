@@ -5,7 +5,7 @@
   "built": "2026-07-12",
   "evidenceThrough": "2026-06-30",
   "reviewCadenceDays": 180,
-  "status": "attested",
+  "status": "draft-pending-attestation",
   "_incorporationChecklist": {
     "source": "Original fictional composite authored for this tool. Interview-skills framing per pg_interview.md; SI-inquiry language per house communication cases and C-SSRS module.",
     "claimExtraction": "No dose literals anywhere in this pack (regex \\d+\\s?(mg|mcg|mL) must return nothing). No management content; this is an interviewing tool.",
@@ -23,6 +23,109 @@
     "guardedTierMax": 0,
     "openTierMin": 1
   },
+  "speechEngine": {
+    "schemaVersion": 1,
+    "status": "draft-pending-attestation",
+    "enabled": false,
+    "activeStack": null,
+    "candidateStacks": [
+      {
+        "id": "openai-quality-v1",
+        "transcription": {
+          "provider": "openai",
+          "model": "whisper-1"
+        },
+        "synthesis": {
+          "provider": "openai",
+          "model": "tts-1-hd"
+        }
+      },
+      {
+        "id": "elevenlabs-expressive-v1",
+        "transcription": {
+          "provider": "elevenlabs",
+          "model": "scribe_v2"
+        },
+        "synthesis": {
+          "provider": "elevenlabs",
+          "model": "eleven_multilingual_v3"
+        }
+      }
+    ],
+    "rateCard": {
+      "version": "2026-07-14-planning-v1",
+      "effectiveDate": "2026-07-14",
+      "currency": "USD",
+      "rates": [
+        {
+          "provider": "anthropic",
+          "model": "claude-haiku-4-5-20251001",
+          "meter": "input_tokens",
+          "unit": "million_tokens",
+          "price": 1,
+          "sourceUrl": "https://docs.anthropic.com/en/docs/about-claude/models/overview"
+        },
+        {
+          "provider": "anthropic",
+          "model": "claude-haiku-4-5-20251001",
+          "meter": "output_tokens",
+          "unit": "million_tokens",
+          "price": 5,
+          "sourceUrl": "https://docs.anthropic.com/en/docs/about-claude/models/overview"
+        },
+        {
+          "provider": "openai",
+          "model": "tts-1-hd",
+          "meter": "synthesis_characters",
+          "unit": "million_characters",
+          "price": 30,
+          "sourceUrl": "https://developers.openai.com/api/docs/models/tts-1-hd"
+        },
+        {
+          "provider": "openai",
+          "model": "whisper-1",
+          "meter": "transcription_audio",
+          "unit": "minute",
+          "price": 0.006,
+          "sourceUrl": "https://developers.openai.com/api/docs/models/whisper-1"
+        },
+        {
+          "provider": "elevenlabs",
+          "model": "eleven_multilingual_v2",
+          "meter": "synthesis_characters",
+          "unit": "thousand_characters",
+          "price": 0.1,
+          "sourceUrl": "https://elevenlabs.io/pricing/api?price.platform=api"
+        },
+        {
+          "provider": "elevenlabs",
+          "model": "eleven_multilingual_v3",
+          "meter": "synthesis_characters",
+          "unit": "thousand_characters",
+          "price": 0.1,
+          "sourceUrl": "https://elevenlabs.io/pricing/api?price.platform=api"
+        },
+        {
+          "provider": "elevenlabs",
+          "model": "scribe_v2",
+          "meter": "transcription_audio",
+          "unit": "hour",
+          "price": 0.22,
+          "sourceUrl": "https://elevenlabs.io/pricing/api?price.platform=api"
+        }
+      ]
+    },
+    "privacyReview": {
+      "status": "pending",
+      "policyUrls": [],
+      "policyHashes": [],
+      "reviewer": null,
+      "reviewedAt": null,
+      "nextReviewAt": null,
+      "decision": "pending",
+      "consentVersion": "2026-07-14-draft"
+    }
+  },
   "cases": [
     {
       "id": "sp_depression_gated_si_001",
@@ -35,6 +138,24 @@
       "linkedPages": ["pg_interview.md", "pg_suicide.md", "t_mood.md"],
       "evidenceIds": ["cssrs-columbia-lighthouse", "va-dod-suicide-cpg-2024"],
       "facultyReview": { "status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-13" },
+      "speechProfile": {
+        "id": "dana-measured-v1",
+        "status": "draft-pending-attestation",
+        "profileVersion": 1,
+        "provider": null,
+        "providerModel": null,
+        "voiceId": null,
+        "cadence": "measured-flat",
+        "speakingRate": 0.95,
+        "stageDirections": "visual-only",
+        "facultyReview": {
+          "status": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "auditionId": null,
+          "profileHash": null
+        }
+      },
       "persona": {
         "displayName": "Dana",
         "ageBand": "30s",
@@ -287,6 +408,24 @@
         "status": "draft",
         "reviewer": "",
         "lastReviewed": ""
+      },
+      "speechProfile": {
+        "id": "marcus-pressured-v1",
+        "status": "draft-pending-attestation",
+        "profileVersion": 1,
+        "provider": null,
+        "providerModel": null,
+        "voiceId": null,
+        "cadence": "pressured-fast",
+        "speakingRate": 1.15,
+        "stageDirections": "visual-only",
+        "facultyReview": {
+          "status": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "auditionId": null,
+          "profileHash": null
+        }
       },
       "persona": {
         "displayName": "Marcus",
@@ -1103,6 +1242,24 @@
         "status": "draft",
         "reviewer": "",
         "lastReviewed": ""
+      },
+      "speechProfile": {
+        "id": "ray-guarded-v1",
+        "status": "draft-pending-attestation",
+        "profileVersion": 1,
+        "provider": null,
+        "providerModel": null,
+        "voiceId": null,
+        "cadence": "guarded-halting",
+        "speakingRate": 0.85,
+        "stageDirections": "visual-only",
+        "facultyReview": {
+          "status": "pending",
+          "reviewer": null,
+          "reviewedAt": null,
+          "auditionId": null,
+          "profileHash": null
+        }
       },
       "persona": {
         "displayName": "Ray",

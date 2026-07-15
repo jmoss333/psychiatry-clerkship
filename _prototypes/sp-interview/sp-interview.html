@@ -375,6 +375,18 @@ function buildNarrative(s,cov,rub){
   return {strengths:strengths.slice(0,2),growth:growth.slice(0,2)};
 }
 
+function isCaseReviewed(caseDef){
+  return !!(caseDef&&caseDef.facultyReview&&caseDef.facultyReview.status==='reviewed');
+}
+function eligibleCases(pack){
+  return (pack&&Array.isArray(pack.cases)?pack.cases:[]).filter(isCaseReviewed);
+}
+function isManagedVoiceEligible(pack,caseDef){
+  return !!(isCaseReviewed(caseDef)&&pack.speechEngine&&pack.speechEngine.enabled===true&&
+    pack.speechEngine.status==='reviewed'&&caseDef.speechProfile&&
+    caseDef.speechProfile.status==='reviewed');
+}
+
 /* ===================== Redesign: pacing, coach, coverage prose ===================== */
 /* Per-persona speech pace, derived from the pack's authored persona.voice field.
    The rhythm is clinical content: pressured speech reveals fast and dense; guarded
@@ -629,7 +641,7 @@ function App(){
   if(S.screen==='select'){
     return e('div',null,header,
       e('div',{className:'casegrid'},
-        S.pack.cases.map(function(cd){
+        eligibleCases(S.pack).map(function(cd){
           var P=paceFor(cd), tp=cd.title.split(' — ');
           return e('div',{className:'case',key:cd.id},
             e('div',null,
@@ -838,7 +850,7 @@ function App(){
   }
   return null;
 }
-try{window.__SP_TEST__={MockProvider:MockProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach};}catch(x){}
+try{window.__SP_TEST__={MockProvider:MockProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible};}catch(x){}
 ReactDOM.createRoot(document.getElementById('root')).render(e(App));
 })();
 </script>
