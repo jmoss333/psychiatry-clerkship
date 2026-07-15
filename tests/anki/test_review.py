@@ -13,7 +13,7 @@ import apply_review_patch as apply_review_patch_cli
 import pytest
 from jsonschema import Draft7Validator
 
-from pcl_anki.contract import canonical_json_sha256
+from pcl_anki.contract import canonical_json_bytes, canonical_json_sha256
 from pcl_anki.review import (
     ReviewPatchError,
     apply_optimistic_registry_patch,
@@ -539,6 +539,31 @@ def _candidate_shell(previews, *, qbank_items=()):
         "quarantineBaseRecordSha256": {},
         "withdrawalPreviews": [],
     }
+
+
+def _run_qbank_export_helper(rendered, note, editable, reviewer, reviewed_at):
+    helper = re.search(
+        r'<script id="qbank-export-helper" type="application/javascript">(.*?)</script>',
+        rendered,
+        re.DOTALL,
+    )
+    assert helper is not None, "clinic must expose the exact qbank export helper"
+    program = (
+        helper.group(1)
+        + "\nconst exported=qbankProposalFromCurrent("
+        + json.dumps(note, ensure_ascii=False)
+        + ","
+        + json.dumps(editable, ensure_ascii=False)
+        + ","
+        + json.dumps(reviewer)
+        + ","
+        + json.dumps(reviewed_at)
+        + ");process.stdout.write(JSON.stringify(exported));"
+    )
+    result = subprocess.run(
+        ["node"], input=program, check=True, capture_output=True, text=True
+    )
+    return json.loads(result.stdout)
 
 
 def test_candidate_schema_rejects_empty_and_wrong_typed_previews():
@@ -1144,6 +1169,189 @@ def test_changed_exact_prior_and_never_approved_remain_applicable(
         never_html,
     )
     assert never_controls is not None and " disabled" not in never_controls.group(1)
+
+
+@pytest.mark.parametrize("action", ("accept", "edit"))
+def test_changed_exact_qbank_browser_export_uses_current_mechanical_template(
+    passing_release_factory, tmp_path, action
+):
+    from datetime import date
+
+    from pcl_anki.contract import HistoryRegistry
+    from pcl_anki.package import write_release
+    from pcl_anki.release import evaluate_release
+
+    bundle = passing_release_factory()
+    release_config = deepcopy(bundle.inputs.release_config)
+    release_config.update(
+        releaseId="synthetic-browser-export-predecessor",
+        releaseDate="2026-07-15",
+        releaseEpoch=1784059200,
+    )
+    predecessor_inputs = SimpleNamespace(
+        **{
+            **vars(bundle.inputs),
+            "release_config": release_config,
+            "release_history": {
+                "schemaVersion": 1,
+                "identityEntries": [],
+                "releases": [],
+            },
+            "governed_input_sha256": "a" * 64,
+            "governed_input_ledger": (("synthetic/input.json", "b" * 64),),
+        }
+    )
+    original_candidate = evaluate_release(
+        predecessor_inputs,
+        build_epoch=1784059200,
+        evaluation_date=date(2026, 7, 15),
+        profile="prepare",
+        baseline_history=HistoryRegistry((), ()),
+    )
+    predecessor = tmp_path / "predecessor"
+    write_release(original_candidate, predecessor)
+    predecessor_qbank = predecessor / "psychiatry_clerkship_qbank.apkg"
+    assert predecessor_qbank.is_file()
+
+    changed_question_bank = deepcopy(bundle.inputs.question_bank)
+    changed_item = changed_question_bank["items"][0]
+    changed_item["stem"] += " Synthetic current browser-export marker."
+    current_inputs = SimpleNamespace(
+        **{
+            **vars(bundle.inputs),
+            "question_bank": changed_question_bank,
+            "qbank_reviews": (deepcopy(bundle.qbank_review),),
+            "prior_package_paths": (predecessor_qbank,),
+        }
+    )
+    preview = next(
+        value
+        for value in _draft_previews(current_inputs)
+        if value["namespace"] == "qbank" and value["identity"] == "base"
+    )
+    assert preview["priorRenderStatus"] == "changed_exact_prior"
+    assert (
+        preview["priorApprovedRenderSha256"]
+        == bundle.qbank_review["renderedNoteSha256"]
+    )
+    rendered = build_review_html(
+        _candidate_shell([preview], qbank_items=[changed_item])
+    )
+    editable = deepcopy(bundle.qbank_review)
+    if action == "edit":
+        editable["reviewDue"] = "2026-08-15"
+        editable["approvedItemSha256"] = "0" * 64
+        editable["renderedNoteSha256"] = "1" * 64
+        editable["templateContractSha256"] = "2" * 64
+        editable["sourceAnchorSha256"] = "3" * 64
+    reviewer = "Named Browser Export Reviewer"
+    reviewed_at = "2026-07-15"
+    proposed = _run_qbank_export_helper(
+        rendered, preview, editable, reviewer, reviewed_at
+    )
+    patch = {
+        "schemaVersion": 1,
+        "targetRegistry": "qbank_render_reviews",
+        "generatedFromCommit": "a" * 40,
+        "inputSha256": "b" * 64,
+        "decisions": [
+            {
+                "recordKey": preview["recordKey"],
+                "baseRecordSha256": canonical_json_sha256(bundle.qbank_review),
+                "proposedRecord": proposed,
+                "decision": action,
+                "reviewer": reviewer,
+                "reviewedAt": reviewed_at,
+            }
+        ],
+    }
+    validate_review_patch(patch)
+    validate_nonhistory_patch(
+        current_inputs,
+        history_from_dict(current_inputs.release_history),
+        patch,
+    )
+    registry = tmp_path / f"{action}-qbank_render_reviews.json"
+    registry.write_text(
+        json.dumps(
+            {"schemaVersion": 1, "reviews": [bundle.qbank_review]}, indent=2
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    assert apply_optimistic_registry_patch(
+        registry,
+        patch,
+        current_head="a" * 40,
+        current_input_sha256="b" * 64,
+    ) == (preview["recordKey"],)
+    stored = json.loads(registry.read_text())["reviews"][0]
+    assert canonical_json_bytes(stored) == canonical_json_bytes(proposed)
+    for field in (
+        "qbankId",
+        "identity",
+        "primaryPage",
+        "approvedItemSha256",
+        "templateVersion",
+        "templateContractSha256",
+        "renderedNoteSha256",
+        "legacyTemplateContract",
+    ):
+        assert stored[field] == preview["proposedRecordTemplate"][field]
+    selected_section = next(
+        value
+        for value in preview["source"]["sections"]
+        if value["anchor"] == stored["primaryAnchor"]
+    )
+    assert stored["sourceAnchorSha256"] == selected_section["sourceAnchorSha256"]
+    assert stored["facultyApprovedBy"] == reviewer
+    assert stored["facultyApprovedAt"] == reviewed_at
+    if action == "edit":
+        assert stored["reviewDue"] == "2026-08-15"
+
+    original_bytes = (
+        json.dumps(
+            {"schemaVersion": 1, "reviews": [bundle.qbank_review]}, indent=2
+        )
+        + "\n"
+    ).encode()
+    stale_registry = tmp_path / f"{action}-stale.json"
+    stale_registry.write_bytes(original_bytes)
+    stale = deepcopy(patch)
+    stale["decisions"][0]["baseRecordSha256"] = "f" * 64
+    with pytest.raises(ReviewPatchError, match="stale base"):
+        apply_optimistic_registry_patch(
+            stale_registry,
+            stale,
+            current_head="a" * 40,
+            current_input_sha256="b" * 64,
+        )
+    assert stale_registry.read_bytes() == original_bytes
+
+    for field, value in (
+        ("approvedItemSha256", "0" * 64),
+        ("renderedNoteSha256", "1" * 64),
+        ("templateContractSha256", "2" * 64),
+        ("sourceAnchorSha256", "3" * 64),
+    ):
+        forged_registry = tmp_path / f"{action}-forged-{field}.json"
+        forged_registry.write_bytes(original_bytes)
+        forged = deepcopy(patch)
+        forged["decisions"][0]["proposedRecord"][field] = value
+        validate_review_patch(forged)
+        with pytest.raises(ReviewPatchError, match="recomputation failed"):
+            validate_nonhistory_patch(
+                current_inputs,
+                history_from_dict(current_inputs.release_history),
+                forged,
+            )
+            apply_optimistic_registry_patch(
+                forged_registry,
+                forged,
+                current_head="a" * 40,
+                current_input_sha256="b" * 64,
+            )
+        assert forged_registry.read_bytes() == original_bytes
 
 
 @pytest.mark.parametrize("target", ("cards", "qbank_render_reviews"))

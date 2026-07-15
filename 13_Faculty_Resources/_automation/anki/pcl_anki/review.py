@@ -851,6 +851,16 @@ def _build_candidate_review_html(candidate: Mapping) -> str:
 <label>Review owner <input id="owner" required></label><label>Reviewer name <input id="reviewer" required></label><label>Review date <input id="reviewedAt" type="date" required></label>
 <label>Disposition <select id="disposition"><option value="exclude">Exclude</option><option value="withdraw">Withdraw shipped note</option><option value="retire">Retire</option></select></label>
 <p>Disabled card/qbank actions mean no complete canonical proposal exists. Quarantine requires a matching live finding.</p>
+<script id="qbank-export-helper" type="application/javascript">
+const qbankFacultyFields=['primaryAnchor','risk','evidenceCitation','evidenceRecord','evidenceSha256','evidenceReviewedBy','evidenceReviewedAt','localPolicySource','localPolicySha256','localPolicyReviewedBy','localPolicyReviewedAt','reviewDue'];
+function qbankProposalFromCurrent(note,editable,reviewer,reviewedAt){{
+ const faculty={{}}; for(const name of qbankFacultyFields){{if(Object.prototype.hasOwnProperty.call(editable||{{}},name))faculty[name]=JSON.parse(JSON.stringify(editable[name]));}}
+ const proposed={{...faculty,...JSON.parse(JSON.stringify(note.proposedRecordTemplate||{{}}))}};
+ const sections=((note.source||{{}}).sections||[]),selected=sections.find(value=>value.anchor===proposed.primaryAnchor);
+ if(selected)proposed.sourceAnchorSha256=selected.sourceAnchorSha256;
+ proposed.facultyApprovedBy=reviewer;proposed.facultyApprovedAt=reviewedAt;return proposed;
+}}
+</script>
 <script id="candidate" type="application/json" data-encoding="base64">{payload}</script><script>
 const candidateBytes=Uint8Array.from(atob(document.getElementById('candidate').textContent),c=>c.charCodeAt(0));
 const candidate=JSON.parse(new TextDecoder().decode(candidateBytes));
@@ -864,18 +874,18 @@ document.querySelectorAll('[data-action]').forEach(button=>button.addEventListen
  if(action==='reject'){{savePatch({{schemaVersion:1,targetRegistry:note.targetRegistry,generatedFromCommit:candidate.generatedFromCommit,inputSha256:candidate.governedInputSha256,decisions:[{{recordKey:note.recordKey,baseRecordSha256:note.baseRecordSha256,proposedRecord:null,decision:'reject',reviewer,reviewedAt}}]}},note.targetRegistry+'.rejection.patch.json');return;}}
  if(action==='quarantine'){{if(!reviewOwner){{alert('A review owner is required for quarantine.');return;}}const f=[...(candidate.quarantine.new||[]),...(candidate.quarantine.changed||[])].find(value=>value.namespace===note.namespace&&value.uid===note.uid&&value.identity===note.identity);if(!f){{alert('No matching live quarantine finding exists for this note.');return;}}const key=[f.namespace,f.uid,f.identity,f.reasonCode,f.subjectSha256].join(':');const proposedRecord={{namespace:f.namespace,uid:f.uid,identity:f.identity,reasonCode:f.reasonCode,subjectSha256:f.subjectSha256,sourcePath:f.sourcePath,firstSeenCommit:f.firstSeenCommit,reviewOwner,disposition,reviewedBy:reviewer,reviewedAt}};if(disposition==='withdraw'){{const p=(candidate.withdrawalPreviews||[]).find(v=>v.namespace===f.namespace&&v.uid===f.uid&&v.identity===f.identity&&v.reasonCode===f.reasonCode);if(!p){{alert('Exact neutral withdrawal preview is required.');return;}}proposedRecord.affectedReleaseId=p.affectedReleaseId;proposedRecord.withdrawalTemplateVersion=p.withdrawalTemplateVersion;proposedRecord.approvedWithdrawalSha256=p.approvedWithdrawalSha256;}}savePatch({{schemaVersion:1,targetRegistry:'quarantine',generatedFromCommit:candidate.generatedFromCommit,inputSha256:candidate.governedInputSha256,decisions:[{{recordKey:key,baseRecordSha256:(candidate.quarantineBaseRecordSha256||{{}})[key]||null,proposedRecord,decision:'accept',reviewer,reviewedAt}}]}},'quarantine.review.patch.json');return;}}
  if((!note.canonicalRecord&&!note.proposedRecordTemplate)||!note.targetRegistry){{alert('No governed proposal template exists.');return;}}
- let proposedRecord=JSON.parse(JSON.stringify(note.canonicalRecord||note.proposedRecordTemplate));
+ let proposedRecord=note.targetRegistry==='qbank_render_reviews'?qbankProposalFromCurrent(note,note.canonicalRecord||{{}},reviewer,reviewedAt):JSON.parse(JSON.stringify(note.canonicalRecord||note.proposedRecordTemplate));
  if(note.targetRegistry==='qbank_render_reviews'&&!note.canonicalRecord){{
   const anchor=panel.querySelector('[data-qbank-anchor]'),riskLevel=panel.querySelector('[data-risk-level]').value,facets=[...panel.querySelectorAll('[data-risk-facet]:checked')].map(value=>value.value);
   if(!anchor.value||!riskLevel){{alert('Select a governed source section and faculty risk before export.');return;}}
-  proposedRecord.primaryAnchor=anchor.value;proposedRecord.sourceAnchorSha256=anchor.selectedOptions[0].dataset.sourceSha;proposedRecord.risk={{level:riskLevel,facets}};proposedRecord.facultyApprovedBy=reviewer;proposedRecord.facultyApprovedAt=reviewedAt;
+  proposedRecord.primaryAnchor=anchor.value;proposedRecord.sourceAnchorSha256=anchor.selectedOptions[0].dataset.sourceSha;proposedRecord.risk={{level:riskLevel,facets}};
   const get=name=>panel.querySelector(name).value.trim();
   if(riskLevel==='High'){{const values=[get('[data-evidence-citation]'),get('[data-evidence-record]'),get('[data-evidence-sha]'),get('[data-evidence-reviewer]'),get('[data-evidence-date]'),get('[data-review-due]')];if(values.some(value=>!value)){{alert('High-risk review requires complete evidence proof and review due date.');return;}}[proposedRecord.evidenceCitation,proposedRecord.evidenceRecord,proposedRecord.evidenceSha256,proposedRecord.evidenceReviewedBy,proposedRecord.evidenceReviewedAt,proposedRecord.reviewDue]=values;}}
   if(facets.includes('LocalPolicy')){{const values=[get('[data-policy-source]'),get('[data-policy-sha]'),get('[data-policy-reviewer]'),get('[data-policy-date]'),get('[data-review-due]')];if(values.some(value=>!value)){{alert('LocalPolicy requires complete policy proof and review due date.');return;}}[proposedRecord.localPolicySource,proposedRecord.localPolicySha256,proposedRecord.localPolicyReviewedBy,proposedRecord.localPolicyReviewedAt,proposedRecord.reviewDue]=values;}}
  }}
- if(action==='edit'){{const edited=prompt('Edit complete proposed JSON; computed hashes are revalidated on apply.',JSON.stringify(proposedRecord,null,2));if(edited===null)return;try{{proposedRecord=JSON.parse(edited);}}catch(error){{alert('Edited record is not valid JSON.');return;}}}}
+ if(action==='edit'){{const edited=prompt('Edit faculty review fields; computed fields remain current and cannot be edited.',JSON.stringify(proposedRecord,null,2));if(edited===null)return;try{{const parsed=JSON.parse(edited);proposedRecord=note.targetRegistry==='qbank_render_reviews'?qbankProposalFromCurrent(note,parsed,reviewer,reviewedAt):parsed;}}catch(error){{alert('Edited record is not valid JSON.');return;}}}}
  if(action==='accept'&&note.targetRegistry==='cards'){{proposedRecord.review={{...(proposedRecord.review||{{}}),cardApprovedBy:reviewer,cardApprovedAt:reviewedAt,approvedCardSha256:note.renderSha256}};}}
- if(action==='accept'&&note.targetRegistry==='qbank_render_reviews'){{proposedRecord.facultyApprovedBy=reviewer;proposedRecord.facultyApprovedAt=reviewedAt;proposedRecord.renderedNoteSha256=note.renderSha256;}}
+ if(action==='accept'&&note.targetRegistry==='qbank_render_reviews'){{proposedRecord=qbankProposalFromCurrent(note,proposedRecord,reviewer,reviewedAt);}}
  const patch={{schemaVersion:1,targetRegistry:note.targetRegistry,generatedFromCommit:candidate.generatedFromCommit,inputSha256:candidate.governedInputSha256,decisions:[{{recordKey:note.recordKey,baseRecordSha256:note.baseRecordSha256,proposedRecord,decision:action,reviewer,reviewedAt}}]}};savePatch(patch,note.targetRegistry+'.review.patch.json');
 }}));
 </script></body></html>"""
