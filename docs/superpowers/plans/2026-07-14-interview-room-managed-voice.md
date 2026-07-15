@@ -71,6 +71,7 @@ MS3/resident build and Playwright smoke infrastructure.
 - Create: `_prototypes/sp-interview/tests/review-filter.test.mjs`
 - Create: `_prototypes/sp-interview/tests/voice-state.test.mjs`
 - Create: `_prototypes/sp-interview/tests/voice-contract.test.mjs`
+- Create: `_prototypes/sp-interview/tests/managed-transport.test.mjs`
 - Create: `_prototypes/sp-interview/tests/provider-errors.test.mjs`
 - Create: `_prototypes/sp-interview/tests/ci-build-contract.test.mjs`
 - Create: `_prototypes/sp-interview/tests/ops-docs.test.mjs`
@@ -375,6 +376,7 @@ const controller = SPInterviewVoice.createController(deps);
 controller.getSnapshot();
 controller.subscribe(listener);
 controller.beginEncounter(encounterId);
+controller.requestOpening({ runActor });
 controller.setMode('off' | 'device' | 'managed');
 controller.startListening();
 controller.stopListening();
@@ -382,6 +384,7 @@ controller.submitTurn({ text, runActor });
 controller.acceptPatientReply({ turnId, reply, ticket });
 controller.stopPlayback();
 controller.replay(turnId);
+controller.canReplay(turnId);
 controller.resolveFallback('text' | 'device');
 controller.cancelAll(reason);
 controller.endEncounter();
@@ -390,15 +393,17 @@ controller.destroy();
 
 `deps` supplies `createRecorder`, `transcribe`, `synthesize`, `deviceSpeak`, `createPlayer`,
 `createObjectURL`, `revokeObjectURL`, `setTimeout`, `clearTimeout`, and `now`.
-`runActor` receives `{text, signal, encounterId, turnId}` and resolves to `{reply, ticket}`. The
-controller resolves `submitTurn` with `{turnId, reply, ticket}` only while the captured IDs remain
+`requestOpening` and `submitTurn` are the only actor-request paths. `runActor` receives
+`{mode:'open'|'converse', text, signal, encounterId, turnId}` and resolves to `{reply, ticket}`. The
+controller resolves either method with `{turnId, reply, ticket}` only while the captured IDs remain
 current; React publishes the full text and then calls `acceptPatientReply`.
 
 - [ ] **Step 1: Write the red state and contract tests**
 
 Cover the exact state graph, explicit mode values, 90-second stop, 4 MiB rejection, editable
 transcript callback, stale encounter/turn rejection, no record/play overlap, Replay without network,
-three-object/10-MiB eviction, stage-direction stripping, and all cancellation events.
+three-object/10-MiB eviction with exact replayable turn IDs, cancellable/stale opening requests,
+stage-direction stripping, and all cancellation events.
 
 Use a seeded sequence test:
 
@@ -433,7 +438,7 @@ Expose the same object as `window.SPInterviewVoice` and `module.exports`. The sn
   draft: '',
   error: null,
   activePatientTurn: null,
-  canReplay: false,
+  replayableTurnIds: [],
 }
 ```
 
@@ -471,6 +476,7 @@ git commit -m "feat(sp-interview): add deterministic voice controller"
 - Create: `sp-proxy/netlify/functions/_shared/sp-pack.mjs`
 - Create: `sp-proxy/netlify/functions/_shared/sp-governance.mjs`
 - Create: `sp-proxy/netlify/functions/_shared/sp-speech-ticket.mjs`
+- Create: `sp-proxy/tests/helpers/fake-blob-store.mjs`
 - Create: `sp-proxy/tests/fixtures/pack.fixture.mjs`
 - Create: `sp-proxy/tests/sp-http.test.mjs`
 - Create: `sp-proxy/tests/sp-pack-governance.test.mjs`
@@ -486,6 +492,7 @@ resolveReviewedCase({ pack, caseId });
 reviewedCaseSummaries(pack);
 managedVoiceEligibility({ pack, packHash, caseDef, now });
 createTicketCodec({ secret, clock, randomBytes });
+createRedemptionLedger({ store, namespace, clock, maxCasAttempts: 5 });
 spokenText(reply);
 ```
 
@@ -507,6 +514,12 @@ altered reply, wrong pack/attestation/profile/case, 16-byte `jti`, and exact sta
 payload contains schema, rotation, encounter, turn, `jti`, case, pack hash, attestation hash, profile
 hash/version, provider/model/voice, reply hash, issued time, and expiry.
 
+Use the conditional fake Blob store to assert ten concurrent claims produce exactly one claim and
+nine stable `speech_in_progress` errors. After `complete`, every later claim returns
+`speech_already_redeemed`. The ledger stores only ticket IDs, lifecycle status, expiry, and
+content-free usage metadata; it never stores reply or audio content. `claim` uses `onlyIfNew`, while
+`complete` uses the claim ETag with `onlyIfMatch`.
+
 - [ ] **Step 4: Verify red**
 
 Run:
@@ -524,6 +537,9 @@ Use `crypto.timingSafeEqual` over fixed-length SHA-256 digests for credentials. 
 before `JSON.parse`. Return typed operational errors with `{status, code, message}`. Reject managed
 voice unless every reviewed hash/pin and next-review date matches. `readEnv(name)` calls
 `globalThis.Netlify.env.get(name)` when available and otherwise reads `process.env[name]` for tests.
+The redemption ledger exposes `claim(payload)` and
+`complete(claim,{status:'succeeded'|'provider_failed',usage})`; concurrent versus terminal states map
+exactly to `speech_in_progress` and `speech_already_redeemed`.
 
 - [ ] **Step 6: Verify green**
 
@@ -545,7 +561,7 @@ git commit -m "feat(sp-proxy): add governed HTTP and speech tickets"
 **Files:**
 
 - Create: `sp-proxy/netlify/functions/_shared/sp-budget.mjs`
-- Create: `sp-proxy/tests/helpers/fake-blob-store.mjs`
+- Modify: `sp-proxy/tests/helpers/fake-blob-store.mjs`
 - Create: `sp-proxy/tests/sp-budget.test.mjs`
 
 **Interfaces:**
@@ -650,7 +666,7 @@ provider.synthesize({ text, profile, signal });
 // => { audio: Uint8Array, contentType: 'audio/mpeg', usage: { characters } }
 
 createSpeechProvider({ stack, fetchImpl, apiKeys });
-createVoiceHandler({ http, packLoader, governance, ticketCodec, budget, provider, config });
+createVoiceHandler({ http, packLoader, governance, ticketCodec, redemption, budget, provider, config });
 ```
 
 - [ ] **Step 1: Write red provider tests**
@@ -664,7 +680,8 @@ from returned errors.
 Test health while disabled, health with reviewed fixtures, operations-key usage, accepted MIME list,
 `401`, origin `403`, case/profile `403`, MIME `415`, size `413`, budget `429`, storage `503`, timeout
 `504`, valid transcription, valid binary synthesis, altered ticket, and ten duplicate speech requests
-causing exactly one provider invocation.
+causing exactly one provider invocation. Concurrent duplicates return `speech_in_progress`; a retry
+after completion returns `speech_already_redeemed` and never starts another provider call.
 
 - [ ] **Step 3: Verify red**
 
@@ -685,9 +702,16 @@ Export the injected `createVoiceHandler(dependencies)`, a default handler constr
 dependencies, and `config={path:'/api/sp/voice'}`. The handler routes only the four operations defined
 in the design; every other method/operation returns typed `405 method_not_allowed`.
 
+For synthesis, verify ticket and governance first, reserve the maximum budget, then atomically claim
+the `jti`. A duplicate claim releases the not-started reservation and returns the redemption ledger's
+stable code. Only after both reservation and claim succeed may the handler mark provider-started and
+invoke the provider. Settle the budget and mark redemption terminal on success or provider failure;
+a response loss or retry can never start a second synthesis call.
+
 Production dependencies read `SP_MANAGED_VOICE_ENABLED` as false unless exactly `true`, use
-`getStore({name:'sp-usage', consistency:'strong'})`, and derive a non-identifying rotation ID from
-`SP_ROTATION_ID` or the student-passcode hash. Deploy previews never enable real speech.
+`getStore({name:'sp-usage', consistency:'strong'})`, and require an explicit non-identifying
+`SP_ROTATION_ID` whenever managed voice is enabled. Production fails closed rather than deriving a
+rotation from a passcode; local tests inject an explicit test rotation. Deploy previews never enable real speech.
 Health returns `warning` at $16; transcribe and speak reject new calls in that band while actor turns
 retain the remaining envelope.
 
@@ -769,6 +793,7 @@ git commit -m "refactor(sp-proxy): govern actor turns and openings"
 **Files:**
 
 - Create: `_prototypes/sp-interview/tests/provider-errors.test.mjs`
+- Create: `_prototypes/sp-interview/tests/managed-transport.test.mjs`
 - Modify: `_prototypes/sp-interview/sp-interview.html`
 - Modify: `_prototypes/sp-interview/sp-interview.voice.js`
 - Generate: `_prototypes/sp-interview/sp-interview.preview.html`
@@ -787,6 +812,13 @@ errors reject with stable codes and never call `MockProvider.respond`. Assert th
 `sp-interview.voice.js`, has one voice controller ref, contains no `SpeechRecognition`, no
 `buildSpeechSteps`, no independent speech timer, and always renders `m.text`.
 
+In `managed-transport.test.mjs`, specify `SPInterviewVoice.createManagedTransport({voiceEndpoint,
+getStudentKey,fetchImpl})`. Assert transcription sends the original allowlisted audio body (never
+base64 or FormData), `Content-Type`, `x-student-key`, case/encounter/turn IDs, and the caller's abort
+signal. Assert synthesis sends only `{reply,ticket}`, requests audio, returns bytes plus MIME type,
+and preserves typed endpoint errors. No method may log, persist, retry, or switch providers. Assert
+all recording/blob references are released after draft creation, cancellation, or encounter end.
+
 Create the Chromium `interview-room` Playwright project and write browser tests for keyboard mode
 selection, text before audio, denied mic, blocked autoplay, slow actor, cancel-on-end, no overlap,
 stale-response rejection, explicit offline choice, Stop/Replay, narrow layout, reduced motion, and
@@ -799,11 +831,14 @@ Run:
 
 ```bash
 node --test _prototypes/sp-interview/tests/provider-errors.test.mjs
+node --test _prototypes/sp-interview/tests/managed-transport.test.mjs
 node --test _prototypes/sp-interview/tests/voice-contract.test.mjs
+npm --prefix tests/smoke ci
 python3 -m http.server 4300 --directory _prototypes/sp-interview &
 SERVER_PID=$!
 trap 'kill $SERVER_PID' EXIT
-SP_INTERVIEW_BASE_URL=http://localhost:4300/ npm --prefix tests/smoke exec playwright test -- --project=interview-room
+curl --fail --silent --show-error --retry 20 --retry-delay 1 --retry-connrefused http://localhost:4300/sp-interview.html >/dev/null
+SP_INTERVIEW_BASE_URL=http://localhost:4300/ npm --prefix tests/smoke run test -- --project=interview-room
 ```
 
 Expected: the unit contracts and browser acceptance fail on the missing integrated behavior.
@@ -816,7 +851,12 @@ consent keys in local storage.
 
 Render a native mode select with `Voice off`, `Device voice`, and Managed voice only when health says
 it is eligible. Managed selection first presents consent that separately names clerkship retention,
-provider processing, no real-patient information, and equal typing access.
+the selected speech provider, a linked provider data-use notice, provider processing, no
+real-patient information, and equal typing access.
+
+Construct the managed transport from the reviewed voice-health response and the existing tab-scoped
+student key. Its raw-audio and signed-synthesis methods are the controller's injected `transcribe`
+and `synthesize` dependencies; neither React nor `ProxyProvider` performs speech requests directly.
 
 - [ ] **Step 4: Route encounter actions through the controller**
 
@@ -828,7 +868,9 @@ page teardown cancel controller resources.
 - [ ] **Step 5: Implement explicit stable fallback UI**
 
 Actor errors keep the submitted learner text and offer Retry or Continue offline. Offline selection
-rehydrates a fresh `MockProvider` by replaying prior learner turns before generating the failed turn.
+rehydrates a fresh `MockProvider` by replaying prior learner turns before generating the failed turn,
+then places a persistent `Offline simulation` label in the encounter header and beside every new
+offline patient reply.
 Voice errors keep patient text and offer Continue with text or Use device voice. No mode changes
 without an explicit learner action.
 
@@ -845,20 +887,23 @@ Run:
 ```bash
 node _prototypes/sp-interview/generate-preview.mjs --write
 node --test _prototypes/sp-interview/tests/provider-errors.test.mjs
+node --test _prototypes/sp-interview/tests/managed-transport.test.mjs
 node --test _prototypes/sp-interview/tests/voice-state.test.mjs
 node --test _prototypes/sp-interview/tests/voice-contract.test.mjs
 node _prototypes/sp-interview/tests/preview.test.mjs
 bash _prototypes/sp-interview/tests/run-all.sh
+npm --prefix tests/smoke ci
 python3 -m http.server 4300 --directory _prototypes/sp-interview &
 SERVER_PID=$!
 trap 'kill $SERVER_PID' EXIT
-SP_INTERVIEW_BASE_URL=http://localhost:4300/ npm --prefix tests/smoke exec playwright test -- --project=interview-room
+curl --fail --silent --show-error --retry 20 --retry-delay 1 --retry-connrefused http://localhost:4300/sp-interview.html >/dev/null
+SP_INTERVIEW_BASE_URL=http://localhost:4300/ npm --prefix tests/smoke run test -- --project=interview-room
 ```
 
 - [ ] **Step 8: Commit**
 
 ```bash
-git add _prototypes/sp-interview
+git add _prototypes/sp-interview tests/smoke/interview-room.spec.js tests/smoke/playwright.config.js
 git commit -m "feat(sp-interview): integrate smooth governed voice experience"
 ```
 
@@ -967,6 +1012,7 @@ git commit -m "chore(sp-interview): add release and operations gates"
 ```bash
 rm -rf sp-proxy/node_modules
 npm --prefix sp-proxy ci
+npm --prefix tests/smoke ci
 npm --prefix sp-proxy test
 node _prototypes/sp-interview/generate-preview.mjs --check
 bash _prototypes/sp-interview/tests/run-all.sh
@@ -990,10 +1036,11 @@ Run the existing Chromium project named `interview-room` with
 browser audio APIs before navigation, and never supplies a live endpoint or passcode.
 
 ```bash
-python3 -m http.server 4200 --directory _site/ms3 &
+python3 -m http.server 4200 --directory _build/ms3 &
 SERVER_PID=$!
 trap 'kill $SERVER_PID' EXIT
-SP_INTERVIEW_BASE_URL=http://localhost:4200/tools/ npm --prefix tests/smoke exec playwright test -- --project=interview-room
+curl --fail --silent --show-error --retry 20 --retry-delay 1 --retry-connrefused http://localhost:4200/tools/sp-interview.html >/dev/null
+SP_INTERVIEW_BASE_URL=http://localhost:4200/tools/ npm --prefix tests/smoke run test -- --project=interview-room
 ```
 
 - [ ] **Step 3: Fix only reproduced defects with TDD**
@@ -1001,24 +1048,44 @@ SP_INTERVIEW_BASE_URL=http://localhost:4200/tools/ npm --prefix tests/smoke exec
 For every defect, add the smallest failing automated test, watch it fail, implement the fix, and run
 the focused test plus the aggregate suite before continuing.
 
-- [ ] **Step 4: Run final repository evidence**
+- [ ] **Step 4: Commit any browser-acceptance repairs**
+
+If Step 3 changed files, stage only those named defect fixes, verify `git diff --cached --check`, and
+commit them as `fix(sp-interview): resolve browser acceptance defects`. Do not proceed with a dirty
+tree. If no defect was reproduced, create no empty commit.
+
+- [ ] **Step 5: Refresh and reconcile the remote base**
+
+Run `git fetch origin main`. If `origin/main` is not already an ancestor of `HEAD`, merge it with
+`git merge --no-edit origin/main`; do not discard either side. Resolve only genuine in-scope
+conflicts, add a focused regression test for any behavioral conflict, then rerun Steps 1 and 2.
+
+- [ ] **Step 6: Obtain independent whole-branch review**
+
+Generate a review package from `git merge-base origin/main HEAD` through `HEAD`. Require separate
+verdicts for specification compliance and code quality. Fix every Critical or Important finding,
+commit the reviewed fixes, rerun their covering tests plus the aggregate suite, and obtain clean
+re-review.
+
+- [ ] **Step 7: Run final repository evidence**
 
 ```bash
-git diff --check main...HEAD
+git diff --check origin/main...HEAD
 git status --short
-git log --oneline main..HEAD
+git log --oneline origin/main..HEAD
 ```
 
 Expected: no whitespace errors, no uncommitted changes, and only intentional Interview Room,
 governance, build, CI, proxy, test, and documentation commits.
 
-- [ ] **Step 5: Obtain independent whole-branch review**
+- [ ] **Step 8: Push, open or refresh the pull request, and confirm remote checks**
 
-Generate a review package from `git merge-base main HEAD` through `HEAD`. Require separate verdicts
-for specification compliance and code quality. Fix every Critical or Important finding, rerun its
-covering tests, and obtain clean re-review.
+Push `codex/interview-room-voice-experience-design`, open or refresh its pull request against
+`main`, and wait for required checks. Confirm the PR reports no merge conflicts and save its URL.
+If authentication or a remote service is unavailable, preserve the clean verified branch and report
+that external blocker explicitly instead of claiming remote merge readiness.
 
-- [ ] **Step 6: Prepare morning merge guidance**
+- [ ] **Step 9: Prepare morning merge guidance**
 
 Report the branch, commits, exact verification results, managed-voice disabled status, remaining
 external gates, safe rollback, and the concrete merge command or pull-request URL. Do not label
