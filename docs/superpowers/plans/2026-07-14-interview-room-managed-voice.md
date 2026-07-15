@@ -606,6 +606,8 @@ git commit -m "feat(sp-proxy): add governed HTTP and speech tickets"
 **Interfaces:**
 
 ```javascript
+export const PRODUCTION_BUDGET_STORE_NAME = 'sp-usage';
+export const PRODUCTION_BUDGET_NAMESPACE = 'managed-voice';
 const ledger = createBudgetLedger({
   store,
   namespace,
@@ -625,6 +627,10 @@ await ledger.failBeforeProvider({ reservation, code });
 await ledger.getBand();
 await ledger.getUsage();
 ```
+
+Both the actor/evaluator handler and speech handler import these exact shared production constants
+and use the same strong Blob store, namespace, and `SP_ROTATION_ID`. No endpoint owns a private
+namespace string or creates a second rotation record.
 
 Supported kinds and exact usage shapes are:
 
@@ -806,6 +812,7 @@ git commit -m "feat(sp-proxy): enforce atomic rotation budget"
 - Create: `sp-proxy/netlify/functions/_shared/sp-audio-metadata.mjs`
 - Create: `sp-proxy/netlify/functions/_shared/sp-speech-provider.mjs`
 - Create: `sp-proxy/netlify/functions/sp-voice.mjs`
+- Modify: `sp-proxy/netlify/functions/_shared/sp-budget.mjs`
 - Modify: `sp-proxy/tests/sp-http.test.mjs`
 - Modify: `sp-proxy/tests/sp-pack-governance.test.mjs`
 - Modify: `sp-proxy/tests/sp-speech-ticket.test.mjs`
@@ -814,6 +821,7 @@ git commit -m "feat(sp-proxy): enforce atomic rotation budget"
 - Create: `sp-proxy/tests/helpers/fake-speech-provider.mjs`
 - Create: `sp-proxy/tests/sp-speech-provider.test.mjs`
 - Create: `sp-proxy/tests/sp-voice.test.mjs`
+- Modify: `sp-proxy/tests/sp-budget.test.mjs`
 - Modify: `13_Faculty_Resources/_automation/validate_attestation_consistency.py`
 - Modify: `13_Faculty_Resources/_automation/test_validate_attestation_consistency.py`
 - Modify: `_prototypes/sp-interview/sp-interview.pack.json`
@@ -1154,6 +1162,12 @@ fields, and each is a safe positive integer. Derive the budget rate key only as
 work. A missing or mismatched pin/rate fails closed before ledger or provider access; no learner body
 or environment value may select a model, maximum, provider, or rate.
 
+Instantiate the actor/evaluation ledger from the same `PRODUCTION_BUDGET_STORE_NAME`,
+`PRODUCTION_BUDGET_NAMESPACE`, strong-consistency store, and `SP_ROTATION_ID` used by the voice
+handler. Add one cross-endpoint integration test over a shared fake store: settled/reserved actor
+spend must immediately change voice `getBand()`/health and voice reservation capacity, and the `$20`
+total cap must remain one record rather than two endpoint-specific caps.
+
 The learner request contracts are exact and size-bounded. Opening is
 `{caseId,mode:'open',encounterId,turnId:0}`; converse is
 `{caseId,mode:'converse',encounterId,turnId,turns,message}` with
@@ -1292,6 +1306,10 @@ case summaries, deterministic opening/converse state, top-level retry dispositio
 `ProxyProvider` state/private-return mapping. Mutate every feedback key, enum, cardinality, string
 bound, Unicode validity, and linked-page membership. Mutate each model/output/rate pin and prove
 failure occurs before budget/provider work.
+
+Assert production actor and voice factories import the exact shared budget store/namespace
+constants. With both handlers backed by one fake strong store and rotation, charge actor usage and
+prove voice health/reservations see the same warning/cap transition without a second record.
 
 Also cover every exact body/ID/size boundary; missing-key-before-budget; immutable one-snapshot
 governance; byte-derived maximum input; abort before reservation, after reservation, during provider-
