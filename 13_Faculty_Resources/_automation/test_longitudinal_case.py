@@ -39,7 +39,18 @@ def main():
     for week in weeks:
         for key in ("title", "focus", "patientState", "learnerTask", "checklist", "links"):
             assert key in week, f"{week['id']} missing {key}"
-        assert len(week["checklist"]) >= 2, f"{week['id']} needs checklist items"
+        checklist = week["checklist"]
+        assert len(checklist) == 3, f"{week['id']} must contain exactly three checklist items"
+        for index, item in enumerate(checklist):
+            assert isinstance(item, dict), (
+                f"{week['id']} checklist item {index} must be an object"
+            )
+            assert isinstance(item.get("prompt"), str) and item["prompt"].strip(), (
+                f"{week['id']} checklist item {index} needs a nonblank prompt"
+            )
+            assert isinstance(item.get("example"), str) and item["example"].strip(), (
+                f"{week['id']} checklist item {index} needs a nonblank example"
+            )
         for link in week["links"]:
             assert link["kind"] in ("page", "tool")
             target = link["target"]
