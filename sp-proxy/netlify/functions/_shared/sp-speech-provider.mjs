@@ -112,7 +112,13 @@ function validProvenance(value) {
 }
 
 function validateStack(stack) {
-  if (!stack || typeof stack !== 'object' || Array.isArray(stack) || !nonempty(stack.id)) {
+  if (
+    !exactKeys(stack, ['id', 'synthesis', 'transcription', 'zeroRetentionEntitled'])
+    || !nonempty(stack.id)
+    || !exactKeys(stack.transcription, ['model', 'provider'])
+    || !exactKeys(stack.synthesis, ['model', 'provider'])
+    || typeof stack.zeroRetentionEntitled !== 'boolean'
+  ) {
     throw safeError('factoryConfiguration');
   }
   const transcription = stack.transcription;
@@ -122,14 +128,13 @@ function validateStack(stack) {
     && transcription?.model === 'whisper-1'
     && synthesis?.provider === 'openai'
     && synthesis?.model === 'tts-1-hd'
-    && stack.zeroRetentionEntitled !== true;
+    && stack.zeroRetentionEntitled === false;
   const elevenlabs = stack.id === 'elevenlabs-expressive-v1'
     && transcription?.provider === 'elevenlabs'
     && transcription?.model === 'scribe_v2'
     && synthesis?.provider === 'elevenlabs'
     && synthesis?.model === 'eleven_v3'
-    && (stack.zeroRetentionEntitled === undefined
-      || typeof stack.zeroRetentionEntitled === 'boolean');
+    && typeof stack.zeroRetentionEntitled === 'boolean';
   if (!openai && !elevenlabs) throw safeError('factoryConfiguration');
   return Object.freeze({
     provider: transcription.provider,
@@ -391,7 +396,12 @@ function parseOpenAiTranscript(value) {
   const durationMilliseconds = milliseconds(value.duration);
   let usage = null;
   if (value.usage !== undefined) {
-    if (value.usage?.type !== 'duration') throw safeError('provider');
+    if (
+      !exactKeys(value.usage, ['seconds', 'type'])
+      || value.usage.type !== 'duration'
+    ) {
+      throw safeError('provider');
+    }
     usage = Object.freeze({ milliseconds: milliseconds(value.usage.seconds) });
   }
   return Object.freeze({
@@ -473,9 +483,11 @@ function transcribeElevenLabs({ fetchImpl, key, model, zeroRetentionEntitled }, 
   form.append('model_id', model);
   form.append('tag_audio_events', 'false');
   form.append('diarize', 'false');
-  if (zeroRetentionEntitled) form.append('enable_logging', 'false');
+  const url = zeroRetentionEntitled
+    ? `${ELEVENLABS_BASE_URL}/speech-to-text?enable_logging=false`
+    : `${ELEVENLABS_BASE_URL}/speech-to-text`;
   return deadline(async (signal) => {
-    const response = await providerFetch(fetchImpl, `${ELEVENLABS_BASE_URL}/speech-to-text`, {
+    const response = await providerFetch(fetchImpl, url, {
       method: 'POST',
       headers: { 'xi-api-key': key },
       body: form,
@@ -509,17 +521,18 @@ function synthesizeOpenAi({ fetchImpl, key, model }, input, deadline) {
   });
 }
 
-function synthesizeElevenLabs({ fetchImpl, key, model }, input, deadline) {
+function synthesizeElevenLabs({ fetchImpl, key, model, zeroRetentionEntitled }, input, deadline) {
   const body = boundedJson({
     text: input.text,
     model_id: model,
     voice_settings: input.settings,
   });
   const voiceId = encodeURIComponent(input.profile.voiceId);
+  const retentionQuery = zeroRetentionEntitled ? '&enable_logging=false' : '';
   return deadline(async (signal) => {
     const response = await providerFetch(
       fetchImpl,
-      `${ELEVENLABS_BASE_URL}/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
+      `${ELEVENLABS_BASE_URL}/text-to-speech/${voiceId}?output_format=mp3_44100_128${retentionQuery}`,
       {
         method: 'POST',
         headers: {
@@ -570,6 +583,7 @@ export function createSpeechProvider({
         fetchImpl,
         key,
         model: selected.synthesisModel,
+        zeroRetentionEntitled: selected.zeroRetentionEntitled,
       });
       const deadline = (operation, signal) => withDeadline(
         { callerSignal: signal, timeoutMs, timers },

@@ -16,6 +16,7 @@ const SENTINEL_BODY = 'provider-secret-body-must-never-leak';
 function openAiStack() {
   return {
     id: 'openai-quality-v1',
+    zeroRetentionEntitled: false,
     transcription: { provider: 'openai', model: 'whisper-1' },
     synthesis: { provider: 'openai', model: 'tts-1-hd' },
   };
@@ -323,17 +324,28 @@ test('ElevenLabs transcription sends the exact Scribe v2 fields without unreview
 test('ElevenLabs sends enable_logging=false only with an explicit reviewed entitlement pin', async () => {
   const { adapter, network } = await prepared({
     stack: elevenLabsStack({ zeroRetentionEntitled: true }),
-    responses: [jsonResponse({ text: 'Test.', words: [{ start: 0, end: 0.5, text: 'Test.' }] })],
+    responses: [
+      jsonResponse({ text: 'Test.', words: [{ start: 0, end: 0.5, text: 'Test.' }] }),
+      mp3Response(Uint8Array.of(0xff, 0xfb, 0x90, 0x64)),
+    ],
   });
   await adapter.transcribe(audioInput());
+  await adapter.synthesize({ text: 'Test.', profile: elevenLabsProfile() });
   assert.deepEqual([...network.calls[0].options.body.keys()], [
     'file',
     'model_id',
     'tag_audio_events',
     'diarize',
-    'enable_logging',
   ]);
-  assert.equal(network.calls[0].options.body.get('enable_logging'), 'false');
+  assert.equal(
+    network.calls[0].url,
+    'https://api.elevenlabs.io/v1/speech-to-text?enable_logging=false',
+  );
+  assert.equal(network.calls[0].options.body.has('enable_logging'), false);
+  assert.equal(
+    network.calls[1].url,
+    'https://api.elevenlabs.io/v1/text-to-speech/voice%20%2F%3F%23?output_format=mp3_44100_128&enable_logging=false',
+  );
 });
 
 test('Eleven v3 synthesis encodes the voice ID and sends only exact reviewed settings', async () => {
@@ -421,6 +433,10 @@ test('unsupported provider/model pairs and mixed-provider stacks fail closed wit
     { ...openAiStack(), synthesis: { provider: 'openai', model: 'tts-1' } },
     { ...openAiStack(), synthesis: { provider: 'elevenlabs', model: 'eleven_v3' } },
     { ...openAiStack(), zeroRetentionEntitled: true },
+    { ...openAiStack(), zeroRetentionEntitled: 'false' },
+    { ...openAiStack(), unexpected: 'must fail closed' },
+    { ...openAiStack(), transcription: { ...openAiStack().transcription, unexpected: true } },
+    (() => { const stack = elevenLabsStack(); delete stack.zeroRetentionEntitled; return stack; })(),
     { ...elevenLabsStack(), synthesis: { provider: 'elevenlabs', model: 'eleven_multilingual_v3' } },
   ];
   for (const stack of stacks) {
@@ -527,6 +543,12 @@ test('OpenAI transcription accepts absent optional usage but requires language a
     { text: 'Test.', language: '', duration: 1 },
     { text: 'Test.', language: 'en', duration: 1, usage: { type: 'tokens', seconds: 1 } },
     { text: 'Test.', language: 'en', duration: 1, usage: { seconds: 1 } },
+    {
+      text: 'Test.',
+      language: 'en',
+      duration: 1,
+      usage: { type: 'duration', seconds: 1, extra: 'must fail closed' },
+    },
   ]) {
     const { adapter } = await prepared({ responses: [jsonResponse(value)] });
     await assert.rejects(
