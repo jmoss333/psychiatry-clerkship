@@ -28,6 +28,21 @@ const PAYLOAD_KEYS = [
   'turnId',
   'voiceId',
 ].sort();
+const OPENING_INPUT_KEYS = [
+  'attestationHash',
+  'caseId',
+  'encounterId',
+  'model',
+  'packHash',
+  'profileHash',
+  'profileVersion',
+  'provider',
+  'reply',
+  'rotationId',
+  'turnId',
+  'voiceId',
+].sort();
+const OPENING_JTI_DOMAIN = 'sp-speech-ticket/opening-jti/v1\0';
 
 function invalidTicket() {
   return operationalError(403, 'invalid_speech_ticket', 'The speech ticket is invalid.');
@@ -59,6 +74,15 @@ function secureEqual(left, right) {
 
 function nonempty(value) {
   return typeof value === 'string' && value.length > 0;
+}
+
+function exactKeys(value, expected) {
+  return Boolean(
+    value
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && JSON.stringify(Object.keys(value).sort()) === JSON.stringify(expected)
+  );
 }
 
 function validSha256(value) {
@@ -206,19 +230,14 @@ export function createTicketCodec({
     return createHmac('sha256', secretBytes).update(encodedPayload, 'utf8').digest();
   }
 
-  function issue(input) {
-    if (!validateBindings(input) || typeof input.reply !== 'string') throw invalidTicket();
-    const jtiBytes = Buffer.from(randomBytes(16));
-    if (jtiBytes.byteLength !== 16) {
-      throw operationalError(500, 'invalid_configuration', 'Speech ticket randomness is invalid.');
-    }
+  function encodeTicket(input, jti) {
     const iat = nowSeconds(clock);
     const payload = {
       schemaVersion: 1,
       rotationId: input.rotationId,
       encounterId: input.encounterId,
       turnId: input.turnId,
-      jti: jtiBytes.toString('base64url'),
+      jti,
       caseId: input.caseId,
       packHash: input.packHash,
       attestationHash: input.attestationHash,
@@ -233,6 +252,48 @@ export function createTicketCodec({
     };
     const encodedPayload = Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
     return `${encodedPayload}.${signature(encodedPayload).toString('base64url')}`;
+  }
+
+  function issue(input) {
+    if (!validateBindings(input) || typeof input.reply !== 'string') throw invalidTicket();
+    const jtiBytes = Buffer.from(randomBytes(16));
+    if (jtiBytes.byteLength !== 16) {
+      throw operationalError(500, 'invalid_configuration', 'Speech ticket randomness is invalid.');
+    }
+    return encodeTicket(input, jtiBytes.toString('base64url'));
+  }
+
+  function issueStableOpening(input) {
+    if (
+      !exactKeys(input, OPENING_INPUT_KEYS)
+      || !validateBindings(input)
+      || input.turnId !== 0
+      || typeof input.reply !== 'string'
+    ) {
+      throw invalidTicket();
+    }
+    const replyHash = sha256(input.reply);
+    const identity = JSON.stringify({
+      rotationId: input.rotationId,
+      encounterId: input.encounterId,
+      turnId: 0,
+      caseId: input.caseId,
+      packHash: input.packHash,
+      attestationHash: input.attestationHash,
+      profileHash: input.profileHash,
+      profileVersion: input.profileVersion,
+      provider: input.provider,
+      model: input.model,
+      voiceId: input.voiceId,
+      replyHash,
+    });
+    const jti = createHmac('sha256', secretBytes)
+      .update(OPENING_JTI_DOMAIN, 'utf8')
+      .update(identity, 'utf8')
+      .digest()
+      .subarray(0, 16)
+      .toString('base64url');
+    return encodeTicket(input, jti);
   }
 
   function authenticate({ ticket, reply }) {
@@ -312,7 +373,7 @@ export function createTicketCodec({
     return assertBindings({ payload: authenticate({ ticket, reply }), expected });
   }
 
-  return Object.freeze({ issue, authenticate, assertBindings, verify });
+  return Object.freeze({ issue, issueStableOpening, authenticate, assertBindings, verify });
 }
 
 export function createRedemptionLedger({

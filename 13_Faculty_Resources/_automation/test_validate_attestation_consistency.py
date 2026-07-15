@@ -143,7 +143,11 @@ def pending_pack():
         "schemaVersion": "1.0",
         "tool": "sp-interview",
         "status": "draft-pending-attestation",
-        "engine": {"modelPinned": "claude-haiku-4-5-20251001"},
+        "engine": {
+            "modelPinned": "claude-haiku-4-5-20251001",
+            "maxActorOutputTokens": 300,
+            "maxEvaluatorOutputTokens": 1500,
+        },
         "speechEngine": draft_speech_engine(),
         "cases": [
             {
@@ -402,6 +406,48 @@ class AttestationConsistencyTests(unittest.TestCase):
             )
             errors = self.validate(root)
         self.assertEqual(errors, [])
+
+    def test_engine_output_token_pins_are_required_positive_safe_integers(self):
+        fields = ("maxActorOutputTokens", "maxEvaluatorOutputTokens")
+        for field in fields:
+            for label, value in {
+                "missing": None,
+                "boolean": True,
+                "zero": 0,
+                "fractional": 1.5,
+                "unsafe": 9_007_199_254_740_992,
+            }.items():
+                with self.subTest(field=field, mutation=label):
+                    pack = canonical_pack()
+                    pack["engine"].update(
+                        {
+                            "maxActorOutputTokens": 300,
+                            "maxEvaluatorOutputTokens": 1500,
+                        }
+                    )
+                    if value is None:
+                        pack["engine"].pop(field)
+                    else:
+                        pack["engine"][field] = value
+                    errors = self.validate_pack(pack)
+                    self.assertTrue(
+                        any(field in error and "positive safe integer" in error for error in errors),
+                        errors,
+                    )
+
+    def test_engine_output_token_pins_match_the_reviewed_contract(self):
+        for field, value in {
+            "maxActorOutputTokens": 301,
+            "maxEvaluatorOutputTokens": 1499,
+        }.items():
+            with self.subTest(field=field):
+                pack = canonical_pack()
+                pack["engine"][field] = value
+                errors = self.validate_pack(pack)
+                self.assertTrue(
+                    any(field in error and "reviewed value" in error for error in errors),
+                    errors,
+                )
 
     def test_draft_privacy_cannot_claim_account_controls(self):
         pack = pending_pack()

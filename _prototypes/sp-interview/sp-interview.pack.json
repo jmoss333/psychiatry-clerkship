@@ -16,6 +16,8 @@
   },
   "engine": {
     "modelPinned": "claude-haiku-4-5-20251001",
+    "maxActorOutputTokens": 300,
+    "maxEvaluatorOutputTokens": 1500,
     "maxTurns": 40,
     "rapportStart": 0,
     "rapportMin": -3,

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import test from 'node:test';
 
 import {
@@ -27,9 +27,14 @@ const TICKET_INPUT = Object.freeze({
   voiceId: 'alloy',
   reply: REPLY,
 });
+const OPENING_INPUT = Object.freeze({ ...TICKET_INPUT, turnId: 0 });
 
 function sha256(value) {
   return createHash('sha256').update(value, 'utf8').digest('hex');
+}
+
+function decodedTicket(ticket) {
+  return JSON.parse(Buffer.from(ticket.split('.')[0], 'base64url').toString('utf8'));
 }
 
 function fixedRandomBytes(size) {
@@ -115,6 +120,106 @@ test('ticket round-trip binds every field, uses a 16-byte JTI, and expires after
   });
   assert.equal(Buffer.from(payload.jti, 'base64url').byteLength, 16);
   assert.match(ticket, /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+});
+
+test('stable opening tickets use the exact domain-separated HMAC identity across issue times', () => {
+  const clockRef = { now: NOW_MS };
+  let randomCalls = 0;
+  const codec = createTicketCodec({
+    secret: SECRET,
+    clock: () => clockRef.now,
+    randomBytes() { randomCalls += 1; throw new Error('stable opening must not use randomness'); },
+  });
+  const first = decodedTicket(codec.issueStableOpening(OPENING_INPUT));
+  clockRef.now += 1_000;
+  const second = decodedTicket(codec.issueStableOpening(OPENING_INPUT));
+
+  const replyHash = sha256(OPENING_INPUT.reply);
+  const identity = JSON.stringify({
+    rotationId: OPENING_INPUT.rotationId,
+    encounterId: OPENING_INPUT.encounterId,
+    turnId: 0,
+    caseId: OPENING_INPUT.caseId,
+    packHash: OPENING_INPUT.packHash,
+    attestationHash: OPENING_INPUT.attestationHash,
+    profileHash: OPENING_INPUT.profileHash,
+    profileVersion: OPENING_INPUT.profileVersion,
+    provider: OPENING_INPUT.provider,
+    model: OPENING_INPUT.model,
+    voiceId: OPENING_INPUT.voiceId,
+    replyHash,
+  });
+  const expectedJti = createHmac('sha256', SECRET)
+    .update('sp-speech-ticket/opening-jti/v1\0', 'utf8')
+    .update(identity, 'utf8')
+    .digest()
+    .subarray(0, 16)
+    .toString('base64url');
+
+  assert.equal(first.jti, expectedJti);
+  assert.equal(second.jti, expectedJti);
+  assert.notEqual(first.iat, second.iat);
+  assert.equal(first.turnId, 0);
+  assert.equal(first.replyHash, replyHash);
+  assert.equal(randomCalls, 0);
+  assert.equal(Buffer.from(first.jti, 'base64url').byteLength, 16);
+});
+
+test('stable opening identity rotates on every governed binding while converse JTIs stay random', () => {
+  let sequence = 0;
+  const codec = createTicketCodec({
+    secret: SECRET,
+    clock: () => NOW_MS,
+    randomBytes(size) {
+      assert.equal(size, 16);
+      sequence += 1;
+      return Buffer.alloc(size, sequence);
+    },
+  });
+  const stable = decodedTicket(codec.issueStableOpening(OPENING_INPUT)).jti;
+  const mutations = {
+    rotationId: 'rotation-2026-07-b',
+    encounterId: 'encounter-8',
+    caseId: 'case-reviewed-second',
+    packHash: '11'.repeat(32),
+    attestationHash: '22'.repeat(32),
+    profileHash: '33'.repeat(32),
+    profileVersion: 3,
+    provider: 'elevenlabs',
+    model: 'eleven_v3',
+    voiceId: 'another-stock-voice',
+    reply: `${OPENING_INPUT.reply} Changed.`,
+  };
+  for (const [field, value] of Object.entries(mutations)) {
+    const changed = decodedTicket(codec.issueStableOpening({
+      ...OPENING_INPUT,
+      [field]: value,
+    })).jti;
+    assert.notEqual(changed, stable, field);
+  }
+
+  const ordinaryOne = decodedTicket(codec.issue(TICKET_INPUT)).jti;
+  const ordinaryTwo = decodedTicket(codec.issue(TICKET_INPUT)).jti;
+  assert.notEqual(ordinaryOne, ordinaryTwo);
+});
+
+test('stable opening issuance accepts only exact turn-zero server bindings', () => {
+  const codec = createFixedCodec();
+  for (const invalid of [
+    { ...OPENING_INPUT, turnId: 1 },
+    { ...OPENING_INPUT, replyHash: sha256(OPENING_INPUT.reply) },
+    { ...OPENING_INPUT, extra: true },
+    { ...OPENING_INPUT, reply: null },
+  ]) {
+    assert.throws(
+      () => codec.issueStableOpening(invalid),
+      (error) => assertOperationalError(error, {
+        status: 403,
+        code: 'invalid_speech_ticket',
+        message: 'The speech ticket is invalid.',
+      }),
+    );
+  }
 });
 
 test('authentication precedes expected-case binding and returns no secret-bearing details', () => {

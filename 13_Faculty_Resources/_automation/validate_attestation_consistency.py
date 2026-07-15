@@ -26,6 +26,11 @@ REVIEWED_STATUSES = {"reviewed", "attested"}
 PROFILE_STATUSES = {"draft-pending-attestation", "reviewed"}
 CADENCES = {"measured-flat", "pressured-fast", "guarded-halting"}
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
+MAX_SAFE_INTEGER = 9_007_199_254_740_991
+ENGINE_OUTPUT_TOKEN_PINS = {
+    "maxActorOutputTokens": 300,
+    "maxEvaluatorOutputTokens": 1500,
+}
 OPENAI_STOCK_VOICES = {
     "alloy",
     "ash",
@@ -100,6 +105,31 @@ def norm_status(value):
 
 def is_reviewed(value):
     return norm_status(value) in REVIEWED_STATUSES
+
+
+def _validate_engine(slug, pack):
+    engine = pack.get("engine")
+    if not isinstance(engine, dict):
+        return ["%s: pack.engine must be an object" % slug]
+
+    errors = []
+    for field, expected in ENGINE_OUTPUT_TOKEN_PINS.items():
+        value = engine.get(field)
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, int)
+            or value <= 0
+            or value > MAX_SAFE_INTEGER
+        ):
+            errors.append(
+                "%s: engine.%s must be a positive safe integer" % (slug, field)
+            )
+        elif value != expected:
+            errors.append(
+                "%s: engine.%s must equal reviewed value %d"
+                % (slug, field, expected)
+            )
+    return errors
 
 
 def parse_rc_meta(source):
@@ -650,6 +680,8 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
             "%s: RC-META status %s disagrees with pack status %s"
             % (slug, meta_status, pack_status)
         )
+
+    errors.extend(_validate_engine(slug, pack))
 
     cases = pack.get("cases")
     if not isinstance(cases, list) or not cases:
