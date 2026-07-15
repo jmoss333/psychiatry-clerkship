@@ -820,14 +820,35 @@ git commit -m "feat(sp-proxy): enforce atomic rotation budget"
 **Interfaces:**
 
 ```javascript
-provider.transcribe({ audio, mimeType, signal });
+preparedProvider.transcribe({ audio, mimeType, signal });
 // => { text, durationMilliseconds, usage: { milliseconds } | null }
-provider.synthesize({ text, profile, signal });
+preparedProvider.synthesize({ text, profile, signal });
 // => { audio: Uint8Array, contentType: 'audio/mpeg', usage: { characters } }
 
 createSpeechProvider({ stack, fetchImpl, readApiKey, timeoutMs: 45000, timers });
 createVoiceHandler({ http, packLoader, governance, ticketCodec, budget, provider, config });
 ```
+
+`createSpeechProvider` is a credential-lazy factory. `provider.prepare()` reads and validates only the
+active provider's key and returns a frozen request-scoped adapter with `transcribe`/`synthesize`
+methods that capture the key without exposing it. The handler calls `prepare()` before any budget
+access and uses that prepared adapter after provider-start authorization. Tests prove construction,
+disabled health, and rejected governance never read a key.
+
+Extend the existing shared interfaces without breaking their current callers:
+
+```javascript
+ticketCodec.authenticate({ ticket, reply });             // frozen signed payload
+ticketCodec.assertBindings({ payload, expected });       // same payload or typed 403
+ticketCodec.verify({ ticket, reply, expected });          // composite compatibility helper
+http.requireOrigin(request);                             // validated origin only
+http.requireStudentCredential(request);                  // credential only
+http.binary(bytes, { contentType, status, origin });      // CORS + no-store + nosniff
+```
+
+Keep `http.requireStudent` as the compatibility composition of the two split auth calls. This lets a
+route retain a validated allowlisted origin when credential validation throws and therefore return a
+browser-readable typed `401` without ever adding CORS to a disallowed origin.
 
 The Task 5 operation record is the **single** synthesis redemption and provider-start authority. Its
 stable idempotency key is fixed-key canonical JSON over
