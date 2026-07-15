@@ -19,9 +19,18 @@
       "patientState": "Jordan arrives guarded and tired after several nights of very little sleep. The chart is brief, the reason for admission is contested, and Jordan asks whether the team has already decided what is wrong.",
       "learnerTask": "Practice opening the interview, mapping the timeline, and describing the mental status exam before naming a diagnosis.",
       "checklist": [
-        "I can state what changed, when it changed, and who noticed it.",
-        "I can name one alliance move that gives Jordan more control.",
-        "I can separate observed MSE findings from my interpretation."
+        {
+          "prompt": "I can state what changed, when it changed, and who noticed it.",
+          "example": "Jordan reports several nights of very little sleep before admission. Jordan describes feeling exhausted, while the family noticed escalating mood and communication changes."
+        },
+        {
+          "prompt": "I can name one alliance move that gives Jordan more control.",
+          "example": "I might begin, \"I have read the admission note, but I want to understand what this was like for you. Would you rather start with the sleep changes or with what brought you here?\""
+        },
+        {
+          "prompt": "I can separate observed MSE findings from my interpretation.",
+          "example": "I observed brief answers and limited eye contact. I interpret this as guardedness, although fatigue or mistrust could also contribute."
+        }
       ],
       "reflectionPrompt": "What would help Jordan feel that the interview is collaborative rather than an interrogation?",
       "handoff": "On rounds, present the timeline and MSE first, then state what remains uncertain.",
@@ -38,9 +47,18 @@
       "patientState": "Jordan reports racing thoughts, unusual confidence, and feeling watched during the worst nights. A family member describes a previous period of reduced sleep, but the timing of substance exposure and medical contributors is still unclear.",
       "learnerTask": "Build a problem representation, keep primary, substance-related, and medical explanations visible, and identify the next collateral question.",
       "checklist": [
-        "I can describe the syndrome without prematurely closing on a diagnosis.",
-        "I can name the data that would increase or decrease confidence in each leading explanation.",
-        "I can ask collateral questions that clarify baseline and longitudinal course."
+        {
+          "prompt": "I can describe the syndrome without prematurely closing on a diagnosis.",
+          "example": "Jordan has a syndrome of reduced sleep, racing thoughts, unusual confidence, and intermittently feeling watched. Whether this reflects a primary mood disorder, substance effects, or a medical contributor remains uncertain."
+        },
+        {
+          "prompt": "I can name the data that would increase or decrease confidence in each leading explanation.",
+          "example": "A prior episode with the same symptoms in the absence of substance exposure would increase my confidence in a primary mood disorder. A tight timeline with an exposure or a new medical finding would shift that confidence."
+        },
+        {
+          "prompt": "I can ask collateral questions that clarify baseline and longitudinal course.",
+          "example": "I would ask, \"Before this episode, what were Jordan's usual sleep, energy, speech, and daily functioning, and when did each of those begin to change?\""
+        }
       ],
       "reflectionPrompt": "Which new fact would most change your working formulation, and why?",
       "handoff": "On rounds, label your leading diagnosis as a working hypothesis and state what would update it.",
@@ -58,9 +76,18 @@
       "patientState": "Jordan is sleeping more but is unsure whether the improvement is worth feeling slowed down. Jordan worries that accepting medication means accepting a diagnosis and asks what the team is not saying.",
       "learnerTask": "Rehearse a medication conversation that explores goals, concerns, alternatives, monitoring, and the role of supervision.",
       "checklist": [
-        "I can ask what improvement would matter most to Jordan.",
-        "I can explain uncertainty and monitoring without promising a specific outcome.",
-        "I can bring medication questions to the supervising team instead of giving an unsupervised recommendation."
+        {
+          "prompt": "I can ask what improvement would matter most to Jordan.",
+          "example": "I might ask, \"If treatment were helping in a way that mattered to you, what would you notice first—better sleep, clearer thinking, more energy, or something else?\""
+        },
+        {
+          "prompt": "I can explain uncertainty and monitoring without promising a specific outcome.",
+          "example": "We have seen your sleep improve, but we cannot know yet which changes will last or which burdens will ease. The supervising team will keep checking benefits and side effects with you as the plan evolves."
+        },
+        {
+          "prompt": "I can bring medication questions to the supervising team instead of giving an unsupervised recommendation.",
+          "example": "I would tell my supervisor, \"Jordan reports improved sleep but troubling slowing and is unsure about continuing. Could we review the likely benefits, adverse effects, alternatives, and monitoring together before I answer?\""
+        }
       ],
       "reflectionPrompt": "What part of Jordan's ambivalence deserves curiosity before education?",
       "handoff": "On rounds, report Jordan's goals and concerns alongside observed response and monitoring needs.",
@@ -78,9 +105,18 @@
       "patientState": "Jordan wants to leave soon. A family member is worried and frustrated, but Jordan does not want every detail shared. The team needs collateral, a clear confidentiality frame, and a realistic conversation about supports.",
       "learnerTask": "Prepare a family meeting that respects Jordan's voice, gathers useful collateral, and identifies what the system must solve before discharge.",
       "checklist": [
-        "I can explain the purpose and boundaries of family involvement.",
-        "I can ask for observations rather than inviting labels or arguments.",
-        "I can turn family concerns into concrete questions for the team and discharge plan."
+        {
+          "prompt": "I can explain the purpose and boundaries of family involvement.",
+          "example": "I might say, \"A family meeting can help us understand what changed and plan support after discharge. I want to ask what you are comfortable discussing, and I will confirm the confidentiality boundaries with my supervisor before we meet.\""
+        },
+        {
+          "prompt": "I can ask for observations rather than inviting labels or arguments.",
+          "example": "I would ask, \"What specific changes did you notice in Jordan's sleep, speech, spending, or daily functioning, and when did they begin?\""
+        },
+        {
+          "prompt": "I can turn family concerns into concrete questions for the team and discharge plan.",
+          "example": "The family is worried about sleepless nights and medication support. I would ask the team who will monitor sleep, how medication access will be handled, and whom the family should contact if symptoms return."
+        }
       ],
       "reflectionPrompt": "How can the family be included without making Jordan feel discussed rather than included?",
       "handoff": "On rounds, distinguish patient report, collateral observation, team interpretation, and unresolved disagreement.",
@@ -99,9 +135,18 @@
       "patientState": "After a difficult phone call, Jordan says, \"Maybe it would be easier if I just disappeared,\" then asks to leave the unit. The meaning, intent, and immediacy of the statement need careful assessment.",
       "learnerTask": "Practice direct, calm safety language; identify what must be escalated immediately; and keep the patient connected while the supervising team evaluates next steps.",
       "checklist": [
-        "I can ask directly about suicidal thoughts, intent, plan, access, and immediate safety.",
-        "I can state what I heard and what I need to discuss with my supervisor now.",
-        "I can avoid treating a screening result as a complete risk formulation."
+        {
+          "prompt": "I can ask directly about suicidal thoughts, intent, plan, access, and immediate safety.",
+          "example": "I would ask, \"When you say it might be easier to disappear, are you thinking about killing yourself? Do you have a plan, intent, access to what you would use, or concern that you might act right now?\""
+        },
+        {
+          "prompt": "I can state what I heard and what I need to discuss with my supervisor now.",
+          "example": "I might say, \"I am concerned by what you just told me. I need to bring my supervisor in now so we can help keep you safe, and I will stay with you while we do that.\""
+        },
+        {
+          "prompt": "I can avoid treating a screening result as a complete risk formulation.",
+          "example": "Jordan's screening response is one data point. I also need to integrate the exact statement, intent, plan, access, behavior, acute stressor, protective factors, and remaining uncertainty with my supervisor."
+        }
       ],
       "reflectionPrompt": "What would you say first so that Jordan hears concern rather than punishment?",
       "handoff": "On rounds, describe the patient's words, context, observed behavior, protective factors, uncertainty, and supervision plan.",
@@ -120,9 +165,18 @@
       "patientState": "Jordan is preparing for transition. Symptoms, goals, family concerns, medication questions, and follow-up needs have changed over time. The final task is not to tell a perfect story; it is to make the reasoning and remaining uncertainty visible.",
       "learnerTask": "Give a concise longitudinal presentation, identify the current treatment targets, and plan a warm handoff that keeps Jordan's voice in the center.",
       "checklist": [
-        "I can explain how the working formulation changed as new data arrived.",
-        "I can present current risks, strengths, needs, and unanswered questions without overclaiming.",
-        "I can name one relational skill I want to carry into the next rotation."
+        {
+          "prompt": "I can explain how the working formulation changed as new data arrived.",
+          "example": "I initially described a mood syndrome while keeping primary, substance-related, and medical causes open. Collateral and the observed course changed their relative likelihoods, and I would name which data drove each update rather than claim certainty."
+        },
+        {
+          "prompt": "I can present current risks, strengths, needs, and unanswered questions without overclaiming.",
+          "example": "Current concerns include recurrence after discharge and unresolved medication ambivalence; strengths include improved sleep and family involvement. We still need clarity about follow-up ownership and the response to early warning signs."
+        },
+        {
+          "prompt": "I can name one relational skill I want to carry into the next rotation.",
+          "example": "I want to carry forward the habit of naming uncertainty out loud while still offering the patient and team a clear next step."
+        }
       ],
       "reflectionPrompt": "What did you learn about the difference between being right and being useful to a patient and team?",
       "handoff": "For the final presentation, connect the timeline, formulation, treatment targets, family/system plan, safety plan, and follow-up ownership.",
