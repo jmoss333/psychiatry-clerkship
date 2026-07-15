@@ -19,6 +19,7 @@ if(!T){console.log('FAIL: test hooks missing');process.exit(1);}
 const pack=JSON.parse(fs.readFileSync(path.join(ROOT,'sp-interview.pack.json'),'utf8'));
 const cd=pack.cases[0];
 const P=new T.MockProvider();
+let failures=0;
 
 async function run(name,msgs,checks){
   const s=P.start(cd,{difficulty:'supported'});
@@ -26,6 +27,7 @@ async function run(name,msgs,checks){
   for(const msg of msgs){const r=await P.respond(s,msg);replies.push(r.reply);}
   const cov=T.computeCoverage(s), rub=T.computeRubric(s,cov), nar=T.buildNarrative(s,cov,rub);
   const errs=checks(s,cov,rub,nar,replies);
+  failures+=errs.length;
   console.log((errs.length?'FAIL':'PASS')+' — '+name);
   errs.forEach(e=>console.log('   · '+e));
 }
@@ -111,4 +113,10 @@ const phi=[['MRN 4482913 patient in bed 4',true],['my patient said the same thin
 let perrs=[];
 phi.forEach(([t,exp])=>{if(T.looksLikePhi(t)!==exp)perrs.push(t);});
 console.log((perrs.length?'FAIL':'PASS')+' — PHI heuristic'); perrs.forEach(t=>console.log('   · '+t));
+failures+=perrs.length;
+if(process.env.SP_SMOKE_FORCE_FAIL==='1'){
+  failures++;
+  console.log('FAIL — forced harness check');
+}
+process.exitCode=failures?1:0;
 })().catch(e=>{console.log('CRASH',e);process.exit(1);});

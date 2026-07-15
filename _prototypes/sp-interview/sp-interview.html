@@ -200,6 +200,7 @@
 <script>
 (function(){
 "use strict";
+var previewConfig=window.__SP_PREVIEW__||{providerMode:'live',endpoint:null,autoOpenSettings:true};
 var e=React.createElement, useState=React.useState, useEffect=React.useEffect, useRef=React.useRef;
 function announce(m){try{document.getElementById('live').textContent=m;}catch(x){}}
 
@@ -453,7 +454,7 @@ function App(){
   var enc=useState(null); var E=enc[0],setE=enc[1];
   var inp=useState(''); var input=inp[0],setInput=inp[1];
   var sa=useState({a:'',b:'',c:''}); var SA=sa[0],setSA=sa[1];
-  var mode=useState('live'); var provMode=mode[0],setProvMode=mode[1];
+  var mode=useState(previewConfig.providerMode); var provMode=mode[0],setProvMode=mode[1];
   var busy=useState(false); var isBusy=busy[0],setBusy=busy[1];
   var shs=useState(false); var showSettings=shs[0],setShowSettings=shs[1];
   var cfs=useState(null); var cfg=cfs[0],setCfg=cfs[1];
@@ -495,8 +496,8 @@ function App(){
   function clearLegacyPasscode(){ try{localStorage.removeItem('cw_sp_passcode');}catch(x){} }
   function readPasscode(){ try{return sessionStorage.getItem('cw_sp_passcode')||'';}catch(x){return '';} }
   function writePasscode(v){ try{ if(v){sessionStorage.setItem('cw_sp_passcode',v);} else{sessionStorage.removeItem('cw_sp_passcode');} }catch(x){} }
-  function loadCfg(){ var ep=''; clearLegacyPasscode();
-    try{ep=localStorage.getItem('cw_sp_endpoint')||'https://sp-interview-proxy.netlify.app/api/sp';}catch(x){}
+  function loadCfg(){ var ep=previewConfig.endpoint===null?'https://sp-interview-proxy.netlify.app/api/sp':previewConfig.endpoint; clearLegacyPasscode();
+    try{ep=localStorage.getItem('cw_sp_endpoint')||ep;}catch(x){}
     return {ep:ep,pc:readPasscode(),msg:''}; }
   function openSettings(){ setCfg(loadCfg()); setShowSettings(true); }
   function saveAndTest(){
@@ -521,7 +522,7 @@ function App(){
       .then(function(p){setS({screen:'select',pack:p,err:null});})
       .catch(function(x){setS({screen:'loading',pack:null,err:'Could not load sp-interview.pack.json ('+x.message+'). Serve this folder over http, or open sp-interview.preview.html.'});});
   },[]);
-  useEffect(function(){ clearLegacyPasscode(); if(provMode==='live'&&!readPasscode()){openSettings();} },[]);
+  useEffect(function(){ clearLegacyPasscode(); if(previewConfig.autoOpenSettings&&provMode==='live'&&!readPasscode()){openSettings();} },[]);
   useEffect(function(){ if(chatRef.current){chatRef.current.scrollTop=chatRef.current.scrollHeight;} });
   useEffect(function(){ if(stepOut&&returnRef.current){try{returnRef.current.focus();}catch(x){}} },[stepOut]);
   useEffect(function(){
