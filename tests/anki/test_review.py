@@ -854,7 +854,166 @@ def test_reject_is_stale_checked_successful_no_write(
     assert registry.read_bytes() == before
 
 
-def test_frozen_prior_qbank_bytes_render_as_escaped_red_green_diff():
+def test_blocking_prior_evidence_disables_accept_edit_for_qbank_and_cards(
+    passing_release_factory,
+):
+    bundle = passing_release_factory()
+    blocked_qbank_review = deepcopy(bundle.qbank_review)
+    blocked_qbank_review["renderedNoteSha256"] = "0" * 64
+    blocked_card = deepcopy(bundle.core_cards[0])
+    blocked_card["review"]["approvedCardSha256"] = "0" * 64
+    cards = tuple(
+        blocked_card if card["id"] == blocked_card["id"] else card
+        for card in bundle.inputs.cards
+    )
+    inputs = SimpleNamespace(
+        **{
+            **vars(bundle.inputs),
+            "cards": cards,
+            "qbank_reviews": (blocked_qbank_review,),
+            "prior_package_paths": (),
+        }
+    )
+    previews = _draft_previews(inputs)
+    blocked = [
+        preview
+        for preview in previews
+        if preview["recordKey"]
+        in {
+            blocked_card["id"],
+            f'{blocked_qbank_review["qbankId"]}:{blocked_qbank_review["identity"]}',
+        }
+    ]
+    assert {preview["targetRegistry"] for preview in blocked} == {
+        "cards",
+        "qbank_render_reviews",
+    }
+    assert all(
+        preview["priorRenderStatus"] == "blocking_prior_evidence_gap"
+        for preview in blocked
+    )
+
+    rendered = build_review_html(
+        _candidate_shell(blocked, qbank_items=[bundle.qbank_item])
+    )
+
+    for preview in blocked:
+        controls = re.search(
+            rf'<div class="note-controls" data-note-key="{re.escape(preview["recordKey"])}">(.*?)</div>',
+            rendered,
+        )
+        assert controls is not None
+        assert 'data-action="accept" disabled' in controls.group(1)
+        assert 'data-action="edit" disabled' in controls.group(1)
+        assert 'data-action="reject">' in controls.group(1)
+        assert 'data-action="quarantine">' in controls.group(1)
+
+
+def test_forged_qbank_accept_with_blocking_prior_evidence_is_rejected_no_write(
+    passing_release_factory, tmp_path
+):
+    bundle = passing_release_factory()
+    blocked = deepcopy(bundle.qbank_review)
+    blocked["renderedNoteSha256"] = "0" * 64
+    inputs = SimpleNamespace(
+        **{
+            **vars(bundle.inputs),
+            "qbank_reviews": (blocked,),
+            "prior_package_paths": (),
+        }
+    )
+    key = f'{blocked["qbankId"]}:{blocked["identity"]}'
+    patch = {
+        "schemaVersion": 1,
+        "targetRegistry": "qbank_render_reviews",
+        "generatedFromCommit": "a" * 40,
+        "inputSha256": "b" * 64,
+        "decisions": [
+            {
+                "recordKey": key,
+                "baseRecordSha256": canonical_json_sha256(blocked),
+                "proposedRecord": deepcopy(bundle.qbank_review),
+                "decision": "accept",
+                "reviewer": bundle.qbank_review["facultyApprovedBy"],
+                "reviewedAt": bundle.qbank_review["facultyApprovedAt"],
+            }
+        ],
+    }
+    registry = tmp_path / "qbank_render_reviews.json"
+    registry.write_text(
+        json.dumps({"schemaVersion": 1, "reviews": [blocked]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    before = registry.read_bytes()
+
+    with pytest.raises(ReviewPatchError, match="prior-render evidence"):
+        validate_nonhistory_patch(
+            inputs, history_from_dict(inputs.release_history), patch
+        )
+        apply_optimistic_registry_patch(
+            registry,
+            patch,
+            current_head="a" * 40,
+            current_input_sha256="b" * 64,
+        )
+    assert registry.read_bytes() == before
+
+
+def test_forged_cards_accept_is_rejected_atomically_no_write(
+    passing_release_factory, tmp_path
+):
+    bundle = passing_release_factory()
+    exact = deepcopy(bundle.core_cards[0])
+    blocked = deepcopy(bundle.core_cards[1])
+    approved_blocked = deepcopy(blocked)
+    blocked["review"]["approvedCardSha256"] = "0" * 64
+    cards = tuple(
+        blocked if card["id"] == blocked["id"] else card
+        for card in bundle.inputs.cards
+    )
+    inputs = SimpleNamespace(**{**vars(bundle.inputs), "cards": cards})
+
+    def decision(current, proposed):
+        return {
+            "recordKey": current["id"],
+            "baseRecordSha256": canonical_json_sha256(current),
+            "proposedRecord": proposed,
+            "decision": "accept",
+            "reviewer": proposed["review"]["cardApprovedBy"],
+            "reviewedAt": proposed["review"]["cardApprovedAt"],
+        }
+
+    patch = {
+        "schemaVersion": 1,
+        "targetRegistry": "cards",
+        "generatedFromCommit": "a" * 40,
+        "inputSha256": "b" * 64,
+        "decisions": [decision(exact, exact), decision(blocked, approved_blocked)],
+    }
+    registry = tmp_path / "cards.json"
+    registry.write_text(
+        json.dumps({"schemaVersion": 1, "cards": [exact, blocked]}, indent=2)
+        + "\n",
+        encoding="utf-8",
+    )
+    before = registry.read_bytes()
+
+    with pytest.raises(ReviewPatchError, match="prior-render evidence"):
+        validate_nonhistory_patch(
+            inputs, history_from_dict(inputs.release_history), patch
+        )
+        apply_optimistic_registry_patch(
+            registry,
+            patch,
+            current_head="a" * 40,
+            current_input_sha256="b" * 64,
+        )
+    assert registry.read_bytes() == before
+
+
+def test_changed_exact_prior_and_never_approved_remain_applicable(
+    passing_release_factory,
+):
     repo = Path(__file__).resolve().parents[2]
     question_bank = json.loads((repo / "question_bank.json").read_text())
     original_item = next(
@@ -917,6 +1076,154 @@ def test_frozen_prior_qbank_bytes_render_as_escaped_red_green_diff():
     assert "diff-prior-red" in rendered and "diff-current-green" in rendered
     assert "Current changed render marker" in rendered
     assert "Absolute neutrophil count monitoring" in rendered
+    changed_controls = re.search(
+        rf'<div class="note-controls" data-note-key="{re.escape(preview["recordKey"])}">(.*?)</div>',
+        rendered,
+    )
+    assert changed_controls is not None and " disabled" not in changed_controls.group(1)
+
+    bundle = passing_release_factory()
+    exact_key = f'{bundle.qbank_review["qbankId"]}:{bundle.qbank_review["identity"]}'
+    exact_patch = {
+        "schemaVersion": 1,
+        "targetRegistry": "qbank_render_reviews",
+        "generatedFromCommit": "a" * 40,
+        "inputSha256": "b" * 64,
+        "decisions": [
+            {
+                "recordKey": exact_key,
+                "baseRecordSha256": canonical_json_sha256(bundle.qbank_review),
+                "proposedRecord": deepcopy(bundle.qbank_review),
+                "decision": "edit",
+                "reviewer": bundle.qbank_review["facultyApprovedBy"],
+                "reviewedAt": bundle.qbank_review["facultyApprovedAt"],
+            }
+        ],
+    }
+    validate_nonhistory_patch(
+        bundle.inputs,
+        history_from_dict(bundle.inputs.release_history),
+        exact_patch,
+    )
+
+    never_inputs = SimpleNamespace(
+        **{**vars(bundle.inputs), "qbank_reviews": (), "prior_package_paths": ()}
+    )
+    never_preview = next(
+        value
+        for value in _draft_previews(never_inputs)
+        if value["namespace"] == "qbank" and value["identity"] == "base"
+    )
+    assert never_preview["priorRenderStatus"] == "never_approved"
+    never_patch = {
+        "schemaVersion": 1,
+        "targetRegistry": "qbank_render_reviews",
+        "generatedFromCommit": "a" * 40,
+        "inputSha256": "b" * 64,
+        "decisions": [
+            {
+                "recordKey": never_preview["recordKey"],
+                "baseRecordSha256": None,
+                "proposedRecord": deepcopy(bundle.qbank_review),
+                "decision": "accept",
+                "reviewer": bundle.qbank_review["facultyApprovedBy"],
+                "reviewedAt": bundle.qbank_review["facultyApprovedAt"],
+            }
+        ],
+    }
+    validate_nonhistory_patch(
+        never_inputs,
+        history_from_dict(never_inputs.release_history),
+        never_patch,
+    )
+    never_html = build_review_html(
+        _candidate_shell([never_preview], qbank_items=[bundle.qbank_item])
+    )
+    never_controls = re.search(
+        rf'<div class="note-controls" data-note-key="{re.escape(never_preview["recordKey"])}">(.*?)</div>',
+        never_html,
+    )
+    assert never_controls is not None and " disabled" not in never_controls.group(1)
+
+
+@pytest.mark.parametrize("target", ("cards", "qbank_render_reviews"))
+def test_blocking_prior_reject_remains_stale_checked_no_write(
+    passing_release_factory, tmp_path, target
+):
+    bundle = passing_release_factory()
+    if target == "cards":
+        record = deepcopy(bundle.core_cards[0])
+        record["review"]["approvedCardSha256"] = "0" * 64
+        key = record["id"]
+        collection = "cards"
+        inputs = SimpleNamespace(
+            **{
+                **vars(bundle.inputs),
+                "cards": tuple(
+                    record if card["id"] == key else card
+                    for card in bundle.inputs.cards
+                ),
+            }
+        )
+    else:
+        record = deepcopy(bundle.qbank_review)
+        record["renderedNoteSha256"] = "0" * 64
+        key = f'{record["qbankId"]}:{record["identity"]}'
+        collection = "reviews"
+        inputs = SimpleNamespace(
+            **{
+                **vars(bundle.inputs),
+                "qbank_reviews": (record,),
+                "prior_package_paths": (),
+            }
+        )
+    patch = {
+        "schemaVersion": 1,
+        "targetRegistry": target,
+        "generatedFromCommit": "a" * 40,
+        "inputSha256": "b" * 64,
+        "decisions": [
+            {
+                "recordKey": key,
+                "baseRecordSha256": canonical_json_sha256(record),
+                "proposedRecord": None,
+                "decision": "reject",
+                "reviewer": "Named Faculty Reviewer",
+                "reviewedAt": "2026-07-14",
+            }
+        ],
+    }
+    registry = tmp_path / f"{target}.json"
+    registry.write_text(
+        json.dumps({"schemaVersion": 1, collection: [record]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    before = registry.read_bytes()
+
+    validate_nonhistory_patch(
+        inputs, history_from_dict(inputs.release_history), patch
+    )
+    assert (
+        apply_optimistic_registry_patch(
+            registry,
+            patch,
+            current_head="a" * 40,
+            current_input_sha256="b" * 64,
+        )
+        == ()
+    )
+    assert registry.read_bytes() == before
+
+    stale = deepcopy(patch)
+    stale["decisions"][0]["baseRecordSha256"] = "f" * 64
+    with pytest.raises(ReviewPatchError, match="stale base"):
+        apply_optimistic_registry_patch(
+            registry,
+            stale,
+            current_head="a" * 40,
+            current_input_sha256="b" * 64,
+        )
+    assert registry.read_bytes() == before
 
 
 def test_prior_render_status_distinguishes_never_approved_from_blocking_gap(

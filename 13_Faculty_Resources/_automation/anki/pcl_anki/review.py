@@ -21,6 +21,15 @@ class ReviewPatchError(ValueError):
     """Raised when a browser export is incomplete, stale, or out of scope."""
 
 
+_MUTABLE_PRIOR_EVIDENCE_STATUSES = frozenset(
+    {"exact", "changed_exact_prior", "never_approved"}
+)
+
+
+def _prior_evidence_allows_mutation(status: object) -> bool:
+    return status in _MUTABLE_PRIOR_EVIDENCE_STATUSES
+
+
 def _schema(name: str) -> tuple[Path, dict]:
     path = Path(__file__).resolve().parents[1] / name
     value = json.loads(path.read_text(encoding="utf-8"))
@@ -325,7 +334,12 @@ def validate_nonhistory_patch(
 
     from pcl_anki.governance import evaluate_card, evaluate_qbank_note
     from pcl_anki.history import preview_withdrawals
-    from pcl_anki.release import INTERNAL_REVIEW_EPOCH, evaluate_release, utc_today
+    from pcl_anki.release import (
+        INTERNAL_REVIEW_EPOCH,
+        _draft_previews,
+        evaluate_release,
+        utc_today,
+    )
     from pcl_anki.render import build_withdrawal_note
 
     def values(obj):
@@ -348,6 +362,22 @@ def validate_nonhistory_patch(
         if target not in {"cards", "qbank_render_reviews", "quarantine"}:
             raise ReviewPatchError(f"invalid non-history target registry: {target}")
         return
+    if target in {"cards", "qbank_render_reviews"}:
+        prior_statuses = {
+            preview["recordKey"]: preview["priorRenderStatus"]
+            for preview in _draft_previews(inputs)
+            if preview.get("targetRegistry") == target
+        }
+        for decision in mutations:
+            status = prior_statuses.get(decision["recordKey"])
+            if status is None:
+                raise ReviewPatchError(
+                    "prior-render evidence eligibility could not be recomputed"
+                )
+            if not _prior_evidence_allows_mutation(status):
+                raise ReviewPatchError(
+                    "blocking prior-render evidence gap forbids canonical mutation"
+                )
     if target == "cards":
         cards = list(getattr(inputs, "cards", ()))
         by_id = {card.get("id"): index for index, card in enumerate(cards)}
@@ -736,7 +766,11 @@ def _build_candidate_review_html(candidate: Mapping) -> str:
         has_proposal = isinstance(note.get("canonicalRecord"), Mapping) or isinstance(
             note.get("proposedRecordTemplate"), Mapping
         )
-        disabled = "" if has_proposal else " disabled"
+        disabled = (
+            ""
+            if has_proposal and _prior_evidence_allows_mutation(prior_status)
+            else " disabled"
+        )
         controls = (
             f'<div class="note-controls" data-note-key="{record_key}">'
             f'<button data-action="accept"{disabled}>Accept exact render</button>'
