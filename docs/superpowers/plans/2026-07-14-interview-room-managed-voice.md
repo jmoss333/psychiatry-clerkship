@@ -378,10 +378,11 @@ controller.subscribe(listener);
 controller.beginEncounter(encounterId);
 controller.requestOpening({ runActor });
 controller.setMode('off' | 'device' | 'managed');
+controller.setDraft(text);
 controller.startListening();
 controller.stopListening();
-controller.submitTurn({ text, runActor });
-controller.acceptPatientReply({ turnId, reply, ticket });
+controller.submitTurn({ runActor });
+controller.acceptPatientReply({ encounterId, turnId, reply, ticket });
 controller.stopPlayback();
 controller.replay(turnId);
 controller.canReplay(turnId);
@@ -392,18 +393,29 @@ controller.destroy();
 ```
 
 `deps` supplies `createRecorder`, `transcribe`, `synthesize`, `deviceSpeak`, `createPlayer`,
-`createObjectURL`, `revokeObjectURL`, `setTimeout`, `clearTimeout`, and `now`.
+`createObjectURL`, `revokeObjectURL`, `setTimeout`, `clearTimeout`, and `now`. Recorder adapters expose
+`start/stop/cancel/release`; managed players expose `play/stop/destroy`; device players expose
+`stop/destroy`. Adapter creation receives the current encounter and prospective turn IDs.
 `requestOpening` and `submitTurn` are the only actor-request paths. `runActor` receives
 `{mode:'open'|'converse', text, signal, encounterId, turnId}` and resolves to `{reply, ticket}`. The
-controller resolves either method with `{turnId, reply, ticket}` only while the captured IDs remain
-current; React publishes the full text and then calls `acceptPatientReply`.
+controller resolves either method with `{encounterId,turnId,reply,ticket}` only while the captured IDs
+remain current; React publishes the full text and then calls `acceptPatientReply` with that exact
+immutable payload. Audio uses only the stored actor payload, never caller-substituted text or tickets.
+
+Opening is turn `0` and must be accepted before learner turns begin. A failed, cancelled, or
+unaccepted opening remains retryable. `setDraft` owns the editable text. `submitTurn` freezes and
+clears it; actor failure or ordinary cancellation restores the same text and rolls back the turn ID
+for a same-ID retry. Encounter replacement, End, and destroy intentionally discard it.
 
 - [ ] **Step 1: Write the red state and contract tests**
 
 Cover the exact state graph, explicit mode values, 90-second stop, 4 MiB rejection, editable
 transcript callback, stale encounter/turn rejection, no record/play overlap, Replay without network,
 three-object/10-MiB eviction with exact replayable turn IDs, cancellable/stale opening requests,
-stage-direction stripping, and all cancellation events.
+stage-direction stripping, strict adapter shapes, authoritative reply/ticket binding, accepted-opening
+gating, same-turn retry after failure/cancellation, synchronous recorder callbacks, and all
+cancellation events. The chunk crossing 4 MiB is discarded and no oversized body reaches
+transcription.
 
 Use a seeded sequence test:
 
@@ -445,6 +457,12 @@ Expose the same object as `window.SPInterviewVoice` and `module.exports`. The sn
 Own exactly one recorder, actor abort controller, speech abort controller, and player. Every async
 continuation captures encounter/turn IDs and returns without mutation when they no longer match.
 `spokenText(reply)` removes only `*stage direction*` spans and normalizes whitespace.
+
+Replay cache order is insertion FIFO and replay does not refresh it. Audio larger than 10 MiB is
+one-shot and never cached. Revoke each URL exactly once on eviction, stale synthesis, encounter
+replacement, End, and destroy. `cancelAll` preserves same-encounter replay entries; Voice off and
+terminal/replacement actions clear them. Cancellation synchronously aborts, releases, clears timers,
+and publishes before returning; late callbacks are inert.
 
 - [ ] **Step 4: Verify green and aggregate**
 
