@@ -31,7 +31,10 @@ test('practice mode reveal + self-rate writes one FAM# card and stores no free t
   // Regression: switching scenarios via a filter must not leak graded state.
   // revealed/graded are keyed by shared prompt id, so a filter-driven auto-switch
   // (ensureCurrentVisible) must reset them or the new scenario falsely reads "already reviewed".
-  await page.getByRole('button', { name: /^Meeting/ }).click(); // excludes the default (collateral) scenario → auto-switches
+  // NOTE: depends on JSON scenario order — the default (index-0) scenario is non-Meeting, so the
+  // Meeting filter excludes it and forces an ensureCurrentVisible() auto-switch. If ordering changes,
+  // pick a filter that excludes whatever scenario loads first.
+  await page.getByRole('button', { name: /^Meeting/ }).click();
   await expect(page.locator('.pcard .pdone')).toHaveCount(0); // newly-shown scenario is not falsely graded
   await expect(page.getByRole('button', { name: /reveal one way/i }).first()).toBeVisible();
 

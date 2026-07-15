@@ -105,10 +105,11 @@ remain available as post-reveal debrief. The `prepare` section is shown as frami
 
 ### Ordering and resurfacing
 
-Within a scenario, Practice mode orders any of that scenario's cards whose `due` has passed to the
-front, and shows a small "N due" indicator for the scenario and for the tool overall. Un-started
-prompts are presented in authored order. The tool does not implement a new-cards-per-day throttle in
-this version; the deck is small and scenario-scoped.
+Within a scenario, Practice mode shows a small "N due" indicator (the scenario's due / started /
+total). **Shipped scope:** cards are presented in authored order. Sorting a scenario's *due* cards to
+the front was deferred — the deck is only 2–3 cards and the due count is already surfaced, so the
+ordering gain is marginal (recorded in the future-work register). The tool does not implement a
+new-cards-per-day throttle in this version; the deck is small and scenario-scoped.
 
 ## Data contract
 

@@ -38,6 +38,7 @@ fixed; the other three remain.
 - **Approach C — family-meeting micro-simulator:** a short branching engine where the family *system* reacts to each move (emotional temperature, a member escalating/softening, a confidentiality test). This is effectively the separately-tracked backlog item **P2-2 "Family Meeting Simulator"** — a new project, not a tweak.
 - **Unify Daily Review (the documented v2 non-goal):** `review.html` is catalog-based, so it counts `FAM#` cards in the home due badge but cannot *render* them (family review happens in-tool). Teaching `review.html` a "family deck" card type (it already has a `deck` concept) would fully unify review. Small papercut today: the home badge can read a few higher than Daily Review shows.
 - **Data-drive the family maps:** `SCENARIO_FILTERS` / `CASE_LABELS` are hardcoded in `family-systems-practice.html`; move to `family_systems_scenarios.json` so faculty can edit filters/labels as data.
+- **Due-first ordering / richer resurfacing:** within-scenario due-first card ordering was deferred (deck is 2–3 cards; the "N due" count already ships). A higher-value version would order the *sidebar scenarios* by due count so a returning learner is steered to what's actually due first.
 
 ## 3. Close the practice → mastery loop for ALL sims (structural)
 
