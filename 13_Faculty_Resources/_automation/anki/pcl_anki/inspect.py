@@ -16,16 +16,19 @@ from zipfile import BadZipFile, ZipFile
 from pcl_anki.contract import (
     APPLICATION_ARTIFACT_FILENAME,
     APPLICATION_DECK_ID,
+    APPLICATION_DECK_NAME,
     APPLICATION_MODEL_ID,
     COMPLETE_ARTIFACT_FILENAME,
     CORE_ARTIFACT_FILENAME,
     CORE_BASIC_MODEL_ID,
     CORE_CLOZE_MODEL_ID,
     CORE_DECK_ID,
+    CORE_DECK_NAME,
     InspectionResult,
     Issue,
     LEGACY_QBANK_MODEL_ID,
     LEGACY_QBANK_DECK_ID,
+    LEGACY_QBANK_DECK_NAME,
     PackageCard,
     PackageNote,
     PackageSnapshot,
@@ -79,11 +82,14 @@ _MODEL_SETS = {
     },
     QBANK_ARTIFACT_FILENAME: {LEGACY_QBANK_MODEL_ID},
 }
-_DECLARED_DECK_IDS = {
-    CORE_ARTIFACT_FILENAME: {CORE_DECK_ID},
-    APPLICATION_ARTIFACT_FILENAME: {APPLICATION_DECK_ID},
-    COMPLETE_ARTIFACT_FILENAME: {CORE_DECK_ID, APPLICATION_DECK_ID},
-    QBANK_ARTIFACT_FILENAME: {LEGACY_QBANK_DECK_ID},
+_DECLARED_DECK_CONTRACTS = {
+    CORE_ARTIFACT_FILENAME: {CORE_DECK_ID: CORE_DECK_NAME},
+    APPLICATION_ARTIFACT_FILENAME: {APPLICATION_DECK_ID: APPLICATION_DECK_NAME},
+    COMPLETE_ARTIFACT_FILENAME: {
+        CORE_DECK_ID: CORE_DECK_NAME,
+        APPLICATION_DECK_ID: APPLICATION_DECK_NAME,
+    },
+    QBANK_ARTIFACT_FILENAME: {LEGACY_QBANK_DECK_ID: LEGACY_QBANK_DECK_NAME},
 }
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
 _SOURCE_URL_RE = re.compile(r'<a href="([^"]+)">Open reviewed source</a>')
@@ -346,7 +352,10 @@ def _contract_issues(filename: str, snapshot: PackageSnapshot) -> list[Issue]:
     issues = []
     note_models = {note.model_id for note in snapshot.notes}
     stored_models = set(snapshot.models)
-    stored_decks = set(snapshot.decks)
+    stored_decks = {
+        deck_id: deck.get("name") for deck_id, deck in snapshot.decks.items()
+    }
+    expected_decks = {1: "Default", **_DECLARED_DECK_CONTRACTS[filename]}
     allowed_models = _MODEL_SETS[filename]
     if not note_models <= allowed_models:
         issues.append(
@@ -358,14 +367,13 @@ def _contract_issues(filename: str, snapshot: PackageSnapshot) -> list[Issue]:
         )
     if (
         stored_models != note_models
-        or stored_decks != _DECLARED_DECK_IDS[filename] | {1}
-        or snapshot.decks.get(1, {}).get("name") != "Default"
+        or stored_decks != expected_decks
     ):
         issues.append(
             _issue(
                 "PACKAGE_STORED_MEMBERSHIP",
                 filename,
-                "stored models/decks must equal note/card membership plus the verified Default deck",
+                "stored models and declared deck IDs/names must match the package contract",
             )
         )
     for model_id in sorted(note_models):

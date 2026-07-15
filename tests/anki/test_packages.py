@@ -463,6 +463,50 @@ def test_declared_empty_core_application_and_complete_decks_are_valid(
         assert snapshot.cards == ()
 
 
+@pytest.mark.parametrize(
+    ("filename", "deck_id"),
+    [
+        (CORE_ARTIFACT_FILENAME, CORE_DECK_ID),
+        (APPLICATION_ARTIFACT_FILENAME, APPLICATION_DECK_ID),
+        (COMPLETE_ARTIFACT_FILENAME, CORE_DECK_ID),
+        (COMPLETE_ARTIFACT_FILENAME, APPLICATION_DECK_ID),
+        (QBANK_ARTIFACT_FILENAME, LEGACY_QBANK_DECK_ID),
+    ],
+)
+def test_self_consistently_rehashed_empty_declared_deck_rename_is_rejected(
+    candidate, tmp_path, filename, deck_id
+):
+    empty_candidate = replace(
+        candidate,
+        core_active=(),
+        application_active=(),
+        qbank_active=(),
+        withdrawals=(),
+    )
+    receipt = write_release(empty_candidate, tmp_path)
+    assert inspect_release(tmp_path, receipt).issues == ()
+
+    package_path = tmp_path / filename
+    _rewrite_collection(
+        package_path,
+        lambda _models, decks: decks[str(deck_id)].__setitem__(
+            "name", "tampered empty deck"
+        ),
+    )
+    tampered = read_apkg(package_path)
+    changed_receipt = deepcopy(receipt)
+    changed_receipt["packages"][filename]["contentFingerprintSha256"] = (
+        canonical_package_fingerprint(tampered)
+    )
+    changed_receipt = _stage_changed_receipt(tmp_path, changed_receipt, filename)
+
+    result = inspect_release(tmp_path, changed_receipt)
+
+    assert "PACKAGE_STORED_MEMBERSHIP" in {
+        issue.code for issue in result.issues
+    }
+
+
 def test_withdrawal_is_neutral_history_backed_and_csv_is_active_core_application_only(
     candidate, tmp_path
 ):
