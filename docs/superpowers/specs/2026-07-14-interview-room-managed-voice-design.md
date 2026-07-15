@@ -287,7 +287,8 @@ Each case receives a `speechProfile` with these required properties:
 | `voiceProvenance` | Reviewed evidence that the identifier is provider stock, not cloned |
 | `cadence` | One of `measured-flat`, `pressured-fast`, or `guarded-halting` |
 | `speakingRate` | Numeric provider-neutral target, validated to `0.75` through `1.25` |
-| `adapterMappingVersion` | Attested version of the cadence-to-provider settings mapping |
+| `adapterMappingVersion` | `openai-tts-1-hd-v1` or `eleven-v3-v1` after review |
+| `providerSettings` | Exact attested settings object sent to the selected synthesis adapter |
 | `stageDirections` | Required value `visual-only` |
 | `profileVersion` | Positive integer incremented for any acoustic behavior change |
 | `facultyReview` | Status, reviewer, review date, audition record, and SHA-256 profile hash |
@@ -295,6 +296,14 @@ Each case receives a `speechProfile` with these required properties:
 The provider adapter translates the provider-neutral cadence into supported vendor settings. The
 pack remains the clinical source of truth for how a patient should sound; environment configuration
 may supply credentials and feature flags but may not silently override an attested profile.
+
+Until audition and attestation, `voiceProvenance`, `adapterMappingVersion`, and `providerSettings`
+are explicitly null. A reviewed provenance object requires `kind:'provider-stock'`, an HTTPS catalog
+URL, named verifier, verification date, and evidence hash; these fields record evidence and are not
+manufactured by software. OpenAI's reviewed settings object contains only `speed`, exactly equal to
+the profile's speaking rate, and cadence adds no hidden prompt. Eleven v3's exact settings are
+`speed`, `stability`, `similarity_boost`, `style`, and `use_speaker_boost`; unsupported or unattested
+values fail rather than being clamped. The profile hash binds all of these fields.
 
 ## Provider audition and selection gate
 

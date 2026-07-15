@@ -812,6 +812,8 @@ git commit -m "feat(sp-proxy): enforce atomic rotation budget"
 - Create: `sp-proxy/tests/helpers/fake-speech-provider.mjs`
 - Create: `sp-proxy/tests/sp-speech-provider.test.mjs`
 - Create: `sp-proxy/tests/sp-voice.test.mjs`
+- Modify: `13_Faculty_Resources/_automation/validate_attestation_consistency.py`
+- Modify: `13_Faculty_Resources/_automation/test_validate_attestation_consistency.py`
 - Modify: `_prototypes/sp-interview/sp-interview.pack.json`
 - Generate: `_prototypes/sp-interview/sp-interview.preview.html`
 
@@ -845,11 +847,39 @@ logical keys are hashed by the ledger and never stored.
 - [ ] **Step 1: Write red provider tests**
 
 First correct the draft ElevenLabs candidate and rate-card model from nonexistent
-`eleven_multilingual_v3` to the current official ID `eleven_v3`, increment the planning rate-card
-version/effective date, regenerate the preview, and keep engine/profile/privacy status pending. Add
-null `voiceProvenance` and `adapterMappingVersion` fields that are permitted only for draft profiles;
-reviewed profiles require attested values. Add a test that rejects unknown provider/model pairs and
-locks both candidate IDs.
+`eleven_multilingual_v3` to the current official ID `eleven_v3`, set the planning rate card to exact
+version `2026-07-15-planning-v2` and effective date `2026-07-15`, regenerate the preview, and keep
+engine/profile/privacy status pending. Add
+null `voiceProvenance`, `adapterMappingVersion`, and `providerSettings` fields that are permitted only
+for draft profiles; reviewed profiles require attested values. Update the Python attestation
+validator and fixtures from `eleven_multilingual_v3` to `eleven_v3` in the same change, and add
+reviewed/draft field tests. Add a test that rejects unknown provider/model pairs and locks both
+candidate IDs.
+
+The exact reviewed profile additions are:
+
+```json
+{
+  "voiceProvenance": {
+    "kind": "provider-stock",
+    "catalogUrl": "https://reviewed-provider.example/voice",
+    "verifiedBy": "named reviewer",
+    "verifiedAt": "YYYY-MM-DD",
+    "evidenceHash": "64 lowercase hex characters"
+  },
+  "adapterMappingVersion": "openai-tts-1-hd-v1 or eleven-v3-v1",
+  "providerSettings": {}
+}
+```
+
+`catalogUrl` above illustrates the required HTTPS field, not an approval or a value to copy. OpenAI
+`providerSettings` has the exact shape `{speed}` and speed must equal the reviewed `speakingRate`;
+cadence remains attested metadata and adds no hidden instructions. Eleven v3 has exact keys
+`{speed,stability,similarity_boost,style,use_speaker_boost}`; speed must equal `speakingRate` and be
+`0.7..1.2`, stability is `0|0.5|1`, the two numeric style/similarity values are finite `0..1`, and
+speaker boost is Boolean. The adapter sends only these reviewed settings and never infers or clamps
+values. Draft profiles store all three new fields as `null`; no placeholder reviewer or provenance
+data is fabricated.
 
 Refactor managed-voice governance so runtime pins only the active stack and provider/model pairs;
 each reviewed case profile supplies its own voice ID. Require the profile hash to bind the voice,
@@ -984,19 +1014,58 @@ Read the active provider key lazily, only after every non-secret gate. The user-
 OpenAI project credential is supplied only through server-side `OPENAI_API_KEY`; ElevenLabs uses
 `ELEVENLABS_API_KEY` only if that stack is later reviewed. Keys never enter source, fixtures, browser
 output, storage, logs, or test network calls. Zero-retention options may be sent only when the
-reviewed runtime records the account entitlement. Health requires student auth, returns an allowlist
-such as `{enabled,acceptingVoice,budgetBand}`, and does not need provider credentials while disabled.
-At the `$16` warning band it reports not accepting voice and rejects speech while preserving the
-remaining actor envelope; `$20` is the hard total cap.
+reviewed runtime records the account entitlement. For a POST, resolve and validate the selected key
+after authentication, frozen governance, and input/media validation, but before any budget access;
+a missing key returns `503 invalid_configuration` with zero ledger writes. Then read the band and,
+only when `ok`, reserve. Disabled paths never read a provider key, pack, body, or store.
+
+Health requires student auth and returns exactly:
+
+```javascript
+{
+  schemaVersion: 1,
+  enabled: boolean,
+  acceptingVoice: boolean,
+  budgetBand: null | 'ok' | 'warning' | 'capped',
+  activeStack: null | {
+    id,
+    transcription: { provider, model },
+    synthesis: { provider, model },
+  },
+  eligibleProfiles: [{ caseId, profileId, profileVersion }],
+  acceptedMediaTypes: [
+    'audio/webm', 'audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg', 'audio/wav',
+  ],
+  limits: { maxAudioBytes: 4194304, maxAudioDurationMilliseconds: 90000 },
+}
+```
+
+When disabled, health returns `enabled:false`, `acceptingVoice:false`, `budgetBand:null`, a null
+stack, and empty profiles without loading provider credentials or storage. When enabled, it returns
+only reviewed eligible profiles; `acceptingVoice` is true only with an `ok` band and a present active
+provider key. At the `$16` warning band it reports not accepting voice and rejects speech while
+preserving the remaining actor envelope; `$20` is the hard total cap. Operations usage returns the
+Task 5 `getUsage()` allowlist exactly, unwrapped and with no extra fields or CORS.
 
 - [ ] **Step 5: Verify green**
 
-Run: `npm --prefix sp-proxy test`
+Run:
+
+```bash
+python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py
+node _prototypes/sp-interview/generate-preview.mjs --write
+node --test _prototypes/sp-interview/tests/preview.test.mjs
+npm --prefix sp-proxy test
+```
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add sp-proxy
+git add sp-proxy \
+  13_Faculty_Resources/_automation/validate_attestation_consistency.py \
+  13_Faculty_Resources/_automation/test_validate_attestation_consistency.py \
+  _prototypes/sp-interview/sp-interview.pack.json \
+  _prototypes/sp-interview/sp-interview.preview.html
 git commit -m "feat(sp-proxy): add guarded managed speech endpoint"
 ```
 
@@ -1087,12 +1156,15 @@ errors reject with stable codes and never call `MockProvider.respond`. Assert th
 `buildSpeechSteps`, no independent speech timer, and always renders `m.text`.
 
 In `managed-transport.test.mjs`, specify `SPInterviewVoice.createManagedTransport({voiceEndpoint,
-getStudentKey,fetchImpl})`. Assert transcription sends the original allowlisted audio body (never
-base64 or FormData), `Content-Type`, `x-student-key`, case/encounter/turn IDs, and the caller's abort
-signal. Assert synthesis sends only `{reply,ticket}`, requests audio, returns bytes plus MIME type,
-and preserves typed endpoint errors. No method may log, persist, retry, or switch providers. Assert
-all recording/blob references are released after draft creation, transcription rejection or timeout,
-cancellation, or encounter end.
+getStudentKey,fetchImpl,randomBytes})`. Assert transcription sends the original allowlisted audio body
+(never base64 or FormData), `Content-Type`, `x-student-key`, case/encounter/turn IDs,
+`x-sp-capture-id`, and the caller's abort signal. The transport owns a `WeakMap` from each finalized
+Blob to a canonical unpadded base64url ID generated from exactly 16 Web Crypto random bytes: a
+same-Blob network retry reuses the ID, while every new recording Blob gets a new ID. Reject malformed
+randomness before fetch. Assert synthesis sends only `{reply,ticket}`, requests audio, returns bytes
+plus MIME type, and preserves typed endpoint errors. No method may log, persist, retry, or switch
+providers. Assert all recording/blob references are released after draft creation, transcription
+rejection or timeout, cancellation, or encounter end.
 
 Create the Chromium `interview-room` Playwright project and write browser tests for keyboard mode
 selection, text before audio, denied mic, blocked autoplay, slow actor, cancel-on-end, no overlap,
