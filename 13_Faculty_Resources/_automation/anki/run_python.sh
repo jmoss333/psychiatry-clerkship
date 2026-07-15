@@ -74,18 +74,23 @@ if [[ ! -f "$READY_MARKER" ]]; then
   : > "$READY_MARKER"
 fi
 
-if [[ "$LOCK_PROFILE" == "build" || "$LOCK_PROFILE" == "current" ]]; then
-  "$VENV_DIR/bin/python" - <<'PY'
-import anki
+if [[ "$LOCK_PROFILE" == "min" ]]; then
+  EXPECTED_ANKI_VERSION="23.10.1"
+else
+  EXPECTED_ANKI_VERSION="26.5"
+fi
+
+"$VENV_DIR/bin/python" - "$EXPECTED_ANKI_VERSION" <<'PY'
 from importlib.metadata import version
+import sys
 
 anki_version = version("anki")
-if anki_version != "26.5":
+expected = sys.argv[1]
+if anki_version != expected:
     raise SystemExit(
-        f"Production Anki profile requires anki==26.5; found {anki_version!r}."
+        f"Anki {expected} is required for this lock profile; found {anki_version!r}."
     )
 PY
-fi
 
 export PCL_ANKI_LOCK_PROFILE="$LOCK_PROFILE"
 exec "$VENV_DIR/bin/python" "$@"
