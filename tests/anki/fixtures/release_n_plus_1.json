@@ -5,191 +5,24 @@
     "epoch": 1784000100,
     "governedInputSha256": "2222222222222222222222222222222222222222222222222222222222222222"
   },
-  "notes": [
-    {
-      "namespace": "core",
-      "uid": "migration_core_copy",
-      "identity": "base",
-      "model": "core_basic",
-      "state": "active",
-      "fields": [
-        "migration_core_copy",
-        "Release N+1 Core copy marker",
-        "Synthetic answer N+1",
-        "Synthetic explanation N+1",
-        "Synthetic fixture only.",
-        "Synthetic source quote N+1",
-        "https://example.invalid/migration-core-copy",
-        "Release N+1"
-      ]
-    },
-    {
-      "namespace": "core",
-      "uid": "migration_core_quarantine",
-      "identity": "base",
-      "model": "core_basic",
-      "state": "withdrawn",
-      "fields": [
-        "migration_core_quarantine",
-        "[WITHDRAWN SAFETY UPDATE] This card is no longer active.",
-        "Do not use the prior content.",
-        "",
-        "",
-        "",
-        "",
-        "Anki safety release notice"
-      ]
-    },
-    {
-      "namespace": "core",
-      "uid": "migration_core_retired",
-      "identity": "base",
-      "model": "core_basic",
-      "state": "withdrawn",
-      "fields": [
-        "migration_core_retired",
-        "[WITHDRAWN SAFETY UPDATE] This card is no longer active.",
-        "Do not use the prior content.",
-        "",
-        "",
-        "",
-        "",
-        "Anki safety release notice"
-      ]
-    },
-    {
-      "namespace": "application",
-      "uid": "migration_application_quarantine",
-      "identity": "base",
-      "model": "application",
-      "state": "withdrawn",
-      "fields": [
-        "migration_application_quarantine",
-        "[WITHDRAWN SAFETY UPDATE] This card is no longer active.",
-        "Do not use the prior content.",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "Anki safety release notice"
-      ]
-    },
-    {
-      "namespace": "application",
-      "uid": "migration_application_retired",
-      "identity": "base",
-      "model": "application",
-      "state": "withdrawn",
-      "fields": [
-        "migration_application_retired",
-        "[WITHDRAWN SAFETY UPDATE] This card is no longer active.",
-        "Do not use the prior content.",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "Anki safety release notice"
-      ]
-    },
-    {
-      "namespace": "qbank",
-      "uid": "qb_migration_two_tier",
-      "identity": "base",
-      "model": "qbank",
-      "state": "active",
-      "fields": [
-        "qb_migration_two_tier",
-        "Release N+1 qbank base marker",
-        "<ul><li>A. Synthetic option N+1</li></ul>",
-        "Synthetic answer N+1",
-        "Synthetic reason N+1",
-        "Synthetic pearl N+1",
-        "Synthetic evidence N+1",
-        "",
-        "<div class=\"tag\">Release N+1 base</div>"
-      ]
-    },
-    {
-      "namespace": "qbank",
-      "uid": "qb_migration_two_tier",
-      "identity": "tier2",
-      "model": "qbank",
-      "state": "active",
-      "fields": [
-        "qb_migration_two_tier",
-        "Release N+1 qbank Tier 2 marker",
-        "<ul><li>A. Synthetic mechanism N+1</li></ul>",
-        "Synthetic mechanism answer N+1",
-        "Synthetic mechanism reason N+1",
-        "Synthetic pearl N+1",
-        "Synthetic evidence N+1",
-        "",
-        "<div class=\"tag\">Release N+1 Tier 2</div>"
-      ]
-    },
-    {
-      "namespace": "qbank",
-      "uid": "qb_pha_002",
-      "identity": "base",
-      "model": "qbank",
-      "state": "withdrawn",
-      "fields": [
-        "qb_pha_002",
-        "<span class=\"withdrawn\">[WITHDRAWN SAFETY UPDATE]</span> This card is no longer active. Re-imported under the same UID to remove stale content.",
-        "",
-        "<div class=\"withdrawn\">Do not use the prior clinical content. See the release notice and search this UID if manual suspension is needed.</div>",
-        "",
-        "",
-        "",
-        "Anki safety release notice",
-        "<div class=\"tag\">Withdrawn</div>"
-      ]
-    },
-    {
-      "namespace": "qbank",
-      "uid": "qb_migration_retired",
-      "identity": "base",
-      "model": "qbank",
-      "state": "withdrawn",
-      "fields": [
-        "qb_migration_retired",
-        "<span class=\"withdrawn\">[WITHDRAWN SAFETY UPDATE]</span> This card is no longer active.",
-        "",
-        "<div class=\"withdrawn\">Do not use the prior content.</div>",
-        "",
-        "",
-        "",
-        "Anki safety release notice",
-        "<div class=\"tag\">Withdrawn</div>"
-      ]
-    },
-    {
-      "namespace": "qbank",
-      "uid": "qb_migration_retired",
-      "identity": "tier2",
-      "model": "qbank",
-      "state": "withdrawn",
-      "fields": [
-        "qb_migration_retired",
-        "<span class=\"withdrawn\">[WITHDRAWN SAFETY UPDATE]</span> This card is no longer active.",
-        "",
-        "<div class=\"withdrawn\">Do not use the prior content.</div>",
-        "",
-        "",
-        "",
-        "Anki safety release notice",
-        "<div class=\"tag\">Withdrawn</div>"
-      ]
-    }
+  "marker": "Release N+1",
+  "active": {
+    "core": ["migration_core_copy"],
+    "application": [],
+    "qbank": ["qb_sud_014"]
+  },
+  "withdraw": [
+    ["core", "migration_core_quarantine", "base"],
+    ["application", "migration_application_quarantine", "base"],
+    ["qbank", "qb_pha_002", "base"]
+  ],
+  "retire": [
+    ["core", "migration_core_retired", "base"],
+    ["application", "migration_application_retired", "base"],
+    ["qbank", "qb_otherdx_999", "base"],
+    ["qbank", "qb_otherdx_999", "tier2"]
   ],
   "unshippedRetired": [
-    {"namespace": "core", "uid": "migration_core_never_shipped", "identity": "base"},
-    {"namespace": "application", "uid": "migration_application_never_shipped", "identity": "base"},
-    {"namespace": "qbank", "uid": "qb_migration_never_shipped", "identity": "base"},
-    {"namespace": "qbank", "uid": "qb_migration_never_shipped", "identity": "tier2"}
+    ["core", "migration_core_never_shipped", "base"]
   ]
 }

@@ -5,191 +5,21 @@
     "epoch": 1784000000,
     "governedInputSha256": "1111111111111111111111111111111111111111111111111111111111111111"
   },
-  "notes": [
-    {
-      "namespace": "core",
-      "uid": "migration_core_copy",
-      "identity": "base",
-      "model": "core_basic",
-      "state": "active",
-      "fields": [
-        "migration_core_copy",
-        "Release N Core copy marker",
-        "Synthetic answer N",
-        "Synthetic explanation N",
-        "Synthetic fixture only.",
-        "Synthetic source quote N",
-        "https://example.invalid/migration-core-copy",
-        "Release N"
-      ]
-    },
-    {
-      "namespace": "core",
-      "uid": "migration_core_quarantine",
-      "identity": "base",
-      "model": "core_basic",
-      "state": "active",
-      "fields": [
-        "migration_core_quarantine",
-        "Release N Core quarantine marker",
-        "Synthetic answer N",
-        "Synthetic explanation N",
-        "Synthetic fixture only.",
-        "Synthetic source quote N",
-        "https://example.invalid/migration-core-quarantine",
-        "Release N"
-      ]
-    },
-    {
-      "namespace": "core",
-      "uid": "migration_core_retired",
-      "identity": "base",
-      "model": "core_basic",
-      "state": "active",
-      "fields": [
-        "migration_core_retired",
-        "Release N Core retirement marker",
-        "Synthetic answer N",
-        "Synthetic explanation N",
-        "Synthetic fixture only.",
-        "Synthetic source quote N",
-        "https://example.invalid/migration-core-retired",
-        "Release N"
-      ]
-    },
-    {
-      "namespace": "application",
-      "uid": "migration_application_quarantine",
-      "identity": "base",
-      "model": "application",
-      "state": "active",
-      "fields": [
-        "migration_application_quarantine",
-        "Release N Application quarantine marker",
-        "Synthetic answer N",
-        "Synthetic discriminator N",
-        "Synthetic trap N",
-        "Synthetic detail N",
-        "Synthetic fixture only.",
-        "Synthetic source quote N",
-        "https://example.invalid/migration-application-quarantine",
-        "Release N"
-      ]
-    },
-    {
-      "namespace": "application",
-      "uid": "migration_application_retired",
-      "identity": "base",
-      "model": "application",
-      "state": "active",
-      "fields": [
-        "migration_application_retired",
-        "Release N Application retirement marker",
-        "Synthetic answer N",
-        "Synthetic discriminator N",
-        "Synthetic trap N",
-        "Synthetic detail N",
-        "Synthetic fixture only.",
-        "Synthetic source quote N",
-        "https://example.invalid/migration-application-retired",
-        "Release N"
-      ]
-    },
-    {
-      "namespace": "qbank",
-      "uid": "qb_migration_two_tier",
-      "identity": "base",
-      "model": "qbank",
-      "state": "active",
-      "fields": [
-        "qb_migration_two_tier",
-        "Release N qbank base marker",
-        "<ul><li>A. Synthetic option N</li></ul>",
-        "Synthetic answer N",
-        "Synthetic reason N",
-        "Synthetic pearl N",
-        "Synthetic evidence N",
-        "",
-        "<div class=\"tag\">Release N base</div>"
-      ]
-    },
-    {
-      "namespace": "qbank",
-      "uid": "qb_migration_two_tier",
-      "identity": "tier2",
-      "model": "qbank",
-      "state": "active",
-      "fields": [
-        "qb_migration_two_tier",
-        "Release N qbank Tier 2 marker",
-        "<ul><li>A. Synthetic mechanism N</li></ul>",
-        "Synthetic mechanism answer N",
-        "Synthetic mechanism reason N",
-        "Synthetic pearl N",
-        "Synthetic evidence N",
-        "",
-        "<div class=\"tag\">Release N Tier 2</div>"
-      ]
-    },
-    {
-      "namespace": "qbank",
-      "uid": "qb_pha_002",
-      "identity": "base",
-      "model": "qbank",
-      "state": "active",
-      "fields": [
-        "qb_pha_002",
-        "Release N synthetic safety-hold marker",
-        "<ul><li>A. Synthetic option N</li></ul>",
-        "Synthetic answer N",
-        "Synthetic reason N",
-        "Synthetic pearl N",
-        "Synthetic evidence N",
-        "",
-        "<div class=\"tag\">Release N</div>"
-      ]
-    },
-    {
-      "namespace": "qbank",
-      "uid": "qb_migration_retired",
-      "identity": "base",
-      "model": "qbank",
-      "state": "active",
-      "fields": [
-        "qb_migration_retired",
-        "Release N retired qbank base marker",
-        "<ul><li>A. Synthetic option N</li></ul>",
-        "Synthetic answer N",
-        "Synthetic reason N",
-        "Synthetic pearl N",
-        "Synthetic evidence N",
-        "",
-        "<div class=\"tag\">Release N base</div>"
-      ]
-    },
-    {
-      "namespace": "qbank",
-      "uid": "qb_migration_retired",
-      "identity": "tier2",
-      "model": "qbank",
-      "state": "active",
-      "fields": [
-        "qb_migration_retired",
-        "Release N retired qbank Tier 2 marker",
-        "<ul><li>A. Synthetic mechanism N</li></ul>",
-        "Synthetic mechanism answer N",
-        "Synthetic mechanism reason N",
-        "Synthetic pearl N",
-        "Synthetic evidence N",
-        "",
-        "<div class=\"tag\">Release N Tier 2</div>"
-      ]
-    }
-  ],
-  "unshippedRetired": [
-    {"namespace": "core", "uid": "migration_core_never_shipped", "identity": "base"},
-    {"namespace": "application", "uid": "migration_application_never_shipped", "identity": "base"},
-    {"namespace": "qbank", "uid": "qb_migration_never_shipped", "identity": "base"},
-    {"namespace": "qbank", "uid": "qb_migration_never_shipped", "identity": "tier2"}
-  ]
+  "marker": "Release N",
+  "active": {
+    "core": [
+      "migration_core_copy",
+      "migration_core_quarantine",
+      "migration_core_retired"
+    ],
+    "application": [
+      "migration_application_quarantine",
+      "migration_application_retired"
+    ],
+    "qbank": [
+      "qb_sud_014",
+      "qb_otherdx_999",
+      "qb_pha_002"
+    ]
+  }
 }
