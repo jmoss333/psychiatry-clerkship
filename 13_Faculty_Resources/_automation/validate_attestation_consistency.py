@@ -10,6 +10,7 @@ import json
 import os
 import re
 import sys
+from datetime import date
 
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -23,6 +24,50 @@ REVIEWED_STATUSES = {"reviewed", "attested"}
 PROFILE_STATUSES = {"draft-pending-attestation", "reviewed"}
 CADENCES = {"measured-flat", "pressured-fast", "guarded-halting"}
 EXPECTED_CANDIDATE_IDS = {"openai-quality-v1", "elevenlabs-expressive-v1"}
+EXPECTED_CANDIDATE_STACKS = {
+    "openai-quality-v1": {
+        "transcription": ("openai", "whisper-1"),
+        "synthesis": ("openai", "tts-1-hd"),
+    },
+    "elevenlabs-expressive-v1": {
+        "transcription": ("elevenlabs", "scribe_v2"),
+        "synthesis": ("elevenlabs", "eleven_multilingual_v3"),
+    },
+}
+PLANNING_RATE_EFFECTIVE_DATE = "2026-07-14"
+EXPECTED_RATE_TUPLES = (
+    (
+        "anthropic",
+        "claude-haiku-4-5-20251001",
+        "input_tokens",
+        "million_tokens",
+        1,
+    ),
+    (
+        "anthropic",
+        "claude-haiku-4-5-20251001",
+        "output_tokens",
+        "million_tokens",
+        5,
+    ),
+    ("openai", "tts-1-hd", "synthesis_characters", "million_characters", 30),
+    ("openai", "whisper-1", "transcription_audio", "minute", 0.006),
+    (
+        "elevenlabs",
+        "eleven_multilingual_v2",
+        "synthesis_characters",
+        "thousand_characters",
+        0.1,
+    ),
+    (
+        "elevenlabs",
+        "eleven_multilingual_v3",
+        "synthesis_characters",
+        "thousand_characters",
+        0.1,
+    ),
+    ("elevenlabs", "scribe_v2", "transcription_audio", "hour", 0.22),
+)
 
 
 def load(path):
@@ -44,6 +89,15 @@ def parse_rc_meta(source):
     if not match:
         return None
     return dict(re.findall(r"([A-Za-z][\w-]*)=\"([^\"]*)\"", match.group(1)))
+
+
+def parse_iso_date(value):
+    if not isinstance(value, str):
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
 
 
 def _case_label(case_def, index):
@@ -166,17 +220,37 @@ def _validate_speech_engine(slug, pack, cases):
     if not isinstance(candidates, list):
         errors.append("%s: speechEngine.candidateStacks must be a list" % slug)
         candidates = []
-    candidate_ids = {
+    candidate_ids = [
         candidate.get("id")
         for candidate in candidates
         if isinstance(candidate, dict) and candidate.get("id")
-    }
-    if candidate_ids != EXPECTED_CANDIDATE_IDS:
+    ]
+    candidate_id_set = set(candidate_ids)
+    actual_candidate_stacks = {}
+    for candidate in candidates:
+        if not isinstance(candidate, dict) or not candidate.get("id"):
+            continue
+        actual_candidate_stacks[candidate.get("id")] = {
+            leg: (
+                candidate.get(leg, {}).get("provider"),
+                candidate.get(leg, {}).get("model"),
+            )
+            if isinstance(candidate.get(leg), dict)
+            else (None, None)
+            for leg in ("transcription", "synthesis")
+        }
+    if (
+        len(candidates) != len(EXPECTED_CANDIDATE_STACKS)
+        or candidate_id_set != EXPECTED_CANDIDATE_IDS
+        or len(candidate_ids) != len(EXPECTED_CANDIDATE_STACKS)
+        or len(candidate_id_set) != len(candidate_ids)
+        or actual_candidate_stacks != EXPECTED_CANDIDATE_STACKS
+    ):
         errors.append(
-            "%s: speechEngine candidate IDs must be %s"
-            % (slug, ", ".join(sorted(EXPECTED_CANDIDATE_IDS)))
+            "%s: speechEngine candidate stacks do not match the dated planning contract"
+            % slug
         )
-    if engine_status == "reviewed" and speech_engine.get("activeStack") not in candidate_ids:
+    if engine_status == "reviewed" and speech_engine.get("activeStack") not in candidate_id_set:
         errors.append("%s: reviewed speechEngine must select an audition candidate" % slug)
 
     rate_card = speech_engine.get("rateCard")
@@ -191,6 +265,7 @@ def _validate_speech_engine(slug, pack, cases):
         if not isinstance(rates, list) or not rates:
             errors.append("%s: rateCard.rates must be a non-empty list" % slug)
             rates = []
+        actual_rate_tuples = []
         for index, rate in enumerate(rates):
             if not isinstance(rate, dict):
                 errors.append("%s: rateCard.rates[%d] must be an object" % (slug, index))
@@ -212,9 +287,28 @@ def _validate_speech_engine(slug, pack, cases):
                 errors.append(
                     "%s: rateCard.rates[%d].price must be positive" % (slug, index)
                 )
-            if model:
+            actual_rate_tuples.append(
+                (provider, model, meter, rate.get("unit"), price)
+            )
+            if isinstance(model, str) and model:
                 rate_models.add(model)
                 rate_keys.add((model, meter))
+        exact_rates = (
+            len(actual_rate_tuples) == len(EXPECTED_RATE_TUPLES)
+            and all(
+                actual_rate_tuples.count(expected) == 1
+                for expected in EXPECTED_RATE_TUPLES
+            )
+            and all(rate_tuple in EXPECTED_RATE_TUPLES for rate_tuple in actual_rate_tuples)
+        )
+        if (
+            rate_card.get("effectiveDate") != PLANNING_RATE_EFFECTIVE_DATE
+            or not exact_rates
+        ):
+            errors.append(
+                "%s: rateCard does not match the 2026-07-14 planning contract"
+                % slug
+            )
 
     for candidate in candidates:
         if not isinstance(candidate, dict):
@@ -258,6 +352,56 @@ def _validate_speech_engine(slug, pack, cases):
         if privacy.get("consentVersion") != "2026-07-14-draft":
             errors.append(
                 "%s: pending privacyReview consentVersion must be 2026-07-14-draft"
+                % slug
+            )
+
+    if isinstance(privacy, dict) and (
+        engine_status == "reviewed" or speech_engine.get("enabled") is True
+    ):
+        if privacy.get("status") != "reviewed" or privacy.get("decision") != "approved":
+            errors.append(
+                "%s: reviewed or enabled speechEngine requires an approved privacy decision"
+                % slug
+            )
+        policy_urls = privacy.get("policyUrls")
+        policy_hashes = privacy.get("policyHashes")
+        valid_policy_urls = (
+            isinstance(policy_urls, list)
+            and bool(policy_urls)
+            and all(isinstance(value, str) and value.strip() for value in policy_urls)
+        )
+        valid_policy_hashes = (
+            isinstance(policy_hashes, list)
+            and bool(policy_hashes)
+            and all(isinstance(value, str) and value.strip() for value in policy_hashes)
+        )
+        if (
+            not valid_policy_urls
+            or not valid_policy_hashes
+            or len(policy_urls) != len(policy_hashes)
+        ):
+            errors.append(
+                "%s: approved privacy review requires matched nonempty policy URLs and hashes"
+                % slug
+            )
+        if not isinstance(privacy.get("reviewer"), str) or not privacy.get("reviewer", "").strip():
+            errors.append("%s: approved privacy review is missing reviewer" % slug)
+        reviewed_at = parse_iso_date(privacy.get("reviewedAt"))
+        if reviewed_at is None or reviewed_at > date.today():
+            errors.append("%s: approved privacy review has invalid reviewedAt" % slug)
+        next_review_at = parse_iso_date(privacy.get("nextReviewAt"))
+        if next_review_at is None or next_review_at <= date.today():
+            errors.append(
+                "%s: approved privacy review requires a future nextReviewAt" % slug
+            )
+        consent_version = privacy.get("consentVersion")
+        if (
+            not isinstance(consent_version, str)
+            or not consent_version.strip()
+            or "draft" in consent_version.lower()
+        ):
+            errors.append(
+                "%s: approved privacy review requires a non-draft consentVersion"
                 % slug
             )
 

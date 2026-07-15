@@ -12,6 +12,8 @@ import validate_attestation_consistency as validator
 
 TOOL_SOURCE = "_prototypes/sp-interview/sp-interview.html"
 TOOL_SLUG = "sp-interview.html"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CANONICAL_PACK = REPO_ROOT / "_prototypes" / "sp-interview" / "sp-interview.pack.json"
 
 
 def draft_speech_profile(profile_id="dana-measured-v1"):
@@ -103,6 +105,14 @@ def draft_speech_engine():
                 },
                 {
                     "provider": "elevenlabs",
+                    "model": "eleven_multilingual_v2",
+                    "meter": "synthesis_characters",
+                    "unit": "thousand_characters",
+                    "price": 0.1,
+                    "sourceUrl": "https://example.test/elevenlabs",
+                },
+                {
+                    "provider": "elevenlabs",
                     "model": "eleven_multilingual_v3",
                     "meter": "synthesis_characters",
                     "unit": "thousand_characters",
@@ -143,6 +153,49 @@ def pending_pack():
             }
         ],
     }
+
+
+def canonical_pack():
+    return json.loads(CANONICAL_PACK.read_text(encoding="utf-8"))
+
+
+def reviewed_voice_pack():
+    pack = canonical_pack()
+    speech_engine = pack["speechEngine"]
+    speech_engine.update(
+        {
+            "status": "reviewed",
+            "enabled": True,
+            "activeStack": "openai-quality-v1",
+            "privacyReview": {
+                "status": "reviewed",
+                "policyUrls": [
+                    "https://example.test/openai-policy",
+                    "https://example.test/elevenlabs-policy",
+                ],
+                "policyHashes": ["a" * 64, "b" * 64],
+                "reviewer": "Privacy Reviewer, MD",
+                "reviewedAt": "2026-07-14",
+                "nextReviewAt": "2099-07-14",
+                "decision": "approved",
+                "consentVersion": "2026-07-14-v1",
+            },
+        }
+    )
+    return pack
+
+
+def swap_candidate_synthesis(pack):
+    candidates = pack["speechEngine"]["candidateStacks"]
+    candidates[0]["synthesis"], candidates[1]["synthesis"] = (
+        candidates[1]["synthesis"],
+        candidates[0]["synthesis"],
+    )
+
+
+def remove_rate(pack, model):
+    rates = pack["speechEngine"]["rateCard"]["rates"]
+    rates[:] = [rate for rate in rates if rate.get("model") != model]
 
 
 def write_fixture(root, *, ledger_status, tool_status, pack):
@@ -198,6 +251,16 @@ class AttestationConsistencyTests(unittest.TestCase):
             "validator must expose validate(root) -> list[str]",
         )
         return validate(root)
+
+    def validate_pack(self, pack):
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(
+                root,
+                ledger_status="pending",
+                tool_status="draft-pending-attestation",
+                pack=pack,
+            )
+            return self.validate(root)
 
     def test_reviewed_ledger_with_pending_tool_header_fails(self):
         with tempfile.TemporaryDirectory() as root:
@@ -278,6 +341,123 @@ class AttestationConsistencyTests(unittest.TestCase):
             )
             errors = self.validate(root)
         self.assertEqual(errors, [])
+
+    def test_reviewed_enabled_engine_requires_complete_approved_privacy(self):
+        self.assertEqual(self.validate_pack(reviewed_voice_pack()), [])
+
+        def pending_decision(pack):
+            pack["speechEngine"]["privacyReview"]["decision"] = "pending"
+
+        def pending_status(pack):
+            pack["speechEngine"]["privacyReview"]["status"] = "pending"
+
+        def empty_policy_urls(pack):
+            pack["speechEngine"]["privacyReview"]["policyUrls"] = []
+
+        def empty_policy_hashes(pack):
+            pack["speechEngine"]["privacyReview"]["policyHashes"] = []
+
+        def mismatched_policy_records(pack):
+            pack["speechEngine"]["privacyReview"]["policyHashes"].pop()
+
+        def blank_policy_hash(pack):
+            pack["speechEngine"]["privacyReview"]["policyHashes"][0] = ""
+
+        def missing_reviewer(pack):
+            pack["speechEngine"]["privacyReview"]["reviewer"] = None
+
+        def invalid_reviewed_at(pack):
+            pack["speechEngine"]["privacyReview"]["reviewedAt"] = "not-a-date"
+
+        def expired_next_review(pack):
+            pack["speechEngine"]["privacyReview"]["nextReviewAt"] = "2020-01-01"
+
+        def invalid_next_review(pack):
+            pack["speechEngine"]["privacyReview"]["nextReviewAt"] = "not-a-date"
+
+        def draft_consent(pack):
+            pack["speechEngine"]["privacyReview"]["consentVersion"] = (
+                "2026-07-14-draft"
+            )
+
+        mutations = {
+            "pending decision": pending_decision,
+            "pending status": pending_status,
+            "empty policy URLs": empty_policy_urls,
+            "empty policy hashes": empty_policy_hashes,
+            "mismatched policy records": mismatched_policy_records,
+            "blank policy hash": blank_policy_hash,
+            "missing reviewer": missing_reviewer,
+            "invalid reviewedAt": invalid_reviewed_at,
+            "expired nextReviewAt": expired_next_review,
+            "invalid nextReviewAt": invalid_next_review,
+            "draft consent version": draft_consent,
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(mutation=label):
+                pack = reviewed_voice_pack()
+                mutate(pack)
+                self.assertTrue(self.validate_pack(pack), label)
+
+    def test_canonical_voice_contract_rejects_every_drift_mutation(self):
+        self.assertEqual(self.validate_pack(canonical_pack()), [])
+
+        def wrong_candidate_provider(pack):
+            pack["speechEngine"]["candidateStacks"][0]["transcription"][
+                "provider"
+            ] = "elevenlabs"
+
+        def missing_candidate(pack):
+            pack["speechEngine"]["candidateStacks"].pop()
+
+        def duplicate_candidate(pack):
+            candidates = pack["speechEngine"]["candidateStacks"]
+            candidates.append(copy.deepcopy(candidates[0]))
+
+        def missing_candidate_model(pack):
+            pack["speechEngine"]["candidateStacks"][0]["transcription"].pop(
+                "model"
+            )
+
+        def wrong_candidate_model(pack):
+            pack["speechEngine"]["candidateStacks"][0]["transcription"][
+                "model"
+            ] = "eleven_multilingual_v3"
+
+        def missing_v2_rate(pack):
+            remove_rate(pack, "eleven_multilingual_v2")
+
+        def duplicate_rate(pack):
+            rates = pack["speechEngine"]["rateCard"]["rates"]
+            rates.append(copy.deepcopy(rates[0]))
+
+        def wrong_rate_tuple(pack):
+            pack["speechEngine"]["rateCard"]["rates"][0]["unit"] = "tokens"
+
+        def wrong_rate_value(pack):
+            pack["speechEngine"]["rateCard"]["rates"][2]["price"] = 31
+
+        def wrong_effective_date(pack):
+            pack["speechEngine"]["rateCard"]["effectiveDate"] = "2026-07-15"
+
+        mutations = {
+            "swapped candidate synthesis models": swap_candidate_synthesis,
+            "wrong candidate provider": wrong_candidate_provider,
+            "missing candidate": missing_candidate,
+            "duplicate candidate": duplicate_candidate,
+            "missing candidate model": missing_candidate_model,
+            "wrong candidate model": wrong_candidate_model,
+            "missing ElevenLabs v2 rate": missing_v2_rate,
+            "duplicate rate": duplicate_rate,
+            "wrong rate tuple": wrong_rate_tuple,
+            "wrong rate value": wrong_rate_value,
+            "wrong effective date": wrong_effective_date,
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(mutation=label):
+                pack = canonical_pack()
+                mutate(pack)
+                self.assertTrue(self.validate_pack(pack), label)
 
 
 if __name__ == "__main__":
