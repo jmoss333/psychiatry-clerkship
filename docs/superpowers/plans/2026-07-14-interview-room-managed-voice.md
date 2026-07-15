@@ -613,31 +613,96 @@ const ledger = createBudgetLedger({
   warningMicros: 16000000,
   rateCard,
   clock,
+  randomBytes,
   maxCasAttempts: 5,
 });
-await ledger.reserve({ idempotencyKey, kind, maximumMicros });
+ledger.quote({ kind, rateKey, usage });
+await ledger.reserve({ idempotencyKey, kind, rateKey, maximumUsage });
 await ledger.markProviderStarted(reservation);
-await ledger.settle({ reservation, actualMicros, usage });
+await ledger.settle({ reservation, outcome: 'succeeded' | 'provider_failed', usage });
 await ledger.failBeforeProvider({ reservation, code });
 await ledger.getBand();
 await ledger.getUsage();
 ```
 
+Supported kinds and exact usage shapes are:
+
+```javascript
+actorOrEvaluation = { inputTokens, outputTokens };
+transcription = { milliseconds };
+synthesis = { characters };
+rateKey = { provider, model };
+```
+
+Every numeric field is a nonnegative safe integer with no extra keys. `actor` and `evaluation`
+resolve unique input/output token rates; `transcription` resolves one audio rate and converts its
+minute/hour denominator to milliseconds; `synthesis` resolves one character rate. Parse decimal USD
+prices into integer rational arithmetic and round each rate component upward:
+
+```text
+ceil(quantity × priceUSD × 1,000,000 / unitsPerPrice)
+```
+
+The ledger validates USD, a nonfuture effective date, unique provider/model/meter rates, allowed
+units, and an unchanged canonical rate-card hash/version. Callers never supply dollar amounts.
+
+The logical state machine is exact:
+
+```text
+absent -> reserved(g) -> provider_started(g) -> settled(g)
+                                      \------> provider_failed(g)
+reserved(g) -> failed_before_provider(g) -> reserved(g+1)
+```
+
+`reserve` hashes the stable logical idempotency key and returns an opaque owner capability only to
+the winning CAS caller. The record stores only the operation hash, generation, and owner-token hash.
+A retry generation advances only after a recorded `failed_before_provider`; a caller-supplied attempt
+number is never part of logical identity. Same-key binding changes return `409 idempotency_mismatch`.
+Duplicates in reserved/provider-started state receive no owner handle and cannot release or start the
+winner; terminal duplicates receive a stable finalized result/error and never call a provider.
+
+`markProviderStarted` is a one-winner authorization: only its `modified:true` transition returns
+`authorized:true`. A second mark returns `authorized:false` and never authorizes a call.
+`failBeforeProvider` owns only `reserved`; `settle` owns only `provider_started`. Mark-versus-fail
+races permit exactly one transition. Failed/stale/forged/cross-ledger handles cause zero writes.
+
 - [ ] **Step 1: Extend the conditional fake store and write red ledger tests**
 
 The fake implements `getWithMetadata(key,{type:'json',consistency:'strong'})` and raw
 `set(key,JSON.stringify(record),{onlyIfNew|onlyIfMatch})`; conditional conflicts return
-`{modified:false}`. Test initial creation, strong reads, ETag ownership/conflicts, five bounded
-retries, duplicate keys, failed-before-provider retry,
-provider-started no-retry, settlement, unknown rate card, unavailable store, `$16` warning, `$20`
-cap, and ten simultaneous reservations.
+`{modified:false}`. ETags own the whole rotation record, not individual operations: every transition
+strong-reads the newest record/ETag, revalidates its operation owner/generation/state, then writes
+against that ETag. On conflict it repeats for at most exactly five conditional writes while logical
+ownership remains valid.
+
+Write RED tests for initialization; corrupt records/counters; strong reads; unrelated-operation ETag
+changes; five-write contention; unavailable storage; stable idempotency; changed binding; failed-
+before-provider generation retry; provider-started no-retry; forged/stale/cross-ledger handles;
+concurrent mark; mark-versus-fail; double fail; identical and mismatched double settlement; missing
+usage; provider failure without usage; actual overrun; unknown/future/duplicate rate cards; overflow;
+clock rollback; privacy sentinels; `$16` voice warning; `$20` total cap; and aggregate-only responses.
+
+Exact pricing tests include:
+
+- Haiku 100 input plus 20 output tokens = `200` micro-dollars.
+- OpenAI TTS-1 HD 100 characters = `3000` micro-dollars.
+- Whisper 1500 milliseconds = `150` micro-dollars.
+- Scribe v2 1000 milliseconds = `62` micro-dollars.
+
+For total-cap concurrency, use `kind:'actor'`. With ten simultaneous $2.50 maximum reservations and
+five CAS writes per caller, assert no more than eight succeed and authorization never exceeds $20;
+retry unreserved logical operations sequentially until exactly $20 is filled. Separately prove six
+$2.50 synthesis reservations succeed at $15, the seventh is rejected with
+`429 voice_budget_reserved`, a $1 synthesis reservation can land exactly at $16, and actor work can
+then reserve to exactly $20.
 
 ```javascript
 const results = await Promise.allSettled(
   Array.from({ length: 10 }, (_, index) => ledger.reserve({
     idempotencyKey: `turn-${index}`,
-    kind: 'synthesis',
-    maximumMicros: 2500000,
+    kind: 'actor',
+    rateKey: { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
+    maximumUsage: { inputTokens: 2500000, outputTokens: 0 },
   })),
 );
 const stored = await fakeStore.getWithMetadata(
@@ -645,7 +710,7 @@ const stored = await fakeStore.getWithMetadata(
   { type: 'json', consistency: 'strong' },
 );
 assert.equal(stored.data.authorizedMicros, 20000000);
-assert.equal(results.filter((result) => result.status === 'fulfilled').length, 8);
+assert.equal(results.filter((result) => result.status === 'fulfilled').length <= 8, true);
 ```
 
 - [ ] **Step 2: Verify red**
@@ -654,24 +719,63 @@ Run: `node --test sp-proxy/tests/sp-budget.test.mjs`
 
 - [ ] **Step 3: Implement compact strong-consistency CAS records**
 
-Store one JSON record per `namespace/rotationId`, use integer micro-dollars, and reserve maximum cost
-before `markProviderStarted`. Do not fall back to process memory. Keep terminal idempotency records
-for the rotation and cumulative units after pruning details. Use explicit strong reads and raw
-conditional writes; never use Blobs 10.7.9 `setJSON` for CAS.
+Store one JSON record per `namespace/rotationId`, use integer micro-dollars, and reserve ledger-
+computed maximum cost before `markProviderStarted`. Do not fall back to process memory. Prune nothing
+during an active rotation: reserved/provider-started operations and terminal idempotency tombstones
+all remain. Defer compaction to a future explicit rotation-close workflow. Use explicit strong reads
+and raw conditional writes; never use Blobs 10.7.9 `setJSON` for CAS.
 
 The record schema is:
 
 ```javascript
 {
-  schema: 1,
+  schemaVersion: 1,
+  currency: 'USD',
+  rateCardVersion: '2026-07-14-planning-v1',
+  rateCardHash: '<sha256>',
   authorizedMicros: 0,
   spentMicros: 0,
   reservedMicros: 0,
-  units: { actorInputTokens: 0, actorOutputTokens: 0, transcriptionSeconds: 0, synthesisCharacters: 0 },
+  overrunMicros: 0,
+  units: {
+    actorInputTokens: 0,
+    actorOutputTokens: 0,
+    transcriptionMilliseconds: 0,
+    synthesisCharacters: 0,
+  },
   operations: {},
   updatedAt: '2026-07-14T00:00:00.000Z',
 }
 ```
+
+After every read and transition require
+`authorizedMicros === spentMicros + reservedMicros`; all counters are nonnegative safe integers,
+spent never decreases, and reserved equals maxima for `reserved` plus `provider_started` operations.
+Pre-provider failure releases its maximum exactly once. Settlement releases the maximum and adds the
+ledger-computed actual exactly once. Unknown usage after provider start charges the full maximum and
+is terminal. If measured actual exceeds the conservative maximum, persist the full actual and
+overrun, allow totals to honestly exceed the cap, and cap all later calls; never clamp or hide spend.
+A crashed provider-started operation remains conservatively reserved.
+
+Voice (`transcription`/`synthesis`) reservation is atomically limited to authorization at or below
+`warningMicros`; actor/evaluation may reserve at or below `capMicros`. Bands use current
+authorization: `<$16 = ok`, `$16..<20 = warning`, `>=$20 or any overrun = capped`.
+
+`clock()` returns a finite safe epoch-millisecond integer. Timestamps are canonical UTC and never move
+backward across CAS retries. Store failure never returns a reassuring zero.
+
+`getBand()` returns only `ok|warning|capped`. `getUsage()` returns a copied aggregate allowlist:
+
+```javascript
+{
+  schemaVersion, band, currency, rateCardVersion,
+  authorizedMicros, spentMicros, reservedMicros, remainingMicros,
+  overrunMicros, capMicros, warningMicros, units, updatedAt,
+}
+```
+
+It never exposes operations, hashes, handles, owner data, identifiers, or failure details. Raw
+idempotency/owner values and transcript/audio/error text never enter storage, errors, or responses.
 
 - [ ] **Step 4: Verify green**
 
