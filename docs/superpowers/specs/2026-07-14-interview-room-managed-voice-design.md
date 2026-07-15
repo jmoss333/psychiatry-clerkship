@@ -272,8 +272,10 @@ variables may contain keys and enable/disable flags, but their provider/model va
 reviewed record or the voice health check fails closed.
 
 The privacy-review record includes reviewed policy URLs and content hashes, reviewer, review date,
-next-review date, institutional decision, and consent-copy version. A missing or expired record keeps
-managed voice off without affecting text/device use.
+next-review date, institutional decision, consent-copy version, and exact provider account controls.
+Draft account controls are null. A reviewed record pins `{provider,zeroRetentionEntitled,evidenceHash}`
+to the active provider and runtime; the software never infers or claims an entitlement. A missing,
+mismatched, or expired record keeps managed voice off without affecting text/device use.
 
 Each case receives a `speechProfile` with these required properties:
 

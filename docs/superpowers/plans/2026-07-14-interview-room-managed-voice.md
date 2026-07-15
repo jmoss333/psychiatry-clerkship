@@ -871,7 +871,9 @@ logical keys are hashed by the ledger and never stored.
 First correct the draft ElevenLabs candidate and rate-card model from nonexistent
 `eleven_multilingual_v3` to the current official ID `eleven_v3`, set the planning rate card to exact
 version `2026-07-15-planning-v2` and effective date `2026-07-15`, regenerate the preview, and keep
-engine/profile/privacy status pending. Add
+engine/profile/privacy status pending. Add `privacyReview.accountControls:null`; a reviewed privacy
+record requires exact `{provider,zeroRetentionEntitled,evidenceHash}` values matching both the active
+stack and runtime, while software never infers entitlement. Add
 null `voiceProvenance`, `adapterMappingVersion`, and `providerSettings` fields that are permitted only
 for draft profiles; reviewed profiles require attested values. Update the Python attestation
 validator and fixtures from `eleven_multilingual_v3` to `eleven_v3` in the same change, and add
@@ -936,6 +938,12 @@ unshown sound. Bind `cadence`, `speakingRate`, stock-voice provenance, and an at
 version into the frozen provider input. Runtime pins the stack/provider/models while each reviewed
 case profile pins its own voice. Bound synthesis request JSON to 16 KiB, transcription response JSON
 to 256 KiB, and returned audio to 10 MiB before accumulating them in memory.
+
+For OpenAI, accept only the current built-in stock identifiers `alloy`, `ash`, `ballad`, `coral`,
+`echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer`, `verse`, `marin`, or `cedar`; a custom voice ID
+cannot satisfy stock provenance. For Whisper verbose JSON, require its language/duration/text shape;
+when optional usage is present it must be exact `{type:'duration',seconds}` and is converted to
+milliseconds, while omitted usage remains `null` for conservative endpoint settlement.
 
 - [ ] **Step 2: Write red endpoint tests**
 
