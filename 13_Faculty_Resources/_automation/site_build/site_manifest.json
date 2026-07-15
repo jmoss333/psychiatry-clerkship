@@ -102,6 +102,16 @@
    "Practice Questions — Question Bank"
   ]
  ],
+ "toolAssets": [
+  [
+   "_prototypes/sp-interview/sp-interview.pack.json",
+   "sp-interview.pack.json"
+  ],
+  [
+   "_prototypes/sp-interview/sp-interview.voice.js",
+   "sp-interview.voice.js"
+  ]
+ ],
  "md": [
   [
    "13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md",

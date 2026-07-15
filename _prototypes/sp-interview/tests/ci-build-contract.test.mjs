@@ -1,0 +1,121 @@
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+const MANIFEST = path.join(
+  ROOT,
+  '13_Faculty_Resources/_automation/site_build/site_manifest.json',
+);
+const BUILD = path.join(
+  ROOT,
+  '13_Faculty_Resources/_automation/site_build/build_deploy.py',
+);
+const CHECKER = path.join(
+  ROOT,
+  '13_Faculty_Resources/_automation/site_build/check-static-site.mjs',
+);
+const CI = path.join(ROOT, '.github/workflows/ci.yml');
+
+const EXPECTED_ASSETS = [
+  ['_prototypes/sp-interview/sp-interview.pack.json', 'sp-interview.pack.json'],
+  ['_prototypes/sp-interview/sp-interview.voice.js', 'sp-interview.voice.js'],
+];
+
+function run(command, args, options = {}) {
+  return spawnSync(command, args, {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 10 * 1024 * 1024,
+    ...options,
+  });
+}
+
+test('manifest drives both Interview Room runtime assets into a real site build', () => {
+  const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
+  assert.deepEqual(manifest.toolAssets, EXPECTED_ASSETS);
+  for (const [source] of EXPECTED_ASSETS) {
+    assert.equal(fs.existsSync(path.join(ROOT, source)), true, `missing source asset: ${source}`);
+  }
+
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'sp-build-contract-'));
+  const output = path.join(temporary, 'site');
+  try {
+    const result = run('python3', [BUILD], {
+      env: { ...process.env, OUT_DIR: output },
+      timeout: 60_000,
+    });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    for (const [, destination] of EXPECTED_ASSETS) {
+      assert.equal(
+        fs.existsSync(path.join(output, 'tools', destination)),
+        true,
+        `built site omitted tools/${destination}`,
+      );
+    }
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(`${output}.source-map.json`, { force: true });
+  }
+});
+
+test('static QA rejects a missing relative script dependency', () => {
+  const site = fs.mkdtempSync(path.join(os.tmpdir(), 'sp-static-contract-'));
+  const sourceMap = `${site}.source-map.json`;
+  const tools = path.join(site, 'tools');
+  fs.mkdirSync(tools);
+  fs.writeFileSync(
+    path.join(tools, 'fixture.html'),
+    '<!doctype html><title>Fixture</title><meta name="viewport" content="width=device-width"><!-- [RC-META] --><script src="./missing.js"></script>',
+  );
+  fs.writeFileSync(
+    path.join(site, 'nav.json'),
+    JSON.stringify([{ section: 'Fixture', items: [{ k: 'tool', f: 'fixture.html' }] }]),
+  );
+  const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
+  fs.writeFileSync(
+    sourceMap,
+    JSON.stringify({ sources: [...manifest.tools, ...manifest.md].map(([source]) => source) }),
+  );
+  try {
+    const missing = run(process.execPath, [CHECKER, site]);
+    assert.equal(missing.status, 1, missing.stdout + missing.stderr);
+    assert.match(missing.stdout + missing.stderr, /missing relative script source.*missing\.js/i);
+
+    fs.writeFileSync(path.join(tools, 'missing.js'), 'export {};\n');
+    const present = run(process.execPath, [CHECKER, site]);
+    assert.equal(present.status, 0, present.stdout + present.stderr);
+  } finally {
+    fs.rmSync(site, { recursive: true, force: true });
+    fs.rmSync(sourceMap, { force: true });
+  }
+});
+
+test('Node 20 and the aggregate SP gates run before either site build', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const ordered = [
+    'uses: actions/setup-node@v4',
+    'node-version: "20"',
+    'npm --prefix sp-proxy ci',
+    'npm --prefix sp-proxy test',
+    'bash _prototypes/sp-interview/tests/run-all.sh',
+    'python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py',
+    'build_and_check.sh ms3',
+    'build_and_check.sh res',
+  ];
+  let prior = -1;
+  for (const marker of ordered) {
+    const index = ci.indexOf(marker);
+    assert.ok(index > prior, `${marker} must occur after the preceding managed-SP gate`);
+    prior = index;
+  }
+
+  const server = ci.indexOf('Serve built sites on localhost');
+  const interviewRoom = ci.indexOf('--project=interview-room');
+  assert.ok(server >= 0 && interviewRoom > server, 'Interview Room browser acceptance must follow site servers');
+  assert.match(ci, /SP_INTERVIEW_BASE_URL:\s*http:\/\/localhost:4200\/tools\//);
+});

@@ -46,6 +46,15 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Install — managed SP proxy dependencies
+        run: npm --prefix sp-proxy ci
+
+      - name: Test — SP Interview and managed proxy
+        run: |
+          npm --prefix sp-proxy test
+          bash _prototypes/sp-interview/tests/run-all.sh
+          python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py
+
       - name: Build + static QA gate (ms3)
         run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
 
@@ -104,6 +113,13 @@ jobs:
         run: |
           cd tests/smoke
           npx playwright test --project=nav-ms3 --project=nav-res
+
+      - name: "Check 1a: Interview Room acceptance — ms3"
+        run: |
+          cd tests/smoke
+          npx playwright test --project=interview-room
+        env:
+          SP_INTERVIEW_BASE_URL: http://localhost:4200/tools/
 
       - name: "Check 2: LFS integrity — Netlify deploy preview"
         run: |

@@ -12,4 +12,6 @@ echo "── generated preview reproducibility ──"; node preview.test.mjs
 echo "── Dana harness failure propagation ──"; node harness-exit.test.mjs
 echo "── deterministic voice state ──"; node --test voice-state.test.mjs
 echo "── managed voice contracts ──"; node --test voice-contract.test.mjs
+echo "── CI and site-build contracts ──"; node --test ci-build-contract.test.mjs
+echo "── managed voice operations docs + release passport ──"; node --test ops-docs.test.mjs
 echo "ALL SUITES PASSED"
