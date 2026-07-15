@@ -2,8 +2,8 @@ import { getStore } from '@netlify/blobs';
 
 import {
   createBudgetLedger,
-  SP_USAGE_NAMESPACE,
-  SP_USAGE_STORE_NAME,
+  PRODUCTION_BUDGET_NAMESPACE,
+  PRODUCTION_BUDGET_STORE_NAME,
 } from './_shared/sp-budget.mjs';
 import * as productionGovernance from './_shared/sp-governance.mjs';
 import { createHttp, operationalError, readEnv } from './_shared/sp-http.mjs';
@@ -943,8 +943,8 @@ function createProductionVoiceHandler() {
     timeoutMs: 45_000,
   });
   const budget = ({ snapshot }) => createBudgetLedger({
-    store: getStore({ name: SP_USAGE_STORE_NAME, consistency: 'strong' }),
-    namespace: SP_USAGE_NAMESPACE,
+    store: getStore({ name: PRODUCTION_BUDGET_STORE_NAME, consistency: 'strong' }),
+    namespace: PRODUCTION_BUDGET_NAMESPACE,
     rotationId: configValue.rotationId,
     capMicros: 20_000_000,
     warningMicros: 16_000_000,

@@ -4,8 +4,8 @@ import test from 'node:test';
 
 import {
   createBudgetLedger,
-  SP_USAGE_NAMESPACE,
-  SP_USAGE_STORE_NAME,
+  PRODUCTION_BUDGET_NAMESPACE,
+  PRODUCTION_BUDGET_STORE_NAME,
 } from '../netlify/functions/_shared/sp-budget.mjs';
 import { createFakeBlobStore } from './helpers/fake-blob-store.mjs';
 
@@ -22,8 +22,8 @@ const ELEVEN_TTS_RATE_KEY = Object.freeze({
 });
 
 test('actor and voice operations share one production store and namespace', () => {
-  assert.equal(SP_USAGE_STORE_NAME, 'sp-usage');
-  assert.equal(SP_USAGE_NAMESPACE, 'managed-voice');
+  assert.equal(PRODUCTION_BUDGET_STORE_NAME, 'sp-usage');
+  assert.equal(PRODUCTION_BUDGET_NAMESPACE, 'managed-voice');
 });
 
 const RATE_CARD = Object.freeze({

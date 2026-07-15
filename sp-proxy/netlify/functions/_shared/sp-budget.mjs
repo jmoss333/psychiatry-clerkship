@@ -5,8 +5,8 @@ import {
 
 import { operationalError } from './sp-http.mjs';
 
-export const SP_USAGE_STORE_NAME = 'sp-usage';
-export const SP_USAGE_NAMESPACE = 'managed-voice';
+export const PRODUCTION_BUDGET_STORE_NAME = 'sp-usage';
+export const PRODUCTION_BUDGET_NAMESPACE = 'managed-voice';
 
 const SHA256_HEX = /^[a-f0-9]{64}$/;
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
