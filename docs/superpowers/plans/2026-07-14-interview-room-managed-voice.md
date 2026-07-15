@@ -808,6 +808,7 @@ git commit -m "feat(sp-proxy): enforce atomic rotation budget"
 - Modify: `sp-proxy/tests/sp-http.test.mjs`
 - Modify: `sp-proxy/tests/sp-pack-governance.test.mjs`
 - Modify: `sp-proxy/tests/sp-speech-ticket.test.mjs`
+- Modify: `sp-proxy/tests/fixtures/pack.fixture.mjs`
 - Create: `sp-proxy/tests/sp-audio-metadata.test.mjs`
 - Create: `sp-proxy/tests/helpers/fake-speech-provider.mjs`
 - Create: `sp-proxy/tests/sp-speech-provider.test.mjs`
@@ -906,7 +907,10 @@ Refactor managed-voice governance so runtime pins only the active stack and prov
 each reviewed case profile supplies its own voice ID. Require the profile hash to bind the voice,
 provenance, cadence, speaking rate, and adapter-mapping version. Tests must prove two reviewed cases
 on one runtime stack can use different attested stock voices, while any profile/runtime mutation
-fails eligibility.
+fails eligibility. Update `sp-proxy/tests/fixtures/pack.fixture.mjs` to remove the global runtime
+`voiceId`, add exact reviewed provenance/mapping/settings values to each profile, and recompute fixture
+hashes through its existing canonical helpers rather than pasting fabricated approvals into the
+learner pack.
 
 Test deterministic fake transcripts/audio, integer-millisecond usage, invocation counts,
 configuration/input validation, caller abort, one 45-second timeout, response-size limits, malformed
