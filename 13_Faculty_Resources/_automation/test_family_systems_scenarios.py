@@ -15,13 +15,57 @@ REVEAL_FIELDS = {"opening", "prepare", "ask", "say", "avoid", "handoff", "safety
 DEFAULT_SOURCES = ("opening", "ask", "avoid")
 
 
+def validate_retrieval(sid, retrieval):
+    """Validate a scenario's retrieval block. Raises AssertionError on any violation."""
+    assert isinstance(retrieval, list), f"{sid}: retrieval must be a list"
+    seen = set()
+    for entry in retrieval:
+        assert isinstance(entry, dict), f"{sid}: retrieval entry must be an object"
+        eid = entry.get("id")
+        assert isinstance(eid, str) and ID_RE.match(eid), f"{sid}: bad retrieval id {eid!r}"
+        assert eid not in seen, f"{sid}: duplicate retrieval id {eid!r}"
+        seen.add(eid)
+        assert isinstance(entry.get("prompt"), str) and entry["prompt"].strip(), f"{sid}:{eid} needs a prompt"
+        rf, rt = entry.get("revealFrom"), entry.get("revealText")
+        assert (rf in REVEAL_FIELDS) or (isinstance(rt, str) and rt.strip()), (
+            f"{sid}:{eid} needs revealFrom in {sorted(REVEAL_FIELDS)} or a revealText"
+        )
+
+
+def check_retrieval_contract():
+    """Exercise validate_retrieval against synthetic valid and malformed blocks so the
+    contract is enforced even while all shipped scenarios omit `retrieval`."""
+    validate_retrieval("synthetic_ok", [
+        {"id": "opening", "prompt": "Say your opening line.", "revealFrom": "opening"},
+        {"id": "custom", "prompt": "Do the thing.", "revealText": "A model answer."},
+    ])
+    bad_cases = [
+        [{"id": "Bad Id", "prompt": "x", "revealFrom": "ask"}],          # id fails pattern
+        [{"id": "dup", "prompt": "x", "revealFrom": "ask"},
+         {"id": "dup", "prompt": "y", "revealFrom": "avoid"}],           # duplicate id
+        [{"id": "blank", "prompt": "   ", "revealFrom": "ask"}],          # blank prompt
+        [{"id": "noprompt", "revealFrom": "ask"}],                       # missing prompt
+        [{"id": "noreveal", "prompt": "x"}],                             # neither revealFrom nor revealText
+        [{"id": "badfrom", "prompt": "x", "revealFrom": "nope"}],        # invalid revealFrom, no revealText
+    ]
+    for i, block in enumerate(bad_cases):
+        try:
+            validate_retrieval(f"synthetic_bad_{i}", block)
+        except AssertionError:
+            continue
+        raise AssertionError(f"retrieval contract failed to reject malformed block {i}: {block!r}")
+
+
 def main():
     data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     scenarios = data.get("scenarios")
     assert isinstance(scenarios, list) and scenarios, "scenarios must be a non-empty list"
 
+    check_retrieval_contract()
+
     for sc in scenarios:
-        sid = sc["id"]
+        sid = sc.get("id")
+        assert isinstance(sid, str) and sid, "scenario missing id"
         # auto-derive sources must exist so every scenario yields retrieval cards
         assert isinstance(sc.get("opening"), str) and sc["opening"].strip(), f"{sid}: opening required"
         sections = sc.get("sections", {})
@@ -31,19 +75,7 @@ def main():
         # validate any explicit retrieval blocks (none required in v1)
         retrieval = sc.get("retrieval")
         if retrieval is not None:
-            assert isinstance(retrieval, list), f"{sid}: retrieval must be a list"
-            seen = set()
-            for entry in retrieval:
-                assert isinstance(entry, dict), f"{sid}: retrieval entry must be an object"
-                eid = entry.get("id")
-                assert isinstance(eid, str) and ID_RE.match(eid), f"{sid}: bad retrieval id {eid!r}"
-                assert eid not in seen, f"{sid}: duplicate retrieval id {eid!r}"
-                seen.add(eid)
-                assert isinstance(entry.get("prompt"), str) and entry["prompt"].strip(), f"{sid}:{eid} needs a prompt"
-                rf, rt = entry.get("revealFrom"), entry.get("revealText")
-                assert (rf in REVEAL_FIELDS) or (isinstance(rt, str) and rt.strip()), (
-                    f"{sid}:{eid} needs revealFrom in {sorted(REVEAL_FIELDS)} or a revealText"
-                )
+            validate_retrieval(sid, retrieval)
 
     # schema must permit the retrieval property (strict additionalProperties:false)
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
