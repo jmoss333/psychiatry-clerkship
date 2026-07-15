@@ -811,15 +811,20 @@ function parseWebm(bytes) {
       if (sawTracks || sawCluster || child.unknownSize) throw invalidAudio();
       sawTracks = true;
       const trackNumbers = new Set();
-      for (const track of parseWebmTracks(bytes, child)) {
+      const tracks = parseWebmTracks(bytes, child);
+      if (
+        tracks.length !== 1
+        || tracks[0].type !== 2
+        || tracks[0].codec !== 'A_OPUS'
+      ) {
+        throw invalidAudio();
+      }
+      for (const track of tracks) {
         if (trackNumbers.has(track.number)) throw invalidAudio();
         trackNumbers.add(track.number);
-        if (track.type === 2 && track.codec === 'A_OPUS') {
-          state.opusTracks.add(track.number);
-          state.trackWorkMicroseconds.set(track.number, 0n);
-        }
+        state.opusTracks.add(track.number);
+        state.trackWorkMicroseconds.set(track.number, 0n);
       }
-      if (state.opusTracks.size === 0) throw invalidAudio();
       offset = child.end;
     } else if (child.id === EBML_IDS.CLUSTER) {
       if (!sawTracks) throw invalidAudio();

@@ -348,12 +348,21 @@ function floatBytes(value, size = 8) {
   return new Uint8Array(buffer);
 }
 
-function webmTrack({ codec = 'A_OPUS', trackNumber = 1 } = {}) {
-  return ebmlElement(WEBM_IDS.TRACKS, ebmlElement(WEBM_IDS.TRACK_ENTRY, bytes(
+function webmTrackEntry({ codec = 'A_OPUS', trackNumber = 1 } = {}) {
+  return ebmlElement(WEBM_IDS.TRACK_ENTRY, bytes(
     ebmlElement(WEBM_IDS.TRACK_NUMBER, ebmlUnsigned(trackNumber)),
     ebmlElement(WEBM_IDS.TRACK_TYPE, ebmlUnsigned(2)),
     ebmlElement(WEBM_IDS.CODEC_ID, ascii(codec)),
-  )));
+  ));
+}
+
+function webmTrack({ codec = 'A_OPUS', trackNumbers = [1], trackDefs = null } = {}) {
+  const definitions = trackDefs
+    ?? trackNumbers.map((trackNumber) => ({ codec, trackNumber }));
+  return ebmlElement(
+    WEBM_IDS.TRACKS,
+    bytes(...definitions.map((definition) => webmTrackEntry(definition))),
+  );
 }
 
 function simpleBlock({
@@ -412,6 +421,8 @@ function webm({
   unknownCluster = false,
   blockGroupDuration = null,
   clusterBeforeTracks = false,
+  trackNumbers = [1],
+  trackDefs = null,
 } = {}) {
   const ebmlHeader = ebmlElement(WEBM_IDS.EBML, ebmlElement(WEBM_IDS.DOC_TYPE, ascii('webm')));
   const infoParts = [ebmlElement(WEBM_IDS.TIMECODE_SCALE, ebmlUnsigned(timecodeScale))];
@@ -430,7 +441,7 @@ function webm({
     }
   }
   const info = ebmlElement(WEBM_IDS.INFO, bytes(...infoParts));
-  const tracks = webmTrack({ codec });
+  const tracks = webmTrack({ codec, trackNumbers, trackDefs });
   const cluster = ebmlElement(
     WEBM_IDS.CLUSTER,
     bytes(...clusterParts),
@@ -721,6 +732,36 @@ test('rejects cumulative WebM Opus work hidden at one repeated timestamp', () =>
   assert.throws(
     () => inspectAudio({ audio, mimeType: 'audio/webm;codecs=opus' }),
     (error) => assertOperationalError(error, { status: 422, code: 'audio_too_long' }),
+  );
+});
+
+test('rejects multiple Opus tracks that split cumulative work below the duration limit', () => {
+  const packet = Uint8Array.of(0x19); // Two 60 ms Opus frames.
+  const audio = webm({
+    trackNumbers: [1, 2],
+    blocks: Array.from({ length: 1_000 }, (_, index) => simpleBlock({
+      track: (index % 2) + 1,
+      packets: [packet],
+    })),
+  });
+  assert.ok(audio.length < MAX_BYTES);
+  assert.throws(
+    () => inspectAudio({ audio, mimeType: 'audio/webm;codecs=opus' }),
+    (error) => assertOperationalError(error, { status: 422, code: 'invalid_audio' }),
+  );
+});
+
+test('rejects a non-Opus audio decoy alongside the governed Opus track', () => {
+  const audio = webm({
+    trackDefs: [
+      { trackNumber: 1, codec: 'A_VORBIS' },
+      { trackNumber: 2, codec: 'A_OPUS' },
+    ],
+    blocks: [simpleBlock({ track: 2 })],
+  });
+  assert.throws(
+    () => inspectAudio({ audio, mimeType: 'audio/webm' }),
+    (error) => assertOperationalError(error, { status: 422, code: 'invalid_audio' }),
   );
 });
 
