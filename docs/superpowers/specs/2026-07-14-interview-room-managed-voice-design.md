@@ -429,14 +429,17 @@ the code, case ID, turn number, phase duration, and billable units; never the te
 
 Add a metadata-only rotation ledger keyed by `SP_ROTATION_ID`. Reuse the existing
 `@netlify/blobs` dependency in a dedicated `sp-usage` store configured for strong consistency. It
-records actor input/output token counts, transcription seconds, synthesis characters, and estimated
-spend using a server-side pinned rate card. It records no identity, transcript, or audio. The design
+records actor input/output token counts, transcription milliseconds, synthesis characters, and
+estimated spend using a server-side pinned rate card. It records no identity, transcript, or audio. The design
 uses Netlify's documented [strong-consistency and conditional-write
 controls](https://docs.netlify.com/build/data-and-storage/netlify-blobs/#consistency), not the
-current best-effort read/modify/write counter.
+current best-effort read/modify/write counter. The ledger computes cost from exact provider, model,
+meter, rate-card, and measured-unit bindings; callers never supply dollar amounts.
 
-Every billable request receives an idempotency key derived from rotation, encounter, turn, operation,
-and attempt; synthesis also binds the one-time `jti`. Before calling a provider, the budget module
+Every billable request receives one stable logical idempotency key derived from rotation, encounter,
+turn, and operation; synthesis also binds the one-time `jti`. The ledger, not the caller, advances an
+internal generation only after a recorded failure before provider work begins. Before calling a
+provider, the budget module
 atomically reserves a conservative maximum cost using the record's ETag and a bounded retry loop;
 after the response it reconciles that reservation to reported or measured usage. A request is
 refused when its reservation would cross the cap. The same key may retry only after a recorded
