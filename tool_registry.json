@@ -107,7 +107,7 @@
       "category": "family-systems",
       "riskLevel": "moderate",
       "disclaimerType": "fictional-simulation-supervision-local-policy",
-      "storageKeys": ["cw_family_v1"],
+      "storageKeys": ["cw_family_v1", "cw_srs_v1"],
       "evidenceIds": ["va-dod-suicide-cpg-2024", "project-beta-deescalation-2012"],
       "relatedPages": ["collateral_workflow.md", "exp_family.md", "family_playbook.md", "family_modalities.md", "pg_suicide.md", "t_psychosis.md", "ethics_legal.md", "delirium.md", "t_mood.md", "t_sud.md", "t_personality.md", "t_neurocog.md", "t_neurodev.md", "agitation.md", "cultural_psychiatry.md"]
     },
