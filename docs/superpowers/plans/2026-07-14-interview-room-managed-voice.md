@@ -1244,9 +1244,12 @@ unmount. Migrate legacy `cw_sp_voice=1` to `device`, never managed. Store only v
 consent keys in local storage.
 
 Render a native mode select with `Voice off`, `Device voice`, and Managed voice only when health says
-it is eligible. Managed selection first presents consent that separately names clerkship retention,
-the selected speech provider, a linked provider data-use notice, provider processing, no
-real-patient information, and equal typing access.
+it is eligible and the browser can record at least one advertised media type. Intersect
+`MediaRecorder.isTypeSupported` with health in this preference order: WebM Opus, Ogg Opus, WebM,
+Ogg, then WAV only if the browser actually supports it. Never fall back to unadvertised MP4. Managed
+selection first presents consent that separately names clerkship retention, the selected speech
+provider, a linked provider data-use notice, provider processing, no real-patient information, and
+equal typing access.
 
 Construct the managed transport from the reviewed voice-health response and the existing tab-scoped
 student key. Its raw-audio and signed-synthesis methods are the controller's injected `transcribe`
