@@ -34,6 +34,12 @@ test('operations guide names every managed-voice control without embedding value
     'SP_SPEECH_TICKET_SECRET',
     'OPENAI_API_KEY',
     'ELEVENLABS_API_KEY',
+    'SP_VOICE_STACK_ID',
+    'SP_VOICE_TRANSCRIPTION_PROVIDER',
+    'SP_VOICE_TRANSCRIPTION_MODEL',
+    'SP_VOICE_SYNTHESIS_PROVIDER',
+    'SP_VOICE_SYNTHESIS_MODEL',
+    'SP_VOICE_ZERO_RETENTION_ENTITLED',
   ]) {
     assert.match(readme, new RegExp(`\\b${variable}\\b`), `missing environment name: ${variable}`);
   }

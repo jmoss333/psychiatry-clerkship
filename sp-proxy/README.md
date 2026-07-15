@@ -99,6 +99,12 @@ source, screenshots, tickets, browser settings, test fixtures, logs, or the rele
 | `SP_MAX_TOKENS_EVAL` | Reviewed evaluator output bound |
 | `SP_ROTATION_ID` | Non-identifying, unique rotation ledger ID |
 | `SP_MANAGED_VOICE_ENABLED` | Explicit production voice kill switch |
+| `SP_VOICE_STACK_ID` | Reviewed speech-stack pin |
+| `SP_VOICE_TRANSCRIPTION_PROVIDER` | Reviewed transcription-provider pin |
+| `SP_VOICE_TRANSCRIPTION_MODEL` | Reviewed transcription-model pin |
+| `SP_VOICE_SYNTHESIS_PROVIDER` | Reviewed synthesis-provider pin |
+| `SP_VOICE_SYNTHESIS_MODEL` | Reviewed synthesis-model pin |
+| `SP_VOICE_ZERO_RETENTION_ENTITLED` | Explicit reviewed account-entitlement pin; never inferred |
 
 ## Retention and deletion
 
