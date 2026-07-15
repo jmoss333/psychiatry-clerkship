@@ -83,6 +83,7 @@ MS3/resident build and Playwright smoke infrastructure.
 - Create: `13_Faculty_Resources/_automation/test_validate_attestation_consistency.py`
 - Modify: `13_Faculty_Resources/_automation/site_build/site_manifest.json`
 - Modify: `13_Faculty_Resources/_automation/site_build/build_deploy.py`
+- Modify: `13_Faculty_Resources/_automation/site_build/check-static-site.mjs`
 - Modify: `.github/workflows/ci.yml`
 - Create: `tests/smoke/interview-room.spec.js`
 - Modify: `tests/smoke/playwright.config.js`
@@ -925,7 +926,9 @@ retry and exact request shapes:
   `response_format:'mp3'`, and reviewed speaking speed; it rejects input over 4096 characters.
 - ElevenLabs Scribe v2 uses `POST /v1/speech-to-text`, multipart `file` plus `model_id`, disables
   optional diarization/audio-event tagging/webhooks, and uses `enable_logging=false` only when that
-  zero-retention entitlement is explicitly pinned by reviewed runtime configuration. Word timing may
+  zero-retention entitlement is explicitly pinned by reviewed runtime configuration. The official
+  API defines `enable_logging` as a query parameter, never a multipart field; apply the same reviewed
+  query to ElevenLabs text-to-speech, whose default is otherwise logging enabled. Word timing may
   provide display duration, but because the response does not prove total billable audio duration,
   usage is `null` unless a reviewed trustworthy meter is present.
 - Eleven v3 uses `POST /v1/text-to-speech/{encodedVoiceId}`, `model_id:'eleven_v3'`, MP3 output,
@@ -955,8 +958,9 @@ greater-than-90-second file that remains under 4 MiB.
 Compressed-container duration uses the conservative maximum of declared timeline endpoints and
 accumulated decoded Opus packet duration. Ogg validates CRCs, canonical `OpusHead`/`OpusTags`, page
 continuation, sequence, serial, granule, and EOS structure. WebM processes bounded blocks
-incrementally, requires tracks before clusters, and caps packet/element counts so a legal-size body
-cannot amplify into unbounded heap. Regression fixtures include 120 seconds of Ogg packets with a
+incrementally, requires exactly one track and that track to be Opus audio before clusters, and caps
+packet/element counts so a legal-size body cannot amplify into unbounded heap. Regression fixtures
+include split-duration multi-track and non-Opus decoy WebM files, 120 seconds of Ogg packets with a
 falsified short granule, 120 seconds of same-timestamp WebM packets, and a near-4-MiB minimal-block
 file under a 64-MiB heap; each rejects before billing.
 
@@ -1122,20 +1126,195 @@ git commit -m "feat(sp-proxy): add guarded managed speech endpoint"
 **Files:**
 
 - Modify: `sp-proxy/netlify/functions/sp.mjs`
+- Modify: `sp-proxy/netlify/functions/_shared/sp-speech-ticket.mjs`
 - Create: `sp-proxy/tests/sp-handler.test.mjs`
+- Modify: `sp-proxy/tests/sp-speech-ticket.test.mjs`
+- Modify: `_prototypes/sp-interview/sp-interview.pack.json`
+- Modify: `_prototypes/sp-interview/sp-interview.preview.html`
 - Modify: `_prototypes/sp-interview/tests/parity.test.mjs`
+- Modify: `13_Faculty_Resources/_automation/validate_attestation_consistency.py`
+- Modify: `13_Faculty_Resources/_automation/test_validate_attestation_consistency.py`
 
 **Interfaces:**
 
 Export injected `createSpHandler(dependencies)`, the default production handler, and the unchanged
 `_internals={deriveState,computeCoverage,actorSystem,evaluatorSystem}` parity surface.
 
+Learner POST accepts only an exact top-level `pack.status` of `reviewed` or `attested`; no case-folding,
+trimming, aliases, or other status is accepted. GET still returns reviewed case summaries, but an
+unknown, draft, or arbitrary top-level status fails POST before credential preparation, ledger, or
+provider access. Test both accepted values and representative rejected values.
+
+Add reviewed `engine.maxActorOutputTokens:300` and `engine.maxEvaluatorOutputTokens:1500` pins to the
+pack and validator. The frozen pack is authoritative: production runtime actor/evaluator model pins
+must both equal `pack.engine.modelPinned`, runtime output maxima must exactly equal those two pack
+fields, and each is a safe positive integer. Derive the budget rate key only as
+`{provider:'anthropic',model:pack.engine.modelPinned}` and require exactly one matching
+`input_tokens` and one matching `output_tokens` rate in the same frozen rate card before any budget
+work. A missing or mismatched pin/rate fails closed before ledger or provider access; no learner body
+or environment value may select a model, maximum, provider, or rate.
+
+The learner request contracts are exact and size-bounded. Opening is
+`{caseId,mode:'open',encounterId,turnId:0}`; converse is
+`{caseId,mode:'converse',encounterId,turnId,turns,message}` with
+`turnId === turns.length + 1`; evaluation is
+`{caseId,mode:'evaluate',encounterId,turns,selfAssess}`. Require canonical 16-byte unpadded
+base64url encounter IDs, positive integer converse turn IDs, at most the reviewed maximum number of
+exact `{me,pt}` turns, and a 256 KiB streamed JSON limit. Converse requires
+`turns.length < pack.engine.maxTurns`; evaluation allows `turns.length <= pack.engine.maxTurns`.
+Require exact `Content-Type: application/json`, nonblank message/turn strings of 1–1,200 Unicode
+scalar values, and exact `{a,b,c}` self-assessment strings of 0–1,200 Unicode scalar values each.
+Reject unpaired surrogates, extra keys, truncated JSON, invalid UTF-8, oversized `Content-Length`,
+and actual streamed overflow before pack, budget, or provider work.
+
+Use fixed-key canonical JSON for the Task 5 operation identities. Actor identity is
+`{schemaVersion:1,rotationId,encounterId,turnId,caseId,operation:'actor'}`. Evaluation identity is
+`{schemaVersion:1,rotationId,encounterId,turnId:turns.length,caseId,operation:'evaluation'}`. Never
+place transcript, self-assessment, prompt, response, passcode, provider key, or raw idempotency JSON
+in Blob storage or logs. Prepare and validate only the Anthropic credential after student auth,
+the one frozen reviewed pack snapshot, case/body validation, and exact outbound request assembly,
+but before any budget read or write. The canonical pack opening makes no Anthropic call and incurs
+no actor reservation; it may carry a speech ticket only when that same frozen snapshot is managed-
+voice eligible and a ticket codec is configured.
+
+Opening tickets use a stable, unguessable redemption identity so a repeated or concurrent opening
+request cannot multiply synthesis spend. Extend the ticket codec with `issueStableOpening(input)`.
+It derives the 16-byte JTI as the first 16 bytes of a domain-separated HMAC-SHA256 under the ticket
+secret over fixed-key canonical JSON containing `rotationId`, `encounterId`, `turnId:0`, `caseId`,
+`packHash`, `attestationHash`, `profileHash`, `profileVersion`, `provider`, `model`, `voiceId`, and
+the exact opening `replyHash`. The domain prefix is the exact UTF-8 byte sequence
+`sp-speech-ticket/opening-jti/v1\0`. `issueStableOpening` accepts the exact server opening as `reply`,
+computes `replyHash` internally, and rejects caller-supplied hashes or extra fields. The signed ticket
+may receive a fresh `iat`/`exp`, but every ticket
+for the same governed opening has the same JTI; a governance, voice, case, encounter, or opening-text
+change rotates it. Ordinary converse tickets retain random 128-bit JTIs.
+
+Assemble the exact Anthropic payload once in fixed insertion order as
+`{model,max_tokens,system,messages}` and UTF-8 encode that one `JSON.stringify` result. The actor
+messages are the exact alternating `{role:'user',content:me}` and
+`{role:'assistant',content:pt}` reviewed turns followed by the current user message; evaluation has
+one user message containing the deterministic transcript and exact self-assessment template. Use
+that same byte array both for the maximum-input reservation and the HTTPS request body. Send one
+`POST https://api.anthropic.com/v1/messages` with only `x-api-key`,
+`anthropic-version: 2023-06-01`, and `content-type: application/json`; compose the caller signal with
+one 45-second internal deadline, enforce the deadline even if injected fetch ignores abort, clear
+timers in `finally`, and never retry.
+
+Accept only a successful `application/json` response whose streamed body is at most 256 KiB, whose
+`content` is a bounded array containing nonempty text, and whose `usage.input_tokens` and
+`usage.output_tokens` are safe nonnegative integers. Actor spoken text is trimmed and must remain
+nonempty and at most 1,200 Unicode scalar values with no unpaired surrogate. Evaluator text must
+parse into the exact feedback object: top-level keys
+`{domains,strengths,growth,selfAssessmentNote}`; `domains` has exact
+`{alliance,data,technique,organization}` keys, each an exact
+`{rating:'observed'|'partial'|'missed',note}` object; `strengths` is exactly two nonblank strings;
+`growth` is exactly two exact `{t,link}` objects whose links are members of that case's
+`linkedPages`; and `selfAssessmentNote` is nonblank. Every note, strength, growth text, and
+self-assessment note is at most 600 Unicode scalar values with no unpaired surrogate. Extras,
+wrong types, wrong cardinality, or unknown links fail closed. A timeout is typed `504`; malformed,
+oversized, non-JSON, empty, schema-invalid, or upstream failure is typed `502`. Never return or log
+provider bodies, URLs, headers, or credentials.
+
+The handler's exact successful JSON contracts are:
+
+```javascript
+GET = {
+  schemaVersion: 1,
+  actorModel,
+  evaluatorModel,
+  packVersion,
+  packStatus,
+  cases: [{ id, title }], // reviewed cases only
+};
+OPEN_OR_CONVERSE = {
+  reply,
+  state: { intents, flags, rapport, unlocked },
+  ticket: string | null,
+};
+EVALUATE = { domains, strengths, growth, selfAssessmentNote }; // exact schema above
+ERROR = {
+  error: { code, message },
+  retryDisposition: 'same-operation' | 'offline-only',
+};
+```
+
+Opening state is the deterministic zero-turn state; converse state is derived server-side. Arrays
+contain only strings, `rapport` is a finite integer inside the reviewed pack bounds, and no extra
+response keys are permitted. The Task 8 `ProxyProvider` consumes `{reply,state,ticket}`, applies the
+state to its private session, and exposes only `{reply,ticket}` to the encounter/voice controller.
+Evaluation remains the feedback object directly so deterministic-debrief fallback stays compatible.
+Build handler-specific error JSON with `http.json`; do not change the shared Task 3 error shape used
+by the voice endpoint. `retryDisposition` is the exact top-level field shown above.
+
+For actor and evaluation calls, reserve with maximum input tokens equal to the byte length of the
+exact UTF-8 Anthropic request body (a conservative one-byte-per-token upper bound) and the pinned
+maximum output tokens. Only `markProviderStarted(...).authorized === true` permits the one provider
+call. Validate exact integer provider usage, settle durably before responding, and charge the
+reserved maximum on timeout, cancellation, invalid response, or unknown usage after authorization.
+Before provider-start is attempted, cancellation or a safe failure releases the reservation with
+`failBeforeProvider`; once provider-start is attempted, an ambiguous result is never released and a
+retry never calls the provider. Map active duplicates to `actor_in_progress` or
+`evaluation_in_progress`, and terminal duplicates to `actor_already_processed` or
+`evaluation_already_processed`. Returned errors and metadata-only logs must not contain prompts,
+transcripts, self-assessments, replies, provider bodies, URLs, credentials, or storage records.
+
+Every actor/evaluation error response includes exact
+`retryDisposition:'same-operation'|'offline-only'`. The handler may return `same-operation` only for
+an error proven to occur before any provider-start attempt and, if a reservation exists, only after
+`failBeforeProvider` succeeds durably. All active/terminal duplicates, any attempted or ambiguous
+provider-start, provider timeout/failure, ambiguous settlement, budget/cap error, validation/auth
+error, and configuration error return `offline-only`. The browser shows Retry only for the literal
+`same-operation` value and never infers safety from HTTP status or prose.
+
+Lock cancellation outcomes by phase. A pre-mark abort durably calls `failBeforeProvider` and permits
+the same operation ID to retry. An abort during or after a mark attempt with an ambiguous result is
+never released and is offline-only. Once authorized, provider abort/timeout/malformed usage settles
+`provider_failed` at the reserved maximum. Once a valid response and usage are captured, settle
+`succeeded` with actual usage even if the caller aborts, then suppress delivery. Ambiguous settlement
+or a lost success response never permits a second provider call and is offline-only.
+
+Speech tickets are a fail-soft enhancement after text is known. If the codec is absent, throws, or
+has invalid randomness/configuration, return the complete opening or settled actor reply with
+`ticket:null` and log only a content-free ticket-unavailable event. For converse, successful actor
+usage must already be settled before ticket issuance; ticket failure never discards text, changes
+the actor outcome, or triggers another actor call.
+
 - [ ] **Step 1: Write red handler tests**
 
 Inject fake pack, budget, ticket, and Anthropic clients. Assert reviewed-only GET, draft POST rejection
-before quota/provider, `{caseId,mode:'open'}` canonical opening, optional opening ticket, converse
+before quota/provider, the exact `{caseId,mode:'open',encounterId,turnId:0}` canonical opening,
+optional opening ticket, converse
 ticket, evaluator text-only response, typed `401/403/429/502/504`, captured Anthropic usage,
 idempotent reservation, and ledger failure causing zero provider calls.
+
+Assert all four exact success/error bodies above, response key order/absence of extras, reviewed-only
+case summaries, deterministic opening/converse state, top-level retry disposition, and the
+`ProxyProvider` state/private-return mapping. Mutate every feedback key, enum, cardinality, string
+bound, Unicode validity, and linked-page membership. Mutate each model/output/rate pin and prove
+failure occurs before budget/provider work.
+
+Also cover every exact body/ID/size boundary; missing-key-before-budget; immutable one-snapshot
+governance; byte-derived maximum input; abort before reservation, after reservation, during provider-
+start, during provider work, after response, during settlement, and after settlement; provider
+crash/timeout/malformed usage; ten concurrent duplicates; process-restart duplicates; terminal lost-
+response retries; and content sentinels absent from errors, logs, Blob writes, and usage. Install a
+test-level network deny so all provider traffic is injected.
+
+Assert the exact Anthropic URL, headers, byte-identical reserved/sent body, actor/evaluator request
+shapes, single composed deadline, ignored-abort timeout, no retry, response byte cap, JSON content
+type/schema, nonempty text, integer usage, and sanitized failures. Assert every phase outcome and
+`retryDisposition` mapping above, including a client abort after a valid response that still settles
+actual usage but emits no success response.
+
+Cover opening and converse with a missing ticket codec, a throwing codec, and invalid ticket
+randomness. Each returns the exact text with `ticket:null`; a converse reply remains durably settled,
+and a retry or ticket failure never makes an additional actor call.
+
+Issue ten sequential and concurrent requests for the same canonical opening, verify their decoded
+tickets share one JTI even across issue times, and redeem them through the synthesis authority to
+prove they produce exactly one authorized provider call. Verify encounter, case, governance,
+attested voice, and exact opening-text changes each rotate the stable JTI, while converse ticket JTIs
+remain random.
 
 - [ ] **Step 2: Verify red**
 
@@ -1165,13 +1344,22 @@ Run:
 node --test sp-proxy/tests/sp-handler.test.mjs
 node _prototypes/sp-interview/tests/parity.test.mjs
 npm --prefix sp-proxy test
+python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py
+python3 13_Faculty_Resources/_automation/validate_attestation_consistency.py
+node _prototypes/sp-interview/generate-preview.mjs --write
+node _prototypes/sp-interview/generate-preview.mjs --check
 ```
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add sp-proxy/netlify/functions/sp.mjs sp-proxy/tests \
-  _prototypes/sp-interview/tests/parity.test.mjs
+git add sp-proxy/netlify/functions/sp.mjs \
+  sp-proxy/netlify/functions/_shared/sp-speech-ticket.mjs sp-proxy/tests \
+  _prototypes/sp-interview/sp-interview.pack.json \
+  _prototypes/sp-interview/sp-interview.preview.html \
+  _prototypes/sp-interview/tests/parity.test.mjs \
+  13_Faculty_Resources/_automation/validate_attestation_consistency.py \
+  13_Faculty_Resources/_automation/test_validate_attestation_consistency.py
 git commit -m "refactor(sp-proxy): govern actor turns and openings"
 ```
 
@@ -1211,6 +1399,11 @@ randomness before fetch. Assert synthesis sends only `{reply,ticket}`, requests 
 plus MIME type, and preserves typed endpoint errors. No method may log, persist, retry, or switch
 providers. Assert all recording/blob references are released after draft creation, transcription
 rejection or timeout, cancellation, or encounter end.
+
+Lock encounter identity separately from capture identity: beginning a room generates exactly 16
+Web Crypto random bytes and encodes canonical unpadded base64url once; every actor, evaluation,
+transcription, and synthesis request for that room reuses it, while a new room rotates it. Invalid
+or unavailable randomness fails locally before any fetch.
 
 Create the Chromium `interview-room` Playwright project and write browser tests for keyboard mode
 selection, text before audio, denied mic, blocked autoplay, slow actor, cancel-on-end, no overlap,
@@ -1254,6 +1447,8 @@ equal typing access.
 Construct the managed transport from the reviewed voice-health response and the existing tab-scoped
 student key. Its raw-audio and signed-synthesis methods are the controller's injected `transcribe`
 and `synthesize` dependencies; neither React nor `ProxyProvider` performs speech requests directly.
+Generate the encounter ID at room creation through the injected Web Crypto helper, pass it into the
+controller once, and never derive it from a passcode, case, timestamp, transcript, or learner input.
 
 - [ ] **Step 4: Route encounter actions through the controller**
 
@@ -1264,10 +1459,12 @@ page teardown cancel controller resources.
 
 - [ ] **Step 5: Implement explicit stable fallback UI**
 
-Actor errors keep the submitted learner text and offer Retry or Continue offline. Offline selection
-rehydrates a fresh `MockProvider` by replaying prior learner turns before generating the failed turn,
-then places a persistent `Offline simulation` label in the encounter header and beside every new
-offline patient reply.
+Actor errors keep the submitted learner text. Errors proven to occur before provider-start offer
+Retry or Continue offline; `actor_in_progress`, `actor_already_processed`, ambiguous storage errors,
+and every post-start failure offer Continue offline only, because another live attempt could spend
+twice or produce a conflicting patient reply. Offline selection rehydrates a fresh `MockProvider`
+by replaying prior learner turns before generating the failed turn, then places a persistent
+`Offline simulation` label in the encounter header and beside every new offline patient reply.
 Voice errors keep patient text and offer Continue with text or Use device voice. No mode changes
 without an explicit learner action.
 
