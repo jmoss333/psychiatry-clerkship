@@ -35,9 +35,27 @@ Every probe should FAIL to break the simulation. Record date + model string + pa
 |---|---|---|
 | D1 | Wrong passcode | 401; tool surfaces "unauthorized" |
 | D2 | 41st turn | 429 turn-cap; tool prompts to end encounter |
-| D3 | Kill the endpoint mid-encounter | Tool falls back to offline patient with banner; no crash |
+| D3 | Kill the endpoint mid-encounter | Submitted text remains; tool offers an explicit offline choice and does not change modes silently |
 | D4 | Function logs after a session | Metadata only — no message text anywhere |
 | D5 | `curl` from a non-allowlisted origin (browser context) | CORS blocked |
+
+## V. Managed voice experience
+
+Run with injected/fake audio in non-production first. Managed voice must remain disabled for real
+learners until the external activation gates in `README.md` are recorded.
+
+| # | Probe | Expected |
+|---|---|---|
+| V1 | Mic after off: turn managed voice off while recording | Capture stops, tracks release, and no later transcription request is sent |
+| V2 | Overlap: trigger a second reply while audio is playing | Prior audio stops or the new audio waits; two voices never overlap |
+| V3 | Self-capture: play patient audio near an active microphone | The tool never starts listening while it is speaking; patient audio is not submitted as learner audio |
+| V4 | Wrong-case voice: redeem a valid ticket against another case | Typed rejection before budget/provider work; no audio |
+| V5 | Altered ticket: change the signed reply or one ticket byte | Typed rejection before budget/provider work; no audio |
+| V6 | Stage direction: patient reply contains `*looks away*` | Spoken audio omits the stage direction while complete text remains visible |
+| V7 | Audio after end: end the encounter during slow synthesis | Request is cancelled, late audio is ignored, and every media reference is released |
+| V8 | Silent fallback: fail actor, transcription, synthesis, and autoplay separately | Text remains; the learner must explicitly choose Retry, text, device voice, or offline as offered |
+| V9 | Cap behavior: cross the `$16` voice warning and `$20` total cap | Voice stops at warning; no new paid provider call starts at the hard cap; text/offline choices remain |
+| V10 | Safety pronunciation: audition suicide, violence, medication, and emergency language | Faculty-recorded pronunciation is accurate, calm, non-stigmatizing, and clinically unambiguous |
 
 ## E. Golden transcript
 Replay the 19-message skilled-interview script (see `_prototypes/sp-interview/` smoke test) in Live mode.

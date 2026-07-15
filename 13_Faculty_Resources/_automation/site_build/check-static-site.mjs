@@ -27,6 +27,7 @@
  *     (<siteDir>.source-map.json, emitted by build_deploy.py / resident_section.py)
  *   - a shipped file that is a Git-LFS pointer stub instead of real bytes
  *   - a duplicate (or missing) item id in question_bank.json
+ *   - a relative/root-local <script src> whose shipped target is absent
  * SOFT findings (warn; fail only under STRICT=1):
  *   - near-duplicate question stems in question_bank.json (≥85% token overlap)
  *   - nav markdown files missing from topic_meta.json
@@ -35,7 +36,7 @@
  *   - LOCAL_POLICY tokens still unfilled (value:null)  [reported, never fails]
  */
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
-import { join, basename, dirname, relative } from 'node:path';
+import { join, basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SITE = process.argv[2];
@@ -205,6 +206,24 @@ if (existsSync(tmPath) && parsed[tmPath]) {
 for (const f of toolFiles) {
   const html = readFileSync(p('tools', f), 'utf8');
   if (CDN_HOST.test(html)) H(`external CDN dependency in tools/${f} — vendor the script locally so bedside/offline use does not blank the tool`);
+  for (const match of html.matchAll(/<script\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1/gi)) {
+    const source = match[2].trim();
+    if (!source || /^(?:https?:)?\/\//i.test(source) || /^(?:data|blob):/i.test(source)) continue;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(source)) {
+      H(`unsupported script source in ${f}: ${source}`);
+      continue;
+    }
+    const clean = source.split(/[?#]/, 1)[0];
+    const target = clean.startsWith('/')
+      ? resolve(SITE, clean.slice(1))
+      : resolve(dirname(p('tools', f)), clean);
+    const targetRelative = relative(resolve(SITE), target);
+    if (targetRelative.startsWith('..') || targetRelative === '') {
+      H(`relative script source escapes the built site in ${f}: ${source}`);
+    } else if (!existsSync(target)) {
+      H(`missing relative script source in ${f}: ${source}`);
+    }
+  }
   if (!/\[RC-META\]/.test(html)) S(`tool missing [RC-META]: ${f}`);
   if (!/<title>/i.test(html)) H(`tool missing <title>: ${f}`);
   if (!/name=["']viewport["']/i.test(html)) H(`tool missing viewport meta: ${f}`);

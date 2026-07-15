@@ -42,6 +42,7 @@ os.makedirs(OUT+"/content"); os.makedirs(OUT+"/tools")
 # New content pages: register in site_manifest.json AND in nav[] below to ship.
 _manifest=json.load(open(MANIFEST,encoding="utf-8"))
 tools=[tuple(x) for x in _manifest["tools"]]
+tool_assets=[tuple(x) for x in _manifest.get("toolAssets",[])]
 # Hidden from the sidebar list + search per Dr. Moss's request (2026-07-06) — superseded by the
 # question bank practice tool. Files still ship (still in `tools` above) and stay fully reachable
 # by direct link / the home "Start review" card / per-page tool docks (all look items up by
@@ -53,6 +54,8 @@ HIDDEN_TOOLS={"shelf-mode.html","review.html"}
 # mid-build and fail the Netlify deploy for BOTH sites with a bare traceback. Fail fast
 # here with the COMPLETE list of missing assets so the fix is obvious.
 _required=[os.path.join(LIB,src) for src,_,_ in tools]+[
+    os.path.join(LIB,src) for src,_ in tool_assets
+]+[
     LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
     LIB+"/01_Six_Week_Curriculum/learning-path.html",
     LIB+"/question_bank.json",
@@ -61,6 +64,8 @@ _abort_missing([p for p in _required if not os.path.exists(p)])
 
 _missing_req=[]
 for src,dst,_ in tools:
+    _copy_required(os.path.join(LIB,src), OUT+"/tools/"+dst, _missing_req)
+for src,dst in tool_assets:
     _copy_required(os.path.join(LIB,src), OUT+"/tools/"+dst, _missing_req)
 _abort_missing(_missing_req)
 
@@ -102,7 +107,6 @@ print("video library:",_vidfound,"of",len(VIDEO_MEDIA),"assets found in _prototy
 
 _missing_req=[]
 _copy_required(LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json", OUT+"/tools/quizzes.json", _missing_req)
-_copy_required(LIB+"/_prototypes/sp-interview/sp-interview.pack.json", OUT+"/tools/sp-interview.pack.json", _missing_req)
 _abort_missing(_missing_req)
 _aud=LIB+"/07_Evidence_and_Reading/Landmark_Trials/audio"
 if os.path.isdir(_aud): shutil.copytree(_aud, OUT+"/audio")
@@ -210,7 +214,7 @@ for src,dst,_ in md:
 # build dir (<OUT>.source-map.json), never inside it — nothing ships. check-static-site.mjs
 # reads it to hard-fail any content-convention markdown in the source tree that the build
 # ignores (the "10 pages dropped at git cutover" failure class).
-_srcmap=sorted({s for s,_,_ in tools}|{s for s,_,_ in md})
+_srcmap=sorted({s for s,_,_ in tools}|{s for s,_ in tool_assets}|{s for s,_,_ in md})
 open(OUT.rstrip("/\\")+".source-map.json","w",encoding="utf-8").write(json.dumps({"sources":_srcmap}))
 
 _tool_titles={d:n for _,d,n in tools}

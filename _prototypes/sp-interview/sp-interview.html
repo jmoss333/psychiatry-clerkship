@@ -10,6 +10,7 @@
 <meta name="description" content="Interview practice with a fictional standardized patient. Educational only; not clinical decision support.">
 <script src="./vendor/react.min.js"></script>
 <script src="./vendor/react-dom.min.js"></script>
+<script src="./sp-interview.voice.js"></script>
 <style>
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
@@ -39,7 +40,7 @@
   .lede{color:var(--text-mid);margin:4px 0 0;max-width:62ch}
   .badge{display:inline-block;font-size:.7rem;font-weight:700;border-radius:var(--radius-pill);padding:4px 12px;vertical-align:middle;min-height:0}
   .badge.draft{background:var(--warning-light);color:var(--warning);border:1px dashed var(--warning)}
-  .badge.mode{background:var(--info-light);color:var(--info);border:1px solid var(--info);cursor:pointer;font:inherit;font-size:.7rem;font-weight:700}
+  .badge.mode{background:var(--info-light);color:var(--info);border:1px solid var(--info);cursor:pointer;font:inherit;font-size:.7rem;font-weight:700;min-height:44px;padding:8px 12px}
   .ribbon{display:flex;align-items:flex-start;gap:10px;margin:var(--sp3) 0 0;padding:var(--sp2) 14px;background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:.83rem;color:var(--accent-dark);line-height:1.5}
   .ribbon .mark{font-family:var(--font-head);font-style:italic;padding-top:1px}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-top:var(--sp3)}
@@ -81,8 +82,20 @@
   .spkchip{display:inline-flex;align-items:center;gap:8px;font-size:.74rem;color:var(--accent-dark);font-weight:600}
   .spkbars{display:inline-flex;align-items:flex-end;gap:2px;height:18px;transition:opacity .3s}
   .spkbars span{width:3px;height:16px;background:var(--accent);border-radius:2px;transform-origin:bottom}
-  .voicebtn{min-height:44px;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-mid);font-weight:600;font-size:.82rem;cursor:pointer;font-family:inherit}
-  .voicebtn.on{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark)}
+  .audiosel{min-height:44px;padding:8px 34px 8px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;font-weight:600;font-size:.82rem}
+  .audiorail{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;padding:9px var(--sp4);border-bottom:1px solid var(--border);background:var(--accent-light);font-size:.76rem;color:var(--accent-dark)}
+  .audiorail .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+  .audiorail .audiohint{color:var(--text-mid)}
+  .audiostatus{font-weight:700}
+  .message-actions{display:flex;gap:8px;margin-top:7px}
+  .message-actions button{min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--accent-dark);font:inherit;font-size:.72rem;font-weight:700;cursor:pointer}
+  .recovery{margin:12px var(--sp3) 0;padding:12px 14px;border:1px solid var(--warning);border-radius:var(--radius-md);background:var(--warning-light);color:var(--warning);font-size:.83rem}
+  .recovery p{margin:0}
+  .recovery .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+  .offline-label{display:inline-flex;align-items:center;border:1px solid var(--warning);border-radius:var(--radius-pill);padding:2px 8px;color:var(--warning);background:var(--warning-light);font-size:.66rem;font-weight:700;margin-left:7px}
+  .consentcopy{font-size:.86rem;color:var(--text-mid);line-height:1.55}
+  .consentcopy ul{padding-left:20px}
+  .consentcopy li{margin:5px 0}
   .chat{display:flex;flex-direction:column;gap:var(--sp2);max-height:52vh;min-height:260px;overflow-y:auto;padding:var(--sp3);background:var(--bg-alt)}
   .msg{max-width:78%;padding:10px 14px;border-radius:var(--radius-md);font-size:.92rem;line-height:1.55;white-space:pre-wrap}
   .msg.pt{align-self:flex-start;background:var(--surface);border:1px solid var(--border)}
@@ -196,10 +209,12 @@
 <body>
 <button class="themebtn" id="themebtn" aria-label="Toggle light/dark theme">◐</button>
 <main class="shell" id="root"></main>
-<div id="live" class="visually-hidden" aria-live="polite"></div>
+<div id="live" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
 <script>
 (function(){
 "use strict";
+var previewConfig=window.__SP_PREVIEW__||{providerMode:'live',endpoint:null,autoOpenSettings:true};
+var MANAGED_AUDIO_BITS_PER_SECOND=32000,MANAGED_RECORDER_TIMESLICE_MS=1000;
 var e=React.createElement, useState=React.useState, useEffect=React.useEffect, useRef=React.useRef;
 function announce(m){try{document.getElementById('live').textContent=m;}catch(x){}}
 
@@ -298,26 +313,55 @@ MockProvider.prototype.respond=function(s,text){
 };
 MockProvider.prototype.evaluate=function(){return Promise.resolve(null);};
 
-function ProxyProvider(endpoint,passcode){this.endpoint=endpoint;this.passcode=passcode;this.mock=new MockProvider();}
+function ProxyProvider(endpoint,passcode,bounds){this.endpoint=endpoint;this.passcode=passcode;this.mock=new MockProvider();this.rapportMin=bounds&&bounds.rapportMin;this.rapportMax=bounds&&bounds.rapportMax;}
 ProxyProvider.prototype.name='Live (proxy)';
 ProxyProvider.prototype.start=function(caseDef,opts){var s=this.mock.start(caseDef,opts);s._live=true;return s;};
-ProxyProvider.prototype.respond=function(s,text){
-  var self=this;
+ProxyProvider.prototype._request=function(body,signal){
+  function cancelled(){var error=new Error('The live patient request was cancelled.');error.code='cancelled';error.status=0;error.retryDisposition='offline-only';return error;}
+  if(signal&&signal.aborted)return Promise.reject(cancelled());
   return fetch(this.endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-student-key':this.passcode},
-    body:JSON.stringify({caseId:s.caseDef.id,turns:s.turns.map(function(t){return{me:t.me,pt:t.pt};}),message:text})})
-  .then(function(r){if(!r.ok)throw new Error('proxy '+r.status);return r.json();})
-  .then(function(j){ s.turns.push({me:text,pt:j.reply,flags:j.state.flags||[],intents:j.state.intents||[],rapport:j.state.rapport});
-    (j.state.intents||[]).forEach(function(i){s.covered[i]=true;}); s.rapport=j.state.rapport;
-    (j.state.unlocked||[]).forEach(function(u){s.unlocked[u]=true;});
-    return j; })
-  .catch(function(err){ announce('Live provider unavailable — falling back to offline patient.');
-    s._fellBack=true; return self.mock.respond(s,text); });
+    body:JSON.stringify(body),signal:signal})
+  .then(function(r){return r.text().then(function(text){
+    var j={}; try{j=text?JSON.parse(text):{};}catch(x){var malformed=new Error('The live patient returned an invalid response.');malformed.code='invalid_response';malformed.status=r.status;malformed.retryDisposition='offline-only';throw malformed;}
+    if(!r.ok){var d=j&&j.error&&typeof j.error==='object'?j.error:{};var err=new Error(d.message||'The live patient is unavailable.');err.code=d.code||'actor_failed';err.status=r.status;err.retryDisposition=j.retryDisposition||'offline-only';throw err;}
+    if(signal&&signal.aborted)throw cancelled();
+    return j;
+  });});
 };
-ProxyProvider.prototype.evaluate=function(s,sa){
-  return fetch(this.endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-student-key':this.passcode},
-    body:JSON.stringify({caseId:s.caseDef.id,mode:'evaluate',turns:s.turns.map(function(t){return{me:t.me,pt:t.pt};}),selfAssess:sa})})
-  .then(function(r){if(!r.ok)throw new Error('proxy '+r.status);return r.json();})
-  .catch(function(){return null;});
+ProxyProvider.prototype._applyState=function(s,j,text,signal){
+  if(signal&&signal.aborted){var cancelled=new Error('The live patient request was cancelled.');cancelled.code='cancelled';cancelled.status=0;cancelled.retryDisposition='offline-only';throw cancelled;}
+  function stringArray(value){return Array.isArray(value)&&value.every(function(item){return typeof item==='string';});}
+  function exactKeys(value,expected){if(!value||typeof value!=='object'||Array.isArray(value))return false;var actual=Object.keys(value).sort();var wanted=expected.slice().sort();return actual.length===wanted.length&&actual.every(function(key,index){return key===wanted[index];});}
+  var st=j&&j.state;
+  var ticketValid=j&&(j.ticket===null||(typeof j.ticket==='string'&&j.ticket.trim()!==''));
+  var valid=!!(exactKeys(j,['reply','state','ticket'])&&typeof j.reply==='string'&&j.reply.trim()!==''&&j.reply.length<=1200&&exactKeys(st,['intents','flags','rapport','unlocked'])&&
+    stringArray(st.intents)&&stringArray(st.flags)&&Number.isSafeInteger(st.rapport)&&
+    Number.isSafeInteger(this.rapportMin)&&Number.isSafeInteger(this.rapportMax)&&
+    st.rapport>=this.rapportMin&&st.rapport<=this.rapportMax&&stringArray(st.unlocked)&&ticketValid);
+  if(!valid){var invalid=new Error('The live patient returned an invalid response.');invalid.code='invalid_response';invalid.status=200;invalid.retryDisposition='offline-only';throw invalid;}
+  var intents=st.intents.slice(),flags=st.flags.slice(),unlocked=st.unlocked.slice(),rapport=st.rapport;
+  var nextTurns=s.turns.slice(),nextCovered=Object.assign({},s.covered),nextUnlocked=Object.assign({},s.unlocked);
+  if(text!==null)nextTurns.push({me:text,pt:j.reply,flags:flags,intents:intents,rapport:rapport});
+  intents.forEach(function(i){nextCovered[i]=true;});
+  unlocked.forEach(function(u){nextUnlocked[u]=true;});
+  s.turns=nextTurns;s.covered=nextCovered;s.rapport=rapport;s.unlocked=nextUnlocked;
+  return {reply:j.reply,ticket:j.ticket};
+};
+ProxyProvider.prototype.open=function(s,context){
+  var self=this,ctx=context||{};
+  return this._request({caseId:s.caseDef.id,mode:'open',encounterId:ctx.encounterId,turnId:0},ctx.signal)
+    .then(function(j){return self._applyState(s,j,null,ctx.signal);});
+};
+ProxyProvider.prototype.respond=function(s,text,context){
+  var self=this,ctx=context||{};
+  return this._request({caseId:s.caseDef.id,mode:'converse',encounterId:ctx.encounterId,turnId:ctx.turnId,
+    turns:s.turns.map(function(t){return{me:t.me,pt:t.pt};}),message:text},ctx.signal)
+    .then(function(j){return self._applyState(s,j,text,ctx.signal);});
+};
+ProxyProvider.prototype.evaluate=function(s,sa,context){
+  var ctx=context||{};
+  return this._request({caseId:s.caseDef.id,mode:'evaluate',encounterId:ctx.encounterId,
+    turns:s.turns.map(function(t){return{me:t.me,pt:t.pt};}),selfAssess:sa},ctx.signal);
 };
 
 /* ============================ Deterministic debrief ============================ */
@@ -374,6 +418,18 @@ function buildNarrative(s,cov,rub){
   return {strengths:strengths.slice(0,2),growth:growth.slice(0,2)};
 }
 
+function isCaseReviewed(caseDef){
+  return !!(caseDef&&caseDef.facultyReview&&caseDef.facultyReview.status==='reviewed');
+}
+function eligibleCases(pack){
+  return (pack&&Array.isArray(pack.cases)?pack.cases:[]).filter(isCaseReviewed);
+}
+function isManagedVoiceEligible(pack,caseDef){
+  return !!(isCaseReviewed(caseDef)&&pack.speechEngine&&pack.speechEngine.enabled===true&&
+    pack.speechEngine.status==='reviewed'&&caseDef.speechProfile&&
+    caseDef.speechProfile.status==='reviewed');
+}
+
 /* ===================== Redesign: pacing, coach, coverage prose ===================== */
 /* Per-persona speech pace, derived from the pack's authored persona.voice field.
    The rhythm is clinical content: pressured speech reveals fast and dense; guarded
@@ -383,23 +439,6 @@ function paceFor(caseDef){
   if(/rapid|pressured|run-on/.test(v)) return {w:75,ch:4,sent:170,cl:60,ell:220,stage:450,caps:140,rate:1.15,anim:'spkflat spkbar',dur:'.45s',label:'pressured, fast',bars:[14,20,17,20,18]};
   if(/pause|halting|careful|tests you/.test(v)) return {w:300,ch:2,sent:1050,cl:520,ell:1650,stage:2100,caps:0,rate:0.85,anim:'spkhalt',dur:'2.1s',label:'halting, careful',bars:[17,5,4,16,5]};
   return {w:260,ch:2,sent:620,cl:280,ell:950,stage:1300,caps:0,rate:0.95,anim:'spkflat',dur:'1.7s',label:'measured, flat',bars:[9,12,10,12,9]};
-}
-function buildSpeechSteps(text,P){
-  var steps=[],acc='';
-  text.split(/(\*[^*]+\*)/).forEach(function(part){ if(!part||!part.trim())return;
-    if(/^\*[^*]+\*$/.test(part)){ acc=(acc?acc+' ':'')+part; steps.push({text:acc,delay:P.stage,hold:true}); return; }
-    var words=part.split(/\s+/).filter(Boolean);
-    for(var i=0;i<words.length;i+=P.ch){ var chunk=words.slice(i,i+P.ch).join(' ');
-      acc=(acc?acc+' ':'')+chunk;
-      var d=Math.min(P.ch,words.length-i)*P.w;
-      if(/(\.\.\.|…)/.test(chunk))d+=P.ell;
-      else if(/[.!?]["”]?$/.test(chunk))d+=P.sent;
-      else if(/[,;:—–]$/.test(chunk))d+=P.cl;
-      if(P.caps&&/\b[A-Z]{3,}\b/.test(chunk))d+=P.caps;
-      steps.push({text:acc,delay:d,hold:d>=600});
-    }
-  });
-  return steps;
 }
 /* Adaptive coach: process before content, stakes before list order, escalating specificity. */
 function getCoach(sess){
@@ -453,66 +492,166 @@ function App(){
   var enc=useState(null); var E=enc[0],setE=enc[1];
   var inp=useState(''); var input=inp[0],setInput=inp[1];
   var sa=useState({a:'',b:'',c:''}); var SA=sa[0],setSA=sa[1];
-  var mode=useState('live'); var provMode=mode[0],setProvMode=mode[1];
+  var mode=useState(previewConfig.providerMode); var provMode=mode[0],setProvMode=mode[1];
   var busy=useState(false); var isBusy=busy[0],setBusy=busy[1];
   var shs=useState(false); var showSettings=shs[0],setShowSettings=shs[1];
   var cfs=useState(null); var cfg=cfs[0],setCfg=cfs[1];
-  var vm=useState(function(){try{return localStorage.getItem('cw_sp_voice')==='1';}catch(x){return false;}}); var voiceMode=vm[0],setVoiceMode=vm[1];
-  var lis=useState(false); var listening=lis[0],setListening=lis[1];
-  var spkS=useState(null); var spk=spkS[0],setSpk=spkS[1];       // {idx,text,pausing}
+  var vm=useState(function(){try{var saved=localStorage.getItem('cw_sp_voice_mode_v2');if(saved==='off'||saved==='device')return saved;if(saved==='managed')return'off';var legacy=localStorage.getItem('cw_sp_voice');localStorage.removeItem('cw_sp_voice');return legacy==='1'?'device':'off';}catch(x){return'off';}}); var voiceMode=vm[0],setVoiceMode=vm[1];
+  var vh=useState({status:'idle',data:null,mimeType:null}); var voiceHealth=vh[0],setVoiceHealth=vh[1];
+  var vc=useState(false); var showVoiceConsent=vc[0],setShowVoiceConsent=vc[1];
+  var ai=useState(null); var actorIssue=ai[0],setActorIssue=ai[1];
+  var pt=useState(null); var pendingTranscript=pt[0],setPendingTranscript=pt[1];
+  var os=useState(false); var offlineSession=os[0],setOfflineSession=os[1];
   var soS=useState(false); var stepOut=soS[0],setStepOut=soS[1];
-  var chatRef=useRef(null), recRef=useRef(null), spkTimer=useRef(null), returnRef=useRef(null), doorRef=useRef(null);
-  var SR=(typeof window!=='undefined')&&(window.SpeechRecognition||window.webkitSpeechRecognition);
-  var ttsOK=(typeof window!=='undefined')&&('speechSynthesis' in window);
-  var voiceSupported=!!(SR||ttsOK);
-
-  function cancelSpeech(){ if(spkTimer.current){clearTimeout(spkTimer.current);spkTimer.current=null;} setSpk(null); if(ttsOK){try{window.speechSynthesis.cancel();}catch(x){}} }
-  function speak(idx,text,cd){
-    if(!voiceMode||!text)return;
-    var base=cd||(E&&E.caseDef); if(!base)return;
-    var P=paceFor(base);
-    if(ttsOK){try{ window.speechSynthesis.cancel();
-      var clean=String(text).replace(/\*[^*]*\*/g,' ').replace(/\s+/g,' ').trim();
-      if(clean){ var u=new SpeechSynthesisUtterance(clean); u.rate=P.rate; u.pitch=1; u.lang='en-US'; window.speechSynthesis.speak(u); } }catch(x){}}
-    var steps=buildSpeechSteps(text,P), k=0;
-    if(spkTimer.current)clearTimeout(spkTimer.current);
-    (function run(){ if(k>=steps.length){setSpk(null);return;}
-      var s=steps[k++]; setSpk({idx:idx,text:s.text,pausing:!!s.hold});
-      spkTimer.current=setTimeout(run,s.delay);
-    })();
+  var chatRef=useRef(null), returnRef=useRef(null), doorRef=useRef(null), consentRef=useRef(null), voiceModeRef=useRef(null), passcodeRef=useRef(null), composerRef=useRef(null), limitEndRef=useRef(null), selfAssessRef=useRef(null), dictationRef=useRef({active:false,edited:false}), evaluationAbortRef=useRef(null), providerCheckRef=useRef({generation:0,abort:null}), healthRequestRef=useRef({generation:0,abort:null}), providerModeRef=useRef(provMode), voiceRuntimeRef=useRef({mimeType:null,transport:null,caseId:null,caseDef:null,consentIdentity:''});
+  providerModeRef.current=provMode;
+  var voiceControllerRef=useRef(null);
+  if(!voiceControllerRef.current){
+    voiceControllerRef.current=window.SPInterviewVoice.createController({
+      getMimeType:function(){return voiceRuntimeRef.current.mimeType;},
+      createRecorder:function(options){
+        var media=null,stream=null,stopped=false,released=false,pendingStop=false,tracksReleased=false;
+        function releaseTracks(){if(!stream||tracksReleased)return;tracksReleased=true;stream.getTracks().forEach(function(track){try{track.stop();}catch(x){}});}
+        return {
+          start:function(){
+            if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=='function'){options.onError(new Error('Microphone access is unavailable.'));return;}
+            navigator.mediaDevices.getUserMedia({audio:true}).then(function(nextStream){
+              stream=nextStream;if(released||stopped){releaseTracks();return;}
+              try{media=new MediaRecorder(stream,{mimeType:options.mimeType,audioBitsPerSecond:MANAGED_AUDIO_BITS_PER_SECOND});}catch(error){releaseTracks();options.onError(error);return;}
+              media.ondataavailable=function(ev){if(ev.data&&ev.data.size)options.onChunk(ev.data);};
+              media.onerror=function(ev){options.onError(ev.error||new Error('Recording failed.'));};
+              media.onstop=function(){options.onStop();};
+              media.start(MANAGED_RECORDER_TIMESLICE_MS);if(pendingStop&&media.state!=='inactive')media.stop();
+            }).catch(options.onError);
+          },
+          stop:function(){pendingStop=true;if(media&&media.state!=='inactive')media.stop();},
+          cancel:function(){stopped=true;if(media){media.onstop=null;try{if(media.state!=='inactive')media.stop();}catch(x){}}releaseTracks();},
+          release:function(){released=true;releaseTracks();media=null;stream=null;}
+        };
+      },
+      transcribe:function(args){var rt=voiceRuntimeRef.current;if(!rt.transport)return Promise.reject(new Error('Managed transcription is unavailable.'));return rt.transport.transcribe(Object.assign({},args,{caseId:rt.caseId}));},
+      synthesize:function(args){var rt=voiceRuntimeRef.current;if(!rt.transport)return Promise.reject(new Error('Managed speech is unavailable.'));return rt.transport.synthesize(args);},
+      createObjectURL:function(audio,mimeType){return URL.createObjectURL(audio instanceof Blob?audio:new Blob([audio],{type:mimeType||'audio/mpeg'}));},
+      revokeObjectURL:function(url){URL.revokeObjectURL(url);},
+      createPlayer:function(options){var audio=new Audio(options.url);audio.onended=options.onEnded;audio.onerror=function(){options.onError(new Error('Audio playback was blocked or failed.'));};return{play:function(){return audio.play();},stop:function(){audio.pause();audio.currentTime=0;},destroy:function(){audio.onended=null;audio.onerror=null;audio.removeAttribute('src');audio.load();}};},
+      deviceSpeak:function(options){
+        if(!('speechSynthesis' in window)||typeof window.SpeechSynthesisUtterance!=='function')throw new Error('Device voice is unavailable.');
+        var utterance=new window.SpeechSynthesisUtterance(options.text),ended=false,base=voiceRuntimeRef.current.caseDef;
+        utterance.rate=base?paceFor(base).rate:1;utterance.lang='en-US';
+        utterance.onend=function(){if(!ended){ended=true;options.onEnded();}};
+        utterance.onerror=function(ev){if(!ended){ended=true;options.onError(ev.error||new Error('Device voice failed.'));}};
+        window.speechSynthesis.cancel();window.speechSynthesis.speak(utterance);
+        return{stop:function(){ended=true;window.speechSynthesis.cancel();},destroy:function(){utterance.onend=null;utterance.onerror=null;}};
+      }
+    });
   }
-  function toggleVoice(){ var nx=!voiceMode; setVoiceMode(nx); try{localStorage.setItem('cw_sp_voice',nx?'1':'0');}catch(x){}
-    if(!nx){cancelSpeech();setListening(false);} announce(nx?'Voice mode on — patient speech is mirrored as paced text; text stays the record.':'Voice mode off.'); }
-  function startListening(){ if(!SR||listening)return; var rec; try{rec=new SR();}catch(x){return;} recRef.current=rec;
-    cancelSpeech();
-    rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1; setListening(true);
-    announce('Listening — take your time. Your words appear in the text box; nothing sends until you press Say it.');
-    rec.onresult=function(ev){ try{ var t=ev.results[0][0].transcript; setInput(function(p){return p?(p+' '+t):t;}); }catch(x){} };
-    rec.onerror=function(){ setListening(false); }; rec.onend=function(){ setListening(false); announce('Mic off — review your words, then press Say it.'); };
-    try{rec.start();}catch(x){ setListening(false); } }
-  function stopListening(){ try{ if(recRef.current)recRef.current.stop(); }catch(x){} setListening(false); }
+  var vs=useState(voiceControllerRef.current.getSnapshot()); var voiceState=vs[0],setVoiceState=vs[1];
+  var listening=voiceState.phase==='listening';
+
+  function voiceEndpointFor(endpoint){return String(endpoint||'').replace(/\/+$/,'')+'/voice';}
+  function selectedMediaType(health){
+    if(!health||!Array.isArray(health.acceptedMediaTypes)||typeof MediaRecorder==='undefined'||typeof MediaRecorder.isTypeSupported!=='function')return null;
+    var preferred=['audio/webm;codecs=opus','audio/ogg;codecs=opus','audio/webm','audio/ogg','audio/wav'];
+    for(var i=0;i<preferred.length;i++){if(health.acceptedMediaTypes.indexOf(preferred[i])>=0&&MediaRecorder.isTypeSupported(preferred[i]))return preferred[i];}
+    return null;
+  }
+  function managedEligible(caseDef){
+    var health=voiceHealth.data,profile=caseDef&&caseDef.speechProfile;
+    var listed=!!(health&&Array.isArray(health.eligibleProfiles)&&profile&&health.eligibleProfiles.some(function(item){return !!(item&&item.caseId===caseDef.id&&item.profileId===profile.id&&item.profileVersion===profile.profileVersion); }));
+    return !!(isManagedVoiceEligible(S.pack,caseDef)&&health&&health.enabled===true&&health.acceptingVoice===true&&voiceHealth.mimeType&&listed);
+  }
+  function managedAvailable(){return !!(S.pack&&eligibleCases(S.pack).some(managedEligible));}
+  function normalizedEndpoint(endpoint){return String(endpoint||'').trim().replace(/\/+$/,'');}
+  function reviewedConsentIdentity(endpoint,health){var stack=health&&health.activeStack,t=stack&&stack.transcription,s=stack&&stack.synthesis;if(!stack||!t||!s)return'';return JSON.stringify([normalizedEndpoint(endpoint),stack.id,t.provider,t.model,s.provider,s.model]);}
+  function consentKey(){var se=S.pack&&S.pack.speechEngine,privacy=se&&se.privacyReview,controls=privacy&&privacy.accountControls;return privacy&&voiceRuntimeRef.current.consentIdentity&&controls?privacy.consentVersion+'|'+voiceRuntimeRef.current.consentIdentity+'|'+JSON.stringify([controls.provider,controls.zeroRetentionEntitled]):'';}
+  function managedConsentValid(){var accepted='';try{accepted=localStorage.getItem('cw_sp_voice_consent_v1')||'';}catch(x){}return !!(readPasscode()&&managedAvailable()&&consentKey()&&accepted===consentKey());}
+  function persistVoiceMode(next){
+    var interrupted=isBusy&&E?E.msgs.filter(function(message){return message.who==='me';}).slice(-1)[0]:null;
+    setVoiceMode(next);try{localStorage.setItem('cw_sp_voice_mode_v2',next);}catch(x){}
+    if(voiceControllerRef.current.getSnapshot().phase!=='ended')voiceControllerRef.current.setMode(next);
+    if(isBusy&&E){setBusy(false);setActorIssue({kind:interrupted?'converse':'open',text:interrupted?interrupted.text:'',error:{code:'actor_cancelled',message:'The in-progress patient reply was cancelled when room audio changed.',retryDisposition:'offline-only'}});}
+    announce(next==='off'?'Room audio off.':next==='device'?'Device voice selected. Patient text remains complete.':'Managed voice selected. Review every dictated draft before sending.');
+  }
+  function chooseVoiceMode(next){
+    if(next==='managed'){
+      if(S.screen!=='select'){setShowVoiceConsent(false);announce('Choose managed voice before entering the room. Your current audio setting is unchanged.');return;}
+      if(!managedAvailable())return;
+      if(!managedConsentValid()){setShowSettings(false);setShowVoiceConsent(true);return;}
+    }
+    persistVoiceMode(next);
+  }
+  function restoreVoiceModeFocus(){setTimeout(function(){if(voiceModeRef.current)try{voiceModeRef.current.focus();}catch(x){}},0);}
+  function closeManagedConsent(){setShowVoiceConsent(false);persistVoiceMode('off');restoreVoiceModeFocus();}
+  function acceptManagedConsent(){
+    var key=consentKey();
+    if(S.screen!=='select'||providerModeRef.current!=='live'||!readPasscode()||!key||!managedAvailable()){
+      setShowVoiceConsent(false);persistVoiceMode('off');restoreVoiceModeFocus();announce('Managed voice is no longer available. Voice remains off; typing is ready.');return;
+    }
+    try{localStorage.setItem('cw_sp_voice_consent_v1',key);}catch(x){}
+    setShowVoiceConsent(false);persistVoiceMode('managed');restoreVoiceModeFocus();
+  }
+  function startListening(){if(!managedConsentValid()){dictationRef.current={active:false,edited:false};setShowVoiceConsent(false);persistVoiceMode('off');announce('Managed voice is no longer available. Voice is off, and typing remains ready.');return;}dictationRef.current={active:true,edited:false};setPendingTranscript(null);try{var controller=voiceControllerRef.current;if(controller.getSnapshot().phase==='speaking')controller.stopPlayback();controller.setDraft(input);controller.startListening();}catch(error){dictationRef.current={active:false,edited:false};announce(error.message||'Microphone unavailable.');}}
+  function stopListening(){var result=voiceControllerRef.current.stopListening();if(result&&typeof result.then==='function')result.then(function(){announce('Mic off. Review your words, then press Say it.');}).catch(function(error){dictationRef.current={active:false,edited:false};announce(error.message||'Transcription failed.');});}
 
   function clearLegacyPasscode(){ try{localStorage.removeItem('cw_sp_passcode');}catch(x){} }
   function readPasscode(){ try{return sessionStorage.getItem('cw_sp_passcode')||'';}catch(x){return '';} }
   function writePasscode(v){ try{ if(v){sessionStorage.setItem('cw_sp_passcode',v);} else{sessionStorage.removeItem('cw_sp_passcode');} }catch(x){} }
-  function loadCfg(){ var ep=''; clearLegacyPasscode();
-    try{ep=localStorage.getItem('cw_sp_endpoint')||'https://sp-interview-proxy.netlify.app/api/sp';}catch(x){}
+  function refreshVoiceHealth(endpoint,key){
+    var generation=healthRequestRef.current.generation+1;
+    if(healthRequestRef.current.abort)try{healthRequestRef.current.abort.abort();}catch(x){}
+    var abortController=typeof AbortController!=='undefined'?new AbortController():null;
+    healthRequestRef.current={generation:generation,abort:abortController};
+    voiceRuntimeRef.current.mimeType=null;voiceRuntimeRef.current.transport=null;voiceRuntimeRef.current.consentIdentity='';
+    if(!endpoint||!key||providerModeRef.current!=='live'){setVoiceHealth({status:'unavailable',data:null,mimeType:null});return Promise.resolve(null);}
+    setVoiceHealth({status:'checking',data:null,mimeType:null});
+    return fetch(voiceEndpointFor(endpoint),{headers:{'x-student-key':key||''},cache:'no-store',signal:abortController?abortController.signal:undefined})
+      .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error('voice '+r.status);return j;});})
+      .then(function(health){if(healthRequestRef.current.generation!==generation||(abortController&&abortController.signal.aborted))return null;var mime=selectedMediaType(health);voiceRuntimeRef.current.mimeType=mime;voiceRuntimeRef.current.transport=window.SPInterviewVoice.createManagedTransport({voiceEndpoint:voiceEndpointFor(endpoint),getStudentKey:readPasscode});voiceRuntimeRef.current.consentIdentity=reviewedConsentIdentity(endpoint,health);setVoiceHealth({status:'ready',data:health,mimeType:mime});healthRequestRef.current.abort=null;return health;})
+      .catch(function(){if(healthRequestRef.current.generation===generation){voiceRuntimeRef.current.mimeType=null;voiceRuntimeRef.current.transport=null;voiceRuntimeRef.current.consentIdentity='';setVoiceHealth({status:'unavailable',data:null,mimeType:null});healthRequestRef.current.abort=null;}return null;});
+  }
+  function loadCfg(){ var ep=previewConfig.endpoint===null?'https://sp-interview-proxy.netlify.app/api/sp':previewConfig.endpoint; clearLegacyPasscode();
+    try{ep=localStorage.getItem('cw_sp_endpoint')||ep;}catch(x){}
     return {ep:ep,pc:readPasscode(),msg:''}; }
   function openSettings(){ setCfg(loadCfg()); setShowSettings(true); }
-  function saveAndTest(){
-    var ep=(cfg.ep||'').trim();
-    try{localStorage.setItem('cw_sp_endpoint',ep);}catch(x){}
-    writePasscode(cfg.pc||'');
-    setCfg(Object.assign({},cfg,{msg:'Testing…'}));
-    fetch(ep,{headers:{'x-student-key':cfg.pc||''}})
-      .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j,status:r.status};});})
-      .then(function(res){setCfg(function(c){return Object.assign({},c,{msg:res.ok?('✓ Connected — pack v'+res.j.packVersion+' ('+res.j.packStatus+'), actor '+res.j.actorModel):('✗ '+(res.j&&res.j.error?res.j.error:('HTTP '+res.status)))});});})
-      .catch(function(err){setCfg(function(c){return Object.assign({},c,{msg:'✗ Could not reach endpoint ('+err.message+')'});});});
+  function cancelProviderCheck(){
+    var generation=providerCheckRef.current.generation+1;
+    if(providerCheckRef.current.abort)try{providerCheckRef.current.abort.abort();}catch(x){}
+    providerCheckRef.current={generation:generation,abort:null};
   }
-  function clearPasscode(){ writePasscode(''); clearLegacyPasscode();
+  function saveAndTest(){
+    var ep=(cfg.ep||'').trim(),pc=cfg.pc||'',generation=providerCheckRef.current.generation+1;
+    if(providerCheckRef.current.abort)try{providerCheckRef.current.abort.abort();}catch(x){}
+    var abortController=typeof AbortController!=='undefined'?new AbortController():null;
+    providerCheckRef.current={generation:generation,abort:abortController};
+    try{localStorage.setItem('cw_sp_endpoint',ep);}catch(x){}
+    writePasscode(pc);setShowVoiceConsent(false);if(voiceMode==='managed')persistVoiceMode('off');
+    refreshVoiceHealth('', '');
+    setCfg(Object.assign({},cfg,{msg:'Testing…'}));
+    fetch(ep,{headers:{'x-student-key':pc},cache:'no-store',signal:abortController?abortController.signal:undefined})
+      .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j,status:r.status};});})
+      .then(function(res){
+        if(providerCheckRef.current.generation!==generation||(abortController&&abortController.signal.aborted)||providerModeRef.current!=='live')return null;
+        providerCheckRef.current.abort=null;
+        var detail=res.j&&res.j.error,setupError=typeof detail==='string'?detail:detail&&typeof detail.message==='string'?detail.message:'HTTP '+res.status;
+        setCfg(function(c){return Object.assign({},c,{msg:res.ok?('✓ Connected — pack v'+res.j.packVersion+' ('+res.j.packStatus+'), actor '+res.j.actorModel):('✗ '+setupError)});});
+        if(res.ok){if(E&&E.provider&&('passcode' in E.provider)){E.provider.endpoint=ep;E.provider.passcode=pc;}setActorIssue(function(issue){var auth=issue&&issue.error&&(issue.error.status===401||issue.error.code==='unauthorized');return auth?Object.assign({},issue,{authRecovered:true,error:Object.assign({},issue.error,{message:'Connection restored. Restart this room before sending another live turn.'})}):issue;});return refreshVoiceHealth(ep,pc);}return null;
+      })
+      .catch(function(err){if(providerCheckRef.current.generation!==generation||(abortController&&abortController.signal.aborted))return;providerCheckRef.current.abort=null;setCfg(function(c){return Object.assign({},c,{msg:'✗ Could not reach endpoint ('+err.message+')'});});});
+  }
+  function clearPasscode(){ cancelProviderCheck();writePasscode(''); clearLegacyPasscode();setShowVoiceConsent(false);if(voiceMode==='managed')persistVoiceMode('off');
     if(E&&E.provider&&('passcode' in E.provider)){E.provider.passcode='';}
+    refreshVoiceHealth('', '');
     setCfg(function(c){return Object.assign({},c,{pc:'',msg:'Passcode cleared for this browser tab.'});});
     announce('Passcode cleared for this browser tab.'); }
+  function trapDialogKey(ev,onEscape){
+    if(ev.key==='Escape'){ev.preventDefault();onEscape();return;}
+    if(ev.key!=='Tab')return;
+    var nodes=Array.prototype.slice.call(ev.currentTarget.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'));
+    if(!nodes.length){ev.preventDefault();return;}
+    var first=nodes[0],last=nodes[nodes.length-1],active=document.activeElement;
+    if(ev.shiftKey&&(active===first||active===ev.currentTarget)){ev.preventDefault();last.focus();}
+    else if(!ev.shiftKey&&active===last){ev.preventDefault();first.focus();}
+  }
 
   useEffect(function(){
     if(window.__SP_PACK__){setS({screen:'select',pack:window.__SP_PACK__,err:null});return;}
@@ -521,9 +660,41 @@ function App(){
       .then(function(p){setS({screen:'select',pack:p,err:null});})
       .catch(function(x){setS({screen:'loading',pack:null,err:'Could not load sp-interview.pack.json ('+x.message+'). Serve this folder over http, or open sp-interview.preview.html.'});});
   },[]);
-  useEffect(function(){ clearLegacyPasscode(); if(provMode==='live'&&!readPasscode()){openSettings();} },[]);
+  useEffect(function(){
+    var controller=voiceControllerRef.current;
+    var unsubscribe=controller.subscribe(setVoiceState);
+    if(voiceMode==='off'||voiceMode==='device')controller.setMode(voiceMode);
+    return function(){cancelProviderCheck();if(evaluationAbortRef.current)try{evaluationAbortRef.current.abort();}catch(x){}if(healthRequestRef.current.abort)try{healthRequestRef.current.abort.abort();}catch(x){}unsubscribe();controller.destroy();};
+  },[]);
+  useEffect(function(){
+    if(voiceState.phase==='ready'&&dictationRef.current.active){
+      if(dictationRef.current.edited)setPendingTranscript(voiceState.draft);else setInput(voiceState.draft);
+      dictationRef.current={active:false,edited:false};return;
+    }
+    if(voiceState.phase==='error'||voiceState.phase==='ended')dictationRef.current={active:false,edited:false};
+  },[voiceState.phase,voiceState.draft]);
+  useEffect(function(){
+    if(S.screen!=='encounter'||!E)return;
+    var message=voiceState.notice?voiceState.notice.message:voiceState.phase==='listening'?'Listening. Your words will appear as an editable draft and will not send automatically.':
+      voiceState.phase==='transcribing'?'Turning speech into an editable draft.':
+      voiceState.phase==='awaiting_patient'?E.caseDef.persona.displayName+' is thinking.':null;
+    if(message)announce(message);
+  },[voiceState.phase,voiceState.notice&&voiceState.notice.code]);
+  useEffect(function(){
+    if(!S.pack)return;
+    if(provMode!=='live'){refreshVoiceHealth('', '');return;}
+    var loaded=loadCfg();refreshVoiceHealth(loaded.ep,loaded.pc);
+  },[S.pack,provMode]);
+  useEffect(function(){ clearLegacyPasscode(); if(previewConfig.autoOpenSettings&&provMode==='live'&&!readPasscode()){openSettings();} },[]);
   useEffect(function(){ if(chatRef.current){chatRef.current.scrollTop=chatRef.current.scrollHeight;} });
   useEffect(function(){ if(stepOut&&returnRef.current){try{returnRef.current.focus();}catch(x){}} },[stepOut]);
+  useEffect(function(){ if(showVoiceConsent&&consentRef.current){try{consentRef.current.focus();}catch(x){}} },[showVoiceConsent]);
+  useEffect(function(){if(showSettings&&passcodeRef.current){try{passcodeRef.current.focus();}catch(x){}}},[showSettings]);
+  useEffect(function(){if(S.screen==='encounter'&&composerRef.current){try{composerRef.current.focus();}catch(x){}}else if(S.screen==='selfassess'&&selfAssessRef.current){try{selfAssessRef.current.focus();}catch(x){}}},[S.screen,E&&E.encounterId]);
+  useEffect(function(){
+    var last=E&&E.msgs&&E.msgs[E.msgs.length-1],limit=S.pack&&S.pack.engine&&(S.pack.engine.maxTurns||40);
+    if(S.screen==='encounter'&&last&&last.who==='pt'&&E.session.turns.length>=limit&&limitEndRef.current){try{limitEndRef.current.focus();}catch(x){}}
+  },[S.screen,E&&E.msgs&&E.msgs.length]);
   useEffect(function(){
     var b=document.getElementById('themebtn');
     if(!b)return; var h=function(){var cur=document.documentElement.getAttribute('data-theme');var nx=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',nx);try{localStorage.setItem('cw_theme',nx);}catch(x){}};
@@ -534,47 +705,111 @@ function App(){
     if(provMode==='live'){
       var ep=null; try{ep=localStorage.getItem('cw_sp_endpoint');}catch(x){}
       var pc=readPasscode();
-      if(ep){return new ProxyProvider(ep,pc||'');}
-      announce('Live endpoint not configured; using offline patient.');
+      if(ep){return new ProxyProvider(ep,pc||'',{rapportMin:S.pack.engine.rapportMin,rapportMax:S.pack.engine.rapportMax});}
+      openSettings();announce('Set up the live patient before beginning, or explicitly choose Mock patient.');return null;
     }
     return new MockProvider();
   }
+  function cancelEvaluation(){if(evaluationAbortRef.current)try{evaluationAbortRef.current.abort();}catch(x){}evaluationAbortRef.current=null;}
+  function acceptRenderedReply(result){
+    return voiceControllerRef.current.acceptPatientReply(result).catch(function(){return null;});
+  }
+  function publishPatientReply(result,isOffline){
+    setE(function(prev){if(!prev)return prev;return Object.assign({},prev,{msgs:prev.msgs.concat([{who:'pt',text:result.reply,turnId:result.turnId,offline:!!isOffline}])});});
+    announce((E&&E.caseDef?E.caseDef.persona.displayName:'Patient')+' replied: '+result.reply);
+    setBusy(false);setActorIssue(null);
+    setTimeout(function(){
+      acceptRenderedReply(result);
+      var limit=S.pack&&S.pack.engine&&(S.pack.engine.maxTurns||40),atLimit=E&&E.session.turns.length>=limit;
+      if(S.screen==='encounter'&&!atLimit&&composerRef.current){try{composerRef.current.focus();}catch(x){}}
+    },0);
+  }
+  function runOpening(provider,session,isOffline){
+    setBusy(true);
+    return voiceControllerRef.current.requestOpening({runActor:function(ctx){
+      if(typeof provider.open==='function')return provider.open(session,ctx);
+      return Promise.resolve({reply:session.caseDef.persona.opening,ticket:null});
+    }}).then(function(result){publishPatientReply(result,isOffline);return result;}).catch(function(error){
+      if(error&&error.code==='cancelled')return null;
+      setBusy(false);setActorIssue({kind:'open',text:'',error:error});return null;
+    });
+  }
   function begin(caseDef,difficulty){
-    cancelSpeech();
-    var p=makeProvider(); var sess=p.start(caseDef,{difficulty:difficulty});
+    if(voiceMode==='managed'&&!managedEligible(caseDef)){setShowVoiceConsent(false);announce('Managed voice is not approved for this case. Choose Voice off or Device voice to begin.');return;}
+    if(voiceMode==='managed'&&!managedConsentValid()){setShowVoiceConsent(true);announce('Review managed voice consent before entering the room.');return;}
+    cancelEvaluation();setShowSettings(false);setShowVoiceConsent(false);
+    var p=makeProvider();if(!p)return;
+    var encounterId;
+    try{encounterId=window.SPInterviewVoice.createEncounterId();}catch(error){announce('This browser cannot create a private room identifier.');return;}
+    voiceControllerRef.current.cancelAll('A new room was selected.');voiceControllerRef.current.beginEncounter(encounterId);
+    if(voiceControllerRef.current.getSnapshot().mode!==voiceMode)voiceControllerRef.current.setMode(voiceMode==='managed'&&managedEligible(caseDef)?'managed':voiceMode==='device'?'device':'off');
+    voiceRuntimeRef.current.caseId=caseDef.id;voiceRuntimeRef.current.caseDef=caseDef;
+    var sess=p.start(caseDef,{difficulty:difficulty,encounterId:encounterId});
     setE({provider:p,session:sess,caseDef:caseDef,difficulty:difficulty,
-          msgs:[{who:'pt',text:caseDef.persona.opening}],phiHold:null,feedback:null});
-    setSA({a:'',b:'',c:''}); setStepOut(false); setInput('');
+          encounterId:encounterId,msgs:[],phiHold:null,feedback:null});
+    setSA({a:'',b:'',c:''});setActorIssue(null);setPendingTranscript(null);dictationRef.current={active:false,edited:false};setOfflineSession(p instanceof MockProvider);setStepOut(false);setInput('');
     setS(Object.assign({},S,{screen:'encounter'}));
     announce('Encounter started with '+caseDef.persona.displayName+', '+difficulty+' mode.');
-    if(voiceMode)setTimeout(function(){speak(0,caseDef.persona.opening,caseDef);},50);
+    runOpening(p,sess,p instanceof MockProvider);
   }
   function send(force){
     var text=input.trim(); if(!text||isBusy)return;
+    if(text.length>1200){announce('Draft is over the 1200-character limit. Shorten it before sending.');return;}
     if(!force&&looksLikePhi(text)){ setE(Object.assign({},E,{phiHold:text})); return; }
-    cancelSpeech(); stopListening();
-    setBusy(true); setInput('');
+    voiceControllerRef.current.stopPlayback();
+    try{voiceControllerRef.current.setDraft(text);}catch(x){return;}
+    setBusy(true);setActorIssue(null);setPendingTranscript(null);setInput('');
     var msgs=E.msgs.concat([{who:'me',text:text}]);
     setE(Object.assign({},E,{msgs:msgs,phiHold:null}));
-    E.provider.respond(E.session,text).then(function(r){
-      var idx=null;
-      setE(function(prev){ var m2=prev.msgs.concat([{who:'pt',text:r.reply}]); idx=m2.length-1; return Object.assign({},prev,{msgs:m2}); });
-      announce(E.caseDef.persona.displayName+' replied: '+r.reply);
-      setBusy(false);
-      if(voiceMode)setTimeout(function(){speak(idx,r.reply);},30);
-      if(E.session.turns.length>=(S.pack.engine.maxTurns||40)){endEncounter();}
-    });
+    voiceControllerRef.current.submitTurn({runActor:function(ctx){return E.provider.respond(E.session,text,ctx);}}).then(function(r){
+      publishPatientReply(r,offlineSession);
+    }).catch(function(error){if(error&&error.code==='cancelled')return;setBusy(false);setActorIssue({kind:'converse',text:text,error:error});});
   }
+  function retryActor(){
+    if(!actorIssue||!actorIssue.error||actorIssue.error.retryDisposition!=='same-operation'||!E)return;
+    var issue=actorIssue;setActorIssue(null);voiceControllerRef.current.cancelAll('Retry requested.');
+    if(issue.kind==='open'){runOpening(E.provider,E.session,offlineSession);return;}
+    try{voiceControllerRef.current.setDraft(issue.text);}catch(x){return;}
+    setBusy(true);setInput('');
+    voiceControllerRef.current.submitTurn({runActor:function(ctx){return E.provider.respond(E.session,issue.text,ctx);}})
+      .then(function(result){publishPatientReply(result,offlineSession);})
+      .catch(function(error){if(error&&error.code==='cancelled')return;setBusy(false);setActorIssue({kind:'converse',text:issue.text,error:error});});
+  }
+  function restartAfterAuth(){if(!actorIssue||!actorIssue.authRecovered||!E)return;var caseDef=E.caseDef,difficulty=E.difficulty;setActorIssue(null);begin(caseDef,difficulty);}
+  function continueOffline(){
+    if(!actorIssue||!E)return;
+    var issue=actorIssue,prior=E.session.turns.slice(),mock=new MockProvider(),session=mock.start(E.caseDef,{difficulty:E.difficulty,encounterId:E.encounterId});
+    session.stepOuts=E.session.stepOuts||0;session.hintUses=E.session.hintUses||0;
+    var replay=Promise.resolve();prior.forEach(function(turn){replay=replay.then(function(){return mock.respond(session,turn.me).then(function(){session.turns[session.turns.length-1].pt=turn.pt;});});});
+    setActorIssue(null);setOfflineSession(true);voiceControllerRef.current.cancelAll('Offline simulation selected.');setBusy(true);
+    replay.then(function(){
+      setE(function(prev){return Object.assign({},prev,{provider:mock,session:session});});
+      if(issue.kind==='open')return runOpening(mock,session,true);
+      voiceControllerRef.current.setDraft(issue.text);
+      return voiceControllerRef.current.submitTurn({runActor:function(){return mock.respond(session,issue.text);}})
+        .then(function(result){publishPatientReply(result,true);});
+    }).catch(function(error){setBusy(false);setActorIssue({kind:issue.kind,text:issue.text,error:error});});
+  }
+  function resolveVoiceFallback(choice){try{voiceControllerRef.current.resolveFallback(choice);if(choice==='text'){setVoiceMode('off');try{localStorage.setItem('cw_sp_voice_mode_v2','off');}catch(x){}}else{setVoiceMode('device');try{localStorage.setItem('cw_sp_voice_mode_v2','device');}catch(x){}}}catch(x){}}
   function openDoor(){ E.session.stepOuts=(E.session.stepOuts||0)+1; E.session.hintUses=(E.session.hintUses||0)+1;
-    cancelSpeech(); setStepOut(true); announce('Stepped out. '+E.caseDef.persona.displayName+' waits.'); }
+    var interrupted=isBusy?E.msgs.filter(function(message){return message.who==='me';}).slice(-1)[0]:null;
+    voiceControllerRef.current.cancelAll('The learner stepped out.');setBusy(false);
+    if(isBusy)setActorIssue({kind:interrupted?'converse':'open',text:interrupted?interrupted.text:'',error:{code:'actor_cancelled',message:'The in-progress patient reply was cancelled when you stepped out.',retryDisposition:'offline-only'}});
+    setStepOut(true); announce('Stepped out. '+E.caseDef.persona.displayName+' waits.'); }
   function closeDoor(){ setStepOut(false); announce('Back in the room.');
     setTimeout(function(){ if(doorRef.current)try{doorRef.current.focus();}catch(x){} },30); }
-  function endEncounter(){ cancelSpeech(); stopListening(); setStepOut(false);
+  function endEncounter(){ setShowVoiceConsent(false);setPendingTranscript(null);dictationRef.current={active:false,edited:false};voiceControllerRef.current.endEncounter();setBusy(false); setStepOut(false);
     setS(Object.assign({},S,{screen:'selfassess'})); announce('Encounter ended. Your read comes before any feedback.'); }
   function toDebrief(){
+    cancelEvaluation();
+    var evaluationEncounterId=E.encounterId,abortController=typeof AbortController!=='undefined'?new AbortController():null;
+    evaluationAbortRef.current=abortController;
     setS(Object.assign({},S,{screen:'debrief'}));
-    E.provider.evaluate(E.session,SA).then(function(fb){ if(fb){setE(function(p){return Object.assign({},p,{feedback:fb});});} });
+    E.provider.evaluate(E.session,SA,{encounterId:evaluationEncounterId,signal:abortController?abortController.signal:undefined}).then(function(fb){
+      if(fb&&(!abortController||!abortController.signal.aborted)){setE(function(p){return p&&p.encounterId===evaluationEncounterId?Object.assign({},p,{feedback:fb}):p;});}
+    }).catch(function(){return null;}).then(function(){if(evaluationAbortRef.current===abortController)evaluationAbortRef.current=null;});
   }
+  function backToCases(){cancelEvaluation();setShowVoiceConsent(false);setS(Object.assign({},S,{screen:'select'}));}
   function downloadTranscript(){
     var s=E.session,cd=E.caseDef;
     var lines=['The Interview Room — practice transcript (FICTIONAL SIMULATION — not a clinical record)',
@@ -602,11 +837,18 @@ function App(){
       e('h1',null,'The Interview Room'),
       e('span',{className:'badge draft'},'Redesigned — pending faculty review'),
       e('button',{className:'badge mode',
-        onClick:function(){var nx=provMode==='mock'?'live':'mock';setProvMode(nx);
+        disabled:S.screen!=='select'||showVoiceConsent,
+        onClick:function(){var nx=provMode==='mock'?'live':'mock';cancelProviderCheck();providerModeRef.current=nx;setProvMode(nx);setShowVoiceConsent(false);
+          if(nx!=='live'){setShowSettings(false);refreshVoiceHealth('', '');if(voiceMode==='managed')persistVoiceMode('off');}
           if(nx==='live'){var ep='';try{ep=localStorage.getItem('cw_sp_endpoint')||'';}catch(x){} if(!ep)openSettings();}},
         title:'Mock runs offline. Live uses the sp-proxy endpoint (key stays on the server).'},
         provMode==='mock'?'● Mock patient (offline)':'● Live patient (LLM proxy)'),
-      provMode==='live'?e('button',{className:'badge mode',onClick:openSettings,title:'Configure live endpoint + passcode'},'⚙ setup'):null),
+      provMode==='live'?e('button',{className:'badge mode',disabled:S.screen!=='select'||showVoiceConsent,onClick:openSettings,title:'Configure live endpoint + passcode'},'⚙ setup'):null,
+      e('label',{className:'visually-hidden',htmlFor:'voice_mode'},'Voice mode'),
+      e('select',{id:'voice_mode',ref:voiceModeRef,className:'audiosel','aria-label':'Voice mode',value:voiceMode,disabled:S.screen==='selfassess'||S.screen==='debrief'||showVoiceConsent,onChange:function(ev){chooseVoiceMode(ev.target.value);},onKeyDown:function(ev){var modes=managedAvailable()?['off','device','managed']:['off','device'];var at=modes.indexOf(voiceMode),next=null;if(ev.key==='Home')next=modes[0];else if(ev.key==='End')next=modes[modes.length-1];else if(ev.key==='ArrowDown')next=modes[Math.min(modes.length-1,at+1)];else if(ev.key==='ArrowUp')next=modes[Math.max(0,at-1)];if(next!==null){ev.preventDefault();chooseVoiceMode(next);}}},
+        e('option',{value:'off'},'Voice off'),
+        e('option',{value:'device'},'Device voice'),
+        managedAvailable()?e('option',{value:'managed'},'Managed voice'):null)),
     e('p',{className:'lede'},'Interview a fictional standardized patient. Free text — say what you would actually say.'),
     e(Ribbon,{line:ribbonLine}),
     (showSettings&&cfg)?e('div',{className:'card'},
@@ -616,20 +858,36 @@ function App(){
       e('input',{id:'cfg_ep',type:'url',className:'cfgin',placeholder:'https://<sp-proxy-site>.netlify.app/api/sp',value:cfg.ep,
         onChange:function(ev){setCfg(Object.assign({},cfg,{ep:ev.target.value}));}}),
       e('label',{style:{fontWeight:600,fontSize:'.82rem'},htmlFor:'cfg_pc'},'Passcode'),
-      e('input',{id:'cfg_pc',type:'password',className:'cfgin',value:cfg.pc,autoComplete:'off',
+      e('input',{id:'cfg_pc',ref:passcodeRef,type:'password',className:'cfgin',value:cfg.pc,autoComplete:'off',
         onChange:function(ev){setCfg(Object.assign({},cfg,{pc:ev.target.value}));}}),
       cfg.msg?e('p',{style:{fontSize:'.82rem',fontWeight:600,color:cfg.msg.indexOf('✓')===0?'var(--success)':'var(--warning)'}},cfg.msg):null,
       e('div',{style:{display:'flex',gap:'10px',flexWrap:'wrap'}},
         e('button',{className:'btn primary',onClick:saveAndTest,disabled:!(cfg.ep||'').trim()},'Save & test connection'),
         e('button',{className:'btn',type:'button',onClick:clearPasscode},'Clear passcode'),
-        e('button',{className:'btn',onClick:function(){setShowSettings(false);}},'Close'))):null);
+        e('button',{className:'btn',onClick:function(){setShowSettings(false);}},'Close'))):null,
+    (showVoiceConsent&&S.screen==='select')?e('div',{className:'card',role:'dialog','aria-modal':true,'aria-labelledby':'voice_consent_title',tabIndex:-1,ref:consentRef,onKeyDown:function(ev){trapDialogKey(ev,closeManagedConsent);}},
+      e('h2',{id:'voice_consent_title'},'Before using managed voice'),
+      e('div',{className:'consentcopy'},
+        e('p',null,'This is a fictional AI patient. Typing remains fully available, and managed voice never changes the patient text shown in the room.'),
+        e('ul',null,
+          e('li',null,'Microphone audio is sent to ',e('b',null,(voiceHealth.data&&voiceHealth.data.activeStack?voiceHealth.data.activeStack.transcription.provider:'the reviewed transcription provider')),' for transcription.'),
+          e('li',null,'The clerkship tool does not intentionally store the microphone recording. The editable draft and patient text stay in this browser session.'),
+          e('li',null,e('b',null,(voiceHealth.data&&voiceHealth.data.activeStack?voiceHealth.data.activeStack.transcription.provider:'The reviewed speech provider')),' processes it under the linked provider data notice and approved account settings. Provider retention and account controls are separate from the clerkship tool’s non-retention.'),
+          e('li',null,(function(){var controls=S.pack.speechEngine.privacyReview.accountControls,provider=controls&&controls.provider?controls.provider:'The reviewed provider';return controls&&controls.zeroRetentionEntitled===true?'The reviewed '+provider+' account is marked as zero-retention entitled.':'The reviewed '+provider+' account is not marked as zero-retention entitled; vendor retention follows the linked notice and approved account settings.';})()),
+          e('li',null,'The fictional patient is read by a stock synthetic voice. No real person’s voice is cloned.'),
+          e('li',null,'Do not speak real-patient names, dates, record numbers, or other identifying information.'),
+          e('li',null,'You can use typing instead at any time with equal access to the exercise.')),
+        (S.pack.speechEngine.privacyReview.policyUrls||[])[0]?e('p',null,e('a',{href:S.pack.speechEngine.privacyReview.policyUrls[0],target:'_blank',rel:'noreferrer'},'Read the provider data-use notice')):null),
+      e('div',{className:'acts'},
+        e('button',{className:'btn primary',onClick:acceptManagedConsent},'Use managed voice'),
+        e('button',{className:'btn',onClick:closeManagedConsent},'Keep voice off'))):null);
 
   /* ---------- select ---------- */
   if(S.screen==='select'){
     return e('div',null,header,
       e('div',{className:'casegrid'},
-        S.pack.cases.map(function(cd){
-          var P=paceFor(cd), tp=cd.title.split(' — ');
+        eligibleCases(S.pack).map(function(cd){
+          var P=paceFor(cd), tp=cd.title.split(' — '), managedCaseUnavailable=voiceMode==='managed'&&!managedEligible(cd);
           return e('div',{className:'case',key:cd.id},
             e('div',null,
               e('p',{className:'microlabel',style:{marginBottom:'4px'}},'Practice encounter · ~'+cd.estMinutes+' min'),
@@ -643,9 +901,10 @@ function App(){
             e('div',{className:'chips'},cd.skillTags.map(function(t,i){return e('span',{className:'chip',key:i},t);})),
             e('div',{className:'begincol'},
               e('p',{className:'microlabel'},'Choose your room'),
+              managedCaseUnavailable?e('p',{className:'setting',role:'note'},'Managed voice is not approved for this case. Choose Voice off or Device voice to begin.'):null,
               e('div',{className:'begin'},
-                e('button',{className:'btn primary',onClick:function(){begin(cd,'supported');}},'Begin — Supported',e('span',{className:'sub'},'a door to step out — your notes + a coach')),
-                e('button',{className:'btn',onClick:function(){begin(cd,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door — alone with the patient, like the real thing')))));
+                e('button',{className:'btn primary',disabled:showVoiceConsent||managedCaseUnavailable,onClick:function(){begin(cd,'supported');}},'Begin — Supported',e('span',{className:'sub'},'a door to step out — your notes + a coach')),
+                e('button',{className:'btn',disabled:showVoiceConsent||managedCaseUnavailable,onClick:function(){begin(cd,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door — alone with the patient, like the real thing')))));
         })));
   }
 
@@ -653,6 +912,8 @@ function App(){
   if(S.screen==='encounter'){
     var cd=E.caseDef, sess=E.session, P=paceFor(cd);
     var supported=E.difficulty==='supported';
+    var turnLimitReached=sess.turns.length>=(S.pack.engine.maxTurns||40);
+    var authIssue=!!(actorIssue&&actorIssue.error&&(actorIssue.error.status===401||actorIssue.error.code==='unauthorized'));
     return e('div',null,header,
       e('div',{className:'room'},
         e('div',{className:'roomhead'},
@@ -661,18 +922,29 @@ function App(){
             e('p',{className:'setting'},cd.setting),
             e('p',{className:'modeline'},supported?'Supported — you can step out for your notes and a coach':'Realistic — a blank room, like the real thing')),
           e('div',{className:'roomtools'},
-            spk?e('span',{className:'spkchip'},
-              e(SpeakBars,{anim:P.anim,dur:P.dur,dim:spk.pausing}),
-              e('span',null,spk.pausing?(cd.persona.displayName+' pauses…'):(cd.persona.displayName+' is speaking · '+P.label))):null,
-            voiceSupported?e('button',{className:'voicebtn'+(voiceMode?' on':''),'aria-pressed':voiceMode,onClick:toggleVoice,
-              title:'Patient speech is mirrored as paced text'+(ttsOK?' and spoken aloud':'')+(SR?'; you can ask by voice':'')+'. Text stays the record.'},
-              voiceMode?'Voice on':'Voice off'):null)),
-        e('div',{className:'chat',ref:chatRef,role:'log','aria-label':'Conversation transcript'},
+            offlineSession?e('span',{className:'offline-label'},'Offline simulation'):null,
+            voiceState.phase==='speaking'?e('span',{className:'spkchip'},e(SpeakBars,{anim:P.anim,dur:P.dur,dim:false}),e('span',null,cd.persona.displayName+' is speaking · '+P.label)):null)),
+        e('div',{className:'audiorail',role:'group','aria-label':'Room audio status'},
+          e('span',{className:'dot','aria-hidden':true}),
+          e('span',{className:'audiostatus'},
+            voiceState.notice?voiceState.notice.message:
+            voiceState.phase==='listening'?'Listening — draft first':
+            voiceState.phase==='transcribing'?'Turning speech into an editable draft…':
+            voiceState.phase==='awaiting_patient'?cd.persona.displayName+' is thinking…':
+            voiceState.phase==='buffering_audio'?'Patient text is ready · preparing optional audio…':
+            voiceState.phase==='speaking'?cd.persona.displayName+' is speaking':
+            actorIssue?'Live patient needs your choice':voiceState.phase==='error'?'Room audio needs your choice':
+            voiceMode==='off'?'Room audio off':voiceMode==='device'?'Device voice · typing stays available':'Managed synthetic voice · review before sending'),
+          e('span',{className:'audiohint'},voiceMode==='managed'?'Stock synthetic voice; no real person’s voice is cloned. Patient text is authoritative.':'Patient text is always complete and authoritative.')),
+        e('div',{className:'chat',ref:chatRef,role:'log','aria-live':'off','aria-label':'Conversation transcript'},
           E.msgs.map(function(m,i){
-            var speaking=spk&&spk.idx===i&&m.who==='pt';
+            var speaking=m.who==='pt'&&voiceState.phase==='speaking'&&voiceState.activePatientTurn===m.turnId;
             return e('div',{className:'msg '+(m.who==='pt'?'pt':'me')+(speaking?' speaking':''),key:i},
               e('span',{className:'who'},m.who==='pt'?cd.persona.displayName:'You'),
-              speaking?spk.text:m.text);}),
+              m.text,
+              m.offline?e('span',{className:'offline-label'},'Offline simulation'):null,
+              m.who==='pt'&&speaking?e('div',{className:'message-actions'},e('button',{type:'button',onClick:function(){voiceControllerRef.current.stopPlayback();}},'Stop')):
+              m.who==='pt'&&voiceState.replayableTurnIds.indexOf(m.turnId)>=0?e('div',{className:'message-actions'},e('button',{type:'button',onClick:function(){voiceControllerRef.current.replay(m.turnId);}},voiceState.phase==='error'&&voiceState.error&&voiceState.error.code==='playback_failed'&&voiceState.activePatientTurn===m.turnId?'Play':'Replay')):null);}),
           isBusy?e('div',{className:'msg pt'},e('span',{className:'who'},cd.persona.displayName),
             e('span',{className:'typing','aria-hidden':true},e('span'),e('span'),e('span'))):null),
         E.phiHold?e('div',{className:'phi',role:'alertdialog','aria-label':'Possible real-patient information'},
@@ -680,32 +952,50 @@ function App(){
           e('div',{className:'acts'},
             e('button',{className:'btn',onClick:function(){setInput(E.phiHold);setE(Object.assign({},E,{phiHold:null}));}},'Edit message'),
             e('button',{className:'btn ghost',onClick:function(){setInput(E.phiHold);setE(Object.assign({},E,{phiHold:null}));setTimeout(function(){send(true);},0);}},'It’s fictional — send'))):null,
-        e('div',{className:'composer'},
+        actorIssue?e('div',{className:'recovery',role:'alert'},
+          e('p',null,e('b',null,'The live patient could not continue. '),actorIssue.error&&actorIssue.error.message?actorIssue.error.message:'Choose how to continue.'),
+          e('div',{className:'acts'},
+            authIssue?(actorIssue.authRecovered?e('button',{className:'btn primary',type:'button',onClick:restartAfterAuth},'Restart room with corrected passcode'):e('button',{className:'btn primary',type:'button',onClick:openSettings},'Reopen setup')):null,
+            !authIssue&&actorIssue.error&&actorIssue.error.retryDisposition==='same-operation'?e('button',{className:'btn',type:'button',onClick:retryActor},'Retry'):null,
+            !authIssue?e('button',{className:'btn primary',type:'button',onClick:continueOffline},'Continue offline'):null)):
+        !actorIssue&&voiceState.phase==='error'&&voiceState.error?e('div',{className:'recovery',role:'alert'},
+          e('p',null,e('b',null,'Your text is safe. '),voiceState.error.message),
+          e('div',{className:'acts'},
+            e('button',{className:'btn primary',type:'button',onClick:function(){resolveVoiceFallback('text');}},'Continue with text'),
+            e('button',{className:'btn',type:'button',onClick:function(){resolveVoiceFallback('device');}},'Use device voice'))):null,
+        turnLimitReached?e('div',{className:'composer'},
+          e('p',{className:'recovery',role:'note'},'Turn limit reached. The final patient reply remains above for review.'),
+          e('div',{className:'doorrow'},e('button',{ref:limitEndRef,className:'btn primary',type:'button',onClick:endEncounter},'End encounter and reflect'))):e('div',{className:'composer'},
           e('div',{className:'inrow'},
-            e('textarea',{value:input,maxLength:1200,className:listening?'listening':'','aria-label':'Your next words to the patient',
-              placeholder:(voiceMode&&SR)?'Tap the mic and speak, or type…':'Say what you would actually say…',rows:2,
-              onChange:function(ev){setInput(ev.target.value);},
+            e('textarea',{ref:composerRef,value:input,maxLength:1200,className:listening?'listening':'','aria-label':'Your next words to the patient',
+              placeholder:voiceMode==='managed'?'Record or type — review the draft before sending…':'Say what you would actually say…',rows:2,
+              onChange:function(ev){setInput(ev.target.value);if(voiceState.phase==='listening'||voiceState.phase==='transcribing')dictationRef.current.edited=true;if(voiceState.phase==='ready')try{voiceControllerRef.current.setDraft(ev.target.value);}catch(x){}},
               onKeyDown:function(ev){if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();send(false);}}}),
-            (voiceMode&&SR)?e('button',{className:'mic'+(listening?' live':''),'aria-pressed':listening,'aria-label':listening?'Stop listening':'Speak your question',
+            (voiceMode==='managed'&&managedEligible(cd))?e('button',{className:'mic'+(listening?' live':''),'aria-pressed':listening,'aria-label':listening?'Stop recording':'Record your question',
               onClick:function(){listening?stopListening():startListening();}},
               listening?e('span',{className:'stopglyph','aria-hidden':true}):e('svg',{width:16,height:16,viewBox:'0 0 16 16',fill:'none','aria-hidden':true},
                 e('rect',{x:5.5,y:1.5,width:5,height:8,rx:2.5,stroke:'currentColor',strokeWidth:1.5}),
                 e('path',{d:'M3 7.5V8a5 5 0 0 0 10 0v-.5M8 13v2',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round'})),
               e('span',null,listening?'Stop':'Speak')):null,
-            e('button',{className:'btn primary sayit',disabled:isBusy||!input.trim(),onClick:function(){send(false);}},'Say it')),
+            e('button',{className:'btn primary sayit',disabled:isBusy||voiceState.phase!=='ready'||!input.trim()||input.length>1200,onClick:function(){send(false);}},'Say it')),
+          input.length>1200?e('div',{className:'recovery',role:'note'},'Draft is '+input.length+' characters. Shorten it to 1200 before sending. Nothing was truncated or sent.'):null,
+          pendingTranscript!==null?e('div',{className:'recovery',role:'note'},
+            e('p',null,'Your newer typing was kept. Review the separate transcription before choosing whether to replace it.'),
+            e('textarea',{readOnly:true,value:pendingTranscript,'aria-label':'Transcribed words available for review',rows:2}),
+            e('div',{className:'acts'},e('button',{className:'btn',type:'button',onClick:function(){var text=pendingTranscript;setPendingTranscript(null);setInput(text);if(voiceControllerRef.current.getSnapshot().phase==='ready')try{voiceControllerRef.current.setDraft(text);}catch(x){}}},'Use transcript instead'))):null,
           listening?e('div',{className:'listenrow'},
             e('span',{className:'bars2','aria-hidden':true},e('span'),e('span'),e('span')),
             e('p',null,'Listening — take your time. Your words land in the box first; nothing sends until you press “Say it.”')):null,
           e('div',{className:'metaline'},
             e('span',null,'Turn '+sess.turns.length+' / '+(S.pack.engine.maxTurns||40)),
-            e('span',null,'Provider: '+E.provider.name+(sess._fellBack?' (fell back to offline)':'')),
+            e('span',null,'Provider: '+E.provider.name+(offlineSession?' · Offline simulation':'')),
             e('span',null,'Enter to send · Shift+Enter for a new line'),
             e('span',{className:'fict'},'Fictional practice — no real-patient details')),
           e('div',{className:'doorrow'},
             supported?e('button',{className:'btn door',ref:doorRef,onClick:openDoor},(sess.stepOuts||0)>0?'Step out again':'Step out a moment'):null,
             e('button',{className:'btn',onClick:endEncounter},'End encounter'),
             !supported?e('span',{className:'quiet'},'Realistic — no map, no coach. Your debrief will have both.'):null)),
-        stepOut?e('div',{className:'overlay',onKeyDown:function(ev){if(ev.key==='Escape')closeDoor();}},
+        stepOut?e('div',{className:'overlay',onKeyDown:function(ev){trapDialogKey(ev,closeDoor);}},
           e('div',{className:'panel',role:'dialog','aria-modal':true,'aria-label':'Stepped out of the room'},
             e('div',{className:'panelhead'},
               e('h2',null,'Stepping out — '+cd.persona.displayName+' waits.'),
@@ -733,7 +1023,7 @@ function App(){
   /* ---------- self-assessment ---------- */
   if(S.screen==='selfassess'){
     var qs=[['a','What was this patient most afraid of?'],
-            ['b','What did you not ask that you wish you had?'],
+            ['b','What do you wish you had asked?'],
             ['c','Commit to it: your one-line problem representation.']];
     var ready=SA.a.trim()&&SA.b.trim()&&SA.c.trim();
     return e('div',null,header,
@@ -743,7 +1033,7 @@ function App(){
         e('p',{className:'why'},'Commit before you see anything. The debrief responds to what you write here — it isn’t a form, and nothing is graded.'),
         qs.map(function(q,i){return e('div',{className:'q',key:q[0]},
           e('label',{htmlFor:'sa_'+q[0]},e('span',{className:'num'},String(i+1)),q[1]),
-          e('textarea',{id:'sa_'+q[0],value:SA[q[0]],onChange:function(ev){var o={};o[q[0]]=ev.target.value;setSA(Object.assign({},SA,o));}}));}),
+          e('textarea',{id:'sa_'+q[0],ref:i===0?selfAssessRef:null,value:SA[q[0]],onChange:function(ev){var o={};o[q[0]]=ev.target.value;setSA(Object.assign({},SA,o));}}));}),
         e('div',{className:'commit'},
           e('button',{className:'btn primary',disabled:!ready,onClick:toDebrief},'I’ve committed — show the debrief'),
           e('span',{className:'hint'},ready?'Nothing here is graded — it seeds the conversation.':'All three first — the debrief responds to your read.'))));
@@ -833,11 +1123,11 @@ function App(){
           e('button',{className:'btn primary',onClick:downloadTranscript},'Download transcript for supervision'),
           e('button',{className:'btn',onClick:function(){begin(E.caseDef,E.difficulty==='supported'?'realistic':'supported');}},
             E.difficulty==='supported'?'Re-run — Realistic (blank room)':'Re-run — Supported (with the door)'),
-          e('button',{className:'btn ghost',onClick:function(){setS(Object.assign({},S,{screen:'select'}));}},'Back to cases'))));
+          e('button',{className:'btn ghost',onClick:backToCases},'Back to cases'))));
   }
   return null;
 }
-try{window.__SP_TEST__={MockProvider:MockProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach};}catch(x){}
+try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible};}catch(x){}
 ReactDOM.createRoot(document.getElementById('root')).render(e(App));
 })();
 </script>
