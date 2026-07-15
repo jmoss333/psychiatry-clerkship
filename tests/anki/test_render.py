@@ -22,8 +22,11 @@ from pcl_anki.contract import (
     CORE_CLOZE_MODEL_ID,
     CORE_CLOZE_TEMPLATE_ID,
     CORE_DECK_ID,
+    Withdrawal,
     canonical_json_sha256,
+    core_guid,
 )
+from pcl_anki.history import withdrawal_render_sha256
 from pcl_anki.qbank import (
     LEGACY_QBANK_AFMT,
     LEGACY_QBANK_CSS,
@@ -52,6 +55,7 @@ from pcl_anki.render import (
     TEMPLATE_CONTRACTS,
     TEMPLATE_CONTRACT_SHA256,
     V2_CSS,
+    build_withdrawal_note,
     build_qbank_notes,
     card_approval_payload,
     render_card,
@@ -238,6 +242,48 @@ def make_application_item() -> dict:
     }
 
 
+def make_core_withdrawal() -> Withdrawal:
+    fields = (
+        "ms3_withdrawn_001",
+        '<span class="withdrawn">[WITHDRAWN SAFETY UPDATE]</span> This card is no longer active.',
+        '<div class="withdrawn">Do not use the prior clinical content.</div>',
+        "",
+        "",
+        "",
+        "",
+        "Anki safety release notice",
+    )
+    withdrawal = Withdrawal(
+        namespace="core",
+        uid="ms3_withdrawn_001",
+        identity="base",
+        guid=core_guid("ms3_withdrawn_001"),
+        deck_id=CORE_DECK_ID,
+        deck_name="Psychiatry Clerkship MS3 (Moss)::Core Recall",
+        model_id=CORE_BASIC_MODEL_ID,
+        model_name="PCL MS3 Core Basic v2",
+        template_id=CORE_BASIC_TEMPLATE_ID,
+        template_name="Card 1",
+        template_ordinal=0,
+        field_names=tuple(name for name, _field_id in CORE_BASIC_FIELDS),
+        field_ids=tuple(field_id for _name, field_id in CORE_BASIC_FIELDS),
+        fields=fields,
+        tags=("PsychClerkship", "Status::withdrawn", "UID::ms3_withdrawn_001"),
+        template_contract_sha256=TEMPLATE_CONTRACT_SHA256["coreBasic"],
+        render_sha256="",
+        reason_code="SHIPPED_IDENTITY_MISSING",
+        affected_release_id="synthetic-prior-release",
+        active=False,
+        withdrawn=True,
+    )
+    return Withdrawal(
+        **{
+            **withdrawal.__dict__,
+            "render_sha256": withdrawal_render_sha256(withdrawal),
+        }
+    )
+
+
 def anki_backend_cloze_html(rendered, tmp_path: Path) -> tuple[str, str]:
     """Render the frozen cloze fields through the installed supported Anki backend."""
 
@@ -312,6 +358,38 @@ def test_exact_v2_template_bytes_and_explicit_id_contracts():
     assert CORE_BASIC_MODEL.templates[0]["name"] == "Card 1"
     assert CORE_CLOZE_MODEL.templates[0]["name"] == "Cloze"
     assert APPLICATION_MODEL.templates[0]["name"] == "Card 1"
+
+
+def test_withdrawal_adapter_consumes_the_canonical_history_object_without_rebuilding_it():
+    withdrawal = make_core_withdrawal()
+
+    rendered = build_withdrawal_note(withdrawal)
+
+    assert rendered.namespace == withdrawal.namespace
+    assert rendered.uid == withdrawal.uid
+    assert rendered.guid == withdrawal.guid
+    assert rendered.deck_id == withdrawal.deck_id
+    assert rendered.model_id == withdrawal.model_id
+    assert rendered.template_ordinal == withdrawal.template_ordinal
+    assert rendered.fields == withdrawal.fields
+    assert rendered.tags == tuple(sorted(withdrawal.tags))
+    assert rendered.template_contract_sha256 == withdrawal.template_contract_sha256
+    assert rendered.render_sha256 == withdrawal.render_sha256
+    assert rendered.active is False
+    assert rendered.withdrawn is True
+    assert "WITHDRAWN SAFETY UPDATE" in rendered.front_html
+    assert "Do not use the prior clinical content" in rendered.back_html
+
+
+def test_withdrawal_adapter_rejects_raw_rows_and_any_altered_history_proof():
+    withdrawal = make_core_withdrawal()
+
+    with pytest.raises(TypeError, match="Withdrawal"):
+        build_withdrawal_note(withdrawal.__dict__)
+    with pytest.raises(ValueError, match="render hash"):
+        build_withdrawal_note(
+            Withdrawal(**{**withdrawal.__dict__, "render_sha256": "f" * 64})
+        )
 
 
 def test_template_contract_hashes_are_canonical_configured_and_byte_sensitive():

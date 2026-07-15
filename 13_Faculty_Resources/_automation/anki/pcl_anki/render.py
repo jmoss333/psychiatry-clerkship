@@ -46,6 +46,7 @@ from pcl_anki.contract import (
     LEGACY_QBANK_TEMPLATE_ORDINAL,
     Namespace,
     RenderedNote,
+    Withdrawal,
     application_guid,
     canonical_json_sha256,
     core_guid,
@@ -728,6 +729,153 @@ def rendered_note_approval_payload(
         note.back_html,
         note.tags,
         note.template_contract_sha256,
+    )
+
+
+def build_withdrawal_note(withdrawal: Withdrawal) -> RenderedNote:
+    """Adapt one already-governed history withdrawal to the frozen Anki model.
+
+    The history layer owns every neutral field byte and its approval hash.  This
+    adapter only verifies that proof and previews those supplied fields through
+    the same frozen templates used for active notes.
+    """
+
+    if not isinstance(withdrawal, Withdrawal):
+        raise TypeError("build_withdrawal_note requires a verified Withdrawal")
+    if withdrawal.active or not withdrawal.withdrawn:
+        raise ValueError("withdrawal must be inactive and marked withdrawn")
+    expected_tags = tuple(
+        sorted(
+            (
+                "PsychClerkship",
+                "Status::withdrawn",
+                f"UID::{withdrawal.uid}",
+            )
+        )
+    )
+    if tuple(sorted(withdrawal.tags)) != expected_tags:
+        raise ValueError("withdrawal tag contract drift")
+
+    contracts = {
+        CORE_BASIC_MODEL_ID: (
+            "coreBasic",
+            "core",
+            CORE_DECK_ID,
+            CORE_DECK_NAME,
+            CORE_BASIC_MODEL_NAME,
+            CORE_BASIC_FIELDS,
+            CORE_BASIC_TEMPLATE_ID,
+            CORE_BASIC_TEMPLATE_NAME,
+            CORE_BASIC_TEMPLATE_ORDINAL,
+            CORE_BASIC_QFMT,
+            CORE_BASIC_AFMT,
+            None,
+        ),
+        CORE_CLOZE_MODEL_ID: (
+            "coreCloze",
+            "core",
+            CORE_DECK_ID,
+            CORE_DECK_NAME,
+            CORE_CLOZE_MODEL_NAME,
+            CORE_CLOZE_FIELDS,
+            CORE_CLOZE_TEMPLATE_ID,
+            CORE_CLOZE_TEMPLATE_NAME,
+            CORE_CLOZE_TEMPLATE_ORDINAL,
+            CORE_CLOZE_QFMT,
+            CORE_CLOZE_AFMT,
+            True,
+        ),
+        APPLICATION_MODEL_ID: (
+            "application",
+            "application",
+            APPLICATION_DECK_ID,
+            APPLICATION_DECK_NAME,
+            APPLICATION_MODEL_NAME,
+            APPLICATION_FIELDS,
+            APPLICATION_TEMPLATE_ID,
+            APPLICATION_TEMPLATE_NAME,
+            APPLICATION_TEMPLATE_ORDINAL,
+            APPLICATION_QFMT,
+            APPLICATION_AFMT,
+            None,
+        ),
+        LEGACY_QBANK_MODEL_ID: (
+            "legacyQbank",
+            "qbank",
+            LEGACY_QBANK_DECK_ID,
+            LEGACY_QBANK_DECK_NAME,
+            LEGACY_QBANK_MODEL_NAME,
+            tuple((name, None) for name in LEGACY_QBANK_FIELDS),
+            None,
+            LEGACY_QBANK_TEMPLATE_NAME,
+            LEGACY_QBANK_TEMPLATE_ORDINAL,
+            LEGACY_QBANK_QFMT,
+            LEGACY_QBANK_AFMT,
+            None,
+        ),
+    }
+    try:
+        (
+            contract_key,
+            namespace,
+            deck_id,
+            deck_name,
+            model_name,
+            fields,
+            template_id,
+            template_name,
+            template_ordinal,
+            qfmt,
+            afmt,
+            cloze,
+        ) = contracts[withdrawal.model_id]
+    except KeyError as error:
+        raise ValueError(f"unknown withdrawal model ID {withdrawal.model_id}") from error
+    expected_identity = (
+        withdrawal.namespace == namespace
+        and withdrawal.deck_id == deck_id
+        and withdrawal.deck_name == deck_name
+        and withdrawal.model_name == model_name
+        and withdrawal.template_id == template_id
+        and withdrawal.template_name == template_name
+        and withdrawal.template_ordinal == template_ordinal
+        and withdrawal.field_names == tuple(name for name, _field_id in fields)
+        and withdrawal.field_ids == tuple(field_id for _name, field_id in fields)
+        and len(withdrawal.fields) == len(fields)
+    )
+    if not expected_identity:
+        raise ValueError("withdrawal immutable identity contract drift")
+    expected_contract_hash = TEMPLATE_CONTRACT_SHA256[contract_key]
+    if withdrawal.template_contract_sha256 != expected_contract_hash:
+        raise ValueError("withdrawal template contract hash drift")
+
+    # Lazy import avoids the history -> render import used by Task 6 while still
+    # making the Task 6 canonical hash function the only approval authority.
+    from pcl_anki.history import withdrawal_render_sha256
+
+    if withdrawal.render_sha256 != withdrawal_render_sha256(withdrawal):
+        raise ValueError("withdrawal render hash does not match the history proof")
+    field_map = dict(zip(withdrawal.field_names, withdrawal.fields, strict=True))
+    front_html = _render_template(qfmt, field_map, cloze_front=True if cloze else None)
+    back_html = _render_template(afmt, field_map, cloze_front=False if cloze else None)
+    if not front_html or not back_html:
+        raise ValueError("withdrawal rendered faces must be nonempty")
+    return RenderedNote(
+        namespace=withdrawal.namespace,
+        uid=withdrawal.uid,
+        identity=withdrawal.identity,
+        guid=withdrawal.guid,
+        deck_id=withdrawal.deck_id,
+        model_id=withdrawal.model_id,
+        template_ordinal=withdrawal.template_ordinal,
+        fields=withdrawal.fields,
+        tags=expected_tags,
+        front_html=front_html,
+        back_html=back_html,
+        template_contract_sha256=withdrawal.template_contract_sha256,
+        render_sha256=withdrawal.render_sha256,
+        active=False,
+        withdrawn=True,
     )
 
 

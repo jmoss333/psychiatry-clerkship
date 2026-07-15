@@ -176,6 +176,9 @@ class CandidateRelease:
     quarantine: QuarantineResult
     coverage: Mapping[str, object]
     issues: tuple[Issue, ...]
+    # Task 9 populates the complete ledger.  The compatibility default keeps
+    # pre-writer governance tests source-compatible; package writing rejects it.
+    governed_input_ledger: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True)
