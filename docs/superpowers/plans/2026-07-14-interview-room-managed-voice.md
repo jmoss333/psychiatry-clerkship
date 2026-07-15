@@ -817,7 +817,8 @@ getStudentKey,fetchImpl})`. Assert transcription sends the original allowlisted 
 base64 or FormData), `Content-Type`, `x-student-key`, case/encounter/turn IDs, and the caller's abort
 signal. Assert synthesis sends only `{reply,ticket}`, requests audio, returns bytes plus MIME type,
 and preserves typed endpoint errors. No method may log, persist, retry, or switch providers. Assert
-all recording/blob references are released after draft creation, cancellation, or encounter end.
+all recording/blob references are released after draft creation, transcription rejection or timeout,
+cancellation, or encounter end.
 
 Create the Chromium `interview-room` Playwright project and write browser tests for keyboard mode
 selection, text before audio, denied mic, blocked autoplay, slow actor, cancel-on-end, no overlap,
@@ -834,6 +835,7 @@ node --test _prototypes/sp-interview/tests/provider-errors.test.mjs
 node --test _prototypes/sp-interview/tests/managed-transport.test.mjs
 node --test _prototypes/sp-interview/tests/voice-contract.test.mjs
 npm --prefix tests/smoke ci
+npm --prefix tests/smoke exec -- playwright install chromium
 python3 -m http.server 4300 --directory _prototypes/sp-interview &
 SERVER_PID=$!
 trap 'kill $SERVER_PID' EXIT
@@ -893,6 +895,7 @@ node --test _prototypes/sp-interview/tests/voice-contract.test.mjs
 node _prototypes/sp-interview/tests/preview.test.mjs
 bash _prototypes/sp-interview/tests/run-all.sh
 npm --prefix tests/smoke ci
+npm --prefix tests/smoke exec -- playwright install chromium
 python3 -m http.server 4300 --directory _prototypes/sp-interview &
 SERVER_PID=$!
 trap 'kill $SERVER_PID' EXIT
@@ -1013,6 +1016,7 @@ git commit -m "chore(sp-interview): add release and operations gates"
 rm -rf sp-proxy/node_modules
 npm --prefix sp-proxy ci
 npm --prefix tests/smoke ci
+npm --prefix tests/smoke exec -- playwright install chromium
 npm --prefix sp-proxy test
 node _prototypes/sp-interview/generate-preview.mjs --check
 bash _prototypes/sp-interview/tests/run-all.sh
