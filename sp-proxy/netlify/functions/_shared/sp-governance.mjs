@@ -156,13 +156,13 @@ function reviewedProfile(profile, caseDef, nowMs) {
   );
 }
 
-export function resolveReviewedCase({ pack, caseId }) {
+export function resolveReviewedCase({ pack, caseId, now = Date.now }) {
   const cases = Array.isArray(pack?.cases) ? pack.cases : [];
   const caseDef = cases.find((candidate) => candidate?.id === caseId);
   if (!caseDef) {
     throw operationalError(400, 'unknown_case', 'Unknown case.');
   }
-  if (caseDef?.facultyReview?.status !== 'reviewed') {
+  if (!reviewedCase(caseDef, clockValue(now))) {
     throw operationalError(
       403,
       'case_not_reviewed',
@@ -172,9 +172,10 @@ export function resolveReviewedCase({ pack, caseId }) {
   return caseDef;
 }
 
-export function reviewedCaseSummaries(pack) {
+export function reviewedCaseSummaries(pack, { now = Date.now } = {}) {
+  const nowMs = clockValue(now);
   return (Array.isArray(pack?.cases) ? pack.cases : [])
-    .filter((caseDef) => caseDef?.facultyReview?.status === 'reviewed')
+    .filter((caseDef) => reviewedCase(caseDef, nowMs))
     .map((caseDef) => ({ id: caseDef.id, title: caseDef.title }));
 }
 

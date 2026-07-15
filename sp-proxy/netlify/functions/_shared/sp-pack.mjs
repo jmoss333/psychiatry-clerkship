@@ -18,6 +18,12 @@ function packError(contract) {
   return operationalError(contract.status, contract.code, contract.message);
 }
 
+function deepFreeze(value) {
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
+  for (const nested of Object.values(value)) deepFreeze(nested);
+  return Object.freeze(value);
+}
+
 export function createPackLoader({
   url,
   token,
@@ -71,11 +77,12 @@ export function createPackLoader({
       const text = new TextDecoder('utf-8', { fatal: true }).decode(rawBytes);
       pack = JSON.parse(text);
       if (!pack || typeof pack !== 'object' || Array.isArray(pack)) throw new Error('invalid pack');
+      deepFreeze(pack);
     } catch {
       throw packError(PACK_INVALID);
     }
 
-    cached = { pack, packHash, fetchedAt };
+    cached = Object.freeze({ pack, packHash, fetchedAt });
     return cached;
   }
 

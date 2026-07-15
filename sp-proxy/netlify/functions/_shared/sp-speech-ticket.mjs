@@ -61,6 +61,10 @@ function nonempty(value) {
   return typeof value === 'string' && value.length > 0;
 }
 
+function validSha256(value) {
+  return typeof value === 'string' && SHA256_HEX.test(value);
+}
+
 function validJti(jti) {
   if (typeof jti !== 'string' || !BASE64URL.test(jti)) return false;
   try {
@@ -85,9 +89,9 @@ function validateBindings(input) {
     && Number.isInteger(input.turnId)
     && input.turnId >= 0
     && nonempty(input.caseId)
-    && SHA256_HEX.test(input.packHash)
-    && SHA256_HEX.test(input.attestationHash)
-    && SHA256_HEX.test(input.profileHash)
+    && validSha256(input.packHash)
+    && validSha256(input.attestationHash)
+    && validSha256(input.profileHash)
     && Number.isInteger(input.profileVersion)
     && input.profileVersion > 0
     && nonempty(input.provider)
@@ -105,7 +109,7 @@ function validatePayload(payload) {
     && payload.schemaVersion === 1
     && validateBindings(payload)
     && validJti(payload.jti)
-    && SHA256_HEX.test(payload.replyHash)
+    && validSha256(payload.replyHash)
     && Number.isInteger(payload.iat)
     && Number.isInteger(payload.exp)
     && payload.exp === payload.iat + 120
@@ -132,38 +136,48 @@ function validStoredRecord(record) {
     'status',
     'usage',
   ].sort();
-  return JSON.stringify(keys) === JSON.stringify(expected)
-    && record.schemaVersion === 1
-    && ['in_progress', 'succeeded', 'provider_failed'].includes(record.status)
-    && Number.isInteger(record.expiresAt)
-    && Number.isInteger(record.claimedAt)
-    && (record.completedAt === null || Number.isInteger(record.completedAt));
+  if (
+    JSON.stringify(keys) !== JSON.stringify(expected)
+    || record.schemaVersion !== 1
+    || !['in_progress', 'succeeded', 'provider_failed'].includes(record.status)
+    || !Number.isInteger(record.expiresAt)
+    || !Number.isInteger(record.claimedAt)
+    || record.claimedAt >= record.expiresAt
+  ) {
+    return false;
+  }
+  if (record.status === 'in_progress') {
+    return record.completedAt === null && record.usage === null;
+  }
+  if (!Number.isInteger(record.completedAt) || record.completedAt < record.claimedAt) {
+    return false;
+  }
+  if (record.status === 'succeeded') return validUsage(record.usage);
+  return record.usage === null || validUsage(record.usage);
 }
 
-function validateUsage(usage) {
-  if (usage === null) return null;
-  if (!usage || typeof usage !== 'object' || Array.isArray(usage)) {
+function validUsage(usage) {
+  return Boolean(
+    usage
+    && typeof usage === 'object'
+    && !Array.isArray(usage)
+    && JSON.stringify(Object.keys(usage).sort()) === JSON.stringify(['quantity', 'unit'])
+    && usage.unit === 'synthesis_characters'
+    && Number.isInteger(usage.quantity)
+    && usage.quantity >= 0
+  );
+}
+
+function validateUsage(status, usage) {
+  if (status === 'provider_failed' && usage === null) return null;
+  if (!validUsage(usage)) {
     throw operationalError(
       500,
       'invalid_usage_metadata',
       'Redemption usage metadata must be content-free.',
     );
   }
-  if (
-    JSON.stringify(Object.keys(usage).sort()) !== JSON.stringify(['quantity', 'unit'])
-    || typeof usage.unit !== 'string'
-    || !/^[a-z][a-z0-9_]{0,63}$/.test(usage.unit)
-    || typeof usage.quantity !== 'number'
-    || !Number.isFinite(usage.quantity)
-    || usage.quantity < 0
-  ) {
-    throw operationalError(
-      500,
-      'invalid_usage_metadata',
-      'Redemption usage metadata must be content-free.',
-    );
-  }
-  return { unit: usage.unit, quantity: usage.quantity };
+  return { unit: 'synthesis_characters', quantity: usage.quantity };
 }
 
 export function spokenText(reply) {
@@ -310,7 +324,10 @@ export function createRedemptionLedger({
 
   async function read(key) {
     try {
-      const result = await store.getWithMetadata(key, { type: 'json' });
+      const result = await store.getWithMetadata(key, {
+        type: 'json',
+        consistency: 'strong',
+      });
       if (result === null) return null;
       if (!result || !nonempty(result.etag) || !validStoredRecord(result.data)) {
         throw redemptionUnavailable();
@@ -386,8 +403,7 @@ export function createRedemptionLedger({
     ) {
       throw invalidTicket();
     }
-    const safeUsage = validateUsage(usage);
-    let expectedEtag = claimed.etag;
+    const safeUsage = validateUsage(status, usage);
 
     for (let attempt = 0; attempt < maxCasAttempts; attempt += 1) {
       const current = await read(claimed.key);
@@ -398,10 +414,10 @@ export function createRedemptionLedger({
       if (
         current.data.status !== 'in_progress'
         || current.data.expiresAt !== claimed.expiresAt
+        || current.etag !== claimed.etag
       ) {
         throw redemptionUnavailable();
       }
-      if (attempt > 0) expectedEtag = current.etag;
 
       const next = {
         schemaVersion: 1,
@@ -413,7 +429,7 @@ export function createRedemptionLedger({
       };
       let result;
       try {
-        result = await write(claimed.key, next, { onlyIfMatch: expectedEtag });
+        result = await write(claimed.key, next, { onlyIfMatch: claimed.etag });
       } catch {
         throw redemptionUnavailable();
       }

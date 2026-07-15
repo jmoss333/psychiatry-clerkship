@@ -234,6 +234,44 @@ test('wrong rotation, encounter, turn, case, pack, attestation, profile, provide
   }
 });
 
+test('ticket hash bindings must be primitive strings when tickets are issued and verified', () => {
+  const hashFields = ['packHash', 'attestationHash', 'profileHash'];
+  const wrappedHash = (value) => ({
+    toString: () => value,
+    toJSON: () => value,
+  });
+  const codec = createFixedCodec();
+  const ticket = codec.issue(TICKET_INPUT);
+
+  for (const field of hashFields) {
+    for (const value of [[TICKET_INPUT[field]], wrappedHash(TICKET_INPUT[field])]) {
+      assert.throws(
+        () => codec.issue({ ...TICKET_INPUT, [field]: value }),
+        (error) => assertOperationalError(error, {
+          status: 403,
+          code: 'invalid_speech_ticket',
+          message: 'The speech ticket is invalid.',
+        }),
+        `issue ${field}`,
+      );
+    }
+
+    assert.throws(
+      () => codec.verify({
+        ticket,
+        reply: REPLY,
+        expected: expectedBindings({ [field]: wrappedHash(TICKET_INPUT[field]) }),
+      }),
+      (error) => assertOperationalError(error, {
+        status: 403,
+        code: 'invalid_speech_ticket',
+        message: 'The speech ticket is invalid.',
+      }),
+      `verify ${field}`,
+    );
+  }
+});
+
 test('ticket secrets require at least 32 UTF-8 bytes', () => {
   assert.throws(
     () => createTicketCodec({
@@ -264,14 +302,14 @@ test('spokenText removes only complete asterisk-delimited spans and normalizes w
   assert.equal(spokenText('*silence* *looks down*'), '');
 });
 
-test('ten concurrent claims yield exactly one owner and nine stable in-progress errors', async () => {
+test('ten concurrent claims use strong reads to yield one owner and nine stable in-progress errors', async () => {
   const codec = createFixedCodec();
   const payload = codec.verify({
     ticket: codec.issue(TICKET_INPUT),
     reply: REPLY,
     expected: expectedBindings(),
   });
-  const fake = createFakeBlobStore();
+  const fake = createFakeBlobStore({ nonStrongReadsReturnNull: true });
   const ledger = createRedemptionLedger({
     store: fake.store,
     namespace: 'test',
@@ -321,6 +359,9 @@ test('ten concurrent claims yield exactly one owner and nine stable in-progress 
   assert.equal(newWrites.length, 10);
   assert.equal(newWrites.every((call) => call.options.onlyIfNew === true), true);
   assert.equal(newWrites.every((call) => typeof call.value === 'string'), true);
+  assert.equal(fake.calls.filter((call) => call.method === 'getWithMetadata').every((call) => (
+    call.options.consistency === 'strong'
+  )), true);
 });
 
 test('completion uses the claim ETag, stores only content-free metadata, and makes later claims terminal', async () => {
@@ -342,7 +383,7 @@ test('completion uses the claim ETag, stores only content-free metadata, and mak
   nowMs += 5_000;
   const completed = await ledger.complete(claim, {
     status: 'succeeded',
-    usage: { unit: 'characters', quantity: 64 },
+    usage: { unit: 'synthesis_characters', quantity: 64 },
   });
 
   assert.deepEqual(completed, {
@@ -366,7 +407,7 @@ test('completion uses the claim ETag, stores only content-free metadata, and mak
     expiresAt: payload.exp,
     claimedAt: Math.floor(NOW_MS / 1000),
     completedAt: Math.floor(nowMs / 1000),
-    usage: { unit: 'characters', quantity: 64 },
+    usage: { unit: 'synthesis_characters', quantity: 64 },
   });
   const serialized = JSON.stringify(stored);
   for (const prohibited of [
@@ -399,14 +440,17 @@ test('completion uses the claim ETag, stores only content-free metadata, and mak
   }
 });
 
-test('completion retries onlyIfMatch conflicts and returns an existing terminal record idempotently', async () => {
+test('completion retries transient conflicts only while the owning ETag is unchanged', async () => {
   const codec = createFixedCodec();
   const payload = codec.verify({
     ticket: codec.issue(TICKET_INPUT),
     reply: REPLY,
     expected: expectedBindings(),
   });
-  const fake = createFakeBlobStore({ onlyIfMatchConflicts: 2 });
+  const fake = createFakeBlobStore({
+    onlyIfMatchConflicts: 2,
+    nonStrongReadsReturnNull: true,
+  });
   const ledger = createRedemptionLedger({
     store: fake.store,
     namespace: 'test',
@@ -420,13 +464,51 @@ test('completion retries onlyIfMatch conflicts and returns an existing terminal 
     call.method === 'set' && call.options.onlyIfMatch !== undefined
   )).length, 3);
 
-  const again = await ledger.complete(claim, { status: 'succeeded', usage: null });
+  const again = await ledger.complete(claim, {
+    status: 'succeeded',
+    usage: { unit: 'synthesis_characters', quantity: 12 },
+  });
   assert.deepEqual(again, {
     key: claim.key,
     etag: fake.etag(claim.key),
     status: 'provider_failed',
     expiresAt: payload.exp,
   });
+  const conditionalWrites = fake.calls.filter((call) => (
+    call.method === 'set' && call.options.onlyIfMatch !== undefined
+  ));
+  assert.equal(conditionalWrites.every((call) => call.options.onlyIfMatch === claim.etag), true);
+});
+
+test('a forged or stale claim ETag cannot terminalize a real in-progress claim', async () => {
+  const codec = createFixedCodec();
+  const payload = codec.verify({
+    ticket: codec.issue(TICKET_INPUT),
+    reply: REPLY,
+    expected: expectedBindings(),
+  });
+  const fake = createFakeBlobStore();
+  const ledger = createRedemptionLedger({
+    store: fake.store,
+    namespace: 'test',
+    clock: () => NOW_MS,
+    maxCasAttempts: 5,
+  });
+  const claim = await ledger.claim(payload);
+
+  await assert.rejects(
+    ledger.complete({ ...claim, etag: 'forged-stale-etag' }, {
+      status: 'succeeded',
+      usage: { unit: 'synthesis_characters', quantity: 64 },
+    }),
+    (error) => assertOperationalError(error, {
+      status: 503,
+      code: 'redemption_unavailable',
+      message: 'Speech ticket redemption is temporarily unavailable.',
+    }),
+  );
+  assert.equal(fake.read(claim.key).status, 'in_progress');
+  assert.equal(fake.etag(claim.key), claim.etag);
 });
 
 test('bounded conditional-write conflicts and unavailable storage fail with redemption_unavailable', async () => {
@@ -445,7 +527,10 @@ test('bounded conditional-write conflicts and unavailable storage fail with rede
   });
   const claim = await conflictLedger.claim(payload);
   await assert.rejects(
-    conflictLedger.complete(claim, { status: 'succeeded', usage: null }),
+    conflictLedger.complete(claim, {
+      status: 'succeeded',
+      usage: { unit: 'synthesis_characters', quantity: 1 },
+    }),
     (error) => assertOperationalError(error, {
       status: 503,
       code: 'redemption_unavailable',
@@ -483,6 +568,7 @@ test('a terminal write discovered on the final allowed conflict is returned idem
   const fake = createFakeBlobStore({
     onlyIfMatchConflicts: 5,
     terminalOnMatchConflict: 5,
+    nonStrongReadsReturnNull: true,
   });
   const ledger = createRedemptionLedger({
     store: fake.store,
@@ -492,7 +578,10 @@ test('a terminal write discovered on the final allowed conflict is returned idem
   });
   const claim = await ledger.claim(payload);
 
-  const completed = await ledger.complete(claim, { status: 'succeeded', usage: null });
+  const completed = await ledger.complete(claim, {
+    status: 'succeeded',
+    usage: { unit: 'synthesis_characters', quantity: 32 },
+  });
   assert.deepEqual(completed, {
     key: claim.key,
     etag: fake.etag(claim.key),
@@ -544,7 +633,7 @@ test('redemption rejects expired or malformed tickets and unsafe usage metadata 
   await assert.rejects(
     ledger.complete(claim, {
       status: 'succeeded',
-      usage: { unit: 'characters', quantity: 10, reply: REPLY },
+      usage: { unit: 'synthesis_characters', quantity: 10, reply: REPLY },
     }),
     (error) => assertOperationalError(error, {
       status: 500,
@@ -553,4 +642,112 @@ test('redemption rejects expired or malformed tickets and unsafe usage metadata 
     }),
   );
   assert.equal(fake.read(claim.key).status, 'in_progress');
+});
+
+test('redemption usage permits only nonnegative integer synthesis character counts', async () => {
+  const codec = createFixedCodec();
+  const payload = codec.verify({
+    ticket: codec.issue(TICKET_INPUT),
+    reply: REPLY,
+    expected: expectedBindings(),
+  });
+  const invalidUsages = [
+    null,
+    { unit: 'characters', quantity: 10 },
+    { unit: 'transcript', quantity: 10 },
+    { unit: 'transcript_words', quantity: 10 },
+    { unit: 'synthesis_characters', quantity: -1 },
+    { unit: 'synthesis_characters', quantity: 0.5 },
+    { unit: 'synthesis_characters', quantity: '10' },
+    { unit: 'synthesis_characters', quantity: 10, transcript: REPLY },
+  ];
+
+  for (const usage of invalidUsages) {
+    const fake = createFakeBlobStore();
+    const ledger = createRedemptionLedger({
+      store: fake.store,
+      namespace: 'test',
+      clock: () => NOW_MS,
+      maxCasAttempts: 5,
+    });
+    const claim = await ledger.claim(payload);
+    await assert.rejects(
+      ledger.complete(claim, { status: 'succeeded', usage }),
+      (error) => assertOperationalError(error, {
+        status: 500,
+        code: 'invalid_usage_metadata',
+        message: 'Redemption usage metadata must be content-free.',
+      }),
+      JSON.stringify(usage),
+    );
+    assert.equal(fake.read(claim.key).status, 'in_progress');
+    assert.equal(fake.calls.some((call) => call.options?.onlyIfMatch), false);
+  }
+});
+
+test('corrupt or contentful stored records fail before redemption classification', async () => {
+  const codec = createFixedCodec();
+  const payload = codec.verify({
+    ticket: codec.issue(TICKET_INPUT),
+    reply: REPLY,
+    expected: expectedBindings(),
+  });
+  const corruptions = [
+    ['claim timestamp at expiry', (record) => ({ ...record, claimedAt: record.expiresAt })],
+    ['in-progress completion timestamp', (record) => ({ ...record, completedAt: record.claimedAt })],
+    ['in-progress usage', (record) => ({
+      ...record,
+      usage: { unit: 'synthesis_characters', quantity: 1 },
+    })],
+    ['succeeded without completion', (record) => ({
+      ...record,
+      status: 'succeeded',
+      usage: { unit: 'synthesis_characters', quantity: 1 },
+    })],
+    ['succeeded before claim', (record) => ({
+      ...record,
+      status: 'succeeded',
+      completedAt: record.claimedAt - 1,
+      usage: { unit: 'synthesis_characters', quantity: 1 },
+    })],
+    ['succeeded without usage', (record) => ({
+      ...record,
+      status: 'succeeded',
+      completedAt: record.claimedAt,
+      usage: null,
+    })],
+    ['transcript-like usage', (record) => ({
+      ...record,
+      status: 'provider_failed',
+      completedAt: record.claimedAt,
+      usage: { unit: 'transcript_words', quantity: 1 },
+    })],
+    ['contentful nested usage', (record) => ({
+      ...record,
+      status: 'provider_failed',
+      completedAt: record.claimedAt,
+      usage: { unit: 'synthesis_characters', quantity: 1, transcript: REPLY },
+    })],
+  ];
+
+  for (const [label, corrupt] of corruptions) {
+    const fake = createFakeBlobStore();
+    const ledger = createRedemptionLedger({
+      store: fake.store,
+      namespace: 'test',
+      clock: () => NOW_MS,
+      maxCasAttempts: 5,
+    });
+    const claim = await ledger.claim(payload);
+    fake.replace(claim.key, corrupt(fake.read(claim.key)), { etag: claim.etag });
+    await assert.rejects(
+      ledger.claim(payload),
+      (error) => assertOperationalError(error, {
+        status: 503,
+        code: 'redemption_unavailable',
+        message: 'Speech ticket redemption is temporarily unavailable.',
+      }),
+      label,
+    );
+  }
 });

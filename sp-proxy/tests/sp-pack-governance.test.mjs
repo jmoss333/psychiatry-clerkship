@@ -73,6 +73,35 @@ test('pack loader hashes the exact response bytes and caches only while elapsed 
   assert.equal(atBoundary.fetchedAt, 301_000);
 });
 
+test('pack loader deeply freezes the cached pack and snapshot so content cannot diverge from its hash', async () => {
+  const raw = '{"version":1,"cases":[{"id":"case-reviewed","nested":{"labels":["original"]}}]}';
+  let fetches = 0;
+  const loader = createPackLoader({
+    url: 'https://content.example.test/pack.json',
+    fetchImpl: async () => {
+      fetches += 1;
+      return new Response(raw, { status: 200 });
+    },
+    now: () => 1_000,
+  });
+
+  const first = await loader.load();
+  assert.equal(Object.isFrozen(first), true);
+  assert.equal(Object.isFrozen(first.pack), true);
+  assert.equal(Object.isFrozen(first.pack.cases), true);
+  assert.equal(Object.isFrozen(first.pack.cases[0]), true);
+  assert.equal(Object.isFrozen(first.pack.cases[0].nested.labels), true);
+  assert.throws(() => { first.pack.cases[0].id = 'mutated'; }, TypeError);
+  assert.throws(() => { first.pack.cases[0].nested.labels.push('mutated'); }, TypeError);
+
+  const later = await loader.load();
+  assert.strictEqual(later, first);
+  assert.equal(later.pack.cases[0].id, 'case-reviewed');
+  assert.deepEqual(later.pack.cases[0].nested.labels, ['original']);
+  assert.equal(later.packHash, sha256(Buffer.from(raw, 'utf8')));
+  assert.equal(fetches, 1);
+});
+
 test('an expired pack cache fails closed on fetch or parse errors instead of serving stale content', async () => {
   let nowMs = 0;
   let mode = 'ok';
@@ -110,18 +139,18 @@ test('an expired pack cache fails closed on fetch or parse errors instead of ser
   );
 });
 
-test('reviewed case resolution and summaries expose only reviewed public fields', () => {
+test('reviewed case resolution and summaries expose only fully attested reviewed public fields', () => {
   const pack = createReviewedPack();
   assert.strictEqual(
-    resolveReviewedCase({ pack, caseId: 'case-reviewed' }),
+    resolveReviewedCase({ pack, caseId: 'case-reviewed', now: () => NOW_MS }),
     pack.cases[0],
   );
-  assert.deepEqual(reviewedCaseSummaries(pack), [
+  assert.deepEqual(reviewedCaseSummaries(pack, { now: () => NOW_MS }), [
     { id: 'case-reviewed', title: 'Dana — reviewed case' },
   ]);
 
   assert.throws(
-    () => resolveReviewedCase({ pack, caseId: 'missing-case' }),
+    () => resolveReviewedCase({ pack, caseId: 'missing-case', now: () => NOW_MS }),
     (error) => assertOperationalError(error, {
       status: 400,
       code: 'unknown_case',
@@ -129,13 +158,36 @@ test('reviewed case resolution and summaries expose only reviewed public fields'
     }),
   );
   assert.throws(
-    () => resolveReviewedCase({ pack, caseId: 'case-draft' }),
+    () => resolveReviewedCase({ pack, caseId: 'case-draft', now: () => NOW_MS }),
     (error) => assertOperationalError(error, {
       status: 403,
       code: 'case_not_reviewed',
       message: 'This case is not reviewed for learner use.',
     }),
   );
+});
+
+test('case resolution and summaries reject blank reviewers, invalid dates, and future reviews', () => {
+  const mutations = [
+    ['blank reviewer', (review) => { review.reviewer = '   '; }],
+    ['invalid date', (review) => { review.lastReviewed = '2026-02-30'; }],
+    ['future date', (review) => { review.lastReviewed = '2026-07-15'; }],
+  ];
+
+  for (const [label, mutate] of mutations) {
+    const pack = createReviewedPack();
+    mutate(pack.cases[0].facultyReview);
+    assert.throws(
+      () => resolveReviewedCase({ pack, caseId: 'case-reviewed', now: () => NOW_MS }),
+      (error) => assertOperationalError(error, {
+        status: 403,
+        code: 'case_not_reviewed',
+        message: 'This case is not reviewed for learner use.',
+      }),
+      label,
+    );
+    assert.deepEqual(reviewedCaseSummaries(pack, { now: () => NOW_MS }), [], label);
+  }
 });
 
 test('fully reviewed governance returns exact pack, engine, profile, attestation, and runtime bindings', () => {

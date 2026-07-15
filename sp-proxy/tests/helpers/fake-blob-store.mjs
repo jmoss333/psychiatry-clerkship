@@ -7,6 +7,7 @@ function clone(value) {
 export function createFakeBlobStore({
   onlyIfMatchConflicts = 0,
   terminalOnMatchConflict = null,
+  nonStrongReadsReturnNull = false,
   unavailable = false,
 } = {}) {
   const records = new Map();
@@ -21,7 +22,8 @@ export function createFakeBlobStore({
     async getWithMetadata(key, options) {
       calls.push({ method: 'getWithMetadata', key, options: clone(options) });
       if (unavailable) throw new Error('fake store unavailable');
-      assert.deepEqual(options, { type: 'json' });
+      if (options?.consistency !== 'strong' && nonStrongReadsReturnNull) return null;
+      assert.deepEqual(options, { type: 'json', consistency: 'strong' });
       const record = records.get(key);
       if (!record) return null;
       return {
@@ -52,9 +54,9 @@ export function createFakeBlobStore({
         if (remainingMatchConflicts > 0) {
           remainingMatchConflicts -= 1;
           matchConflictCount += 1;
-          current.etag = nextEtag();
           if (matchConflictCount === terminalOnMatchConflict) {
             current.value = JSON.stringify({ ...JSON.parse(value), status: 'succeeded' });
+            current.etag = nextEtag();
           }
           return { modified: false };
         }
@@ -79,6 +81,13 @@ export function createFakeBlobStore({
     },
     etag(key) {
       return records.get(key)?.etag ?? null;
+    },
+    replace(key, value, { etag = records.get(key)?.etag ?? nextEtag() } = {}) {
+      records.set(key, {
+        value: JSON.stringify(value),
+        metadata: null,
+        etag,
+      });
     },
   };
 }

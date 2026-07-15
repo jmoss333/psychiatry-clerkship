@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
   createHttp,
+  operationalError,
   readEnv,
 } from '../netlify/functions/_shared/sp-http.mjs';
 
@@ -73,6 +74,39 @@ test('production configuration fails closed for missing, wildcard, and local ori
     allowedOrigins: ['http://localhost:3000'],
     production: false,
   }));
+});
+
+test('production mode must be an explicit boolean', () => {
+  for (const production of [undefined, null, 0, 1, 'true', 'false']) {
+    assert.throws(
+      () => createProductionHttp({ production }),
+      (error) => assertOperationalError(error, {
+        status: 500,
+        code: 'invalid_configuration',
+        message: 'Production mode must be explicitly configured.',
+      }),
+    );
+  }
+});
+
+test('production rejects null, malformed, and non-HTTP origins', () => {
+  for (const origin of [
+    'null',
+    'not-an-origin',
+    'ftp://learn.example.test',
+    'https://learn.example.test/path',
+    'https://user:password@learn.example.test',
+  ]) {
+    assert.throws(
+      () => createProductionHttp({ allowedOrigins: [origin] }),
+      (error) => assertOperationalError(error, {
+        status: 500,
+        code: 'invalid_configuration',
+        message: 'Production CORS origins must be valid HTTP(S) origins.',
+      }),
+      origin,
+    );
+  }
 });
 
 test('student and operations credentials must be configured and distinct', () => {
@@ -183,7 +217,7 @@ test('operations authorization is distinct and usage responses never emit browse
 test('typed error responses retain the stable code without exposing internals', async () => {
   const http = createProductionHttp();
   const response = http.error(
-    { status: 409, code: 'speech_in_progress', message: 'Speech is already in progress.' },
+    operationalError(409, 'speech_in_progress', 'Speech is already in progress.'),
     { origin: ALLOWED_ORIGIN },
   );
   assert.equal(response.status, 409);
@@ -196,6 +230,23 @@ test('typed error responses retain the stable code without exposing internals', 
   assert.deepEqual(await internal.json(), {
     error: { code: 'internal_error', message: 'Internal server error.' },
   });
+
+  for (const providerError of [
+    { status: 502, code: 'provider_failed', message: 'Bearer credential-secret' },
+    Object.assign(new Error('API key sk-secret-detail'), {
+      status: 401,
+      code: 'invalid_api_key',
+    }),
+  ]) {
+    const providerResponse = http.error(providerError, { origin: null });
+    assert.equal(providerResponse.status, 500);
+    const serialized = await providerResponse.text();
+    assert.deepEqual(JSON.parse(serialized), {
+      error: { code: 'internal_error', message: 'Internal server error.' },
+    });
+    assert.equal(serialized.includes('credential-secret'), false);
+    assert.equal(serialized.includes('sk-secret-detail'), false);
+  }
 });
 
 test('readEnv prefers Netlify.env.get and uses process.env only when Netlify is unavailable', () => {

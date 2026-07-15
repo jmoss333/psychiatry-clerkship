@@ -63,6 +63,19 @@ function isLocalOrigin(origin) {
   }
 }
 
+function isHttpOrigin(origin) {
+  if (origin === 'null') return false;
+  try {
+    const url = new URL(origin);
+    return (url.protocol === 'http:' || url.protocol === 'https:')
+      && url.origin === origin
+      && url.username === ''
+      && url.password === '';
+  } catch {
+    return false;
+  }
+}
+
 function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': origin,
@@ -73,18 +86,7 @@ function corsHeaders(origin) {
 }
 
 function asOperationalError(error) {
-  if (
-    error
-    && Number.isInteger(error.status)
-    && error.status >= 400
-    && error.status <= 599
-    && typeof error.code === 'string'
-    && error.code
-    && typeof error.message === 'string'
-    && error.message
-  ) {
-    return error;
-  }
+  if (error instanceof OperationalError) return error;
   return operationalError(500, 'internal_error', 'Internal server error.');
 }
 
@@ -110,6 +112,9 @@ export function createHttp({
   ) {
     throw configurationError('Student and operations credentials must be present and distinct.');
   }
+  if (typeof production !== 'boolean') {
+    throw configurationError('Production mode must be explicitly configured.');
+  }
 
   const origins = normalizeOrigins(allowedOrigins);
   if (production && (origins.length === 0 || origins.includes('*'))) {
@@ -117,6 +122,9 @@ export function createHttp({
   }
   if (production && origins.some(isLocalOrigin)) {
     throw configurationError('Production CORS origins cannot be local.');
+  }
+  if (production && origins.some((origin) => !isHttpOrigin(origin))) {
+    throw configurationError('Production CORS origins must be valid HTTP(S) origins.');
   }
   if (!production && origins.length === 0) origins.push('*');
   const originSet = new Set(origins);
