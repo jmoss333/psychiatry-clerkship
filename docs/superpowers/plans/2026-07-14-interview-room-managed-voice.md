@@ -947,10 +947,23 @@ milliseconds, while omitted usage remains `null` for conservative endpoint settl
 
 - [ ] **Step 2: Write red endpoint tests**
 
-Create synthetic, content-free WAV, Ogg Opus, WebM Opus, and MP4 fixtures. Server-side parsing must
+Create synthetic, content-free WAV, Ogg Opus, and WebM Opus fixtures. Server-side parsing must
 sniff the declared container and derive a finite positive duration before any reservation/provider
 call. Test MIME spoofing, malformed/truncated metadata, empty audio, a 90-second boundary, and a
 greater-than-90-second file that remains under 4 MiB.
+
+Compressed-container duration uses the conservative maximum of declared timeline endpoints and
+accumulated decoded Opus packet duration. Ogg validates CRCs, canonical `OpusHead`/`OpusTags`, page
+continuation, sequence, serial, granule, and EOS structure. WebM processes bounded blocks
+incrementally, requires tracks before clusters, and caps packet/element counts so a legal-size body
+cannot amplify into unbounded heap. Regression fixtures include 120 seconds of Ogg packets with a
+falsified short granule, 120 seconds of same-timestamp WebM packets, and a near-4-MiB minimal-block
+file under a 64-MiB heap; each rejects before billing.
+
+Do not accept MP4 in this release: independently verified fragmented/audio-track timing is not yet
+implemented, and `mvhd` alone is attacker-editable. Assert `audio/mp4` returns `415` before budget or
+provider work. Safari learners retain typing and device voice until a vetted bounded MP4 parser and
+real Safari MediaRecorder fixture corpus pass the same duration-bypass review.
 
 Test health while disabled; deploy-preview hard disable; health with reviewed fixtures; warning
 band; operations-key usage; preflight headers; typed allowed-origin `401`; origin `403`; case/profile
@@ -994,7 +1007,7 @@ node --test sp-proxy/tests/sp-voice.test.mjs
 - [ ] **Step 4: Implement providers and route**
 
 Use native `fetch`, `FormData`, `Blob`, and composed `AbortSignal`s. Accept only `audio/webm`,
-`audio/webm;codecs=opus`, `audio/mp4`, `audio/ogg`, and `audio/wav`. Treat `Content-Length` only as an
+`audio/webm;codecs=opus`, `audio/ogg`, `audio/ogg;codecs=opus`, and `audio/wav`. Treat `Content-Length` only as an
 early-rejection hint. Stream-read and count actual bytes, cancel immediately above `4194304`, and
 keep the bounded audio only in request-local memory released in `finally`. Before budget or provider
 work, `sp-audio-metadata.mjs` must sniff a matching container and derive a finite positive duration
@@ -1067,7 +1080,7 @@ Health requires student auth and returns exactly:
   },
   eligibleProfiles: [{ caseId, profileId, profileVersion }],
   acceptedMediaTypes: [
-    'audio/webm', 'audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg', 'audio/wav',
+    'audio/webm', 'audio/webm;codecs=opus', 'audio/ogg', 'audio/ogg;codecs=opus', 'audio/wav',
   ],
   limits: { maxAudioBytes: 4194304, maxAudioDurationMilliseconds: 90000 },
 }

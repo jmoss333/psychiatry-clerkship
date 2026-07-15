@@ -191,6 +191,12 @@ authoritative. It aborts provider work before 45 seconds so durable accounting c
 current function window. Neither the proxy nor the client persists the learner audio blob after the
 draft is produced.
 
+The first managed release accepts bounded WAV, Ogg Opus, and WebM Opus only. It does not accept MP4:
+container-level `mvhd` duration is not sufficient to prove AAC/audio-track duration, especially for
+fragmented Safari recordings. Safari therefore keeps equal typing and device-voice paths until a
+vetted bounded MP4 parser plus real Safari MediaRecorder fixtures pass falsified-timeline and memory
+tests. The health response advertises only formats the server can independently verify.
+
 The learner sees the transcript in the existing textarea, edits it if needed, and presses **Say
 it**. The existing PHI heuristic runs against the final draft before the actor request. Because audio
 may already have reached the speech vendor before text screening is possible, the microphone consent
