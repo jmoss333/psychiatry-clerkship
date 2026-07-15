@@ -23,8 +23,8 @@ sp-proxy/
 - **Evaluate** (`POST` with `mode:"evaluate"`): deterministic coverage map + rubric context +
   the student's self-assessment → structured JSON feedback. Parse failure degrades gracefully
   to the tool's deterministic debrief.
-- **Health** (`GET /api/sp`): `{ok, actorModel, packVersion, packStatus, cases}` — this is what
-  the tool's "Test connection" button calls.
+- **Health** (`GET /api/sp`): the versioned actor/evaluator model pins, pack version/status, and
+  reviewed case summaries — this is what the tool's "Test connection" button calls.
 - **Logs are metadata only** — case id, turn number, rapport, date. Never message text.
 
 ## One-time setup (~10 min, Netlify dashboard)
@@ -34,29 +34,35 @@ sp-proxy/
 
 1. **Add new site → Import from Git →** `jmoss333/psychiatry-clerkship`
    - Base directory: `sp-proxy` · Build command: `npm ci --omit=dev` · Publish: `sp-proxy`
-   - Functions auto-detect from `sp-proxy/netlify/functions`.
+   - Functions auto-detect from `sp-proxy/netlify/functions`; `netlify.toml` pins Node 20.
 2. **Environment variables:**
 
 | Variable | Value |
 |---|---|
 | `ANTHROPIC_API_KEY` | your Anthropic key (console.anthropic.com) |
 | `SP_STUDENT_PASSCODE` | strong passcode; **rotate each rotation block** |
+| `SP_OPERATIONS_KEY` | separate strong operations credential; never give it to learners |
+| `SP_SPEECH_TICKET_SECRET` | independent random signing secret; keep server-only |
+| `SP_ROTATION_ID` | unique non-identifying ID for this rotation's shared budget ledger |
 | `SP_PACK_URL` | `https://api.github.com/repos/jmoss333/psychiatry-clerkship/contents/_prototypes/sp-interview/sp-interview.pack.json?ref=main` *(update on promotion out of _prototypes)* |
 | `SP_PACK_TOKEN` | fine-grained GitHub PAT, **Contents: read** on this repo only (repo is private) — lets the function read the pack. Rotate as needed. |
-| `SP_MODEL_ACTOR` | pinned actor model — **verify the current model string at docs.claude.com, then record the same string in `pack.engine.modelPinned`** |
-| `SP_MODEL_EVALUATOR` | pinned evaluator model (a stronger tier than the actor) |
 | `SP_ALLOWED_ORIGINS` | `https://une-ms3-psychiatry.netlify.app,https://mmc-psychiatry-residents-sanford.netlify.app` (+ `http://localhost:8888` while testing) |
-| `SP_MAX_TURNS` / `SP_DAILY_LIMIT` | optional; defaults 40 / 2000 LLM calls/day |
+| `SP_MANAGED_VOICE_ENABLED` | keep `false` until every external activation gate is recorded |
 
-3. Deploy, then verify: `curl -H "x-student-key: <passcode>" https://<site>/api/sp` → `{"ok":true,...}`.
+3. Deploy, then verify with an allowed learner origin:
+   `curl -H "Origin: https://une-ms3-psychiatry.netlify.app" -H "x-student-key: <passcode>" https://<site>/api/sp`
+   → `{"schemaVersion":1,"actorModel":"claude-haiku-4-5-20251001","evaluatorModel":"claude-haiku-4-5-20251001","packVersion":"<reviewed pack version>","packStatus":"<reviewed status>","cases":[...]}`.
 4. In the tool: mode chip → **Live** → settings panel → paste endpoint URL
    (`https://<site>/api/sp`) + passcode → **Test connection**.
 5. Run `REDTEAM_CHECKLIST.md` end to end **before giving students the passcode**.
 
 ## Governance couplings (do not skip)
 
-- **Model pin = content pin.** `SP_MODEL_ACTOR` and `pack.engine.modelPinned` must match.
-  Changing either re-triggers faculty review: replay the golden transcript
+- **Immutable model, output, and turn pins.** Production hard-pins the actor and evaluator to the
+  same reviewed model, currently `claude-haiku-4-5-20251001`, with output maxima of 300 and 1,500
+  tokens. The reviewed pack must match those pins and currently sets a 40-turn maximum; no
+  environment variable can override them. Changing source or pack pins re-triggers faculty review:
+  replay the golden transcript
   (the 19-message skilled-interview script in `/tmp`-test / checklist) and eyeball Dana's voice.
 - **Pack changes deploy themselves** (the function re-fetches within 5 min) — which is exactly
   why `SP_PACK_URL` must point at `main`, where nothing lands without your PR review.
@@ -92,11 +98,6 @@ source, screenshots, tickets, browser settings, test fixtures, logs, or the rele
 | `SP_PACK_URL` | Reviewed pack source |
 | `SP_PACK_TOKEN` | Read-only credential for a private pack source |
 | `SP_ALLOWED_ORIGINS` | Exact learner-site origin allowlist |
-| `SP_MODEL_ACTOR` | Reviewed actor model pin |
-| `SP_MODEL_EVALUATOR` | Reviewed evaluator model pin |
-| `SP_MAX_TURNS` | Reviewed encounter turn bound |
-| `SP_MAX_TOKENS_ACTOR` | Reviewed actor output bound |
-| `SP_MAX_TOKENS_EVAL` | Reviewed evaluator output bound |
 | `SP_ROTATION_ID` | Non-identifying, unique rotation ledger ID |
 | `SP_MANAGED_VOICE_ENABLED` | Explicit production voice kill switch |
 | `SP_VOICE_STACK_ID` | Reviewed speech-stack pin |
@@ -178,6 +179,10 @@ All of these must be recorded outside the automated receipt before learner activ
 - faculty audition and clinical-safety approval for every case/voice pairing;
 - privacy approval of provider policy, retention, deletion, and account controls;
 - evidence that any claimed zero-retention entitlement applies to the deployed account;
+- a deployment preflight confirming the separate operations credential and new non-identifying
+  rotation ID are present before restoring live actor access;
+- confirmation that the learner site's consent version/account-control record matches the exact
+  reviewed pack and speech stack deployed by the proxy; recheck after either site deploys;
 - pronunciation checks for suicide, violence, medication, and emergency-safety language;
 - a small supervised learner pilot with explicit fallback and accessibility review.
 
