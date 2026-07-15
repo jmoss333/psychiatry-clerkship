@@ -800,11 +800,13 @@ git commit -m "feat(sp-proxy): enforce atomic rotation budget"
 **Files:**
 
 - Modify: `sp-proxy/netlify/functions/_shared/sp-http.mjs`
+- Modify: `sp-proxy/netlify/functions/_shared/sp-governance.mjs`
 - Modify: `sp-proxy/netlify/functions/_shared/sp-speech-ticket.mjs`
 - Create: `sp-proxy/netlify/functions/_shared/sp-audio-metadata.mjs`
 - Create: `sp-proxy/netlify/functions/_shared/sp-speech-provider.mjs`
 - Create: `sp-proxy/netlify/functions/sp-voice.mjs`
 - Modify: `sp-proxy/tests/sp-http.test.mjs`
+- Modify: `sp-proxy/tests/sp-pack-governance.test.mjs`
 - Modify: `sp-proxy/tests/sp-speech-ticket.test.mjs`
 - Create: `sp-proxy/tests/sp-audio-metadata.test.mjs`
 - Create: `sp-proxy/tests/helpers/fake-speech-provider.mjs`
@@ -848,6 +850,12 @@ version/effective date, regenerate the preview, and keep engine/profile/privacy 
 null `voiceProvenance` and `adapterMappingVersion` fields that are permitted only for draft profiles;
 reviewed profiles require attested values. Add a test that rejects unknown provider/model pairs and
 locks both candidate IDs.
+
+Refactor managed-voice governance so runtime pins only the active stack and provider/model pairs;
+each reviewed case profile supplies its own voice ID. Require the profile hash to bind the voice,
+provenance, cadence, speaking rate, and adapter-mapping version. Tests must prove two reviewed cases
+on one runtime stack can use different attested stock voices, while any profile/runtime mutation
+fails eligibility.
 
 Test deterministic fake transcripts/audio, integer-millisecond usage, invocation counts,
 configuration/input validation, caller abort, one 45-second timeout, response-size limits, malformed

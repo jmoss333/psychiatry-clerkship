@@ -527,6 +527,7 @@ This is the expected change surface; the implementation plan will specify exact 
 | `sp-proxy/netlify/functions/sp.mjs` | Existing actor plus speech-ticket issuance and usage metadata |
 | `sp-proxy/netlify/functions/sp-voice.mjs` | Bounded transcription, signed synthesis, health, and cost bands |
 | `sp-proxy/netlify/functions/_shared/sp-http.mjs` | Shared auth, CORS, and safe response helpers |
+| `sp-proxy/netlify/functions/_shared/sp-governance.mjs` | Frozen pack, per-case voice, privacy, and runtime-stack eligibility |
 | `sp-proxy/netlify/functions/_shared/sp-speech-ticket.mjs` | HMAC ticket issuance/authentication; standalone redemption is not composed into the billable endpoint |
 | `sp-proxy/netlify/functions/_shared/sp-budget.mjs` | Strongly consistent Blob ledger, idempotent reservations, reconciliation, and budget policy |
 | `sp-proxy/README.md` | Environment, provider, privacy, cost, and rollback operations |
