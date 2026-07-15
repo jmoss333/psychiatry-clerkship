@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const MS3_URL = process.env.MS3_BASE_URL || 'http://localhost:4200';
 const RES_URL = process.env.RES_BASE_URL || 'http://localhost:4201';
+const SP_INTERVIEW_URL = process.env.SP_INTERVIEW_BASE_URL || 'http://localhost:4300';
 
 export default defineConfig({
   testDir: '.',
@@ -53,6 +54,11 @@ export default defineConfig({
       name: 'visual',
       testMatch: 'visual-regression.spec.js',
       use: { ...devices['Desktop Chrome'], baseURL: RES_URL },
+    },
+    {
+      name: 'interview-room',
+      testMatch: 'interview-room.spec.js',
+      use: { ...devices['Desktop Chrome'], baseURL: SP_INTERVIEW_URL },
     },
   ],
 

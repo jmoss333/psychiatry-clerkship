@@ -10,6 +10,52 @@
   var MAX_CACHE_BYTES = 10 * 1024 * 1024;
   var MAX_CACHE_OBJECTS = 3;
   var DEFAULT_MIME_TYPE = 'audio/webm';
+  var MANAGED_MEDIA_TYPES = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/webm', 'audio/ogg', 'audio/wav'];
+
+  function defaultRandomBytes(size) {
+    var cryptoObject = typeof globalThis !== 'undefined' ? globalThis.crypto : null;
+    if (!cryptoObject || typeof cryptoObject.getRandomValues !== 'function') {
+      throw voiceError('random_unavailable', 'Secure browser randomness is unavailable.');
+    }
+    return cryptoObject.getRandomValues(new Uint8Array(size));
+  }
+
+  function randomIdentifier(randomBytes) {
+    if (typeof randomBytes !== 'function') {
+      throw voiceError('random_unavailable', 'Secure browser randomness is unavailable.');
+    }
+    var bytes;
+    try {
+      bytes = randomBytes(16);
+    } catch (error) {
+      throw voiceError('random_unavailable', 'Secure browser randomness is unavailable.', error);
+    }
+    if (!(bytes instanceof Uint8Array) || bytes.byteLength !== 16) {
+      throw voiceError('invalid_randomness', 'Secure randomness must return exactly 16 bytes.');
+    }
+    var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    var output = '';
+    for (var offset = 0; offset < bytes.length; offset += 3) {
+      var remaining = bytes.length - offset;
+      var first = bytes[offset];
+      var second = remaining > 1 ? bytes[offset + 1] : 0;
+      var third = remaining > 2 ? bytes[offset + 2] : 0;
+      var value = (first << 16) | (second << 8) | third;
+      output += alphabet[(value >>> 18) & 63];
+      output += alphabet[(value >>> 12) & 63];
+      if (remaining > 1) output += alphabet[(value >>> 6) & 63];
+      if (remaining > 2) output += alphabet[value & 63];
+    }
+    return output.replace(/\+/g, '-').replace(/\//g, '_');
+  }
+
+  function createEncounterId(options) {
+    var input = options || {};
+    var randomBytes = Object.prototype.hasOwnProperty.call(input, 'randomBytes')
+      ? input.randomBytes
+      : defaultRandomBytes;
+    return randomIdentifier(randomBytes);
+  }
 
   function voiceError(code, message, cause) {
     var error = new Error(message || code);
@@ -20,16 +66,147 @@
   }
 
   function normalizeError(error, fallbackCode) {
-    if (error && typeof error === 'object' && error.code) return error;
+    if (error && typeof error === 'object' && typeof error.code === 'string' && error.code) return error;
     if (error instanceof Error) {
-      error.code = fallbackCode;
-      return error;
+      var normalized = voiceError(fallbackCode, error.message || fallbackCode, error);
+      if (error.status !== undefined) normalized.status = error.status;
+      if (error.retryDisposition) normalized.retryDisposition = error.retryDisposition;
+      return normalized;
     }
     return voiceError(fallbackCode, String(error || fallbackCode), error);
   }
 
   function errorSnapshot(error) {
-    return error ? { code: error.code || 'voice_failed', message: error.message || String(error) } : null;
+    if (!error) return null;
+    var snapshot = { code: error.code || 'voice_failed', message: error.message || String(error) };
+    if (error.retryDisposition) snapshot.retryDisposition = error.retryDisposition;
+    return snapshot;
+  }
+
+  function typedHttpError(response, body, fallbackCode) {
+    var payload = body && typeof body === 'object' ? body : {};
+    var detail = payload.error && typeof payload.error === 'object' ? payload.error : payload;
+    var code = typeof detail.code === 'string' && detail.code ? detail.code : fallbackCode;
+    var message = typeof detail.message === 'string' && detail.message
+      ? detail.message
+      : 'The managed voice request could not be completed.';
+    var error = voiceError(code, message);
+    error.status = response.status;
+    if (typeof payload.retryDisposition === 'string') error.retryDisposition = payload.retryDisposition;
+    return error;
+  }
+
+  function readJson(response) {
+    return response.text().then(function (text) {
+      if (!text) return {};
+      try { return JSON.parse(text); } catch (error) {
+        throw voiceError('invalid_response', 'The managed voice endpoint returned invalid JSON.', error);
+      }
+    });
+  }
+
+  function createManagedTransport(inputOptions) {
+    var options = inputOptions || {};
+    var endpoint = String(options.voiceEndpoint || '').trim().replace(/[?&]+$/, '');
+    if (!endpoint) throw voiceError('invalid_argument', 'voiceEndpoint is required.');
+    var fetchImpl = options.fetchImpl || (typeof fetch === 'function' ? fetch.bind(globalThis) : null);
+    if (typeof fetchImpl !== 'function') throw voiceError('unavailable', 'Browser fetch is unavailable.');
+    if (typeof options.getStudentKey !== 'function') {
+      throw voiceError('invalid_argument', 'getStudentKey must be a function.');
+    }
+    var randomBytes = Object.prototype.hasOwnProperty.call(options, 'randomBytes')
+      ? options.randomBytes
+      : defaultRandomBytes;
+    if (typeof randomBytes !== 'function') {
+      throw voiceError('random_unavailable', 'Secure browser randomness is unavailable.');
+    }
+    var captureIds = new WeakMap();
+
+    function operationUrl(operation) {
+      return endpoint + (endpoint.indexOf('?') >= 0 ? '&' : '?') + 'op=' + operation;
+    }
+
+    function studentKey() {
+      var value = options.getStudentKey();
+      return String(value == null ? '' : value);
+    }
+
+    function captureId(audio) {
+      if (!audio || (typeof audio !== 'object' && typeof audio !== 'function')) {
+        throw voiceError('invalid_audio', 'A finalized audio Blob is required.');
+      }
+      var existing = captureIds.get(audio);
+      if (existing) return existing;
+      var created = randomIdentifier(randomBytes);
+      captureIds.set(audio, created);
+      return created;
+    }
+
+    function transcribe(args) {
+      var request = args || {};
+      var requestMimeType = String(request.mimeType || (request.audio && request.audio.type) || '');
+      if (MANAGED_MEDIA_TYPES.indexOf(requestMimeType) < 0) {
+        return rejected(voiceError('unsupported_audio', 'That recording format is not supported.'));
+      }
+      if (typeof Blob !== 'undefined' && !(request.audio instanceof Blob)) {
+        return rejected(voiceError('invalid_audio', 'A finalized audio Blob is required.'));
+      }
+      var id;
+      try { id = captureId(request.audio); } catch (error) { return rejected(error); }
+      var headers = {
+        'Content-Type': requestMimeType,
+        'x-student-key': studentKey(),
+        'x-sp-case-id': String(request.caseId || ''),
+        'x-sp-encounter-id': String(request.encounterId || ''),
+        'x-sp-turn-id': String(request.turnId),
+        'x-sp-capture-id': id,
+      };
+      return Promise.resolve().then(function () {
+        return fetchImpl(operationUrl('transcribe'), {
+          method: 'POST',
+          headers: headers,
+          body: request.audio,
+          signal: request.signal,
+        });
+      }).then(function (response) {
+        return readJson(response).then(function (body) {
+          if (!response.ok) throw typedHttpError(response, body, 'voice_request_failed');
+          if (!body || typeof body.text !== 'string') {
+            throw voiceError('invalid_response', 'The transcription response is invalid.');
+          }
+          return body;
+        });
+      });
+    }
+
+    function synthesize(args) {
+      var request = args || {};
+      var body = JSON.stringify({ reply: String(request.text == null ? '' : request.text), ticket: request.ticket });
+      return Promise.resolve().then(function () {
+        return fetchImpl(operationUrl('speak'), {
+          method: 'POST',
+          headers: {
+            'Accept': 'audio/*',
+            'Content-Type': 'application/json',
+            'x-student-key': studentKey(),
+          },
+          body: body,
+          signal: request.signal,
+        });
+      }).then(function (response) {
+        if (!response.ok) {
+          return readJson(response).then(function (payload) {
+            throw typedHttpError(response, payload, 'voice_request_failed');
+          });
+        }
+        var mimeType = response.headers.get('content-type') || 'application/octet-stream';
+        return response.arrayBuffer().then(function (buffer) {
+          return { audio: new Uint8Array(buffer), mimeType: mimeType };
+        });
+      });
+    }
+
+    return { transcribe: transcribe, synthesize: synthesize };
   }
 
   function spokenText(reply) {
@@ -140,18 +317,25 @@
       turnId: 0,
       draft: '',
       error: null,
+      notice: null,
       activePatientTurn: null,
       replayableTurnIds: [],
     };
 
     function snapshot() {
+      var publicError = null;
+      if (state.error) {
+        publicError = { code: state.error.code, message: state.error.message };
+        if (state.error.retryDisposition) publicError.retryDisposition = state.error.retryDisposition;
+      }
       return {
         phase: state.phase,
         mode: state.mode,
         encounterId: state.encounterId,
         turnId: state.turnId,
         draft: state.draft,
-        error: state.error ? { code: state.error.code, message: state.error.message } : null,
+        error: publicError,
+        notice: state.notice ? { code: state.notice.code, message: state.notice.message } : null,
         activePatientTurn: state.activePatientTurn,
         replayableTurnIds: state.replayableTurnIds.slice(),
       };
@@ -336,6 +520,7 @@
       publish({
         phase: 'error',
         error: errorSnapshot(normalized),
+        notice: null,
         activePatientTurn: activeTurn == null ? null : activeTurn,
         replayableTurnIds: state.replayableTurnIds.slice(),
       });
@@ -549,11 +734,15 @@
       failState(normalized, null);
     }
 
-    function requestRecordingStop(session) {
+    function requestRecordingStop(session, reason) {
       if (recorderSession !== session || session.cancelled || session.stopRequested) return false;
       session.stopRequested = true;
       clearRecordingTimer(session);
-      publish({ phase: 'transcribing', error: null });
+      session.notice = reason === 'recording_time_limit' ? {
+        code: 'recording_time_limit',
+        message: 'Recording stopped at the 90-second limit. The captured segment is being transcribed.',
+      } : null;
+      publish({ phase: 'transcribing', error: null, notice: session.notice });
       try {
         session.recorder.stop();
       } catch (error) {
@@ -579,7 +768,7 @@
       };
       actorOperation = operation;
       pendingReply = null;
-      publish({ phase: 'awaiting_patient', error: null, activePatientTurn: null });
+      publish({ phase: 'awaiting_patient', error: null, notice: null, activePatientTurn: null });
       Promise.resolve().then(function () {
         if (operation.work.settled) return undefined;
         return runActor({
@@ -653,7 +842,7 @@
       try {
         if (!Number.isFinite(size) || size < 0) throw voiceError('invalid_audio', 'Synthesis returned invalid audio.');
         if (typeof deps.createObjectURL !== 'function') throw voiceError('unavailable', 'Object URL creation is unavailable.');
-        url = deps.createObjectURL(audio);
+        url = deps.createObjectURL(audio, resultMime);
       } catch (error) {
         if (operation.work.settled) return;
         failSynthesis(operation, error);
@@ -726,6 +915,7 @@
         turnId: 0,
         draft: '',
         error: null,
+        notice: null,
         activePatientTurn: null,
         replayableTurnIds: [],
       });
@@ -754,13 +944,15 @@
       }
       if (state.phase === 'ended') throw voiceError('invalid_state', 'The encounter has ended.');
       if (state.mode === mode) return false;
+      var leavingManaged = state.mode === 'managed' && mode !== 'managed';
       cancelOwned('cancelled', 'Voice mode changed.');
       pendingReply = null;
-      if (mode === 'off') clearCache();
+      if (mode === 'off' || leavingManaged) clearCache();
       publish({
         phase: 'ready',
         mode: mode,
         error: null,
+        notice: null,
         activePatientTurn: null,
         replayableTurnIds: state.replayableTurnIds.slice(),
       });
@@ -772,24 +964,28 @@
       if (state.phase !== 'ready') {
         throw voiceError('invalid_state', 'The draft is editable only in ready state.');
       }
-      publish({ draft: String(text == null ? '' : text) });
+      publish({ draft: String(text == null ? '' : text), notice: null });
       return state.draft;
     }
 
     function startListening() {
       assertActiveEncounter();
-      if (state.mode !== 'managed' || state.phase !== 'ready') {
-        throw voiceError('invalid_state', 'Listening is available only in managed ready state.');
+      if (state.mode !== 'managed' || (state.phase !== 'ready' && state.phase !== 'speaking')) {
+        throw voiceError('invalid_state', 'Listening is available only in managed ready or speaking state.');
       }
+      if (state.phase === 'speaking') stopPlayback();
       if (typeof deps.createRecorder !== 'function') {
         throw voiceError('unavailable', 'Managed recording is unavailable.');
       }
-      cancelPlayer();
+      var recordingMimeType = typeof deps.getMimeType === 'function' ? deps.getMimeType() : mimeType;
+      if (typeof recordingMimeType !== 'string' || !recordingMimeType) {
+        throw voiceError('unavailable', 'No reviewed recording format is available.');
+      }
       var session = {
         encounterId: state.encounterId,
         baseTurnId: state.turnId,
         turnId: state.turnId + 1,
-        mimeType: mimeType,
+        mimeType: recordingMimeType,
         chunks: [],
         bytes: 0,
         timerId: null,
@@ -798,11 +994,12 @@
         stopRequested: false,
         stopHandled: false,
         released: false,
+        notice: null,
         work: createWork(),
       };
       try {
         session.recorder = deps.createRecorder({
-          mimeType: mimeType,
+          mimeType: session.mimeType,
           encounterId: session.encounterId,
           turnId: session.turnId,
           onChunk: function (chunk) { onRecordingChunk(session, chunk); },
@@ -811,9 +1008,9 @@
         });
         requireAdapter(session.recorder, ['start', 'stop', 'cancel', 'release'], 'Recorder adapter');
         recorderSession = session;
-        publish({ phase: 'listening', error: null, activePatientTurn: null });
+        publish({ phase: 'listening', error: null, notice: null, activePatientTurn: null });
         if (timerSet) {
-          session.timerId = timerSet(function () { requestRecordingStop(session); }, MAX_RECORDING_MS);
+          session.timerId = timerSet(function () { requestRecordingStop(session, 'recording_time_limit'); }, MAX_RECORDING_MS);
         }
         session.recorder.start();
       } catch (error) {
@@ -885,6 +1082,11 @@
             return rejected(deviceError);
           }
         }
+        if (typeof accepted.ticket !== 'string' || !accepted.ticket) {
+          var noTicket = voiceError('managed_audio_unavailable', 'Managed audio is unavailable for this reply.');
+          failState(noTicket, accepted.turnId);
+          return rejected(noTicket);
+        }
         if (typeof deps.synthesize !== 'function') {
           var unavailable = voiceError('unavailable', 'Managed synthesis is unavailable.');
           failState(unavailable, accepted.turnId);
@@ -927,7 +1129,7 @@
     }
 
     function canReplay(turnId) {
-      if (destroyed || state.phase !== 'ready' || state.mode === 'off' || state.encounterId == null) return false;
+      if (destroyed || (state.phase !== 'ready' && state.phase !== 'error') || state.mode !== 'managed' || state.encounterId == null) return false;
       return cache.some(function (entry) {
         return entry.turnId === turnId && entry.encounterId === state.encounterId && !entry.revoked;
       });
@@ -959,6 +1161,7 @@
         });
         return true;
       }
+      clearCache();
       publish({ phase: 'ready', mode: 'device', error: null, activePatientTurn: null });
       if (pendingReply) {
         try {
@@ -980,7 +1183,7 @@
       cancelOwned('cancelled', reason || 'Voice work was cancelled.');
       pendingReply = null;
       if (state.encounterId != null) {
-        publish({ phase: 'ready', error: null, activePatientTurn: null });
+        publish({ phase: 'ready', error: null, notice: null, activePatientTurn: null });
       }
       return changed;
     }
@@ -995,6 +1198,7 @@
         phase: 'ended',
         draft: '',
         error: null,
+        notice: null,
         activePatientTurn: null,
         replayableTurnIds: [],
       });
@@ -1013,6 +1217,7 @@
         encounterId: null,
         draft: '',
         error: null,
+        notice: null,
         activePatientTurn: null,
         replayableTurnIds: [],
       });
@@ -1054,6 +1259,8 @@
 
   return {
     createController: createController,
+    createEncounterId: createEncounterId,
+    createManagedTransport: createManagedTransport,
     spokenText: spokenText,
   };
 });

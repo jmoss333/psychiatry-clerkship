@@ -427,12 +427,14 @@ test('recorder chunks remain byte-exact and failure, cancellation, and staleness
 
 test('recorder adapter requires all lifecycle methods before ownership and receives turn identity', () => {
   const valid = makeHarness();
+  valid.deps.getMimeType = () => 'audio/ogg;codecs=opus';
   const validController = SPInterviewVoice.createController(valid.deps);
   validController.beginEncounter('enc-recorder-shape');
   validController.setMode('managed');
   validController.startListening();
   assert.equal(valid.recorders[0].options.encounterId, 'enc-recorder-shape');
   assert.equal(valid.recorders[0].options.turnId, 1);
+  assert.equal(valid.recorders[0].options.mimeType, 'audio/ogg;codecs=opus');
   validController.cancelAll('test cleanup');
 
   const invalid = makeHarness();
@@ -506,6 +508,30 @@ test('device speech strips only star stage directions and normalizes whitespace'
   assert.equal(controller.getSnapshot().phase, 'ready');
 });
 
+test('managed Speak stops active patient audio before recording begins', async () => {
+  const h = makeHarness();
+  const controller = SPInterviewVoice.createController(h.deps);
+  controller.beginEncounter('enc-managed-barge-in');
+  controller.setMode('managed');
+  const opening = await openReply(controller, {
+    reply: 'You can interrupt this optional audio.',
+    ticket: 'barge-in-ticket',
+  });
+  const accepted = controller.acceptPatientReply(opening);
+  await flush();
+  h.syntheses[0].work.resolve({ audio: { size: 32 }, mimeType: 'audio/mpeg' });
+  await accepted;
+  assert.equal(controller.getSnapshot().phase, 'speaking');
+  assert.equal(h.players[0].active, true);
+
+  assert.equal(controller.startListening(), true);
+  assert.equal(h.players[0].stops, 1);
+  assert.equal(h.players[0].destroys, 1);
+  assert.equal(h.recorders[0].active, true);
+  assert.equal(controller.getSnapshot().phase, 'listening');
+  controller.cancelAll('test cleanup');
+});
+
 test('managed and device players require complete lifecycle adapters before ownership', async () => {
   const managed = makeHarness();
   let managedStops = 0;
@@ -556,6 +582,23 @@ test('missing managed synthesis becomes an explicit fallback state', async () =>
   assert.equal(controller.resolveFallback('text'), true);
   assert.equal(controller.getSnapshot().phase, 'ready');
   assert.equal(controller.getSnapshot().mode, 'off');
+});
+
+test('a fail-soft null speech ticket keeps text and makes no synthesis request', async () => {
+  const h = makeHarness();
+  const controller = SPInterviewVoice.createController(h.deps);
+  controller.beginEncounter('enc-null-ticket');
+  controller.setMode('managed');
+
+  const opening = await openReply(controller, { reply: 'Complete text remains visible.', ticket: null });
+  await assert.rejects(
+    controller.acceptPatientReply(opening),
+    (error) => error.code === 'managed_audio_unavailable',
+  );
+
+  assert.equal(h.syntheses.length, 0, 'a missing signed ticket must never call synthesis');
+  assert.equal(controller.getSnapshot().phase, 'error');
+  assert.equal(controller.getSnapshot().activePatientTurn, 0);
 });
 
 test('managed synthesis uses exact identifiers and replay performs no network work or refresh', async () => {
@@ -616,6 +659,40 @@ test('managed synthesis uses exact identifiers and replay performs no network wo
   assert.equal(count(h.revokedUrls, 'blob:contract-1'), 1, 'oldest URL is revoked once on eviction');
   assert.equal(controller.canReplay(0), false);
   assert.equal(controller.canReplay(1), true);
+});
+
+test('leaving managed mode clears provider audio and forbids replay', async () => {
+  const h = makeHarness();
+  const controller = SPInterviewVoice.createController(h.deps);
+  controller.beginEncounter('enc-mode-cache');
+  controller.setMode('managed');
+  const opening = await openReply(controller);
+  const player = await acceptManaged(controller, h, opening, 64);
+  player.end();
+  assert.equal(controller.canReplay(0), true);
+
+  controller.setMode('device');
+  assert.deepEqual(controller.getSnapshot().replayableTurnIds, []);
+  assert.equal(controller.canReplay(0), false);
+  assert.equal(count(h.revokedUrls, 'blob:contract-1'), 1);
+  assert.throws(() => controller.replay(0), { code: 'invalid_state' });
+});
+
+test('device fallback clears cached managed audio before changing identity', async () => {
+  const h = makeHarness();
+  const controller = SPInterviewVoice.createController(h.deps);
+  controller.beginEncounter('enc-fallback-cache');
+  controller.setMode('managed');
+  const opening = await openReply(controller);
+  const player = await acceptManaged(controller, h, opening, 64);
+  player.error(Object.assign(new Error('Autoplay blocked'), { code: 'playback_failed' }));
+  assert.equal(controller.getSnapshot().phase, 'error');
+  assert.deepEqual(controller.getSnapshot().replayableTurnIds, [0]);
+
+  assert.equal(controller.resolveFallback('device'), true);
+  assert.deepEqual(controller.getSnapshot().replayableTurnIds, []);
+  assert.equal(controller.canReplay(0), false);
+  assert.equal(count(h.revokedUrls, 'blob:contract-1'), 1);
 });
 
 test('oversized one-shot audio is not cached and every URL is revoked exactly once', async () => {

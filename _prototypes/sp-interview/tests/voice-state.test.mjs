@@ -206,6 +206,7 @@ test('controller starts from the exact public snapshot and publishes the state g
     turnId: 0,
     draft: '',
     error: null,
+    notice: null,
     activePatientTurn: null,
     replayableTurnIds: [],
   });
@@ -216,6 +217,7 @@ test('controller starts from the exact public snapshot and publishes the state g
     'turnId',
     'draft',
     'error',
+    'notice',
     'activePatientTurn',
     'replayableTurnIds',
   ]);
@@ -292,6 +294,10 @@ test('managed recording stops at 90 seconds and replaces, but never sends, the e
   assert.equal(h.recorders[0].stops, 1);
   assert.equal(h.recorders[0].releases, 1);
   assert.equal(controller.getSnapshot().phase, 'transcribing');
+  assert.deepEqual(controller.getSnapshot().notice, {
+    code: 'recording_time_limit',
+    message: 'Recording stopped at the 90-second limit. The captured segment is being transcribed.',
+  });
   assert.equal(h.transcriptions.length, 1);
   assert.equal(h.transcriptions[0].args.encounterId, 'enc-record');
   assert.equal(h.transcriptions[0].args.turnId, 1);
@@ -304,6 +310,7 @@ test('managed recording stops at 90 seconds and replaces, but never sends, the e
   await flush();
   assert.equal(controller.getSnapshot().phase, 'ready');
   assert.equal(controller.getSnapshot().draft, 'Could you tell me more?');
+  assert.equal(controller.getSnapshot().notice.code, 'recording_time_limit');
   assert.equal(controller.getSnapshot().turnId, 0, 'dictation must never auto-send');
   assert.equal(h.clock.pending(), 0);
 });
