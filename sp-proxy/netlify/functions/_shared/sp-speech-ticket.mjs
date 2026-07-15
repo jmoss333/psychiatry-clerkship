@@ -200,6 +200,7 @@ export function createTicketCodec({
   if (typeof clock !== 'function' || typeof randomBytes !== 'function') {
     throw operationalError(500, 'invalid_configuration', 'The speech ticket codec is not configured.');
   }
+  const authenticatedPayloads = new WeakSet();
 
   function signature(encodedPayload) {
     return createHmac('sha256', secretBytes).update(encodedPayload, 'utf8').digest();
@@ -234,9 +235,9 @@ export function createTicketCodec({
     return `${encodedPayload}.${signature(encodedPayload).toString('base64url')}`;
   }
 
-  function verify({ ticket, reply, expected }) {
+  function authenticate({ ticket, reply }) {
     try {
-      if (typeof ticket !== 'string') throw invalidTicket();
+      if (typeof ticket !== 'string' || typeof reply !== 'string') throw invalidTicket();
       const parts = ticket.split('.');
       if (
         parts.length !== 2
@@ -260,14 +261,30 @@ export function createTicketCodec({
       const payloadText = Buffer.from(parts[0], 'base64url').toString('utf8');
       if (Buffer.from(payloadText, 'utf8').toString('base64url') !== parts[0]) throw invalidTicket();
       const payload = JSON.parse(payloadText);
-      if (!validatePayload(payload) || !validateBindings(expected) || typeof reply !== 'string') {
-        throw invalidTicket();
-      }
+      if (!validatePayload(payload)) throw invalidTicket();
       const now = nowSeconds(clock);
       if (now >= payload.exp) throw expiredTicket();
       if (now < payload.iat) throw invalidTicket();
       if (!secureEqual(payload.replyHash, sha256(reply))) throw invalidTicket();
+      const frozen = Object.freeze(payload);
+      authenticatedPayloads.add(frozen);
+      return frozen;
+    } catch (error) {
+      if (error?.code === 'speech_ticket_expired') throw error;
+      throw invalidTicket();
+    }
+  }
 
+  function assertBindings({ payload, expected }) {
+    try {
+      if (
+        !validatePayload(payload)
+        || !Object.isFrozen(payload)
+        || !authenticatedPayloads.has(payload)
+        || !validateBindings(expected)
+      ) {
+        throw invalidTicket();
+      }
       for (const field of [
         'rotationId',
         'encounterId',
@@ -286,13 +303,16 @@ export function createTicketCodec({
         }
       }
       return payload;
-    } catch (error) {
-      if (error?.code === 'speech_ticket_expired') throw error;
+    } catch {
       throw invalidTicket();
     }
   }
 
-  return { issue, verify };
+  function verify({ ticket, reply, expected }) {
+    return assertBindings({ payload: authenticate({ ticket, reply }), expected });
+  }
+
+  return Object.freeze({ issue, authenticate, assertBindings, verify });
 }
 
 export function createRedemptionLedger({

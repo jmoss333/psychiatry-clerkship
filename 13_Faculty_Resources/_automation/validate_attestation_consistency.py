@@ -7,10 +7,12 @@ approval than that ledger actually records.
 """
 
 import json
+import math
 import os
 import re
 import sys
 from datetime import date
+from urllib.parse import urlparse
 
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -23,6 +25,22 @@ MANIFEST_PATH = os.path.join(
 REVIEWED_STATUSES = {"reviewed", "attested"}
 PROFILE_STATUSES = {"draft-pending-attestation", "reviewed"}
 CADENCES = {"measured-flat", "pressured-fast", "guarded-halting"}
+SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
+OPENAI_STOCK_VOICES = {
+    "alloy",
+    "ash",
+    "ballad",
+    "cedar",
+    "coral",
+    "echo",
+    "fable",
+    "marin",
+    "nova",
+    "onyx",
+    "sage",
+    "shimmer",
+    "verse",
+}
 EXPECTED_CANDIDATE_IDS = {"openai-quality-v1", "elevenlabs-expressive-v1"}
 EXPECTED_CANDIDATE_STACKS = {
     "openai-quality-v1": {
@@ -31,10 +49,11 @@ EXPECTED_CANDIDATE_STACKS = {
     },
     "elevenlabs-expressive-v1": {
         "transcription": ("elevenlabs", "scribe_v2"),
-        "synthesis": ("elevenlabs", "eleven_multilingual_v3"),
+        "synthesis": ("elevenlabs", "eleven_v3"),
     },
 }
-PLANNING_RATE_EFFECTIVE_DATE = "2026-07-14"
+PLANNING_RATE_VERSION = "2026-07-15-planning-v2"
+PLANNING_RATE_EFFECTIVE_DATE = "2026-07-15"
 EXPECTED_RATE_TUPLES = (
     (
         "anthropic",
@@ -61,7 +80,7 @@ EXPECTED_RATE_TUPLES = (
     ),
     (
         "elevenlabs",
-        "eleven_multilingual_v3",
+        "eleven_v3",
         "synthesis_characters",
         "thousand_characters",
         0.1,
@@ -100,8 +119,107 @@ def parse_iso_date(value):
         return None
 
 
+def is_sha256(value):
+    return isinstance(value, str) and SHA256_RE.fullmatch(value) is not None
+
+
+def exact_keys(value, expected):
+    return isinstance(value, dict) and set(value) == set(expected)
+
+
+def finite_number(value, minimum, maximum):
+    return (
+        not isinstance(value, bool)
+        and isinstance(value, (int, float))
+        and math.isfinite(value)
+        and minimum <= value <= maximum
+    )
+
+
+def valid_https_url(value):
+    if not isinstance(value, str):
+        return False
+    try:
+        parsed = urlparse(value)
+    except ValueError:
+        return False
+    return (
+        parsed.scheme == "https"
+        and bool(parsed.netloc)
+        and parsed.username is None
+        and parsed.password is None
+    )
+
+
 def _case_label(case_def, index):
     return str(case_def.get("id") or "case[%d]" % index)
+
+
+def _validate_reviewed_voice_contract(slug, case_id, profile):
+    errors = []
+    prefix = "%s: reviewed case %s speechProfile" % (slug, case_id)
+    provenance = profile.get("voiceProvenance")
+    provenance_keys = {
+        "kind", "catalogUrl", "verifiedBy", "verifiedAt", "evidenceHash"
+    }
+    if not exact_keys(provenance, provenance_keys):
+        errors.append(prefix + ".voiceProvenance must have the exact reviewed shape")
+    else:
+        verified_at = parse_iso_date(provenance.get("verifiedAt"))
+        if provenance.get("kind") != "provider-stock":
+            errors.append(prefix + ".voiceProvenance.kind must be provider-stock")
+        if not valid_https_url(provenance.get("catalogUrl")):
+            errors.append(prefix + ".voiceProvenance.catalogUrl must be HTTPS")
+        if not isinstance(provenance.get("verifiedBy"), str) or not provenance.get("verifiedBy", "").strip():
+            errors.append(prefix + ".voiceProvenance.verifiedBy is required")
+        if verified_at is None or verified_at > date.today():
+            errors.append(prefix + ".voiceProvenance.verifiedAt is invalid or future")
+        if not is_sha256(provenance.get("evidenceHash")):
+            errors.append(prefix + ".voiceProvenance.evidenceHash must be SHA-256")
+
+    provider = profile.get("provider")
+    model = profile.get("providerModel")
+    mapping = profile.get("adapterMappingVersion")
+    settings = profile.get("providerSettings")
+    speaking_rate = profile.get("speakingRate")
+    if provider == "openai" and model == "tts-1-hd":
+        if profile.get("voiceId") not in OPENAI_STOCK_VOICES:
+            errors.append(prefix + ".voiceId is not a supported OpenAI stock voice")
+        if mapping != "openai-tts-1-hd-v1":
+            errors.append(prefix + ".adapterMappingVersion is invalid for OpenAI")
+        if not exact_keys(settings, {"speed"}):
+            errors.append(prefix + ".providerSettings must contain only speed")
+        elif settings.get("speed") != speaking_rate:
+            errors.append(prefix + ".providerSettings.speed must equal speakingRate")
+    elif provider == "elevenlabs" and model == "eleven_v3":
+        required_settings = {
+            "speed",
+            "stability",
+            "similarity_boost",
+            "style",
+            "use_speaker_boost",
+        }
+        if mapping != "eleven-v3-v1":
+            errors.append(prefix + ".adapterMappingVersion is invalid for Eleven v3")
+        if not exact_keys(settings, required_settings):
+            errors.append(prefix + ".providerSettings has an invalid Eleven v3 shape")
+        else:
+            if settings.get("speed") != speaking_rate or not finite_number(
+                settings.get("speed"), 0.7, 1.2
+            ):
+                errors.append(prefix + ".providerSettings.speed is invalid for Eleven v3")
+            stability = settings.get("stability")
+            if isinstance(stability, bool) or stability not in (0, 0.5, 1):
+                errors.append(prefix + ".providerSettings.stability is invalid")
+            if not finite_number(settings.get("similarity_boost"), 0, 1):
+                errors.append(prefix + ".providerSettings.similarity_boost is invalid")
+            if not finite_number(settings.get("style"), 0, 1):
+                errors.append(prefix + ".providerSettings.style is invalid")
+            if not isinstance(settings.get("use_speaker_boost"), bool):
+                errors.append(prefix + ".providerSettings.use_speaker_boost must be boolean")
+    else:
+        errors.append(prefix + " has an unsupported provider/model pair")
+    return errors
 
 
 def _validate_speech_profile(slug, case_def, case_id, engine_status):
@@ -158,6 +276,12 @@ def _validate_speech_profile(slug, case_def, case_id, engine_status):
                 "%s: case %s draft speechProfile cannot claim reviewed facultyReview"
                 % (slug, case_id)
             )
+        for field in ("voiceProvenance", "adapterMappingVersion", "providerSettings"):
+            if field not in profile or profile.get(field) is not None:
+                errors.append(
+                    "%s: case %s draft speechProfile.%s must be null"
+                    % (slug, case_id, field)
+                )
     elif profile_status == "reviewed":
         if engine_status != "reviewed":
             errors.append(
@@ -186,9 +310,22 @@ def _validate_speech_profile(slug, case_def, case_id, engine_status):
                     "%s: reviewed case %s speechProfile facultyReview is missing %s"
                     % (slug, case_id, field)
                 )
+        if review.get("profileHash") and not is_sha256(review.get("profileHash")):
+            errors.append(
+                "%s: reviewed case %s speechProfile facultyReview.profileHash must be SHA-256"
+                % (slug, case_id)
+            )
+        errors.extend(_validate_reviewed_voice_contract(slug, case_id, profile))
 
     if profile_status != "draft-pending-attestation":
-        for field in ("provider", "providerModel", "voiceId"):
+        for field in (
+            "provider",
+            "providerModel",
+            "voiceId",
+            "voiceProvenance",
+            "adapterMappingVersion",
+            "providerSettings",
+        ):
             if profile.get(field) is None:
                 errors.append(
                     "%s: null speechProfile.%s is allowed only while draft"
@@ -302,11 +439,13 @@ def _validate_speech_engine(slug, pack, cases):
             and all(rate_tuple in EXPECTED_RATE_TUPLES for rate_tuple in actual_rate_tuples)
         )
         if (
+            rate_card.get("version") != PLANNING_RATE_VERSION
+            or
             rate_card.get("effectiveDate") != PLANNING_RATE_EFFECTIVE_DATE
             or not exact_rates
         ):
             errors.append(
-                "%s: rateCard does not match the 2026-07-14 planning contract"
+                "%s: rateCard does not match the 2026-07-15 planning contract"
                 % slug
             )
 
@@ -354,6 +493,10 @@ def _validate_speech_engine(slug, pack, cases):
                 "%s: pending privacyReview consentVersion must be 2026-07-14-draft"
                 % slug
             )
+        if "accountControls" not in privacy or privacy.get("accountControls") is not None:
+            errors.append(
+                "%s: pending privacyReview.accountControls must be null" % slug
+            )
 
     if isinstance(privacy, dict) and (
         engine_status == "reviewed" or speech_engine.get("enabled") is True
@@ -373,7 +516,7 @@ def _validate_speech_engine(slug, pack, cases):
         valid_policy_hashes = (
             isinstance(policy_hashes, list)
             and bool(policy_hashes)
-            and all(isinstance(value, str) and value.strip() for value in policy_hashes)
+            and all(is_sha256(value) for value in policy_hashes)
         )
         if (
             not valid_policy_urls
@@ -404,6 +547,42 @@ def _validate_speech_engine(slug, pack, cases):
                 "%s: approved privacy review requires a non-draft consentVersion"
                 % slug
             )
+        active_candidates = [
+            candidate
+            for candidate in candidates
+            if isinstance(candidate, dict)
+            and candidate.get("id") == speech_engine.get("activeStack")
+        ]
+        active_provider = None
+        if len(active_candidates) == 1:
+            transcription_provider = active_candidates[0].get("transcription", {}).get("provider")
+            synthesis_provider = active_candidates[0].get("synthesis", {}).get("provider")
+            if transcription_provider == synthesis_provider:
+                active_provider = synthesis_provider
+        account_controls = privacy.get("accountControls")
+        if not exact_keys(
+            account_controls,
+            {"provider", "zeroRetentionEntitled", "evidenceHash"},
+        ):
+            errors.append(
+                "%s: approved privacy review requires exact accountControls" % slug
+            )
+        else:
+            if not active_provider or account_controls.get("provider") != active_provider:
+                errors.append(
+                    "%s: privacyReview.accountControls provider must match the active stack"
+                    % slug
+                )
+            if not isinstance(account_controls.get("zeroRetentionEntitled"), bool):
+                errors.append(
+                    "%s: privacyReview.accountControls zeroRetentionEntitled must be boolean"
+                    % slug
+                )
+            if not is_sha256(account_controls.get("evidenceHash")):
+                errors.append(
+                    "%s: privacyReview.accountControls evidenceHash must be SHA-256"
+                    % slug
+                )
 
     if speech_engine.get("enabled") is True and engine_status != "reviewed":
         errors.append("%s: managed voice cannot be enabled before speechEngine review" % slug)

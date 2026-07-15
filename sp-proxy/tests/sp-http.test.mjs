@@ -137,14 +137,65 @@ test('student authorization returns the exact allowed origin and emits scoped CO
   assert.equal(response.headers.get('access-control-allow-methods'), 'GET, POST, OPTIONS');
   assert.equal(
     response.headers.get('access-control-allow-headers'),
-    'Content-Type, x-student-key',
+    'Content-Type, x-student-key, x-sp-case-id, x-sp-encounter-id, x-sp-turn-id, x-sp-capture-id',
   );
   assert.equal(response.headers.get('vary'), 'Origin');
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
   assert.deepEqual(await response.json(), { ok: true });
 
   const preflight = http.preflight(request({ method: 'OPTIONS' }));
   assert.equal(preflight.status, 204);
   assert.equal(preflight.headers.get('access-control-allow-origin'), ALLOWED_ORIGIN);
+});
+
+test('split learner auth retains an allowed origin for a browser-readable typed 401', async () => {
+  const http = createProductionHttp();
+  const wrongCredential = request({ studentKey: 'wrong' });
+  const origin = http.requireOrigin(wrongCredential);
+  assert.equal(origin, ALLOWED_ORIGIN);
+  let failure;
+  try {
+    http.requireStudentCredential(wrongCredential);
+  } catch (error) {
+    failure = error;
+  }
+  const response = http.error(failure, { origin });
+  assert.equal(response.status, 401);
+  assert.equal(response.headers.get('access-control-allow-origin'), ALLOWED_ORIGIN);
+  assert.deepEqual(await response.json(), {
+    error: { code: 'unauthorized', message: 'Unauthorized.' },
+  });
+
+  assert.throws(
+    () => http.requireOrigin(request({
+      origin: 'https://attacker.example.test',
+      studentKey: 'wrong',
+    })),
+    (error) => assertOperationalError(error, {
+      status: 403,
+      code: 'origin_not_allowed',
+      message: 'This origin is not allowed.',
+    }),
+  );
+});
+
+test('binary learner responses are scoped, no-store, and nosniff', async () => {
+  const http = createProductionHttp();
+  const bytes = Uint8Array.of(0x49, 0x44, 0x33);
+  const response = http.binary(bytes, {
+    contentType: 'audio/mpeg',
+    status: 201,
+    origin: ALLOWED_ORIGIN,
+  });
+
+  assert.equal(response.status, 201);
+  assert.equal(response.headers.get('content-type'), 'audio/mpeg');
+  assert.equal(response.headers.get('content-length'), '3');
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(response.headers.get('access-control-allow-origin'), ALLOWED_ORIGIN);
+  assert.deepEqual(new Uint8Array(await response.arrayBuffer()), bytes);
 });
 
 test('student authorization rejects disallowed origins before credentials', async () => {
@@ -200,6 +251,8 @@ test('operations authorization is distinct and usage responses never emit browse
   );
   assert.equal(response.headers.has('access-control-allow-origin'), false);
   assert.equal(response.headers.has('access-control-allow-methods'), false);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
   assert.deepEqual(await response.json(), { spendMicros: 123 });
 
   for (const operationsKey of [undefined, STUDENT_KEY, 'wrong']) {

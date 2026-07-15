@@ -24,8 +24,11 @@ def draft_speech_profile(profile_id="dana-measured-v1"):
         "provider": None,
         "providerModel": None,
         "voiceId": None,
+        "voiceProvenance": None,
         "cadence": "measured-flat",
         "speakingRate": 0.95,
+        "adapterMappingVersion": None,
+        "providerSettings": None,
         "stageDirections": "visual-only",
         "facultyReview": {
             "status": "pending",
@@ -54,13 +57,13 @@ def draft_speech_engine():
                 "transcription": {"provider": "elevenlabs", "model": "scribe_v2"},
                 "synthesis": {
                     "provider": "elevenlabs",
-                    "model": "eleven_multilingual_v3",
+                    "model": "eleven_v3",
                 },
             },
         ],
         "rateCard": {
-            "version": "2026-07-14-planning-v1",
-            "effectiveDate": "2026-07-14",
+            "version": "2026-07-15-planning-v2",
+            "effectiveDate": "2026-07-15",
             "currency": "USD",
             "rates": [
                 {
@@ -113,7 +116,7 @@ def draft_speech_engine():
                 },
                 {
                     "provider": "elevenlabs",
-                    "model": "eleven_multilingual_v3",
+                    "model": "eleven_v3",
                     "meter": "synthesis_characters",
                     "unit": "thousand_characters",
                     "price": 0.1,
@@ -130,6 +133,7 @@ def draft_speech_engine():
             "nextReviewAt": None,
             "decision": "pending",
             "consentVersion": "2026-07-14-draft",
+            "accountControls": None,
         },
     }
 
@@ -179,10 +183,67 @@ def reviewed_voice_pack():
                 "nextReviewAt": "2099-07-14",
                 "decision": "approved",
                 "consentVersion": "2026-07-14-v1",
+                "accountControls": {
+                    "provider": "openai",
+                    "zeroRetentionEntitled": False,
+                    "evidenceHash": "e" * 64,
+                },
             },
         }
     )
     return pack
+
+
+def review_first_profile(pack, provider="openai"):
+    profile = pack["cases"][0]["speechProfile"]
+    if provider == "openai":
+        provider_model = "tts-1-hd"
+        voice_id = "alloy"
+        mapping = "openai-tts-1-hd-v1"
+        settings = {"speed": profile["speakingRate"]}
+        pack["speechEngine"]["activeStack"] = "openai-quality-v1"
+    else:
+        provider_model = "eleven_v3"
+        voice_id = "stock-voice-2"
+        mapping = "eleven-v3-v1"
+        settings = {
+            "speed": profile["speakingRate"],
+            "stability": 0.5,
+            "similarity_boost": 0.75,
+            "style": 0.2,
+            "use_speaker_boost": True,
+        }
+        pack["speechEngine"]["activeStack"] = "elevenlabs-expressive-v1"
+        pack["speechEngine"]["privacyReview"]["accountControls"] = {
+            "provider": "elevenlabs",
+            "zeroRetentionEntitled": False,
+            "evidenceHash": "f" * 64,
+        }
+    profile.update(
+        {
+            "status": "reviewed",
+            "provider": provider,
+            "providerModel": provider_model,
+            "voiceId": voice_id,
+            "voiceProvenance": {
+                "kind": "provider-stock",
+                "catalogUrl": "https://provider.example.test/stock-voices/" + voice_id,
+                "verifiedBy": "Faculty voice reviewer",
+                "verifiedAt": "2026-07-14",
+                "evidenceHash": "c" * 64,
+            },
+            "adapterMappingVersion": mapping,
+            "providerSettings": settings,
+            "facultyReview": {
+                "status": "reviewed",
+                "reviewer": "Faculty Reviewer, MD",
+                "reviewedAt": "2026-07-14",
+                "auditionId": "synthetic-audition-fixture",
+                "profileHash": "d" * 64,
+            },
+        }
+    )
+    return profile
 
 
 def swap_candidate_synthesis(pack):
@@ -342,6 +403,98 @@ class AttestationConsistencyTests(unittest.TestCase):
             errors = self.validate(root)
         self.assertEqual(errors, [])
 
+    def test_draft_privacy_cannot_claim_account_controls(self):
+        pack = pending_pack()
+        pack["speechEngine"]["privacyReview"]["accountControls"] = {
+            "provider": "openai",
+            "zeroRetentionEntitled": False,
+            "evidenceHash": "e" * 64,
+        }
+        errors = self.validate_pack(pack)
+        self.assertTrue(any("accountControls must be null" in error for error in errors), errors)
+
+    def test_draft_profiles_require_explicit_null_attestation_only_fields(self):
+        for field, value in {
+            "voiceProvenance": {
+                "kind": "provider-stock",
+                "catalogUrl": "https://example.test/voice",
+                "verifiedBy": "Unapproved placeholder",
+                "verifiedAt": "2026-07-14",
+                "evidenceHash": "a" * 64,
+            },
+            "adapterMappingVersion": "openai-tts-1-hd-v1",
+            "providerSettings": {"speed": 0.95},
+        }.items():
+            with self.subTest(field=field):
+                pack = pending_pack()
+                pack["cases"][0]["speechProfile"][field] = value
+                errors = self.validate_pack(pack)
+                self.assertTrue(any(field in error and "must be null" in error for error in errors), errors)
+
+    def test_reviewed_profile_requires_exact_stock_provenance_and_openai_mapping(self):
+        valid = reviewed_voice_pack()
+        review_first_profile(valid)
+        self.assertEqual(self.validate_pack(valid), [])
+
+        def mutate(field, value):
+            def apply(pack):
+                profile = review_first_profile(pack)
+                if field.startswith("voiceProvenance."):
+                    profile["voiceProvenance"][field.split(".", 1)[1]] = value
+                elif field.startswith("providerSettings."):
+                    profile["providerSettings"][field.split(".", 1)[1]] = value
+                else:
+                    profile[field] = value
+            return apply
+
+        mutations = {
+            "cloned provenance": mutate("voiceProvenance.kind", "cloned"),
+            "HTTP catalog": mutate("voiceProvenance.catalogUrl", "http://example.test/voice"),
+            "blank verifier": mutate("voiceProvenance.verifiedBy", "  "),
+            "future verification": mutate("voiceProvenance.verifiedAt", "2999-01-01"),
+            "invalid evidence hash": mutate("voiceProvenance.evidenceHash", "A" * 64),
+            "wrong mapping": mutate("adapterMappingVersion", "openai-v2"),
+            "speed mismatch": mutate("providerSettings.speed", 1.0),
+            "unknown model": mutate("providerModel", "tts-unknown"),
+        }
+        for label, apply in mutations.items():
+            with self.subTest(mutation=label):
+                pack = reviewed_voice_pack()
+                apply(pack)
+                self.assertTrue(self.validate_pack(pack), label)
+
+        pack = reviewed_voice_pack()
+        profile = review_first_profile(pack)
+        profile["voiceProvenance"]["extra"] = True
+        self.assertTrue(self.validate_pack(pack))
+        pack = reviewed_voice_pack()
+        profile = review_first_profile(pack)
+        profile["providerSettings"]["pitch"] = 1
+        self.assertTrue(self.validate_pack(pack))
+
+    def test_reviewed_eleven_v3_profile_requires_exact_supported_settings(self):
+        valid = reviewed_voice_pack()
+        review_first_profile(valid, "elevenlabs")
+        self.assertEqual(self.validate_pack(valid), [])
+
+        mutations = {
+            "speed over supported range": lambda p: (
+                p.update({"speakingRate": 1.21}),
+                p["providerSettings"].update({"speed": 1.21}),
+            ),
+            "unsupported stability": lambda p: p["providerSettings"].update({"stability": 0.2}),
+            "similarity out of range": lambda p: p["providerSettings"].update({"similarity_boost": 1.1}),
+            "style out of range": lambda p: p["providerSettings"].update({"style": -0.1}),
+            "non-boolean boost": lambda p: p["providerSettings"].update({"use_speaker_boost": "true"}),
+            "wrong mapping": lambda p: p.update({"adapterMappingVersion": "eleven-v2-v1"}),
+        }
+        for label, apply in mutations.items():
+            with self.subTest(mutation=label):
+                pack = reviewed_voice_pack()
+                profile = review_first_profile(pack, "elevenlabs")
+                apply(profile)
+                self.assertTrue(self.validate_pack(pack), label)
+
     def test_reviewed_enabled_engine_requires_complete_approved_privacy(self):
         self.assertEqual(self.validate_pack(reviewed_voice_pack()), [])
 
@@ -380,6 +533,21 @@ class AttestationConsistencyTests(unittest.TestCase):
                 "2026-07-14-draft"
             )
 
+        def missing_account_controls(pack):
+            pack["speechEngine"]["privacyReview"]["accountControls"] = None
+
+        def wrong_account_provider(pack):
+            pack["speechEngine"]["privacyReview"]["accountControls"]["provider"] = "elevenlabs"
+
+        def invalid_entitlement(pack):
+            pack["speechEngine"]["privacyReview"]["accountControls"]["zeroRetentionEntitled"] = "false"
+
+        def invalid_account_evidence(pack):
+            pack["speechEngine"]["privacyReview"]["accountControls"]["evidenceHash"] = "E" * 64
+
+        def extra_account_field(pack):
+            pack["speechEngine"]["privacyReview"]["accountControls"]["reviewedBy"] = "placeholder"
+
         mutations = {
             "pending decision": pending_decision,
             "pending status": pending_status,
@@ -392,6 +560,11 @@ class AttestationConsistencyTests(unittest.TestCase):
             "expired nextReviewAt": expired_next_review,
             "invalid nextReviewAt": invalid_next_review,
             "draft consent version": draft_consent,
+            "missing account controls": missing_account_controls,
+            "wrong account provider": wrong_account_provider,
+            "invalid entitlement": invalid_entitlement,
+            "invalid account evidence": invalid_account_evidence,
+            "extra account field": extra_account_field,
         }
         for label, mutate in mutations.items():
             with self.subTest(mutation=label):
@@ -422,7 +595,7 @@ class AttestationConsistencyTests(unittest.TestCase):
         def wrong_candidate_model(pack):
             pack["speechEngine"]["candidateStacks"][0]["transcription"][
                 "model"
-            ] = "eleven_multilingual_v3"
+            ] = "eleven_v3"
 
         def missing_v2_rate(pack):
             remove_rate(pack, "eleven_multilingual_v2")
@@ -438,7 +611,10 @@ class AttestationConsistencyTests(unittest.TestCase):
             pack["speechEngine"]["rateCard"]["rates"][2]["price"] = 31
 
         def wrong_effective_date(pack):
-            pack["speechEngine"]["rateCard"]["effectiveDate"] = "2026-07-15"
+            pack["speechEngine"]["rateCard"]["effectiveDate"] = "2026-07-14"
+
+        def wrong_rate_card_version(pack):
+            pack["speechEngine"]["rateCard"]["version"] = "2026-07-14-planning-v1"
 
         mutations = {
             "swapped candidate synthesis models": swap_candidate_synthesis,
@@ -452,6 +628,7 @@ class AttestationConsistencyTests(unittest.TestCase):
             "wrong rate tuple": wrong_rate_tuple,
             "wrong rate value": wrong_rate_value,
             "wrong effective date": wrong_effective_date,
+            "wrong rate-card version": wrong_rate_card_version,
         }
         for label, mutate in mutations.items():
             with self.subTest(mutation=label):

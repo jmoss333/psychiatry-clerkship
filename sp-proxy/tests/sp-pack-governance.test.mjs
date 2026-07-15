@@ -147,6 +147,7 @@ test('reviewed case resolution and summaries expose only fully attested reviewed
   );
   assert.deepEqual(reviewedCaseSummaries(pack, { now: () => NOW_MS }), [
     { id: 'case-reviewed', title: 'Dana — reviewed case' },
+    { id: 'case-reviewed-second', title: 'Morgan — second reviewed case' },
   ]);
 
   assert.throws(
@@ -186,7 +187,9 @@ test('case resolution and summaries reject blank reviewers, invalid dates, and f
       }),
       label,
     );
-    assert.deepEqual(reviewedCaseSummaries(pack, { now: () => NOW_MS }), [], label);
+    assert.deepEqual(reviewedCaseSummaries(pack, { now: () => NOW_MS }), [
+      { id: 'case-reviewed-second', title: 'Morgan — second reviewed case' },
+    ], label);
   }
 });
 
@@ -215,14 +218,183 @@ test('fully reviewed governance returns exact pack, engine, profile, attestation
     engineHash,
     profileHash,
     attestationHash,
+    zeroRetentionEntitled: false,
     profile: {
       id: 'dana-measured-v1',
-      version: 2,
+      status: 'reviewed',
+      profileVersion: 2,
       provider: 'openai',
-      model: 'tts-1-hd',
+      providerModel: 'tts-1-hd',
       voiceId: 'alloy',
+      voiceProvenance: {
+        kind: 'provider-stock',
+        catalogUrl: 'https://provider.example.test/stock-voices/alloy',
+        verifiedBy: 'Faculty voice reviewer',
+        verifiedAt: '2026-07-13',
+        evidenceHash: canonicalHash({ provider: 'openai', voiceId: 'alloy' }),
+      },
+      cadence: 'measured-flat',
+      speakingRate: 0.95,
+      adapterMappingVersion: 'openai-tts-1-hd-v1',
+      providerSettings: { speed: 0.95 },
+      stageDirections: 'visual-only',
     },
   });
+  const eligibility = managedVoiceEligibility({
+    pack,
+    packHash: PACK_HASH,
+    caseDef,
+    now: () => NOW_MS,
+    runtime: RUNTIME_PINS,
+  });
+  assert.equal(Object.isFrozen(eligibility), true);
+  assert.equal(Object.isFrozen(eligibility.profile), true);
+  assert.equal(Object.isFrozen(eligibility.profile.voiceProvenance), true);
+  assert.equal(Object.isFrozen(eligibility.profile.providerSettings), true);
+  assert.throws(() => { eligibility.profile.providerSettings.speed = 1.1; }, TypeError);
+});
+
+test('one reviewed runtime stack supports different attested stock voices by case', () => {
+  const pack = createReviewedPack();
+  const first = managedVoiceEligibility({
+    pack,
+    packHash: PACK_HASH,
+    caseDef: pack.cases[0],
+    now: () => NOW_MS,
+    runtime: RUNTIME_PINS,
+  });
+  const second = managedVoiceEligibility({
+    pack,
+    packHash: PACK_HASH,
+    caseDef: pack.cases[1],
+    now: () => NOW_MS,
+    runtime: RUNTIME_PINS,
+  });
+
+  assert.equal(first.eligible, true);
+  assert.equal(second.eligible, true);
+  assert.equal(first.profile.voiceId, 'alloy');
+  assert.equal(second.profile.voiceId, 'echo');
+  assert.notEqual(first.profileHash, second.profileHash);
+  assert.deepEqual(Object.keys(RUNTIME_PINS).sort(), [
+    'stackId',
+    'synthesisModel',
+    'synthesisProvider',
+    'transcriptionModel',
+    'transcriptionProvider',
+    'zeroRetentionEntitled',
+  ]);
+});
+
+test('reviewed OpenAI provenance and adapter settings fail semantic validation after rehashing', () => {
+  const mutations = [
+    ['provenance kind', (profile) => { profile.voiceProvenance.kind = 'cloned'; }],
+    ['provenance URL', (profile) => { profile.voiceProvenance.catalogUrl = 'http://example.test/voice'; }],
+    ['provenance verifier', (profile) => { profile.voiceProvenance.verifiedBy = '   '; }],
+    ['provenance date', (profile) => { profile.voiceProvenance.verifiedAt = '2026-02-30'; }],
+    ['future provenance date', (profile) => { profile.voiceProvenance.verifiedAt = '2026-07-15'; }],
+    ['provenance evidence hash', (profile) => { profile.voiceProvenance.evidenceHash = 'AA'.repeat(32); }],
+    ['provenance extra key', (profile) => { profile.voiceProvenance.extra = true; }],
+    ['adapter mapping', (profile) => { profile.adapterMappingVersion = 'openai-tts-v2'; }],
+    ['settings missing speed', (profile) => { profile.providerSettings = {}; }],
+    ['settings extra key', (profile) => { profile.providerSettings.pitch = 1; }],
+    ['settings speed mismatch', (profile) => { profile.providerSettings.speed = 1; }],
+    ['custom OpenAI voice', (profile) => { profile.voiceId = 'custom-voice-id'; }],
+  ];
+
+  for (const [label, mutate] of mutations) {
+    const pack = createReviewedPack();
+    mutate(pack.cases[0].speechProfile);
+    refreshGovernanceHashes(pack);
+    assert.deepEqual(managedVoiceEligibility({
+      pack,
+      packHash: PACK_HASH,
+      caseDef: pack.cases[0],
+      now: () => NOW_MS,
+      runtime: RUNTIME_PINS,
+    }), { eligible: false }, label);
+  }
+});
+
+test('reviewed Eleven v3 profiles require the exact supported attested mapping and settings', () => {
+  function elevenPack() {
+    const pack = createReviewedPack();
+    pack.speechEngine.activeStack = 'elevenlabs-expressive-v1';
+    pack.speechEngine.candidateStacks = [{
+      id: 'elevenlabs-expressive-v1',
+      transcription: { provider: 'elevenlabs', model: 'scribe_v2' },
+      synthesis: { provider: 'elevenlabs', model: 'eleven_v3' },
+    }];
+    pack.speechEngine.rateCard.rates = [
+      {
+        provider: 'elevenlabs', model: 'scribe_v2', meter: 'transcription_audio',
+        unit: 'hour', price: 0.22, sourceUrl: 'https://example.test/rates/transcription',
+      },
+      {
+        provider: 'elevenlabs', model: 'eleven_v3', meter: 'synthesis_characters',
+        unit: 'thousand_characters', price: 0.1, sourceUrl: 'https://example.test/rates/synthesis',
+      },
+    ];
+    for (const caseDef of pack.cases.slice(0, 2)) {
+      const profile = caseDef.speechProfile;
+      profile.provider = 'elevenlabs';
+      profile.providerModel = 'eleven_v3';
+      profile.adapterMappingVersion = 'eleven-v3-v1';
+      profile.providerSettings = {
+        speed: profile.speakingRate,
+        stability: 0.5,
+        similarity_boost: 0.75,
+        style: 0.2,
+        use_speaker_boost: true,
+      };
+    }
+    pack.speechEngine.privacyReview.accountControls = {
+      provider: 'elevenlabs',
+      zeroRetentionEntitled: false,
+      evidenceHash: canonicalHash({ provider: 'elevenlabs', zeroRetentionEntitled: false }),
+    };
+    return refreshGovernanceHashes(pack);
+  }
+  const runtime = {
+    stackId: 'elevenlabs-expressive-v1',
+    transcriptionProvider: 'elevenlabs',
+    transcriptionModel: 'scribe_v2',
+    synthesisProvider: 'elevenlabs',
+    synthesisModel: 'eleven_v3',
+    zeroRetentionEntitled: false,
+  };
+  const valid = elevenPack();
+  assert.equal(managedVoiceEligibility({
+    pack: valid,
+    packHash: PACK_HASH,
+    caseDef: valid.cases[0],
+    now: () => NOW_MS,
+    runtime,
+  }).eligible, true);
+
+  const mutations = [
+    ['mapping', (profile) => { profile.adapterMappingVersion = 'eleven-v2-v1'; }],
+    ['speed mismatch', (profile) => { profile.providerSettings.speed = 1; }],
+    ['speed above 1.2', (profile) => { profile.speakingRate = 1.21; profile.providerSettings.speed = 1.21; }],
+    ['stability', (profile) => { profile.providerSettings.stability = 0.2; }],
+    ['similarity', (profile) => { profile.providerSettings.similarity_boost = 1.01; }],
+    ['style', (profile) => { profile.providerSettings.style = -0.01; }],
+    ['speaker boost', (profile) => { profile.providerSettings.use_speaker_boost = 'true'; }],
+    ['missing key', (profile) => { delete profile.providerSettings.style; }],
+    ['extra key', (profile) => { profile.providerSettings.pitch = 1; }],
+  ];
+  for (const [label, mutate] of mutations) {
+    const pack = elevenPack();
+    mutate(pack.cases[0].speechProfile);
+    refreshGovernanceHashes(pack);
+    assert.deepEqual(managedVoiceEligibility({
+      pack,
+      packHash: PACK_HASH,
+      caseDef: pack.cases[0],
+      now: () => NOW_MS,
+      runtime,
+    }), { eligible: false }, label);
+  }
 });
 
 test('managed voice independently fails closed on every review, privacy, hash, and runtime pin', () => {
@@ -239,7 +411,6 @@ test('managed voice independently fails closed on every review, privacy, hash, a
     ['transcription model missing from both runtime and stack', ({ runtime, pack }) => { runtime.transcriptionModel = ''; pack.speechEngine.candidateStacks[0].transcription.model = ''; refreshGovernanceHashes(pack); }],
     ['synthesis provider changed', ({ runtime }) => { runtime.synthesisProvider = 'other'; }],
     ['synthesis model changed', ({ runtime }) => { runtime.synthesisModel = 'other'; }],
-    ['voice changed', ({ runtime }) => { runtime.voiceId = 'other'; }],
     ['rate card absent', ({ pack }) => { delete pack.speechEngine.rateCard; refreshGovernanceHashes(pack); }],
     ['rate card version absent', ({ pack }) => { pack.speechEngine.rateCard.version = ''; refreshGovernanceHashes(pack); }],
     ['rate card currency absent', ({ pack }) => { pack.speechEngine.rateCard.currency = ''; refreshGovernanceHashes(pack); }],
@@ -260,7 +431,19 @@ test('managed voice independently fails closed on every review, privacy, hash, a
     ['profile audition missing', ({ caseDef, pack }) => { caseDef.speechProfile.facultyReview.auditionId = ''; refreshGovernanceHashes(pack); }],
     ['profile provider changed', ({ caseDef, pack }) => { caseDef.speechProfile.provider = 'other'; refreshGovernanceHashes(pack); }],
     ['profile model changed', ({ caseDef, pack }) => { caseDef.speechProfile.providerModel = 'other'; refreshGovernanceHashes(pack); }],
-    ['profile voice changed', ({ caseDef, pack }) => { caseDef.speechProfile.voiceId = 'other'; refreshGovernanceHashes(pack); }],
+    ['profile voice changed with stale hash', ({ caseDef }) => { caseDef.speechProfile.voiceId = 'other'; }],
+    ['voice provenance kind changed', ({ caseDef }) => { caseDef.speechProfile.voiceProvenance.kind = 'cloned'; }],
+    ['voice provenance catalog is not HTTPS', ({ caseDef }) => { caseDef.speechProfile.voiceProvenance.catalogUrl = 'http://provider.example.test/voice'; }],
+    ['voice provenance verifier missing', ({ caseDef }) => { caseDef.speechProfile.voiceProvenance.verifiedBy = ''; }],
+    ['voice provenance date invalid', ({ caseDef }) => { caseDef.speechProfile.voiceProvenance.verifiedAt = '2026-02-30'; }],
+    ['voice provenance date future', ({ caseDef }) => { caseDef.speechProfile.voiceProvenance.verifiedAt = '2026-07-15'; }],
+    ['voice provenance evidence hash invalid', ({ caseDef }) => { caseDef.speechProfile.voiceProvenance.evidenceHash = 'not-a-hash'; }],
+    ['voice provenance has an extra field', ({ caseDef }) => { caseDef.speechProfile.voiceProvenance.cloneConsent = true; }],
+    ['adapter mapping changed', ({ caseDef }) => { caseDef.speechProfile.adapterMappingVersion = 'unreviewed-v2'; }],
+    ['provider settings speed differs from speaking rate', ({ caseDef }) => { caseDef.speechProfile.providerSettings.speed = 1; }],
+    ['provider settings has an extra field', ({ caseDef }) => { caseDef.speechProfile.providerSettings.pitch = 2; }],
+    ['cadence changed with stale hash', ({ caseDef }) => { caseDef.speechProfile.cadence = 'pressured-fast'; }],
+    ['speaking rate changed with stale hash', ({ caseDef }) => { caseDef.speechProfile.speakingRate = 1; }],
     ['engine hash stale', ({ pack }) => { pack.speechEngine.engineHash = '00'.repeat(32); }],
     ['profile hash stale', ({ caseDef }) => { caseDef.speechProfile.facultyReview.profileHash = '00'.repeat(32); }],
     ['privacy status pending', ({ pack }) => { pack.speechEngine.privacyReview.status = 'pending'; refreshGovernanceHashes(pack); }],
@@ -273,6 +456,11 @@ test('managed voice independently fails closed on every review, privacy, hash, a
     ['privacy reviewed date impossible', ({ pack }) => { pack.speechEngine.privacyReview.reviewedAt = '2026-02-30'; refreshGovernanceHashes(pack); }],
     ['privacy next-review date impossible', ({ pack }) => { pack.speechEngine.privacyReview.nextReviewAt = '2027-02-30'; refreshGovernanceHashes(pack); }],
     ['privacy consent is draft', ({ pack }) => { pack.speechEngine.privacyReview.consentVersion = 'draft-v2'; refreshGovernanceHashes(pack); }],
+    ['privacy account controls absent', ({ pack }) => { delete pack.speechEngine.privacyReview.accountControls; refreshGovernanceHashes(pack); }],
+    ['privacy account provider changed', ({ pack }) => { pack.speechEngine.privacyReview.accountControls.provider = 'elevenlabs'; refreshGovernanceHashes(pack); }],
+    ['privacy account evidence hash invalid', ({ pack }) => { pack.speechEngine.privacyReview.accountControls.evidenceHash = 'not-a-hash'; refreshGovernanceHashes(pack); }],
+    ['privacy account controls has extra field', ({ pack }) => { pack.speechEngine.privacyReview.accountControls.reviewedBy = 'someone'; refreshGovernanceHashes(pack); }],
+    ['runtime retention entitlement changed', ({ runtime }) => { runtime.zeroRetentionEntitled = true; }],
   ];
 
   for (const [label, mutate] of checks) {

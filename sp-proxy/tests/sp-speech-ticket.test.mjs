@@ -60,11 +60,22 @@ function createFixedCodec(clockRef = { now: NOW_MS }) {
 test('ticket round-trip binds every field, uses a 16-byte JTI, and expires after exactly 120 seconds', () => {
   const codec = createFixedCodec();
   const ticket = codec.issue(TICKET_INPUT);
-  const payload = codec.verify({
+  const authenticated = codec.authenticate({
+    ticket,
+    reply: REPLY,
+  });
+  assert.equal(Object.isFrozen(authenticated), true);
+  assert.throws(() => { authenticated.caseId = 'tampered-after-auth'; }, TypeError);
+  const payload = codec.assertBindings({
+    payload: authenticated,
+    expected: expectedBindings(),
+  });
+  assert.strictEqual(payload, authenticated);
+  assert.deepEqual(codec.verify({
     ticket,
     reply: REPLY,
     expected: expectedBindings(),
-  });
+  }), authenticated);
 
   assert.deepEqual(Object.keys(payload).sort(), [
     'attestationHash',
@@ -104,6 +115,43 @@ test('ticket round-trip binds every field, uses a 16-byte JTI, and expires after
   });
   assert.equal(Buffer.from(payload.jti, 'base64url').byteLength, 16);
   assert.match(ticket, /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+});
+
+test('authentication precedes expected-case binding and returns no secret-bearing details', () => {
+  const codec = createFixedCodec();
+  const ticket = codec.issue(TICKET_INPUT);
+  const payload = codec.authenticate({ ticket, reply: REPLY });
+  assert.equal(payload.caseId, TICKET_INPUT.caseId);
+  assert.strictEqual(
+    codec.assertBindings({ payload, expected: expectedBindings() }),
+    payload,
+  );
+
+  assert.throws(
+    () => codec.assertBindings({
+      payload,
+      expected: expectedBindings({ caseId: 'different-case' }),
+    }),
+    (error) => assertOperationalError(error, {
+      status: 403,
+      code: 'invalid_speech_ticket',
+      message: 'The speech ticket is invalid.',
+    }),
+  );
+
+  assert.throws(
+    () => codec.authenticate({ ticket, reply: `${REPLY} altered ${SECRET}` }),
+    (error) => {
+      assertOperationalError(error, {
+        status: 403,
+        code: 'invalid_speech_ticket',
+        message: 'The speech ticket is invalid.',
+      });
+      assert.equal(error.message.includes(SECRET), false);
+      assert.equal(error.message.includes(REPLY), false);
+      return true;
+    },
+  );
 });
 
 test('ticket validity uses now < exp: exp minus one millisecond passes and equality expires', () => {

@@ -9,7 +9,7 @@ export const RUNTIME_PINS = Object.freeze({
   transcriptionModel: 'whisper-1',
   synthesisProvider: 'openai',
   synthesisModel: 'tts-1-hd',
-  voiceId: 'alloy',
+  zeroRetentionEntitled: false,
 });
 
 function clone(value) {
@@ -45,6 +45,36 @@ export function refreshGovernanceHashes(pack) {
     pack.speechEngine.engineHash = canonicalHash(engineForHash);
   }
   return pack;
+}
+
+function reviewedProfile({ id, voiceId, cadence, speakingRate }) {
+  return {
+    id,
+    status: 'reviewed',
+    profileVersion: 2,
+    provider: 'openai',
+    providerModel: 'tts-1-hd',
+    voiceId,
+    voiceProvenance: {
+      kind: 'provider-stock',
+      catalogUrl: `https://provider.example.test/stock-voices/${voiceId}`,
+      verifiedBy: 'Faculty voice reviewer',
+      verifiedAt: '2026-07-13',
+      evidenceHash: canonicalHash({ provider: 'openai', voiceId }),
+    },
+    cadence,
+    speakingRate,
+    adapterMappingVersion: 'openai-tts-1-hd-v1',
+    providerSettings: { speed: speakingRate },
+    stageDirections: 'visual-only',
+    facultyReview: {
+      status: 'reviewed',
+      reviewer: 'Joshua Moss, MD',
+      reviewedAt: '2026-07-13',
+      auditionId: `audition-${id}`,
+      profileHash: null,
+    },
+  };
 }
 
 export function createReviewedPack() {
@@ -96,6 +126,11 @@ export function createReviewedPack() {
         nextReviewAt: '2027-07-14',
         decision: 'approved',
         consentVersion: '2026-07-14-v1',
+        accountControls: {
+          provider: 'openai',
+          zeroRetentionEntitled: false,
+          evidenceHash: canonicalHash({ provider: 'openai', zeroRetentionEntitled: false }),
+        },
       },
       engineHash: null,
     },
@@ -110,23 +145,28 @@ export function createReviewedPack() {
           lastReviewed: '2026-07-13',
         },
         speechProfile: {
-          id: 'dana-measured-v1',
-          status: 'reviewed',
-          profileVersion: 2,
-          provider: 'openai',
-          providerModel: 'tts-1-hd',
-          voiceId: 'alloy',
-          cadence: 'measured-flat',
-          speakingRate: 0.95,
-          stageDirections: 'visual-only',
-          facultyReview: {
-            status: 'reviewed',
-            reviewer: 'Joshua Moss, MD',
-            reviewedAt: '2026-07-13',
-            auditionId: 'audition-v1',
-            profileHash: null,
-          },
+          ...reviewedProfile({
+            id: 'dana-measured-v1',
+            voiceId: 'alloy',
+            cadence: 'measured-flat',
+            speakingRate: 0.95,
+          }),
         },
+      },
+      {
+        id: 'case-reviewed-second',
+        title: 'Morgan — second reviewed case',
+        facultyReview: {
+          status: 'reviewed',
+          reviewer: 'Joshua Moss, MD',
+          lastReviewed: '2026-07-13',
+        },
+        speechProfile: reviewedProfile({
+          id: 'morgan-guarded-v1',
+          voiceId: 'echo',
+          cadence: 'guarded-halting',
+          speakingRate: 0.85,
+        }),
       },
       {
         id: 'case-draft',

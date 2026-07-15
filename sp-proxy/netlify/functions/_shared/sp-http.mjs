@@ -80,9 +80,18 @@ function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, x-student-key',
+    'Access-Control-Allow-Headers': 'Content-Type, x-student-key, x-sp-case-id, x-sp-encounter-id, x-sp-turn-id, x-sp-capture-id',
     Vary: 'Origin',
   };
+}
+
+function safeResponseHeaders(contentType = null) {
+  const headers = {
+    'Cache-Control': 'no-store',
+    'X-Content-Type-Options': 'nosniff',
+  };
+  if (contentType !== null) headers['Content-Type'] = contentType;
+  return headers;
 }
 
 function asOperationalError(error) {
@@ -148,8 +157,12 @@ export function createHttp({
     }
   }
 
+  function requireStudentCredential(request) {
+    requireCredential(request, 'x-student-key', studentKey);
+  }
+
   function json(body, { status = 200, origin = null } = {}) {
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = safeResponseHeaders('application/json');
     if (origin !== null) {
       if (!originSet.has('*') && !originSet.has(origin)) {
         throw operationalError(
@@ -163,6 +176,32 @@ export function createHttp({
     return new Response(JSON.stringify(body), { status, headers });
   }
 
+  function binary(bytes, { contentType, status = 200, origin = null } = {}) {
+    if (
+      !(bytes instanceof Uint8Array)
+      || typeof contentType !== 'string'
+      || contentType.trim().length === 0
+      || !Number.isInteger(status)
+      || status < 100
+      || status > 599
+    ) {
+      throw configurationError('The binary response is invalid.');
+    }
+    const headers = safeResponseHeaders(contentType);
+    headers['Content-Length'] = String(bytes.byteLength);
+    if (origin !== null) {
+      if (!originSet.has('*') && !originSet.has(origin)) {
+        throw operationalError(
+          ORIGIN_NOT_ALLOWED.status,
+          ORIGIN_NOT_ALLOWED.code,
+          ORIGIN_NOT_ALLOWED.message,
+        );
+      }
+      Object.assign(headers, corsHeaders(origin));
+    }
+    return new Response(bytes, { status, headers });
+  }
+
   function error(err, { origin = null } = {}) {
     const normalized = asOperationalError(err);
     return json(
@@ -174,7 +213,10 @@ export function createHttp({
   function preflight(request) {
     try {
       const origin = requireOrigin(request);
-      return new Response(null, { status: 204, headers: corsHeaders(origin) });
+      return new Response(null, {
+        status: 204,
+        headers: { ...safeResponseHeaders(), ...corsHeaders(origin) },
+      });
     } catch (err) {
       return error(err, { origin: null });
     }
@@ -182,7 +224,7 @@ export function createHttp({
 
   function requireStudent(request) {
     const origin = requireOrigin(request);
-    requireCredential(request, 'x-student-key', studentKey);
+    requireStudentCredential(request);
     return { origin };
   }
 
@@ -193,9 +235,12 @@ export function createHttp({
 
   return {
     preflight,
+    requireOrigin,
+    requireStudentCredential,
     requireStudent,
     requireOperations,
     json,
+    binary,
     error,
   };
 }

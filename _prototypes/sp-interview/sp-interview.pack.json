@@ -48,13 +48,13 @@
         },
         "synthesis": {
           "provider": "elevenlabs",
-          "model": "eleven_multilingual_v3"
+          "model": "eleven_v3"
         }
       }
     ],
     "rateCard": {
-      "version": "2026-07-14-planning-v1",
-      "effectiveDate": "2026-07-14",
+      "version": "2026-07-15-planning-v2",
+      "effectiveDate": "2026-07-15",
       "currency": "USD",
       "rates": [
         {
@@ -99,7 +99,7 @@
         },
         {
           "provider": "elevenlabs",
-          "model": "eleven_multilingual_v3",
+          "model": "eleven_v3",
           "meter": "synthesis_characters",
           "unit": "thousand_characters",
           "price": 0.1,
@@ -123,7 +123,8 @@
       "reviewedAt": null,
       "nextReviewAt": null,
       "decision": "pending",
-      "consentVersion": "2026-07-14-draft"
+      "consentVersion": "2026-07-14-draft",
+      "accountControls": null
     }
   },
   "cases": [
@@ -145,8 +146,11 @@
         "provider": null,
         "providerModel": null,
         "voiceId": null,
+        "voiceProvenance": null,
         "cadence": "measured-flat",
         "speakingRate": 0.95,
+        "adapterMappingVersion": null,
+        "providerSettings": null,
         "stageDirections": "visual-only",
         "facultyReview": {
           "status": "pending",
@@ -416,8 +420,11 @@
         "provider": null,
         "providerModel": null,
         "voiceId": null,
+        "voiceProvenance": null,
         "cadence": "pressured-fast",
         "speakingRate": 1.15,
+        "adapterMappingVersion": null,
+        "providerSettings": null,
         "stageDirections": "visual-only",
         "facultyReview": {
           "status": "pending",
@@ -1250,8 +1257,11 @@
         "provider": null,
         "providerModel": null,
         "voiceId": null,
+        "voiceProvenance": null,
         "cadence": "guarded-halting",
         "speakingRate": 0.85,
+        "adapterMappingVersion": null,
+        "providerSettings": null,
         "stageDirections": "visual-only",
         "facultyReview": {
           "status": "pending",
