@@ -90,8 +90,16 @@ def main():
         f"storageKeys must be ['cw_family_v1','cw_srs_v1'], got {tool['storageKeys']!r}"
     )
 
-    # the default retrieval sources are the three fields the renderer derives from
-    assert DEFAULT_SOURCES == ("opening", "ask", "avoid")
+    # the default retrieval sources must match the tool's actual DEFAULT_RETRIEVAL JS,
+    # since the per-scenario required-field checks above are derived from them
+    html = (ROOT / "06_Family_and_Relational" / "family-systems-practice.html").read_text(encoding="utf-8")
+    block = re.search(r"var DEFAULT_RETRIEVAL=\[(.*?)\];", html, re.DOTALL)
+    assert block, "family-systems-practice.html must define DEFAULT_RETRIEVAL"
+    js_sources = tuple(re.findall(r"revealFrom:'([a-z_]+)'", block.group(1)))
+    assert js_sources == DEFAULT_SOURCES, (
+        f"tool DEFAULT_RETRIEVAL revealFrom {js_sources!r} != contract {DEFAULT_SOURCES!r} — "
+        "update the required-field checks in this test to match"
+    )
 
     print("test_family_systems_scenarios: OK — scenarios, retrieval contract, schema, and registry")
 

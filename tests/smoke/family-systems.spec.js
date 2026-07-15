@@ -17,6 +17,7 @@ test('practice mode reveal + self-rate writes one FAM# card and stores no free t
   await reveal.click();
 
   await page.getByRole('button', { name: 'Good' }).first().click();
+  await expect(page.locator('.pcard .pdone')).toHaveCount(1); // grading visibly marks the prompt "Scheduled"
 
   const srs = await page.evaluate(() => JSON.parse(window.localStorage.getItem('cw_srs_v1') || '{}'));
   const famIds = Object.keys(srs.cards || {}).filter((k) => k.startsWith('FAM#'));
@@ -24,6 +25,10 @@ test('practice mode reveal + self-rate writes one FAM# card and stores no free t
   expect(srs.cards[famIds[0]].ivl).toBe(1);            // Good on first encounter → interval 1 day
   expect(srs.cards[famIds[0]].due).toBeGreaterThan(Date.now());
   expect(Object.keys(srs.cards).every((k) => k.startsWith('FAM#'))).toBe(true); // no QB#/TOPIC# fabricated
+  // Family ratings must not touch shared stats: review.html renders Retention as correct/seen,
+  // and a self-rating has no ground-truth correctness to contribute.
+  expect((srs.stats || {}).seen || 0).toBe(0);
+  expect((srs.stats || {}).totalReviews || 0).toBe(0);
 
   const raw = await page.evaluate(() => window.localStorage.getItem('cw_srs_v1'));
   expect(raw).not.toMatch(/opening line|collateral question|trap/i); // scheduling metadata only

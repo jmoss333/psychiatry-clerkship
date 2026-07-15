@@ -180,8 +180,8 @@ function srsGradeFamily(scenarioId,promptId,grade){
   var s=srsLoadStore(), id=famCardId(scenarioId,promptId);
   var card=s.cards[id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0};
   s.cards[id]=applyGrade(card,grade);
-  s.stats.totalReviews=(s.stats.totalReviews||0)+1;
-  s.stats.seen=(s.stats.seen||0)+1;
+  /* cards only — never stats: review.html renders Retention as correct/seen,
+     and a self-rating has no ground-truth "correct" to contribute */
   srsSaveStore(s);
   return s.cards[id];
 }
@@ -248,7 +248,7 @@ function reviewBadge(it){var rv=it.facultyReview||{};return '<span class="pill d
 function introHtml(it){return '<section class="panel"><div class="title-row"><div><h2>'+esc(it.title)+'</h2><div class="meta"><span class="pill">'+esc(it.setting)+'</span><span class="pill">'+esc(it.time||'5 min')+'</span>'+reviewBadge(it)+'</div></div></div><div class="goal"><b>Practice goal:</b> '+esc(it.learnerGoal)+'</div><p class="opening">"'+esc(it.opening)+'"</p>'+linksHtml(it)+'</section>';}
 function sectionHtml(key,arr){if(!arr||!arr.length)return '';var cls=key==='say'?' say':key==='avoid'?' avoid':key==='handoff'?' handoff':'';return '<section class="section'+cls+'"><h3>'+esc(LABELS[key]||key)+'</h3><ul>'+arr.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></section>';}
 function bodyHtml(it){var s=it.sections||{};return '<div class="grid">'+['prepare','ask','say','avoid','handoff','safety'].map(function(k){return sectionHtml(k,s[k]);}).join('')+'</div>';}
-function checklistHtml(it){var rec=state.progress[it.id]||{}, checks=rec.checks||{};return '<section class="checklist"><h3>Before you call it done</h3><div class="checks">'+(it.checks||[]).map(function(c){var on=!!checks[c.id];return '<button type="button" class="check'+(on?' on':'')+'" data-check="'+esc(c.id)+'" aria-pressed="'+String(on)+'">'+esc(c.label)+'</button>';}).join('')+'</div><div class="actions"><button type="button" class="btn secondary" data-act="reset">Reset this scenario</button></div><div class="storage">Stored locally: scenario id, checklist id, checked state, and date. No free text or patient identifiers.</div></section>';}
+function checklistHtml(it){var rec=state.progress[it.id]||{}, checks=rec.checks||{};return '<section class="checklist"><h3>Before you call it done</h3><div class="checks">'+(it.checks||[]).map(function(c){var on=!!checks[c.id];return '<button type="button" class="check'+(on?' on':'')+'" data-check="'+esc(c.id)+'" aria-pressed="'+String(on)+'">'+esc(c.label)+'</button>';}).join('')+'</div><div class="actions"><button type="button" class="btn secondary" data-act="reset">Reset this scenario</button></div><div class="storage">Stored locally: scenario id, checklist id, checked state, date, mode preference, and practice-rating schedules (ids + timing only). No free text or patient identifiers.</div></section>';}
 function pageHref(f){return f&&f.endsWith('.html')?'../index.html?tool='+encodeURIComponent(f):'../index.html?page='+encodeURIComponent(f);}
 function pageLabel(f){return PAGE_LABELS[f]||String(f||'').replace(/\.md$|\.html$/g,'').replace(/^t_/,'').replace(/^pg_/,'').replace(/_/g,' ').replace(/\b\w/g,function(m){return m.toUpperCase();});}
 function linksHtml(it){var out=[];(it.linkedPages||[]).forEach(function(f){out.push('<a href="'+pageHref(f)+'">'+esc(pageLabel(f))+'</a>');});(it.communicationCases||[]).forEach(function(id){out.push('<a href="../index.html?tool=communication-practice.html&case='+encodeURIComponent(id)+'">'+esc(CASE_LABELS[id]||'Communication Practice')+'</a>');});return out.length?'<div class="links">'+out.join('')+'</div>':'';}
