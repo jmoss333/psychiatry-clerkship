@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "targetRegistry", "generatedFromCommit", "inputSha256", "decisions"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "targetRegistry": {"enum": ["cards", "qbank_render_reviews", "quarantine", "release_history"]},
+    "generatedFromCommit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "inputSha256": {"$ref": "#/definitions/sha256"},
+    "sourceProposalSha256": {"$ref": "#/definitions/sha256"},
+    "historyAppend": {"$ref": "#/definitions/historyAppend"},
+    "decisions": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/decision"}}
+  },
+  "definitions": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "historyAppend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["newIdentityEntries", "releaseRecord"],
+      "properties": {
+        "newIdentityEntries": {"type": "array", "items": {"$ref": "../../anki/release_history.schema.json#/definitions/identityEntry"}},
+        "releaseRecord": {"$ref": "../../anki/release_history.schema.json#/definitions/release"}
+      }
+    },
+    "proposedRecord": {
+      "oneOf": [
+        {"$ref": "#/definitions/historyAppend"},
+        {"$ref": "../../anki/cards.schema.json#/definitions/card"},
+        {"$ref": "../../anki/qbank_render_reviews.schema.json#/definitions/review"},
+        {"$ref": "../../anki/quarantine.schema.json#/definitions/decision"}
+      ]
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordKey", "baseRecordSha256", "proposedRecord", "decision", "reviewer", "reviewedAt"],
+      "properties": {
+        "recordKey": {"type": "string", "minLength": 1},
+        "baseRecordSha256": {"oneOf": [{"type": "null"}, {"$ref": "#/definitions/sha256"}]},
+        "proposedRecord": {"$ref": "#/definitions/proposedRecord"},
+        "decision": {"enum": ["accept", "edit", "reject", "quarantine"]},
+        "reviewer": {"type": "string", "pattern": "^.*\\S.*$"},
+        "reviewedAt": {"type": "string", "format": "date"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"targetRegistry": {"const": "release_history"}}},
+      "then": {"required": ["sourceProposalSha256", "historyAppend"]},
+      "else": {
+        "not": {
+          "anyOf": [
+            {"required": ["sourceProposalSha256"]},
+            {"required": ["historyAppend"]}
+          ]
+        }
+      }
+    }
+  ]
+}
