@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 from hashlib import sha256
 import html
 import json
@@ -44,6 +45,21 @@ RELEASE_FILENAMES = {
     RECEIPT_ARTIFACT_FILENAME,
 }
 _COLLECTION_NAMES = {"collection.anki2", "collection.anki21"}
+CSV_FIELDS = (
+    "artifactRole",
+    "namespace",
+    "uid",
+    "identity",
+    "guid",
+    "deckId",
+    "modelId",
+    "templateOrdinal",
+    "fieldsJson",
+    "tagsJson",
+    "templateContractSha256",
+    "renderSha256",
+    "sourceUrl",
+)
 _MODEL_KEYS = {
     CORE_BASIC_MODEL_ID: "coreBasic",
     CORE_CLOZE_MODEL_ID: "coreCloze",
@@ -320,6 +336,9 @@ def _valid_receipt_ledger(value: object) -> bool:
 def _contract_issues(filename: str, snapshot: PackageSnapshot) -> list[Issue]:
     issues = []
     note_models = {note.model_id for note in snapshot.notes}
+    stored_models = set(snapshot.models)
+    referenced_decks = {card.deck_id for card in snapshot.cards}
+    stored_decks = set(snapshot.decks)
     allowed_models = _MODEL_SETS[filename]
     if not note_models <= allowed_models:
         issues.append(
@@ -327,6 +346,18 @@ def _contract_issues(filename: str, snapshot: PackageSnapshot) -> list[Issue]:
                 "PACKAGE_MEMBERSHIP_MODEL",
                 filename,
                 f"package contains disallowed model IDs {sorted(note_models - allowed_models)}",
+            )
+        )
+    if (
+        stored_models != note_models
+        or stored_decks != referenced_decks | {1}
+        or snapshot.decks.get(1, {}).get("name") != "Default"
+    ):
+        issues.append(
+            _issue(
+                "PACKAGE_STORED_MEMBERSHIP",
+                filename,
+                "stored models/decks must equal note/card membership plus the verified Default deck",
             )
         )
     for model_id in sorted(note_models):
@@ -567,6 +598,137 @@ def _identity_fingerprint(snapshot: PackageSnapshot, note: PackageNote) -> str |
     )
 
 
+def _csv_semantic_issue(
+    path: Path,
+    core: PackageSnapshot,
+    application: PackageSnapshot,
+) -> Issue | None:
+    """Verify CSV meaning against active standalone SQLite notes, not its receipt hash."""
+
+    expected = []
+    for namespace, snapshot in (("core", core), ("application", application)):
+        for note in snapshot.notes:
+            if "Status::withdrawn" in note.tags:
+                continue
+            contract_key = _MODEL_KEYS.get(note.model_id)
+            contract = _template_contract(snapshot, note.model_id)
+            if contract_key is None or contract is None:
+                return _issue(
+                    "CSV_SEMANTIC_DRIFT",
+                    path,
+                    "active SQLite note lacks its fixed model/template contract",
+                )
+            source_index = 8 if namespace == "application" else 6
+            source_matches = (
+                _SOURCE_URL_RE.findall(note.fields[source_index])
+                if len(note.fields) > source_index
+                else []
+            )
+            if len(source_matches) != 1:
+                return _issue(
+                    "CSV_SEMANTIC_DRIFT",
+                    path,
+                    "active SQLite note lacks exactly one reviewed source URL",
+                )
+            expected.append(
+                {
+                    "artifactRole": "faculty_audit_interchange",
+                    "namespace": namespace,
+                    "uid": note.fields[0],
+                    "identity": "base",
+                    "guid": note.guid,
+                    "deckId": str(TEMPLATE_CONTRACTS[contract_key]["deckId"]),
+                    "modelId": str(note.model_id),
+                    "templateOrdinal": str(
+                        TEMPLATE_CONTRACTS[contract_key]["templateOrdinal"]
+                    ),
+                    "fieldsJson": json.dumps(
+                        note.fields, ensure_ascii=False, separators=(",", ":")
+                    ),
+                    "tagsJson": json.dumps(
+                        tuple(sorted(note.tags)),
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    ),
+                    "templateContractSha256": canonical_json_sha256(contract),
+                    "sourceUrl": html.unescape(source_matches[0]),
+                }
+            )
+    expected.sort(key=lambda row: (row["namespace"], row["uid"], row["identity"]))
+    try:
+        raw = path.read_bytes()
+        text = raw.decode("utf-8")
+        if not text.endswith("\n") or "\r" in text:
+            raise ValueError("CSV must use deterministic UTF-8 LF line endings")
+        with path.open("r", encoding="utf-8", newline="") as stream:
+            reader = csv.DictReader(stream)
+            if tuple(reader.fieldnames or ()) != CSV_FIELDS:
+                raise ValueError("CSV header does not match the fixed schema")
+            rows = list(reader)
+    except (OSError, UnicodeError, csv.Error, ValueError) as error:
+        return _issue("CSV_SEMANTIC_DRIFT", path, str(error))
+    if len(rows) != len(expected):
+        return _issue(
+            "CSV_SEMANTIC_DRIFT",
+            path,
+            "CSV row count differs from active Core/Application SQLite notes",
+        )
+    observed_keys = []
+    for index, (row, expected_row) in enumerate(zip(rows, expected, strict=True)):
+        if set(row) != set(CSV_FIELDS) or None in row or any(
+            not isinstance(value, str) for value in row.values()
+        ):
+            return _issue(
+                "CSV_SEMANTIC_DRIFT", path, f"row {index} has malformed columns"
+            )
+        try:
+            fields = json.loads(row["fieldsJson"])
+            tags = json.loads(row["tagsJson"])
+        except json.JSONDecodeError as error:
+            return _issue(
+                "CSV_SEMANTIC_DRIFT", path, f"row {index} has invalid JSON: {error}"
+            )
+        if (
+            not isinstance(fields, list)
+            or not all(isinstance(value, str) for value in fields)
+            or not isinstance(tags, list)
+            or not all(isinstance(value, str) for value in tags)
+            or tags != sorted(set(tags))
+            or row["fieldsJson"]
+            != json.dumps(fields, ensure_ascii=False, separators=(",", ":"))
+            or row["tagsJson"]
+            != json.dumps(tags, ensure_ascii=False, separators=(",", ":"))
+        ):
+            return _issue(
+                "CSV_SEMANTIC_DRIFT",
+                path,
+                f"row {index} fields/tags are not deterministic string arrays",
+            )
+        if _SHA256_RE.fullmatch(row["renderSha256"]) is None:
+            return _issue(
+                "CSV_SEMANTIC_DRIFT",
+                path,
+                f"row {index} render hash is not SHA-256",
+            )
+        for key, value in expected_row.items():
+            if row.get(key) != value:
+                return _issue(
+                    "CSV_SEMANTIC_DRIFT",
+                    path,
+                    f"row {index} {key} differs from active SQLite",
+                )
+        observed_keys.append((row["namespace"], row["uid"], row["identity"]))
+    if observed_keys != sorted(observed_keys) or len(set(observed_keys)) != len(
+        observed_keys
+    ):
+        return _issue(
+            "CSV_SEMANTIC_DRIFT",
+            path,
+            "CSV rows must have deterministic unique namespace/UID/identity ordering",
+        )
+    return None
+
+
 def inspect_release(out_dir: Path, receipt: Mapping[str, object]) -> InspectionResult:
     """Inspect staged bytes and their real SQLite contracts without mutating them."""
 
@@ -757,6 +919,13 @@ def inspect_release(out_dir: Path, receipt: Mapping[str, object]) -> InspectionR
     csv_path = out_dir / CSV_ARTIFACT_FILENAME
     csv_record = receipt.get("csv") if isinstance(receipt, Mapping) else None
     if csv_path.is_file():
+        core_snapshot = snapshots.get(CORE_ARTIFACT_FILENAME)
+        application_snapshot = snapshots.get(APPLICATION_ARTIFACT_FILENAME)
+        if core_snapshot is not None and application_snapshot is not None:
+            if semantic_issue := _csv_semantic_issue(
+                csv_path, core_snapshot, application_snapshot
+            ):
+                issues.append(semantic_issue)
         expected_csv = {
             "filename": CSV_ARTIFACT_FILENAME,
             "sha256": artifact_sha256.get(CSV_ARTIFACT_FILENAME),

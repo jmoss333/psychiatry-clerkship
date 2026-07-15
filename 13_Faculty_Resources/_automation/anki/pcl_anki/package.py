@@ -11,7 +11,6 @@ import io
 import json
 from pathlib import Path, PurePosixPath
 import re
-import shutil
 import tempfile
 from typing import Iterable, Mapping, Sequence
 
@@ -40,6 +39,7 @@ from pcl_anki.contract import (
     Withdrawal,
 )
 from pcl_anki.inspect import (
+    CSV_FIELDS,
     canonical_package_fingerprint,
     inspect_release,
     read_apkg,
@@ -57,21 +57,6 @@ RELEASE_FILENAMES = {
 }
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
 _SOURCE_URL_RE = re.compile(r'<a href="([^"]+)">Open reviewed source</a>')
-_CSV_FIELDS = (
-    "artifactRole",
-    "namespace",
-    "uid",
-    "identity",
-    "guid",
-    "deckId",
-    "modelId",
-    "templateOrdinal",
-    "fieldsJson",
-    "tagsJson",
-    "templateContractSha256",
-    "renderSha256",
-    "sourceUrl",
-)
 
 
 class PackageWriteError(ValueError):
@@ -198,7 +183,7 @@ def _source_url(note: RenderedNote) -> str:
 
 def _csv_bytes(notes: Sequence[RenderedNote]) -> bytes:
     stream = io.StringIO(newline="")
-    writer = csv.DictWriter(stream, fieldnames=_CSV_FIELDS, lineterminator="\n")
+    writer = csv.DictWriter(stream, fieldnames=CSV_FIELDS, lineterminator="\n")
     writer.writeheader()
     for note in sorted(notes, key=lambda value: (value.namespace, value.uid, value.identity)):
         writer.writerow(
@@ -366,7 +351,12 @@ def write_release(candidate: CandidateRelease, out_dir: Path) -> dict:
             )
         if {path.name for path in staged.iterdir()} != RELEASE_FILENAMES:
             raise PackageWriteError("writer did not produce the exact six-artifact set")
-        out_dir.mkdir(parents=True, exist_ok=True)
-        for filename in sorted(RELEASE_FILENAMES):
-            shutil.move(str(staged / filename), str(out_dir / filename))
+        try:
+            if out_dir.exists():
+                out_dir.rmdir()
+            staged.replace(out_dir)
+        except OSError as error:
+            raise PackageWriteError(
+                f"could not publish the inspected release atomically: {error}"
+            ) from error
     return receipt

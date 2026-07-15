@@ -21,6 +21,7 @@ from pcl_anki.contract import (
     CORE_ARTIFACT_FILENAME,
     CORE_BASIC_FIELDS,
     CORE_BASIC_MODEL_ID,
+    CORE_CLOZE_MODEL_ID,
     CORE_DECK_ID,
     LEGACY_QBANK_DECK_ID,
     LEGACY_QBANK_FIELDS,
@@ -62,6 +63,21 @@ ALL_FILENAMES = {
     "psychiatry_clerkship_ms3_cards.csv",
     "anki_release_receipt.json",
 }
+EXPECTED_CSV_FIELDS = (
+    "artifactRole",
+    "namespace",
+    "uid",
+    "identity",
+    "guid",
+    "deckId",
+    "modelId",
+    "templateOrdinal",
+    "fieldsJson",
+    "tagsJson",
+    "templateContractSha256",
+    "renderSha256",
+    "sourceUrl",
+)
 
 
 def _qbank_item() -> dict:
@@ -269,6 +285,20 @@ def _sha256(path: Path) -> str:
     return sha256(path.read_bytes()).hexdigest()
 
 
+def _stage_changed_receipt(out_dir: Path, receipt: dict, filename: str) -> dict:
+    changed = deepcopy(receipt)
+    path = out_dir / filename
+    record = {"sha256": _sha256(path), "sizeBytes": path.stat().st_size}
+    changed["artifacts"][filename] = record
+    if filename == CSV_ARTIFACT_FILENAME:
+        changed["csv"] = {"filename": filename, **record}
+    changed["receiptContractSha256"] = receipt_contract_sha256(changed)
+    (out_dir / RECEIPT_ARTIFACT_FILENAME).write_text(
+        json.dumps(changed, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return changed
+
+
 def test_write_release_writes_exact_six_governed_artifacts_and_real_sqlite(candidate, tmp_path):
     receipt = write_release(candidate, tmp_path)
 
@@ -326,6 +356,72 @@ def test_membership_union_identity_counts_and_no_qbank_in_complete(candidate, tm
     )
 
 
+def test_stored_model_and_deck_sets_reject_unused_qbank_in_complete(candidate, tmp_path):
+    receipt = write_release(candidate, tmp_path)
+    snapshots = inspect_release(tmp_path, receipt).snapshots
+    assert set(snapshots[CORE_ARTIFACT_FILENAME].models) == {
+        CORE_BASIC_MODEL_ID,
+        CORE_CLOZE_MODEL_ID,
+    }
+    assert set(snapshots[CORE_ARTIFACT_FILENAME].decks) == {1, CORE_DECK_ID}
+    assert set(snapshots[APPLICATION_ARTIFACT_FILENAME].models) == {
+        APPLICATION_MODEL_ID
+    }
+    assert set(snapshots[APPLICATION_ARTIFACT_FILENAME].decks) == {
+        1,
+        APPLICATION_DECK_ID,
+    }
+    assert set(snapshots[COMPLETE_ARTIFACT_FILENAME].models) == {
+        CORE_BASIC_MODEL_ID,
+        CORE_CLOZE_MODEL_ID,
+        APPLICATION_MODEL_ID,
+    }
+    assert set(snapshots[COMPLETE_ARTIFACT_FILENAME].decks) == {
+        1,
+        CORE_DECK_ID,
+        APPLICATION_DECK_ID,
+    }
+    assert set(snapshots[QBANK_ARTIFACT_FILENAME].models) == {
+        LEGACY_QBANK_MODEL_ID
+    }
+    assert set(snapshots[QBANK_ARTIFACT_FILENAME].decks) == {
+        1,
+        LEGACY_QBANK_DECK_ID
+    }
+    assert all(snapshot.decks[1]["name"] == "Default" for snapshot in snapshots.values())
+
+    qbank_models, qbank_decks = _raw_collection_contract(
+        tmp_path / QBANK_ARTIFACT_FILENAME
+    )
+
+    def inject_unused_qbank(models, decks):
+        models[str(LEGACY_QBANK_MODEL_ID)] = deepcopy(
+            qbank_models[str(LEGACY_QBANK_MODEL_ID)]
+        )
+        decks[str(LEGACY_QBANK_DECK_ID)] = deepcopy(
+            qbank_decks[str(LEGACY_QBANK_DECK_ID)]
+        )
+
+    complete_path = tmp_path / COMPLETE_ARTIFACT_FILENAME
+    _rewrite_collection(complete_path, inject_unused_qbank)
+    tampered = read_apkg(complete_path)
+    changed_receipt = deepcopy(receipt)
+    changed_receipt["packages"][COMPLETE_ARTIFACT_FILENAME] = {
+        "contentFingerprintSha256": canonical_package_fingerprint(tampered),
+        "activeNoteCount": 3,
+        "withdrawalNoteCount": 1,
+        "totalNoteCount": 4,
+        "scheduledCardCount": 4,
+    }
+    changed_receipt = _stage_changed_receipt(
+        tmp_path, changed_receipt, COMPLETE_ARTIFACT_FILENAME
+    )
+
+    result = inspect_release(tmp_path, changed_receipt)
+
+    assert "PACKAGE_STORED_MEMBERSHIP" in {issue.code for issue in result.issues}
+
+
 def test_withdrawal_is_neutral_history_backed_and_csv_is_active_core_application_only(
     candidate, tmp_path
 ):
@@ -349,6 +445,85 @@ def test_withdrawal_is_neutral_history_backed_and_csv_is_active_core_application
         "sha256": _sha256(csv_path),
         "sizeBytes": csv_path.stat().st_size,
     }
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        "header",
+        "reverse",
+        "duplicate",
+        "role",
+        "namespace",
+        "model",
+        "fields_json",
+        "fields_parity",
+        "tags_json",
+        "tags_parity",
+        "ordinal",
+        "template_hash",
+        "render_hash",
+        "source_url",
+    ),
+)
+def test_inspection_rejects_self_consistently_rehashed_csv_semantic_tampering(
+    candidate, tmp_path, mutation
+):
+    receipt = write_release(candidate, tmp_path)
+    csv_path = tmp_path / CSV_ARTIFACT_FILENAME
+    original = csv_path.read_text(encoding="utf-8")
+    reader = csv.DictReader(io.StringIO(original))
+    assert tuple(reader.fieldnames or ()) == EXPECTED_CSV_FIELDS
+    rows = list(reader)
+
+    if mutation == "header":
+        changed_csv = original.replace("artifactRole,", "wrongRole,", 1)
+    else:
+        if mutation == "reverse":
+            rows.reverse()
+        elif mutation == "duplicate":
+            rows.append(deepcopy(rows[0]))
+        elif mutation == "role":
+            rows[0]["artifactRole"] = "learner_export"
+        elif mutation == "namespace":
+            rows[0]["namespace"] = "qbank"
+        elif mutation == "model":
+            rows[0]["modelId"] = str(LEGACY_QBANK_MODEL_ID)
+        elif mutation == "fields_json":
+            rows[0]["fieldsJson"] = "{"
+        elif mutation == "fields_parity":
+            fields = json.loads(rows[0]["fieldsJson"])
+            fields[1] += " tampered"
+            rows[0]["fieldsJson"] = json.dumps(fields, separators=(",", ":"))
+        elif mutation == "tags_json":
+            rows[0]["tagsJson"] = "not-json"
+        elif mutation == "tags_parity":
+            tags = json.loads(rows[0]["tagsJson"])
+            tags.remove("Status::active")
+            rows[0]["tagsJson"] = json.dumps(tags, separators=(",", ":"))
+        elif mutation == "ordinal":
+            rows[0]["templateOrdinal"] = "1"
+        elif mutation == "template_hash":
+            rows[0]["templateContractSha256"] = "f" * 64
+        elif mutation == "render_hash":
+            rows[0]["renderSha256"] = "not-a-sha256"
+        elif mutation == "source_url":
+            rows[0]["sourceUrl"] = "https://example.invalid/wrong"
+        stream = io.StringIO(newline="")
+        writer = csv.DictWriter(
+            stream, fieldnames=EXPECTED_CSV_FIELDS, lineterminator="\n"
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+        changed_csv = stream.getvalue()
+    csv_path.write_text(changed_csv, encoding="utf-8")
+    changed_receipt = _stage_changed_receipt(
+        tmp_path, receipt, CSV_ARTIFACT_FILENAME
+    )
+
+    result = inspect_release(tmp_path, changed_receipt)
+
+    assert "CSV_SEMANTIC_DRIFT" in {issue.code for issue in result.issues}
 
 
 def test_qbank_tier2_withdrawal_keeps_history_guid_and_is_counted_separately(
@@ -494,6 +669,24 @@ def _rewrite_collection(apkg: Path, mutate) -> None:
         with ZipFile(apkg, "w", ZIP_DEFLATED) as archive:
             for name in members:
                 archive.write(root / name, name)
+
+
+def _raw_collection_contract(apkg: Path) -> tuple[dict, dict]:
+    with tempfile.TemporaryDirectory() as directory:
+        database_path = Path(directory) / "collection.anki2"
+        with ZipFile(apkg) as archive:
+            members = [
+                name
+                for name in archive.namelist()
+                if name in {"collection.anki2", "collection.anki21"}
+            ]
+            assert len(members) == 1
+            database_path.write_bytes(archive.read(members[0]))
+        with sqlite3.connect(database_path) as database:
+            models_raw, decks_raw = database.execute(
+                "select models, decks from col"
+            ).fetchone()
+    return json.loads(models_raw), json.loads(decks_raw)
 
 
 def _rewrite_database(apkg: Path, mutate) -> None:
@@ -699,3 +892,58 @@ def test_inspection_rejects_extra_or_missing_artifacts(candidate, tmp_path):
     (tmp_path / APPLICATION_ARTIFACT_FILENAME).unlink()
     result = inspect_release(tmp_path, receipt)
     assert "RELEASE_ARTIFACT_SET" in {issue.code for issue in result.issues}
+
+
+def test_release_publication_uses_one_atomic_full_directory_replace(
+    candidate, tmp_path, monkeypatch
+):
+    out_dir = tmp_path / "published"
+    real_replace = Path.replace
+    observed = []
+
+    def recording_replace(source, target):
+        if Path(target) == out_dir:
+            observed.append({path.name for path in source.iterdir()})
+        return real_replace(source, target)
+
+    monkeypatch.setattr(Path, "replace", recording_replace)
+
+    write_release(candidate, out_dir)
+
+    assert observed == [ALL_FILENAMES]
+    assert {path.name for path in out_dir.iterdir()} == ALL_FILENAMES
+
+
+def test_atomic_publish_failure_never_exposes_a_partial_release(
+    candidate, tmp_path, monkeypatch
+):
+    out_dir = tmp_path / "published"
+    out_dir.mkdir()
+    real_replace = Path.replace
+
+    def failing_replace(source, target):
+        if Path(target) == out_dir:
+            raise OSError("simulated atomic publish failure")
+        return real_replace(source, target)
+
+    monkeypatch.setattr(Path, "replace", failing_replace)
+
+    with pytest.raises(PackageWriteError, match="publish"):
+        write_release(candidate, out_dir)
+
+    assert not out_dir.exists() or not tuple(out_dir.iterdir())
+    assert not tuple(tmp_path.glob(".pcl-anki-release-*"))
+
+
+def test_atomic_publisher_preserves_preexisting_nonempty_destination(candidate, tmp_path):
+    out_dir = tmp_path / "published"
+    out_dir.mkdir()
+    sentinel = out_dir / "owner.txt"
+    sentinel.write_text("preexisting", encoding="utf-8")
+
+    with pytest.raises(PackageWriteError, match="must be empty"):
+        write_release(candidate, out_dir)
+
+    assert sentinel.read_text(encoding="utf-8") == "preexisting"
+    assert {path.name for path in out_dir.iterdir()} == {"owner.txt"}
+    assert not tuple(tmp_path.glob(".pcl-anki-release-*"))
