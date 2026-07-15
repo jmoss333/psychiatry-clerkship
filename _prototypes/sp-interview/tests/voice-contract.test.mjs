@@ -272,7 +272,7 @@ test('opening is turn 0, learner turns start at 1, and only the owned draft is s
     },
   });
   assert.equal(controller.getSnapshot().draft, '');
-  controller.setDraft('editable next-turn draft');
+  assert.throws(() => controller.setDraft('editable next-turn draft'), { code: 'invalid_state' });
   const turn = await turnPromise;
   assert.deepEqual(
     {
@@ -294,7 +294,80 @@ test('opening is turn 0, learner turns start at 1, and only the owned draft is s
     reply: 'It has been difficult.',
     ticket: 'ticket-1',
   });
+  await controller.acceptPatientReply(turn);
+  controller.setDraft('editable next-turn draft');
   assert.equal(controller.getSnapshot().draft, 'editable next-turn draft');
+});
+
+test('Device and Managed playback accept only the authoritative actor reply and ticket', async () => {
+  const device = makeHarness();
+  const deviceController = SPInterviewVoice.createController(device.deps);
+  deviceController.beginEncounter('enc-authoritative-device');
+  deviceController.setMode('device');
+  const deviceReply = await openReply(deviceController, {
+    reply: '*nods* Authoritative device reply.',
+    ticket: 'device-ticket',
+  });
+  await assert.rejects(
+    deviceController.acceptPatientReply({ ...deviceReply, reply: 'Altered device reply.' }),
+    { code: 'invalid_state' },
+  );
+  await assert.rejects(
+    deviceController.acceptPatientReply({ ...deviceReply, ticket: 'altered-device-ticket' }),
+    { code: 'invalid_state' },
+  );
+  assert.equal(device.deviceCalls.length, 0);
+  assert.equal(deviceController.getSnapshot().phase, 'reply_ready');
+  await deviceController.acceptPatientReply(deviceReply);
+  assert.equal(device.deviceCalls[0].options.text, 'Authoritative device reply.');
+
+  const managed = makeHarness();
+  const managedController = SPInterviewVoice.createController(managed.deps);
+  managedController.beginEncounter('enc-authoritative-managed');
+  managedController.setMode('managed');
+  const managedReply = await openReply(managedController, {
+    reply: 'Authoritative managed reply.',
+    ticket: 'managed-ticket',
+  });
+  await assert.rejects(
+    managedController.acceptPatientReply({ ...managedReply, reply: 'Altered managed reply.' }),
+    { code: 'invalid_state' },
+  );
+  await assert.rejects(
+    managedController.acceptPatientReply({ ...managedReply, ticket: 'altered-managed-ticket' }),
+    { code: 'invalid_state' },
+  );
+  assert.equal(managed.syntheses.length, 0);
+  assert.equal(managedController.getSnapshot().phase, 'reply_ready');
+  const accepted = managedController.acceptPatientReply(managedReply);
+  await flush();
+  assert.equal(managed.syntheses[0].args.text, 'Authoritative managed reply.');
+  assert.equal(managed.syntheses[0].args.ticket, 'managed-ticket');
+  managed.syntheses[0].work.resolve({ audio: { size: 16 }, mimeType: 'audio/mpeg' });
+  await accepted;
+
+  const isolated = makeHarness();
+  const isolatedController = SPInterviewVoice.createController(isolated.deps);
+  isolatedController.beginEncounter('enc-authoritative-alias');
+  isolatedController.setMode('device');
+  const isolatedReply = await openReply(isolatedController, {
+    reply: 'Immutable authoritative reply.',
+    ticket: { signature: 'signed-ticket' },
+  });
+  const authoritativeTicket = isolatedReply.ticket;
+  isolatedReply.reply = 'Mutation through returned result.';
+  isolatedReply.ticket = { signature: 'forged-ticket' };
+  await assert.rejects(isolatedController.acceptPatientReply(isolatedReply), {
+    code: 'invalid_state',
+  });
+  assert.equal(isolated.deviceCalls.length, 0);
+  await isolatedController.acceptPatientReply({
+    encounterId: isolatedReply.encounterId,
+    turnId: isolatedReply.turnId,
+    reply: 'Immutable authoritative reply.',
+    ticket: authoritativeTicket,
+  });
+  assert.equal(isolated.deviceCalls[0].options.text, 'Immutable authoritative reply.');
 });
 
 test('recorder chunks remain byte-exact and failure, cancellation, and staleness preserve the draft', async () => {
@@ -352,6 +425,68 @@ test('recorder chunks remain byte-exact and failure, cancellation, and staleness
   assert.equal(controller.getSnapshot().error.code, 'mic_denied');
 });
 
+test('recorder adapter requires all lifecycle methods before ownership and receives turn identity', () => {
+  const valid = makeHarness();
+  const validController = SPInterviewVoice.createController(valid.deps);
+  validController.beginEncounter('enc-recorder-shape');
+  validController.setMode('managed');
+  validController.startListening();
+  assert.equal(valid.recorders[0].options.encounterId, 'enc-recorder-shape');
+  assert.equal(valid.recorders[0].options.turnId, 1);
+  validController.cancelAll('test cleanup');
+
+  const invalid = makeHarness();
+  let starts = 0;
+  let cancels = 0;
+  let releases = 0;
+  invalid.deps.createRecorder = () => ({
+    start() { starts += 1; },
+    cancel() { cancels += 1; },
+    release() { releases += 1; },
+  });
+  const invalidController = SPInterviewVoice.createController(invalid.deps);
+  invalidController.beginEncounter('enc-invalid-recorder');
+  invalidController.setMode('managed');
+  assert.throws(() => invalidController.startListening(), { code: 'invalid_adapter' });
+  assert.equal(starts, 0, 'an invalid recorder must never start');
+  assert.equal(cancels, 1);
+  assert.equal(releases, 1);
+  assert.equal(invalid.clock.pending(), 0);
+  assert.equal(invalidController.getSnapshot().phase, 'error');
+  assert.equal(invalidController.stopListening(), false);
+});
+
+test('synchronous recorder stop and error callbacks cannot orphan the 90-second timer', () => {
+  for (const event of ['stop', 'error']) {
+    const h = makeHarness();
+    let cancels = 0;
+    let releases = 0;
+    h.deps.createRecorder = (options) => ({
+      start() {
+        if (event === 'stop') options.onStop();
+        else options.onError(Object.assign(new Error('sync recorder error'), { code: 'recording_failed' }));
+      },
+      stop() {},
+      cancel() { cancels += 1; },
+      release() { releases += 1; },
+    });
+    const controller = SPInterviewVoice.createController(h.deps);
+    controller.beginEncounter(`enc-sync-${event}`);
+    controller.setMode('managed');
+    assert.equal(controller.startListening(), true);
+    assert.equal(h.clock.pending(), 0, `${event} must clear the timer in the same turn`);
+    assert.equal(releases, 1);
+    if (event === 'stop') {
+      assert.equal(cancels, 0);
+      assert.equal(controller.getSnapshot().phase, 'transcribing');
+      controller.cancelAll('test cleanup');
+    } else {
+      assert.equal(cancels, 1);
+      assert.equal(controller.getSnapshot().phase, 'error');
+    }
+  }
+});
+
 test('device speech strips only star stage directions and normalizes whitespace', async () => {
   const h = makeHarness();
   const controller = SPInterviewVoice.createController(h.deps);
@@ -369,6 +504,45 @@ test('device speech strips only star stage directions and normalizes whitespace'
   assert.throws(() => controller.startListening(), { code: 'invalid_state' });
   h.deviceCalls[0].end();
   assert.equal(controller.getSnapshot().phase, 'ready');
+});
+
+test('managed and device players require complete lifecycle adapters before ownership', async () => {
+  const managed = makeHarness();
+  let managedStops = 0;
+  let managedDestroys = 0;
+  managed.deps.createPlayer = () => ({
+    stop() { managedStops += 1; },
+    destroy() { managedDestroys += 1; },
+  });
+  const managedController = SPInterviewVoice.createController(managed.deps);
+  managedController.beginEncounter('enc-invalid-managed-player');
+  managedController.setMode('managed');
+  const managedReply = await openReply(managedController);
+  const managedAccept = managedController.acceptPatientReply(managedReply);
+  await flush();
+  managed.syntheses[0].work.resolve({ audio: { size: 8 }, mimeType: 'audio/mpeg' });
+  await assert.rejects(managedAccept, { code: 'invalid_adapter' });
+  assert.equal(managedStops, 1);
+  assert.equal(managedDestroys, 1);
+  assert.equal(managedController.stopPlayback(), false);
+  assert.deepEqual(managedController.getSnapshot().replayableTurnIds, []);
+  assert.deepEqual(managed.revokedUrls, ['blob:contract-1']);
+
+  const device = makeHarness();
+  let deviceStops = 0;
+  device.deps.deviceSpeak = () => ({
+    stop() { deviceStops += 1; },
+  });
+  const deviceController = SPInterviewVoice.createController(device.deps);
+  deviceController.beginEncounter('enc-invalid-device-player');
+  deviceController.setMode('device');
+  const deviceReply = await openReply(deviceController);
+  await assert.rejects(deviceController.acceptPatientReply(deviceReply), {
+    code: 'invalid_adapter',
+  });
+  assert.equal(deviceStops, 1);
+  assert.equal(deviceController.stopPlayback(), false);
+  assert.equal(deviceController.getSnapshot().phase, 'error');
 });
 
 test('missing managed synthesis becomes an explicit fallback state', async () => {
@@ -499,6 +673,8 @@ test('all cancellation paths synchronously abort and release owned work; late ca
   const h = makeHarness();
   const controller = SPInterviewVoice.createController(h.deps);
   controller.beginEncounter('enc-cancel');
+  const initialOpening = await openReply(controller);
+  await controller.acceptPatientReply(initialOpening);
   controller.setMode('managed');
 
   controller.startListening();

@@ -39,6 +39,21 @@
       .trim();
   }
 
+  function freezeTree(value) {
+    if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
+    Object.keys(value).forEach(function (key) { freezeTree(value[key]); });
+    return Object.freeze(value);
+  }
+
+  function immutableTicket(ticket) {
+    if (!ticket || typeof ticket !== 'object') return ticket;
+    try {
+      return freezeTree(JSON.parse(JSON.stringify(ticket)));
+    } catch (error) {
+      throw voiceError('invalid_response', 'The actor returned an invalid speech ticket.', error);
+    }
+  }
+
   function byteLength(value) {
     if (value == null) return 0;
     if (typeof value.size === 'number') return value.size;
@@ -109,7 +124,7 @@
     var mimeType = deps.mimeType || DEFAULT_MIME_TYPE;
     var listeners = [];
     var destroyed = false;
-    var openingUsed = false;
+    var openingAccepted = false;
     var recorderSession = null;
     var actorOperation = null;
     var speechOperation = null;
@@ -178,6 +193,16 @@
     function safeCall(target, name) {
       if (!target || typeof target[name] !== 'function') return;
       try { target[name](); } catch (error) {}
+    }
+
+    function requireAdapter(adapter, methods, label) {
+      var missing = methods.filter(function (method) {
+        return !adapter || typeof adapter[method] !== 'function';
+      });
+      if (missing.length) {
+        throw voiceError('invalid_adapter', label + ' is missing ' + missing.join(', ') + '.');
+      }
+      return adapter;
     }
 
     function isContext(encounterId, turnId) {
@@ -256,8 +281,22 @@
 
     function cancelOperation(operation, code, reason) {
       if (!operation) return false;
+      restoreActorDraft(operation);
       safeAbort(operation.abortController);
       rejectWork(operation.work, voiceError(code, reason || code));
+      return true;
+    }
+
+    function restoreActorDraft(operation) {
+      var request = operation && operation.kind === 'actor' ? operation.request : null;
+      if (
+        !request ||
+        request.mode !== 'converse' ||
+        state.encounterId !== request.encounterId ||
+        state.turnId !== request.turnId
+      ) return false;
+      if (state.draft === '') state.draft = request.text;
+      state.turnId = request.turnId - 1;
       return true;
     }
 
@@ -335,7 +374,13 @@
         onError: function (error) { onPlayerError(owner, error); },
       });
       try {
-        owner.player = factory(options) || {};
+        owner.player = factory(options);
+        requireAdapter(
+          owner.player,
+          config.play ? ['play', 'stop', 'destroy'] : ['stop', 'destroy'],
+          config.play ? 'Managed player adapter' : 'Device player adapter',
+        );
+        if (config.onValidated) config.onValidated(owner);
         playerOwner = owner;
         publish({
           phase: 'speaking',
@@ -348,7 +393,7 @@
           playResult.catch(function (error) { onPlayerError(owner, error); });
         }
       } catch (error) {
-        releasePlayer(owner, false);
+        releasePlayer(owner, true);
         throw normalizeError(error, 'playback_failed');
       }
       return true;
@@ -363,6 +408,10 @@
         oneShotEntry: entry.cached ? null : entry,
         play: true,
         options: { url: entry.url, mimeType: entry.mimeType },
+        onValidated: function (owner) {
+          if (!entry.cached) entry.cached = cacheEntry(entry);
+          owner.oneShotEntry = entry.cached ? null : entry;
+        },
       });
     }
 
@@ -514,9 +563,17 @@
     }
 
     function startActor(mode, text, turnId, runActor) {
-      var operation = {
+      var request = Object.freeze({
         encounterId: state.encounterId,
         turnId: turnId,
+        text: text,
+        mode: mode,
+      });
+      var operation = {
+        kind: 'actor',
+        request: request,
+        encounterId: request.encounterId,
+        turnId: request.turnId,
         abortController: newAbortController(),
         work: createWork(),
       };
@@ -526,11 +583,11 @@
       Promise.resolve().then(function () {
         if (operation.work.settled) return undefined;
         return runActor({
-          mode: mode,
-          text: text,
+          mode: request.mode,
+          text: request.text,
           signal: operation.abortController.signal,
-          encounterId: operation.encounterId,
-          turnId: operation.turnId,
+          encounterId: request.encounterId,
+          turnId: request.turnId,
         });
       }).then(function (result) {
         if (operation.work.settled) return;
@@ -542,17 +599,32 @@
         actorOperation = null;
         if (!result || typeof result.reply !== 'string') {
           var invalid = voiceError('invalid_response', 'The actor returned an invalid response.');
+          restoreActorDraft(operation);
           failState(invalid, null);
           rejectWork(operation.work, invalid);
           return;
         }
+        var authoritative;
+        try {
+          authoritative = Object.freeze({
+            encounterId: operation.encounterId,
+            turnId: operation.turnId,
+            reply: result.reply,
+            ticket: immutableTicket(result.ticket == null ? null : result.ticket),
+          });
+        } catch (error) {
+          restoreActorDraft(operation);
+          failState(error, null);
+          rejectWork(operation.work, error);
+          return;
+        }
+        pendingReply = authoritative;
         var ready = {
-          encounterId: operation.encounterId,
-          turnId: operation.turnId,
-          reply: result.reply,
-          ticket: result.ticket == null ? null : result.ticket,
+          encounterId: authoritative.encounterId,
+          turnId: authoritative.turnId,
+          reply: authoritative.reply,
+          ticket: authoritative.ticket,
         };
-        pendingReply = ready;
         publish({ phase: 'reply_ready', error: null, activePatientTurn: operation.turnId });
         resolveWork(operation.work, ready);
       }, function (error) {
@@ -564,6 +636,7 @@
         actorOperation = null;
         var normalized = normalizeError(error, 'actor_failed');
         pendingReply = null;
+        restoreActorDraft(operation);
         failState(normalized, null);
         rejectWork(operation.work, normalized);
       });
@@ -612,7 +685,6 @@
         revoked: false,
         cached: false,
       };
-      entry.cached = cacheEntry(entry);
       try {
         startManagedPlayer(entry);
         resolveWork(operation.work, {
@@ -646,7 +718,7 @@
       }
       cancelOwned('stale_operation', 'The encounter was replaced.');
       clearCache();
-      openingUsed = false;
+      openingAccepted = false;
       pendingReply = null;
       publish({
         phase: 'ready',
@@ -663,13 +735,12 @@
     function requestOpening(options) {
       try {
         assertActiveEncounter();
-        if (state.phase !== 'ready' || openingUsed || state.turnId !== 0) {
+        if (state.phase !== 'ready' || openingAccepted || state.turnId !== 0) {
           throw voiceError('invalid_state', 'The opening is not available in the current state.');
         }
         if (!options || typeof options.runActor !== 'function') {
           throw voiceError('invalid_argument', 'runActor must be a function.');
         }
-        openingUsed = true;
         return startActor('open', '', 0, options.runActor);
       } catch (error) {
         return rejected(error);
@@ -698,6 +769,9 @@
 
     function setDraft(text) {
       assertActiveEncounter();
+      if (state.phase !== 'ready') {
+        throw voiceError('invalid_state', 'The draft is editable only in ready state.');
+      }
       publish({ draft: String(text == null ? '' : text) });
       return state.draft;
     }
@@ -729,19 +803,19 @@
       try {
         session.recorder = deps.createRecorder({
           mimeType: mimeType,
+          encounterId: session.encounterId,
+          turnId: session.turnId,
           onChunk: function (chunk) { onRecordingChunk(session, chunk); },
           onStop: function () { onRecordingStop(session); },
           onError: function (error) { onRecordingError(session, error); },
         });
-        if (!session.recorder || typeof session.recorder.start !== 'function') {
-          throw voiceError('unavailable', 'Recorder adapter is invalid.');
-        }
+        requireAdapter(session.recorder, ['start', 'stop', 'cancel', 'release'], 'Recorder adapter');
         recorderSession = session;
         publish({ phase: 'listening', error: null, activePatientTurn: null });
-        session.recorder.start();
         if (timerSet) {
           session.timerId = timerSet(function () { requestRecordingStop(session); }, MAX_RECORDING_MS);
         }
+        session.recorder.start();
       } catch (error) {
         if (recorderSession === session) recorderSession = null;
         releaseRecorder(session, true);
@@ -763,7 +837,7 @@
     function submitTurn(options) {
       try {
         assertActiveEncounter();
-        if (state.phase !== 'ready' || !state.draft.trim()) {
+        if (state.phase !== 'ready' || !openingAccepted || !state.draft.trim()) {
           throw voiceError('invalid_state', 'A nonempty reviewed draft is required in ready state.');
         }
         if (!options || typeof options.runActor !== 'function') {
@@ -784,19 +858,19 @@
         if (
           state.phase !== 'reply_ready' ||
           !reply ||
+          !pendingReply ||
           reply.encounterId !== state.encounterId ||
           reply.turnId !== state.turnId ||
-          state.activePatientTurn !== reply.turnId
+          state.activePatientTurn !== reply.turnId ||
+          reply.encounterId !== pendingReply.encounterId ||
+          reply.turnId !== pendingReply.turnId ||
+          reply.reply !== pendingReply.reply ||
+          reply.ticket !== pendingReply.ticket
         ) {
           throw voiceError('invalid_state', 'The patient reply does not match the ready turn.');
         }
-        var accepted = {
-          encounterId: reply.encounterId,
-          turnId: reply.turnId,
-          reply: String(reply.reply == null ? '' : reply.reply),
-          ticket: reply.ticket == null ? null : reply.ticket,
-        };
-        pendingReply = accepted;
+        var accepted = pendingReply;
+        if (accepted.turnId === 0) openingAccepted = true;
         if (state.mode === 'off') {
           pendingReply = null;
           publish({ phase: 'ready', error: null, activePatientTurn: null });

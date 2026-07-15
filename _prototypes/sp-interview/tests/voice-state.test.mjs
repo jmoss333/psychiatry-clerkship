@@ -356,6 +356,10 @@ test('stale and cancelled actor work rejects with typed errors and cannot become
   assert.equal(controller.getSnapshot().encounterId, 'enc-new');
   assert.equal(controller.getSnapshot().phase, 'ready');
   assert.equal(controller.getSnapshot().activePatientTurn, null);
+  const currentOpening = await controller.requestOpening({
+    runActor: async () => ({ reply: 'current opening', ticket: null }),
+  });
+  await controller.acceptPatientReply(currentOpening);
   controller.setDraft('A reviewed learner turn');
   const actor = deferred();
   let signal;
@@ -373,6 +377,152 @@ test('stale and cancelled actor work rejects with typed errors and cannot become
   await flush();
   assert.equal(controller.getSnapshot().phase, 'ready');
   assert.equal(controller.getSnapshot().activePatientTurn, null);
+});
+
+test('opening retries until accepted and gates the first learner turn', async () => {
+  const h = makeHarness();
+  const controller = SPInterviewVoice.createController(h.deps);
+  controller.beginEncounter('enc-opening-retry');
+  controller.setDraft('learner turn must wait');
+  await assert.rejects(
+    controller.submitTurn({ runActor: async () => ({ reply: 'too early', ticket: null }) }),
+    { code: 'invalid_state' },
+  );
+  assert.equal(controller.getSnapshot().turnId, 0);
+
+  await assert.rejects(
+    controller.requestOpening({ runActor: async () => { throw new Error('opening failed'); } }),
+    { code: 'actor_failed' },
+  );
+  controller.cancelAll('clear opening error');
+
+  const cancelledActor = deferred();
+  const cancelled = controller.requestOpening({ runActor: () => cancelledActor.promise });
+  controller.cancelAll('cancel opening');
+  await assert.rejects(cancelled, { code: 'cancelled' });
+
+  const unaccepted = await controller.requestOpening({
+    runActor: async () => ({ reply: 'not yet accepted', ticket: 'retry-ticket-1' }),
+  });
+  controller.cancelAll('discard unaccepted opening');
+  assert.equal(controller.getSnapshot().phase, 'ready');
+
+  const accepted = await controller.requestOpening({
+    runActor: async () => ({ reply: 'accepted opening', ticket: 'retry-ticket-2' }),
+  });
+  await controller.acceptPatientReply(accepted);
+  await assert.rejects(
+    controller.requestOpening({ runActor: async () => ({ reply: 'duplicate', ticket: null }) }),
+    { code: 'invalid_state' },
+  );
+
+  controller.setDraft('first learner turn');
+  let firstTurnId;
+  const firstTurn = await controller.submitTurn({
+    runActor(args) {
+      firstTurnId = args.turnId;
+      return { reply: 'first patient answer', ticket: null };
+    },
+  });
+  assert.equal(firstTurnId, 1);
+  assert.equal(firstTurn.turnId, 1);
+  assert.equal(unaccepted.turnId, 0);
+});
+
+test('failed and immediately cancelled learner turns restore text and reuse the same turn ID', async () => {
+  const h = makeHarness();
+  const controller = SPInterviewVoice.createController(h.deps);
+  controller.beginEncounter('enc-turn-retry');
+  const opening = await controller.requestOpening({
+    runActor: async () => ({ reply: 'Opening', ticket: null }),
+  });
+  await controller.acceptPatientReply(opening);
+
+  controller.setDraft('reviewed text after failure');
+  let failedTurnId;
+  const failed = controller.submitTurn({
+    runActor(args) {
+      failedTurnId = args.turnId;
+      throw new Error('actor unavailable');
+    },
+  });
+  assert.throws(() => controller.setDraft('racing newer draft'), { code: 'invalid_state' });
+  await assert.rejects(failed, { code: 'actor_failed' });
+  assert.equal(failedTurnId, 1);
+  assert.equal(controller.getSnapshot().turnId, 0);
+  assert.equal(controller.getSnapshot().draft, 'reviewed text after failure');
+  controller.cancelAll('retry after failure');
+
+  let failureRetryId;
+  const failureRetry = await controller.submitTurn({
+    runActor(args) {
+      failureRetryId = args.turnId;
+      return { reply: 'failure retry reply', ticket: null };
+    },
+  });
+  assert.equal(failureRetryId, 1);
+  await controller.acceptPatientReply(failureRetry);
+
+  controller.setDraft('reviewed text after cancellation');
+  const cancelledActor = deferred();
+  let cancelledTurnId;
+  const cancelled = controller.submitTurn({
+    runActor(args) {
+      cancelledTurnId = args.turnId;
+      return cancelledActor.promise;
+    },
+  });
+  controller.cancelAll('immediate learner cancellation');
+  await assert.rejects(cancelled, { code: 'cancelled' });
+  assert.equal(cancelledTurnId, undefined, 'queued adapter must not start after same-turn cancellation');
+  assert.equal(controller.getSnapshot().turnId, 1);
+  assert.equal(controller.getSnapshot().draft, 'reviewed text after cancellation');
+
+  let cancellationRetryId;
+  const cancellationRetry = await controller.submitTurn({
+    runActor(args) {
+      cancellationRetryId = args.turnId;
+      return { reply: 'cancellation retry reply', ticket: null };
+    },
+  });
+  assert.equal(cancellationRetryId, 2);
+  assert.equal(cancellationRetry.turnId, 2);
+});
+
+test('mode cancellation preserves a restored draft while begin, end, and destroy discard it', async () => {
+  async function controllerWithOpening(id) {
+    const h = makeHarness();
+    const controller = SPInterviewVoice.createController(h.deps);
+    controller.beginEncounter(id);
+    const opening = await controller.requestOpening({
+      runActor: async () => ({ reply: 'Opening', ticket: null }),
+    });
+    await controller.acceptPatientReply(opening);
+    return controller;
+  }
+
+  const modeController = await controllerWithOpening('enc-mode-preserve');
+  modeController.setDraft('preserve on mode cancellation');
+  const modeActor = deferred();
+  const modePending = modeController.submitTurn({ runActor: () => modeActor.promise });
+  modeController.setMode('device');
+  await assert.rejects(modePending, { code: 'cancelled' });
+  assert.equal(modeController.getSnapshot().turnId, 0);
+  assert.equal(modeController.getSnapshot().draft, 'preserve on mode cancellation');
+
+  for (const lifecycle of ['begin', 'end', 'destroy']) {
+    const controller = await controllerWithOpening(`enc-discard-${lifecycle}`);
+    controller.setDraft(`discard on ${lifecycle}`);
+    const actor = deferred();
+    const pending = controller.submitTurn({ runActor: () => actor.promise });
+    if (lifecycle === 'begin') controller.beginEncounter('replacement');
+    if (lifecycle === 'end') controller.endEncounter();
+    if (lifecycle === 'destroy') controller.destroy();
+    await assert.rejects(pending, {
+      code: lifecycle === 'begin' ? 'stale_operation' : 'cancelled',
+    });
+    assert.equal(controller.getSnapshot().draft, '', lifecycle);
+  }
 });
 
 test('illegal actions and post-destroy calls return stable errors', async () => {
@@ -404,9 +554,11 @@ test('illegal actions and post-destroy calls return stable errors', async () => 
   assert.throws(() => controller.startListening(), { code: 'invalid_state' });
   controller.cancelAll('user_cancelled');
   await assert.rejects(opening, { code: 'cancelled' });
-  await assert.rejects(controller.requestOpening({ runActor: async () => ({}) }), {
-    code: 'invalid_state',
+  controller.setMode('off');
+  const retriedOpening = await controller.requestOpening({
+    runActor: async () => ({ reply: 'retried opening', ticket: null }),
   });
+  await controller.acceptPatientReply(retriedOpening);
 
   controller.setDraft('question');
   const actor = deferred();
