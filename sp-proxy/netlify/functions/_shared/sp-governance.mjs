@@ -19,6 +19,18 @@ const OPENAI_STOCK_VOICES = new Set([
   'shimmer',
   'verse',
 ]);
+const CANDIDATE_KEYS = ['id', 'synthesis', 'transcription'];
+const PROVIDER_LEG_KEYS = ['model', 'provider'];
+const RATE_CARD_KEYS = ['currency', 'effectiveDate', 'rates', 'version'];
+const RATE_KEYS = ['meter', 'model', 'price', 'provider', 'sourceUrl', 'unit'];
+const RUNTIME_KEYS = [
+  'stackId',
+  'synthesisModel',
+  'synthesisProvider',
+  'transcriptionModel',
+  'transcriptionProvider',
+  'zeroRetentionEntitled',
+];
 
 function nonempty(value) {
   return typeof value === 'string' && value.trim().length > 0;
@@ -120,7 +132,7 @@ function reviewedPrivacy(privacy, active, runtime, nowMs) {
     && privacy?.decision === 'approved'
     && Array.isArray(privacy.policyUrls)
     && privacy.policyUrls.length > 0
-    && privacy.policyUrls.every(nonempty)
+    && privacy.policyUrls.every(validHttpsUrl)
     && Array.isArray(privacy.policyHashes)
     && privacy.policyHashes.length === privacy.policyUrls.length
     && privacy.policyHashes.every(validSha256)
@@ -145,12 +157,17 @@ function reviewedPrivacy(privacy, active, runtime, nowMs) {
 function reviewedRateCard(rateCard, activeStack, nowMs) {
   const effectiveAtMs = epochMs(rateCard?.effectiveDate);
   if (
-    !nonempty(rateCard?.version)
+    !exactKeys(rateCard, RATE_CARD_KEYS)
+    || !nonempty(rateCard?.version)
     || !nonempty(rateCard?.currency)
     || effectiveAtMs === null
     || effectiveAtMs > nowMs
     || !Array.isArray(rateCard?.rates)
     || rateCard.rates.length === 0
+    || !rateCard.rates.every((rate) => (
+      exactKeys(rate, RATE_KEYS)
+      && validHttpsUrl(rate.sourceUrl)
+    ))
   ) {
     return false;
   }
@@ -176,8 +193,7 @@ function reviewedRateCard(rateCard, activeStack, nowMs) {
       && nonempty(matches[0].unit)
       && typeof matches[0].price === 'number'
       && Number.isFinite(matches[0].price)
-      && matches[0].price > 0
-      && nonempty(matches[0].sourceUrl);
+      && matches[0].price > 0;
   });
 }
 
@@ -325,11 +341,18 @@ export function managedVoiceEligibility({
     if (profileHash(profile) !== profile.facultyReview.profileHash) return { eligible: false };
 
     const candidates = Array.isArray(engine.candidateStacks) ? engine.candidateStacks : [];
+    if (!candidates.every((candidate) => (
+      exactKeys(candidate, CANDIDATE_KEYS)
+      && exactKeys(candidate.transcription, PROVIDER_LEG_KEYS)
+      && exactKeys(candidate.synthesis, PROVIDER_LEG_KEYS)
+    ))) {
+      return { eligible: false };
+    }
     const activeCandidates = candidates.filter((candidate) => candidate?.id === engine.activeStack);
     if (activeCandidates.length !== 1) return { eligible: false };
     const active = activeCandidates[0];
     if (
-      !runtime
+      !exactKeys(runtime, RUNTIME_KEYS)
       || ![
         runtime.stackId,
         runtime.transcriptionProvider,

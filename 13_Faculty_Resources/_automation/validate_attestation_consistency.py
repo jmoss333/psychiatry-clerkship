@@ -276,7 +276,14 @@ def _validate_speech_profile(slug, case_def, case_id, engine_status):
                 "%s: case %s draft speechProfile cannot claim reviewed facultyReview"
                 % (slug, case_id)
             )
-        for field in ("voiceProvenance", "adapterMappingVersion", "providerSettings"):
+        for field in (
+            "provider",
+            "providerModel",
+            "voiceId",
+            "voiceProvenance",
+            "adapterMappingVersion",
+            "providerSettings",
+        ):
             if field not in profile or profile.get(field) is not None:
                 errors.append(
                     "%s: case %s draft speechProfile.%s must be null"
@@ -367,6 +374,17 @@ def _validate_speech_engine(slug, pack, cases):
     for candidate in candidates:
         if not isinstance(candidate, dict) or not candidate.get("id"):
             continue
+        if not exact_keys(candidate, {"id", "transcription", "synthesis"}):
+            errors.append(
+                "%s: candidate %s must have the exact stack shape"
+                % (slug, candidate.get("id") or "<unknown>")
+            )
+        for leg in ("transcription", "synthesis"):
+            if not exact_keys(candidate.get(leg), {"provider", "model"}):
+                errors.append(
+                    "%s: candidate %s %s must have exact provider/model fields"
+                    % (slug, candidate.get("id") or "<unknown>", leg)
+                )
         actual_candidate_stacks[candidate.get("id")] = {
             leg: (
                 candidate.get(leg, {}).get("provider"),
@@ -407,12 +425,25 @@ def _validate_speech_engine(slug, pack, cases):
             if not isinstance(rate, dict):
                 errors.append("%s: rateCard.rates[%d] must be an object" % (slug, index))
                 continue
+            if not exact_keys(
+                rate,
+                {"provider", "model", "meter", "unit", "price", "sourceUrl"},
+            ):
+                errors.append(
+                    "%s: rateCard.rates[%d] must have the exact rate shape"
+                    % (slug, index)
+                )
             provider = rate.get("provider")
             model = rate.get("model")
             meter = rate.get("meter")
             if not all((provider, model, meter, rate.get("unit"), rate.get("sourceUrl"))):
                 errors.append(
                     "%s: rateCard.rates[%d] is missing provider/model/meter/unit/sourceUrl"
+                    % (slug, index)
+                )
+            if not valid_https_url(rate.get("sourceUrl")):
+                errors.append(
+                    "%s: rateCard.rates[%d].sourceUrl must be credential-free HTTPS"
                     % (slug, index)
                 )
             price = rate.get("price")
@@ -511,7 +542,7 @@ def _validate_speech_engine(slug, pack, cases):
         valid_policy_urls = (
             isinstance(policy_urls, list)
             and bool(policy_urls)
-            and all(isinstance(value, str) and value.strip() for value in policy_urls)
+            and all(valid_https_url(value) for value in policy_urls)
         )
         valid_policy_hashes = (
             isinstance(policy_hashes, list)

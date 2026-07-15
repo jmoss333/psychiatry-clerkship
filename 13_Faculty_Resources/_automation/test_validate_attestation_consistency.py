@@ -415,6 +415,9 @@ class AttestationConsistencyTests(unittest.TestCase):
 
     def test_draft_profiles_require_explicit_null_attestation_only_fields(self):
         for field, value in {
+            "provider": "openai",
+            "providerModel": "tts-1-hd",
+            "voiceId": "alloy",
             "voiceProvenance": {
                 "kind": "provider-stock",
                 "catalogUrl": "https://example.test/voice",
@@ -548,6 +551,9 @@ class AttestationConsistencyTests(unittest.TestCase):
         def extra_account_field(pack):
             pack["speechEngine"]["privacyReview"]["accountControls"]["reviewedBy"] = "placeholder"
 
+        def unsafe_policy_url(pack):
+            pack["speechEngine"]["privacyReview"]["policyUrls"][0] = "javascript:alert(1)"
+
         mutations = {
             "pending decision": pending_decision,
             "pending status": pending_status,
@@ -565,6 +571,7 @@ class AttestationConsistencyTests(unittest.TestCase):
             "invalid entitlement": invalid_entitlement,
             "invalid account evidence": invalid_account_evidence,
             "extra account field": extra_account_field,
+            "unsafe policy URL": unsafe_policy_url,
         }
         for label, mutate in mutations.items():
             with self.subTest(mutation=label):
@@ -597,6 +604,15 @@ class AttestationConsistencyTests(unittest.TestCase):
                 "model"
             ] = "eleven_v3"
 
+        def extra_candidate_field(pack):
+            pack["speechEngine"]["candidateStacks"][0]["voiceId"] = "alloy"
+
+        def extra_candidate_leg_field(pack):
+            pack["speechEngine"]["candidateStacks"][0]["synthesis"]["voiceId"] = "alloy"
+
+        def unsafe_rate_source(pack):
+            pack["speechEngine"]["rateCard"]["rates"][0]["sourceUrl"] = "javascript:alert(1)"
+
         def missing_v2_rate(pack):
             remove_rate(pack, "eleven_multilingual_v2")
 
@@ -623,6 +639,9 @@ class AttestationConsistencyTests(unittest.TestCase):
             "duplicate candidate": duplicate_candidate,
             "missing candidate model": missing_candidate_model,
             "wrong candidate model": wrong_candidate_model,
+            "extra candidate field": extra_candidate_field,
+            "extra candidate leg field": extra_candidate_leg_field,
+            "unsafe rate source": unsafe_rate_source,
             "missing ElevenLabs v2 rate": missing_v2_rate,
             "duplicate rate": duplicate_rate,
             "wrong rate tuple": wrong_rate_tuple,
