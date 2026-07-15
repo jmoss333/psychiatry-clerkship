@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [RC-META] tool="Family Systems Practice" version="1.1" built="2026-07-08" category="family-systems" audience="trainee,ms3,resident" settings="inpatient,self-study,rounds-prep" time="5-10min" summary="Structured family/collateral/discharge practice scenarios with quick filters. Stores anonymous checklist state under cw_family_v1; no PHI or free-text patient fields." -->
+<!-- [RC-META] tool="Family Systems Practice" version="2.0" built="2026-07-15" category="family-systems" audience="trainee,ms3,resident" settings="inpatient,self-study,rounds-prep" time="5-10min" summary="Structured family/collateral/discharge scenarios in Reference mode, plus a Practice mode with generate-then-reveal retrieval cards feeding the shared SM-2 review store. Stores anonymous checklist state under cw_family_v1 and family scheduling cards under cw_srs_v1 (FAM# ids); no PHI or free-text patient fields." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -90,6 +90,28 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offs
   .meta{display:grid;grid-template-columns:1fr;align-items:start}
   .grid,.checks{grid-template-columns:1fr}
 }
+.modebar{display:inline-flex;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px;margin:0 0 12px}
+.modebtn{border:1px solid transparent;background:transparent;border-radius:999px;padding:6px 14px;font:inherit;font-size:.82rem;font-weight:900;color:var(--muted);cursor:pointer}
+.modebtn.on{background:var(--teal);color:#fff}
+.practice{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 4px rgba(56,48,40,.06);padding:16px}
+.practicehead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+.practicehead h3{font-family:var(--font-head);font-size:1.2rem;color:var(--terracotta);margin:0}
+.duechip{border:1px solid var(--line);border-radius:999px;background:var(--surface-2);padding:3px 10px;font-size:.75rem;font-weight:900;color:var(--muted)}
+.prepare{border-left:4px solid var(--teal);background:var(--teal-soft);border-radius:0 10px 10px 0;padding:10px 13px;color:var(--muted);margin:0 0 14px}
+.prepare ul{margin:6px 0 0;padding-left:1.1rem}
+.pcard{border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:13px;margin:0 0 12px}
+.pk{text-transform:uppercase;letter-spacing:.1em;font-size:.68rem;font-weight:900;color:var(--soft);margin:0 0 5px}
+.pprompt{font-family:var(--font-head);font-size:1.1rem;color:var(--ink);margin:0 0 6px}
+.pnote{font-size:.82rem;color:var(--soft);margin:0 0 10px}
+.revealbtn{border:1px solid var(--teal);background:var(--surface);color:var(--teal-dark);border-radius:999px;padding:7px 13px;font:inherit;font-size:.85rem;font-weight:900;cursor:pointer}
+.revealbtn:hover{background:var(--teal-soft)}
+.preveal{border-left:4px solid var(--teal);background:var(--surface);border-radius:0 10px 10px 0;padding:10px 12px;margin:0 0 10px;color:var(--muted)}
+.preveal-k{display:block;text-transform:uppercase;letter-spacing:.08em;font-size:.68rem;font-weight:900;color:var(--teal-dark);margin:0 0 4px}
+.preveal ul{margin:0;padding-left:1.1rem}
+.prate{display:flex;gap:8px;flex-wrap:wrap}
+.ratebtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font:inherit;font-size:.84rem;font-weight:900;color:var(--ink);cursor:pointer}
+.ratebtn:hover{border-color:var(--teal);background:var(--teal-soft)}
+.pdone{font-size:.86rem;font-weight:800;color:var(--teal-dark)}
 </style>
 </head>
 <body>
@@ -107,7 +129,8 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offs
 <script>
 (function(){
 var app=document.getElementById('app');
-var state={items:[],current:0,filter:'all',progress:loadProgress(),requested:requestedScenario()};
+var state={items:[],current:0,filter:'all',progress:loadProgress(),requested:requestedScenario(),mode:'reference',revealed:{},graded:{}};
+state.mode=(state.progress&&state.progress['$mode']==='practice')?'practice':'reference';
 /* ---- cw_srs_v1 spaced-repetition adapter (family retrieval cards) --------------
    Family cards share the question bank's store under a FAM# id namespace
    (QB#/TOPIC# already exist). applyGrade is copied verbatim from
@@ -229,8 +252,72 @@ function checklistHtml(it){var rec=state.progress[it.id]||{}, checks=rec.checks|
 function pageHref(f){return f&&f.endsWith('.html')?'../index.html?tool='+encodeURIComponent(f):'../index.html?page='+encodeURIComponent(f);}
 function pageLabel(f){return PAGE_LABELS[f]||String(f||'').replace(/\.md$|\.html$/g,'').replace(/^t_/,'').replace(/^pg_/,'').replace(/_/g,' ').replace(/\b\w/g,function(m){return m.toUpperCase();});}
 function linksHtml(it){var out=[];(it.linkedPages||[]).forEach(function(f){out.push('<a href="'+pageHref(f)+'">'+esc(pageLabel(f))+'</a>');});(it.communicationCases||[]).forEach(function(id){out.push('<a href="../index.html?tool=communication-practice.html&case='+encodeURIComponent(id)+'">'+esc(CASE_LABELS[id]||'Communication Practice')+'</a>');});return out.length?'<div class="links">'+out.join('')+'</div>':'';}
-function render(){if(!state.items.length){app.innerHTML='<div class="empty">No family systems scenarios are available.</div>';return;}ensureCurrentVisible();var it=current();app.innerHTML=sideHtml()+'<div class="main">'+introHtml(it)+bodyHtml(it)+checklistHtml(it)+'</div>';}
-app.addEventListener('click',function(ev){var flt=ev.target.closest&&ev.target.closest('[data-filter]');if(flt){state.filter=flt.getAttribute('data-filter')||'all';render();return;}var sc=ev.target.closest&&ev.target.closest('.scenario');if(sc){setCurrent(sc.getAttribute('data-id'));render();return;}var ck=ev.target.closest&&ev.target.closest('.check');if(ck){var it=current(), id=ck.getAttribute('data-check'), rec=state.progress[it.id]||{checks:{}};rec.checks=rec.checks||{};rec.checks[id]=!rec.checks[id];rec.updatedAt=new Date().toISOString().slice(0,10);state.progress[it.id]=rec;saveProgress();render();return;}var act=ev.target.closest&&ev.target.closest('[data-act]');if(act&&act.getAttribute('data-act')==='reset'){delete state.progress[current().id];saveProgress();render();}});
+var DEFAULT_RETRIEVAL=[
+  {id:'opening',prompt:'Say your opening line for this family out loud.',revealFrom:'opening'},
+  {id:'ask',prompt:'Name the collateral questions you would ask — out loud or on scratch.',revealFrom:'ask'},
+  {id:'avoid',prompt:'Name the trap here: what would you deliberately NOT do?',revealFrom:'avoid'}
+];
+function revealContent(it,rp){
+  if(rp.revealText)return rp.revealText;
+  if(rp.revealFrom==='opening')return it.opening||null;
+  var sec=(it.sections||{})[rp.revealFrom];
+  return (sec&&sec.length)?sec:null;
+}
+function retrievalFor(it){
+  if(Array.isArray(it.retrieval)&&it.retrieval.length)return it.retrieval;
+  return DEFAULT_RETRIEVAL.filter(function(rp){return revealContent(it,rp)!=null;});
+}
+function revealBodyHtml(content){
+  if(content==null)return '';
+  if(typeof content==='string')return '<p>'+esc(content)+'</p>';
+  return '<ul>'+content.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>';
+}
+function scheduledLabel(card){
+  var days=Math.max(0,Math.round((card.due-Date.now())/DAY));
+  return days<=0?'Scheduled — back soon':'Scheduled — back in about '+days+' day'+(days===1?'':'s');
+}
+function modeToggleHtml(){
+  return '<div class="modebar" role="group" aria-label="Study mode">'
+    +'<button type="button" class="modebtn'+(state.mode==='reference'?' on':'')+'" data-mode="reference" aria-label="Reference mode" aria-pressed="'+(state.mode==='reference')+'">Reference</button>'
+    +'<button type="button" class="modebtn'+(state.mode==='practice'?' on':'')+'" data-mode="practice" aria-label="Practice mode" aria-pressed="'+(state.mode==='practice')+'">Practice</button>'
+    +'</div>';
+}
+function practiceHtml(it){
+  var prompts=retrievalFor(it), d=srsDueForScenario(it.id,prompts);
+  var chip=d.due>0?(d.due+' due for review'):(d.started+' of '+d.total+' started');
+  var prep=(it.sections&&it.sections.prepare)?it.sections.prepare:[];
+  var cards=prompts.map(function(rp,i){
+    var shown=!!state.revealed[rp.id], graded=state.graded[rp.id];
+    var body='<div class="pcard"><div class="pk">Retrieval '+(i+1)+' of '+prompts.length+'</div>'
+      +'<p class="pprompt">'+esc(rp.prompt)+'</p>'
+      +'<p class="pnote">Say or jot your answer first. Nothing you say is recorded.</p>';
+    if(!shown){
+      body+='<button type="button" class="revealbtn" data-reveal="'+esc(rp.id)+'" aria-expanded="false">Reveal one way to do it</button>';
+    } else {
+      body+='<div class="preveal"><span class="preveal-k">One way to do it</span>'+revealBodyHtml(revealContent(it,rp))+'</div>';
+      if(graded){
+        body+='<div class="pdone" aria-live="polite">'+esc(scheduledLabel(graded))+'</div>';
+      } else {
+        body+='<div class="prate" role="group" aria-label="How close was your answer to the model?">'
+          +['Again','Hard','Good','Easy'].map(function(g){return '<button type="button" class="ratebtn r-'+g.toLowerCase()+'" data-rate="'+g+'" data-prompt="'+esc(rp.id)+'">'+g+'</button>';}).join('')
+          +'</div>';
+      }
+    }
+    return body+'</div>';
+  }).join('');
+  return '<section class="practice"><div class="practicehead"><h3>Practice: generate, then compare</h3><span class="duechip">'+esc(chip)+'</span></div>'
+    +(prep.length?'<div class="prepare"><b>Before you start:</b><ul>'+prep.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>':'')
+    +cards+'</section>';
+}
+function render(){if(!state.items.length){app.innerHTML='<div class="empty">No family systems scenarios are available.</div>';return;}ensureCurrentVisible();var it=current();var mid=state.mode==='practice'?practiceHtml(it):bodyHtml(it);app.innerHTML=sideHtml()+'<div class="main">'+modeToggleHtml()+introHtml(it)+mid+checklistHtml(it)+'</div>';}
+app.addEventListener('click',function(ev){
+    var mb=ev.target.closest&&ev.target.closest('[data-mode]');
+    if(mb){state.mode=mb.getAttribute('data-mode')==='practice'?'practice':'reference';state.progress['$mode']=state.mode;saveProgress();state.revealed={};state.graded={};render();return;}
+    var rv=ev.target.closest&&ev.target.closest('[data-reveal]');
+    if(rv){state.revealed[rv.getAttribute('data-reveal')]=true;render();return;}
+    var rt=ev.target.closest&&ev.target.closest('[data-rate]');
+    if(rt){state.graded[rt.getAttribute('data-prompt')]=srsGradeFamily(current().id,rt.getAttribute('data-prompt'),rt.getAttribute('data-rate'));render();return;}
+    var flt=ev.target.closest&&ev.target.closest('[data-filter]');if(flt){state.filter=flt.getAttribute('data-filter')||'all';render();return;}var sc=ev.target.closest&&ev.target.closest('.scenario');if(sc){setCurrent(sc.getAttribute('data-id'));state.revealed={};state.graded={};render();return;}var ck=ev.target.closest&&ev.target.closest('.check');if(ck){var it=current(), id=ck.getAttribute('data-check'), rec=state.progress[it.id]||{checks:{}};rec.checks=rec.checks||{};rec.checks[id]=!rec.checks[id];rec.updatedAt=new Date().toISOString().slice(0,10);state.progress[it.id]=rec;saveProgress();render();return;}var act=ev.target.closest&&ev.target.closest('[data-act]');if(act&&act.getAttribute('data-act')==='reset'){delete state.progress[current().id];saveProgress();render();}});
 fetch('../family_systems_scenarios.json').then(function(r){if(!r.ok)throw new Error('missing scenarios');return r.json();}).then(function(d){state.items=(d&&d.scenarios)||[];if(state.requested)setCurrent(state.requested);render();}).catch(function(){app.innerHTML='<div class="empty">Could not load family systems scenarios. Rebuild the site or check family_systems_scenarios.json.</div>';});
 })();
 </script>
