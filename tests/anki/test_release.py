@@ -10,6 +10,7 @@ from types import SimpleNamespace
 import pytest
 
 from pcl_anki.contract import HistoryRegistry
+from pcl_anki.contract import normalize_source
 from pcl_anki.history import history_bytes, history_to_dict
 from pcl_anki.package import RELEASE_FILENAMES
 from pcl_anki.package import write_release
@@ -130,7 +131,11 @@ def test_policy_loader_validates_registry_and_ledgers_exact_passage_bytes(tmp_pa
     registry_dir.mkdir(parents=True)
     passage = repo / "policies" / "unit-policy.md"
     passage.parent.mkdir()
-    passage.write_text("# Unit policy\n\nExact governed passage.\n", encoding="utf-8")
+    passage.write_text(
+        "# Policies\n\n## Unit policy\n\nExact governed passage.\n\n"
+        "## Other policy\n\nUnrelated surrounding text.\n",
+        encoding="utf-8",
+    )
     schema_source = (
         Path(__file__).resolve().parents[2]
         / "13_Faculty_Resources"
@@ -144,7 +149,9 @@ def test_policy_loader_validates_registry_and_ledgers_exact_passage_bytes(tmp_pa
         "owner": "Synthetic Policy Owner",
         "path": "policies/unit-policy.md",
         "anchor": "unit-policy",
-        "passageSha256": sha256(passage.read_bytes()).hexdigest(),
+        "passageSha256": sha256(
+            normalize_source("## Unit policy\n\nExact governed passage.").encode()
+        ).hexdigest(),
         "reviewStatus": "unreviewed",
     }
     (registry_dir / "policy_registry.json").write_text(
@@ -159,9 +166,113 @@ def test_policy_loader_validates_registry_and_ledgers_exact_passage_bytes(tmp_pa
     assert registry_dir / "policy_registry.json" in loaded
     assert registry_dir / "policy_registry.schema.json" in loaded
 
-    passage.write_text("# Unit policy\n\nDrifted passage.\n", encoding="utf-8")
+    passage.write_text(
+        "# Policies\n\n## Unit policy\n\nDrifted passage.\n\n"
+        "## Other policy\n\nUnrelated surrounding text.\n",
+        encoding="utf-8",
+    )
     with pytest.raises(ReleaseOrchestrationError, match="policy passage hash"):
         load_policy_records(repo, set())
+
+
+def test_policy_loader_rejects_missing_ambiguous_and_whole_file_anchor_hashes(
+    tmp_path,
+):
+    repo = tmp_path / "repo"
+    registry_dir = repo / "13_Faculty_Resources" / "anki"
+    registry_dir.mkdir(parents=True)
+    schema_source = (
+        Path(__file__).resolve().parents[2]
+        / "13_Faculty_Resources"
+        / "anki"
+        / "policy_registry.schema.json"
+    )
+    shutil.copy2(schema_source, registry_dir / schema_source.name)
+    passage = repo / "policies" / "unit-policy.md"
+    passage.parent.mkdir()
+    canonical = "# Policies\n\n## Unit policy\n\nExact governed passage.\n"
+    passage.write_text(canonical, encoding="utf-8")
+
+    def write_record(anchor, passage_sha256):
+        record = {
+            "id": "unit-policy-v1",
+            "version": "2026-07-14",
+            "owner": "Synthetic Policy Owner",
+            "path": "policies/unit-policy.md",
+            "anchor": anchor,
+            "passageSha256": passage_sha256,
+            "reviewStatus": "unreviewed",
+        }
+        (registry_dir / "policy_registry.json").write_text(
+            json.dumps({"schemaVersion": 1, "policies": [record]}),
+            encoding="utf-8",
+        )
+
+    whole_file_hash = sha256(passage.read_bytes()).hexdigest()
+    write_record("does-not-exist", whole_file_hash)
+    with pytest.raises(ReleaseOrchestrationError, match="policy anchor"):
+        load_policy_records(repo, set())
+
+    write_record("unit-policy", whole_file_hash)
+    with pytest.raises(ReleaseOrchestrationError, match="policy passage hash"):
+        load_policy_records(repo, set())
+
+    passage.write_text(
+        canonical + "\n## Unit policy\n\nDuplicate governed passage.\n",
+        encoding="utf-8",
+    )
+    write_record(
+        "unit-policy",
+        sha256(
+            normalize_source("## Unit policy\n\nExact governed passage.").encode()
+        ).hexdigest(),
+    )
+    with pytest.raises(ReleaseOrchestrationError, match="policy anchor"):
+        load_policy_records(repo, set())
+
+
+def test_policy_loader_allows_surrounding_drift_but_ledgers_whole_file(tmp_path):
+    repo = tmp_path / "repo"
+    registry_dir = repo / "13_Faculty_Resources" / "anki"
+    registry_dir.mkdir(parents=True)
+    schema_source = (
+        Path(__file__).resolve().parents[2]
+        / "13_Faculty_Resources"
+        / "anki"
+        / "policy_registry.schema.json"
+    )
+    shutil.copy2(schema_source, registry_dir / schema_source.name)
+    passage = repo / "policies" / "unit-policy.md"
+    passage.parent.mkdir()
+    section = "## Unit policy\n\nExact governed passage."
+    record = {
+        "id": "unit-policy-v1",
+        "version": "2026-07-14",
+        "owner": "Synthetic Policy Owner",
+        "path": "policies/unit-policy.md",
+        "anchor": "unit-policy",
+        "passageSha256": sha256(normalize_source(section).encode()).hexdigest(),
+        "reviewStatus": "unreviewed",
+    }
+    (registry_dir / "policy_registry.json").write_text(
+        json.dumps({"schemaVersion": 1, "policies": [record]}), encoding="utf-8"
+    )
+    passage.write_text(
+        "# Policies changed\n\n" + section + "\n\n## Other\n\nFirst text.\n",
+        encoding="utf-8",
+    )
+    first_loaded = set()
+    assert load_policy_records(repo, first_loaded)[record["id"]] == record
+    first_file_hash = sha256(passage.read_bytes()).hexdigest()
+
+    passage.write_text(
+        "# Policies changed again\n\n" + section + "\n\n## Other\n\nSecond text.\n",
+        encoding="utf-8",
+    )
+    second_loaded = set()
+    assert load_policy_records(repo, second_loaded)[record["id"]] == record
+    assert passage in first_loaded == second_loaded
+    assert sha256(passage.read_bytes()).hexdigest() != first_file_hash
 
 
 def test_real_loader_digest_detects_one_byte_drift_in_every_input_category(tmp_path):

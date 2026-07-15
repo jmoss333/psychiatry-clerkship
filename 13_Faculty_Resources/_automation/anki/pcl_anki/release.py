@@ -23,6 +23,7 @@ from pcl_anki.contract import (
     application_guid,
     core_guid,
     legacy_qbank_guid,
+    LEGACY_QBANK_MODEL_ID,
 )
 from pcl_anki.governance import (
     detect_quarantines,
@@ -31,7 +32,11 @@ from pcl_anki.governance import (
     reconcile_quarantines,
     validate_release_coverage,
 )
-from pcl_anki.history import build_withdrawals
+from pcl_anki.history import (
+    LEGACY_COMBINED_RELATIVE_PATH,
+    LEGACY_STANDALONE_RELATIVE_PATH,
+    build_withdrawals,
+)
 from pcl_anki.history import (
     history_from_dict,
     history_to_dict,
@@ -40,7 +45,7 @@ from pcl_anki.history import (
     validate_history,
     preview_withdrawals,
 )
-from pcl_anki.inspect import inspect_release, read_apkg
+from pcl_anki.inspect import _template_contract, inspect_release, read_apkg
 from pcl_anki.migration import (
     ReleaseIdentityError,
     import_package,
@@ -56,8 +61,16 @@ from pcl_anki.package import (
     RELEASE_FILENAMES,
     write_release,
 )
-from pcl_anki.render import build_qbank_notes, build_withdrawal_note, render_card
-from pcl_anki.sources import load_manifest
+from pcl_anki.qbank import qbank_item_sha256
+from pcl_anki.render import (
+    TEMPLATE_CONTRACTS,
+    TEMPLATE_CONTRACT_SHA256,
+    _legacy_html,
+    build_qbank_notes,
+    build_withdrawal_note,
+    render_card,
+)
+from pcl_anki.sources import load_manifest, parse_markdown_sections
 from pcl_anki.contract import validate_registry
 
 
@@ -438,7 +451,62 @@ def _exact_source_quote(repo_root: Path, source_path: str, item: dict) -> dict:
         "quote": quote,
         "quoteSha256": sha256(quote.encode("utf-8")).hexdigest(),
         "fileSha256": _file_sha256(path),
+        "sections": [
+            {
+                "anchor": section.anchor,
+                "title": section.title,
+                "sourceAnchorSha256": sha256(
+                    section.normalized_text.encode("utf-8")
+                ).hexdigest(),
+            }
+            for section in parse_markdown_sections(raw)
+        ],
     }
+
+
+def _prior_qbank_renders(inputs: object) -> dict[str, dict[str, str]]:
+    """Reconstruct exact governed qbank faces from predecessor package bytes."""
+
+    prior: dict[str, dict[str, str]] = {}
+    for raw_path in _input(inputs, "prior_package_paths", ()):
+        path = Path(raw_path)
+        if not path.is_file():
+            continue
+        snapshot = read_apkg(path)
+        if (
+            _template_contract(snapshot, LEGACY_QBANK_MODEL_ID)
+            != TEMPLATE_CONTRACTS["legacyQbank"]
+        ):
+            continue
+        for stored in snapshot.notes:
+            if stored.model_id != LEGACY_QBANK_MODEL_ID or not stored.fields:
+                continue
+            serialized_uid = stored.fields[0]
+            identity = "tier2" if serialized_uid.endswith("::t2") else "base"
+            uid = serialized_uid[:-4] if identity == "tier2" else serialized_uid
+            if stored.guid != legacy_qbank_guid(uid, identity):
+                continue
+            front_html = _legacy_html(stored.fields, back=False)
+            back_html = _legacy_html(stored.fields, back=True)
+            render_sha256 = canonical_json_sha256(
+                {
+                    "front": front_html,
+                    "back": back_html,
+                    "tags": list(stored.tags),
+                    "id": uid,
+                    "identity": identity,
+                    "templateVersion": "pcl-qbank-legacy-v1",
+                    "templateContractSha256": TEMPLATE_CONTRACT_SHA256[
+                        "legacyQbank"
+                    ],
+                }
+            )
+            prior[stored.guid] = {
+                "frontHtml": front_html,
+                "backHtml": back_html,
+                "renderSha256": render_sha256,
+            }
+    return prior
 
 
 def _draft_previews(inputs: object) -> list[dict[str, object]]:
@@ -448,6 +516,7 @@ def _draft_previews(inputs: object) -> list[dict[str, object]]:
         if isinstance(item, dict)
     }
     previews = []
+    prior_qbank = _prior_qbank_renders(inputs)
     for card in _input(inputs, "cards", ()):
         try:
             qbank = card.get("qbank", {}) if isinstance(card, dict) else {}
@@ -462,6 +531,13 @@ def _draft_previews(inputs: object) -> list[dict[str, object]]:
         record = _note_dict(note)
         prior_hash = (card.get("review") or {}).get("approvedCardSha256")
         exact_prior = prior_hash == note.render_sha256
+        prior_status = (
+            "exact"
+            if exact_prior
+            else "blocking_prior_evidence_gap"
+            if isinstance(prior_hash, str)
+            else "never_approved"
+        )
         record.update(
             state=card.get("state"),
             source=card.get("source"),
@@ -471,9 +547,7 @@ def _draft_previews(inputs: object) -> list[dict[str, object]]:
             priorApprovedRenderSha256=prior_hash,
             priorApprovedFrontHtml=note.front_html if exact_prior else None,
             priorApprovedBackHtml=note.back_html if exact_prior else None,
-            priorRenderStatus=(
-                "exact" if exact_prior else "changed_prior_bytes_unavailable"
-            ),
+            priorRenderStatus=prior_status,
             targetRegistry="cards",
             recordKey=card.get("id"),
             baseRecordSha256=canonical_json_sha256(card),
@@ -538,6 +612,43 @@ def _draft_previews(inputs: object) -> list[dict[str, object]]:
                 review.get("renderedNoteSha256") if isinstance(review, dict) else None
             )
             exact_prior = prior_hash == note.render_sha256
+            stored_prior = prior_qbank.get(note.guid)
+            if exact_prior:
+                prior_status = "exact"
+                prior_front = note.front_html
+                prior_back = note.back_html
+            elif isinstance(stored_prior, dict) and (
+                not isinstance(prior_hash, str)
+                or stored_prior["renderSha256"] == prior_hash
+            ):
+                prior_hash = stored_prior["renderSha256"]
+                prior_front = stored_prior["frontHtml"]
+                prior_back = stored_prior["backHtml"]
+                prior_status = (
+                    "exact"
+                    if prior_hash == note.render_sha256
+                    else "changed_exact_prior"
+                )
+            elif isinstance(prior_hash, str):
+                prior_front = None
+                prior_back = None
+                prior_status = "blocking_prior_evidence_gap"
+            else:
+                prior_front = None
+                prior_back = None
+                prior_status = "never_approved"
+            proposal_template = None
+            if isinstance(primary_page, str):
+                proposal_template = {
+                    "qbankId": item["id"],
+                    "identity": note.identity,
+                    "primaryPage": primary_page,
+                    "approvedItemSha256": qbank_item_sha256(item),
+                    "templateVersion": "pcl-qbank-legacy-v1",
+                    "templateContractSha256": note.template_contract_sha256,
+                    "renderedNoteSha256": note.render_sha256,
+                    "legacyTemplateContract": TEMPLATE_CONTRACTS["legacyQbank"],
+                }
             record.update(
                 state=item.get("status"),
                 qbankItem=item,
@@ -562,17 +673,16 @@ def _draft_previews(inputs: object) -> list[dict[str, object]]:
                 risk=review.get("risk") if isinstance(review, dict) else None,
                 review=review,
                 priorApprovedRenderSha256=prior_hash,
-                priorApprovedFrontHtml=note.front_html if exact_prior else None,
-                priorApprovedBackHtml=note.back_html if exact_prior else None,
-                priorRenderStatus=(
-                    "exact" if exact_prior else "changed_prior_bytes_unavailable"
-                ),
+                priorApprovedFrontHtml=prior_front,
+                priorApprovedBackHtml=prior_back,
+                priorRenderStatus=prior_status,
                 targetRegistry="qbank_render_reviews",
                 recordKey=f"{item.get('id')}:{note.identity}",
                 baseRecordSha256=(
                     canonical_json_sha256(review) if isinstance(review, dict) else None
                 ),
                 canonicalRecord=review,
+                proposedRecordTemplate=proposal_template,
             )
             previews.append(record)
     return previews
@@ -1456,7 +1566,25 @@ def load_policy_records(repo: Path, loaded: set[Path]) -> dict[str, dict]:
         passage = repo / record["path"]
         _repo_relative(repo, passage)
         loaded.add(passage)
-        if _file_sha256(passage) != record["passageSha256"]:
+        try:
+            markdown = passage.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as error:
+            raise ReleaseOrchestrationError(
+                f"cannot read policy passage {policy_id}: {error}"
+            ) from error
+        matching_sections = [
+            section
+            for section in parse_markdown_sections(markdown)
+            if section.anchor == record["anchor"]
+        ]
+        if len(matching_sections) != 1:
+            raise ReleaseOrchestrationError(
+                f"policy anchor must resolve exactly once: {policy_id}"
+            )
+        passage_sha256 = sha256(
+            matching_sections[0].normalized_text.encode("utf-8")
+        ).hexdigest()
+        if passage_sha256 != record["passageSha256"]:
             raise ReleaseOrchestrationError(
                 f"policy passage hash differs from registry: {policy_id}"
             )
@@ -1537,6 +1665,11 @@ def load_release_inputs(repo: Path) -> SimpleNamespace:
             relative = manifest.slug_to_path.get(slug)
             if relative:
                 loaded.add(repo / relative)
+    prior_package_paths = (
+        repo / LEGACY_STANDALONE_RELATIVE_PATH,
+        repo / LEGACY_COMBINED_RELATIVE_PATH,
+    )
+    loaded.update(prior_package_paths)
     policy_records = load_policy_records(repo, loaded)
     loaded.update(_governed_static_paths(repo))
     snapshot = capture_governed_inputs(repo, sorted(loaded))
@@ -1565,6 +1698,7 @@ def load_release_inputs(repo: Path) -> SimpleNamespace:
         surveillance=raw["surveillance"],
         evidence_records=evidence,
         policy_records=policy_records,
+        prior_package_paths=prior_package_paths,
         input_issues=tuple(input_issues),
         governed_input_sha256=snapshot.sha256,
         governed_input_ledger=snapshot.ledger,

@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 import re
 import shutil
+from types import SimpleNamespace
 import build_release as build_release_cli
 import apply_review_patch as apply_review_patch_cli
 
@@ -24,6 +25,52 @@ from pcl_anki.review import (
 from pcl_anki.history import history_from_dict
 from pcl_anki.release import _draft_previews, ReleaseOrchestrationError
 from pcl_anki.sources import load_manifest
+from pcl_anki.render import TEMPLATE_CONTRACTS
+
+
+def _complete_preview(**changes):
+    preview = {
+        "namespace": "qbank",
+        "uid": "qb_synthetic_001",
+        "identity": "base",
+        "guid": "synthetic-guid",
+        "deckId": 1,
+        "modelId": 2,
+        "templateOrdinal": 0,
+        "fields": ["front", "back"],
+        "tags": ["PsychClerkship"],
+        "frontHtml": "front",
+        "backHtml": "back",
+        "templateContractSha256": "1" * 64,
+        "renderSha256": "2" * 64,
+        "active": False,
+        "withdrawn": False,
+        "state": "draft",
+        "source": {"quote": "Synthetic quote", "url": "https://example.invalid"},
+        "risk": None,
+        "review": None,
+        "qbank": None,
+        "priorApprovedRenderSha256": None,
+        "priorApprovedFrontHtml": None,
+        "priorApprovedBackHtml": None,
+        "priorRenderStatus": "never_approved",
+        "targetRegistry": "qbank_render_reviews",
+        "recordKey": "qb_synthetic_001:base",
+        "baseRecordSha256": None,
+        "canonicalRecord": None,
+        "proposedRecordTemplate": {
+            "qbankId": "qb_synthetic_001",
+            "identity": "base",
+            "primaryPage": "synthetic.md",
+            "approvedItemSha256": "3" * 64,
+            "templateVersion": "pcl-qbank-legacy-v1",
+            "templateContractSha256": "1" * 64,
+            "renderedNoteSha256": "2" * 64,
+            "legacyTemplateContract": deepcopy(TEMPLATE_CONTRACTS["legacyQbank"]),
+        },
+    }
+    preview.update(changes)
+    return preview
 
 
 def _history_proposal():
@@ -335,25 +382,24 @@ def test_authoring_clinic_renders_exact_note_context_and_exports_quarantine_patc
         "generatedFromCommit": "a" * 40,
         "governedInputSha256": "b" * 64,
         "draftAndCurrentPreviews": [
-            {
-                "namespace": "qbank",
-                "uid": "qb_pha_002",
-                "identity": "base",
-                "frontHtml": "<b>Exact front</b>",
-                "backHtml": "<i>Exact back</i>",
-                "renderSha256": "1" * 64,
-                "templateContractSha256": "2" * 64,
-                "source": {"quote": "Exact quote", "url": "https://example.invalid"},
-                "qbank": {
+            _complete_preview(
+                uid="qb_pha_002",
+                recordKey="qb_pha_002:base",
+                frontHtml="<b>Exact front</b>",
+                backHtml="<i>Exact back</i>",
+                renderSha256="1" * 64,
+                templateContractSha256="2" * 64,
+                source={"quote": "Exact quote", "url": "https://example.invalid"},
+                qbank={
                     "stem": "Synthetic stem",
                     "answer": None,
                     "traps": [{"name": "Synthetic trap", "note": "Better reasoning"}],
                     "itemSha256": "5" * 64,
                 },
-                "risk": {"level": "High", "facets": ["Medication"]},
-                "review": None,
-                "priorApprovedRenderSha256": "3" * 64,
-            }
+                risk={"level": "High", "facets": ["Medication"]},
+                priorApprovedRenderSha256="3" * 64,
+                priorRenderStatus="blocking_prior_evidence_gap",
+            )
         ],
         "issues": [],
         "qbankItems": [],
@@ -397,13 +443,12 @@ def test_candidate_payload_is_base64_safe_and_round_trips_exact_canonical_bytes(
         "generatedFromCommit": "a" * 40,
         "governedInputSha256": "b" * 64,
         "draftAndCurrentPreviews": [
-            {
-                "namespace": "core",
-                "uid": "injection-probe",
-                "identity": "base",
-                "frontHtml": injected,
-                "backHtml": injected,
-            }
+            _complete_preview(
+                uid="injection-probe",
+                recordKey="injection-probe:base",
+                frontHtml=injected,
+                backHtml=injected,
+            )
         ],
         "issues": [{"code": "TEST", "severity": "hard", "subject": injected, "message": injected}],
         "qbankItems": [],
@@ -479,6 +524,65 @@ def test_candidate_schema_rejects_unknown_nested_preview_property():
         build_review_html(candidate)
 
 
+def _candidate_shell(previews, *, qbank_items=()):
+    return {
+        "schemaVersion": 1,
+        "reportType": "anki_review_candidate",
+        "generatedFromCommit": "a" * 40,
+        "governedInputSha256": "b" * 64,
+        "draftAndCurrentPreviews": list(previews),
+        "issues": [],
+        "qbankItems": list(qbank_items),
+        "evidenceRecords": {},
+        "policyRecords": {},
+        "quarantine": {"new": [], "changed": [], "accepted": [], "resolved": []},
+        "quarantineBaseRecordSha256": {},
+        "withdrawalPreviews": [],
+    }
+
+
+def test_candidate_schema_rejects_empty_and_wrong_typed_previews():
+    with pytest.raises(ReviewPatchError, match="candidate"):
+        build_review_html(_candidate_shell([{}]))
+
+    wrong = {
+        "namespace": 123,
+        "uid": False,
+        "identity": [],
+        "guid": {},
+        "deckId": "not-an-integer",
+        "modelId": None,
+        "templateOrdinal": 1.5,
+        "fields": "not-an-array",
+        "tags": {},
+        "frontHtml": [],
+        "backHtml": {},
+        "templateContractSha256": "not-a-hash",
+        "renderSha256": 7,
+        "active": "yes",
+        "withdrawn": 0,
+    }
+    with pytest.raises(ReviewPatchError, match="candidate"):
+        build_review_html(_candidate_shell([wrong]))
+
+
+def test_candidate_schema_allows_nullable_canonical_only_with_qbank_template():
+    qbank_without_template = _complete_preview()
+    del qbank_without_template["proposedRecordTemplate"]
+    with pytest.raises(ReviewPatchError, match="candidate"):
+        build_review_html(_candidate_shell([qbank_without_template]))
+
+    card_without_record = _complete_preview(
+        namespace="core",
+        uid="card-1",
+        targetRegistry="cards",
+        recordKey="card-1",
+    )
+    del card_without_record["proposedRecordTemplate"]
+    with pytest.raises(ReviewPatchError, match="candidate"):
+        build_review_html(_candidate_shell([card_without_record]))
+
+
 def test_real_generated_authoring_candidate_validates_for_clinic(
     passing_release_factory, tmp_path
 ):
@@ -502,6 +606,42 @@ def test_real_generated_authoring_candidate_validates_for_clinic(
         baseline_history=HistoryRegistry((), ()),
     )
     candidate = json.loads((review / "review_candidate.json").read_text())
+
+    required_preview_fields = (
+        "namespace",
+        "uid",
+        "identity",
+        "guid",
+        "deckId",
+        "modelId",
+        "templateOrdinal",
+        "fields",
+        "tags",
+        "frontHtml",
+        "backHtml",
+        "templateContractSha256",
+        "renderSha256",
+        "active",
+        "withdrawn",
+        "state",
+        "source",
+        "risk",
+        "review",
+        "qbank",
+        "priorApprovedRenderSha256",
+        "priorApprovedFrontHtml",
+        "priorApprovedBackHtml",
+        "priorRenderStatus",
+        "targetRegistry",
+        "recordKey",
+        "baseRecordSha256",
+        "canonicalRecord",
+    )
+    for field in required_preview_fields:
+        missing = deepcopy(candidate)
+        del missing["draftAndCurrentPreviews"][0][field]
+        with pytest.raises(ReviewPatchError, match="candidate"):
+            build_review_html(missing)
 
     rendered = build_review_html(candidate)
 
@@ -543,6 +683,261 @@ def test_real_generated_authoring_candidate_validates_for_clinic(
     ]
 
     assert 'data-encoding="base64"' in build_review_html(realistic)
+
+    shared_withdrawal_types = {
+        "namespace": 123,
+        "uid": False,
+        "guid": [],
+        "deckId": "not-an-integer",
+        "fields": "not-an-array",
+        "frontHtml": [],
+        "templateContractSha256": "not-a-hash",
+        "active": "yes",
+    }
+    for field, value in shared_withdrawal_types.items():
+        malformed = deepcopy(realistic)
+        malformed["withdrawals"][0][field] = value
+        with pytest.raises(ReviewPatchError, match="candidate"):
+            build_review_html(malformed)
+
+
+@pytest.mark.parametrize("decision_name", ("accept", "edit"))
+def test_new_qbank_preview_exports_applicable_named_review_patch(
+    passing_release_factory, tmp_path, decision_name
+):
+    bundle = passing_release_factory()
+    inputs = SimpleNamespace(**{**vars(bundle.inputs), "qbank_reviews": ()})
+    preview = next(
+        value
+        for value in _draft_previews(inputs)
+        if value["namespace"] == "qbank" and value["identity"] == "base"
+    )
+
+    assert preview["canonicalRecord"] is None
+    assert preview["baseRecordSha256"] is None
+    template = preview["proposedRecordTemplate"]
+    assert "risk" not in template
+    assert "facultyApprovedBy" not in template
+    section = next(
+        value
+        for value in preview["source"]["sections"]
+        if value["anchor"] == bundle.qbank_review["primaryAnchor"]
+    )
+    proposed = {
+        **template,
+        "primaryAnchor": section["anchor"],
+        "sourceAnchorSha256": section["sourceAnchorSha256"],
+        "risk": {"level": "Routine", "facets": []},
+        "facultyApprovedBy": "Named Faculty Reviewer",
+        "facultyApprovedAt": "2026-07-14",
+    }
+    patch = {
+        "schemaVersion": 1,
+        "targetRegistry": "qbank_render_reviews",
+        "generatedFromCommit": "a" * 40,
+        "inputSha256": "b" * 64,
+        "decisions": [
+            {
+                "recordKey": preview["recordKey"],
+                "baseRecordSha256": None,
+                "proposedRecord": proposed,
+                "decision": decision_name,
+                "reviewer": "Named Faculty Reviewer",
+                "reviewedAt": "2026-07-14",
+            }
+        ],
+    }
+    validate_review_patch(patch)
+    validate_nonhistory_patch(
+        inputs, history_from_dict(inputs.release_history), patch
+    )
+
+    registry = tmp_path / "qbank_render_reviews.json"
+    registry.write_text('{"schemaVersion":1,"reviews":[]}\n', encoding="utf-8")
+    changed = apply_optimistic_registry_patch(
+        registry,
+        patch,
+        current_head="a" * 40,
+        current_input_sha256="b" * 64,
+    )
+    assert changed == (preview["recordKey"],)
+    assert json.loads(registry.read_text())["reviews"] == [proposed]
+
+    stale_registry = tmp_path / "stale-qbank_render_reviews.json"
+    stale_registry.write_text(
+        json.dumps({"schemaVersion": 1, "reviews": [proposed]}, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    stale_before = stale_registry.read_bytes()
+    with pytest.raises(ReviewPatchError, match="stale base"):
+        apply_optimistic_registry_patch(
+            stale_registry,
+            patch,
+            current_head="a" * 40,
+            current_input_sha256="b" * 64,
+        )
+    assert stale_registry.read_bytes() == stale_before
+
+    candidate = _candidate_shell([preview], qbank_items=[bundle.qbank_item])
+    rendered = build_review_html(candidate)
+    controls = re.search(
+        rf'<div class="note-controls" data-note-key="{re.escape(preview["recordKey"])}">(.*?)</div>',
+        rendered,
+    )
+    assert controls is not None and " disabled" not in controls.group(1)
+    assert "Select faculty risk" in rendered
+    assert "proposedRecord:null" in rendered
+    assert ".rejection.patch.json" in rendered
+
+
+@pytest.mark.parametrize("target", ("cards", "qbank_render_reviews"))
+@pytest.mark.parametrize("existing", (False, True))
+def test_reject_is_stale_checked_successful_no_write(
+    passing_release_factory, tmp_path, target, existing
+):
+    bundle = passing_release_factory()
+    if target == "cards":
+        record = deepcopy(bundle.core_cards[0])
+        key = record["id"]
+        collection = "cards"
+    else:
+        record = deepcopy(bundle.qbank_review)
+        key = f"{record['qbankId']}:{record['identity']}"
+        collection = "reviews"
+    records = [record] if existing else []
+    registry = tmp_path / f"{target}.json"
+    registry.write_text(
+        json.dumps({"schemaVersion": 1, collection: records}, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    before = registry.read_bytes()
+    patch = {
+        "schemaVersion": 1,
+        "targetRegistry": target,
+        "generatedFromCommit": "a" * 40,
+        "inputSha256": "b" * 64,
+        "decisions": [
+            {
+                "recordKey": key,
+                "baseRecordSha256": canonical_json_sha256(record) if existing else None,
+                "proposedRecord": None,
+                "decision": "reject",
+                "reviewer": "Named Faculty Reviewer",
+                "reviewedAt": "2026-07-14",
+            }
+        ],
+    }
+    validate_review_patch(patch)
+    validate_nonhistory_patch(
+        bundle.inputs, history_from_dict(bundle.inputs.release_history), patch
+    )
+    assert (
+        apply_optimistic_registry_patch(
+            registry,
+            patch,
+            current_head="a" * 40,
+            current_input_sha256="b" * 64,
+        )
+        == ()
+    )
+    assert registry.read_bytes() == before
+
+    stale = deepcopy(patch)
+    stale["decisions"][0]["baseRecordSha256"] = "0" * 64
+    with pytest.raises(ReviewPatchError, match="stale base|missing base"):
+        apply_optimistic_registry_patch(
+            registry,
+            stale,
+            current_head="a" * 40,
+            current_input_sha256="b" * 64,
+        )
+    assert registry.read_bytes() == before
+
+
+def test_frozen_prior_qbank_bytes_render_as_escaped_red_green_diff():
+    repo = Path(__file__).resolve().parents[2]
+    question_bank = json.loads((repo / "question_bank.json").read_text())
+    original_item = next(
+        item for item in question_bank["items"] if item["id"] == "qb_pha_002"
+    )
+    changed_item = deepcopy(original_item)
+    changed_item["stem"] += " Current changed render marker."
+    manifest = load_manifest(
+        repo
+        / "13_Faculty_Resources"
+        / "_automation"
+        / "site_build"
+        / "site_manifest.json"
+    )
+    reviewed = json.loads((repo / "13_Faculty_Resources" / "reviewed.json").read_text())
+    prior_package_paths = (
+        repo / "tests/anki/fixtures/legacy_qbank_2026-07-12.apkg",
+    )
+    original_inputs = SimpleNamespace(
+        repo_root=repo,
+        cards=(),
+        question_bank={"items": [original_item]},
+        qbank_reviews=(),
+        manifest=manifest,
+        reviewed=reviewed,
+        prior_package_paths=prior_package_paths,
+    )
+    original_preview = next(
+        value
+        for value in _draft_previews(original_inputs)
+        if value["identity"] == "base"
+    )
+    source_section = original_preview["source"]["sections"][0]
+    existing_approval = {
+        **original_preview["proposedRecordTemplate"],
+        "primaryAnchor": source_section["anchor"],
+        "sourceAnchorSha256": source_section["sourceAnchorSha256"],
+        "risk": {"level": "Routine", "facets": []},
+        "facultyApprovedBy": "Named Faculty Reviewer",
+        "facultyApprovedAt": "2026-07-14",
+    }
+    inputs = SimpleNamespace(
+        **{
+            **vars(original_inputs),
+            "question_bank": {"items": [changed_item]},
+            "qbank_reviews": (existing_approval,),
+        }
+    )
+    preview = next(value for value in _draft_previews(inputs) if value["identity"] == "base")
+
+    assert preview["priorRenderStatus"] == "changed_exact_prior"
+    assert preview["priorApprovedRenderSha256"] == existing_approval["renderedNoteSha256"]
+    assert "Current changed render marker" not in preview["priorApprovedFrontHtml"]
+    assert "Current changed render marker" in preview["frontHtml"]
+    assert preview["priorApprovedBackHtml"]
+
+    rendered = build_review_html(
+        _candidate_shell([preview], qbank_items=[changed_item])
+    )
+    assert "diff-prior-red" in rendered and "diff-current-green" in rendered
+    assert "Current changed render marker" in rendered
+    assert "Absolute neutrophil count monitoring" in rendered
+
+
+def test_prior_render_status_distinguishes_never_approved_from_blocking_gap(
+    passing_release_factory,
+):
+    bundle = passing_release_factory()
+    never = SimpleNamespace(**{**vars(bundle.inputs), "qbank_reviews": (), "prior_package_paths": ()})
+    never_preview = next(
+        value for value in _draft_previews(never) if value["namespace"] == "qbank"
+    )
+    assert never_preview["priorRenderStatus"] == "never_approved"
+
+    claimed = deepcopy(bundle.qbank_review)
+    claimed["renderedNoteSha256"] = "0" * 64
+    blocked = SimpleNamespace(
+        **{**vars(bundle.inputs), "qbank_reviews": (claimed,), "prior_package_paths": ()}
+    )
+    blocked_preview = next(
+        value for value in _draft_previews(blocked) if value["namespace"] == "qbank"
+    )
+    assert blocked_preview["priorRenderStatus"] == "blocking_prior_evidence_gap"
 
 
 def test_real_shaped_qb_pha_002_preview_resolves_exact_governed_source():
@@ -599,22 +994,15 @@ def test_candidate_clinic_has_per_note_actions_and_visible_prior_current_status(
         "generatedFromCommit": "a" * 40,
         "governedInputSha256": "b" * 64,
         "draftAndCurrentPreviews": [
-            {
-                "namespace": "core",
-                "uid": "card-1",
-                "identity": "base",
-                "frontHtml": "Current front",
-                "backHtml": "Current back",
-                "renderSha256": "1" * 64,
-                "priorApprovedRenderSha256": "2" * 64,
-                "priorApprovedFrontHtml": None,
-                "priorApprovedBackHtml": None,
-                "priorRenderStatus": "changed_prior_bytes_unavailable",
-                "targetRegistry": "cards",
-                "recordKey": "card-1",
-                "baseRecordSha256": "3" * 64,
-                "canonicalRecord": None,
-            }
+            _complete_preview(
+                uid="qb_card_1",
+                recordKey="qb_card_1:base",
+                frontHtml="Current front",
+                backHtml="Current back",
+                renderSha256="1" * 64,
+                priorApprovedRenderSha256="2" * 64,
+                priorRenderStatus="blocking_prior_evidence_gap",
+            )
         ],
         "issues": [],
         "qbankItems": [],
@@ -630,7 +1018,7 @@ def test_candidate_clinic_has_per_note_actions_and_visible_prior_current_status(
     for action in ("accept", "edit", "reject", "quarantine"):
         assert f'data-action="{action}"' in rendered
     assert "Current approved-render comparison" in rendered
-    assert "Prior approved bytes unavailable" in rendered
+    assert "Blocking prior-render evidence gap" in rendered
     assert "diff-changed" in rendered and "diff-exact" in rendered
     assert "targetRegistry:note.targetRegistry" in rendered
 

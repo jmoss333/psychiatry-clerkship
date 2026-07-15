@@ -38,11 +38,18 @@
       "properties": {
         "recordKey": {"type": "string", "minLength": 1},
         "baseRecordSha256": {"oneOf": [{"type": "null"}, {"$ref": "#/definitions/sha256"}]},
-        "proposedRecord": {"$ref": "#/definitions/proposedRecord"},
+        "proposedRecord": {},
         "decision": {"enum": ["accept", "edit", "reject", "quarantine"]},
         "reviewer": {"type": "string", "pattern": "^.*\\S.*$"},
         "reviewedAt": {"type": "string", "format": "date"}
-      }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"decision": {"const": "reject"}}, "required": ["decision"]},
+          "then": {"properties": {"proposedRecord": {"type": "null"}}},
+          "else": {"properties": {"proposedRecord": {"$ref": "#/definitions/proposedRecord"}}}
+        }
+      ]
     }
   },
   "allOf": [

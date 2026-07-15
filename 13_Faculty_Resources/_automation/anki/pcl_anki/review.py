@@ -122,6 +122,63 @@ def _sandboxed_render(value: object, title: str) -> str:
     )
 
 
+def _qbank_faculty_fields(note: Mapping) -> str:
+    if note.get("targetRegistry") != "qbank_render_reviews":
+        return ""
+    source = note.get("source") if isinstance(note.get("source"), Mapping) else {}
+    sections = source.get("sections") if isinstance(source.get("sections"), list) else []
+    options = ['<option value="">Select governed source section</option>']
+    for section in sections:
+        if not isinstance(section, Mapping):
+            continue
+        options.append(
+            '<option value="'
+            + html.escape(str(section.get("anchor", "")), quote=True)
+            + '" data-source-sha="'
+            + html.escape(str(section.get("sourceAnchorSha256", "")), quote=True)
+            + '">'
+            + html.escape(str(section.get("title", section.get("anchor", ""))))
+            + "</option>"
+        )
+    facets = "".join(
+        '<label class="facet"><input type="checkbox" data-risk-facet value="'
+        + value
+        + '">'
+        + value
+        + "</label>"
+        for value in (
+            "Medication",
+            "Emergency",
+            "Pregnancy",
+            "Legal",
+            "Regulatory",
+            "Numerical",
+            "EvidenceSensitive",
+            "LocalPolicy",
+        )
+    )
+    return (
+        '<fieldset class="qbank-faculty-fields"><legend>Named qbank review fields</legend>'
+        '<label>Source section <select data-qbank-anchor>'
+        + "".join(options)
+        + "</select></label>"
+        '<label>Select faculty risk <select data-risk-level><option value="">Select faculty risk</option><option>Routine</option><option>High</option></select></label>'
+        '<div>Risk facets (no defaults): '
+        + facets
+        + "</div>"
+        '<label>Evidence citation <input data-evidence-citation></label>'
+        '<label>Evidence record ID <input data-evidence-record></label>'
+        '<label>Evidence SHA-256 <input data-evidence-sha></label>'
+        '<label>Evidence reviewer <input data-evidence-reviewer></label>'
+        '<label>Evidence review date <input type="date" data-evidence-date></label>'
+        '<label>Local policy record ID <input data-policy-source></label>'
+        '<label>Policy SHA-256 <input data-policy-sha></label>'
+        '<label>Policy reviewer <input data-policy-reviewer></label>'
+        '<label>Policy review date <input type="date" data-policy-date></label>'
+        '<label>Review due <input type="date" data-review-due></label></fieldset>'
+    )
+
+
 _REGISTRY_COLLECTION = {
     "cards": "cards",
     "qbank_render_reviews": "reviews",
@@ -226,6 +283,14 @@ def apply_optimistic_registry_patch(
         ]
         if len(matches) > 1:
             raise ReviewPatchError(f"duplicate canonical record: {key}")
+        if decision["decision"] == "reject":
+            if matches:
+                current = working[matches[0]]
+                if decision["baseRecordSha256"] != canonical_json_sha256(current):
+                    raise ReviewPatchError(f"stale base record for {key}")
+            elif decision["baseRecordSha256"] is not None:
+                raise ReviewPatchError(f"missing base record for {key}")
+            continue
         proposed = decision["proposedRecord"]
         if _record_key(target, proposed) != key:
             raise ReviewPatchError(f"immutable identity changed for {key}")
@@ -244,9 +309,10 @@ def apply_optimistic_registry_patch(
                 raise ReviewPatchError(f"missing base record for {key}")
             working.append(dict(proposed))
         changed.append(key)
-    updated = dict(root)
-    updated[collection_name] = working
-    _atomic_json_write(Path(registry_path), updated)
+    if changed:
+        updated = dict(root)
+        updated[collection_name] = working
+        _atomic_json_write(Path(registry_path), updated)
     return tuple(changed)
 
 
@@ -266,19 +332,33 @@ def validate_nonhistory_patch(
         return dict(obj) if isinstance(obj, Mapping) else vars(obj)
 
     target = patch["targetRegistry"]
-    if any(decision["decision"] not in {"accept", "edit"} for decision in patch["decisions"]):
-        raise ReviewPatchError("only accept/edit decisions may change a canonical registry")
+    if any(
+        decision["decision"] not in {"accept", "edit", "reject"}
+        for decision in patch["decisions"]
+    ):
+        raise ReviewPatchError(
+            "only accept/edit mutations or reject no-write decisions are supported"
+        )
+    mutations = [
+        decision
+        for decision in patch["decisions"]
+        if decision["decision"] in {"accept", "edit"}
+    ]
+    if not mutations:
+        if target not in {"cards", "qbank_render_reviews", "quarantine"}:
+            raise ReviewPatchError(f"invalid non-history target registry: {target}")
+        return
     if target == "cards":
         cards = list(getattr(inputs, "cards", ()))
         by_id = {card.get("id"): index for index, card in enumerate(cards)}
-        for decision in patch["decisions"]:
+        for decision in mutations:
             proposed = decision["proposedRecord"]
             if proposed.get("id") in by_id:
                 cards[by_id[proposed["id"]]] = proposed
             else:
                 cards.append(proposed)
         fresh_inputs = SimpleNamespace(**{**values(inputs), "cards": tuple(cards), "mode": "authoring"})
-        for decision in patch["decisions"]:
+        for decision in mutations:
             proposed = decision["proposedRecord"]
             review = proposed.get("review") if isinstance(proposed.get("review"), Mapping) else {}
             if (
@@ -299,7 +379,7 @@ def validate_nonhistory_patch(
             (record.get("qbankId"), record.get("identity")): index
             for index, record in enumerate(reviews)
         }
-        for decision in patch["decisions"]:
+        for decision in mutations:
             proposed = decision["proposedRecord"]
             key = proposed.get("qbankId"), proposed.get("identity")
             if key in keys:
@@ -314,7 +394,7 @@ def validate_nonhistory_patch(
             for item in getattr(inputs, "question_bank", {}).get("items", ())
             if isinstance(item, Mapping)
         }
-        for decision in patch["decisions"]:
+        for decision in mutations:
             proposed = decision["proposedRecord"]
             if (
                 proposed.get("facultyApprovedBy") != decision["reviewer"]
@@ -355,7 +435,7 @@ def validate_nonhistory_patch(
         ): finding
         for finding in (*candidate.quarantine.new, *candidate.quarantine.changed)
     }
-    for decision in patch["decisions"]:
+    for decision in mutations:
         proposed = decision["proposedRecord"]
         key = (
             proposed.get("namespace"),
@@ -629,19 +709,39 @@ def _build_candidate_review_html(candidate: Mapping) -> str:
     for note in candidate.get("draftAndCurrentPreviews", ()):
         if not isinstance(note, Mapping):
             continue
-        exact_prior = note.get("priorRenderStatus") == "exact"
-        prior = (
-            '<div class="diff-exact"><strong>Prior approved render is byte-exact with current.</strong></div>'
-            if exact_prior
-            else '<div class="diff-changed"><strong>Prior approved bytes unavailable; hash changed. No prior text is fabricated.</strong></div>'
-        )
+        prior_status = note.get("priorRenderStatus")
+        if prior_status == "exact":
+            prior = '<div class="diff-exact"><strong>Prior approved render is byte-exact with current.</strong></div>'
+        elif prior_status == "changed_exact_prior":
+            prior = (
+                '<div class="diff-changed diff-grid"><div class="diff-prior-red"><h4>Prior exact front</h4>'
+                + _sandboxed_render(
+                    note.get("priorApprovedFrontHtml", ""), "Prior exact Anki front"
+                )
+                + "<h4>Prior exact back</h4>"
+                + _sandboxed_render(
+                    note.get("priorApprovedBackHtml", ""), "Prior exact Anki back"
+                )
+                + '</div><div class="diff-current-green"><h4>Current exact front</h4>'
+                + _sandboxed_render(note.get("frontHtml", ""), "Current exact Anki front")
+                + "<h4>Current exact back</h4>"
+                + _sandboxed_render(note.get("backHtml", ""), "Current exact Anki back")
+                + "</div></div>"
+            )
+        elif prior_status == "never_approved":
+            prior = '<div class="diff-never"><strong>No prior approved or shipped record exists; this is a first review.</strong></div>'
+        else:
+            prior = '<div class="diff-changed diff-blocking"><strong>Blocking prior-render evidence gap: prior approved bytes unavailable. No prior text is fabricated and approval must not proceed.</strong></div>'
         record_key = html.escape(str(note.get("recordKey", "")), quote=True)
-        disabled = "" if isinstance(note.get("canonicalRecord"), Mapping) else " disabled"
+        has_proposal = isinstance(note.get("canonicalRecord"), Mapping) or isinstance(
+            note.get("proposedRecordTemplate"), Mapping
+        )
+        disabled = "" if has_proposal else " disabled"
         controls = (
             f'<div class="note-controls" data-note-key="{record_key}">'
             f'<button data-action="accept"{disabled}>Accept exact render</button>'
             f'<button data-action="edit"{disabled}>Edit proposed record</button>'
-            f'<button data-action="reject"{disabled}>Reject</button>'
+            '<button data-action="reject">Reject (named no-write)</button>'
             '<button data-action="quarantine">Quarantine</button></div>'
         )
         sections.append(
@@ -677,6 +777,7 @@ def _build_candidate_review_html(candidate: Mapping) -> str:
                 )
             )
             + "</pre>"
+            + _qbank_faculty_fields(note)
             + controls
             + "</section>"
         )
@@ -709,7 +810,7 @@ def _build_candidate_review_html(candidate: Mapping) -> str:
         )
     )
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>PCL Anki authoring clinic</title><style>body{{font:16px system-ui;margin:2rem;max-width:1200px}}section{{border:1px solid #bbb;padding:1rem;margin:1rem 0}}.render{{padding:1rem;background:#fff}}pre{{white-space:pre-wrap;background:#f4f4f4;padding:1rem}}label{{display:block;margin:.7rem 0}}.diff-exact{{border-left:5px solid #27823b;background:#eef9f0;padding:.7rem}}.diff-changed{{border-left:5px solid #b42318;background:#fff1f0;padding:.7rem}}.note-controls button{{margin:.25rem}}</style></head>
+<title>PCL Anki authoring clinic</title><style>body{{font:16px system-ui;margin:2rem;max-width:1200px}}section{{border:1px solid #bbb;padding:1rem;margin:1rem 0}}.render{{padding:1rem;background:#fff}}pre{{white-space:pre-wrap;background:#f4f4f4;padding:1rem}}label{{display:block;margin:.7rem 0}}.diff-exact{{border-left:5px solid #27823b;background:#eef9f0;padding:.7rem}}.diff-changed,.diff-blocking{{border-left:5px solid #b42318;background:#fff1f0;padding:.7rem}}.diff-never{{border-left:5px solid #667085;background:#f2f4f7;padding:.7rem}}.diff-grid{{display:grid;grid-template-columns:1fr 1fr;gap:1rem}}.diff-prior-red{{background:#fff1f0;padding:.7rem}}.diff-current-green{{background:#eef9f0;padding:.7rem}}.note-controls button{{margin:.25rem}}.facet{{display:inline-block;margin-right:.7rem}}</style></head>
 <body><h1>Anki faculty card clinic</h1><p>Every exact rendered note in this export is displayed below. Page review never counts as approval.</p>
 {''.join(sections)}<h2>Complete governed context</h2><pre>{visible_context}</pre>
 <h2>Named per-note decision export</h2>
@@ -723,9 +824,24 @@ function savePatch(patch,name){{const blob=new Blob([JSON.stringify(patch,null,2
 document.querySelectorAll('[data-action]').forEach(button=>button.addEventListener('click',()=>{{
  const recordKey=button.closest('[data-note-key]').dataset.noteKey,action=button.dataset.action;
  const note=(candidate.draftAndCurrentPreviews||[]).find(value=>value.recordKey===recordKey);if(!note){{alert('Displayed note context is missing.');return;}}
+ const panel=button.closest('section');
  const reviewOwner=document.getElementById('owner').value.trim(),reviewer=document.getElementById('reviewer').value.trim(),reviewedAt=document.getElementById('reviewedAt').value,disposition=document.getElementById('disposition').value;
  if(!reviewer||!/^\\d{{4}}-\\d{{2}}-\\d{{2}}$/.test(reviewedAt)){{alert('Reviewer and ISO review date are required.');return;}}
+ if(action==='reject'){{savePatch({{schemaVersion:1,targetRegistry:note.targetRegistry,generatedFromCommit:candidate.generatedFromCommit,inputSha256:candidate.governedInputSha256,decisions:[{{recordKey:note.recordKey,baseRecordSha256:note.baseRecordSha256,proposedRecord:null,decision:'reject',reviewer,reviewedAt}}]}},note.targetRegistry+'.rejection.patch.json');return;}}
  if(action==='quarantine'){{if(!reviewOwner){{alert('A review owner is required for quarantine.');return;}}const f=[...(candidate.quarantine.new||[]),...(candidate.quarantine.changed||[])].find(value=>value.namespace===note.namespace&&value.uid===note.uid&&value.identity===note.identity);if(!f){{alert('No matching live quarantine finding exists for this note.');return;}}const key=[f.namespace,f.uid,f.identity,f.reasonCode,f.subjectSha256].join(':');const proposedRecord={{namespace:f.namespace,uid:f.uid,identity:f.identity,reasonCode:f.reasonCode,subjectSha256:f.subjectSha256,sourcePath:f.sourcePath,firstSeenCommit:f.firstSeenCommit,reviewOwner,disposition,reviewedBy:reviewer,reviewedAt}};if(disposition==='withdraw'){{const p=(candidate.withdrawalPreviews||[]).find(v=>v.namespace===f.namespace&&v.uid===f.uid&&v.identity===f.identity&&v.reasonCode===f.reasonCode);if(!p){{alert('Exact neutral withdrawal preview is required.');return;}}proposedRecord.affectedReleaseId=p.affectedReleaseId;proposedRecord.withdrawalTemplateVersion=p.withdrawalTemplateVersion;proposedRecord.approvedWithdrawalSha256=p.approvedWithdrawalSha256;}}savePatch({{schemaVersion:1,targetRegistry:'quarantine',generatedFromCommit:candidate.generatedFromCommit,inputSha256:candidate.governedInputSha256,decisions:[{{recordKey:key,baseRecordSha256:(candidate.quarantineBaseRecordSha256||{{}})[key]||null,proposedRecord,decision:'accept',reviewer,reviewedAt}}]}},'quarantine.review.patch.json');return;}}
- if(!note.canonicalRecord||!note.targetRegistry){{alert('No complete canonical card/qbank proposal exists.');return;}}let proposedRecord=JSON.parse(JSON.stringify(note.canonicalRecord));if(action==='edit'){{const edited=prompt('Edit complete proposed JSON; computed hashes are revalidated on apply.',JSON.stringify(proposedRecord,null,2));if(edited===null)return;try{{proposedRecord=JSON.parse(edited);}}catch(error){{alert('Edited record is not valid JSON.');return;}}}}if(action==='accept'&&note.targetRegistry==='cards'){{proposedRecord.review={{...(proposedRecord.review||{{}}),cardApprovedBy:reviewer,cardApprovedAt:reviewedAt,approvedCardSha256:note.renderSha256}};}}if(action==='accept'&&note.targetRegistry==='qbank_render_reviews'){{proposedRecord.facultyApprovedBy=reviewer;proposedRecord.facultyApprovedAt=reviewedAt;proposedRecord.renderedNoteSha256=note.renderSha256;}}const patch={{schemaVersion:1,targetRegistry:note.targetRegistry,generatedFromCommit:candidate.generatedFromCommit,inputSha256:candidate.governedInputSha256,decisions:[{{recordKey:note.recordKey,baseRecordSha256:note.baseRecordSha256,proposedRecord,decision:action,reviewer,reviewedAt}}]}};savePatch(patch,note.targetRegistry+'.review.patch.json');
+ if((!note.canonicalRecord&&!note.proposedRecordTemplate)||!note.targetRegistry){{alert('No governed proposal template exists.');return;}}
+ let proposedRecord=JSON.parse(JSON.stringify(note.canonicalRecord||note.proposedRecordTemplate));
+ if(note.targetRegistry==='qbank_render_reviews'&&!note.canonicalRecord){{
+  const anchor=panel.querySelector('[data-qbank-anchor]'),riskLevel=panel.querySelector('[data-risk-level]').value,facets=[...panel.querySelectorAll('[data-risk-facet]:checked')].map(value=>value.value);
+  if(!anchor.value||!riskLevel){{alert('Select a governed source section and faculty risk before export.');return;}}
+  proposedRecord.primaryAnchor=anchor.value;proposedRecord.sourceAnchorSha256=anchor.selectedOptions[0].dataset.sourceSha;proposedRecord.risk={{level:riskLevel,facets}};proposedRecord.facultyApprovedBy=reviewer;proposedRecord.facultyApprovedAt=reviewedAt;
+  const get=name=>panel.querySelector(name).value.trim();
+  if(riskLevel==='High'){{const values=[get('[data-evidence-citation]'),get('[data-evidence-record]'),get('[data-evidence-sha]'),get('[data-evidence-reviewer]'),get('[data-evidence-date]'),get('[data-review-due]')];if(values.some(value=>!value)){{alert('High-risk review requires complete evidence proof and review due date.');return;}}[proposedRecord.evidenceCitation,proposedRecord.evidenceRecord,proposedRecord.evidenceSha256,proposedRecord.evidenceReviewedBy,proposedRecord.evidenceReviewedAt,proposedRecord.reviewDue]=values;}}
+  if(facets.includes('LocalPolicy')){{const values=[get('[data-policy-source]'),get('[data-policy-sha]'),get('[data-policy-reviewer]'),get('[data-policy-date]'),get('[data-review-due]')];if(values.some(value=>!value)){{alert('LocalPolicy requires complete policy proof and review due date.');return;}}[proposedRecord.localPolicySource,proposedRecord.localPolicySha256,proposedRecord.localPolicyReviewedBy,proposedRecord.localPolicyReviewedAt,proposedRecord.reviewDue]=values;}}
+ }}
+ if(action==='edit'){{const edited=prompt('Edit complete proposed JSON; computed hashes are revalidated on apply.',JSON.stringify(proposedRecord,null,2));if(edited===null)return;try{{proposedRecord=JSON.parse(edited);}}catch(error){{alert('Edited record is not valid JSON.');return;}}}}
+ if(action==='accept'&&note.targetRegistry==='cards'){{proposedRecord.review={{...(proposedRecord.review||{{}}),cardApprovedBy:reviewer,cardApprovedAt:reviewedAt,approvedCardSha256:note.renderSha256}};}}
+ if(action==='accept'&&note.targetRegistry==='qbank_render_reviews'){{proposedRecord.facultyApprovedBy=reviewer;proposedRecord.facultyApprovedAt=reviewedAt;proposedRecord.renderedNoteSha256=note.renderSha256;}}
+ const patch={{schemaVersion:1,targetRegistry:note.targetRegistry,generatedFromCommit:candidate.generatedFromCommit,inputSha256:candidate.governedInputSha256,decisions:[{{recordKey:note.recordKey,baseRecordSha256:note.baseRecordSha256,proposedRecord,decision:action,reviewer,reviewedAt}}]}};savePatch(patch,note.targetRegistry+'.review.patch.json');
 }}));
 </script></body></html>"""
