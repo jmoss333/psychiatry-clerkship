@@ -1304,3 +1304,62 @@ test('the default handler hard-disables deploy previews without touching the net
     }
   }
 });
+
+// F7 — the billable voice POST routes must enforce the same pack-status floor
+// the actor endpoint enforces (sp.mjs POST_PACK_STATUSES). A reviewed+enabled
+// speech engine on a pack whose top-level status is not approved must not bill
+// transcription or synthesis.
+test('transcribe and speak reject a pack whose top-level status is not approved, with no billable work', async () => {
+  const pack = createReviewedPack();
+  pack.status = 'draft-pending-attestation';
+  const snapshot = reviewedSnapshot(pack);
+
+  const t = enabledHandler({ snapshot });
+  const transcribeResponse = await t.handler(transcribeRequest());
+  assert.equal(transcribeResponse.status, 403);
+  assert.equal((await transcribeResponse.json()).error.code, 'pack_not_approved');
+  assert.deepEqual(t.recordingProvider.calls, []);
+  assert.deepEqual(t.budgetSpy.calls, []);
+
+  const s = enabledHandler({ snapshot });
+  const speakResponse = await s.handler(speakRequest({ snapshot }));
+  assert.equal(speakResponse.status, 403);
+  assert.equal((await speakResponse.json()).error.code, 'pack_not_approved');
+  assert.deepEqual(s.recordingProvider.calls, []);
+  assert.deepEqual(s.budgetSpy.calls, []);
+});
+
+// F15 — the anti-billing kill switch depends on request.signal being forwarded
+// into the provider call (sp-voice.mjs synthesize/transcribe: signal:
+// request.signal). The adapter-level abort is tested elsewhere; this locks the
+// sp-voice -> provider forwarding seam so dropping it turns red.
+test('the request abort signal is forwarded into the provider transcribe and synthesize calls', async () => {
+  const transcribeController = new AbortController();
+  const t = enabledHandler();
+  const transcribeResponse = await t.handler(
+    transcribeRequest({ signal: transcribeController.signal }),
+  );
+  assert.equal(transcribeResponse.status, 200);
+  const transcribeCall = t.recordingProvider.calls.find((call) => call.method === 'transcribe');
+  assert.ok(transcribeCall, 'provider transcribe must have been called');
+  assert.ok(
+    transcribeCall.input.signal instanceof AbortSignal,
+    'provider transcribe must receive the request AbortSignal (forwarding not dropped)',
+  );
+  assert.equal(transcribeCall.input.signal.aborted, false);
+  transcribeController.abort();
+  assert.equal(transcribeCall.input.signal.aborted, true);
+
+  const synthController = new AbortController();
+  const s = enabledHandler();
+  const speakResponse = await s.handler(speakRequest({ signal: synthController.signal }));
+  assert.equal(speakResponse.status, 200);
+  const synthesizeCall = s.recordingProvider.calls.find((call) => call.method === 'synthesize');
+  assert.ok(synthesizeCall, 'provider synthesize must have been called');
+  assert.ok(
+    synthesizeCall.input.signal instanceof AbortSignal,
+    'provider synthesize must receive the request AbortSignal (forwarding not dropped)',
+  );
+  synthController.abort();
+  assert.equal(synthesizeCall.input.signal.aborted, true);
+});

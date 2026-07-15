@@ -95,6 +95,45 @@ test('static QA rejects a missing relative script dependency', () => {
   }
 });
 
+// F24 — shipped JS toolAssets (e.g. sp-interview.voice.js) were never scanned;
+// only tools/*.html was read. A CDN dependency inside a shipped script blanks
+// the tool on offline/ward networks the same way one in the HTML would.
+test('static QA rejects a CDN dependency inside a shipped JS asset', () => {
+  const site = fs.mkdtempSync(path.join(os.tmpdir(), 'sp-static-js-'));
+  const sourceMap = `${site}.source-map.json`;
+  const tools = path.join(site, 'tools');
+  fs.mkdirSync(tools);
+  fs.writeFileSync(
+    path.join(tools, 'fixture.html'),
+    '<!doctype html><title>Fixture</title><meta name="viewport" content="width=device-width"><!-- [RC-META] --><script src="./fixture.js"></script>',
+  );
+  fs.writeFileSync(
+    path.join(tools, 'fixture.js'),
+    'const cdn = "https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js";\n',
+  );
+  fs.writeFileSync(
+    path.join(site, 'nav.json'),
+    JSON.stringify([{ section: 'Fixture', items: [{ k: 'tool', f: 'fixture.html' }] }]),
+  );
+  const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
+  fs.writeFileSync(
+    sourceMap,
+    JSON.stringify({ sources: [...manifest.tools, ...manifest.md].map(([source]) => source) }),
+  );
+  try {
+    const flagged = run(process.execPath, [CHECKER, site]);
+    assert.equal(flagged.status, 1, flagged.stdout + flagged.stderr);
+    assert.match(flagged.stdout + flagged.stderr, /external CDN dependency in tools\/fixture\.js/i);
+
+    fs.writeFileSync(path.join(tools, 'fixture.js'), 'export {};\n');
+    const clean = run(process.execPath, [CHECKER, site]);
+    assert.equal(clean.status, 0, clean.stdout + clean.stderr);
+  } finally {
+    fs.rmSync(site, { recursive: true, force: true });
+    fs.rmSync(sourceMap, { force: true });
+  }
+});
+
 test('Node 20 and the aggregate SP gates run before either site build', () => {
   const ci = fs.readFileSync(CI, 'utf8');
   const ordered = [

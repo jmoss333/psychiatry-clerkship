@@ -27,6 +27,9 @@ const MAX_TRANSCRIPTION_TEXT_BYTES = 256 * 1024;
 const MAX_SYNTHESIS_AUDIO_BYTES = 10 * 1024 * 1024;
 const OPAQUE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const CAPTURE_ID = /^[A-Za-z0-9_-]{22}$/;
+// Parity with the actor endpoint (sp.mjs POST_PACK_STATUSES): billable POSTs
+// require an approved top-level pack, independent of per-case/engine review.
+const POST_PACK_STATUSES = new Set(['reviewed', 'attested']);
 
 function methodNotAllowed() {
   return operationalError(405, 'method_not_allowed', 'Method not allowed.');
@@ -34,6 +37,14 @@ function methodNotAllowed() {
 
 function managedVoiceDisabled() {
   return operationalError(503, 'managed_voice_disabled', 'Managed voice is not available.');
+}
+
+function packNotApproved() {
+  return operationalError(403, 'pack_not_approved', 'The case pack is not approved for learner use.');
+}
+
+function requireApprovedPack(snapshot) {
+  if (!POST_PACK_STATUSES.has(snapshot?.pack?.status)) throw packNotApproved();
 }
 
 function disabledHealth() {
@@ -796,6 +807,7 @@ export function createVoiceHandler({
         const audio = await readBoundedAudio(request);
         inspectAudio({ audio, mimeType });
         const snapshot = await loadFrozenSnapshot(packLoader);
+        requireApprovedPack(snapshot);
         const caseContext = managedCaseContext({
           snapshot,
           governance,
@@ -831,6 +843,7 @@ export function createVoiceHandler({
         const payload = ticketCodec.authenticate({ ticket: input.ticket, reply: input.reply });
         const text = validateSpokenText(input.reply);
         const snapshot = await loadFrozenSnapshot(packLoader);
+        requireApprovedPack(snapshot);
         const caseContext = managedCaseContext({
           snapshot,
           governance,

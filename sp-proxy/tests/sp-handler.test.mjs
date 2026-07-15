@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import test from 'node:test';
 
@@ -1246,6 +1247,111 @@ test('ten stable opening tickets redeem through voice with exactly one synthesis
   assert.equal(responses.filter(({ status }) => status === 200).length, 1);
   assert.equal(responses.filter(({ status }) => status === 409).length, 9);
   assert.equal(synthesisCalls, 1);
+});
+
+// F18 — the live-actor (converse) ticket was only checked for a random JTI; its
+// replyHash was never asserted against the reply, and it was never redeemed
+// end-to-end. A regression that signs the wrong text or binds the wrong turn on
+// the converse branch would 403 every live-turn's voice while CI stayed green.
+test('a live-actor converse ticket binds the exact reply and redeems through voice with one synthesis', async () => {
+  const codec = createTicketCodec({
+    secret: TICKET_SECRET,
+    clock: () => NOW_MS,
+    randomBytes: (size) => Buffer.alloc(size, 5),
+  });
+  const packSnapshot = managedVoiceSnapshot();
+  const governanceImpl = managedVoiceGovernance();
+  const actorHarness = makeHarness({ packSnapshot, governanceImpl, ticketCodec: codec });
+
+  const converseResponse = await actorHarness.handler(learnerRequest({ body: converseBody() }));
+  assert.equal(converseResponse.status, 200);
+  const { reply, ticket } = await json(converseResponse);
+  assert.equal(typeof ticket, 'string');
+  assert.equal(reply, 'I have just been feeling worn down.');
+  // The signed replyHash must be the digest of the exact returned reply.
+  const payload = JSON.parse(Buffer.from(ticket.split('.')[0], 'base64url').toString('utf8'));
+  assert.equal(payload.replyHash, createHash('sha256').update(reply, 'utf8').digest('hex'));
+
+  let synthesisCalls = 0;
+  const fake = createFakeBlobStore({ nonStrongReadsReturnNull: true });
+  let ownerSequence = 0;
+  const budget = () => createBudgetLedger({
+    store: fake.store,
+    namespace: PRODUCTION_BUDGET_NAMESPACE,
+    rotationId: 'rotation-2026-07-a',
+    capMicros: 20_000_000,
+    warningMicros: 16_000_000,
+    rateCard: packSnapshot.pack.speechEngine.rateCard,
+    clock: () => NOW_MS,
+    randomBytes(size) { ownerSequence += 1; return Buffer.alloc(size, ownerSequence); },
+  });
+  const voiceHandler = createVoiceHandler({
+    http: createTestHttp(),
+    packLoader: { async load() { return packSnapshot; } },
+    governance: governanceImpl,
+    ticketCodec: codec,
+    budget,
+    provider: {
+      async prepare() {
+        return {
+          async synthesize({ text }) {
+            synthesisCalls += 1;
+            return {
+              audio: Uint8Array.of(0x49, 0x44, 0x33, 0x04),
+              contentType: 'audio/mpeg',
+              usage: { characters: [...text].length },
+            };
+          },
+        };
+      },
+    },
+    config: {
+      enabled: true,
+      rotationId: 'rotation-2026-07-a',
+      runtime: {
+        stackId: 'openai-quality-v1',
+        transcriptionProvider: 'openai',
+        transcriptionModel: 'whisper-1',
+        synthesisProvider: 'openai',
+        synthesisModel: 'tts-1-hd',
+        zeroRetentionEntitled: false,
+      },
+      now: () => NOW_MS,
+    },
+  });
+  // A 200 here proves the voice endpoint re-derived sha256(reply) === payload.replyHash
+  // and that every binding assertBindings checks matched the converse ticket.
+  const speakResponse = await voiceHandler(
+    voiceRequest('?op=speak', { method: 'POST', body: { reply, ticket } }),
+  );
+  assert.equal(speakResponse.status, 200);
+  assert.equal(synthesisCalls, 1);
+});
+
+// F18 (cont.) — with a codec present but the case ineligible, converse must
+// still return the actor reply but no ticket (the only prior null-ticket
+// assertions were for a missing or throwing codec, never eligible:false).
+test('a converse turn on an ineligible case returns the reply with a null ticket', async () => {
+  const codec = createTicketCodec({
+    secret: TICKET_SECRET,
+    clock: () => NOW_MS,
+    randomBytes: (size) => Buffer.alloc(size, 6),
+  });
+  const ineligibleGovernance = {
+    ...governance,
+    managedVoiceEligibility() { return { eligible: false }; },
+  };
+  const harness = makeHarness({
+    packSnapshot: managedVoiceSnapshot(),
+    governanceImpl: ineligibleGovernance,
+    ticketCodec: codec,
+  });
+  const response = await harness.handler(learnerRequest({ body: converseBody() }));
+  assert.equal(response.status, 200);
+  const body = await json(response);
+  assert.equal(body.ticket, null);
+  assert.equal(body.reply, 'I have just been feeling worn down.');
+  assert.equal(harness.anthropicSpy.calls.filter(({ method }) => method === 'call').length, 1);
 });
 
 test('ten concurrent actor duplicates and a process restart authorize one provider call', async () => {

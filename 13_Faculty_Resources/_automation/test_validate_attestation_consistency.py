@@ -175,6 +175,7 @@ def reviewed_voice_pack():
             "status": "reviewed",
             "enabled": True,
             "activeStack": "openai-quality-v1",
+            "engineHash": "f" * 64,
             "privacyReview": {
                 "status": "reviewed",
                 "policyUrls": [
@@ -542,6 +543,32 @@ class AttestationConsistencyTests(unittest.TestCase):
                 pack = reviewed_voice_pack()
                 profile = review_first_profile(pack, "elevenlabs")
                 apply(profile)
+                self.assertTrue(self.validate_pack(pack), label)
+
+    def test_reviewed_profile_provider_must_match_active_synthesis_stack(self):
+        pack = reviewed_voice_pack()
+        review_first_profile(pack, "openai")
+        self.assertEqual(self.validate_pack(pack), [])
+        # Point the engine's active stack at the ElevenLabs candidate while the
+        # reviewed profile stays pinned to the OpenAI synthesis model.
+        pack["speechEngine"]["activeStack"] = "elevenlabs-expressive-v1"
+        errors = self.validate_pack(pack)
+        self.assertTrue(
+            any("must match the active synthesis stack" in message for message in errors),
+            errors,
+        )
+
+    def test_reviewed_or_enabled_engine_requires_a_sha256_engine_hash(self):
+        self.assertEqual(self.validate_pack(reviewed_voice_pack()), [])
+        mutations = {
+            "missing engineHash": lambda engine: engine.pop("engineHash", None),
+            "null engineHash": lambda engine: engine.__setitem__("engineHash", None),
+            "malformed engineHash": lambda engine: engine.__setitem__("engineHash", "not-a-hash"),
+        }
+        for label, apply in mutations.items():
+            with self.subTest(mutation=label):
+                pack = reviewed_voice_pack()
+                apply(pack["speechEngine"])
                 self.assertTrue(self.validate_pack(pack), label)
 
     def test_reviewed_enabled_engine_requires_complete_approved_privacy(self):
