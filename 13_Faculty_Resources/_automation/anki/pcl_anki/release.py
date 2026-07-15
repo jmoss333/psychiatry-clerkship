@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from hashlib import sha256
 import json
+import re
 from pathlib import Path
 import subprocess
 import tempfile
@@ -19,6 +20,9 @@ from pcl_anki.contract import (
     MigrationResult,
     canonical_json_bytes,
     canonical_json_sha256,
+    application_guid,
+    core_guid,
+    legacy_qbank_guid,
 )
 from pcl_anki.governance import (
     detect_quarantines,
@@ -36,7 +40,7 @@ from pcl_anki.history import (
     validate_history,
     preview_withdrawals,
 )
-from pcl_anki.inspect import inspect_release
+from pcl_anki.inspect import inspect_release, read_apkg
 from pcl_anki.migration import (
     ReleaseIdentityError,
     import_package,
@@ -403,6 +407,40 @@ def _note_dict(note) -> dict[str, object]:
     }
 
 
+def _exact_source_quote(repo_root: Path, source_path: str, item: dict) -> dict:
+    path = repo_root / source_path
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        return {}
+    paragraphs = [value.strip() for value in raw.split("\n\n") if value.strip()]
+    terms = {
+        token.casefold()
+        for token in re.findall(
+            r"[A-Za-z][A-Za-z-]{4,}",
+            " ".join(
+                str(item.get(name, "")) for name in ("stem", "evidence", "pearl")
+            ),
+        )
+        if token.casefold()
+        not in {"which", "following", "patient", "reports", "correct", "started"}
+    }
+    if not paragraphs:
+        return {}
+    quote = max(
+        paragraphs,
+        key=lambda value: (
+            sum(value.casefold().count(term) for term in terms),
+            -len(value),
+        ),
+    )
+    return {
+        "quote": quote,
+        "quoteSha256": sha256(quote.encode("utf-8")).hexdigest(),
+        "fileSha256": _file_sha256(path),
+    }
+
+
 def _draft_previews(inputs: object) -> list[dict[str, object]]:
     items = {
         item.get("id"): item
@@ -422,15 +460,24 @@ def _draft_previews(inputs: object) -> list[dict[str, object]]:
         except (KeyError, TypeError, ValueError):
             continue
         record = _note_dict(note)
+        prior_hash = (card.get("review") or {}).get("approvedCardSha256")
+        exact_prior = prior_hash == note.render_sha256
         record.update(
             state=card.get("state"),
             source=card.get("source"),
             risk=card.get("risk"),
             review=card.get("review"),
             qbank=card.get("qbank"),
-            priorApprovedRenderSha256=(card.get("review") or {}).get(
-                "approvedCardSha256"
+            priorApprovedRenderSha256=prior_hash,
+            priorApprovedFrontHtml=note.front_html if exact_prior else None,
+            priorApprovedBackHtml=note.back_html if exact_prior else None,
+            priorRenderStatus=(
+                "exact" if exact_prior else "changed_prior_bytes_unavailable"
             ),
+            targetRegistry="cards",
+            recordKey=card.get("id"),
+            baseRecordSha256=canonical_json_sha256(card),
+            canonicalRecord=card,
         )
         previews.append(record)
     reviews = tuple(_input(inputs, "qbank_reviews", ()))
@@ -453,6 +500,9 @@ def _draft_previews(inputs: object) -> list[dict[str, object]]:
                 None,
             )
             primary_page = review.get("primaryPage") if isinstance(review, dict) else None
+            if not isinstance(primary_page, str):
+                pages = item.get("pages", ())
+                primary_page = pages[0] if isinstance(pages, list) and pages else None
             source_path = (
                 manifest.slug_to_path.get(primary_page)
                 if manifest is not None and isinstance(primary_page, str)
@@ -461,7 +511,33 @@ def _draft_previews(inputs: object) -> list[dict[str, object]]:
             source_review = None
             if isinstance(reviewed, dict):
                 source_review = reviewed.get(source_path) or reviewed.get(primary_page)
+            source = {
+                "path": source_path,
+                "slug": primary_page,
+                "anchor": review.get("primaryAnchor")
+                if isinstance(review, dict)
+                else None,
+                "status": source_review,
+                "pages": item.get("pages"),
+                "evidence": item.get("evidence"),
+            }
+            if isinstance(primary_page, str):
+                source["url"] = (
+                    "https://une-ms3-psychiatry.netlify.app/?page=" + primary_page
+                )
+            if isinstance(source_path, str):
+                source.update(
+                    _exact_source_quote(
+                        Path(_input(inputs, "repo_root", Path.cwd())),
+                        source_path,
+                        item,
+                    )
+                )
             record = _note_dict(note)
+            prior_hash = (
+                review.get("renderedNoteSha256") if isinstance(review, dict) else None
+            )
+            exact_prior = prior_hash == note.render_sha256
             record.update(
                 state=item.get("status"),
                 qbankItem=item,
@@ -482,21 +558,21 @@ def _draft_previews(inputs: object) -> list[dict[str, object]]:
                     ],
                     "itemSha256": canonical_json_sha256(item),
                 },
-                source={
-                    "path": source_path,
-                    "slug": primary_page,
-                    "anchor": review.get("primaryAnchor")
-                    if isinstance(review, dict)
-                    else None,
-                    "status": source_review,
-                    "pages": item.get("pages"),
-                    "evidence": item.get("evidence"),
-                },
+                source=source,
                 risk=review.get("risk") if isinstance(review, dict) else None,
                 review=review,
-                priorApprovedRenderSha256=review.get("renderedNoteSha256")
-                if isinstance(review, dict)
-                else None,
+                priorApprovedRenderSha256=prior_hash,
+                priorApprovedFrontHtml=note.front_html if exact_prior else None,
+                priorApprovedBackHtml=note.back_html if exact_prior else None,
+                priorRenderStatus=(
+                    "exact" if exact_prior else "changed_prior_bytes_unavailable"
+                ),
+                targetRegistry="qbank_render_reviews",
+                recordKey=f"{item.get('id')}:{note.identity}",
+                baseRecordSha256=(
+                    canonical_json_sha256(review) if isinstance(review, dict) else None
+                ),
+                canonicalRecord=review,
             )
             previews.append(record)
     return previews
@@ -960,6 +1036,50 @@ def _original_migration_proof(
     return seed_release_id, canonical_json_sha256(contract)
 
 
+def _complete_package_projection(package_paths: Iterable[Path]) -> tuple[list, list]:
+    """Project the complete last-package-wins state for an import sequence."""
+
+    notes: dict[str, tuple] = {}
+    cards: dict[tuple[str, int], tuple] = {}
+    for package_path in package_paths:
+        snapshot = read_apkg(package_path)
+        for note in snapshot.notes:
+            notes[note.guid] = (
+                note.guid,
+                note.model_id,
+                tuple(note.fields),
+                tuple(sorted(note.tags)),
+            )
+        for card in snapshot.cards:
+            cards.setdefault((card.note_guid, card.ordinal), (
+                card.note_guid,
+                str(snapshot.decks[card.deck_id]["name"]),
+                card.ordinal,
+            ))
+    return sorted(notes.values()), sorted(cards.values())
+
+
+def _historically_withdrawn_guids(history: HistoryRegistry) -> set[str]:
+    if not history.releases:
+        return set()
+    values = set()
+    for membership in history.releases[-1].get("memberships", ()):
+        if not isinstance(membership, dict) or membership.get("status") != "withdrawn":
+            continue
+        namespace = membership.get("namespace")
+        uid = membership.get("uid")
+        identity = membership.get("identity", "base")
+        if not isinstance(uid, str):
+            continue
+        if namespace == "core":
+            values.add(core_guid(uid))
+        elif namespace == "application":
+            values.add(application_guid(uid))
+        elif namespace == "qbank" and identity in {"base", "tier2"}:
+            values.add(legacy_qbank_guid(uid, identity))
+    return values
+
+
 def run_candidate_migration(
     prior_release_dir: Path,
     candidate_dir: Path,
@@ -1063,43 +1183,35 @@ def run_candidate_migration(
             raise ReleaseOrchestrationError(
                 "migration candidate failed receipt-to-payload verification"
             )
-        canonical_snapshots = tuple(
-            candidate_inspection.snapshots[name]
-            for name in (
-                CORE_ARTIFACT_FILENAME,
-                APPLICATION_ARTIFACT_FILENAME,
-                QBANK_ARTIFACT_FILENAME,
-            )
+        candidate_paths = [
+            candidate_dir / COMPLETE_ARTIFACT_FILENAME,
+            candidate_dir / QBANK_ARTIFACT_FILENAME,
+        ]
+        seed_notes, _ = _complete_package_projection(seed_paths)
+        candidate_notes, _ = _complete_package_projection(candidate_paths)
+        candidate_guids = {value[0] for value in candidate_notes}
+        withdrawn_guids = _historically_withdrawn_guids(baseline_history)
+        unaccounted_seed_guids = sorted(
+            value[0]
+            for value in seed_notes
+            if value[0] not in candidate_guids and value[0] not in withdrawn_guids
         )
-        expected_notes = sorted(
-            (
-                note.guid,
-                note.model_id,
-                tuple(note.fields),
-                tuple(sorted(note.tags)),
+        if unaccounted_seed_guids:
+            raise ReleaseOrchestrationError(
+                "migration seed contains learner-visible identities absent from the "
+                "candidate or approved withdrawal history: "
+                + ", ".join(unaccounted_seed_guids[:8])
+                + (" ..." if len(unaccounted_seed_guids) > 8 else "")
             )
-            for snapshot in canonical_snapshots
-            for note in snapshot.notes
-        )
-        expected_guids = {value[0] for value in expected_notes}
-        expected_cards = sorted(
-            (
-                card.note_guid,
-                str(snapshot.decks[card.deck_id]["name"]),
-                card.ordinal,
-            )
-            for snapshot in canonical_snapshots
-            for card in snapshot.cards
+        expected_notes, expected_cards = _complete_package_projection(
+            (*seed_paths, *candidate_paths)
         )
         with tempfile.TemporaryDirectory(prefix="pcl-anki-migration-") as temporary:
             collection = Collection(str(Path(temporary) / "collection.anki2"))
             try:
                 for package in seed_paths:
                     import_package(collection, package)
-                for package in (
-                    candidate_dir / COMPLETE_ARTIFACT_FILENAME,
-                    candidate_dir / QBANK_ARTIFACT_FILENAME,
-                ):
+                for package in candidate_paths:
                     import_package(collection, package)
                 imported_notes = sorted(
                     (
@@ -1111,7 +1223,6 @@ def run_candidate_migration(
                     for guid, mid, fields, tags in collection.db.all(
                         "select guid, mid, flds, tags from notes order by guid"
                     )
-                    if guid in expected_guids
                 )
                 imported_cards = sorted(
                     (
@@ -1122,7 +1233,6 @@ def run_candidate_migration(
                     for guid, did, ordinal in collection.db.all(
                         "select n.guid, c.did, c.ord from cards c join notes n on n.id = c.nid order by n.guid, c.ord"
                     )
-                    if guid in expected_guids
                 )
             finally:
                 collection.close()
@@ -1322,6 +1432,38 @@ def _governed_static_paths(repo: Path) -> set[Path]:
     return values
 
 
+def load_policy_records(repo: Path, loaded: set[Path]) -> dict[str, dict]:
+    """Load the closed policy registry and bind every referenced passage byte."""
+
+    repo = Path(repo).resolve(strict=True)
+    registry_dir = repo / "13_Faculty_Resources" / "anki"
+    registry_path = registry_dir / "policy_registry.json"
+    schema_path = registry_dir / "policy_registry.schema.json"
+    registry = _read_json(registry_path, loaded)
+    _read_json(schema_path, loaded)
+    issues = validate_registry(registry_path, schema_path)
+    if issues:
+        raise ReleaseOrchestrationError(
+            "policy registry validation failed: "
+            + "; ".join(f"{issue.code} {issue.subject}" for issue in issues)
+        )
+    policies = registry.get("policies", ()) if isinstance(registry, dict) else ()
+    records: dict[str, dict] = {}
+    for record in policies:
+        policy_id = record["id"]
+        if policy_id in records:
+            raise ReleaseOrchestrationError(f"duplicate policy record: {policy_id}")
+        passage = repo / record["path"]
+        _repo_relative(repo, passage)
+        loaded.add(passage)
+        if _file_sha256(passage) != record["passageSha256"]:
+            raise ReleaseOrchestrationError(
+                f"policy passage hash differs from registry: {policy_id}"
+            )
+        records[policy_id] = record
+    return records
+
+
 def load_release_inputs(repo: Path) -> SimpleNamespace:
     """Load canonical release inputs and freeze their complete access ledger."""
 
@@ -1395,6 +1537,7 @@ def load_release_inputs(repo: Path) -> SimpleNamespace:
             relative = manifest.slug_to_path.get(slug)
             if relative:
                 loaded.add(repo / relative)
+    policy_records = load_policy_records(repo, loaded)
     loaded.update(_governed_static_paths(repo))
     snapshot = capture_governed_inputs(repo, sorted(loaded))
     evidence = raw["evidence"]
@@ -1421,7 +1564,7 @@ def load_release_inputs(repo: Path) -> SimpleNamespace:
         reviewed=raw["reviewed"],
         surveillance=raw["surveillance"],
         evidence_records=evidence,
-        policy_records={},
+        policy_records=policy_records,
         input_issues=tuple(input_issues),
         governed_input_sha256=snapshot.sha256,
         governed_input_ledger=snapshot.ledger,

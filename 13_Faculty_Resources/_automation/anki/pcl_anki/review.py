@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+import base64
 import html
 import json
 import os
@@ -36,8 +37,17 @@ def _errors(value: object, schema_name: str) -> list[str]:
         "cards.schema.json",
         "qbank_render_reviews.schema.json",
         "quarantine.schema.json",
+        "policy_registry.schema.json",
     ):
         target = canonical_dir / name
+        referenced = json.loads(target.read_text(encoding="utf-8"))
+        registry = registry.with_resource(
+            target.as_uri(), Resource.from_contents(referenced)
+        )
+    for target in (
+        path.parents[3] / "question_bank.schema.json",
+        path.parents[3] / "evidence_registry.schema.json",
+    ):
         referenced = json.loads(target.read_text(encoding="utf-8"))
         registry = registry.with_resource(
             target.as_uri(), Resource.from_contents(referenced)
@@ -88,6 +98,28 @@ def validate_review_patch(value: object) -> Mapping:
         ):
             raise ReviewPatchError("release history patch changed the mechanical append")
     return value
+
+
+def validate_review_candidate(value: object) -> Mapping:
+    errors = _errors(value, "review_candidate.schema.json")
+    if errors:
+        raise ReviewPatchError("invalid review candidate: " + "; ".join(errors))
+    assert isinstance(value, Mapping)
+    return value
+
+
+def _base64_payload(value: object) -> str:
+    return base64.b64encode(canonical_json_bytes(value)).decode("ascii")
+
+
+def _sandboxed_render(value: object, title: str) -> str:
+    return (
+        '<iframe sandbox title="'
+        + html.escape(title, quote=True)
+        + '" srcdoc="'
+        + html.escape(str(value or ""), quote=True)
+        + '"></iframe>'
+    )
 
 
 _REGISTRY_COLLECTION = {
@@ -563,8 +595,9 @@ def build_review_html(candidate: Mapping) -> str:
     if candidate.get("proposalType") == "release_history":
         validate_history_proposal(candidate)
     elif candidate.get("reportType") == "anki_review_candidate":
+        validate_review_candidate(candidate)
         return _build_candidate_review_html(candidate)
-    payload = canonical_json_bytes(candidate).decode("utf-8")
+    payload = _base64_payload(candidate)
     visible = html.escape(json.dumps(candidate, ensure_ascii=False, indent=2, sort_keys=True))
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>PCL Anki faculty clinic</title>
@@ -575,14 +608,15 @@ def build_review_html(candidate: Mapping) -> str:
 <label>Reviewer name <input id="reviewer" required></label>
 <label>Review date <input id="reviewedAt" type="date" required></label>
 <button id="export">Export release_history.patch.json</button>
-<script id="proposal" type="application/json">{payload}</script>
+<script id="proposal" type="application/json" data-encoding="base64">{payload}</script>
 <script>
-const proposal=JSON.parse(document.getElementById('proposal').textContent);
+const proposalBytes=Uint8Array.from(atob(document.getElementById('proposal').textContent),c=>c.charCodeAt(0));
+const proposalText=new TextDecoder().decode(proposalBytes); const proposal=JSON.parse(proposalText);
 document.getElementById('export').addEventListener('click',async()=>{{
  const reviewer=document.getElementById('reviewer').value.trim();
  const reviewedAt=document.getElementById('reviewedAt').value;
  if(!reviewer||!/^\\d{{4}}-\\d{{2}}-\\d{{2}}$/.test(reviewedAt)){{alert('Reviewer name and review date are required.');return;}}
- const bytes=new TextEncoder().encode(document.getElementById('proposal').textContent); const digest=await crypto.subtle.digest('SHA-256',bytes); const sourceProposalSha256=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
+ const digest=await crypto.subtle.digest('SHA-256',proposalBytes); const sourceProposalSha256=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
  const patch={{schemaVersion:1,targetRegistry:'release_history',generatedFromCommit:proposal.generatedFromCommit,inputSha256:proposal.inputSha256,sourceProposalSha256,historyAppend:proposal.historyAppend,decisions:[{{recordKey:'release:'+proposal.historyAppend.releaseRecord.releaseId,baseRecordSha256:null,proposedRecord:proposal.historyAppend,decision:'accept',reviewer,reviewedAt}}]}};
  const blob=new Blob([JSON.stringify(patch,null,2)+'\\n'],{{type:'application/json'}}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='release_history.patch.json'; a.click(); URL.revokeObjectURL(a.href);
 }});
@@ -590,21 +624,38 @@ document.getElementById('export').addEventListener('click',async()=>{{
 
 
 def _build_candidate_review_html(candidate: Mapping) -> str:
-    payload = canonical_json_bytes(candidate).decode("utf-8")
+    payload = _base64_payload(candidate)
     sections = []
     for note in candidate.get("draftAndCurrentPreviews", ()):
         if not isinstance(note, Mapping):
             continue
+        exact_prior = note.get("priorRenderStatus") == "exact"
+        prior = (
+            '<div class="diff-exact"><strong>Prior approved render is byte-exact with current.</strong></div>'
+            if exact_prior
+            else '<div class="diff-changed"><strong>Prior approved bytes unavailable; hash changed. No prior text is fabricated.</strong></div>'
+        )
+        record_key = html.escape(str(note.get("recordKey", "")), quote=True)
+        disabled = "" if isinstance(note.get("canonicalRecord"), Mapping) else " disabled"
+        controls = (
+            f'<div class="note-controls" data-note-key="{record_key}">'
+            f'<button data-action="accept"{disabled}>Accept exact render</button>'
+            f'<button data-action="edit"{disabled}>Edit proposed record</button>'
+            f'<button data-action="reject"{disabled}>Reject</button>'
+            '<button data-action="quarantine">Quarantine</button></div>'
+        )
         sections.append(
             "<section><h2>"
             + html.escape(
                 f"{note.get('namespace')}:{note.get('uid')}:{note.get('identity')}"
             )
             + "</h2><h3>Exact Anki front</h3><div class=\"render\">"
-            + str(note.get("frontHtml", ""))
+            + _sandboxed_render(note.get("frontHtml", ""), "Exact Anki front")
             + "</div><h3>Exact Anki back</h3><div class=\"render\">"
-            + str(note.get("backHtml", ""))
-            + "</div><h3>Governed source, qbank, risk, and prior approval</h3><pre>"
+            + _sandboxed_render(note.get("backHtml", ""), "Exact Anki back")
+            + "</div><h3>Current approved-render comparison</h3>"
+            + prior
+            + "<h3>Governed source, qbank, risk, and prior approval</h3><pre>"
             + html.escape(
                 json.dumps(
                     {
@@ -625,7 +676,9 @@ def _build_candidate_review_html(candidate: Mapping) -> str:
                     sort_keys=True,
                 )
             )
-            + "</pre></section>"
+            + "</pre>"
+            + controls
+            + "</section>"
         )
     for preview in candidate.get("withdrawalPreviews", ()):
         if not isinstance(preview, Mapping):
@@ -633,9 +686,9 @@ def _build_candidate_review_html(candidate: Mapping) -> str:
         sections.append(
             "<section class=\"withdrawal\"><h2>Exact neutral withdrawal preview</h2>"
             "<h3>Front</h3><div class=\"render\">"
-            + str(preview.get("frontHtml", ""))
+            + _sandboxed_render(preview.get("frontHtml", ""), "Neutral withdrawal front")
             + "</div><h3>Back</h3><div class=\"render\">"
-            + str(preview.get("backHtml", ""))
+            + _sandboxed_render(preview.get("backHtml", ""), "Neutral withdrawal back")
             + "</div><pre>"
             + html.escape(json.dumps(preview, ensure_ascii=False, indent=2, sort_keys=True))
             + "</pre></section>"
@@ -656,21 +709,23 @@ def _build_candidate_review_html(candidate: Mapping) -> str:
         )
     )
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>PCL Anki authoring clinic</title><style>body{{font:16px system-ui;margin:2rem;max-width:1200px}}section{{border:1px solid #bbb;padding:1rem;margin:1rem 0}}.render{{padding:1rem;background:#fff}}pre{{white-space:pre-wrap;background:#f4f4f4;padding:1rem}}label{{display:block;margin:.7rem 0}}</style></head>
+<title>PCL Anki authoring clinic</title><style>body{{font:16px system-ui;margin:2rem;max-width:1200px}}section{{border:1px solid #bbb;padding:1rem;margin:1rem 0}}.render{{padding:1rem;background:#fff}}pre{{white-space:pre-wrap;background:#f4f4f4;padding:1rem}}label{{display:block;margin:.7rem 0}}.diff-exact{{border-left:5px solid #27823b;background:#eef9f0;padding:.7rem}}.diff-changed{{border-left:5px solid #b42318;background:#fff1f0;padding:.7rem}}.note-controls button{{margin:.25rem}}</style></head>
 <body><h1>Anki faculty card clinic</h1><p>Every exact rendered note in this export is displayed below. Page review never counts as approval.</p>
 {''.join(sections)}<h2>Complete governed context</h2><pre>{visible_context}</pre>
-<h2>Named quarantine decision export</h2>
+<h2>Named per-note decision export</h2>
 <label>Review owner <input id="owner" required></label><label>Reviewer name <input id="reviewer" required></label><label>Review date <input id="reviewedAt" type="date" required></label>
 <label>Disposition <select id="disposition"><option value="exclude">Exclude</option><option value="withdraw">Withdraw shipped note</option><option value="retire">Retire</option></select></label>
-<p>This Task-9 export is quarantine-decision only. Edit or reject leaves canonical files unchanged and exports no patch.</p>
-<button id="accept">Accept exact quarantine decision</button>
-<script id="candidate" type="application/json">{payload}</script><script>
-const candidate=JSON.parse(document.getElementById('candidate').textContent);
-document.getElementById('accept').addEventListener('click',()=>{{
+<p>Disabled card/qbank actions mean no complete canonical proposal exists. Quarantine requires a matching live finding.</p>
+<script id="candidate" type="application/json" data-encoding="base64">{payload}</script><script>
+const candidateBytes=Uint8Array.from(atob(document.getElementById('candidate').textContent),c=>c.charCodeAt(0));
+const candidate=JSON.parse(new TextDecoder().decode(candidateBytes));
+function savePatch(patch,name){{const blob=new Blob([JSON.stringify(patch,null,2)+'\\n'],{{type:'application/json'}});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href);}}
+document.querySelectorAll('[data-action]').forEach(button=>button.addEventListener('click',()=>{{
+ const recordKey=button.closest('[data-note-key]').dataset.noteKey,action=button.dataset.action;
+ const note=(candidate.draftAndCurrentPreviews||[]).find(value=>value.recordKey===recordKey);if(!note){{alert('Displayed note context is missing.');return;}}
  const reviewOwner=document.getElementById('owner').value.trim(),reviewer=document.getElementById('reviewer').value.trim(),reviewedAt=document.getElementById('reviewedAt').value,disposition=document.getElementById('disposition').value;
- if(!reviewOwner||!reviewer||!/^\\d{{4}}-\\d{{2}}-\\d{{2}}$/.test(reviewedAt)){{alert('Owner, reviewer, and ISO review date are required.');return;}}
- const findings=[...(candidate.quarantine.new||[]),...(candidate.quarantine.changed||[])]; if(!findings.length){{alert('No new or changed quarantine finding to export.');return;}}
- const decisions=findings.map(f=>{{const key=[f.namespace,f.uid,f.identity,f.reasonCode,f.subjectSha256].join(':'); const proposedRecord={{namespace:f.namespace,uid:f.uid,identity:f.identity,reasonCode:f.reasonCode,subjectSha256:f.subjectSha256,sourcePath:f.sourcePath,firstSeenCommit:f.firstSeenCommit,reviewOwner,disposition,reviewedBy:reviewer,reviewedAt}}; if(disposition==='withdraw'){{const p=(candidate.withdrawalPreviews||[]).find(v=>v.namespace===f.namespace&&v.uid===f.uid&&v.identity===f.identity&&v.reasonCode===f.reasonCode); if(!p) throw new Error('Exact neutral withdrawal preview is required'); proposedRecord.affectedReleaseId=p.affectedReleaseId; proposedRecord.withdrawalTemplateVersion=p.withdrawalTemplateVersion; proposedRecord.approvedWithdrawalSha256=p.approvedWithdrawalSha256;}} return {{recordKey:key,baseRecordSha256:(candidate.quarantineBaseRecordSha256||{{}})[key]||null,proposedRecord,decision:'accept',reviewer,reviewedAt}};}});
- const patch={{schemaVersion:1,targetRegistry:'quarantine',generatedFromCommit:candidate.generatedFromCommit,inputSha256:candidate.governedInputSha256,decisions}}; const blob=new Blob([JSON.stringify(patch,null,2)+'\\n'],{{type:'application/json'}}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='quarantine.review.patch.json';a.click();URL.revokeObjectURL(a.href);
-}});
+ if(!reviewer||!/^\\d{{4}}-\\d{{2}}-\\d{{2}}$/.test(reviewedAt)){{alert('Reviewer and ISO review date are required.');return;}}
+ if(action==='quarantine'){{if(!reviewOwner){{alert('A review owner is required for quarantine.');return;}}const f=[...(candidate.quarantine.new||[]),...(candidate.quarantine.changed||[])].find(value=>value.namespace===note.namespace&&value.uid===note.uid&&value.identity===note.identity);if(!f){{alert('No matching live quarantine finding exists for this note.');return;}}const key=[f.namespace,f.uid,f.identity,f.reasonCode,f.subjectSha256].join(':');const proposedRecord={{namespace:f.namespace,uid:f.uid,identity:f.identity,reasonCode:f.reasonCode,subjectSha256:f.subjectSha256,sourcePath:f.sourcePath,firstSeenCommit:f.firstSeenCommit,reviewOwner,disposition,reviewedBy:reviewer,reviewedAt}};if(disposition==='withdraw'){{const p=(candidate.withdrawalPreviews||[]).find(v=>v.namespace===f.namespace&&v.uid===f.uid&&v.identity===f.identity&&v.reasonCode===f.reasonCode);if(!p){{alert('Exact neutral withdrawal preview is required.');return;}}proposedRecord.affectedReleaseId=p.affectedReleaseId;proposedRecord.withdrawalTemplateVersion=p.withdrawalTemplateVersion;proposedRecord.approvedWithdrawalSha256=p.approvedWithdrawalSha256;}}savePatch({{schemaVersion:1,targetRegistry:'quarantine',generatedFromCommit:candidate.generatedFromCommit,inputSha256:candidate.governedInputSha256,decisions:[{{recordKey:key,baseRecordSha256:(candidate.quarantineBaseRecordSha256||{{}})[key]||null,proposedRecord,decision:'accept',reviewer,reviewedAt}}]}},'quarantine.review.patch.json');return;}}
+ if(!note.canonicalRecord||!note.targetRegistry){{alert('No complete canonical card/qbank proposal exists.');return;}}let proposedRecord=JSON.parse(JSON.stringify(note.canonicalRecord));if(action==='edit'){{const edited=prompt('Edit complete proposed JSON; computed hashes are revalidated on apply.',JSON.stringify(proposedRecord,null,2));if(edited===null)return;try{{proposedRecord=JSON.parse(edited);}}catch(error){{alert('Edited record is not valid JSON.');return;}}}}if(action==='accept'&&note.targetRegistry==='cards'){{proposedRecord.review={{...(proposedRecord.review||{{}}),cardApprovedBy:reviewer,cardApprovedAt:reviewedAt,approvedCardSha256:note.renderSha256}};}}if(action==='accept'&&note.targetRegistry==='qbank_render_reviews'){{proposedRecord.facultyApprovedBy=reviewer;proposedRecord.facultyApprovedAt=reviewedAt;proposedRecord.renderedNoteSha256=note.renderSha256;}}const patch={{schemaVersion:1,targetRegistry:note.targetRegistry,generatedFromCommit:candidate.generatedFromCommit,inputSha256:candidate.governedInputSha256,decisions:[{{recordKey:note.recordKey,baseRecordSha256:note.baseRecordSha256,proposedRecord,decision:action,reviewer,reviewedAt}}]}};savePatch(patch,note.targetRegistry+'.review.patch.json');
+}}));
 </script></body></html>"""

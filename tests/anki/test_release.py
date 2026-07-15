@@ -1,5 +1,6 @@
 from datetime import date
 from copy import deepcopy
+from hashlib import sha256
 import json
 from pathlib import Path
 import subprocess
@@ -11,6 +12,7 @@ import pytest
 from pcl_anki.contract import HistoryRegistry
 from pcl_anki.history import history_bytes, history_to_dict
 from pcl_anki.package import RELEASE_FILENAMES
+from pcl_anki.package import write_release
 from pcl_anki.review import validate_history_proposal
 from pcl_anki.release import (
     INTERNAL_REVIEW_EPOCH,
@@ -18,6 +20,8 @@ from pcl_anki.release import (
     capture_governed_inputs,
     classify_maintenance_issues,
     evaluate_release,
+    load_policy_records,
+    load_release_inputs,
     require_clean_tracked_worktree,
     run_candidate_migration,
     run_profile,
@@ -118,6 +122,126 @@ def test_governed_snapshot_rejects_missing_outside_symlink_and_duplicate_paths(
     ):
         with pytest.raises(ReleaseOrchestrationError, match=message):
             capture_governed_inputs(repo, paths)
+
+
+def test_policy_loader_validates_registry_and_ledgers_exact_passage_bytes(tmp_path):
+    repo = tmp_path / "repo"
+    registry_dir = repo / "13_Faculty_Resources" / "anki"
+    registry_dir.mkdir(parents=True)
+    passage = repo / "policies" / "unit-policy.md"
+    passage.parent.mkdir()
+    passage.write_text("# Unit policy\n\nExact governed passage.\n", encoding="utf-8")
+    schema_source = (
+        Path(__file__).resolve().parents[2]
+        / "13_Faculty_Resources"
+        / "anki"
+        / "policy_registry.schema.json"
+    )
+    shutil.copy2(schema_source, registry_dir / schema_source.name)
+    record = {
+        "id": "unit-policy-v1",
+        "version": "2026-07-14",
+        "owner": "Synthetic Policy Owner",
+        "path": "policies/unit-policy.md",
+        "anchor": "unit-policy",
+        "passageSha256": sha256(passage.read_bytes()).hexdigest(),
+        "reviewStatus": "unreviewed",
+    }
+    (registry_dir / "policy_registry.json").write_text(
+        json.dumps({"schemaVersion": 1, "policies": [record]}), encoding="utf-8"
+    )
+    loaded = set()
+
+    records = load_policy_records(repo, loaded)
+
+    assert records == {"unit-policy-v1": record}
+    assert passage in loaded
+    assert registry_dir / "policy_registry.json" in loaded
+    assert registry_dir / "policy_registry.schema.json" in loaded
+
+    passage.write_text("# Unit policy\n\nDrifted passage.\n", encoding="utf-8")
+    with pytest.raises(ReleaseOrchestrationError, match="policy passage hash"):
+        load_policy_records(repo, set())
+
+
+def test_real_loader_digest_detects_one_byte_drift_in_every_input_category(tmp_path):
+    source_repo = Path(__file__).resolve().parents[2]
+    repo = tmp_path / "real-loader-repo"
+    subprocess.run(
+        ["git", "clone", "-q", "--shared", str(source_repo), str(repo)],
+        check=True,
+    )
+    policy_dir = repo / "13_Faculty_Resources" / "anki"
+    for name in ("policy_registry.json", "policy_registry.schema.json"):
+        shutil.copy2(source_repo / "13_Faculty_Resources" / "anki" / name, policy_dir / name)
+    _git(
+        repo,
+        "add",
+        "13_Faculty_Resources/anki/policy_registry.json",
+        "13_Faculty_Resources/anki/policy_registry.schema.json",
+    )
+    staged = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"], cwd=repo, check=False
+    )
+    if staged.returncode == 1:
+        _git(
+            repo,
+            "-c",
+            "user.name=Loader Test",
+            "-c",
+            "user.email=loader@example.invalid",
+            "commit",
+            "-qm",
+            "add policy registry",
+        )
+    elif staged.returncode != 0:
+        raise RuntimeError("could not inspect loader fixture staging state")
+
+    baseline = load_release_inputs(repo)
+    categories = {
+        "canonical registry": "question_bank.json",
+        "learner source": "09_Exam_Prep/anki_export/anki.md",
+        "generator and template code": (
+            "13_Faculty_Resources/_automation/anki/pcl_anki/render.py"
+        ),
+        "schema": "13_Faculty_Resources/anki/cards.schema.json",
+        "dependency lock": "13_Faculty_Resources/_automation/anki/requirements.lock",
+        "site staging": (
+            "13_Faculty_Resources/_automation/site_build/site_manifest.json"
+        ),
+        "policy registry": "13_Faculty_Resources/anki/policy_registry.json",
+    }
+    baseline_ledger = dict(baseline.governed_input_ledger)
+    for category, relative in categories.items():
+        path = repo / relative
+        original = path.read_bytes()
+        path.write_bytes(original + b"\n")
+        _git(repo, "add", relative)
+        _git(
+            repo,
+            "-c",
+            "user.name=Loader Test",
+            "-c",
+            "user.email=loader@example.invalid",
+            "commit",
+            "-qm",
+            f"drift {category}",
+        )
+        changed = load_release_inputs(repo)
+        assert changed.governed_input_sha256 != baseline.governed_input_sha256, category
+        assert dict(changed.governed_input_ledger)[relative] != baseline_ledger[relative], category
+        path.write_bytes(original)
+        _git(repo, "add", relative)
+        _git(
+            repo,
+            "-c",
+            "user.name=Loader Test",
+            "-c",
+            "user.email=loader@example.invalid",
+            "commit",
+            "-qm",
+            f"restore {category}",
+        )
 
 
 def test_prepare_release_cleanliness_gate_ignores_untracked_but_blocks_tracked_drift(
@@ -268,6 +392,30 @@ def _profile_inputs(bundle, **changes):
     )
 
 
+def _accounted_legacy_seed(candidate, tmp_path, monkeypatch):
+    """Create a first-launch seed whose every identity is in the candidate."""
+
+    seed_source = tmp_path / "accounted-seed-source"
+    write_release(candidate, seed_source)
+    prior = tmp_path / "accounted-legacy"
+    prior.mkdir()
+    qbank = prior / "legacy_qbank_2026-07-12.apkg"
+    combined = prior / "legacy_all_2026-07-12.apkg"
+    shutil.copy2(seed_source / "psychiatry_clerkship_qbank.apkg", qbank)
+    shutil.copy2(seed_source / "psychiatry_clerkship_ms3_complete.apkg", combined)
+    import pcl_anki.release as release_module
+
+    monkeypatch.setattr(
+        release_module,
+        "_LEGACY_FIXTURE_SHA256",
+        {
+            qbank.name: sha256(qbank.read_bytes()).hexdigest(),
+            combined.name: sha256(combined.read_bytes()).hexdigest(),
+        },
+    )
+    return prior
+
+
 def test_authoring_writes_closed_review_candidate_and_only_internal_pilot_output(
     passing_release_factory, tmp_path
 ):
@@ -372,10 +520,14 @@ def test_prepare_writes_inspected_candidate_then_closed_mechanical_proposal(
     baseline = HistoryRegistry((), ())
     baseline_path = tmp_path / "baseline.json"
     baseline_path.write_bytes(history_bytes(baseline))
-    prior = tmp_path / "prior"
-    prior.mkdir()
-    shutil.copy2(legacy_qbank_path, prior / legacy_qbank_path.name)
-    shutil.copy2(legacy_all_path, prior / legacy_all_path.name)
+    seed_candidate = evaluate_release(
+        inputs,
+        build_epoch=1784059200,
+        evaluation_date=date(2026, 7, 14),
+        profile="prepare",
+        baseline_history=baseline,
+    )
+    prior = _accounted_legacy_seed(seed_candidate, tmp_path, monkeypatch)
     out = tmp_path / "candidate"
     review = tmp_path / "review"
     monkeypatch.chdir(tmp_path)
@@ -410,21 +562,25 @@ def test_prepare_writes_inspected_candidate_then_closed_mechanical_proposal(
 
 
 def test_release_requires_exact_new_history_append_and_emits_no_proposal(
-    passing_release_factory, legacy_qbank_path, legacy_all_path, tmp_path
+    passing_release_factory, legacy_qbank_path, legacy_all_path, tmp_path, monkeypatch
 ):
     bundle = passing_release_factory()
     baseline = HistoryRegistry((), ())
     baseline_path = tmp_path / "baseline.json"
     baseline_path.write_bytes(history_bytes(baseline))
-    prior = tmp_path / "prior"
-    prior.mkdir()
-    shutil.copy2(legacy_qbank_path, prior / legacy_qbank_path.name)
-    shutil.copy2(legacy_all_path, prior / legacy_all_path.name)
     prepare_review = tmp_path / "prepare-review"
     base_inputs = _profile_inputs(
         bundle,
         release_history={"schemaVersion": 1, "identityEntries": [], "releases": []},
     )
+    seed_candidate = evaluate_release(
+        base_inputs,
+        build_epoch=1784059200,
+        evaluation_date=date(2026, 7, 14),
+        profile="prepare",
+        baseline_history=baseline,
+    )
+    prior = _accounted_legacy_seed(seed_candidate, tmp_path, monkeypatch)
     run_profile(
         base_inputs,
         profile="prepare",
@@ -528,21 +684,162 @@ def test_release_requires_exact_new_history_append_and_emits_no_proposal(
         assert [issue.code for issue in race.issues] == ["MIGRATION_PROOF_FAILED"]
 
 
-def test_release_rejects_partial_history_match(
+def test_migration_rejects_extra_seed_note_in_first_predecessor_redeploy_and_race(
+    passing_release_factory,
+    legacy_qbank_path,
+    legacy_all_path,
+    tmp_path,
+    monkeypatch,
+):
+    bundle = passing_release_factory()
+    empty = HistoryRegistry((), ())
+    empty_path = tmp_path / "empty-history.json"
+    empty_path.write_bytes(history_bytes(empty))
+    first_inputs = _profile_inputs(
+        bundle,
+        release_history={"schemaVersion": 1, "identityEntries": [], "releases": []},
+    )
+    seed_candidate = evaluate_release(
+        first_inputs,
+        build_epoch=1784059200,
+        evaluation_date=date(2026, 7, 14),
+        profile="prepare",
+        baseline_history=empty,
+    )
+    legacy = _accounted_legacy_seed(seed_candidate, tmp_path, monkeypatch)
+    first_out = tmp_path / "first"
+    first_review = tmp_path / "first-review"
+    first_candidate = run_profile(
+        first_inputs,
+        profile="prepare",
+        out=first_out,
+        review_out=first_review,
+        baseline_history=empty,
+        history_baseline_path=empty_path,
+        prior_release_dir=legacy,
+        evaluation_date=date(2026, 7, 14),
+    )
+    append = json.loads(
+        (first_review / "release_history.proposal.json").read_text()
+    )["historyAppend"]
+    reviewed = HistoryRegistry(
+        tuple(append["newIdentityEntries"]), (append["releaseRecord"],)
+    )
+
+    second_config = deepcopy(first_inputs.release_config)
+    second_config.update(
+        releaseId="synthetic-task9-release-2",
+        releaseDate="2026-07-15",
+        releaseEpoch=1784145600,
+    )
+    second_inputs = SimpleNamespace(
+        **{
+            **vars(first_inputs),
+            "release_config": second_config,
+            "release_history": history_to_dict(reviewed),
+        }
+    )
+    second_candidate = evaluate_release(
+        second_inputs,
+        build_epoch=1784145600,
+        evaluation_date=date(2026, 7, 15),
+        profile="prepare",
+        baseline_history=reviewed,
+    )
+    second_out = tmp_path / "second"
+    write_release(second_candidate, second_out)
+
+    import pcl_anki.release as release_module
+
+    original_import = release_module.import_package
+    call_count = 0
+
+    def import_with_extra_seed_note(collection, package):
+        nonlocal call_count
+        original_import(collection, package)
+        call_count += 1
+        if call_count % 4 != 1:
+            return
+        model = collection.models.all()[0]
+        note = collection.new_note(model)
+        note.guid = f"unexpectedSeedGuid{call_count}"
+        for field in note.keys():
+            note[field] = f"unexpected governed seed content {field}"
+        collection.add_note(note, collection.decks.id("Unexpected Seed"))
+
+    monkeypatch.setattr(release_module, "import_package", import_with_extra_seed_note)
+    scenarios = (
+        ("first", legacy, first_out, empty, empty, first_candidate),
+        (
+            "predecessor",
+            first_out,
+            second_out,
+            reviewed,
+            reviewed,
+            second_candidate,
+        ),
+        ("redeploy", first_out, first_out, reviewed, reviewed, first_candidate),
+        ("race", first_out, first_out, empty, reviewed, first_candidate),
+    )
+    for label, prior, candidate_dir, baseline, current, candidate in scenarios:
+        result = run_candidate_migration(
+            prior, candidate_dir, baseline, current, candidate
+        )
+        assert [issue.code for issue in result.issues] == [
+            "MIGRATION_PROOF_FAILED"
+        ], label
+
+
+def test_first_launch_blocks_unaccounted_frozen_legacy_all_notes(
     passing_release_factory, legacy_qbank_path, legacy_all_path, tmp_path
+):
+    bundle = passing_release_factory()
+    empty = HistoryRegistry((), ())
+    inputs = _profile_inputs(
+        bundle,
+        release_history={"schemaVersion": 1, "identityEntries": [], "releases": []},
+    )
+    candidate = evaluate_release(
+        inputs,
+        build_epoch=1784059200,
+        evaluation_date=date(2026, 7, 14),
+        profile="prepare",
+        baseline_history=empty,
+    )
+    candidate_dir = tmp_path / "candidate"
+    write_release(candidate, candidate_dir)
+    prior = tmp_path / "frozen-legacy"
+    prior.mkdir()
+    shutil.copy2(legacy_qbank_path, prior / legacy_qbank_path.name)
+    shutil.copy2(legacy_all_path, prior / legacy_all_path.name)
+
+    result = run_candidate_migration(
+        prior, candidate_dir, empty, empty, candidate
+    )
+
+    assert [issue.code for issue in result.issues] == ["MIGRATION_PROOF_FAILED"]
+    assert "absent from the candidate" in result.issues[0].message
+
+
+def test_release_rejects_partial_history_match(
+    passing_release_factory, tmp_path, monkeypatch
 ):
     bundle = passing_release_factory()
     baseline = HistoryRegistry((), ())
     baseline_path = tmp_path / "baseline.json"
     baseline_path.write_bytes(history_bytes(baseline))
-    prior = tmp_path / "prior"
-    prior.mkdir()
-    shutil.copy2(legacy_qbank_path, prior / legacy_qbank_path.name)
-    shutil.copy2(legacy_all_path, prior / legacy_all_path.name)
     inputs = _profile_inputs(
         bundle,
         release_history={"schemaVersion": 1, "identityEntries": [], "releases": []},
     )
+    candidate = evaluate_release(
+        inputs,
+        build_epoch=inputs.release_config["releaseEpoch"],
+        evaluation_date=date(2026, 7, 14),
+        profile="release",
+        baseline_history=baseline,
+    )
+    prior = _accounted_legacy_seed(candidate, tmp_path, monkeypatch)
     with pytest.raises(ReleaseOrchestrationError, match="history patch"):
         run_profile(
             inputs,
@@ -576,6 +873,27 @@ def test_prepare_rejects_future_config_date_against_utc_evaluation(
             prior_release_dir=tmp_path,
             evaluation_date=date(2026, 7, 14),
         )
+
+
+def test_backdated_release_date_cannot_bypass_current_utc_review_expiry(
+    passing_release_factory,
+):
+    bundle = passing_release_factory()
+    cards = deepcopy(bundle.cards)
+    cards[0]["risk"] = {"level": "High", "facets": ["SafetyCritical"]}
+    cards[0]["review"]["reviewDue"] = "2026-07-13"
+    inputs = _profile_inputs(bundle, cards=tuple(cards))
+    inputs.release_config["releaseDate"] = "2026-01-01"
+
+    candidate = evaluate_release(
+        inputs,
+        build_epoch=1784059200,
+        evaluation_date=date(2026, 7, 14),
+        profile="prepare",
+        baseline_history=HistoryRegistry((), ()),
+    )
+
+    assert any(issue.code == "REVIEW_EXPIRED" for issue in candidate.issues)
 
 
 def test_prepare_rejects_authoring_date_and_epoch_overrides(
