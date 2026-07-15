@@ -718,7 +718,11 @@ function App(){
     setE(function(prev){if(!prev)return prev;return Object.assign({},prev,{msgs:prev.msgs.concat([{who:'pt',text:result.reply,turnId:result.turnId,offline:!!isOffline}])});});
     announce((E&&E.caseDef?E.caseDef.persona.displayName:'Patient')+' replied: '+result.reply);
     setBusy(false);setActorIssue(null);
-    setTimeout(function(){acceptRenderedReply(result);},0);
+    setTimeout(function(){
+      acceptRenderedReply(result);
+      var limit=S.pack&&S.pack.engine&&(S.pack.engine.maxTurns||40),atLimit=E&&E.session.turns.length>=limit;
+      if(S.screen==='encounter'&&!atLimit&&composerRef.current){try{composerRef.current.focus();}catch(x){}}
+    },0);
   }
   function runOpening(provider,session,isOffline){
     setBusy(true);

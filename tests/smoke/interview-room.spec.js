@@ -403,6 +403,7 @@ test('voice mode is keyboard-operable and managed identity stays canonical acros
   await expect(page.getByLabel(/Your next words/i)).toHaveValue('Could you tell me more?');
   await page.getByRole('button', { name: 'Say it' }).click();
   await expect(page.locator('.msg.pt').filter({ hasText: PATIENT_REPLY })).toBeVisible();
+  await expect(page.getByLabel(/Your next words/i)).toBeFocused();
   await page.locator('.msg.pt').filter({ hasText: PATIENT_REPLY }).getByRole('button', { name: 'Stop' }).click();
   await page.getByRole('button', { name: 'End encounter' }).click();
   await expect(select).toBeDisabled();
