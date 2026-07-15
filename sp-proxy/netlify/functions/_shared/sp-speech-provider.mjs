@@ -184,18 +184,25 @@ async function withDeadline({ callerSignal, timeoutMs, timers }, operation) {
   const controller = new AbortController();
   let timedOut = false;
   let callerAborted = false;
+  let rejectBoundary;
+  const boundary = new Promise((_resolve, reject) => {
+    rejectBoundary = reject;
+  });
   const onCallerAbort = () => {
     callerAborted = true;
     controller.abort();
+    rejectBoundary(safeError('cancelled'));
   };
   callerSignal?.addEventListener('abort', onCallerAbort, { once: true });
   const timeoutId = timers.setTimeout(() => {
     timedOut = true;
     controller.abort();
+    rejectBoundary(safeError('timeout'));
   }, timeoutMs);
+  const providerOperation = Promise.resolve().then(() => operation(controller.signal));
 
   try {
-    return await operation(controller.signal);
+    return await Promise.race([providerOperation, boundary]);
   } catch (error) {
     if (timedOut) throw safeError('timeout');
     if (callerAborted || callerSignal?.aborted) throw safeError('cancelled');

@@ -488,6 +488,39 @@ test('caller abort and the single internal deadline compose without retry and al
   }
 });
 
+test('caller abort and timeout win even when injected fetch ignores the abort signal', async () => {
+  for (const mode of ['caller', 'timeout']) {
+    const timers = createTimers();
+    let resolveFetch;
+    const network = createFetch([
+      () => new Promise((resolve) => { resolveFetch = resolve; }),
+    ]);
+    const provider = createSpeechProvider({
+      stack: openAiStack(),
+      fetchImpl: network.fetchImpl,
+      readApiKey: () => SENTINEL_KEY,
+      timeoutMs: 45_000,
+      timers: timers.api,
+    });
+    const adapter = await provider.prepare();
+    const caller = new AbortController();
+    const pending = adapter.transcribe({ ...audioInput(), signal: caller.signal });
+    await Promise.resolve();
+    if (mode === 'caller') caller.abort();
+    else timers.fire();
+    resolveFetch(jsonResponse({ text: 'must not succeed', language: 'en', duration: 1 }));
+    await assert.rejects(
+      pending,
+      (error) => assertOperationalError(error, {
+        status: mode === 'caller' ? 499 : 504,
+        code: mode === 'caller' ? 'request_cancelled' : 'speech_provider_timeout',
+      }),
+    );
+    assert.equal(network.calls.length, 1);
+    assert.equal(timers.pendingCount, 0);
+  }
+});
+
 test('successful calls clear the internal deadline', async () => {
   const timers = createTimers();
   const { adapter } = await prepared({
