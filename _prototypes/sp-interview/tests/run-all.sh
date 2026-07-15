@@ -10,4 +10,6 @@ echo "── tab-scoped credential storage ──"; node storage.test.mjs
 echo "── locked-content leak check (both cases) ──"; node leak.test.mjs
 echo "── generated preview reproducibility ──"; node preview.test.mjs
 echo "── Dana harness failure propagation ──"; node harness-exit.test.mjs
+echo "── deterministic voice state ──"; node --test voice-state.test.mjs
+echo "── managed voice contracts ──"; node --test voice-contract.test.mjs
 echo "ALL SUITES PASSED"
