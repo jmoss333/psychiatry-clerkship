@@ -1,6 +1,10 @@
 import { getStore } from '@netlify/blobs';
 
-import { createBudgetLedger } from './_shared/sp-budget.mjs';
+import {
+  createBudgetLedger,
+  SP_USAGE_NAMESPACE,
+  SP_USAGE_STORE_NAME,
+} from './_shared/sp-budget.mjs';
 import * as productionGovernance from './_shared/sp-governance.mjs';
 import { createHttp, operationalError, readEnv } from './_shared/sp-http.mjs';
 import { inspectAudio } from './_shared/sp-audio-metadata.mjs';
@@ -365,7 +369,7 @@ async function readBoundedAudio(request) {
   }
 
   const reader = request.body.getReader();
-  const chunks = [];
+  const audio = new Uint8Array(MAX_AUDIO_BYTES);
   let length = 0;
   try {
     while (true) {
@@ -385,24 +389,22 @@ async function readBoundedAudio(request) {
         await cancelReader(reader);
         throw operationalError(422, 'invalid_audio', 'The audio file is invalid.');
       }
-      length += item.value.byteLength;
-      if (length > MAX_AUDIO_BYTES) {
+      if (item.value.byteLength === 0) {
+        await cancelReader(reader);
+        throw operationalError(422, 'invalid_audio', 'The audio file is invalid.');
+      }
+      if (item.value.byteLength > MAX_AUDIO_BYTES - length) {
         await cancelReader(reader);
         throw audioTooLarge();
       }
-      chunks.push(item.value);
+      audio.set(item.value, length);
+      length += item.value.byteLength;
     }
   } finally {
     reader.releaseLock();
   }
   if (request.signal.aborted) throw requestCancelled();
-  const audio = new Uint8Array(length);
-  let offset = 0;
-  for (const chunk of chunks) {
-    audio.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return audio;
+  return audio.slice(0, length);
 }
 
 function rejectOversizedSynthesisLength(request) {
@@ -417,7 +419,7 @@ async function readSynthesisJson(request) {
   if (request.signal.aborted) throw requestCancelled();
   if (!request.body || typeof request.body.getReader !== 'function') throw invalidSpeechRequest();
   const reader = request.body.getReader();
-  const chunks = [];
+  const encoded = new Uint8Array(MAX_SYNTHESIS_BODY_BYTES);
   let length = 0;
   try {
     while (true) {
@@ -437,25 +439,25 @@ async function readSynthesisJson(request) {
         await cancelReader(reader);
         throw invalidSpeechRequest();
       }
-      length += item.value.byteLength;
-      if (length > MAX_SYNTHESIS_BODY_BYTES) {
+      if (item.value.byteLength === 0) {
+        await cancelReader(reader);
+        throw invalidSpeechRequest();
+      }
+      if (item.value.byteLength > MAX_SYNTHESIS_BODY_BYTES - length) {
         await cancelReader(reader);
         throw synthesisBodyTooLarge();
       }
-      chunks.push(item.value);
+      encoded.set(item.value, length);
+      length += item.value.byteLength;
     }
   } finally {
     reader.releaseLock();
   }
   if (request.signal.aborted) throw requestCancelled();
-  const encoded = new Uint8Array(length);
-  let offset = 0;
-  for (const chunk of chunks) {
-    encoded.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
   try {
-    const value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(encoded));
+    const value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(
+      encoded.subarray(0, length),
+    ));
     if (
       !value
       || typeof value !== 'object'
@@ -941,8 +943,8 @@ function createProductionVoiceHandler() {
     timeoutMs: 45_000,
   });
   const budget = ({ snapshot }) => createBudgetLedger({
-    store: getStore({ name: 'sp-usage', consistency: 'strong' }),
-    namespace: 'managed-voice',
+    store: getStore({ name: SP_USAGE_STORE_NAME, consistency: 'strong' }),
+    namespace: SP_USAGE_NAMESPACE,
     rotationId: configValue.rotationId,
     capMicros: 20_000_000,
     warningMicros: 16_000_000,

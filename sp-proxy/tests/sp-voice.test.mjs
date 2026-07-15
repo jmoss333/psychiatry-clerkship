@@ -776,6 +776,70 @@ test('actual streaming bytes enforce the exact 4 MiB boundary and cancel overflo
   assert.equal(boundaryHarness.budgetSpy.calls.length, 0);
 });
 
+test('300,000 one-byte audio chunks stay within a 64 MiB heap before media rejection', async () => {
+  const harness = enabledHandler();
+  let emitted = 0;
+  const body = new ReadableStream({
+    pull(controller) {
+      if (emitted >= 300_000) {
+        controller.close();
+        return;
+      }
+      controller.enqueue(Uint8Array.of(0));
+      emitted += 1;
+    },
+  });
+  const response = await harness.handler(transcribeRequest({ body }));
+  assert.equal(response.status, 415);
+  assert.equal(emitted, 300_000);
+  assert.deepEqual(harness.recordingProvider.calls, []);
+  assert.deepEqual(harness.budgetSpy.calls, []);
+});
+
+test('zero-progress audio and JSON chunks reject instead of extending stream work', async () => {
+  const audioHarness = enabledHandler();
+  const validAudio = wav();
+  let audioStep = 0;
+  const audioBody = new ReadableStream({
+    pull(controller) {
+      if (audioStep === 0) controller.enqueue(new Uint8Array());
+      else if (audioStep === 1) controller.enqueue(validAudio);
+      else controller.close();
+      audioStep += 1;
+    },
+  });
+  const audioResponse = await audioHarness.handler(transcribeRequest({ body: audioBody }));
+  assert.equal(audioResponse.status, 422);
+  assert.deepEqual(audioHarness.recordingProvider.calls, []);
+  assert.deepEqual(audioHarness.budgetSpy.calls, []);
+
+  const jsonHarness = enabledHandler();
+  const reply = '*looks away* Hello there.';
+  const codec = fixedTicketCodec();
+  const payload = new TextEncoder().encode(JSON.stringify({
+    reply,
+    ticket: ticketFor({ codec, reply }),
+  }));
+  let jsonStep = 0;
+  const jsonBody = new ReadableStream({
+    pull(controller) {
+      if (jsonStep === 0) controller.enqueue(new Uint8Array());
+      else if (jsonStep === 1) controller.enqueue(payload);
+      else controller.close();
+      jsonStep += 1;
+    },
+  });
+  const jsonResponse = await jsonHarness.handler(speakRequest({
+    codec,
+    reply,
+    body: jsonBody,
+  }));
+  assert.equal(jsonResponse.status, 400);
+  assert.equal((await errorBody(jsonResponse)).code, 'invalid_speech_request');
+  assert.deepEqual(jsonHarness.recordingProvider.calls, []);
+  assert.deepEqual(jsonHarness.budgetSpy.calls, []);
+});
+
 test('missing provider key and non-ok bands cause zero reservation or provider invocation', async () => {
   const missingRotation = enabledHandler({ config: { rotationId: '' } });
   const rotationResponse = await missingRotation.handler(transcribeRequest());

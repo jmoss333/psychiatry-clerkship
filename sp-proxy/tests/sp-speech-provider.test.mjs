@@ -97,6 +97,32 @@ function mp3Response(bytes = Uint8Array.of(0x49, 0x44, 0x33, 0x04, 0x00)) {
   return new Response(bytes, { headers: { 'content-type': 'audio/mpeg' } });
 }
 
+function oneByteChunkResponse(bytes, contentType) {
+  let offset = 0;
+  return new Response(new ReadableStream({
+    pull(controller) {
+      if (offset >= bytes.byteLength) {
+        controller.close();
+        return;
+      }
+      controller.enqueue(Uint8Array.of(bytes[offset]));
+      offset += 1;
+    },
+  }), { headers: { 'content-type': contentType } });
+}
+
+function zeroProgressResponse(bytes, contentType) {
+  let step = 0;
+  return new Response(new ReadableStream({
+    pull(controller) {
+      if (step === 0) controller.enqueue(new Uint8Array());
+      else if (step === 1) controller.enqueue(bytes);
+      else controller.close();
+      step += 1;
+    },
+  }), { headers: { 'content-type': contentType } });
+}
+
 function createFetch(responses) {
   const queue = [...responses];
   const calls = [];
@@ -561,6 +587,35 @@ test('non-2xx and network failures are one safe provider error with no key, body
   }
 });
 
+test('non-2xx provider responses cancel unread bodies without leaking provider content', async () => {
+  let cancelCalls = 0;
+  let pulls = 0;
+  const response = new Response(new ReadableStream({
+    pull(controller) {
+      pulls += 1;
+      controller.enqueue(new TextEncoder().encode(SENTINEL_BODY));
+    },
+    cancel() {
+      cancelCalls += 1;
+    },
+  }), {
+    status: 500,
+    headers: { 'content-type': 'text/plain' },
+  });
+  const { adapter } = await prepared({ responses: [response] });
+  await assert.rejects(
+    adapter.transcribe(audioInput()),
+    (error) => {
+      assertOperationalError(error, { status: 502, code: 'speech_provider_error' });
+      assert.doesNotMatch(error.message, /provider-secret|secret-body/i);
+      return true;
+    },
+  );
+  assert.equal(cancelCalls, 1);
+  assert.equal(pulls <= 1, true);
+  assert.equal(response.body.locked, false);
+});
+
 test('OpenAI transcription accepts absent optional usage but requires language and duration-typed usage', async () => {
   const withoutUsage = await prepared({
     responses: [jsonResponse({ text: 'Test.', language: 'en', duration: 8.47 })],
@@ -609,6 +664,23 @@ test('transcription requires bounded JSON and validated text, duration, and usag
   }
 });
 
+test('200,000 one-byte JSON chunks stay within a 64 MiB heap through the full adapter', async () => {
+  const value = {
+    text: 'Tiny chunks still produce one transcript.',
+    language: 'en',
+    duration: 8.47,
+    usage: { type: 'duration', seconds: 9 },
+  };
+  const json = JSON.stringify(value).padEnd(200_000, ' ');
+  const response = oneByteChunkResponse(new TextEncoder().encode(json), 'application/json');
+  const { adapter } = await prepared({ responses: [response] });
+  assert.deepEqual(await adapter.transcribe(audioInput()), {
+    text: value.text,
+    durationMilliseconds: 8_470,
+    usage: { milliseconds: 9_000 },
+  });
+});
+
 test('ElevenLabs transcription rejects malformed word timing and never treats it as trusted usage', async () => {
   for (const words of [[], [{ start: 1, end: 0.5 }], [{ start: 0, end: 'secret' }]]) {
     const { adapter } = await prepared({
@@ -646,6 +718,43 @@ test('synthesis streams at most 10 MiB and validates type, nonempty body, and MP
   }
   assert.equal(cancelled, true);
   assert.equal(AUDIO_LIMIT, 10_485_760);
+});
+
+test('300,000 one-byte MP3 chunks stay within a 64 MiB heap through the full adapter', async () => {
+  const audio = new Uint8Array(300_000);
+  audio.set(Uint8Array.of(0x49, 0x44, 0x33), 0);
+  const response = oneByteChunkResponse(audio, 'audio/mpeg');
+  const { adapter } = await prepared({ responses: [response] });
+  const result = await adapter.synthesize({ text: 'Safe text.', profile: openAiProfile() });
+  assert.equal(result.audio.byteLength, 300_000);
+  assert.deepEqual(result.audio.subarray(0, 3), Uint8Array.of(0x49, 0x44, 0x33));
+  assert.deepEqual(result.usage, { characters: 10 });
+});
+
+test('zero-progress provider JSON and audio chunks fail closed', async () => {
+  const transcript = new TextEncoder().encode(JSON.stringify({
+    text: 'This must not be accepted after an empty chunk.',
+    language: 'en',
+    duration: 1,
+  }));
+  const transcriber = await prepared({
+    responses: [zeroProgressResponse(transcript, 'application/json')],
+  });
+  await assert.rejects(
+    transcriber.adapter.transcribe(audioInput()),
+    (error) => assertOperationalError(error, { status: 502, code: 'speech_provider_error' }),
+  );
+
+  const synthesizer = await prepared({
+    responses: [zeroProgressResponse(
+      Uint8Array.of(0x49, 0x44, 0x33, 0x04, 0x00),
+      'audio/mpeg',
+    )],
+  });
+  await assert.rejects(
+    synthesizer.adapter.synthesize({ text: 'Safe text.', profile: openAiProfile() }),
+    (error) => assertOperationalError(error, { status: 502, code: 'speech_provider_error' }),
+  );
 });
 
 test('the adapter never falls through to global network access', async () => {

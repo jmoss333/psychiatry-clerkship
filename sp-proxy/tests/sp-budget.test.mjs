@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import test from 'node:test';
 
-import { createBudgetLedger } from '../netlify/functions/_shared/sp-budget.mjs';
+import {
+  createBudgetLedger,
+  SP_USAGE_NAMESPACE,
+  SP_USAGE_STORE_NAME,
+} from '../netlify/functions/_shared/sp-budget.mjs';
 import { createFakeBlobStore } from './helpers/fake-blob-store.mjs';
 
 const NOW_MS = Date.parse('2026-07-14T12:00:00.000Z');
@@ -15,6 +19,11 @@ const OPENAI_TTS_RATE_KEY = Object.freeze({ provider: 'openai', model: 'tts-1-hd
 const ELEVEN_TTS_RATE_KEY = Object.freeze({
   provider: 'elevenlabs',
   model: 'eleven_multilingual_v2',
+});
+
+test('actor and voice operations share one production store and namespace', () => {
+  assert.equal(SP_USAGE_STORE_NAME, 'sp-usage');
+  assert.equal(SP_USAGE_NAMESPACE, 'managed-voice');
 });
 
 const RATE_CARD = Object.freeze({

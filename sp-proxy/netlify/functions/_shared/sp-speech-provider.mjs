@@ -315,7 +315,11 @@ async function providerFetch(fetchImpl, url, options) {
   } catch {
     throw safeError('provider');
   }
-  if (!(response instanceof Response) || !response.ok) throw safeError('provider');
+  if (!(response instanceof Response)) throw safeError('provider');
+  if (!response.ok) {
+    await cancelBody(response);
+    throw safeError('provider');
+  }
   return response;
 }
 
@@ -340,31 +344,29 @@ async function readBounded(response, maximumBytes) {
   if (!response.body || typeof response.body.getReader !== 'function') throw safeError('provider');
 
   const reader = response.body.getReader();
-  const chunks = [];
+  const combined = new Uint8Array(maximumBytes);
   let total = 0;
   try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      if (!(value instanceof Uint8Array)) throw safeError('provider');
-      total += value.byteLength;
-      if (total > maximumBytes) {
+      if (!(value instanceof Uint8Array) || value.byteLength === 0) {
         try { await reader.cancel(); } catch { /* discard provider details */ }
         throw safeError('provider');
       }
-      chunks.push(value);
+      if (value.byteLength > maximumBytes - total) {
+        try { await reader.cancel(); } catch { /* discard provider details */ }
+        throw safeError('provider');
+      }
+      combined.set(value, total);
+      total += value.byteLength;
     }
   } catch {
     throw safeError('provider');
+  } finally {
+    reader.releaseLock();
   }
-
-  const combined = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    combined.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return combined;
+  return combined.slice(0, total);
 }
 
 async function readJson(response) {
