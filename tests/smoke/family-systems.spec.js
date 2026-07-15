@@ -28,7 +28,16 @@ test('practice mode reveal + self-rate writes one FAM# card and stores no free t
   const raw = await page.evaluate(() => window.localStorage.getItem('cw_srs_v1'));
   expect(raw).not.toMatch(/opening line|collateral question|trap/i); // scheduling metadata only
 
-  // Reference mode still renders the original checklist
+  // Regression: switching scenarios via a filter must not leak graded state.
+  // revealed/graded are keyed by shared prompt id, so a filter-driven auto-switch
+  // (ensureCurrentVisible) must reset them or the new scenario falsely reads "already reviewed".
+  await page.getByRole('button', { name: /^Meeting/ }).click(); // excludes the default (collateral) scenario → auto-switches
+  await expect(page.locator('.pcard .pdone')).toHaveCount(0); // newly-shown scenario is not falsely graded
+  await expect(page.getByRole('button', { name: /reveal one way/i }).first()).toBeVisible();
+
+  // Reference mode renders the original checklist AND the reference sections, not the practice UI
   await page.getByRole('button', { name: 'Reference mode' }).click();
   await expect(page.getByText(/before you call it done/i)).toBeVisible();
+  await expect(page.locator('.practice')).toHaveCount(0);
+  await expect(page.locator('.section').first()).toBeVisible();
 });
