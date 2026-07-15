@@ -5,6 +5,8 @@ name: CI — build, test, validate
 # breakage turns a PR red instead of only surfacing at deploy time.
 on:
   pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
