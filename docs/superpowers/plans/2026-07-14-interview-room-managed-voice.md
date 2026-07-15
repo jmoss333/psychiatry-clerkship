@@ -302,13 +302,13 @@ Use `measured-flat`/`0.95` for Dana, `pressured-fast`/`1.15` for Marcus, and
 `guarded-halting`/`0.85` for Ray.
 
 Candidate IDs are `openai-quality-v1` (`whisper-1` plus `tts-1-hd`) and
-`elevenlabs-expressive-v1` (`scribe_v2` plus `eleven_multilingual_v3`). The pending privacy record
+`elevenlabs-expressive-v1` (`scribe_v2` plus `eleven_v3`). The pending privacy record
 contains empty policy URL/hash arrays, null reviewer/review/next-review dates, decision `pending`, and
 consent version `2026-07-14-draft`; these explicit missing values keep managed voice ineligible.
 
 The July 14 planning rates are explicit operational inputs: Haiku 4.5 `$1/M` input and `$5/M`
 output tokens; OpenAI TTS-1 HD `$30/M` characters; Whisper `$0.006/minute`; ElevenLabs
-Multilingual v2/v3 `$0.10/1K` characters; and Scribe v2 `$0.22/hour`. Store source URLs and an
+Multilingual v2/Eleven v3 `$0.10/1K` characters; and Scribe v2 `$0.22/hour`. Store source URLs and an
 effective date. A runtime model absent from this exact rate card fails before provider work.
 
 - [ ] **Step 4: Reconcile and enforce attestation**
@@ -799,37 +799,117 @@ git commit -m "feat(sp-proxy): enforce atomic rotation budget"
 
 **Files:**
 
+- Modify: `sp-proxy/netlify/functions/_shared/sp-http.mjs`
+- Modify: `sp-proxy/netlify/functions/_shared/sp-speech-ticket.mjs`
+- Create: `sp-proxy/netlify/functions/_shared/sp-audio-metadata.mjs`
 - Create: `sp-proxy/netlify/functions/_shared/sp-speech-provider.mjs`
 - Create: `sp-proxy/netlify/functions/sp-voice.mjs`
+- Modify: `sp-proxy/tests/sp-http.test.mjs`
+- Modify: `sp-proxy/tests/sp-speech-ticket.test.mjs`
+- Create: `sp-proxy/tests/sp-audio-metadata.test.mjs`
 - Create: `sp-proxy/tests/helpers/fake-speech-provider.mjs`
 - Create: `sp-proxy/tests/sp-speech-provider.test.mjs`
 - Create: `sp-proxy/tests/sp-voice.test.mjs`
+- Modify: `_prototypes/sp-interview/sp-interview.pack.json`
+- Generate: `_prototypes/sp-interview/sp-interview.preview.html`
 
 **Interfaces:**
 
 ```javascript
 provider.transcribe({ audio, mimeType, signal });
-// => { text, durationSeconds, usage: { seconds } }
+// => { text, durationMilliseconds, usage: { milliseconds } | null }
 provider.synthesize({ text, profile, signal });
 // => { audio: Uint8Array, contentType: 'audio/mpeg', usage: { characters } }
 
-createSpeechProvider({ stack, fetchImpl, apiKeys });
-createVoiceHandler({ http, packLoader, governance, ticketCodec, redemption, budget, provider, config });
+createSpeechProvider({ stack, fetchImpl, readApiKey, timeoutMs: 45000, timers });
+createVoiceHandler({ http, packLoader, governance, ticketCodec, budget, provider, config });
 ```
+
+The Task 5 operation record is the **single** synthesis redemption and provider-start authority. Its
+stable idempotency key is fixed-key canonical JSON over
+`{schemaVersion:1,rotationId,encounterId,turnId,caseId,operation:'synthesis',jti}`. Do not compose the
+separate Task 4 redemption record with the budget record: two independent Blob CAS writes cannot
+create one atomic permission.
+Map an active duplicate to `speech_in_progress` and a terminal duplicate to
+`speech_already_redeemed`. Only `markProviderStarted(...).authorized === true` permits a provider
+call.
+
+Transcription uses a separate browser-generated 128-bit base64url `captureId` for each newly
+recorded blob. Network retries of the same bytes reuse it; a new recording gets a new ID. The
+operation key binds fixed-key canonical JSON over
+`{schemaVersion:1,rotationId,encounterId,turnId,caseId,operation:'transcription',captureId}`. Raw
+logical keys are hashed by the ledger and never stored.
 
 - [ ] **Step 1: Write red provider tests**
 
-Test deterministic fake transcripts/audio, exact usage units, invocation counts, configurable
-provider errors, 50-second abort, OpenAI request shape, ElevenLabs request shape, and absence of keys
-from returned errors.
+First correct the draft ElevenLabs candidate and rate-card model from nonexistent
+`eleven_multilingual_v3` to the current official ID `eleven_v3`, increment the planning rate-card
+version/effective date, regenerate the preview, and keep engine/profile/privacy status pending. Add
+null `voiceProvenance` and `adapterMappingVersion` fields that are permitted only for draft profiles;
+reviewed profiles require attested values. Add a test that rejects unknown provider/model pairs and
+locks both candidate IDs.
+
+Test deterministic fake transcripts/audio, integer-millisecond usage, invocation counts,
+configuration/input validation, caller abort, one 45-second timeout, response-size limits, malformed
+JSON/audio, non-2xx responses, and absence of keys/provider bodies from returned errors. Assert no
+retry and exact request shapes:
+
+- OpenAI Whisper uses `POST /v1/audio/transcriptions`, multipart file/model,
+  `response_format:'verbose_json'`, and validates text, duration, and duration usage.
+- OpenAI TTS-1 HD uses `POST /v1/audio/speech`, exact reviewed model/voice, `input`,
+  `response_format:'mp3'`, and reviewed speaking speed; it rejects input over 4096 characters.
+- ElevenLabs Scribe v2 uses `POST /v1/speech-to-text`, multipart `file` plus `model_id`, disables
+  optional diarization/audio-event tagging/webhooks, and uses `enable_logging=false` only when that
+  zero-retention entitlement is explicitly pinned by reviewed runtime configuration. Word timing may
+  provide display duration, but because the response does not prove total billable audio duration,
+  usage is `null` unless a reviewed trustworthy meter is present.
+- Eleven v3 uses `POST /v1/text-to-speech/{encodedVoiceId}`, `model_id:'eleven_v3'`, MP3 output,
+  and only supported reviewed voice settings. Reject speaking speed above ElevenLabs' supported
+  `1.2`; never clamp or rewrite an attested profile silently.
+
+Neither provider adapter adds cadence words, audio tags, SSML, prompts, identifiers, or logging
+metadata to authored speech. Reject provider control syntax that could turn visual directions into
+unshown sound. Bind `cadence`, `speakingRate`, stock-voice provenance, and an attested adapter-mapping
+version into the frozen provider input. Runtime pins the stack/provider/models while each reviewed
+case profile pins its own voice. Bound synthesis request JSON to 16 KiB, transcription response JSON
+to 256 KiB, and returned audio to 10 MiB before accumulating them in memory.
 
 - [ ] **Step 2: Write red endpoint tests**
 
-Test health while disabled, health with reviewed fixtures, operations-key usage, accepted MIME list,
-`401`, origin `403`, case/profile `403`, MIME `415`, size `413`, budget `429`, storage `503`, timeout
-`504`, valid transcription, valid binary synthesis, altered ticket, and ten duplicate speech requests
-causing exactly one provider invocation. Concurrent duplicates return `speech_in_progress`; a retry
-after completion returns `speech_already_redeemed` and never starts another provider call.
+Create synthetic, content-free WAV, Ogg Opus, WebM Opus, and MP4 fixtures. Server-side parsing must
+sniff the declared container and derive a finite positive duration before any reservation/provider
+call. Test MIME spoofing, malformed/truncated metadata, empty audio, a 90-second boundary, and a
+greater-than-90-second file that remains under 4 MiB.
+
+Test health while disabled; deploy-preview hard disable; health with reviewed fixtures; warning
+band; operations-key usage; preflight headers; typed allowed-origin `401`; origin `403`; case/profile
+`403`; JSON/media type `415`; body `413`; duration `422`; budget `429`; storage `503`; timeout `504`;
+valid transcription; valid no-store binary synthesis; altered/expired/wrong-governance ticket; and
+ten duplicate requests causing exactly one provider invocation.
+
+The raw transcription request carries exact headers `x-sp-case-id`, `x-sp-encounter-id`,
+`x-sp-turn-id`, and `x-sp-capture-id`; validate bounded content-free IDs and a canonical 16-byte
+base64url capture ID. It sends the original raw allowlisted audio body, never base64 or FormData from
+the browser. The server independently checks actual bytes and container duration. Speak accepts an
+exact, size-bounded JSON object `{reply,ticket}` only.
+
+Add deterministic crash/interleaving tests before reservation, after reservation, during the
+provider-start CAS, after provider-start, after provider response, during settlement, and after
+settlement/before response. Ten concurrent identical synthesis calls must yield exactly one
+`authorized:true`, one provider call, and no overspend across process restart.
+Concurrent synthesis duplicates return `speech_in_progress`; a retry after either successful or
+failed terminal settlement returns `speech_already_redeemed`. Concurrent transcription duplicates
+return `transcription_in_progress`; a terminal retry returns `transcription_already_processed`.
+No lost response, abort, timeout, storage error, or retry may authorize a second provider call.
+
+Also lock these merge gates: same-blob retry versus new-capture behavior; one immutable pack snapshot
+despite attempted mutation; exact 4 MiB and 90,000 ms boundaries; malformed/missing `Content-Length`
+and streamed overflow; `8.47` seconds of display duration versus `9` seconds of billed use becoming
+`8470` versus `9000` ms; empty/wrong-type/oversized provider responses; caller abort at every ledger
+phase; disabled, pending-review, warning, capped, preview, missing-key, and missing-rotation paths
+making zero provider calls; the full method/CORS/cache matrix; and sentinel key/transcript/audio text
+absent from errors, logs, Blob writes, and usage. Install a test-level network deny so every provider
+call is injected and no live credential can be reached.
 
 - [ ] **Step 3: Verify red**
 
@@ -842,26 +922,64 @@ node --test sp-proxy/tests/sp-voice.test.mjs
 
 - [ ] **Step 4: Implement providers and route**
 
-Use native `fetch`, `FormData`, `Blob`, and `AbortSignal`. Accept only `audio/webm`,
-`audio/webm;codecs=opus`, `audio/mp4`, `audio/ogg`, and `audio/wav`. Count actual bytes and reject
-above `4194304` before reservation. Export:
+Use native `fetch`, `FormData`, `Blob`, and composed `AbortSignal`s. Accept only `audio/webm`,
+`audio/webm;codecs=opus`, `audio/mp4`, `audio/ogg`, and `audio/wav`. Treat `Content-Length` only as an
+early-rejection hint. Stream-read and count actual bytes, cancel immediately above `4194304`, and
+keep the bounded audio only in request-local memory released in `finally`. Before budget or provider
+work, `sp-audio-metadata.mjs` must sniff a matching container and derive a finite positive duration
+no greater than `90000` ms. Unknown, malformed, truncated, or MIME-mismatched media fails closed.
+
+Split ticket handling into two stages. `ticketCodec.authenticate({ticket,reply})` first verifies the
+canonical HMAC, schema, expiry, and exact reply and returns a frozen signed payload. Then load exactly
+one frozen pack snapshot, resolve the signed case, recompute eligibility, and assert the signed
+rotation, pack, attestation, profile, provider, model, voice, and adapter-mapping bindings against
+that same snapshot. Preserve the existing one-step `verify` helper for its established tests.
+
+Expose allowed-origin validation independently in `sp-http.mjs` so typed `401` responses retain CORS
+for an allowlisted learner origin while disallowed origins receive none. Student preflight permits
+only the exact content headers plus `x-sp-case-id`, `x-sp-encounter-id`, `x-sp-turn-id`, and
+`x-sp-capture-id`. Every JSON and audio response uses `Cache-Control:no-store` and
+`X-Content-Type-Options:nosniff`; the operations-only usage route emits no CORS headers and has no
+student preflight.
 
 Export the injected `createVoiceHandler(dependencies)`, a default handler constructed from production
-dependencies, and `config={path:'/api/sp/voice'}`. The handler routes only the four operations defined
-in the design; every other method/operation returns typed `405 method_not_allowed`.
+dependencies, and `config={path:'/api/sp/voice'}`. The exact matrix is student `GET` health, student
+`POST ?op=transcribe`, student `POST ?op=speak`, and operations-key `GET ?op=usage`; all other
+method/operation combinations return typed `405 method_not_allowed`.
 
-For synthesis, verify ticket and governance first, reserve the maximum budget, then atomically claim
-the `jti`. A duplicate claim releases the not-started reservation and returns the redemption ledger's
-stable code. Only after both reservation and claim succeed may the handler mark provider-started and
-invoke the provider. Settle the budget and mark redemption terminal on success or provider failure;
-a response loss or retry can never start a second synthesis call.
+For synthesis, finish authentication, the single frozen governance check, exact `spokenText`
+derivation, and bounded-input validation before budget work. Reject empty spoken text and provider
+control syntax. Reserve against the stable signed-JTI operation key; that Task 5 record atomically
+serves as both redemption and provider-start authority. An active duplicate maps to
+`speech_in_progress`; any terminal duplicate maps to `speech_already_redeemed`. Invoke the provider
+only when `markProviderStarted(reservation).authorized === true`. Settle exact characters durably
+before returning audio. On provider error or unknown use after authorization, settle
+`provider_failed` at the reserved maximum. If settlement is ambiguous, return `503` and leave the
+conservative `provider_started`/reserved state; a retry never starts a second provider call. Do not
+call the separate Task 4 redemption ledger from this endpoint.
 
-Production dependencies read `SP_MANAGED_VOICE_ENABLED` as false unless exactly `true`, use
-`getStore({name:'sp-usage', consistency:'strong'})`, and require an explicit non-identifying
-`SP_ROTATION_ID` whenever managed voice is enabled. Production fails closed rather than deriving a
-rotation from a passcode; local tests inject an explicit test rotation. Deploy previews never enable real speech.
-Health returns `warning` at $16; transcribe and speak reject new calls in that band while actor turns
-retain the remaining envelope.
+For transcription, validate bytes, container, duration, IDs, case governance, and warning band before
+reserving `90000` ms against the capture-bound key. Call `markProviderStarted` exactly once and invoke
+the provider only on `authorized:true`. Settle a trusted integer-millisecond usage value, or the full
+reserved maximum when provider usage is unknown. Before provider authorization, cancellation or
+validation failure calls `failBeforeProvider`; once provider-start authorization is attempted, an
+ambiguous write is never released. Timeout, abort, or provider error after authorization settles
+`provider_failed` at the reserved maximum. Durable settlement precedes any success response.
+
+Compose the caller signal with one internal 45-second deadline and clear timers in `finally`; there
+are no provider retries. Production enables real speech only when both `CONTEXT==='production'` and
+`SP_MANAGED_VOICE_ENABLED==='true'`, uses `getStore({name:'sp-usage',consistency:'strong'})`, and
+requires explicit non-identifying `SP_ROTATION_ID`. It never derives rotation identity from a
+passcode. Deploy previews remain disabled even if the flag is present.
+
+Read the active provider key lazily, only after every non-secret gate. The user-selected Voice Over
+OpenAI project credential is supplied only through server-side `OPENAI_API_KEY`; ElevenLabs uses
+`ELEVENLABS_API_KEY` only if that stack is later reviewed. Keys never enter source, fixtures, browser
+output, storage, logs, or test network calls. Zero-retention options may be sent only when the
+reviewed runtime records the account entitlement. Health requires student auth, returns an allowlist
+such as `{enabled,acceptingVoice,budgetBand}`, and does not need provider credentials while disabled.
+At the `$16` warning band it reports not accepting voice and rejects speech while preserving the
+remaining actor envelope; `$20` is the hard total cap.
 
 - [ ] **Step 5: Verify green**
 

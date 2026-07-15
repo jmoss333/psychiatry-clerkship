@@ -89,7 +89,7 @@ reviewed synthetic voice. This provides consistent speech without changing the c
 
 Estimated incremental speech cost is approximately $0.06–$0.28 per completed encounter depending
 on the provider selected in the audition. The budget baseline is OpenAI `tts-1-hd` plus
-`whisper-1`; ElevenLabs Multilingual v3 plus Scribe v2 is the higher-expression challenger.
+`whisper-1`; ElevenLabs Eleven v3 (`eleven_v3`) plus Scribe v2 is the higher-expression challenger.
 
 For the agreed 96-encounter high-use block, the planning envelope is:
 
@@ -184,9 +184,12 @@ comes first. The client requests a bounded recording bitrate and both client and
 oversized body before provider work. This fits the current synchronous Netlify Function request
 [payload and execution limits](https://docs.netlify.com/build/functions/configuration/); larger
 uploads require a different architecture and are out of scope. The endpoint forwards the transient
-body to the selected transcription provider and returns text plus duration metadata. It aborts
-provider work before 50 seconds so the current function cannot wait indefinitely. Neither the proxy
-nor the client persists the learner audio blob after the draft is produced.
+body to the selected transcription provider and returns text plus duration metadata. Before any
+billable work, the server independently counts the body, sniffs the declared media container, and
+derives a finite duration no greater than 90 seconds; client claims and `Content-Length` are never
+authoritative. It aborts provider work before 45 seconds so durable accounting can finish within the
+current function window. Neither the proxy nor the client persists the learner audio blob after the
+draft is produced.
 
 The learner sees the transcript in the existing textarea, edits it if needed, and presses **Say
 it**. The existing PHI heuristic runs against the final draft before the actor request. Because audio
@@ -216,11 +219,13 @@ a short-lived speech ticket containing:
 The ticket prevents the browser from turning the faculty-funded endpoint into an arbitrary
 text-to-speech service. The voice endpoint requires both the rotation passcode and a valid ticket,
 recomputes the reply digest, verifies the exact reviewed attestation and pack/profile hashes, and
-refuses expired or altered text. It atomically marks the `jti` before provider work; a duplicate or
-concurrent redemption returns a stable `speech_in_progress` or `speech_already_redeemed` response
-and never causes a second provider call. If a response is lost after redemption, text remains the
-fallback rather than billing again. Replay is client-cached, so the normal interface consumes one
-synthesis call per patient turn.
+refuses expired or altered text. One strongly consistent budget operation, keyed by the signed
+`jti`, atomically owns redemption, provider-start permission, and settlement. The endpoint does not
+compose a second redemption record because two independent writes cannot form one crash-safe
+permission. A duplicate or concurrent redemption returns a stable `speech_in_progress` or
+`speech_already_redeemed` response and never causes a second provider call. If a response is lost
+after redemption, text remains the fallback rather than billing again. Replay is client-cached, so
+the normal interface consumes one synthesis call per patient turn.
 
 The governed opening line needs the same protection. Starting a live encounter sends
 `{caseId, mode:"open"}` to `/api/sp`; the server reads the reviewed opening from its canonical pack
@@ -278,9 +283,11 @@ Each case receives a `speechProfile` with these required properties:
 | `status` | `draft-pending-attestation` or `reviewed` |
 | `provider` | `openai` or `elevenlabs`, selected by the audition |
 | `providerModel` | Exact pinned model string |
-| `voiceId` | Exact stock synthetic voice identifier |
+| `voiceId` | Exact case-specific stock synthetic voice identifier |
+| `voiceProvenance` | Reviewed evidence that the identifier is provider stock, not cloned |
 | `cadence` | One of `measured-flat`, `pressured-fast`, or `guarded-halting` |
 | `speakingRate` | Numeric provider-neutral target, validated to `0.75` through `1.25` |
+| `adapterMappingVersion` | Attested version of the cadence-to-provider settings mapping |
 | `stageDirections` | Required value `visual-only` |
 | `profileVersion` | Positive integer incremented for any acoustic behavior change |
 | `facultyReview` | Status, reviewer, review date, audition record, and SHA-256 profile hash |
@@ -294,7 +301,8 @@ may supply credentials and feature flags but may not silently override an attest
 Before production integration is enabled, compare these current paired speech stacks:
 
 - Budget baseline: OpenAI `tts-1-hd` for synthesis and `whisper-1` for transcription.
-- Expressive challenger: ElevenLabs Multilingual v3 for synthesis and Scribe v2 for transcription.
+- Expressive challenger: ElevenLabs Eleven v3 (`eleven_v3`) for synthesis and Scribe v2 for
+  transcription.
 
 Create a blind randomized set of twelve fictional clips: for each of Dana, Marcus, and Ray, use one
 opening line, one neutral response, one emotionally loaded response, and one safety disclosure from
@@ -519,7 +527,7 @@ This is the expected change surface; the implementation plan will specify exact 
 | `sp-proxy/netlify/functions/sp.mjs` | Existing actor plus speech-ticket issuance and usage metadata |
 | `sp-proxy/netlify/functions/sp-voice.mjs` | Bounded transcription, signed synthesis, health, and cost bands |
 | `sp-proxy/netlify/functions/_shared/sp-http.mjs` | Shared auth, CORS, and safe response helpers |
-| `sp-proxy/netlify/functions/_shared/sp-speech-ticket.mjs` | HMAC tickets plus atomic one-use `jti` redemption metadata |
+| `sp-proxy/netlify/functions/_shared/sp-speech-ticket.mjs` | HMAC ticket issuance/authentication; standalone redemption is not composed into the billable endpoint |
 | `sp-proxy/netlify/functions/_shared/sp-budget.mjs` | Strongly consistent Blob ledger, idempotent reservations, reconciliation, and budget policy |
 | `sp-proxy/README.md` | Environment, provider, privacy, cost, and rollback operations |
 | `sp-proxy/REDTEAM_CHECKLIST.md` | Voice, overlap, failure, pronunciation, and re-attestation probes |
