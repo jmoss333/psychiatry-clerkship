@@ -31,9 +31,9 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
 python3 13_Faculty_Resources/_automation/validate_topic_meta.py
 python3 13_Faculty_Resources/_automation/validate_attestation_consistency.py
 
-# Root static-regression tests (node:test). Use the *.test.mjs glob:
-# `node --test tests/` wrongly recurses into tests/smoke/*.spec.js (Playwright, not installed at root).
-node --test tests/*.test.mjs        # guarded in CI (build-test-validate); glob avoids tests/smoke/*.spec.js (Playwright)
+# Root static-regression tests (node:test). Scope to the *.test.mjs glob — tests/smoke/*.spec.js
+# is a separate Playwright suite (own deps + CI job; not runnable from repo root).
+node --test tests/*.test.mjs        # guarded in CI (build-test-validate)
 
 # Playwright smoke suite (nav crawl · LFS integrity · visual regression)
 cd tests/smoke && npm ci && npx playwright test
@@ -62,7 +62,8 @@ cd tests/smoke && npm ci && npx playwright test
 - **localStorage keys must be namespaced `cw_*` (shared hub) or `rp_*` (resident).** The QA gate
   hard-fails any other prefix. Item-id collisions silently corrupt attestation (`cw_qbank_attest_v1`) and SRS state.
 - **No hard-coded `/Users` or `/sessions` paths in tracked `.py`** — CI lints for this; derive from `__file__`.
-- Clinical tools are **single-file HTML** (Clinical Warm palette, `clinical-warm.css`). Dose literals
+- Clinical tools are **single-file HTML** (Clinical Warm palette — build-injected from
+  `13_Faculty_Resources/_automation/site_build/clinical-warm.css`). Dose literals
   are banned in `rp-*` / `*-trainer` tools (QA gate).
 - **No PHI.** Clinical content is synthetic / de-identified only; never commit patient identifiers to
   git-tracked files, memory, or scratch outputs.
