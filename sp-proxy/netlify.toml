@@ -3,7 +3,7 @@
 # token never share an environment (smaller blast radius per key).
 [build]
   publish = "."
-  command = "npm install --omit=dev"
+  command = "npm ci --omit=dev"
 
 [functions]
   directory = "netlify/functions"
