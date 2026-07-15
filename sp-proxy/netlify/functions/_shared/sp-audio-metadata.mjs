@@ -2,16 +2,32 @@ import { OperationalError, operationalError } from './sp-http.mjs';
 
 const MAX_AUDIO_BYTES = 4 * 1024 * 1024;
 const MAX_DURATION_MILLISECONDS = 90_000;
+const MAX_DURATION_MICROSECONDS = 90_000_000n;
+const MAX_DURATION_NANOSECONDS = 90_000_000_000n;
+const MAX_WEBM_TRACKS = 64;
+const MAX_WEBM_CLUSTERS = 40_000;
+const MAX_WEBM_BLOCKS = 40_000;
+const MAX_OPUS_PACKETS = 36_000;
 const UNKNOWN_EBML_SIZE = Symbol('unknown-ebml-size');
 const UNKNOWN_OGG_GRANULE = 0xffffffffffffffffn;
 
 const MIME_TO_CONTAINER = new Map([
   ['audio/wav', 'wav'],
   ['audio/ogg', 'ogg'],
-  ['audio/mp4', 'mp4'],
+  ['audio/ogg;codecs=opus', 'ogg'],
   ['audio/webm', 'webm'],
   ['audio/webm;codecs=opus', 'webm'],
 ]);
+
+const OGG_CRC_TABLE = Object.freeze(Array.from({ length: 256 }, (_, index) => {
+  let value = index << 24;
+  for (let bit = 0; bit < 8; bit += 1) {
+    value = value & 0x80000000
+      ? ((value << 1) ^ 0x04c11db7) >>> 0
+      : (value << 1) >>> 0;
+  }
+  return value >>> 0;
+}));
 
 const EBML_IDS = Object.freeze({
   EBML: 0x1a45dfa3,
@@ -83,16 +99,6 @@ function u32le(bytes, offset) {
     + (bytes[offset + 1] * 0x100)
     + (bytes[offset + 2] * 0x10000)
     + (bytes[offset + 3] * 0x1000000)
-  );
-}
-
-function u32be(bytes, offset) {
-  requireRange(bytes, offset, 4);
-  return (
-    (bytes[offset] * 0x1000000)
-    + (bytes[offset + 1] * 0x10000)
-    + (bytes[offset + 2] * 0x100)
-    + bytes[offset + 3]
   );
 }
 
@@ -214,21 +220,47 @@ function parseWav(bytes) {
 
 function parseOpusHead(packet) {
   if (
-    packet.length < 19
+    packet.length !== 19
     || textAt(packet, 0, 8) !== 'OpusHead'
     || packet[8] !== 1
     || packet[9] < 1
+    || packet[9] > 2
+    || packet[18] !== 0
   ) {
     throw invalidAudio();
   }
-  const channels = packet[9];
-  const mappingFamily = packet[18];
-  if (mappingFamily === 0) {
-    if (channels > 2 || packet.length !== 19) throw invalidAudio();
-  } else if (packet.length < 21 + channels) {
-    throw invalidAudio();
-  }
   return u16le(packet, 10);
+}
+
+function parseOpusTags(packet) {
+  if (packet.length < 16 || textAt(packet, 0, 8) !== 'OpusTags') throw invalidAudio();
+  const vendorLength = u32le(packet, 8);
+  let offset = 12;
+  requireRange(packet, offset, vendorLength);
+  offset += vendorLength;
+  requireRange(packet, offset, 4);
+  const commentCount = u32le(packet, offset);
+  offset += 4;
+  if (commentCount > Math.floor((packet.length - offset) / 4)) throw invalidAudio();
+  for (let comment = 0; comment < commentCount; comment += 1) {
+    requireRange(packet, offset, 4);
+    const commentLength = u32le(packet, offset);
+    offset += 4;
+    requireRange(packet, offset, commentLength);
+    offset += commentLength;
+  }
+  if (offset !== packet.length) throw invalidAudio();
+}
+
+function validateOggPageCrc(bytes, start, end) {
+  const stored = u32le(bytes, start + 22);
+  let crc = 0;
+  for (let offset = start; offset < end; offset += 1) {
+    const value = offset >= start + 22 && offset < start + 26 ? 0 : bytes[offset];
+    const lookup = ((crc >>> 24) ^ value) & 0xff;
+    crc = (((crc << 8) >>> 0) ^ OGG_CRC_TABLE[lookup]) >>> 0;
+  }
+  if (crc !== stored) throw invalidAudio();
 }
 
 function parseOgg(bytes) {
@@ -242,6 +274,8 @@ function parseOgg(bytes) {
   let packetParts = [];
   let packetLength = 0;
   let sawEnd = false;
+  let audioPacketCount = 0;
+  let audioDurationMicroseconds = 0n;
 
   while (offset < bytes.length) {
     requireRange(bytes, offset, 27);
@@ -252,6 +286,7 @@ function parseOgg(bytes) {
     const pageSerial = u32le(bytes, offset + 14);
     const sequence = u32le(bytes, offset + 18);
     const segmentCount = bytes[offset + 26];
+    if (segmentCount === 0) throw invalidAudio();
     const tableOffset = offset + 27;
     requireRange(bytes, tableOffset, segmentCount);
     let payloadLength = 0;
@@ -261,6 +296,7 @@ function parseOgg(bytes) {
     const payloadOffset = tableOffset + segmentCount;
     requireRange(bytes, payloadOffset, payloadLength);
     const pageEnd = payloadOffset + payloadLength;
+    validateOggPageCrc(bytes, offset, pageEnd);
     const expectsContinuation = packetLength > 0;
     if (((flags & 0x01) !== 0) !== expectsContinuation) throw invalidAudio();
 
@@ -297,11 +333,34 @@ function parseOgg(bytes) {
           packetOffset += packetPart.length;
         }
         packetCount += 1;
-        if (packetCount === 1) preSkip = parseOpusHead(packet);
+        if (packetCount === 1) {
+          preSkip = parseOpusHead(packet);
+        } else if (packetCount === 2) {
+          parseOpusTags(packet);
+        } else {
+          audioPacketCount += 1;
+          if (audioPacketCount > MAX_OPUS_PACKETS) throw audioTooLong();
+          audioDurationMicroseconds += BigInt(opusPacketDurationMicroseconds(packet));
+          if (audioDurationMicroseconds > MAX_DURATION_MICROSECONDS) throw audioTooLong();
+        }
         packetParts = [];
         packetLength = 0;
       }
     }
+
+    if (sequence === 0) {
+      if (
+        packetCount !== 1
+        || packetLength !== 0
+        || segmentCount !== 1
+        || bytes[tableOffset] !== 19
+        || granule !== 0n
+        || (flags & 0x04) !== 0
+      ) {
+        throw invalidAudio();
+      }
+    }
+    if (audioPacketCount === 0 && granule !== 0n) throw invalidAudio();
 
     if ((flags & 0x04) !== 0) {
       if (pageEnd !== bytes.length || granule === UNKNOWN_OGG_GRANULE) throw invalidAudio();
@@ -315,7 +374,8 @@ function parseOgg(bytes) {
     offset !== bytes.length
     || !sawEnd
     || packetParts.length !== 0
-    || packetCount < 2
+    || packetCount < 3
+    || audioPacketCount < 1
     || preSkip === null
     || finalGranule === null
     || finalGranule <= BigInt(preSkip)
@@ -323,91 +383,11 @@ function parseOgg(bytes) {
     throw invalidAudio();
   }
   const samples = finalGranule - BigInt(preSkip);
-  return durationNumber(ceilRatio(samples * 1_000n, 48_000n));
-}
-
-function readMp4Box(bytes, offset, end) {
-  requireRange(bytes, offset, 8, end);
-  const size32 = u32be(bytes, offset);
-  const type = textAt(bytes, offset + 4, 4);
-  let headerSize = 8;
-  let size;
-  if (size32 === 1) {
-    requireRange(bytes, offset, 16, end);
-    const extended = unsignedBigEndian(bytes, offset + 8, 8);
-    if (extended > BigInt(Number.MAX_SAFE_INTEGER)) throw invalidAudio();
-    size = Number(extended);
-    headerSize = 16;
-  } else if (size32 === 0) {
-    size = end - offset;
-  } else {
-    size = size32;
-  }
-  if (size < headerSize || offset + size > end) throw invalidAudio();
-  return {
-    type,
-    dataOffset: offset + headerSize,
-    end: offset + size,
-  };
-}
-
-function parseMovieHeader(bytes, box) {
-  requireRange(bytes, box.dataOffset, 4, box.end);
-  const version = bytes[box.dataOffset];
-  let timescale;
-  let duration;
-  if (version === 0) {
-    requireRange(bytes, box.dataOffset, 20, box.end);
-    timescale = BigInt(u32be(bytes, box.dataOffset + 12));
-    duration = BigInt(u32be(bytes, box.dataOffset + 16));
-    if (duration === 0xffffffffn) throw invalidAudio();
-  } else if (version === 1) {
-    requireRange(bytes, box.dataOffset, 32, box.end);
-    timescale = BigInt(u32be(bytes, box.dataOffset + 20));
-    duration = unsignedBigEndian(bytes, box.dataOffset + 24, 8);
-    if (duration === 0xffffffffffffffffn) throw invalidAudio();
-  } else {
-    throw invalidAudio();
-  }
-  if (timescale <= 0n || duration <= 0n) throw invalidAudio();
-  return durationNumber(ceilRatio(duration * 1_000n, timescale));
-}
-
-function parseMp4(bytes) {
-  let offset = 0;
-  let index = 0;
-  let movieDuration = null;
-  let sawFtyp = false;
-  let sawMoov = false;
-  while (offset < bytes.length) {
-    const box = readMp4Box(bytes, offset, bytes.length);
-    if (index === 0) {
-      if (box.type !== 'ftyp' || box.end - box.dataOffset < 8) throw invalidAudio();
-      sawFtyp = true;
-    }
-    if (box.type === 'moov') {
-      if (sawMoov) throw invalidAudio();
-      sawMoov = true;
-      let childOffset = box.dataOffset;
-      while (childOffset < box.end) {
-        const child = readMp4Box(bytes, childOffset, box.end);
-        if (child.type === 'mvhd') {
-          if (movieDuration !== null) throw invalidAudio();
-          movieDuration = parseMovieHeader(bytes, child);
-        }
-        if (child.end <= childOffset) throw invalidAudio();
-        childOffset = child.end;
-      }
-      if (childOffset !== box.end) throw invalidAudio();
-    }
-    if (box.end <= offset) throw invalidAudio();
-    offset = box.end;
-    index += 1;
-  }
-  if (offset !== bytes.length || !sawFtyp || !sawMoov || movieDuration === null) {
-    throw invalidAudio();
-  }
-  return movieDuration;
+  const granuleMilliseconds = ceilRatio(samples * 1_000n, 48_000n);
+  const packetMilliseconds = ceilRatio(audioDurationMicroseconds, 1_000n);
+  return durationNumber(
+    granuleMilliseconds > packetMilliseconds ? granuleMilliseconds : packetMilliseconds,
+  );
 }
 
 function vintLength(firstByte, maximumLength) {
@@ -549,7 +529,10 @@ function parseWebmTracks(bytes, element) {
   const entries = [];
   while (offset < element.end) {
     const child = readEbmlElement(bytes, offset, element.end);
-    if (child.id === EBML_IDS.TRACK_ENTRY) entries.push(parseTrackEntry(bytes, child));
+    if (child.id === EBML_IDS.TRACK_ENTRY) {
+      if (entries.length >= MAX_WEBM_TRACKS) throw invalidAudio();
+      entries.push(parseTrackEntry(bytes, child));
+    }
     offset = child.end;
   }
   if (offset !== element.end || entries.length === 0) throw invalidAudio();
@@ -580,30 +563,42 @@ function isSegmentLevelId(id) {
   return id === EBML_IDS.INFO || id === EBML_IDS.TRACKS || id === EBML_IDS.CLUSTER;
 }
 
-function parseWebmCluster(bytes, element, parentEnd) {
+function parseWebmCluster(bytes, element, parentEnd, state) {
   let offset = element.dataOffset;
-  const blocks = [];
   let timestamp = null;
+  let sawBlock = false;
   while (offset < element.end) {
     const childId = readEbmlId(bytes, offset, element.end).value;
     if (element.unknownSize && isSegmentLevelId(childId)) break;
     const child = readEbmlElement(bytes, offset, element.end);
     if (child.id === EBML_IDS.TIMESTAMP) {
-      if (timestamp !== null) throw invalidAudio();
+      if (timestamp !== null || sawBlock) throw invalidAudio();
       timestamp = readEbmlUnsigned(bytes, child);
     } else if (child.id === EBML_IDS.SIMPLE_BLOCK) {
-      blocks.push({
-        bytes: bytes.subarray(child.dataOffset, child.end),
+      if (timestamp === null) throw invalidAudio();
+      sawBlock = true;
+      processWebmBlock({
+        blockBytes: bytes.subarray(child.dataOffset, child.end),
         blockDuration: null,
+        clusterTimestamp: timestamp,
+        state,
       });
     } else if (child.id === EBML_IDS.BLOCK_GROUP) {
-      blocks.push(parseBlockGroup(bytes, child));
+      if (timestamp === null) throw invalidAudio();
+      sawBlock = true;
+      const group = parseBlockGroup(bytes, child);
+      processWebmBlock({
+        blockBytes: group.bytes,
+        blockDuration: group.blockDuration,
+        clusterTimestamp: timestamp,
+        state,
+      });
     }
     offset = child.end;
   }
   if (!element.unknownSize && offset !== element.end) throw invalidAudio();
   if (offset > parentEnd || timestamp === null) throw invalidAudio();
-  return { timestamp, blocks, nextOffset: offset };
+  return { nextOffset: offset };
 }
 
 function splitLacedPackets(block, offset, end, lacing) {
@@ -719,10 +714,52 @@ function parseWebmBlock(block, opusTracks) {
   offset += 1;
   const lacing = (flags & 0x06) >>> 1;
   const packets = splitLacedPackets(block, offset, block.length, lacing);
-  if (!opusTracks.has(Number(track.value))) return null;
+  const trackNumber = Number(track.value);
+  if (!opusTracks.has(trackNumber)) return null;
   let durationMicroseconds = 0;
   for (const packet of packets) durationMicroseconds += opusPacketDurationMicroseconds(packet);
-  return { relativeTimestamp, durationMicroseconds };
+  return {
+    trackNumber,
+    relativeTimestamp,
+    packetCount: packets.length,
+    durationMicroseconds,
+  };
+}
+
+function processWebmBlock({
+  blockBytes,
+  blockDuration,
+  clusterTimestamp,
+  state,
+}) {
+  state.totalBlocks += 1;
+  if (state.totalBlocks > MAX_WEBM_BLOCKS) throw invalidAudio();
+  const block = parseWebmBlock(blockBytes, state.opusTracks);
+  if (block === null) return;
+
+  state.opusBlockCount += 1;
+  state.audioPacketCount += block.packetCount;
+  if (state.audioPacketCount > MAX_OPUS_PACKETS) throw audioTooLong();
+
+  const previousWork = state.trackWorkMicroseconds.get(block.trackNumber) ?? 0n;
+  const nextWork = previousWork + BigInt(block.durationMicroseconds);
+  if (nextWork > MAX_DURATION_MICROSECONDS) throw audioTooLong();
+  state.trackWorkMicroseconds.set(block.trackNumber, nextWork);
+
+  const startTicks = clusterTimestamp + BigInt(block.relativeTimestamp);
+  if (startTicks < 0n) throw invalidAudio();
+  const packetNanoseconds = BigInt(block.durationMicroseconds) * 1_000n;
+  const declaredNanoseconds = blockDuration === null
+    ? 0n
+    : blockDuration * state.timecodeScale;
+  const blockNanoseconds = packetNanoseconds > declaredNanoseconds
+    ? packetNanoseconds
+    : declaredNanoseconds;
+  const endNanoseconds = (startTicks * state.timecodeScale) + blockNanoseconds;
+  if (endNanoseconds > MAX_DURATION_NANOSECONDS) throw audioTooLong();
+  if (endNanoseconds > state.maximumEndNanoseconds) {
+    state.maximumEndNanoseconds = endNanoseconds;
+  }
 }
 
 function parseWebm(bytes) {
@@ -742,27 +779,54 @@ function parseWebm(bytes) {
   let infoDuration = null;
   let sawInfo = false;
   let sawTracks = false;
-  const trackEntries = [];
-  const clusters = [];
+  let sawCluster = false;
+  let clusterCount = 0;
+  const state = {
+    timecodeScale,
+    opusTracks: new Set(),
+    trackWorkMicroseconds: new Map(),
+    totalBlocks: 0,
+    audioPacketCount: 0,
+    opusBlockCount: 0,
+    maximumEndNanoseconds: 0n,
+  };
   while (offset < segmentEnd) {
     const id = readEbmlId(bytes, offset, segmentEnd).value;
     const allowUnknownSize = id === EBML_IDS.CLUSTER;
     const child = readEbmlElement(bytes, offset, segmentEnd, { allowUnknownSize });
     if (child.id === EBML_IDS.INFO) {
-      if (sawInfo || child.unknownSize) throw invalidAudio();
+      if (sawInfo || sawCluster || child.unknownSize) throw invalidAudio();
       sawInfo = true;
       const info = parseWebmInfo(bytes, child);
       if (info.timecodeScale !== null) timecodeScale = info.timecodeScale;
+      state.timecodeScale = timecodeScale;
       infoDuration = info.duration;
+      if (infoDuration !== null) {
+        const scaled = (infoDuration * Number(timecodeScale)) / 1_000_000;
+        if (!Number.isFinite(scaled) || scaled <= 0) throw invalidAudio();
+        if (Math.ceil(scaled) > MAX_DURATION_MILLISECONDS) throw audioTooLong();
+      }
       offset = child.end;
     } else if (child.id === EBML_IDS.TRACKS) {
-      if (sawTracks || child.unknownSize) throw invalidAudio();
+      if (sawTracks || sawCluster || child.unknownSize) throw invalidAudio();
       sawTracks = true;
-      trackEntries.push(...parseWebmTracks(bytes, child));
+      const trackNumbers = new Set();
+      for (const track of parseWebmTracks(bytes, child)) {
+        if (trackNumbers.has(track.number)) throw invalidAudio();
+        trackNumbers.add(track.number);
+        if (track.type === 2 && track.codec === 'A_OPUS') {
+          state.opusTracks.add(track.number);
+          state.trackWorkMicroseconds.set(track.number, 0n);
+        }
+      }
+      if (state.opusTracks.size === 0) throw invalidAudio();
       offset = child.end;
     } else if (child.id === EBML_IDS.CLUSTER) {
-      const cluster = parseWebmCluster(bytes, child, segmentEnd);
-      clusters.push(cluster);
+      if (!sawTracks) throw invalidAudio();
+      sawCluster = true;
+      clusterCount += 1;
+      if (clusterCount > MAX_WEBM_CLUSTERS) throw invalidAudio();
+      const cluster = parseWebmCluster(bytes, child, segmentEnd, state);
       offset = child.unknownSize ? cluster.nextOffset : child.end;
       if (child.unknownSize && offset === child.dataOffset) throw invalidAudio();
     } else {
@@ -770,48 +834,35 @@ function parseWebm(bytes) {
       offset = child.end;
     }
   }
-  if (offset !== segmentEnd || !sawTracks) throw invalidAudio();
-
-  const trackNumbers = new Set();
-  const opusTracks = new Set();
-  for (const track of trackEntries) {
-    if (trackNumbers.has(track.number)) throw invalidAudio();
-    trackNumbers.add(track.number);
-    if (track.type === 2 && track.codec === 'A_OPUS') opusTracks.add(track.number);
+  if (
+    offset !== segmentEnd
+    || !sawTracks
+    || !sawCluster
+    || state.opusBlockCount === 0
+  ) {
+    throw invalidAudio();
   }
-  if (opusTracks.size === 0) throw invalidAudio();
 
   let maximumMilliseconds = 0;
   if (infoDuration !== null) {
     const scaled = (infoDuration * Number(timecodeScale)) / 1_000_000;
-    if (!Number.isFinite(scaled) || scaled <= 0) throw invalidAudio();
     const rounded = Math.ceil(scaled);
-    if (!Number.isSafeInteger(rounded)) throw audioTooLong();
+    if (!Number.isSafeInteger(rounded) || rounded > MAX_DURATION_MILLISECONDS) {
+      throw audioTooLong();
+    }
     maximumMilliseconds = rounded;
   }
 
-  let maximumEndNanoseconds = 0n;
-  let opusBlockCount = 0;
-  for (const cluster of clusters) {
-    for (const storedBlock of cluster.blocks) {
-      const block = parseWebmBlock(storedBlock.bytes, opusTracks);
-      if (block === null) continue;
-      opusBlockCount += 1;
-      const startTicks = cluster.timestamp + BigInt(block.relativeTimestamp);
-      const packetNanoseconds = BigInt(block.durationMicroseconds) * 1_000n;
-      const declaredNanoseconds = storedBlock.blockDuration === null
-        ? 0n
-        : storedBlock.blockDuration * timecodeScale;
-      const blockNanoseconds = packetNanoseconds > declaredNanoseconds
-        ? packetNanoseconds
-        : declaredNanoseconds;
-      const endNanoseconds = (startTicks * timecodeScale) + blockNanoseconds;
-      if (endNanoseconds > maximumEndNanoseconds) maximumEndNanoseconds = endNanoseconds;
-    }
+  let maximumWorkMicroseconds = 0n;
+  for (const work of state.trackWorkMicroseconds.values()) {
+    if (work > maximumWorkMicroseconds) maximumWorkMicroseconds = work;
   }
-  if (opusBlockCount === 0) throw invalidAudio();
-  if (maximumEndNanoseconds > 0n) {
-    const blockMilliseconds = ceilRatio(maximumEndNanoseconds, 1_000_000n);
+  if (maximumWorkMicroseconds > 0n) {
+    const workMilliseconds = ceilRatio(maximumWorkMicroseconds, 1_000n);
+    maximumMilliseconds = Math.max(maximumMilliseconds, Number(workMilliseconds));
+  }
+  if (state.maximumEndNanoseconds > 0n) {
+    const blockMilliseconds = ceilRatio(state.maximumEndNanoseconds, 1_000_000n);
     if (blockMilliseconds > BigInt(Number.MAX_SAFE_INTEGER)) throw audioTooLong();
     maximumMilliseconds = Math.max(maximumMilliseconds, Number(blockMilliseconds));
   }
@@ -847,9 +898,7 @@ export function inspectAudio({ audio, mimeType } = {}) {
       ? parseWav(bytes)
       : actualContainer === 'ogg'
         ? parseOgg(bytes)
-        : actualContainer === 'mp4'
-          ? parseMp4(bytes)
-          : parseWebm(bytes);
+        : parseWebm(bytes);
     return Object.freeze({ mimeType, durationMilliseconds });
   } catch (error) {
     if (error instanceof OperationalError) throw error;

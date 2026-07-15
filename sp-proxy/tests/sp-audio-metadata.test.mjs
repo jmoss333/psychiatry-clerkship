@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { inspectAudio } from '../netlify/functions/_shared/sp-audio-metadata.mjs';
 
@@ -58,6 +60,20 @@ function u64le(value) {
   return Uint8Array.from(u64be(value)).reverse();
 }
 
+function oggCrc(page) {
+  let crc = 0;
+  for (let offset = 0; offset < page.length; offset += 1) {
+    const value = offset >= 22 && offset < 26 ? 0 : page[offset];
+    crc = (crc ^ (value << 24)) >>> 0;
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = crc & 0x80000000
+        ? ((crc << 1) ^ 0x04c11db7) >>> 0
+        : (crc << 1) >>> 0;
+    }
+  }
+  return crc >>> 0;
+}
+
 function assertOperationalError(error, { status, code }) {
   assert.equal(error?.name, 'OperationalError');
   assert.equal(error?.status, status);
@@ -107,7 +123,7 @@ function oggPage({
 }) {
   assert.equal(segments.reduce((sum, length) => sum + length, 0), packet.length);
   assert.ok(segments.length <= 255 && segments.every((length) => length <= 255));
-  return bytes(
+  const page = bytes(
     ascii('OggS'),
     Uint8Array.of(0, flags),
     u64le(granule),
@@ -117,38 +133,51 @@ function oggPage({
     Uint8Array.of(segments.length, ...segments),
     packet,
   );
+  page.set(u32le(oggCrc(page)), 22);
+  return page;
 }
 
 function continuedOggOpus({ continuation = true } = {}) {
-  const opusHead = new Uint8Array(300);
-  opusHead.set(bytes(
+  const opusHead = bytes(
     ascii('OpusHead'),
     Uint8Array.of(1, 1),
     u16le(312),
     u32le(48_000),
     u16le(0),
-    Uint8Array.of(1, 1, 0, 0),
-  ));
+    Uint8Array.of(0),
+  );
+  const opusTags = bytes(
+    ascii('OpusTags'),
+    u32le(284),
+    new Uint8Array(284),
+    u32le(0),
+  );
   return bytes(
     oggPage({
       sequence: 0,
       flags: 0x02,
       granule: 0n,
-      packet: opusHead.subarray(0, 255),
-      segments: [255],
+      packet: opusHead,
     }),
     oggPage({
       sequence: 1,
+      flags: 0,
+      granule: 0n,
+      packet: opusTags.subarray(0, 255),
+      segments: [255],
+    }),
+    oggPage({
+      sequence: 2,
       flags: 0x04 | (continuation ? 0x01 : 0),
       granule: 48_312n,
-      packet: bytes(opusHead.subarray(255), Uint8Array.of(0xf8)),
+      packet: bytes(opusTags.subarray(255), Uint8Array.of(0xf8)),
       segments: [45, 1],
     }),
   );
 }
 
-function oggOpus({ preSkip = 312, samples = 48_000n, finalGranule = null } = {}) {
-  const opusHead = bytes(
+function opusHead({ preSkip = 312 } = {}) {
+  return bytes(
     ascii('OpusHead'),
     Uint8Array.of(1, 1),
     u16le(preSkip),
@@ -156,12 +185,71 @@ function oggOpus({ preSkip = 312, samples = 48_000n, finalGranule = null } = {})
     u16le(0),
     Uint8Array.of(0),
   );
+}
+
+function opusTags() {
+  return bytes(ascii('OpusTags'), u32le(0), u32le(0));
+}
+
+function oggOpus({
+  preSkip = 312,
+  samples = 48_000n,
+  finalGranule = null,
+  audioPackets = [Uint8Array.of(0xf8)],
+} = {}) {
+  const audioPayload = bytes(...audioPackets);
+  const segments = audioPackets.map((packet) => packet.length);
+  assert.ok(segments.length <= 255 && segments.every((length) => length < 255));
   return bytes(
+    oggPage({ sequence: 0, flags: 0x02, granule: 0n, packet: opusHead({ preSkip }) }),
+    oggPage({ sequence: 1, flags: 0, granule: 0n, packet: opusTags() }),
+    oggPage({
+      sequence: 2,
+      flags: 0x04,
+      granule: finalGranule ?? (BigInt(preSkip) + BigInt(samples)),
+      packet: audioPayload,
+      segments,
+    }),
+  );
+}
+
+function oggWithFalsifiedGranule({ packetCount }) {
+  const opusHead = bytes(
+    ascii('OpusHead'),
+    Uint8Array.of(1, 1),
+    u16le(312),
+    u32le(48_000),
+    u16le(0),
+    Uint8Array.of(0),
+  );
+  const pages = [
     oggPage({ sequence: 0, flags: 0x02, granule: 0n, packet: opusHead }),
+    oggPage({ sequence: 1, flags: 0, granule: 0n, packet: opusTags() }),
+  ];
+  let remaining = packetCount;
+  let sequence = 2;
+  while (remaining > 0) {
+    const count = Math.min(255, remaining);
+    remaining -= count;
+    pages.push(oggPage({
+      sequence,
+      flags: remaining === 0 ? 0x04 : 0,
+      granule: 48_312n,
+      packet: new Uint8Array(count).fill(0xf8),
+      segments: Array(count).fill(1),
+    }));
+    sequence += 1;
+  }
+  return bytes(...pages);
+}
+
+function legacyUntaggedOgg() {
+  return bytes(
+    oggPage({ sequence: 0, flags: 0x02, granule: 0n, packet: opusHead() }),
     oggPage({
       sequence: 1,
       flags: 0x04,
-      granule: finalGranule ?? (BigInt(preSkip) + BigInt(samples)),
+      granule: 48_312n,
       packet: Uint8Array.of(0xf8),
     }),
   );
@@ -323,6 +411,7 @@ function webm({
   unknownSegment = false,
   unknownCluster = false,
   blockGroupDuration = null,
+  clusterBeforeTracks = false,
 } = {}) {
   const ebmlHeader = ebmlElement(WEBM_IDS.EBML, ebmlElement(WEBM_IDS.DOC_TYPE, ascii('webm')));
   const infoParts = [ebmlElement(WEBM_IDS.TIMECODE_SCALE, ebmlUnsigned(timecodeScale))];
@@ -340,12 +429,56 @@ function webm({
       )));
     }
   }
-  const segment = bytes(
-    ebmlElement(WEBM_IDS.INFO, bytes(...infoParts)),
-    webmTrack({ codec }),
-    ebmlElement(WEBM_IDS.CLUSTER, bytes(...clusterParts), { unknownSize: unknownCluster }),
+  const info = ebmlElement(WEBM_IDS.INFO, bytes(...infoParts));
+  const tracks = webmTrack({ codec });
+  const cluster = ebmlElement(
+    WEBM_IDS.CLUSTER,
+    bytes(...clusterParts),
+    { unknownSize: unknownCluster },
   );
+  const segment = clusterBeforeTracks
+    ? bytes(info, cluster, tracks)
+    : bytes(info, tracks, cluster);
   return bytes(ebmlHeader, ebmlElement(WEBM_IDS.SEGMENT, segment, { unknownSize: unknownSegment }));
+}
+
+function webmWithRepeatedMinimalBlocks(blockCount = 580_000) {
+  const ebmlHeader = ebmlElement(WEBM_IDS.EBML, ebmlElement(WEBM_IDS.DOC_TYPE, ascii('webm')));
+  const info = ebmlElement(
+    WEBM_IDS.INFO,
+    ebmlElement(WEBM_IDS.TIMECODE_SCALE, ebmlUnsigned(1_000_000)),
+  );
+  const tracks = webmTrack();
+  const timestamp = ebmlElement(WEBM_IDS.TIMESTAMP, ebmlUnsigned(0));
+  const block = ebmlElement(
+    WEBM_IDS.SIMPLE_BLOCK,
+    simpleBlock({ packets: [Uint8Array.of(0x80)] }), // One 2.5 ms Opus frame.
+  );
+  const clusterPayload = new Uint8Array(timestamp.length + (block.length * blockCount));
+  clusterPayload.set(timestamp, 0);
+  for (let offset = timestamp.length; offset < clusterPayload.length; offset += block.length) {
+    clusterPayload.set(block, offset);
+  }
+  const cluster = ebmlElement(WEBM_IDS.CLUSTER, clusterPayload);
+  const segment = ebmlElement(WEBM_IDS.SEGMENT, bytes(info, tracks, cluster));
+  return bytes(ebmlHeader, segment);
+}
+
+if (process.env.SP_AUDIO_MEMORY_PROBE === '1') {
+  const audio = webmWithRepeatedMinimalBlocks();
+  if (audio.length < 3_900_000 || audio.length >= MAX_BYTES) process.exit(3);
+  try {
+    inspectAudio({ audio, mimeType: 'audio/webm;codecs=opus' });
+    process.exit(4);
+  } catch (error) {
+    process.exit(
+      error?.name === 'OperationalError'
+      && error?.status === 422
+      && error?.code === 'audio_too_long'
+        ? 0
+        : 5,
+    );
+  }
 }
 
 test('accepts WAV metadata and returns an immutable canonical result', () => {
@@ -405,11 +538,33 @@ test('accepts Ogg Opus and applies pre-skip with conservative rounding', () => {
   assert.equal(
     inspectAudio({ audio: oggOpus({ preSkip: 65_535, samples: 1n }), mimeType: 'audio/ogg' })
       .durationMilliseconds,
-    1,
+    20,
   );
   assert.equal(
     inspectAudio({ audio: continuedOggOpus(), mimeType: 'audio/ogg' }).durationMilliseconds,
     1_000,
+  );
+  assert.equal(
+    inspectAudio({ audio: oggOpus(), mimeType: 'audio/ogg;codecs=opus' })
+      .durationMilliseconds,
+    1_000,
+  );
+  assert.equal(
+    inspectAudio({
+      audio: oggOpus({
+        samples: 1n,
+        audioPackets: [Uint8Array.of(0xf8), Uint8Array.of(0xf8), Uint8Array.of(0xf8)],
+      }),
+      mimeType: 'audio/ogg',
+    }).durationMilliseconds,
+    60,
+  );
+  assert.equal(
+    inspectAudio({
+      audio: oggWithFalsifiedGranule({ packetCount: 4_500 }),
+      mimeType: 'audio/ogg',
+    }).durationMilliseconds,
+    90_000,
   );
 });
 
@@ -426,12 +581,31 @@ test('rejects overlong, invalid-granule, and malformed Ogg Opus', () => {
     oggOpus({ preSkip: 312, finalGranule: 312n }),
     oggOpus({ finalGranule: 0xffffffffffffffffn }),
     oggOpus().subarray(0, oggOpus().length - 1),
+    legacyUntaggedOgg(),
   ]) {
     assert.throws(
       () => inspectAudio({ audio, mimeType: 'audio/ogg' }),
       (error) => assertOperationalError(error, { status: 422, code: 'invalid_audio' }),
     );
   }
+});
+
+test('validates Ogg CRC and rejects mutated page content', () => {
+  const corrupted = Uint8Array.from(oggOpus());
+  corrupted[corrupted.length - 1] ^= 1;
+  assert.throws(
+    () => inspectAudio({ audio: corrupted, mimeType: 'audio/ogg' }),
+    (error) => assertOperationalError(error, { status: 422, code: 'invalid_audio' }),
+  );
+});
+
+test('rejects 120 seconds of Ogg Opus packets despite a falsified one-second granule', () => {
+  const audio = oggWithFalsifiedGranule({ packetCount: 6_001 });
+  assert.ok(audio.length < MAX_BYTES);
+  assert.throws(
+    () => inspectAudio({ audio, mimeType: 'audio/ogg;codecs=opus' }),
+    (error) => assertOperationalError(error, { status: 422, code: 'audio_too_long' }),
+  );
 });
 
 test('rejects Ogg stream sequence and serial discontinuities', () => {
@@ -460,45 +634,11 @@ test('rejects Ogg stream sequence and serial discontinuities', () => {
   }
 });
 
-test('accepts MP4 mvhd version 0 and version 1 including extended box sizes', () => {
-  assert.equal(
-    inspectAudio({ audio: mp4({ duration: 90_000 }), mimeType: 'audio/mp4' })
-      .durationMilliseconds,
-    90_000,
-  );
-  assert.equal(
-    inspectAudio({
-      audio: mp4({
-        version: 1,
-        timescale: 48_000,
-        duration: 48_001n,
-        extendedMoov: true,
-        extendedMvhd: true,
-      }),
-      mimeType: 'audio/mp4',
-    }).durationMilliseconds,
-    1_001,
-  );
-});
-
-test('rejects overlong and invalid MP4 metadata', () => {
-  const over = mp4({ version: 1, timescale: 1_000, duration: 90_001n });
-  assert.ok(over.length < MAX_BYTES);
-  assert.throws(
-    () => inspectAudio({ audio: over, mimeType: 'audio/mp4' }),
-    (error) => assertOperationalError(error, { status: 422, code: 'audio_too_long' }),
-  );
-
-  for (const audio of [
-    mp4({ timescale: 0 }),
-    mp4({ duration: 0 }),
-    mp4({ version: 2 }),
-    mp4().subarray(0, mp4().length - 1),
-    bytes(u32be(7), ascii('ftyp')),
-  ]) {
+test('temporarily rejects structurally valid and metadata-mutated MP4 audio', () => {
+  for (const audio of [mp4(), mp4({ version: 1, duration: 90_001n })]) {
     assert.throws(
       () => inspectAudio({ audio, mimeType: 'audio/mp4' }),
-      (error) => assertOperationalError(error, { status: 422, code: 'invalid_audio' }),
+      (error) => assertOperationalError(error, { status: 415, code: 'unsupported_audio' }),
     );
   }
 });
@@ -560,6 +700,55 @@ test('uses the conservative maximum of WebM packet and BlockDuration timing', ()
       mimeType: 'audio/webm',
     }).durationMilliseconds,
     90_000,
+  );
+});
+
+test('rejects cumulative WebM Opus work hidden at one repeated timestamp', () => {
+  const packet = Uint8Array.of(0x19); // Two 60 ms Opus frames.
+  assert.equal(
+    inspectAudio({
+      audio: webm({
+        blocks: Array.from({ length: 750 }, () => simpleBlock({ packets: [packet] })),
+      }),
+      mimeType: 'audio/webm',
+    }).durationMilliseconds,
+    90_000,
+  );
+  const audio = webm({
+    blocks: Array.from({ length: 1_000 }, () => simpleBlock({ packets: [packet] })),
+  });
+  assert.ok(audio.length < MAX_BYTES);
+  assert.throws(
+    () => inspectAudio({ audio, mimeType: 'audio/webm;codecs=opus' }),
+    (error) => assertOperationalError(error, { status: 422, code: 'audio_too_long' }),
+  );
+});
+
+test('rejects WebM clusters that precede the governed Opus track definition', () => {
+  assert.throws(
+    () => inspectAudio({
+      audio: webm({ clusterBeforeTracks: true }),
+      mimeType: 'audio/webm',
+    }),
+    (error) => assertOperationalError(error, { status: 422, code: 'invalid_audio' }),
+  );
+});
+
+test('rejects a near-4 MiB minimal-block WebM within a 64 MiB heap', () => {
+  const result = spawnSync(
+    process.execPath,
+    ['--max-old-space-size=64', fileURLToPath(import.meta.url)],
+    {
+      env: { ...process.env, SP_AUDIO_MEMORY_PROBE: '1' },
+      encoding: 'utf8',
+      maxBuffer: 128 * 1024,
+      timeout: 20_000,
+    },
+  );
+  assert.equal(
+    result.status,
+    0,
+    `memory probe failed (status=${result.status}, signal=${result.signal ?? 'none'})`,
   );
 });
 
@@ -629,7 +818,15 @@ test('rejects container spoofing and noncanonical MIME declarations', () => {
     );
   }
 
-  for (const mimeType of ['audio/x-wav', 'audio/webm; codecs=opus', 'Audio/WebM', '', null]) {
+  for (const mimeType of [
+    'audio/x-wav',
+    'audio/ogg; codecs=opus',
+    'Audio/Ogg;codecs=opus',
+    'audio/webm; codecs=opus',
+    'Audio/WebM',
+    '',
+    null,
+  ]) {
     assert.throws(
       () => inspectAudio({ audio: wav(), mimeType }),
       (error) => assertOperationalError(error, { status: 415, code: 'unsupported_audio' }),
