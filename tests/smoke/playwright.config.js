@@ -37,12 +37,12 @@ export default defineConfig({
   projects: [
     {
       name: 'nav-ms3',
-      testMatch: 'nav-crawl.spec.js',
+      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: MS3_URL },
     },
     {
       name: 'nav-res',
-      testMatch: 'nav-crawl.spec.js',
+      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: RES_URL },
     },
     {
