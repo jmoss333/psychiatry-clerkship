@@ -18,6 +18,9 @@ export function createFakeBlobStore({
   let remainingNewConflicts = onlyIfNewConflicts;
   let remainingMatchConflicts = onlyIfMatchConflicts;
   let matchConflictCount = 0;
+  let matchConflictMutator = mutateOnMatchConflict;
+  let remainingAmbiguousModifiedResults = 0;
+  let ambiguousEtag = '';
 
   const nextEtag = () => `etag-${++etagSequence}`;
 
@@ -47,6 +50,11 @@ export function createFakeBlobStore({
       });
       if (unavailable) throw new Error('fake store unavailable');
 
+      if (remainingAmbiguousModifiedResults > 0) {
+        remainingAmbiguousModifiedResults -= 1;
+        return { modified: true, etag: ambiguousEtag };
+      }
+
       // Yield once so Promise.all claim tests exercise the conditional-write path.
       await Promise.resolve();
       const current = records.get(key);
@@ -61,8 +69,8 @@ export function createFakeBlobStore({
         if (remainingMatchConflicts > 0) {
           remainingMatchConflicts -= 1;
           matchConflictCount += 1;
-          if (typeof mutateOnMatchConflict === 'function') {
-            const replacement = mutateOnMatchConflict({
+          if (typeof matchConflictMutator === 'function') {
+            const replacement = matchConflictMutator({
               key,
               current: current ? JSON.parse(current.value) : null,
               attempted: JSON.parse(value),
@@ -100,6 +108,15 @@ export function createFakeBlobStore({
     },
     etag(key) {
       return records.get(key)?.etag ?? null;
+    },
+    ambiguousNextWrites(count = 1, etag = '') {
+      remainingAmbiguousModifiedResults = count;
+      ambiguousEtag = etag;
+    },
+    conflictNextMatches(count, mutate = null) {
+      remainingMatchConflicts = count;
+      matchConflictCount = 0;
+      matchConflictMutator = mutate;
     },
     replace(key, value, { etag = records.get(key)?.etag ?? nextEtag() } = {}) {
       records.set(key, {

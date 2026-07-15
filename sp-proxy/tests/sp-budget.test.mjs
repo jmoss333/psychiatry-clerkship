@@ -156,6 +156,18 @@ function writeCalls(fake) {
   return fake.calls.filter((call) => call.method === 'set');
 }
 
+function commitFifthAttempt({ current, attempted, matchConflictCount }) {
+  return matchConflictCount === 5 ? attempted : current;
+}
+
+function assertFiveWritesThenFinalStrongRead(fake, beforeCallCount) {
+  const calls = fake.calls.slice(beforeCallCount);
+  assert.equal(calls.filter((call) => call.method === 'set').length, 5);
+  assert.equal(calls.filter((call) => call.method === 'getWithMetadata').length, 6);
+  assert.equal(calls.at(-1).method, 'getWithMetadata');
+  assert.deepEqual(calls.at(-1).options, { type: 'json', consistency: 'strong' });
+}
+
 test('quote uses exact rational micro-dollar arithmetic and rounds each component upward', () => {
   const { ledger } = makeHarness();
 
@@ -401,6 +413,36 @@ test('storage failures are a 503 and never return reassuring zero usage', async 
   );
 });
 
+test('a modified write without a nonempty ETag cannot create a durable reservation', async () => {
+  for (const etag of ['', '   ']) {
+    const fake = createFakeBlobStore();
+    fake.ambiguousNextWrites(1, etag);
+    const { ledger } = makeHarness({ fake });
+
+    await assert.rejects(
+      ledger.reserve(actorRequest(`ambiguous-reserve-${etag.length}`)),
+      (error) => assertOperationalError(error, { status: 503, code: 'budget_unavailable' }),
+    );
+    assert.equal(fake.read(KEY), null);
+    assert.equal(writeCalls(fake).length, 1);
+  }
+});
+
+test('an ambiguous provider-start write never returns provider authorization', async () => {
+  const fake = createFakeBlobStore();
+  const { ledger } = makeHarness({ fake });
+  const reservation = await ledger.reserve(actorRequest('ambiguous-provider-start'));
+  fake.ambiguousNextWrites();
+  const beforeWrites = writeCalls(fake).length;
+
+  await assert.rejects(
+    ledger.markProviderStarted(reservation),
+    (error) => assertOperationalError(error, { status: 503, code: 'budget_unavailable' }),
+  );
+  assert.equal(writeCalls(fake).length, beforeWrites + 1);
+  assert.equal(currentAttempt(fake).status, 'reserved');
+});
+
 test('initialization stops after exactly five conditional writes under contention', async () => {
   const fake = createFakeBlobStore({ onlyIfNewConflicts: 5 });
   const { ledger } = makeHarness({ fake });
@@ -426,6 +468,258 @@ test('an existing-record transition stops after exactly five matching conditiona
   const transitionWrites = writeCalls(fake).slice(before);
   assert.equal(transitionWrites.length, 5);
   assert.equal(transitionWrites.every((call) => typeof call.options.onlyIfMatch === 'string'), true);
+});
+
+test('reserve reconciles an identical fifth-write commit with one final read and no sixth write', async () => {
+  const fake = createFakeBlobStore();
+  const { ledger } = makeHarness({ fake });
+  await ledger.getUsage();
+  fake.conflictNextMatches(5, commitFifthAttempt);
+  const beforeCalls = fake.calls.length;
+
+  const reservation = await ledger.reserve(actorRequest('reserve-final-read-identical'));
+  assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
+  assert.equal(Object.isFrozen(reservation), true);
+  assert.deepEqual(await ledger.markProviderStarted(reservation), {
+    modified: true,
+    authorized: true,
+    status: 'provider_started',
+  });
+});
+
+test('reserve final read never grants ownership of a competing reservation', async () => {
+  const fake = createFakeBlobStore();
+  const { ledger } = makeHarness({ fake });
+  await ledger.getUsage();
+  fake.conflictNextMatches(5, ({ current, attempted, matchConflictCount }) => {
+    if (matchConflictCount !== 5) return current;
+    const competitor = clone(attempted);
+    const operation = Object.values(competitor.operations)[0];
+    operation.attempts.at(-1).ownerTokenHash = 'ab'.repeat(32);
+    return competitor;
+  });
+  const beforeCalls = fake.calls.length;
+
+  await assert.rejects(
+    ledger.reserve(actorRequest('reserve-final-read-competitor')),
+    (error) => assertOperationalError(error, { status: 409, code: 'budget_in_progress' }),
+  );
+  assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
+});
+
+test('reserve final read requires the exact attempted generation even when owner hashes repeat', async () => {
+  const fake = createFakeBlobStore();
+  const ownerBytes = Buffer.alloc(32, 0x5a);
+  const { ledger } = makeHarness({ fake, randomBytes: () => ownerBytes });
+  const first = await ledger.reserve(actorRequest('reserve-final-read-generation'));
+  await ledger.failBeforeProvider({ reservation: first, code: 'request_aborted' });
+  fake.conflictNextMatches(5, ({ current, attempted, matchConflictCount }) => {
+    if (matchConflictCount !== 5) return current;
+    const competitor = clone(attempted);
+    const operation = Object.values(competitor.operations)[0];
+    const second = operation.attempts.at(-1);
+    second.status = 'failed_before_provider';
+    second.failureCode = 'request_aborted';
+    const third = {
+      ...clone(second),
+      generation: 3,
+      status: 'reserved',
+      failureCode: null,
+    };
+    operation.generation = 3;
+    operation.attempts.push(third);
+    return competitor;
+  });
+  const beforeCalls = fake.calls.length;
+
+  await assert.rejects(
+    ledger.reserve(actorRequest('reserve-final-read-generation')),
+    (error) => assertOperationalError(error, { status: 409, code: 'budget_in_progress' }),
+  );
+  assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
+});
+
+test('reserve final read returns a stable terminal result committed by the fifth writer', async () => {
+  const fake = createFakeBlobStore();
+  const { ledger } = makeHarness({ fake });
+  await ledger.getUsage();
+  fake.conflictNextMatches(5, ({ current, attempted, matchConflictCount }) => {
+    if (matchConflictCount !== 5) return current;
+    const terminal = clone(attempted);
+    const operation = Object.values(terminal.operations)[0];
+    const attempt = operation.attempts.at(-1);
+    attempt.status = 'settled';
+    attempt.actualMicros = 200;
+    attempt.actualUsage = { inputTokens: 100, outputTokens: 20 };
+    attempt.outcome = 'succeeded';
+    attempt.settlementHash = canonicalHash({
+      outcome: 'succeeded',
+      usage: attempt.actualUsage,
+    });
+    terminal.reservedMicros = 0;
+    terminal.spentMicros = 200;
+    terminal.authorizedMicros = 200;
+    terminal.units.actorInputTokens = 100;
+    terminal.units.actorOutputTokens = 20;
+    return terminal;
+  });
+  const beforeCalls = fake.calls.length;
+
+  assert.deepEqual(await ledger.reserve(actorRequest('reserve-final-read-terminal')), {
+    finalized: true,
+    status: 'settled',
+    outcome: 'succeeded',
+    chargedMicros: 200,
+  });
+  assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
+});
+
+test('provider start reconciles a fifth-write commit without granting loser authorization', async () => {
+  const fake = createFakeBlobStore();
+  const { ledger } = makeHarness({ fake });
+  const reservation = await ledger.reserve(actorRequest('mark-final-read-identical'));
+  fake.conflictNextMatches(5, commitFifthAttempt);
+  const beforeCalls = fake.calls.length;
+
+  assert.deepEqual(await ledger.markProviderStarted(reservation), {
+    modified: false,
+    authorized: false,
+    status: 'provider_started',
+  });
+  assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
+});
+
+test('provider start retains contention when the final read is still reserved', async () => {
+  const fake = createFakeBlobStore();
+  const { ledger } = makeHarness({ fake });
+  const reservation = await ledger.reserve(actorRequest('mark-final-read-pending'));
+  fake.conflictNextMatches(5, ({ current }) => current);
+  const beforeCalls = fake.calls.length;
+
+  await assert.rejects(
+    ledger.markProviderStarted(reservation),
+    (error) => assertOperationalError(error, { status: 503, code: 'budget_contention' }),
+  );
+  assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
+});
+
+test('fail-before-provider reconciles identical and mismatched fifth-write outcomes safely', async () => {
+  {
+    const fake = createFakeBlobStore();
+    const { ledger } = makeHarness({ fake });
+    const reservation = await ledger.reserve(actorRequest('fail-final-read-identical'));
+    fake.conflictNextMatches(5, commitFifthAttempt);
+    const beforeCalls = fake.calls.length;
+
+    assert.deepEqual(await ledger.failBeforeProvider({
+      reservation,
+      code: 'provider_unavailable',
+    }), { modified: false, status: 'failed_before_provider' });
+    assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
+  }
+
+  {
+    const fake = createFakeBlobStore();
+    const { ledger } = makeHarness({ fake });
+    const reservation = await ledger.reserve(actorRequest('fail-final-read-mismatch'));
+    fake.conflictNextMatches(5, ({ current, attempted, matchConflictCount }) => {
+      if (matchConflictCount !== 5) return current;
+      const mismatch = clone(attempted);
+      Object.values(mismatch.operations)[0].attempts.at(-1).failureCode = 'request_aborted';
+      return mismatch;
+    });
+    const beforeCalls = fake.calls.length;
+
+    await assert.rejects(
+      ledger.failBeforeProvider({ reservation, code: 'provider_unavailable' }),
+      (error) => assertOperationalError(error, { status: 409, code: 'idempotency_mismatch' }),
+    );
+    assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
+  }
+});
+
+test('fail-before-provider retains contention when the final read is still reserved', async () => {
+  const fake = createFakeBlobStore();
+  const { ledger } = makeHarness({ fake });
+  const reservation = await ledger.reserve(actorRequest('fail-final-read-pending'));
+  fake.conflictNextMatches(5, ({ current }) => current);
+  const beforeCalls = fake.calls.length;
+
+  await assert.rejects(
+    ledger.failBeforeProvider({ reservation, code: 'provider_unavailable' }),
+    (error) => assertOperationalError(error, { status: 503, code: 'budget_contention' }),
+  );
+  assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
+});
+
+test('settle reconciles identical and mismatched fifth-write terminal outcomes safely', async () => {
+  const settlement = (reservation) => ({
+    reservation,
+    outcome: 'succeeded',
+    usage: { inputTokens: 100, outputTokens: 20 },
+  });
+
+  {
+    const fake = createFakeBlobStore();
+    const { ledger } = makeHarness({ fake });
+    const reservation = await ledger.reserve(actorRequest('settle-final-read-identical'));
+    await ledger.markProviderStarted(reservation);
+    fake.conflictNextMatches(5, commitFifthAttempt);
+    const beforeCalls = fake.calls.length;
+
+    assert.deepEqual(await ledger.settle(settlement(reservation)), {
+      modified: false,
+      status: 'settled',
+      outcome: 'succeeded',
+      chargedMicros: 200,
+    });
+    assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
+  }
+
+  {
+    const fake = createFakeBlobStore();
+    const { ledger } = makeHarness({ fake });
+    const reservation = await ledger.reserve(actorRequest('settle-final-read-mismatch'));
+    await ledger.markProviderStarted(reservation);
+    fake.conflictNextMatches(5, ({ current, attempted, matchConflictCount }) => {
+      if (matchConflictCount !== 5) return current;
+      const mismatch = clone(attempted);
+      const attempt = Object.values(mismatch.operations)[0].attempts.at(-1);
+      attempt.status = 'provider_failed';
+      attempt.outcome = 'provider_failed';
+      attempt.settlementHash = canonicalHash({
+        outcome: 'provider_failed',
+        usage: attempt.actualUsage,
+      });
+      return mismatch;
+    });
+    const beforeCalls = fake.calls.length;
+
+    await assert.rejects(
+      ledger.settle(settlement(reservation)),
+      (error) => assertOperationalError(error, { status: 409, code: 'idempotency_mismatch' }),
+    );
+    assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
+  }
+});
+
+test('settle retains contention when the final read is still provider-started', async () => {
+  const fake = createFakeBlobStore();
+  const { ledger } = makeHarness({ fake });
+  const reservation = await ledger.reserve(actorRequest('settle-final-read-pending'));
+  await ledger.markProviderStarted(reservation);
+  fake.conflictNextMatches(5, ({ current }) => current);
+  const beforeCalls = fake.calls.length;
+
+  await assert.rejects(
+    ledger.settle({
+      reservation,
+      outcome: 'succeeded',
+      usage: { inputTokens: 100, outputTokens: 20 },
+    }),
+    (error) => assertOperationalError(error, { status: 503, code: 'budget_contention' }),
+  );
+  assertFiveWritesThenFinalStrongRead(fake, beforeCalls);
 });
 
 test('reserve stores hashes rather than raw identity or owner secrets and enforces stable binding', async () => {
@@ -906,12 +1200,31 @@ test('clock rollback never moves canonical UTC timestamps backward', async () =>
 });
 
 test('invalid clocks and unsafe arithmetic fail before a corrupt write', async () => {
-  for (const now of [Number.NaN, Number.POSITIVE_INFINITY, 0.5, Number.MAX_SAFE_INTEGER]) {
+  for (const now of [
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    0.5,
+    Number.MAX_SAFE_INTEGER,
+    Date.parse('+010000-01-01T00:00:00.000Z'),
+    Date.parse('-000001-01-01T00:00:00.000Z'),
+  ]) {
+    const fake = createFakeBlobStore();
     assert.throws(
-      () => makeHarness({ clockRef: { now } }),
+      () => makeHarness({ fake, clockRef: { now } }),
       (error) => assertOperationalError(error, { status: 500, code: 'invalid_configuration' }),
     );
+    assert.equal(fake.calls.length, 0);
   }
+
+  const clockRef = { now: NOW_MS };
+  const runtimeFake = createFakeBlobStore();
+  const { ledger: runtimeLedger } = makeHarness({ fake: runtimeFake, clockRef });
+  clockRef.now = Date.parse('+010000-01-01T00:00:00.000Z');
+  await assert.rejects(
+    runtimeLedger.reserve(actorRequest('runtime-extended-year')),
+    (error) => assertOperationalError(error, { status: 500, code: 'invalid_configuration' }),
+  );
+  assert.equal(writeCalls(runtimeFake).length, 0);
 
   const huge = clone(RATE_CARD);
   huge.rates[0].price = Number.MAX_SAFE_INTEGER;

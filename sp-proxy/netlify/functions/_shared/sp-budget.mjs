@@ -202,6 +202,13 @@ function clockMilliseconds(clock) {
   ) {
     throw invalidConfiguration();
   }
+  try {
+    if (!CANONICAL_TIMESTAMP.test(new Date(value).toISOString())) {
+      throw invalidConfiguration();
+    }
+  } catch {
+    throw invalidConfiguration();
+  }
   return value;
 }
 
@@ -662,6 +669,7 @@ export function createBudgetLedger({
       throw budgetUnavailable();
     }
     if (result?.modified !== true && result?.modified !== false) throw budgetUnavailable();
+    if (result.modified === true && !nonempty(result.etag)) throw budgetUnavailable();
     return result.modified;
   }
 
@@ -733,6 +741,7 @@ export function createBudgetLedger({
       rateCardVersion: frozenRateCard.version,
     });
     let owner = null;
+    let intendedGeneration = null;
 
     for (let casAttempt = 0; casAttempt < maxCasAttempts; casAttempt += 1) {
       const existing = await read();
@@ -747,6 +756,7 @@ export function createBudgetLedger({
         if (last.status !== 'failed_before_provider') throw budgetUnavailable();
         generation = operation.generation + 1;
       }
+      intendedGeneration = generation;
 
       const limit = VOICE_KINDS.has(input.kind) ? warningMicros : capMicros;
       const prospective = safeSum(record.authorizedMicros, maximumMicros);
@@ -791,6 +801,26 @@ export function createBudgetLedger({
         });
       }
     }
+    const final = await read();
+    if (!final) throw budgetContention();
+    const operation = final.data.operations[operationHash];
+    if (!operation) throw budgetContention();
+    if (operation.bindingHash !== bindingHash) throw idempotencyMismatch();
+    const attempt = currentAttempt(operation);
+    if (TERMINAL_PROVIDER_STATUSES.has(attempt.status)) return publicTerminal(attempt);
+    if (
+      attempt.status === 'reserved'
+      && owner !== null
+      && operation.generation === intendedGeneration
+      && attempt.ownerTokenHash === owner.hash
+    ) {
+      return makeHandle({
+        operationHash,
+        generation: operation.generation,
+        ownerTokenHash: owner.hash,
+      });
+    }
+    if (ACTIVE_STATUSES.has(attempt.status)) throw budgetInProgress();
     throw budgetContention();
   }
 
@@ -815,7 +845,14 @@ export function createBudgetLedger({
       }
       void operation;
     }
-    throw budgetContention();
+    const final = await read();
+    if (!final) throw stateConflict();
+    const { attempt } = operationFor(final.data, metadata);
+    if (attempt.status === 'provider_started') {
+      return { modified: false, authorized: false, status: 'provider_started' };
+    }
+    if (attempt.status === 'reserved') throw budgetContention();
+    throw stateConflict();
   }
 
   async function failBeforeProvider(input) {
@@ -849,7 +886,15 @@ export function createBudgetLedger({
         return { modified: true, status: 'failed_before_provider' };
       }
     }
-    throw budgetContention();
+    const final = await read();
+    if (!final) throw stateConflict();
+    const { attempt } = operationFor(final.data, metadata);
+    if (attempt.status === 'failed_before_provider') {
+      if (attempt.failureCode !== input.code) throw idempotencyMismatch();
+      return { modified: false, status: 'failed_before_provider' };
+    }
+    if (attempt.status === 'reserved') throw budgetContention();
+    throw stateConflict();
   }
 
   async function settle(input) {
@@ -865,11 +910,7 @@ export function createBudgetLedger({
     const suppliedUsage = Object.hasOwn(input, 'usage') ? input.usage : null;
     if (suppliedUsage !== null && !isObject(suppliedUsage)) throw invalidRequest();
     const metadata = handleMetadata(input.reservation);
-
-    for (let casAttempt = 0; casAttempt < maxCasAttempts; casAttempt += 1) {
-      const existing = await read();
-      if (!existing) throw stateConflict();
-      const { operation, attempt } = operationFor(existing.data, metadata);
+    const settlementFor = (operation) => {
       const actualUsage = suppliedUsage === null
         ? clone(operation.maximumUsage)
         : validateUsage(operation.kind, suppliedUsage);
@@ -880,6 +921,14 @@ export function createBudgetLedger({
         outcome: input.outcome,
         usage: suppliedUsage === null ? null : actualUsage,
       });
+      return { actualUsage, actualMicros, settlementHash };
+    };
+
+    for (let casAttempt = 0; casAttempt < maxCasAttempts; casAttempt += 1) {
+      const existing = await read();
+      if (!existing) throw stateConflict();
+      const { operation, attempt } = operationFor(existing.data, metadata);
+      const { actualUsage, actualMicros, settlementHash } = settlementFor(operation);
       if (TERMINAL_PROVIDER_STATUSES.has(attempt.status)) {
         if (attempt.settlementHash !== settlementHash) throw idempotencyMismatch();
         return publicSettlement(attempt, false);
@@ -909,7 +958,16 @@ export function createBudgetLedger({
         return publicSettlement(nextAttempt, true);
       }
     }
-    throw budgetContention();
+    const final = await read();
+    if (!final) throw stateConflict();
+    const { operation, attempt } = operationFor(final.data, metadata);
+    const { settlementHash } = settlementFor(operation);
+    if (TERMINAL_PROVIDER_STATUSES.has(attempt.status)) {
+      if (attempt.settlementHash !== settlementHash) throw idempotencyMismatch();
+      return publicSettlement(attempt, false);
+    }
+    if (attempt.status === 'provider_started') throw budgetContention();
+    throw stateConflict();
   }
 
   async function getUsage() {
