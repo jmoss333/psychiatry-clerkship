@@ -75,7 +75,7 @@ EXPECTED_CSV_FIELDS = (
     "fieldsJson",
     "tagsJson",
     "templateContractSha256",
-    "renderSha256",
+    "shippedCardSha256",
     "sourceUrl",
 )
 
@@ -422,6 +422,47 @@ def test_stored_model_and_deck_sets_reject_unused_qbank_in_complete(candidate, t
     assert "PACKAGE_STORED_MEMBERSHIP" in {issue.code for issue in result.issues}
 
 
+def test_declared_empty_qbank_deck_is_valid_and_keeps_no_model(candidate, tmp_path):
+    candidate = replace(candidate, qbank_active=())
+
+    receipt = write_release(candidate, tmp_path)
+    result = inspect_release(tmp_path, receipt)
+
+    assert result.issues == ()
+    snapshot = result.snapshots[QBANK_ARTIFACT_FILENAME]
+    assert snapshot.models == {}
+    assert set(snapshot.decks) == {1, LEGACY_QBANK_DECK_ID}
+    assert snapshot.notes == ()
+    assert snapshot.cards == ()
+
+
+def test_declared_empty_core_application_and_complete_decks_are_valid(
+    candidate, tmp_path
+):
+    candidate = replace(
+        candidate,
+        core_active=(),
+        application_active=(),
+        withdrawals=(),
+    )
+
+    receipt = write_release(candidate, tmp_path)
+    result = inspect_release(tmp_path, receipt)
+
+    assert result.issues == ()
+    expected_decks = {
+        CORE_ARTIFACT_FILENAME: {1, CORE_DECK_ID},
+        APPLICATION_ARTIFACT_FILENAME: {1, APPLICATION_DECK_ID},
+        COMPLETE_ARTIFACT_FILENAME: {1, CORE_DECK_ID, APPLICATION_DECK_ID},
+    }
+    for filename, deck_ids in expected_decks.items():
+        snapshot = result.snapshots[filename]
+        assert snapshot.models == {}
+        assert set(snapshot.decks) == deck_ids
+        assert snapshot.notes == ()
+        assert snapshot.cards == ()
+
+
 def test_withdrawal_is_neutral_history_backed_and_csv_is_active_core_application_only(
     candidate, tmp_path
 ):
@@ -440,6 +481,13 @@ def test_withdrawal_is_neutral_history_backed_and_csv_is_active_core_application
     assert {row["namespace"] for row in rows} == {"core", "application"}
     assert {row["uid"] for row in rows}.isdisjoint({candidate.withdrawals[0].uid})
     assert all(row["artifactRole"] == "faculty_audit_interchange" for row in rows)
+    assert all(
+        row["shippedCardSha256"]
+        == result.identity_fingerprints[
+            (row["namespace"], row["uid"], row["identity"])
+        ]
+        for row in rows
+    )
     assert receipt["csv"] == {
         "filename": CSV_ARTIFACT_FILENAME,
         "sha256": _sha256(csv_path),
@@ -462,7 +510,7 @@ def test_withdrawal_is_neutral_history_backed_and_csv_is_active_core_application
         "tags_parity",
         "ordinal",
         "template_hash",
-        "render_hash",
+        "shipped_hash",
         "source_url",
     ),
 )
@@ -505,8 +553,8 @@ def test_inspection_rejects_self_consistently_rehashed_csv_semantic_tampering(
             rows[0]["templateOrdinal"] = "1"
         elif mutation == "template_hash":
             rows[0]["templateContractSha256"] = "f" * 64
-        elif mutation == "render_hash":
-            rows[0]["renderSha256"] = "not-a-sha256"
+        elif mutation == "shipped_hash":
+            rows[0]["shippedCardSha256"] = "f" * 64
         elif mutation == "source_url":
             rows[0]["sourceUrl"] = "https://example.invalid/wrong"
         stream = io.StringIO(newline="")
@@ -517,6 +565,30 @@ def test_inspection_rejects_self_consistently_rehashed_csv_semantic_tampering(
         writer.writerows(rows)
         changed_csv = stream.getvalue()
     csv_path.write_text(changed_csv, encoding="utf-8")
+    changed_receipt = _stage_changed_receipt(
+        tmp_path, receipt, CSV_ARTIFACT_FILENAME
+    )
+
+    result = inspect_release(tmp_path, changed_receipt)
+
+    assert "CSV_SEMANTIC_DRIFT" in {issue.code for issue in result.issues}
+
+
+def test_self_consistently_rehashed_valid_hex_csv_card_hash_must_match_sqlite(
+    candidate, tmp_path
+):
+    receipt = write_release(candidate, tmp_path)
+    csv_path = tmp_path / CSV_ARTIFACT_FILENAME
+    reader = csv.DictReader(io.StringIO(csv_path.read_text(encoding="utf-8")))
+    fieldnames = tuple(reader.fieldnames or ())
+    rows = list(reader)
+    assert fieldnames == EXPECTED_CSV_FIELDS
+    rows[0]["shippedCardSha256"] = "f" * 64
+    stream = io.StringIO(newline="")
+    writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
+    writer.writeheader()
+    writer.writerows(rows)
+    csv_path.write_text(stream.getvalue(), encoding="utf-8")
     changed_receipt = _stage_changed_receipt(
         tmp_path, receipt, CSV_ARTIFACT_FILENAME
     )

@@ -41,6 +41,7 @@ from pcl_anki.contract import (
 from pcl_anki.inspect import (
     CSV_FIELDS,
     canonical_package_fingerprint,
+    canonical_identity_fingerprint,
     inspect_release,
     read_apkg,
     receipt_contract_sha256,
@@ -181,7 +182,9 @@ def _source_url(note: RenderedNote) -> str:
     return html.unescape(matches[0]) if matches else ""
 
 
-def _csv_bytes(notes: Sequence[RenderedNote]) -> bytes:
+def _csv_bytes(
+    notes: Sequence[RenderedNote], shipped_card_sha256: Mapping[str, str]
+) -> bytes:
     stream = io.StringIO(newline="")
     writer = csv.DictWriter(stream, fieldnames=CSV_FIELDS, lineterminator="\n")
     writer.writeheader()
@@ -203,7 +206,7 @@ def _csv_bytes(notes: Sequence[RenderedNote]) -> bytes:
                     tuple(sorted(note.tags)), ensure_ascii=False, separators=(",", ":")
                 ),
                 "templateContractSha256": note.template_contract_sha256,
-                "renderSha256": note.render_sha256,
+                "shippedCardSha256": shipped_card_sha256[note.guid],
                 "sourceUrl": _source_url(note),
             }
         )
@@ -264,8 +267,22 @@ def _write_release_in(candidate: CandidateRelease, withdrawals: tuple[RenderedNo
     write_apkg(qbank_deck, root / QBANK_ARTIFACT_FILENAME, candidate.release_epoch)
 
     active_csv_notes = (*candidate.core_active, *candidate.application_active)
+    shipped_card_sha256 = {}
+    for snapshot in (
+        read_apkg(root / CORE_ARTIFACT_FILENAME),
+        read_apkg(root / APPLICATION_ARTIFACT_FILENAME),
+    ):
+        for note in snapshot.notes:
+            if "Status::withdrawn" in note.tags:
+                continue
+            fingerprint = canonical_identity_fingerprint(snapshot, note)
+            if fingerprint is None:
+                raise PackageWriteError(
+                    f"cannot derive shipped-card fingerprint for {note.guid}"
+                )
+            shipped_card_sha256[note.guid] = fingerprint
     csv_path = root / CSV_ARTIFACT_FILENAME
-    csv_path.write_bytes(_csv_bytes(active_csv_notes))
+    csv_path.write_bytes(_csv_bytes(active_csv_notes, shipped_card_sha256))
     package_records = {
         CORE_ARTIFACT_FILENAME: _package_record(
             root / CORE_ARTIFACT_FILENAME,

@@ -15,14 +15,17 @@ from zipfile import BadZipFile, ZipFile
 
 from pcl_anki.contract import (
     APPLICATION_ARTIFACT_FILENAME,
+    APPLICATION_DECK_ID,
     APPLICATION_MODEL_ID,
     COMPLETE_ARTIFACT_FILENAME,
     CORE_ARTIFACT_FILENAME,
     CORE_BASIC_MODEL_ID,
     CORE_CLOZE_MODEL_ID,
+    CORE_DECK_ID,
     InspectionResult,
     Issue,
     LEGACY_QBANK_MODEL_ID,
+    LEGACY_QBANK_DECK_ID,
     PackageCard,
     PackageNote,
     PackageSnapshot,
@@ -57,7 +60,7 @@ CSV_FIELDS = (
     "fieldsJson",
     "tagsJson",
     "templateContractSha256",
-    "renderSha256",
+    "shippedCardSha256",
     "sourceUrl",
 )
 _MODEL_KEYS = {
@@ -75,6 +78,12 @@ _MODEL_SETS = {
         APPLICATION_MODEL_ID,
     },
     QBANK_ARTIFACT_FILENAME: {LEGACY_QBANK_MODEL_ID},
+}
+_DECLARED_DECK_IDS = {
+    CORE_ARTIFACT_FILENAME: {CORE_DECK_ID},
+    APPLICATION_ARTIFACT_FILENAME: {APPLICATION_DECK_ID},
+    COMPLETE_ARTIFACT_FILENAME: {CORE_DECK_ID, APPLICATION_DECK_ID},
+    QBANK_ARTIFACT_FILENAME: {LEGACY_QBANK_DECK_ID},
 }
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
 _SOURCE_URL_RE = re.compile(r'<a href="([^"]+)">Open reviewed source</a>')
@@ -337,7 +346,6 @@ def _contract_issues(filename: str, snapshot: PackageSnapshot) -> list[Issue]:
     issues = []
     note_models = {note.model_id for note in snapshot.notes}
     stored_models = set(snapshot.models)
-    referenced_decks = {card.deck_id for card in snapshot.cards}
     stored_decks = set(snapshot.decks)
     allowed_models = _MODEL_SETS[filename]
     if not note_models <= allowed_models:
@@ -350,7 +358,7 @@ def _contract_issues(filename: str, snapshot: PackageSnapshot) -> list[Issue]:
         )
     if (
         stored_models != note_models
-        or stored_decks != referenced_decks | {1}
+        or stored_decks != _DECLARED_DECK_IDS[filename] | {1}
         or snapshot.decks.get(1, {}).get("name") != "Default"
     ):
         issues.append(
@@ -582,7 +590,9 @@ def _identity_key(note: PackageNote) -> tuple[str, str, str] | None:
     return None
 
 
-def _identity_fingerprint(snapshot: PackageSnapshot, note: PackageNote) -> str | None:
+def canonical_identity_fingerprint(
+    snapshot: PackageSnapshot, note: PackageNote
+) -> str | None:
     key = _MODEL_KEYS.get(note.model_id)
     actual_contract = _template_contract(snapshot, note.model_id)
     if key is None or actual_contract is None:
@@ -651,6 +661,9 @@ def _csv_semantic_issue(
                         separators=(",", ":"),
                     ),
                     "templateContractSha256": canonical_json_sha256(contract),
+                    "shippedCardSha256": canonical_identity_fingerprint(
+                        snapshot, note
+                    ),
                     "sourceUrl": html.unescape(source_matches[0]),
                 }
             )
@@ -704,11 +717,11 @@ def _csv_semantic_issue(
                 path,
                 f"row {index} fields/tags are not deterministic string arrays",
             )
-        if _SHA256_RE.fullmatch(row["renderSha256"]) is None:
+        if _SHA256_RE.fullmatch(row["shippedCardSha256"]) is None:
             return _issue(
                 "CSV_SEMANTIC_DRIFT",
                 path,
-                f"row {index} render hash is not SHA-256",
+                f"row {index} shipped-card hash is not SHA-256",
             )
         for key, value in expected_row.items():
             if row.get(key) != value:
@@ -908,7 +921,7 @@ def inspect_release(out_dir: Path, receipt: Mapping[str, object]) -> InspectionR
     for snapshot in (value for value in canonical_sources if value is not None):
         for note in snapshot.notes:
             key = _identity_key(note)
-            fingerprint = _identity_fingerprint(snapshot, note)
+            fingerprint = canonical_identity_fingerprint(snapshot, note)
             if key is None or fingerprint is None:
                 continue
             if key in identity_fingerprints:
