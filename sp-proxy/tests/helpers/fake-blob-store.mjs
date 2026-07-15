@@ -5,14 +5,17 @@ function clone(value) {
 }
 
 export function createFakeBlobStore({
+  onlyIfNewConflicts = 0,
   onlyIfMatchConflicts = 0,
   terminalOnMatchConflict = null,
+  mutateOnMatchConflict = null,
   nonStrongReadsReturnNull = false,
   unavailable = false,
 } = {}) {
   const records = new Map();
   const calls = [];
   let etagSequence = 0;
+  let remainingNewConflicts = onlyIfNewConflicts;
   let remainingMatchConflicts = onlyIfMatchConflicts;
   let matchConflictCount = 0;
 
@@ -47,6 +50,10 @@ export function createFakeBlobStore({
       // Yield once so Promise.all claim tests exercise the conditional-write path.
       await Promise.resolve();
       const current = records.get(key);
+      if (options.onlyIfNew && remainingNewConflicts > 0) {
+        remainingNewConflicts -= 1;
+        return { modified: false };
+      }
       if (options.onlyIfNew && current) return { modified: false };
 
       if (options.onlyIfMatch !== undefined) {
@@ -54,6 +61,18 @@ export function createFakeBlobStore({
         if (remainingMatchConflicts > 0) {
           remainingMatchConflicts -= 1;
           matchConflictCount += 1;
+          if (typeof mutateOnMatchConflict === 'function') {
+            const replacement = mutateOnMatchConflict({
+              key,
+              current: current ? JSON.parse(current.value) : null,
+              attempted: JSON.parse(value),
+              matchConflictCount,
+            });
+            if (replacement !== undefined && current) {
+              current.value = JSON.stringify(replacement);
+              current.etag = nextEtag();
+            }
+          }
           if (matchConflictCount === terminalOnMatchConflict) {
             current.value = JSON.stringify({ ...JSON.parse(value), status: 'succeeded' });
             current.etag = nextEtag();
