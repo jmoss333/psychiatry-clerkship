@@ -14,3 +14,12 @@ test('question bank announces the verdict in an aria-live region', async ({ page
   await expect(live).toHaveCount(1);
   await expect(live).toContainText(/correct|incorrect|reasoning/i);
 });
+
+// WP-05 (WCAG 2.1 AA 2.4.1 Bypass Blocks): every built tool page ships a skip-to-content
+// link injected by build_deploy.py's polish pass — it must be the first focusable element.
+test('tool page exposes a skip link as first focusable', async ({ page }) => {
+  await page.goto('/tools/question-bank-practice.html');
+  await page.keyboard.press('Tab');
+  const focused = await page.evaluate(() => document.activeElement && document.activeElement.className);
+  expect(focused).toContain('skip-link');
+});

@@ -370,10 +370,27 @@ for _f in _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"
 for _f in _glob.glob(OUT+"/tools/*.html"):
     _t=open(_f,encoding="utf-8").read(); _o=_t
     _t=_t.replace('<div id="root"></div>','<main id="root"></main>')
+    if 'id="root"' not in _t and '<main' in _t:
+        # WP-05 gap: 2/20 tool sources (family-systems-practice, one-patient-six-weeks) already
+        # ship a <main> wrapper but no id — give the skip-link below a resolvable #root anchor
+        # without duplicating an id= that's already present on the tag.
+        _t=_re.sub(r'<main(?![^>]*\bid=)', '<main id="root"', _t, count=1)
     _t=_t.replace('<head>','<head>\n<link rel="icon" href="/favicon.svg">',1)
+    # WP-05: skip-to-content link (WCAG 2.1 AA 2.4.1 Bypass Blocks) — first focusable element in body.
+    if 'class="skip-link"' not in _t and '<body' in _t:
+        _t=_re.sub(r'(<body[^>]*>)', r'\1\n<a class="skip-link" href="#root">Skip to content</a>', _t, count=1)
+    if '.skip-link{' not in _t and '</head>' in _t:
+        _t=_t.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}</style>\n</head>', 1)
     if _t!=_o: open(_f,"w",encoding="utf-8").write(_t)
-_ih=open(OUT+"/index.html",encoding="utf-8").read()
-if 'rel="icon"' not in _ih: open(OUT+"/index.html","w",encoding="utf-8").write(_ih.replace('<head>','<head>\n<link rel="icon" href="/favicon.svg">',1))
+_ih=open(OUT+"/index.html",encoding="utf-8").read(); _ih_o=_ih
+if 'rel="icon"' not in _ih: _ih=_ih.replace('<head>','<head>\n<link rel="icon" href="/favicon.svg">',1)
+# Shell (spa_index.html) already ships its own skip-link (href="#content") — guard so the build
+# never double-injects a second one into the SPA index.
+if 'class="skip-link"' not in _ih and '<body' in _ih:
+    _ih=_re.sub(r'(<body[^>]*>)', r'\1\n<a class="skip-link" href="#root">Skip to content</a>', _ih, count=1)
+if '.skip-link{' not in _ih and '</head>' in _ih:
+    _ih=_ih.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}</style>\n</head>', 1)
+if _ih!=_ih_o: open(OUT+"/index.html","w",encoding="utf-8").write(_ih)
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(OUT+"/404.html","w",encoding="utf-8").write('<!doctype html><meta charset="utf-8"><title>Not found</title><meta name="robots" content="noindex,nofollow"><style>body{font-family:system-ui,sans-serif;background:#f6f3ee;color:#2f2924;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#174d43}</style><div><h1 style="color:#9f3f2a">Page not found</h1><p><a href="/">Return to the clerkship hub</a></p></div>')

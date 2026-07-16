@@ -64,6 +64,17 @@ for src,dst in PROTO_TOOLS:
     pack_src=p[:-len(".html")]+".pack.json"
     if os.path.exists(pack_src):
         shutil.copyfile(pack_src, OUT+"/tools/"+dst[:-len(".html")]+".pack.json")
+    # WP-05: these 3 rp-* tools bypass build_deploy.py's polish pass entirely (raw copy, above),
+    # so they'd otherwise ship without the skip-to-content link every other built page gets.
+    # All 3 already carry <main id="root">, so only the skip-link + its CSS need injecting here.
+    _dp=OUT+"/tools/"+dst
+    if os.path.exists(_dp):
+        _t=open(_dp,encoding="utf-8").read(); _o=_t
+        if 'class="skip-link"' not in _t and '<body' in _t:
+            _t=re.sub(r'(<body[^>]*>)', r'\1\n<a class="skip-link" href="#root">Skip to content</a>', _t, count=1)
+        if '.skip-link{' not in _t and '</head>' in _t:
+            _t=_t.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}</style>\n</head>', 1)
+        if _t!=_o: open(_dp,"w",encoding="utf-8").write(_t)
 # vendor React (shared across all three rp-* tools; files are byte-for-byte identical)
 _vendor_src=os.path.join(LIB,"_prototypes/agitation-trainer/vendor")
 _vendor_dst=OUT+"/tools/vendor"
