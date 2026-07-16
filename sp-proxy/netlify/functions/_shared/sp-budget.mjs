@@ -746,13 +746,40 @@ export function createBudgetLedger({
     return { operation, attempt };
   }
 
-  async function ensureRecord() {
+  // Read path with F1 read-repair: reclaim stale reservations and persist the
+  // release so getUsage/getBand (and the voice pre-check that gates on them)
+  // reflect a healed envelope. Without this the reclaim only ran inside reserve,
+  // which the voice POSTs never reach once strands push the band off 'ok'.
+  async function readRepairedRecord() {
     for (let attempt = 0; attempt < maxCasAttempts; attempt += 1) {
       const existing = await read();
-      if (existing) return existing.data;
-      const next = initialRecord();
-      if (await write(next, { onlyIfNew: true })) return next;
+      if (!existing) {
+        const next = initialRecord();
+        if (await write(next, { onlyIfNew: true })) return next;
+        continue;
+      }
+      const record = clone(existing.data);
+      const nowMs = clockMilliseconds(clock);
+      const updatedAt = timestampAt(clock, record.updatedAt);
+      const reclaimedMicros = reclaimStaleReservations(
+        record,
+        nowMs,
+        updatedAt,
+        reservationLeaseMilliseconds,
+      );
+      if (reclaimedMicros === 0) return existing.data;
+      if (await write(record, { onlyIfMatch: existing.etag })) {
+        console.info(JSON.stringify({
+          event: 'sp_budget_reclaimed',
+          releasedMicros: reclaimedMicros,
+        }));
+        return record;
+      }
+      // Lost the CAS to a concurrent writer; re-read and repair the new state.
     }
+    // Never brick the read paths (health/usage): fall back to the stored view.
+    const final = await read();
+    if (final) return final.data;
     throw budgetContention();
   }
 
@@ -1024,7 +1051,7 @@ export function createBudgetLedger({
   }
 
   async function getUsage() {
-    const record = await ensureRecord();
+    const record = await readRepairedRecord();
     return {
       schemaVersion: record.schemaVersion,
       band: bandFor(record, capMicros, warningMicros),

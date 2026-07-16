@@ -1384,3 +1384,27 @@ test('the request abort signal is forwarded into the provider transcribe and syn
   synthController.abort();
   assert.equal(synthesizeCall.input.signal.aborted, true);
 });
+
+// #232 item 2 — abort cleanup is best-effort. If a concurrent read-repair reclaim
+// already flipped this reservation to lease_expired, failBeforeProvider throws
+// idempotency_mismatch (409). A learner who merely cancelled must still see 499,
+// not a confusing 409.
+test('an abort cleanup that races a concurrent reclaim still returns 499, not a 409 mismatch', async () => {
+  const controller = new AbortController();
+  const mismatch = operationalError(
+    409,
+    'idempotency_mismatch',
+    'The budget operation does not match its original request.',
+  );
+  const budget = Object.freeze({
+    async getBand() { return 'ok'; },
+    async reserve() { controller.abort(); return Object.freeze({}); },
+    async markProviderStarted() { return { modified: true, authorized: true, status: 'provider_started' }; },
+    async settle() { return { modified: true, status: 'settled', outcome: 'succeeded', chargedMicros: 1 }; },
+    async failBeforeProvider() { throw mismatch; },
+  });
+  const harness = enabledHandler({ budget });
+  const response = await harness.handler(transcribeRequest({ signal: controller.signal }));
+  assert.equal(response.status, 499);
+  assert.equal((await response.json()).error.code, 'request_cancelled');
+});

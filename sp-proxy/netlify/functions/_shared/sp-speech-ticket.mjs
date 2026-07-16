@@ -10,6 +10,10 @@ import { operationalError } from './sp-http.mjs';
 const SHA256_HEX = /^[a-f0-9]{64}$/;
 const BASE64URL = /^[A-Za-z0-9_-]+$/;
 const TERMINAL_STATUSES = new Set(['succeeded', 'provider_failed']);
+// The actor endpoint stamps iat on one function clock; the voice endpoint
+// authenticates on another. Tolerate a small forward skew (verifier lagging the
+// issuer) so a fresh ticket is not rejected; exp (iat+120) stays strict.
+const CLOCK_SKEW_SECONDS = 5;
 const PAYLOAD_KEYS = [
   'attestationHash',
   'caseId',
@@ -325,7 +329,7 @@ export function createTicketCodec({
       if (!validatePayload(payload)) throw invalidTicket();
       const now = nowSeconds(clock);
       if (now >= payload.exp) throw expiredTicket();
-      if (now < payload.iat) throw invalidTicket();
+      if (now + CLOCK_SKEW_SECONDS < payload.iat) throw invalidTicket();
       if (!secureEqual(payload.replyHash, sha256(reply))) throw invalidTicket();
       const frozen = Object.freeze(payload);
       authenticatedPayloads.add(frozen);

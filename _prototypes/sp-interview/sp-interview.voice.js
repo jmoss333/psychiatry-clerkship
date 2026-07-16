@@ -1139,7 +1139,14 @@
       assertActiveEncounter();
       if (!canReplay(turnId)) throw voiceError('invalid_state', 'That patient turn is not replayable now.');
       var entry = cache.filter(function (candidate) { return candidate.turnId === turnId; })[0];
-      return startManagedPlayer(entry);
+      try {
+        return startManagedPlayer(entry);
+      } catch (error) {
+        // startPlayer publishes 'speaking' before play(); a synchronous playback
+        // failure must resolve to 'error', matching the reply-arrival path,
+        // rather than stranding the controller in a phantom speaking state.
+        throw failState(error, turnId);
+      }
     }
 
     function resolveFallback(choice) {
