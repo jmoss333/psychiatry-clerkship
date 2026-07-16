@@ -64,7 +64,6 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
 .oeaudio{margin:0 0 14px;border:1px solid var(--border2);border-radius:9px;padding:8px 11px;background:var(--bg-alt)}
 .oeaudio summary{cursor:pointer;font-size:.85rem;color:var(--accent-dark);font-weight:600;list-style:none}
 .oeaudio audio{width:100%;margin-top:9px}
-.oealt{margin:7px 0 0;font-size:.82rem;color:var(--text-mid);line-height:1.4}
 .opts{display:flex;flex-direction:column;gap:9px}
 .opt{text-align:left;border:1.5px solid var(--border);background:var(--surface2);border-radius:11px;padding:11px 13px;font-size:.95rem;color:var(--text);cursor:pointer;font-family:inherit;line-height:1.4;display:flex;gap:10px;align-items:flex-start}
 .opt:hover{border-color:var(--primary);background:var(--hover)}
@@ -140,7 +139,7 @@ function App(){
       fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};})
     ]).then(function(res){
       var j=res[0]||{}, tm=res[1]||{}, out=[];
-      (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null,audioTitle:d.audioTitle||null}); }); });
+      (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); });
       function pretty(k){ return k.replace(/^t_/,"").replace(/\.md$/,"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}); }
       Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+pretty(k),q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } });
       if(!out.length){ setErr(true); return; }
@@ -219,7 +218,7 @@ function App(){
             e("span",{className:"deckchip",style:{background:"var(--bg-alt)",color:"var(--text-light)"}}, c.deckTitle.length>42?c.deckTitle.slice(0,40)+"…":c.deckTitle),
             e("span",{className:"scount"}, (sess.pos+1)+" / "+sess.total)),
           e("div",{className:"qtext"}, c.q),
-          c.audio? e("details",{className:"oeaudio"}, e("summary",null,"🎧 Listen — paper overview"+(c.audioDur?(" · "+c.audioDur):"")), c.audioTitle? e("p",{className:"oealt"}, c.audioTitle) : null, e("audio",{controls:true,preload:"none",src:"../audio_oe/"+c.audio,"aria-label":"Paper overview audio"+(c.audioTitle?(": "+c.audioTitle):"")})) : null,
+          c.audio? e("details",{className:"oeaudio"}, e("summary",null,"🎧 Listen — paper overview"+(c.audioDur?(" · "+c.audioDur):"")), e("audio",{controls:true,preload:"none",src:"../audio_oe/"+c.audio,"aria-label":"Paper overview audio"})) : null,
           e("div",{className:"opts"}, c.o.map(function(o,i){
             var cls="opt"; if(sess.revealed){ if(i===ci)cls+=" correct"; else if(i===sess.chosen)cls+=" wrong"; else cls+=" dim"; }
             return e("button",{key:i,className:cls,disabled:sess.revealed,onClick:function(){choose(i);}},
