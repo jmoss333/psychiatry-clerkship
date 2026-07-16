@@ -203,6 +203,12 @@ export function createHttp({
   }
 
   function error(err, { origin = null } = {}) {
+    if (!(err instanceof OperationalError)) {
+      // A non-operational throw is a bug, not a governed denial. The response
+      // stays a generic 500 (no internals leak) but the evidence must reach
+      // the function log or the failure is undiagnosable.
+      console.error('sp: internal error', err);
+    }
     const normalized = asOperationalError(err);
     return json(
       { error: { code: normalized.code, message: normalized.message } },

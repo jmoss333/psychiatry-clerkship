@@ -569,7 +569,13 @@ class AttestationConsistencyTests(unittest.TestCase):
             with self.subTest(mutation=label):
                 pack = reviewed_voice_pack()
                 apply(pack["speechEngine"])
-                self.assertTrue(self.validate_pack(pack), label)
+                errors = self.validate_pack(pack)
+                # Match the specific message so an unrelated shape error can't
+                # keep this green if the engineHash requirement regresses.
+                self.assertTrue(
+                    any("requires a SHA-256 engineHash" in message for message in errors),
+                    (label, errors),
+                )
 
     def test_reviewed_enabled_engine_requires_complete_approved_privacy(self):
         self.assertEqual(self.validate_pack(reviewed_voice_pack()), [])

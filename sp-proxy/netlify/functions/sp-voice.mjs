@@ -775,6 +775,11 @@ export function createVoiceHandler({
       if (!validEnabledConfig(config)) throw invalidConfiguration();
       if (healthRoute) {
         const snapshot = await loadFrozenSnapshot(packLoader);
+        // F7 parity on the advisory surface: a pack below the billable-POST
+        // floor must not advertise a stack/profiles every capture would 403 on.
+        if (!POST_PACK_STATUSES.has(snapshot?.pack?.status)) {
+          return http.json(healthBody(), { origin });
+        }
         const context = resolveEligibleContext({ snapshot, governance, config });
         if (context.stack === null) {
           return http.json(healthBody({ context }), { origin });
@@ -984,6 +989,7 @@ export default async function handler(request) {
     return await defaultHandler(request);
   } catch (error) {
     const operational = Number.isInteger(error?.status) && typeof error?.code === 'string';
+    if (!operational) console.error('sp-voice: internal error', error);
     const status = operational ? error.status : 500;
     const code = operational ? error.code : 'internal_error';
     const message = operational && typeof error?.message === 'string'

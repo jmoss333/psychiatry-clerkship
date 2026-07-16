@@ -1329,6 +1329,27 @@ test('transcribe and speak reject a pack whose top-level status is not approved,
   assert.deepEqual(s.budgetSpy.calls, []);
 });
 
+// F7 parity on the advisory surface — the health route must not advertise
+// acceptingVoice/eligible profiles that every billable POST would then 403,
+// or the client enables the mic and every capture dies as pack_not_approved.
+test('health does not advertise voice for a pack whose top-level status is not approved', async () => {
+  const pack = createReviewedPack();
+  pack.status = 'draft-pending-attestation';
+  const snapshot = reviewedSnapshot(pack);
+
+  const harness = enabledHandler({ snapshot });
+  const response = await harness.handler(learnerRequest());
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.enabled, true);
+  assert.equal(body.acceptingVoice, false);
+  assert.equal(body.budgetBand, null);
+  assert.equal(body.activeStack, null);
+  assert.deepEqual(body.eligibleProfiles, []);
+  assert.deepEqual(harness.recordingProvider.calls, []);
+  assert.deepEqual(harness.budgetSpy.calls, []);
+});
+
 // F15 — the anti-billing kill switch depends on request.signal being forwarded
 // into the provider call (sp-voice.mjs synthesize/transcribe: signal:
 // request.signal). The adapter-level abort is tested elsewhere; this locks the

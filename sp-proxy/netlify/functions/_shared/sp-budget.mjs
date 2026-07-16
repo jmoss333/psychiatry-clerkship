@@ -785,7 +785,12 @@ export function createBudgetLedger({
       const record = existing ? clone(existing.data) : initialRecord();
       const nowMs = clockMilliseconds(clock);
       const updatedAt = timestampAt(clock, record.updatedAt);
-      reclaimStaleReservations(record, nowMs, updatedAt, reservationLeaseMilliseconds);
+      const reclaimedMicros = reclaimStaleReservations(
+        record,
+        nowMs,
+        updatedAt,
+        reservationLeaseMilliseconds,
+      );
       const operation = record.operations[operationHash];
       let generation = 1;
       if (operation) {
@@ -833,6 +838,15 @@ export function createBudgetLedger({
       record.updatedAt = updatedAt;
       const conditions = existing ? { onlyIfMatch: existing.etag } : { onlyIfNew: true };
       if (await write(record, conditions)) {
+        if (reclaimedMicros > 0) {
+          // A persisted reclaim is evidence a strand happened (crash or
+          // contention throw) — the F1 anomaly must be visible to operators,
+          // not only inferable from the blob record.
+          console.info(JSON.stringify({
+            event: 'sp_budget_reclaimed',
+            releasedMicros: reclaimedMicros,
+          }));
+        }
         return makeHandle({
           operationHash,
           generation,

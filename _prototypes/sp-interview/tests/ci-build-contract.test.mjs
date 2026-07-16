@@ -158,3 +158,18 @@ test('Node 20 and the aggregate SP gates run before either site build', () => {
   assert.ok(server >= 0 && interviewRoom > server, 'Interview Room browser acceptance must follow site servers');
   assert.match(ci, /SP_INTERVIEW_BASE_URL:\s*http:\/\/localhost:4200\/tools\//);
 });
+
+// F26's other half: CI invoking run-all.sh (locked above) only helps if
+// run-all.sh itself keeps every suite wired — deleting one line would
+// silently re-orphan a test with CI green.
+test('run-all.sh keeps the review-filter suite wired', () => {
+  const runAll = fs.readFileSync(
+    path.join(ROOT, '_prototypes/sp-interview/tests/run-all.sh'),
+    'utf8',
+  );
+  assert.match(
+    runAll,
+    /node review-filter\.test\.mjs/,
+    'review-filter.test.mjs must stay invoked by run-all.sh',
+  );
+});
