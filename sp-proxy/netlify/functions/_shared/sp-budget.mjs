@@ -17,6 +17,7 @@ const ACTIVE_STATUSES = new Set(['reserved', 'provider_started']);
 const TERMINAL_PROVIDER_STATUSES = new Set(['settled', 'provider_failed']);
 const FAILURE_CODES = new Set([
   'budget_rejected',
+  'lease_expired',
   'provider_unavailable',
   'redemption_failed',
   'request_aborted',
@@ -390,6 +391,36 @@ function currentAttempt(operation) {
   return operation.attempts[operation.attempts.length - 1];
 }
 
+// F1 reclaim: a 'reserved' attempt means the provider was never called
+// (markProviderStarted flips it to 'provider_started' immediately before the
+// call). If such an attempt outlives the lease it was stranded by a crash or a
+// contention throw and its held maximum will otherwise inflate authorizedMicros
+// forever. Release it via the existing failed_before_provider transition. Only
+// 'reserved' is reclaimed; a stranded 'provider_started' may reflect real,
+// already-billed provider work, so it is left charged (fail closed on money).
+function reclaimStaleReservations(record, nowMs, updatedAt, leaseMs) {
+  let released = 0;
+  for (const operation of Object.values(record.operations)) {
+    const attempt = currentAttempt(operation);
+    if (
+      attempt.status === 'reserved'
+      && nowMs - Date.parse(attempt.updatedAt) >= leaseMs
+    ) {
+      attempt.status = 'failed_before_provider';
+      attempt.failureCode = 'lease_expired';
+      attempt.updatedAt = updatedAt;
+      released = safeSum(released, operation.maximumMicros);
+    }
+  }
+  if (released > 0) {
+    record.reservedMicros -= released;
+    if (!safeNonnegative(record.reservedMicros)) throw budgetUnavailable();
+    record.authorizedMicros = safeSum(record.spentMicros, record.reservedMicros);
+    record.updatedAt = updatedAt;
+  }
+  return released;
+}
+
 function emptyUnits() {
   return {
     actorInputTokens: 0,
@@ -595,6 +626,7 @@ export function createBudgetLedger({
   clock = Date.now,
   randomBytes = nodeRandomBytes,
   maxCasAttempts = 5,
+  reservationLeaseMilliseconds = 120_000,
 }) {
   if (
     !store
@@ -611,6 +643,8 @@ export function createBudgetLedger({
     || typeof randomBytes !== 'function'
     || !Number.isSafeInteger(maxCasAttempts)
     || maxCasAttempts < 1
+    || !Number.isSafeInteger(reservationLeaseMilliseconds)
+    || reservationLeaseMilliseconds < 1
   ) {
     throw invalidConfiguration();
   }
@@ -749,6 +783,14 @@ export function createBudgetLedger({
     for (let casAttempt = 0; casAttempt < maxCasAttempts; casAttempt += 1) {
       const existing = await read();
       const record = existing ? clone(existing.data) : initialRecord();
+      const nowMs = clockMilliseconds(clock);
+      const updatedAt = timestampAt(clock, record.updatedAt);
+      const reclaimedMicros = reclaimStaleReservations(
+        record,
+        nowMs,
+        updatedAt,
+        reservationLeaseMilliseconds,
+      );
       const operation = record.operations[operationHash];
       let generation = 1;
       if (operation) {
@@ -765,7 +807,6 @@ export function createBudgetLedger({
       const prospective = safeSum(record.authorizedMicros, maximumMicros);
       if (record.overrunMicros > 0 || prospective > limit) throw budgetLimit(input.kind);
       if (owner === null) owner = newOwner();
-      const updatedAt = timestampAt(clock, record.updatedAt);
       const nextAttempt = {
         generation,
         ownerTokenHash: owner.hash,
@@ -797,6 +838,15 @@ export function createBudgetLedger({
       record.updatedAt = updatedAt;
       const conditions = existing ? { onlyIfMatch: existing.etag } : { onlyIfNew: true };
       if (await write(record, conditions)) {
+        if (reclaimedMicros > 0) {
+          // A persisted reclaim is evidence a strand happened (crash or
+          // contention throw) — the F1 anomaly must be visible to operators,
+          // not only inferable from the blob record.
+          console.info(JSON.stringify({
+            event: 'sp_budget_reclaimed',
+            releasedMicros: reclaimedMicros,
+          }));
+        }
         return makeHandle({
           operationHash,
           generation,

@@ -438,6 +438,34 @@ def _validate_speech_engine(slug, pack, cases):
     if engine_status == "reviewed" and speech_engine.get("activeStack") not in candidate_id_set:
         errors.append("%s: reviewed speechEngine must select an audition candidate" % slug)
 
+    # The runtime gate (sp-governance.mjs) refuses managed voice unless the
+    # reviewed/enabled engine carries a SHA-256 engineHash. CI never checked it,
+    # so a reviewed pack missing engineHash passed here yet was ineligible live.
+    if engine_status == "reviewed" or speech_engine.get("enabled") is True:
+        if not is_sha256(speech_engine.get("engineHash")):
+            errors.append(
+                "%s: reviewed or enabled speechEngine requires a SHA-256 engineHash" % slug
+            )
+
+    # A reviewed profile pins provider/providerModel; the runtime additionally
+    # requires that pin to equal the engine's active synthesis stack (a mismatch
+    # is silently ineligible live). Cross-check it here so CI catches the drift.
+    active_synthesis = actual_candidate_stacks.get(
+        speech_engine.get("activeStack"), {}
+    ).get("synthesis")
+    if engine_status == "reviewed" and active_synthesis and active_synthesis != (None, None):
+        for case_def in cases:
+            if not isinstance(case_def, dict):
+                continue
+            profile = case_def.get("speechProfile")
+            if not isinstance(profile, dict) or norm_status(profile.get("status")) != "reviewed":
+                continue
+            if (profile.get("provider"), profile.get("providerModel")) != active_synthesis:
+                errors.append(
+                    "%s: reviewed case %s speechProfile provider/model must match the active synthesis stack"
+                    % (slug, case_def.get("id") or "<unknown>")
+                )
+
     rate_card = speech_engine.get("rateCard")
     rate_models = set()
     rate_keys = set()

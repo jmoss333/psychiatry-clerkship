@@ -24,6 +24,14 @@ jobs:
         with:
           lfs: false
 
+      - name: Agent docs parity — AGENTS.md must equal CLAUDE.md
+        run: |
+          if ! cmp -s CLAUDE.md AGENTS.md; then
+            echo "::error::AGENTS.md is out of sync with CLAUDE.md — run: cp CLAUDE.md AGENTS.md"
+            exit 1
+          fi
+          echo "agent docs parity OK"
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -44,9 +52,15 @@ jobs:
       - name: Validate — longitudinal case contract
         run: python3 13_Faculty_Resources/_automation/test_longitudinal_case.py
 
+      - name: Validate — family systems scenarios contract
+        run: python3 13_Faculty_Resources/_automation/test_family_systems_scenarios.py
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      - name: Unit — root node regression tests (tests/*.test.mjs)
+        run: node --test tests/*.test.mjs
 
       - name: Install — managed SP proxy dependencies
         run: npm --prefix sp-proxy ci
