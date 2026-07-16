@@ -1,0 +1,979 @@
+{
+  "_note": "Media accessibility manifest (WP-13): text-alternative / caption status per media asset. Generated 2026-07-16, corrected after build verification showed the OE paper-overview audio (review.html) is actually live for 50/79 quiz decks (build-time title-join in build_deploy.py), not dormant as first assumed. 'onDisk' = a matching file exists in the working tree; 'served' = reachable from a built page on the live site as of this audit (both ms3 and res builds pass hard:0).",
+  "audio": [
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#01-CATIE-Lieberman-2005.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#02-STARD-Rush-2006.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#03-STEP-BD-Sachs-2007.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#04-Kane-Clozapine-1988.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#05-Cipriani-AD-NMA-2018.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#06-BALANCE-Geddes-2010.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#07-Cipriani-Lithium-Suicide-2013.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#08-Leucht-AP-NMA-2013.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#09-Kellner-ECT-2006.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#10-Moncrieff-Discontinuation-2019.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#11-Brown-EE-1962.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#12-Leff-Family-Intervention-1982.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#13-Falloon-Family-Therapy-1982.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#14-McFarlane-Multifamily-1995.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#15-Miklowitz-FFT-Bipolar-2003.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#16-Diamond-ABFT-2010.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#17-Pinsof-Science-FT-2018.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#18-Minuchin-Psychosomatic-1975.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#19-Leff-Couple-Therapy-2000.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#20-Pharoah-Cochrane-FI-2010.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#21-Linehan-DBT-1991.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#22-Bateman-MBT-1999.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#23-Wampold-Common-Factors-2001.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#24-Shedler-Psychodynamic-2010.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#25-Norcross-Alliance-2011.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#26-Rosenhan-Pseudopatient-1973.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#27-Appelbaum-Capacity-1988.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#28-Bush-Francis-Catatonia-1996.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#29-Foa-Prolonged-Exposure-2005.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#30-TADS-Adolescent-MDD-2004.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#31-Zanarini-MSAD-16yr-2012.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#32-Gunderson-BPD-NEJM-2011.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#33-Mann-Suicide-Prevention-2005.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#34-Stanley-Brown-Safety-Planning-2012.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#35-Franklin-Suicide-MetaAnalysis-2017.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#36-Caspi-5HTTLPR-2003.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#37-Border-Candidate-Gene-Null-2019.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#38-Sekar-C4-Schizophrenia-2016.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#39-Kernberg-BPO-1967.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#40-Gabbard-Boundaries-1995.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#41-Engel-Biopsychosocial-1977.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#42-Insel-RDoC-2010.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#43-Stein-Test-ACT-1980.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#44-Felitti-ACE-Study-1998.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#45-Project-MATCH-1997.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#46-Anton-COMBINE-2006.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#47-Volkow-Addiction-Brain-2016.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#48-MTA-Study-1999.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#49-Bridge-SSRI-Youth-2007.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#50-Reynolds-Geriatric-Maintenance-2006.m4a",
+      "kind": "paper-overview-brief",
+      "onDisk": false,
+      "served": false,
+      "textAlt": "written brief printed beside the filename in listening-guide-briefs.html",
+      "note": "source doc lives under a _source/ folder; verified (2026-07) it is not reachable from either built site (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) and no built page links to it — not learner-facing. No <audio> player exists; WP-13 Step 1 intentionally not actioned for this reason (see task-5-report.md)."
+    },
+    {
+      "file": "audio_oe/OE-01_Anthony_s_Recovery_Model_Beyond_Symptom_Remission__Meaningful_recovery_beyond_the_clinical_checklist.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Meaningful recovery beyond the clinical checklist",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-02_CBT_versus_Imipramine_for_Management_of_Panic_Disorder__CBT_Outlasts_Medication_for_Panic_Disorder.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "CBT Outlasts Medication for Panic Disorder",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-03_Ciprianis_Comprehensive_Meta_Analysis_of_21_Antidepressant_Drugs__Which_Antidepressants_Actually_Work_Best.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Which Antidepressants Actually Work Best",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-04_Clarifying_Confusion_The_Inouye_CAM_Study_Summary__Master_the_CAM_delirium_screening_tool.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Master the CAM delirium screening tool",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-05_Clinical_Standards_and_Efficacy_of_Electroconvulsive_Therapy__ECT_Outperforms_Medications_for_Severe_Depression.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "ECT Outperforms Medications for Severe Depression",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-06_Comparative_Efficacy_and_Tolerability_of_32_Oral_Antipsychotics__Pick_antipsychotics_based_on_side_effects.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Pick antipsychotics based on side effects",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-07_Divalproex_versus_Lithium_for_Acute_Mania_The_Bowden_Trial__Divalproex_Rivals_Lithium_for_Acute_Mania.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Divalproex Rivals Lithium for Acute Mania",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-08_Dole_and_Nyswander_The_Foundations_of_Methadone_Maintenance__The_1965_Trial_That_Established_Methadone.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "The 1965 Trial That Established Methadone",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-09_Evidence_Based_Strategies_for_Systematic_Suicide_Prevention__Treating_depression_and_restricting_lethal_means.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Treating depression and restricting lethal means",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-10_Family_Focused_Therapy_and_Relapse_Prevention_in_Bipolar_Disorder__Family_Focused_Therapy_Prevents_Bipolar_Relapse.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Family Focused Therapy Prevents Bipolar Relapse",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-11_Foundations_of_Dialectical_Behavior_Therapy_for_Borderline_Personality_Disorder__How_Marsha_Linehan_proved_BPD_is_treatable.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "How Marsha Linehan proved BPD is treatable",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-12_Foundations_of_Office_Based_Buprenorphine_Treatment__Bringing_Buprenorphine_to_Primary_Care.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Bringing Buprenorphine to Primary Care",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-13_Lithium_and_the_Prevention_of_Suicide_in_Mood_Disorders__Lithium_Slashes_Suicide_Risk_by_87_Percent.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Lithium Slashes Suicide Risk by 87 Percent",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-14_Measurement_Based_Care_for_Major_Depressive_Disorder__Measurement_Based_Care_Doubles_Depression_Remission.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Measurement Based Care Doubles Depression Remission",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-15_Memantine_and_the_Evolution_of_Severe_Alzheimers_Therapy__Memantine_for_Moderate_to_Severe_Alzheimer_s.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Memantine for Moderate to Severe Alzheimer's",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-16_Metabolic_Monitoring_Protocols_for_Second_Generation_Antipsychotics__ADA_APA_Antipsychotic_Metabolic_Monitoring_Consensus.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "ADA APA Antipsychotic Metabolic Monitoring Consensus",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-17_Pediatric_Antidepressants_and_the_FDA_Black_Box_Warning__Why_Pediatric_Antidepressant_Warnings_Backfired.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Why Pediatric Antidepressant Warnings Backfired",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-18_Project_MATCH_Brief_Interventions_and_Motivational_Enhancement_Efficiency__Project_MATCH_proves_brief_therapy_works.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Project MATCH proves brief therapy works",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-19_RAISE_ETP_Coordinated_Specialty_Care_for_First_Episode_Psychosis__RAISE_ETP_Standards_for_First_Episode_Psychosis.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "RAISE-ETP Standards for First Episode Psychosis",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-20_STEP_BD_The_Role_of_Antidepressants_in_Bipolar_Depression__Antidepressants_fail_to_treat_bipolar_depression.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Antidepressants fail to treat bipolar depression",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-21_Sackeim_Study_Pharmacotherapy_Strategies_for_Post_ECT_Relapse_Prevention__Lithium_and_Nortriptyline_Prevent_ECT_Relapse.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Lithium and Nortriptyline Prevent ECT Relapse",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-22_Sertraline_Efficacy_in_PTSD_Management_The_Brady_Study__The_Brady_Study_of_Sertraline_for_PTSD.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "The Brady Study of Sertraline for PTSD",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-23_Shared_Decision_Making_in_Psychiatric_Care__Shared_Decision_Making_for_Severe_Mental_Illness.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Shared Decision Making for Severe Mental Illness",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-24_Social_Determinants_and_Clinical_Frameworks_in_Modern_Psychiatry__Social_reality_is_core_psychiatry.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Social reality is core psychiatry",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-25_TADS_Evaluating_Combination_Therapy_for_Adolescent_Depression__Fluoxetine_and_CBT_for_depressed_teens.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Fluoxetine and CBT for depressed teens",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-26_The_BALANCE_Trial_Lithium_vs_Valproate_for_Bipolar_Maintenance__Lithium_Beats_Valproate_for_Bipolar_Maintenance.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Lithium Beats Valproate for Bipolar Maintenance",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-27_The_Bush_Francis_Catatonia_Rating_Scale_and_Lorazepam_Protocol__Bush_Francis_Scale_and_the_Lorazepam_Challenge.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Bush-Francis Scale and the Lorazepam Challenge",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-28_The_CATIE_Trial_Rethinking_Antipsychotic_Efficacy_and_Selection__Side_Effects_Drive_Antipsychotic_Selection.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Side Effects Drive Antipsychotic Selection",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-29_The_CATIE_AD_Trial_Antipsychotic_Risks_in_Alzheimers_Patients__Why_Antipsychotics_Failed_in_CATIE_AD.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Why Antipsychotics Failed in CATIE-AD",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-30_The_CLARITY_AD_Trial_Lecanemab_for_Early_Alzheimers_Disease__Lecanemab_slows_early_Alzheimer_s_decline.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Lecanemab slows early Alzheimer's decline",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-31_The_COMBINE_Study_Optimizing_Alcohol_Use_Disorder_Treatment__Naltrexone_and_medical_management_for_AUD.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Naltrexone and medical management for AUD",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-32_The_Columbia_Suicide_Severity_Rating_Scale_Foundation_and_Validation__Validating_the_Columbia_Suicide_Severity_Scale.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Validating the Columbia Suicide Severity Scale",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-33_The_Definitive_Meta_Analysis_of_Psychotherapy_for_Depression__Is_CBT_Actually_Better_Than_Other_Therapies.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Is CBT Actually Better Than Other Therapies",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-34_The_Engel_Biopsychosocial_Model_Foundations_of_Modern_Psychiatry__Engel_s_Biopsychosocial_Model_for_Modern_Psychiatry.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Engel's Biopsychosocial Model for Modern Psychiatry",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-35_The_FIN11_Study_Antipsychotic_Treatment_and_Schizophrenia_Mortality__Antipsychotics_reduce_schizophrenia_mortality.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Antipsychotics reduce schizophrenia mortality",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-36_The_Genesis_of_Modern_Psychopharmacology_Chlorpromazine_1952__How_chlorpromazine_replaced_the_lobotomy.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "How chlorpromazine replaced the lobotomy",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-37_The_Gold_Standard_Foundations_of_CPT_and_PE_for_PTSD__Resick_Trial_Gold_Standard_PTSD_Evidence.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Resick Trial Gold Standard PTSD Evidence",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-38_The_HELP_Trial_Multicomponent_Strategies_for_Delirium_Prevention__Stopping_delirium_with_the_HELP_trial.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Stopping delirium with the HELP trial",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-39_The_IMPACT_Trial_Collaborative_Care_for_Late_Life_Depression__Collaborative_Care_Doubles_Depression_Recovery_Rates.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Collaborative Care Doubles Depression Recovery Rates",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-40_The_Kane_Study_Clozapine_in_Treatment_Resistant_Schizophrenia__Clozapine_for_Treatment_Resistant_Schizophrenia.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Clozapine for Treatment Resistant Schizophrenia",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-41_The_Leucht_Meta_Analysis_Antipsychotic_Maintenance_and_Relapse_Prevention__Maintenance_Antipsychotics_and_the_NNT_of_3.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Maintenance Antipsychotics and the NNT of 3",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-42_The_MoCA_Validation_Study_Superior_Screening_for_Cognitive_Impairment__Why_MoCA_Catches_What_MMSE_Misses.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Why MoCA Catches What MMSE Misses",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-43_The_NIMH_Treatment_of_Depression_Collaborative_Research_Program__Talk_Therapy_Matches_Antidepressants_for_Major_Depression.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Talk Therapy Matches Antidepressants for Major Depression",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-44_The_POTS_Trial_Advancing_Pediatric_OCD_Treatment_Standards__CBT_plus_SSRIs_for_Pediatric_OCD.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "CBT plus SSRIs for Pediatric OCD",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-45_The_Rosenhan_Study_Diagnostic_Validity_and_Institutional_Bias__Why_Doctors_Couldn_t_Spot_Sane_Patients.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Why Doctors Couldn't Spot Sane Patients",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-46_The_STAR_D_Trial_Benchmarking_Depression_Treatment_Outcomes__The_STARD_Trial_Remission_Reality_Check.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "The STARD Trial Remission Reality Check",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-47_The_Stanley_and_Brown_Safety_Planning_Intervention_Guide__Safety_Planning_Beats_No_Suicide_Contracts.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Safety Planning Beats No-Suicide Contracts",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-48_The_Therapeutic_Alliance_and_Psychotherapy_Outcomes_Study_Summary__Therapeutic_Alliance_Predicts_Treatment_Outcomes.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Therapeutic Alliance Predicts Treatment Outcomes",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-49_Validating_the_CAM_ICU_for_Delirium_Screening__Detecting_delirium_in_patients_who_cannot_speak.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Detecting delirium in patients who cannot speak",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    },
+    {
+      "file": "audio_oe/OE-50_Zarate_2006_Ketamine_for_Treatment_Resistant_Depression_Study_Summary__Ketamine_treats_resistant_depression_in_hours.m4a",
+      "kind": "paper-overview-audio",
+      "sourceDoc": "07_Evidence_and_Reading/Landmark_Trials/review.html",
+      "onDisk": true,
+      "served": true,
+      "captions": false,
+      "textAlt": "Ketamine treats resistant depression in hours",
+      "note": "short authored one-line description (MANIFEST.csv audio_card_title field, not invented), now surfaced as visible text + audio aria-label next to the player (WP-13, review.html <details class=\"oeaudio\">). Not a full transcript — no verbatim transcript of the audio exists anywhere in the data pipeline. Deck-aligned into quizzes.json by title match at build time (build_deploy.py); 50 of 79 quiz decks carry audio as of this audit, the other 29 decks have no audio and no player renders for them."
+    }
+  ],
+  "video": [
+    {
+      "file": "media/tool-spotlight-interview-circle.mp4",
+      "sourceDoc": "02_Clinical_Skills/Interviewing/interview-circle.html",
+      "kind": "silent-screen-recording",
+      "onDisk": false,
+      "assetShipped": false,
+      "controls": true,
+      "loop": false,
+      "captions": false,
+      "textAlt": "aria-label (\"Tool spotlight: The Interview Circle...\") + in-<video> <p> fallback with download link (added WP-13)",
+      "note": "individual tool-spotlight-*.mp4 clips were never exported (only the combined reel media/tool-spotlight-reel.mp4 exists, in _prototypes/video-library/); the build's media_guard.py currently strips this <details class=\"tl-spotlight\"> block entirely on both built sites, so the video does not reach learners yet. Source markup fixed now (controls added, loop removed, text alternative added) so it is compliant the moment the real clip ships and the guard stops stripping it."
+    },
+    {
+      "file": "media/tool-spotlight-bfcrs.mp4",
+      "sourceDoc": "04_Acute_and_Safety/Catatonia/bfcrs.html",
+      "kind": "silent-screen-recording",
+      "onDisk": false,
+      "assetShipped": false,
+      "controls": true,
+      "loop": false,
+      "captions": false,
+      "textAlt": "aria-label (\"Tool spotlight: Bush-Francis Catatonia Rating Scale (BFCRS)...\") + in-<video> <p> fallback with download link (added WP-13)",
+      "note": "individual tool-spotlight-*.mp4 clips were never exported (only the combined reel media/tool-spotlight-reel.mp4 exists, in _prototypes/video-library/); the build's media_guard.py currently strips this <details class=\"tl-spotlight\"> block entirely on both built sites, so the video does not reach learners yet. Source markup fixed now (controls added, loop removed, text alternative added) so it is compliant the moment the real clip ships and the guard stops stripping it."
+    },
+    {
+      "file": "media/tool-spotlight-capacity.mp4",
+      "sourceDoc": "04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html",
+      "kind": "silent-screen-recording",
+      "onDisk": false,
+      "assetShipped": false,
+      "controls": true,
+      "loop": false,
+      "captions": false,
+      "textAlt": "aria-label (\"Tool spotlight: Decisional Capacity...\") + in-<video> <p> fallback with download link (added WP-13)",
+      "note": "individual tool-spotlight-*.mp4 clips were never exported (only the combined reel media/tool-spotlight-reel.mp4 exists, in _prototypes/video-library/); the build's media_guard.py currently strips this <details class=\"tl-spotlight\"> block entirely on both built sites, so the video does not reach learners yet. Source markup fixed now (controls added, loop removed, text alternative added) so it is compliant the moment the real clip ships and the guard stops stripping it."
+    },
+    {
+      "file": "media/tool-spotlight-violence.mp4",
+      "sourceDoc": "04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html",
+      "kind": "silent-screen-recording",
+      "onDisk": false,
+      "assetShipped": false,
+      "controls": true,
+      "loop": false,
+      "captions": false,
+      "textAlt": "aria-label (\"Tool spotlight: Violence Risk (FRST)...\") + in-<video> <p> fallback with download link (added WP-13)",
+      "note": "individual tool-spotlight-*.mp4 clips were never exported (only the combined reel media/tool-spotlight-reel.mp4 exists, in _prototypes/video-library/); the build's media_guard.py currently strips this <details class=\"tl-spotlight\"> block entirely on both built sites, so the video does not reach learners yet. Source markup fixed now (controls added, loop removed, text alternative added) so it is compliant the moment the real clip ships and the guard stops stripping it."
+    },
+    {
+      "file": "media/tool-spotlight-decision-aids.mp4",
+      "sourceDoc": "04_Acute_and_Safety/Decision_Aids/decision-aids.html",
+      "kind": "silent-screen-recording",
+      "onDisk": false,
+      "assetShipped": false,
+      "controls": true,
+      "loop": false,
+      "captions": false,
+      "textAlt": "aria-label (\"Tool spotlight: Algorithms & Decision Aids...\") + in-<video> <p> fallback with download link (added WP-13)",
+      "note": "individual tool-spotlight-*.mp4 clips were never exported (only the combined reel media/tool-spotlight-reel.mp4 exists, in _prototypes/video-library/); the build's media_guard.py currently strips this <details class=\"tl-spotlight\"> block entirely on both built sites, so the video does not reach learners yet. Source markup fixed now (controls added, loop removed, text alternative added) so it is compliant the moment the real clip ships and the guard stops stripping it."
+    },
+    {
+      "file": "media/tool-spotlight-withdrawal.mp4",
+      "sourceDoc": "03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html",
+      "kind": "silent-screen-recording",
+      "onDisk": false,
+      "assetShipped": false,
+      "controls": true,
+      "loop": false,
+      "captions": false,
+      "textAlt": "aria-label (\"Tool spotlight: CIWA-Ar / COWS withdrawal scoring...\") + in-<video> <p> fallback with download link (added WP-13)",
+      "note": "individual tool-spotlight-*.mp4 clips were never exported (only the combined reel media/tool-spotlight-reel.mp4 exists, in _prototypes/video-library/); the build's media_guard.py currently strips this <details class=\"tl-spotlight\"> block entirely on both built sites, so the video does not reach learners yet. Source markup fixed now (controls added, loop removed, text alternative added) so it is compliant the moment the real clip ships and the guard stops stripping it."
+    }
+  ]
+}

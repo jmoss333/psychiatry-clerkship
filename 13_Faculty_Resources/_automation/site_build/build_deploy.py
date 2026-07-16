@@ -122,12 +122,16 @@ if os.path.isdir(_oedir) and os.path.exists(_oedir+"/MANIFEST.csv"):
         if os.path.exists(_src):
             shutil.copy2(_src, OUT+"/audio_oe/"+_fn)
             _key=_re2.sub(r'[^a-z0-9]+',' ',_r["source_title"].lower()).strip()
-            _oemap[_key]={"audio":_fn,"audioDur":_r["duration"],"oe":_r["number"]}
+            # audio_card_title is the only written text tied to this clip (WP-13: surfaced in
+            # review.html as the audio's accessible text alternative — no full transcript exists).
+            _oemap[_key]={"audio":_fn,"audioDur":_r["duration"],"oe":_r["number"],"audioTitle":_r.get("audio_card_title","")}
     _qp=OUT+"/tools/quizzes.json"; _q=json.load(open(_qp,encoding="utf-8")); _na=0
     for _d in _q.get("decks",[]):
         _k=_re2.sub(r'[^a-z0-9]+',' ',(_d.get("title","")).lower()).strip()
         if _k in _oemap:
-            _d["audio"]=_oemap[_k]["audio"]; _d["audioDur"]=_oemap[_k]["audioDur"]; _d["oe"]=_oemap[_k]["oe"]; _na+=1
+            _d["audio"]=_oemap[_k]["audio"]; _d["audioDur"]=_oemap[_k]["audioDur"]; _d["oe"]=_oemap[_k]["oe"]
+            if _oemap[_k]["audioTitle"]: _d["audioTitle"]=_oemap[_k]["audioTitle"]
+            _na+=1
     json.dump(_q, open(_qp,"w",encoding="utf-8"))
     print("OE audio: copied",len(_oemap),"files | deck-aligned",_na,"quiz decks")
 _rv=LIB+"/13_Faculty_Resources/reviewed.json"
