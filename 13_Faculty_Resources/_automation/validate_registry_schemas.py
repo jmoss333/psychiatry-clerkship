@@ -104,9 +104,13 @@ def schema_reference_error(schema):
                 if not isinstance(reference, str) or not reference.startswith("#"):
                     return pointer, "non-local $ref is not permitted"
                 try:
-                    local_fragment_target(schema, reference)
+                    target = local_fragment_target(schema, reference)
                 except ValueError:
                     return pointer, "unresolved local $ref"
+                try:
+                    Draft7Validator.check_schema(target)
+                except SchemaError:
+                    return pointer, "local $ref target is not a valid Draft-07 schema"
             for key, value in node.items():
                 error = walk(value, (*path, key))
                 if error:

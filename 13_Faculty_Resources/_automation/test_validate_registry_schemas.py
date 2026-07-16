@@ -145,6 +145,31 @@ class RegistrySchemaGateTests(unittest.TestCase):
         )
         self.assertNotIn("Traceback", result.stderr)
 
+    def test_local_reference_to_a_non_schema_target_fails_without_a_traceback(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            (root / "question_bank.schema.json").write_text(
+                json.dumps(
+                    {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "x-extension": {"value": "not a schema"},
+                        "$ref": "#/x-extension/value",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "question_bank.schema.json: INVALID SCHEMA at /$ref: "
+            "local $ref target is not a valid Draft-07 schema",
+            result.stdout,
+        )
+        self.assertNotIn("not a schema", result.stdout)
+        self.assertNotIn("Traceback", result.stderr)
+
     def test_absolute_schema_reference_is_rejected_without_opening_a_url(self) -> None:
         with self.make_registry_copy() as temporary:
             root = Path(temporary)
