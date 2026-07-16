@@ -197,7 +197,7 @@
   .review-ledger .v{font-size:.78rem;color:var(--text-mid);line-height:1.35}
   .review-ledger .revcount{font-weight:800;color:var(--text)}
   .review-ledger .review-date{color:var(--text-light)}
-  @media(max-width:560px){.page-title-row{display:block}.page-title-row .markrev{margin:.25rem 0 .1rem}}
+  @media(max-width:560px){.page-title-row{display:block}.page-title-row .markrev{margin:.25rem 0 .1rem}.mc-mode,.wd-mode{min-height:44px;padding-top:10px;padding-bottom:10px}}
   .in30{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:13px 16px;margin:0 0 14px}
   .practice-panel .in30{background:transparent;border-left:none;border-radius:0;padding:0;margin:0}
   .in30 .lbl{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark);margin-bottom:6px}
@@ -1102,7 +1102,7 @@
     var mode=dashboardMode(), cfg=dashCfg(mode), modes=[['ward','Ward'],['shelf','Shelf'],['family','Family'],['safety','Safety'],['5min','5 min']];
     var matches=itemsForMode(mode), tools=toolsForMode(mode,matches), pages=matches.slice(0,3);
     var h='<div class="mc-head"><div class="mc-title">'+esc(cfg.label)+' mode</div><button type="button" class="mc-home" data-mc-home="1">Progress</button></div>';
-    h+='<div class="mc-modes">'+modes.map(function(m){return '<button type="button" class="mc-mode'+(mode===m[0]?' on':'')+'" data-mc-mode="'+m[0]+'">'+m[1]+'</button>';}).join('')+'</div>';
+    h+='<div class="mc-modes">'+modes.map(function(m){return '<button type="button" class="mc-mode'+(mode===m[0]?' on':'')+'" data-mc-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div>';
     h+='<div class="mc-section"><div class="mc-label">Pages</div><div class="mc-list">'+(pages.length?pages.map(function(x){return companionButton(x,'page');}).join(''):'<div class="mc-empty">Recommendations load after navigation data is ready.</div>')+'</div></div>';
     h+='<div class="mc-section"><div class="mc-label">Tools</div><div class="mc-list">'+(tools.length?tools.slice(0,3).map(function(x){return companionButton(x,'tool');}).join(''):'<div class="mc-empty">No mode tools yet.</div>')+'</div></div>';
     root.innerHTML=h;
@@ -1144,7 +1144,7 @@
     if(!pack.after.length)pack.after=compactActions(casePicks.slice(0,1).concat(matches.slice(2,3),tools.slice(0,1))).slice(0,2);
     if(!pack.leave.length)pack.leave=[toolAction('review.html','review')];
     var cfg=dashCfg(mode);
-    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit <span class="wd-count">'+matches.length+' matched</span></h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'">'+m[1]+'</button>';}).join('')+'</div></div>';
+    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit <span class="wd-count">'+matches.length+' matched</span></h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div></div>';
     h+='<p class="wd-intro">'+esc(cfg.intent)+'</p>'+relationalChallengeHtml(mode)+toolRow(tools,mode);
     h+='<div class="wd-grid"><div class="wd-card"><h3>Before rounds</h3>'+pack.before.map(function(x){return actionRow(x,'open');}).join('')+'</div><div class="wd-card"><h3>After rounds</h3>'+pack.after.map(function(x){return actionRow(x,'practice');}).join('')+'</div><div class="wd-card"><h3>Before leaving</h3>'+pack.leave.map(function(x){return actionRow(x,'review');}).join('')+'</div></div></div>';
     return h;
