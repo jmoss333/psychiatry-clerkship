@@ -57,7 +57,7 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Unit — root node regression tests (alex-tour · family-companion)
+      - name: Unit — root node regression tests (tests/*.test.mjs)
         run: node --test tests/*.test.mjs
 
       - name: Install — managed SP proxy dependencies
