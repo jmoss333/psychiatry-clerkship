@@ -50,11 +50,14 @@ jobs:
       - name: Validate — longitudinal case contract
         run: python3 13_Faculty_Resources/_automation/test_longitudinal_case.py
 
+      - name: Validate — family systems scenarios contract
+        run: python3 13_Faculty_Resources/_automation/test_family_systems_scenarios.py
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Unit — root node regression tests (alex-tour · family-companion)
+      - name: Unit — root node regression tests (tests/*.test.mjs)
         run: node --test tests/*.test.mjs
 
       - name: Install — managed SP proxy dependencies
