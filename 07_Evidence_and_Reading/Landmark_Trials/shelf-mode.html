@@ -8,6 +8,7 @@
 <title>Shelf Mode — Exam Simulation</title>
 <meta name="description" content="An optional timed, blueprint-weighted psychiatry COMAT/shelf vignette simulation with per-question feedback, teaching points, and links back to the hub.">
 <style>
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
     --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
@@ -395,6 +396,8 @@ function App(){
       e("div",{className:"card res"},
         e("div",{className:"score"}, R.correct+" / "+R.n),
         e("div",{className:"sub",style:{textAlign:"center"}}, R.pct+"% · "+msg+" · "+(st.timed?"used ":"took ")+fmt(R.secs)+(st.preview?" · sample set":"")),
+        e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"},
+          R.correct+" of "+R.n+" correct, "+R.pct+" percent. "+msg),
         e("table",{className:"bt"},
           e("thead",null,e("tr",null,e("th",null,"Topic"),e("th",null,""),e("th",{className:"n"},"Score"))),
           e("tbody",null, bts.map(function(t){

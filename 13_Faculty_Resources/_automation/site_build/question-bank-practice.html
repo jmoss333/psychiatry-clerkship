@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Practice Questions — MS3 Question Bank</title>
 <style>
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 :root{
   --bg:#f6f3ee;--bg-alt:#faf6f0;--surface:#ffffff;--border:#ddd3c6;
   --primary:#c25a3c;--primary-dark:#a84830;--primary-light:#f3ebe5;
@@ -140,6 +141,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body
   </div>
   <div class="qprog" id="qprog" hidden><div class="qprog-fill" id="qprogFill" style="width:0%"></div></div>
   <div id="root"><div class="loading">Loading question bank&hellip;</div></div>
+  <div id="qb-live" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
 </div>
 <script>
 (function(){
@@ -730,6 +732,8 @@ function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){
     var existing = qcard.querySelector('.feedback');
     if(existing) existing.parentNode.removeChild(existing);
     qcard.insertAdjacentHTML('beforeend', fbHtml);
+    var _live=document.getElementById('qb-live');
+    if(_live){ _live.textContent = (twoTierResult==='shaky'?'Right answer, shaky reasoning. ':correct?'Correct. ':'Incorrect. ') + (item.pearl||''); }
     /* scroll feedback into view */
     var fb = document.getElementById('feedbackPanel');
     if(fb) setTimeout(function(){ fb.scrollIntoView({behavior:'smooth',block:'nearest'}); },80);

@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Daily Review — Spaced Repetition</title>
 <style>
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 :root{
   --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --surface2:#faf6f0; --hover:#f0e9e0;
   --border:#ddd3c6; --border2:#e7ded2;
@@ -227,6 +228,8 @@ function App(){
           sess.revealed? e("div",{className:"fb"},
             e("b",null, gotIt?"✓ Correct. ":"✗ Not quite. "),
             (fbOpt.fb||corrOpt.fb||"") ) : null,
+          e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"},
+            sess.revealed ? (gotIt?"Correct. ":"Not quite. ")+(fbOpt.fb||corrOpt.fb||"") : ""),
           sess.revealed? e("div",{className:"grades"},
             e("button",{className:"gr again"+(!gotIt?" sug":""),onClick:function(){grade(0);}},"Again",e("span",{className:"gk"},"<10m")),
             e("button",{className:"gr hard",onClick:function(){grade(1);}},"Hard",e("span",{className:"gk"},"1")),
