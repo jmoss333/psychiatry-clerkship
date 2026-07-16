@@ -904,3 +904,25 @@ test('corrupt or contentful stored records fail before redemption classification
     );
   }
 });
+
+// F5 — the actor endpoint mints iat; the voice endpoint authenticates on a
+// separate function clock. A sub-lease skew where the verifier lags the issuer
+// must not reject an otherwise-valid fresh ticket, but a far-future iat still must.
+test('authenticate tolerates small clock skew where the verifier lags the issuer, within a bound', () => {
+  const clockRef = { now: NOW_MS + 3_000 };
+  const codec = createFixedCodec(clockRef);
+  const ticket = codec.issue(TICKET_INPUT); // iat three seconds ahead of the verifier
+  clockRef.now = NOW_MS;
+  const authenticated = codec.authenticate({ ticket, reply: REPLY });
+  assert.equal(authenticated.iat, Math.floor((NOW_MS + 3_000) / 1000));
+
+  // Beyond the tolerance, a future-dated ticket is still rejected.
+  const farClock = { now: NOW_MS + 60_000 };
+  const farCodec = createFixedCodec(farClock);
+  const farTicket = farCodec.issue(TICKET_INPUT);
+  farClock.now = NOW_MS;
+  assert.throws(
+    () => farCodec.authenticate({ ticket: farTicket, reply: REPLY }),
+    (error) => error?.code === 'invalid_speech_ticket',
+  );
+});

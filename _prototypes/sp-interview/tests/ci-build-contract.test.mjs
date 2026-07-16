@@ -173,3 +173,27 @@ test('run-all.sh keeps the review-filter suite wired', () => {
     'review-filter.test.mjs must stay invoked by run-all.sh',
   );
 });
+
+// F25 — a gate that runs but can never fail the build is worse than no gate. The
+// order test above does not catch a step neutered with `|| true` / continue-on-error.
+test('CI gates fail the build — no step swallows a nonzero exit', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  assert.equal(/\|\|\s*true\b/.test(ci), false, 'no CI step may mask failure with "|| true"');
+  assert.equal(/continue-on-error:\s*true/.test(ci), false, 'no CI step may continue-on-error');
+  assert.equal(/^\s*set \+e\b/m.test(ci), false, 'no CI step may disable errexit with "set +e"');
+
+  // The managed-proxy/interview gate runs all three suites in one errexit shell
+  // (GitHub Actions default bash -e), so any single failure fails the job.
+  const gate = ci.slice(
+    ci.indexOf('Test — SP Interview and managed proxy'),
+    ci.indexOf('Build + static QA gate (ms3)'),
+  );
+  assert.ok(gate.length > 0, 'SP managed-proxy gate step must exist');
+  for (const marker of [
+    'npm --prefix sp-proxy test',
+    'bash _prototypes/sp-interview/tests/run-all.sh',
+    'python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py',
+  ]) {
+    assert.ok(gate.includes(marker), `SP gate must run ${marker}`);
+  }
+});

@@ -558,6 +558,19 @@ class AttestationConsistencyTests(unittest.TestCase):
             errors,
         )
 
+    def test_reviewed_engine_flags_unresolvable_active_synthesis_for_profile_crosscheck(self):
+        pack = reviewed_voice_pack()
+        review_first_profile(pack, "openai")
+        self.assertEqual(self.validate_pack(pack), [])
+        # A reviewed profile with an active stack that resolves to no synthesis
+        # must produce an explicit error, not a silent skip of the parity check.
+        pack["speechEngine"]["activeStack"] = "nonexistent-stack"
+        errors = self.validate_pack(pack)
+        self.assertTrue(
+            any("active synthesis stack is unresolvable" in message for message in errors),
+            errors,
+        )
+
     def test_reviewed_or_enabled_engine_requires_a_sha256_engine_hash(self):
         self.assertEqual(self.validate_pack(reviewed_voice_pack()), [])
         mutations = {

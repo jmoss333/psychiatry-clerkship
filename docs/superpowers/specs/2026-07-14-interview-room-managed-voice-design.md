@@ -235,7 +235,7 @@ the normal interface consumes one synthesis call per patient turn.
 
 The governed opening line needs the same protection. Starting a live encounter sends
 `{caseId, mode:"open"}` to `/api/sp`; the server reads the reviewed opening from its canonical pack
-and returns `{reply, state, speechTicket}`. Managed synthesis is available only for this signed
+and returns `{reply, state, ticket}`. Managed synthesis is available only for this signed
 opening and signed live-actor replies. Offline mock replies use device speech or text, never the
 faculty-funded managed synthesis endpoint. Evaluation and debrief content remain text-only.
 

@@ -582,7 +582,15 @@ async function transcribe({ request, snapshot, context, provider, budget, config
   if (reservation?.finalized === true) duplicateTranscription(reservation);
 
   if (request.signal.aborted) {
-    await ledger.failBeforeProvider({ reservation, code: 'request_cancelled' });
+    // Best-effort release: a concurrent read-repair reclaim may already have
+    // released this reservation (lease_expired), which surfaces as
+    // idempotency_mismatch. The reservation is freed either way and the learner
+    // cancelled, so surface 499 rather than that misleading 409.
+    try {
+      await ledger.failBeforeProvider({ reservation, code: 'request_cancelled' });
+    } catch {
+      // cleanup is best-effort
+    }
     throw requestCancelled();
   }
 
@@ -691,7 +699,15 @@ async function synthesize({ request, snapshot, context, payload, text, provider,
   if (reservation?.finalized === true) duplicateSpeech(reservation);
 
   if (request.signal.aborted) {
-    await ledger.failBeforeProvider({ reservation, code: 'request_cancelled' });
+    // Best-effort release: a concurrent read-repair reclaim may already have
+    // released this reservation (lease_expired), which surfaces as
+    // idempotency_mismatch. The reservation is freed either way and the learner
+    // cancelled, so surface 499 rather than that misleading 409.
+    try {
+      await ledger.failBeforeProvider({ reservation, code: 'request_cancelled' });
+    } catch {
+      // cleanup is best-effort
+    }
     throw requestCancelled();
   }
   const authorization = await ledger.markProviderStarted(reservation);

@@ -651,3 +651,51 @@ test('100 seeded operation sequences never overlap learner recording and patient
     assert.equal(trace.some((step) => step.recording && step.playing), false, `seed ${seed}`);
   }
 });
+
+// F22 — replay() calls startManagedPlayer unwrapped. startPlayer publishes
+// phase:'speaking' before play(); a synchronous play() throw would otherwise
+// leave the controller stuck in 'speaking'. It must fail to 'error' like the
+// reply-arrival path does.
+test('a replay whose playback throws surfaces error state, not a phantom speaking state', async () => {
+  const h = makeHarness();
+  let failPlay = false;
+  const baseCreatePlayer = h.deps.createPlayer;
+  h.deps.createPlayer = (options) => {
+    const adapter = baseCreatePlayer(options);
+    return Object.assign({}, adapter, {
+      play() {
+        if (failPlay) throw new Error('play boom');
+        return adapter.play();
+      },
+    });
+  };
+  const controller = SPInterviewVoice.createController(h.deps);
+  controller.beginEncounter('enc-replay');
+  controller.setMode('managed');
+
+  const openingActor = deferred();
+  const opening = controller.requestOpening({ runActor: () => openingActor.promise });
+  openingActor.resolve({ reply: 'Hello.', ticket: 'open-ticket' });
+  await opening;
+  const accepted = controller.acceptPatientReply({
+    encounterId: 'enc-replay',
+    turnId: 0,
+    reply: 'Hello.',
+    ticket: 'open-ticket',
+  });
+  await flush();
+  h.syntheses[0].work.resolve({ audio: { size: 128 }, mimeType: 'audio/mpeg' });
+  await accepted;
+  assert.equal(controller.getSnapshot().phase, 'speaking');
+  h.players[0].end();
+  assert.equal(controller.getSnapshot().phase, 'ready');
+  assert.deepEqual(controller.getSnapshot().replayableTurnIds, [0]);
+
+  failPlay = true;
+  assert.throws(() => controller.replay(0));
+  assert.equal(
+    controller.getSnapshot().phase,
+    'error',
+    'a replay playback failure must not leave a phantom speaking state',
+  );
+});

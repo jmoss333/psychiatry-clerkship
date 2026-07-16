@@ -465,6 +465,18 @@ def _validate_speech_engine(slug, pack, cases):
                     "%s: reviewed case %s speechProfile provider/model must match the active synthesis stack"
                     % (slug, case_def.get("id") or "<unknown>")
                 )
+    elif engine_status == "reviewed" and any(
+        isinstance(case_def, dict)
+        and isinstance(case_def.get("speechProfile"), dict)
+        and norm_status(case_def["speechProfile"].get("status")) == "reviewed"
+        for case_def in cases
+    ):
+        # Do not skip the parity check silently: a reviewed engine with reviewed
+        # profiles but an unresolvable active synthesis stack is a governance gap.
+        errors.append(
+            "%s: reviewed profiles could not be cross-checked — the active synthesis stack is unresolvable"
+            % slug
+        )
 
     rate_card = speech_engine.get("rateCard")
     rate_models = set()

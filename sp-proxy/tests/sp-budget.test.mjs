@@ -1339,3 +1339,26 @@ test('a provider_started reservation past the lease is NOT reclaimed (may reflec
   assert.equal(currentAttempt(fake).status, 'provider_started');
   assert.equal(fake.read('test/rotation-1').reservedMicros, 10_000_000);
 });
+
+// #232 item 1 — the F1 reclaim only ran inside reserve(); the voice POSTs gate on
+// getBand()/requireOkBand BEFORE reserve, so once strands push authorized past
+// warning the endpoint 429s at the pre-check and never reaches the reclaim.
+// getUsage/getBand must read-repair stranded reservations so the band heals and
+// operators do not see a phantom-full envelope.
+test('getUsage read-repairs stranded reservations past the lease so the band is not phantom-full', async () => {
+  const clockRef = { now: NOW_MS };
+  const { ledger } = makeHarness({ clockRef, warningMicros: 8_000_000, capMicros: 20_000_000 });
+  // An actor reservation bills against the shared envelope with the cap (not the
+  // voice warning) as its limit, so one can legitimately push authorized past warning.
+  const stranded = await ledger.reserve(actorRequest('turn-1', 10_000_000, 0)); // 10_000_000 micros
+  void stranded;
+  assert.equal((await ledger.getUsage()).band, 'warning'); // still fresh: genuinely reserved
+  assert.equal((await ledger.getUsage()).reservedMicros, 10_000_000);
+
+  clockRef.now = NOW_MS + 200_000; // past the 120s lease
+  const usage = await ledger.getUsage();
+  assert.equal(usage.band, 'ok', 'stranded reservation must be reclaimed on read so the band heals');
+  assert.equal(usage.reservedMicros, 0);
+  assert.equal(usage.authorizedMicros, 0);
+  assert.equal(await ledger.getBand(), 'ok');
+});
