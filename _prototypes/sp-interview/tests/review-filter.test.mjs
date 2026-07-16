@@ -74,4 +74,60 @@ assert.deepEqual(
 );
 assert.equal(testApi.isManagedVoiceEligible(pack, pack.cases[0]), false);
 
+// Discriminating coverage for the client managed-voice billing gate. The shipped
+// pack has speechEngine.enabled === false, so the assertion above passes for a
+// fail-open implementation too. Build an in-memory pack whose engine is
+// enabled+reviewed and vary only the case/profile review status, so a regression
+// that drops the case-review or speechProfile-review check turns this test red.
+function eligibleWith({ engineEnabled, engineStatus, caseStatus, profileStatus }) {
+  const p = {
+    speechEngine: { enabled: engineEnabled, status: engineStatus },
+    cases: [
+      {
+        id: 'synthetic_case',
+        facultyReview: { status: caseStatus },
+        speechProfile: profileStatus === undefined ? undefined : { status: profileStatus },
+      },
+    ],
+  };
+  return testApi.isManagedVoiceEligible(p, p.cases[0]);
+}
+
+const reviewedAll = {
+  engineEnabled: true,
+  engineStatus: 'reviewed',
+  caseStatus: 'reviewed',
+  profileStatus: 'reviewed',
+};
+
+// Positive: every gate satisfied -> eligible.
+assert.equal(eligibleWith(reviewedAll), true, 'all-reviewed enabled engine must be eligible');
+
+// Each gate, independently, must fail closed.
+assert.equal(
+  eligibleWith({ ...reviewedAll, caseStatus: 'draft-pending-attestation' }),
+  false,
+  'draft case must not be managed-voice eligible even with a reviewed engine',
+);
+assert.equal(
+  eligibleWith({ ...reviewedAll, profileStatus: 'draft-pending-attestation' }),
+  false,
+  'draft speechProfile must not be managed-voice eligible',
+);
+assert.equal(
+  eligibleWith({ ...reviewedAll, profileStatus: undefined }),
+  false,
+  'missing speechProfile must not be managed-voice eligible',
+);
+assert.equal(
+  eligibleWith({ ...reviewedAll, engineEnabled: false }),
+  false,
+  'disabled engine must not be managed-voice eligible',
+);
+assert.equal(
+  eligibleWith({ ...reviewedAll, engineStatus: 'draft-pending-attestation' }),
+  false,
+  'draft engine status must not be managed-voice eligible',
+);
+
 console.log('PASS — learner selector exposes only reviewed cases and managed voice fails closed');

@@ -1276,3 +1276,66 @@ test('stored records contain no raw keys, owner tokens, transcripts, audio, or f
     assert.equal(serialized.includes(prohibited), false, prohibited);
   }
 });
+
+// F1 — stranded reservation reclaim. A reservation left ACTIVE ('reserved')
+// past the lease (a crash-strand, or a markProviderStarted that threw
+// budget_contention) must be reclaimed by a later reserve so its held maximum
+// stops permanently consuming the rotation envelope.
+const RECLAIM_CLOCK_KEY = 'test/rotation-1';
+
+test('a reserved reservation stranded past the lease is reclaimed by a later reserve, freeing the envelope', async () => {
+  const clockRef = { now: NOW_MS };
+  // Voice limit ($12) is passed by two identical $10 synthesis reservations only
+  // if the first still counts; reclaiming the stranded first must let the second in.
+  const { ledger, fake } = makeHarness({
+    clockRef,
+    warningMicros: 12_000_000,
+    capMicros: 20_000_000,
+  });
+  const stranded = await ledger.reserve(voiceRequest('turn-1', 100_000));
+  assert.equal(currentAttempt(fake).status, 'reserved');
+  assert.equal(fake.read(RECLAIM_CLOCK_KEY).reservedMicros, 10_000_000);
+  void stranded; // simulate a crash / contention: never settled or released.
+
+  // A second turn while the first is still fresh must be refused (envelope full).
+  await assert.rejects(
+    ledger.reserve(voiceRequest('turn-2', 100_000)),
+    (error) => assertOperationalError(error, { status: 429, code: 'voice_budget_reserved' }),
+  );
+
+  // After the lease elapses, the stranded reservation is dead weight and must be reclaimed.
+  clockRef.now = NOW_MS + 200_000; // > 120s default lease
+  const second = await ledger.reserve(voiceRequest('turn-2', 100_000));
+  assert.ok(second, 'second reservation must succeed after the stranded one is reclaimed');
+
+  const record = fake.read(RECLAIM_CLOCK_KEY);
+  const operations = Object.values(record.operations);
+  const strandedOp = operations[0];
+  assert.equal(strandedOp.attempts.at(-1).status, 'failed_before_provider');
+  assert.equal(strandedOp.attempts.at(-1).failureCode, 'lease_expired');
+  // Only the live second reservation should count against the envelope now.
+  assert.equal(record.reservedMicros, 10_000_000);
+  assert.equal(await ledger.getBand(), 'ok');
+});
+
+test('a provider_started reservation past the lease is NOT reclaimed (may reflect billed provider work)', async () => {
+  const clockRef = { now: NOW_MS };
+  const { ledger, fake } = makeHarness({
+    clockRef,
+    warningMicros: 12_000_000,
+    capMicros: 20_000_000,
+  });
+  const reservation = await ledger.reserve(voiceRequest('turn-1', 100_000));
+  await ledger.markProviderStarted(reservation); // provider call may now have billed
+  assert.equal(currentAttempt(fake).status, 'provider_started');
+
+  clockRef.now = NOW_MS + 200_000; // well past the lease
+  // The stranded provider_started reservation must still hold the envelope: a
+  // second $10 synthesis would exceed the $12 voice limit and be refused.
+  await assert.rejects(
+    ledger.reserve(voiceRequest('turn-2', 100_000)),
+    (error) => assertOperationalError(error, { status: 429, code: 'voice_budget_reserved' }),
+  );
+  assert.equal(currentAttempt(fake).status, 'provider_started');
+  assert.equal(fake.read('test/rotation-1').reservedMicros, 10_000_000);
+});

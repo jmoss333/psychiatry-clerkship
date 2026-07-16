@@ -202,6 +202,18 @@ if (existsSync(tmPath) && parsed[tmPath]) {
   }
 }
 
+/* ---------- 5a. shipped JS assets (toolAssets) must vendor locally, no CDN ---------- */
+// toolAssets (e.g. sp-interview.voice.js) ship verbatim to tools/ but were never
+// scanned — only tools/*.html was read. A CDN dependency inside a shipped script
+// blanks the tool on offline/ward networks just as one in the HTML would.
+const jsAssets = existsSync(p('tools'))
+  ? readdirSync(p('tools')).filter(f => f.endsWith('.js'))
+  : [];
+for (const f of jsAssets) {
+  const js = readFileSync(p('tools', f), 'utf8');
+  if (CDN_HOST.test(js)) H(`external CDN dependency in tools/${f} — vendor the script locally so bedside/offline use does not blank the tool`);
+}
+
 /* ---------- 5. per-tool HTML checks (RC-META, title, viewport, dose, storage) ---------- */
 for (const f of toolFiles) {
   const html = readFileSync(p('tools', f), 'utf8');
