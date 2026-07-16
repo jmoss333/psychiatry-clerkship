@@ -93,6 +93,11 @@ def schema_reference_error(schema):
     """Return the first deterministic invalid-reference location and reason."""
     def walk(node, path=()):
         if isinstance(node, dict):
+            if path and "$id" in node:
+                return (
+                    json_pointer((*path, "$id")),
+                    "nested resource scopes are unsupported",
+                )
             if "$ref" in node:
                 pointer = json_pointer((*path, "$ref"))
                 reference = node["$ref"]
@@ -159,7 +164,7 @@ def validate_root(root: Path) -> tuple[list[str], bool]:
                 ),
             )
         except Unresolvable:
-            diagnostics.append(f"{schema_name}: INVALID SCHEMA at /$ref: unresolvable local $ref")
+            diagnostics.append(f"{schema_name}: INVALID SCHEMA at /: unresolvable local $ref")
             has_errors = True
             continue
         if errors:

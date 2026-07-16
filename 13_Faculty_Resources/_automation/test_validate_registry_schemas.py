@@ -220,6 +220,56 @@ class RegistrySchemaGateTests(unittest.TestCase):
         )
         self.assertNotIn("Traceback", result.stderr)
 
+    def test_nested_id_is_rejected_at_its_escaped_schema_pointer(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            (root / "question_bank.schema.json").write_text(
+                json.dumps(
+                    {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "definitions": {
+                            "nested/id~": {
+                                "$id": "nested-resource.json",
+                                "type": "object",
+                            }
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "question_bank.schema.json: INVALID SCHEMA at "
+            "/definitions/nested~1id~0/$id: nested resource scopes are unsupported",
+            result.stdout,
+        )
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_root_id_with_canonical_local_fragment_remains_valid_offline(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            (root / "question_bank.schema.json").write_text(
+                json.dumps(
+                    {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$id": "https://example.invalid/question-bank.schema.json",
+                        "definitions": {"canonical": {"type": "object"}},
+                        "$ref": "#/definitions/canonical",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (root / "question_bank.json").write_text("{}\n", encoding="utf-8")
+
+            result = run_validator(root, forbid_urlopen=True)
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("question_bank.json: OK (question_bank.schema.json)", result.stdout)
+        self.assertNotIn("urlopen called", result.stdout + result.stderr)
+
     def test_json_pointer_escapes_nested_slashes_and_tildes(self) -> None:
         self.assertEqual(json_pointer(["nested/key", "tilde~key"]), "/nested~1key/tilde~0key")
 
