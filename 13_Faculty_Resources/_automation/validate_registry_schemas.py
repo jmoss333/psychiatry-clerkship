@@ -5,13 +5,16 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from urllib.parse import unquote
 
 try:
     from jsonschema import Draft7Validator
     from jsonschema.exceptions import SchemaError
+    from referencing import Registry
     from referencing.exceptions import Unresolvable
 except ImportError:  # pragma: no cover - exercised only before dependency installation
     Draft7Validator = None
+    Registry = None
     SchemaError = Exception
     Unresolvable = Exception
 
@@ -46,6 +49,73 @@ def load_json(path: Path):
         return None, f"{path.name}: UNREADABLE: {error}"
 
 
+def local_fragment_target(schema, reference: str):
+    """Return a local JSON Pointer target or raise ValueError if it is absent."""
+    if not reference.startswith("#"):
+        raise ValueError("non-local")
+
+    pointer = unquote(reference[1:])
+    if not pointer:
+        return schema
+    if not pointer.startswith("/"):
+        raise ValueError("not a JSON Pointer")
+
+    target = schema
+    for token in pointer[1:].split("/"):
+        decoded = []
+        index = 0
+        while index < len(token):
+            if token[index] != "~":
+                decoded.append(token[index])
+                index += 1
+                continue
+            if index + 1 == len(token) or token[index + 1] not in "01":
+                raise ValueError("invalid escape")
+            decoded.append("~" if token[index + 1] == "0" else "/")
+            index += 2
+        token = "".join(decoded)
+        if isinstance(target, dict):
+            try:
+                target = target[token]
+            except KeyError as error:
+                raise ValueError("missing target") from error
+        elif isinstance(target, list) and token.isdigit() and str(int(token)) == token:
+            index = int(token)
+            if index >= len(target):
+                raise ValueError("missing target")
+            target = target[index]
+        else:
+            raise ValueError("missing target")
+    return target
+
+
+def schema_reference_error(schema):
+    """Return the first deterministic invalid-reference location and reason."""
+    def walk(node, path=()):
+        if isinstance(node, dict):
+            if "$ref" in node:
+                pointer = json_pointer((*path, "$ref"))
+                reference = node["$ref"]
+                if not isinstance(reference, str) or not reference.startswith("#"):
+                    return pointer, "non-local $ref is not permitted"
+                try:
+                    local_fragment_target(schema, reference)
+                except ValueError:
+                    return pointer, "unresolved local $ref"
+            for key, value in node.items():
+                error = walk(value, (*path, key))
+                if error:
+                    return error
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                error = walk(value, (*path, index))
+                if error:
+                    return error
+        return None
+
+    return walk(schema)
+
+
 def validate_root(root: Path) -> tuple[list[str], bool]:
     """Return deterministic diagnostics for the six fixed registry/schema pairs."""
     diagnostics = []
@@ -66,6 +136,13 @@ def validate_root(root: Path) -> tuple[list[str], bool]:
             has_errors = True
             continue
 
+        reference_error = schema_reference_error(schema)
+        if reference_error:
+            pointer, reason = reference_error
+            diagnostics.append(f"{schema_name}: INVALID SCHEMA at {pointer}: {reason}")
+            has_errors = True
+            continue
+
         document, document_error = load_json(root / document_name)
         if document_error:
             diagnostics.append(document_error)
@@ -74,15 +151,15 @@ def validate_root(root: Path) -> tuple[list[str], bool]:
 
         try:
             errors = sorted(
-                Draft7Validator(schema).iter_errors(document),
+                Draft7Validator(schema, registry=Registry()).iter_errors(document),
                 key=lambda error: (
                     json_pointer(error.absolute_path),
                     error.message,
                     json_pointer(error.absolute_schema_path),
                 ),
             )
-        except Unresolvable as error:
-            diagnostics.append(f"{schema_name}: INVALID SCHEMA at /$ref: {error}")
+        except Unresolvable:
+            diagnostics.append(f"{schema_name}: INVALID SCHEMA at /$ref: unresolvable local $ref")
             has_errors = True
             continue
         if errors:

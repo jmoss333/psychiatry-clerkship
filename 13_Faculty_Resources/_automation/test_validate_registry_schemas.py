@@ -24,9 +24,27 @@ PAIRS = (
 )
 
 
-def run_validator(root: Path) -> subprocess.CompletedProcess[str]:
+def run_validator(
+    root: Path, *, forbid_urlopen: bool = False
+) -> subprocess.CompletedProcess[str]:
+    command = [sys.executable, str(VALIDATOR), "--root", str(root)]
+    if forbid_urlopen:
+        command = [
+            sys.executable,
+            "-c",
+            (
+                "import runpy, sys, urllib.request; "
+                "urllib.request.urlopen = lambda *args, **kwargs: "
+                "(_ for _ in ()).throw(AssertionError('urlopen called')); "
+                "validator, root = sys.argv[1:]; "
+                "sys.argv = [validator, '--root', root]; "
+                "runpy.run_path(validator, run_name='__main__')"
+            ),
+            str(VALIDATOR),
+            str(root),
+        ]
     return subprocess.run(
-        [sys.executable, str(VALIDATOR), "--root", str(root)],
+        command,
         check=False,
         capture_output=True,
         text=True,
@@ -120,7 +138,86 @@ class RegistrySchemaGateTests(unittest.TestCase):
             result = run_validator(root)
 
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("question_bank.schema.json: INVALID SCHEMA at /$ref:", result.stdout)
+        self.assertIn(
+            "question_bank.schema.json: INVALID SCHEMA at /$ref: "
+            "non-local $ref is not permitted",
+            result.stdout,
+        )
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_absolute_schema_reference_is_rejected_without_opening_a_url(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            (root / "question_bank.schema.json").write_text(
+                json.dumps({"$schema": "http://json-schema.org/draft-07/schema#", "$ref": "https://example.invalid/schema"}),
+                encoding="utf-8",
+            )
+
+            result = run_validator(root, forbid_urlopen=True)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "question_bank.schema.json: INVALID SCHEMA at /$ref: "
+            "non-local $ref is not permitted",
+            result.stdout,
+        )
+        self.assertNotIn("urlopen called", result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_nested_validation_error_uses_an_escaped_cli_pointer(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            (root / "question_bank.schema.json").write_text(
+                json.dumps(
+                    {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "properties": {
+                            "nested/key": {
+                                "type": "object",
+                                "properties": {"tilde~key": {"type": "integer"}},
+                            }
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (root / "question_bank.json").write_text(
+                json.dumps({"nested/key": {"tilde~key": "invalid"}}),
+                encoding="utf-8",
+            )
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "question_bank.json: INVALID at /nested~1key/tilde~0key:", result.stdout
+        )
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_nested_unresolved_local_reference_reports_its_schema_pointer(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            (root / "question_bank.schema.json").write_text(
+                json.dumps(
+                    {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "definitions": {
+                            "nested/key~": {"$ref": "#/definitions/missing"}
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "question_bank.schema.json: INVALID SCHEMA at "
+            "/definitions/nested~1key~0/$ref:",
+            result.stdout,
+        )
         self.assertNotIn("Traceback", result.stderr)
 
     def test_json_pointer_escapes_nested_slashes_and_tildes(self) -> None:
