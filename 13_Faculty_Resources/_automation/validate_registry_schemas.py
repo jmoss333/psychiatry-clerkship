@@ -9,9 +9,11 @@ from pathlib import Path
 try:
     from jsonschema import Draft7Validator
     from jsonschema.exceptions import SchemaError
+    from referencing.exceptions import Unresolvable
 except ImportError:  # pragma: no cover - exercised only before dependency installation
     Draft7Validator = None
     SchemaError = Exception
+    Unresolvable = Exception
 
 
 PAIRS = (
@@ -38,17 +40,21 @@ def load_json(path: Path):
         return None, f"{path.name}: MISSING"
     except json.JSONDecodeError as error:
         return None, f"{path.name}: INVALID JSON at line {error.lineno}, column {error.colno}: {error.msg}"
+    except UnicodeDecodeError as error:
+        return None, f"{path.name}: INVALID JSON at byte {error.start}: invalid UTF-8"
     except OSError as error:
         return None, f"{path.name}: UNREADABLE: {error}"
 
 
-def validate_root(root: Path) -> list[str]:
+def validate_root(root: Path) -> tuple[list[str], bool]:
     """Return deterministic diagnostics for the six fixed registry/schema pairs."""
     diagnostics = []
+    has_errors = False
     for document_name, schema_name in PAIRS:
         schema, schema_error = load_json(root / schema_name)
         if schema_error:
             diagnostics.append(schema_error)
+            has_errors = True
             continue
 
         try:
@@ -57,29 +63,37 @@ def validate_root(root: Path) -> list[str]:
             diagnostics.append(
                 f"{schema_name}: INVALID SCHEMA at {json_pointer(error.absolute_path)}: {error.message}"
             )
+            has_errors = True
             continue
 
         document, document_error = load_json(root / document_name)
         if document_error:
             diagnostics.append(document_error)
+            has_errors = True
             continue
 
-        errors = sorted(
-            Draft7Validator(schema).iter_errors(document),
-            key=lambda error: (
-                json_pointer(error.absolute_path),
-                error.message,
-                json_pointer(error.absolute_schema_path),
-            ),
-        )
+        try:
+            errors = sorted(
+                Draft7Validator(schema).iter_errors(document),
+                key=lambda error: (
+                    json_pointer(error.absolute_path),
+                    error.message,
+                    json_pointer(error.absolute_schema_path),
+                ),
+            )
+        except Unresolvable as error:
+            diagnostics.append(f"{schema_name}: INVALID SCHEMA at /$ref: {error}")
+            has_errors = True
+            continue
         if errors:
+            has_errors = True
             diagnostics.extend(
                 f"{document_name}: INVALID at {json_pointer(error.absolute_path)}: {error.message}"
                 for error in errors
             )
         else:
             diagnostics.append(f"{document_name}: OK ({schema_name})")
-    return diagnostics
+    return diagnostics, has_errors
 
 
 def main() -> int:
@@ -96,10 +110,10 @@ def main() -> int:
         print("jsonschema is required; install dependencies with: python3 -m pip install -r requirements.txt")
         return 2
 
-    diagnostics = validate_root(args.root)
+    diagnostics, has_errors = validate_root(args.root)
     for diagnostic in diagnostics:
         print(diagnostic)
-    return 1 if any(": OK (" not in diagnostic for diagnostic in diagnostics) else 0
+    return 1 if has_errors else 0
 
 
 if __name__ == "__main__":

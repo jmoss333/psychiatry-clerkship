@@ -9,6 +9,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from validate_registry_schemas import json_pointer
+
 
 ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR = Path(__file__).with_name("validate_registry_schemas.py")
@@ -84,6 +86,45 @@ class RegistrySchemaGateTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("tool_registry.json: INVALID JSON", result.stdout)
         self.assertNotIn("Traceback", result.stderr)
+
+    def test_invalid_value_containing_ok_marker_exits_nonzero(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            (root / "question_bank.json").write_text('"bad: OK ("\n', encoding="utf-8")
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("question_bank.json: INVALID at /", result.stdout)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_invalid_utf8_fails_without_a_traceback(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            (root / "tool_registry.json").write_bytes(b"\xff\n")
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("tool_registry.json: INVALID JSON", result.stdout)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_unresolvable_schema_reference_fails_without_a_traceback(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            (root / "question_bank.schema.json").write_text(
+                json.dumps({"$schema": "http://json-schema.org/draft-07/schema#", "$ref": "missing.json#"}),
+                encoding="utf-8",
+            )
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("question_bank.schema.json: INVALID SCHEMA at /$ref:", result.stdout)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_json_pointer_escapes_nested_slashes_and_tildes(self) -> None:
+        self.assertEqual(json_pointer(["nested/key", "tilde~key"]), "/nested~1key/tilde~0key")
 
     def test_errors_have_deterministic_order_and_pointer_format(self) -> None:
         with self.make_registry_copy() as temporary:
