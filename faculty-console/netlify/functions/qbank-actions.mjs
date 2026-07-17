@@ -113,26 +113,53 @@ function actionBoundary(action) {
   }
 }
 
-function requireInput(input) {
+function requireInput(input, omittableUndefined = []) {
   if (!isRecord(input)) throw invalidInput();
+  const keys = Object.keys(input);
+  if (Object.getOwnPropertySymbols(input).length
+      || Object.getOwnPropertyNames(input).length !== keys.length) {
+    throw invalidInput();
+  }
+  const omitted = new Set(omittableUndefined);
+  const entries = keys.flatMap(key => {
+    const descriptor = Object.getOwnPropertyDescriptor(input, key);
+    if (!descriptor || !Object.hasOwn(descriptor, 'value')) throw invalidInput();
+    return descriptor.value === undefined && omitted.has(key)
+      ? []
+      : [[key, descriptor.value]];
+  });
+  canonicalJson(Object.fromEntries(entries));
   return input;
 }
 
 function requireBank(bank) {
-  if (!isRecord(bank) || !Array.isArray(bank.items) || bank.items.some(item => !isRecord(item))) {
-    throw invalidInput('The question bank must contain an array of item objects.');
+  if (!isRecord(bank)) {
+    throw invalidInput('The question bank must be a JSON object.');
   }
   canonicalJson(bank);
+  if (!Array.isArray(bank.items) || bank.items.some(item => !isRecord(item))) {
+    throw invalidInput('The question bank must contain an array of item objects.');
+  }
   if (bank.items.some(item => (Object.hasOwn(item, 'retired') && typeof item.retired !== 'boolean')
       || (Object.hasOwn(item, 'retiredReason') && typeof item.retiredReason !== 'string'))) {
     throw invalidInput('Question retirement metadata is malformed.');
   }
-  return bank;
+  const ids = new Set();
+  for (const item of bank.items) {
+    if (ids.has(item.id)) {
+      throw new QbankActionError('qbank.duplicate_item', `Duplicate bank item ID: ${String(item.id)}`, 409);
+    }
+    ids.add(item.id);
+  }
+  return bank.items.filter(item => item.retired !== true);
 }
 
 function requireManifestPages(manifestPages) {
-  if (!Array.isArray(manifestPages)
-      || manifestPages.length === 0
+  if (!Array.isArray(manifestPages)) {
+    throw invalidInput('The shipped Markdown manifest must be an array.');
+  }
+  canonicalJson(manifestPages);
+  if (manifestPages.length === 0
       || manifestPages.some(page => typeof page !== 'string' || !page.trim())) {
     throw invalidInput('The shipped Markdown manifest is required.');
   }
@@ -175,6 +202,7 @@ function findActiveItem(bank, id) {
 
 function requireEntries(entries) {
   if (!Array.isArray(entries)) throw invalidInput('Attestation entries must be an array.');
+  canonicalJson(entries);
   if (entries.length === 0) {
     throw new QbankActionError('attest.empty_selection', 'Select at least one question to attest.');
   }
@@ -199,8 +227,14 @@ function requireEntries(entries) {
 }
 
 function requireConfirmations(confirmations) {
-  if (!isRecord(confirmations)
-      || confirmations.clinical !== true
+  if (!isRecord(confirmations)) {
+    throw new QbankActionError(
+      'attest.confirmations_required',
+      'Complete all faculty confirmations.',
+    );
+  }
+  canonicalJson(confirmations);
+  if (confirmations.clinical !== true
       || confirmations.evidence !== true
       || confirmations.originalityAndNoPhi !== true) {
     throw new QbankActionError(
@@ -237,7 +271,7 @@ export function prepareDraftSave(input) {
       baseRevision,
       editedItem,
     } = requireInput(input);
-    requireBank(bank);
+    const activeItems = requireBank(bank);
     requireManifestPages(manifestPages);
     requireId(id);
     requireRevision(baseRevision);
@@ -258,10 +292,10 @@ export function prepareDraftSave(input) {
       throw new QbankActionError('qbank.no_changes', 'No editable question fields changed.');
     }
 
-    const candidateItems = bank.items.map((item, itemIndex) => itemIndex === index ? next : item);
+    const candidateItems = activeItems.map(item => item === original ? next : item);
     const assessment = assessItem(next, {
       manifestPages,
-      activeItems: candidateItems.filter(item => item.retired !== true),
+      activeItems: candidateItems,
     });
     if (assessment.blockers.length) {
       throw new QbankActionError(
@@ -286,13 +320,13 @@ export function prepareAttestation(input) {
       manifestPages,
       entries,
       confirmations,
-    } = requireInput(input);
-    requireBank(bank);
+    } = requireInput(input, ['confirmations']);
+    const activeItems = requireBank(bank);
     requireManifestPages(manifestPages);
     requireEntries(entries);
     requireConfirmations(confirmations);
 
-    const assessmentById = assessBank(bank.items, { manifestPages }).byId;
+    const assessmentById = assessBank(activeItems, { manifestPages, activeItems }).byId;
     const selected = entries.map(entry => {
       const { item, index } = findActiveItem(bank, entry.id);
       if (itemRevision(item) !== entry.revision) {

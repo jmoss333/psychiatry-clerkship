@@ -82,6 +82,70 @@ function clone(value) {
   return structuredClone(value);
 }
 
+function draftRequest() {
+  const item = validItem();
+  const editedItem = clone(item);
+  editedItem.stem = 'A revised fictional presentation has persistent sadness. What diagnosis best fits?';
+  return {
+    bank: makeBank([item]),
+    manifestPages: [...manifestPages],
+    id: item.id,
+    baseRevision: itemRevision(item),
+    editedItem,
+  };
+}
+
+function attestationRequest() {
+  const item = validItem();
+  return {
+    bank: makeBank([item]),
+    manifestPages: [...manifestPages],
+    entries: [entryFor(item)],
+    confirmations: { ...confirmed },
+  };
+}
+
+function accessorProperty(base, key, value) {
+  let reads = 0;
+  const container = { ...base };
+  delete container[key];
+  Object.defineProperty(container, key, {
+    enumerable: true,
+    get() {
+      reads += 1;
+      return value;
+    },
+  });
+  return { value: container, reads: () => reads };
+}
+
+function malformedArrayCases(valueFactory) {
+  return [
+    ['sparse', () => {
+      const value = [];
+      value.length = 1;
+      return { value, reads: () => 0 };
+    }],
+    ['accessor', () => {
+      let reads = 0;
+      const value = [];
+      Object.defineProperty(value, '0', {
+        enumerable: true,
+        get() {
+          reads += 1;
+          return valueFactory();
+        },
+      });
+      return { value, reads: () => reads };
+    }],
+    ['custom-property', () => {
+      const value = [valueFactory()];
+      value.extra = 'not JSON array data';
+      return { value, reads: () => 0 };
+    }],
+  ];
+}
+
 function expectActionError(call, {
   code,
   status,
@@ -351,6 +415,88 @@ test('actions reject malformed retirement metadata instead of treating it as act
       status: 400,
     });
   }
+});
+
+test('prepareDraftSave rejects an active and retired bank-item ID collision', () => {
+  const active = validItem({ id: 'qb_moo_900', stem: stems[0] });
+  const retired = validItem({ id: active.id, stem: stems[1] });
+  retired.retired = true;
+  retired.retiredReason = 'Superseded synthetic fixture.';
+  const bank = makeBank([active, retired]);
+  const before = clone(bank);
+  const editedItem = clone(active);
+  editedItem.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
+
+  expectActionError(() => prepareDraftSave({
+    bank,
+    manifestPages,
+    id: active.id,
+    baseRevision: itemRevision(active),
+    editedItem,
+  }), {
+    code: 'qbank.duplicate_item',
+    status: 409,
+  });
+  assert.deepEqual(bank, before);
+});
+
+test('prepareAttestation rejects an active and retired bank-item ID collision', () => {
+  const active = validItem({ id: 'qb_moo_900', stem: stems[0] });
+  const retired = validItem({ id: active.id, stem: stems[1] });
+  retired.retired = true;
+  retired.retiredReason = 'Superseded synthetic fixture.';
+  const bank = makeBank([active, retired]);
+  const before = clone(bank);
+
+  expectActionError(() => prepareAttestation({
+    bank,
+    manifestPages,
+    entries: [entryFor(active)],
+    confirmations: confirmed,
+  }), {
+    code: 'qbank.duplicate_item',
+    status: 409,
+  });
+  assert.deepEqual(bank, before);
+});
+
+test('prepareDraftSave rejects duplicate IDs on unrelated bank items', () => {
+  const target = validItem({ id: 'qb_moo_900', stem: stems[0] });
+  const duplicate = validItem({ id: 'qb_moo_901', stem: stems[1] });
+  const bank = makeBank([target, duplicate, clone(duplicate)]);
+  const before = clone(bank);
+  const editedItem = clone(target);
+  editedItem.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
+
+  expectActionError(() => prepareDraftSave({
+    bank,
+    manifestPages,
+    id: target.id,
+    baseRevision: itemRevision(target),
+    editedItem,
+  }), {
+    code: 'qbank.duplicate_item',
+    status: 409,
+  });
+  assert.deepEqual(bank, before);
+});
+
+test('prepareAttestation rejects duplicate IDs on unrelated bank items', () => {
+  const target = validItem({ id: 'qb_moo_900', stem: stems[0] });
+  const duplicate = validItem({ id: 'qb_moo_901', stem: stems[1] });
+  const bank = makeBank([target, duplicate, clone(duplicate)]);
+  const before = clone(bank);
+
+  expectActionError(() => prepareAttestation({
+    bank,
+    manifestPages,
+    entries: [entryFor(target)],
+    confirmations: confirmed,
+  }), {
+    code: 'qbank.duplicate_item',
+    status: 409,
+  });
+  assert.deepEqual(bank, before);
 });
 
 test('prepareDraftSave requires exactly one active matching item', () => {
@@ -759,6 +905,123 @@ test('prepareAttestation rejects malformed JSON-like public inputs with action e
   for (const call of calls) {
     expectActionError(call, { code: 'qbank.invalid_input', status: 400 });
   }
+});
+
+test('prepareDraftSave validates the top-level request before reading an accessor', () => {
+  const request = draftRequest();
+  const wrapped = accessorProperty(request, 'bank', request.bank);
+
+  expectActionError(() => prepareDraftSave(wrapped.value), {
+    code: 'qbank.invalid_input',
+    status: 400,
+  });
+  assert.equal(wrapped.reads(), 0);
+});
+
+test('prepareAttestation validates the top-level request before reading an accessor', () => {
+  const request = attestationRequest();
+  const wrapped = accessorProperty(request, 'entries', request.entries);
+
+  expectActionError(() => prepareAttestation(wrapped.value), {
+    code: 'qbank.invalid_input',
+    status: 400,
+  });
+  assert.equal(wrapped.reads(), 0);
+});
+
+test('prepareDraftSave validates the bank before reading its items property', () => {
+  const request = draftRequest();
+  const wrapped = accessorProperty(
+    { _note: request.bank._note, version: request.bank.version, extension: request.bank.extension },
+    'items',
+    request.bank.items,
+  );
+  request.bank = wrapped.value;
+
+  expectActionError(() => prepareDraftSave(request), {
+    code: 'qbank.invalid_input',
+    status: 400,
+  });
+  assert.equal(wrapped.reads(), 0);
+});
+
+for (const [shape, create] of malformedArrayCases(() => 't_mood.md')) {
+  test(`prepareDraftSave rejects a ${shape} manifest array before reading it`, () => {
+    const request = draftRequest();
+    const malformed = create();
+    request.manifestPages = malformed.value;
+
+    expectActionError(() => prepareDraftSave(request), {
+      code: 'qbank.invalid_input',
+      status: 400,
+    });
+    assert.equal(malformed.reads(), 0);
+  });
+
+  test(`prepareAttestation rejects a ${shape} manifest array before reading it`, () => {
+    const request = attestationRequest();
+    const malformed = create();
+    request.manifestPages = malformed.value;
+
+    expectActionError(() => prepareAttestation(request), {
+      code: 'qbank.invalid_input',
+      status: 400,
+    });
+    assert.equal(malformed.reads(), 0);
+  });
+}
+
+for (const [shape, create] of malformedArrayCases(() => entryFor(validItem()))) {
+  test(`prepareAttestation rejects a ${shape} entries array before reading it`, () => {
+    const request = attestationRequest();
+    const malformed = create();
+    request.entries = malformed.value;
+
+    expectActionError(() => prepareAttestation(request), {
+      code: 'qbank.invalid_input',
+      status: 400,
+    });
+    assert.equal(malformed.reads(), 0);
+  });
+}
+
+for (const [shape, create] of [
+  ['accessor', () => accessorProperty({ evidence: true, originalityAndNoPhi: true }, 'clinical', true)],
+  ['non-enumerable property', () => {
+    const value = { ...confirmed };
+    Object.defineProperty(value, 'extra', { value: true });
+    return { value, reads: () => 0 };
+  }],
+  ['symbol property', () => {
+    const value = { ...confirmed };
+    value[Symbol('extra')] = true;
+    return { value, reads: () => 0 };
+  }],
+]) {
+  test(`prepareAttestation rejects confirmations with a ${shape}`, () => {
+    const request = attestationRequest();
+    const malformed = create();
+    request.confirmations = malformed.value;
+
+    expectActionError(() => prepareAttestation(request), {
+      code: 'qbank.invalid_input',
+      status: 400,
+    });
+    assert.equal(malformed.reads(), 0);
+  });
+}
+
+test('prepareAttestation validates each entry before reading an accessor property', () => {
+  const request = attestationRequest();
+  const original = request.entries[0];
+  const wrapped = accessorProperty({ revision: original.revision }, 'id', original.id);
+  request.entries = [wrapped.value];
+
+  expectActionError(() => prepareAttestation(request), {
+    code: 'qbank.invalid_input',
+    status: 400,
+  });
+  assert.equal(wrapped.reads(), 0);
 });
 
 test('public action boundaries safely wrap hostile thrown values', () => {
