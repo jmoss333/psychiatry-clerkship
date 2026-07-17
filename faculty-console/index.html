@@ -574,6 +574,21 @@
   .guard-panel p,
   .conflict-alert p { margin: 0.35rem 0; }
 
+  body:has(.modal-panel) { overflow: hidden; }
+
+  .modal-panel {
+    position: fixed;
+    z-index: 100;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    width: min(calc(100% - 2rem), 38rem);
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+    margin: 0;
+    box-shadow: 0 0 0 100vmax rgb(23 33 27 / 0.48), 0 1rem 3rem rgb(23 33 27 / 0.24);
+    translate: -50% -50%;
+  }
+
   .guard-actions,
   .draft-actions {
     display: flex;
@@ -643,6 +658,12 @@
   }
 
   .option-grid { margin-block-start: 0.9rem; }
+
+  .tier-cardinality-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-block-start: 0.8rem;
+  }
 
   .option-card {
     min-width: 0;
