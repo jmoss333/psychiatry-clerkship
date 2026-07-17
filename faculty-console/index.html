@@ -45,7 +45,8 @@
 
   button,
   input,
-  select {
+  select,
+  textarea {
     max-width: 100%;
     font: inherit;
   }
@@ -53,7 +54,8 @@
   button,
   a,
   input,
-  select {
+  select,
+  textarea {
     touch-action: manipulation;
   }
 
@@ -86,7 +88,8 @@
   button:focus-visible,
   a:focus-visible,
   input:focus-visible,
-  select:focus-visible {
+  select:focus-visible,
+  textarea:focus-visible {
     outline: 3px solid var(--focus);
     outline-offset: 2px;
   }
@@ -96,7 +99,8 @@
   input[type="text"],
   input[type="password"],
   input[type="search"],
-  select {
+  select,
+  textarea {
     width: 100%;
     min-width: 0;
     min-height: 2.6rem;
@@ -106,6 +110,18 @@
     color: var(--ink);
     padding: 0.55rem 0.65rem;
   }
+
+  textarea {
+    resize: vertical;
+    line-height: 1.45;
+  }
+
+  input[readonly] {
+    background: #f3f5f3;
+    color: var(--muted);
+  }
+
+  fieldset { min-width: 0; }
 
   label,
   legend {
@@ -417,6 +433,11 @@
     font-variant-numeric: tabular-nums;
   }
 
+  .data-text {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
   .queue-id { display: block; font-size: 0.76rem; font-weight: 800; }
 
   .queue-stem {
@@ -461,6 +482,10 @@
 
   .batch-summary p { flex: 1 1 12rem; margin: 0; font-size: 0.78rem; }
 
+  .batch-copy { min-width: 0; flex: 1 1 12rem; }
+
+  .batch-confirmation { flex: 1 0 100%; }
+
   .batch-warning { color: var(--warning); font-weight: 700; }
 
   .review-panel { min-height: 28rem; }
@@ -478,6 +503,224 @@
   }
 
   .review-heading p { margin: 0.25rem 0 0; }
+
+  .workflow-rail {
+    margin-block: 1rem 1.25rem;
+    border-block: 1px solid var(--line);
+    background: #f8faf8;
+  }
+
+  .workflow-rail ol {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .workflow-rail li {
+    position: relative;
+    min-width: 0;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 0.65rem 0.7rem;
+    text-align: center;
+  }
+
+  .workflow-rail li + li { border-inline-start: 1px solid var(--line); }
+
+  .workflow-rail li + li::before {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    translate: -50% -50%;
+    background: #f8faf8;
+    color: var(--muted);
+    content: "→";
+    padding-inline: 0.15rem;
+  }
+
+  .workflow-rail li.complete { color: var(--ready); }
+
+  .workflow-rail li.current {
+    background: var(--primary-soft);
+    color: var(--ink);
+    box-shadow: inset 0 -3px 0 var(--primary);
+  }
+
+  .action-feedback:empty { display: none; }
+
+  .action-result,
+  .action-error,
+  .guard-panel {
+    margin-block: 1rem;
+    border: 1px solid var(--line);
+    border-inline-start: 0.35rem solid var(--ready);
+    background: var(--ready-soft);
+    padding: 0.85rem 0.9rem;
+  }
+
+  .action-error,
+  .conflict-alert,
+  .guard-panel {
+    border-inline-start-color: var(--blocked);
+    background: var(--blocked-soft);
+  }
+
+  .guard-panel h3,
+  .conflict-alert h3 { margin: 0 0 0.35rem; }
+
+  .guard-panel p,
+  .conflict-alert p { margin: 0.35rem 0; }
+
+  .guard-actions,
+  .draft-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-block-start: 0.75rem;
+  }
+
+  .editor-section {
+    margin: 1rem 0 0;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: 0.85rem 0.9rem 1rem;
+  }
+
+  .editor-section > legend {
+    color: var(--primary);
+    padding-inline: 0.35rem;
+  }
+
+  .editor-section > .field + .field,
+  .teaching-section > .field + .field,
+  .tier-two > .field + .field { margin-block-start: 0.85rem; }
+
+  .editor-grid,
+  .option-grid,
+  .review-safety-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .checkbox-fieldset {
+    margin: 0.85rem 0 0;
+    border: 0;
+    padding: 0;
+  }
+
+  .checkbox-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.8rem;
+    margin-block-start: 0.35rem;
+  }
+
+  .checkbox-grid label,
+  .checkbox-line,
+  .radio-choice,
+  .human-confirmations label,
+  .warning-acknowledgements label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+
+  .checkbox-line { margin-block-start: 0.85rem; }
+
+  .checkbox-grid input,
+  .checkbox-line input,
+  .radio-choice input,
+  .human-confirmations input,
+  .warning-acknowledgements input {
+    flex: 0 0 auto;
+    width: 1rem;
+    height: 1rem;
+    margin-block-start: 0.18rem;
+  }
+
+  .option-grid { margin-block-start: 0.9rem; }
+
+  .option-card {
+    min-width: 0;
+    margin: 0;
+    border: 1px solid var(--line);
+    background: #f8faf8;
+    padding: 0.75rem;
+  }
+
+  .option-card > legend { padding-inline: 0.3rem; }
+
+  .option-card > * + * { margin-block-start: 0.7rem; }
+
+  .option-card .field { margin-block-start: 0.7rem; }
+
+  .option-card.compact { background: var(--surface); }
+
+  .governed-fields {
+    display: grid;
+    grid-template-columns: minmax(12rem, 0.42fr) minmax(0, 1fr);
+    gap: 1rem;
+    background: #f8faf8;
+  }
+
+  .governed-fields > legend { grid-column: 1 / -1; }
+
+  .governed-fields .question-facts {
+    border-inline-start: 1px solid var(--line);
+    padding-inline-start: 1rem;
+  }
+
+  .review-safety-grid {
+    align-items: start;
+    margin-block-start: 1rem;
+  }
+
+  .change-summary,
+  .safety-note {
+    min-width: 0;
+    margin: 0;
+  }
+
+  .change-summary {
+    border-inline-start: 0.3rem solid var(--primary);
+    background: #f8faf8;
+    padding: 0.8rem 0.9rem;
+  }
+
+  .change-summary h3 { margin: 0 0 0.35rem; }
+
+  .change-summary p { margin: 0; }
+
+  .change-summary ul { margin: 0.35rem 0 0; padding-inline-start: 1.2rem; }
+
+  .checks-stale { color: var(--warning); font-weight: 700; }
+
+  .checks-current { color: var(--ready); font-weight: 700; }
+
+  .issue-group h4 { margin: 0.65rem 0 0.25rem; }
+
+  .issue-group.blocked h4 { color: var(--blocked); }
+
+  .issue-group.warning h4 { color: var(--warning); }
+
+  .draft-actions { justify-content: flex-end; }
+
+  .human-confirmations,
+  .warning-acknowledgements {
+    margin-block-start: 1rem;
+    border: 1px solid var(--line);
+    padding: 0.8rem 0.9rem 0.9rem;
+  }
+
+  .human-confirmations label + label,
+  .warning-acknowledgements label + label { margin-block-start: 0.65rem; }
+
+  .human-confirmations[disabled],
+  .warning-acknowledgements[disabled] { color: var(--muted); }
 
   .status-chip {
     display: inline-flex;
@@ -614,6 +857,12 @@
     .question-facts { border-inline-start: 0; border-block-start: 1px solid var(--line); padding: 0.8rem 0 0; }
     .content-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .content-actions { grid-column: 1 / -1; justify-content: flex-start; }
+    .editor-grid,
+    .option-grid,
+    .review-safety-grid,
+    .governed-fields { grid-template-columns: minmax(0, 1fr); }
+    .governed-fields > legend { grid-column: auto; }
+    .governed-fields .question-facts { border-inline-start: 0; padding-inline-start: 0; }
   }
 
   @media (max-width: 760px) {
@@ -637,6 +886,10 @@
     .count-strip div:nth-child(n + 4) { border-block-start: 1px solid var(--line); }
     .content-row { grid-template-columns: auto minmax(0, 1fr); }
     .content-row a { grid-column: 2; }
+    .review-sheet { padding-inline: 0.75rem; }
+    .workflow-rail li { font-size: 0.68rem; padding-inline: 0.35rem; }
+    .draft-actions button,
+    .guard-actions button { flex: 1 1 8rem; }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -1,7 +1,12 @@
 import {
   assessBatch,
   assessItem,
+  CATEGORIES,
+  COMPETENCIES,
   diffEditableFields,
+  OPTION_KEYS,
+  SUBTYPES,
+  TYPES,
 } from './qbank-rules.mjs';
 
 const API = '/api/attest';
@@ -14,12 +19,46 @@ const GATE_LABELS = {
   blocked: { label: 'Blocked', symbol: '×' },
 };
 
+const CONFIRMATION_COPY = {
+  clinical: 'I verified the clinical answer and rationale.',
+  evidence: 'I verified the item against the named library page(s) and evidence anchor.',
+  originalityAndNoPhi: 'I verified that the vignette is an original fictional composite with no PHI.',
+};
+
+const OPTION_TEXT_LABELS = {
+  A: 'Option A text',
+  B: 'Option B text',
+  C: 'Option C text',
+  D: 'Option D text',
+};
+
+const emptyConfirmations = () => ({
+  clinical: false,
+  evidence: false,
+  originalityAndNoPhi: false,
+});
+
 function list(value) {
   return Array.isArray(value) ? value : [];
 }
 
 function text(value) {
   return typeof value === 'string' ? value : '';
+}
+
+function record(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function clone(value) {
+  return structuredClone(value);
+}
+
+function parseDelimited(value) {
+  return [...new Set(text(value)
+    .split(/[\n,]/)
+    .map(entry => entry.trim())
+    .filter(Boolean))];
 }
 
 function gateOf(question) {
@@ -99,6 +138,17 @@ export function startFacultyConsole({
     contentFilters: { kind: 'all', status: 'all' },
     contentMessage: '',
     contentCommitUrl: null,
+    dirtyFields: [],
+    localAssessment: null,
+    confirmations: emptyConfirmations(),
+    warningAcks: new Set(),
+    qbankMessage: '',
+    qbankCommitUrl: null,
+    qbankError: '',
+    conflict: null,
+    navigationGuard: null,
+    navigationAfterSave: null,
+    batchConfirmation: null,
   };
 
   function el(tag, attributes = {}, children = []) {
@@ -109,7 +159,7 @@ export function startFacultyConsole({
         node.className = value;
       } else if (name.startsWith('on') && typeof value === 'function') {
         node.addEventListener(name.slice(2).toLowerCase(), value);
-      } else if (['checked', 'disabled', 'selected', 'value'].includes(name)) {
+      } else if (['checked', 'disabled', 'selected', 'value', 'readOnly'].includes(name)) {
         node[name] = value;
       } else {
         node.setAttribute(name, value === true ? '' : String(value));
@@ -171,12 +221,32 @@ export function startFacultyConsole({
     return fallback;
   }
 
+  function stableResponseMessage(payload, fallback) {
+    const message = responseMessage(payload, fallback);
+    const code = text(payload?.error?.code);
+    return code ? `${code}: ${message}` : message;
+  }
+
   async function responseJson(response) {
     try {
       return await response.json();
     } catch {
       return {};
     }
+  }
+
+  function validServerState(payload) {
+    if (!payload || typeof payload !== 'object'
+        || !Array.isArray(payload.qbank)
+        || !Array.isArray(payload.items)
+        || !Array.isArray(payload.manifestPages)) return false;
+    const ids = new Set();
+    for (const question of payload.qbank) {
+      if (!question || typeof question !== 'object' || Array.isArray(question)
+          || !text(question.id) || !text(question.revision) || ids.has(question.id)) return false;
+      ids.add(question.id);
+    }
+    return true;
   }
 
   function safeStudentUrl(query) {
@@ -208,32 +278,79 @@ export function startFacultyConsole({
 
   function hasUnsavedChanges(question = state.editor) {
     if (!state.original || !question) return false;
-    return diffEditableFields(state.original, question).length > 0;
+    try {
+      return diffEditableFields(state.original, question).length > 0;
+    } catch {
+      return true;
+    }
   }
 
   function hasAnyUnsavedChanges() {
     return hasUnsavedChanges() || Object.keys(state.contentChanges).length > 0;
   }
 
-  function setSelected(id) {
+  function resetApprovalInputs() {
+    state.confirmations = emptyConfirmations();
+    state.warningAcks = new Set();
+    state.batchConfirmation = null;
+  }
+
+  function invalidateSessionReview(id) {
+    if (!id) return;
+    state.reviewedInSession.delete(id);
+    state.reviewedRevisions.delete(id);
+    state.batch.delete(id);
+  }
+
+  function refreshEditorState() {
+    if (!state.original || !state.editor) {
+      state.dirtyFields = [];
+      state.localAssessment = null;
+      return;
+    }
+    try {
+      state.dirtyFields = diffEditableFields(state.original, state.editor);
+    } catch {
+      state.dirtyFields = ['Question'];
+    }
+    state.localAssessment = currentAssessment(state.editor);
+  }
+
+  function setSelected(id, { force = false } = {}) {
     const question = findQuestion(id);
     if (!question) {
       state.selectedId = null;
       state.original = null;
       state.editor = null;
+      state.dirtyFields = [];
+      state.localAssessment = null;
+      resetApprovalInputs();
       return;
     }
+    if (!force && state.selectedId === question.id && state.editor) return;
     state.selectedId = question.id;
-    state.original = structuredClone(question);
-    state.editor = structuredClone(question);
+    state.original = clone(question);
+    state.editor = clone(question);
+    state.qbankError = '';
+    state.conflict = null;
+    resetApprovalInputs();
+    refreshEditorState();
   }
 
   function currentAssessment(question) {
     try {
-      return assessItemImpl(question, {
+      const activeItems = list(state.server?.qbank).map(item => (
+        item?.id === question?.id ? question : item
+      ));
+      const assessment = assessItemImpl(question, {
         manifestPages: list(state.server?.manifestPages),
-        activeItems: list(state.server?.qbank),
+        activeItems,
       });
+      if (!assessment || !Object.hasOwn(GATE_LABELS, assessment.gate)
+          || !Array.isArray(assessment.blockers) || !Array.isArray(assessment.warnings)) {
+        throw new Error('Malformed assessment');
+      }
+      return assessment;
     } catch {
       return {
         gate: 'blocked',
@@ -276,12 +393,12 @@ export function startFacultyConsole({
 
   function chooseSelection() {
     if (findQuestion(state.selectedId)) {
-      setSelected(state.selectedId);
+      setSelected(state.selectedId, { force: true });
       return;
     }
     const first = filteredQuestions(state.server, state.filters)[0]
       || list(state.server?.qbank)[0];
-    setSelected(first?.id || null);
+    setSelected(first?.id || null, { force: true });
   }
 
   function renderLogin(message = '') {
@@ -346,7 +463,13 @@ export function startFacultyConsole({
     panel.focus();
   }
 
-  async function load({ silent = false, focusId = null } = {}) {
+  async function load({
+    silent = false,
+    focusId = null,
+    requiredId = null,
+    expectedRevisions = null,
+    preserveOnError = false,
+  } = {}) {
     state.pending = true;
     if (!silent) renderLoading();
     try {
@@ -356,25 +479,72 @@ export function startFacultyConsole({
         clearKey();
         state.pending = false;
         renderLogin('Key not accepted. Check the shared faculty key and try again.');
-        return;
+        return false;
       }
-      if (!response.ok || !Array.isArray(payload.qbank) || !Array.isArray(payload.items)) {
+      if (!response.ok || !validServerState(payload)) {
         throw new Error(responseMessage(payload, 'The server returned an incomplete state.'));
+      }
+      if (requiredId && !payload.qbank.some(question => question.id === requiredId)) {
+        throw new Error(`The refreshed state did not include ${requiredId}. Local work was retained.`);
+      }
+      if (expectedRevisions && typeof expectedRevisions === 'object') {
+        for (const [id, revision] of Object.entries(expectedRevisions)) {
+          const refreshed = payload.qbank.find(question => question.id === id);
+          if (!refreshed || refreshed.revision !== revision) {
+            throw new Error(`The refreshed state did not confirm ${id}. Local work was retained.`);
+          }
+        }
       }
       state.server = payload;
       state.pending = false;
       pruneSessionReview();
       chooseSelection();
       renderShell(focusId);
+      return true;
     } catch (error) {
       state.pending = false;
-      renderLoadError(error instanceof Error ? error.message : 'Network request failed.');
+      const message = error instanceof Error ? error.message : 'Network request failed.';
+      if (preserveOnError && state.server) {
+        state.qbankError = `refresh_failed: ${message}`;
+        announce(state.qbankError);
+        renderShell('qbank-action-error');
+      } else {
+        renderLoadError(message);
+      }
+      return false;
     }
   }
 
+  function performNavigation(target) {
+    if (!target || typeof target !== 'object') return;
+    if (target.kind === 'tab') {
+      state.tab = target.name;
+      renderShell(target.focus ? `tab-${target.name}` : null);
+      return;
+    }
+    if (target.kind === 'question' && findQuestion(target.id)) {
+      setSelected(target.id);
+      renderShell(target.focusId || `queue-${domToken(target.id)}`);
+    }
+  }
+
+  function requestNavigation(target, returnFocus = null) {
+    const changesQuestion = target?.kind === 'question' && target.id !== state.selectedId;
+    const leavesQuestionTab = target?.kind === 'tab'
+      && state.tab === 'qbank' && target.name !== 'qbank';
+    if (hasUnsavedChanges() && (changesQuestion || leavesQuestionTab)) {
+      state.navigationGuard = { target, returnFocus };
+      renderShell('unsaved-guard');
+      return;
+    }
+    performNavigation(target);
+  }
+
   function activateTab(name, focusTab = false) {
-    state.tab = name;
-    renderShell(focusTab ? `tab-${name}` : null);
+    requestNavigation(
+      { kind: 'tab', name, focus: focusTab },
+      `tab-${state.tab}`,
+    );
   }
 
   function tabButton(name, label) {
@@ -462,7 +632,8 @@ export function startFacultyConsole({
     if (focusId) {
       const target = document.getElementById(focusId);
       target?.focus();
-      if (target?.type === 'search') {
+      const targetType = target?.getAttribute?.('type');
+      if (targetType === 'search' || targetType === 'text' || target?.tagName === 'TEXTAREA') {
         const end = target.value.length;
         target.setSelectionRange?.(end, end);
       }
@@ -511,11 +682,11 @@ export function startFacultyConsole({
       el('div', { class: 'filter-grid' }, [
         labeledControl('Search questions', 'question-search', search, 'filter-search'),
         filterSelect(
-          'question-category',
+          'filter-question-category',
           'Category',
           [['all', 'All categories'], ...categories.map(value => [value, value])],
           state.filters.category,
-          event => updateFilter('category', event.target.value, 'question-category'),
+          event => updateFilter('category', event.target.value, 'filter-question-category'),
         ),
         filterSelect(
           'question-status',
@@ -532,11 +703,11 @@ export function startFacultyConsole({
           event => updateFilter('gate', event.target.value, 'question-gate'),
         ),
         filterSelect(
-          'question-difficulty',
+          'filter-question-difficulty',
           'Difficulty',
           [['all', 'All levels'], ...difficulties.map(value => [value, `Level ${value}`])],
           state.filters.difficulty,
-          event => updateFilter('difficulty', event.target.value, 'question-difficulty'),
+          event => updateFilter('difficulty', event.target.value, 'filter-question-difficulty'),
         ),
       ]),
     ]);
@@ -604,8 +775,10 @@ export function startFacultyConsole({
         type: 'button',
         'aria-current': selected ? 'true' : null,
         onClick: () => {
-          setSelected(question.id);
-          renderShell(queueId);
+          requestNavigation(
+            { kind: 'question', id: question.id, focusId: queueId },
+            `queue-${domToken(state.selectedId)}`,
+          );
         },
       }, [
         el('span', { class: 'queue-id' }, [question.id]),
@@ -618,20 +791,119 @@ export function startFacultyConsole({
     ]);
   }
 
-  function renderBatchSummary() {
-    const selected = [...state.batch]
+  function confirmationsComplete() {
+    return state.confirmations.clinical === true
+      && state.confirmations.evidence === true
+      && state.confirmations.originalityAndNoPhi === true;
+  }
+
+  function selectedBatchQuestions() {
+    return [...state.batch]
       .map(findQuestion)
       .filter(Boolean)
-      .map(assessedQuestion);
-    const assessment = assessBatch(selected);
+      .map(assessedQuestion)
+      .filter(question => (
+        state.reviewedRevisions.get(question.id) === question.revision
+          && isBatchEligible(question, state.reviewedInSession, false)
+      ));
+  }
+
+  function safeBatchAssessment(questions) {
+    try {
+      const assessment = assessBatch(questions);
+      if (!assessment || typeof assessment.ok !== 'boolean' || !Array.isArray(assessment.issues)) {
+        throw new Error('Malformed batch assessment');
+      }
+      return assessment;
+    } catch {
+      return {
+        ok: false,
+        issues: [{
+          code: 'batch.runtime_failure',
+          field: 'options',
+          message: 'Batch checks could not run. Reload before attesting.',
+        }],
+        answerKeys: { A: 0, B: 0, C: 0, D: 0 },
+      };
+    }
+  }
+
+  function openBatchConfirmation() {
+    const selected = selectedBatchQuestions();
+    const assessment = safeBatchAssessment(selected);
+    if (!selected.length || selected.length !== state.batch.size) {
+      showQbankError('batch.selection_stale: Reload or review the selected questions again.');
+      return;
+    }
+    if (!assessment.ok) {
+      showQbankError(`${assessment.issues[0].code}: ${assessment.issues[0].message}`);
+      return;
+    }
+    if (!confirmationsComplete()) {
+      showQbankError('attest.confirmations_required: Complete all faculty confirmations.');
+      return;
+    }
+    state.batchConfirmation = selected.map(question => question.id);
+    renderShell('batch-confirmation');
+  }
+
+  function renderBatchConfirmation() {
+    if (!Array.isArray(state.batchConfirmation)) return null;
+    const ids = state.batchConfirmation;
+    return el('section', {
+      id: 'batch-confirmation',
+      class: 'guard-panel batch-confirmation',
+      role: 'alertdialog',
+      tabindex: '-1',
+      'aria-modal': 'true',
+      'aria-labelledby': 'batch-confirmation-title',
+    }, [
+      el('h3', { id: 'batch-confirmation-title' }, ['Confirm green batch attestation']),
+      el('p', {}, ['The following saved revisions will be attested atomically:']),
+      el('ul', { class: 'data-text' }, ids.map(id => el('li', {}, [id]))),
+      el('div', { class: 'guard-actions' }, [
+        el('button', {
+          id: 'confirm-batch-attest',
+          class: 'primary',
+          type: 'button',
+          disabled: state.pending,
+          onClick: () => void attestBatch(ids),
+        }, ['Confirm batch attestation']),
+        el('button', {
+          type: 'button',
+          disabled: state.pending,
+          onClick: () => {
+            state.batchConfirmation = null;
+            renderShell('open-batch-attest');
+          },
+        }, ['Cancel']),
+      ]),
+    ]);
+  }
+
+  function renderBatchSummary() {
+    const selected = selectedBatchQuestions();
+    const assessment = safeBatchAssessment(selected);
+    const selectedIds = selected.map(question => question.id);
     const message = selected.length
-      ? `${selected.length} reviewed green draft${selected.length === 1 ? '' : 's'} selected.`
+      ? `${selected.length} reviewed green draft${selected.length === 1 ? '' : 's'} selected: ${selectedIds.join(', ')}`
       : 'No questions selected. Review each green draft before using its batch checkbox.';
     return el('div', { class: 'batch-summary' }, [
-      el('p', {}, [message]),
-      !assessment.ok
-        ? el('p', { class: 'batch-warning' }, [assessment.issues[0].message])
-        : null,
+      el('div', { id: 'batch-safety', class: 'batch-copy' }, [
+        el('p', {}, [message]),
+        !assessment.ok
+          ? el('p', { class: 'batch-warning' }, [assessment.issues[0].message])
+          : null,
+      ]),
+      el('button', {
+        id: 'open-batch-attest',
+        class: 'primary',
+        type: 'button',
+        disabled: !selected.length || selected.length !== state.batch.size
+          || !assessment.ok || !confirmationsComplete() || state.pending,
+        onClick: openBatchConfirmation,
+      }, ['Attest selected green drafts']),
+      renderBatchConfirmation(),
     ]);
   }
 
@@ -651,103 +923,659 @@ export function startFacultyConsole({
     announce(`${question.id} marked reviewed in this session. Its batch checkbox is now available.`);
   }
 
-  function renderAssessment(assessment) {
-    const gate = Object.hasOwn(GATE_LABELS, assessment.gate) ? assessment.gate : 'blocked';
-    const issues = gate === 'blocked' ? list(assessment.blockers) : list(assessment.warnings);
-    if (!issues.length) {
-      return el('section', { class: 'safety-note', 'aria-labelledby': 'checks-title' }, [
-        el('h3', { id: 'checks-title' }, ['Automated checks passed']),
-        el('p', {}, [
-          'Green means the saved structure passed. It does not verify clinical accuracy or source support.',
-        ]),
-      ]);
+  function moveQueueSelection(event, questions) {
+    if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    const targetId = event.target?.getAttribute?.('id') || '';
+    if (!targetId.startsWith('queue-')) return;
+    const index = questions.findIndex(question => question.id === state.selectedId);
+    if (index < 0) return;
+    const offset = event.key === 'ArrowDown' ? 1 : -1;
+    const next = questions[Math.max(0, Math.min(questions.length - 1, index + offset))];
+    if (!next || next.id === state.selectedId) return;
+    event.preventDefault();
+    requestNavigation(
+      { kind: 'question', id: next.id, focusId: `queue-${domToken(next.id)}` },
+      targetId,
+    );
+  }
+
+  function controlValue(id, fallback = '') {
+    const control = document.getElementById(id);
+    return control ? text(control.value) : text(fallback);
+  }
+
+  function controlChecked(id, fallback = false) {
+    const control = document.getElementById(id);
+    return control ? control.checked === true : fallback === true;
+  }
+
+  function readEditor() {
+    const base = clone(state.editor || state.original || {});
+    const next = clone(base);
+    next.type = controlValue('question-type', base.type);
+    next.category = controlValue('question-category', base.category);
+    next.competency = COMPETENCIES.filter(value => controlChecked(
+      `competency-${domToken(value)}`,
+      list(base.competency).includes(value),
+    ));
+    next.difficulty = Number(controlValue('question-difficulty', base.difficulty));
+    if (controlChecked('question-high-yield', base.hy === true)) next.hy = true;
+    else delete next.hy;
+    next.pages = parseDelimited(controlValue('question-pages', list(base.pages).join(', ')));
+    next.link = {
+      label: controlValue('question-link-label', base.link?.label),
+      href: controlValue('question-link-href', base.link?.href),
+    };
+    next.stem = controlValue('question-stem', base.stem);
+    next.why = controlValue('question-why', base.why);
+    next.pearl = controlValue('question-pearl', base.pearl);
+    next.evidence = controlValue('question-evidence', base.evidence);
+
+    const currentOptions = Object.fromEntries(list(base.options).map(optionItem => [optionItem?.key, optionItem]));
+    const correctKey = OPTION_KEYS.find(key => controlChecked(
+      `correct-${key}`,
+      currentOptions[key]?.c === true,
+    )) || '';
+    next.options = OPTION_KEYS.map(key => {
+      const originalOption = record(currentOptions[key]);
+      const optionItem = clone(originalOption);
+      optionItem.key = key;
+      optionItem.t = controlValue(`option-${key}-text`, originalOption.t);
+      if (key === correctKey) {
+        optionItem.c = true;
+        delete optionItem.trap;
+      } else {
+        delete optionItem.c;
+        optionItem.trap = {
+          name: controlValue(`option-${key}-trap-name`, originalOption.trap?.name),
+          note: controlValue(`option-${key}-trap-note`, originalOption.trap?.note),
+        };
+      }
+      return optionItem;
+    });
+
+    if (next.type === 'relational') {
+      next.subtype = controlValue('question-subtype', base.subtype);
+    } else {
+      delete next.subtype;
     }
-    return el('section', {
-      class: `safety-note ${gate}`,
-      'aria-labelledby': 'checks-title',
-    }, [
-      el('h3', { id: 'checks-title' }, [
-        gate === 'blocked' ? 'Structural blockers' : 'Faculty review warnings',
-      ]),
-      el('ul', { class: 'issue-list' }, issues.map(issue => (
-        el('li', {}, [`${text(issue.field) || 'Question'}: ${text(issue.message) || text(issue.code)}`])
-      ))),
+
+    if (next.type === 'two-tier') {
+      const tier = record(base.tier2);
+      const tierOptions = Object.fromEntries(list(tier.options).map(optionItem => [optionItem?.key, optionItem]));
+      const tierCorrect = OPTION_KEYS.find(key => controlChecked(
+        `tier2-correct-${key}`,
+        tierOptions[key]?.c === true,
+      )) || '';
+      next.tier2 = {
+        q: controlValue('tier2-question', tier.q),
+        options: OPTION_KEYS.map(key => {
+          const optionItem = clone(record(tierOptions[key]));
+          optionItem.key = key;
+          optionItem.t = controlValue(`tier2-option-${key}-text`, tierOptions[key]?.t);
+          if (key === tierCorrect) optionItem.c = true;
+          else delete optionItem.c;
+          return optionItem;
+        }),
+        why: controlValue('tier2-why', tier.why),
+      };
+    } else {
+      delete next.tier2;
+    }
+    return next;
+  }
+
+  function editorChanged(focusId) {
+    state.editor = readEditor();
+    invalidateSessionReview(state.selectedId);
+    resetApprovalInputs();
+    state.qbankMessage = '';
+    state.qbankCommitUrl = null;
+    state.qbankError = '';
+    state.conflict = null;
+    refreshEditorState();
+    renderShell(focusId);
+  }
+
+  function editorInput(id, attributes = {}) {
+    return el('input', {
+      id,
+      ...attributes,
+      onInput: event => editorChanged(event.target.getAttribute('id')),
+    });
+  }
+
+  function editorSelect(id, values, selected, label) {
+    return labeledControl(label, id, el('select', {
+      id,
+      value: text(selected),
+      onChange: event => editorChanged(event.target.getAttribute('id')),
+    }, values.map(([value, name]) => option(value, name, selected))));
+  }
+
+  function editorTextarea(label, id, value, rows = 3) {
+    return labeledControl(label, id, el('textarea', {
+      id,
+      rows: String(rows),
+      value: text(value),
+      onInput: event => editorChanged(event.target.getAttribute('id')),
+    }));
+  }
+
+  function editorText(label, id, value, attributes = {}) {
+    return labeledControl(label, id, editorInput(id, {
+      type: 'text',
+      value: text(value),
+      ...attributes,
+    }));
+  }
+
+  function renderCompetencies(question) {
+    return el('fieldset', { class: 'checkbox-fieldset' }, [
+      el('legend', {}, ['Competencies']),
+      el('div', { class: 'checkbox-grid' }, COMPETENCIES.map(value => {
+        const id = `competency-${domToken(value)}`;
+        return el('label', { for: id }, [
+          el('input', {
+            id,
+            type: 'checkbox',
+            checked: list(question.competency).includes(value),
+            onChange: event => editorChanged(event.target.getAttribute('id')),
+          }),
+          value,
+        ]);
+      })),
     ]);
   }
 
+  function renderOptionEditor(optionItem, correctKey) {
+    const key = optionItem.key;
+    const group = el('fieldset', { class: 'option-card' });
+    group.appendChild(el('legend', {}, [`Option ${key}`]));
+    group.appendChild(editorText(`Option ${key} key`, `option-${key}-key`, key, { readOnly: true }));
+    group.appendChild(el('label', { class: 'radio-choice', for: `correct-${key}` }, [
+      el('input', {
+        id: `correct-${key}`,
+        type: 'radio',
+        name: 'correct-key',
+        value: key,
+        checked: correctKey === key,
+        onChange: event => editorChanged(event.target.getAttribute('id')),
+      }),
+      'Correct answer',
+    ]));
+    group.appendChild(editorTextarea(OPTION_TEXT_LABELS[key], `option-${key}-text`, optionItem.t, 3));
+    if (correctKey !== key) {
+      group.appendChild(editorText('Trap name', `option-${key}-trap-name`, optionItem.trap?.name));
+      group.appendChild(editorTextarea('Corrective trap note', `option-${key}-trap-note`, optionItem.trap?.note, 3));
+    }
+    return group;
+  }
+
+  function renderTierTwoEditor(question) {
+    if (question.type !== 'two-tier') return null;
+    const tier = record(question.tier2);
+    const optionsByKey = Object.fromEntries(list(tier.options).map(optionItem => [optionItem?.key, optionItem]));
+    const correctKey = list(tier.options).find(optionItem => optionItem?.c === true)?.key || '';
+    return el('fieldset', { class: 'editor-section tier-two' }, [
+      el('legend', {}, ['Tier-two reasoning']),
+      editorTextarea('Tier-two question', 'tier2-question', tier.q, 3),
+      el('div', { class: 'option-grid' }, OPTION_KEYS.map(key => {
+        const optionItem = record(optionsByKey[key]);
+        return el('fieldset', { class: 'option-card compact' }, [
+          el('legend', {}, [`Tier-two option ${key}`]),
+          editorText(`Tier-two option ${key} key`, `tier2-option-${key}-key`, key, { readOnly: true }),
+          el('label', { class: 'radio-choice', for: `tier2-correct-${key}` }, [
+            el('input', {
+              id: `tier2-correct-${key}`,
+              type: 'radio',
+              name: 'tier2-correct-key',
+              value: key,
+              checked: correctKey === key,
+              onChange: event => editorChanged(event.target.getAttribute('id')),
+            }),
+            'Correct answer',
+          ]),
+          editorTextarea(`Tier-two option ${key} text`, `tier2-option-${key}-text`, optionItem.t, 2),
+        ]);
+      })),
+      editorTextarea('Tier-two rationale', 'tier2-why', tier.why, 4),
+    ]);
+  }
+
+  function issueControlId(field) {
+    const value = text(field);
+    if (value === 'stem') return 'question-stem';
+    if (value === 'type') return 'question-type';
+    if (value === 'subtype') return 'question-subtype';
+    if (value === 'category') return 'question-category';
+    if (value === 'competency') return 'competency-dx';
+    if (value === 'difficulty') return 'question-difficulty';
+    if (value === 'pages') return 'question-pages';
+    if (value.startsWith('link.href')) return 'question-link-href';
+    if (value.startsWith('link')) return 'question-link-label';
+    if (value === 'why') return 'question-why';
+    if (value === 'pearl') return 'question-pearl';
+    if (value === 'evidence') return 'question-evidence';
+    const optionMatch = /^options\.([A-D])(?:\.(t|trap))?/.exec(value);
+    if (optionMatch) {
+      if (optionMatch[2] === 'trap') return `option-${optionMatch[1]}-trap-name`;
+      return `option-${optionMatch[1]}-text`;
+    }
+    const tierMatch = /^tier2\.options\.([A-D])/.exec(value);
+    if (tierMatch) return `tier2-option-${tierMatch[1]}-text`;
+    if (value.startsWith('tier2.why')) return 'tier2-why';
+    if (value.startsWith('tier2')) return 'tier2-question';
+    return 'review-title';
+  }
+
+  function renderIssueList(title, issues, kind) {
+    if (!issues.length) return null;
+    return el('section', { class: `issue-group ${kind}` }, [
+      el('h4', {}, [title]),
+      el('ul', { class: 'issue-list' }, issues.map(issue => {
+        const field = text(issue.field) || 'Question';
+        const target = issueControlId(field);
+        return el('li', {}, [
+          el('a', {
+            id: `issue-${domToken(field)}`,
+            href: `#${target}`,
+            onClick: () => document.getElementById(target)?.focus(),
+          }, [field]),
+          `: ${text(issue.message) || text(issue.code) || 'Review this field.'}`,
+        ]);
+      })),
+    ]);
+  }
+
+  function renderAssessment(assessment, dirty) {
+    const gate = Object.hasOwn(GATE_LABELS, assessment?.gate) ? assessment.gate : 'blocked';
+    const blockers = list(assessment?.blockers);
+    const warnings = list(assessment?.warnings);
+    return el('section', {
+      id: 'safety-issues',
+      class: `safety-note ${gate}`,
+      'aria-labelledby': 'checks-title',
+    }, [
+      el('h3', { id: 'checks-title' }, ['Safety issues']),
+      el('p', { class: dirty ? 'checks-stale' : 'checks-current' }, [
+        dirty
+          ? 'Checks are local and stale until this draft is saved and reloaded.'
+          : 'Checks current for the saved repository version.',
+      ]),
+      !blockers.length && !warnings.length
+        ? el('div', {}, [
+          el('h4', {}, ['Automated checks passed']),
+          el('p', {}, [
+            'Green means the saved structure passed. It does not verify clinical accuracy or source support.',
+          ]),
+        ])
+        : null,
+      renderIssueList('Structural blockers', blockers, 'blocked'),
+      renderIssueList('Faculty review warnings', warnings, 'warning'),
+    ]);
+  }
+
+  function renderChangedFields() {
+    return el('section', {
+      id: 'changed-fields',
+      class: 'change-summary',
+      'aria-labelledby': 'changed-fields-title',
+    }, [
+      el('h3', { id: 'changed-fields-title' }, ['Changed fields']),
+      state.dirtyFields.length
+        ? el('ul', { class: 'data-text' }, state.dirtyFields.map(field => el('li', {}, [field])))
+        : el('p', { class: 'muted' }, ['No local changes.']),
+    ]);
+  }
+
+  function renderWorkflowRail(question, dirty) {
+    const current = question.status === 'attested' ? 2 : dirty ? 0 : 1;
+    return el('nav', {
+      class: 'workflow-rail',
+      'aria-label': 'Save draft → Checks current → Attest',
+    }, [
+      el('ol', {}, [
+        el('li', { class: current === 0 ? 'current' : current > 0 ? 'complete' : '' }, ['Save draft']),
+        el('li', { class: current === 1 ? 'current' : current > 1 ? 'complete' : '' }, ['Checks current']),
+        el('li', { class: current === 2 ? 'complete current' : '' }, ['Attest']),
+      ]),
+    ]);
+  }
+
+  function renderActionFeedback() {
+    return el('div', { class: 'action-feedback' }, [
+      state.qbankMessage ? el('section', {
+        id: 'qbank-action-result',
+        class: 'action-result',
+        tabindex: '-1',
+      }, [
+        state.qbankMessage,
+        state.qbankCommitUrl ? ' ' : null,
+        state.qbankCommitUrl ? el('a', {
+          href: state.qbankCommitUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        }, ['View commit ↗']) : null,
+      ]) : null,
+      state.qbankError ? el('section', {
+        id: 'qbank-action-error',
+        class: 'action-error',
+        role: 'alert',
+        tabindex: '-1',
+      }, [state.qbankError]) : null,
+      state.conflict ? el('section', {
+        id: 'qbank-conflict',
+        class: 'action-error conflict-alert',
+        role: 'alert',
+        tabindex: '-1',
+        'aria-labelledby': 'conflict-title',
+      }, [
+        el('h3', { id: 'conflict-title' }, ['This question changed in the repository']),
+        el('p', {}, [state.conflict.message]),
+        el('p', {}, ['Reload the current repository version, or keep this local copy for reference. This console will not overwrite the newer version.']),
+        el('div', { class: 'guard-actions' }, [
+          el('button', {
+            class: 'primary',
+            type: 'button',
+            onClick: () => {
+              const id = state.selectedId;
+              state.conflict = null;
+              state.qbankError = '';
+              void load({
+                silent: true,
+                focusId: 'question-stem',
+                requiredId: id,
+                preserveOnError: true,
+              });
+            },
+          }, ['Reload']),
+          el('button', {
+            type: 'button',
+            onClick: () => {
+              state.conflict = null;
+              state.qbankError = '';
+              announce('Local copy retained. Reload before trying to save over a newer revision.');
+              renderShell('save-draft');
+            },
+          }, ['Keep local copy']),
+        ]),
+      ]) : null,
+    ]);
+  }
+
+  function renderNavigationGuard() {
+    if (!state.navigationGuard) return null;
+    return el('section', {
+      id: 'unsaved-guard',
+      class: 'guard-panel',
+      role: 'alertdialog',
+      tabindex: '-1',
+      'aria-modal': 'true',
+      'aria-labelledby': 'unsaved-guard-title',
+    }, [
+      el('h3', { id: 'unsaved-guard-title' }, ['Unsaved question changes']),
+      el('p', {}, ['Choose what to do with the current local edits before navigating.']),
+      el('div', { class: 'guard-actions' }, [
+        el('button', {
+          class: 'primary',
+          type: 'button',
+          disabled: state.pending || list(state.localAssessment?.blockers).length > 0,
+          onClick: () => {
+            state.navigationAfterSave = state.navigationGuard.target;
+            state.navigationGuard = null;
+            void saveCurrentDraft();
+          },
+        }, ['Save draft']),
+        el('button', {
+          type: 'button',
+          disabled: state.pending,
+          onClick: () => {
+            const target = state.navigationGuard.target;
+            state.navigationGuard = null;
+            state.editor = clone(state.original);
+            refreshEditorState();
+            resetApprovalInputs();
+            performNavigation(target);
+          },
+        }, ['Discard']),
+        el('button', {
+          type: 'button',
+          disabled: state.pending,
+          onClick: () => {
+            const focusId = state.navigationGuard.returnFocus;
+            state.navigationGuard = null;
+            renderShell(focusId);
+          },
+        }, ['Cancel']),
+      ]),
+    ]);
+  }
+
+  function renderConfirmations(disabled) {
+    return el('fieldset', { class: 'human-confirmations', disabled }, [
+      el('legend', {}, ['Faculty confirmations']),
+      el('p', { class: 'hint' }, ['Automated checks support faculty judgment; they do not establish clinical truth.']),
+      ...Object.entries(CONFIRMATION_COPY).map(([key, copy]) => {
+        const id = key === 'originalityAndNoPhi' ? 'confirm-originality' : `confirm-${key}`;
+        return el('label', { for: id }, [
+          el('input', {
+            id,
+            type: 'checkbox',
+            checked: state.confirmations[key] === true,
+            disabled,
+            onChange: event => {
+              state.confirmations[key] = event.target.checked === true;
+              state.batchConfirmation = null;
+              renderShell(id);
+            },
+          }),
+          copy,
+        ]);
+      }),
+    ]);
+  }
+
+  function renderWarningAcknowledgements(assessment, disabled) {
+    const warnings = list(assessment?.warnings);
+    if (!warnings.length) return null;
+    return el('fieldset', { class: 'warning-acknowledgements', disabled }, [
+      el('legend', {}, ['Acknowledge current warnings individually']),
+      ...warnings.map(warning => {
+        const code = text(warning.code);
+        const id = `ack-${domToken(code)}`;
+        return el('label', { for: id }, [
+          el('input', {
+            id,
+            type: 'checkbox',
+            checked: state.warningAcks.has(code),
+            disabled,
+            onChange: event => {
+              if (event.target.checked) state.warningAcks.add(code);
+              else state.warningAcks.delete(code);
+              renderShell(id);
+            },
+          }),
+          `${code}: ${text(warning.message)}`,
+        ]);
+      }),
+    ]);
+  }
+
+  function warningAcknowledgementsComplete(assessment) {
+    const codes = list(assessment?.warnings).map(warning => warning.code);
+    return codes.length > 0 && codes.every(code => state.warningAcks.has(code));
+  }
+
   function renderQuestionOverview() {
-    const question = findQuestion(state.selectedId);
+    const savedQuestion = findQuestion(state.selectedId);
+    const question = state.editor;
     const panel = el('article', { class: 'review-panel', 'aria-labelledby': 'review-title' });
-    if (!question) {
+    if (!savedQuestion || !question) {
       panel.appendChild(el('div', { class: 'review-sheet' }, [
         el('h2', { id: 'review-title' }, ['Select a question']),
-        el('p', { class: 'muted' }, ['Choose a queue row to open its review overview.']),
+        el('p', { class: 'muted' }, ['Choose a queue row to open its full editor.']),
       ]));
       return panel;
     }
 
-    const assessment = currentAssessment(question);
+    const assessment = state.localAssessment || currentAssessment(question);
     const gate = assessment.gate;
-    const assessed = { ...question, assessment };
-    const learnerUrl = safeStudentUrl('?tool=question-bank-practice.html');
-    const reviewed = gate === 'ready'
-      && state.reviewedInSession.has(question.id)
-      && state.reviewedRevisions.get(question.id) === question.revision;
-    const eligible = question.status === 'draft'
+    const dirty = state.dirtyFields.length > 0;
+    const reviewed = savedQuestion.status === 'draft'
       && gate === 'ready'
-      && !hasUnsavedChanges();
-    const pages = list(question.pages).filter(page => typeof page === 'string');
-    const sessionCopy = reviewed
-      ? 'Reviewed in this session. Use the separate queue checkbox if this item belongs in a green batch.'
-      : batchReason(assessed, hasUnsavedChanges());
+      && !dirty
+      && state.reviewedInSession.has(savedQuestion.id)
+      && state.reviewedRevisions.get(savedQuestion.id) === savedQuestion.revision;
+    const markEligible = savedQuestion.status === 'draft' && gate === 'ready' && !dirty;
+    const attestationDisabled = state.pending || dirty || gate === 'blocked'
+      || savedQuestion.status !== 'draft';
+    const warningCodesComplete = warningAcknowledgementsComplete(assessment);
+    const learnerUrl = safeStudentUrl(text(question.link?.href));
+    const correctKey = list(question.options).find(optionItem => optionItem?.c === true)?.key || '';
+    const optionsByKey = Object.fromEntries(list(question.options).map(optionItem => [optionItem?.key, optionItem]));
 
     panel.appendChild(el('div', { class: 'review-sheet' }, [
       el('header', { class: 'review-heading' }, [
         el('div', {}, [
           el('p', { class: 'eyebrow' }, ['Selected question']),
-          el('h2', { id: 'review-title', class: 'question-id' }, [question.id]),
-          el('p', { class: 'muted' }, [`${question.status === 'attested' ? 'Attested' : 'Draft'} repository version`]),
+          el('h2', { id: 'review-title', class: 'question-id' }, [savedQuestion.id]),
+          el('p', { class: 'muted' }, [`${savedQuestion.status === 'attested' ? 'Attested' : 'Draft'} repository version`]),
         ]),
-        el('span', { class: `status-chip ${gate}` }, [
-          el('span', { 'aria-hidden': 'true' }, [GATE_LABELS[gate]?.symbol || '×']),
-          GATE_LABELS[gate]?.label || 'Blocked',
-        ]),
+        gateLabel(gate),
       ]),
-      el('div', { class: 'overview-grid' }, [
-        el('p', { class: 'stem-copy' }, [text(question.stem) || 'Stem unavailable']),
+      renderWorkflowRail(savedQuestion, dirty),
+      renderActionFeedback(),
+      renderNavigationGuard(),
+      el('fieldset', { class: 'editor-section governed-fields' }, [
+        el('legend', {}, ['Governed fields — read-only']),
+        editorText('Question ID', 'question-id', savedQuestion.id, { readOnly: true }),
         el('dl', { class: 'question-facts' }, [
-          el('div', {}, [el('dt', {}, ['Category']), el('dd', {}, [text(question.category) || '—'])]),
-          el('div', {}, [el('dt', {}, ['Difficulty']), el('dd', {}, [`Level ${question.difficulty ?? '—'}`])]),
-          el('div', {}, [
-            el('dt', {}, ['Source pages']),
-            el('dd', { class: 'data-text' }, [pages.length ? pages.join(', ') : 'None listed']),
-          ]),
+          el('div', {}, [el('dt', {}, ['Status']), el('dd', {}, [text(savedQuestion.status) || 'Unknown'])]),
+          el('div', {}, [el('dt', {}, ['Revision']), el('dd', { class: 'data-text' }, [text(savedQuestion.revision) || 'Unavailable'])]),
+          el('div', {}, [el('dt', {}, ['Retirement']), el('dd', {}, ['Managed outside this workbench'])]),
+          el('div', {}, [el('dt', {}, ['Reserved data']), el('dd', {}, [
+            Object.hasOwn(savedQuestion, 'v2')
+              ? 'Reserved v2 data is preserved and read-only.'
+              : 'System fields are preserved and read-only.',
+          ])]),
         ]),
       ]),
-      el('section', { class: 'source-note', 'aria-labelledby': 'evidence-title' }, [
-        el('h3', { id: 'evidence-title' }, ['Evidence anchor']),
-        el('p', {}, [text(question.evidence) || 'No evidence anchor supplied.']),
+      el('fieldset', { class: 'editor-section metadata-section' }, [
+        el('legend', {}, ['Question metadata']),
+        el('div', { class: 'editor-grid' }, [
+          editorSelect('question-type', TYPES.map(value => [value, value]), question.type, 'Question type'),
+          question.type === 'relational'
+            ? editorSelect(
+              'question-subtype',
+              [['', 'Choose subtype'], ...SUBTYPES.map(value => [value, value])],
+              question.subtype,
+              'Relational subtype',
+            ) : null,
+          editorSelect(
+            'question-category',
+            CATEGORIES.map(value => [value, value]),
+            question.category,
+            'Category',
+          ),
+          editorSelect(
+            'question-difficulty',
+            [['1', 'Level 1'], ['2', 'Level 2'], ['3', 'Level 3']],
+            String(question.difficulty),
+            'Difficulty',
+          ),
+        ]),
+        renderCompetencies(question),
+        el('label', { class: 'checkbox-line', for: 'question-high-yield' }, [
+          el('input', {
+            id: 'question-high-yield',
+            type: 'checkbox',
+            checked: question.hy === true,
+            onChange: event => editorChanged(event.target.getAttribute('id')),
+          }),
+          'High yield',
+        ]),
       ]),
-      renderAssessment(assessment),
+      el('fieldset', { class: 'editor-section source-section' }, [
+        el('legend', {}, ['Learning source']),
+        editorTextarea('Source pages', 'question-pages', list(question.pages).join(', '), 2),
+        el('div', { class: 'editor-grid' }, [
+          editorText('Learning link label', 'question-link-label', question.link?.label),
+          editorText('Learning link href', 'question-link-href', question.link?.href),
+        ]),
+        learnerUrl ? el('a', {
+          href: learnerUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        }, ['Open learner-site deep link ↗']) : el('p', { class: 'hint' }, [
+          'Enter a valid page or tool link to open the learner surface.',
+        ]),
+      ]),
+      el('fieldset', { class: 'editor-section' }, [
+        el('legend', {}, ['Question and answers']),
+        editorTextarea('Question stem', 'question-stem', question.stem, 6),
+        el('div', { class: 'option-grid' }, OPTION_KEYS.map(key => renderOptionEditor({
+          key,
+          ...record(optionsByKey[key]),
+        }, correctKey))),
+      ]),
+      el('fieldset', { class: 'editor-section teaching-section' }, [
+        el('legend', {}, ['Teaching explanation']),
+        editorTextarea('Rationale', 'question-why', question.why, 5),
+        editorTextarea('Teaching pearl', 'question-pearl', question.pearl, 3),
+        editorTextarea('Evidence anchor', 'question-evidence', question.evidence, 4),
+      ]),
+      renderTierTwoEditor(question),
+      el('div', { class: 'review-safety-grid' }, [
+        renderChangedFields(),
+        renderAssessment(assessment, dirty),
+      ]),
+      el('div', { class: 'draft-actions' }, [
+        el('button', {
+          id: 'revert-question',
+          type: 'button',
+          disabled: !dirty || state.pending,
+          onClick: () => {
+            state.editor = clone(state.original);
+            resetApprovalInputs();
+            refreshEditorState();
+            state.qbankError = '';
+            state.conflict = null;
+            renderShell('question-stem');
+            announce(`${savedQuestion.id} reverted to the loaded repository version.`);
+          },
+        }, ['Revert']),
+        el('button', {
+          id: 'save-draft',
+          class: 'primary',
+          type: 'button',
+          disabled: !dirty || list(assessment.blockers).length > 0 || state.pending,
+          onClick: () => void saveCurrentDraft(),
+        }, [state.pending ? 'Saving…' : 'Save draft']),
+      ]),
+      renderConfirmations(attestationDisabled),
+      renderWarningAcknowledgements(assessment, attestationDisabled),
       el('fieldset', { class: 'session-review' }, [
-        el('legend', {}, ['Session review']),
-        el('p', {}, [sessionCopy]),
+        el('legend', {}, ['Attest']),
+        el('p', {}, [reviewed
+          ? 'Reviewed in this session. Use the queue checkbox to add this saved green revision to a batch.'
+          : batchReason({ ...savedQuestion, assessment }, dirty)]),
         el('div', { class: 'session-actions' }, [
           el('button', {
+            id: 'mark-reviewed-next',
             class: 'primary',
             type: 'button',
-            disabled: !eligible || reviewed || state.pending,
-            onClick: () => markReviewedAndNext(question),
+            disabled: !markEligible || reviewed || state.pending,
+            onClick: () => markReviewedAndNext(savedQuestion),
           }, [reviewed ? 'Reviewed this session' : 'Mark reviewed & next']),
-          learnerUrl
-            ? el('a', { href: learnerUrl, target: '_blank', rel: 'noopener noreferrer' }, [
-              'Open learner practice ↗',
-            ])
-            : null,
+          assessment.gate === 'warning' ? el('button', {
+            id: 'attest-warning',
+            class: 'primary',
+            type: 'button',
+            disabled: attestationDisabled || !confirmationsComplete() || !warningCodesComplete,
+            onClick: () => void attestWarning(savedQuestion, assessment),
+          }, ['Attest this warning question']) : null,
         ]),
-      ]),
-      el('p', { class: 'review-placeholder' }, [
-        'This queue step supports safe triage and session review. Full field editing, draft saving, and attestation controls follow in the guarded editor step.',
       ]),
     ]));
     return panel;
@@ -765,7 +1593,11 @@ export function startFacultyConsole({
       renderCountStrip(questions),
       el('p', { class: 'queue-meta' }, [`${shown.length} of ${list(state.server?.qbank).length} questions shown`]),
       shown.length
-        ? el('ol', { class: 'queue-list' }, shown.map(renderQueueRow))
+        ? el('ol', {
+          id: 'question-queue',
+          class: 'queue-list',
+          onKeydown: event => moveQueueSelection(event, shown),
+        }, shown.map(renderQueueRow))
         : el('p', { class: 'empty-queue' }, [
           'No questions match these filters. Clear or widen a filter to continue.',
         ]),
@@ -954,12 +1786,238 @@ export function startFacultyConsole({
     ]);
   }
 
-  function saveCurrentDraft() {
+  function showQbankError(message) {
+    state.pending = false;
+    state.qbankError = message;
+    state.qbankMessage = '';
+    state.qbankCommitUrl = null;
+    state.batchConfirmation = null;
+    announce(message);
+    renderShell('qbank-action-error');
+  }
+
+  function showConflict(payload) {
+    state.pending = false;
+    state.navigationAfterSave = null;
+    state.batchConfirmation = null;
+    state.qbankError = '';
+    state.qbankMessage = '';
+    state.qbankCommitUrl = null;
+    state.conflict = {
+      message: stableResponseMessage(payload, 'This question changed after you loaded it.'),
+    };
+    announce(state.conflict.message);
+    renderShell('qbank-conflict');
+  }
+
+  async function saveCurrentDraft() {
+    if (state.pending) {
+      announce('A faculty action is already in progress.');
+      return false;
+    }
+    refreshEditorState();
     if (!hasUnsavedChanges()) {
       announce('No unsaved question changes to save.');
-      return;
+      return false;
     }
-    announce('Draft saving will be available in the guarded question editor.');
+    if (list(state.localAssessment?.blockers).length) {
+      announce('Resolve structural blockers before saving this draft.');
+      return false;
+    }
+
+    const id = state.selectedId;
+    const candidate = clone(state.editor);
+    const baseRevision = text(state.original?.revision);
+    const body = {
+      action: 'qbank.save-draft',
+      id,
+      baseRevision,
+      item: candidate,
+      attester: state.reviewerLabel,
+    };
+    state.pending = true;
+    state.qbankError = '';
+    state.qbankMessage = '';
+    state.qbankCommitUrl = null;
+    state.conflict = null;
+    renderShell('save-draft');
+    try {
+      const response = await fetchImpl(API, {
+        method: 'POST',
+        headers: apiHeaders(true),
+        body: JSON.stringify(body),
+      });
+      const payload = await responseJson(response);
+      if (response.status === 401) {
+        clearKey();
+        state.pending = false;
+        renderLogin('Key not accepted. Check the shared faculty key and try again.');
+        return false;
+      }
+      if (response.status === 409) {
+        showConflict(payload);
+        return false;
+      }
+      if (!response.ok) {
+        state.navigationAfterSave = null;
+        showQbankError(stableResponseMessage(payload, 'The draft was not saved.'));
+        return false;
+      }
+      const revision = text(payload.revision);
+      if (!revision) {
+        state.navigationAfterSave = null;
+        showQbankError('invalid_response: The save receipt did not include a question revision. Local work was retained.');
+        return false;
+      }
+      state.qbankMessage = `Saved draft ${id}. Checks current for the refreshed repository version.`;
+      state.qbankCommitUrl = safeExternalUrl(payload.commit);
+      state.pending = false;
+      const refreshed = await load({
+        silent: true,
+        focusId: 'qbank-action-result',
+        requiredId: id,
+        expectedRevisions: { [id]: revision },
+        preserveOnError: true,
+      });
+      if (!refreshed) {
+        state.navigationAfterSave = null;
+        return false;
+      }
+      const navigation = state.navigationAfterSave;
+      state.navigationAfterSave = null;
+      if (navigation) performNavigation(navigation);
+      announce(state.qbankMessage);
+      return true;
+    } catch (error) {
+      state.navigationAfterSave = null;
+      showQbankError(error instanceof Error
+        ? `network_error: ${error.message}`
+        : 'network_error: The draft was not saved.');
+      return false;
+    }
+  }
+
+  async function attestEntries(entries, ids) {
+    if (state.pending) return false;
+    if (!confirmationsComplete()) {
+      showQbankError('attest.confirmations_required: Complete all faculty confirmations.');
+      return false;
+    }
+    state.pending = true;
+    state.qbankError = '';
+    state.qbankMessage = '';
+    state.qbankCommitUrl = null;
+    state.conflict = null;
+    renderShell(state.batchConfirmation ? 'batch-confirmation' : 'attest-warning');
+    try {
+      const response = await fetchImpl(API, {
+        method: 'POST',
+        headers: apiHeaders(true),
+        body: JSON.stringify({
+          action: 'qbank.attest',
+          items: entries,
+          confirmations: {
+            clinical: state.confirmations.clinical,
+            evidence: state.confirmations.evidence,
+            originalityAndNoPhi: state.confirmations.originalityAndNoPhi,
+          },
+          attester: state.reviewerLabel,
+        }),
+      });
+      const payload = await responseJson(response);
+      if (response.status === 401) {
+        clearKey();
+        state.pending = false;
+        renderLogin('Key not accepted. Check the shared faculty key and try again.');
+        return false;
+      }
+      if (response.status === 409) {
+        showConflict(payload);
+        return false;
+      }
+      if (!response.ok) {
+        showQbankError(stableResponseMessage(payload, 'The attestation was not saved.'));
+        return false;
+      }
+      const expectedRevisions = record(payload.revision);
+      if (ids.some(id => !text(expectedRevisions[id]))) {
+        showQbankError('invalid_response: The attestation receipt did not confirm every revision. Selection was retained.');
+        return false;
+      }
+      state.qbankMessage = `Attested ${ids.length} question${ids.length === 1 ? '' : 's'}: ${ids.join(', ')}.`;
+      state.qbankCommitUrl = safeExternalUrl(payload.commit);
+      state.pending = false;
+      const selectedId = state.selectedId;
+      const refreshed = await load({
+        silent: true,
+        focusId: 'qbank-action-result',
+        requiredId: selectedId,
+        expectedRevisions,
+        preserveOnError: true,
+      });
+      if (!refreshed) return false;
+      for (const id of ids) {
+        state.batch.delete(id);
+        state.reviewedInSession.delete(id);
+        state.reviewedRevisions.delete(id);
+      }
+      state.batchConfirmation = null;
+      resetApprovalInputs();
+      renderShell('qbank-action-result');
+      announce(state.qbankMessage);
+      return true;
+    } catch (error) {
+      showQbankError(error instanceof Error
+        ? `network_error: ${error.message}`
+        : 'network_error: The attestation was not saved.');
+      return false;
+    }
+  }
+
+  async function attestWarning(question, assessment) {
+    refreshEditorState();
+    const current = findQuestion(question.id);
+    if (!current || state.dirtyFields.length || current.status !== 'draft'
+        || state.localAssessment?.gate !== 'warning') {
+      showQbankError('attest.selection_stale: Save and reload this warning question before attesting.');
+      return false;
+    }
+    const warningCodes = list(state.localAssessment.warnings).map(warning => warning.code);
+    if (!warningCodes.length || !warningCodes.every(code => state.warningAcks.has(code))) {
+      showQbankError('attest.warning_acknowledgement_required: Acknowledge every current warning before attestation.');
+      return false;
+    }
+    const batchAssessment = safeBatchAssessment([current]);
+    if (!batchAssessment.ok) {
+      showQbankError(`${batchAssessment.issues[0].code}: ${batchAssessment.issues[0].message}`);
+      return false;
+    }
+    return attestEntries([{
+      id: current.id,
+      revision: current.revision,
+      acknowledgedWarnings: warningCodes,
+    }], [current.id]);
+  }
+
+  async function attestBatch(ids) {
+    const selected = ids.map(findQuestion).filter(Boolean).map(assessedQuestion);
+    if (selected.length !== ids.length || selected.length !== state.batch.size
+        || selected.some(question => (
+          state.reviewedRevisions.get(question.id) !== question.revision
+            || !isBatchEligible(question, state.reviewedInSession, false)
+        ))) {
+      showQbankError('batch.selection_stale: Reload or review the selected questions again.');
+      return false;
+    }
+    const assessment = safeBatchAssessment(selected);
+    if (!assessment.ok) {
+      showQbankError(`${assessment.issues[0].code}: ${assessment.issues[0].message}`);
+      return false;
+    }
+    return attestEntries(selected.map(question => ({
+      id: question.id,
+      revision: question.revision,
+    })), ids);
   }
 
   window.addEventListener('beforeunload', event => {

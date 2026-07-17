@@ -99,6 +99,7 @@ class FakeElement {
     this.checked = false;
     this.disabled = false;
     this.selected = false;
+    this.readOnly = false;
     this._text = '';
   }
 
@@ -117,6 +118,12 @@ class FakeElement {
 
   setAttribute(name, value) {
     this.attributes.set(name, String(value));
+    if (name === 'readonly') this.readOnly = true;
+  }
+
+  removeAttribute(name) {
+    this.attributes.delete(name);
+    if (name === 'readonly') this.readOnly = false;
   }
 
   getAttribute(name) {
@@ -136,6 +143,20 @@ class FakeElement {
   setSelectionRange() {}
 
   async dispatch(type, properties = {}) {
+    if (type === 'change'
+        && this.tagName === 'INPUT'
+        && this.getAttribute('type') === 'radio'
+        && this.checked) {
+      const name = this.getAttribute('name');
+      for (const element of this.ownerDocument.elements()) {
+        if (element !== this
+            && element.tagName === 'INPUT'
+            && element.getAttribute('type') === 'radio'
+            && element.getAttribute('name') === name) {
+          element.checked = false;
+        }
+      }
+    }
     const event = {
       target: this,
       currentTarget: this,
@@ -197,6 +218,11 @@ class FakeDocument {
     )) || null;
   }
 
+  findAll(tagName) {
+    const normalizedTag = tagName.toUpperCase();
+    return this.elements().filter(element => element.tagName === normalizedTag);
+  }
+
   links() {
     return this.elements().filter(element => element.tagName === 'A');
   }
@@ -230,7 +256,12 @@ class FakeWindow {
   }
 }
 
-function serverState({ question: item = validDomQuestion(), items } = {}) {
+function serverState({
+  question: item = validDomQuestion(),
+  questions,
+  items,
+  manifestPages = ['t_mood.md'],
+} = {}) {
   const contentItems = items || [{
     slug: 't_mood.md',
     title: 'Mood disorders',
@@ -242,9 +273,9 @@ function serverState({ question: item = validDomQuestion(), items } = {}) {
   return {
     student: 'https://students.example/',
     qbankRevision: 'a'.repeat(40),
-    manifestPages: ['t_mood.md'],
-    qbank: [item],
-    qbankSummary: { counts: { total: 1, draft: 1, attested: 0, ready: 1, warning: 0, blocked: 0 } },
+    manifestPages,
+    qbank: questions || [item],
+    qbankSummary: { counts: { total: (questions || [item]).length, draft: 1, attested: 0, ready: 1, warning: 0, blocked: 0 } },
     items: contentItems,
     counts: { pagesReviewed: 0, pagesTotal: contentItems.length, qbankAttested: 0, qbankTotal: 1 },
   };
@@ -270,6 +301,22 @@ async function startHarness({ fetchImpl, assessItemImpl } = {}) {
   const controller = startFacultyConsole({ document, window, fetchImpl: fetcher, assessItemImpl });
   await flushAsyncWork();
   return { controller, document, window, requests };
+}
+
+async function setValue(document, id, value, eventName = 'input') {
+  const control = document.getElementById(id);
+  assert.ok(control, `Missing control ${id}`);
+  control.value = value;
+  await control.dispatch(eventName);
+  return control;
+}
+
+async function setChecked(document, id, checked = true) {
+  const control = document.getElementById(id);
+  assert.ok(control, `Missing control ${id}`);
+  control.checked = checked;
+  await control.dispatch('change');
+  return control;
 }
 
 test('exports the injectable faculty-console browser entry', () => {
@@ -312,10 +359,41 @@ test('creates semantic tabs, queue controls, and persistent field labels', () =>
     'Status',
     'Review gate',
     'Difficulty',
+    'Question ID',
+    'Question type',
+    'Relational subtype',
+    'Competencies',
+    'High yield',
+    'Source pages',
+    'Learning link label',
+    'Learning link href',
+    'Question stem',
+    'Option A text',
+    'Option B text',
+    'Option C text',
+    'Option D text',
+    'Correct answer',
+    'Trap name',
+    'Corrective trap note',
+    'Rationale',
+    'Teaching pearl',
+    'Evidence anchor',
+    'Tier-two question',
+    'Tier-two rationale',
+    'Changed fields',
+    'Safety issues',
+    'I verified the clinical answer and rationale.',
+    'I verified the item against the named library page(s) and evidence anchor.',
+    'I verified that the vignette is an original fictional composite with no PHI.',
   ]) assert.ok(appSource.includes(label), `Missing persistent label: ${label}`);
 
   assert.match(appSource, /not verified identit/i);
   assert.match(appSource, /Mark reviewed & next/);
+  assert.match(appSource, /Revert/);
+  assert.match(appSource, /Save draft/);
+  assert.match(appSource, /Attest this warning question/);
+  assert.match(appSource, /Attest selected green drafts/);
+  assert.match(appSource, /Save draft[^\n]+Checks current[^\n]+Attest/);
   assert.match(appSource, /Ready|Warning|Blocked/);
 });
 
@@ -328,6 +406,7 @@ test('renders repository text without HTML parsing sinks', () => {
   assert.doesNotMatch(appSource, /insertAdjacentHTML|document\.write\s*\(/);
   assert.match(appSource, /document\.createTextNode/);
   assert.match(appSource, /replaceChildren/);
+  assert.doesNotMatch(appSource, /Evidence verified/i);
 });
 
 test('keeps the shared key in session storage and request headers only', () => {
@@ -350,6 +429,11 @@ test('guards unsaved work and reserves the global shortcut for Ctrl or Command S
   const letterShortcuts = [...appSource.matchAll(/key\.toLowerCase\(\)\s*===\s*'([a-z])'/g)]
     .map(match => match[1]);
   assert.deepEqual(letterShortcuts, ['s']);
+  assert.match(appSource, /Save draft/);
+  assert.match(appSource, /Discard/);
+  assert.match(appSource, /Cancel/);
+  assert.match(appSource, /ArrowUp/);
+  assert.match(appSource, /ArrowDown/);
 });
 
 test('uses the approved clinical workbench layout and accessible primary contrast', () => {
@@ -366,6 +450,9 @@ test('uses the approved clinical workbench layout and accessible primary contras
   assert.match(html, /@media\s*\(max-width:\s*760px\)/);
   assert.match(html, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   assert.match(html, /\.queue-row::before/);
+  assert.match(html, /\.workflow-rail/);
+  assert.match(html, /textarea/);
+  assert.match(html, /\.data-text\s*\{[^}]*overflow-wrap:\s*anywhere/s);
   assert.doesNotMatch(html, /linear-gradient|radial-gradient|@keyframes/);
 });
 
@@ -490,6 +577,522 @@ test('an assessment exception renders a blocker and revokes session batch eligib
   assert.ok(document.find('p', 'Only questions with a green Ready gate can enter a batch.'));
 });
 
+test('renders every v1 editor field safely and switches conditional question controls', async () => {
+  const unsafe = '<img src=x onerror=alert(1)> What is the diagnosis?';
+  const { controller, document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      question: validDomQuestion({
+        stem: unsafe,
+        v2: { reserved: '<script>not markup</script>' },
+        systemNote: 'preserve me',
+      }),
+    })),
+  });
+
+  for (const id of [
+    'question-id',
+    'question-type',
+    'question-category',
+    'competency-dx',
+    'question-difficulty',
+    'question-high-yield',
+    'question-pages',
+    'question-link-label',
+    'question-link-href',
+    'question-stem',
+    'option-A-text',
+    'option-B-text',
+    'option-C-text',
+    'option-D-text',
+    'correct-A',
+    'correct-B',
+    'correct-C',
+    'correct-D',
+    'option-B-trap-name',
+    'option-B-trap-note',
+    'question-why',
+    'question-pearl',
+    'question-evidence',
+    'changed-fields',
+    'safety-issues',
+  ]) assert.ok(document.getElementById(id), `Missing editor control ${id}`);
+
+  assert.equal(document.getElementById('question-id').readOnly, true);
+  assert.equal(document.getElementById('option-A-key').readOnly, true);
+  assert.equal(document.getElementById('correct-A').getAttribute('name'), 'correct-key');
+  assert.equal(document.getElementById('option-A-trap-name'), null);
+  assert.equal(document.getElementById('question-subtype'), null);
+  assert.equal(document.getElementById('tier2-question'), null);
+  assert.equal(document.findAll('img').length, 0);
+  assert.match(document.app.textContent, /<img src=x onerror=alert\(1\)>/);
+  assert.match(document.app.textContent, /Reserved v2 data is preserved and read-only/);
+
+  await setValue(document, 'question-type', 'relational', 'change');
+  assert.ok(document.getElementById('question-subtype'));
+  assert.equal(document.getElementById('tier2-question'), null);
+  assert.equal(controller.state.editor.type, 'relational');
+  assert.equal(Object.hasOwn(controller.state.editor, 'tier2'), false);
+
+  await setValue(document, 'question-type', 'two-tier', 'change');
+  assert.equal(document.getElementById('question-subtype'), null);
+  for (const id of [
+    'tier2-question',
+    'tier2-option-A-text',
+    'tier2-option-B-text',
+    'tier2-option-C-text',
+    'tier2-option-D-text',
+    'tier2-correct-A',
+    'tier2-correct-B',
+    'tier2-correct-C',
+    'tier2-correct-D',
+    'tier2-why',
+  ]) assert.ok(document.getElementById(id), `Missing two-tier control ${id}`);
+  assert.equal(Object.hasOwn(controller.state.editor, 'subtype'), false);
+
+  await setChecked(document, 'correct-B');
+  assert.equal(document.getElementById('option-B-trap-name'), null);
+  assert.ok(document.getElementById('option-A-trap-name'));
+  assert.equal(controller.state.editor.options.find(option => option.key === 'B').c, true);
+  assert.equal(Object.hasOwn(
+    controller.state.editor.options.find(option => option.key === 'A'),
+    'c',
+  ), false);
+  assert.equal(controller.state.editor.v2.reserved, '<script>not markup</script>');
+  assert.equal(controller.state.editor.systemNote, 'preserve me');
+
+  await setValue(document, 'question-pages', 't_mood.md, psychopharm_primer.md\n t_mood.md');
+  assert.deepEqual(controller.state.editor.pages, ['t_mood.md', 'psychopharm_primer.md']);
+  await setChecked(document, 'competency-safety');
+  assert.deepEqual(controller.state.editor.competency.sort(), ['dx', 'safety']);
+});
+
+test('rebuilds the candidate immediately, shows blockers before warnings, and marks dirty checks stale', async () => {
+  const assessItemImpl = item => {
+    const stem = typeof item?.stem === 'string' ? item.stem : '';
+    const blockers = stem
+      ? []
+      : [{ code: 'required.stem', field: 'stem', message: 'Question stem is required.' }];
+    const warnings = stem.includes('warning')
+      ? [{ code: 'stem.synthetic_warning', field: 'stem', message: 'Review this synthetic warning.' }]
+      : [];
+    return {
+      gate: blockers.length ? 'blocked' : warnings.length ? 'warning' : 'ready',
+      blockers,
+      warnings,
+    };
+  };
+  const { controller, document, window, requests } = await startHarness({ assessItemImpl });
+  controller.state.reviewedInSession.add('qb_moo_902');
+  controller.state.reviewedRevisions.set('qb_moo_902', 'revision-one');
+  controller.state.batch.add('qb_moo_902');
+
+  await setValue(document, 'question-stem', '');
+  assert.equal(requests.filter(request => request.options.method === 'POST').length, 0);
+  assert.equal(controller.state.editor.stem, '');
+  assert.deepEqual(controller.state.dirtyFields, ['stem']);
+  assert.equal(controller.state.reviewedInSession.has('qb_moo_902'), false);
+  assert.equal(controller.state.batch.has('qb_moo_902'), false);
+  assert.match(document.getElementById('changed-fields').textContent, /stem/);
+  assert.match(document.getElementById('safety-issues').textContent, /Question stem is required/);
+  assert.match(document.app.textContent, /Checks are local and stale until this draft is saved and reloaded/);
+  assert.equal(document.getElementById('save-draft').disabled, true);
+  assert.equal(document.getElementById('mark-reviewed-next').disabled, true);
+  const beforeUnload = await window.dispatch('beforeunload');
+  assert.equal(beforeUnload.defaultPrevented, true);
+  assert.equal(beforeUnload.returnValue, '');
+
+  await setValue(document, 'question-stem', 'A warning question?');
+  assert.equal(controller.state.localAssessment.gate, 'warning');
+  assert.match(document.getElementById('safety-issues').textContent, /Review this synthetic warning/);
+  assert.equal(document.getElementById('save-draft').disabled, false);
+  assert.equal(document.getElementById('attest-warning').disabled, true);
+  assert.equal(document.getElementById('issue-stem')?.getAttribute('href'), '#question-stem');
+
+  await document.getElementById('revert-question').dispatch('click');
+  assert.deepEqual(controller.state.dirtyFields, []);
+  assert.equal(document.getElementById('question-stem').value, validDomQuestion().stem);
+  assert.match(document.app.textContent, /Checks current for the saved repository version/);
+});
+
+test('saves only on explicit action with the exact revision-safe payload, then confirms the refreshed item', async () => {
+  const original = validDomQuestion({
+    status: 'attested',
+    v2: { reserved: true },
+    systemNote: 'preserve me',
+  });
+  let current = original;
+  let posted;
+  const requests = [];
+  const fetchImpl = async (url, options = {}) => {
+    requests.push({ url, options });
+    if (options.method === 'POST') {
+      posted = JSON.parse(options.body);
+      current = {
+        ...structuredClone(posted.item),
+        status: 'draft',
+        revision: 'revision-two',
+        assessment: { gate: 'ready', blockers: [], warnings: [] },
+      };
+      return jsonResponse({
+        ok: true,
+        action: 'qbank.save-draft',
+        updated: 1,
+        revision: 'revision-two',
+        assessment: current.assessment,
+        commit: 'https://github.example/commit/draft-two',
+      });
+    }
+    return jsonResponse(serverState({ question: current }));
+  };
+  const { controller, document } = await startHarness({ fetchImpl });
+  const changedStem = 'A fictional patient has a sustained syndrome. Which diagnosis is most likely?';
+  await setValue(document, 'question-stem', changedStem);
+  assert.equal(requests.filter(request => request.options.method === 'POST').length, 0, 'must not autosave');
+
+  await document.getElementById('save-draft').dispatch('click');
+  await flushAsyncWork();
+
+  assert.deepEqual(Object.keys(posted).sort(), [
+    'action', 'attester', 'baseRevision', 'id', 'item',
+  ]);
+  assert.equal(posted.action, 'qbank.save-draft');
+  assert.equal(posted.id, 'qb_moo_902');
+  assert.equal(posted.baseRevision, 'revision-one');
+  assert.equal(posted.attester, 'Joshua Moss, MD');
+  assert.equal(posted.item.stem, changedStem);
+  assert.equal(posted.item.id, 'qb_moo_902');
+  assert.equal(posted.item.status, 'attested');
+  assert.deepEqual(posted.item.v2, { reserved: true });
+  assert.equal(posted.item.systemNote, 'preserve me');
+  assert.equal(controller.state.selectedId, 'qb_moo_902');
+  assert.equal(controller.state.original.revision, 'revision-two');
+  assert.deepEqual(controller.state.dirtyFields, []);
+  assert.match(document.app.textContent, /Saved draft qb_moo_902/);
+  assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-result');
+  assert.equal(
+    document.links().find(link => link.textContent === 'View commit ↗')?.getAttribute('href'),
+    'https://github.example/commit/draft-two',
+  );
+});
+
+test('retains the local candidate on ordinary save failure', async () => {
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      return jsonResponse({
+        error: { code: 'github_rate_limited', message: 'Repository write is temporarily unavailable.', retryable: true },
+      }, { ok: false, status: 429 });
+    }
+    return jsonResponse(serverState());
+  };
+  const { controller, document } = await startHarness({ fetchImpl });
+  await setValue(document, 'question-stem', 'Keep this local candidate?');
+  await document.getElementById('save-draft').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(controller.state.editor.stem, 'Keep this local candidate?');
+  assert.ok(controller.state.dirtyFields.includes('stem'));
+  assert.equal(document.getElementById('question-stem').value, 'Keep this local candidate?');
+  assert.match(document.getElementById('qbank-action-error').textContent, /github_rate_limited/);
+  assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-error');
+});
+
+test('handles 409 with an accessible reload or keep-local conflict alert and never overwrites', async () => {
+  const local = validDomQuestion();
+  const remote = validDomQuestion({
+    revision: 'revision-remote',
+    stem: 'A remote faculty edit is now current. What is the diagnosis?',
+  });
+  let useRemote = false;
+  let postCount = 0;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      postCount += 1;
+      return jsonResponse({
+        error: { code: 'qbank.conflict', message: 'This question changed after you loaded it.' },
+      }, { ok: false, status: 409 });
+    }
+    return jsonResponse(serverState({ question: useRemote ? remote : local }));
+  };
+  const { controller, document } = await startHarness({ fetchImpl });
+  await setValue(document, 'question-stem', 'My unsaved local edit?');
+  await document.getElementById('save-draft').dispatch('click');
+  await flushAsyncWork();
+
+  const conflict = document.getElementById('qbank-conflict');
+  assert.equal(conflict?.getAttribute('role'), 'alert');
+  assert.equal(document.activeElement, conflict);
+  assert.ok(document.find('button', 'Reload'));
+  assert.ok(document.find('button', 'Keep local copy'));
+  await document.find('button', 'Keep local copy').dispatch('click');
+  assert.equal(controller.state.editor.stem, 'My unsaved local edit?');
+  assert.ok(controller.state.dirtyFields.includes('stem'));
+  assert.equal(postCount, 1);
+
+  await document.getElementById('save-draft').dispatch('click');
+  await flushAsyncWork();
+  useRemote = true;
+  await document.find('button', 'Reload').dispatch('click');
+  await flushAsyncWork();
+  assert.equal(controller.state.selectedId, 'qb_moo_902');
+  assert.equal(controller.state.editor.stem, remote.stem);
+  assert.deepEqual(controller.state.dirtyFields, []);
+  assert.equal(postCount, 2, 'reload must not issue an overwrite POST');
+});
+
+test('guards dirty queue and tab navigation with Save draft, Discard, and Cancel', async () => {
+  const first = validDomQuestion({ id: 'qb_moo_901', revision: 'rev-one' });
+  const second = validDomQuestion({
+    id: 'qb_moo_902',
+    revision: 'rev-two',
+    stem: 'A second fictional patient has symptoms. What is the diagnosis?',
+  });
+  let questions = [first, second];
+  let postCount = 0;
+  const alwaysReady = () => ({ gate: 'ready', blockers: [], warnings: [] });
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      postCount += 1;
+      const body = JSON.parse(options.body);
+      questions = questions.map(item => item.id === body.id
+        ? { ...structuredClone(body.item), status: 'draft', revision: 'rev-saved' }
+        : item);
+      return jsonResponse({
+        ok: true,
+        action: 'qbank.save-draft',
+        revision: 'rev-saved',
+        assessment: alwaysReady(),
+        commit: null,
+      });
+    }
+    return jsonResponse(serverState({ questions }));
+  };
+  const { controller, document } = await startHarness({ fetchImpl, assessItemImpl: alwaysReady });
+  assert.equal(controller.state.selectedId, 'qb_moo_901');
+  await setValue(document, 'question-stem', 'A guarded local edit?');
+  await document.getElementById('queue-qb_moo_902').dispatch('click');
+  const guard = document.getElementById('unsaved-guard');
+  assert.equal(guard?.getAttribute('role'), 'alertdialog');
+  assert.equal(document.activeElement, guard);
+  for (const label of ['Save draft', 'Discard', 'Cancel']) assert.ok(document.find('button', label));
+
+  await document.find('button', 'Cancel').dispatch('click');
+  assert.equal(controller.state.selectedId, 'qb_moo_901');
+  assert.equal(controller.state.editor.stem, 'A guarded local edit?');
+
+  await document.getElementById('queue-qb_moo_902').dispatch('click');
+  await document.find('button', 'Save draft').dispatch('click');
+  await flushAsyncWork();
+  assert.equal(postCount, 1);
+  assert.equal(controller.state.selectedId, 'qb_moo_902');
+  assert.deepEqual(controller.state.dirtyFields, []);
+
+  await setValue(document, 'question-stem', 'Discard this second edit?');
+  await document.getElementById('tab-content').dispatch('click');
+  assert.equal(document.activeElement?.getAttribute('id'), 'unsaved-guard');
+  await document.find('button', 'Discard').dispatch('click');
+  assert.equal(controller.state.tab, 'content');
+  assert.equal(postCount, 1);
+});
+
+test('supports queue-scoped ArrowUp and ArrowDown without creating global arrow shortcuts', async () => {
+  const questions = [
+    validDomQuestion({ id: 'qb_moo_901', revision: 'rev-one' }),
+    validDomQuestion({ id: 'qb_moo_902', revision: 'rev-two' }),
+  ];
+  const alwaysReady = () => ({ gate: 'ready', blockers: [], warnings: [] });
+  const { controller, document, window } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({ questions })),
+    assessItemImpl: alwaysReady,
+  });
+  const firstButton = document.getElementById('queue-qb_moo_901');
+  const queue = document.getElementById('question-queue');
+  const down = await queue.dispatch('keydown', { key: 'ArrowDown', target: firstButton });
+  assert.equal(down.defaultPrevented, true);
+  assert.equal(controller.state.selectedId, 'qb_moo_902');
+  assert.equal(document.activeElement?.getAttribute('id'), 'queue-qb_moo_902');
+
+  await window.dispatch('keydown', { key: 'ArrowUp', metaKey: false, ctrlKey: false });
+  assert.equal(controller.state.selectedId, 'qb_moo_902');
+});
+
+test('requires all human confirmations and each current warning acknowledgement for one yellow item', async () => {
+  const warning = {
+    code: 'stem.negative_lead_in',
+    field: 'stem',
+    message: 'Confirm that the negative lead-in is intentional.',
+  };
+  const warningAssessment = () => ({ gate: 'warning', blockers: [], warnings: [warning] });
+  let current = validDomQuestion();
+  let posted;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      posted = JSON.parse(options.body);
+      current = { ...current, status: 'attested', revision: 'revision-attested' };
+      return jsonResponse({
+        ok: true,
+        action: 'qbank.attest',
+        updated: 1,
+        revision: { qb_moo_902: 'revision-attested' },
+        assessment: { qb_moo_902: warningAssessment() },
+        commit: 'https://github.example/commit/attested-yellow',
+      });
+    }
+    return jsonResponse(serverState({ question: current }));
+  };
+  const { controller, document } = await startHarness({
+    fetchImpl,
+    assessItemImpl: warningAssessment,
+  });
+  const attest = document.getElementById('attest-warning');
+  assert.equal(attest.disabled, true);
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(document, id);
+  }
+  assert.equal(document.getElementById('attest-warning').disabled, true);
+  await setChecked(document, 'ack-stem-negative_lead_in');
+  assert.equal(document.getElementById('attest-warning').disabled, false);
+  await document.getElementById('attest-warning').dispatch('click');
+  await flushAsyncWork();
+
+  assert.deepEqual(Object.keys(posted).sort(), ['action', 'attester', 'confirmations', 'items']);
+  assert.equal(posted.action, 'qbank.attest');
+  assert.deepEqual(posted.items, [{
+    id: 'qb_moo_902',
+    revision: 'revision-one',
+    acknowledgedWarnings: ['stem.negative_lead_in'],
+  }]);
+  assert.deepEqual(posted.confirmations, {
+    clinical: true,
+    evidence: true,
+    originalityAndNoPhi: true,
+  });
+  assert.equal(controller.state.original.status, 'attested');
+  assert.equal(controller.state.original.revision, 'revision-attested');
+  assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-result');
+});
+
+test('lists every green batch ID, keeps selection atomic on failure, and clears only committed IDs on success', async () => {
+  const ready = () => ({ gate: 'ready', blockers: [], warnings: [] });
+  const withCorrect = (item, key) => ({
+    ...item,
+    options: item.options.map(optionItem => {
+      const next = structuredClone(optionItem);
+      if (optionItem.key === key) {
+        next.c = true;
+        delete next.trap;
+      } else {
+        delete next.c;
+        next.trap ||= { name: 'Trap', note: 'Corrective note.' };
+      }
+      return next;
+    }),
+  });
+  let questions = [
+    withCorrect(validDomQuestion({ id: 'qb_moo_901', revision: 'rev-one' }), 'A'),
+    withCorrect(validDomQuestion({ id: 'qb_moo_902', revision: 'rev-two' }), 'B'),
+    withCorrect(validDomQuestion({ id: 'qb_moo_903', revision: 'rev-three' }), 'C'),
+  ];
+  let fail = true;
+  const posts = [];
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      const body = JSON.parse(options.body);
+      posts.push(body);
+      if (fail) {
+        return jsonResponse({ error: { code: 'github_conflict', message: 'Synthetic batch failure.' } }, { ok: false, status: 500 });
+      }
+      const revisions = {};
+      for (const entry of body.items) revisions[entry.id] = `${entry.revision}-attested`;
+      questions = questions.map(item => revisions[item.id]
+        ? { ...item, status: 'attested', revision: revisions[item.id] }
+        : item);
+      return jsonResponse({
+        ok: true,
+        action: 'qbank.attest',
+        updated: body.items.length,
+        revision: revisions,
+        assessment: Object.fromEntries(body.items.map(entry => [entry.id, ready()])),
+        commit: 'https://github.example/commit/green-batch',
+      });
+    }
+    return jsonResponse(serverState({ questions }));
+  };
+  const { controller, document } = await startHarness({ fetchImpl, assessItemImpl: ready });
+
+  await document.getElementById('mark-reviewed-next').dispatch('click');
+  await setChecked(document, 'batch-qb_moo_901');
+  await document.getElementById('mark-reviewed-next').dispatch('click');
+  await setChecked(document, 'batch-qb_moo_902');
+  await document.getElementById('mark-reviewed-next').dispatch('click');
+  assert.equal(controller.state.reviewedInSession.has('qb_moo_903'), true);
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(document, id);
+  }
+
+  await document.getElementById('open-batch-attest').dispatch('click');
+  const confirmation = document.getElementById('batch-confirmation');
+  assert.match(confirmation.textContent, /qb_moo_901/);
+  assert.match(confirmation.textContent, /qb_moo_902/);
+  assert.equal(document.activeElement, confirmation);
+  await document.getElementById('confirm-batch-attest').dispatch('click');
+  await flushAsyncWork();
+  assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-error');
+  assert.deepEqual([...controller.state.batch].sort(), ['qb_moo_901', 'qb_moo_902']);
+  assert.equal(controller.state.reviewedInSession.has('qb_moo_903'), true);
+
+  fail = false;
+  await document.getElementById('open-batch-attest').dispatch('click');
+  await document.getElementById('confirm-batch-attest').dispatch('click');
+  await flushAsyncWork();
+  assert.deepEqual(posts.at(-1).items, [
+    { id: 'qb_moo_901', revision: 'rev-one' },
+    { id: 'qb_moo_902', revision: 'rev-two' },
+  ]);
+  assert.deepEqual(posts.at(-1).confirmations, {
+    clinical: true,
+    evidence: true,
+    originalityAndNoPhi: true,
+  });
+  assert.equal(controller.state.batch.has('qb_moo_901'), false);
+  assert.equal(controller.state.batch.has('qb_moo_902'), false);
+  assert.equal(controller.state.reviewedInSession.has('qb_moo_903'), true);
+  assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-result');
+});
+
+test('blocks an imbalanced four-question green batch before POST', async () => {
+  const ready = () => ({ gate: 'ready', blockers: [], warnings: [] });
+  const questions = [1, 2, 3, 4].map(number => validDomQuestion({
+    id: `qb_moo_90${number}`,
+    revision: `rev-${number}`,
+  }));
+  let postCount = 0;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') postCount += 1;
+    return jsonResponse(serverState({ questions }));
+  };
+  const { document } = await startHarness({ fetchImpl, assessItemImpl: ready });
+  for (const questionItem of questions) {
+    await document.getElementById('mark-reviewed-next').dispatch('click');
+    await setChecked(document, `batch-${questionItem.id}`);
+  }
+  assert.match(document.getElementById('batch-safety').textContent, /strong answer-position cue/);
+  assert.equal(document.getElementById('open-batch-attest').disabled, true);
+  assert.equal(postCount, 0);
+});
+
+test('fails closed when authenticated state omits concurrency or assessment context', async () => {
+  const incomplete = serverState();
+  delete incomplete.manifestPages;
+  incomplete.qbank[0] = { ...incomplete.qbank[0] };
+  delete incomplete.qbank[0].revision;
+  const { controller, document } = await startHarness({
+    fetchImpl: async () => jsonResponse(incomplete),
+  });
+  assert.equal(controller.state.server, null);
+  assert.match(document.app.textContent, /incomplete state/i);
+  assert.equal(document.activeElement?.getAttribute('role'), 'alert');
+});
+
 test('Ctrl or Command S routes Content changes to commit and qbank to draft save', async () => {
   const requests = [];
   const fetchImpl = async (url, options = {}) => {
@@ -522,6 +1125,38 @@ test('Ctrl or Command S routes Content changes to commit and qbank to draft save
   assert.equal(qbankShortcut.defaultPrevented, true);
   assert.equal(requests.filter(request => request.options.method === 'POST').length, 1);
   assert.equal(document.status.textContent, 'No unsaved question changes to save.');
+});
+
+test('Ctrl or Command S saves the dirty question in the active qbank tab only', async () => {
+  let current = validDomQuestion();
+  const posts = [];
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      const body = JSON.parse(options.body);
+      posts.push(body);
+      current = { ...structuredClone(body.item), status: 'draft', revision: 'shortcut-revision' };
+      return jsonResponse({
+        ok: true,
+        action: 'qbank.save-draft',
+        revision: 'shortcut-revision',
+        assessment: { gate: 'ready', blockers: [], warnings: [] },
+        commit: null,
+      });
+    }
+    return jsonResponse(serverState({ question: current }));
+  };
+  const { document, window } = await startHarness({ fetchImpl });
+  await setValue(document, 'question-stem', 'Save this question with the keyboard?');
+  const shortcut = await window.dispatch('keydown', {
+    metaKey: false,
+    ctrlKey: true,
+    key: 's',
+  });
+  await flushAsyncWork();
+  assert.equal(shortcut.defaultPrevented, true);
+  assert.equal(posts.length, 1);
+  assert.equal(posts[0].action, 'qbank.save-draft');
+  assert.equal(posts[0].target, undefined);
 });
 
 test('Content renders provenance safely and restores focus after mark-all and successful save', async () => {
