@@ -106,6 +106,7 @@ class FakeElement {
     this.value = '';
     this.checked = false;
     this.disabled = false;
+    this.open = false;
     this.selected = false;
     this.readOnly = false;
     this.selectionStart = 0;
@@ -746,6 +747,124 @@ test('an empty filter result clears only the review selection and renders the em
   assert.equal(document.getElementById('learner-preview-frame'), null);
 });
 
+test('successful loads retain only review holds that still normalize as complete', async () => {
+  const heldKey = 'question:qb_moo_902';
+  const page = { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' };
+  let includeQuestion = true;
+  let question = validDomQuestion({ status: 'attested' });
+  const fetchImpl = async () => jsonResponse(serverState({
+    items: [page],
+    questions: includeQuestion ? [question] : [],
+  }));
+  const { controller } = await startHarness({ fetchImpl });
+
+  controller.state.completedHoldKey = heldKey;
+  assert.equal(await controller.load({ silent: true }), true);
+  assert.equal(controller.state.completedHoldKey, heldKey);
+  assert.equal(controller.state.selectedKey, heldKey);
+
+  question = {
+    ...question,
+    status: 'draft',
+    revision: testRevision('existing-hold-became-incomplete'),
+  };
+  assert.equal(await controller.load({ silent: true }), true);
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.selectedKey, heldKey);
+
+  question = {
+    ...question,
+    status: 'attested',
+    revision: testRevision('requested-complete-hold'),
+  };
+  assert.equal(await controller.load({ silent: true, completedHoldKey: heldKey }), true);
+  assert.equal(controller.state.completedHoldKey, heldKey);
+  assert.equal(controller.state.selectedKey, heldKey);
+
+  question = {
+    ...question,
+    status: 'draft',
+    revision: testRevision('requested-incomplete-hold'),
+  };
+  assert.equal(await controller.load({ silent: true, completedHoldKey: heldKey }), true);
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.selectedKey, heldKey);
+
+  controller.state.completedHoldKey = heldKey;
+  includeQuestion = false;
+  assert.equal(await controller.load({ silent: true }), true);
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+});
+
+test('cancelling a dirty filter attempt preserves the completed hold and its Next path', async () => {
+  const heldKey = 'question:qb_moo_902';
+  const question = validDomQuestion({ status: 'attested' });
+  const fetchImpl = async () => jsonResponse(serverState({
+    items: [{ slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' }],
+    questions: [question],
+  }));
+  const { controller, document } = await startHarness({ fetchImpl });
+  controller.state.completedHoldKey = heldKey;
+  assert.equal(await controller.load({ silent: true }), true);
+  assert.equal(controller.state.selectedKey, heldKey);
+  assert.equal(document.getElementById('next-review-item').textContent, 'Next item');
+  assert.equal(document.getElementById('next-review-item').disabled, false);
+
+  await document.getElementById('view-edit').dispatch('click');
+  const frame = document.getElementById('learner-preview-frame');
+  const frameWindow = frame.contentWindow;
+  const localStem = 'Keep this completed hold while the dirty filter is cancelled?';
+  await setValue(document, 'question-stem', localStem);
+
+  const typeFilter = document.getElementById('review-type-filter');
+  typeFilter.value = 'page';
+  await typeFilter.dispatch('change');
+  assert.ok(document.getElementById('unsaved-guard'));
+  assert.equal(controller.state.completedHoldKey, heldKey);
+  assert.equal(controller.state.selectedKey, heldKey);
+  assert.equal(controller.state.editor.stem, localStem);
+  assert.ok(document.getElementById('learner-preview-frame') === frame);
+  assert.ok(document.getElementById('learner-preview-frame').contentWindow === frameWindow);
+
+  await document.getElementById('unsaved-cancel').dispatch('click');
+  assert.equal(controller.state.completedHoldKey, heldKey);
+  assert.equal(controller.state.selectedKey, heldKey);
+  assert.equal(controller.state.editor.stem, localStem);
+  assert.equal(controller.state.queueFilters.type, 'all');
+  assert.equal(document.getElementById('review-type-filter').value, 'all');
+  assert.match(document.getElementById('review-item-selector').textContent, /qb_moo_902/);
+  assert.equal(document.getElementById('next-review-item').textContent, 'Next item');
+  assert.equal(document.getElementById('next-review-item').disabled, false);
+  assert.equal(document.activeElement?.getAttribute('id'), 'review-type-filter');
+  assert.ok(document.getElementById('learner-preview-frame') === frame);
+  assert.ok(document.getElementById('learner-preview-frame').contentWindow === frameWindow);
+});
+
+test('retained question-filter refresh preserves disclosure, visible focus, and iframe identity', async () => {
+  const { controller, document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [{ slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' }],
+      questions: [validDomQuestion()],
+    })),
+  });
+  const disclosure = document.getElementById('question-filter-disclosure');
+  disclosure.open = true;
+  const frame = document.getElementById('learner-preview-frame');
+  const frameWindow = frame.contentWindow;
+
+  await setValue(document, 'filter-question-category', 'mood', 'change');
+
+  const refreshedDisclosure = document.getElementById('question-filter-disclosure');
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+  assert.equal(controller.state.queueFilters.category, 'mood');
+  assert.equal(refreshedDisclosure.open, true);
+  assert.equal(document.activeElement?.getAttribute('id'), 'filter-question-category');
+  assert.equal(refreshedDisclosure.contains(document.activeElement), true);
+  assert.ok(document.getElementById('learner-preview-frame') === frame);
+  assert.ok(document.getElementById('learner-preview-frame').contentWindow === frameWindow);
+});
+
 test('targeted queue, reviewer, view, editor, and rail updates keep the learner iframe alive', async () => {
   const { controller, document } = await startHarness({
     assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
@@ -768,6 +887,65 @@ test('targeted queue, reviewer, view, editor, and rail updates keep the learner 
   assert.equal(document.getElementById('learner-preview-frame'), frame);
   assert.equal(document.getElementById('learner-preview-frame').contentWindow, frameWindow);
   assert.match(document.getElementById('selected-item-view').textContent, /Edit question/);
+});
+
+test('editor mutation and Revert revoke review evidence without replacing the preview', async () => {
+  const harness = await startHarness({
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { controller, document, window } = harness;
+  const preview = controller.state.preview;
+  const frame = document.getElementById('learner-preview-frame');
+  const frameWindow = frame.contentWindow;
+  await frame.dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  await setChecked(document, 'review-live-preview');
+  await document.getElementById('view-edit').dispatch('click');
+  const previewToken = preview.request.token;
+  const previewAttempt = controller.state.previewAttempt;
+  const emptyChecks = {
+    completeItemReviewed: false,
+    liveReviewed: false,
+    separateTabReviewed: false,
+    liveUnavailableAcknowledged: false,
+    accuracy: false,
+    interactions: false,
+  };
+  const seedAllReviewEvidence = () => {
+    Object.assign(controller.state.reviewChecks, {
+      completeItemReviewed: true,
+      liveReviewed: true,
+      separateTabReviewed: true,
+      liveUnavailableAcknowledged: true,
+      accuracy: true,
+      interactions: true,
+    });
+    controller.state.reviewedInSession.add('qb_moo_902');
+    controller.state.reviewedRevisions.set('qb_moo_902', validDomQuestion().revision);
+    controller.state.batch.add('qb_moo_902');
+    controller.state.confirmations.clinical = true;
+  };
+  const assertEvidenceRevokedAndPreviewPreserved = () => {
+    assert.deepEqual(controller.state.reviewChecks, emptyChecks);
+    assert.equal(controller.state.reviewedInSession.has('qb_moo_902'), false);
+    assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
+    assert.equal(controller.state.batch.has('qb_moo_902'), false);
+    assert.equal(controller.state.confirmations.clinical, false);
+    assert.equal(controller.state.preview, preview);
+    assert.equal(controller.state.preview.request.token, previewToken);
+    assert.equal(controller.state.preview.status, 'ready');
+    assert.equal(controller.state.previewAttempt, previewAttempt);
+    assert.ok(document.getElementById('learner-preview-frame') === frame);
+    assert.ok(document.getElementById('learner-preview-frame').contentWindow === frameWindow);
+  };
+
+  seedAllReviewEvidence();
+  await setValue(document, 'question-stem', 'A local editor mutation must revoke review evidence?');
+  assertEvidenceRevokedAndPreviewPreserved();
+
+  seedAllReviewEvidence();
+  await document.getElementById('revert-question').dispatch('click');
+  assertEvidenceRevokedAndPreviewPreserved();
 });
 
 test('preview selection and Retry create exact tokenized routes, fresh iframes, and strict sandbox policy', async () => {

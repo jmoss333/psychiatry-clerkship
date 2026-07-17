@@ -180,7 +180,7 @@ export function startFacultyConsole({
         node.className = value;
       } else if (name.startsWith('on') && typeof value === 'function') {
         node.addEventListener(name.slice(2).toLowerCase(), value);
-      } else if (['checked', 'disabled', 'selected', 'value', 'readOnly'].includes(name)) {
+      } else if (['checked', 'disabled', 'open', 'selected', 'value', 'readOnly'].includes(name)) {
         node[name] = value;
       } else {
         node.setAttribute(name, value === true ? '' : String(value));
@@ -676,9 +676,9 @@ export function startFacultyConsole({
       }
       state.server = { ...payload, student: studentBase.href };
       state.reviewItems = reviewItems;
-      if (completedHoldKey && findReviewItem(completedHoldKey)) {
-        state.completedHoldKey = completedHoldKey;
-      }
+      const holdKey = completedHoldKey || state.completedHoldKey;
+      const heldItem = holdKey ? findReviewItem(holdKey) : null;
+      state.completedHoldKey = heldItem?.completion === 'complete' ? heldItem.key : null;
       state.pending = false;
       pruneSessionReview();
       chooseSelection();
@@ -1351,8 +1351,8 @@ export function startFacultyConsole({
   function updateQueueFilter(name, value, focusTarget) {
     const filters = { ...state.queueFilters, [name]: value };
     const visible = filterReviewItems(state.reviewItems, filters);
-    state.completedHoldKey = null;
     if (visible.some(item => item.key === state.selectedKey)) {
+      state.completedHoldKey = null;
       state.queueFilters[name] = value;
       refreshQueueStrip(focusTarget);
       announce(`${visible.length} review item${visible.length === 1 ? '' : 's'} shown.`);
@@ -1364,7 +1364,7 @@ export function startFacultyConsole({
     );
   }
 
-  function renderSharedQueueStrip(items) {
+  function renderSharedQueueStrip(items, { questionFiltersOpen = false } = {}) {
     const questions = list(state.server?.qbank);
     const categories = [...new Set(questions.map(question => text(question.category)).filter(Boolean))]
       .sort((left, right) => left.localeCompare(right));
@@ -1453,7 +1453,11 @@ export function startFacultyConsole({
           `${counts.total} shown · ${counts.needsReview} need review · ${counts.complete} complete`,
         ]),
       ]),
-      el('details', { id: 'question-filter-disclosure', class: 'question-filter-disclosure' }, [
+      el('details', {
+        id: 'question-filter-disclosure',
+        class: 'question-filter-disclosure',
+        open: questionFiltersOpen,
+      }, [
         el('summary', {}, ['Question filters']),
         el('fieldset', { class: 'question-filter-grid' }, [
           el('legend', { class: 'sr-only' }, ['Question-only filters']),
@@ -1489,7 +1493,10 @@ export function startFacultyConsole({
   function refreshQueueStrip(focusTarget = null) {
     const current = document.getElementById('review-queue-strip');
     if (!current) return;
-    const replacement = renderSharedQueueStrip(visibleReviewItems());
+    const disclosure = document.getElementById('question-filter-disclosure');
+    const replacement = renderSharedQueueStrip(visibleReviewItems(), {
+      questionFiltersOpen: disclosure?.open === true,
+    });
     current.replaceChildren(...replacement.children);
     focusRequested(focusTarget);
   }
