@@ -360,6 +360,19 @@ export function prepareAttestation(input) {
         warned.flatMap(selection => selection.assessment.warnings),
       );
     }
+    const unreviewedReady = selected.filter(({ entry, assessment }) => (
+      assessment.warnings.length === 0
+      && (typeof entry.reviewedRevision !== 'string'
+        || !REVISION_PATTERN.test(entry.reviewedRevision)
+        || entry.reviewedRevision !== entry.revision)
+    ));
+    if (unreviewedReady.length) {
+      throw new QbankActionError(
+        'attest.review_required',
+        'Mark every ready question reviewed at its exact saved revision before attestation.',
+        422,
+      );
+    }
     if (warned.length === 1) {
       const [{ entry, assessment }] = warned;
       const warningCodes = currentWarningCodes(assessment);

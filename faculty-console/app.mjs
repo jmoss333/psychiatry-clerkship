@@ -882,7 +882,11 @@ export function startFacultyConsole({
       return;
     }
     state.batchConfirmation = {
-      entries: selected.map(question => ({ id: question.id, revision: question.revision })),
+      entries: selected.map(question => ({
+        id: question.id,
+        revision: question.revision,
+        reviewedRevision: state.reviewedRevisions.get(question.id),
+      })),
       returnFocus: 'open-batch-attest',
     };
     renderShell('batch-confirmation');
@@ -922,6 +926,7 @@ export function startFacultyConsole({
     const entries = state.batchConfirmation.entries.map(entry => ({
       id: text(entry?.id),
       revision: text(entry?.revision),
+      reviewedRevision: text(entry?.reviewedRevision),
     }));
     return el('section', {
       id: 'batch-confirmation',
@@ -939,7 +944,7 @@ export function startFacultyConsole({
       el('h3', { id: 'batch-confirmation-title' }, ['Confirm green batch attestation']),
       el('p', {}, ['The following saved revisions will be attested atomically:']),
       el('ul', { class: 'data-text' }, entries.map(entry => el('li', {}, [
-        `${entry.id} — revision ${entry.revision}`,
+        `${entry.id} — revision ${entry.revision}; reviewed receipt ${entry.reviewedRevision}`,
       ]))),
       el('div', { class: 'guard-actions' }, [
         el('button', {
@@ -2202,7 +2207,11 @@ export function startFacultyConsole({
 
   function sameAttestationEntries(left, right) {
     const keys = entries => list(entries)
-      .map(entry => `${text(entry?.id)}\u0000${text(entry?.revision)}`)
+      .map(entry => [
+        text(entry?.id),
+        text(entry?.revision),
+        text(entry?.reviewedRevision),
+      ].join('\u0000'))
       .sort();
     const before = keys(left);
     const after = keys(right);
@@ -2215,6 +2224,7 @@ export function startFacultyConsole({
     const currentEntries = selected.map(question => ({
       id: question.id,
       revision: question.revision,
+      reviewedRevision: state.reviewedRevisions.get(question.id),
     }));
     if (selected.length !== state.batch.size
         || !sameAttestationEntries(frozenEntries, currentEntries)) {

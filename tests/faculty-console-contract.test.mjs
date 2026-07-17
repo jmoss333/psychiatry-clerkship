@@ -1551,8 +1551,16 @@ test('lists every green batch ID, keeps selection atomic on failure, and clears 
   await document.getElementById('confirm-batch-attest').dispatch('click');
   await flushAsyncWork();
   assert.deepEqual(posts.at(-1).items, [
-    { id: 'qb_moo_901', revision: testRevision('rev-one') },
-    { id: 'qb_moo_902', revision: testRevision('rev-two') },
+    {
+      id: 'qb_moo_901',
+      revision: testRevision('rev-one'),
+      reviewedRevision: testRevision('rev-one'),
+    },
+    {
+      id: 'qb_moo_902',
+      revision: testRevision('rev-two'),
+      reviewedRevision: testRevision('rev-two'),
+    },
   ]);
   assert.deepEqual(posts.at(-1).confirmations, {
     clinical: true,
@@ -1604,8 +1612,8 @@ test('batch confirmation freezes exact revisions in a top-level modal and reject
   await document.getElementById('open-batch-attest').dispatch('click');
 
   assert.deepEqual(controller.state.batchConfirmation.entries, [
-    { id: 'qb_moo_901', revision: firstRevision },
-    { id: 'qb_moo_902', revision: secondRevision },
+    { id: 'qb_moo_901', revision: firstRevision, reviewedRevision: firstRevision },
+    { id: 'qb_moo_902', revision: secondRevision, reviewedRevision: secondRevision },
   ]);
   let dialog = document.getElementById('batch-confirmation');
   assert.equal(dialog.parentNode, document.app);
@@ -1614,6 +1622,7 @@ test('batch confirmation freezes exact revisions in a top-level modal and reject
   assert.equal(document.getElementById('console-background').getAttribute('inert'), '');
   assert.match(dialog.textContent, new RegExp(firstRevision));
   assert.match(dialog.textContent, new RegExp(secondRevision));
+  assert.match(dialog.textContent, /reviewed receipt/i);
 
   const underlying = document.getElementById('batch-qb_moo_901');
   underlying.checked = false;

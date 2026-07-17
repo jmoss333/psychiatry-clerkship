@@ -70,8 +70,10 @@ function makeBank(items) {
   };
 }
 
-function entryFor(item, acknowledgedWarnings) {
-  const entry = { id: item.id, revision: itemRevision(item) };
+function entryFor(item, acknowledgedWarnings, includeReviewedRevision = true) {
+  const revision = itemRevision(item);
+  const entry = { id: item.id, revision };
+  if (includeReviewedRevision) entry.reviewedRevision = revision;
   if (acknowledgedWarnings !== undefined) {
     entry.acknowledgedWarnings = acknowledgedWarnings;
   }
@@ -274,6 +276,78 @@ test('prepareDraftSave preserves governed data, forces draft, and never mutates 
   assert.deepEqual(result.item.serverOnly, original.serverOnly);
   assert.deepEqual(result.changedFields, ['stem']);
   assert.equal(result.assessment.gate, 'ready');
+});
+
+test('prepareDraftSave preserves omitted repository nested metadata and drops client extensions', () => {
+  const original = validItem({ status: 'attested' });
+  original.type = 'two-tier';
+  original.link.repository = { provenance: 'preserve-link' };
+  original.options[1].repository = { provenance: 'preserve-option' };
+  original.options[1].trap.repository = { provenance: 'preserve-trap' };
+  original.tier2 = {
+    q: 'Which rationale best supports the answer?',
+    why: 'The defining time course supports the keyed diagnosis.',
+    repository: { provenance: 'preserve-tier' },
+    options: [
+      { key: 'A', t: 'The syndrome meets the threshold.', c: true },
+      {
+        key: 'B',
+        t: 'The presentation fluctuates.',
+        trap: {
+          name: 'Existing repository trap',
+          note: 'This reserved tier-two trap must survive the editor boundary.',
+        },
+        repository: { provenance: 'preserve-tier-option' },
+      },
+      { key: 'C', t: 'Activation defines the presentation.' },
+    ],
+  };
+  const bank = makeBank([original]);
+  const before = clone(bank);
+  const editedItem = clone(original);
+  editedItem.stem = 'A revised fictional presentation has persistent sadness. What diagnosis best fits?';
+  editedItem.link = { label: original.link.label, href: original.link.href, injected: true };
+  editedItem.options = editedItem.options.map(option => ({
+    key: option.key,
+    t: option.t,
+    ...(option.c === true ? { c: true } : {}),
+    ...(option.trap ? { trap: { name: option.trap.name, note: option.trap.note } } : {}),
+    injected: true,
+  }));
+  editedItem.tier2 = {
+    q: original.tier2.q,
+    why: original.tier2.why,
+    options: original.tier2.options.map(option => ({
+      key: option.key,
+      t: option.t,
+      ...(option.c === true ? { c: true } : {}),
+      injected: true,
+    })),
+    injected: true,
+  };
+
+  const result = prepareDraftSave({
+    bank,
+    manifestPages,
+    id: original.id,
+    baseRevision: itemRevision(original),
+    editedItem,
+  });
+
+  assert.deepEqual(bank, before);
+  assert.deepEqual(result.item.link.repository, original.link.repository);
+  assert.deepEqual(result.item.options[1].repository, original.options[1].repository);
+  assert.deepEqual(result.item.options[1].trap.repository, original.options[1].trap.repository);
+  assert.deepEqual(result.item.tier2.repository, original.tier2.repository);
+  assert.deepEqual(result.item.tier2.options[1].trap, original.tier2.options[1].trap);
+  assert.deepEqual(result.item.tier2.options[1].repository, original.tier2.options[1].repository);
+  assert.equal(Object.hasOwn(result.item.link, 'injected'), false);
+  assert.equal(Object.hasOwn(result.item.options[1], 'injected'), false);
+  assert.equal(Object.hasOwn(result.item.tier2, 'injected'), false);
+  assert.equal(Object.hasOwn(result.item.tier2.options[1], 'injected'), false);
+
+  result.item.tier2.options[1].trap.name = 'Mutated result';
+  assert.equal(original.tier2.options[1].trap.name, 'Existing repository trap');
 });
 
 test('prepareDraftSave rejects governed-only changes as a no-op', () => {
@@ -617,6 +691,42 @@ test('prepareAttestation permits individual and small green selections', () => {
   assert.deepEqual(two.ids, [first.id, second.id]);
 });
 
+test('prepareAttestation requires an exact matching reviewed revision for every green item', () => {
+  const first = validItem({ id: 'qb_moo_900', stem: stems[0] });
+  const second = validItem({ id: 'qb_moo_901', stem: stems[1] });
+  const bank = makeBank([first, second]);
+  const firstRevision = itemRevision(first);
+  const secondRevision = itemRevision(second);
+
+  for (const entries of [
+    [{ id: first.id, revision: firstRevision }],
+    [{ id: first.id, revision: firstRevision, reviewedRevision: itemRevision({ ...first, stem: 'Earlier review.' }) }],
+    [{ id: first.id, revision: firstRevision, reviewedRevision: 'not-a-revision' }],
+    [
+      { id: first.id, revision: firstRevision, reviewedRevision: firstRevision },
+      { id: second.id, revision: secondRevision },
+    ],
+  ]) {
+    expectActionError(() => prepareAttestation({
+      bank,
+      manifestPages,
+      entries,
+      confirmations: confirmed,
+    }), {
+      code: 'attest.review_required',
+      status: 422,
+    });
+  }
+
+  const result = prepareAttestation({
+    bank,
+    manifestPages,
+    entries: [{ id: first.id, revision: firstRevision, reviewedRevision: firstRevision }],
+    confirmations: confirmed,
+  });
+  assert.deepEqual(result.ids, [first.id]);
+});
+
 test('prepareAttestation requires every human confirmation to be literal true', () => {
   const item = validItem();
   const bank = makeBank([item]);
@@ -669,7 +779,7 @@ test('prepareAttestation accepts one yellow item only with the exact current war
   const result = prepareAttestation({
     bank,
     manifestPages,
-    entries: [entryFor(item, [...currentWarnings].reverse())],
+    entries: [entryFor(item, [...currentWarnings].reverse(), false)],
     confirmations: confirmed,
   });
   assert.deepEqual(result.ids, [item.id]);

@@ -576,12 +576,13 @@ test('qbank.save-draft performs exactly one successful PUT and returns the saved
 
 test('qbank.attest performs exactly one successful PUT and returns stable target revisions and assessments', async () => {
   const item = validItem();
+  const revision = itemRevision(item);
   const mock = createGithubMock({ files: defaultFiles(makeBank([item])) });
 
   const response = await handlerWith(mock)(apiRequest('POST', {
     body: {
       action: 'qbank.attest',
-      items: [{ id: item.id, revision: itemRevision(item) }],
+      items: [{ id: item.id, revision, reviewedRevision: revision }],
       confirmations: confirmed,
       attester: 'Synthetic Reviewer',
     },
@@ -597,6 +598,23 @@ test('qbank.attest performs exactly one successful PUT and returns stable target
   assert.equal(saved.items[0].status, 'attested');
   assert.equal(payload.revision[item.id], itemRevision(saved.items[0]));
   assert.equal(payload.assessment[item.id].gate, 'ready');
+});
+
+test('qbank.attest rejects a legacy green request without reviewed-revision evidence', async () => {
+  const item = validItem();
+  const mock = createGithubMock({ files: defaultFiles(makeBank([item])) });
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.attest',
+      items: [{ id: item.id, revision: itemRevision(item) }],
+      confirmations: confirmed,
+      attester: 'Synthetic Reviewer',
+    },
+  }));
+
+  await expectError(response, { status: 422, code: 'attest.review_required' });
+  assert.equal(mock.putBodies.length, 0);
 });
 
 test('retries one GitHub 409 after an unrelated-item race and preserves the unrelated update', async () => {
@@ -707,8 +725,8 @@ test('normalizes deletion of any attestation target during retry to one atomic c
     body: {
       action: 'qbank.attest',
       items: [
-        { id: first.id, revision: itemRevision(first) },
-        { id: second.id, revision: itemRevision(second) },
+        { id: first.id, revision: itemRevision(first), reviewedRevision: itemRevision(first) },
+        { id: second.id, revision: itemRevision(second), reviewedRevision: itemRevision(second) },
       ],
       confirmations: confirmed,
     },

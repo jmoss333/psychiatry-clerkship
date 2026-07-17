@@ -35,7 +35,7 @@ faculty-console/
    - **Ready (green):** the saved structure passed automated checks. This does **not** establish clinical correctness, evidence support, originality, or absence of PHI; those remain faculty judgments.
 3. Editing any item — including an attested item — invalidates prior review, clears confirmations and batch selection, and makes checks local/stale. **Save draft** forces the saved status to `draft`, then reloads the repository version so checks are current again.
 4. For a green batch, open each saved green draft and choose **Mark reviewed & next**. Only the exact revision reviewed in this browser session gets an enabled batch checkbox. Reloading, editing, or receiving a newer revision removes that eligibility.
-5. Select reviewed green drafts, complete all three faculty confirmations, and inspect the final confirmation dialog. Batches of four or more must avoid a strong answer-position cue. The submitted IDs and revisions are frozen and attested atomically.
+5. Select reviewed green drafts, complete all three faculty confirmations, and inspect the final confirmation dialog. Batches of four or more must avoid a strong answer-position cue. The submitted IDs, current revisions, and revisions captured by **Mark reviewed & next** are frozen and attested atomically. This reviewed-revision receipt is a workflow assertion made under the shared faculty key; it is not independent proof of a reviewer's identity.
 6. For a yellow item, complete the three faculty confirmations plus every displayed warning acknowledgement, then use **Attest this warning question**. Yellow items never enter a batch.
 
 ### Content pages and tools

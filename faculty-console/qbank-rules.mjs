@@ -6,6 +6,11 @@ export const OPTION_KEYS = ['A','B','C','D'];
 
 const EDITABLE = ['type','subtype','category','competency','difficulty','hy','pages','link','stem','options','why','pearl','evidence','tier2'];
 const REQUIRED_TEXT = ['id', 'status', 'type', 'category', 'stem', 'why', 'pearl', 'evidence'];
+const LINK_FIELDS = ['label', 'href'];
+const OPTION_FIELDS = ['key', 't', 'c', 'trap'];
+const TRAP_FIELDS = ['name', 'note'];
+const TIER_FIELDS = ['q', 'why', 'options'];
+const TIER_OPTION_FIELDS = ['key', 't', 'c'];
 
 const issue = (code, field, message) => ({ code, field, message });
 const text = value => typeof value === 'string' ? value.trim() : '';
@@ -363,13 +368,108 @@ export function assessBank(items, context = {}) {
   return { byId, counts, answerKeys, categoryAnswerKeys };
 }
 
+function preserveUnknownMembers(original, supported) {
+  const source = record(original);
+  return Object.fromEntries(Object.keys(source)
+    .filter(key => !supported.includes(key))
+    .map(key => [key, structuredClone(source[key])]));
+}
+
+function copyPresentFields(target, edited, fields) {
+  for (const key of fields) {
+    if (Object.hasOwn(edited, key)) target[key] = structuredClone(edited[key]);
+  }
+  return target;
+}
+
+function mergeTrap(original, edited) {
+  if (!isRecord(edited)) return structuredClone(edited);
+  return copyPresentFields(
+    preserveUnknownMembers(original, TRAP_FIELDS),
+    edited,
+    TRAP_FIELDS,
+  );
+}
+
+function originalOptionsByKey(options) {
+  const byKey = new Map();
+  for (const option of list(options)) {
+    const key = text(option?.key);
+    if (key && !byKey.has(key)) byKey.set(key, option);
+  }
+  return byKey;
+}
+
+function mergeMainOption(original, edited) {
+  if (!isRecord(edited)) return structuredClone(edited);
+  const next = copyPresentFields(
+    preserveUnknownMembers(original, OPTION_FIELDS),
+    edited,
+    ['key', 't', 'c'],
+  );
+  if (Object.hasOwn(edited, 'trap')) next.trap = mergeTrap(original?.trap, edited.trap);
+  return next;
+}
+
+function mergeMainOptions(original, edited) {
+  if (!Array.isArray(edited)) return structuredClone(edited);
+  const originals = originalOptionsByKey(original);
+  return edited.map(option => mergeMainOption(originals.get(text(option?.key)), option));
+}
+
+function mergeTierOption(original, edited) {
+  if (!isRecord(edited)) return structuredClone(edited);
+  return copyPresentFields(
+    preserveUnknownMembers(original, TIER_OPTION_FIELDS),
+    edited,
+    TIER_OPTION_FIELDS,
+  );
+}
+
+function mergeTierOptions(original, edited) {
+  if (!Array.isArray(edited)) return structuredClone(edited);
+  const originals = originalOptionsByKey(original);
+  return edited.map(option => mergeTierOption(originals.get(text(option?.key)), option));
+}
+
+function mergeLink(original, edited) {
+  if (!isRecord(edited)) return structuredClone(edited);
+  return copyPresentFields(
+    preserveUnknownMembers(original, LINK_FIELDS),
+    edited,
+    LINK_FIELDS,
+  );
+}
+
+function mergeTierTwo(original, edited) {
+  if (!isRecord(edited)) return structuredClone(edited);
+  const next = copyPresentFields(
+    preserveUnknownMembers(original, TIER_FIELDS),
+    edited,
+    ['q', 'why'],
+  );
+  if (Object.hasOwn(edited, 'options')) {
+    next.options = mergeTierOptions(original?.options, edited.options);
+  }
+  return next;
+}
+
 export function mergeEditableItem(original, edited) {
   const base = record(original);
   const changes = record(edited);
   const next = structuredClone(base);
   for (const key of EDITABLE) {
-    if (Object.hasOwn(changes, key)) next[key] = structuredClone(changes[key]);
-    else delete next[key];
+    if (!Object.hasOwn(changes, key)) {
+      delete next[key];
+    } else if (key === 'link') {
+      next.link = mergeLink(base.link, changes.link);
+    } else if (key === 'options') {
+      next.options = mergeMainOptions(base.options, changes.options);
+    } else if (key === 'tier2') {
+      next.tier2 = mergeTierTwo(base.tier2, changes.tier2);
+    } else {
+      next[key] = structuredClone(changes[key]);
+    }
   }
   next.id = base.id;
   next.status = 'draft';

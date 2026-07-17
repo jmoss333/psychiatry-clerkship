@@ -529,7 +529,11 @@ test('attests only a reviewed and answer-balanced green batch', async ({ page })
   ]);
 
   const post = qbankPosts(api).at(-1);
-  expect(post.body.items).toEqual(ids.map(id => ({ id, revision: revisionsBefore[id] })));
+  expect(post.body.items).toEqual(ids.map(id => ({
+    id,
+    revision: revisionsBefore[id],
+    reviewedRevision: revisionsBefore[id],
+  })));
   expect(post.body.confirmations).toEqual({
     clinical: true,
     evidence: true,

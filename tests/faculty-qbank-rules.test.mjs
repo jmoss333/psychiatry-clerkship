@@ -348,6 +348,110 @@ test('governed merge preserves retirement metadata from the original', () => {
   assert.equal(merged.retiredReason, 'Duplicate item.');
 });
 
+test('governed merge updates supported nested fields while preserving only repository extensions', () => {
+  const original = twoTier();
+  original.link.repository = { source: 'preserve-link-extension' };
+  original.options[1].repository = { calibration: 'preserve-option-extension' };
+  original.options[1].trap.repository = { noteVersion: 2 };
+  original.tier2.repository = { source: 'preserve-tier-extension' };
+  original.tier2.options[1].trap = {
+    name: 'Preserve existing tier-two trap',
+    note: 'The editor does not currently expose tier-two trap fields.',
+    repository: { reviewed: true },
+  };
+  const before = clone(original);
+  const edited = {
+    ...clone(original),
+    link: {
+      label: 'Open the revised mood page',
+      href: '?page=t_mood.md',
+      clientInjected: { doNotTrust: true },
+    },
+    options: original.options.map(option => ({
+      key: option.key,
+      t: option.key === 'B' ? 'A revised distractor' : option.t,
+      ...(option.c === true ? { c: true } : {}),
+      ...(option.trap ? {
+        trap: {
+          name: option.trap.name,
+          note: option.key === 'B' ? 'A revised corrective note.' : option.trap.note,
+          clientInjected: 'drop me',
+        },
+      } : {}),
+      clientInjected: 'drop me',
+    })),
+    tier2: {
+      q: 'Which revised rationale best explains the answer?',
+      why: original.tier2.why,
+      clientInjected: 'drop me',
+      options: original.tier2.options.map(option => ({
+        key: option.key,
+        t: option.t,
+        ...(option.c === true ? { c: true } : {}),
+        clientInjected: 'drop me',
+      })),
+    },
+  };
+  const editedBefore = clone(edited);
+
+  const merged = mergeEditableItem(original, edited);
+
+  assert.deepEqual(original, before);
+  assert.deepEqual(edited, editedBefore);
+  assert.deepEqual(merged.link.repository, original.link.repository);
+  assert.equal(Object.hasOwn(merged.link, 'clientInjected'), false);
+  assert.deepEqual(merged.options[1].repository, original.options[1].repository);
+  assert.deepEqual(merged.options[1].trap.repository, original.options[1].trap.repository);
+  assert.equal(merged.options[1].t, 'A revised distractor');
+  assert.equal(merged.options[1].trap.note, 'A revised corrective note.');
+  assert.equal(Object.hasOwn(merged.options[1], 'clientInjected'), false);
+  assert.equal(Object.hasOwn(merged.options[1].trap, 'clientInjected'), false);
+  assert.deepEqual(merged.tier2.repository, original.tier2.repository);
+  assert.deepEqual(merged.tier2.options[1].trap, original.tier2.options[1].trap);
+  assert.equal(Object.hasOwn(merged.tier2, 'clientInjected'), false);
+  assert.equal(Object.hasOwn(merged.tier2.options[1], 'clientInjected'), false);
+
+  merged.tier2.options[1].trap.repository.reviewed = false;
+  assert.equal(original.tier2.options[1].trap.repository.reviewed, true);
+});
+
+test('governed merge honors explicit tier-two option cardinality changes by stable key', () => {
+  const original = twoTier();
+  original.tier2.options[1].repository = { preserve: 'B' };
+  const edited = clone(original);
+  edited.tier2.options.push({ key: 'D', t: 'A new fourth rationale.' });
+  const expanded = mergeEditableItem(original, edited);
+  assert.deepEqual(expanded.tier2.options.map(option => option.key), ['A', 'B', 'C', 'D']);
+  assert.deepEqual(expanded.tier2.options[1].repository, { preserve: 'B' });
+
+  const reducedEdit = clone(expanded);
+  reducedEdit.tier2.options = reducedEdit.tier2.options.slice(0, 3);
+  const reduced = mergeEditableItem(expanded, reducedEdit);
+  assert.deepEqual(reduced.tier2.options.map(option => option.key), ['A', 'B', 'C']);
+  assert.deepEqual(reduced.tier2.options[1].repository, { preserve: 'B' });
+});
+
+test('governed merge does not silently restore missing supported nested structure', () => {
+  const original = twoTier();
+  const edited = clone(original);
+  edited.link = { label: original.link.label };
+  edited.options[1] = { key: 'B', trap: clone(original.options[1].trap) };
+  edited.tier2 = {
+    why: original.tier2.why,
+    options: clone(original.tier2.options),
+  };
+
+  const merged = mergeEditableItem(original, edited);
+  const result = assessItem(merged, contextFor(merged));
+
+  assert.equal(Object.hasOwn(merged.link, 'href'), false);
+  assert.equal(Object.hasOwn(merged.options[1], 't'), false);
+  assert.equal(Object.hasOwn(merged.tier2, 'q'), false);
+  assert.ok(codes(result.blockers).includes('link.href'));
+  assert.ok(codes(result.blockers).includes('options.text'));
+  assert.ok(codes(result.blockers).includes('tier2.question'));
+});
+
 test('field diff reports editable leaf labels and ignores governed fields', () => {
   const original = valid();
   const edited = clone(original);
