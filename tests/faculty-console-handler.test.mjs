@@ -408,6 +408,7 @@ test('returns complete active qbank items, stable revisions, assessments, manife
   const payload = await response.json();
 
   assert.equal(payload.student, 'https://students.example');
+  assert.equal(payload.manifestRevision, MANIFEST_SHA);
   assert.deepEqual(payload.manifestPages, ['t_mood.md']);
   assert.equal(payload.items.length, 2);
   assert.equal(payload.qbank.length, 2);
@@ -483,6 +484,24 @@ for (const [name, sha] of [
   });
 }
 
+for (const [name, sha] of [
+  ['whitespace', ' '.repeat(40)],
+  ['non-hex', 'g'.repeat(40)],
+  ['39-character', 'a'.repeat(39)],
+  ['65-character', 'a'.repeat(65)],
+]) {
+  test(`rejects a manifest Contents object with a ${name} SHA`, async () => {
+    const files = defaultFiles();
+    files[MANIFEST_PATH].sha = sha;
+    const mock = createGithubMock({ files });
+
+    const response = await handlerWith(mock)(apiRequest('GET'));
+
+    await expectError(response, { status: 502, code: 'github_response_invalid' });
+    assert.equal(mock.putBodies.length, 0);
+  });
+}
+
 for (const [name, sha, expected] of [
   ['uppercase SHA-1', 'A'.repeat(40), 'a'.repeat(40)],
   ['uppercase SHA-256', 'B'.repeat(64), 'b'.repeat(64)],
@@ -497,6 +516,23 @@ for (const [name, sha, expected] of [
 
     assert.equal(response.status, 200);
     assert.equal(payload.qbankRevision, expected);
+  });
+}
+
+for (const [name, sha, expected] of [
+  ['uppercase SHA-1', 'C'.repeat(40), 'c'.repeat(40)],
+  ['uppercase SHA-256', 'D'.repeat(64), 'd'.repeat(64)],
+]) {
+  test(`returns a normalized manifest revision for a valid ${name}`, async () => {
+    const files = defaultFiles();
+    files[MANIFEST_PATH].sha = sha;
+    const mock = createGithubMock({ files });
+
+    const response = await handlerWith(mock)(apiRequest('GET'));
+    const payload = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.equal(payload.manifestRevision, expected);
   });
 }
 
@@ -526,6 +562,7 @@ test('sets GitHub REST API version 2026-03-10 and common safety headers on every
   const saveResponse = await handlerWith(mock)(apiRequest('POST', {
     body: {
       action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
       id: item.id,
       baseRevision: itemRevision(item),
       item: edited,
@@ -542,6 +579,130 @@ test('sets GitHub REST API version 2026-03-10 and common safety headers on every
   }
 });
 
+for (const [name, manifestRevision] of [
+  ['missing', undefined],
+  ['blank', ' '.repeat(40)],
+  ['non-hex', 'g'.repeat(40)],
+  ['39-character', 'a'.repeat(39)],
+  ['65-character', 'a'.repeat(65)],
+  ['non-string', 7],
+]) {
+  test(`qbank.save-draft rejects a ${name} manifest revision before repository access`, async () => {
+    const item = validItem({ status: 'attested' });
+    const edited = clone(item);
+    edited.stem = 'A revised fictional inpatient has sustained sadness. What diagnosis best fits?';
+    const mock = createGithubMock({ files: defaultFiles(makeBank([item])) });
+
+    const response = await handlerWith(mock)(apiRequest('POST', {
+      body: {
+        action: 'qbank.save-draft',
+        manifestRevision,
+        id: item.id,
+        baseRevision: itemRevision(item),
+        item: edited,
+      },
+    }));
+
+    await expectError(response, { status: 400, code: 'qbank.invalid_input' });
+    assert.equal(mock.calls.length, 0);
+    assert.equal(mock.putBodies.length, 0);
+  });
+}
+
+test('qbank.save-draft compares manifest revisions case-insensitively after normalization', async () => {
+  const item = validItem({ status: 'attested' });
+  const edited = clone(item);
+  edited.stem = 'A revised fictional inpatient has sustained sadness. What diagnosis best fits?';
+  const mock = createGithubMock({ files: defaultFiles(makeBank([item])) });
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA.toUpperCase(),
+      id: item.id,
+      baseRevision: itemRevision(item),
+      item: edited,
+    },
+  }));
+
+  assert.equal(response.status, 200);
+  assert.equal(mock.putBodies.length, 1);
+});
+
+test('qbank.save-draft rejects a first-attempt manifest mismatch without a PUT', async () => {
+  const item = validItem({ status: 'attested' });
+  const edited = clone(item);
+  edited.stem = 'A revised fictional inpatient has sustained sadness. What diagnosis best fits?';
+  const mock = createGithubMock({ files: defaultFiles(makeBank([item])) });
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.save-draft',
+      manifestRevision: '4'.repeat(40),
+      id: item.id,
+      baseRevision: itemRevision(item),
+      item: edited,
+    },
+  }));
+
+  await expectError(response, { status: 409, code: 'qbank.conflict' });
+  assert.equal(mock.calls.filter(call => call.path === QBANK_PATH).length, 1);
+  assert.equal(mock.calls.filter(call => call.path === MANIFEST_PATH).length, 1);
+  assert.equal(mock.putBodies.length, 0);
+});
+
+test('qbank.save-draft maps a missing current manifest to a safe conflict without leaking internals', async () => {
+  const item = validItem({ status: 'attested' });
+  const edited = clone(item);
+  edited.stem = 'A revised fictional inpatient has sustained sadness. What diagnosis best fits?';
+  const files = defaultFiles(makeBank([item]));
+  delete files[MANIFEST_PATH];
+  const mock = createGithubMock({ files });
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
+      id: item.id,
+      baseRevision: itemRevision(item),
+      item: edited,
+    },
+  }));
+  const payload = await expectError(response, { status: 409, code: 'qbank.conflict' });
+
+  assert.equal(JSON.stringify(payload).includes('notFound'), false);
+  assert.equal(mock.calls.filter(call => call.path === QBANK_PATH).length, 1);
+  assert.equal(mock.calls.filter(call => call.path === MANIFEST_PATH).length, 1);
+  assert.equal(mock.putBodies.length, 0);
+});
+
+test('qbank.save-draft preserves a non-404 manifest read failure', async () => {
+  const item = validItem({ status: 'attested' });
+  const edited = clone(item);
+  edited.stem = 'A revised fictional inpatient has sustained sadness. What diagnosis best fits?';
+  const mock = createGithubMock({
+    files: defaultFiles(makeBank([item])),
+    beforeRequest: call => (
+      call.method === 'GET' && call.path === MANIFEST_PATH
+        ? jsonResponse(403, { message: 'Synthetic upstream details must not escape.' })
+        : undefined
+    ),
+  });
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
+      id: item.id,
+      baseRevision: itemRevision(item),
+      item: edited,
+    },
+  }));
+
+  await expectError(response, { status: 403, code: 'github_forbidden' });
+  assert.equal(mock.putBodies.length, 0);
+});
+
 test('qbank.save-draft performs exactly one successful PUT and returns the saved item revision and assessment', async () => {
   const item = validItem({ status: 'attested' });
   const mock = createGithubMock({ files: defaultFiles(makeBank([item])) });
@@ -551,6 +712,7 @@ test('qbank.save-draft performs exactly one successful PUT and returns the saved
   const response = await handlerWith(mock)(apiRequest('POST', {
     body: {
       action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
       id: item.id,
       baseRevision: itemRevision(item),
       item: edited,
@@ -572,6 +734,8 @@ test('qbank.save-draft performs exactly one successful PUT and returns the saved
   assert.equal(saved.items[0].stem, edited.stem);
   assert.equal(saved.items[0].status, 'draft');
   assert.equal(payload.revision, itemRevision(saved.items[0]));
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 1);
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 1);
 });
 
 test('qbank.attest performs exactly one successful PUT and returns stable target revisions and assessments', async () => {
@@ -582,6 +746,7 @@ test('qbank.attest performs exactly one successful PUT and returns stable target
   const response = await handlerWith(mock)(apiRequest('POST', {
     body: {
       action: 'qbank.attest',
+      manifestRevision: MANIFEST_SHA,
       items: [{ id: item.id, revision, reviewedRevision: revision }],
       confirmations: confirmed,
       attester: 'Synthetic Reviewer',
@@ -607,6 +772,7 @@ test('qbank.attest rejects a legacy green request without reviewed-revision evid
   const response = await handlerWith(mock)(apiRequest('POST', {
     body: {
       action: 'qbank.attest',
+      manifestRevision: MANIFEST_SHA,
       items: [{ id: item.id, revision: itemRevision(item) }],
       confirmations: confirmed,
       attester: 'Synthetic Reviewer',
@@ -614,6 +780,24 @@ test('qbank.attest rejects a legacy green request without reviewed-revision evid
   }));
 
   await expectError(response, { status: 422, code: 'attest.review_required' });
+  assert.equal(mock.putBodies.length, 0);
+});
+
+test('qbank.attest requires the loaded manifest revision before repository access', async () => {
+  const item = validItem();
+  const revision = itemRevision(item);
+  const mock = createGithubMock({ files: defaultFiles(makeBank([item])) });
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.attest',
+      items: [{ id: item.id, revision, reviewedRevision: revision }],
+      confirmations: confirmed,
+    },
+  }));
+
+  await expectError(response, { status: 400, code: 'qbank.invalid_input' });
+  assert.equal(mock.calls.length, 0);
   assert.equal(mock.putBodies.length, 0);
 });
 
@@ -636,6 +820,7 @@ test('retries one GitHub 409 after an unrelated-item race and preserves the unre
   const response = await handlerWith(mock)(apiRequest('POST', {
     body: {
       action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
       id: target.id,
       baseRevision: itemRevision(target),
       item: edited,
@@ -648,6 +833,144 @@ test('retries one GitHub 409 after an unrelated-item race and preserves the unre
   const retriedBank = JSON.parse(Buffer.from(mock.putBodies[1].body.content, 'base64').toString('utf8'));
   assert.equal(retriedBank.items[0].stem, edited.stem);
   assert.equal(retriedBank.items[1].pearl, 'An unrelated faculty edit won the first race.');
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 2);
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
+});
+
+test('returns a conflict with no second PUT when the manifest drifts during a qbank retry', async () => {
+  const target = validItem({ status: 'attested' });
+  const unrelated = validItem({ id: 'qb_moo_901', stem: stems[1] });
+  const files = defaultFiles(makeBank([target, unrelated]));
+  const mock = createGithubMock({
+    files,
+    onPut: ({ attempt, files: mutableFiles }) => {
+      if (attempt !== 1) return undefined;
+      mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
+      mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
+      mutableFiles[MANIFEST_PATH].sha = '5'.repeat(40);
+      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+    },
+  });
+  const edited = clone(target);
+  edited.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
+      id: target.id,
+      baseRevision: itemRevision(target),
+      item: edited,
+    },
+  }));
+
+  await expectError(response, { status: 409, code: 'qbank.conflict' });
+  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 2);
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
+});
+
+test('returns a conflict with no second PUT when the manifest is removed during a qbank retry', async () => {
+  const target = validItem({ status: 'attested' });
+  const unrelated = validItem({ id: 'qb_moo_901', stem: stems[1] });
+  const files = defaultFiles(makeBank([target, unrelated]));
+  const mock = createGithubMock({
+    files,
+    onPut: ({ attempt, files: mutableFiles }) => {
+      if (attempt !== 1) return undefined;
+      mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
+      mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
+      delete mutableFiles[MANIFEST_PATH];
+      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+    },
+  });
+  const edited = clone(target);
+  edited.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
+      id: target.id,
+      baseRevision: itemRevision(target),
+      item: edited,
+    },
+  }));
+
+  await expectError(response, { status: 409, code: 'qbank.conflict' });
+  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 2);
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
+});
+
+test('validates the retry manifest before a second qbank PUT', async () => {
+  const target = validItem({ status: 'attested' });
+  const unrelated = validItem({ id: 'qb_moo_901', stem: stems[1] });
+  const files = defaultFiles(makeBank([target, unrelated]));
+  const mock = createGithubMock({
+    files,
+    onPut: ({ attempt, files: mutableFiles }) => {
+      if (attempt !== 1) return undefined;
+      mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
+      mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
+      mutableFiles[MANIFEST_PATH].json = { md: 'not-an-array', tools: [] };
+      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+    },
+  });
+  const edited = clone(target);
+  edited.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
+      id: target.id,
+      baseRevision: itemRevision(target),
+      item: edited,
+    },
+  }));
+
+  await expectError(response, { status: 502, code: 'repository_file_invalid' });
+  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
+});
+
+test('preserves a non-404 manifest failure during a qbank retry', async () => {
+  const target = validItem({ status: 'attested' });
+  const unrelated = validItem({ id: 'qb_moo_901', stem: stems[1] });
+  const files = defaultFiles(makeBank([target, unrelated]));
+  let firstPutFailed = false;
+  const mock = createGithubMock({
+    files,
+    beforeRequest: call => (
+      firstPutFailed && call.method === 'GET' && call.path === MANIFEST_PATH
+        ? jsonResponse(403, { message: 'Synthetic upstream details must not escape.' })
+        : undefined
+    ),
+    onPut: ({ attempt, files: mutableFiles }) => {
+      if (attempt !== 1) return undefined;
+      firstPutFailed = true;
+      mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
+      mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
+      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+    },
+  });
+  const edited = clone(target);
+  edited.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
+      id: target.id,
+      baseRevision: itemRevision(target),
+      item: edited,
+    },
+  }));
+
+  await expectError(response, { status: 403, code: 'github_forbidden' });
+  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
 });
 
 test('returns a same-item conflict with no second PUT when the target changes during a GitHub 409 race', async () => {
@@ -668,6 +991,7 @@ test('returns a same-item conflict with no second PUT when the target changes du
   const response = await handlerWith(mock)(apiRequest('POST', {
     body: {
       action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
       id: target.id,
       baseRevision: itemRevision(target),
       item: edited,
@@ -676,6 +1000,8 @@ test('returns a same-item conflict with no second PUT when the target changes du
 
   await expectError(response, { status: 409, code: 'qbank.conflict' });
   assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 2);
+  assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
 });
 
 test('normalizes target retirement during a save retry to a conflict with no second PUT', async () => {
@@ -697,6 +1023,7 @@ test('normalizes target retirement during a save retry to a conflict with no sec
   const response = await handlerWith(mock)(apiRequest('POST', {
     body: {
       action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
       id: target.id,
       baseRevision: itemRevision(target),
       item: edited,
@@ -724,6 +1051,7 @@ test('normalizes deletion of any attestation target during retry to one atomic c
   const response = await handlerWith(mock)(apiRequest('POST', {
     body: {
       action: 'qbank.attest',
+      manifestRevision: MANIFEST_SHA,
       items: [
         { id: first.id, revision: itemRevision(first), reviewedRevision: itemRevision(first) },
         { id: second.id, revision: itemRevision(second), reviewedRevision: itemRevision(second) },
@@ -753,6 +1081,7 @@ for (const [name, githubPayload] of [
     const response = await handlerWith(mock)(apiRequest('POST', {
       body: {
         action: 'qbank.save-draft',
+        manifestRevision: MANIFEST_SHA,
         id: item.id,
         baseRevision: itemRevision(item),
         item: edited,
@@ -786,6 +1115,7 @@ for (const [name, receiptSha] of [
     const response = await handlerWith(mock)(apiRequest('POST', {
       body: {
         action: 'qbank.save-draft',
+        manifestRevision: MANIFEST_SHA,
         id: item.id,
         baseRevision: itemRevision(item),
         item: edited,
@@ -844,6 +1174,7 @@ test('qbank and content no-op requests perform no commit', async () => {
   const qbankResponse = await handlerWith(qbankMock)(apiRequest('POST', {
     body: {
       action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
       id: item.id,
       baseRevision: itemRevision(item),
       item: clone(item),

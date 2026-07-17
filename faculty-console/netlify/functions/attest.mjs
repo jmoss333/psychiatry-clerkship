@@ -48,10 +48,11 @@ class HttpError extends Error {
 }
 
 class GithubError extends HttpError {
-  constructor(code, status, { retryable = false } = {}) {
+  constructor(code, status, { retryable = false, notFound = false } = {}) {
     super(code, status, ERROR_MESSAGES[code] || ERROR_MESSAGES.github_request_failed, { retryable });
     this.name = 'GithubError';
     this.conflict = status === 409;
+    this.notFound = notFound === true;
   }
 }
 
@@ -210,6 +211,8 @@ function githubStatusError(status) {
       return new GithubError('github_forbidden', 403);
     case 409:
       return new GithubError('github_conflict', 409, { retryable: true });
+    case 404:
+      return new GithubError('github_request_failed', 502, { notFound: true });
     case 422:
       return new GithubError('github_validation_failed', 422);
     case 429:
@@ -492,6 +495,7 @@ async function buildState(repository, student) {
   const qbankPayload = buildQbankPayload(qbankFile, manifestFile.json);
   return {
     student,
+    manifestRevision: manifestFile.sha,
     items,
     ...qbankPayload,
     counts: {
@@ -647,12 +651,39 @@ function normalizeRetryTargetError(error) {
   return error;
 }
 
+function requireManifestRevision(value) {
+  if (typeof value !== 'string' || !GIT_OBJECT_ID_PATTERN.test(value)) {
+    throw new QbankActionError(
+      'qbank.invalid_input',
+      'The loaded source manifest revision is required.',
+      400,
+    );
+  }
+  return value.toLowerCase();
+}
+
+function manifestConflict() {
+  return new QbankActionError(
+    'qbank.conflict',
+    'The question source manifest changed after you loaded it.',
+    409,
+  );
+}
+
 async function commitQbankMutation({ repository, action, body, attester }) {
-  const manifestFile = await repository.read(MANIFEST_PATH);
-  const { manifestPages } = requireManifest(manifestFile.json);
-  let bankFile = await repository.read(QBANK_PATH, { maxBytes: MAX_BANK_BYTES });
+  const expectedManifestRevision = requireManifestRevision(body.manifestRevision);
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
+    const bankFile = await repository.read(QBANK_PATH, { maxBytes: MAX_BANK_BYTES });
+    let manifestFile;
+    try {
+      manifestFile = await repository.read(MANIFEST_PATH);
+    } catch (error) {
+      if (error instanceof GithubError && error.notFound) throw manifestConflict();
+      throw error;
+    }
+    const { manifestPages } = requireManifest(manifestFile.json);
+    if (manifestFile.sha !== expectedManifestRevision) throw manifestConflict();
     requireQbank(bankFile.json);
     let result;
     try {
@@ -671,7 +702,6 @@ async function commitQbankMutation({ repository, action, body, attester }) {
       return qbankSuccess(action, result, saved, manifestPages);
     } catch (error) {
       if (!(error instanceof GithubError && error.conflict) || attempt === 1) throw error;
-      bankFile = await repository.read(QBANK_PATH, { maxBytes: MAX_BANK_BYTES });
     }
   }
   throw new GithubError('github_conflict', 409, { retryable: true });

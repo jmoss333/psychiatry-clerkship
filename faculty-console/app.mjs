@@ -54,6 +54,12 @@ function clone(value) {
   return structuredClone(value);
 }
 
+function freezeSnapshot(value) {
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
+  for (const nested of Object.values(value)) freezeSnapshot(nested);
+  return Object.freeze(value);
+}
+
 function parseDelimited(value) {
   return [...new Set(text(value)
     .split(/[\n,]/)
@@ -241,6 +247,7 @@ export function startFacultyConsole({
     if (!payload || typeof payload !== 'object'
         || !Array.isArray(payload.qbank)
         || !Array.isArray(payload.items)
+        || !/^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i.test(text(payload.manifestRevision))
         || !Array.isArray(payload.manifestPages)
         || payload.manifestPages.length === 0
         || payload.manifestPages.some(page => typeof page !== 'string' || !page.trim())) return false;
@@ -495,6 +502,14 @@ export function startFacultyConsole({
       }
       if (!response.ok || !validServerState(payload)) {
         throw new Error(responseMessage(payload, 'The server returned an incomplete state.'));
+      }
+      const manifestChanged = state.server !== null
+        && state.server.manifestRevision !== payload.manifestRevision;
+      if (manifestChanged) {
+        state.reviewedInSession.clear();
+        state.reviewedRevisions.clear();
+        state.batch.clear();
+        resetApprovalInputs();
       }
       if (requiredId && !payload.qbank.some(question => question.id === requiredId)) {
         throw new Error(`The refreshed state did not include ${requiredId}. Local work was retained.`);
@@ -1435,7 +1450,7 @@ export function startFacultyConsole({
         tabindex: '-1',
         'aria-labelledby': 'conflict-title',
       }, [
-        el('h3', { id: 'conflict-title' }, ['This question changed in the repository']),
+        el('h3', { id: 'conflict-title' }, ['This review context changed in the repository']),
         el('p', {}, [state.conflict.message]),
         el('p', {}, ['Reload the current repository version, or keep this local copy for reference. This console will not overwrite the newer version.']),
         el('div', { class: 'guard-actions' }, [
@@ -2002,7 +2017,7 @@ export function startFacultyConsole({
     state.qbankMessage = '';
     state.qbankCommitUrl = null;
     state.conflict = {
-      message: stableResponseMessage(payload, 'This question changed after you loaded it.'),
+      message: stableResponseMessage(payload, 'The repository review context changed after you loaded it.'),
     };
     announce(state.conflict.message);
     renderShell('qbank-conflict');
@@ -2025,16 +2040,17 @@ export function startFacultyConsole({
         return false;
       }
       const id = state.selectedId;
-      snapshot = {
+      snapshot = freezeSnapshot({
         id,
         body: {
           action: 'qbank.save-draft',
+          manifestRevision: text(state.server?.manifestRevision),
           id,
           baseRevision: text(state.original?.revision),
           item: clone(state.editor),
           attester: state.reviewerLabel,
         },
-      };
+      });
     }
     const { id, body } = snapshot;
     state.pending = true;
@@ -2104,12 +2120,30 @@ export function startFacultyConsole({
     }
   }
 
-  async function attestEntries(entries, ids) {
+  async function attestEntries(entries, ids, retrySnapshot = null) {
     if (state.pending) return false;
-    if (!confirmationsComplete()) {
-      showQbankError('attest.confirmations_required: Complete all faculty confirmations.');
-      return false;
+    let snapshot = retrySnapshot;
+    if (!snapshot) {
+      if (!confirmationsComplete()) {
+        showQbankError('attest.confirmations_required: Complete all faculty confirmations.');
+        return false;
+      }
+      snapshot = freezeSnapshot({
+        ids: [...ids],
+        body: {
+          action: 'qbank.attest',
+          manifestRevision: text(state.server?.manifestRevision),
+          items: clone(entries),
+          confirmations: {
+            clinical: state.confirmations.clinical,
+            evidence: state.confirmations.evidence,
+            originalityAndNoPhi: state.confirmations.originalityAndNoPhi,
+          },
+          attester: state.reviewerLabel,
+        },
+      });
     }
+    const requestIds = list(snapshot.ids).map(id => text(id));
     state.pending = true;
     state.qbankError = '';
     state.qbankMessage = '';
@@ -2120,24 +2154,20 @@ export function startFacultyConsole({
       const response = await fetchImpl(API, {
         method: 'POST',
         headers: apiHeaders(true),
-        body: JSON.stringify({
-          action: 'qbank.attest',
-          items: entries,
-          confirmations: {
-            clinical: state.confirmations.clinical,
-            evidence: state.confirmations.evidence,
-            originalityAndNoPhi: state.confirmations.originalityAndNoPhi,
-          },
-          attester: state.reviewerLabel,
-        }),
+        body: JSON.stringify(snapshot.body),
       });
       const payload = await responseJson(response);
       if (response.status === 401) {
         clearKey();
         state.pending = false;
-        renderLogin('Key not accepted. Check the shared faculty key and try again.');
+        state.reauthAction = {
+          kind: 'qbank.attest',
+          retry: () => attestEntries(null, null, snapshot),
+        };
+        renderLogin('Key not accepted. Your exact attestation is retained; enter the faculty key to retry.');
         return false;
       }
+      state.reauthAction = null;
       if (response.status === 409) {
         showConflict(payload);
         return false;
@@ -2147,11 +2177,11 @@ export function startFacultyConsole({
         return false;
       }
       const expectedRevisions = record(payload.revision);
-      if (ids.some(id => !text(expectedRevisions[id]))) {
+      if (requestIds.some(id => !text(expectedRevisions[id]))) {
         showQbankError('invalid_response: The attestation receipt did not confirm every revision. Selection was retained.');
         return false;
       }
-      state.qbankMessage = `Attested ${ids.length} question${ids.length === 1 ? '' : 's'}: ${ids.join(', ')}.`;
+      state.qbankMessage = `Attested ${requestIds.length} question${requestIds.length === 1 ? '' : 's'}: ${requestIds.join(', ')}.`;
       state.qbankCommitUrl = safeExternalUrl(payload.commit);
       const selectedId = state.selectedId;
       const refreshed = await load({
@@ -2162,7 +2192,7 @@ export function startFacultyConsole({
         preserveOnError: true,
       });
       if (!refreshed) return false;
-      for (const id of ids) {
+      for (const id of requestIds) {
         state.batch.delete(id);
         state.reviewedInSession.delete(id);
         state.reviewedRevisions.delete(id);
@@ -2173,6 +2203,7 @@ export function startFacultyConsole({
       announce(state.qbankMessage);
       return true;
     } catch (error) {
+      state.reauthAction = null;
       showQbankError(error instanceof Error
         ? `network_error: ${error.message}`
         : 'network_error: The attestation was not saved.');

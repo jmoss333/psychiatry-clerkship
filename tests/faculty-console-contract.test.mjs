@@ -15,6 +15,7 @@ import {
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(path.join(repo, 'faculty-console/index.html'), 'utf8');
 const appSource = readFileSync(path.join(repo, 'faculty-console/app.mjs'), 'utf8');
+const DEFAULT_MANIFEST_REVISION = 'b'.repeat(40);
 
 function testRevision(label) {
   return createHash('sha256').update(String(label)).digest('hex');
@@ -288,6 +289,7 @@ function serverState({
   questions,
   items,
   manifestPages = ['t_mood.md'],
+  manifestRevision = DEFAULT_MANIFEST_REVISION,
 } = {}) {
   const contentItems = items || [{
     slug: 't_mood.md',
@@ -300,6 +302,7 @@ function serverState({
   return {
     student: 'https://students.example/',
     qbankRevision: 'a'.repeat(40),
+    manifestRevision,
     manifestPages,
     qbank: questions || [item],
     qbankSummary: { counts: { total: (questions || [item]).length, draft: 1, attested: 0, ready: 1, warning: 0, blocked: 0 } },
@@ -966,9 +969,10 @@ test('saves only on explicit action with the exact revision-safe payload, then c
   await flushAsyncWork();
 
   assert.deepEqual(Object.keys(posted).sort(), [
-    'action', 'attester', 'baseRevision', 'id', 'item',
+    'action', 'attester', 'baseRevision', 'id', 'item', 'manifestRevision',
   ]);
   assert.equal(posted.action, 'qbank.save-draft');
+  assert.equal(posted.manifestRevision, DEFAULT_MANIFEST_REVISION);
   assert.equal(posted.id, 'qb_moo_902');
   assert.equal(posted.baseRevision, testRevision('revision-one'));
   assert.equal(posted.attester, 'Joshua Moss, MD');
@@ -1033,6 +1037,7 @@ test('handles 409 with an accessible reload or keep-local conflict alert and nev
 
   const conflict = document.getElementById('qbank-conflict');
   assert.equal(conflict?.getAttribute('role'), 'alert');
+  assert.match(conflict.textContent, /This review context changed in the repository/);
   assert.equal(document.activeElement, conflict);
   assert.ok(document.find('button', 'Reload'));
   assert.ok(document.find('button', 'Keep local copy'));
@@ -1211,6 +1216,7 @@ test('Lock uses the dirty guard and save-time 401 reauthentication retries the c
   assert.equal(posts.length, 1);
   assert.equal(controller.state.editor.stem, localStem);
   assert.ok(document.getElementById('faculty-key'));
+  controller.state.server.manifestRevision = 'c'.repeat(40);
 
   let keyInput = document.getElementById('faculty-key');
   keyInput.value = 'still-wrong';
@@ -1230,6 +1236,11 @@ test('Lock uses the dirty guard and save-time 401 reauthentication retries the c
     testRevision('reauth-original'),
     testRevision('reauth-original'),
     testRevision('reauth-original'),
+  ]);
+  assert.deepEqual(posts.map(entry => entry.body.manifestRevision), [
+    DEFAULT_MANIFEST_REVISION,
+    DEFAULT_MANIFEST_REVISION,
+    DEFAULT_MANIFEST_REVISION,
   ]);
   assert.equal(controller.state.server, null, 'successful guarded save should complete the requested lock');
   assert.ok(document.getElementById('faculty-key'));
@@ -1258,6 +1269,7 @@ test('Lock saves content-only changes through the same guard before ending the s
   await flushAsyncWork();
 
   assert.equal(posted.target, 'content');
+  assert.equal(Object.hasOwn(posted, 'manifestRevision'), false);
   assert.equal(controller.state.server, null);
   assert.ok(document.getElementById('faculty-key'));
 });
@@ -1322,8 +1334,11 @@ test('requires all human confirmations and each current warning acknowledgement 
   await document.getElementById('attest-warning').dispatch('click');
   await flushAsyncWork();
 
-  assert.deepEqual(Object.keys(posted).sort(), ['action', 'attester', 'confirmations', 'items']);
+  assert.deepEqual(Object.keys(posted).sort(), [
+    'action', 'attester', 'confirmations', 'items', 'manifestRevision',
+  ]);
   assert.equal(posted.action, 'qbank.attest');
+  assert.equal(posted.manifestRevision, DEFAULT_MANIFEST_REVISION);
   assert.deepEqual(posted.items, [{
     id: 'qb_moo_902',
     revision: testRevision('revision-one'),
@@ -1336,6 +1351,63 @@ test('requires all human confirmations and each current warning acknowledgement 
   });
   assert.equal(controller.state.original.status, 'attested');
   assert.equal(controller.state.original.revision, testRevision('revision-attested'));
+  assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-result');
+});
+
+test('save-time 401 reauthentication retries the exact captured attestation and manifest revision', async () => {
+  const warning = {
+    code: 'stem.negative_lead_in',
+    field: 'stem',
+    message: 'Confirm that the negative lead-in is intentional.',
+  };
+  const warningAssessment = () => ({ gate: 'warning', blockers: [], warnings: [warning] });
+  const attestedRevision = testRevision('reauth-attested');
+  let current = validDomQuestion();
+  const posts = [];
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      const body = JSON.parse(options.body);
+      const key = options.headers['x-faculty-key'];
+      posts.push({ body, key });
+      if (key !== 'correct-key') {
+        return jsonResponse({ error: { code: 'unauthorized', message: 'Wrong key.' } }, {
+          ok: false,
+          status: 401,
+        });
+      }
+      current = { ...current, status: 'attested', revision: attestedRevision };
+      return jsonResponse({
+        ok: true,
+        action: 'qbank.attest',
+        updated: 1,
+        revision: { qb_moo_902: attestedRevision },
+        assessment: { qb_moo_902: warningAssessment() },
+        commit: null,
+      });
+    }
+    return jsonResponse(serverState({ question: current }));
+  };
+  const { controller, document } = await startHarness({ fetchImpl, assessItemImpl: warningAssessment });
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(document, id);
+  }
+  await setChecked(document, 'ack-stem-negative_lead_in');
+  await document.getElementById('attest-warning').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(posts.length, 1);
+  assert.ok(document.getElementById('faculty-key'));
+  controller.state.server.manifestRevision = 'c'.repeat(40);
+  controller.state.confirmations.clinical = false;
+  const keyInput = document.getElementById('faculty-key');
+  keyInput.value = 'correct-key';
+  await keyInput.parentNode.parentNode.dispatch('submit');
+  await flushAsyncWork();
+
+  assert.equal(posts.length, 2);
+  assert.equal(posts[0].body.manifestRevision, DEFAULT_MANIFEST_REVISION);
+  assert.deepEqual(posts[1].body, posts[0].body);
+  assert.equal(controller.state.original.revision, attestedRevision);
   assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-result');
 });
 
@@ -1731,6 +1803,86 @@ test('fails closed when authenticated state omits concurrency or assessment cont
   assert.equal(controller.state.server, null);
   assert.match(document.app.textContent, /incomplete state/i);
   assert.equal(document.activeElement?.getAttribute('role'), 'alert');
+});
+
+for (const [name, manifestRevision] of [
+  ['missing', undefined],
+  ['blank', ' '.repeat(40)],
+  ['non-hex', 'g'.repeat(40)],
+  ['39-character', 'a'.repeat(39)],
+  ['65-character', 'a'.repeat(65)],
+  ['non-string', 7],
+]) {
+  test(`fails closed when authenticated state has a ${name} manifest revision`, async () => {
+    const payload = serverState();
+    if (manifestRevision === undefined) delete payload.manifestRevision;
+    else payload.manifestRevision = manifestRevision;
+    const { controller, document } = await startHarness({
+      fetchImpl: async () => jsonResponse(payload),
+    });
+
+    assert.equal(controller.state.server, null);
+    assert.match(document.app.textContent, /incomplete state/i);
+  });
+}
+
+test('a successful load with a changed manifest revision invalidates all review-session approval state', async () => {
+  let manifestRevision = DEFAULT_MANIFEST_REVISION;
+  const fetchImpl = async () => jsonResponse(serverState({ manifestRevision }));
+  const { controller, document } = await startHarness({ fetchImpl });
+
+  await document.getElementById('mark-reviewed-next').dispatch('click');
+  await setChecked(document, 'batch-qb_moo_902');
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(document, id);
+  }
+  await document.getElementById('open-batch-attest').dispatch('click');
+  assert.equal(controller.state.reviewedInSession.has('qb_moo_902'), true);
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), true);
+  assert.equal(controller.state.batch.has('qb_moo_902'), true);
+  assert.ok(controller.state.batchConfirmation);
+
+  manifestRevision = 'c'.repeat(40);
+  assert.equal(await controller.load({ silent: true }), true);
+
+  assert.deepEqual([...controller.state.reviewedInSession], []);
+  assert.deepEqual([...controller.state.reviewedRevisions], []);
+  assert.deepEqual([...controller.state.batch], []);
+  assert.equal(controller.state.batchConfirmation, null);
+  assert.deepEqual(controller.state.confirmations, {
+    clinical: false,
+    evidence: false,
+    originalityAndNoPhi: false,
+  });
+});
+
+test('a valid changed-manifest GET invalidates approvals even when post-write revision confirmation fails', async () => {
+  let manifestRevision = DEFAULT_MANIFEST_REVISION;
+  const fetchImpl = async () => jsonResponse(serverState({ manifestRevision }));
+  const { controller, document } = await startHarness({ fetchImpl });
+
+  await document.getElementById('mark-reviewed-next').dispatch('click');
+  await setChecked(document, 'batch-qb_moo_902');
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(document, id);
+  }
+  manifestRevision = 'c'.repeat(40);
+
+  const loaded = await controller.load({
+    silent: true,
+    expectedRevisions: { qb_moo_902: testRevision('not-the-returned-revision') },
+    preserveOnError: true,
+  });
+
+  assert.equal(loaded, false);
+  assert.deepEqual([...controller.state.reviewedInSession], []);
+  assert.deepEqual([...controller.state.reviewedRevisions], []);
+  assert.deepEqual([...controller.state.batch], []);
+  assert.deepEqual(controller.state.confirmations, {
+    clinical: false,
+    evidence: false,
+    originalityAndNoPhi: false,
+  });
 });
 
 test('fails closed when manifest pages are blank or question revisions are not exact SHA-256 hex', async () => {

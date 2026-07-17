@@ -12,6 +12,7 @@ import {
 
 const FACULTY_KEY = 'synthetic-faculty-key';
 const MANIFEST_PAGES = ['t_mood.md'];
+const MANIFEST_REVISION = 'b'.repeat(40);
 const CONFIRMATION_IDS = [
   'confirm-clinical',
   'confirm-evidence',
@@ -180,6 +181,7 @@ function buildGetPayload(bank) {
     student: 'https://students.example/',
     items,
     qbankRevision: itemRevision(bank).slice(0, 40),
+    manifestRevision: MANIFEST_REVISION,
     manifestPages: [...MANIFEST_PAGES],
     qbank,
     qbankSummary,
@@ -247,6 +249,13 @@ async function installRepositoryApi(page, initialBank) {
       const body = JSON.parse(request.postData() || 'null');
       call.body = structuredClone(body);
       call.action = body?.action || body?.target || '';
+
+      if (body?.action?.startsWith('qbank.') && body.manifestRevision !== MANIFEST_REVISION) {
+        await fulfillJson(route, 400, {
+          error: { code: 'qbank.invalid_input', message: 'Synthetic manifest revision mismatch.' },
+        });
+        return;
+      }
 
       if (body?.action === 'qbank.save-draft') {
         if (conflict && conflict.id === body.id) {
@@ -386,6 +395,7 @@ test('logs in, filters active items, preserves a forced draft, and recovers from
   await unlock(page);
 
   expect(api.gets.at(-1).manifestPages).toEqual(MANIFEST_PAGES);
+  expect(api.gets.at(-1).manifestRevision).toBe(MANIFEST_REVISION);
   expect(api.gets.at(-1).items).toHaveLength(1);
   expect(api.gets.at(-1).qbank).toHaveLength(3);
   expect(api.gets.at(-1).qbank.map(item => item.id)).not.toContain('qb_moo_999');
@@ -446,6 +456,7 @@ test('logs in, filters active items, preserves a forced draft, and recovers from
     'GET:state',
   ]);
   expect(saveCalls[0].body.item.status).toBe('attested');
+  expect(saveCalls[0].body.manifestRevision).toBe(MANIFEST_REVISION);
   expect(saveCalls[0].body.baseRevision).toMatch(/^[0-9a-f]{64}$/);
   const saved = api.currentBank().items.find(item => item.id === 'qb_moo_901');
   expect(saved.status).toBe('draft');
@@ -473,7 +484,7 @@ test('logs in, filters active items, preserves a forced draft, and recovers from
   const conflictStart = api.calls.length;
   await page.locator('#save-draft').click();
   await expect(page.getByRole('heading', {
-    name: 'This question changed in the repository',
+    name: 'This review context changed in the repository',
   })).toBeVisible();
   await expect(page.locator('#question-stem')).toHaveValue(localConflictStem);
   expect(api.calls.slice(conflictStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
@@ -529,6 +540,7 @@ test('attests only a reviewed and answer-balanced green batch', async ({ page })
   ]);
 
   const post = qbankPosts(api).at(-1);
+  expect(post.body.manifestRevision).toBe(MANIFEST_REVISION);
   expect(post.body.items).toEqual(ids.map(id => ({
     id,
     revision: revisionsBefore[id],
@@ -583,6 +595,7 @@ test('requires individual warning acknowledgement before attestation', async ({ 
     'GET:state',
   ]);
   const post = qbankPosts(api).at(-1);
+  expect(post.body.manifestRevision).toBe(MANIFEST_REVISION);
   expect(post.body.items).toEqual([{
     id: 'qb_moo_905',
     revision: post.body.items[0].revision,

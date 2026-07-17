@@ -17,9 +17,9 @@ faculty-console/
 ## How it works
 
 1. You open the faculty site (its own Netlify URL) and enter the faculty key.
-2. The console calls `GET /api/attest`. The faculty key is sent only in the `x-faculty-key` header; it is never accepted from the URL or JSON body. The function reads `reviewed.json`, `site_manifest.json`, and `question_bank.json` and returns only active questions with their exact saved revisions and current structural checks.
-3. A question edit is saved as a **draft** first. The server checks the loaded revision, applies only editable fields, reruns the shared checks, commits the draft, and makes the browser reload that committed revision.
-4. Attestation is a separate deliberate action. The server rechecks the exact saved revision, human confirmations, warning acknowledgements, and batch balance before changing status.
+2. The console calls `GET /api/attest`. The faculty key is sent only in the `x-faculty-key` header; it is never accepted from the URL or JSON body. The function reads `reviewed.json`, `site_manifest.json`, and `question_bank.json` and returns only active questions with their exact saved revisions, the normalized Git object ID for the loaded manifest, and current structural checks.
+3. A question edit is saved as a **draft** first. The browser sends the exact loaded question and manifest revisions. Before each write attempt, the server rereads and validates both files, checks the manifest revision, applies only editable fields using that attempt's manifest pages, reruns the shared checks, commits the draft, and makes the browser reload that committed revision.
+4. Attestation is a separate deliberate action. It carries the same loaded manifest revision, and the server rechecks it together with the exact saved question revision, human confirmations, warning acknowledgements, and batch balance before changing status.
 5. Netlify sees the commit and rebuilds the student sites. Badges update on the next deploy.
 
 **The GitHub token never leaves the server.** The browser only ever holds the faculty key (in `sessionStorage`, cleared when the tab closes).
@@ -44,7 +44,7 @@ Open **Content pages & tools**, filter the list, mark individual or all shown it
 
 ### Conflicts and failed refreshes
 
-Every question action includes the revision that was loaded. If another commit changes that question first, the server returns HTTP 409 and does not overwrite it. Choose **Reload** to replace the editor with the current repository version, or **Keep local copy** to retain the unsaved text for reference. A failed post-save refresh also keeps the local editor and reports that the commit has not yet been confirmed in the browser.
+Every question action includes the question revision and source-manifest revision that were loaded. The server returns HTTP 409 without another write when a selected question or the manifest changed, or when the current manifest disappeared. A GitHub write conflict caused only by an unrelated question-bank edit may be retried once, but the retry rereads and rechecks both files first. Choose **Reload** to replace the editor with the current repository version, or **Keep local copy** to retain the unsaved text for reference. Any valid `GET` state response with a different manifest revision clears session review receipts, batch selection, the batch confirmation dialog, and faculty confirmations, even if a post-write question-revision confirmation then fails. A failed post-save refresh keeps the local editor and reports that the commit has not yet been confirmed in the browser.
 
 ## Runtime and request limits
 
@@ -105,7 +105,8 @@ Deploy. Open the site, enter the key, and you're attesting.
 - **Token scope is the blast radius.** A fine-grained PAT limited to this one repo with Contents-only access means a leaked token can, at worst, edit files in this repo — not touch your other repos or account.
 - **The key is a shared secret**, checked server-side in constant time before a POST body is read. It is appropriate only for a small trusted faculty group.
 - **Reviewer labels are self-asserted, not verified identities.** The label improves the Git history but does not prove which person used the shared key. If verified per-person attribution is required, replace the shared key with institutional SSO or OAuth before treating the label as an identity record.
-- **Concurrency is fail-closed.** The function reads the current file SHA, checks exact per-item revisions, and does not overwrite a question that changed after it was loaded.
+- **Concurrency is fail-closed at each preflight.** Every question-bank write attempt reads the current bank and then the current manifest, validates both, compares the manifest's normalized 40- or 64-hex Git object ID with the loaded value, checks exact per-item revisions, and writes with the current bank SHA. Missing or changed manifest state becomes a safe conflict; other upstream failures retain their existing generic error handling.
+- **Residual race boundary:** this narrows the manifest-to-write window but is not a cross-file or branch-wide transaction. GitHub's Contents write protects the `question_bank.json` blob SHA; it cannot atomically lock `site_manifest.json` with that write. A manifest commit can still land after the final manifest read. The browser's required post-write reload detects a changed manifest and invalidates session approvals, but deployment policy or a true server-side transaction would be needed to eliminate that final cross-file window.
 - **Audit trail:** every successful mutation is a Git commit. Content commits use `attest: N content item(s) by <name> (date)`; question commits identify the saved draft or attested IDs. Git history is durable, but the self-entered reviewer label retains the identity limitation above.
 
 ## After it's live: remove the on-site attestation tools
