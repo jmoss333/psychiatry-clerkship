@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Diagnostic Reasoning Workbench</title>
 <style>
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 :root{
   --bg:#f6f3ee;--bg-alt:#faf6f0;--surface:#ffffff;--border:#ddd3c6;
   --primary:#c25a3c;--primary-dark:#a84830;--primary-light:#f3ebe5;
@@ -104,6 +105,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offs
     <div class="notice"><b>Boundary:</b> fictional composites only. No patient information, no free text, no diagnosis or treatment advice. Use with supervision and local policy.</div>
   </div>
   <div id="app" class="layout"><div class="empty">Loading reasoning cases...</div></div>
+  <div id="dr-live" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
 </main>
 <script>
 (function(){
@@ -136,7 +138,10 @@ function linkHref(f){return f&&f.endsWith('.html')?'../index.html?tool='+encodeU
 function linkLabel(f){return LINK_LABELS[f]||String(f||'').replace(/\\.md$|\\.html$/g,'').replace(/^t_/,'').replace(/^pg_/,'').replace(/_/g,' ').replace(/\b\w/g,function(m){return m.toUpperCase();});}
 function linksHtml(c){return '<div class="links">'+(c.linkedPages||[]).map(function(f){return '<a href="'+linkHref(f)+'">'+esc(linkLabel(f))+'</a>';}).join('')+'</div>';}
 function savedChoiceForStep(c,st){var rec=state.attempts[c.id];var saved=rec&&rec.steps&&rec.steps[st.id];if(!saved)return null;return (st.choices||[]).filter(function(ch){return ch.id===saved.choiceId;})[0]||null;}
-function render(){if(!state.cases.length){app.innerHTML='<div class="empty">No reasoning cases are available.</div>';return;}var c=currentCase(), st=currentStep();if(!state.choice&&st)state.choice=savedChoiceForStep(c,st);app.innerHTML=navHtml()+'<div class="main">'+caseHtml(c)+stepHtml(c,st)+'</div>';}
+function render(){if(!state.cases.length){app.innerHTML='<div class="empty">No reasoning cases are available.</div>';return;}var c=currentCase(), st=currentStep();if(!state.choice&&st)state.choice=savedChoiceForStep(c,st);app.innerHTML=navHtml()+'<div class="main">'+caseHtml(c)+stepHtml(c,st)+'</div>';
+  var _live=document.getElementById('dr-live'); var _fb=app.querySelector('.feedback');
+  if(_live) _live.textContent=_fb?_fb.textContent:'';
+}
 app.addEventListener('click',function(ev){var caseBtn=ev.target.closest&&ev.target.closest('.casebtn');if(caseBtn){state.current=+caseBtn.getAttribute('data-i')||0;state.step=0;state.choice=null;state.matchedRequest=false;render();return;}var choiceBtn=ev.target.closest&&ev.target.closest('.choice');if(choiceBtn){var c=currentCase(), st=currentStep(), id=choiceBtn.getAttribute('data-choice');state.choice=(st.choices||[]).filter(function(ch){return ch.id===id;})[0]||null;if(state.choice)saveAttempt(c.id,st.id,state.choice);render();return;}var act=ev.target.closest&&ev.target.closest('[data-act]');if(act){var c=currentCase();if(act.getAttribute('data-act')==='prev'&&state.step>0){state.step--;state.choice=null;}else if(act.getAttribute('data-act')==='restart'){state.step=0;state.choice=null;}else if(act.getAttribute('data-act')==='next'){if(state.step<c.steps.length-1){state.step++;state.choice=null;}}render();}});
 fetch('../reasoning_cases.json').then(function(r){if(!r.ok)throw new Error('missing cases');return r.json();}).then(function(d){state.cases=(d&&d.cases)||[];if(state.requestedCase)state.matchedRequest=setCurrentById(state.requestedCase);render();}).catch(function(){app.innerHTML='<div class="empty">Could not load reasoning cases. Rebuild the site or check reasoning_cases.json.</div>';});
 })();

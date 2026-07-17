@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Practice Questions — MS3 Question Bank</title>
 <style>
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 :root{
   --bg:#f6f3ee;--bg-alt:#faf6f0;--surface:#ffffff;--border:#ddd3c6;
   --primary:#c25a3c;--primary-dark:#a84830;--primary-light:#f3ebe5;
@@ -140,6 +141,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body
   </div>
   <div class="qprog" id="qprog" hidden><div class="qprog-fill" id="qprogFill" style="width:0%"></div></div>
   <div id="root"><div class="loading">Loading question bank&hellip;</div></div>
+  <div id="qb-live" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
 </div>
 <script>
 (function(){
@@ -273,6 +275,12 @@ function buildQueue(items, catFilter, diffFilter, sizeLimit){
   return q;
 }
 
+/* Items eligible to serve to learners. Retired items (near-duplicate/redundant per
+   question_bank.schema.json) are NEVER queued. Drafts ARE served and marked. */
+function activeItems(){
+  return (BANK && BANK.items ? BANK.items : []).filter(function(it){ return !it.retired; });
+}
+
 /* ---- rendering helpers -------------------------------------------------------- */
 function diffDots(n){
   var h='<div class="diff-dots" title="Difficulty '+n+'/3" aria-label="Difficulty '+n+' of 3">';
@@ -281,7 +289,7 @@ function diffDots(n){
 }
 
 function renderSetup(){
-  var items = BANK ? BANK.items : [];
+  var items = activeItems();
   var cats = {};
   items.forEach(function(it){ cats[it.category]=1; });
   var catOpts = '<option value="all">All categories</option>';
@@ -291,7 +299,7 @@ function renderSetup(){
   var total = items.length;
   return '<div class="setup">'
     +'<h2>Practice bank</h2>'
-    +'<p class="sub">'+total+' items across 12 categories. Select filters, then start. Draft items are included and marked; they teach well even before formal faculty attestation.</p>'
+    +'<p class="sub">'+total+' items across 12 categories. Select filters, then start. Draft items are included and marked; they teach well even before formal faculty attestation. Retired near-duplicates are excluded.</p>'
     +'<div class="filters">'
     +'<div class="field"><label for="f-cat">Category</label><select id="f-cat">'+catOpts+'</select></div>'
     +'<div class="field"><label for="f-diff">Difficulty</label><select id="f-diff"><option value="all">All levels</option><option value="1">1 — Recognition</option><option value="2">2 — Shelf-standard</option><option value="3">3 — Stretch</option></select></div>'
@@ -532,7 +540,7 @@ function bindSetup(){
   var startBtn=document.getElementById('startBtn');
   function updateCount(){
     var cat=catSel?catSel.value:'all', diff=diffSel?diffSel.value:'all';
-    var n = (BANK?BANK.items:[]).filter(function(it){
+    var n = activeItems().filter(function(it){
       if(cat!=='all'&&it.category!==cat) return false;
       if(diff!=='all'&&String(it.difficulty)!==diff) return false;
       return true;
@@ -555,7 +563,7 @@ function bindSetup(){
 }
 
 function startSession(catFilter, diffFilter, sizeLimit){
-  var queue = buildQueue(BANK.items, catFilter, diffFilter, sizeLimit);
+  var queue = buildQueue(activeItems(), catFilter, diffFilter, sizeLimit);
   if(!queue.length){
     setRoot('<div class="err-box">No questions match the selected filters.</div>');
     return;
@@ -724,6 +732,8 @@ function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){
     var existing = qcard.querySelector('.feedback');
     if(existing) existing.parentNode.removeChild(existing);
     qcard.insertAdjacentHTML('beforeend', fbHtml);
+    var _live=document.getElementById('qb-live');
+    if(_live){ _live.textContent = (twoTierResult==='shaky'?'Right answer, shaky reasoning. ':correct?'Correct. ':'Incorrect. ') + (item.pearl||''); }
     /* scroll feedback into view */
     var fb = document.getElementById('feedbackPanel');
     if(fb) setTimeout(function(){ fb.scrollIntoView({behavior:'smooth',block:'nearest'}); },80);
@@ -777,7 +787,7 @@ function showSummary(){
       try{ var _focus=localStorage.getItem('cw_qb_focus'); if(_focus){ localStorage.removeItem('cw_qb_focus');
         var _cs=document.getElementById('f-cat');
         if(_cs){ for(var _i=0;_i<_cs.options.length;_i++){ if(_cs.options[_i].value===_focus){ _cs.value=_focus; break; } }
-          var _cnt=document.getElementById('itemCount'), _n=(BANK.items||[]).filter(function(it){return it.category===_focus;}).length;
+          var _cnt=document.getElementById('itemCount'), _n=activeItems().filter(function(it){return it.category===_focus;}).length;
           if(_cnt) _cnt.textContent=_n+' question'+(_n!==1?'s':'')+' match'; } } }catch(_){ }
     })
     .catch(function(err){
@@ -793,7 +803,7 @@ function showSummary(){
       var catSel=document.getElementById('f-cat'),diffSel=document.getElementById('f-diff'),sizeSel=document.getElementById('f-size'),countEl=document.getElementById('itemCount');
       if(!BANK||!countEl) return;
       var cat=catSel?catSel.value:'all',diff=diffSel?diffSel.value:'all';
-      var n=(BANK.items||[]).filter(function(it){
+      var n=activeItems().filter(function(it){
         return (cat==='all'||it.category===cat)&&(diff==='all'||String(it.difficulty)===diff);
       }).length;
       var size=sizeSel?sizeSel.value:'20';

@@ -8,6 +8,7 @@
 <title>Shelf Mode — Exam Simulation</title>
 <meta name="description" content="An optional timed, blueprint-weighted psychiatry COMAT/shelf vignette simulation with per-question feedback, teaching points, and links back to the hub.">
 <style>
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
     --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
@@ -104,6 +105,7 @@ function loadLS(){try{return JSON.parse(localStorage.getItem(LS))||{}}catch(_){r
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function fmt(s){s=Math.max(0,Math.round(s));var m=Math.floor(s/60),x=s%60;return m+":"+(x<10?"0":"")+x;}
 function normDiff(d){d=(d||"").toLowerCase();return d==="easy"||d==="hard"||d==="review"?d:"med";}
+function resultMsgFor(pct){return pct>=80?"Strong — exam-ready range.":pct>=70?"Solid — tighten the misses.":pct>=60?"Passing range — keep drilling.":"Worth another pass.";}
 
 // Blueprint order + weights (mirror the Qbank spec target counts; used for ordering chips and weighting the draw)
 var BLUEPRINT=[
@@ -307,8 +309,14 @@ function App(){
     return Object.assign({},p,{view:"result",result:res});
   }
 
-  if(err) return e("div",{className:"wrap"},e("h1",null,"Shelf Mode"),e("div",{className:"card"},err));
-  if(!data) return e("div",{className:"wrap"},e("div",{className:"loading"},"Loading the question bank…"));
+  // Persistent, unconditional live region: same DOM node across every view (config/exam/result),
+  // so a screen reader binds to it once and hears only the CONTENT change when a result lands.
+  var resultMsg = (st.view==="result" && st.result) ? resultMsgFor(st.result.pct) : "";
+  var liveRegion = e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"},
+    (st.view==="result" && st.result) ? (st.result.correct+" of "+st.result.n+" correct, "+st.result.pct+" percent. "+resultMsg) : "");
+
+  if(err) return e("div",{className:"wrap"},liveRegion,e("h1",null,"Shelf Mode"),e("div",{className:"card"},err));
+  if(!data) return e("div",{className:"wrap"},liveRegion,e("div",{className:"loading"},"Loading the question bank…"));
 
   // ---------------- CONFIG ----------------
   if(st.view==="config"){
@@ -320,6 +328,7 @@ function App(){
     }).length;
     var lens=[10,20,40].filter(function(n){return true;});
     return e("div",{className:"wrap"},
+      liveRegion,
       e("h1",null,"Shelf Mode"),
       e("span",{className:"opt-pill"},"Optional practice · exam simulation"),
       e("div",{className:"sub"},"A timed, blueprint-weighted vignette set that mirrors the psychiatry COMAT / shelf. Choose your length, topics, and pacing. Single best answer, with feedback and a teaching point on every item."),
@@ -384,13 +393,14 @@ function App(){
 
   // ---------------- RESULT ----------------
   if(st.view==="result"){
-    var R=st.result, msg=R.pct>=80?"Strong — exam-ready range.":R.pct>=70?"Solid — tighten the misses.":R.pct>=60?"Passing range — keep drilling.":"Worth another pass.";
+    var R=st.result, msg=resultMsg;
     var bts=Object.keys(R.byTopic).sort(function(a,b){return orderRank(a)-orderRank(b);});
     var revItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){
       if(st.revFilter==="all") return true;
       var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci;
     });
     return e("div",{className:"wrap"},
+      liveRegion,
       e("a",{className:"back",onClick:function(){set({view:"config",saved:false});}},"← New set"),
       e("div",{className:"card res"},
         e("div",{className:"score"}, R.correct+" / "+R.n),
@@ -441,6 +451,7 @@ function App(){
   var answeredCount = st.picks.filter(function(p){return p!=null;}).length;
   var low = st.timed && st.secs<=Math.max(30, st.total*0.1);
   return e("div",{className:"wrap"},
+    liveRegion,
     e("div",{className:"topbar"},
       e("a",{className:"back",onClick:function(){if(confirm("End this set and discard progress?")) set({view:"config"});}},"← Exit"),
       e("span",{className:"timer"+(low?" low":"")}, st.timed? fmt(st.secs) : fmt(st.secs)+" elapsed")
