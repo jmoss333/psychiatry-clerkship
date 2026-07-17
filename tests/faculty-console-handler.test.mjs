@@ -13,6 +13,15 @@ const API_ORIGIN = new URL(API_URL).origin;
 const FACULTY_KEY = 'synthetic-faculty-key';
 const TOKEN = 'synthetic-github-token';
 const MAX_BANK_BYTES = 4 * 1024 * 1024;
+const REVIEWED_SHA = 'a'.repeat(40);
+const MANIFEST_SHA = 'b'.repeat(40);
+const QBANK_SHA = 'c'.repeat(40);
+const FIRST_WRITE_SHA = 'd'.repeat(40);
+const SECOND_WRITE_SHA = 'e'.repeat(40);
+const UNRELATED_RACE_SHA = 'f'.repeat(40);
+const SAME_ITEM_RACE_SHA = '1'.repeat(40);
+const RETIREMENT_RACE_SHA = '2'.repeat(40);
+const DELETION_RACE_SHA = '3'.repeat(40);
 
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
@@ -89,18 +98,18 @@ function defaultFiles(bank = makeBank([
         't_mood.md': { status: 'reviewed', at: '2026-07-01', by: 'Synthetic Reviewer' },
         'mse-tool': { status: 'pending', at: '2026-07-02', by: 'Pending faculty review' },
       },
-      sha: 'reviewed-sha-1',
+      sha: REVIEWED_SHA,
     },
     [MANIFEST_PATH]: {
       json: {
         md: [['01_Core/t_mood.md', 't_mood.md', 'Mood Disorders']],
         tools: [['04_Assessment/mse.html', 'mse-tool', 'Mental Status Examination']],
       },
-      sha: 'manifest-sha-1',
+      sha: MANIFEST_SHA,
     },
     [QBANK_PATH]: {
       json: bank,
-      sha: 'qbank-sha-1',
+      sha: QBANK_SHA,
     },
   };
 }
@@ -184,7 +193,7 @@ function createGithubMock({
 
       const savedText = Buffer.from(body.content, 'base64').toString('utf8');
       file.json = JSON.parse(savedText);
-      file.sha = `${path === QBANK_PATH ? 'qbank' : 'reviewed'}-sha-${putAttempt + 1}`;
+      file.sha = putAttempt === 1 ? FIRST_WRITE_SHA : SECOND_WRITE_SHA;
       return jsonResponse(200, {
         content: { sha: file.sha },
         commit: { html_url: `https://github.example/commit/${putAttempt}` },
@@ -314,6 +323,54 @@ test('uses an exact ALLOWED_ORIGIN override without reflecting request origins',
   assert.equal(rejectedMock.calls.length, 0);
 });
 
+test('malformed ALLOWED_ORIGIN rejects a foreign origin before auth or body access', async () => {
+  const mock = createGithubMock();
+  const handler = handlerWith(mock, { ALLOWED_ORIGIN: 'not an origin' });
+  const request = apiRequest('POST', {
+    key: null,
+    origin: 'https://foreign.example',
+    body: '{ invalid json that must remain unread',
+  });
+
+  const response = await handler(request);
+
+  await expectError(response, { status: 403, code: 'origin_not_allowed' });
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'), API_ORIGIN);
+  assert.equal(request.bodyUsed, false);
+  assert.equal(mock.calls.length, 0);
+});
+
+test('malformed ALLOWED_ORIGIN returns generic unauthorized for a wrong key before body access', async () => {
+  const mock = createGithubMock();
+  const handler = handlerWith(mock, { ALLOWED_ORIGIN: 'not an origin' });
+  const request = apiRequest('POST', {
+    key: 'wrong-key',
+    body: '{ invalid json that must remain unread',
+  });
+
+  const response = await handler(request);
+
+  await expectError(response, { status: 401, code: 'unauthorized' });
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'), API_ORIGIN);
+  assert.equal(request.bodyUsed, false);
+  assert.equal(mock.calls.length, 0);
+});
+
+test('malformed ALLOWED_ORIGIN surfaces configuration error only after successful auth', async () => {
+  const mock = createGithubMock();
+  const handler = handlerWith(mock, { ALLOWED_ORIGIN: 'not an origin' });
+  const request = apiRequest('POST', {
+    body: '{ invalid json that must remain unread',
+  });
+
+  const response = await handler(request);
+
+  await expectError(response, { status: 500, code: 'server_configuration' });
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'), API_ORIGIN);
+  assert.equal(request.bodyUsed, false);
+  assert.equal(mock.calls.length, 0);
+});
+
 test('returns no-store CORS headers for preflight and rejects foreign preflight origins', async () => {
   const mock = createGithubMock();
   const handler = handlerWith(mock);
@@ -373,7 +430,7 @@ test('returns complete active qbank items, stable revisions, assessments, manife
   assert.deepEqual(payload.qbankSummary.categoryAnswerKeys.mood, { A: 1, B: 0, C: 0, D: 0 });
   assert.equal(payload.counts.qbankTotal, 2);
   assert.equal(payload.counts.qbankAttested, 1);
-  assert.equal(payload.qbankRevision, 'qbank-sha-1');
+  assert.equal(payload.qbankRevision, QBANK_SHA);
 });
 
 test('falls back from the Contents object response to raw media without losing the blob SHA', async () => {
@@ -385,7 +442,7 @@ test('falls back from the Contents object response to raw media without losing t
   const payload = await response.json();
 
   assert.equal(response.status, 200);
-  assert.equal(payload.qbankRevision, 'qbank-sha-1');
+  assert.equal(payload.qbankRevision, QBANK_SHA);
   assert.equal(payload.qbank.length, 2);
   const qbankGets = mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH);
   assert.equal(qbankGets.length, 2);
@@ -407,6 +464,41 @@ test('uses raw media whenever GitHub reports encoding none even if object conten
   assert.equal(qbankGets.length, 2);
   assert.equal(qbankGets[1].headers.get('Accept'), 'application/vnd.github.raw+json');
 });
+
+for (const [name, sha] of [
+  ['whitespace', ' '.repeat(40)],
+  ['non-hex', 'g'.repeat(40)],
+  ['39-character', 'a'.repeat(39)],
+  ['65-character', 'a'.repeat(65)],
+]) {
+  test(`rejects a GitHub Contents object with a ${name} SHA`, async () => {
+    const files = defaultFiles();
+    files[QBANK_PATH].sha = sha;
+    const mock = createGithubMock({ files });
+
+    const response = await handlerWith(mock)(apiRequest('GET'));
+
+    await expectError(response, { status: 502, code: 'github_response_invalid' });
+    assert.equal(mock.putBodies.length, 0);
+  });
+}
+
+for (const [name, sha, expected] of [
+  ['uppercase SHA-1', 'A'.repeat(40), 'a'.repeat(40)],
+  ['uppercase SHA-256', 'B'.repeat(64), 'b'.repeat(64)],
+]) {
+  test(`accepts and normalizes a valid ${name} Contents object ID`, async () => {
+    const files = defaultFiles();
+    files[QBANK_PATH].sha = sha;
+    const mock = createGithubMock({ files });
+
+    const response = await handlerWith(mock)(apiRequest('GET'));
+    const payload = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.equal(payload.qbankRevision, expected);
+  });
+}
 
 test('rejects a raw source bank over 4 MiB before attempting JSON parsing', async () => {
   const files = defaultFiles();
@@ -516,7 +608,7 @@ test('retries one GitHub 409 after an unrelated-item race and preserves the unre
     onPut: ({ attempt, files: mutableFiles }) => {
       if (attempt !== 1) return undefined;
       mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated faculty edit won the first race.';
-      mutableFiles[QBANK_PATH].sha = 'qbank-sha-raced';
+      mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
       return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
     },
   });
@@ -534,7 +626,7 @@ test('retries one GitHub 409 after an unrelated-item race and preserves the unre
   }));
   assert.equal(response.status, 200);
   assert.equal(mock.putBodies.length, 2);
-  assert.equal(mock.putBodies[1].body.sha, 'qbank-sha-raced');
+  assert.equal(mock.putBodies[1].body.sha, UNRELATED_RACE_SHA);
   const retriedBank = JSON.parse(Buffer.from(mock.putBodies[1].body.content, 'base64').toString('utf8'));
   assert.equal(retriedBank.items[0].stem, edited.stem);
   assert.equal(retriedBank.items[1].pearl, 'An unrelated faculty edit won the first race.');
@@ -548,7 +640,7 @@ test('returns a same-item conflict with no second PUT when the target changes du
     onPut: ({ attempt, files: mutableFiles }) => {
       if (attempt !== 1) return undefined;
       mutableFiles[QBANK_PATH].json.items[0].pearl = 'A competing edit changed this same item.';
-      mutableFiles[QBANK_PATH].sha = 'qbank-sha-same-item-race';
+      mutableFiles[QBANK_PATH].sha = SAME_ITEM_RACE_SHA;
       return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
     },
   });
@@ -577,7 +669,7 @@ test('normalizes target retirement during a save retry to a conflict with no sec
       if (attempt !== 1) return undefined;
       mutableFiles[QBANK_PATH].json.items[0].retired = true;
       mutableFiles[QBANK_PATH].json.items[0].retiredReason = 'Retired during the synthetic race.';
-      mutableFiles[QBANK_PATH].sha = 'qbank-sha-retirement-race';
+      mutableFiles[QBANK_PATH].sha = RETIREMENT_RACE_SHA;
       return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
     },
   });
@@ -606,7 +698,7 @@ test('normalizes deletion of any attestation target during retry to one atomic c
     onPut: ({ attempt, files: mutableFiles }) => {
       if (attempt !== 1) return undefined;
       mutableFiles[QBANK_PATH].json.items = [mutableFiles[QBANK_PATH].json.items[0]];
-      mutableFiles[QBANK_PATH].sha = 'qbank-sha-deletion-race';
+      mutableFiles[QBANK_PATH].sha = DELETION_RACE_SHA;
       return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
     },
   });
@@ -628,7 +720,7 @@ test('normalizes deletion of any attestation target during retry to one atomic c
 
 for (const [name, githubPayload] of [
   ['missing commit and content receipts', {}],
-  ['missing commit receipt', { content: { sha: 'qbank-sha-written' } }],
+  ['missing commit receipt', { content: { sha: FIRST_WRITE_SHA } }],
   ['missing content receipt', { commit: { html_url: 'https://github.example/commit/written' } }],
 ]) {
   test(`rejects a successful GitHub PUT response with ${name}`, async () => {
@@ -651,6 +743,40 @@ for (const [name, githubPayload] of [
 
     await expectError(response, { status: 502, code: 'github_response_invalid' });
     assert.equal(mock.putBodies.length, 1);
+  });
+}
+
+for (const [name, receiptSha] of [
+  ['unchanged', QBANK_SHA],
+  ['case-only unchanged', QBANK_SHA.toUpperCase()],
+  ['whitespace', ' '.repeat(40)],
+  ['non-hex', 'g'.repeat(40)],
+  ['wrong-length', 'a'.repeat(39)],
+]) {
+  test(`rejects a successful GitHub PUT response with a ${name} content SHA`, async () => {
+    const item = validItem({ status: 'attested' });
+    const edited = clone(item);
+    edited.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
+    const mock = createGithubMock({
+      files: defaultFiles(makeBank([item])),
+      onPut: () => jsonResponse(200, {
+        content: { sha: receiptSha },
+        commit: { html_url: 'https://github.example/commit/written' },
+      }),
+    });
+
+    const response = await handlerWith(mock)(apiRequest('POST', {
+      body: {
+        action: 'qbank.save-draft',
+        id: item.id,
+        baseRevision: itemRevision(item),
+        item: edited,
+      },
+    }));
+
+    await expectError(response, { status: 502, code: 'github_response_invalid' });
+    assert.equal(mock.putBodies.length, 1);
+    assert.match(mock.putBodies[0].body.sha, /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/);
   });
 }
 
@@ -720,6 +846,24 @@ test('qbank and content no-op requests perform no commit', async () => {
     commit: null,
   });
   assert.equal(contentMock.calls.length, 0);
+
+  const semanticMock = createGithubMock();
+  const semanticResponse = await handlerWith(semanticMock)(apiRequest('POST', {
+    body: {
+      target: 'content',
+      changes: { 't_mood.md': true, 'mse-tool': false },
+      attester: 'Different Synthetic Reviewer',
+    },
+  }));
+  assert.equal(semanticResponse.status, 200);
+  assert.deepEqual(await semanticResponse.json(), {
+    ok: true,
+    target: 'content',
+    updated: 0,
+    commit: null,
+  });
+  assert.equal(semanticMock.putBodies.length, 0);
+  assert.equal(semanticMock.calls.filter(call => call.method === 'GET').length, 1);
 });
 
 test('preserves the legacy content review write path with header-only auth', async () => {

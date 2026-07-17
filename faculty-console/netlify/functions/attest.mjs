@@ -23,6 +23,7 @@ const GITHUB_API = 'https://api.github.com';
 const GITHUB_API_VERSION = '2026-03-10';
 const MAX_POST_BYTES = 128 * 1024;
 const MAX_BANK_BYTES = 4 * 1024 * 1024;
+const GIT_OBJECT_ID_PATTERN = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/i;
 
 const ERROR_MESSAGES = Object.freeze({
   github_forbidden: 'The repository refused this request.',
@@ -76,33 +77,24 @@ function requestOrigin(request) {
   }
 }
 
-function configuredOrigin(env) {
+function configuredOriginPolicy(env) {
   const supplied = readEnv(env, 'ALLOWED_ORIGIN').trim();
-  if (!supplied) return '';
+  if (!supplied) return { origin: '', valid: true };
   try {
     const parsed = new URL(supplied);
     if (!['http:', 'https:'].includes(parsed.protocol) || parsed.origin !== supplied) {
       throw new Error('not an exact origin');
     }
-    return supplied;
+    return { origin: supplied, valid: true };
   } catch {
-    throw new HttpError(
-      'server_configuration',
-      500,
-      'The faculty service is not configured.',
-    );
+    return { origin: '', valid: false };
   }
 }
 
 function responseContext(request, env) {
   const sameOrigin = requestOrigin(request);
-  let allowedOrigin = '';
-  try {
-    allowedOrigin = configuredOrigin(env);
-  } catch {
-    // Configuration errors are normalized by the handler. Do not reflect the invalid value.
-  }
-  return { allowedOrigin: allowedOrigin || sameOrigin || 'null' };
+  const policy = configuredOriginPolicy(env);
+  return { allowedOrigin: policy.origin || sameOrigin || 'null' };
 }
 
 function responseHeaders(context) {
@@ -183,7 +175,7 @@ function requireRequest(request) {
   }
 }
 
-function requireServerSettings(env, fetchImpl) {
+function requireServerSettings(env, fetchImpl, originPolicy) {
   const token = readEnv(env, 'GITHUB_TOKEN');
   const key = readEnv(env, 'FACULTY_ATTEST_PASSWORD');
   const repo = readEnv(env, 'GITHUB_REPO').trim() || DEFAULT_REPO;
@@ -191,8 +183,8 @@ function requireServerSettings(env, fetchImpl) {
   const studentValue = readEnv(env, 'STUDENT_SITE_URL').trim() || DEFAULT_STUDENT_SITE;
   const attesterEmail = readEnv(env, 'ATTESTER_EMAIL').trim() || DEFAULT_ATTESTER_EMAIL;
 
-  configuredOrigin(env);
-  if (!token
+  if (!originPolicy.valid
+      || !token
       || !key
       || typeof fetchImpl !== 'function'
       || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)
@@ -281,6 +273,13 @@ function enforceByteLimit(byteLength, maxBytes) {
   if (maxBytes && byteLength > maxBytes) throw qbankSizeError();
 }
 
+function normalizeGitObjectId(value) {
+  if (typeof value !== 'string' || !GIT_OBJECT_ID_PATTERN.test(value)) {
+    throw new GithubError('github_response_invalid', 502);
+  }
+  return value.toLowerCase();
+}
+
 function decodeBase64(content) {
   const compact = content.replace(/\s+/g, '');
   if (compact.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(compact)) {
@@ -311,9 +310,7 @@ function createRepositoryGateway({ settings, fetchImpl }) {
       { headers: githubHeaders(settings.token) },
     );
     const object = await githubJson(objectResponse);
-    if (typeof object.sha !== 'string' || !object.sha) {
-      throw new GithubError('github_response_invalid', 502);
-    }
+    const sha = normalizeGitObjectId(object.sha);
     if (!Number.isInteger(object.size) || object.size < 0) {
       throw new GithubError('github_response_invalid', 502);
     }
@@ -348,7 +345,7 @@ function createRepositoryGateway({ settings, fetchImpl }) {
     enforceByteLimit(bytes.byteLength, maxBytes);
     return {
       json: parseRepositoryJson(bytes),
-      sha: object.sha,
+      sha,
       size: bytes.byteLength,
     };
   }
@@ -358,6 +355,7 @@ function createRepositoryGateway({ settings, fetchImpl }) {
     const bytes = Buffer.from(serialized, 'utf8');
     if (path === QBANK_PATH) enforceByteLimit(bytes.byteLength, MAX_BANK_BYTES);
 
+    const submittedSha = normalizeGitObjectId(sha);
     const response = await githubRequest(
       fetchImpl,
       repositoryUrl(settings, path, false),
@@ -367,7 +365,7 @@ function createRepositoryGateway({ settings, fetchImpl }) {
         body: JSON.stringify({
           message,
           content: bytes.toString('base64'),
-          sha,
+          sha: submittedSha,
           branch: settings.branch,
           committer: {
             name: 'Faculty Attestation Console',
@@ -378,14 +376,14 @@ function createRepositoryGateway({ settings, fetchImpl }) {
     );
     const payload = await githubJson(response);
     const commit = typeof payload.commit?.html_url === 'string' ? payload.commit.html_url : null;
-    const revision = typeof payload.content?.sha === 'string' ? payload.content.sha : null;
+    const revision = normalizeGitObjectId(payload.content?.sha);
     let commitUrl;
     try {
       commitUrl = new URL(commit);
     } catch {
       throw new GithubError('github_response_invalid', 502);
     }
-    if (commitUrl.protocol !== 'https:' || !revision) {
+    if (commitUrl.protocol !== 'https:' || revision === submittedSha) {
       throw new GithubError('github_response_invalid', 502);
     }
     return { commit, revision };
@@ -540,7 +538,16 @@ async function commitContentMutation({ repository, body, attester }) {
     const file = await repository.read(REVIEWED_PATH);
     if (!isRecord(file.json)) invalidRepositoryFile();
     const reviewed = structuredClone(file.json);
-    for (const [slug, selected] of changes) {
+    const effectiveChanges = changes.filter(([slug, selected]) => {
+      const current = Object.hasOwn(reviewed, slug) && isRecord(reviewed[slug])
+        ? reviewed[slug].status
+        : '';
+      return current !== (selected ? 'reviewed' : 'pending');
+    });
+    if (!effectiveChanges.length) {
+      return { ok: true, target: 'content', updated: 0, commit: null };
+    }
+    for (const [slug, selected] of effectiveChanges) {
       Object.defineProperty(reviewed, slug, {
         configurable: true,
         enumerable: true,
@@ -556,13 +563,13 @@ async function commitContentMutation({ repository, body, attester }) {
         REVIEWED_PATH,
         reviewed,
         file.sha,
-        `attest: ${changes.length} content item(s) by ${attester} (${at})`,
+        `attest: ${effectiveChanges.length} content item(s) by ${attester} (${at})`,
         1,
       );
       return {
         ok: true,
         target: 'content',
-        updated: changes.length,
+        updated: effectiveChanges.length,
         commit: saved.commit,
       };
     } catch (error) {
@@ -729,7 +736,8 @@ export function createHandler({ env = process.env, fetchImpl = globalThis.fetch 
     const context = responseContext(request, env);
     try {
       requireRequest(request);
-      const allowedOrigin = configuredOrigin(env) || requestOrigin(request);
+      const originPolicy = configuredOriginPolicy(env);
+      const allowedOrigin = originPolicy.origin || requestOrigin(request);
       context.allowedOrigin = allowedOrigin;
       const suppliedOrigin = request.headers.get('Origin');
       if (suppliedOrigin && suppliedOrigin !== allowedOrigin) {
@@ -747,7 +755,7 @@ export function createHandler({ env = process.env, fetchImpl = globalThis.fetch 
       if (!safeEqual(request.headers.get('x-faculty-key'), facultyKey)) {
         throw new HttpError('unauthorized', 401, 'Unauthorized.');
       }
-      const settings = requireServerSettings(env, fetchImpl);
+      const settings = requireServerSettings(env, fetchImpl, originPolicy);
 
       const repository = createRepositoryGateway({ settings, fetchImpl });
       switch (request.method.toUpperCase()) {
