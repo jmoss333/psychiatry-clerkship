@@ -71,7 +71,12 @@ export function isBatchEligible(question, reviewedInSession, hasUnsavedChanges =
     && !hasUnsavedChanges;
 }
 
-export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
+export function startFacultyConsole({
+  document,
+  window,
+  fetchImpl = fetch,
+  assessItemImpl = assessItem,
+}) {
   const app = document.getElementById('app');
   const statusRegion = document.getElementById('app-status');
   if (!app || !statusRegion) {
@@ -93,6 +98,7 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     contentChanges: Object.create(null),
     contentFilters: { kind: 'all', status: 'all' },
     contentMessage: '',
+    contentCommitUrl: null,
   };
 
   function el(tag, attributes = {}, children = []) {
@@ -182,6 +188,16 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     }
   }
 
+  function safeExternalUrl(value) {
+    if (typeof value !== 'string') return null;
+    try {
+      const url = new URL(value);
+      return ['https:', 'http:'].includes(url.protocol) ? url.href : null;
+    } catch {
+      return null;
+    }
+  }
+
   function domToken(value) {
     return text(value).replace(/[^A-Za-z0-9_-]/g, '-');
   }
@@ -212,12 +228,40 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     state.editor = structuredClone(question);
   }
 
+  function currentAssessment(question) {
+    try {
+      return assessItemImpl(question, {
+        manifestPages: list(state.server?.manifestPages),
+        activeItems: list(state.server?.qbank),
+      });
+    } catch {
+      return {
+        gate: 'blocked',
+        blockers: [{
+          code: 'checks.runtime_failure',
+          field: 'Question',
+          message: 'Automated checks could not run. Reload before reviewing this question.',
+        }],
+        warnings: [],
+      };
+    }
+  }
+
+  function assessedQuestion(question) {
+    return { ...question, assessment: currentAssessment(question) };
+  }
+
+  function assessedQuestions() {
+    return list(state.server?.qbank).map(assessedQuestion);
+  }
+
   function pruneSessionReview() {
     for (const id of [...state.reviewedInSession]) {
       const question = findQuestion(id);
       const revision = state.reviewedRevisions.get(id);
+      const assessment = question ? currentAssessment(question) : null;
       if (!question || question.revision !== revision
-          || question.status !== 'draft' || gateOf(question) !== 'ready') {
+          || question.status !== 'draft' || assessment?.gate !== 'ready') {
         state.reviewedInSession.delete(id);
         state.reviewedRevisions.delete(id);
         state.batch.delete(id);
@@ -225,7 +269,8 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     }
     for (const id of [...state.batch]) {
       const question = findQuestion(id);
-      if (!isBatchEligible(question, state.reviewedInSession, false)) state.batch.delete(id);
+      const assessed = question ? assessedQuestion(question) : null;
+      if (!isBatchEligible(assessed, state.reviewedInSession, false)) state.batch.delete(id);
     }
   }
 
@@ -301,7 +346,7 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     panel.focus();
   }
 
-  async function load({ silent = false } = {}) {
+  async function load({ silent = false, focusId = null } = {}) {
     state.pending = true;
     if (!silent) renderLoading();
     try {
@@ -320,7 +365,7 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
       state.pending = false;
       pruneSessionReview();
       chooseSelection();
-      renderShell();
+      renderShell(focusId);
     } catch (error) {
       state.pending = false;
       renderLoadError(error instanceof Error ? error.message : 'Network request failed.');
@@ -497,8 +542,8 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     ]);
   }
 
-  function renderCountStrip() {
-    const counts = deriveQueueCounts(state.server?.qbank);
+  function renderCountStrip(questions) {
+    const counts = deriveQueueCounts(questions);
     const labels = [
       ['Draft', counts.draft],
       ['Ready', counts.ready],
@@ -574,7 +619,10 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
   }
 
   function renderBatchSummary() {
-    const selected = [...state.batch].map(findQuestion).filter(Boolean);
+    const selected = [...state.batch]
+      .map(findQuestion)
+      .filter(Boolean)
+      .map(assessedQuestion);
     const assessment = assessBatch(selected);
     const message = selected.length
       ? `${selected.length} reviewed green draft${selected.length === 1 ? '' : 's'} selected.`
@@ -587,17 +635,6 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     ]);
   }
 
-  function currentAssessment(question) {
-    try {
-      return assessItem(question, {
-        manifestPages: list(state.server?.manifestPages),
-        activeItems: list(state.server?.qbank),
-      });
-    } catch {
-      return question.assessment || { gate: 'blocked', blockers: [], warnings: [] };
-    }
-  }
-
   function markReviewedAndNext(question) {
     const assessment = currentAssessment(question);
     if (question.status !== 'draft' || assessment.gate !== 'ready' || hasUnsavedChanges()) {
@@ -606,7 +643,7 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     }
     state.reviewedInSession.add(question.id);
     state.reviewedRevisions.set(question.id, question.revision);
-    const queue = filteredQuestions(state.server, state.filters);
+    const queue = filteredQuestions({ qbank: assessedQuestions() }, state.filters);
     const index = queue.findIndex(candidate => candidate.id === question.id);
     const next = index >= 0 ? queue[index + 1] : null;
     if (next) setSelected(next.id);
@@ -651,8 +688,10 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
 
     const assessment = currentAssessment(question);
     const gate = assessment.gate;
+    const assessed = { ...question, assessment };
     const learnerUrl = safeStudentUrl('?tool=question-bank-practice.html');
-    const reviewed = state.reviewedInSession.has(question.id)
+    const reviewed = gate === 'ready'
+      && state.reviewedInSession.has(question.id)
       && state.reviewedRevisions.get(question.id) === question.revision;
     const eligible = question.status === 'draft'
       && gate === 'ready'
@@ -660,7 +699,7 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     const pages = list(question.pages).filter(page => typeof page === 'string');
     const sessionCopy = reviewed
       ? 'Reviewed in this session. Use the separate queue checkbox if this item belongs in a green batch.'
-      : batchReason(question, hasUnsavedChanges());
+      : batchReason(assessed, hasUnsavedChanges());
 
     panel.appendChild(el('div', { class: 'review-sheet' }, [
       el('header', { class: 'review-heading' }, [
@@ -715,14 +754,15 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
   }
 
   function renderQuestionWorkbench() {
-    const shown = filteredQuestions(state.server, state.filters);
+    const questions = assessedQuestions();
+    const shown = filteredQuestions({ qbank: questions }, state.filters);
     const queue = el('aside', { class: 'queue-panel', 'aria-labelledby': 'queue-title' }, [
       el('header', { class: 'panel-heading' }, [
         el('h2', { id: 'queue-title' }, ['Review queue']),
         el('p', { class: 'hint' }, ['Gate rails show machine-checkable status; symbols and words carry the same meaning.']),
       ]),
       renderQueueFilters(),
-      renderCountStrip(),
+      renderCountStrip(questions),
       el('p', { class: 'queue-meta' }, [`${shown.length} of ${list(state.server?.qbank).length} questions shown`]),
       shown.length
         ? el('ol', { class: 'queue-list' }, shown.map(renderQueueRow))
@@ -759,6 +799,7 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     if (checked === committed) delete state.contentChanges[item.slug];
     else state.contentChanges[item.slug] = checked;
     state.contentMessage = '';
+    state.contentCommitUrl = null;
     renderShell(focusId);
   }
 
@@ -771,6 +812,9 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     const studentUrl = safeStudentUrl(
       item.kind === 'tool' ? `?tool=${encodeURIComponent(item.slug)}` : `?page=${encodeURIComponent(item.slug)}`,
     );
+    const provenance = text(item.by)
+      ? ` · Reviewed by ${text(item.by)}${text(item.at) ? ` on ${text(item.at)}` : ''}`
+      : '';
     return el('li', { class: 'content-row' }, [
       el('input', {
         id,
@@ -783,7 +827,7 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
       el('div', {}, [
         el('p', { class: 'content-title' }, [text(item.title) || item.slug]),
         el('p', { class: 'content-meta data-text' }, [
-          `${item.kind === 'tool' ? 'tool' : 'page'} · ${item.slug}`,
+          `${item.kind === 'tool' ? 'tool' : 'page'} · ${item.slug}${provenance}`,
         ]),
       ]),
       studentUrl
@@ -798,7 +842,8 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
     if (!Object.keys(changes).length || state.pending) return;
     state.pending = true;
     state.contentMessage = 'Committing content reviews…';
-    renderShell();
+    state.contentCommitUrl = null;
+    renderShell('content-save-result');
     try {
       const response = await fetchImpl(API, {
         method: 'POST',
@@ -819,14 +864,16 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
       if (!response.ok) throw new Error(responseMessage(payload, 'Content reviews were not saved.'));
       state.contentChanges = Object.create(null);
       state.contentMessage = `Saved ${payload.updated ?? 0} content review${payload.updated === 1 ? '' : 's'}.`;
+      state.contentCommitUrl = safeExternalUrl(payload.commit);
       state.pending = false;
       announce(state.contentMessage);
-      await load({ silent: true });
+      await load({ silent: true, focusId: 'content-save-result' });
     } catch (error) {
       state.pending = false;
       state.contentMessage = error instanceof Error ? error.message : 'Content reviews were not saved.';
+      state.contentCommitUrl = null;
       announce(state.contentMessage);
-      renderShell();
+      renderShell('content-save-result');
     }
   }
 
@@ -860,6 +907,7 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
             `${shown.length} shown · ${shown.filter(item => item.status !== 'reviewed').length} not reviewed`,
           ]),
           el('button', {
+            id: 'mark-all-content',
             type: 'button',
             disabled: state.pending,
             onClick: () => {
@@ -867,7 +915,8 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
                 if (item.status !== 'reviewed') state.contentChanges[item.slug] = true;
               }
               state.contentMessage = '';
-              renderShell();
+              state.contentCommitUrl = null;
+              renderShell('mark-all-content');
             },
           }, ['Mark all shown reviewed']),
         ]),
@@ -878,8 +927,23 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
           changes ? `${changes} unsaved content change${changes === 1 ? '' : 's'}` : 'No unsaved content changes',
         ]),
         el('div', { class: 'content-actions' }, [
-          state.contentMessage ? el('span', { class: 'hint' }, [state.contentMessage]) : null,
+          state.contentMessage ? el('span', {
+            id: 'content-save-result',
+            class: 'hint',
+            tabindex: '-1',
+          }, [
+            state.contentMessage,
+            state.contentCommitUrl ? ' ' : null,
+            state.contentCommitUrl
+              ? el('a', {
+                href: state.contentCommitUrl,
+                target: '_blank',
+                rel: 'noopener noreferrer',
+              }, ['View commit ↗'])
+              : null,
+          ]) : null,
           el('button', {
+            id: 'save-content-reviews',
             class: 'primary',
             type: 'button',
             disabled: !changes || state.pending,
@@ -907,7 +971,17 @@ export function startFacultyConsole({ document, window, fetchImpl = fetch }) {
   window.addEventListener('keydown', event => {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
       event.preventDefault();
-      saveCurrentDraft();
+      if (state.tab === 'content') {
+        if (state.pending) {
+          announce('Content reviews are already saving.');
+        } else if (Object.keys(state.contentChanges).length) {
+          void commitContent();
+        } else {
+          announce('No unsaved content reviews to save.');
+        }
+      } else {
+        saveCurrentDraft();
+      }
     }
   });
 

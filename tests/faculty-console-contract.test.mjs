@@ -52,9 +52,232 @@ function question(overrides = {}) {
   };
 }
 
+function validDomQuestion(overrides = {}) {
+  return {
+    id: 'qb_moo_902',
+    revision: 'revision-one',
+    status: 'draft',
+    type: 'sba',
+    category: 'mood',
+    competency: ['dx'],
+    difficulty: 2,
+    pages: ['t_mood.md'],
+    link: { label: 'Open Mood Disorders', href: '?page=t_mood.md' },
+    stem: 'A fictional patient has a sustained depressive syndrome. What is the diagnosis?',
+    options: [
+      { key: 'A', t: 'Major depressive disorder', c: true },
+      { key: 'B', t: 'Delirium', trap: { name: 'Timeline miss', note: 'Delirium fluctuates.' } },
+      { key: 'C', t: 'Mania', trap: { name: 'Polarity miss', note: 'Mania needs activation.' } },
+      { key: 'D', t: 'Adjustment disorder', trap: { name: 'Threshold miss', note: 'The full syndrome is present.' } },
+    ],
+    why: 'The sustained syndrome supports major depressive disorder.',
+    pearl: 'Name the syndrome before choosing treatment.',
+    evidence: 't_mood.md - depressive syndrome discriminator.',
+    assessment: { gate: 'ready', blockers: [], warnings: [] },
+    ...overrides,
+  };
+}
+
+class FakeTextNode {
+  constructor(value, ownerDocument) {
+    this.ownerDocument = ownerDocument;
+    this.parentNode = null;
+    this.textContent = String(value);
+  }
+}
+
+class FakeElement {
+  constructor(tagName, ownerDocument) {
+    this.ownerDocument = ownerDocument;
+    this.tagName = tagName.toUpperCase();
+    this.parentNode = null;
+    this.children = [];
+    this.attributes = new Map();
+    this.listeners = new Map();
+    this.className = '';
+    this.value = '';
+    this.checked = false;
+    this.disabled = false;
+    this.selected = false;
+    this._text = '';
+  }
+
+  appendChild(child) {
+    child.parentNode = this;
+    this.children.push(child);
+    return child;
+  }
+
+  replaceChildren(...children) {
+    for (const child of this.children) child.parentNode = null;
+    this.children = [];
+    this._text = '';
+    for (const child of children) this.appendChild(child);
+  }
+
+  setAttribute(name, value) {
+    this.attributes.set(name, String(value));
+  }
+
+  getAttribute(name) {
+    return this.attributes.has(name) ? this.attributes.get(name) : null;
+  }
+
+  addEventListener(type, listener) {
+    const listeners = this.listeners.get(type) || [];
+    listeners.push(listener);
+    this.listeners.set(type, listeners);
+  }
+
+  focus() {
+    if (!this.disabled) this.ownerDocument.activeElement = this;
+  }
+
+  setSelectionRange() {}
+
+  async dispatch(type, properties = {}) {
+    const event = {
+      target: this,
+      currentTarget: this,
+      defaultPrevented: false,
+      preventDefault() { this.defaultPrevented = true; },
+      ...properties,
+    };
+    for (const listener of this.listeners.get(type) || []) await listener(event);
+    return event;
+  }
+
+  get textContent() {
+    return this._text + this.children.map(child => child.textContent).join('');
+  }
+
+  set textContent(value) {
+    this.replaceChildren();
+    this._text = String(value);
+  }
+}
+
+class FakeDocument {
+  constructor() {
+    this.activeElement = null;
+    this.app = this.createElement('main');
+    this.app.setAttribute('id', 'app');
+    this.status = this.createElement('div');
+    this.status.setAttribute('id', 'app-status');
+    this.roots = [this.app, this.status];
+  }
+
+  createElement(tagName) {
+    return new FakeElement(tagName, this);
+  }
+
+  createTextNode(value) {
+    return new FakeTextNode(value, this);
+  }
+
+  getElementById(id) {
+    return this.elements().find(element => element.getAttribute('id') === id) || null;
+  }
+
+  elements() {
+    const found = [];
+    const visit = node => {
+      if (!(node instanceof FakeElement)) return;
+      found.push(node);
+      for (const child of node.children) visit(child);
+    };
+    for (const root of this.roots) visit(root);
+    return found;
+  }
+
+  find(tagName, exactText) {
+    const normalizedTag = tagName.toUpperCase();
+    return this.elements().find(element => (
+      element.tagName === normalizedTag && element.textContent === exactText
+    )) || null;
+  }
+
+  links() {
+    return this.elements().filter(element => element.tagName === 'A');
+  }
+}
+
+class FakeWindow {
+  constructor(key = 'test-faculty-key') {
+    this.listeners = new Map();
+    this.storage = new Map(key ? [['fac_key', key]] : []);
+    this.sessionStorage = {
+      getItem: name => this.storage.get(name) || null,
+      setItem: (name, value) => this.storage.set(name, String(value)),
+      removeItem: name => this.storage.delete(name),
+    };
+  }
+
+  addEventListener(type, listener) {
+    const listeners = this.listeners.get(type) || [];
+    listeners.push(listener);
+    this.listeners.set(type, listeners);
+  }
+
+  async dispatch(type, properties = {}) {
+    const event = {
+      defaultPrevented: false,
+      preventDefault() { this.defaultPrevented = true; },
+      ...properties,
+    };
+    for (const listener of this.listeners.get(type) || []) await listener(event);
+    return event;
+  }
+}
+
+function serverState({ question: item = validDomQuestion(), items } = {}) {
+  const contentItems = items || [{
+    slug: 't_mood.md',
+    title: 'Mood disorders',
+    kind: 'page',
+    status: 'unreviewed',
+    by: 'Dr <Faculty>',
+    at: '2026-07-17',
+  }];
+  return {
+    student: 'https://students.example/',
+    qbankRevision: 'a'.repeat(40),
+    manifestPages: ['t_mood.md'],
+    qbank: [item],
+    qbankSummary: { counts: { total: 1, draft: 1, attested: 0, ready: 1, warning: 0, blocked: 0 } },
+    items: contentItems,
+    counts: { pagesReviewed: 0, pagesTotal: contentItems.length, qbankAttested: 0, qbankTotal: 1 },
+  };
+}
+
+function jsonResponse(body, { ok = true, status = ok ? 200 : 500 } = {}) {
+  return { ok, status, json: async () => body };
+}
+
+async function flushAsyncWork() {
+  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setImmediate(resolve));
+}
+
+async function startHarness({ fetchImpl, assessItemImpl } = {}) {
+  const document = new FakeDocument();
+  const window = new FakeWindow();
+  const requests = [];
+  const fetcher = fetchImpl || (async (url, options = {}) => {
+    requests.push({ url, options });
+    return jsonResponse(serverState());
+  });
+  const controller = startFacultyConsole({ document, window, fetchImpl: fetcher, assessItemImpl });
+  await flushAsyncWork();
+  return { controller, document, window, requests };
+}
+
 test('exports the injectable faculty-console browser entry', () => {
   assert.equal(typeof startFacultyConsole, 'function');
-  assert.match(appSource, /export function startFacultyConsole\s*\(\{\s*document,\s*window,\s*fetchImpl\s*=\s*fetch\s*\}\)/);
+  assert.match(
+    appSource,
+    /export function startFacultyConsole\s*\(\{\s*document,\s*window,\s*fetchImpl\s*=\s*fetch,\s*assessItemImpl\s*=\s*assessItem,?\s*\}\)/,
+  );
 });
 
 test('uses an inert document root and one dedicated status region', () => {
@@ -214,4 +437,155 @@ test('batch eligibility requires a saved green draft reviewed in this session', 
     assessment: { gate: 'warning', blockers: [], warnings: [{ code: 'stem.lead_in' }] },
   }), reviewed, false), false);
   assert.equal(isBatchEligible(question(), reviewed, true), false);
+});
+
+test('opening then reviewing a green saved revision enables only its batch checkbox', async () => {
+  let revision = 'revision-one';
+  const harness = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      question: validDomQuestion({ revision }),
+    })),
+  });
+  const { controller, document } = harness;
+  const queueButton = document.getElementById('queue-qb_moo_902');
+  assert.ok(queueButton);
+  await queueButton.dispatch('click');
+
+  const mark = document.find('button', 'Mark reviewed & next');
+  assert.ok(mark);
+  assert.equal(mark.disabled, false);
+  await mark.dispatch('click');
+
+  let checkbox = document.getElementById('batch-qb_moo_902');
+  assert.equal(checkbox.disabled, false);
+  assert.equal(controller.state.reviewedInSession.has('qb_moo_902'), true);
+
+  revision = 'revision-two';
+  await controller.load({ silent: true });
+  await flushAsyncWork();
+  checkbox = document.getElementById('batch-qb_moo_902');
+  assert.equal(checkbox.disabled, true);
+  assert.equal(controller.state.reviewedInSession.has('qb_moo_902'), false);
+});
+
+test('an assessment exception renders a blocker and revokes session batch eligibility', async () => {
+  const harness = await startHarness({
+    assessItemImpl: () => { throw new Error('synthetic assessor failure'); },
+  });
+  const { controller, document } = harness;
+  controller.state.reviewedInSession.add('qb_moo_902');
+  controller.state.reviewedRevisions.set('qb_moo_902', 'revision-one');
+
+  await controller.load({ silent: true });
+  await flushAsyncWork();
+
+  const checkbox = document.getElementById('batch-qb_moo_902');
+  const queueButton = document.getElementById('queue-qb_moo_902');
+  const mark = document.find('button', 'Mark reviewed & next');
+  assert.equal(controller.state.reviewedInSession.has('qb_moo_902'), false);
+  assert.equal(checkbox.disabled, true);
+  assert.match(queueButton.parentNode.className, /gate-blocked/);
+  assert.equal(mark.disabled, true);
+  assert.match(document.app.textContent, /Automated checks could not run/);
+  assert.ok(document.find('p', 'Only questions with a green Ready gate can enter a batch.'));
+});
+
+test('Ctrl or Command S routes Content changes to commit and qbank to draft save', async () => {
+  const requests = [];
+  const fetchImpl = async (url, options = {}) => {
+    requests.push({ url, options });
+    if (options.method === 'POST') return jsonResponse({ ok: true, updated: 1, commit: null });
+    return jsonResponse(serverState());
+  };
+  const { document, window } = await startHarness({ fetchImpl });
+  await document.getElementById('tab-content').dispatch('click');
+  const contentCheckbox = document.getElementById('content-t_mood-md');
+  contentCheckbox.checked = true;
+  await contentCheckbox.dispatch('change');
+
+  const contentShortcut = await window.dispatch('keydown', {
+    metaKey: true,
+    ctrlKey: false,
+    key: 's',
+  });
+  await flushAsyncWork();
+  assert.equal(contentShortcut.defaultPrevented, true);
+  assert.equal(requests.filter(request => request.options.method === 'POST').length, 1);
+
+  await document.getElementById('tab-qbank').dispatch('click');
+  const qbankShortcut = await window.dispatch('keydown', {
+    metaKey: false,
+    ctrlKey: true,
+    key: 's',
+  });
+  await flushAsyncWork();
+  assert.equal(qbankShortcut.defaultPrevented, true);
+  assert.equal(requests.filter(request => request.options.method === 'POST').length, 1);
+  assert.equal(document.status.textContent, 'No unsaved question changes to save.');
+});
+
+test('Content renders provenance safely and restores focus after mark-all and successful save', async () => {
+  const requests = [];
+  const fetchImpl = async (url, options = {}) => {
+    requests.push({ url, options });
+    if (options.method === 'POST') {
+      return jsonResponse({
+        ok: true,
+        updated: 1,
+        commit: 'https://github.example/commit/safe-receipt',
+      });
+    }
+    return jsonResponse(serverState());
+  };
+  const { document } = await startHarness({ fetchImpl });
+  await document.getElementById('tab-content').dispatch('click');
+  assert.match(document.app.textContent, /Reviewed by Dr <Faculty> on 2026-07-17/);
+
+  const markAll = document.getElementById('mark-all-content');
+  assert.ok(markAll);
+  await markAll.dispatch('click');
+  assert.equal(document.activeElement?.getAttribute('id'), 'mark-all-content');
+
+  const save = document.getElementById('save-content-reviews');
+  assert.equal(save.disabled, false);
+  await save.dispatch('click');
+  await flushAsyncWork();
+  assert.equal(document.activeElement?.getAttribute('id'), 'content-save-result');
+  const commitLink = document.links().find(link => link.textContent === 'View commit ↗');
+  assert.equal(commitLink?.getAttribute('href'), 'https://github.example/commit/safe-receipt');
+});
+
+test('Content rejects an unsafe commit URL and restores focus after a failed save', async () => {
+  let responseMode = 'unsafe-success';
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      if (responseMode === 'unsafe-success') {
+        return jsonResponse({ ok: true, updated: 1, commit: 'javascript:alert(1)' });
+      }
+      return jsonResponse({ error: { message: 'Synthetic save failure' } }, { ok: false, status: 500 });
+    }
+    return jsonResponse(serverState());
+  };
+  const { controller, document } = await startHarness({ fetchImpl });
+  await document.getElementById('tab-content').dispatch('click');
+  let checkbox = document.getElementById('content-t_mood-md');
+  checkbox.checked = true;
+  await checkbox.dispatch('change');
+  await document.getElementById('save-content-reviews').dispatch('click');
+  await flushAsyncWork();
+  assert.equal(document.links().some(link => link.textContent === 'View commit ↗'), false);
+  assert.equal(document.activeElement?.getAttribute('id'), 'content-save-result');
+
+  responseMode = 'failure';
+  controller.state.contentChanges['t_mood.md'] = true;
+  controller.state.tab = 'content';
+  await controller.load({ silent: true, focusId: 'save-content-reviews' });
+  await flushAsyncWork();
+  checkbox = document.getElementById('content-t_mood-md');
+  checkbox.checked = true;
+  await checkbox.dispatch('change');
+  await document.getElementById('save-content-reviews').dispatch('click');
+  await flushAsyncWork();
+  assert.match(document.app.textContent, /Synthetic save failure/);
+  assert.equal(document.activeElement?.getAttribute('id'), 'content-save-result');
 });
