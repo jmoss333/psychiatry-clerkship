@@ -192,7 +192,7 @@ export function startFacultyConsole({
     if (typeof value !== 'string') return null;
     try {
       const url = new URL(value);
-      return ['https:', 'http:'].includes(url.protocol) ? url.href : null;
+      return url.protocol === 'https:' ? url.href : null;
     } catch {
       return null;
     }

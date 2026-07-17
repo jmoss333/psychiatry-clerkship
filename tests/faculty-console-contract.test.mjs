@@ -589,3 +589,26 @@ test('Content rejects an unsafe commit URL and restores focus after a failed sav
   assert.match(document.app.textContent, /Synthetic save failure/);
   assert.equal(document.activeElement?.getAttribute('id'), 'content-save-result');
 });
+
+test('Content rejects an unencrypted HTTP commit receipt', async () => {
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      return jsonResponse({
+        ok: true,
+        updated: 1,
+        commit: 'http://github.example/commit/insecure-receipt',
+      });
+    }
+    return jsonResponse(serverState());
+  };
+  const { document } = await startHarness({ fetchImpl });
+  await document.getElementById('tab-content').dispatch('click');
+  const checkbox = document.getElementById('content-t_mood-md');
+  checkbox.checked = true;
+  await checkbox.dispatch('change');
+  await document.getElementById('save-content-reviews').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(document.links().some(link => link.textContent === 'View commit ↗'), false);
+  assert.equal(document.activeElement?.getAttribute('id'), 'content-save-result');
+});
