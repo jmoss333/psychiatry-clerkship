@@ -359,6 +359,14 @@ async function setChecked(document, id, checked = true) {
   return control;
 }
 
+function attributeTokens(element, name) {
+  return (element.getAttribute(name) || '').trim().split(/\s+/).filter(Boolean);
+}
+
+function domId(value) {
+  return String(value).toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+}
+
 test('exports the injectable faculty-console browser entry', () => {
   assert.equal(typeof startFacultyConsole, 'function');
   assert.match(
@@ -860,6 +868,19 @@ test('rebuilds the candidate immediately, shows blockers before warnings, and ma
   assert.match(document.app.textContent, /Checks are local and stale until this draft is saved and reloaded/);
   assert.equal(document.getElementById('save-draft').disabled, true);
   assert.equal(document.getElementById('mark-reviewed-next').disabled, true);
+  const blockedStem = document.getElementById('question-stem');
+  assert.equal(blockedStem.getAttribute('aria-invalid'), 'true');
+  assert.deepEqual(attributeTokens(blockedStem, 'aria-describedby'), [
+    'issue-blocked-required-stem-stem',
+  ]);
+  const blockerDescription = document.getElementById('issue-blocked-required-stem-stem');
+  assert.equal(blockerDescription.tagName, 'LI');
+  assert.equal(blockerDescription.textContent, 'stem: Question stem is required.');
+  const blockerLink = document.links().find(link => (
+    link.getAttribute('href') === '#question-stem'
+  ));
+  await blockerLink.dispatch('click');
+  assert.equal(document.activeElement, blockedStem);
   const beforeUnload = await window.dispatch('beforeunload');
   assert.equal(beforeUnload.defaultPrevented, true);
   assert.equal(beforeUnload.returnValue, '');
@@ -870,10 +891,21 @@ test('rebuilds the candidate immediately, shows blockers before warnings, and ma
   assert.equal(document.getElementById('save-draft').disabled, false);
   assert.equal(document.getElementById('attest-warning').disabled, true);
   assert.equal(document.links().some(link => link.getAttribute('href') === '#question-stem'), true);
+  const warningStem = document.getElementById('question-stem');
+  assert.equal(warningStem.getAttribute('aria-invalid'), null);
+  assert.deepEqual(attributeTokens(warningStem, 'aria-describedby'), [
+    'issue-warning-stem-synthetic_warning-stem',
+  ]);
+  assert.equal(
+    document.getElementById('issue-warning-stem-synthetic_warning-stem').textContent,
+    'stem: Review this synthetic warning.',
+  );
 
   await document.getElementById('revert-question').dispatch('click');
   assert.deepEqual(controller.state.dirtyFields, []);
   assert.equal(document.getElementById('question-stem').value, validDomQuestion().stem);
+  assert.equal(document.getElementById('question-stem').getAttribute('aria-invalid'), null);
+  assert.deepEqual(attributeTokens(document.getElementById('question-stem'), 'aria-describedby'), []);
   assert.match(document.app.textContent, /Checks current for the saved repository version/);
 });
 
@@ -910,7 +942,7 @@ test('dirty state takes workflow precedence for an edited attested item', async 
   assert.doesNotMatch(steps[2].className, /current/);
 });
 
-test('issue links keep unique IDs when several issues point to the same field', async () => {
+test('issue descriptions keep semantic IDs across rerenders when several issues share a field', async () => {
   const assessItemImpl = () => ({
     gate: 'blocked',
     blockers: [
@@ -919,15 +951,152 @@ test('issue links keep unique IDs when several issues point to the same field', 
     ],
     warnings: [
       { code: 'stem.warning', field: 'stem', message: 'Stem warning.' },
+      { code: 'stem.warning', field: 'stem', message: 'Second stem warning.' },
     ],
   });
   const { document } = await startHarness({ assessItemImpl });
   const issueLinks = document.links().filter(link => (
     link.getAttribute('href') === '#question-stem'
   ));
-  const ids = issueLinks.map(link => link.getAttribute('id'));
-  assert.equal(issueLinks.length, 3);
-  assert.equal(new Set(ids).size, ids.length);
+  const ids = issueLinks.map(link => link.parentNode.getAttribute('id'));
+  assert.equal(issueLinks.length, 4);
+  assert.deepEqual(ids, [
+    'issue-blocked-stem-first-stem',
+    'issue-blocked-stem-second-stem',
+    'issue-warning-stem-warning-stem',
+    'issue-warning-stem-warning-stem-2',
+  ]);
+  assert.equal(new Set(ids).size, 4);
+  assert.deepEqual(attributeTokens(document.getElementById('question-stem'), 'aria-describedby'), ids);
+  assert.equal(document.getElementById(ids[0]).textContent, 'stem: First stem blocker.');
+  assert.equal(document.getElementById(ids[1]).textContent, 'stem: Second stem blocker.');
+  assert.equal(document.getElementById(ids[2]).textContent, 'stem: Stem warning.');
+  assert.equal(document.getElementById(ids[3]).textContent, 'stem: Second stem warning.');
+  assert.equal(document.getElementById('question-stem').getAttribute('aria-invalid'), 'true');
+
+  await setValue(document, 'question-stem', `${document.getElementById('question-stem').value} Updated`);
+  const rerenderedIds = document.links()
+    .filter(link => link.getAttribute('href') === '#question-stem')
+    .map(link => link.parentNode.getAttribute('id'));
+  assert.deepEqual(rerenderedIds, ids);
+});
+
+test('maps aggregate, option, tier-two, and global issues to purposeful visible targets', async () => {
+  const item = validDomQuestion({
+    type: 'two-tier',
+    tier2: {
+      q: 'Which finding best supports that answer?',
+      options: [
+        { key: 'A', t: 'Finding one', c: true },
+        { key: 'B', t: 'Finding two' },
+        { key: 'C', t: 'Finding three' },
+      ],
+      why: 'Finding one is the best discriminator.',
+    },
+  });
+  const blockers = [
+    { code: 'status.enum', field: 'status', message: 'Review the governed status.' },
+    { code: 'item.retired', field: 'retired', message: 'This item is retired.' },
+    { code: 'competency.count', field: 'competency', message: 'Choose competencies.' },
+    { code: 'link.required', field: 'link', message: 'Provide a learning link.' },
+    { code: 'options.count', field: 'options', message: 'Review the answer option set.' },
+    { code: 'options.text', field: 'options.B.t', message: 'Option B needs text.' },
+    { code: 'options.correct_flag', field: 'options.B.c', message: 'Review option B correctness.' },
+    { code: 'options.trap', field: 'options.B.trap', message: 'Option B needs trap details.' },
+    { code: 'tier2.required', field: 'tier2', message: 'Review tier-two reasoning.' },
+    { code: 'tier2.options_count', field: 'tier2.options', message: 'Review tier-two options.' },
+    { code: 'tier2.text', field: 'tier2.options.B.t', message: 'Tier-two option B needs text.' },
+    { code: 'tier2.correct_flag', field: 'tier2.options.B.c', message: 'Review tier-two option B correctness.' },
+    { code: 'tier2.why', field: 'tier2.why', message: 'Tier-two rationale is required.' },
+    { code: 'runtime.assessment', message: 'Assessment failed unexpectedly.' },
+  ];
+  const warnings = [
+    { code: 'pages.review', field: 'pages', message: 'Review the source pages.' },
+    { code: 'hy.review', field: 'hy', message: 'Review the high-yield flag.' },
+    { code: 'link.page_mismatch', field: 'link.href', message: 'Review the link destination.' },
+  ];
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({ question: item })),
+    assessItemImpl: () => ({ gate: 'blocked', blockers, warnings }),
+  });
+
+  const blockerTargets = new Map([
+    ['status.enum', 'question-governed-fields'],
+    ['item.retired', 'question-governed-fields'],
+    ['competency.count', 'question-competencies'],
+    ['link.required', 'question-link-fields'],
+    ['options.count', 'question-options'],
+    ['options.text', 'option-B-text'],
+    ['options.correct_flag', 'correct-B'],
+    ['options.trap', 'option-B-trap-name'],
+    ['tier2.required', 'question-tier2'],
+    ['tier2.options_count', 'question-tier2-options'],
+    ['tier2.text', 'tier2-option-B-text'],
+    ['tier2.correct_flag', 'tier2-correct-B'],
+    ['tier2.why', 'tier2-why'],
+  ]);
+  for (const issue of blockers.slice(0, -1)) {
+    const target = document.getElementById(blockerTargets.get(issue.code));
+    assert.ok(target, `Missing issue target for ${issue.field}`);
+    const issueId = `issue-blocked-${domId(issue.code)}-${domId(issue.field)}`;
+    assert.equal(attributeTokens(target, 'aria-describedby').includes(issueId), true);
+    assert.equal(target.getAttribute('aria-invalid'), 'true');
+    assert.equal(document.getElementById(issueId).textContent, `${issue.field}: ${issue.message}`);
+  }
+  assert.deepEqual(
+    attributeTokens(document.getElementById('question-governed-fields'), 'aria-describedby'),
+    [
+      'governed-fields-description',
+      'issue-blocked-status-enum-status',
+      'issue-blocked-item-retired-retired',
+    ],
+  );
+  assert.ok(document.getElementById('governed-fields-description'));
+
+  const warningTargets = new Map([
+    ['pages.review', 'question-pages'],
+    ['hy.review', 'question-high-yield'],
+    ['link.page_mismatch', 'question-link-href'],
+  ]);
+  for (const issue of warnings) {
+    const target = document.getElementById(warningTargets.get(issue.code));
+    const issueId = `issue-warning-${domId(issue.code)}-${domId(issue.field)}`;
+    assert.deepEqual(attributeTokens(target, 'aria-describedby'), [issueId]);
+    assert.equal(target.getAttribute('aria-invalid'), null);
+  }
+
+  for (const id of [
+    'question-governed-fields',
+    'question-competencies',
+    'question-link-fields',
+    'question-options',
+    'question-tier2',
+    'question-tier2-options',
+  ]) assert.equal(document.getElementById(id).getAttribute('tabindex'), '-1');
+  const linkFields = document.getElementById('question-link-fields');
+  assert.equal(linkFields.contains(document.getElementById('question-link-label')), true);
+  assert.equal(linkFields.contains(document.getElementById('question-link-href')), true);
+  assert.equal(linkFields.contains(document.getElementById('question-type')), false);
+
+  const trapIssueId = 'issue-blocked-options-trap-options-b-trap';
+  assert.equal(
+    attributeTokens(document.getElementById('option-B-trap-note'), 'aria-describedby')
+      .includes(trapIssueId),
+    true,
+  );
+  assert.equal(document.getElementById('option-B-trap-note').getAttribute('aria-invalid'), 'true');
+
+  const globalIssue = document.getElementById('issue-blocked-runtime-assessment-question');
+  assert.equal(globalIssue.textContent, 'Question: Assessment failed unexpectedly.');
+  const reviewTitle = document.getElementById('review-title');
+  assert.equal(reviewTitle.getAttribute('aria-describedby'), null);
+  assert.equal(reviewTitle.getAttribute('aria-invalid'), null);
+  assert.equal(reviewTitle.getAttribute('tabindex'), '-1');
+  const globalLink = document.links().find(link => (
+    link.parentNode === globalIssue && link.getAttribute('href') === '#review-title'
+  ));
+  await globalLink.dispatch('click');
+  assert.equal(document.activeElement, reviewTitle);
 });
 
 test('saves only on explicit action with the exact revision-safe payload, then confirms the refreshed item', async () => {

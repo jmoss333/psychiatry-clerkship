@@ -438,6 +438,16 @@ test('logs in, filters active items, preserves a forced draft, and recovers from
   await page.locator('#question-stem').fill('');
   await expect(page.locator('.gate-label.blocked')).toHaveText(/Blocked/);
   await expect(page.locator('#safety-issues')).toContainText('stem cannot be empty');
+  await expect(page.locator('#question-stem')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#question-stem')).toHaveAttribute(
+    'aria-describedby',
+    'issue-blocked-required-stem-stem',
+  );
+  const blockerDescription = page.locator('#issue-blocked-required-stem-stem');
+  await expect(blockerDescription).toHaveText('stem: stem cannot be empty.');
+  expect(await blockerDescription.evaluate(node => node.tagName)).toBe('LI');
+  await blockerDescription.getByRole('link', { name: 'stem' }).click();
+  await expect(page.locator('#question-stem')).toBeFocused();
   await expect(page.locator('#save-draft')).toBeDisabled();
   await page.waitForTimeout(50);
   expect(qbankPosts(api)).toHaveLength(postsBeforeBlock);
@@ -445,6 +455,8 @@ test('logs in, filters active items, preserves a forced draft, and recovers from
   const savedStem = 'A fictional adult has five weeks of low mood, anhedonia, early waking, and impaired function without activation. Which diagnosis best explains the syndrome?';
   await page.locator('#question-stem').fill(savedStem);
   await expect(page.locator('.review-heading .gate-label.ready')).toHaveText(/Ready/);
+  await expect(page.locator('#question-stem')).not.toHaveAttribute('aria-invalid', /.+/);
+  await expect(page.locator('#question-stem')).not.toHaveAttribute('aria-describedby', /.+/);
   await expect(page.locator('#save-draft')).toBeEnabled();
   const saveStart = api.calls.length;
   await page.locator('#save-draft').click();
@@ -580,6 +592,17 @@ test('requires individual warning acknowledgement before attestation', async ({ 
   });
   await expect(page.locator('.review-heading .gate-label.warning')).toHaveText(/Warning/);
   await expect(page.locator('#safety-issues')).toContainText('Review the negative wording');
+  await expect(page.locator('#question-stem')).toHaveAttribute(
+    'aria-describedby',
+    'issue-warning-stem-negative_lead_in-stem',
+  );
+  await expect(page.locator('#question-stem')).not.toHaveAttribute('aria-invalid', /.+/);
+  const warningDescription = page.locator('#issue-warning-stem-negative_lead_in-stem');
+  await expect(warningDescription).toHaveText(
+    'stem: Review the negative wording in the final lead-in.',
+  );
+  await warningDescription.getByRole('link', { name: 'stem' }).click();
+  await expect(page.locator('#question-stem')).toBeFocused();
   await expect(page.locator('#attest-warning')).toBeDisabled();
 
   await checkConfirmations(page);

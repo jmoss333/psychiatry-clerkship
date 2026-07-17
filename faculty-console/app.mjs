@@ -158,6 +158,7 @@ export function startFacultyConsole({
     reauthAction: null,
     loadGeneration: 0,
   };
+  let renderedIssueRecords = [];
 
   function el(tag, attributes = {}, children = []) {
     const node = document.createElement(tag);
@@ -621,6 +622,7 @@ export function startFacultyConsole({
 
   function renderShell(focusTarget = null) {
     if (!state.server) return;
+    renderedIssueRecords = [];
     const focusState = typeof focusTarget === 'string'
       ? { id: focusTarget }
       : record(focusTarget);
@@ -677,6 +679,7 @@ export function startFacultyConsole({
       panel,
     ]);
     replaceApp(background, ...(modal ? [modal] : []));
+    applyIssueAssociations(renderedIssueRecords);
 
     if (text(focusState.id)) {
       const target = document.getElementById(focusState.id);
@@ -1235,7 +1238,11 @@ export function startFacultyConsole({
   }
 
   function renderCompetencies(question) {
-    return el('fieldset', { class: 'checkbox-fieldset' }, [
+    return el('fieldset', {
+      id: 'question-competencies',
+      class: 'checkbox-fieldset',
+      tabindex: '-1',
+    }, [
       el('legend', {}, ['Competencies']),
       el('div', { class: 'checkbox-grid' }, COMPETENCIES.map(value => {
         const id = `competency-${domToken(value)}`;
@@ -1283,10 +1290,20 @@ export function startFacultyConsole({
     const missingKey = OPTION_KEYS.find(key => !tierKeys.includes(key));
     const optionsByKey = Object.fromEntries(list(tier.options).map(optionItem => [optionItem?.key, optionItem]));
     const correctKey = list(tier.options).find(optionItem => optionItem?.c === true)?.key || '';
-    return el('fieldset', { class: 'editor-section tier-two' }, [
+    return el('fieldset', {
+      id: 'question-tier2',
+      class: 'editor-section tier-two',
+      tabindex: '-1',
+    }, [
       el('legend', {}, ['Tier-two reasoning']),
       editorTextarea('Tier-two question', 'tier2-question', tier.q, 3),
-      el('div', { class: 'option-grid' }, tierKeys.map(key => {
+      el('div', {
+        id: 'question-tier2-options',
+        class: 'option-grid',
+        role: 'group',
+        'aria-label': 'Tier-two answer options and correct answer',
+        tabindex: '-1',
+      }, tierKeys.map(key => {
         const optionItem = record(optionsByKey[key]);
         return el('fieldset', { class: 'option-card compact' }, [
           el('legend', {}, [`Tier-two option ${key}`]),
@@ -1322,44 +1339,113 @@ export function startFacultyConsole({
     ]);
   }
 
-  function issueControlId(field) {
+  function issueTarget(field) {
     const value = text(field);
-    if (value === 'stem') return 'question-stem';
-    if (value === 'type') return 'question-type';
-    if (value === 'subtype') return 'question-subtype';
-    if (value === 'category') return 'question-category';
-    if (value === 'competency') return 'competency-dx';
-    if (value === 'difficulty') return 'question-difficulty';
-    if (value === 'pages') return 'question-pages';
-    if (value.startsWith('link.href')) return 'question-link-href';
-    if (value.startsWith('link')) return 'question-link-label';
-    if (value === 'why') return 'question-why';
-    if (value === 'pearl') return 'question-pearl';
-    if (value === 'evidence') return 'question-evidence';
-    const optionMatch = /^options\.([A-D])(?:\.(t|trap))?/.exec(value);
+    const direct = (targetId, associationIds = [targetId]) => ({ targetId, associationIds });
+    if (value === 'id') return direct('question-id');
+    if (value === 'status' || value === 'retired') return direct('question-governed-fields');
+    if (value === 'stem') return direct('question-stem');
+    if (value === 'type') return direct('question-type');
+    if (value === 'subtype') return direct('question-subtype');
+    if (value === 'category') return direct('question-category');
+    if (value === 'competency') return direct('question-competencies');
+    if (value === 'difficulty') return direct('question-difficulty');
+    if (value === 'hy') return direct('question-high-yield');
+    if (value === 'pages') return direct('question-pages');
+    if (value === 'link') return direct('question-link-fields');
+    if (value === 'link.label') return direct('question-link-label');
+    if (value.startsWith('link.href')) return direct('question-link-href');
+    if (value === 'why') return direct('question-why');
+    if (value === 'pearl') return direct('question-pearl');
+    if (value === 'evidence') return direct('question-evidence');
+    if (value === 'options') return direct('question-options');
+    const optionMatch = /^options\.([A-D])\.(t|c|trap)$/.exec(value);
     if (optionMatch) {
-      if (optionMatch[2] === 'trap') return `option-${optionMatch[1]}-trap-name`;
-      return `option-${optionMatch[1]}-text`;
+      const [, key, nestedField] = optionMatch;
+      if (nestedField === 't') return direct(`option-${key}-text`);
+      if (nestedField === 'c') return direct(`correct-${key}`);
+      if (nestedField === 'trap') {
+        return direct(`option-${key}-trap-name`, [
+          `option-${key}-trap-name`,
+          `option-${key}-trap-note`,
+        ]);
+      }
     }
-    const tierMatch = /^tier2\.options\.([A-D])/.exec(value);
-    if (tierMatch) return `tier2-option-${tierMatch[1]}-text`;
-    if (value.startsWith('tier2.why')) return 'tier2-why';
-    if (value.startsWith('tier2')) return 'tier2-question';
-    return 'review-title';
+    if (value === 'tier2') return direct('question-tier2');
+    if (value === 'tier2.q') return direct('tier2-question');
+    if (value === 'tier2.why') return direct('tier2-why');
+    if (value === 'tier2.options') return direct('question-tier2-options');
+    const tierMatch = /^tier2\.options\.([A-D])\.(t|c)$/.exec(value);
+    if (tierMatch) {
+      const [, key, nestedField] = tierMatch;
+      if (nestedField === 't') return direct(`tier2-option-${key}-text`);
+      if (nestedField === 'c') return direct(`tier2-correct-${key}`);
+    }
+    return { targetId: 'review-title', associationIds: [] };
   }
 
-  function renderIssueList(title, issues, kind) {
-    if (!issues.length) return null;
+  function normalizeIssueRecords(assessment) {
+    const counts = new Map();
+    const normalize = (issue, kind) => {
+      const field = text(issue?.field) || 'Question';
+      const code = text(issue?.code) || 'uncoded';
+      const { targetId, associationIds } = issueTarget(field);
+      const baseId = [
+        'issue',
+        kind,
+        domToken(code.toLowerCase()) || 'uncoded',
+        domToken(field.toLowerCase()) || 'question',
+      ].join('-');
+      const occurrence = (counts.get(baseId) || 0) + 1;
+      counts.set(baseId, occurrence);
+      return {
+        issue,
+        kind,
+        field,
+        targetId,
+        associationIds,
+        issueId: occurrence === 1 ? baseId : `${baseId}-${occurrence}`,
+      };
+    };
+    return [
+      ...list(assessment?.blockers).map(issue => normalize(issue, 'blocked')),
+      ...list(assessment?.warnings).map(issue => normalize(issue, 'warning')),
+    ];
+  }
+
+  function applyIssueAssociations(issueRecords) {
+    const grouped = new Map();
+    for (const issueRecord of issueRecords) {
+      for (const targetId of issueRecord.associationIds) {
+        const target = document.getElementById(targetId);
+        if (!target) continue;
+        const group = grouped.get(target) || { issueIds: [], blocked: false };
+        group.issueIds.push(issueRecord.issueId);
+        group.blocked ||= issueRecord.kind === 'blocked';
+        grouped.set(target, group);
+      }
+    }
+    for (const [target, group] of grouped) {
+      const descriptionIds = new Set(
+        (target.getAttribute('aria-describedby') || '').trim().split(/\s+/).filter(Boolean),
+      );
+      for (const issueId of group.issueIds) descriptionIds.add(issueId);
+      target.setAttribute('aria-describedby', [...descriptionIds].join(' '));
+      if (group.blocked) target.setAttribute('aria-invalid', 'true');
+      else target.removeAttribute('aria-invalid');
+    }
+  }
+
+  function renderIssueList(title, issueRecords, kind) {
+    if (!issueRecords.length) return null;
     return el('section', { class: `issue-group ${kind}` }, [
       el('h4', {}, [title]),
-      el('ul', { class: 'issue-list' }, issues.map((issue, index) => {
-        const field = text(issue.field) || 'Question';
-        const target = issueControlId(field);
-        return el('li', {}, [
+      el('ul', { class: 'issue-list' }, issueRecords.map(issueRecord => {
+        const { issue, field, targetId, issueId } = issueRecord;
+        return el('li', { id: issueId }, [
           el('a', {
-            id: `issue-${kind}-${index + 1}-${domToken(field)}`,
-            href: `#${target}`,
-            onClick: () => document.getElementById(target)?.focus(),
+            href: `#${targetId}`,
+            onClick: () => document.getElementById(targetId)?.focus(),
           }, [field]),
           `: ${text(issue.message) || text(issue.code) || 'Review this field.'}`,
         ]);
@@ -1367,10 +1453,10 @@ export function startFacultyConsole({
     ]);
   }
 
-  function renderAssessment(assessment, dirty) {
+  function renderAssessment(assessment, dirty, issueRecords) {
     const gate = Object.hasOwn(GATE_LABELS, assessment?.gate) ? assessment.gate : 'blocked';
-    const blockers = list(assessment?.blockers);
-    const warnings = list(assessment?.warnings);
+    const blockers = issueRecords.filter(issueRecord => issueRecord.kind === 'blocked');
+    const warnings = issueRecords.filter(issueRecord => issueRecord.kind === 'warning');
     return el('section', {
       id: 'safety-issues',
       class: `safety-note ${gate}`,
@@ -1627,6 +1713,8 @@ export function startFacultyConsole({
     }
 
     const assessment = state.localAssessment || currentAssessment(question);
+    const issueRecords = normalizeIssueRecords(assessment);
+    renderedIssueRecords = issueRecords;
     const gate = assessment.gate;
     const dirty = state.dirtyFields.length > 0;
     const reviewed = savedQuestion.status === 'draft'
@@ -1646,17 +1734,26 @@ export function startFacultyConsole({
       el('header', { class: 'review-heading' }, [
         el('div', {}, [
           el('p', { class: 'eyebrow' }, ['Selected question']),
-          el('h2', { id: 'review-title', class: 'question-id' }, [savedQuestion.id]),
+          el('h2', {
+            id: 'review-title',
+            class: 'question-id',
+            tabindex: '-1',
+          }, [savedQuestion.id]),
           el('p', { class: 'muted' }, [`${savedQuestion.status === 'attested' ? 'Attested' : 'Draft'} repository version`]),
         ]),
         gateLabel(gate),
       ]),
       renderWorkflowRail(savedQuestion, dirty),
       renderActionFeedback(),
-      el('fieldset', { class: 'editor-section governed-fields' }, [
+      el('fieldset', {
+        id: 'question-governed-fields',
+        class: 'editor-section governed-fields',
+        tabindex: '-1',
+        'aria-describedby': 'governed-fields-description',
+      }, [
         el('legend', {}, ['Governed fields — read-only']),
         editorText('Question ID', 'question-id', savedQuestion.id, { readOnly: true }),
-        el('dl', { class: 'question-facts' }, [
+        el('dl', { id: 'governed-fields-description', class: 'question-facts' }, [
           el('div', {}, [el('dt', {}, ['Status']), el('dd', {}, [text(savedQuestion.status) || 'Unknown'])]),
           el('div', {}, [el('dt', {}, ['Revision']), el('dd', { class: 'data-text' }, [text(savedQuestion.revision) || 'Unavailable'])]),
           el('div', {}, [el('dt', {}, ['Retirement']), el('dd', {}, ['Managed outside this workbench'])]),
@@ -1705,7 +1802,13 @@ export function startFacultyConsole({
       el('fieldset', { class: 'editor-section source-section' }, [
         el('legend', {}, ['Learning source']),
         editorTextarea('Source pages', 'question-pages', list(question.pages).join(', '), 2),
-        el('div', { class: 'editor-grid' }, [
+        el('div', {
+          id: 'question-link-fields',
+          class: 'editor-grid',
+          role: 'group',
+          'aria-label': 'Learning link',
+          tabindex: '-1',
+        }, [
           editorText('Learning link label', 'question-link-label', question.link?.label),
           editorText('Learning link href', 'question-link-href', question.link?.href),
         ]),
@@ -1720,7 +1823,13 @@ export function startFacultyConsole({
       el('fieldset', { class: 'editor-section' }, [
         el('legend', {}, ['Question and answers']),
         editorTextarea('Question stem', 'question-stem', question.stem, 6),
-        el('div', { class: 'option-grid' }, OPTION_KEYS.map(key => renderOptionEditor({
+        el('div', {
+          id: 'question-options',
+          class: 'option-grid',
+          role: 'group',
+          'aria-label': 'Answer options and correct answer',
+          tabindex: '-1',
+        }, OPTION_KEYS.map(key => renderOptionEditor({
           key,
           ...record(optionsByKey[key]),
         }, correctKey))),
@@ -1734,7 +1843,7 @@ export function startFacultyConsole({
       renderTierTwoEditor(question),
       el('div', { class: 'review-safety-grid' }, [
         renderChangedFields(),
-        renderAssessment(assessment, dirty),
+        renderAssessment(assessment, dirty, issueRecords),
       ]),
       el('div', { class: 'draft-actions' }, [
         el('button', {

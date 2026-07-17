@@ -1,7 +1,7 @@
 # Faculty Question-Bank Review Workbench Design
 
-**Date:** 2026-07-16  
-**Status:** Approved for implementation  
+**Date:** 2026-07-16
+**Status:** Approved for implementation
 **Scope:** `faculty-console/` question-bank workflow only
 
 ## Outcome

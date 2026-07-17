@@ -272,6 +272,16 @@ test('deployment configuration selects Node 24 and CI runs on pushes to main', (
   assert.match(ci, /on:\s*\n\s+pull_request:\s*\n\s+push:\s*\n\s+branches:\s*\[main\]\s*\n\s+workflow_dispatch:/);
 });
 
+test('static console deployment denies framing with CSP and a legacy fallback', () => {
+  const netlify = readFileSync(new URL('../faculty-console/netlify.toml', import.meta.url), 'utf8');
+  const headerValues = netlify.match(/\[headers\.values\]([\s\S]*?)(?=\n\[|$)/)?.[1] || '';
+  assert.match(
+    headerValues,
+    /^\s*Content-Security-Policy\s*=\s*"frame-ancestors 'none'"\s*$/m,
+  );
+  assert.match(headerValues, /^\s*X-Frame-Options\s*=\s*"DENY"\s*$/m);
+});
+
 test('rejects header auth before reading a POST body and never accepts a body key', async () => {
   const mock = createGithubMock();
   const handler = handlerWith(mock);
