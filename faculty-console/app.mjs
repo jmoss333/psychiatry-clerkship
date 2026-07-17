@@ -8,6 +8,18 @@ import {
   SUBTYPES,
   TYPES,
 } from './qbank-rules.mjs';
+import {
+  buildExternalReviewUrl,
+  buildPreviewRequest,
+  createReviewToken,
+  deriveAttestationEligibility,
+  deriveReviewCounts,
+  filterReviewItems,
+  matchesPreviewStatus,
+  normalizeReviewItems,
+  normalizeStudentBase,
+  reviewedRevisionMatches,
+} from './review-model.mjs';
 
 const API = '/api/attest';
 const KEY_STORAGE = 'fac_key';
@@ -36,6 +48,15 @@ const emptyConfirmations = () => ({
   clinical: false,
   evidence: false,
   originalityAndNoPhi: false,
+});
+
+const emptyReviewChecks = () => ({
+  completeItemReviewed: false,
+  liveReviewed: false,
+  separateTabReviewed: false,
+  liveUnavailableAcknowledged: false,
+  accuracy: false,
+  interactions: false,
 });
 
 function list(value) {
@@ -72,43 +93,7 @@ function gateOf(question) {
   return Object.hasOwn(GATE_LABELS, gate) ? gate : 'blocked';
 }
 
-export function filteredQuestions(server, filters) {
-  const questions = list(server?.qbank);
-  const selected = filters && typeof filters === 'object' ? filters : {};
-  const needle = text(selected.search).trim().toLowerCase();
-
-  return questions.filter(question => {
-    const pages = list(question?.pages).filter(page => typeof page === 'string');
-    const haystack = [
-      text(question?.id),
-      text(question?.stem),
-      text(question?.category),
-      text(question?.evidence),
-      ...pages,
-    ].join(' ').toLowerCase();
-    return (!needle || haystack.includes(needle))
-      && (selected.category === 'all' || question?.category === selected.category)
-      && (selected.status === 'all' || question?.status === selected.status)
-      && (selected.gate === 'all' || gateOf(question) === selected.gate)
-      && (selected.difficulty === 'all'
-        || String(question?.difficulty) === selected.difficulty);
-  }).sort((left, right) => (
-    text(left?.category).localeCompare(text(right?.category))
-      || text(left?.id).localeCompare(text(right?.id))
-  ));
-}
-
-export function deriveQueueCounts(questions) {
-  const counts = { draft: 0, ready: 0, warning: 0, blocked: 0, attested: 0 };
-  for (const question of list(questions)) {
-    if (question?.status === 'draft') counts.draft += 1;
-    if (question?.status === 'attested') counts.attested += 1;
-    counts[gateOf(question)] += 1;
-  }
-  return counts;
-}
-
-export function isBatchEligible(question, reviewedInSession, hasUnsavedChanges = false) {
+function legacyBatchEligible(question, reviewedInSession, hasUnsavedChanges = false) {
   return question?.status === 'draft'
     && gateOf(question) === 'ready'
     && reviewedInSession instanceof Set
@@ -121,6 +106,10 @@ export function startFacultyConsole({
   window,
   fetchImpl = fetch,
   assessItemImpl = assessItem,
+  tokenFactory = () => createReviewToken(window.crypto),
+  scheduleTimeout = (callback, delay) => window.setTimeout(callback, delay),
+  cancelTimeout = id => window.clearTimeout(id),
+  openExternal = url => window.open(url, '_blank', 'noopener,noreferrer'),
 }) {
   const app = document.getElementById('app');
   const statusRegion = document.getElementById('app-status');
@@ -130,20 +119,33 @@ export function startFacultyConsole({
 
   const state = {
     server: null,
-    tab: 'qbank',
+    selectedKey: null,
+    completedHoldKey: null,
+    reviewItems: [],
     selectedId: null,
     editor: null,
     original: null,
     reviewedInSession: new Set(),
     batch: new Set(),
-    filters: { search: '', category: 'all', status: 'draft', gate: 'all', difficulty: 'all' },
+    queueFilters: {
+      search: '',
+      type: 'all',
+      status: 'needs-review',
+      category: 'all',
+      gate: 'all',
+      difficulty: 'all',
+    },
+    viewMode: 'live',
+    preview: null,
+    previewAttempt: 0,
+    reviewChecks: emptyReviewChecks(),
     pending: false,
     reviewerLabel: DEFAULT_REVIEWER,
     reviewedRevisions: new Map(),
     contentChanges: Object.create(null),
-    contentFilters: { kind: 'all', status: 'all' },
     contentMessage: '',
     contentCommitUrl: null,
+    reopenConfirmation: null,
     dirtyFields: [],
     localAssessment: null,
     confirmations: emptyConfirmations(),
@@ -350,6 +352,58 @@ export function startFacultyConsole({
     refreshEditorState();
   }
 
+  function findReviewItem(key) {
+    return state.reviewItems.find(item => item.key === key) || null;
+  }
+
+  function currentReviewItem() {
+    return findReviewItem(state.selectedKey);
+  }
+
+  function visibleReviewItems() {
+    return filterReviewItems(state.reviewItems, state.queueFilters);
+  }
+
+  function clearReviewSelection() {
+    if (state.preview?.timerId) cancelTimeout(state.preview.timerId);
+    state.selectedKey = null;
+    state.completedHoldKey = null;
+    state.selectedId = null;
+    state.original = null;
+    state.editor = null;
+    state.dirtyFields = [];
+    state.localAssessment = null;
+    state.viewMode = 'live';
+    state.preview = null;
+    state.previewAttempt = 0;
+    state.reviewChecks = emptyReviewChecks();
+    resetApprovalInputs();
+  }
+
+  function setSelectedReviewKey(key, { force = false, preserveCompletedHold = false } = {}) {
+    const item = findReviewItem(key);
+    if (!item) return false;
+    if (!preserveCompletedHold) state.completedHoldKey = null;
+    if (!force && state.selectedKey === key) return true;
+    if (state.preview?.timerId) cancelTimeout(state.preview.timerId);
+    state.reviewedRevisions.clear();
+    state.selectedKey = key;
+    state.viewMode = 'live';
+    state.preview = null;
+    state.previewAttempt = 0;
+    state.reviewChecks = emptyReviewChecks();
+    resetApprovalInputs();
+    if (item.type === 'question') setSelected(item.identity, { force: true });
+    else {
+      state.selectedId = null;
+      state.original = null;
+      state.editor = null;
+      state.dirtyFields = [];
+      state.localAssessment = null;
+    }
+    return true;
+  }
+
   function currentAssessment(question) {
     try {
       const activeItems = list(state.server?.qbank).map(item => (
@@ -400,21 +454,27 @@ export function startFacultyConsole({
     for (const id of [...state.batch]) {
       const question = findQuestion(id);
       const assessed = question ? assessedQuestion(question) : null;
-      if (!isBatchEligible(assessed, state.reviewedInSession, false)) state.batch.delete(id);
+      if (!legacyBatchEligible(assessed, state.reviewedInSession, false)) state.batch.delete(id);
     }
   }
 
   function chooseSelection() {
-    if (findQuestion(state.selectedId)) {
-      setSelected(state.selectedId, { force: true });
+    const visible = visibleReviewItems();
+    const held = state.completedHoldKey && findReviewItem(state.completedHoldKey);
+    if (held) {
+      setSelectedReviewKey(held.key, { force: true, preserveCompletedHold: true });
       return;
     }
-    const first = filteredQuestions(state.server, state.filters)[0]
-      || list(state.server?.qbank)[0];
-    setSelected(first?.id || null, { force: true });
+    if (visible.some(item => item.key === state.selectedKey)) {
+      setSelectedReviewKey(state.selectedKey, { force: true });
+      return;
+    }
+    if (visible[0]) setSelectedReviewKey(visible[0].key, { force: true });
+    else clearReviewSelection();
   }
 
   function renderLogin(message = '') {
+    document.title = 'Faculty attestation workspace';
     const keyInput = el('input', {
       id: 'faculty-key',
       type: 'password',
@@ -443,14 +503,14 @@ export function startFacultyConsole({
           ]),
       ]),
       el('div', { class: 'login-actions' }, [
-        el('button', { class: 'primary', type: 'submit' }, ['Unlock workbench']),
+        el('button', { class: 'primary', type: 'submit' }, ['Unlock workspace']),
       ]),
     ]);
     replaceApp(el('section', { class: 'login-shell', 'aria-labelledby': 'login-title' }, [
       el('p', { class: 'eyebrow' }, ['Faculty governance']),
-      el('h1', { id: 'login-title' }, ['Clinical-question quality workbench']),
+      el('h1', { id: 'login-title' }, ['Faculty attestation workspace']),
       el('p', { class: 'console-subtitle' }, [
-        'Private review space for the psychiatry clerkship question bank and content attestations.',
+        'Review one learner-facing page, tool, or question, resolve concerns, then attest deliberately.',
       ]),
       form,
     ]));
@@ -461,7 +521,7 @@ export function startFacultyConsole({
     replaceApp(el('section', { class: 'loading-state', 'aria-labelledby': 'loading-title' }, [
       el('p', { class: 'eyebrow' }, ['Faculty governance']),
       el('h1', { id: 'loading-title' }, ['Loading current repository state…']),
-      el('p', { class: 'muted' }, ['Question versions and automated gates are being checked.']),
+      el('p', { class: 'muted' }, ['Pages, tools, and question versions are being organized for review.']),
     ]));
   }
 
@@ -486,6 +546,7 @@ export function startFacultyConsole({
     requiredId = null,
     expectedRevisions = null,
     preserveOnError = false,
+    completedHoldKey = null,
   } = {}) {
     const generation = ++state.loadGeneration;
     state.pending = true;
@@ -503,6 +564,14 @@ export function startFacultyConsole({
       }
       if (!response.ok || !validServerState(payload)) {
         throw new Error(responseMessage(payload, 'The server returned an incomplete state.'));
+      }
+      let studentBase;
+      let reviewItems;
+      try {
+        studentBase = normalizeStudentBase(payload.student);
+        reviewItems = normalizeReviewItems(payload);
+      } catch {
+        throw new Error('The server returned an incomplete state.');
       }
       const manifestChanged = state.server !== null
         && state.server.manifestRevision !== payload.manifestRevision;
@@ -523,7 +592,11 @@ export function startFacultyConsole({
           }
         }
       }
-      state.server = payload;
+      state.server = { ...payload, student: studentBase.href };
+      state.reviewItems = reviewItems;
+      if (completedHoldKey && findReviewItem(completedHoldKey)) {
+        state.completedHoldKey = completedHoldKey;
+      }
       state.pending = false;
       pruneSessionReview();
       chooseSelection();
@@ -549,6 +622,8 @@ export function startFacultyConsole({
     if (target.kind === 'lock') {
       clearKey();
       state.server = null;
+      state.reviewItems = [];
+      clearReviewSelection();
       state.navigationGuard = null;
       state.navigationAfterSave = null;
       state.batchConfirmation = null;
@@ -556,24 +631,30 @@ export function startFacultyConsole({
       renderLogin();
       return;
     }
-    if (target.kind === 'tab') {
-      state.tab = target.name;
-      renderShell(target.focus ? `tab-${target.name}` : null);
+    if (target.kind === 'review' && setSelectedReviewKey(target.key)) {
+      renderShell(target.focusId || 'review-item-selector');
       return;
     }
-    if (target.kind === 'question' && findQuestion(target.id)) {
-      setSelected(target.id);
-      renderShell(target.focusId || `queue-${domToken(target.id)}`);
+    if (target.kind === 'filter') {
+      state.queueFilters[target.name] = target.value;
+      state.completedHoldKey = null;
+      const visible = visibleReviewItems();
+      const next = visible[0] || null;
+      if (next) setSelectedReviewKey(next.key);
+      else clearReviewSelection();
+      renderShell(target.focusTarget || 'review-item-selector');
+      announce(next
+        ? `The prior selection is hidden by the active filters. Selected ${next.title}.`
+        : 'No review items match the active filters.');
     }
   }
 
   function requestNavigation(target, returnFocus = null) {
-    const changesQuestion = target?.kind === 'question' && target.id !== state.selectedId;
-    const leavesQuestionTab = target?.kind === 'tab'
-      && state.tab === 'qbank' && target.name !== 'qbank';
+    const changesReviewItem = (target?.kind === 'review' && target.key !== state.selectedKey)
+      || target?.kind === 'filter';
     const locksWithUnsavedChanges = target?.kind === 'lock' && hasAnyUnsavedChanges();
     if (locksWithUnsavedChanges
-        || (hasUnsavedChanges() && (changesQuestion || leavesQuestionTab))) {
+        || (hasUnsavedChanges() && changesReviewItem)) {
       state.navigationGuard = { target, returnFocus };
       renderShell('unsaved-guard');
       return;
@@ -581,51 +662,237 @@ export function startFacultyConsole({
     performNavigation(target);
   }
 
-  function activateTab(name, focusTab = false) {
-    requestNavigation(
-      { kind: 'tab', name, focus: focusTab },
-      `tab-${state.tab}`,
-    );
+  function focusRequested(focusTarget = null) {
+    const focusState = typeof focusTarget === 'string'
+      ? { id: focusTarget }
+      : record(focusTarget);
+    if (!text(focusState.id)) return;
+    const target = document.getElementById(focusState.id);
+    target?.focus();
+    const targetType = target?.getAttribute?.('type');
+    if (targetType === 'search' || targetType === 'text' || target?.tagName === 'TEXTAREA') {
+      const hasSelection = Number.isInteger(focusState.selectionStart)
+        && Number.isInteger(focusState.selectionEnd);
+      const start = hasSelection ? focusState.selectionStart : target.value.length;
+      const end = hasSelection ? focusState.selectionEnd : target.value.length;
+      target.setSelectionRange?.(start, end, text(focusState.selectionDirection) || 'none');
+    }
   }
 
-  function tabButton(name, label) {
-    const active = state.tab === name;
-    return el('button', {
-      id: `tab-${name}`,
-      class: 'tab',
-      type: 'button',
-      role: 'tab',
-      'aria-selected': String(active),
-      'aria-controls': `panel-${name}`,
-      tabindex: active ? '0' : '-1',
-      onClick: () => activateTab(name, true),
-    }, [label]);
+  function itemTypeLabel(type) {
+    if (type === 'page') return 'Page';
+    if (type === 'tool') return 'Tool';
+    return 'Question';
   }
 
-  function renderTabNavigation() {
-    const tabs = el('div', {
-      class: 'tabs',
-      role: 'tablist',
-      'aria-label': 'Faculty console sections',
-      onKeydown: event => {
-        if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
-        event.preventDefault();
-        const next = state.tab === 'qbank' ? 'content' : 'qbank';
-        activateTab(next, true);
-      },
+  function savedStatusLabel(item) {
+    if (item?.type === 'question') return item.savedStatus === 'attested' ? 'Attested' : 'Draft';
+    return item?.savedStatus === 'reviewed' ? 'Reviewed' : 'Not reviewed';
+  }
+
+  function viewModeLabel(item = currentReviewItem()) {
+    if (item?.type !== 'question' || state.viewMode === 'live') return 'Live deploy';
+    return state.viewMode === 'draft' ? 'Draft preview' : 'Edit question';
+  }
+
+  function renderItemHeader(item) {
+    if (!item) {
+      return el('section', { id: 'selected-item-header', class: 'item-header empty-selection' }, [
+        el('h2', { id: 'selected-item-title' }, ['No items match the active filters']),
+        el('p', { class: 'muted' }, ['Clear or widen a queue filter to continue.']),
+      ]);
+    }
+    return el('section', {
+      id: 'selected-item-header',
+      class: 'item-header',
+      'aria-labelledby': 'selected-item-title',
     }, [
-      tabButton('qbank', 'Question bank'),
-      tabButton('content', 'Content pages & tools'),
+      el('div', {}, [
+        el('p', { class: 'eyebrow' }, ['Selected curriculum item']),
+        el('h2', { id: 'selected-item-title' }, [item.title]),
+        el('p', { id: 'selected-item-identity', class: 'data-text item-identity' }, [item.identity]),
+      ]),
+      el('dl', { class: 'item-facts' }, [
+        el('div', {}, [el('dt', {}, ['Type']), el('dd', { id: 'selected-item-type' }, [itemTypeLabel(item.type)])]),
+        el('div', {}, [el('dt', {}, ['Saved status']), el('dd', { id: 'selected-item-status' }, [savedStatusLabel(item)])]),
+        el('div', {}, [el('dt', {}, ['Current view']), el('dd', { id: 'selected-item-view' }, [viewModeLabel(item)])]),
+        item.revision ? el('div', {}, [
+          el('dt', {}, ['Revision']),
+          el('dd', { id: 'selected-item-revision', class: 'data-text' }, [item.revision]),
+        ]) : null,
+      ]),
     ]);
-    return el('nav', { class: 'tab-nav', 'aria-label': 'Review areas' }, [tabs]);
+  }
+
+  function switchQuestionView(mode, focusId) {
+    if (!['live', 'draft', 'edit'].includes(mode) || currentReviewItem()?.type !== 'question') return;
+    state.viewMode = mode;
+    for (const candidate of ['live', 'draft', 'edit']) {
+      const button = document.getElementById(`view-${candidate}`);
+      button?.setAttribute('aria-pressed', String(candidate === mode));
+      const pane = document.getElementById(`question-view-${candidate}`);
+      if (candidate === mode) pane?.removeAttribute('hidden');
+      else pane?.setAttribute('hidden', '');
+    }
+    const view = document.getElementById('selected-item-view');
+    if (view) view.textContent = viewModeLabel();
+    refreshAttestationRail(focusId);
+  }
+
+  function renderViewSwitcher(item) {
+    if (item?.type !== 'question') {
+      return el('div', { class: 'view-switcher', 'aria-label': 'Current workspace view' }, [
+        el('span', { class: 'view-label' }, ['Live deploy']),
+      ]);
+    }
+    return el('div', {
+      class: 'view-switcher',
+      role: 'group',
+      'aria-label': 'Question workspace view',
+    }, [
+      ...[
+        ['live', 'Live deploy'],
+        ['draft', 'Draft preview'],
+        ['edit', 'Edit question'],
+      ].map(([mode, label]) => el('button', {
+        id: `view-${mode}`,
+        type: 'button',
+        'aria-pressed': String(state.viewMode === mode),
+        onClick: () => switchQuestionView(mode, `view-${mode}`),
+      }, [label])),
+    ]);
+  }
+
+  function renderWorkspaceSurface(item) {
+    if (!item) {
+      return el('div', { class: 'preview-shell empty-selection' }, [
+        el('p', { class: 'muted' }, ['No review surface is available for the active filters.']),
+      ]);
+    }
+    const live = el('section', {
+      id: 'question-view-live',
+      class: 'preview-shell',
+      hidden: item.type === 'question' && state.viewMode !== 'live',
+      'aria-label': 'Live learner deployment',
+    }, [
+      el('div', { id: 'preview-status-slot', class: 'preview-status' }, [
+        el('strong', {}, ['Live preview pending']),
+        el('span', {}, [' The authenticated shell is ready; verified preview loading follows in the next slice.']),
+      ]),
+      el('iframe', {
+        id: 'learner-preview-frame',
+        title: `Live learner preview for ${item.title}`,
+        src: 'about:blank',
+      }),
+    ]);
+    if (item.type !== 'question') return live;
+    const dirty = state.dirtyFields.length > 0;
+    return el('div', { class: 'question-view-stack' }, [
+      live,
+      el('section', {
+        id: 'question-view-draft',
+        class: 'preview-shell draft-preview-shell',
+        hidden: state.viewMode !== 'draft',
+        'aria-labelledby': 'draft-preview-title',
+      }, [
+        el('h2', { id: 'draft-preview-title' }, [
+          dirty ? 'Unsaved local preview · Not deployed' : 'Saved Draft preview · Not deployed',
+        ]),
+        el('p', { class: 'muted' }, [
+          'The revision-aware Draft rendering surface is introduced in the next review slice.',
+        ]),
+      ]),
+      el('section', {
+        id: 'question-view-edit',
+        class: 'question-edit-pane',
+        hidden: state.viewMode !== 'edit',
+        'aria-label': 'Question editor',
+      }, [renderQuestionOverview()]),
+    ]);
+  }
+
+  function renderAttestationRail(item) {
+    if (!item) {
+      return el('aside', { id: 'attestation-rail', class: 'signoff-rail' }, [
+        el('h2', {}, ['Review → Resolve → Confirm']),
+        el('p', { class: 'muted' }, ['No item is selected.']),
+      ]);
+    }
+    const question = item.type === 'question' ? state.editor : null;
+    const assessment = question ? (state.localAssessment || currentAssessment(question)) : null;
+    const dirty = question ? state.dirtyFields.length > 0 : false;
+    const blocked = question && (dirty || assessment?.gate === 'blocked' || item.savedStatus !== 'draft');
+    const warningCodesComplete = question ? warningAcknowledgementsComplete(assessment) : false;
+    const currentStep = dirty ? 'review' : item.completion === 'complete' ? 'confirm' : 'resolve';
+    return el('aside', {
+      id: 'attestation-rail',
+      class: 'signoff-rail',
+      'aria-labelledby': 'attestation-rail-title',
+    }, [
+      el('header', { class: 'rail-heading' }, [
+        el('p', { class: 'eyebrow' }, ['Single-item sign-off']),
+        el('h2', { id: 'attestation-rail-title' }, ['Review → Resolve → Confirm']),
+      ]),
+      renderActionFeedback(),
+      el('section', {
+        id: 'rail-step-review',
+        class: `rail-step${currentStep === 'review' ? ' current' : ''}`,
+      }, [
+        el('h3', {}, ['Review']),
+        el('p', {}, [item.type === 'question'
+          ? 'Inspect the learner view, saved Draft, and governed question fields.'
+          : 'Inspect the complete learner-facing page or tool.']),
+      ]),
+      el('section', {
+        id: 'rail-step-resolve',
+        class: `rail-step${currentStep === 'resolve' ? ' current' : ''}`,
+      }, [
+        el('h3', {}, ['Resolve']),
+        question
+          ? gateLabel(Object.hasOwn(GATE_LABELS, assessment?.gate) ? assessment.gate : 'blocked')
+          : el('p', { class: 'muted' }, [
+            'Content checks activate with the verified preview workflow.',
+          ]),
+      ]),
+      el('section', {
+        id: 'rail-step-confirm',
+        class: `rail-step${currentStep === 'confirm' ? ' current' : ''}`,
+      }, [
+        el('h3', {}, ['Confirm']),
+        question ? renderConfirmations(blocked || state.pending) : el('p', { class: 'muted' }, [
+          'Individual attestation activates after live review is verified.',
+        ]),
+        question ? renderWarningAcknowledgements(assessment, blocked || state.pending) : null,
+        question && assessment?.gate === 'warning' ? el('button', {
+          id: 'attest-warning',
+          class: 'primary rail-action',
+          type: 'button',
+          disabled: blocked || state.pending || !confirmationsComplete() || !warningCodesComplete,
+          onClick: () => void attestWarning(findQuestion(item.identity), assessment),
+        }, ['Attest this warning question']) : el('button', {
+          id: 'attest-current-item',
+          class: 'primary rail-action',
+          type: 'button',
+          disabled: true,
+        }, ['Attestation pending live review']),
+      ]),
+    ]);
+  }
+
+  function renderWorkspace(item) {
+    return el('section', { id: 'review-workspace', class: 'workspace' }, [
+      el('div', { class: 'preview-column' }, [
+        renderViewSwitcher(item),
+        renderWorkspaceSurface(item),
+      ]),
+      renderAttestationRail(item),
+    ]);
   }
 
   function renderShell(focusTarget = null) {
     if (!state.server) return;
     renderedIssueRecords = [];
-    const focusState = typeof focusTarget === 'string'
-      ? { id: focusTarget }
-      : record(focusTarget);
+    document.title = 'Faculty attestation workspace';
     const reviewer = el('input', {
       id: 'reviewer-label',
       type: 'text',
@@ -633,14 +900,9 @@ export function startFacultyConsole({
       value: state.reviewerLabel,
       onInput: event => { state.reviewerLabel = event.target.value; },
     });
-    const panel = el('section', {
-      id: `panel-${state.tab}`,
-      role: 'tabpanel',
-      tabindex: '0',
-      'aria-labelledby': `tab-${state.tab}`,
-    }, [state.tab === 'qbank' ? renderQuestionWorkbench() : renderContentPanel()]);
 
-    const modal = renderNavigationGuard() || renderBatchConfirmation();
+    const item = currentReviewItem();
+    const modal = renderNavigationGuard();
     const background = el('div', {
       id: 'console-background',
       inert: state.pending || modal ? true : null,
@@ -649,9 +911,9 @@ export function startFacultyConsole({
       el('header', { class: 'console-header' }, [
         el('div', {}, [
           el('p', { class: 'eyebrow' }, ['Psychiatry clerkship faculty']),
-          el('h1', {}, ['Question review workbench']),
+          el('h1', {}, ['Faculty attestation workspace']),
           el('p', { class: 'console-subtitle' }, [
-            'Triage question quality, open one item, and record deliberate faculty review.',
+            'Review one learner-facing page, tool, or question, resolve concerns, then attest deliberately.',
           ]),
         ]),
         el('div', { class: 'header-actions' }, [
@@ -675,24 +937,13 @@ export function startFacultyConsole({
           'Self-asserted under the shared faculty key; this label is not verified identity.',
         ]),
       ]),
-      renderTabNavigation(),
-      panel,
+      renderSharedQueueStrip(visibleReviewItems()),
+      renderItemHeader(item),
+      renderWorkspace(item),
     ]);
     replaceApp(background, ...(modal ? [modal] : []));
     applyIssueAssociations(renderedIssueRecords);
-
-    if (text(focusState.id)) {
-      const target = document.getElementById(focusState.id);
-      target?.focus();
-      const targetType = target?.getAttribute?.('type');
-      if (targetType === 'search' || targetType === 'text' || target?.tagName === 'TEXTAREA') {
-        const hasSelection = Number.isInteger(focusState.selectionStart)
-          && Number.isInteger(focusState.selectionEnd);
-        const start = hasSelection ? focusState.selectionStart : target.value.length;
-        const end = hasSelection ? focusState.selectionEnd : target.value.length;
-        target.setSelectionRange?.(start, end, text(focusState.selectionDirection) || 'none');
-      }
-    }
+    focusRequested(focusTarget);
   }
 
   function labeledControl(label, id, control, className = '') {
@@ -707,79 +958,156 @@ export function startFacultyConsole({
   }
 
   function filterSelect(id, label, values, selected, onChange) {
-    const control = el('select', { id, onChange }, values.map(([value, name]) => (
+    const control = el('select', { id, value: selected, onChange }, values.map(([value, name]) => (
       option(value, name, selected)
     )));
     return labeledControl(label, id, control);
   }
 
-  function updateFilter(name, value, focusId) {
-    state.filters[name] = value;
-    renderShell(focusId);
+  function updateQueueFilter(name, value, focusTarget) {
+    const filters = { ...state.queueFilters, [name]: value };
+    const visible = filterReviewItems(state.reviewItems, filters);
+    state.completedHoldKey = null;
+    if (visible.some(item => item.key === state.selectedKey)) {
+      state.queueFilters[name] = value;
+      refreshQueueStrip(focusTarget);
+      announce(`${visible.length} review item${visible.length === 1 ? '' : 's'} shown.`);
+      return;
+    }
+    requestNavigation(
+      { kind: 'filter', name, value, focusTarget },
+      text(record(focusTarget).id) || text(focusTarget) || 'review-item-selector',
+    );
   }
 
-  function renderQueueFilters() {
+  function renderSharedQueueStrip(items) {
     const questions = list(state.server?.qbank);
     const categories = [...new Set(questions.map(question => text(question.category)).filter(Boolean))]
       .sort((left, right) => left.localeCompare(right));
     const difficulties = [...new Set(questions.map(question => String(question.difficulty)))]
       .filter(value => value !== 'undefined')
       .sort((left, right) => Number(left) - Number(right));
+    const held = state.completedHoldKey && findReviewItem(state.completedHoldKey);
+    const selectable = held && !items.some(item => item.key === held.key) ? [held, ...items] : items;
+    const index = items.findIndex(item => item.key === state.selectedKey);
+    const previousKey = index > 0 ? items[index - 1].key : null;
+    const nextKey = held && state.selectedKey === held.key && index < 0
+      ? items[0]?.key || null
+      : index >= 0 && index < items.length - 1 ? items[index + 1].key : null;
+    const counts = deriveReviewCounts(items);
     const search = el('input', {
-      id: 'question-search',
+      id: 'review-search',
       type: 'search',
-      value: state.filters.search,
+      value: state.queueFilters.search,
       autocomplete: 'off',
-      onInput: event => updateFilter('search', event.target.value, 'question-search'),
+      onInput: event => updateQueueFilter('search', event.target.value, editorFocusState(event.target)),
     });
-    return el('fieldset', { class: 'queue-filters' }, [
-      el('legend', {}, ['Filter question queue']),
-      el('div', { class: 'filter-grid' }, [
-        labeledControl('Search questions', 'question-search', search, 'filter-search'),
+    const selector = el('select', {
+      id: 'review-item-selector',
+      value: state.selectedKey || '',
+      disabled: !selectable.length || state.pending,
+      onChange: event => requestNavigation(
+        { kind: 'review', key: event.target.value, focusId: 'review-item-selector' },
+        'review-item-selector',
+      ),
+    }, selectable.length ? selectable.map(item => el('option', {
+      value: item.key,
+      selected: item.key === state.selectedKey,
+      'aria-current': item.key === state.selectedKey ? 'true' : null,
+    }, [`${itemTypeLabel(item.type)} · ${item.title} · ${savedStatusLabel(item)}`])) : [
+      option('', 'No items match the active filters', ''),
+    ]);
+    return el('section', {
+      id: 'review-queue-strip',
+      class: 'queue-strip',
+      'aria-labelledby': 'review-queue-title',
+    }, [
+      el('div', { class: 'queue-primary' }, [
+        el('div', { class: 'queue-heading' }, [
+          el('p', { class: 'eyebrow' }, ['Ordered review queue']),
+          el('h2', { id: 'review-queue-title' }, ['Choose one curriculum item']),
+        ]),
+        el('div', { class: 'queue-navigation' }, [
+          el('button', {
+            id: 'previous-review-item',
+            type: 'button',
+            disabled: !previousKey || state.pending,
+            onClick: () => requestNavigation(
+              { kind: 'review', key: previousKey, focusId: 'previous-review-item' },
+              'previous-review-item',
+            ),
+          }, ['Previous']),
+          el('button', {
+            id: 'next-review-item',
+            type: 'button',
+            disabled: !nextKey || state.pending,
+            onClick: () => requestNavigation(
+              { kind: 'review', key: nextKey, focusId: 'next-review-item' },
+              'next-review-item',
+            ),
+          }, [held && state.selectedKey === held.key ? 'Next item' : 'Next']),
+        ]),
+        labeledControl('Search pages, tools, and questions', 'review-search', search, 'queue-search'),
+        labeledControl('Review item', 'review-item-selector', selector, 'queue-selector'),
+      ]),
+      el('div', { class: 'queue-filters' }, [
         filterSelect(
-          'filter-question-category',
-          'Category',
-          [['all', 'All categories'], ...categories.map(value => [value, value])],
-          state.filters.category,
-          event => updateFilter('category', event.target.value, 'filter-question-category'),
+          'review-type-filter',
+          'Item type',
+          [['all', 'All types'], ['page', 'Pages'], ['tool', 'Tools'], ['question', 'Questions']],
+          state.queueFilters.type,
+          event => updateQueueFilter('type', event.target.value, 'review-type-filter'),
         ),
         filterSelect(
-          'question-status',
-          'Status',
-          [['all', 'All statuses'], ['draft', 'Draft'], ['attested', 'Attested']],
-          state.filters.status,
-          event => updateFilter('status', event.target.value, 'question-status'),
+          'review-status-filter',
+          'Review status',
+          [['needs-review', 'Needs review'], ['complete', 'Complete'], ['all', 'All statuses']],
+          state.queueFilters.status,
+          event => updateQueueFilter('status', event.target.value, 'review-status-filter'),
         ),
-        filterSelect(
-          'question-gate',
-          'Review gate',
-          [['all', 'All gates'], ['ready', 'Ready'], ['warning', 'Warning'], ['blocked', 'Blocked']],
-          state.filters.gate,
-          event => updateFilter('gate', event.target.value, 'question-gate'),
-        ),
-        filterSelect(
-          'filter-question-difficulty',
-          'Difficulty',
-          [['all', 'All levels'], ...difficulties.map(value => [value, `Level ${value}`])],
-          state.filters.difficulty,
-          event => updateFilter('difficulty', event.target.value, 'filter-question-difficulty'),
-        ),
+        el('p', { id: 'review-queue-counts', class: 'queue-counts' }, [
+          `${counts.total} shown · ${counts.needsReview} need review · ${counts.complete} complete`,
+        ]),
+      ]),
+      el('details', { id: 'question-filter-disclosure', class: 'question-filter-disclosure' }, [
+        el('summary', {}, ['Question filters']),
+        el('fieldset', { class: 'question-filter-grid' }, [
+          el('legend', { class: 'sr-only' }, ['Question-only filters']),
+          filterSelect(
+            'filter-question-category',
+            'Category',
+            [['all', 'All categories'], ...categories.map(value => [value, value])],
+            state.queueFilters.category,
+            event => updateQueueFilter('category', event.target.value, 'filter-question-category'),
+          ),
+          filterSelect(
+            'question-gate',
+            'Review gate',
+            [['all', 'All gates'], ['ready', 'Ready'], ['warning', 'Warning'], ['blocked', 'Blocked']],
+            state.queueFilters.gate,
+            event => updateQueueFilter('gate', event.target.value, 'question-gate'),
+          ),
+          filterSelect(
+            'filter-question-difficulty',
+            'Difficulty',
+            [['all', 'All levels'], ...difficulties.map(value => [value, `Level ${value}`])],
+            state.queueFilters.difficulty,
+            event => updateQueueFilter('difficulty', event.target.value, 'filter-question-difficulty'),
+          ),
+        ]),
+      ]),
+      items.length ? null : el('p', { class: 'empty-queue' }, [
+        'No items match these filters. Clear or widen a filter to continue.',
       ]),
     ]);
   }
 
-  function renderCountStrip(questions) {
-    const counts = deriveQueueCounts(questions);
-    const labels = [
-      ['Draft', counts.draft],
-      ['Ready', counts.ready],
-      ['Warnings', counts.warning],
-      ['Blocked', counts.blocked],
-      ['Attested', counts.attested],
-    ];
-    return el('dl', { class: 'count-strip', 'aria-label': 'Question bank counts' }, labels.map(
-      ([label, count]) => el('div', {}, [el('dt', {}, [label]), el('dd', {}, [count])]),
-    ));
+  function refreshQueueStrip(focusTarget = null) {
+    const current = document.getElementById('review-queue-strip');
+    if (!current) return;
+    const replacement = renderSharedQueueStrip(visibleReviewItems());
+    current.replaceChildren(...replacement.children);
+    focusRequested(focusTarget);
   }
 
   function gateLabel(gate) {
@@ -790,61 +1118,33 @@ export function startFacultyConsole({
     ]);
   }
 
-  function batchReason(question, dirty) {
-    if (question.status !== 'draft') return 'Only saved drafts can enter a batch.';
-    if (gateOf(question) !== 'ready') return 'Only questions with a green Ready gate can enter a batch.';
-    if (dirty) return 'Save or discard local changes before batch selection.';
-    if (!state.reviewedInSession.has(question.id)) {
-      return 'Open this question and choose Mark reviewed & next before batch selection.';
-    }
-    return 'Eligible for a green batch after faculty review in this session.';
+  function refreshAttestationRail(focusTarget = null) {
+    const current = document.getElementById('attestation-rail');
+    if (!current) return;
+    const replacement = renderAttestationRail(currentReviewItem());
+    current.replaceChildren(...replacement.children);
+    focusRequested(focusTarget);
   }
 
-  function renderQueueRow(question) {
-    const selected = state.selectedId === question.id;
-    const dirty = selected && hasUnsavedChanges();
-    const revisionReviewed = state.reviewedRevisions.get(question.id) === question.revision;
-    const eligible = revisionReviewed
-      && isBatchEligible(question, state.reviewedInSession, dirty);
-    const checkboxId = `batch-${domToken(question.id)}`;
-    const queueId = `queue-${domToken(question.id)}`;
-    const checkbox = el('input', {
-      id: checkboxId,
-      type: 'checkbox',
-      checked: state.batch.has(question.id),
-      disabled: !eligible || state.pending,
-      'aria-label': `Select ${question.id} for batch attestation. ${batchReason(question, dirty)}`,
-      onChange: event => {
-        if (event.target.checked) state.batch.add(question.id);
-        else state.batch.delete(question.id);
-        resetApprovalInputs();
-        renderShell(checkboxId);
-      },
-    });
-    return el('li', { class: `queue-row gate-${gateOf(question)}` }, [
-      el('label', { class: 'batch-check', for: checkboxId, title: batchReason(question, dirty) }, [
-        checkbox,
-      ]),
-      el('button', {
-        id: queueId,
-        class: 'queue-choice',
-        type: 'button',
-        'aria-current': selected ? 'true' : null,
-        onClick: () => {
-          requestNavigation(
-            { kind: 'question', id: question.id, focusId: queueId },
-            `queue-${domToken(state.selectedId)}`,
-          );
-        },
-      }, [
-        el('span', { class: 'queue-id' }, [question.id]),
-        el('span', { class: 'queue-stem' }, [text(question.stem) || 'Stem unavailable']),
-        el('span', { class: 'queue-detail' }, [
-          el('span', {}, [`${text(question.category) || 'uncategorized'} · L${question.difficulty ?? '—'}`]),
-          gateLabel(gateOf(question)),
-        ]),
-      ]),
-    ]);
+  function refreshQuestionSurfacesAndRail(focusTarget = null) {
+    const item = currentReviewItem();
+    if (item?.type !== 'question') return;
+    renderedIssueRecords = [];
+    const title = document.getElementById('draft-preview-title');
+    if (title) {
+      title.textContent = state.dirtyFields.length
+        ? 'Unsaved local preview · Not deployed'
+        : 'Saved Draft preview · Not deployed';
+    }
+    const editPane = document.getElementById('question-view-edit');
+    if (editPane) editPane.replaceChildren(renderQuestionOverview());
+    const rail = document.getElementById('attestation-rail');
+    if (rail) {
+      const replacement = renderAttestationRail(item);
+      rail.replaceChildren(...replacement.children);
+    }
+    applyIssueAssociations(renderedIssueRecords);
+    focusRequested(focusTarget);
   }
 
   function confirmationsComplete() {
@@ -860,7 +1160,7 @@ export function startFacultyConsole({
       .map(assessedQuestion)
       .filter(question => (
         state.reviewedRevisions.get(question.id) === question.revision
-          && isBatchEligible(question, state.reviewedInSession, false)
+          && legacyBatchEligible(question, state.reviewedInSession, false)
       ));
   }
 
@@ -931,112 +1231,6 @@ export function startFacultyConsole({
     if (!wrapsBackward && !wrapsForward) return;
     event.preventDefault();
     controls[wrapsBackward ? controls.length - 1 : 0].focus();
-  }
-
-  function closeBatchConfirmation() {
-    const returnFocus = text(state.batchConfirmation?.returnFocus) || 'open-batch-attest';
-    state.batchConfirmation = null;
-    renderShell(returnFocus);
-  }
-
-  function renderBatchConfirmation() {
-    if (!state.batchConfirmation || !Array.isArray(state.batchConfirmation.entries)) return null;
-    const entries = state.batchConfirmation.entries.map(entry => ({
-      id: text(entry?.id),
-      revision: text(entry?.revision),
-      reviewedRevision: text(entry?.reviewedRevision),
-    }));
-    return el('section', {
-      id: 'batch-confirmation',
-      class: 'modal-panel guard-panel batch-confirmation',
-      role: 'dialog',
-      tabindex: '-1',
-      'aria-modal': 'true',
-      'aria-labelledby': 'batch-confirmation-title',
-      onKeydown: event => modalKeydown(
-        event,
-        ['confirm-batch-attest', 'cancel-batch-attest'],
-        closeBatchConfirmation,
-      ),
-    }, [
-      el('h3', { id: 'batch-confirmation-title' }, ['Confirm green batch attestation']),
-      el('p', {}, ['The following saved revisions will be attested atomically:']),
-      el('ul', { class: 'data-text' }, entries.map(entry => el('li', {}, [
-        `${entry.id} — revision ${entry.revision}; reviewed receipt ${entry.reviewedRevision}`,
-      ]))),
-      el('div', { class: 'guard-actions' }, [
-        el('button', {
-          id: 'confirm-batch-attest',
-          class: 'primary',
-          type: 'button',
-          disabled: state.pending,
-          onClick: () => void attestBatch(entries),
-        }, ['Confirm batch attestation']),
-        el('button', {
-          id: 'cancel-batch-attest',
-          type: 'button',
-          disabled: state.pending,
-          onClick: closeBatchConfirmation,
-        }, ['Cancel']),
-      ]),
-    ]);
-  }
-
-  function renderBatchSummary() {
-    const selected = selectedBatchQuestions();
-    const assessment = safeBatchAssessment(selected);
-    const selectedIds = selected.map(question => question.id);
-    const message = selected.length
-      ? `${selected.length} reviewed green draft${selected.length === 1 ? '' : 's'} selected: ${selectedIds.join(', ')}`
-      : 'No questions selected. Review each green draft before using its batch checkbox.';
-    return el('div', { class: 'batch-summary' }, [
-      el('div', { id: 'batch-safety', class: 'batch-copy' }, [
-        el('p', {}, [message]),
-        !assessment.ok
-          ? el('p', { class: 'batch-warning' }, [assessment.issues[0].message])
-          : null,
-      ]),
-      el('button', {
-        id: 'open-batch-attest',
-        class: 'primary',
-        type: 'button',
-        disabled: !selected.length || selected.length !== state.batch.size
-          || !assessment.ok || !confirmationsComplete() || state.pending,
-        onClick: openBatchConfirmation,
-      }, ['Attest selected green drafts']),
-    ]);
-  }
-
-  function markReviewedAndNext(question) {
-    const assessment = currentAssessment(question);
-    if (question.status !== 'draft' || assessment.gate !== 'ready' || hasUnsavedChanges()) {
-      announce(`${question.id} is not eligible for a green batch.`);
-      return;
-    }
-    state.reviewedInSession.add(question.id);
-    state.reviewedRevisions.set(question.id, question.revision);
-    const queue = filteredQuestions({ qbank: assessedQuestions() }, state.filters);
-    const index = queue.findIndex(candidate => candidate.id === question.id);
-    const next = index >= 0 ? queue[index + 1] : null;
-    if (next) setSelected(next.id);
-    renderShell(next ? `queue-${domToken(next.id)}` : `queue-${domToken(question.id)}`);
-    announce(`${question.id} marked reviewed in this session. Its batch checkbox is now available.`);
-  }
-
-  function moveQueueSelection(event, questions) {
-    if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
-    const targetId = event.target?.getAttribute?.('id') || '';
-    if (!targetId.startsWith('queue-')) return;
-    const index = questions.findIndex(question => question.id === state.selectedId);
-    if (index < 0) return;
-    const offset = event.key === 'ArrowDown' ? 1 : -1;
-    const next = questions[Math.max(0, Math.min(questions.length - 1, index + offset))];
-    if (!next || next.id === state.selectedId) return;
-    event.preventDefault();
-    requestNavigation(
-      { kind: 'question', id: next.id, focusId: `queue-${domToken(next.id)}` },
-      targetId,
-    );
   }
 
   function controlValue(id, fallback = '') {
@@ -1158,7 +1352,7 @@ export function startFacultyConsole({
     state.qbankError = '';
     state.conflict = null;
     refreshEditorState();
-    renderShell(focusId);
+    refreshQuestionSurfacesAndRail(focusId);
   }
 
   function editorFocusState(controlOrId) {
@@ -1489,22 +1683,8 @@ export function startFacultyConsole({
     }, [
       el('h3', { id: 'changed-fields-title' }, ['Changed fields']),
       state.dirtyFields.length
-        ? el('ul', { class: 'data-text' }, state.dirtyFields.map(field => el('li', {}, [field])))
+        ? el('ul', {}, state.dirtyFields.map(field => el('li', {}, [field])))
         : el('p', { class: 'muted' }, ['No local changes.']),
-    ]);
-  }
-
-  function renderWorkflowRail(question, dirty) {
-    const current = dirty ? 0 : question.status === 'attested' ? 2 : 1;
-    return el('nav', {
-      class: 'workflow-rail',
-      'aria-label': 'Save draft → Checks current → Attest',
-    }, [
-      el('ol', {}, [
-        el('li', { class: current === 0 ? 'current' : current > 0 ? 'complete' : '' }, ['Save draft']),
-        el('li', { class: current === 1 ? 'current' : current > 1 ? 'complete' : '' }, ['Checks current']),
-        el('li', { class: current === 2 ? 'complete current' : '' }, ['Attest']),
-      ]),
     ]);
   }
 
@@ -1660,7 +1840,7 @@ export function startFacultyConsole({
             onChange: event => {
               state.confirmations[key] = event.target.checked === true;
               state.batchConfirmation = null;
-              renderShell(id);
+              refreshAttestationRail(id);
             },
           }),
           copy,
@@ -1686,7 +1866,7 @@ export function startFacultyConsole({
             onChange: event => {
               if (event.target.checked) state.warningAcks.add(code);
               else state.warningAcks.delete(code);
-              renderShell(id);
+              refreshAttestationRail(id);
             },
           }),
           `${code}: ${text(warning.message)}`,
@@ -1715,17 +1895,7 @@ export function startFacultyConsole({
     const assessment = state.localAssessment || currentAssessment(question);
     const issueRecords = normalizeIssueRecords(assessment);
     renderedIssueRecords = issueRecords;
-    const gate = assessment.gate;
     const dirty = state.dirtyFields.length > 0;
-    const reviewed = savedQuestion.status === 'draft'
-      && gate === 'ready'
-      && !dirty
-      && state.reviewedInSession.has(savedQuestion.id)
-      && state.reviewedRevisions.get(savedQuestion.id) === savedQuestion.revision;
-    const markEligible = savedQuestion.status === 'draft' && gate === 'ready' && !dirty;
-    const attestationDisabled = state.pending || dirty || gate === 'blocked'
-      || savedQuestion.status !== 'draft';
-    const warningCodesComplete = warningAcknowledgementsComplete(assessment);
     const learnerUrl = safeStudentUrl(text(question.link?.href));
     const correctKey = list(question.options).find(optionItem => optionItem?.c === true)?.key || '';
     const optionsByKey = Object.fromEntries(list(question.options).map(optionItem => [optionItem?.key, optionItem]));
@@ -1733,18 +1903,16 @@ export function startFacultyConsole({
     panel.appendChild(el('div', { class: 'review-sheet' }, [
       el('header', { class: 'review-heading' }, [
         el('div', {}, [
-          el('p', { class: 'eyebrow' }, ['Selected question']),
+          el('p', { class: 'eyebrow' }, ['Governed question editor']),
           el('h2', {
             id: 'review-title',
-            class: 'question-id',
             tabindex: '-1',
-          }, [savedQuestion.id]),
-          el('p', { class: 'muted' }, [`${savedQuestion.status === 'attested' ? 'Attested' : 'Draft'} repository version`]),
+          }, ['Edit question']),
+          el('p', { class: 'muted' }, [
+            'Changes stay local until Save draft succeeds and the repository revision reloads.',
+          ]),
         ]),
-        gateLabel(gate),
       ]),
-      renderWorkflowRail(savedQuestion, dirty),
-      renderActionFeedback(),
       el('fieldset', {
         id: 'question-governed-fields',
         class: 'editor-section governed-fields',
@@ -1856,7 +2024,7 @@ export function startFacultyConsole({
             refreshEditorState();
             state.qbankError = '';
             state.conflict = null;
-            renderShell('question-stem');
+            refreshQuestionSurfacesAndRail('question-stem');
             announce(`${savedQuestion.id} reverted to the loaded repository version.`);
           },
         }, ['Revert']),
@@ -1868,77 +2036,8 @@ export function startFacultyConsole({
           onClick: () => void saveCurrentDraft(),
         }, [state.pending ? 'Saving…' : 'Save draft']),
       ]),
-      renderConfirmations(attestationDisabled),
-      renderWarningAcknowledgements(assessment, attestationDisabled),
-      el('fieldset', { class: 'session-review' }, [
-        el('legend', {}, ['Attest']),
-        el('p', {}, [reviewed
-          ? 'Reviewed in this session. Use the queue checkbox to add this saved green revision to a batch.'
-          : batchReason({ ...savedQuestion, assessment }, dirty)]),
-        el('div', { class: 'session-actions' }, [
-          el('button', {
-            id: 'mark-reviewed-next',
-            class: 'primary',
-            type: 'button',
-            disabled: !markEligible || reviewed || state.pending,
-            onClick: () => markReviewedAndNext(savedQuestion),
-          }, [reviewed ? 'Reviewed this session' : 'Mark reviewed & next']),
-          assessment.gate === 'warning' ? el('button', {
-            id: 'attest-warning',
-            class: 'primary',
-            type: 'button',
-            disabled: attestationDisabled || !confirmationsComplete() || !warningCodesComplete,
-            onClick: () => void attestWarning(savedQuestion, assessment),
-          }, ['Attest this warning question']) : null,
-        ]),
-      ]),
     ]));
     return panel;
-  }
-
-  function renderQuestionWorkbench() {
-    const questions = assessedQuestions();
-    const shown = filteredQuestions({ qbank: questions }, state.filters);
-    const queue = el('aside', { class: 'queue-panel', 'aria-labelledby': 'queue-title' }, [
-      el('header', { class: 'panel-heading' }, [
-        el('h2', { id: 'queue-title' }, ['Review queue']),
-        el('p', { class: 'hint' }, ['Gate rails show machine-checkable status; symbols and words carry the same meaning.']),
-      ]),
-      renderQueueFilters(),
-      renderCountStrip(questions),
-      el('p', { class: 'queue-meta' }, [`${shown.length} of ${list(state.server?.qbank).length} questions shown`]),
-      shown.length
-        ? el('ol', {
-          id: 'question-queue',
-          class: 'queue-list',
-          onKeydown: event => moveQueueSelection(event, shown),
-        }, shown.map(renderQueueRow))
-        : el('p', { class: 'empty-queue' }, [
-          'No questions match these filters. Clear or widen a filter to continue.',
-        ]),
-      renderBatchSummary(),
-    ]);
-    return el('div', { class: 'workbench' }, [queue, renderQuestionOverview()]);
-  }
-
-  function contentStatusLabel(status) {
-    if (status === 'reviewed') return 'Reviewed';
-    if (status === 'pending') return 'Pending';
-    return 'Not reviewed';
-  }
-
-  function contentShown() {
-    return list(state.server?.items).filter(item => {
-      if (state.contentFilters.kind !== 'all' && item.kind !== state.contentFilters.kind) return false;
-      if (state.contentFilters.status === 'reviewed' && item.status !== 'reviewed') return false;
-      if (state.contentFilters.status === 'unreviewed' && item.status === 'reviewed') return false;
-      return true;
-    });
-  }
-
-  function updateContentFilter(name, value, focusId) {
-    state.contentFilters[name] = value;
-    renderShell(focusId);
   }
 
   function toggleContent(item, checked, focusId) {
@@ -1948,40 +2047,6 @@ export function startFacultyConsole({
     state.contentMessage = '';
     state.contentCommitUrl = null;
     renderShell(focusId);
-  }
-
-  function renderContentRow(item) {
-    const id = `content-${domToken(item.slug)}`;
-    const committed = item.status === 'reviewed';
-    const checked = Object.hasOwn(state.contentChanges, item.slug)
-      ? state.contentChanges[item.slug]
-      : committed;
-    const studentUrl = safeStudentUrl(
-      item.kind === 'tool' ? `?tool=${encodeURIComponent(item.slug)}` : `?page=${encodeURIComponent(item.slug)}`,
-    );
-    const provenance = text(item.by)
-      ? ` · Reviewed by ${text(item.by)}${text(item.at) ? ` on ${text(item.at)}` : ''}`
-      : '';
-    return el('li', { class: 'content-row' }, [
-      el('input', {
-        id,
-        type: 'checkbox',
-        checked,
-        disabled: state.pending,
-        'aria-label': `Mark ${text(item.title) || item.slug} reviewed`,
-        onChange: event => toggleContent(item, event.target.checked, id),
-      }),
-      el('div', {}, [
-        el('p', { class: 'content-title' }, [text(item.title) || item.slug]),
-        el('p', { class: 'content-meta data-text' }, [
-          `${item.kind === 'tool' ? 'tool' : 'page'} · ${item.slug}${provenance}`,
-        ]),
-      ]),
-      studentUrl
-        ? el('a', { href: studentUrl, target: '_blank', rel: 'noopener noreferrer' }, ['View ↗'])
-        : null,
-      el('span', { class: 'content-status' }, [contentStatusLabel(item.status)]),
-    ]);
   }
 
   async function commitContent() {
@@ -2013,7 +2078,11 @@ export function startFacultyConsole({
       state.contentMessage = `Saved ${payload.updated ?? 0} content review${payload.updated === 1 ? '' : 's'}.`;
       state.contentCommitUrl = safeExternalUrl(payload.commit);
       announce(state.contentMessage);
-      const refreshed = await load({ silent: true, focusId: 'content-save-result' });
+      const refreshed = await load({
+        silent: true,
+        focusId: 'content-save-result',
+        completedHoldKey: state.selectedKey,
+      });
       if (!refreshed) {
         state.navigationAfterSave = null;
         return;
@@ -2029,83 +2098,6 @@ export function startFacultyConsole({
       announce(state.contentMessage);
       renderShell('content-save-result');
     }
-  }
-
-  function renderContentPanel() {
-    const shown = contentShown();
-    const changes = Object.keys(state.contentChanges).length;
-    const kind = filterSelect(
-      'content-kind',
-      'Content type',
-      [['all', 'All types'], ['page', 'Content pages'], ['tool', 'Interactive tools']],
-      state.contentFilters.kind,
-      event => updateContentFilter('kind', event.target.value, 'content-kind'),
-    );
-    const status = filterSelect(
-      'content-status',
-      'Review status',
-      [['all', 'All statuses'], ['unreviewed', 'Not reviewed'], ['reviewed', 'Reviewed']],
-      state.contentFilters.status,
-      event => updateContentFilter('status', event.target.value, 'content-status'),
-    );
-    return el('section', { class: 'content-panel', 'aria-labelledby': 'content-title' }, [
-      el('header', { class: 'panel-heading' }, [
-        el('h2', { id: 'content-title' }, ['Content pages & tools']),
-        el('p', { class: 'hint' }, ['The existing content-attestation workflow remains available here.']),
-      ]),
-      el('div', { class: 'content-toolbar' }, [
-        kind,
-        status,
-        el('div', { class: 'content-actions' }, [
-          el('span', { class: 'hint' }, [
-            `${shown.length} shown · ${shown.filter(item => item.status !== 'reviewed').length} not reviewed`,
-          ]),
-          el('button', {
-            id: 'mark-all-content',
-            type: 'button',
-            disabled: state.pending,
-            onClick: () => {
-              for (const item of shown) {
-                if (item.status !== 'reviewed') state.contentChanges[item.slug] = true;
-              }
-              state.contentMessage = '';
-              state.contentCommitUrl = null;
-              renderShell('mark-all-content');
-            },
-          }, ['Mark all shown reviewed']),
-        ]),
-      ]),
-      el('ul', { class: 'content-list' }, shown.map(renderContentRow)),
-      el('div', { class: 'save-strip' }, [
-        el('p', { class: changes ? '' : 'muted' }, [
-          changes ? `${changes} unsaved content change${changes === 1 ? '' : 's'}` : 'No unsaved content changes',
-        ]),
-        el('div', { class: 'content-actions' }, [
-          state.contentMessage ? el('span', {
-            id: 'content-save-result',
-            class: 'hint',
-            tabindex: '-1',
-          }, [
-            state.contentMessage,
-            state.contentCommitUrl ? ' ' : null,
-            state.contentCommitUrl
-              ? el('a', {
-                href: state.contentCommitUrl,
-                target: '_blank',
-                rel: 'noopener noreferrer',
-              }, ['View commit ↗'])
-              : null,
-          ]) : null,
-          el('button', {
-            id: 'save-content-reviews',
-            class: 'primary',
-            type: 'button',
-            disabled: !changes || state.pending,
-            onClick: () => void commitContent(),
-          }, [state.pending ? 'Saving…' : 'Save content reviews']),
-        ]),
-      ]),
-    ]);
   }
 
   function showQbankError(message) {
@@ -2293,12 +2285,14 @@ export function startFacultyConsole({
       state.qbankMessage = `Attested ${requestIds.length} question${requestIds.length === 1 ? '' : 's'}: ${requestIds.join(', ')}.`;
       state.qbankCommitUrl = safeExternalUrl(payload.commit);
       const selectedId = state.selectedId;
+      const selectedKey = state.selectedKey;
       const refreshed = await load({
         silent: true,
         focusId: 'qbank-action-result',
         requiredId: selectedId,
         expectedRevisions,
         preserveOnError: true,
+        completedHoldKey: selectedKey,
       });
       if (!refreshed) return false;
       for (const id of requestIds) {
@@ -2393,17 +2387,9 @@ export function startFacultyConsole({
         saveNavigationGuard();
         return;
       }
-      if (state.tab === 'content') {
-        if (state.pending) {
-          announce('Content reviews are already saving.');
-        } else if (Object.keys(state.contentChanges).length) {
-          void commitContent();
-        } else {
-          announce('No unsaved content reviews to save.');
-        }
-      } else {
-        saveCurrentDraft();
-      }
+      if (hasUnsavedChanges()) saveCurrentDraft();
+      else if (Object.keys(state.contentChanges).length) void commitContent();
+      else announce('No unsaved question changes to save.');
     }
   });
 
