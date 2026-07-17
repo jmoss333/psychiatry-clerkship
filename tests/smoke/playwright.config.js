@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const MS3_URL = process.env.MS3_BASE_URL || 'http://localhost:4200';
 const RES_URL = process.env.RES_BASE_URL || 'http://localhost:4201';
+const FACULTY_URL = process.env.FACULTY_CONSOLE_BASE_URL || 'http://localhost:4202';
 const SP_INTERVIEW_URL = process.env.SP_INTERVIEW_BASE_URL || 'http://localhost:4300';
 
 export default defineConfig({
@@ -59,6 +60,11 @@ export default defineConfig({
       name: 'interview-room',
       testMatch: 'interview-room.spec.js',
       use: { ...devices['Desktop Chrome'], baseURL: SP_INTERVIEW_URL },
+    },
+    {
+      name: 'faculty-console',
+      testMatch: 'faculty-console.spec.js',
+      use: { ...devices['Desktop Chrome'], baseURL: FACULTY_URL },
     },
   ],
 
