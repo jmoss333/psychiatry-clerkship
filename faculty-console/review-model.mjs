@@ -100,8 +100,10 @@ export function normalizeStudentBase(studentBase) {
 export function buildPreviewRequest({ studentBase, item, reviewToken }) {
   const identity = clean(item?.identity);
   if (!item || !Object.hasOwn(TYPE_ORDER, item.type) || !identity
+      || item.identity !== identity
       || item.key !== `${item.type}:${identity}`
-      || !TOKEN_PATTERN.test(clean(reviewToken))) {
+      || reviewToken !== clean(reviewToken)
+      || !TOKEN_PATTERN.test(reviewToken)) {
     throw new TypeError('Invalid preview request.');
   }
   const base = normalizeStudentBase(studentBase);
@@ -123,7 +125,8 @@ export function buildPreviewRequest({ studentBase, item, reviewToken }) {
 export function buildExternalReviewUrl({ studentBase, item }) {
   const identity = clean(item?.identity);
   if (!item || !['page', 'tool'].includes(item.type)
-      || !identity || item.key !== `${item.type}:${identity}`) {
+      || !identity || item.identity !== identity
+      || item.key !== `${item.type}:${identity}`) {
     throw new TypeError('External review is available only for a valid page or tool.');
   }
   const base = normalizeStudentBase(studentBase);

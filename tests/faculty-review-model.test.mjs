@@ -218,6 +218,32 @@ test('unsafe bases, malformed tokens, blank identities, and unknown surfaces fai
   }
 });
 
+test('preview routes reject whitespace-wrapped review tokens', () => {
+  const page = normalizeReviewItems(server)[0];
+  assert.throws(() => buildPreviewRequest({
+    studentBase: 'https://students.example/',
+    item: page,
+    reviewToken: ` ${TOKEN} `,
+  }), /Invalid preview request/);
+});
+
+test('preview routes reject whitespace-wrapped item identities', () => {
+  const page = normalizeReviewItems(server)[0];
+  assert.throws(() => buildPreviewRequest({
+    studentBase: 'https://students.example/',
+    item: { ...page, identity: ` ${page.identity} ` },
+    reviewToken: TOKEN,
+  }), /Invalid preview request/);
+});
+
+test('external routes reject whitespace-wrapped item identities', () => {
+  const page = normalizeReviewItems(server)[0];
+  assert.throws(() => buildExternalReviewUrl({
+    studentBase: 'https://students.example/',
+    item: { ...page, identity: ` ${page.identity} ` },
+  }), /External review is available only for a valid page or tool/);
+});
+
 test('accepts only the exact current outer-frame status message', () => {
   const item = normalizeReviewItems(server)[0];
   const request = buildPreviewRequest({
