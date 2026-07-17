@@ -76,6 +76,49 @@ test('valid item is green', () => {
   assert.deepEqual(result.warnings, []);
 });
 
+for (const [name, call, verify] of [
+  ['assessItem accepts a null context', () => assessItem({}, null), result => {
+    assert.equal(result.gate, 'blocked');
+    assert.ok(Array.isArray(result.blockers));
+  }],
+  ['assessItem normalizes wrong context containers', () => assessItem(valid(), { manifestPages: {}, activeItems: 'wrong' }), result => {
+    assert.equal(result.gate, 'ready');
+  }],
+  ['assessItem accepts primitive item and context values', () => assessItem(7, 'wrong'), result => {
+    assert.equal(result.gate, 'blocked');
+  }],
+  ['assessBank ignores a null item', () => assessBank([null], null), result => {
+    assert.equal(result.counts.total, 0);
+    assert.deepEqual(Object.keys(result.byId), []);
+  }],
+  ['assessBank normalizes non-array inputs', () => assessBank(7, { manifestPages: 'wrong', activeItems: {} }), result => {
+    assert.equal(result.counts.total, 0);
+  }],
+  ['assessBatch accepts null', () => assessBatch(null), result => {
+    assert.deepEqual(result.answerKeys, { A: 0, B: 0, C: 0, D: 0 });
+  }],
+  ['assessBatch ignores a null item', () => assessBatch([null]), result => {
+    assert.deepEqual(result.answerKeys, { A: 0, B: 0, C: 0, D: 0 });
+  }],
+  ['assessBatch normalizes primitive inputs', () => assessBatch('wrong'), result => {
+    assert.equal(result.ok, true);
+  }],
+  ['mergeEditableItem accepts a null edit', () => mergeEditableItem(valid(), null), result => {
+    assert.equal(result.id, 'qb_moo_900');
+    assert.equal(result.status, 'draft');
+  }],
+  ['mergeEditableItem normalizes primitive records', () => mergeEditableItem(null, 7), result => {
+    assert.equal(result.status, 'draft');
+  }],
+  ['diffEditableFields normalizes null and primitive records', () => diffEditableFields(null, 7), result => {
+    assert.ok(Array.isArray(result));
+  }],
+]) test(name, () => {
+  let result;
+  assert.doesNotThrow(() => { result = call(); });
+  verify(result);
+});
+
 for (const [name, mutate, code] of [
   ['empty evidence', x => { x.evidence = ' '; }, 'required.evidence'],
   ['duplicate option keys', x => { x.options[3].key = 'A'; }, 'options.keys'],
@@ -232,6 +275,16 @@ test('evidence and page-link mismatches are advisory when both slugs are shipped
   assert.equal(result.blockers.length, 0);
 });
 
+test('evidence matching compares exact Markdown slugs rather than substrings', () => {
+  const item = valid();
+  item.pages = ['mood.md'];
+  item.link.href = '?page=mood.md';
+  item.evidence = 't_mood.md — a different source anchor.';
+  const result = assessItem(item, contextFor(item, { manifestPages: ['mood.md'] }));
+  assert.ok(codes(result.warnings).includes('evidence.page_mismatch'));
+  assert.equal(result.blockers.length, 0);
+});
+
 test('near-duplicate stems warn at 85% Jaccard token overlap', () => {
   const item = valid();
   item.stem = 'A fictional patient reports sadness fatigue insomnia guilt poor concentration and hopelessness. Most likely diagnosis?';
@@ -306,6 +359,18 @@ test('field diff addresses tier-two options by stable key', () => {
   assert.deepEqual(diffEditableFields(original, edited), ['tier2.options.C.t']);
 });
 
+for (const [name, original, edit, expected] of [
+  ['tier-one', (() => {
+    const item = valid(); item.options[3].key = 'E'; return item;
+  })(), item => { item.options[3].t = 'A revised malformed-key answer.'; }, ['options']],
+  ['tier-two', (() => {
+    const item = twoTier(); item.tier2.options[2].key = 'E'; return item;
+  })(), item => { item.tier2.options[2].t = 'A revised malformed-key rationale.'; }, ['tier2.options']],
+]) test(`field diff cannot hide ${name} edits behind malformed option keys`, () => {
+  const edited = clone(original); edit(edited);
+  assert.deepEqual(diffEditableFields(original, edited), expected);
+});
+
 test('bank summary excludes retired items and reports draft answer keys', () => {
   const draftA = valid();
   const draftB = setCorrectKey(valid(), 'B'); draftB.id = 'qb_moo_901';
@@ -327,6 +392,26 @@ test('bank summary excludes retired items and reports draft answer keys', () => 
   assert.deepEqual(result.answerKeys, { A: 1, B: 1, C: 0, D: 0 });
   assert.deepEqual(result.categoryAnswerKeys.mood, { A: 1, B: 1, C: 0, D: 0 });
   assert.deepEqual(Object.keys(result.byId).sort(), ['qb_moo_900', 'qb_moo_901', 'qb_moo_902']);
+});
+
+test('bank summary maps safely retain reserved ID and category names', () => {
+  const proto = valid();
+  proto.id = '__proto__';
+  proto.category = 'constructor';
+  const constructor = valid();
+  constructor.id = 'constructor';
+  constructor.category = '__proto__';
+  constructor.stem = 'An inpatient has new fluctuating attention overnight. What is the most likely syndrome?';
+
+  const result = assessBank([proto, constructor], { manifestPages: ['t_mood.md'] });
+  assert.equal(Object.getPrototypeOf(result.byId), null);
+  assert.equal(Object.getPrototypeOf(result.categoryAnswerKeys), null);
+  assert.equal(Object.hasOwn(result.byId, '__proto__'), true);
+  assert.equal(Object.hasOwn(result.byId, 'constructor'), true);
+  assert.equal(Object.hasOwn(result.categoryAnswerKeys, '__proto__'), true);
+  assert.equal(Object.hasOwn(result.categoryAnswerKeys, 'constructor'), true);
+  assert.equal(result.categoryAnswerKeys.__proto__.A, 1);
+  assert.equal(result.categoryAnswerKeys.constructor.A, 1);
 });
 
 test('bank and batch summaries classify malformed option containers without throwing', () => {

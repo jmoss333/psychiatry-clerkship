@@ -10,6 +10,9 @@ const REQUIRED_TEXT = ['id', 'status', 'type', 'category', 'stem', 'why', 'pearl
 const issue = (code, field, message) => ({ code, field, message });
 const text = value => typeof value === 'string' ? value.trim() : '';
 const blankKeys = () => ({ A: 0, B: 0, C: 0, D: 0 });
+const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const record = value => isRecord(value) ? value : {};
+const list = value => Array.isArray(value) ? value : [];
 
 function pageFromHref(href) {
   return /^\?page=([A-Za-z0-9_-]+\.md)(?:[&#].*)?$/.exec(text(href))?.[1] || '';
@@ -21,6 +24,10 @@ function isToolHref(href) {
 
 function normalized(value) {
   return text(value).normalize('NFKC').toLowerCase().replace(/\s+/g, ' ');
+}
+
+function markdownSlugs(value) {
+  return new Set(text(value).match(/[A-Za-z0-9_.-]+\.md/g) || []);
 }
 
 function addUnique(target, entry) {
@@ -187,7 +194,8 @@ function addItemWarnings(item, warnings, manifestPages, activeItems) {
 
   const pages = Array.isArray(item.pages) ? item.pages.map(text).filter(Boolean) : [];
   const evidence = text(item.evidence);
-  if (evidence && pages.length && !pages.some(page => evidence.includes(page))) {
+  const evidencePages = markdownSlugs(evidence);
+  if (evidence && pages.length && !pages.some(page => evidencePages.has(page))) {
     addUnique(warnings, issue('evidence.page_mismatch', 'evidence', 'The evidence text does not name a selected page slug.'));
   }
 
@@ -207,8 +215,11 @@ function addItemWarnings(item, warnings, manifestPages, activeItems) {
   }
 }
 
-export function assessItem(item, { manifestPages = [], activeItems = [] } = {}) {
-  const candidate = item && typeof item === 'object' && !Array.isArray(item) ? item : {};
+export function assessItem(item, context = {}) {
+  const candidate = record(item);
+  const settings = record(context);
+  const manifestPages = list(settings.manifestPages).filter(page => typeof page === 'string');
+  const activeItems = list(settings.activeItems).filter(isRecord);
   const blockers = [];
   const warnings = [];
 
@@ -323,14 +334,15 @@ export function assessItem(item, { manifestPages = [], activeItems = [] } = {}) 
 }
 
 export function assessBank(items, context = {}) {
-  const activeItems = (Array.isArray(items) ? items : []).filter(item => item?.retired !== true);
-  const byId = {};
+  const activeItems = list(items).filter(isRecord).filter(item => item.retired !== true);
+  const settings = record(context);
+  const byId = Object.create(null);
   const counts = { total: activeItems.length, draft: 0, attested: 0, ready: 0, warning: 0, blocked: 0 };
   const answerKeys = blankKeys();
-  const categoryAnswerKeys = {};
+  const categoryAnswerKeys = Object.create(null);
 
   for (const item of activeItems) {
-    const assessment = assessItem(item, { ...context, activeItems });
+    const assessment = assessItem(item, { ...settings, activeItems });
     byId[item.id] = assessment;
     if (item.status === 'draft') counts.draft++;
     if (item.status === 'attested') counts.attested++;
@@ -352,16 +364,18 @@ export function assessBank(items, context = {}) {
 }
 
 export function mergeEditableItem(original, edited) {
-  const next = structuredClone(original);
+  const base = record(original);
+  const changes = record(edited);
+  const next = structuredClone(base);
   for (const key of EDITABLE) {
-    if (Object.hasOwn(edited, key)) next[key] = structuredClone(edited[key]);
+    if (Object.hasOwn(changes, key)) next[key] = structuredClone(changes[key]);
     else delete next[key];
   }
-  next.id = original.id;
+  next.id = base.id;
   next.status = 'draft';
-  if (original.retired) next.retired = true;
-  if (original.retiredReason) next.retiredReason = original.retiredReason;
-  if (original.v2) next.v2 = structuredClone(original.v2);
+  if (base.retired) next.retired = true;
+  if (base.retiredReason) next.retiredReason = base.retiredReason;
+  if (base.v2) next.v2 = structuredClone(base.v2);
   if (next.type !== 'relational') delete next.subtype;
   if (next.type !== 'two-tier') delete next.tier2;
   return next;
@@ -396,7 +410,8 @@ function diffObject(left, right, prefix) {
 function keyedOptions(options) {
   if (!Array.isArray(options)) return null;
   const entries = options.map(option => [text(option?.key), option]);
-  if (entries.some(([key]) => !key) || new Set(entries.map(([key]) => key)).size !== entries.length) return null;
+  if (entries.some(([key]) => !OPTION_KEYS.includes(key))
+      || new Set(entries.map(([key]) => key)).size !== entries.length) return null;
   return Object.fromEntries(entries);
 }
 
@@ -434,15 +449,17 @@ function diffTierTwo(left, right) {
 }
 
 export function diffEditableFields(original, edited) {
+  const before = record(original);
+  const after = record(edited);
   const changes = [];
   for (const key of EDITABLE) {
-    if (deeplyEqual(original?.[key], edited?.[key])) continue;
+    if (deeplyEqual(before[key], after[key])) continue;
     if (key === 'options') {
-      changes.push(...diffOptionList(original?.options, edited?.options, 'options'));
+      changes.push(...diffOptionList(before.options, after.options, 'options'));
     } else if (key === 'tier2') {
-      changes.push(...diffTierTwo(original?.tier2, edited?.tier2));
+      changes.push(...diffTierTwo(before.tier2, after.tier2));
     } else if (key === 'link') {
-      changes.push(...diffObject(original?.link, edited?.link, 'link'));
+      changes.push(...diffObject(before.link, after.link, 'link'));
     } else {
       changes.push(key);
     }
@@ -451,15 +468,16 @@ export function diffEditableFields(original, edited) {
 }
 
 export function assessBatch(items) {
+  const batchItems = list(items).filter(isRecord);
   const answerKeys = { A: 0, B: 0, C: 0, D: 0 };
-  for (const item of items) {
+  for (const item of batchItems) {
     const options = Array.isArray(item.options) ? item.options : [];
     const correct = options.find(option => option.c === true);
     if (correct && Object.hasOwn(answerKeys, correct.key)) answerKeys[correct.key]++;
   }
   const represented = Object.values(answerKeys).filter(Boolean).length;
   const max = Math.max(...Object.values(answerKeys));
-  const issues = items.length >= 4 && (represented < 3 || max > items.length / 2)
+  const issues = batchItems.length >= 4 && (represented < 3 || max > batchItems.length / 2)
     ? [issue('batch.answer_key_balance', 'options', 'This batch has a strong answer-position cue. Rebalance or attest individually.')]
     : [];
   return { ok: issues.length === 0, issues, answerKeys };
