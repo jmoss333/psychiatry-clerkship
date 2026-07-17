@@ -285,6 +285,18 @@ test('evidence matching compares exact Markdown slugs rather than substrings', (
   assert.equal(result.blockers.length, 0);
 });
 
+for (const suffix of ['.bak', '2']) {
+  test(`evidence matching rejects Markdown-like suffix ${suffix}`, () => {
+    const item = valid();
+    item.pages = ['mood.md'];
+    item.link.href = '?page=mood.md';
+    item.evidence = `mood.md${suffix} — not the exact source slug.`;
+    const result = assessItem(item, contextFor(item, { manifestPages: ['mood.md'] }));
+    assert.ok(codes(result.warnings).includes('evidence.page_mismatch'));
+    assert.equal(result.blockers.length, 0);
+  });
+}
+
 test('near-duplicate stems warn at 85% Jaccard token overlap', () => {
   const item = valid();
   item.stem = 'A fictional patient reports sadness fatigue insomnia guilt poor concentration and hopelessness. Most likely diagnosis?';
@@ -422,6 +434,21 @@ test('bank and batch summaries classify malformed option containers without thro
   assert.deepEqual(assessBatch([item]).answerKeys, { A: 0, B: 0, C: 0, D: 0 });
 });
 
+test('bank and batch summaries tolerate null and primitive options inside an array', () => {
+  const item = setCorrectKey(valid(), 'D');
+  item.options[0] = null;
+  item.options[1] = 7;
+
+  let bank;
+  let batch;
+  assert.doesNotThrow(() => {
+    bank = assessBank([item], { manifestPages: ['t_mood.md'] });
+    batch = assessBatch([item]);
+  });
+  assert.deepEqual(bank.answerKeys, { A: 0, B: 0, C: 0, D: 1 });
+  assert.deepEqual(batch.answerKeys, { A: 0, B: 0, C: 0, D: 1 });
+});
+
 test('batch balance rejects strong position cues only for selections of four or more', () => {
   const make = (id, key) => {
     const item = setCorrectKey(valid(), key); item.id = id; return item;
@@ -440,6 +467,16 @@ test('batch balance rejects strong position cues only for selections of four or 
   const result = assessBatch(cued);
   assert.equal(result.ok, false);
   assert.deepEqual(result.answerKeys, { A: 3, B: 1, C: 0, D: 0 });
+  assert.deepEqual(codes(result.issues), ['batch.answer_key_balance']);
+});
+
+test('malformed members cannot shrink a four-item batch below the balance threshold', () => {
+  const items = [valid(), valid(), valid(), null];
+  items[1].id = 'qb_moo_901';
+  items[2].id = 'qb_moo_902';
+  const result = assessBatch(items);
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.answerKeys, { A: 3, B: 0, C: 0, D: 0 });
   assert.deepEqual(codes(result.issues), ['batch.answer_key_balance']);
 });
 

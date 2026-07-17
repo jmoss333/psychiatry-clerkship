@@ -27,7 +27,7 @@ function normalized(value) {
 }
 
 function markdownSlugs(value) {
-  return new Set(text(value).match(/[A-Za-z0-9_.-]+\.md/g) || []);
+  return new Set(text(value).match(/[A-Za-z0-9_.-]+\.md(?![A-Za-z0-9_.-])/g) || []);
 }
 
 function addUnique(target, entry) {
@@ -353,7 +353,7 @@ export function assessBank(items, context = {}) {
     }
     if (item.status !== 'draft') continue;
     const options = Array.isArray(item.options) ? item.options : [];
-    const correct = options.find(option => option.c === true);
+    const correct = options.find(option => option?.c === true);
     if (correct && Object.hasOwn(answerKeys, correct.key)) {
       answerKeys[correct.key]++;
       categoryAnswerKeys[item.category][correct.key]++;
@@ -468,16 +468,17 @@ export function diffEditableFields(original, edited) {
 }
 
 export function assessBatch(items) {
-  const batchItems = list(items).filter(isRecord);
+  const selectedItems = list(items);
+  const batchItems = selectedItems.filter(isRecord);
   const answerKeys = { A: 0, B: 0, C: 0, D: 0 };
   for (const item of batchItems) {
     const options = Array.isArray(item.options) ? item.options : [];
-    const correct = options.find(option => option.c === true);
+    const correct = options.find(option => option?.c === true);
     if (correct && Object.hasOwn(answerKeys, correct.key)) answerKeys[correct.key]++;
   }
   const represented = Object.values(answerKeys).filter(Boolean).length;
   const max = Math.max(...Object.values(answerKeys));
-  const issues = batchItems.length >= 4 && (represented < 3 || max > batchItems.length / 2)
+  const issues = selectedItems.length >= 4 && (represented < 3 || max > selectedItems.length / 2)
     ? [issue('batch.answer_key_balance', 'options', 'This batch has a strong answer-position cue. Rebalance or attest individually.')]
     : [];
   return { ok: issues.length === 0, issues, answerKeys };
