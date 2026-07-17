@@ -44,6 +44,14 @@ const OPTION_TEXT_LABELS = {
   D: 'Option D text',
 };
 
+const PREVIEW_FAILURES = new Set([
+  'not_found', 'error', 'protocol_unavailable', 'frame_failure',
+]);
+const RETRY_REQUIRED_QUESTION_FAILURES = new Set([
+  'error', 'protocol_unavailable', 'frame_failure',
+]);
+const PREVIEW_SANDBOX = 'allow-scripts allow-same-origin allow-forms';
+
 const emptyConfirmations = () => ({
   clinical: false,
   evidence: false,
@@ -109,7 +117,9 @@ export function startFacultyConsole({
   tokenFactory = () => createReviewToken(window.crypto),
   scheduleTimeout = (callback, delay) => window.setTimeout(callback, delay),
   cancelTimeout = id => window.clearTimeout(id),
-  openExternal = url => window.open(url, '_blank', 'noopener,noreferrer'),
+  openExternal = (url, target = '_blank', features = 'noopener,noreferrer') => (
+    window.open(url, target, features)
+  ),
 }) {
   const app = document.getElementById('app');
   const statusRegion = document.getElementById('app-status');
@@ -317,6 +327,38 @@ export function startFacultyConsole({
     state.batch.delete(id);
   }
 
+  function cancelPreviewTimer(preview = state.preview) {
+    if (!preview || preview.timerId === null || preview.timerId === undefined) return;
+    cancelTimeout(preview.timerId);
+    preview.timerId = null;
+  }
+
+  function clearReviewAcknowledgements({
+    clearApprovals = false,
+    clearAllQuestions = false,
+  } = {}) {
+    state.reviewChecks = emptyReviewChecks();
+    if (clearAllQuestions) {
+      state.reviewedInSession.clear();
+      state.reviewedRevisions.clear();
+      state.batch.clear();
+    } else {
+      invalidateSessionReview(state.selectedId);
+    }
+    if (clearApprovals) resetApprovalInputs();
+  }
+
+  function invalidatePreview({
+    resetAttempt = false,
+    clearApprovals = false,
+    clearAllQuestions = false,
+  } = {}) {
+    cancelPreviewTimer();
+    state.preview = null;
+    if (resetAttempt) state.previewAttempt = 0;
+    clearReviewAcknowledgements({ clearApprovals, clearAllQuestions });
+  }
+
   function refreshEditorState() {
     if (!state.original || !state.editor) {
       state.dirtyFields = [];
@@ -364,8 +406,43 @@ export function startFacultyConsole({
     return filterReviewItems(state.reviewItems, state.queueFilters);
   }
 
+  function beginPreviewLoad(item) {
+    cancelPreviewTimer();
+    const request = buildPreviewRequest({
+      studentBase: state.server.student,
+      item,
+      reviewToken: tokenFactory(),
+    });
+    state.previewAttempt += 1;
+    const preview = {
+      request,
+      status: 'loading',
+      frameLoaded: false,
+      frameWindow: null,
+      timerId: null,
+      loadCount: 0,
+      attempt: state.previewAttempt,
+    };
+    preview.timerId = scheduleTimeout(() => {
+      if (state.preview !== preview || preview.status !== 'loading') return;
+      preview.status = preview.frameLoaded ? 'protocol_unavailable' : 'frame_failure';
+      clearReviewAcknowledgements();
+      applyQuestionView('live');
+      announce(preview.frameLoaded
+        ? 'Preview protocol unavailable. Use Retry or the documented fallback.'
+        : 'Network or embedded-preview failure. Use Retry or the documented fallback.');
+      refreshPreviewChromeAndRail('preview-status');
+    }, 10_000);
+    state.preview = preview;
+    return preview;
+  }
+
   function clearReviewSelection() {
-    if (state.preview?.timerId) cancelTimeout(state.preview.timerId);
+    cancelPreviewTimer();
+    clearReviewAcknowledgements({
+      clearApprovals: true,
+      clearAllQuestions: true,
+    });
     state.selectedKey = null;
     state.completedHoldKey = null;
     state.selectedId = null;
@@ -376,8 +453,6 @@ export function startFacultyConsole({
     state.viewMode = 'live';
     state.preview = null;
     state.previewAttempt = 0;
-    state.reviewChecks = emptyReviewChecks();
-    resetApprovalInputs();
   }
 
   function setSelectedReviewKey(key, { force = false, preserveCompletedHold = false } = {}) {
@@ -385,14 +460,15 @@ export function startFacultyConsole({
     if (!item) return false;
     if (!preserveCompletedHold) state.completedHoldKey = null;
     if (!force && state.selectedKey === key) return true;
-    if (state.preview?.timerId) cancelTimeout(state.preview.timerId);
-    state.reviewedRevisions.clear();
+    cancelPreviewTimer();
+    clearReviewAcknowledgements({
+      clearApprovals: true,
+      clearAllQuestions: true,
+    });
     state.selectedKey = key;
     state.viewMode = 'live';
     state.preview = null;
     state.previewAttempt = 0;
-    state.reviewChecks = emptyReviewChecks();
-    resetApprovalInputs();
     if (item.type === 'question') setSelected(item.identity, { force: true });
     else {
       state.selectedId = null;
@@ -401,6 +477,7 @@ export function startFacultyConsole({
       state.dirtyFields = [];
       state.localAssessment = null;
     }
+    beginPreviewLoad(item);
     return true;
   }
 
@@ -549,6 +626,11 @@ export function startFacultyConsole({
     completedHoldKey = null,
   } = {}) {
     const generation = ++state.loadGeneration;
+    invalidatePreview({
+      resetAttempt: true,
+      clearApprovals: true,
+      clearAllQuestions: true,
+    });
     state.pending = true;
     if (!silent) renderLoading();
     else if (state.server) renderShell();
@@ -745,8 +827,8 @@ export function startFacultyConsole({
     ]);
   }
 
-  function switchQuestionView(mode, focusId) {
-    if (!['live', 'draft', 'edit'].includes(mode) || currentReviewItem()?.type !== 'question') return;
+  function applyQuestionView(mode) {
+    if (!['live', 'draft', 'edit'].includes(mode) || currentReviewItem()?.type !== 'question') return false;
     state.viewMode = mode;
     for (const candidate of ['live', 'draft', 'edit']) {
       const button = document.getElementById(`view-${candidate}`);
@@ -757,6 +839,11 @@ export function startFacultyConsole({
     }
     const view = document.getElementById('selected-item-view');
     if (view) view.textContent = viewModeLabel();
+    return true;
+  }
+
+  function switchQuestionView(mode, focusId) {
+    if (!applyQuestionView(mode)) return;
     refreshAttestationRail(focusId);
   }
 
@@ -784,6 +871,140 @@ export function startFacultyConsole({
     ]);
   }
 
+  function handlePreviewFrameLoad(preview) {
+    if (state.preview !== preview || !['loading', 'ready'].includes(preview.status)) return;
+    preview.loadCount += 1;
+    if (preview.loadCount === 1) {
+      preview.frameLoaded = true;
+      return;
+    }
+    cancelPreviewTimer(preview);
+    preview.status = 'frame_failure';
+    clearReviewAcknowledgements();
+    applyQuestionView('live');
+    announce('The embedded preview changed or reloaded. Use Retry or the documented fallback.');
+    refreshPreviewChromeAndRail('preview-status');
+  }
+
+  function handlePreviewFrameError(preview) {
+    if (state.preview !== preview || !['loading', 'ready'].includes(preview.status)) return;
+    cancelPreviewTimer(preview);
+    preview.status = 'frame_failure';
+    clearReviewAcknowledgements();
+    applyQuestionView('live');
+    announce('Network or embedded-preview failure. Use Retry or the documented fallback.');
+    refreshPreviewChromeAndRail('preview-status');
+  }
+
+  function retryPreview() {
+    const item = currentReviewItem();
+    if (!item || state.pending) return;
+    cancelPreviewTimer();
+    state.preview = null;
+    clearReviewAcknowledgements({ clearApprovals: true });
+    beginPreviewLoad(item);
+    renderShell('preview-status');
+    announce(`Retrying the ${itemTypeLabel(item.type).toLowerCase()} preview.`);
+  }
+
+  function openFullPage(item) {
+    if (!item || !['page', 'tool'].includes(item.type)) return;
+    const url = buildExternalReviewUrl({
+      studentBase: state.server.student,
+      item,
+    });
+    openExternal(url, '_blank', 'noopener,noreferrer');
+    announce(`Opened the full ${item.type} in a separate tab.`);
+  }
+
+  function renderPreviewStatusSlot(item) {
+    const status = state.preview?.status || 'frame_failure';
+    const statuses = {
+      loading: {
+        symbol: '…',
+        label: 'Loading',
+        detail: ' Waiting for the learner surface to report its exact readiness.',
+      },
+      ready: {
+        symbol: '✓',
+        label: 'Ready',
+        detail: ' The current learner surface reported that it is ready for review.',
+      },
+      not_found: {
+        symbol: '!',
+        label: 'Not found',
+        detail: ' The deployed learner surface could not find this exact item.',
+      },
+      error: {
+        symbol: '×',
+        label: 'Error',
+        detail: ' The deployed learner surface reported an error for this exact item.',
+      },
+      protocol_unavailable: {
+        symbol: '!',
+        label: 'Preview protocol unavailable',
+        detail: ' The outer page loaded, but the exact learner surface did not report readiness within 10 seconds.',
+      },
+      frame_failure: {
+        symbol: '×',
+        label: 'Network or embedded-preview failure',
+        detail: ' The embedded learner page did not load reliably, or it changed or reloaded after verification.',
+      },
+    };
+    const meta = statuses[status] || statuses.frame_failure;
+    const failed = PREVIEW_FAILURES.has(status) || !state.preview;
+    return el('div', { id: 'preview-status-slot', class: 'preview-status' }, [
+      el('section', {
+        id: 'preview-status',
+        class: `preview-status-panel ${status}`,
+        tabindex: '-1',
+        'aria-labelledby': 'preview-status-label',
+      }, [
+        el('span', { class: 'preview-status-icon', 'aria-hidden': 'true' }, [meta.symbol]),
+        el('span', {}, [
+          el('strong', { id: 'preview-status-label' }, [meta.label]),
+          meta.detail,
+        ]),
+        failed ? el('div', { class: 'preview-actions' }, [
+          el('button', {
+            id: 'retry-preview',
+            type: 'button',
+            disabled: state.pending,
+            onClick: retryPreview,
+          }, ['Retry preview']),
+          item && ['page', 'tool'].includes(item.type) ? el('button', {
+            id: 'open-full-page',
+            type: 'button',
+            disabled: state.pending,
+            onClick: () => openFullPage(item),
+          }, ['Open full page']) : null,
+        ]) : null,
+      ]),
+    ]);
+  }
+
+  function renderPreviewFrame(item) {
+    const preview = state.preview;
+    if (!preview) return null;
+    const frame = el('iframe', {
+      id: 'learner-preview-frame',
+      title: `Live learner preview for ${item.title}`,
+      sandbox: PREVIEW_SANDBOX,
+      referrerpolicy: 'no-referrer',
+      onLoad: () => handlePreviewFrameLoad(preview),
+      onError: () => handlePreviewFrameError(preview),
+    });
+    frame.setAttribute('src', preview.request.url);
+    return frame;
+  }
+
+  function installCurrentPreviewFrame() {
+    const preview = state.preview;
+    const frame = document.getElementById('learner-preview-frame');
+    if (!preview || !frame) return;
+    preview.frameWindow = frame.contentWindow;
+  }
+
   function renderWorkspaceSurface(item) {
     if (!item) {
       return el('div', { class: 'preview-shell empty-selection' }, [
@@ -796,15 +1017,8 @@ export function startFacultyConsole({
       hidden: item.type === 'question' && state.viewMode !== 'live',
       'aria-label': 'Live learner deployment',
     }, [
-      el('div', { id: 'preview-status-slot', class: 'preview-status' }, [
-        el('strong', {}, ['Live preview pending']),
-        el('span', {}, [' The authenticated shell is ready; verified preview loading follows in the next slice.']),
-      ]),
-      el('iframe', {
-        id: 'learner-preview-frame',
-        title: `Live learner preview for ${item.title}`,
-        src: 'about:blank',
-      }),
+      renderPreviewStatusSlot(item),
+      renderPreviewFrame(item),
     ]);
     if (item.type !== 'question') return live;
     const dirty = state.dirtyFields.length > 0;
@@ -832,6 +1046,142 @@ export function startFacultyConsole({
     ]);
   }
 
+  function updateReviewCheck(item, key, checked, focusId) {
+    state.reviewChecks[key] = checked === true;
+    if (item?.type === 'question'
+        && ['liveReviewed', 'liveUnavailableAcknowledged'].includes(key)) {
+      if (checked) {
+        state.reviewedInSession.add(item.identity);
+        state.reviewedRevisions.set(item.identity, item.revision);
+      } else if (!state.reviewChecks.liveReviewed
+          && !state.reviewChecks.liveUnavailableAcknowledged) {
+        invalidateSessionReview(item.identity);
+      }
+    }
+    refreshPreviewChromeAndRail(focusId);
+  }
+
+  function reviewPathComplete(item) {
+    const status = state.preview?.status;
+    if (status === 'ready') {
+      return item.type === 'question'
+        ? state.reviewChecks.liveReviewed === true
+        : state.reviewChecks.completeItemReviewed === true;
+    }
+    if (!PREVIEW_FAILURES.has(status)) return false;
+    return item.type === 'question'
+      ? state.reviewChecks.liveUnavailableAcknowledged === true
+      : state.reviewChecks.separateTabReviewed === true;
+  }
+
+  function renderReviewPath(item) {
+    const status = state.preview?.status || 'frame_failure';
+    if (status === 'loading') {
+      return el('p', { class: 'muted' }, [
+        'Wait for the exact learner surface to report Ready before recording review.',
+      ]);
+    }
+    if (status === 'ready') {
+      const question = item.type === 'question';
+      const id = question ? 'review-live-preview' : 'review-complete-item';
+      const key = question ? 'liveReviewed' : 'completeItemReviewed';
+      return el('label', { class: 'checkbox-line', for: id }, [
+        el('input', {
+          id,
+          type: 'checkbox',
+          checked: state.reviewChecks[key] === true,
+          disabled: state.pending,
+          onChange: event => updateReviewCheck(item, key, event.target.checked, id),
+        }),
+        question
+          ? 'I reviewed the exact live learner question.'
+          : 'I reviewed the complete live learner item.',
+      ]);
+    }
+    if (PREVIEW_FAILURES.has(status) || !state.preview) {
+      if (item.type !== 'question') {
+        return el('label', { class: 'checkbox-line', for: 'review-separate-tab' }, [
+          el('input', {
+            id: 'review-separate-tab',
+            type: 'checkbox',
+            checked: state.reviewChecks.separateTabReviewed === true,
+            disabled: state.pending,
+            onChange: event => updateReviewCheck(
+              item,
+              'separateTabReviewed',
+              event.target.checked,
+              'review-separate-tab',
+            ),
+          }),
+          'I reviewed this item in the separate tab',
+        ]);
+      }
+      const retryRequired = RETRY_REQUIRED_QUESTION_FAILURES.has(status)
+        && (state.preview?.attempt || 0) <= 1;
+      return el('div', {}, [
+        el('label', { class: 'checkbox-line', for: 'ack-live-unavailable' }, [
+          el('input', {
+            id: 'ack-live-unavailable',
+            type: 'checkbox',
+            checked: state.reviewChecks.liveUnavailableAcknowledged === true,
+            disabled: state.pending || retryRequired,
+            onChange: event => updateReviewCheck(
+              item,
+              'liveUnavailableAcknowledged',
+              event.target.checked,
+              'ack-live-unavailable',
+            ),
+          }),
+          'I reviewed the saved Draft and acknowledge that the live learner preview is unavailable.',
+        ]),
+        retryRequired ? el('p', { class: 'hint' }, [
+          'Retry preview once. This acknowledgement becomes available only if that attempt also fails.',
+        ]) : null,
+      ]);
+    }
+    return el('p', { class: 'muted' }, ['Preview verification is unavailable.']);
+  }
+
+  function renderContentChecks(item) {
+    return el('fieldset', { class: 'content-review-checks', disabled: state.pending }, [
+      el('legend', {}, ['Content checks']),
+      ...[
+        ['accuracy', 'review-content-accuracy', 'I verified the learner-facing content is accurate and complete.'],
+        ['interactions', 'review-content-interactions', 'I verified the important links and interactions.'],
+      ].map(([key, id, copy]) => el('label', { for: id }, [
+        el('input', {
+          id,
+          type: 'checkbox',
+          checked: state.reviewChecks[key] === true,
+          disabled: state.pending,
+          onChange: event => updateReviewCheck(item, key, event.target.checked, id),
+        }),
+        copy,
+      ])),
+    ]);
+  }
+
+  function currentAttestationEligibility(item, assessment, dirty) {
+    return deriveAttestationEligibility({
+      item,
+      assessment,
+      dirty,
+      previewStatus: state.preview?.status,
+      retryAttempted: (state.preview?.attempt || 0) > 1,
+      completeItemReviewed: state.reviewChecks.completeItemReviewed,
+      liveReviewed: state.reviewChecks.liveReviewed,
+      separateTabReviewed: state.reviewChecks.separateTabReviewed,
+      liveUnavailableAcknowledged: state.reviewChecks.liveUnavailableAcknowledged,
+      reviewedRevision: state.reviewedRevisions.get(item.identity),
+      warningAcks: state.warningAcks,
+      confirmations: state.confirmations,
+      contentChecks: {
+        accuracy: state.reviewChecks.accuracy,
+        interactions: state.reviewChecks.interactions,
+      },
+    });
+  }
+
   function renderAttestationRail(item) {
     if (!item) {
       return el('aside', { id: 'attestation-rail', class: 'signoff-rail' }, [
@@ -843,7 +1193,8 @@ export function startFacultyConsole({
     const assessment = question ? (state.localAssessment || currentAssessment(question)) : null;
     const dirty = question ? state.dirtyFields.length > 0 : false;
     const blocked = question && (dirty || assessment?.gate === 'blocked' || item.savedStatus !== 'draft');
-    const warningCodesComplete = question ? warningAcknowledgementsComplete(assessment) : false;
+    const reviewComplete = reviewPathComplete(item);
+    const eligibility = currentAttestationEligibility(item, assessment, dirty);
     const currentStep = dirty ? 'review' : item.completion === 'complete' ? 'confirm' : 'resolve';
     return el('aside', {
       id: 'attestation-rail',
@@ -863,6 +1214,7 @@ export function startFacultyConsole({
         el('p', {}, [item.type === 'question'
           ? 'Inspect the learner view, saved Draft, and governed question fields.'
           : 'Inspect the complete learner-facing page or tool.']),
+        renderReviewPath(item),
       ]),
       el('section', {
         id: 'rail-step-resolve',
@@ -871,31 +1223,41 @@ export function startFacultyConsole({
         el('h3', {}, ['Resolve']),
         question
           ? gateLabel(Object.hasOwn(GATE_LABELS, assessment?.gate) ? assessment.gate : 'blocked')
-          : el('p', { class: 'muted' }, [
-            'Content checks activate with the verified preview workflow.',
-          ]),
+          : renderContentChecks(item),
       ]),
       el('section', {
         id: 'rail-step-confirm',
         class: `rail-step${currentStep === 'confirm' ? ' current' : ''}`,
       }, [
         el('h3', {}, ['Confirm']),
-        question ? renderConfirmations(blocked || state.pending) : el('p', { class: 'muted' }, [
-          'Individual attestation activates after live review is verified.',
+        question ? renderConfirmations(blocked || state.pending || !reviewComplete) : el('p', { class: 'muted' }, [
+          reviewComplete
+            ? 'The learner surface review is recorded. Complete both content checks to continue.'
+            : 'Record the learner surface review before confirming this item.',
         ]),
-        question ? renderWarningAcknowledgements(assessment, blocked || state.pending) : null,
+        question ? renderWarningAcknowledgements(
+          assessment,
+          blocked || state.pending || !reviewComplete,
+        ) : null,
         question && assessment?.gate === 'warning' ? el('button', {
           id: 'attest-warning',
           class: 'primary rail-action',
           type: 'button',
-          disabled: blocked || state.pending || !confirmationsComplete() || !warningCodesComplete,
+          disabled: state.pending || !eligibility.eligible,
           onClick: () => void attestWarning(findQuestion(item.identity), assessment),
-        }, ['Attest this warning question']) : el('button', {
+        }, ['Attest this warning question']) : question ? el('button', {
           id: 'attest-current-item',
           class: 'primary rail-action',
           type: 'button',
-          disabled: true,
-        }, ['Attestation pending live review']),
+          disabled: state.pending || !eligibility.eligible,
+          onClick: () => void attestReadyQuestion(item),
+        }, [assessment?.gate === 'ready' ? 'Attest this question' : 'Attestation unavailable']) : el('button', {
+          id: 'attest-current-item',
+          class: 'primary rail-action',
+          type: 'button',
+          disabled: state.pending || !eligibility.eligible,
+          onClick: () => void attestContentItem(item),
+        }, ['Mark reviewed']),
       ]),
     ]);
   }
@@ -963,6 +1325,7 @@ export function startFacultyConsole({
       renderWorkspace(item),
     ]);
     replaceApp(background, ...(modal ? [modal] : []));
+    installCurrentPreviewFrame();
     applyIssueAssociations(renderedIssueRecords);
     focusRequested(focusTarget);
   }
@@ -1144,6 +1507,22 @@ export function startFacultyConsole({
     if (!current) return;
     const replacement = renderAttestationRail(currentReviewItem());
     current.replaceChildren(...replacement.children);
+    focusRequested(focusTarget);
+  }
+
+  function refreshPreviewChromeAndRail(focusTarget = null) {
+    const item = currentReviewItem();
+    const statusSlot = document.getElementById('preview-status-slot');
+    if (statusSlot && item) {
+      const replacement = renderPreviewStatusSlot(item);
+      statusSlot.replaceChildren(...replacement.children);
+    }
+    const rail = document.getElementById('attestation-rail');
+    if (rail) {
+      const replacement = renderAttestationRail(item);
+      rail.replaceChildren(...replacement.children);
+    }
+    applyIssueAssociations(renderedIssueRecords);
     focusRequested(focusTarget);
   }
 
@@ -1367,6 +1746,7 @@ export function startFacultyConsole({
   function applyEditorChange(candidate, focusId) {
     state.editor = candidate;
     invalidateSessionReview(state.selectedId);
+    state.reviewChecks = emptyReviewChecks();
     resetApprovalInputs();
     state.qbankMessage = '';
     state.qbankCommitUrl = null;
@@ -2041,6 +2421,7 @@ export function startFacultyConsole({
           disabled: !dirty || state.pending,
           onClick: () => {
             state.editor = clone(state.original);
+            clearReviewAcknowledgements();
             resetApprovalInputs();
             refreshEditorState();
             state.qbankError = '';
@@ -2070,9 +2451,21 @@ export function startFacultyConsole({
     renderShell(focusId);
   }
 
+  async function attestContentItem(item) {
+    const eligibility = currentAttestationEligibility(item, null, false);
+    if (!eligibility.eligible || state.pending) {
+      announce('Complete the current learner review and content checks before marking this item reviewed.');
+      return false;
+    }
+    state.contentChanges[item.identity] = true;
+    await commitContent();
+    return true;
+  }
+
   async function commitContent() {
     const changes = { ...state.contentChanges };
     if (!Object.keys(changes).length || state.pending) return;
+    invalidatePreview({ resetAttempt: true, clearApprovals: true });
     state.pending = true;
     state.contentMessage = 'Committing content reviews…';
     state.contentCommitUrl = null;
@@ -2132,6 +2525,7 @@ export function startFacultyConsole({
   }
 
   function showConflict(payload) {
+    invalidatePreview({ resetAttempt: true, clearApprovals: true });
     state.pending = false;
     state.navigationAfterSave = null;
     state.batchConfirmation = null;
@@ -2175,6 +2569,7 @@ export function startFacultyConsole({
       });
     }
     const { id, body } = snapshot;
+    invalidatePreview({ resetAttempt: true, clearApprovals: true });
     state.pending = true;
     state.qbankError = '';
     state.qbankMessage = '';
@@ -2265,6 +2660,7 @@ export function startFacultyConsole({
         },
       });
     }
+    invalidatePreview({ resetAttempt: true });
     const requestIds = list(snapshot.ids).map(id => text(id));
     state.pending = true;
     state.qbankError = '';
@@ -2323,7 +2719,6 @@ export function startFacultyConsole({
       }
       state.batchConfirmation = null;
       resetApprovalInputs();
-      renderShell('qbank-action-result');
       announce(state.qbankMessage);
       return true;
     } catch (error) {
@@ -2333,6 +2728,31 @@ export function startFacultyConsole({
         : 'network_error: The attestation was not saved.');
       return false;
     }
+  }
+
+  async function attestReadyQuestion(item) {
+    refreshEditorState();
+    const current = findQuestion(item?.identity);
+    const assessment = current ? state.localAssessment : null;
+    const eligibility = currentAttestationEligibility(
+      item,
+      assessment,
+      state.dirtyFields.length > 0,
+    );
+    if (!current || assessment?.gate !== 'ready' || !eligibility.eligible) {
+      showQbankError('attest.selection_stale: Complete the current saved question review before attesting.');
+      return false;
+    }
+    const batchAssessment = safeBatchAssessment([current]);
+    if (!batchAssessment.ok) {
+      showQbankError(`${batchAssessment.issues[0].code}: ${batchAssessment.issues[0].message}`);
+      return false;
+    }
+    return attestEntries([{
+      id: current.id,
+      revision: current.revision,
+      reviewedRevision: state.reviewedRevisions.get(current.id),
+    }], [current.id]);
   }
 
   async function attestWarning(question, assessment) {
@@ -2394,6 +2814,21 @@ export function startFacultyConsole({
     }
     return attestEntries(currentEntries, currentEntries.map(entry => entry.id));
   }
+
+  function handlePreviewStatus(event) {
+    const preview = state.preview;
+    if (!preview || !['loading', 'ready'].includes(preview.status)) return;
+    if (!matchesPreviewStatus(event, preview.request, preview.frameWindow)) return;
+    if (preview.status === 'ready' && event.data.status === 'ready') return;
+    cancelPreviewTimer(preview);
+    preview.status = event.data.status;
+    clearReviewAcknowledgements();
+    if (event.data.status !== 'ready') applyQuestionView('live');
+    announce(`Deployed ${event.data.surface} preview: ${event.data.status.replace('_', ' ')}.`);
+    refreshPreviewChromeAndRail('preview-status');
+  }
+
+  window.addEventListener('message', handlePreviewStatus);
 
   window.addEventListener('beforeunload', event => {
     if (!hasAnyUnsavedChanges()) return;

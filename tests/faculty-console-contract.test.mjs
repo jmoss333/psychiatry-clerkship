@@ -418,6 +418,50 @@ function domId(value) {
   return String(value).toLowerCase().replace(/[^a-z0-9_-]/g, '-');
 }
 
+function previewStatusEvent(preview, status, {
+  event = {},
+  data = {},
+} = {}) {
+  return {
+    origin: preview.request.origin,
+    source: preview.frameWindow,
+    data: {
+      type: 'faculty-preview-status',
+      reviewKey: preview.request.key,
+      reviewToken: preview.request.token,
+      status,
+      surface: preview.request.surface,
+      ...data,
+    },
+    ...event,
+  };
+}
+
+async function reportPreviewStatus(window, controller, status, overrides = {}) {
+  await window.dispatch('message', previewStatusEvent(
+    controller.state.preview,
+    status,
+    overrides,
+  ));
+}
+
+function runPreviewTimer(window, preview) {
+  const timer = window.timers.get(preview.timerId);
+  assert.ok(timer, 'Expected an active preview timer.');
+  assert.equal(timer.delay, 10_000);
+  timer.callback();
+}
+
+async function makeCurrentQuestionPreviewReady(harness) {
+  const { controller, document, window } = harness;
+  if (controller.state.selectedKey !== 'question:qb_moo_902') {
+    await setValue(document, 'review-item-selector', 'question:qb_moo_902', 'change');
+  }
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  await setChecked(document, 'review-live-preview');
+}
+
 test('exports the injectable faculty-console browser entry', () => {
   assert.equal(typeof startFacultyConsole, 'function');
   assert.match(
@@ -724,6 +768,382 @@ test('targeted queue, reviewer, view, editor, and rail updates keep the learner 
   assert.equal(document.getElementById('learner-preview-frame'), frame);
   assert.equal(document.getElementById('learner-preview-frame').contentWindow, frameWindow);
   assert.match(document.getElementById('selected-item-view').textContent, /Edit question/);
+});
+
+test('preview selection and Retry create exact tokenized routes, fresh iframes, and strict sandbox policy', async () => {
+  const tokens = ['0', '1', '2', '3'].map(value => value.repeat(32));
+  let tokenIndex = 0;
+  const { controller, document, window } = await startHarness({
+    tokenFactory: () => tokens[tokenIndex++],
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+        { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+      ],
+      questions: [validDomQuestion()],
+    })),
+  });
+
+  const pagePreview = controller.state.preview;
+  const pageFrame = document.getElementById('learner-preview-frame');
+  assert.equal(pagePreview.request.url,
+    `https://students.example/?page=t_mood.md&reviewKey=page%3At_mood.md&reviewToken=${tokens[0]}`);
+  assert.equal(pageFrame.getAttribute('src'), pagePreview.request.url);
+  assert.equal(pageFrame.getAttribute('sandbox'), 'allow-scripts allow-same-origin allow-forms');
+  assert.equal(pageFrame.getAttribute('referrerpolicy'), 'no-referrer');
+  assert.equal(pageFrame.getAttribute('title'), 'Live learner preview for Mood disorders');
+  assert.doesNotMatch(pageFrame.getAttribute('sandbox'), /allow-(?:popups|downloads)/);
+  assert.equal(pagePreview.frameWindow, pageFrame.contentWindow);
+  assert.equal(window.timers.get(pagePreview.timerId).delay, 10_000);
+
+  await pageFrame.dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  assert.equal(document.getElementById('learner-preview-frame'), pageFrame);
+  assert.equal(document.getElementById('learner-preview-frame').contentWindow, pageFrame.contentWindow);
+  await setChecked(document, 'review-complete-item');
+  await setValue(document, 'review-search', 'mood');
+  assert.equal(document.getElementById('learner-preview-frame'), pageFrame);
+  assert.equal(document.getElementById('learner-preview-frame').contentWindow, pageFrame.contentWindow);
+  assert.equal(controller.state.reviewChecks.completeItemReviewed, true);
+
+  await setValue(document, 'review-search', '');
+  await setValue(document, 'review-item-selector', 'tool:mse.html', 'change');
+  const toolPreview = controller.state.preview;
+  const toolFrame = document.getElementById('learner-preview-frame');
+  assert.notEqual(toolFrame, pageFrame);
+  assert.equal(toolPreview.attempt, 1);
+  assert.equal(toolPreview.request.url,
+    `https://students.example/?tool=mse.html&reviewKey=tool%3Amse.html&reviewToken=${tokens[1]}`);
+
+  await setValue(document, 'review-item-selector', 'question:qb_moo_902', 'change');
+  const questionPreview = controller.state.preview;
+  const questionFrame = document.getElementById('learner-preview-frame');
+  assert.notEqual(questionFrame, toolFrame);
+  assert.equal(questionPreview.attempt, 1);
+  assert.equal(questionPreview.request.url,
+    `https://students.example/?tool=question-bank-practice.html&reviewItem=qb_moo_902&reviewKey=question%3Aqb_moo_902&reviewToken=${tokens[2]}`);
+
+  await reportPreviewStatus(window, controller, 'error');
+  const priorTimer = questionPreview.timerId;
+  await document.getElementById('retry-preview').dispatch('click');
+  const retryPreview = controller.state.preview;
+  const retryFrame = document.getElementById('learner-preview-frame');
+  assert.equal(retryPreview.attempt, 2);
+  assert.equal(retryPreview.request.token, tokens[3]);
+  assert.notEqual(retryPreview.request.url, questionPreview.request.url);
+  assert.notEqual(retryFrame, questionFrame);
+  assert.notEqual(retryPreview.timerId, priorTimer);
+  assert.equal(window.timers.get(retryPreview.timerId).delay, 10_000);
+});
+
+test('preview iframe load, timeout, and error become honest focusable fallback states', async () => {
+  const tokens = ['4', '5', '6'].map(value => value.repeat(32));
+  let tokenIndex = 0;
+  const { controller, document, window } = await startHarness({
+    tokenFactory: () => tokens[tokenIndex++],
+    fetchImpl: async () => jsonResponse(serverState({ items: [], questions: [validDomQuestion()] })),
+  });
+
+  const noLoad = controller.state.preview;
+  const noLoadFrame = document.getElementById('learner-preview-frame');
+  await document.getElementById('view-edit').dispatch('click');
+  assert.equal(document.getElementById('question-view-live').getAttribute('hidden'), '');
+  runPreviewTimer(window, noLoad);
+  assert.equal(noLoad.status, 'frame_failure');
+  assert.match(document.getElementById('preview-status').textContent,
+    /Network or embedded-preview failure/);
+  assert.match(document.getElementById('preview-status').textContent,
+    /did not load reliably, or it changed or reloaded after verification/);
+  assert.equal(document.getElementById('preview-status').getAttribute('tabindex'), '-1');
+  assert.equal(document.activeElement?.getAttribute('id'), 'preview-status');
+  assert.equal(document.getElementById('question-view-live').getAttribute('hidden'), null);
+  assert.equal(document.getElementById('ack-live-unavailable').disabled, true);
+
+  await document.getElementById('retry-preview').dispatch('click');
+  const loadedWithoutProtocol = controller.state.preview;
+  const loadedFrame = document.getElementById('learner-preview-frame');
+  assert.equal(loadedWithoutProtocol.request.token, tokens[1]);
+  assert.notEqual(loadedFrame, noLoadFrame);
+  await loadedFrame.dispatch('load');
+  assert.equal(loadedWithoutProtocol.frameLoaded, true);
+  assert.equal(loadedWithoutProtocol.status, 'loading');
+  runPreviewTimer(window, loadedWithoutProtocol);
+  assert.equal(loadedWithoutProtocol.status, 'protocol_unavailable');
+  assert.match(document.getElementById('preview-status').textContent,
+    /Preview protocol unavailable/);
+  assert.equal(document.activeElement?.getAttribute('id'), 'preview-status');
+  assert.equal(document.getElementById('ack-live-unavailable').disabled, false);
+
+  await document.getElementById('retry-preview').dispatch('click');
+  const errored = controller.state.preview;
+  const erroredFrame = document.getElementById('learner-preview-frame');
+  assert.equal(errored.request.token, tokens[2]);
+  assert.notEqual(erroredFrame, loadedFrame);
+  const errorTimer = errored.timerId;
+  await erroredFrame.dispatch('error');
+  assert.equal(errored.status, 'frame_failure');
+  assert.equal(window.timers.has(errorTimer), false);
+  assert.match(document.getElementById('preview-status').textContent,
+    /Network or embedded-preview failure/);
+  assert.equal(document.getElementById('ack-live-unavailable').disabled, false);
+});
+
+test('preview spoofing and stale messages remain Loading until the current typed proof or timeout', async () => {
+  const tokens = ['7', '8'].map(value => value.repeat(32));
+  let tokenIndex = 0;
+  const { controller, document, window } = await startHarness({
+    tokenFactory: () => tokens[tokenIndex++],
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [{ slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' }],
+      questions: [validDomQuestion()],
+    })),
+  });
+  const prior = controller.state.preview;
+  const priorFrame = document.getElementById('learner-preview-frame');
+  const priorTimer = window.timers.get(prior.timerId);
+
+  await setValue(document, 'review-item-selector', 'question:qb_moo_902', 'change');
+  const current = controller.state.preview;
+  const currentFrame = document.getElementById('learner-preview-frame');
+  priorTimer.callback();
+  await priorFrame.dispatch('load');
+  await priorFrame.dispatch('error');
+  assert.equal(current.status, 'loading');
+  assert.ok(window.timers.has(current.timerId));
+  await currentFrame.dispatch('load');
+
+  const candidates = [
+    previewStatusEvent(current, 'ready', { event: { origin: 'https://evil.example' } }),
+    previewStatusEvent(current, 'ready', { event: { source: priorFrame.contentWindow } }),
+    previewStatusEvent(current, 'ready', { data: { reviewKey: 'question:qb_other_001' } }),
+    previewStatusEvent(current, 'ready', { data: { reviewToken: 'f'.repeat(32) } }),
+    previewStatusEvent(current, 'ready', { data: { surface: 'page' } }),
+    previewStatusEvent(current, 'ready', { data: { extra: 'reject this shape' } }),
+    previewStatusEvent(prior, 'ready'),
+  ];
+  for (const candidate of candidates) {
+    await window.dispatch('message', candidate);
+    assert.equal(current.status, 'loading');
+    assert.ok(window.timers.has(current.timerId));
+    assert.match(document.getElementById('preview-status').textContent, /Loading/);
+  }
+
+  runPreviewTimer(window, current);
+  assert.equal(current.status, 'protocol_unavailable');
+  assert.equal(controller.state.reviewChecks.liveReviewed, false);
+});
+
+test('preview Ready preserves its browsing context and later status or navigation revokes review evidence', async () => {
+  const tokens = ['9', 'a', 'b'].map(value => value.repeat(32));
+  let tokenIndex = 0;
+  const { controller, document, window } = await startHarness({
+    tokenFactory: () => tokens[tokenIndex++],
+    fetchImpl: async () => jsonResponse(serverState({ items: [], questions: [validDomQuestion()] })),
+  });
+
+  const preview = controller.state.preview;
+  const timerId = preview.timerId;
+  const frame = document.getElementById('learner-preview-frame');
+  const frameWindow = frame.contentWindow;
+  await frame.dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  assert.equal(preview.status, 'ready');
+  assert.equal(window.timers.has(timerId), false);
+  assert.equal(document.getElementById('learner-preview-frame'), frame);
+  assert.equal(document.getElementById('learner-preview-frame').contentWindow, frameWindow);
+  assert.match(document.getElementById('preview-status').textContent, /Ready/);
+
+  await setChecked(document, 'review-live-preview');
+  assert.equal(controller.state.reviewChecks.liveReviewed, true);
+  assert.equal(controller.state.reviewedRevisions.get('qb_moo_902'), validDomQuestion().revision);
+  await reportPreviewStatus(window, controller, 'ready');
+  assert.equal(controller.state.reviewChecks.liveReviewed, true,
+    'A duplicate Ready must not erase valid review evidence.');
+  assert.equal(document.getElementById('learner-preview-frame'), frame);
+
+  await reportPreviewStatus(window, controller, 'error');
+  assert.equal(preview.status, 'error');
+  assert.equal(controller.state.reviewChecks.liveReviewed, false);
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
+  assert.equal(document.getElementById('attest-current-item').disabled, true);
+
+  await document.getElementById('retry-preview').dispatch('click');
+  const notFoundRetry = controller.state.preview;
+  const notFoundFrame = document.getElementById('learner-preview-frame');
+  await notFoundFrame.dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  await setChecked(document, 'review-live-preview');
+  await reportPreviewStatus(window, controller, 'not_found');
+  assert.equal(notFoundRetry.status, 'not_found');
+  assert.equal(controller.state.reviewChecks.liveReviewed, false);
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
+
+  await document.getElementById('retry-preview').dispatch('click');
+  const navigationRetry = controller.state.preview;
+  const navigationFrame = document.getElementById('learner-preview-frame');
+  await navigationFrame.dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  await setChecked(document, 'review-live-preview');
+  await navigationFrame.dispatch('load');
+  assert.equal(navigationRetry.status, 'frame_failure');
+  assert.equal(controller.state.reviewChecks.liveReviewed, false);
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
+  assert.equal(document.getElementById('attest-current-item').disabled, true);
+});
+
+test('preview fallback gates question Retry and opens only clean page or tool routes externally', async () => {
+  const questionTokens = ['b', 'c'].map(value => value.repeat(32));
+  let questionTokenIndex = 0;
+  const questionHarness = await startHarness({
+    tokenFactory: () => questionTokens[questionTokenIndex++],
+    fetchImpl: async () => jsonResponse(serverState({ items: [], questions: [validDomQuestion()] })),
+  });
+  const { controller: questionController, document: questionDocument, window: questionWindow } = questionHarness;
+
+  await reportPreviewStatus(questionWindow, questionController, 'error');
+  assert.equal(questionDocument.getElementById('ack-live-unavailable').disabled, true);
+  assert.equal(questionDocument.getElementById('open-full-page'), null);
+  assert.equal(questionDocument.getElementById('review-separate-tab'), null);
+  await questionDocument.getElementById('retry-preview').dispatch('click');
+  await reportPreviewStatus(questionWindow, questionController, 'error');
+  assert.equal(questionDocument.getElementById('ack-live-unavailable').disabled, false);
+  await setChecked(questionDocument, 'ack-live-unavailable');
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(questionDocument, id);
+  }
+  assert.equal(questionDocument.getElementById('attest-current-item').disabled, false);
+
+  const notFoundHarness = await startHarness({
+    tokenFactory: () => 'd'.repeat(32),
+    fetchImpl: async () => jsonResponse(serverState({ items: [], questions: [validDomQuestion()] })),
+  });
+  await reportPreviewStatus(notFoundHarness.window, notFoundHarness.controller, 'not_found');
+  assert.equal(notFoundHarness.document.getElementById('ack-live-unavailable').disabled, false,
+    'Exact Question Not found can use the deployment-lag acknowledgement on attempt one.');
+
+  const externalCalls = [];
+  const contentTokens = ['e', 'f', '0'].map(value => value.repeat(32));
+  let contentTokenIndex = 0;
+  const contentHarness = await startHarness({
+    tokenFactory: () => contentTokens[contentTokenIndex++],
+    openExternal: (...args) => { externalCalls.push(args); },
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+        { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+      ],
+      questions: [],
+    })),
+  });
+  const { controller: contentController, document: contentDocument, window: contentWindow } = contentHarness;
+
+  assert.equal(contentDocument.getElementById('review-separate-tab'), null);
+  await reportPreviewStatus(contentWindow, contentController, 'error');
+  assert.ok(contentDocument.getElementById('retry-preview'));
+  assert.ok(contentDocument.getElementById('open-full-page'));
+  assert.ok(contentDocument.getElementById('review-separate-tab'));
+  await contentDocument.getElementById('open-full-page').dispatch('click');
+  assert.deepEqual(externalCalls[0], [
+    'https://students.example/?page=t_mood.md',
+    '_blank',
+    'noopener,noreferrer',
+  ]);
+  for (const [url] of externalCalls) {
+    assert.equal(url.includes('reviewKey'), false);
+    assert.equal(url.includes('reviewToken'), false);
+    assert.equal(url.includes('faculty'), false);
+    assert.equal(url.includes('test-faculty-key'), false);
+  }
+  await setChecked(contentDocument, 'review-separate-tab');
+  await setChecked(contentDocument, 'review-content-accuracy');
+  await setChecked(contentDocument, 'review-content-interactions');
+  assert.equal(contentDocument.getElementById('attest-current-item').disabled, false);
+
+  await contentDocument.getElementById('retry-preview').dispatch('click');
+  const pageReadyFrame = contentDocument.getElementById('learner-preview-frame');
+  await pageReadyFrame.dispatch('load');
+  await reportPreviewStatus(contentWindow, contentController, 'ready');
+  await setChecked(contentDocument, 'review-complete-item');
+  await setChecked(contentDocument, 'review-content-accuracy');
+  await setChecked(contentDocument, 'review-content-interactions');
+  await reportPreviewStatus(contentWindow, contentController, 'not_found');
+  assert.equal(contentController.state.reviewChecks.completeItemReviewed, false);
+  assert.equal(contentController.state.reviewChecks.separateTabReviewed, false);
+  assert.equal(contentController.state.reviewChecks.accuracy, false);
+  assert.equal(contentController.state.reviewChecks.interactions, false);
+  assert.equal(contentDocument.getElementById('attest-current-item').disabled, true);
+
+  await setValue(contentDocument, 'review-item-selector', 'tool:mse.html', 'change');
+  await reportPreviewStatus(contentWindow, contentController, 'error');
+  await contentDocument.getElementById('open-full-page').dispatch('click');
+  assert.deepEqual(externalCalls[1], [
+    'https://students.example/?tool=mse.html',
+    '_blank',
+    'noopener,noreferrer',
+  ]);
+});
+
+test('preview repository reload resets attempts and all review acknowledgements', async () => {
+  const tokens = ['1', '2'].map(value => value.repeat(32));
+  let tokenIndex = 0;
+  const harness = await startHarness({
+    tokenFactory: () => tokens[tokenIndex++],
+    fetchImpl: async () => jsonResponse(serverState({ items: [], questions: [validDomQuestion()] })),
+  });
+  const { controller, document, window } = harness;
+  const firstFrame = document.getElementById('learner-preview-frame');
+  await firstFrame.dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  await setChecked(document, 'review-live-preview');
+  await setChecked(document, 'confirm-clinical');
+  assert.equal(controller.state.reviewChecks.liveReviewed, true);
+  assert.equal(controller.state.confirmations.clinical, true);
+
+  assert.equal(await controller.load({ silent: true }), true);
+  assert.equal(controller.state.preview.attempt, 1);
+  assert.equal(controller.state.preview.request.token, tokens[1]);
+  assert.equal(controller.state.preview.status, 'loading');
+  assert.equal(controller.state.reviewChecks.liveReviewed, false);
+  assert.equal(controller.state.confirmations.clinical, false);
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
+  assert.notEqual(document.getElementById('learner-preview-frame'), firstFrame);
+});
+
+test('preview save and conflict cancel the active load and clear preview acknowledgements', async () => {
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      return jsonResponse({
+        error: { code: 'qbank.conflict', message: 'The saved question changed.' },
+      }, { ok: false, status: 409 });
+    }
+    return jsonResponse(serverState({ items: [], questions: [validDomQuestion()] }));
+  };
+  const { controller, document, window } = await startHarness({
+    tokenFactory: () => '3'.repeat(32),
+    fetchImpl,
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const preview = controller.state.preview;
+  const timerId = preview.timerId;
+  assert.ok(window.timers.has(timerId));
+  await setValue(document, 'question-stem', 'A changed saved Draft that will conflict?');
+
+  await document.getElementById('save-draft').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(window.timers.has(timerId), false);
+  assert.equal(controller.state.preview, null);
+  assert.equal(controller.state.previewAttempt, 0);
+  assert.deepEqual(controller.state.reviewChecks, {
+    completeItemReviewed: false,
+    liveReviewed: false,
+    separateTabReviewed: false,
+    liveUnavailableAcknowledged: false,
+    accuracy: false,
+    interactions: false,
+  });
+  assert.ok(document.getElementById('qbank-conflict'));
+  assert.equal(document.getElementById('learner-preview-frame'), null);
 });
 
 test('normalizes the learner base before installing state and preserves prior state on failure', async () => {
@@ -1641,10 +2061,11 @@ test('requires all human confirmations and each current warning acknowledgement 
     }
     return jsonResponse(serverState({ question: current }));
   };
-  const { controller, document } = await startHarness({
+  const { controller, document, window } = await startHarness({
     fetchImpl,
     assessItemImpl: warningAssessment,
   });
+  await makeCurrentQuestionPreviewReady({ controller, document, window });
   const attest = document.getElementById('attest-warning');
   assert.equal(attest.disabled, true);
   for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
@@ -1709,7 +2130,8 @@ test('save-time 401 reauthentication retries the exact captured attestation and 
     }
     return jsonResponse(serverState({ question: current }));
   };
-  const { controller, document } = await startHarness({ fetchImpl, assessItemImpl: warningAssessment });
+  const { controller, document, window } = await startHarness({ fetchImpl, assessItemImpl: warningAssessment });
+  await makeCurrentQuestionPreviewReady({ controller, document, window });
   for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
     await setChecked(document, id);
   }
@@ -1754,7 +2176,8 @@ test('attestation keeps the captured entry and confirmations immutable while POS
     if (gets === 1) return jsonResponse(serverState());
     return refreshGate.promise;
   };
-  const { controller, document } = await startHarness({ fetchImpl, assessItemImpl: warningAssessment });
+  const { controller, document, window } = await startHarness({ fetchImpl, assessItemImpl: warningAssessment });
+  await makeCurrentQuestionPreviewReady({ controller, document, window });
   for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
     await setChecked(document, id);
   }
