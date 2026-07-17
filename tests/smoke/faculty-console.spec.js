@@ -10,9 +10,16 @@ import {
   prepareDraftSave,
 } from '../../faculty-console/netlify/functions/qbank-actions.mjs';
 
+const MS3_URL = process.env.MS3_BASE_URL || 'http://localhost:4200';
 const FACULTY_KEY = 'synthetic-faculty-key';
 const MANIFEST_PAGES = ['t_mood.md'];
 const MANIFEST_REVISION = 'b'.repeat(40);
+const REVIEW_TOKEN = '0123456789abcdef0123456789abcdef';
+const REVIEW_PROGRESS_SENTINELS = Object.freeze({
+  cw_qb_v1: 'question-bank-progress::byte-sentinel',
+  cw_srs_v1: 'spaced-review-progress::byte-sentinel',
+  cw_qb_focus: 'adaptive-focus::byte-sentinel',
+});
 const CONFIRMATION_IDS = [
   'confirm-clinical',
   'confirm-evidence',
@@ -152,6 +159,63 @@ function warningBank() {
       retiredQuestion(),
     ],
   };
+}
+
+function exactReviewBank() {
+  return {
+    version: 1,
+    items: [
+      syntheticQuestion({
+        id: 'qb_moo_902',
+        correctKey: 'B',
+        status: 'attested',
+        stem: 'Exact synthetic review stem: which syndrome best fits this fictional presentation?',
+      }),
+      retiredQuestion(),
+    ],
+  };
+}
+
+function exactReviewUrl(reviewItem = 'qb_moo_902') {
+  const url = new URL('/tools/question-bank-practice.html', MS3_URL);
+  url.searchParams.set('reviewItem', reviewItem);
+  url.searchParams.set('reviewKey', `question:${reviewItem}`);
+  url.searchParams.set('reviewToken', REVIEW_TOKEN);
+  return url;
+}
+
+async function installExactReviewHarness(page, bank = exactReviewBank()) {
+  await page.addInitScript(sentinels => {
+    for (const [key, value] of Object.entries(sentinels)) {
+      localStorage.setItem(key, value);
+    }
+    localStorage.setItem('cw_theme', 'dark');
+    window.__facultyReviewStatuses = [];
+    window.__facultyReviewStatusSnapshots = [];
+    window.addEventListener('message', event => {
+      if (event.data?.type !== 'faculty-preview-question-status') return;
+      window.__facultyReviewStatuses.push(event.data);
+      window.__facultyReviewStatusSnapshots.push({
+        status: event.data.status,
+        visibleError: document.querySelector('.err-box')?.textContent || '',
+      });
+    });
+  }, REVIEW_PROGRESS_SENTINELS);
+  await page.route('**/question_bank.json', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify(bank),
+  }));
+}
+
+async function reviewStatuses(page) {
+  return page.evaluate(() => window.__facultyReviewStatuses);
+}
+
+async function protectedProgress(page) {
+  return page.evaluate(keys => Object.fromEntries(
+    keys.map(key => [key, localStorage.getItem(key)]),
+  ), Object.keys(REVIEW_PROGRESS_SENTINELS));
 }
 
 function activeItems(bank) {
@@ -389,6 +453,130 @@ async function checkConfirmations(page) {
 function qbankPosts(api) {
   return api.calls.filter(call => call.method === 'POST' && call.action.startsWith('qbank.'));
 }
+
+test.describe('learner exact-question review route', () => {
+  test('renders and answers only the requested question without changing learner progress', async ({ page }) => {
+    await installExactReviewHarness(page);
+    await page.goto(exactReviewUrl().href);
+
+    await expect(page.locator('.qcard-stem')).toHaveText(
+      'Exact synthetic review stem: which syndrome best fits this fictional presentation?',
+    );
+    await expect(page.locator('.setup')).toHaveCount(0);
+    await expect(page.locator('.qcard')).not.toContainText('This retired synthetic item');
+    await expect.poll(() => reviewStatuses(page)).toEqual([{
+      type: 'faculty-preview-question-status',
+      reviewKey: 'question:qb_moo_902',
+      reviewToken: REVIEW_TOKEN,
+      reviewItem: 'qb_moo_902',
+      status: 'ready',
+      surface: 'question',
+    }]);
+
+    await page.locator('[data-conf="likely"]').click();
+    await page.locator('[data-key="B"]').click();
+    await expect(page.locator('#feedbackPanel')).toBeVisible();
+    await expect(page.locator('.verdict')).toContainText('Correct');
+    await expect(page.locator('#nextBtn')).toHaveCount(0);
+    await expect(page.locator('.fb-link')).toHaveCount(0);
+    expect(await protectedProgress(page)).toEqual(REVIEW_PROGRESS_SENTINELS);
+  });
+
+  for (const [label, reviewItem] of [
+    ['missing', 'qb_moo_903'],
+    ['retired', 'qb_moo_999'],
+  ]) {
+    test(`${label} review item reports not_found without rendering another question`, async ({ page }) => {
+      await installExactReviewHarness(page);
+      await page.goto(exactReviewUrl(reviewItem).href);
+
+      await expect(page.locator('.err-box')).toContainText(
+        'This question is not present on the current deployment',
+      );
+      await expect(page.locator('.qcard')).toHaveCount(0);
+      await expect(page.locator('body')).not.toContainText(
+        'Exact synthetic review stem: which syndrome best fits this fictional presentation?',
+      );
+      await expect.poll(() => reviewStatuses(page)).toEqual([{
+        type: 'faculty-preview-question-status',
+        reviewKey: `question:${reviewItem}`,
+        reviewToken: REVIEW_TOKEN,
+        reviewItem,
+        status: 'not_found',
+        surface: 'question',
+      }]);
+      expect(await protectedProgress(page)).toEqual(REVIEW_PROGRESS_SENTINELS);
+    });
+  }
+
+  test('failed question-bank fetch shows an error before reporting error status', async ({ page }) => {
+    await installExactReviewHarness(page);
+    await page.unroute('**/question_bank.json');
+    await page.route('**/question_bank.json', route => route.fulfill({
+      status: 503,
+      contentType: 'text/plain',
+      body: 'Synthetic unavailable',
+    }));
+    await page.goto(exactReviewUrl().href);
+
+    await expect(page.locator('.err-box')).toContainText('Could not load question bank');
+    await expect.poll(() => page.evaluate(() => window.__facultyReviewStatusSnapshots)).toEqual([{
+      status: 'error',
+      visibleError: expect.stringContaining('Could not load question bank'),
+    }]);
+    await expect.poll(() => reviewStatuses(page)).toEqual([{
+      type: 'faculty-preview-question-status',
+      reviewKey: 'question:qb_moo_902',
+      reviewToken: REVIEW_TOKEN,
+      reviewItem: 'qb_moo_902',
+      status: 'error',
+      surface: 'question',
+    }]);
+    expect(await protectedProgress(page)).toEqual(REVIEW_PROGRESS_SENTINELS);
+  });
+
+  test('malformed or duplicate review parameters stay in normal practice mode', async ({ page }) => {
+    await installExactReviewHarness(page);
+    const malformedUrls = [];
+
+    const malformedItem = exactReviewUrl();
+    malformedItem.searchParams.set('reviewItem', 'qb_BAD_2');
+    malformedItem.searchParams.set('reviewKey', 'question:qb_BAD_2');
+    malformedUrls.push(malformedItem);
+
+    const mismatchedKey = exactReviewUrl();
+    mismatchedKey.searchParams.set('reviewKey', 'question:qb_moo_903');
+    malformedUrls.push(mismatchedKey);
+
+    const malformedToken = exactReviewUrl();
+    malformedToken.searchParams.set('reviewToken', 'not-a-32-character-hex-token');
+    malformedUrls.push(malformedToken);
+
+    const duplicateItem = exactReviewUrl();
+    duplicateItem.searchParams.append('reviewItem', 'qb_moo_903');
+    malformedUrls.push(duplicateItem);
+
+    for (const url of malformedUrls) {
+      await page.goto(url.href);
+      await expect(page.locator('.setup')).toBeVisible();
+      await expect(page.locator('.qcard')).toHaveCount(0);
+      await expect.poll(() => reviewStatuses(page)).toEqual([]);
+    }
+  });
+
+  test('review mode preserves theme load and message behavior without changing progress', async ({ page }) => {
+    await installExactReviewHarness(page);
+    await page.goto(exactReviewUrl().href);
+
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.evaluate(() => {
+      window.postMessage({ type: 'theme', mode: 'light' }, location.origin);
+    });
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_theme'))).toBe('light');
+    expect(await protectedProgress(page)).toEqual(REVIEW_PROGRESS_SENTINELS);
+  });
+});
 
 test('logs in, filters active items, preserves a forced draft, and recovers from a conflict', async ({ page }) => {
   const api = await installRepositoryApi(page, workflowBank());

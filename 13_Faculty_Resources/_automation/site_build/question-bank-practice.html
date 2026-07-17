@@ -146,6 +146,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body
 'use strict';
 var BANK = null;
 var SESSION = null;
+var REVIEW_CONTEXT = readReviewContext();
 var CAT_LABELS = {
   mood:'Mood',psychosis:'Psychosis',anxiety:'Anxiety/Trauma',
   substance:'Substance Use',neurocog:'Neurocognitive',pharm:'Pharmacology',
@@ -163,6 +164,31 @@ function shuffle(arr){
   var a=arr.slice(),i=a.length,j,t;
   while(i--){j=Math.floor(Math.random()*(i+1));t=a[i];a[i]=a[j];a[j]=t;}
   return a;
+}
+
+function readReviewContext(){
+  var sp = new URLSearchParams(location.search);
+  var reviewItem = sp.get('reviewItem') || '';
+  var reviewKey = sp.get('reviewKey') || '';
+  var reviewToken = sp.get('reviewToken') || '';
+  if(sp.getAll('reviewItem').length !== 1 || sp.getAll('reviewKey').length !== 1
+      || sp.getAll('reviewToken').length !== 1) return null;
+  if(!/^qb_[a-z]+_[0-9]{3}$/.test(reviewItem)) return null;
+  if(reviewKey !== 'question:' + reviewItem) return null;
+  if(!/^[0-9a-f]{32}$/.test(reviewToken)) return null;
+  return Object.freeze({reviewItem:reviewItem, reviewKey:reviewKey, reviewToken:reviewToken});
+}
+
+function postReviewItemStatus(status){
+  if(!REVIEW_CONTEXT || ['ready','not_found','error'].indexOf(status) < 0) return;
+  window.parent.postMessage({
+    type:'faculty-preview-question-status',
+    reviewKey:REVIEW_CONTEXT.reviewKey,
+    reviewToken:REVIEW_CONTEXT.reviewToken,
+    reviewItem:REVIEW_CONTEXT.reviewItem,
+    status:status,
+    surface:'question'
+  }, location.origin);
 }
 
 /* ---- localStorage helpers ----------------------------------------------------- */
@@ -365,6 +391,7 @@ function renderTier2(item){
 }
 
 function getFeedbackHtml(item, selectedKey, tier2Key, confidence, correct, twoTierResult){
+  var reviewOnly = SESSION && SESSION.reviewOnly;
   var h = '<div class="feedback" id="feedbackPanel">';
   /* verdict */
   var verdClass, verdText;
@@ -406,7 +433,7 @@ function getFeedbackHtml(item, selectedKey, tier2Key, confidence, correct, twoTi
   h += '<div class="fb-block"><span class="fb-lbl">Pearl</span><em>'+esc(item.pearl)+'</em></div>';
   h += '<div class="fb-block"><span class="fb-lbl">Source</span>'+esc(item.evidence)+'</div>';
   /* deep link */
-  if(item.link&&item.link.href){
+  if(!reviewOnly && item.link&&item.link.href){
     var linkHref = item.link.href;
     /* route through SPA shell if running inside iframe */
     var isSPA = (window.self!==window.top);
@@ -416,9 +443,12 @@ function getFeedbackHtml(item, selectedKey, tier2Key, confidence, correct, twoTi
     h += '<a class="fb-link" href="'+esc(linkHref)+'" '+(isSPA?'data-spa-nav="1"':' target="_blank" rel="noopener"')+'>'
        + esc(item.link.label||'Continue reading')+(isSPA?'':' →')+'</a>';
   }
-  h += '<div class="fb-actions">'
-     + '<button class="btn btn-accent" id="nextBtn">Next question &rarr;</button>'
-     + '</div></div>';
+  if(!reviewOnly){
+    h += '<div class="fb-actions">'
+       + '<button class="btn btn-accent" id="nextBtn">Next question &rarr;</button>'
+       + '</div>';
+  }
+  h += '</div>';
   return h;
 }
 
@@ -573,6 +603,15 @@ function startSession(catFilter, diffFilter, sizeLimit){
   showQuestion();
 }
 
+function showReviewItem(item){
+  SESSION = {
+    queue:[item], idx:0, responses:[], confidence:null, tier1Key:null,
+    displayOrder:[], tier2DisplayOrder:[], state:'conf', reviewOnly:true
+  };
+  showQuestion();
+  postReviewItemStatus('ready');
+}
+
 function showQuestion(){
   if(!SESSION || SESSION.idx >= SESSION.queue.length){
     showSummary(); return;
@@ -703,6 +742,13 @@ function onTier2Answer(item, tier2Key){
 }
 
 function commitResponse(item, key, tier2Key, confidence, correct, twoTierResult){
+  if(SESSION && SESSION.reviewOnly){
+    SESSION.responses.push({
+      item:item, key:key, tier2Key:tier2Key, confidence:confidence,
+      correct:correct, twoTierResult:twoTierResult, ts:Date.now()
+    });
+    return;
+  }
   var rec = qbRecord(item, key, tier2Key, confidence, correct, twoTierResult);
   srsUpdate(item, confidence, correct, twoTierResult);
   SESSION.responses.push({
@@ -728,6 +774,7 @@ function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){
     var fb = document.getElementById('feedbackPanel');
     if(fb) setTimeout(function(){ fb.scrollIntoView({behavior:'smooth',block:'nearest'}); },80);
   }
+  if(SESSION && SESSION.reviewOnly) return;
   /* bind spa nav links */
   root.querySelectorAll('.fb-link[data-spa-nav="1"]').forEach(function(a){
     a.addEventListener('click',function(ev){
@@ -771,6 +818,18 @@ function showSummary(){
     .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
     .then(function(data){
       BANK = data;
+      if(REVIEW_CONTEXT){
+        var reviewItem = (data.items || []).find(function(item){
+          return item && item.id === REVIEW_CONTEXT.reviewItem && item.retired !== true;
+        });
+        if(!reviewItem){
+          root.innerHTML = '<div class="err-box"><strong>This question is not present on the current deployment</strong></div>';
+          postReviewItemStatus('not_found');
+          return;
+        }
+        showReviewItem(reviewItem);
+        return;
+      }
       showSetup();
       /* adaptive engine handoff: home may set cw_qb_focus to a blueprint category
          so the learner lands in their weakest area with the filter preselected. */
@@ -786,6 +845,7 @@ function showSummary(){
         +'question_bank.json was not found alongside this tool. '
         +'Make sure the build ran successfully and question_bank.json is at the site root.'
         +'<br><small style="opacity:.7">'+esc(String(err))+'</small></div>';
+      postReviewItemStatus('error');
     });
   /* handle filter count updates before bank loads */
   root.addEventListener('input',function(ev){
