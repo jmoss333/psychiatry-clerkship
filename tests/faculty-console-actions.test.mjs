@@ -727,6 +727,34 @@ test('prepareAttestation requires an exact matching reviewed revision for every 
   assert.deepEqual(result.ids, [first.id]);
 });
 
+test('prepareAttestation requires an exact matching reviewed revision for a warning item', () => {
+  const item = validItem({
+    stem: 'A fictional patient has sustained low mood. Which diagnosis is NOT most likely?',
+  });
+  const bank = makeBank([item]);
+  const revision = itemRevision(item);
+  const acknowledgedWarnings = ['stem.negative_lead_in'];
+
+  for (const reviewedRevision of [
+    undefined,
+    'not-a-revision',
+    itemRevision({ ...item, pearl: 'An earlier reviewed version.' }),
+  ]) {
+    const entry = { id: item.id, revision, acknowledgedWarnings };
+    if (reviewedRevision !== undefined) entry.reviewedRevision = reviewedRevision;
+    expectActionError(() => prepareAttestation({
+      bank, manifestPages, entries: [entry], confirmations: confirmed,
+    }), { code: 'attest.review_required', status: 422 });
+  }
+
+  const result = prepareAttestation({
+    bank, manifestPages,
+    entries: [{ id: item.id, revision, reviewedRevision: revision, acknowledgedWarnings }],
+    confirmations: confirmed,
+  });
+  assert.deepEqual(result.ids, [item.id]);
+});
+
 test('prepareAttestation requires every human confirmation to be literal true', () => {
   const item = validItem();
   const bank = makeBank([item]);
@@ -779,7 +807,7 @@ test('prepareAttestation accepts one yellow item only with the exact current war
   const result = prepareAttestation({
     bank,
     manifestPages,
-    entries: [entryFor(item, [...currentWarnings].reverse(), false)],
+    entries: [entryFor(item, [...currentWarnings].reverse())],
     confirmations: confirmed,
   });
   assert.deepEqual(result.ids, [item.id]);

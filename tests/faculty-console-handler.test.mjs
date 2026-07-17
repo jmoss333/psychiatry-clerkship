@@ -749,15 +749,20 @@ test('qbank.save-draft performs exactly one successful PUT and returns the saved
 });
 
 test('qbank.attest performs exactly one successful PUT and returns stable target revisions and assessments', async () => {
-  const item = validItem();
-  const revision = itemRevision(item);
-  const mock = createGithubMock({ files: defaultFiles(makeBank([item])) });
+  const first = validItem({ id: 'qb_moo_900', stem: stems[0] });
+  const second = validItem({ id: 'qb_moo_901', correctKey: 'B', stem: stems[1] });
+  const firstRevision = itemRevision(first);
+  const secondRevision = itemRevision(second);
+  const mock = createGithubMock({ files: defaultFiles(makeBank([first, second])) });
 
   const response = await handlerWith(mock)(apiRequest('POST', {
     body: {
       action: 'qbank.attest',
       manifestRevision: MANIFEST_SHA,
-      items: [{ id: item.id, revision, reviewedRevision: revision }],
+      items: [
+        { id: first.id, revision: firstRevision, reviewedRevision: firstRevision },
+        { id: second.id, revision: secondRevision, reviewedRevision: secondRevision },
+      ],
       confirmations: confirmed,
       attester: 'Synthetic Reviewer',
     },
@@ -767,12 +772,16 @@ test('qbank.attest performs exactly one successful PUT and returns stable target
   assert.equal(response.status, 200);
   assert.equal(payload.ok, true);
   assert.equal(payload.action, 'qbank.attest');
-  assert.equal(payload.updated, 1);
+  assert.equal(payload.updated, 2);
   assert.equal(mock.putBodies.length, 1);
   const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
   assert.equal(saved.items[0].status, 'attested');
-  assert.equal(payload.revision[item.id], itemRevision(saved.items[0]));
-  assert.equal(payload.assessment[item.id].gate, 'ready');
+  assert.equal(saved.items[1].status, 'attested');
+  assert.equal(payload.revision[first.id], itemRevision(saved.items[0]));
+  assert.equal(payload.revision[second.id], itemRevision(saved.items[1]));
+  assert.deepEqual(Object.keys(payload.revision), [first.id, second.id]);
+  assert.equal(payload.assessment[first.id].gate, 'ready');
+  assert.equal(payload.assessment[second.id].gate, 'ready');
 });
 
 test('qbank.attest rejects a legacy green request without reviewed-revision evidence', async () => {
@@ -789,6 +798,25 @@ test('qbank.attest rejects a legacy green request without reviewed-revision evid
     },
   }));
 
+  await expectError(response, { status: 422, code: 'attest.review_required' });
+  assert.equal(mock.putBodies.length, 0);
+});
+
+test('qbank.attest rejects a legacy warning request without reviewed-revision evidence', async () => {
+  const item = validItem({
+    stem: 'A fictional patient has sustained low mood. Which diagnosis is NOT most likely?',
+  });
+  const mock = createGithubMock({ files: defaultFiles(makeBank([item])) });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.attest', manifestRevision: MANIFEST_SHA,
+      items: [{
+        id: item.id, revision: itemRevision(item),
+        acknowledgedWarnings: ['stem.negative_lead_in'],
+      }],
+      confirmations: confirmed, attester: 'Synthetic Reviewer',
+    },
+  }));
   await expectError(response, { status: 422, code: 'attest.review_required' });
   assert.equal(mock.putBodies.length, 0);
 });
