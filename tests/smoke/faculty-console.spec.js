@@ -184,6 +184,82 @@ function exactReviewUrl(reviewItem = 'qb_moo_902') {
   return url;
 }
 
+function learnerPreviewUrl({
+  page,
+  tool,
+  reviewItem,
+  reviewKey,
+  reviewToken = REVIEW_TOKEN,
+}) {
+  const url = new URL('/', MS3_URL);
+  if (page !== undefined) url.searchParams.set('page', page);
+  if (tool !== undefined) url.searchParams.set('tool', tool);
+  if (reviewItem !== undefined) url.searchParams.set('reviewItem', reviewItem);
+  if (reviewKey !== undefined) url.searchParams.set('reviewKey', reviewKey);
+  if (reviewToken !== undefined) url.searchParams.set('reviewToken', reviewToken);
+  return url;
+}
+
+function expectedLearnerPreviewStatus(surface, reviewKey, status) {
+  return {
+    type: 'faculty-preview-status',
+    reviewKey,
+    reviewToken: REVIEW_TOKEN,
+    status,
+    surface,
+  };
+}
+
+function validInnerQuestionStatus(overrides = {}) {
+  return {
+    type: 'faculty-preview-question-status',
+    reviewKey: 'question:qb_moo_902',
+    reviewToken: REVIEW_TOKEN,
+    reviewItem: 'qb_moo_902',
+    status: 'ready',
+    surface: 'question',
+    ...overrides,
+  };
+}
+
+async function installLearnerPreviewHarness(page) {
+  await page.addInitScript(() => {
+    window.__facultyPreviewStatuses = [];
+    window.__facultyPreviewStatusSnapshots = [];
+    window.addEventListener('message', event => {
+      if (event.data?.type !== 'faculty-preview-status') return;
+      let framePath = '';
+      let frameReady = false;
+      const frame = document.querySelector('#content .toolframe');
+      try {
+        framePath = frame?.contentWindow?.location?.pathname || '';
+        frameReady = frame?.contentDocument?.readyState === 'complete';
+      } catch {
+        framePath = 'cross-origin';
+      }
+      window.__facultyPreviewStatuses.push(event.data);
+      window.__facultyPreviewStatusSnapshots.push({
+        status: event.data.status,
+        heading: document.querySelector('#content h1')?.textContent || '',
+        framePath,
+        frameReady,
+      });
+    });
+  });
+}
+
+async function learnerPreviewStatuses(page) {
+  return page.evaluate(() => window.__facultyPreviewStatuses);
+}
+
+async function installControlledQuestionShell(page) {
+  await page.route('**/tools/question-bank-practice.html*', route => route.fulfill({
+    status: 200,
+    contentType: 'text/html',
+    body: '<!doctype html><html><body><h1>Controlled question shell</h1></body></html>',
+  }));
+}
+
 async function installExactReviewHarness(page, bank = exactReviewBank()) {
   await page.addInitScript(sentinels => {
     for (const [key, value] of Object.entries(sentinels)) {
@@ -575,6 +651,482 @@ test.describe('learner exact-question review route', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_theme'))).toBe('light');
     expect(await protectedProgress(page)).toEqual(REVIEW_PROGRESS_SENTINELS);
+  });
+});
+
+test.describe('learner preview protocol', () => {
+  test('reports a page ready only after the requested Markdown is visible', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    const url = learnerPreviewUrl({
+      page: 't_mood.md',
+      reviewKey: 'page:t_mood.md',
+    });
+
+    await page.goto(url.href);
+
+    await expect(page.locator('#content h1')).toHaveText('Mood Disorders on the Inpatient Unit');
+    await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('page', 'page:t_mood.md', 'ready'),
+    ]);
+    await expect.poll(() => page.evaluate(
+      () => window.__facultyPreviewStatusSnapshots,
+    )).toEqual([{
+      status: 'ready',
+      heading: 'Mood Disorders on the Inpatient Unit',
+      framePath: '',
+      frameReady: false,
+    }]);
+  });
+
+  test('maps Markdown 404, HTTP failure, and network failure truthfully', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    const url = learnerPreviewUrl({
+      page: 't_mood.md',
+      reviewKey: 'page:t_mood.md',
+    });
+    const cases = [
+      {
+        name: '404',
+        handler: route => route.fulfill({ status: 404, body: 'Synthetic missing page' }),
+        expected: 'not_found',
+      },
+      {
+        name: '500',
+        handler: route => route.fulfill({ status: 500, body: 'Synthetic page failure' }),
+        expected: 'error',
+      },
+      {
+        name: 'network failure',
+        handler: route => route.abort('failed'),
+        expected: 'error',
+      },
+    ];
+
+    for (const scenario of cases) {
+      await test.step(scenario.name, async () => {
+        await page.route('**/content/t_mood.md', scenario.handler);
+        await page.goto(url.href);
+        await expect(page.locator('#content [role="alert"]')).toContainText('Page unavailable');
+        await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+          expectedLearnerPreviewStatus('page', 'page:t_mood.md', scenario.expected),
+        ]);
+        await page.unroute('**/content/t_mood.md', scenario.handler);
+      });
+    }
+  });
+
+  for (const [label, tool] of [
+    ['manifest tool', 'mse.html'],
+    ['generic question bank', 'question-bank-practice.html'],
+  ]) {
+    test(`reports ${label} ready only after its exact nested iframe loads`, async ({ page }) => {
+      await installLearnerPreviewHarness(page);
+      const url = learnerPreviewUrl({ tool, reviewKey: `tool:${tool}` });
+
+      await page.goto(url.href);
+
+      const frame = page.locator('#content .toolframe');
+      await expect(frame).toHaveAttribute('src', new RegExp(`^tools/${tool}(?:\\?|$)`));
+      await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+        expectedLearnerPreviewStatus('tool', `tool:${tool}`, 'ready'),
+      ]);
+      await expect.poll(() => page.evaluate(
+        () => window.__facultyPreviewStatusSnapshots,
+      )).toEqual([{
+        status: 'ready',
+        heading: '',
+        framePath: `/tools/${tool}`,
+        frameReady: true,
+      }]);
+    });
+  }
+
+  test('maps manifest tool and exact-question shell failures at preflight', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    const mseUrl = learnerPreviewUrl({ tool: 'mse.html', reviewKey: 'tool:mse.html' });
+    const cases = [
+      {
+        name: 'generic 404',
+        handler: route => route.fulfill({ status: 404, body: 'Synthetic missing tool' }),
+        expected: 'not_found',
+      },
+      {
+        name: 'generic 500',
+        handler: route => route.fulfill({ status: 500, body: 'Synthetic failed tool' }),
+        expected: 'error',
+      },
+      {
+        name: 'generic network failure',
+        handler: route => route.abort('failed'),
+        expected: 'error',
+      },
+    ];
+
+    for (const scenario of cases) {
+      await test.step(scenario.name, async () => {
+        await page.route('**/tools/mse.html', scenario.handler);
+        await page.goto(mseUrl.href);
+        await expect(page.locator('#content [role="alert"]')).toContainText('Tool unavailable');
+        await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+          expectedLearnerPreviewStatus('tool', 'tool:mse.html', scenario.expected),
+        ]);
+        await page.unroute('**/tools/mse.html', scenario.handler);
+      });
+    }
+
+    const questionUrl = learnerPreviewUrl({
+      tool: 'question-bank-practice.html',
+      reviewItem: 'qb_moo_902',
+      reviewKey: 'question:qb_moo_902',
+    });
+    const questionHandler = route => route.fulfill({
+      status: 404,
+      body: 'Synthetic missing question shell',
+    });
+    await page.route('**/tools/question-bank-practice.html', questionHandler);
+    await page.goto(questionUrl.href);
+    await expect(page.locator('#content [role="alert"]')).toContainText('Tool unavailable');
+    await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('question', 'question:qb_moo_902', 'error'),
+    ]);
+    await page.unroute('**/tools/question-bank-practice.html', questionHandler);
+  });
+
+  test('reports an unknown tool not_found without falling back to Home', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    const url = learnerPreviewUrl({
+      tool: 'unknown-faculty-preview.html',
+      reviewKey: 'tool:unknown-faculty-preview.html',
+    });
+
+    await page.goto(url.href);
+
+    await expect(page.locator('#content [role="alert"]')).toContainText('Preview route unavailable');
+    await expect(page.locator('#content')).not.toContainText('Today / Progress');
+    await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus(
+        'tool',
+        'tool:unknown-faculty-preview.html',
+        'not_found',
+      ),
+    ]);
+    expect(page.url()).toBe(url.href);
+  });
+
+  test('waits for a validated inner question status and relays only five fields', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    await installControlledQuestionShell(page);
+    const url = learnerPreviewUrl({
+      tool: 'question-bank-practice.html',
+      reviewItem: 'qb_moo_902',
+      reviewKey: 'question:qb_moo_902',
+    });
+
+    await page.goto(url.href);
+
+    await expect(page.frameLocator('.toolframe').getByRole('heading', {
+      name: 'Controlled question shell',
+    })).toBeVisible();
+    await page.waitForTimeout(100);
+    expect(await learnerPreviewStatuses(page)).toEqual([]);
+
+    const questionFrame = page.frames().find(frame => (
+      new URL(frame.url()).pathname === '/tools/question-bank-practice.html'
+    ));
+    expect(questionFrame).toBeTruthy();
+    await questionFrame.evaluate(
+      data => window.parent.postMessage(data, location.origin),
+      validInnerQuestionStatus(),
+    );
+
+    const expected = expectedLearnerPreviewStatus(
+      'question',
+      'question:qb_moo_902',
+      'ready',
+    );
+    await expect.poll(() => learnerPreviewStatuses(page)).toEqual([expected]);
+    expect(Object.keys((await learnerPreviewStatuses(page))[0]).sort()).toEqual([
+      'reviewKey',
+      'reviewToken',
+      'status',
+      'surface',
+      'type',
+    ]);
+  });
+
+  test('ignores spoofed or malformed inner question statuses', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    await installControlledQuestionShell(page);
+    const url = learnerPreviewUrl({
+      tool: 'question-bank-practice.html',
+      reviewItem: 'qb_moo_902',
+      reviewKey: 'question:qb_moo_902',
+    });
+    await page.goto(url.href);
+    await expect(page.frameLocator('.toolframe').getByRole('heading', {
+      name: 'Controlled question shell',
+    })).toBeVisible();
+
+    const valid = validInnerQuestionStatus();
+    await page.evaluate(data => {
+      const frame = document.querySelector('.toolframe');
+      window.dispatchEvent(new MessageEvent('message', {
+        data,
+        origin: 'https://spoofed.example',
+        source: frame.contentWindow,
+      }));
+      window.dispatchEvent(new MessageEvent('message', {
+        data,
+        origin: location.origin,
+        source: window,
+      }));
+    }, valid);
+
+    const questionFrame = page.frames().find(frame => (
+      new URL(frame.url()).pathname === '/tools/question-bank-practice.html'
+    ));
+    expect(questionFrame).toBeTruthy();
+    await questionFrame.evaluate(messages => {
+      for (const message of messages) {
+        window.parent.postMessage(message, location.origin);
+      }
+    }, [
+      validInnerQuestionStatus({ reviewKey: 'question:qb_moo_903' }),
+      validInnerQuestionStatus({ reviewToken: 'f'.repeat(32) }),
+      validInnerQuestionStatus({ reviewItem: 'qb_moo_903' }),
+      validInnerQuestionStatus({ surface: 'tool' }),
+      validInnerQuestionStatus({ status: 'pending' }),
+      validInnerQuestionStatus({ unexpected: 'must be rejected' }),
+    ]);
+
+    await page.waitForTimeout(100);
+    expect(await learnerPreviewStatuses(page)).toEqual([]);
+
+    await questionFrame.evaluate(
+      data => window.parent.postMessage(data, location.origin),
+      valid,
+    );
+    await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('question', 'question:qb_moo_902', 'ready'),
+    ]);
+  });
+
+  test('never reports ready for duplicate or mismatched route parameters', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    await installControlledQuestionShell(page);
+
+    const duplicatePage = learnerPreviewUrl({
+      page: 't_mood.md',
+      reviewKey: 'page:t_mood.md',
+    });
+    duplicatePage.searchParams.append('page', 't_anxiety.md');
+    const duplicateTool = learnerPreviewUrl({ tool: 'mse.html', reviewKey: 'tool:mse.html' });
+    duplicateTool.searchParams.append('tool', 'screeners.html');
+    const duplicateKey = learnerPreviewUrl({ page: 't_mood.md', reviewKey: 'page:t_mood.md' });
+    duplicateKey.searchParams.append('reviewKey', 'page:t_anxiety.md');
+    const duplicateToken = learnerPreviewUrl({ page: 't_mood.md', reviewKey: 'page:t_mood.md' });
+    duplicateToken.searchParams.append('reviewToken', 'f'.repeat(32));
+    const pageAndTool = learnerPreviewUrl({
+      page: 't_mood.md',
+      tool: 'mse.html',
+      reviewKey: 'page:t_mood.md',
+    });
+    const mismatchedPage = learnerPreviewUrl({
+      page: 't_mood.md',
+      reviewKey: 'page:t_anxiety.md',
+    });
+    const mismatchedTool = learnerPreviewUrl({
+      tool: 'mse.html',
+      reviewKey: 'tool:screeners.html',
+    });
+    const duplicateReviewItem = learnerPreviewUrl({
+      tool: 'question-bank-practice.html',
+      reviewItem: 'qb_moo_902',
+      reviewKey: 'question:qb_moo_902',
+    });
+    duplicateReviewItem.searchParams.append('reviewItem', 'qb_moo_903');
+    const emptyTool = learnerPreviewUrl({
+      page: 't_mood.md',
+      reviewKey: 'page:t_mood.md',
+    });
+    emptyTool.searchParams.append('tool', '');
+    const emptyFirstDuplicateTool = learnerPreviewUrl({
+      page: 't_mood.md',
+      reviewKey: 'page:t_mood.md',
+    });
+    emptyFirstDuplicateTool.searchParams.append('tool', '');
+    emptyFirstDuplicateTool.searchParams.append('tool', 'mse.html');
+    const emptyReviewItem = learnerPreviewUrl({
+      page: 't_mood.md',
+      reviewKey: 'page:t_mood.md',
+    });
+    emptyReviewItem.searchParams.append('reviewItem', '');
+    const emptyFirstDuplicateReviewItem = learnerPreviewUrl({
+      page: 't_mood.md',
+      reviewKey: 'page:t_mood.md',
+    });
+    emptyFirstDuplicateReviewItem.searchParams.append('reviewItem', '');
+    emptyFirstDuplicateReviewItem.searchParams.append('reviewItem', 'qb_moo_902');
+
+    for (const url of [
+      duplicatePage,
+      duplicateTool,
+      duplicateKey,
+      duplicateToken,
+      pageAndTool,
+      mismatchedPage,
+      mismatchedTool,
+      duplicateReviewItem,
+      emptyTool,
+      emptyFirstDuplicateTool,
+      emptyReviewItem,
+      emptyFirstDuplicateReviewItem,
+    ]) {
+      await page.goto(url.href);
+      await expect.poll(() => page.evaluate(() => Boolean(
+        document.querySelector('#content h1, #content .toolframe'),
+      ))).toBe(true);
+      await page.waitForTimeout(50);
+      expect(await learnerPreviewStatuses(page)).toEqual([]);
+    }
+  });
+
+  test('locks a ready page against sidebar, mode, message, and history navigation', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    const url = learnerPreviewUrl({
+      page: 't_mood.md',
+      reviewKey: 'page:t_mood.md',
+    });
+    await page.goto(url.href);
+    await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('page', 'page:t_mood.md', 'ready'),
+    ]);
+
+    await page.evaluate(() => {
+      document.querySelector('.navitem[data-f="t_anxiety.md"]').click();
+      document.querySelector('#mPath').click();
+      window.postMessage({ type: 'openPage', f: 't_psychosis.md' }, location.origin);
+      window.postMessage({ type: 'openLibrary' }, location.origin);
+      history.pushState({}, '', '?page=t_anxiety.md');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      const search = document.querySelector('#search');
+      search.value = 'psychosis';
+      search.dispatchEvent(new Event('input', { bubbles: true }));
+      window.postMessage({ type: 'search', q: 'psychosis' }, location.origin);
+    });
+
+    await page.waitForTimeout(200);
+    await expect(page.locator('#content h1')).toHaveText('Mood Disorders on the Inpatient Unit');
+    const notice = page.locator('#faculty-preview-lock-notice');
+    await expect(notice).toHaveText(
+      'Open the full page from the faculty console to navigate elsewhere',
+    );
+    expect(await notice.evaluate(node => !document.querySelector('#content').contains(node))).toBe(true);
+    expect(page.url()).toBe(url.href);
+    expect(await learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('page', 'page:t_mood.md', 'ready'),
+    ]);
+  });
+
+  test('blocks parent-document companion links from leaving a ready page', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    const url = learnerPreviewUrl({
+      page: 't_mood.md',
+      reviewKey: 'page:t_mood.md',
+    });
+    await page.goto(url.href);
+    await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('page', 'page:t_mood.md', 'ready'),
+    ]);
+
+    const companionTool = page.locator('#modeCompanion .mc-item.is-tool').first();
+    await expect(companionTool).toBeVisible();
+    await companionTool.click();
+
+    await expect(page.locator('#content h1')).toHaveText('Mood Disorders on the Inpatient Unit');
+    await expect(page.locator('#faculty-preview-lock-notice')).toHaveText(
+      'Open the full page from the faculty console to navigate elsewhere',
+    );
+    expect(page.url()).toBe(url.href);
+    expect(await learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('page', 'page:t_mood.md', 'ready'),
+    ]);
+  });
+
+  test('reports error when the reviewed nested tool reloads and keeps its frame reference', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    const url = learnerPreviewUrl({ tool: 'mse.html', reviewKey: 'tool:mse.html' });
+    await page.goto(url.href);
+    await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('tool', 'tool:mse.html', 'ready'),
+    ]);
+    await page.evaluate(() => {
+      window.__facultyPreviewToolFrame = document.querySelector('.toolframe');
+      window.__facultyPreviewToolWindow = window.__facultyPreviewToolFrame.contentWindow;
+      window.__facultyPreviewToolWindow.location.reload();
+    });
+
+    await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('tool', 'tool:mse.html', 'ready'),
+      expectedLearnerPreviewStatus('tool', 'tool:mse.html', 'error'),
+    ]);
+    expect(await page.evaluate(() => (
+      document.querySelector('.toolframe') === window.__facultyPreviewToolFrame
+      && document.querySelector('.toolframe').contentWindow === window.__facultyPreviewToolWindow
+    ))).toBe(true);
+  });
+
+  test('keeps the exact-question iframe and route when Practice Questions is opened again', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    await page.route('**/question_bank.json', route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(exactReviewBank()),
+    }));
+    const url = learnerPreviewUrl({
+      tool: 'question-bank-practice.html',
+      reviewItem: 'qb_moo_902',
+      reviewKey: 'question:qb_moo_902',
+    });
+    await page.goto(url.href);
+    const questionFrame = page.frameLocator('.toolframe');
+    await expect(questionFrame.locator('.qcard-stem')).toHaveText(
+      'Exact synthetic review stem: which syndrome best fits this fictional presentation?',
+    );
+    await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('question', 'question:qb_moo_902', 'ready'),
+    ]);
+    await page.evaluate(() => {
+      window.__facultyExactQuestionFrame = document.querySelector('.toolframe');
+      window.__facultyExactQuestionWindow = window.__facultyExactQuestionFrame.contentWindow;
+      document.querySelector('.navitem[data-f="question-bank-practice.html"]').click();
+    });
+
+    expect(await page.evaluate(() => (
+      document.querySelector('.toolframe') === window.__facultyExactQuestionFrame
+      && document.querySelector('.toolframe').contentWindow === window.__facultyExactQuestionWindow
+    ))).toBe(true);
+    await expect(questionFrame.locator('.qcard-stem')).toHaveText(
+      'Exact synthetic review stem: which syndrome best fits this fictional presentation?',
+    );
+    await expect(questionFrame.locator('.setup')).toHaveCount(0);
+    await expect(page.locator('#faculty-preview-lock-notice')).toHaveText(
+      'Open the full page from the faculty console to navigate elsewhere',
+    );
+    await page.locator('#modeCompanion [data-mc-mode="shelf"]').click();
+    const shelfQuestionBank = page.locator(
+      '#modeCompanion .mc-item.is-tool[href="?tool=question-bank-practice.html"]',
+    );
+    await expect(shelfQuestionBank).toBeVisible();
+    await shelfQuestionBank.click();
+    expect(await page.evaluate(() => (
+      document.querySelector('.toolframe') === window.__facultyExactQuestionFrame
+      && document.querySelector('.toolframe').contentWindow === window.__facultyExactQuestionWindow
+    ))).toBe(true);
+    expect(page.url()).toBe(url.href);
+    expect(await learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('question', 'question:qb_moo_902', 'ready'),
+    ]);
   });
 });
 
