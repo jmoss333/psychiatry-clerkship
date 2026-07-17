@@ -150,6 +150,7 @@ export function startFacultyConsole({
     navigationAfterSave: null,
     batchConfirmation: null,
     reauthAction: null,
+    loadGeneration: 0,
   };
 
   function el(tag, attributes = {}, children = []) {
@@ -241,6 +242,7 @@ export function startFacultyConsole({
         || !Array.isArray(payload.qbank)
         || !Array.isArray(payload.items)
         || !Array.isArray(payload.manifestPages)
+        || payload.manifestPages.length === 0
         || payload.manifestPages.some(page => typeof page !== 'string' || !page.trim())) return false;
     const ids = new Set();
     for (const question of payload.qbank) {
@@ -477,11 +479,14 @@ export function startFacultyConsole({
     expectedRevisions = null,
     preserveOnError = false,
   } = {}) {
+    const generation = ++state.loadGeneration;
     state.pending = true;
     if (!silent) renderLoading();
+    else if (state.server) renderShell();
     try {
       const response = await fetchImpl(API, { headers: apiHeaders() });
       const payload = await responseJson(response);
+      if (generation !== state.loadGeneration) return false;
       if (response.status === 401) {
         clearKey();
         state.pending = false;
@@ -509,6 +514,7 @@ export function startFacultyConsole({
       renderShell(focusId);
       return true;
     } catch (error) {
+      if (generation !== state.loadGeneration) return false;
       state.pending = false;
       const message = error instanceof Error ? error.message : 'Network request failed.';
       if (preserveOnError && state.server) {
@@ -1020,6 +1026,19 @@ export function startFacultyConsole({
     return control ? control.checked === true : fallback === true;
   }
 
+  function tierTwoOptionKeys(tier) {
+    const options = list(record(tier).options);
+    const keys = options.map(optionItem => text(optionItem?.key));
+    const preservesActualKeys = [3, 4].includes(keys.length)
+      && keys.every(key => OPTION_KEYS.includes(key))
+      && new Set(keys).size === keys.length;
+    return preservesActualKeys ? keys : [...OPTION_KEYS];
+  }
+
+  function addTierTwoOptionId(key) {
+    return `add-tier2-option-${text(key).toLowerCase()}`;
+  }
+
   function readEditor() {
     const base = clone(state.editor || state.original || {});
     const next = clone(base);
@@ -1083,7 +1102,7 @@ export function startFacultyConsole({
     if (next.type === 'two-tier') {
       const tier = record(base.tier2);
       const tierOptions = Object.fromEntries(list(tier.options).map(optionItem => [optionItem?.key, optionItem]));
-      const tierKeys = list(tier.options).length === 3 ? OPTION_KEYS.slice(0, 3) : OPTION_KEYS;
+      const tierKeys = tierTwoOptionKeys(tier);
       const tierCorrect = tierKeys.find(key => controlChecked(
         `tier2-correct-${key}`,
         tierOptions[key]?.c === true,
@@ -1142,16 +1161,24 @@ export function startFacultyConsole({
     const candidate = readEditor();
     const tier = clone(record(candidate.tier2));
     const options = list(tier.options).map(optionItem => clone(optionItem));
+    let focusId;
     if (includeFourth && options.length === 3) {
-      options.push({ key: 'D', t: '' });
+      const keys = tierTwoOptionKeys(tier);
+      const missingKey = OPTION_KEYS.find(key => !keys.includes(key));
+      if (!missingKey) return;
+      options.push({ key: missingKey, t: '' });
+      focusId = `tier2-option-${missingKey}-text`;
     } else if (!includeFourth && options.length === 4) {
       options.splice(3, 1);
+      const keys = tierTwoOptionKeys({ ...tier, options });
+      const missingKey = OPTION_KEYS.find(key => !keys.includes(key));
+      focusId = addTierTwoOptionId(missingKey);
     } else {
       return;
     }
     tier.options = options;
     candidate.tier2 = tier;
-    applyEditorChange(candidate, includeFourth ? 'tier2-option-D-text' : 'add-tier2-option-d');
+    applyEditorChange(candidate, focusId);
   }
 
   function editorInput(id, attributes = {}) {
@@ -1232,7 +1259,8 @@ export function startFacultyConsole({
   function renderTierTwoEditor(question) {
     if (question.type !== 'two-tier') return null;
     const tier = record(question.tier2);
-    const tierKeys = list(tier.options).length === 3 ? OPTION_KEYS.slice(0, 3) : OPTION_KEYS;
+    const tierKeys = tierTwoOptionKeys(tier);
+    const missingKey = OPTION_KEYS.find(key => !tierKeys.includes(key));
     const optionsByKey = Object.fromEntries(list(tier.options).map(optionItem => [optionItem?.key, optionItem]));
     const correctKey = list(tier.options).find(optionItem => optionItem?.c === true)?.key || '';
     return el('fieldset', { class: 'editor-section tier-two' }, [
@@ -1258,9 +1286,9 @@ export function startFacultyConsole({
         ]);
       })),
       el('div', { class: 'tier-cardinality-actions' }, [
-        tierKeys.length === 3
+        tierKeys.length === 3 && missingKey
           ? el('button', {
-            id: 'add-tier2-option-d',
+            id: addTierTwoOptionId(missingKey),
             type: 'button',
             onClick: () => changeTierTwoCardinality(true),
           }, ['Add fourth option'])
@@ -1435,6 +1463,25 @@ export function startFacultyConsole({
     ]);
   }
 
+  function saveNavigationGuard() {
+    const guard = state.navigationGuard;
+    if (!guard) return false;
+    if (state.pending) {
+      announce('A faculty action is already in progress.');
+      return false;
+    }
+    const savesQuestion = hasUnsavedChanges();
+    if (savesQuestion && list(state.localAssessment?.blockers).length > 0) {
+      announce('Resolve structural blockers before saving this draft.');
+      return false;
+    }
+    state.navigationAfterSave = guard.target;
+    state.navigationGuard = null;
+    if (savesQuestion) void saveCurrentDraft();
+    else void commitContent();
+    return true;
+  }
+
   function renderNavigationGuard() {
     if (!state.navigationGuard) return null;
     const guard = state.navigationGuard;
@@ -1465,12 +1512,7 @@ export function startFacultyConsole({
           type: 'button',
           disabled: state.pending
             || (savesQuestion && list(state.localAssessment?.blockers).length > 0),
-          onClick: () => {
-            state.navigationAfterSave = guard.target;
-            state.navigationGuard = null;
-            if (savesQuestion) void saveCurrentDraft();
-            else void commitContent();
-          },
+          onClick: () => { saveNavigationGuard(); },
         }, [savesQuestion ? 'Save draft' : 'Save content reviews']),
         el('button', {
           id: 'unsaved-discard',
@@ -2197,6 +2239,10 @@ export function startFacultyConsole({
   window.addEventListener('keydown', event => {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
       event.preventDefault();
+      if (state.navigationGuard) {
+        saveNavigationGuard();
+        return;
+      }
       if (state.tab === 'content') {
         if (state.pending) {
           announce('Content reviews are already saving.');

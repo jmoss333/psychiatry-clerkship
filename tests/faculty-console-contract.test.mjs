@@ -784,6 +784,48 @@ test('three-option tier two round-trips and exposes explicit add and remove four
   assert.ok(document.getElementById('add-tier2-option-d'));
 });
 
+test('noncanonical three-option tier two preserves its actual keys when editing and adding the missing fourth', async () => {
+  const tier2 = {
+    q: 'Which finding best supports that diagnosis?',
+    future: { sourceVersion: 'preserve-noncanonical-tier' },
+    options: [
+      { key: 'A', t: 'Sustained syndrome', future: { rank: 1 } },
+      { key: 'B', t: 'Fluctuating attention', future: { rank: 2 } },
+      { key: 'D', t: 'Threshold crossing', c: true, future: { rank: 4 } },
+    ],
+    why: 'The threshold-crossing finding distinguishes the diagnosis.',
+  };
+  const { controller, document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      question: validDomQuestion({ type: 'two-tier', tier2 }),
+    })),
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+
+  assert.deepEqual(controller.state.editor.tier2.options.map(optionItem => optionItem.key), ['A', 'B', 'D']);
+  assert.ok(document.getElementById('tier2-option-D-text'));
+  assert.equal(Boolean(document.getElementById('tier2-option-C-text')), false);
+  assert.ok(document.getElementById('add-tier2-option-c'));
+
+  await setValue(document, 'tier2-option-D-text', 'A revised threshold-crossing finding');
+  assert.deepEqual(controller.state.editor.tier2.options.map(optionItem => optionItem.key), ['A', 'B', 'D']);
+  assert.equal(controller.state.editor.tier2.options[2].future.rank, 4);
+  assert.equal(controller.state.editor.tier2.options[2].c, true);
+  assert.equal(controller.state.editor.tier2.future.sourceVersion, 'preserve-noncanonical-tier');
+
+  await document.getElementById('add-tier2-option-c').dispatch('click');
+  assert.deepEqual(controller.state.editor.tier2.options.map(optionItem => optionItem.key), ['A', 'B', 'D', 'C']);
+  assert.equal(controller.state.editor.tier2.options.filter(optionItem => optionItem.key === 'D').length, 1);
+  assert.ok(document.getElementById('tier2-option-C-text'));
+  assert.ok(document.getElementById('remove-tier2-option-d'));
+
+  await document.getElementById('remove-tier2-option-d').dispatch('click');
+  assert.deepEqual(controller.state.editor.tier2.options.map(optionItem => optionItem.key), ['A', 'B', 'D']);
+  assert.equal(controller.state.editor.tier2.options[2].c, true);
+  assert.equal(Boolean(document.getElementById('tier2-option-C-text')), false);
+  assert.ok(document.getElementById('add-tier2-option-c'));
+});
+
 test('rebuilds the candidate immediately, shows blockers before warnings, and marks dirty checks stale', async () => {
   const assessItemImpl = item => {
     const stem = typeof item?.stem === 'string' ? item.stem : '';
@@ -1008,6 +1050,58 @@ test('handles 409 with an accessible reload or keep-local conflict alert and nev
   assert.equal(controller.state.editor.stem, remote.stem);
   assert.deepEqual(controller.state.dirtyFields, []);
   assert.equal(postCount, 2, 'reload must not issue an overwrite POST');
+});
+
+test('conflict Reload is immediately inert and ignores a slower stale response', async () => {
+  const local = validDomQuestion({
+    revision: testRevision('reload-local'),
+    stem: 'The initially loaded repository stem. What is the diagnosis?',
+  });
+  const staleRemote = validDomQuestion({
+    revision: testRevision('reload-stale'),
+    stem: 'A slower repository response that must not win. What is the diagnosis?',
+  });
+  const newestRemote = validDomQuestion({
+    revision: testRevision('reload-newest'),
+    stem: 'The newest repository response must remain current. What is the diagnosis?',
+  });
+  const slowReload = deferred();
+  let getCount = 0;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      return jsonResponse({
+        error: { code: 'qbank.conflict', message: 'This question changed after you loaded it.' },
+      }, { ok: false, status: 409 });
+    }
+    getCount += 1;
+    if (getCount === 1) return jsonResponse(serverState({ question: local }));
+    if (getCount === 2) return slowReload.promise;
+    if (getCount === 3) return jsonResponse(serverState({ question: newestRemote }));
+    throw new Error(`Unexpected GET ${getCount}`);
+  };
+  const { controller, document } = await startHarness({ fetchImpl });
+  const retainedStem = 'Keep this local candidate until Reload completes?';
+  await setValue(document, 'question-stem', retainedStem);
+  await document.getElementById('save-draft').dispatch('click');
+  await flushAsyncWork();
+
+  await document.find('button', 'Reload').dispatch('click');
+  assert.equal(controller.state.pending, true);
+  assert.equal(document.getElementById('console-background').getAttribute('inert'), '');
+  const pendingStem = document.getElementById('question-stem');
+  pendingStem.value = 'This pending mutation must be ignored.';
+  await pendingStem.dispatch('input');
+  assert.equal(controller.state.editor.stem, retainedStem);
+
+  const latestLoad = controller.load({ silent: true });
+  assert.equal(await latestLoad, true);
+  assert.equal(controller.state.editor.stem, newestRemote.stem);
+  slowReload.resolve(jsonResponse(serverState({ question: staleRemote })));
+  await flushAsyncWork();
+
+  assert.equal(controller.state.editor.stem, newestRemote.stem);
+  assert.equal(controller.state.original.revision, newestRemote.revision);
+  assert.equal(controller.state.pending, false);
 });
 
 test('guards dirty queue and tab navigation with Save draft, Discard, and Cancel', async () => {
@@ -1631,6 +1725,12 @@ test('fails closed when authenticated state omits concurrency or assessment cont
 });
 
 test('fails closed when manifest pages are blank or question revisions are not exact SHA-256 hex', async () => {
+  const emptyManifestHarness = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({ manifestPages: [] })),
+  });
+  assert.equal(emptyManifestHarness.controller.state.server, null);
+  assert.match(emptyManifestHarness.document.app.textContent, /incomplete state/i);
+
   const blankPageState = serverState({ manifestPages: ['t_mood.md', '   '] });
   const blankPageHarness = await startHarness({
     fetchImpl: async () => jsonResponse(blankPageState),
@@ -1721,6 +1821,62 @@ test('Ctrl or Command S saves the dirty question in the active qbank tab only', 
   assert.equal(posts.length, 1);
   assert.equal(posts[0].action, 'qbank.save-draft');
   assert.equal(posts[0].target, undefined);
+});
+
+test('Ctrl or Command S in the unsaved-navigation modal saves and continues its destination', async () => {
+  const first = validDomQuestion({
+    id: 'qb_moo_901',
+    revision: testRevision('shortcut-guard-first'),
+  });
+  const second = validDomQuestion({
+    id: 'qb_moo_902',
+    revision: testRevision('shortcut-guard-second'),
+    stem: 'A second saved question is the guarded destination. What is the diagnosis?',
+  });
+  const savedRevision = testRevision('shortcut-guard-saved');
+  let questions = [first, second];
+  const posts = [];
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      const body = JSON.parse(options.body);
+      posts.push(body);
+      questions = questions.map(questionItem => questionItem.id === body.id
+        ? { ...structuredClone(body.item), status: 'draft', revision: savedRevision }
+        : questionItem);
+      return jsonResponse({
+        ok: true,
+        action: 'qbank.save-draft',
+        revision: savedRevision,
+        assessment: { gate: 'ready', blockers: [], warnings: [] },
+        commit: null,
+      });
+    }
+    return jsonResponse(serverState({ questions }));
+  };
+  const { controller, document, window } = await startHarness({
+    fetchImpl,
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  await setValue(document, 'question-stem', 'Save this guarded local candidate?');
+  await document.getElementById('queue-qb_moo_902').dispatch('click');
+  assert.ok(document.getElementById('unsaved-guard'));
+
+  const shortcut = await window.dispatch('keydown', {
+    metaKey: false,
+    ctrlKey: true,
+    key: 's',
+  });
+  await flushAsyncWork();
+
+  assert.equal(shortcut.defaultPrevented, true);
+  assert.equal(posts.length, 1);
+  assert.equal(posts[0].id, first.id);
+  assert.equal(posts[0].item.stem, 'Save this guarded local candidate?');
+  assert.equal(controller.state.selectedId, second.id);
+  assert.equal(controller.state.navigationGuard, null);
+  assert.equal(controller.state.navigationAfterSave, null);
+  assert.equal(document.getElementById('unsaved-guard'), null);
+  assert.equal(document.activeElement?.getAttribute('id'), `queue-${second.id}`);
 });
 
 test('Content renders provenance safely and restores focus after mark-all and successful save', async () => {
