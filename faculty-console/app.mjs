@@ -871,29 +871,38 @@ export function startFacultyConsole({
     ]);
   }
 
-  function handlePreviewFrameLoad(preview) {
-    if (state.preview !== preview || !['loading', 'ready'].includes(preview.status)) return;
-    preview.loadCount += 1;
-    if (preview.loadCount === 1) {
-      preview.frameLoaded = true;
-      return;
-    }
+  function recordPreviewFrameFailure(preview, message) {
     cancelPreviewTimer(preview);
     preview.status = 'frame_failure';
     clearReviewAcknowledgements();
     applyQuestionView('live');
-    announce('The embedded preview changed or reloaded. Use Retry or the documented fallback.');
+    announce(message);
     refreshPreviewChromeAndRail('preview-status');
   }
 
+  function handlePreviewFrameLoad(preview) {
+    if (state.preview !== preview) return;
+    const active = ['loading', 'ready'].includes(preview.status);
+    if (!active && !PREVIEW_FAILURES.has(preview.status)) return;
+    preview.loadCount += 1;
+    if (active && preview.loadCount === 1) {
+      preview.frameLoaded = true;
+      return;
+    }
+    recordPreviewFrameFailure(
+      preview,
+      'The embedded preview changed or reloaded. Use Retry or the documented fallback.',
+    );
+  }
+
   function handlePreviewFrameError(preview) {
-    if (state.preview !== preview || !['loading', 'ready'].includes(preview.status)) return;
-    cancelPreviewTimer(preview);
-    preview.status = 'frame_failure';
-    clearReviewAcknowledgements();
-    applyQuestionView('live');
-    announce('Network or embedded-preview failure. Use Retry or the documented fallback.');
-    refreshPreviewChromeAndRail('preview-status');
+    if (state.preview !== preview) return;
+    if (!['loading', 'ready'].includes(preview.status)
+        && !PREVIEW_FAILURES.has(preview.status)) return;
+    recordPreviewFrameFailure(
+      preview,
+      'Network or embedded-preview failure. Use Retry or the documented fallback.',
+    );
   }
 
   function retryPreview() {

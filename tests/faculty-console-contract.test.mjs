@@ -1261,6 +1261,147 @@ test('preview fallback gates question Retry and opens only clean page or tool ro
   ]);
 });
 
+test('terminal preview fallback revokes question evidence after a current-frame reload', async () => {
+  const tokens = ['1', '2'].map(value => value.repeat(32));
+  let tokenIndex = 0;
+  const { controller, document, window } = await startHarness({
+    tokenFactory: () => tokens[tokenIndex++],
+    fetchImpl: async () => jsonResponse(serverState({ items: [], questions: [validDomQuestion()] })),
+  });
+
+  await reportPreviewStatus(window, controller, 'error');
+  await document.getElementById('retry-preview').dispatch('click');
+  const preview = controller.state.preview;
+  const frame = document.getElementById('learner-preview-frame');
+  const frameWindow = frame.contentWindow;
+  const timerId = preview.timerId;
+  await frame.dispatch('load');
+  runPreviewTimer(window, preview);
+  assert.equal(preview.status, 'protocol_unavailable');
+  await setChecked(document, 'ack-live-unavailable');
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(document, id);
+  }
+  assert.equal(document.getElementById('attest-current-item').disabled, false);
+  assert.equal(controller.state.reviewedRevisions.get('qb_moo_902'), validDomQuestion().revision);
+  await document.getElementById('view-edit').dispatch('click');
+
+  await frame.dispatch('load');
+
+  assert.equal(preview.status, 'frame_failure');
+  assert.equal(preview.timerId, null);
+  assert.equal(window.timers.has(timerId), false);
+  assert.equal(document.getElementById('learner-preview-frame'), frame);
+  assert.equal(document.getElementById('learner-preview-frame').contentWindow, frameWindow);
+  assert.deepEqual(controller.state.reviewChecks, {
+    completeItemReviewed: false,
+    liveReviewed: false,
+    separateTabReviewed: false,
+    liveUnavailableAcknowledged: false,
+    accuracy: false,
+    interactions: false,
+  });
+  assert.equal(controller.state.reviewedInSession.has('qb_moo_902'), false);
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
+  assert.equal(document.getElementById('attest-current-item').disabled, true);
+  assert.equal(document.getElementById('question-view-live').getAttribute('hidden'), null);
+  assert.equal(document.getElementById('selected-item-view').textContent, 'Live deploy');
+  assert.equal(document.activeElement?.getAttribute('id'), 'preview-status');
+  assert.match(document.getElementById('preview-status').textContent,
+    /Network or embedded-preview failure/);
+});
+
+test('terminal preview fallback revokes question evidence on a late first load after timeout', async () => {
+  const tokens = ['3', '4'].map(value => value.repeat(32));
+  let tokenIndex = 0;
+  const { controller, document, window } = await startHarness({
+    tokenFactory: () => tokens[tokenIndex++],
+    fetchImpl: async () => jsonResponse(serverState({ items: [], questions: [validDomQuestion()] })),
+  });
+
+  runPreviewTimer(window, controller.state.preview);
+  await document.getElementById('retry-preview').dispatch('click');
+  const preview = controller.state.preview;
+  const frame = document.getElementById('learner-preview-frame');
+  const timerId = preview.timerId;
+  runPreviewTimer(window, preview);
+  assert.equal(preview.status, 'frame_failure');
+  assert.equal(preview.loadCount, 0);
+  await setChecked(document, 'ack-live-unavailable');
+  assert.equal(controller.state.reviewChecks.liveUnavailableAcknowledged, true);
+  assert.equal(controller.state.reviewedRevisions.get('qb_moo_902'), validDomQuestion().revision);
+  await document.getElementById('view-edit').dispatch('click');
+
+  await frame.dispatch('load');
+
+  assert.equal(preview.status, 'frame_failure');
+  assert.equal(preview.timerId, null);
+  assert.equal(window.timers.has(timerId), false);
+  assert.equal(document.getElementById('learner-preview-frame'), frame);
+  assert.deepEqual(controller.state.reviewChecks, {
+    completeItemReviewed: false,
+    liveReviewed: false,
+    separateTabReviewed: false,
+    liveUnavailableAcknowledged: false,
+    accuracy: false,
+    interactions: false,
+  });
+  assert.equal(controller.state.reviewedInSession.has('qb_moo_902'), false);
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
+  assert.equal(document.getElementById('question-view-live').getAttribute('hidden'), null);
+  assert.equal(document.activeElement?.getAttribute('id'), 'preview-status');
+});
+
+test('terminal preview fallback revokes page and tool checks after a current-frame error', async () => {
+  const { controller, document, window } = await startHarness({
+    tokenFactory: () => '5'.repeat(32),
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+        { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+      ],
+      questions: [],
+    })),
+  });
+
+  for (const [key, expectedType] of [
+    ['page:t_mood.md', 'Page'],
+    ['tool:mse.html', 'Tool'],
+  ]) {
+    await setValue(document, 'review-item-selector', key, 'change');
+    const preview = controller.state.preview;
+    const frame = document.getElementById('learner-preview-frame');
+    const frameWindow = frame.contentWindow;
+    await reportPreviewStatus(window, controller, 'not_found');
+    for (const id of [
+      'review-separate-tab',
+      'review-content-accuracy',
+      'review-content-interactions',
+    ]) {
+      await setChecked(document, id);
+    }
+    assert.equal(document.getElementById('attest-current-item').disabled, false);
+
+    await frame.dispatch('error');
+
+    assert.equal(preview.status, 'frame_failure', `${expectedType} should record a frame failure.`);
+    assert.equal(document.getElementById('learner-preview-frame'), frame);
+    assert.equal(document.getElementById('learner-preview-frame').contentWindow, frameWindow);
+    assert.deepEqual(controller.state.reviewChecks, {
+      completeItemReviewed: false,
+      liveReviewed: false,
+      separateTabReviewed: false,
+      liveUnavailableAcknowledged: false,
+      accuracy: false,
+      interactions: false,
+    });
+    assert.equal(document.getElementById('attest-current-item').disabled, true);
+    assert.equal(document.activeElement?.getAttribute('id'), 'preview-status');
+    assert.match(document.getElementById('preview-status').textContent,
+      /Network or embedded-preview failure/);
+  }
+});
+
 test('preview repository reload resets attempts and all review acknowledgements', async () => {
   const tokens = ['1', '2'].map(value => value.repeat(32));
   let tokenIndex = 0;
