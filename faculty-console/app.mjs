@@ -656,10 +656,31 @@ export function startFacultyConsole({
     if (locksWithUnsavedChanges
         || (hasUnsavedChanges() && changesReviewItem)) {
       state.navigationGuard = { target, returnFocus };
-      renderShell('unsaved-guard');
+      if (!showNavigationGuard()) {
+        state.navigationGuard = null;
+        announce('Navigation is unavailable. Your local changes were retained.');
+      }
       return;
     }
     performNavigation(target);
+  }
+
+  function showNavigationGuard() {
+    const background = document.getElementById('console-background');
+    const modal = renderNavigationGuard();
+    if (!background || !modal) return false;
+    document.getElementById('unsaved-guard')?.remove();
+    background.setAttribute('inert', '');
+    app.appendChild(modal);
+    modal.focus();
+    return true;
+  }
+
+  function dismissNavigationGuard(returnFocus = null) {
+    document.getElementById('unsaved-guard')?.remove();
+    const background = document.getElementById('console-background');
+    if (background && !state.pending) background.removeAttribute('inert');
+    refreshQueueStrip(returnFocus);
   }
 
   function focusRequested(focusTarget = null) {
@@ -1774,7 +1795,7 @@ export function startFacultyConsole({
     const savesQuestion = hasUnsavedChanges();
     const cancel = () => {
       state.navigationGuard = null;
-      renderShell(guard.returnFocus);
+      dismissNavigationGuard(guard.returnFocus);
     };
     return el('section', {
       id: 'unsaved-guard',

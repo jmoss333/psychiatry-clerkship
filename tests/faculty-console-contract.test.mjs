@@ -121,6 +121,13 @@ class FakeElement {
     return child;
   }
 
+  remove() {
+    if (!this.parentNode) return;
+    const index = this.parentNode.children.indexOf(this);
+    if (index >= 0) this.parentNode.children.splice(index, 1);
+    this.parentNode = null;
+  }
+
   replaceChildren(...children) {
     for (const child of this.children) child.parentNode = null;
     this.children = [];
@@ -1457,6 +1464,58 @@ test('guards dirty unified-queue navigation with Save draft, Discard, and Cancel
   await document.getElementById('unsaved-discard').dispatch('click');
   assert.equal(controller.state.selectedKey, 'question:qb_moo_901');
   assert.equal(postCount, 1);
+});
+
+test('dirty queue and filter cancellation preserves the learner iframe and local edit', async () => {
+  const first = validDomQuestion({ id: 'qb_moo_901', revision: testRevision('stable-frame-one') });
+  const second = validDomQuestion({ id: 'qb_moo_902', revision: testRevision('stable-frame-two') });
+  const alwaysReady = () => ({ gate: 'ready', blockers: [], warnings: [] });
+  const { controller, document } = await startHarness({
+    assessItemImpl: alwaysReady,
+    fetchImpl: async () => jsonResponse(serverState({ questions: [first, second] })),
+  });
+  const frame = document.getElementById('learner-preview-frame');
+  const frameWindow = frame.contentWindow;
+  const selectedKey = controller.state.selectedKey;
+  const localStem = 'Keep this unsaved edit and the live learner frame?';
+  await setValue(document, 'question-stem', localStem);
+
+  const selector = document.getElementById('review-item-selector');
+  selector.value = 'question:qb_moo_902';
+  await selector.dispatch('change');
+  assert.ok(document.getElementById('learner-preview-frame') === frame,
+    'Opening the dirty queue guard must preserve the iframe node.');
+  assert.ok(document.getElementById('learner-preview-frame').contentWindow === frameWindow,
+    'Opening the dirty queue guard must preserve the iframe window.');
+  assert.equal(controller.state.selectedKey, selectedKey);
+  assert.equal(controller.state.editor.stem, localStem);
+
+  await document.getElementById('unsaved-cancel').dispatch('click');
+  assert.ok(document.getElementById('learner-preview-frame') === frame,
+    'Cancelling dirty queue navigation must preserve the iframe node.');
+  assert.ok(document.getElementById('learner-preview-frame').contentWindow === frameWindow,
+    'Cancelling dirty queue navigation must preserve the iframe window.');
+  assert.equal(controller.state.selectedKey, selectedKey);
+  assert.equal(controller.state.editor.stem, localStem);
+
+  const typeFilter = document.getElementById('review-type-filter');
+  typeFilter.value = 'page';
+  await typeFilter.dispatch('change');
+  assert.ok(document.getElementById('learner-preview-frame') === frame,
+    'Opening the dirty filter guard must preserve the iframe node.');
+  assert.ok(document.getElementById('learner-preview-frame').contentWindow === frameWindow,
+    'Opening the dirty filter guard must preserve the iframe window.');
+  assert.equal(controller.state.selectedKey, selectedKey);
+  assert.equal(controller.state.editor.stem, localStem);
+
+  await document.getElementById('unsaved-cancel').dispatch('click');
+  assert.ok(document.getElementById('learner-preview-frame') === frame,
+    'Cancelling dirty filter navigation must preserve the iframe node.');
+  assert.ok(document.getElementById('learner-preview-frame').contentWindow === frameWindow,
+    'Cancelling dirty filter navigation must preserve the iframe window.');
+  assert.equal(controller.state.selectedKey, selectedKey);
+  assert.equal(controller.state.editor.stem, localStem);
+  assert.equal(controller.state.queueFilters.type, 'all');
 });
 
 test('Lock uses the dirty guard and save-time 401 reauthentication retries the captured draft unchanged', async () => {
