@@ -99,6 +99,11 @@ The server enforces these confirmations; they are not decorative client controls
 The same dependency-free rules module runs in the browser for immediate feedback and
 in the Netlify function as the authority before saving or attesting.
 
+Because `question_bank.json` is copied directly to both learner sites, a red
+structural edit remains local and cannot be saved. Yellow drafts can be saved; red
+blocks both repository save and attestation. This avoids deploying a malformed
+work-in-progress item to students.
+
 ### Blocking checks
 
 Attestation is rejected when any of these are true:
@@ -216,7 +221,8 @@ otherwise a caller could bypass the new validation and human-confirmation contra
 
 The question bank is already roughly 600 KB. GitHub's Contents response may omit
 inline content once a file crosses its small-file threshold, so repository reads
-fall back to the Git Blobs endpoint when the Contents payload has no decodable body.
+fall back to the Contents endpoint's raw media response when the object payload has
+no decodable body.
 An explicit maximum-size guard prevents unexpectedly large responses from reaching
 the browser or function memory without a clear error.
 
@@ -253,6 +259,13 @@ identity model is unchanged in this increment.
 ## Error handling and safety
 
 - Unauthorized requests remain generic HTTP 401 responses.
+- Authentication is checked from `x-faculty-key` before parsing a POST body; new
+  requests never accept credentials from JSON.
+- Responses use `Cache-Control: no-store`, same-origin CORS by default, and an
+  optional exact `ALLOWED_ORIGIN` override.
+- POST bodies are capped at 128 KB and bank reads at 4 MB; larger payloads fail
+  before parsing or browser delivery.
+- The function applies a 60-request-per-minute per-IP/domain Netlify rate limit.
 - Malformed input and failed checks return HTTP 400/422 with field-level codes.
 - Stale revisions return HTTP 409 without retrying or writing.
 - GitHub/network failures return a retryable error while preserving unsaved browser
@@ -264,6 +277,9 @@ identity model is unchanged in this increment.
 - Direct-to-main commits remain subject to CI on `push` to `main`; this workflow
   trigger is added because the current mainline CI only runs on pull requests and
   manual dispatch.
+- GitHub requests declare the current `2026-03-10` REST API version, and the faculty
+  Netlify build moves from obsolete Node 18 to Node 24. Reviewer names remain
+  self-asserted labels under the shared faculty key, not verified identities.
 
 ## Accessibility and responsive behavior
 
@@ -297,7 +313,9 @@ Add root `node:test` coverage for:
 - stale-revision rejection and no-write behavior;
 - safe retry after an unrelated-item race and rejection after a same-item race;
 - rejection of the legacy qbank status-toggle path;
-- GitHub Contents-to-Blobs fallback and maximum-size guard;
+- GitHub object-to-raw Contents fallback and maximum-size guard;
+- header-only authentication, same-origin CORS, no-store responses, request limits,
+  and rate-limit configuration;
 - edit-then-attest separation;
 - preservation of retired and reserved fields;
 - HTML/module contracts for the queue, full editor, change summary, safety panel,
