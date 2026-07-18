@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "reportType", "generatedFromCommit", "governedInputSha256", "draftAndCurrentPreviews", "issues", "qbankItems", "evidenceRecords", "policyRecords", "quarantine", "quarantineBaseRecordSha256", "withdrawalPreviews"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "reportType": {"const": "anki_review_candidate"},
+    "profile": {"enum": ["maintenance", "authoring", "prepare", "release"]},
+    "generatedFromCommit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "releaseReady": {"type": "boolean"},
+    "releaseId": {"type": ["string", "null"]},
+    "releaseDate": {"type": ["string", "null"]},
+    "releaseEpoch": {"type": "integer", "minimum": 0},
+    "evaluatedAt": {"type": "string", "format": "date"},
+    "governedInputSha256": {"$ref": "#/definitions/sha256"},
+    "qbankItems": {"type": "array", "items": {"$ref": "../../../question_bank.schema.json#/properties/items/items"}},
+    "evidenceRecords": {
+      "oneOf": [
+        {"$ref": "../../../evidence_registry.schema.json"},
+        {"type": "object", "additionalProperties": {"$ref": "#/definitions/evidenceRecord"}}
+      ]
+    },
+    "policyRecords": {"type": "object", "additionalProperties": {"oneOf": [{"$ref": "../../anki/policy_registry.schema.json#/definitions/policy"}, {"$ref": "#/definitions/legacyPolicyRecord"}]}},
+    "notes": {"type": "array", "items": {"$ref": "#/definitions/note"}},
+    "draftAndCurrentPreviews": {"type": "array", "items": {"$ref": "#/definitions/preview"}},
+    "issues": {"type": "array", "items": {"$ref": "#/definitions/issue"}},
+    "quarantine": {"$ref": "#/definitions/quarantine"},
+    "quarantineBaseRecordSha256": {"type": "object", "additionalProperties": {"$ref": "#/definitions/sha256"}},
+    "withdrawals": {"type": "array", "items": {"$ref": "#/definitions/withdrawal"}},
+    "withdrawalPreviews": {"type": "array", "items": {"$ref": "#/definitions/withdrawalPreview"}}
+  },
+  "definitions": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "evidenceRecord": {"type": "object", "additionalProperties": false, "required": ["id", "title", "facultyReviewStatus", "lastReviewed"], "properties": {"id": {"type": "string"}, "title": {"type": "string"}, "version": {"type": "string"}, "organization": {"type": "string"}, "year": {"type": ["integer", "string"]}, "url": {"type": "string"}, "doi": {"type": "string"}, "evidenceLevel": {"type": "string"}, "lastReviewed": {"type": "string"}, "facultyReviewStatus": {"type": "string"}, "relatedTopicTags": {"type": "array", "items": {"type": "string"}}, "clerkshipRelevance": {"type": "string"}, "shelfComatRelevance": {"type": "string"}, "clinicalWorkflowRelevance": {"type": "string"}, "localPolicyDependent": {"type": "boolean"}, "updateCadence": {"type": "string"}}},
+    "legacyPolicyRecord": {"type": "object", "additionalProperties": false, "required": ["id", "version", "owner", "path", "anchor", "passageSha256"], "properties": {"id": {"type": "string"}, "version": {"type": "string"}, "owner": {"type": "string"}, "path": {"type": "string"}, "anchor": {"type": "string"}, "passageSha256": {"$ref": "#/definitions/sha256"}}},
+    "note": {
+      "type": "object", "additionalProperties": false,
+      "required": ["namespace", "uid", "identity", "guid", "deckId", "modelId", "templateOrdinal", "fields", "tags", "frontHtml", "backHtml", "templateContractSha256", "renderSha256", "active", "withdrawn"],
+      "properties": {
+        "namespace": {"enum": ["core", "application", "qbank"]}, "uid": {"type": "string"}, "identity": {"type": "string"}, "guid": {"type": "string"},
+        "deckId": {"type": "integer"}, "modelId": {"type": "integer"}, "templateOrdinal": {"type": "integer"},
+        "fields": {"type": "array", "items": {"type": "string"}}, "tags": {"type": "array", "items": {"type": "string"}},
+        "frontHtml": {"type": "string"}, "backHtml": {"type": "string"}, "templateContractSha256": {"$ref": "#/definitions/sha256"}, "renderSha256": {"$ref": "#/definitions/sha256"},
+        "active": {"type": "boolean"}, "withdrawn": {"type": "boolean"}
+      }
+    },
+    "sourceContext": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "path": {"type": ["string", "null"]}, "slug": {"type": ["string", "null"]}, "anchor": {"type": ["string", "null"]}, "url": {"type": "string"},
+        "status": {"type": ["object", "null"], "additionalProperties": false, "properties": {"status": {"type": "string"}, "at": {"type": "string"}, "by": {"type": "string"}}},
+        "pages": {"type": ["array", "null"], "items": {"type": "string"}}, "evidence": {"type": ["string", "null"]},
+        "quote": {"type": "string"}, "quoteSha256": {"$ref": "#/definitions/sha256"}, "fileSha256": {"$ref": "#/definitions/sha256"},
+        "sections": {"type": "array", "items": {"$ref": "#/definitions/sourceSection"}}
+      }
+    },
+    "sourceSection": {
+      "type": "object", "additionalProperties": false,
+      "required": ["anchor", "title", "sourceAnchorSha256"],
+      "properties": {"anchor": {"type": "string", "minLength": 1}, "title": {"type": "string", "minLength": 1}, "sourceAnchorSha256": {"$ref": "#/definitions/sha256"}}
+    },
+    "qbankSummary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["stem", "answer", "traps", "itemSha256"],
+      "properties": {"stem": {"type": "string"}, "answer": {"oneOf": [{"$ref": "../../../question_bank.schema.json#/properties/items/items/properties/options/items"}, {"type": "null"}]}, "traps": {"type": "array", "items": {"$ref": "../../../question_bank.schema.json#/properties/items/items/properties/options/items/properties/trap"}}, "itemSha256": {"$ref": "#/definitions/sha256"}}
+    },
+    "preview": {
+          "type": "object", "additionalProperties": false,
+          "required": ["namespace", "uid", "identity", "guid", "deckId", "modelId", "templateOrdinal", "fields", "tags", "frontHtml", "backHtml", "templateContractSha256", "renderSha256", "active", "withdrawn", "state", "source", "risk", "review", "qbank", "priorApprovedRenderSha256", "priorApprovedFrontHtml", "priorApprovedBackHtml", "priorRenderStatus", "targetRegistry", "recordKey", "baseRecordSha256", "canonicalRecord"],
+          "properties": {
+            "namespace": {"$ref": "#/definitions/note/properties/namespace"}, "uid": {"$ref": "#/definitions/note/properties/uid"}, "identity": {"$ref": "#/definitions/note/properties/identity"}, "guid": {"$ref": "#/definitions/note/properties/guid"},
+            "deckId": {"$ref": "#/definitions/note/properties/deckId"}, "modelId": {"$ref": "#/definitions/note/properties/modelId"}, "templateOrdinal": {"$ref": "#/definitions/note/properties/templateOrdinal"},
+            "fields": {"$ref": "#/definitions/note/properties/fields"}, "tags": {"$ref": "#/definitions/note/properties/tags"}, "frontHtml": {"$ref": "#/definitions/note/properties/frontHtml"}, "backHtml": {"$ref": "#/definitions/note/properties/backHtml"},
+            "templateContractSha256": {"$ref": "#/definitions/note/properties/templateContractSha256"}, "renderSha256": {"$ref": "#/definitions/note/properties/renderSha256"}, "active": {"$ref": "#/definitions/note/properties/active"}, "withdrawn": {"$ref": "#/definitions/note/properties/withdrawn"},
+            "state": {"type": ["string", "null"]}, "source": {"anyOf": [{"$ref": "../../anki/cards.schema.json#/definitions/source"}, {"$ref": "#/definitions/sourceContext"}]},
+            "risk": {"anyOf": [{"$ref": "../../anki/cards.schema.json#/definitions/risk"}, {"$ref": "../../anki/qbank_render_reviews.schema.json#/definitions/risk"}, {"type": "null"}]},
+            "review": {"anyOf": [{"$ref": "../../anki/cards.schema.json#/definitions/review"}, {"$ref": "../../anki/qbank_render_reviews.schema.json#/definitions/review"}, {"type": "null"}]},
+            "qbank": {"anyOf": [{"$ref": "../../anki/cards.schema.json#/definitions/qbank"}, {"$ref": "#/definitions/qbankSummary"}, {"type": "null"}]},
+            "qbankItem": {"$ref": "../../../question_bank.schema.json#/properties/items/items"},
+            "priorApprovedRenderSha256": {"oneOf": [{"$ref": "#/definitions/sha256"}, {"type": "null"}]}, "priorApprovedFrontHtml": {"type": ["string", "null"]}, "priorApprovedBackHtml": {"type": ["string", "null"]},
+            "priorRenderStatus": {"enum": ["exact", "changed_exact_prior", "never_approved", "blocking_prior_evidence_gap", "changed_prior_bytes_unavailable"]}, "targetRegistry": {"enum": ["cards", "qbank_render_reviews"]}, "recordKey": {"type": "string", "minLength": 1},
+            "baseRecordSha256": {"oneOf": [{"$ref": "#/definitions/sha256"}, {"type": "null"}]},
+            "canonicalRecord": {"oneOf": [{"$ref": "../../anki/cards.schema.json#/definitions/card"}, {"$ref": "../../anki/qbank_render_reviews.schema.json#/definitions/review"}, {"type": "null"}]},
+            "proposedRecordTemplate": {"$ref": "#/definitions/qbankProposalTemplate"}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"targetRegistry": {"const": "cards"}}, "required": ["targetRegistry"]},
+              "then": {"properties": {"canonicalRecord": {"$ref": "../../anki/cards.schema.json#/definitions/card"}}}
+            },
+            {
+              "if": {"properties": {"targetRegistry": {"const": "qbank_render_reviews"}, "canonicalRecord": {"type": "null"}}, "required": ["targetRegistry", "canonicalRecord"]},
+              "then": {"required": ["proposedRecordTemplate"]}
+            }
+          ]
+    },
+    "qbankProposalTemplate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["qbankId", "identity", "primaryPage", "approvedItemSha256", "templateVersion", "templateContractSha256", "renderedNoteSha256", "legacyTemplateContract"],
+      "properties": {
+        "qbankId": {"type": "string", "pattern": "^qb_[a-z0-9_]+$"}, "identity": {"enum": ["base", "tier2"]}, "primaryPage": {"type": "string", "minLength": 1},
+        "approvedItemSha256": {"$ref": "#/definitions/sha256"}, "templateVersion": {"const": "pcl-qbank-legacy-v1"}, "templateContractSha256": {"$ref": "#/definitions/sha256"}, "renderedNoteSha256": {"$ref": "#/definitions/sha256"},
+        "legacyTemplateContract": {"$ref": "../../anki/qbank_render_reviews.schema.json#/definitions/legacyTemplateContract"}
+      }
+    },
+    "issue": {"type": "object", "additionalProperties": false, "required": ["code", "severity", "subject", "message"], "properties": {"code": {"type": "string"}, "severity": {"enum": ["hard", "review", "info", "warning"]}, "subject": {"type": "string"}, "message": {"type": "string"}}},
+    "finding": {"type": "object", "additionalProperties": false, "required": ["namespace", "uid", "identity", "reasonCode", "subjectSha256", "sourcePath", "firstSeenCommit", "withdrawalRenderSha256"], "properties": {"namespace": {"type": "string"}, "uid": {"type": "string"}, "identity": {"type": "string"}, "reasonCode": {"type": "string"}, "subjectSha256": {"$ref": "#/definitions/sha256"}, "sourcePath": {"type": ["string", "null"]}, "firstSeenCommit": {"type": "string"}, "withdrawalRenderSha256": {"oneOf": [{"$ref": "#/definitions/sha256"}, {"type": "null"}]}}},
+    "quarantine": {"type": "object", "additionalProperties": false, "required": ["new", "changed", "accepted", "resolved"], "properties": {"new": {"type": "array", "items": {"$ref": "#/definitions/finding"}}, "changed": {"type": "array", "items": {"$ref": "#/definitions/finding"}}, "accepted": {"type": "array", "items": {"$ref": "#/definitions/finding"}}, "resolved": {"type": "array", "items": {"$ref": "#/definitions/finding"}}}},
+    "withdrawal": {"type": "object", "additionalProperties": false, "required": ["namespace", "uid", "identity", "guid", "deckId", "modelId", "templateOrdinal", "fields", "tags", "frontHtml", "backHtml", "templateContractSha256", "renderSha256", "active", "withdrawn", "reasonCode", "affectedReleaseId"], "properties": {"namespace": {"$ref": "#/definitions/note/properties/namespace"}, "uid": {"$ref": "#/definitions/note/properties/uid"}, "identity": {"$ref": "#/definitions/note/properties/identity"}, "guid": {"$ref": "#/definitions/note/properties/guid"}, "deckId": {"$ref": "#/definitions/note/properties/deckId"}, "modelId": {"$ref": "#/definitions/note/properties/modelId"}, "templateOrdinal": {"$ref": "#/definitions/note/properties/templateOrdinal"}, "fields": {"$ref": "#/definitions/note/properties/fields"}, "tags": {"$ref": "#/definitions/note/properties/tags"}, "frontHtml": {"$ref": "#/definitions/note/properties/frontHtml"}, "backHtml": {"$ref": "#/definitions/note/properties/backHtml"}, "templateContractSha256": {"$ref": "#/definitions/note/properties/templateContractSha256"}, "renderSha256": {"$ref": "#/definitions/note/properties/renderSha256"}, "active": {"$ref": "#/definitions/note/properties/active"}, "withdrawn": {"$ref": "#/definitions/note/properties/withdrawn"}, "reasonCode": {"type": "string", "minLength": 1}, "affectedReleaseId": {"type": "string", "minLength": 1}}},
+    "withdrawalPreview": {"type": "object", "additionalProperties": false, "required": ["namespace", "uid", "identity", "reasonCode", "affectedReleaseId", "withdrawalTemplateVersion", "approvedWithdrawalSha256", "templateContractSha256", "fields", "frontHtml", "backHtml"], "properties": {"namespace": {"type": "string"}, "uid": {"type": "string"}, "identity": {"type": "string"}, "reasonCode": {"type": "string"}, "affectedReleaseId": {"type": "string"}, "withdrawalTemplateVersion": {"type": "string"}, "approvedWithdrawalSha256": {"$ref": "#/definitions/sha256"}, "templateContractSha256": {"$ref": "#/definitions/sha256"}, "fields": {"type": "array", "items": {"type": "string"}}, "frontHtml": {"type": "string"}, "backHtml": {"type": "string"}}}
+  }
+}

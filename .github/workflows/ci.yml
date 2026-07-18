@@ -64,6 +64,9 @@ jobs:
       - name: Validate — longitudinal case contract
         run: python3 13_Faculty_Resources/_automation/test_longitudinal_case.py
 
+      - name: Unit — shelf/COMAT question bank data-quality gate
+        run: python3 09_Exam_Prep/shelf_comat_bank/engine/test_qbank.py
+
       - name: Validate — family systems scenarios contract
         run: python3 13_Faculty_Resources/_automation/test_family_systems_scenarios.py
 
