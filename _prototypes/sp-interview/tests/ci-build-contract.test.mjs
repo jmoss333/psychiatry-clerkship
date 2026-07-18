@@ -134,7 +134,63 @@ test('static QA rejects a CDN dependency inside a shipped JS asset', () => {
   }
 });
 
-test('Node 20 and the aggregate SP gates run before either site build', () => {
+const SMOKE_SERVERS = Object.freeze([
+  { port: '4200', directory: '_build/ms3' },
+  { port: '4201', directory: '_build/res' },
+  { port: '4202', directory: 'faculty-console' },
+]);
+
+function countOccurrences(source, marker) {
+  return source.split(marker).length - 1;
+}
+
+function assertSmokeServerContract(ci) {
+  let lastServer = -1;
+  for (const { port, directory } of SMOKE_SERVERS) {
+    const command = `python3 -m http.server ${port} --directory ${directory} &`;
+    assert.equal(
+      countOccurrences(ci, command),
+      1,
+      `${port} must serve ${directory} exactly once`,
+    );
+    lastServer = Math.max(lastServer, ci.indexOf(command));
+  }
+
+  const readinessLoop = 'for port in 4200 4201 4202; do';
+  assert.equal(
+    countOccurrences(ci, readinessLoop),
+    1,
+    'readiness loop must check exactly ports 4200, 4201, and 4202',
+  );
+  const readinessIndex = ci.indexOf(readinessLoop);
+  assert.ok(readinessIndex > lastServer, 'readiness loop must follow all three server commands');
+
+  const failureGuard = 'if [ "$ready" != true ]; then';
+  const guardIndex = ci.indexOf(failureGuard, readinessIndex);
+  assert.ok(guardIndex > readinessIndex, 'readiness loop must retain its fail-closed guard');
+  const exitIndex = ci.indexOf('exit 1', guardIndex);
+  assert.ok(exitIndex > guardIndex, 'readiness failure must exit nonzero');
+
+  const readyMarker = 'echo "Servers ready"';
+  assert.equal(countOccurrences(ci, readyMarker), 1, 'server readiness marker must occur exactly once');
+  const readyIndex = ci.indexOf(readyMarker);
+  assert.ok(readyIndex > exitIndex, 'success marker must follow the fail-closed readiness path');
+
+  for (const project of ['interview-room', 'faculty-console']) {
+    const marker = `--project=${project}`;
+    assert.equal(
+      countOccurrences(ci, marker),
+      1,
+      `${project} browser project must run exactly once`,
+    );
+    assert.ok(
+      ci.indexOf(marker) > readyIndex,
+      `${project} browser project must follow successful server readiness`,
+    );
+  }
+}
+
+test('CI gates and the three localhost review surfaces are structurally ordered', () => {
   const ci = fs.readFileSync(CI, 'utf8');
   const ordered = [
     'uses: actions/setup-node@v4',
@@ -153,10 +209,57 @@ test('Node 20 and the aggregate SP gates run before either site build', () => {
     prior = index;
   }
 
-  const server = ci.indexOf('Serve built sites on localhost');
-  const interviewRoom = ci.indexOf('--project=interview-room');
-  assert.ok(server >= 0 && interviewRoom > server, 'Interview Room browser acceptance must follow site servers');
+  assertSmokeServerContract(ci);
   assert.match(ci, /SP_INTERVIEW_BASE_URL:\s*http:\/\/localhost:4200\/tools\//);
+});
+
+test('localhost server contract ignores labels and rejects structural drift', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const relabeled = ci.replace(
+    /(\n\s*- name: )[^\n]+(\n\s+run: \|\n\s+python3 -m http\.server 4200 --directory _build\/ms3 &)/,
+    '$1Arbitrary wording that must not affect behavior$2',
+  );
+  assert.notEqual(relabeled, ci, 'test fixture must locate and relabel the server step');
+  assert.doesNotThrow(() => assertSmokeServerContract(relabeled));
+
+  const commands = [
+    'python3 -m http.server 4200 --directory _build/ms3 &',
+    'python3 -m http.server 4201 --directory _build/res &',
+    'python3 -m http.server 4202 --directory faculty-console &',
+  ];
+  for (const command of commands) {
+    const port = command.match(/http\.server (\d+)/)?.[1];
+    assert.throws(
+      () => assertSmokeServerContract(ci.replace(command, '')),
+      new RegExp(`${port} must serve`),
+    );
+  }
+
+  assert.throws(
+    () => assertSmokeServerContract(ci.replace(
+      'python3 -m http.server 4202 --directory faculty-console &',
+      'python3 -m http.server 4202 --directory _build/ms3 &',
+    )),
+    /4202 must serve faculty-console/,
+  );
+  assert.throws(
+    () => assertSmokeServerContract(ci.replace(
+      'for port in 4200 4201 4202; do',
+      'for port in 4200 4201; do',
+    )),
+    /readiness loop must check exactly ports 4200, 4201, and 4202/,
+  );
+
+  for (const project of ['interview-room', 'faculty-console']) {
+    const command = `npx playwright test --project=${project}`;
+    const moved = ci
+      .replace(command, '')
+      .replace('echo "Servers ready"', `${command}\n          echo "Servers ready"`);
+    assert.throws(
+      () => assertSmokeServerContract(moved),
+      new RegExp(`${project} browser project must follow successful server readiness`),
+    );
+  }
 });
 
 // F26's other half: CI invoking run-all.sh (locked above) only helps if
