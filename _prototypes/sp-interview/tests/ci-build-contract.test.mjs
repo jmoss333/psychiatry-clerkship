@@ -135,7 +135,7 @@ test('static QA rejects a CDN dependency inside a shipped JS asset', () => {
 });
 
 const SMOKE_LAUNCHER_COMMAND = 'bash tests/smoke/start-local-servers.sh';
-const SMOKE_CONFIGURATION_PATTERN = /\bSMOKE_(?:MS3_PORT|RES_PORT|FACULTY_PORT|MS3_DIR|RES_DIR|FACULTY_DIR|READY_ATTEMPTS|READY_DELAY_SECONDS|READY_PATH|SERVER_STATE_DIR)\b/;
+const SMOKE_CONFIGURATION_PATTERN = /\bSMOKE_[A-Z0-9_]+\b/;
 
 function leadingIndent(line) {
   return line.length - line.trimStart().length;
@@ -171,6 +171,22 @@ function extractRunSteps(source) {
     });
   }
   return steps;
+}
+
+function normalizeActiveRunCommands(step) {
+  const commands = [];
+  let continuedCommand = '';
+  for (const line of step.lines) {
+    if (!line.text || line.text.startsWith('#')) continue;
+    const continues = line.text.endsWith('\\');
+    const fragment = continues ? line.text.slice(0, -1).trimEnd() : line.text;
+    continuedCommand = `${continuedCommand} ${fragment}`.trim();
+    if (continues) continue;
+    commands.push(continuedCommand.replace(/\s+/g, ' '));
+    continuedCommand = '';
+  }
+  if (continuedCommand) commands.push(continuedCommand.replace(/\s+/g, ' '));
+  return commands;
 }
 
 function countExactLines(lines, marker) {
@@ -232,11 +248,10 @@ function assertSmokeLauncherContract(ci) {
     'CI must use the launcher default ports, directories, and readiness controls',
   );
   for (const step of allRunSteps) {
-    for (const line of step.lines) {
-      if (line.text.startsWith('#')) continue;
+    for (const command of normalizeActiveRunCommands(step)) {
       assert.doesNotMatch(
-        line.text,
-        /\bpython3\s+-m\s+http\.server(?:\s|$)/,
+        command,
+        /\bpython3\s+-m\s*http\.server(?:\s|$)/,
         'CI must not duplicate smoke-server startup outside the tested launcher',
       );
     }
@@ -365,6 +380,55 @@ test('smoke launcher contract ignores labels and rejects boundary drift', () => 
     () => assertSmokeLauncherContract(duplicatedInlineServer),
     /must not duplicate smoke-server startup/,
   );
+});
+
+test('smoke launcher contract rejects compact inline server syntax', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const compactInlineServer = ci.replace(
+    `run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          python3 -mhttp.server 4300 &`,
+  );
+  assert.notEqual(compactInlineServer, ci, 'test fixture must add a compact inline server');
+  assert.throws(
+    () => assertSmokeLauncherContract(compactInlineServer),
+    /must not duplicate smoke-server startup/,
+  );
+});
+
+test('smoke launcher contract rejects line-continued inline server syntax', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const continuedInlineServer = ci.replace(
+    `run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          python3 -m \\\n            http.server 4300 &`,
+  );
+  assert.notEqual(continuedInlineServer, ci, 'test fixture must add a continued inline server');
+  assert.throws(
+    () => assertSmokeLauncherContract(continuedInlineServer),
+    /must not duplicate smoke-server startup/,
+  );
+});
+
+test('smoke launcher contract rejects future launcher configuration overrides', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const futureOverride = ci.replace(
+    `        run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `        env:\n          SMOKE_FUTURE_SETTING: "enabled"\n        run: ${SMOKE_LAUNCHER_COMMAND}`,
+  );
+  assert.notEqual(futureOverride, ci, 'test fixture must add a future launcher override');
+  assert.throws(
+    () => assertSmokeLauncherContract(futureOverride),
+    /must use the launcher default ports, directories, and readiness controls/,
+  );
+});
+
+test('smoke launcher contract ignores commented inline-server examples', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const commentedInlineServer = ci.replace(
+    `run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          # python3 -mhttp.server 4300 &`,
+  );
+  assert.notEqual(commentedInlineServer, ci, 'test fixture must add a commented server example');
+  assert.doesNotThrow(() => assertSmokeLauncherContract(commentedInlineServer));
 });
 
 // F26's other half: CI invoking run-all.sh (locked above) only helps if

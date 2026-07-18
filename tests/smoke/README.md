@@ -36,6 +36,8 @@ npx playwright test --project=lfs
 npx playwright test --project=visual
 ```
 
+Custom ports are currently safe only for the MS3 nav, resident nav, and Interview Room projects. The faculty-console project and full-suite smoke runs use the default launcher ports shown above.
+
 ```bash
 export SMOKE_MS3_PORT=4300
 export SMOKE_RES_PORT=4301
@@ -45,9 +47,8 @@ bash tests/smoke/start-local-servers.sh
 cd tests/smoke
 MS3_BASE_URL=http://127.0.0.1:4300 \
 RES_BASE_URL=http://127.0.0.1:4301 \
-FACULTY_CONSOLE_BASE_URL=http://127.0.0.1:4302 \
 SP_INTERVIEW_BASE_URL=http://127.0.0.1:4300/tools/ \
-npx playwright test
+npx playwright test --project=nav-ms3 --project=nav-res --project=interview-room
 ```
 
 ## Visual baselines
