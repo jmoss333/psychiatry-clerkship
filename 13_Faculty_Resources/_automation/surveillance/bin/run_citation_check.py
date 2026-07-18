@@ -4,9 +4,10 @@
 Complements the lychee link-monitor. Lychee crawls links in built HTML/markdown;
 this job verifies two things lychee does NOT cover:
 
-  1. The authoritative **source URLs** in config/source_registry.yaml — the pages
-     the whole guideline-surveillance pipeline depends on. They live in YAML, so a
-     markdown/HTML crawler never sees them. If FDA/APA/USPSTF move a page, we learn
+  1. The authoritative **source URLs** projected from evidence_registry.json — the
+     pages the whole guideline-surveillance pipeline depends on. The canonical
+     registry is not a built link surface, so a markdown/HTML crawler never sees
+     them. If FDA/APA/USPSTF move a page, we learn
      it here (and flip `verified`).
   2. **DOIs and PMIDs** cited in curriculum text — resolved against doi.org and
      NCBI eutils. A citation that no longer resolves is a retraction/typo signal.
@@ -181,11 +182,7 @@ def _browser_required_soft_failure(source, code):
 def check_registry_sources():
     """Verify each registry source URL still resolves. Returns list of findings."""
     findings = []
-    try:
-        reg = L.load_registry()
-    except Exception as e:
-        sys.stderr.write("citation-check: cannot load registry (%s); skipping sources\n" % e)
-        return findings
+    reg = L.load_registry()
     for s in reg.get("sources", []):
         url = s.get("url")
         if not url:
@@ -200,8 +197,8 @@ def check_registry_sources():
             continue
         if _browser_required_soft_failure(s, code):
             continue
-        action = ("Authoritative source URL for `%s` is %s. Update the `url` in "
-                  "source_registry.yaml (and any citing pages), then re-run. This "
+        action = ("Authoritative source URL for `%s` is %s. Update the canonical "
+                  "citation `url` in evidence_registry.json (and any citing pages), then re-run. This "
                   "source feeds guideline surveillance — fixing it restores monitoring."
                   % (s.get("id"), detail))
         f = _finding(s.get("id"), s.get("name", s.get("id")), url, ct, code, redir, [], action)
@@ -305,10 +302,14 @@ def self_test():
     assert _skip_citation_path("_prototypes/demo.preview.html")
     assert _skip_citation_path("MS3-Psychiatry-Site_Multidisciplinary-Audit_2026-06-28.md")
     assert not _skip_citation_path("07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md")
+    registry = L.load_registry()
+    assert len(registry["sources"]) == 8
+    assert registry["link_monitor"]["cadence"] == "weekly"
+    assert registry["resource_intake"]["max_candidates_per_run"] == 25
     # backtick neutralization happens downstream in issue_body; here just ensure
     # fingerprints are stable across runs
     assert L.fingerprint("a", "broken-link", "u") == L.fingerprint("a", "broken-link", "u")
-    print("self-test: DOIs=%d PMIDs=%d, finding schema keys OK, fingerprints stable." %
+    print("self-test: DOIs=%d PMIDs=%d, finding schema keys OK, fingerprints stable; canonical registry projection OK." %
           (len(dois), len(pmids)))
     return ok
 

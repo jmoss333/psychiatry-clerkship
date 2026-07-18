@@ -49,11 +49,23 @@ jobs:
       - name: Unit — media guard
         run: python3 13_Faculty_Resources/_automation/site_build/test_media_guard.py
 
+      - name: Unit — evidence registry
+        run: python3 tools/evidence_registry/test_registry.py
+
+      - name: Validate — evidence registry and generated views
+        run: python3 tools/evidence_registry/validate.py --check-generated
+
+      - name: Unit — citation surveillance
+        run: python3 13_Faculty_Resources/_automation/surveillance/bin/run_citation_check.py --self-test
+
       - name: Validate — topic_meta.json contract
         run: python3 13_Faculty_Resources/_automation/validate_topic_meta.py
 
       - name: Validate — longitudinal case contract
         run: python3 13_Faculty_Resources/_automation/test_longitudinal_case.py
+
+      - name: Unit — shelf/COMAT question bank data-quality gate
+        run: python3 09_Exam_Prep/shelf_comat_bank/engine/test_qbank.py
 
       - name: Validate — family systems scenarios contract
         run: python3 13_Faculty_Resources/_automation/test_family_systems_scenarios.py

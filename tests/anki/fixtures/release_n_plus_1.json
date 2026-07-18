@@ -1,0 +1,28 @@
+{
+  "release": {
+    "id": "migration-release-n-plus-1",
+    "date": "2026-07-15",
+    "epoch": 1784000100,
+    "governedInputSha256": "2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "marker": "Release N+1",
+  "active": {
+    "core": ["migration_core_copy"],
+    "application": [],
+    "qbank": ["qb_sud_014"]
+  },
+  "withdraw": [
+    ["core", "migration_core_quarantine", "base"],
+    ["application", "migration_application_quarantine", "base"],
+    ["qbank", "qb_pha_002", "base"]
+  ],
+  "retire": [
+    ["core", "migration_core_retired", "base"],
+    ["application", "migration_application_retired", "base"],
+    ["qbank", "qb_otherdx_999", "base"],
+    ["qbank", "qb_otherdx_999", "tier2"]
+  ],
+  "unshippedRetired": [
+    ["core", "migration_core_never_shipped", "base"]
+  ]
+}

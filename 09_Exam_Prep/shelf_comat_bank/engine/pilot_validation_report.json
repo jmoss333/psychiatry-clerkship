@@ -1,0 +1,294 @@
+{
+  "files": {
+    "04_pilot_batch_01.json": 24
+  },
+  "hard": [],
+  "soft": [
+    [
+      "qbx_rel_001",
+      "stem/lead-in contains answer-telegraphing coaching text"
+    ],
+    [
+      "BATCH",
+      "longest-answer cue: correct option is the SOLE longest in 11/24 items (46%); target <=35%. Items: qbx_psy_001, qbx_anx_002, qbx_cog_001, qbx_pha_001, qbx_saf_001, qbx_per_001, qbx_per_002, qbx_cdev_001, qbx_oth_002, qbx_rel_001, qbx_rel_002"
+    ],
+    [
+      "qbx_pha_002",
+      "negatively-phrased lead-in: 'Which of the following agents is most important to avoid given his risk profile?'"
+    ]
+  ],
+  "coverage": {
+    "n": 24,
+    "target": 180,
+    "category": {
+      "mood": {
+        "have": 2,
+        "target": 22,
+        "status": "under"
+      },
+      "anxiety": {
+        "have": 2,
+        "target": 20,
+        "status": "under"
+      },
+      "neurocog": {
+        "have": 2,
+        "target": 16,
+        "status": "under"
+      },
+      "pharm": {
+        "have": 2,
+        "target": 20,
+        "status": "under"
+      },
+      "substance": {
+        "have": 2,
+        "target": 14,
+        "status": "under"
+      },
+      "safety": {
+        "have": 2,
+        "target": 16,
+        "status": "under"
+      },
+      "psychosis": {
+        "have": 2,
+        "target": 12,
+        "status": "under"
+      },
+      "childdev": {
+        "have": 2,
+        "target": 12,
+        "status": "under"
+      },
+      "otherdx": {
+        "have": 2,
+        "target": 14,
+        "status": "under"
+      },
+      "relational": {
+        "have": 2,
+        "target": 16,
+        "status": "under"
+      },
+      "personality": {
+        "have": 2,
+        "target": 8,
+        "status": "under"
+      },
+      "ethics": {
+        "have": 2,
+        "target": 10,
+        "status": "under"
+      }
+    },
+    "cross_cutting": {
+      "site_of_care": {
+        "ambulatory": {
+          "n": 15,
+          "pct": 62.5,
+          "band": [
+            60,
+            65
+          ],
+          "in_band": true
+        },
+        "emergency-department": {
+          "n": 5,
+          "pct": 20.8,
+          "band": [
+            20,
+            30
+          ],
+          "in_band": true
+        },
+        "inpatient": {
+          "n": 4,
+          "pct": 16.7,
+          "band": [
+            5,
+            10
+          ],
+          "in_band": false
+        }
+      },
+      "nbme_task": {
+        "Diagnosis": {
+          "n": 12,
+          "pct": 50.0,
+          "band": [
+            65,
+            70
+          ],
+          "in_band": false
+        },
+        "Pharmacotherapy/Intervention/Management": {
+          "n": 12,
+          "pct": 50.0,
+          "band": [
+            30,
+            35
+          ],
+          "in_band": false
+        }
+      },
+      "age": {
+        "birth-12": {
+          "n": 3,
+          "pct": 12.5,
+          "band": [
+            10,
+            15
+          ],
+          "in_band": true
+        },
+        "13+": {
+          "n": 21,
+          "pct": 87.5,
+          "band": [
+            85,
+            90
+          ],
+          "in_band": true
+        }
+      },
+      "type": {
+        "sba": {
+          "n": 19,
+          "pct": 79.2,
+          "band": [
+            60,
+            70
+          ],
+          "in_band": false
+        },
+        "two-tier": {
+          "n": 3,
+          "pct": 12.5,
+          "band": [
+            15,
+            25
+          ],
+          "in_band": false
+        },
+        "relational": {
+          "n": 2,
+          "pct": 8.3,
+          "band": [
+            8,
+            14
+          ],
+          "in_band": true
+        }
+      },
+      "difficulty": {
+        "1": {
+          "n": 5,
+          "pct": 20.8,
+          "band": [
+            20,
+            30
+          ],
+          "in_band": true
+        },
+        "2": {
+          "n": 14,
+          "pct": 58.3,
+          "band": [
+            50,
+            60
+          ],
+          "in_band": true
+        },
+        "3": {
+          "n": 5,
+          "pct": 20.8,
+          "band": [
+            15,
+            25
+          ],
+          "in_band": true
+        }
+      },
+      "exam_alignment": {
+        "both": {
+          "n": 15,
+          "pct": 62.5,
+          "band": [
+            60,
+            75
+          ],
+          "in_band": true
+        },
+        "shelf": {
+          "n": 4,
+          "pct": 16.7,
+          "band": [
+            10,
+            20
+          ],
+          "in_band": true
+        },
+        "comat": {
+          "n": 5,
+          "pct": 20.8,
+          "band": [
+            10,
+            20
+          ],
+          "in_band": false
+        }
+      }
+    }
+  },
+  "missing_assignments": [
+    {
+      "category": "mood",
+      "need": 20
+    },
+    {
+      "category": "anxiety",
+      "need": 18
+    },
+    {
+      "category": "pharm",
+      "need": 18
+    },
+    {
+      "category": "neurocog",
+      "need": 14
+    },
+    {
+      "category": "safety",
+      "need": 14
+    },
+    {
+      "category": "relational",
+      "need": 14
+    },
+    {
+      "category": "substance",
+      "need": 12
+    },
+    {
+      "category": "otherdx",
+      "need": 12
+    },
+    {
+      "category": "psychosis",
+      "need": 10
+    },
+    {
+      "category": "childdev",
+      "need": 10
+    },
+    {
+      "category": "ethics",
+      "need": 8
+    },
+    {
+      "category": "personality",
+      "need": 6
+    }
+  ]
+}

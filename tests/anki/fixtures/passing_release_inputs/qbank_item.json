@@ -1,0 +1,19 @@
+{
+  "id": "qb_syn_001",
+  "status": "attested",
+  "type": "sba",
+  "category": "otherdx",
+  "competency": ["dx"],
+  "difficulty": 1,
+  "pages": ["synthetic-source.md"],
+  "stem": "Condition Alpha has an invented marker. Which invented label fits?",
+  "options": [
+    {"key": "A", "t": "Condition Alpha", "c": true},
+    {"key": "B", "t": "Condition Beta", "trap": {"name": "Synthetic trap beta", "note": "The invented marker differs."}},
+    {"key": "C", "t": "Condition Gamma", "trap": {"name": "Synthetic trap gamma", "note": "The invented timing differs."}},
+    {"key": "D", "t": "Condition Delta", "trap": {"name": "Synthetic trap delta", "note": "The invented pattern differs."}}
+  ],
+  "why": "The invented marker supports Condition Alpha.",
+  "pearl": "Use the invented discriminator.",
+  "evidence": "Condition Alpha uses an invented neutral marker."
+}
