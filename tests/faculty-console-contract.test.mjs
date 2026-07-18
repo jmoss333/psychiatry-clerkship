@@ -464,6 +464,25 @@ async function makeCurrentQuestionPreviewReady(harness) {
   await confirmCurrentSavedDraft(document);
 }
 
+async function makeCurrentContentPreviewReady(harness) {
+  const { controller, document, window } = harness;
+  const item = controller.state.reviewItems.find(candidate => (
+    candidate.key === controller.state.selectedKey
+  ));
+  assert.ok(item && ['page', 'tool'].includes(item.type), 'Expected a selected page or tool.');
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+}
+
+async function completeCurrentContentReview(harness) {
+  await makeCurrentContentPreviewReady(harness);
+  for (const id of [
+    'review-complete-item',
+    'review-content-accuracy',
+    'review-content-interactions',
+  ]) await setChecked(harness.document, id);
+}
+
 async function confirmCurrentSavedDraft(document) {
   await document.getElementById('view-draft').dispatch('click');
   await setChecked(document, 'review-saved-revision');
@@ -573,7 +592,7 @@ test('keeps the shared key in session storage and request headers only', () => {
 
 test('guards unsaved work and reserves the global shortcut for Ctrl or Command S', () => {
   assert.match(appSource, /function hasAnyUnsavedChanges\(\)/);
-  assert.match(appSource, /Object\.keys\(state\.contentChanges\)\.length\s*>\s*0/);
+  assert.match(appSource, /function hasAnyUnsavedChanges\(\)\s*{\s*return hasUnsavedChanges\(\);\s*}/);
   assert.match(appSource, /addEventListener\('beforeunload'/);
   assert.match(appSource, /if \(!hasAnyUnsavedChanges\(\)\) return/);
   assert.match(appSource, /event\.preventDefault\(\)/);
@@ -586,6 +605,8 @@ test('guards unsaved work and reserves the global shortcut for Ctrl or Command S
   assert.match(appSource, /Save draft/);
   assert.match(appSource, /Discard/);
   assert.match(appSource, /Cancel/);
+  assert.doesNotMatch(appSource, /\bcontentChanges\b|\bcommitContent\b|\btoggleContent\b/);
+  assert.doesNotMatch(appSource, /Mark reviewed|Save content reviews|Committing content reviews/i);
 });
 
 test('uses the approved clinical workbench layout and accessible primary contrast', () => {
@@ -1428,7 +1449,9 @@ test('preview fallback gates question Retry and opens only clean page or tool ro
   assert.ok(contentDocument.getElementById('retry-preview'));
   assert.ok(contentDocument.getElementById('open-full-page'));
   assert.ok(contentDocument.getElementById('review-separate-tab'));
+  assert.equal(contentDocument.getElementById('review-separate-tab').disabled, true);
   await contentDocument.getElementById('open-full-page').dispatch('click');
+  assert.equal(contentDocument.getElementById('review-separate-tab').disabled, false);
   assert.deepEqual(externalCalls[0], [
     'https://students.example/?page=t_mood.md',
     '_blank',
@@ -1581,6 +1604,7 @@ test('terminal preview fallback revokes page and tool checks after a current-fra
     const frame = document.getElementById('learner-preview-frame');
     const frameWindow = frame.contentWindow;
     await reportPreviewStatus(window, controller, 'not_found');
+    await document.getElementById('open-full-page').dispatch('click');
     for (const id of [
       'review-separate-tab',
       'review-content-accuracy',
@@ -2541,30 +2565,341 @@ test('Lock uses the dirty guard and save-time 401 reauthentication retries the c
   assert.equal(window.sessionStorage.getItem('fac_key'), null);
 });
 
-test('Lock saves content-only changes through the same guard before ending the session', async () => {
-  let items = serverState().items;
+test('page and tool use the same Live Review Resolve Confirm rail and clear content checks on selection', async () => {
+  const harness = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+        { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+      ],
+      questions: [],
+    })),
+  });
+  const { controller, document } = harness;
+
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+  assert.equal(document.getElementById('selected-item-type').textContent, 'Page');
+  assert.equal(document.getElementById('selected-item-view').textContent, 'Live deploy');
+  assert.ok(document.getElementById('learner-preview-frame'));
+  assert.equal(document.getElementById('attestation-rail-title').textContent,
+    'Review → Resolve → Confirm');
+  assert.match(document.getElementById('rail-step-review').className, /current/);
+  assert.equal(document.find('button', 'Attest this page')?.disabled, true);
+
+  await makeCurrentContentPreviewReady(harness);
+  assert.ok(document.find('label', 'I reviewed the complete item'));
+  assert.ok(document.find('label',
+    'I verified that this is accurate and appropriate for a third-year student.'));
+  assert.ok(document.find('label', 'I tested the relevant links, media, or interactions.'));
+  await setChecked(document, 'review-complete-item');
+  assert.match(document.getElementById('rail-step-resolve').className, /current/);
+  await setChecked(document, 'review-content-accuracy');
+  await setChecked(document, 'review-content-interactions');
+  assert.match(document.getElementById('rail-step-confirm').className, /current/);
+  assert.equal(document.find('button', 'Attest this page')?.disabled, false);
+  assert.equal(document.getElementById('current-reviewer-label').textContent, 'Joshua Moss, MD');
+
+  await setValue(document, 'reviewer-label', 'Updated faculty reviewer');
+  assert.equal(document.getElementById('current-reviewer-label').textContent,
+    'Updated faculty reviewer');
+  await setValue(document, 'review-item-selector', 'tool:mse.html', 'change');
+
+  assert.equal(controller.state.selectedKey, 'tool:mse.html');
+  assert.equal(document.getElementById('selected-item-type').textContent, 'Tool');
+  assert.equal(document.getElementById('selected-item-view').textContent, 'Live deploy');
+  assert.ok(document.getElementById('learner-preview-frame'));
+  assert.match(document.getElementById('rail-step-review').className, /current/);
+  assert.equal(document.find('button', 'Attest this tool')?.disabled, true);
+  assert.deepEqual(controller.state.reviewChecks, {
+    completeItemReviewed: false,
+    liveReviewed: false,
+    separateTabReviewed: false,
+    liveUnavailableAcknowledged: false,
+    accuracy: false,
+    interactions: false,
+  });
+});
+
+test('content attestation submits exactly one page slug, confirms it, and holds the item for Next item', async () => {
+  let items = [
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+    { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+  ];
   let posted;
   const fetchImpl = async (url, options = {}) => {
     if (options.method === 'POST') {
       posted = JSON.parse(options.body);
-      items = items.map(item => ({ ...item, status: 'reviewed' }));
-      return jsonResponse({ ok: true, updated: 1, commit: null });
+      const [[slug, reviewed]] = Object.entries(posted.changes);
+      items = items.map(item => item.slug === slug
+        ? { ...item, status: reviewed ? 'reviewed' : 'unreviewed' }
+        : item);
+      return jsonResponse({
+        ok: true,
+        updated: 1,
+        commit: 'https://github.example/commit/content-page',
+      });
     }
-    return jsonResponse(serverState({ items }));
+    return jsonResponse(serverState({ items, questions: [] }));
   };
-  const { controller, document } = await startHarness({ fetchImpl });
-  controller.state.contentChanges['t_mood.md'] = true;
-  await document.getElementById('lock-console').dispatch('click');
-
-  assert.ok(document.getElementById('unsaved-guard'));
-  assert.equal(document.getElementById('unsaved-save').textContent, 'Save content reviews');
-  await document.getElementById('unsaved-save').dispatch('click');
+  const harness = await startHarness({ fetchImpl });
+  const { controller, document } = harness;
+  await completeCurrentContentReview(harness);
+  await document.getElementById('attest-current-item').dispatch('click');
   await flushAsyncWork();
 
-  assert.equal(posted.target, 'content');
-  assert.equal(Object.hasOwn(posted, 'manifestRevision'), false);
-  assert.equal(controller.state.server, null);
+  assert.deepEqual(posted, {
+    target: 'content',
+    changes: { 't_mood.md': true },
+    attester: 'Joshua Moss, MD',
+  });
+  assert.equal(Object.keys(posted.changes).length, 1);
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+  assert.equal(controller.state.completedHoldKey, 'page:t_mood.md');
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'page:t_mood.md').savedStatus,
+    'reviewed');
+  assert.equal(controller.state.contentMessage, 'Attested t_mood.md.');
+  assert.match(document.getElementById('content-action-result').textContent, /Attested t_mood\.md/);
+  assert.equal(
+    document.links().find(link => link.textContent === 'View commit ↗')?.getAttribute('href'),
+    'https://github.example/commit/content-page',
+  );
+  assert.equal(document.getElementById('next-review-item').textContent, 'Next item');
+  assert.equal(document.getElementById('next-review-item').disabled, false);
+  assert.equal(document.activeElement?.getAttribute('id'), 'next-review-item');
+  assert.equal(document.status.textContent, 'Attested t_mood.md.');
+});
+
+test('content POST with a stale confirming GET remains unconfirmed and never announces success', async () => {
+  const items = [
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+    { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+  ];
+  const confirmingGet = deferred();
+  let getCount = 0;
+  let posted;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      posted = JSON.parse(options.body);
+      return jsonResponse({
+        ok: true,
+        updated: 1,
+        commit: 'https://github.example/commit/content-stale',
+      });
+    }
+    getCount += 1;
+    if (getCount === 1) return jsonResponse(serverState({ items, questions: [] }));
+    return confirmingGet.promise;
+  };
+  const harness = await startHarness({ fetchImpl });
+  const { controller, document } = harness;
+  await completeCurrentContentReview(harness);
+  const preservedPreview = controller.state.preview;
+  const preservedFrame = document.getElementById('learner-preview-frame');
+  const preservedChecks = structuredClone(controller.state.reviewChecks);
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.deepEqual(posted.changes, { 't_mood.md': true });
+  assert.equal(controller.state.pending, true);
+  assert.equal(controller.state.contentMessage, 'Saving this content review…');
+  assert.match(document.getElementById('content-action-result').textContent,
+    /Saving this content review/);
+  assert.equal(controller.state.preview, preservedPreview);
+  assert.equal(document.getElementById('learner-preview-frame'), preservedFrame);
+  assert.deepEqual(controller.state.reviewChecks, preservedChecks);
+  assert.doesNotMatch(document.status.textContent, /Attested|Reopened/);
+
+  confirmingGet.resolve(jsonResponse(serverState({ items, questions: [] })));
+  await flushAsyncWork();
+
+  assert.equal(controller.state.pending, false);
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'page:t_mood.md').savedStatus,
+    'unreviewed');
+  assert.match(controller.state.contentMessage, /refresh_failed/);
+  assert.match(document.getElementById('content-action-result').textContent, /refresh_failed/);
+  assert.equal(controller.state.preview, preservedPreview);
+  assert.equal(document.getElementById('learner-preview-frame'), preservedFrame);
+  assert.deepEqual(controller.state.reviewChecks, preservedChecks);
+  assert.equal(document.activeElement?.getAttribute('id'), 'content-action-result');
+  assert.doesNotMatch(document.app.textContent, /Attested t_mood\.md|Reopened t_mood\.md/);
+  assert.doesNotMatch(document.status.textContent, /Attested|Reopened/);
+});
+
+test('content commit URL must be safe HTTPS before any confirming GET', async () => {
+  const items = [
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+  ];
+  let getCount = 0;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      return jsonResponse({
+        ok: true,
+        updated: 1,
+        commit: 'http://github.example/commit/unsafe-content',
+      });
+    }
+    getCount += 1;
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  const harness = await startHarness({ fetchImpl });
+  const { controller, document } = harness;
+  await completeCurrentContentReview(harness);
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(getCount, 1);
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.match(controller.state.contentMessage,
+    /invalid_response: Commit receipt was not a safe HTTPS URL/);
+  assert.match(document.getElementById('content-action-result').textContent,
+    /invalid_response: Commit receipt was not a safe HTTPS URL/);
+  assert.equal(document.links().some(link => link.getAttribute('href')
+    === 'http://github.example/commit/unsafe-content'), false);
+  assert.doesNotMatch(document.status.textContent, /Attested/);
+});
+
+test('content 401 retry freezes the exact slug, boolean status, and reviewer label', async () => {
+  let items = [
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+    { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+  ];
+  const posts = [];
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      const body = JSON.parse(options.body);
+      const key = options.headers['x-faculty-key'];
+      posts.push({ body, key });
+      if (key !== 'correct-key') {
+        return jsonResponse({ error: { code: 'unauthorized', message: 'Wrong key.' } }, {
+          ok: false,
+          status: 401,
+        });
+      }
+      const [[slug, reviewed]] = Object.entries(body.changes);
+      items = items.map(item => item.slug === slug
+        ? { ...item, status: reviewed ? 'reviewed' : 'unreviewed' }
+        : item);
+      return jsonResponse({ ok: true, updated: 1, commit: null });
+    }
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  const harness = await startHarness({ fetchImpl });
+  const { controller, document } = harness;
+  await setValue(document, 'reviewer-label', 'Original faculty reviewer');
+  await completeCurrentContentReview(harness);
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(posts.length, 1);
   assert.ok(document.getElementById('faculty-key'));
+  controller.state.selectedKey = 'tool:mse.html';
+  controller.state.reviewerLabel = 'Changed after the frozen request';
+  controller.state.reviewChecks.accuracy = false;
+  const keyInput = document.getElementById('faculty-key');
+  keyInput.value = 'correct-key';
+  await keyInput.parentNode.parentNode.dispatch('submit');
+  await flushAsyncWork();
+
+  assert.equal(posts.length, 2);
+  assert.deepEqual(posts[1].body, posts[0].body);
+  assert.deepEqual(posts[1].body, {
+    target: 'content',
+    changes: { 't_mood.md': true },
+    attester: 'Original faculty reviewer',
+  });
+});
+
+test('Reopen review is a confirmed More action and submits exactly that content slug as false', async () => {
+  assert.match(html, /summary:focus-visible/);
+  let items = [
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'reviewed' },
+    { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed' },
+  ];
+  let posted;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      posted = JSON.parse(options.body);
+      const [[slug, reviewed]] = Object.entries(posted.changes);
+      items = items.map(item => item.slug === slug
+        ? { ...item, status: reviewed ? 'reviewed' : 'unreviewed' }
+        : item);
+      return jsonResponse({ ok: true, updated: 1, commit: null });
+    }
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  const { controller, document, window } = await startHarness({ fetchImpl });
+  await setValue(document, 'review-status-filter', 'all', 'change');
+
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+  assert.equal(Boolean(document.getElementById('attest-current-item')), false);
+  assert.ok(document.find('summary', 'More actions'));
+  assert.ok(document.find('button', 'Reopen review'));
+  await document.find('button', 'Reopen review').dispatch('click');
+
+  const confirmation = document.getElementById('reopen-confirmation');
+  assert.equal(confirmation?.getAttribute('role'), 'alertdialog');
+  assert.equal(confirmation?.getAttribute('aria-modal'), 'true');
+  assert.equal(document.getElementById('console-background').getAttribute('inert'), '');
+  assert.deepEqual(controller.state.reopenConfirmation, {
+    key: 'page:t_mood.md',
+    reviewed: false,
+  });
+  assert.equal(Object.isFrozen(controller.state.reopenConfirmation), true);
+  const frame = document.getElementById('learner-preview-frame');
+  const frameWindow = frame.contentWindow;
+  await reportPreviewStatus(window, controller, 'ready');
+  assert.equal(document.getElementById('console-background').getAttribute('inert'), '');
+  assert.ok(document.getElementById('reopen-confirmation'));
+  assert.equal(document.getElementById('learner-preview-frame'), frame);
+  assert.equal(document.getElementById('learner-preview-frame').contentWindow, frameWindow);
+  await document.getElementById('confirm-reopen-review').dispatch('click');
+  await flushAsyncWork();
+
+  assert.deepEqual(posted, {
+    target: 'content',
+    changes: { 't_mood.md': false },
+    attester: 'Joshua Moss, MD',
+  });
+  assert.equal(Object.keys(posted.changes).length, 1);
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'page:t_mood.md').savedStatus,
+    'unreviewed');
+  assert.equal(controller.state.contentMessage, 'Reopened t_mood.md for review.');
+  assert.equal(Boolean(document.find('button', 'Reopen review')), false);
+  assert.ok(document.find('button', 'Attest this page'));
+});
+
+test('content checks are not unsaved bulk state and the shortcut never submits them', async () => {
+  const posts = [];
+  const harness = await startHarness({
+    fetchImpl: async (url, options = {}) => {
+      if (options.method === 'POST') posts.push(JSON.parse(options.body));
+      return jsonResponse(serverState({
+        items: [
+          { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+        ],
+        questions: [],
+      }));
+    },
+  });
+  const { controller, document, window } = harness;
+  assert.equal(Object.hasOwn(controller.state, 'contentChanges'), false);
+  await completeCurrentContentReview(harness);
+  const shortcut = await window.dispatch('keydown', {
+    metaKey: true,
+    ctrlKey: false,
+    key: 's',
+  });
+  await flushAsyncWork();
+
+  assert.equal(shortcut.defaultPrevented, true);
+  assert.deepEqual(posts, []);
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+  assert.equal(controller.state.reviewChecks.accuracy, true);
+  assert.equal(document.status.textContent, 'No unsaved question changes to save.');
 });
 
 test('requires all human confirmations and each current warning acknowledgement for one yellow item', async () => {
@@ -3096,7 +3431,7 @@ test('fails closed when manifest pages are blank or question revisions are not e
   assert.match(nonHexRevisionHarness.document.app.textContent, /incomplete state/i);
 });
 
-test('Ctrl or Command S saves the dirty selected question only', async () => {
+test('shortcut saves a dirty selected question only in Edit question', async () => {
   let current = validDomQuestion();
   const posts = [];
   const fetchImpl = async (url, options = {}) => {
@@ -3116,7 +3451,29 @@ test('Ctrl or Command S saves the dirty selected question only', async () => {
   };
   const { document, window } = await startHarness({ fetchImpl });
   await setValue(document, 'question-stem', 'Save this question with the keyboard?');
-  const shortcut = await window.dispatch('keydown', {
+  let shortcut = await window.dispatch('keydown', {
+    metaKey: false,
+    ctrlKey: true,
+    key: 's',
+  });
+  await flushAsyncWork();
+  assert.equal(shortcut.defaultPrevented, true);
+  assert.equal(posts.length, 0);
+  assert.equal(document.status.textContent, 'Open Edit question to save this draft.');
+
+  await document.getElementById('view-draft').dispatch('click');
+  shortcut = await window.dispatch('keydown', {
+    metaKey: true,
+    ctrlKey: false,
+    key: 's',
+  });
+  await flushAsyncWork();
+  assert.equal(shortcut.defaultPrevented, true);
+  assert.equal(posts.length, 0);
+  assert.equal(document.status.textContent, 'Open Edit question to save this draft.');
+
+  await document.getElementById('view-edit').dispatch('click');
+  shortcut = await window.dispatch('keydown', {
     metaKey: false,
     ctrlKey: true,
     key: 's',
@@ -3162,6 +3519,7 @@ test('Ctrl or Command S in the unsaved-navigation modal saves and continues its 
     fetchImpl,
     assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
   });
+  await document.getElementById('view-edit').dispatch('click');
   await setValue(document, 'question-stem', 'Save this guarded local candidate?');
   const selector = document.getElementById('review-item-selector');
   selector.value = 'question:qb_moo_902';

@@ -89,6 +89,7 @@
   a:focus-visible,
   input:focus-visible,
   select:focus-visible,
+  summary:focus-visible,
   textarea:focus-visible {
     outline: 3px solid var(--focus);
     outline-offset: 2px;
@@ -471,6 +472,15 @@
   .rail-step h3 { margin: 0; }
   .rail-step > p { margin: 0.3rem 0 0; color: var(--muted); font-size: 0.82rem; }
   .rail-action { width: 100%; margin-block-start: 0.8rem; }
+
+  .more-actions { margin-block-start: 0.8rem; }
+
+  .more-actions summary {
+    cursor: pointer;
+    color: var(--primary);
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
 
   .content-review-checks {
     margin: 0.65rem 0 0;

@@ -136,7 +136,7 @@ export function startFacultyConsole({
     pending: false,
     reviewerLabel: DEFAULT_REVIEWER,
     reviewedRevisions: new Map(),
-    contentChanges: Object.create(null),
+    externalReviewOpenedKey: null,
     contentMessage: '',
     contentCommitUrl: null,
     reopenConfirmation: null,
@@ -294,7 +294,13 @@ export function startFacultyConsole({
   }
 
   function hasAnyUnsavedChanges() {
-    return hasUnsavedChanges() || Object.keys(state.contentChanges).length > 0;
+    return hasUnsavedChanges();
+  }
+
+  function shortcutCanSaveQuestion() {
+    return currentReviewItem()?.type === 'question'
+      && state.viewMode === 'edit'
+      && hasUnsavedChanges();
   }
 
   function resetApprovalInputs() {
@@ -318,6 +324,7 @@ export function startFacultyConsole({
     clearAllQuestions = false,
   } = {}) {
     state.reviewChecks = emptyReviewChecks();
+    state.externalReviewOpenedKey = null;
     if (clearAllQuestions) {
       state.reviewedRevisions.clear();
     } else {
@@ -431,6 +438,7 @@ export function startFacultyConsole({
     state.viewMode = 'live';
     state.preview = null;
     state.previewAttempt = 0;
+    state.reopenConfirmation = null;
   }
 
   function setSelectedReviewKey(key, { force = false, preserveCompletedHold = false } = {}) {
@@ -592,18 +600,23 @@ export function startFacultyConsole({
     requiredId = null,
     expectedRevisions = null,
     expectedStatuses = null,
+    expectedContentStatus = null,
     preserveOnError = false,
     completedHoldKey = null,
+    errorScope = 'qbank',
   } = {}) {
     const generation = ++state.loadGeneration;
-    invalidatePreview({
-      resetAttempt: true,
-      clearApprovals: true,
-      clearAllQuestions: true,
-    });
+    const confirmingContent = expectedContentStatus !== null;
+    if (!confirmingContent) {
+      invalidatePreview({
+        resetAttempt: true,
+        clearApprovals: true,
+        clearAllQuestions: true,
+      });
+    }
     state.pending = true;
     if (!silent) renderLoading();
-    else if (state.server) renderShell();
+    else if (state.server && !confirmingContent) renderShell();
     try {
       const response = await fetchImpl(API, { headers: apiHeaders() });
       const payload = await responseJson(response);
@@ -625,12 +638,6 @@ export function startFacultyConsole({
       } catch {
         throw new Error('The server returned an incomplete state.');
       }
-      const manifestChanged = state.server !== null
-        && state.server.manifestRevision !== payload.manifestRevision;
-      if (manifestChanged) {
-        state.reviewedRevisions.clear();
-        resetApprovalInputs();
-      }
       if (requiredId && !payload.qbank.some(question => question.id === requiredId)) {
         throw new Error(`The refreshed state did not include ${requiredId}. Local work was retained.`);
       }
@@ -650,9 +657,37 @@ export function startFacultyConsole({
           }
         }
       }
+      let confirmedContentItem = null;
+      if (expectedContentStatus !== null) {
+        const slug = text(expectedContentStatus?.slug);
+        const status = text(expectedContentStatus?.status);
+        confirmedContentItem = reviewItems.find(item => (
+          ['page', 'tool'].includes(item.type) && item.identity === slug
+        )) || null;
+        if (!slug || !['reviewed', 'unreviewed'].includes(status)
+            || !confirmedContentItem || confirmedContentItem.savedStatus !== status) {
+          throw new Error(`The refreshed state did not confirm ${slug || 'this content item'} as ${status || 'requested'}. Local work was retained.`);
+        }
+      }
+      if (confirmingContent) {
+        invalidatePreview({
+          resetAttempt: true,
+          clearApprovals: true,
+          clearAllQuestions: true,
+        });
+      }
+      const manifestChanged = state.server !== null
+        && state.server.manifestRevision !== payload.manifestRevision;
+      if (manifestChanged) {
+        state.reviewedRevisions.clear();
+        resetApprovalInputs();
+      }
       state.server = { ...payload, student: studentBase.href };
       state.reviewItems = reviewItems;
-      const holdKey = completedHoldKey || state.completedHoldKey;
+      const contentHoldKey = expectedContentStatus?.status === 'reviewed'
+        ? confirmedContentItem?.key || null
+        : null;
+      const holdKey = completedHoldKey || contentHoldKey || state.completedHoldKey;
       const heldItem = holdKey ? findReviewItem(holdKey) : null;
       state.completedHoldKey = heldItem?.completion === 'complete' ? heldItem.key : null;
       state.pending = false;
@@ -665,9 +700,17 @@ export function startFacultyConsole({
       state.pending = false;
       const message = error instanceof Error ? error.message : 'Network request failed.';
       if (preserveOnError && state.server) {
-        state.qbankError = `refresh_failed: ${message}`;
-        announce(state.qbankError);
-        renderShell('qbank-action-error');
+        const scopedMessage = `refresh_failed: ${message}`;
+        if (errorScope === 'content') {
+          state.contentMessage = scopedMessage;
+          state.contentCommitUrl = null;
+          announce(state.contentMessage);
+          refreshPreviewChromeAndRail('content-action-result');
+        } else {
+          state.qbankError = scopedMessage;
+          announce(state.qbankError);
+          renderShell('qbank-action-error');
+        }
       } else {
         renderLoadError(message);
       }
@@ -685,6 +728,7 @@ export function startFacultyConsole({
       state.navigationGuard = null;
       state.navigationAfterSave = null;
       state.reauthAction = null;
+      state.reopenConfirmation = null;
       renderLogin();
       return;
     }
@@ -898,7 +942,10 @@ export function startFacultyConsole({
       item,
     });
     openExternal(url, '_blank', 'noopener,noreferrer');
+    state.externalReviewOpenedKey = item.key;
+    state.reviewChecks.separateTabReviewed = false;
     announce(`Opened the full ${item.type} in a separate tab.`);
+    refreshAttestationRail('review-separate-tab');
   }
 
   function renderPreviewStatusSlot(item) {
@@ -1151,7 +1198,8 @@ export function startFacultyConsole({
     if (!PREVIEW_FAILURES.has(status)) return false;
     return item.type === 'question'
       ? state.reviewChecks.liveUnavailableAcknowledged === true && draftReviewed
-      : state.reviewChecks.separateTabReviewed === true;
+      : state.externalReviewOpenedKey === item.key
+        && state.reviewChecks.separateTabReviewed === true;
   }
 
   function renderDraftReviewControl(item) {
@@ -1205,7 +1253,7 @@ export function startFacultyConsole({
         }),
         question
           ? 'I reviewed the complete item in the learner view'
-          : 'I reviewed the complete live learner item.',
+          : 'I reviewed the complete item',
       ]);
     }
     if (PREVIEW_FAILURES.has(status) || !state.preview) {
@@ -1215,7 +1263,7 @@ export function startFacultyConsole({
             id: 'review-separate-tab',
             type: 'checkbox',
             checked: state.reviewChecks.separateTabReviewed === true,
-            disabled: state.pending,
+            disabled: state.pending || state.externalReviewOpenedKey !== item.key,
             onChange: event => updateReviewCheck(
               item,
               'separateTabReviewed',
@@ -1265,8 +1313,8 @@ export function startFacultyConsole({
     return el('fieldset', { class: 'content-review-checks', disabled: state.pending }, [
       el('legend', {}, ['Content checks']),
       ...[
-        ['accuracy', 'review-content-accuracy', 'I verified the learner-facing content is accurate and complete.'],
-        ['interactions', 'review-content-interactions', 'I verified the important links and interactions.'],
+        ['accuracy', 'review-content-accuracy', 'I verified that this is accurate and appropriate for a third-year student.'],
+        ['interactions', 'review-content-interactions', 'I tested the relevant links, media, or interactions.'],
       ].map(([key, id, copy]) => el('label', { for: id }, [
         el('input', {
           id,
@@ -1289,7 +1337,8 @@ export function startFacultyConsole({
       retryAttempted: (state.preview?.attempt || 0) > 1,
       completeItemReviewed: state.reviewChecks.completeItemReviewed,
       liveReviewed: state.reviewChecks.liveReviewed,
-      separateTabReviewed: state.reviewChecks.separateTabReviewed,
+      separateTabReviewed: state.externalReviewOpenedKey === item.key
+        && state.reviewChecks.separateTabReviewed,
       liveUnavailableAcknowledged: state.reviewChecks.liveUnavailableAcknowledged,
       reviewedRevision: state.reviewedRevisions.get(item.identity),
       warningAcks: state.warningAcks,
@@ -1340,6 +1389,24 @@ export function startFacultyConsole({
     ]);
   }
 
+  function contentChecksComplete() {
+    return state.reviewChecks.accuracy === true
+      && state.reviewChecks.interactions === true;
+  }
+
+  function renderContentMoreActions(item) {
+    return el('details', { class: 'more-actions' }, [
+      el('summary', {}, ['More actions']),
+      el('button', {
+        id: 'reopen-content-review',
+        type: 'button',
+        class: 'quiet rail-action',
+        disabled: state.pending,
+        onClick: () => openReopenConfirmation(item),
+      }, ['Reopen review']),
+    ]);
+  }
+
   function renderAttestationRail(item) {
     if (!item) {
       return el('aside', { id: 'attestation-rail', class: 'signoff-rail' }, [
@@ -1353,7 +1420,15 @@ export function startFacultyConsole({
     const blocked = question && (dirty || assessment?.gate === 'blocked' || item.savedStatus !== 'draft');
     const reviewComplete = reviewPathComplete(item);
     const eligibility = currentAttestationEligibility(item, assessment, dirty);
-    const currentStep = dirty ? 'review' : item.completion === 'complete' ? 'confirm' : 'resolve';
+    const currentStep = dirty
+      ? 'review'
+      : item.completion === 'complete'
+        ? 'confirm'
+        : !question && !reviewComplete
+          ? 'review'
+          : !question && contentChecksComplete()
+            ? 'confirm'
+            : 'resolve';
     return el('aside', {
       id: 'attestation-rail',
       class: 'signoff-rail',
@@ -1388,12 +1463,14 @@ export function startFacultyConsole({
         class: `rail-step${currentStep === 'confirm' ? ' current' : ''}`,
       }, [
         el('h3', {}, ['Confirm']),
-        question ? el('p', { class: 'reviewer-confirmation' }, [
+        el('p', { class: 'reviewer-confirmation' }, [
           'Reviewer: ',
           el('strong', { id: 'current-reviewer-label' }, [state.reviewerLabel || 'Not provided']),
-        ]) : null,
+        ]),
         question ? renderConfirmations(blocked || state.pending || !reviewComplete) : el('p', { class: 'muted' }, [
-          reviewComplete
+          item.completion === 'complete'
+            ? 'This item is recorded as reviewed. Reopen it only when another review is needed.'
+            : reviewComplete
             ? 'The learner surface review is recorded. Complete both content checks to continue.'
             : 'Record the learner surface review before confirming this item.',
         ]),
@@ -1403,13 +1480,15 @@ export function startFacultyConsole({
           type: 'button',
           disabled: state.pending || !eligibility.eligible,
           onClick: () => void attestCurrentQuestion(findQuestion(item.identity)),
-        }, ['Attest this question']) : el('button', {
+        }, ['Attest this question']) : item.completion === 'complete'
+          ? renderContentMoreActions(item)
+          : el('button', {
           id: 'attest-current-item',
           class: 'primary rail-action',
           type: 'button',
           disabled: state.pending || !eligibility.eligible,
           onClick: () => void attestContentItem(item),
-        }, ['Mark reviewed']),
+        }, [`Attest this ${item.type}`]),
       ]),
     ]);
   }
@@ -1441,7 +1520,7 @@ export function startFacultyConsole({
     });
 
     const item = currentReviewItem();
-    const modal = renderNavigationGuard();
+    const modal = renderNavigationGuard() || renderReopenConfirmation();
     const background = el('div', {
       id: 'console-background',
       inert: state.pending || modal ? true : null,
@@ -1675,6 +1754,18 @@ export function startFacultyConsole({
 
   function refreshPreviewChromeAndRail(focusTarget = null) {
     const item = currentReviewItem();
+    const background = document.getElementById('console-background');
+    if (background) {
+      if (state.pending) {
+        background.setAttribute('inert', '');
+        background.setAttribute('aria-busy', 'true');
+      } else {
+        background.removeAttribute('aria-busy');
+        if (!state.navigationGuard && !state.reopenConfirmation) {
+          background.removeAttribute('inert');
+        }
+      }
+    }
     const statusSlot = document.getElementById('preview-status-slot');
     if (statusSlot && item) {
       const replacement = renderPreviewStatusSlot(item);
@@ -2192,7 +2283,23 @@ export function startFacultyConsole({
   }
 
   function renderActionFeedback() {
+    const contentActionSucceeded = /^(?:Attested |Reopened )/.test(state.contentMessage);
+    const contentActionPending = state.contentMessage === 'Saving this content review…';
     return el('div', { class: 'action-feedback' }, [
+      state.contentMessage ? el('section', {
+        id: 'content-action-result',
+        class: contentActionSucceeded || contentActionPending ? 'action-result' : 'action-error',
+        role: contentActionSucceeded || contentActionPending ? null : 'alert',
+        tabindex: '-1',
+      }, [
+        state.contentMessage,
+        state.contentCommitUrl ? ' ' : null,
+        state.contentCommitUrl ? el('a', {
+          href: state.contentCommitUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        }, ['View commit ↗']) : null,
+      ]) : null,
       state.qbankMessage ? el('section', {
         id: 'qbank-action-result',
         class: 'action-result',
@@ -2260,14 +2367,17 @@ export function startFacultyConsole({
       return false;
     }
     const savesQuestion = hasUnsavedChanges();
+    if (!savesQuestion) {
+      announce('No unsaved question changes to save.');
+      return false;
+    }
     if (savesQuestion && list(state.localAssessment?.blockers).length > 0) {
       announce('Resolve structural blockers before saving this draft.');
       return false;
     }
     state.navigationAfterSave = guard.target;
     state.navigationGuard = null;
-    if (savesQuestion) void saveCurrentDraft();
-    else void commitContent();
+    void saveCurrentDraft();
     return true;
   }
 
@@ -2302,7 +2412,7 @@ export function startFacultyConsole({
           disabled: state.pending
             || (savesQuestion && list(state.localAssessment?.blockers).length > 0),
           onClick: () => { saveNavigationGuard(); },
-        }, [savesQuestion ? 'Save draft' : 'Save content reviews']),
+        }, ['Save draft']),
         el('button', {
           id: 'unsaved-discard',
           type: 'button',
@@ -2310,9 +2420,6 @@ export function startFacultyConsole({
           onClick: () => {
             state.navigationGuard = null;
             state.editor = clone(state.original);
-            if (guard.target?.kind === 'lock') {
-              state.contentChanges = Object.create(null);
-            }
             refreshEditorState();
             resetApprovalInputs();
             performNavigation(guard.target);
@@ -2320,6 +2427,84 @@ export function startFacultyConsole({
         }, ['Discard']),
         el('button', {
           id: 'unsaved-cancel',
+          type: 'button',
+          disabled: state.pending,
+          onClick: cancel,
+        }, ['Cancel']),
+      ]),
+    ]);
+  }
+
+  function dismissReopenConfirmation(focusId = 'reopen-content-review') {
+    state.reopenConfirmation = null;
+    document.getElementById('reopen-confirmation')?.remove();
+    const background = document.getElementById('console-background');
+    if (background && !state.pending) background.removeAttribute('inert');
+    focusRequested(focusId);
+  }
+
+  function openReopenConfirmation(item) {
+    const current = findReviewItem(item?.key);
+    if (state.pending || !current || !['page', 'tool'].includes(current.type)
+        || current.completion !== 'complete') return false;
+    state.reopenConfirmation = freezeSnapshot({ key: current.key, reviewed: false });
+    const background = document.getElementById('console-background');
+    const modal = renderReopenConfirmation();
+    if (!background || !modal) {
+      state.reopenConfirmation = null;
+      return false;
+    }
+    document.getElementById('reopen-confirmation')?.remove();
+    background.setAttribute('inert', '');
+    app.appendChild(modal);
+    modal.focus();
+    return true;
+  }
+
+  function confirmReopenReview() {
+    const snapshot = state.reopenConfirmation;
+    const item = findReviewItem(snapshot?.key);
+    if (!snapshot || snapshot.reviewed !== false || !item) {
+      dismissReopenConfirmation();
+      return false;
+    }
+    dismissReopenConfirmation(null);
+    void commitCurrentContent(item, snapshot.reviewed);
+    return true;
+  }
+
+  function renderReopenConfirmation() {
+    const snapshot = state.reopenConfirmation;
+    const item = findReviewItem(snapshot?.key);
+    if (!snapshot || snapshot.reviewed !== false || !item) return null;
+    const cancel = () => dismissReopenConfirmation();
+    return el('section', {
+      id: 'reopen-confirmation',
+      class: 'modal-panel guard-panel',
+      role: 'alertdialog',
+      tabindex: '-1',
+      'aria-modal': 'true',
+      'aria-labelledby': 'reopen-confirmation-title',
+      onKeydown: event => modalKeydown(
+        event,
+        ['confirm-reopen-review', 'cancel-reopen-review'],
+        cancel,
+      ),
+    }, [
+      el('h3', { id: 'reopen-confirmation-title' }, ['Reopen this review?']),
+      el('p', {}, [
+        `${item.title} will return to Needs review. This changes only ${item.identity}.`,
+      ]),
+      el('div', { class: 'guard-actions' }, [
+        el('button', {
+          id: 'confirm-reopen-review',
+          class: 'primary',
+          type: 'button',
+          disabled: state.pending,
+          onClick: confirmReopenReview,
+        }, ['Confirm reopen']),
+        el('button', {
+          id: 'cancel-reopen-review',
           type: 'button',
           disabled: state.pending,
           onClick: cancel,
@@ -2538,75 +2723,94 @@ export function startFacultyConsole({
     return panel;
   }
 
-  function toggleContent(item, checked, focusId) {
-    const committed = item.status === 'reviewed';
-    if (checked === committed) delete state.contentChanges[item.slug];
-    else state.contentChanges[item.slug] = checked;
-    state.contentMessage = '';
-    state.contentCommitUrl = null;
-    renderShell(focusId);
+  function contentMutationSnapshot(item, reviewed) {
+    if (!item || !['page', 'tool'].includes(item.type) || typeof reviewed !== 'boolean') {
+      throw new TypeError('Invalid content review mutation.');
+    }
+    return freezeSnapshot({
+      key: item.key,
+      reviewed,
+      body: {
+        target: 'content',
+        changes: { [item.identity]: reviewed },
+        attester: state.reviewerLabel,
+      },
+    });
   }
 
   async function attestContentItem(item) {
+    const current = currentReviewItem();
     const eligibility = currentAttestationEligibility(item, null, false);
-    if (!eligibility.eligible || state.pending) {
-      announce('Complete the current learner review and content checks before marking this item reviewed.');
+    if (!current || current.key !== item?.key || !eligibility.eligible || state.pending) {
+      announce('Complete the current learner review and content checks before attesting this item.');
       return false;
     }
-    state.contentChanges[item.identity] = true;
-    await commitContent();
-    return true;
+    return commitCurrentContent(item, true);
   }
 
-  async function commitContent() {
-    const changes = { ...state.contentChanges };
-    if (!Object.keys(changes).length || state.pending) return;
-    invalidatePreview({ resetAttempt: true, clearApprovals: true });
+  async function commitCurrentContent(item, reviewed, retrySnapshot = null) {
+    let snapshot = retrySnapshot;
+    if (!snapshot) {
+      if (state.pending) return false;
+      snapshot = contentMutationSnapshot(item, reviewed);
+    }
     state.pending = true;
-    state.contentMessage = 'Committing content reviews…';
+    state.contentMessage = 'Saving this content review…';
     state.contentCommitUrl = null;
-    renderShell('content-save-result');
+    refreshPreviewChromeAndRail('content-action-result');
     try {
       const response = await fetchImpl(API, {
-        method: 'POST',
-        headers: apiHeaders(true),
-        body: JSON.stringify({
-          attester: state.reviewerLabel,
-          target: 'content',
-          changes,
-        }),
+        method: 'POST', headers: apiHeaders(true),
+        body: JSON.stringify(snapshot.body),
       });
       const payload = await responseJson(response);
       if (response.status === 401) {
         clearKey();
         state.pending = false;
-        renderLogin('Key not accepted. Check the shared faculty key and try again.');
-        return;
+        state.reauthAction = {
+          kind: 'content.attest',
+          retry: () => commitCurrentContent(null, null, snapshot),
+        };
+        renderLogin('Key not accepted. Your exact one-item review is retained; enter the faculty key to retry.');
+        return false;
       }
-      if (!response.ok) throw new Error(responseMessage(payload, 'Content reviews were not saved.'));
-      state.contentChanges = Object.create(null);
-      state.contentMessage = `Saved ${payload.updated ?? 0} content review${payload.updated === 1 ? '' : 's'}.`;
-      state.contentCommitUrl = safeExternalUrl(payload.commit);
-      announce(state.contentMessage);
+      state.reauthAction = null;
+      if (!response.ok || payload.updated !== 1) {
+        throw new Error(responseMessage(payload, 'This content review was not saved.'));
+      }
+      const commitUrl = safeExternalUrl(payload.commit);
+      if (payload.commit && !commitUrl) throw new Error('invalid_response: Commit receipt was not a safe HTTPS URL.');
+      const slug = snapshot.body.changes && Object.keys(snapshot.body.changes)[0];
+      const expectedStatus = snapshot.reviewed ? 'reviewed' : 'unreviewed';
       const refreshed = await load({
         silent: true,
-        focusId: 'content-save-result',
-        completedHoldKey: state.selectedKey,
+        focusId: 'content-action-result',
+        expectedContentStatus: { slug, status: expectedStatus },
+        preserveOnError: true,
+        errorScope: 'content',
       });
-      if (!refreshed) {
-        state.navigationAfterSave = null;
-        return;
-      }
-      const navigation = state.navigationAfterSave;
-      state.navigationAfterSave = null;
-      if (navigation) requestNavigation(navigation);
+      if (!refreshed) return false;
+      state.contentMessage = snapshot.reviewed
+        ? `Attested ${slug}.`
+        : `Reopened ${slug} for review.`;
+      state.contentCommitUrl = commitUrl;
+      if (snapshot.reviewed) state.completedHoldKey = snapshot.key;
+      resetApprovalInputs();
+      refreshPreviewChromeAndRail('content-action-result');
+      const next = document.getElementById('next-review-item');
+      if (snapshot.reviewed && next && !next.disabled) next.focus();
+      else document.getElementById('content-action-result')?.focus();
+      announce(state.contentMessage);
+      return true;
     } catch (error) {
       state.pending = false;
-      state.navigationAfterSave = null;
-      state.contentMessage = error instanceof Error ? error.message : 'Content reviews were not saved.';
+      state.reauthAction = null;
+      state.contentMessage = error instanceof Error
+        ? error.message : 'This content review was not saved.';
       state.contentCommitUrl = null;
+      refreshPreviewChromeAndRail('content-action-result');
       announce(state.contentMessage);
-      renderShell('content-save-result');
+      return false;
     }
   }
 
@@ -2892,11 +3096,13 @@ export function startFacultyConsole({
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
       event.preventDefault();
       if (state.navigationGuard) {
-        saveNavigationGuard();
+        if (shortcutCanSaveQuestion()) saveNavigationGuard();
+        else if (hasUnsavedChanges()) announce('Open Edit question to save this draft.');
+        else announce('No unsaved question changes to save.');
         return;
       }
-      if (hasUnsavedChanges()) saveCurrentDraft();
-      else if (Object.keys(state.contentChanges).length) void commitContent();
+      if (shortcutCanSaveQuestion()) saveCurrentDraft();
+      else if (hasUnsavedChanges()) announce('Open Edit question to save this draft.');
       else announce('No unsaved question changes to save.');
     }
   });
