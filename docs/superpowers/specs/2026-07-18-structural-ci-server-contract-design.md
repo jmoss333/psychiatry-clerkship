@@ -13,7 +13,8 @@
   - port `4200` serves `_build/ms3`;
   - port `4201` serves `_build/res`;
   - port `4202` serves `faculty-console`.
-- Verify the readiness loop checks the same three ports and fails closed when any server is unavailable.
+- Reject any additional active server command that competes for a required port.
+- Verify the readiness loop checks the same three ports and fails closed inside each per-port iteration when any server is unavailable.
 - Verify the Interview Room and faculty-console browser projects run only after server readiness.
 - Keep the existing managed-SP gate ordering and `SP_INTERVIEW_BASE_URL` contract.
 - Make workflow-step labels irrelevant to the test result.
@@ -27,9 +28,9 @@
 
 ## Design
 
-Add a small, dependency-free validator inside `ci-build-contract.test.mjs`. It accepts workflow text and checks observable workflow structure rather than the step name.
+Add a small, dependency-free validator inside `ci-build-contract.test.mjs`. It accepts workflow text and checks exact executable lines inside indentation-bounded `run: |` blocks rather than the step name. Commented commands and prefix or suffix lookalikes do not count.
 
-The validator will require each exact server command once:
+For each required port, the validator will require exactly one active `python3 -m http.server` invocation and require it to equal the approved command:
 
 ```text
 python3 -m http.server 4200 --directory _build/ms3 &
@@ -37,7 +38,7 @@ python3 -m http.server 4201 --directory _build/res &
 python3 -m http.server 4202 --directory faculty-console &
 ```
 
-It will also require the readiness loop to enumerate `4200 4201 4202`, require the existing fail-closed readiness guard and nonzero exit, and use the `Servers ready` marker as the ordering boundary. Both `--project=interview-room` and `--project=faculty-console` must occur after that boundary.
+It will also require the outer readiness loop to enumerate `4200 4201 4202`, verify the nested bounded retry loop and its matching `done`, and require the fail-closed guard after the retry loop but before the matching outer `done`. The exact active `exit 1` must remain inside that guard, and the `Servers ready` marker must follow the completed outer loop. Both exact Playwright commands for `interview-room` and `faculty-console` must occur in later run blocks.
 
 The existing test will call this validator on the real workflow. It will retain the current managed-SP/build ordering assertions and `SP_INTERVIEW_BASE_URL` assertion.
 
@@ -48,7 +49,9 @@ The test suite will prove the validator is label-independent and structurally st
 - replacing the server-step label with arbitrary wording still passes;
 - deleting any port-to-directory command fails;
 - swapping a required directory fails;
+- adding a competing active server mapping on a required port fails;
 - omitting a port from the readiness loop fails;
+- moving the fail-closed guard after the outer per-port loop fails;
 - moving either browser project before readiness fails.
 
 These mutations operate on an in-memory copy of the workflow and never change the checked-in workflow file.
@@ -68,7 +71,7 @@ Each failed contract assertion will name the missing or misordered structural re
 ## Acceptance criteria
 
 - The contract no longer searches for `Serve built sites on localhost`.
-- Exact port-to-directory mappings and readiness coverage are enforced.
+- Exact one-owner-per-port mappings, nested readiness coverage, and fail-closed loop placement are enforced.
 - Browser-check ordering remains enforced.
 - An arbitrary future label-only edit cannot fail this contract.
 - All targeted and broader local gates pass.

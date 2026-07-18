@@ -157,7 +157,10 @@ function extractRunBlocks(ci) {
     for (let bodyIndex = index + 1; bodyIndex < sourceLines.length; bodyIndex += 1) {
       const sourceLine = sourceLines[bodyIndex];
       if (sourceLine.trim() && leadingIndent(sourceLine) <= runIndent) break;
-      lines.push(sourceLine.trim());
+      lines.push({
+        text: sourceLine.trim(),
+        indent: leadingIndent(sourceLine),
+      });
       endLine = bodyIndex;
     }
     blocks.push({ startLine: index, endLine, lines });
@@ -167,7 +170,24 @@ function extractRunBlocks(ci) {
 }
 
 function countExactLines(lines, marker) {
-  return lines.filter((line) => line === marker).length;
+  return lines.filter((line) => line.text === marker).length;
+}
+
+function hasExactLine(lines, marker) {
+  return lines.some((line) => line.text === marker);
+}
+
+function findExactLineIndex(lines, marker, fromIndex = 0) {
+  return lines.findIndex((line, index) => index >= fromIndex && line.text === marker);
+}
+
+function findMatchingEndIndex(lines, openerIndex, marker) {
+  const openerIndent = lines[openerIndex].indent;
+  return lines.findIndex((line, index) => (
+    index > openerIndex
+      && line.text === marker
+      && line.indent === openerIndent
+  ));
 }
 
 function countRunCommands(runBlocks, command) {
@@ -183,15 +203,24 @@ function assertSmokeServerContract(ci) {
   for (const { port, directory } of SMOKE_SERVERS) {
     const command = `python3 -m http.server ${port} --directory ${directory} &`;
     serverCommands.push(command);
+    const invocation = new RegExp(`^python3 -m http\\.server ${port}(?:\\s|$)`);
+    const invocations = runBlocks.flatMap((block) => (
+      block.lines.filter((line) => invocation.test(line.text))
+    ));
     assert.equal(
-      countRunCommands(runBlocks, command),
+      invocations.length,
       1,
+      `${port} must serve ${directory} exactly once; ${port} must have exactly one active server invocation`,
+    );
+    assert.equal(
+      invocations[0].text,
+      command,
       `${port} must serve ${directory} exactly once`,
     );
   }
 
   const matchingServerBlocks = runBlocks.filter((block) => (
-    serverCommands.every((command) => block.lines.includes(command))
+    serverCommands.every((command) => hasExactLine(block.lines, command))
   ));
   assert.equal(
     matchingServerBlocks.length,
@@ -200,7 +229,7 @@ function assertSmokeServerContract(ci) {
   );
   const serverBlock = matchingServerBlocks[0];
   const lastServer = Math.max(
-    ...serverCommands.map((command) => serverBlock.lines.indexOf(command)),
+    ...serverCommands.map((command) => findExactLineIndex(serverBlock.lines, command)),
   );
 
   const readinessLoop = 'for port in 4200 4201 4202; do';
@@ -209,8 +238,30 @@ function assertSmokeServerContract(ci) {
     1,
     'readiness loop must check exactly ports 4200, 4201, and 4202',
   );
-  const readinessIndex = serverBlock.lines.indexOf(readinessLoop);
+  const readinessIndex = findExactLineIndex(serverBlock.lines, readinessLoop);
   assert.ok(readinessIndex > lastServer, 'readiness loop must follow all three server commands');
+  const readinessIndent = serverBlock.lines[readinessIndex].indent;
+
+  const retryLoop = 'for i in $(seq 1 15); do';
+  assert.equal(
+    countExactLines(serverBlock.lines, retryLoop),
+    1,
+    'readiness loop must retain exactly one bounded retry loop',
+  );
+  const retryIndex = findExactLineIndex(serverBlock.lines, retryLoop);
+  assert.ok(
+    retryIndex > readinessIndex
+      && serverBlock.lines[retryIndex].indent > readinessIndent,
+    'bounded retry loop must remain inside the per-port readiness loop',
+  );
+  const retryEndIndex = findMatchingEndIndex(serverBlock.lines, retryIndex, 'done');
+  assert.ok(retryEndIndex > retryIndex, 'bounded retry loop must retain its matching done');
+
+  const readinessEndIndex = findMatchingEndIndex(serverBlock.lines, readinessIndex, 'done');
+  assert.ok(
+    readinessEndIndex > retryEndIndex,
+    'per-port readiness loop must close after the bounded retry loop',
+  );
 
   const failureGuard = 'if [ "$ready" != true ]; then';
   assert.equal(
@@ -218,18 +269,28 @@ function assertSmokeServerContract(ci) {
     1,
     'readiness loop must retain exactly one fail-closed guard',
   );
-  const guardIndex = serverBlock.lines.indexOf(failureGuard);
-  assert.ok(guardIndex > readinessIndex, 'readiness loop must retain its fail-closed guard');
+  const guardIndex = findExactLineIndex(serverBlock.lines, failureGuard);
+  assert.ok(
+    guardIndex > retryEndIndex
+      && guardIndex < readinessEndIndex
+      && serverBlock.lines[guardIndex].indent > readinessIndent,
+    'fail-closed guard must remain inside the per-port readiness loop',
+  );
   assert.equal(
     countExactLines(serverBlock.lines, 'exit 1'),
     1,
     'readiness failure must exit nonzero exactly once',
   );
-  const exitIndex = serverBlock.lines.indexOf('exit 1', guardIndex);
-  assert.ok(exitIndex > guardIndex, 'readiness failure must exit nonzero');
-  const guardEndIndex = serverBlock.lines.indexOf('fi', guardIndex + 1);
+  const exitIndex = findExactLineIndex(serverBlock.lines, 'exit 1', guardIndex + 1);
+  const guardEndIndex = findMatchingEndIndex(serverBlock.lines, guardIndex, 'fi');
   assert.ok(
-    guardEndIndex > exitIndex,
+    exitIndex > guardIndex
+      && exitIndex < guardEndIndex
+      && serverBlock.lines[exitIndex].indent > serverBlock.lines[guardIndex].indent,
+    'readiness failure must exit nonzero inside the fail-closed guard',
+  );
+  assert.ok(
+    guardEndIndex > exitIndex && guardEndIndex < readinessEndIndex,
     'readiness failure exit must remain inside the fail-closed guard',
   );
 
@@ -239,8 +300,11 @@ function assertSmokeServerContract(ci) {
     1,
     'server readiness marker must occur exactly once',
   );
-  const readyIndex = serverBlock.lines.indexOf(readyMarker);
-  assert.ok(readyIndex > guardEndIndex, 'success marker must follow the fail-closed readiness path');
+  const readyIndex = findExactLineIndex(serverBlock.lines, readyMarker);
+  assert.ok(
+    readyIndex > readinessEndIndex,
+    'success marker must follow the complete per-port readiness loop',
+  );
 
   for (const project of ['interview-room', 'faculty-console']) {
     const command = `npx playwright test --project=${project}`;
@@ -249,7 +313,7 @@ function assertSmokeServerContract(ci) {
       1,
       `${project} browser project must run exactly once`,
     );
-    const projectBlock = runBlocks.find((block) => block.lines.includes(command));
+    const projectBlock = runBlocks.find((block) => hasExactLine(block.lines, command));
     assert.ok(
       projectBlock.startLine > serverBlock.endLine,
       `${project} browser project must follow successful server readiness`,
@@ -367,6 +431,43 @@ test('localhost server contract rejects suffixed Playwright projects', () => {
   }
 });
 
+test('localhost server contract rejects a guard after the per-port readiness loop', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const nestedGuard = [
+    '            if [ "$ready" != true ]; then',
+    '              echo "::error::Server on port $port did not become ready"',
+    '              exit 1',
+    '            fi',
+  ].join('\n');
+  const topLevelGuard = nestedGuard
+    .split('\n')
+    .map((line) => line.slice(2))
+    .join('\n');
+  const moved = ci.replace(
+    `${nestedGuard}\n          done\n          echo "Servers ready"`,
+    `          done\n${topLevelGuard}\n          echo "Servers ready"`,
+  );
+  assert.notEqual(moved, ci, 'test fixture must move the guard after the per-port loop');
+  assert.throws(
+    () => assertSmokeServerContract(moved),
+    /fail-closed guard must remain inside the per-port readiness loop/,
+  );
+});
+
+test('localhost server contract rejects competing server mappings on a required port', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const approved = 'python3 -m http.server 4200 --directory _build/ms3 &';
+  const competing = ci.replace(
+    approved,
+    `${approved}\n          python3 -m http.server 4200 --directory _build/res &`,
+  );
+  assert.notEqual(competing, ci, 'test fixture must add a competing 4200 server');
+  assert.throws(
+    () => assertSmokeServerContract(competing),
+    /4200 must have exactly one active server invocation/,
+  );
+});
+
 // F26's other half: CI invoking run-all.sh (locked above) only helps if
 // run-all.sh itself keeps every suite wired — deleting one line would
 // silently re-orphan a test with CI green.
@@ -405,7 +506,7 @@ function assertCiGatesFailClosed(ci) {
     );
   }
   const gates = runBlocks.filter((block) => (
-    commands.every((command) => block.lines.includes(command))
+    commands.every((command) => hasExactLine(block.lines, command))
   ));
   assert.equal(gates.length, 1, 'SP managed-proxy gate commands must share one run block');
 }
