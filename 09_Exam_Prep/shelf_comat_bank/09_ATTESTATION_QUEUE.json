@@ -1,0 +1,345 @@
+{
+  "generated": "2026-07-13",
+  "attester": "Joshua Moss, MD",
+  "bank_version": "pilot-01",
+  "instructions": "All items status='draft'. Faculty sets status to 'faculty_attested' or 'clinical_review'/'retired'. Attest P1 (higher-intensity: emergency/legal/pregnancy) first. Confirm the 'verified:false' references before attesting items that depend on them.",
+  "queue": [
+    {
+      "id": "qbx_sud_001",
+      "title": "Thiamine before glucose in the malnourished patient",
+      "category": "substance",
+      "status": "draft",
+      "review_priority": "P1-high-intensity",
+      "flags": [
+        "emergency",
+        "medication",
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [
+        "Schuckit MA. Recognition and management of withdrawal deliri"
+      ],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_sud_002",
+      "title": "Opioid overdose — recognize and reverse",
+      "category": "substance",
+      "status": "draft",
+      "review_priority": "P1-high-intensity",
+      "flags": [
+        "emergency",
+        "medication"
+      ],
+      "unverified_refs": [
+        "American Society of Addiction Medicine (ASAM). National Prac"
+      ],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_pha_001",
+      "title": "Serotonin syndrome recognition and first step",
+      "category": "pharm",
+      "status": "draft",
+      "review_priority": "P1-high-intensity",
+      "flags": [
+        "medication",
+        "emergency",
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_saf_001",
+      "title": "Suicide risk — lethal-means counseling as the next step",
+      "category": "safety",
+      "status": "draft",
+      "review_priority": "P1-high-intensity",
+      "flags": [
+        "emergency",
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [
+        "US Department of Veterans Affairs / Department of Defense. V",
+        "Stanley B, Brown GK. Safety Planning Intervention: A Brief I"
+      ],
+      "content_warning": "Depicts suicidal ideation; frames around recognition, means safety, and escalation without method detail."
+    },
+    {
+      "id": "qbx_saf_002",
+      "title": "Agitation — verbal de-escalation first",
+      "category": "safety",
+      "status": "draft",
+      "review_priority": "P1-high-intensity",
+      "flags": [
+        "emergency"
+      ],
+      "unverified_refs": [],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_oth_001",
+      "title": "Anorexia nervosa — refeeding syndrome monitoring",
+      "category": "otherdx",
+      "status": "draft",
+      "review_priority": "P1-high-intensity",
+      "flags": [
+        "emergency",
+        "medication",
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [
+        "Mehanna HM, Moledina J, Travis J. Refeeding syndrome: what i"
+      ],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_eth_001",
+      "title": "Decisional capacity — refusal is not incapacity",
+      "category": "ethics",
+      "status": "draft",
+      "review_priority": "P1-high-intensity",
+      "flags": [
+        "legal-jurisdiction",
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_eth_002",
+      "title": "Confidentiality vs duty to protect a third party",
+      "category": "ethics",
+      "status": "draft",
+      "review_priority": "P1-high-intensity",
+      "flags": [
+        "legal-jurisdiction",
+        "emergency",
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [
+        "American Psychiatric Association. The Principles of Medical "
+      ],
+      "content_warning": "Describes a threat of violence without graphic detail."
+    },
+    {
+      "id": "qbx_mood_001",
+      "title": "Screen for prior mania before starting an antidepressant",
+      "category": "mood",
+      "status": "draft",
+      "review_priority": "P2-medication-or-peds",
+      "flags": [
+        "medication",
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [
+        "Yatham LN, Kennedy SH, Parikh SV, et al. CANMAT and ISBD 201"
+      ],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_mood_002",
+      "title": "First-line treatment of adolescent major depression",
+      "category": "mood",
+      "status": "draft",
+      "review_priority": "P2-medication-or-peds",
+      "flags": [
+        "medication",
+        "pediatric",
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [
+        "American Academy of Child and Adolescent Psychiatry (AACAP).",
+        "US Food and Drug Administration. Antidepressant medications:"
+      ],
+      "content_warning": "References suicidal ideation and its monitoring."
+    },
+    {
+      "id": "qbx_psy_002",
+      "title": "Clozapine for treatment-resistant schizophrenia",
+      "category": "psychosis",
+      "status": "draft",
+      "review_priority": "P2-medication-or-peds",
+      "flags": [
+        "medication",
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [
+        "American Psychiatric Association. The American Psychiatric A"
+      ],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_anx_002",
+      "title": "First-line treatment of pediatric OCD",
+      "category": "anxiety",
+      "status": "draft",
+      "review_priority": "P2-medication-or-peds",
+      "flags": [
+        "pediatric",
+        "medication"
+      ],
+      "unverified_refs": [
+        "American Academy of Child and Adolescent Psychiatry (AACAP)."
+      ],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_cog_001",
+      "title": "Anticholinergic delirium — deprescribe the cause",
+      "category": "neurocog",
+      "status": "draft",
+      "review_priority": "P2-medication-or-peds",
+      "flags": [
+        "medication",
+        "higher-intensity-review",
+        "osteopathic-content"
+      ],
+      "unverified_refs": [
+        "By the 2023 American Geriatrics Society Beers Criteria Updat",
+        "Inouye SK. Delirium in older persons. N Engl J Med. 2006;354"
+      ],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_cog_002",
+      "title": "Dementia with Lewy bodies vs Alzheimer disease",
+      "category": "neurocog",
+      "status": "draft",
+      "review_priority": "P2-medication-or-peds",
+      "flags": [
+        "medication",
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [
+        "McKeith IG, Boeve BF, Dickson DW, et al. Diagnosis and manag"
+      ],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_pha_002",
+      "title": "Choose an antipsychotic by side-effect profile",
+      "category": "pharm",
+      "status": "draft",
+      "review_priority": "P2-medication-or-peds",
+      "flags": [
+        "medication",
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [
+        "American Psychiatric Association. The American Psychiatric A"
+      ],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_cdev_001",
+      "title": "ADHD diagnosis in a school-age child",
+      "category": "childdev",
+      "status": "draft",
+      "review_priority": "P2-medication-or-peds",
+      "flags": [
+        "pediatric"
+      ],
+      "unverified_refs": [
+        "Wolraich ML, Hagan JF, Allan C, et al. (AAP). Clinical Pract"
+      ],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_cdev_002",
+      "title": "Oppositional defiant disorder vs conduct disorder",
+      "category": "childdev",
+      "status": "draft",
+      "review_priority": "P2-medication-or-peds",
+      "flags": [
+        "pediatric"
+      ],
+      "unverified_refs": [],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_psy_001",
+      "title": "Schizophreniform vs schizophrenia — the duration criterion",
+      "category": "psychosis",
+      "status": "draft",
+      "review_priority": "P3-standard",
+      "flags": [],
+      "unverified_refs": [],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_anx_001",
+      "title": "PTSD vs acute stress disorder — the 1-month line",
+      "category": "anxiety",
+      "status": "draft",
+      "review_priority": "P3-standard",
+      "flags": [],
+      "unverified_refs": [
+        "US Department of Veterans Affairs / Department of Defense. V"
+      ],
+      "content_warning": "References a traumatic event."
+    },
+    {
+      "id": "qbx_per_001",
+      "title": "Borderline personality disorder — staff splitting",
+      "category": "personality",
+      "status": "draft",
+      "review_priority": "P3-standard",
+      "flags": [],
+      "unverified_refs": [
+        "Gunderson JG. Clinical practice. Borderline personality diso"
+      ],
+      "content_warning": "References self-harm without method detail."
+    },
+    {
+      "id": "qbx_per_002",
+      "title": "Borderline personality disorder vs bipolar II",
+      "category": "personality",
+      "status": "draft",
+      "review_priority": "P3-standard",
+      "flags": [],
+      "unverified_refs": [],
+      "content_warning": "References self-harm without method detail."
+    },
+    {
+      "id": "qbx_oth_002",
+      "title": "Functional neurological symptom disorder — a rule-in diagnosis",
+      "category": "otherdx",
+      "status": "draft",
+      "review_priority": "P3-standard",
+      "flags": [
+        "osteopathic-content"
+      ],
+      "unverified_refs": [],
+      "content_warning": null
+    },
+    {
+      "id": "qbx_rel_001",
+      "title": "Family meeting — means safety, validate then act",
+      "category": "relational",
+      "status": "draft",
+      "review_priority": "P3-standard",
+      "flags": [
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [
+        "US Department of Veterans Affairs / Department of Defense. V"
+      ],
+      "content_warning": "Depicts a family discussion about suicide safety without method detail."
+    },
+    {
+      "id": "qbx_rel_002",
+      "title": "Discharge transition — the plan the system can hold",
+      "category": "relational",
+      "status": "draft",
+      "review_priority": "P3-standard",
+      "flags": [
+        "higher-intensity-review"
+      ],
+      "unverified_refs": [
+        "US Department of Veterans Affairs / Department of Defense. V"
+      ],
+      "content_warning": "References suicidal ideation and discharge safety without method detail."
+    }
+  ]
+}
