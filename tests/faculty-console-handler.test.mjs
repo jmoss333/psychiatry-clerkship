@@ -34,6 +34,12 @@ const UNRELATED_RACE_HEAD_SHA = 'b'.repeat(64);
 const SAME_ITEM_RACE_HEAD_SHA = 'c'.repeat(64);
 const RETIREMENT_RACE_HEAD_SHA = 'd'.repeat(64);
 const DELETION_RACE_HEAD_SHA = 'e'.repeat(64);
+const MANIFEST_RACE_TREE_SHA = '1'.repeat(64);
+const UNRELATED_RACE_TREE_SHA = '2'.repeat(64);
+const SAME_ITEM_RACE_TREE_SHA = '3'.repeat(64);
+const RETIREMENT_RACE_TREE_SHA = '4'.repeat(64);
+const DELETION_RACE_TREE_SHA = '5'.repeat(64);
+const UNRELATED_REVIEWED_SHA = '6'.repeat(64);
 
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
@@ -135,9 +141,19 @@ function atomicBank(mock, index = 0) {
 }
 
 function assertNoQbankWrite(mock) {
+  assert.equal(mock.putBodies.length, 0);
   assert.equal(mock.blobBodies.length, 0);
+  assert.equal(mock.treeBodies.length, 0);
+  assert.equal(mock.commitBodies.length, 0);
   assert.equal(mock.refBodies.length, 0);
   assert.equal(mock.effectiveWrites.length, 0);
+}
+
+function fileSnapshot(files) {
+  return Object.fromEntries(Object.entries(files).map(([path, file]) => [path, {
+    json: clone(file.json),
+    sha: file.sha,
+  }]));
 }
 
 function jsonResponse(status, value, headers = {}) {
@@ -166,6 +182,7 @@ function createGithubMock({
   beforeRequest,
   onPut,
   onRefUpdate,
+  afterRefUpdate,
 } = {}) {
   const calls = [];
   const putBodies = [];
@@ -177,13 +194,24 @@ function createGithubMock({
   const blobs = new Map();
   const trees = new Map();
   const commits = new Map();
+  const fileTemplates = Object.fromEntries(
+    Object.entries(files).map(([path, file]) => [path, { ...file }]),
+  );
+  const snapshots = new Map([[BRANCH_HEAD_SHA, fileSnapshot(files)]]);
+  const commitTrees = new Map([[BRANCH_HEAD_SHA, PARENT_TREE_SHA]]);
   let putAttempt = 0;
   let branchHead = BRANCH_HEAD_SHA;
   let refAttempt = 0;
 
-  function advanceBranch(mutate, sha = MANIFEST_RACE_HEAD_SHA) {
+  function advanceBranch(
+    mutate,
+    sha = MANIFEST_RACE_HEAD_SHA,
+    treeSha = MANIFEST_RACE_TREE_SHA,
+  ) {
     mutate?.(files);
     branchHead = sha;
+    commitTrees.set(sha, treeSha);
+    snapshots.set(sha, fileSnapshot(files));
   }
 
   const fetchImpl = async (input, init = {}) => {
@@ -213,7 +241,11 @@ function createGithubMock({
     }
 
     if (method === 'GET' && git.startsWith('commits/')) {
-      return jsonResponse(200, { sha: git.slice('commits/'.length), tree: { sha: PARENT_TREE_SHA } });
+      const sha = git.slice('commits/'.length);
+      const treeSha = commitTrees.get(sha);
+      return treeSha
+        ? jsonResponse(200, { sha, tree: { sha: treeSha } })
+        : jsonResponse(404, { message: 'Synthetic commit not found.' });
     }
 
     if (method === 'POST' && git === 'blobs') {
@@ -228,7 +260,10 @@ function createGithubMock({
       const body = JSON.parse(String(init.body));
       treeBodies.push(body);
       const sha = treeBodies.length === 1 ? FIRST_TREE_SHA : SECOND_TREE_SHA;
-      trees.set(sha, body.tree?.[0]?.sha);
+      trees.set(sha, {
+        baseTree: body.base_tree,
+        blob: body.tree?.[0]?.sha,
+      });
       return jsonResponse(201, { sha });
     }
 
@@ -236,10 +271,13 @@ function createGithubMock({
       const body = JSON.parse(String(init.body));
       commitBodies.push(body);
       const sha = commitBodies.length === 1 ? FIRST_COMMIT_SHA : SECOND_COMMIT_SHA;
+      const tree = trees.get(body.tree);
       commits.set(sha, {
         parent: body.parents?.[0],
-        blob: trees.get(body.tree),
+        blob: tree?.blob,
+        tree: body.tree,
       });
+      commitTrees.set(sha, body.tree);
       return jsonResponse(201, {
         sha,
         html_url: `https://github.example/commit/${sha}`,
@@ -268,11 +306,29 @@ function createGithubMock({
       files[QBANK_PATH].json = clone(bank);
       files[QBANK_PATH].sha = proposed.blob;
       branchHead = body.sha;
+      snapshots.set(branchHead, fileSnapshot(files));
       effectiveWrites.push({ path: QBANK_PATH, sha: proposed.blob, head: branchHead });
+      const overriddenResponse = await afterRefUpdate?.({
+        attempt: refAttempt,
+        call,
+        body,
+        files,
+        branchHead,
+      });
+      if (overriddenResponse) return overriddenResponse;
       return jsonResponse(200, { object: { type: 'commit', sha: branchHead } });
     }
 
-    const file = files[path];
+    const requestedRef = new URL(url).searchParams.get('ref');
+    const snapshot = requestedRef ? snapshots.get(requestedRef) : null;
+    const snapshotFile = snapshot?.[path];
+    const currentFile = files[path];
+    const template = currentFile || fileTemplates[path];
+    const file = snapshot
+      ? (snapshotFile && template
+        ? { ...template, json: clone(snapshotFile.json), sha: snapshotFile.sha }
+        : undefined)
+      : currentFile;
     if (!file) return jsonResponse(404, { message: 'Synthetic file not found.' });
 
     if (method === 'GET') {
@@ -1144,7 +1200,9 @@ test('retries one atomic ref conflict after an unrelated-item race and preserves
       advanceBranch(mutableFiles => {
         mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated faculty edit won the first race.';
         mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
-      }, UNRELATED_RACE_HEAD_SHA);
+        mutableFiles[REVIEWED_PATH].json['t_mood.md'].by = 'Concurrent Content Reviewer';
+        mutableFiles[REVIEWED_PATH].sha = UNRELATED_REVIEWED_SHA;
+      }, UNRELATED_RACE_HEAD_SHA, UNRELATED_RACE_TREE_SHA);
       return undefined;
     },
   });
@@ -1166,9 +1224,12 @@ test('retries one atomic ref conflict after an unrelated-item race and preserves
   assert.equal(mock.refBodies.length, 2);
   assert.equal(mock.effectiveWrites.length, 1);
   assert.deepEqual(mock.commitBodies[1].parents, [UNRELATED_RACE_HEAD_SHA]);
+  assert.equal(mock.treeBodies[1].base_tree, UNRELATED_RACE_TREE_SHA);
   const retriedBank = atomicBank(mock, 1);
   assert.equal(retriedBank.items[0].stem, edited.stem);
   assert.equal(retriedBank.items[1].pearl, 'An unrelated faculty edit won the first race.');
+  assert.equal(mock.files[REVIEWED_PATH].json['t_mood.md'].by, 'Concurrent Content Reviewer');
+  assert.equal(mock.files[REVIEWED_PATH].sha, UNRELATED_REVIEWED_SHA);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 2);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
 });
@@ -1185,7 +1246,7 @@ test('returns a conflict with no second ref update when the manifest drifts duri
         mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
         mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
         mutableFiles[MANIFEST_PATH].sha = '5'.repeat(40);
-      }, UNRELATED_RACE_HEAD_SHA);
+      }, UNRELATED_RACE_HEAD_SHA, UNRELATED_RACE_TREE_SHA);
       return undefined;
     },
   });
@@ -1221,7 +1282,7 @@ test('returns a conflict with no second ref update when the manifest is removed 
         mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
         mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
         delete mutableFiles[MANIFEST_PATH];
-      }, UNRELATED_RACE_HEAD_SHA);
+      }, UNRELATED_RACE_HEAD_SHA, UNRELATED_RACE_TREE_SHA);
       return undefined;
     },
   });
@@ -1257,7 +1318,7 @@ test('validates the retry manifest before a second atomic write', async () => {
         mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
         mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
         mutableFiles[MANIFEST_PATH].json = { md: 'not-an-array', tools: [] };
-      }, UNRELATED_RACE_HEAD_SHA);
+      }, UNRELATED_RACE_HEAD_SHA, UNRELATED_RACE_TREE_SHA);
       return undefined;
     },
   });
@@ -1298,7 +1359,7 @@ test('preserves a non-404 manifest failure during a qbank retry', async () => {
       advanceBranch(mutableFiles => {
         mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
         mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
-      }, UNRELATED_RACE_HEAD_SHA);
+      }, UNRELATED_RACE_HEAD_SHA, UNRELATED_RACE_TREE_SHA);
       return undefined;
     },
   });
@@ -1331,7 +1392,7 @@ test('returns a same-item conflict with no second ref update when the target cha
       advanceBranch(mutableFiles => {
         mutableFiles[QBANK_PATH].json.items[0].pearl = 'A competing edit changed this same item.';
         mutableFiles[QBANK_PATH].sha = SAME_ITEM_RACE_SHA;
-      }, SAME_ITEM_RACE_HEAD_SHA);
+      }, SAME_ITEM_RACE_HEAD_SHA, SAME_ITEM_RACE_TREE_SHA);
       return undefined;
     },
   });
@@ -1366,7 +1427,7 @@ test('normalizes target retirement during a save retry to a conflict with no sec
         mutableFiles[QBANK_PATH].json.items[0].retired = true;
         mutableFiles[QBANK_PATH].json.items[0].retiredReason = 'Retired during the synthetic race.';
         mutableFiles[QBANK_PATH].sha = RETIREMENT_RACE_SHA;
-      }, RETIREMENT_RACE_HEAD_SHA);
+      }, RETIREMENT_RACE_HEAD_SHA, RETIREMENT_RACE_TREE_SHA);
       return undefined;
     },
   });
@@ -1399,7 +1460,7 @@ test('normalizes deletion of any attestation target during retry to one atomic c
       advanceBranch(mutableFiles => {
         mutableFiles[QBANK_PATH].json.items = [mutableFiles[QBANK_PATH].json.items[0]];
         mutableFiles[QBANK_PATH].sha = DELETION_RACE_SHA;
-      }, DELETION_RACE_HEAD_SHA);
+      }, DELETION_RACE_HEAD_SHA, DELETION_RACE_TREE_SHA);
       return undefined;
     },
   });
@@ -1421,10 +1482,89 @@ test('normalizes deletion of any attestation target during retry to one atomic c
   assert.equal(mock.effectiveWrites.length, 0);
 });
 
+for (const [name, intercept] of [
+  [
+    'head response missing its object',
+    call => call.method === 'GET' && call.git === 'ref/heads/main'
+      ? jsonResponse(200, {})
+      : undefined,
+  ],
+  [
+    'head response with a non-commit object',
+    call => call.method === 'GET' && call.git === 'ref/heads/main'
+      ? jsonResponse(200, { object: { type: 'blob', sha: BRANCH_HEAD_SHA } })
+      : undefined,
+  ],
+  [
+    'head response with an invalid SHA',
+    call => call.method === 'GET' && call.git === 'ref/heads/main'
+      ? jsonResponse(200, { object: { type: 'commit', sha: 'g'.repeat(40) } })
+      : undefined,
+  ],
+  [
+    'parent commit response with a mismatched SHA',
+    call => call.method === 'GET' && call.git === `commits/${BRANCH_HEAD_SHA}`
+      ? jsonResponse(200, { sha: SECOND_COMMIT_SHA, tree: { sha: PARENT_TREE_SHA } })
+      : undefined,
+  ],
+  [
+    'parent commit response missing its tree',
+    call => call.method === 'GET' && call.git === `commits/${BRANCH_HEAD_SHA}`
+      ? jsonResponse(200, { sha: BRANCH_HEAD_SHA })
+      : undefined,
+  ],
+  [
+    'parent commit response with an invalid tree SHA',
+    call => call.method === 'GET' && call.git === `commits/${BRANCH_HEAD_SHA}`
+      ? jsonResponse(200, { sha: BRANCH_HEAD_SHA, tree: { sha: 'g'.repeat(40) } })
+      : undefined,
+  ],
+  [
+    'created tree response missing its SHA',
+    call => call.method === 'POST' && call.git === 'trees'
+      ? jsonResponse(201, {})
+      : undefined,
+  ],
+  [
+    'created tree response with an invalid SHA',
+    call => call.method === 'POST' && call.git === 'trees'
+      ? jsonResponse(201, { sha: 'g'.repeat(40) })
+      : undefined,
+  ],
+]) {
+  test(`rejects a malformed Git ${name}`, async () => {
+    const item = validItem({ status: 'attested' });
+    const edited = clone(item);
+    edited.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
+    const mock = createGithubMock({
+      files: defaultFiles(makeBank([item])),
+      beforeRequest: intercept,
+    });
+
+    const response = await handlerWith(mock)(apiRequest('POST', {
+      body: {
+        action: 'qbank.save-draft',
+        manifestRevision: MANIFEST_SHA,
+        id: item.id,
+        baseRevision: itemRevision(item),
+        item: edited,
+      },
+    }));
+
+    await expectError(response, { status: 502, code: 'github_response_invalid' });
+    assert.equal(mock.refBodies.length, 0);
+    assert.equal(mock.effectiveWrites.length, 0);
+  });
+}
+
 for (const [name, githubPayload] of [
   ['missing commit SHA and URL', {}],
   ['missing commit URL', { sha: FIRST_COMMIT_SHA }],
   ['missing commit SHA', { html_url: 'https://github.example/commit/written' }],
+  ['invalid commit SHA', { sha: 'g'.repeat(40), html_url: 'https://github.example/commit/written' }],
+  ['commit SHA equal to its parent', { sha: BRANCH_HEAD_SHA, html_url: 'https://github.example/commit/written' }],
+  ['non-HTTPS commit URL', { sha: FIRST_COMMIT_SHA, html_url: 'http://github.example/commit/written' }],
+  ['malformed commit URL', { sha: FIRST_COMMIT_SHA, html_url: 'not a URL' }],
 ]) {
   test(`rejects a successful Git commit response with ${name}`, async () => {
     const item = validItem({ status: 'attested' });
@@ -1507,7 +1647,7 @@ for (const [name, refPayload] of [
     edited.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
     const mock = createGithubMock({
       files: defaultFiles(makeBank([item])),
-      onRefUpdate: () => jsonResponse(200, refPayload),
+      afterRefUpdate: () => jsonResponse(200, refPayload),
     });
 
     const response = await handlerWith(mock)(apiRequest('POST', {
@@ -1522,7 +1662,8 @@ for (const [name, refPayload] of [
 
     await expectError(response, { status: 502, code: 'github_response_invalid' });
     assert.equal(mock.refBodies.length, 1);
-    assert.equal(mock.effectiveWrites.length, 0);
+    assert.equal(mock.effectiveWrites.length, 1);
+    assert.equal(mock.files[QBANK_PATH].json.items[0].stem, edited.stem);
   });
 }
 
