@@ -282,6 +282,65 @@ test('static console deployment denies framing with CSP and a legacy fallback', 
   assert.match(headerValues, /^\s*X-Frame-Options\s*=\s*"DENY"\s*$/m);
 });
 
+test('learner deployment allows framing only by the exact faculty console origin', () => {
+  const buildScript = readFileSync(
+    new URL('../13_Faculty_Resources/_automation/site_build/build_deploy.py', import.meta.url),
+    'utf8',
+  );
+  const literal = buildScript.match(
+    /open\(OUT\+"\/_headers","w",encoding="utf-8"\)\.write\(("(?:\\.|[^"\\])*")\)/,
+  )?.[1];
+  assert.ok(literal, 'the learner _headers payload should remain statically inspectable');
+
+  const learnerHeaders = JSON.parse(literal);
+  const expectedLearnerHeaders = `/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=(self)
+  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+/content/*
+  Cache-Control: public, max-age=0, must-revalidate
+/audio/*
+  Cache-Control: public, max-age=604800
+/audio_oe/*
+  Cache-Control: public, max-age=604800
+/tools/quizzes.json
+  Cache-Control: public, max-age=86400
+/search-index.json
+  Cache-Control: public, max-age=86400
+/evidence_registry.json
+  Cache-Control: public, max-age=0, must-revalidate
+/tool_registry.json
+  Cache-Control: public, max-age=0, must-revalidate
+/communication_cases.json
+  Cache-Control: public, max-age=0, must-revalidate
+/reasoning_cases.json
+  Cache-Control: public, max-age=0, must-revalidate
+/family_systems_scenarios.json
+  Cache-Control: public, max-age=0, must-revalidate
+/reviewed.json
+  Cache-Control: public, max-age=0, must-revalidate
+/favicon.svg
+  Cache-Control: public, max-age=604800
+`;
+  assert.equal(learnerHeaders, expectedLearnerHeaders);
+
+  const rootHeaders = learnerHeaders.match(/^\/\*\n([\s\S]*?)(?=^\/)/m)?.[1] || '';
+  assert.match(rootHeaders, /^\s*X-Content-Type-Options: nosniff\s*$/m);
+  assert.match(rootHeaders, /^\s*Referrer-Policy: strict-origin-when-cross-origin\s*$/m);
+  assert.match(rootHeaders, /^\s*Permissions-Policy: geolocation=\(\), camera=\(\), microphone=\(self\)\s*$/m);
+  assert.doesNotMatch(rootHeaders, /^\s*X-Frame-Options:/mi);
+
+  const csp = rootHeaders.match(/^\s*Content-Security-Policy: (.+)$/m)?.[1];
+  assert.equal(
+    csp,
+    "default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app",
+  );
+  assert.doesNotMatch(csp, /frame-ancestors[^;]*\*/);
+});
+
 test('rejects header auth before reading a POST body and never accepts a body key', async () => {
   const mock = createGithubMock();
   const handler = handlerWith(mock);
