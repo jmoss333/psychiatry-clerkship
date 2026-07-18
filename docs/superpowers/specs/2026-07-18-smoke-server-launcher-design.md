@@ -1,7 +1,7 @@
 # Tested Smoke-Server Launcher Design
 
 **Date:** 2026-07-18
-**Status:** Pending written-spec review
+**Status:** Approved 2026-07-18
 **Scope:** Replace the inline CI server-startup and readiness shell with one directly tested launcher used automatically by CI and optionally by local developers.
 
 ## Context
@@ -137,9 +137,10 @@ The tests use temporary directories containing distinct marker `index.html` file
 - a successful launch serves the correct marker content from all three configured URLs;
 - the success output and PID manifest identify three live processes;
 - missing directories fail before startup;
-- invalid, duplicate, or occupied ports fail closed;
+- invalid (including overflow-sized), duplicate, or occupied ports fail closed;
 - a child process that exits during startup is detected;
 - an unreachable readiness path times out using shortened test-only retry settings;
+- a termination signal during startup triggers the same complete cleanup path;
 - partial failures terminate every process started by the launcher;
 - test cleanup always terminates successful test servers and removes temporary artifacts.
 
@@ -153,6 +154,7 @@ Refactor `_prototypes/sp-interview/tests/ci-build-contract.test.mjs` so server-s
 - the invocation follows both site builds and Playwright installation;
 - the Interview Room and faculty-console projects occur after the launcher invocation;
 - `SP_INTERVIEW_BASE_URL` remains correct;
+- CI does not override any launcher port, directory, readiness, or state variable;
 - no active inline `python3 -m http.server` command remains in the workflow;
 - relabeling the workflow step cannot affect the result.
 
@@ -191,7 +193,7 @@ Update `tests/smoke/README.md` with:
 - Startup failures stop partial processes and make CI fail.
 - Successful startup leaves the servers alive for later workflow steps.
 - The launcher works with temporary local ports and directories.
-- The direct launcher tests cover success, configuration, occupied ports, child death, timeout, and cleanup.
+- The direct launcher tests cover success, configuration, occupied ports, child death, signal handling, timeout, and cleanup.
 - The CI workflow contains no duplicate inline server-startup/readiness implementation.
 - Existing root, managed-proxy, Interview Room, attestation, site-build, and browser-smoke gates pass.
 
