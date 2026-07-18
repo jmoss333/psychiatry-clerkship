@@ -421,6 +421,9 @@ test('returns complete active qbank items, stable revisions, assessments, manife
   assert.equal(payload.manifestRevision, MANIFEST_SHA);
   assert.deepEqual(payload.manifestPages, ['t_mood.md']);
   assert.equal(payload.items.length, 2);
+  assert.equal(payload.items.find(item => item.slug === 't_mood.md')?.status, 'reviewed');
+  assert.equal(payload.items.find(item => item.slug === 'mse-tool')?.status, 'unreviewed');
+  assert.equal(mock.files[REVIEWED_PATH].json['mse-tool'].status, 'pending');
   assert.equal(payload.qbank.length, 2);
   assert.deepEqual(payload.qbank.map(item => item.id), ['qb_moo_900', 'qb_moo_901']);
   assert.equal(payload.qbank[0].stem, stems[0]);
@@ -442,6 +445,22 @@ test('returns complete active qbank items, stable revisions, assessments, manife
   assert.equal(payload.counts.qbankTotal, 2);
   assert.equal(payload.counts.qbankAttested, 1);
   assert.equal(payload.qbankRevision, QBANK_SHA);
+});
+
+test('GET preserves unknown nonempty content status so the browser fails closed', async () => {
+  const files = defaultFiles();
+  files[REVIEWED_PATH].json['mse-tool'].status = 'legacy-reviewing';
+  const mock = createGithubMock({ files });
+
+  const response = await handlerWith(mock)(apiRequest('GET'));
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(
+    payload.items.find(item => item.slug === 'mse-tool')?.status,
+    'legacy-reviewing',
+  );
+  assert.equal(mock.files[REVIEWED_PATH].json['mse-tool'].status, 'legacy-reviewing');
 });
 
 test('falls back from the Contents object response to raw media without losing the blob SHA', async () => {
@@ -1253,9 +1272,10 @@ test('qbank and content no-op requests perform no commit', async () => {
   assert.equal(semanticMock.calls.filter(call => call.method === 'GET').length, 1);
 });
 
-test('preserves the legacy content review write path with header-only auth', async () => {
+test('reopen preserves legacy pending storage and returns canonical unreviewed state', async () => {
   const mock = createGithubMock();
-  const response = await handlerWith(mock)(apiRequest('POST', {
+  const handler = handlerWith(mock);
+  const response = await handler(apiRequest('POST', {
     body: {
       target: 'content',
       changes: { 't_mood.md': false, 'mse-tool': true },
@@ -1277,6 +1297,16 @@ test('preserves the legacy content review write path with header-only auth', asy
   assert.equal(saved['t_mood.md'].status, 'pending');
   assert.equal(saved['mse-tool'].status, 'reviewed');
   assert.equal(saved['mse-tool'].by, 'Synthetic Reviewer');
+  assert.equal(mock.files[REVIEWED_PATH].json['t_mood.md'].status, 'pending');
+
+  const refreshed = await handler(apiRequest('GET'));
+  const refreshedPayload = await refreshed.json();
+  assert.equal(refreshed.status, 200);
+  assert.equal(
+    refreshedPayload.items.find(item => item.slug === 't_mood.md')?.status,
+    'unreviewed',
+  );
+  assert.equal(mock.files[REVIEWED_PATH].json['t_mood.md'].status, 'pending');
 });
 
 test('malformed JSON and missing server configuration fail with stable non-secret responses', async () => {

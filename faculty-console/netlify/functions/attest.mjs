@@ -458,6 +458,11 @@ function buildQbankPayload(bankFile, manifest) {
   };
 }
 
+function contentApiStatus(entry) {
+  if (typeof entry.status !== 'string') return 'unreviewed';
+  return entry.status === 'pending' ? 'unreviewed' : entry.status;
+}
+
 function buildContentItems(reviewed, manifest) {
   if (!isRecord(reviewed)) invalidRepositoryFile();
   const { markdown, tools } = requireManifest(manifest);
@@ -468,7 +473,7 @@ function buildContentItems(reviewed, manifest) {
       slug,
       title,
       kind: 'page',
-      status: typeof entry.status === 'string' ? entry.status : 'unreviewed',
+      status: contentApiStatus(entry),
       at: typeof entry.at === 'string' ? entry.at : '',
       by: typeof entry.by === 'string' ? entry.by : '',
     });
@@ -479,7 +484,7 @@ function buildContentItems(reviewed, manifest) {
       slug,
       title,
       kind: 'tool',
-      status: typeof entry.status === 'string' ? entry.status : 'unreviewed',
+      status: contentApiStatus(entry),
       at: typeof entry.at === 'string' ? entry.at : '',
       by: typeof entry.by === 'string' ? entry.by : '',
     });
