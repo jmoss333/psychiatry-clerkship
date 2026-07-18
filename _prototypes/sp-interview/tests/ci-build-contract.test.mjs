@@ -146,7 +146,9 @@ function extractRunSteps(source) {
   const steps = [];
   for (let index = 0; index < sourceLines.length; index += 1) {
     const sourceLine = sourceLines[index];
-    const blockRun = sourceLine.match(/^(\s*)(-\s+)?run:\s*([|>][+-]?)\s*$/);
+    const blockRun = sourceLine.match(
+      /^(\s*)(-\s+)?run:\s*([|>](?:[1-9][+-]?|[+-][1-9]?|))\s*(?:#.*)?$/,
+    );
     if (blockRun) {
       const runIndent = blockRun[1].length + (blockRun[2]?.length ?? 0);
       const lines = [];
@@ -161,7 +163,14 @@ function extractRunSteps(source) {
         });
         endLine = bodyIndex;
       }
-      steps.push({ startLine: index, endLine, lines, indicator: blockRun[3] });
+      const indentationIndicator = Number(blockRun[3].match(/[1-9]/)?.[0] ?? 0);
+      steps.push({
+        startLine: index,
+        endLine,
+        lines,
+        indicator: blockRun[3],
+        contentIndent: indentationIndicator ? runIndent + indentationIndicator : null,
+      });
       index = endLine;
       continue;
     }
@@ -177,6 +186,7 @@ function extractRunSteps(source) {
         indent: leadingIndent(sourceLine),
       }],
       indicator: null,
+      contentIndent: null,
     });
   }
   return steps;
@@ -215,51 +225,51 @@ function stripShellComment(command) {
 
 function normalizeShellCommand(command) {
   return stripShellComment(command)
-    .replace(/['"\\]/g, '')
+    .replace(/['"]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-function normalizeActiveRunCommands(step) {
-  const rawCommands = [];
-  if (step.indicator?.startsWith('>')) {
-    const contentIndents = step.lines
-      .filter((line) => line.text)
-      .map((line) => line.indent);
-    const baseIndent = contentIndents.length ? Math.min(...contentIndents) : 0;
-    let paragraph = [];
-    const flushParagraph = () => {
-      if (paragraph.length) rawCommands.push(paragraph.join(' '));
-      paragraph = [];
-    };
-    for (const line of step.lines) {
-      if (!line.text) {
-        flushParagraph();
-        continue;
-      }
-      if (line.indent > baseIndent) {
-        flushParagraph();
-        rawCommands.push(line.text);
-        continue;
-      }
-      paragraph.push(line.text);
-    }
-    flushParagraph();
-    return rawCommands.map(normalizeShellCommand).filter(Boolean);
+function resolveRunScalar(step) {
+  if (!step.indicator) return step.lines[0]?.text ?? '';
+  const contentIndents = step.lines
+    .filter((line) => line.text)
+    .map((line) => line.indent);
+  const baseIndent = step.contentIndent
+    ?? (contentIndents.length ? Math.min(...contentIndents) : 0);
+  const rendered = step.lines.map((line) => (
+    line.text
+      ? `${' '.repeat(Math.max(0, line.indent - baseIndent))}${line.text}`
+      : ''
+  ));
+  let resolved = '';
+  for (let index = 0; index < rendered.length; index += 1) {
+    resolved += rendered[index];
+    if (index === rendered.length - 1) continue;
+    const current = step.lines[index];
+    const next = step.lines[index + 1];
+    const folds = step.indicator.startsWith('>')
+      && current.text
+      && next.text
+      && current.indent === baseIndent
+      && next.indent === baseIndent;
+    resolved += folds ? ' ' : '\n';
   }
+  return resolved;
+}
 
-  let continuedCommand = '';
-  for (const line of step.lines) {
-    if (!line.text) continue;
-    const continues = line.text.endsWith('\\');
-    const fragment = continues ? line.text.slice(0, -1) : line.text;
-    continuedCommand += fragment;
-    if (continues) continue;
-    rawCommands.push(continuedCommand);
-    continuedCommand = '';
-  }
-  if (continuedCommand) rawCommands.push(continuedCommand);
-  return rawCommands.map(normalizeShellCommand).filter(Boolean);
+function normalizeActiveRunCommands(step) {
+  const resolved = resolveRunScalar(step).replace(/\\\r?\n/g, '');
+  return resolved
+    .split(/\r?\n/)
+    .map(normalizeShellCommand)
+    .filter(Boolean);
+}
+
+function hasSmokeRunOverride(command) {
+  const assignment = /(?:^|(?:&&|\|\||[;|&()])\s*)(?:(?:export|env)\s+)?SMOKE_[A-Z0-9_]+\s*=/;
+  const exportedName = /(?:^|(?:&&|\|\||[;|&()])\s*)export\s+SMOKE_[A-Z0-9_]+(?:\s|$)/;
+  return assignment.test(command) || exportedName.test(command);
 }
 
 function extractSmokeEnvironmentKeys(source) {
@@ -340,10 +350,7 @@ function assertSmokeLauncherContract(ci) {
     1,
     'tested smoke-server launcher must run exactly once in CI',
   );
-  for (const configuration of [
-    ...extractSmokeEnvironmentKeys(ci),
-    ...activeRunCommands,
-  ]) {
+  for (const configuration of extractSmokeEnvironmentKeys(ci)) {
     assert.doesNotMatch(
       configuration,
       SMOKE_CONFIGURATION_PATTERN,
@@ -351,9 +358,16 @@ function assertSmokeLauncherContract(ci) {
     );
   }
   for (const command of activeRunCommands) {
+    assert.equal(
+      hasSmokeRunOverride(command),
+      false,
+      'CI must use the launcher default ports, directories, and readiness controls',
+    );
+  }
+  for (const command of activeRunCommands) {
     assert.doesNotMatch(
       command,
-      /(?:^|(?:&&|\|\||[;|&()])\s*)python3\s+-m\s*http\.server(?:\s|$)/,
+      /(?:^|(?:&&|\|\||[;|&()])\s*)(?:env\s+)?(?:\/usr\/bin\/)?python3(?:\s+-u)*\s+-m\s*http\.server(?:\s|$)/,
       'CI must not duplicate smoke-server startup outside the tested launcher',
     );
   }
@@ -483,187 +497,229 @@ test('smoke launcher contract ignores labels and rejects boundary drift', () => 
   );
 });
 
-test('smoke launcher contract rejects compact inline server syntax', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const compactInlineServer = ci.replace(
-    `run: ${SMOKE_LAUNCHER_COMMAND}`,
-    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          python3 -mhttp.server 4300 &`,
-  );
-  assert.notEqual(compactInlineServer, ci, 'test fixture must add a compact inline server');
-  assert.throws(
-    () => assertSmokeLauncherContract(compactInlineServer),
-    /must not duplicate smoke-server startup/,
-  );
-});
-
-test('smoke launcher contract rejects line-continued inline server syntax', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const continuedInlineServer = ci.replace(
-    `run: ${SMOKE_LAUNCHER_COMMAND}`,
-    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          python3 -m \\\n            http.server 4300 &`,
-  );
-  assert.notEqual(continuedInlineServer, ci, 'test fixture must add a continued inline server');
-  assert.throws(
-    () => assertSmokeLauncherContract(continuedInlineServer),
-    /must not duplicate smoke-server startup/,
-  );
-});
-
-test('smoke launcher contract rejects future launcher configuration overrides', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const futureOverride = ci.replace(
-    `        run: ${SMOKE_LAUNCHER_COMMAND}`,
-    `        env:\n          SMOKE_FUTURE_SETTING: "enabled"\n        run: ${SMOKE_LAUNCHER_COMMAND}`,
-  );
-  assert.notEqual(futureOverride, ci, 'test fixture must add a future launcher override');
-  assert.throws(
-    () => assertSmokeLauncherContract(futureOverride),
-    /must use the launcher default ports, directories, and readiness controls/,
-  );
-});
-
-test('smoke launcher contract ignores commented inline-server examples', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const commentedInlineServer = ci.replace(
-    `run: ${SMOKE_LAUNCHER_COMMAND}`,
-    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          # python3 -mhttp.server 4300 &`,
-  );
-  assert.notEqual(commentedInlineServer, ci, 'test fixture must add a commented server example');
-  assert.doesNotThrow(() => assertSmokeLauncherContract(commentedInlineServer));
-});
-
-test('smoke launcher contract rejects folded-scalar server syntax', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const foldedInlineServer = ci.replace(
-    `        run: ${SMOKE_LAUNCHER_COMMAND}`,
+function addRunFixture(ci, name, header, lines) {
+  const launcher = '        run: ' + SMOKE_LAUNCHER_COMMAND;
+  return ci.replace(
+    launcher,
     [
-      `        run: ${SMOKE_LAUNCHER_COMMAND}`,
+      launcher,
       '',
-      '      - name: Folded server fixture',
-      '        run: >',
-      '          python3 -m',
-      '          http.server 4300 &',
+      '      - name: ' + name,
+      '        run: ' + header,
+      ...lines.map(({ text, extraIndent = 0 }) => (
+        ' '.repeat(10 + extraIndent) + text
+      )),
     ].join('\n'),
   );
-  assert.notEqual(foldedInlineServer, ci, 'test fixture must add a folded inline server');
-  assert.throws(
-    () => assertSmokeLauncherContract(foldedInlineServer),
-    /must not duplicate smoke-server startup/,
-  );
+}
+
+function addEnvironmentFixture(ci, environment) {
+  const launcher = '        run: ' + SMOKE_LAUNCHER_COMMAND;
+  return ci.replace(launcher, environment + '\n' + launcher);
+}
+
+test('smoke launcher contract rejects bounded workflow mutations', async (t) => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const serverError = /must not duplicate smoke-server startup/;
+  const configurationError = /must use the launcher default ports, directories, and readiness controls/;
+  const cases = [
+    {
+      name: 'compact module flag',
+      mutate: (source) => addRunFixture(source, 'compact module flag', '|', [
+        { text: 'python3 -mhttp.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'literal shell continuation',
+      mutate: (source) => addRunFixture(source, 'literal shell continuation', '|', [
+        { text: 'python3 -m \\' },
+        { text: 'http.server 4300 &', extraIndent: 2 },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'folded scalar',
+      mutate: (source) => addRunFixture(source, 'folded scalar', '>', [
+        { text: 'python3 -m' },
+        { text: 'http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'token-concatenating continuation',
+      mutate: (source) => addRunFixture(source, 'token-concatenating continuation', '|', [
+        { text: 'python3 -mhttp.\\' },
+        { text: 'server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'quoted module',
+      mutate: (source) => addRunFixture(source, 'quoted module', '|', [
+        { text: 'python3 -m"http.server" 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'literal header with inline comment',
+      mutate: (source) => addRunFixture(source, 'header comment', '| # explanation', [
+        { text: 'python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'literal header with indentation indicator',
+      mutate: (source) => addRunFixture(source, 'indentation indicator', '|2', [
+        { text: 'python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'literal header with indentation and chomping indicators',
+      mutate: (source) => addRunFixture(source, 'indicator combination', '|2- # explanation', [
+        { text: 'python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'folded scalar followed by shell continuation',
+      mutate: (source) => addRunFixture(source, 'fold then continue', '>', [
+        { text: 'python3 -m \\' },
+        { text: 'http.server 4300 &', extraIndent: 2 },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'env-prefixed Python invocation',
+      mutate: (source) => addRunFixture(source, 'env prefix', '|', [
+        { text: 'env python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'absolute Python invocation',
+      mutate: (source) => addRunFixture(source, 'absolute Python', '|', [
+        { text: '/usr/bin/python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'unbuffered Python invocation',
+      mutate: (source) => addRunFixture(source, 'unbuffered Python', '|', [
+        { text: 'python3 -u -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'block environment mapping',
+      mutate: (source) => addEnvironmentFixture(
+        source,
+        '        env:\n          SMOKE_FUTURE_SETTING: "enabled"',
+      ),
+      expected: configurationError,
+    },
+    {
+      name: 'quoted flow environment mapping',
+      mutate: (source) => addEnvironmentFixture(
+        source,
+        '        env: { "SMOKE_FUTURE_SETTING": "enabled" }',
+      ),
+      expected: configurationError,
+    },
+    {
+      name: 'anchored environment mapping',
+      mutate: (source) => addEnvironmentFixture(
+        source,
+        '        env: &launcher_environment\n          "SMOKE_FUTURE_SETTING": "enabled"',
+      ),
+      expected: configurationError,
+    },
+    {
+      name: 'SMOKE assignment',
+      mutate: (source) => addRunFixture(source, 'SMOKE assignment', '|', [
+        { text: 'SMOKE_FUTURE_SETTING=enabled' },
+      ]),
+      expected: configurationError,
+    },
+    {
+      name: 'SMOKE export',
+      mutate: (source) => addRunFixture(source, 'SMOKE export', '|', [
+        { text: 'export SMOKE_FUTURE_SETTING' },
+      ]),
+      expected: configurationError,
+    },
+  ];
+  for (const fixture of cases) {
+    await t.test(fixture.name, () => {
+      const mutated = fixture.mutate(ci);
+      assert.notEqual(mutated, ci, 'test fixture must add ' + fixture.name);
+      assert.throws(() => assertSmokeLauncherContract(mutated), fixture.expected);
+    });
+  }
 });
 
-test('smoke launcher contract rejects token-concatenating server continuation', () => {
+test('smoke launcher contract accepts inert workflow mentions', async (t) => {
   const ci = fs.readFileSync(CI, 'utf8');
-  const concatenatedInlineServer = ci.replace(
-    `run: ${SMOKE_LAUNCHER_COMMAND}`,
-    [
-      'run: |',
-      `          ${SMOKE_LAUNCHER_COMMAND}`,
-      '          python3 -mhttp.\\',
-      '          server 4300 &',
-    ].join('\n'),
-  );
-  assert.notEqual(concatenatedInlineServer, ci, 'test fixture must split the module token');
-  assert.throws(
-    () => assertSmokeLauncherContract(concatenatedInlineServer),
-    /must not duplicate smoke-server startup/,
-  );
-});
-
-test('smoke launcher contract rejects shell-quoted server module syntax', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const quotedInlineServer = ci.replace(
-    `run: ${SMOKE_LAUNCHER_COMMAND}`,
-    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          python3 -m"http.server" 4300 &`,
-  );
-  assert.notEqual(quotedInlineServer, ci, 'test fixture must quote the server module');
-  assert.throws(
-    () => assertSmokeLauncherContract(quotedInlineServer),
-    /must not duplicate smoke-server startup/,
-  );
-});
-
-test('smoke launcher contract ignores configuration tokens in step labels', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const relabeled = ci.replace(
-    /(\n\s*- name: )[^\n]+(\n\s+run: bash tests\/smoke\/start-local-servers\.sh)/,
-    '$1Document SMOKE_MS3_PORT launcher behavior$2',
-  );
-  assert.notEqual(relabeled, ci, 'test fixture must add a configuration token to the label');
-  assert.doesNotThrow(() => assertSmokeLauncherContract(relabeled));
-});
-
-test('smoke launcher contract ignores inline shell comments about servers', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const inlineComment = ci.replace(
-    `run: ${SMOKE_LAUNCHER_COMMAND}`,
-    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          echo "server documentation" # python3 -m http.server 4300 &`,
-  );
-  assert.notEqual(inlineComment, ci, 'test fixture must add an inline server comment');
-  assert.doesNotThrow(() => assertSmokeLauncherContract(inlineComment));
-});
-
-test('smoke launcher contract rejects quoted inline configuration keys', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const quotedInlineOverride = ci.replace(
-    `        run: ${SMOKE_LAUNCHER_COMMAND}`,
-    `        env: { "SMOKE_FUTURE_SETTING": "enabled" }\n        run: ${SMOKE_LAUNCHER_COMMAND}`,
-  );
-  assert.notEqual(quotedInlineOverride, ci, 'test fixture must add a quoted flow key');
-  assert.throws(
-    () => assertSmokeLauncherContract(quotedInlineOverride),
-    /must use the launcher default ports, directories, and readiness controls/,
-  );
-});
-
-test('smoke launcher contract rejects anchored multiline configuration keys', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const anchoredOverride = ci.replace(
-    `        run: ${SMOKE_LAUNCHER_COMMAND}`,
-    `        env: &launcher_environment\n          "SMOKE_FUTURE_SETTING": "enabled"\n        run: ${SMOKE_LAUNCHER_COMMAND}`,
-  );
-  assert.notEqual(anchoredOverride, ci, 'test fixture must add an anchored environment key');
-  assert.throws(
-    () => assertSmokeLauncherContract(anchoredOverride),
-    /must use the launcher default ports, directories, and readiness controls/,
-  );
-});
-
-test('smoke launcher contract allows harmless server module output', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const harmlessOutput = ci.replace(
-    `run: ${SMOKE_LAUNCHER_COMMAND}`,
-    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          echo "http.server"`,
-  );
-  assert.notEqual(harmlessOutput, ci, 'test fixture must add harmless module output');
-  assert.doesNotThrow(() => assertSmokeLauncherContract(harmlessOutput));
-});
-
-test('smoke launcher contract allows non-server Python imports', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const harmlessImport = ci.replace(
-    `run: ${SMOKE_LAUNCHER_COMMAND}`,
-    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          python3 -c 'import http.server'`,
-  );
-  assert.notEqual(harmlessImport, ci, 'test fixture must add a harmless Python import');
-  assert.doesNotThrow(() => assertSmokeLauncherContract(harmlessImport));
-});
-
-test('smoke launcher contract preserves more-indented folded lines', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
-  const moreIndentedFoldedLines = ci.replace(
-    `        run: ${SMOKE_LAUNCHER_COMMAND}`,
-    [
-      `        run: ${SMOKE_LAUNCHER_COMMAND}`,
-      '',
-      '      - name: More-indented folded fixture',
-      '        run: >',
-      '          python3 -m',
-      '            http.server 4300 &',
-    ].join('\n'),
-  );
-  assert.notEqual(moreIndentedFoldedLines, ci, 'test fixture must indent the second folded line');
-  assert.doesNotThrow(() => assertSmokeLauncherContract(moreIndentedFoldedLines));
+  const cases = [
+    {
+      name: 'commented server example',
+      mutate: (source) => addRunFixture(source, 'commented example', '|', [
+        { text: '# python3 -mhttp.server 4300 &' },
+      ]),
+    },
+    {
+      name: 'configuration token in step label',
+      mutate: (source) => source.replace(
+        /(\n\s*- name: )[^\n]+(\n\s+run: bash tests\/smoke\/start-local-servers\.sh)/,
+        '$1Document SMOKE_MS3_PORT launcher behavior$2',
+      ),
+    },
+    {
+      name: 'server command in inline shell comment',
+      mutate: (source) => addRunFixture(source, 'inline comment', '|', [
+        { text: 'echo "server documentation" # python3 -m http.server 4300 &' },
+      ]),
+    },
+    {
+      name: 'server module output',
+      mutate: (source) => addRunFixture(source, 'module output', '|', [
+        { text: 'echo "http.server"' },
+      ]),
+    },
+    {
+      name: 'non-server Python import',
+      mutate: (source) => addRunFixture(source, 'Python import', '|', [
+        { text: "python3 -c 'import http.server'" },
+      ]),
+    },
+    {
+      name: 'more-indented folded line',
+      mutate: (source) => addRunFixture(source, 'more-indented folded line', '>', [
+        { text: 'python3 -m' },
+        { text: 'http.server 4300 &', extraIndent: 2 },
+      ]),
+    },
+    {
+      name: 'unset SMOKE mention',
+      mutate: (source) => addRunFixture(source, 'unset mention', '|', [
+        { text: 'unset SMOKE_FUTURE_SETTING' },
+      ]),
+    },
+    {
+      name: 'echoed SMOKE mention',
+      mutate: (source) => addRunFixture(source, 'echo mention', '|', [
+        { text: 'echo "SMOKE_FUTURE_SETTING"' },
+      ]),
+    },
+  ];
+  for (const fixture of cases) {
+    await t.test(fixture.name, () => {
+      const mutated = fixture.mutate(ci);
+      assert.notEqual(mutated, ci, 'test fixture must add ' + fixture.name);
+      assert.doesNotThrow(() => assertSmokeLauncherContract(mutated));
+    });
+  }
 });
 
 // F26's other half: CI invoking run-all.sh (locked above) only helps if
