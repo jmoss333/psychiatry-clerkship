@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 
 import {
   assessBank,
-  assessItem,
 } from '../../faculty-console/qbank-rules.mjs';
 import {
   itemRevision,
@@ -112,7 +111,6 @@ function workflowBank() {
     items: [
       syntheticQuestion({
         id: 'qb_moo_901',
-        status: 'attested',
         type: 'two-tier',
         difficulty: 3,
       }),
@@ -121,6 +119,7 @@ function workflowBank() {
         correctKey: 'B',
         category: 'psychosis',
         difficulty: 1,
+        stem: '',
       }),
       syntheticQuestion({
         id: 'qb_moo_905',
@@ -128,33 +127,11 @@ function workflowBank() {
         category: 'anxiety',
         stem: WARNING_STEM,
       }),
-      retiredQuestion(),
-    ],
-  };
-}
-
-function balancedBank() {
-  return {
-    version: 1,
-    items: [
-      syntheticQuestion({ id: 'qb_moo_901', correctKey: 'A', type: 'two-tier' }),
-      syntheticQuestion({ id: 'qb_moo_902', correctKey: 'B' }),
-      syntheticQuestion({ id: 'qb_moo_903', correctKey: 'C' }),
-      syntheticQuestion({ id: 'qb_moo_904', correctKey: 'D' }),
-      retiredQuestion(),
-    ],
-  };
-}
-
-function warningBank() {
-  return {
-    version: 1,
-    items: [
       syntheticQuestion({
-        id: 'qb_moo_905',
-        correctKey: 'D',
-        category: 'anxiety',
-        stem: WARNING_STEM,
+        id: 'qb_moo_906',
+        correctKey: 'C',
+        category: 'neurocog',
+        stem: READY_STEMS.C,
       }),
       retiredQuestion(),
     ],
@@ -298,7 +275,32 @@ function activeItems(bank) {
   return bank.items.filter(item => item.retired !== true);
 }
 
-function buildGetPayload(bank) {
+function initialContentState() {
+  return [
+    {
+      slug: 't_mood.md',
+      title: 'Synthetic mood disorders page',
+      kind: 'page',
+      status: 'pending',
+      at: '',
+      by: '',
+    },
+    {
+      slug: 'mse.html',
+      title: 'Synthetic mental status exam tool',
+      kind: 'tool',
+      status: 'pending',
+      at: '',
+      by: '',
+    },
+  ];
+}
+
+function apiContentStatus(status) {
+  return status === 'pending' ? 'unreviewed' : status;
+}
+
+function buildGetPayload(bank, contentState = initialContentState()) {
   const active = activeItems(bank);
   const qbankSummary = assessBank(active, {
     manifestPages: MANIFEST_PAGES,
@@ -309,16 +311,12 @@ function buildGetPayload(bank) {
     revision: itemRevision(item),
     assessment: qbankSummary.byId[item.id],
   }));
-  const items = [{
-    slug: 't_mood.md',
-    title: 'Synthetic mood disorders page',
-    kind: 'page',
-    status: 'unreviewed',
-    at: '',
-    by: '',
-  }];
+  const items = contentState.map(item => ({
+    ...structuredClone(item),
+    status: apiContentStatus(item.status),
+  }));
   return {
-    student: 'https://students.example/',
+    student: `${MS3_URL}/`,
     items,
     qbankRevision: itemRevision(bank).slice(0, 40),
     manifestRevision: MANIFEST_REVISION,
@@ -326,7 +324,7 @@ function buildGetPayload(bank) {
     qbank,
     qbankSummary,
     counts: {
-      pagesReviewed: 0,
+      pagesReviewed: items.filter(item => item.status === 'reviewed').length,
       pagesTotal: items.length,
       qbankAttested: active.filter(item => item.status === 'attested').length,
       qbankTotal: active.length,
@@ -343,8 +341,14 @@ async function fulfillJson(route, status, payload) {
   });
 }
 
-async function installRepositoryApi(page, initialBank) {
+async function installRepositoryApi(page, initialBank, {
+  missingDeployedIds = [],
+  contentState: suppliedContentState = null,
+} = {}) {
   let bank = structuredClone(initialBank);
+  const contentState = suppliedContentState
+    ? structuredClone(suppliedContentState) : initialContentState();
+  const missingDeploy = new Set(missingDeployedIds);
   let conflict = null;
   let commitNumber = 0;
   const calls = [];
@@ -372,7 +376,7 @@ async function installRepositoryApi(page, initialBank) {
     }
 
     if (method === 'GET') {
-      const payload = buildGetPayload(bank);
+      const payload = buildGetPayload(bank, contentState);
       gets.push(structuredClone(payload));
       await fulfillJson(route, 200, payload);
       return;
@@ -394,6 +398,36 @@ async function installRepositoryApi(page, initialBank) {
         await fulfillJson(route, 400, {
           error: { code: 'qbank.invalid_input', message: 'Synthetic manifest revision mismatch.' },
         });
+        return;
+      }
+
+      if (body?.target === 'content') {
+        const changes = body.changes && typeof body.changes === 'object'
+          ? Object.entries(body.changes) : [];
+        if (changes.length !== 1 || typeof changes[0][1] !== 'boolean') {
+          await fulfillJson(route, 400, {
+            error: { code: 'invalid_input', message: 'Exactly one content item is required.' },
+          });
+          return;
+        }
+        const [slug, reviewed] = changes[0];
+        const item = contentState.find(candidate => candidate.slug === slug);
+        if (!item) {
+          await fulfillJson(route, 400, {
+            error: { code: 'invalid_input', message: 'Unknown content item.' },
+          });
+          return;
+        }
+        item.status = reviewed ? 'reviewed' : 'pending';
+        item.at = reviewed ? '2026-07-17T12:00:00.000Z' : '';
+        item.by = reviewed ? String(body.attester || '') : '';
+        const receipt = {
+          ok: true,
+          updated: 1,
+          commit: `https://github.example/commit/faculty-${++commitNumber}`,
+        };
+        receipts.push(structuredClone(receipt));
+        await fulfillJson(route, 200, receipt);
         return;
       }
 
@@ -488,20 +522,22 @@ async function installRepositoryApi(page, initialBank) {
     }
   });
 
+  await page.route('**/question_bank.json', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      ...structuredClone(bank),
+      items: activeItems(bank).filter(item => !missingDeploy.has(item.id)),
+    }),
+  }));
+
   return {
     calls,
     gets,
     receipts,
     currentBank: () => structuredClone(bank),
-    currentPayload: () => buildGetPayload(bank),
-    assessmentFor(id) {
-      const active = activeItems(bank);
-      const item = active.find(candidate => candidate.id === id);
-      return assessItem(item, {
-        manifestPages: MANIFEST_PAGES,
-        activeItems: active,
-      });
-    },
+    currentPayload: () => buildGetPayload(bank, contentState),
+    currentContent: () => structuredClone(contentState),
     conflictNextSave(id, remoteStem) {
       conflict = { id, remoteStem };
     },
@@ -509,15 +545,23 @@ async function installRepositoryApi(page, initialBank) {
 }
 
 async function unlock(page) {
+  await page.addInitScript(() => {
+    window.__facultyConsolePreviewMessages = [];
+    window.addEventListener('message', event => {
+      if (event.data?.type === 'faculty-preview-status') {
+        window.__facultyConsolePreviewMessages.push(structuredClone(event.data));
+      }
+    });
+  });
   await page.goto('/');
-  await expect(page).toHaveTitle('Faculty Question Review Workbench');
+  await expect(page).toHaveTitle('Faculty attestation workspace');
   await expect(page.getByRole('heading', {
-    name: 'Clinical-question quality workbench',
+    name: 'Faculty attestation workspace',
   })).toBeVisible();
   await expect(page.getByLabel('Faculty key')).toBeFocused();
   await page.getByLabel('Faculty key').fill(FACULTY_KEY);
-  await page.getByRole('button', { name: 'Unlock workbench' }).click();
-  await expect(page.getByRole('heading', { name: 'Review queue' })).toBeVisible();
+  await page.getByRole('button', { name: 'Unlock workspace' }).click();
+  await expect(page.getByRole('heading', { name: 'Choose one curriculum item' })).toBeVisible();
 }
 
 async function checkConfirmations(page) {
@@ -1130,243 +1174,692 @@ test.describe('learner preview protocol', () => {
   });
 });
 
-test('logs in, filters active items, preserves a forced draft, and recovers from a conflict', async ({ page }) => {
-  const api = await installRepositoryApi(page, workflowBank());
-  await unlock(page);
+test.describe.serial('faculty unified attestation workspace', () => {
+  test('logs in to one accessible queue for page, tool, and question review', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank());
+    await unlock(page);
 
-  expect(api.gets.at(-1).manifestPages).toEqual(MANIFEST_PAGES);
-  expect(api.gets.at(-1).manifestRevision).toBe(MANIFEST_REVISION);
-  expect(api.gets.at(-1).items).toHaveLength(1);
-  expect(api.gets.at(-1).qbank).toHaveLength(3);
-  expect(api.gets.at(-1).qbank.map(item => item.id)).not.toContain('qb_moo_999');
-  expect(api.gets.at(-1).qbank.every(item => /^[0-9a-f]{64}$/.test(item.revision))).toBe(true);
-  await expect(page.locator('#app')).not.toContainText('qb_moo_999');
-  await expect(page.locator('.queue-meta')).toHaveText('2 of 3 questions shown');
+    expect(api.gets.at(-1).student).toBe(`${MS3_URL}/`);
+    expect(api.gets.at(-1).manifestPages).toEqual(MANIFEST_PAGES);
+    expect(api.gets.at(-1).manifestRevision).toBe(MANIFEST_REVISION);
+    expect(api.gets.at(-1).qbank.map(item => item.id)).not.toContain('qb_moo_999');
 
-  await page.locator('#question-status').selectOption('all');
-  await expect(page.locator('.queue-meta')).toHaveText('3 of 3 questions shown');
-  await page.locator('#question-gate').selectOption('warning');
-  await expect(page.locator('#question-queue')).toContainText('qb_moo_905');
-  await expect(page.locator('#question-queue')).not.toContainText('qb_moo_901');
-  await page.locator('#question-gate').selectOption('all');
-  await page.locator('#filter-question-category').selectOption('mood');
-  await expect(page.locator('#question-queue')).toContainText('qb_moo_901');
-  await expect(page.locator('#question-queue')).not.toContainText('qb_moo_902');
-  await page.locator('#filter-question-category').selectOption('all');
-  await page.locator('#filter-question-difficulty').selectOption('3');
-  await expect(page.locator('.queue-meta')).toHaveText('1 of 3 questions shown');
-  await expect(page.locator('#question-queue')).toContainText('qb_moo_901');
-  await page.locator('#filter-question-difficulty').selectOption('all');
-  await page.locator('#question-search').fill('qb_moo_999');
-  await expect(page.locator('.empty-queue')).toHaveText(/No questions match/);
-  await page.locator('#question-search').fill('qb_moo_901');
-  await expect(page.locator('#question-queue')).toContainText('qb_moo_901');
-  await page.locator('#question-search').fill('');
+    const selector = page.locator('#review-item-selector');
+    await expect(selector.locator('option')).toHaveCount(6);
+    await expect(selector).toContainText('Page · Synthetic mood disorders page · Not reviewed');
+    await expect(selector).toContainText('Tool · Synthetic mental status exam tool · Not reviewed');
+    await expect(selector).toContainText('Question · qb_moo_901 · Draft');
+    await expect(selector.locator('option:checked')).toHaveAttribute('aria-current', 'true');
 
-  await page.locator('#queue-qb_moo_901').click();
-  await expect(page.locator('.review-heading .muted')).toHaveText('Attested repository version');
-  await expect(page.locator('#tier2-question')).toHaveValue('Which feature most directly supports the selected syndrome?');
-  for (const key of ['A', 'B', 'C']) {
-    await expect(page.locator(`#tier2-option-${key}-text`)).not.toHaveValue('');
-    await expect(page.locator(`#tier2-correct-${key}`)).toBeVisible();
-  }
-  await expect(page.locator('#tier2-option-D-text')).toHaveCount(0);
-  await expect(page.locator('#add-tier2-option-d')).toHaveText('Add fourth option');
-  await expect(page.locator('#tier2-why')).not.toHaveValue('');
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mood disorders page');
+    await expect(page.locator('#selected-item-type')).toHaveText('Page');
+    await expect(page.locator('#selected-item-view')).toHaveText('Live deploy');
+    await expect(page.locator('#attestation-rail-title')).toHaveText('Review → Resolve → Confirm');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
 
-  const postsBeforeBlock = qbankPosts(api).length;
-  await page.locator('#question-stem').fill('');
-  await expect(page.locator('.gate-label.blocked')).toHaveText(/Blocked/);
-  await expect(page.locator('#safety-issues')).toContainText('stem cannot be empty');
-  await expect(page.locator('#question-stem')).toHaveAttribute('aria-invalid', 'true');
-  await expect(page.locator('#question-stem')).toHaveAttribute(
-    'aria-describedby',
-    'issue-blocked-required-stem-stem',
-  );
-  const blockerDescription = page.locator('#issue-blocked-required-stem-stem');
-  await expect(blockerDescription).toHaveText('stem: stem cannot be empty.');
-  expect(await blockerDescription.evaluate(node => node.tagName)).toBe('LI');
-  await blockerDescription.getByRole('link', { name: 'stem' }).click();
-  await expect(page.locator('#question-stem')).toBeFocused();
-  await expect(page.locator('#save-draft')).toBeDisabled();
-  await page.waitForTimeout(50);
-  expect(qbankPosts(api)).toHaveLength(postsBeforeBlock);
+    const frame = page.locator('#learner-preview-frame');
+    await expect(frame).toHaveAttribute('title', 'Live learner preview for Synthetic mood disorders page');
+    await expect(frame).toHaveAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
+    await expect(frame).toHaveAttribute('referrerpolicy', 'no-referrer');
+    await expect(frame).toHaveAttribute('src', new RegExp(
+      '^http://localhost:4200/\\?page=t_mood\\.md&reviewKey=page%3At_mood\\.md&reviewToken=[0-9a-f]{32}$',
+    ));
 
-  const savedStem = 'A fictional adult has five weeks of low mood, anhedonia, early waking, and impaired function without activation. Which diagnosis best explains the syndrome?';
-  await page.locator('#question-stem').fill(savedStem);
-  await expect(page.locator('.review-heading .gate-label.ready')).toHaveText(/Ready/);
-  await expect(page.locator('#question-stem')).not.toHaveAttribute('aria-invalid', /.+/);
-  await expect(page.locator('#question-stem')).not.toHaveAttribute('aria-describedby', /.+/);
-  await expect(page.locator('#save-draft')).toBeEnabled();
-  const saveStart = api.calls.length;
-  await page.locator('#save-draft').click();
-  await expect(page.locator('#qbank-action-result')).toContainText('Saved draft qb_moo_901');
-
-  const saveCalls = api.calls.slice(saveStart);
-  expect(saveCalls.map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
-    'POST:qbank.save-draft',
-    'GET:state',
-  ]);
-  expect(saveCalls[0].body.item.status).toBe('attested');
-  expect(saveCalls[0].body.manifestRevision).toBe(MANIFEST_REVISION);
-  expect(saveCalls[0].body.baseRevision).toMatch(/^[0-9a-f]{64}$/);
-  const saved = api.currentBank().items.find(item => item.id === 'qb_moo_901');
-  expect(saved.status).toBe('draft');
-  expect(saved.stem).toBe(savedStem);
-  const saveReceipt = api.receipts.at(-1);
-  expect(saveReceipt.revision).toMatch(/^[0-9a-f]{64}$/);
-  expect(saveReceipt.commit).toMatch(/^https:\/\//);
-  expect(api.gets.at(-1).qbank.find(item => item.id === 'qb_moo_901').revision).toBe(saveReceipt.revision);
-
-  await page.reload();
-  await expect(page.getByRole('heading', { name: 'Review queue' })).toBeVisible();
-  await page.locator('#queue-qb_moo_901').click();
-  await expect(page.locator('#question-stem')).toHaveValue(savedStem);
-  await expect(page.locator('.review-heading .muted')).toHaveText('Draft repository version');
-  await expect(page.locator('#batch-qb_moo_901')).toBeDisabled();
-  await expect(page.locator('#batch-qb_moo_901')).toHaveAttribute(
-    'aria-label',
-    /Mark reviewed & next before batch selection/,
-  );
-
-  const localConflictStem = 'This local edit must remain visible until the reviewer chooses how to recover. Which diagnosis fits?';
-  const remoteStem = 'A different faculty reviewer saved this repository version first. Which diagnosis best fits the updated syndrome?';
-  await page.locator('#question-stem').fill(localConflictStem);
-  api.conflictNextSave('qb_moo_901', remoteStem);
-  const conflictStart = api.calls.length;
-  await page.locator('#save-draft').click();
-  await expect(page.getByRole('heading', {
-    name: 'This review context changed in the repository',
-  })).toBeVisible();
-  await expect(page.locator('#question-stem')).toHaveValue(localConflictStem);
-  expect(api.calls.slice(conflictStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
-    'POST:qbank.save-draft',
-  ]);
-  await page.locator('#qbank-conflict').getByRole('button', { name: 'Reload' }).click();
-  await expect(page.locator('#question-stem')).toHaveValue(remoteStem);
-  await expect(page.locator('#qbank-conflict')).toHaveCount(0);
-  expect(api.calls.slice(conflictStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
-    'POST:qbank.save-draft',
-    'GET:state',
-  ]);
-
-  expect(api.calls.every(call => call.key === FACULTY_KEY)).toBe(true);
-  expect(api.calls.every(call => new URL(call.url).search === '')).toBe(true);
-  expect(qbankPosts(api).every(call => !Object.hasOwn(call.body, 'facultyKey'))).toBe(true);
-});
-
-test('attests only a reviewed and answer-balanced green batch', async ({ page }) => {
-  const api = await installRepositoryApi(page, balancedBank());
-  await unlock(page);
-
-  const ids = ['qb_moo_901', 'qb_moo_902', 'qb_moo_903', 'qb_moo_904'];
-  for (const id of ids) {
-    expect(api.assessmentFor(id).gate).toBe('ready');
-    await page.locator(`#queue-${id}`).click();
-    await expect(page.locator('#mark-reviewed-next')).toBeEnabled();
-    await page.locator('#mark-reviewed-next').click();
-    await expect(page.locator(`#batch-${id}`)).toBeEnabled();
-    await page.locator(`#batch-${id}`).check();
-  }
-
-  await checkConfirmations(page);
-  await expect(page.locator('#batch-safety')).toContainText('4 reviewed green drafts selected');
-  await expect(page.locator('#batch-safety')).not.toContainText('strong answer-position cue');
-  await expect(page.locator('#open-batch-attest')).toBeEnabled();
-
-  const revisionsBefore = Object.fromEntries(api.currentPayload().qbank.map(item => [item.id, item.revision]));
-  await page.locator('#open-batch-attest').click();
-  await expect(page.getByRole('dialog', {
-    name: 'Confirm green batch attestation',
-  })).toBeVisible();
-  for (const id of ids) {
-    await expect(page.locator('#batch-confirmation')).toContainText(`${id} — revision ${revisionsBefore[id]}`);
-  }
-
-  const attestStart = api.calls.length;
-  await page.locator('#confirm-batch-attest').click();
-  await expect(page.locator('#qbank-action-result')).toContainText('Attested 4 questions');
-  expect(api.calls.slice(attestStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
-    'POST:qbank.attest',
-    'GET:state',
-  ]);
-
-  const post = qbankPosts(api).at(-1);
-  expect(post.body.manifestRevision).toBe(MANIFEST_REVISION);
-  expect(post.body.items).toEqual(ids.map(id => ({
-    id,
-    revision: revisionsBefore[id],
-    reviewedRevision: revisionsBefore[id],
-  })));
-  expect(post.body.confirmations).toEqual({
-    clinical: true,
-    evidence: true,
-    originalityAndNoPhi: true,
+    await expect(page.getByRole('tab')).toHaveCount(0);
+    await expect(page.getByText('Mark all', { exact: false })).toHaveCount(0);
+    await expect(page.locator('[id*="batch"], [class*="batch"]')).toHaveCount(0);
+    expect(api.calls.every(call => call.key === FACULTY_KEY)).toBe(true);
+    expect(api.calls.every(call => new URL(call.url).search === '')).toBe(true);
+    const previewMessages = await page.evaluate(() => window.__facultyConsolePreviewMessages);
+    expect(previewMessages).toHaveLength(1);
+    expect(Object.keys(previewMessages[0]).sort()).toEqual([
+      'reviewKey',
+      'reviewToken',
+      'status',
+      'surface',
+      'type',
+    ]);
+    const previewMessageJson = JSON.stringify(previewMessages);
+    for (const privateValue of [
+      FACULTY_KEY,
+      'Joshua Moss, MD',
+      'originalityAndNoPhi',
+      READY_STEMS.A,
+      'commit',
+    ]) expect(previewMessageJson).not.toContain(privateValue);
   });
-  expect(api.currentBank().items.filter(item => ids.includes(item.id)).map(item => item.status)).toEqual([
-    'attested',
-    'attested',
-    'attested',
-    'attested',
-  ]);
-  const receipt = api.receipts.at(-1);
-  expect(Object.keys(receipt.revision)).toEqual(ids);
-  expect(Object.values(receipt.revision).every(revision => /^[0-9a-f]{64}$/.test(revision))).toBe(true);
-  expect(receipt.commit).toMatch(/^https:\/\//);
-  await page.locator('#question-status').selectOption('all');
-  await expect(page.locator('.count-strip')).toContainText('Attested4');
-});
 
-test('requires individual warning acknowledgement before attestation', async ({ page }) => {
-  const api = await installRepositoryApi(page, warningBank());
-  await unlock(page);
+  test('attests one page and tool, stays on each receipt, and reopens one page for re-attestation', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank());
+    await unlock(page);
+    await page.getByLabel('Reviewer label').fill('Dr Synthetic');
 
-  expect(api.assessmentFor('qb_moo_905')).toEqual({
-    gate: 'warning',
-    blockers: [],
-    warnings: [{
-      code: 'stem.negative_lead_in',
-      field: 'stem',
-      message: 'Review the negative wording in the final lead-in.',
-    }],
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-complete-item').check();
+    await page.locator('#review-content-accuracy').check();
+    await page.locator('#review-content-interactions').check();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+
+    const pageStart = api.calls.length;
+    await page.locator('#attest-current-item').click();
+    await expect(page.locator('#content-action-result')).toContainText('Attested t_mood.md.');
+    await expect(page.locator('#content-action-result').getByRole('link', {
+      name: 'View commit',
+    })).toHaveAttribute('href', /^https:\/\/github\.example\/commit\/faculty-/);
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mood disorders page');
+    await expect(page.locator('#selected-item-status')).toHaveText('Reviewed');
+    await expect(page.locator('#next-review-item')).toBeEnabled();
+    expect(api.calls.slice(pageStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
+      'POST:content',
+      'GET:state',
+    ]);
+    expect(api.calls[pageStart].body).toEqual({
+      target: 'content',
+      changes: { 't_mood.md': true },
+      attester: 'Dr Synthetic',
+    });
+    expect(api.currentContent().find(item => item.slug === 't_mood.md').status).toBe('reviewed');
+
+    await page.locator('#next-review-item').click();
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mental status exam tool');
+    await expect(page.locator('#selected-item-type')).toHaveText('Tool');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await expect(page.locator('#learner-preview-frame')).toHaveAttribute('src', new RegExp(
+      '^http://localhost:4200/\\?tool=mse\\.html&reviewKey=tool%3Amse\\.html&reviewToken=[0-9a-f]{32}$',
+    ));
+    await page.locator('#review-complete-item').check();
+    await page.locator('#review-content-accuracy').check();
+    await page.locator('#review-content-interactions').check();
+    const toolStart = api.calls.length;
+    await page.locator('#attest-current-item').click();
+    await expect(page.locator('#content-action-result')).toContainText('Attested mse.html.');
+    expect(api.calls.slice(toolStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
+      'POST:content',
+      'GET:state',
+    ]);
+    expect(api.calls[toolStart].body.changes).toEqual({ 'mse.html': true });
+
+    await page.locator('#review-status-filter').selectOption('all');
+    await page.locator('#review-item-selector').selectOption('page:t_mood.md');
+    await expect(page.locator('#selected-item-status')).toHaveText('Reviewed');
+    await page.locator('details.more-actions summary').click();
+    await page.getByRole('button', { name: 'Reopen review' }).click();
+    const reopenDialog = page.getByRole('alertdialog', { name: 'Reopen this review?' });
+    await expect(reopenDialog).toContainText('This changes only t_mood.md.');
+    const reopenStart = api.calls.length;
+    await reopenDialog.getByRole('button', { name: 'Confirm reopen' }).click();
+    await expect(page.locator('#content-action-result')).toContainText('Reopened t_mood.md for review.');
+    await expect(page.locator('#selected-item-status')).toHaveText('Not reviewed');
+    expect(api.calls.slice(reopenStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
+      'POST:content',
+      'GET:state',
+    ]);
+    expect(api.calls[reopenStart].body).toEqual({
+      target: 'content',
+      changes: { 't_mood.md': false },
+      attester: 'Dr Synthetic',
+    });
+    expect(api.currentContent().find(item => item.slug === 't_mood.md').status).toBe('pending');
+    expect(api.gets.at(-1).items.find(item => item.slug === 't_mood.md').status).toBe('unreviewed');
+
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-complete-item').check();
+    await page.locator('#review-content-accuracy').check();
+    await page.locator('#review-content-interactions').check();
+    const reattestStart = api.calls.length;
+    await page.locator('#attest-current-item').click();
+    await expect(page.locator('#content-action-result')).toContainText('Attested t_mood.md.');
+    expect(api.calls[reattestStart].body.changes).toEqual({ 't_mood.md': true });
   });
-  await expect(page.locator('.review-heading .gate-label.warning')).toHaveText(/Warning/);
-  await expect(page.locator('#safety-issues')).toContainText('Review the negative wording');
-  await expect(page.locator('#question-stem')).toHaveAttribute(
-    'aria-describedby',
-    'issue-warning-stem-negative_lead_in-stem',
-  );
-  await expect(page.locator('#question-stem')).not.toHaveAttribute('aria-invalid', /.+/);
-  const warningDescription = page.locator('#issue-warning-stem-negative_lead_in-stem');
-  await expect(warningDescription).toHaveText(
-    'stem: Review the negative wording in the final lead-in.',
-  );
-  await warningDescription.getByRole('link', { name: 'stem' }).click();
-  await expect(page.locator('#question-stem')).toBeFocused();
-  await expect(page.locator('#attest-warning')).toBeDisabled();
 
-  await checkConfirmations(page);
-  await expect(page.locator('#attest-warning')).toBeDisabled();
-  await page.locator('#ack-stem-negative_lead_in').check();
-  await expect(page.locator('#attest-warning')).toBeEnabled();
+  test('attests Ready, Warning, fixed Blocked, and missing-deploy questions one at a time', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank(), {
+      missingDeployedIds: ['qb_moo_906'],
+    });
+    await unlock(page);
+    await page.getByLabel('Reviewer label').fill('Dr Question Reviewer');
 
-  const attestStart = api.calls.length;
-  await page.locator('#attest-warning').click();
-  await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_905');
-  expect(api.calls.slice(attestStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
-    'POST:qbank.attest',
-    'GET:state',
-  ]);
-  const post = qbankPosts(api).at(-1);
-  expect(post.body.manifestRevision).toBe(MANIFEST_REVISION);
-  expect(post.body.items).toEqual([{
-    id: 'qb_moo_905',
-    revision: post.body.items[0].revision,
-    acknowledgedWarnings: ['stem.negative_lead_in'],
-  }]);
-  expect(post.body.items[0].revision).toMatch(/^[0-9a-f]{64}$/);
-  expect(api.currentBank().items.find(item => item.id === 'qb_moo_905').status).toBe('attested');
-  expect(api.receipts.at(-1).revision).toEqual({
-    qb_moo_905: itemRevision(api.currentBank().items.find(item => item.id === 'qb_moo_905')),
+    await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-live-preview').check();
+    await page.getByRole('button', { name: 'Draft preview' }).click();
+    await expect(page.locator('#draft-preview-title')).toHaveText('Saved Draft preview · Not deployed');
+    await page.locator('#review-saved-revision').check();
+    await page.getByRole('button', { name: 'Edit question' }).first().click();
+    const readySavedStem = 'A fictional adult reports five weeks of low mood, anhedonia, early waking, and impaired function without activation. Which syndrome best fits?';
+    await page.locator('#question-stem').fill(readySavedStem);
+    const readySaveStart = api.calls.length;
+    await page.locator('#save-draft').click();
+    await expect(page.locator('#qbank-action-result')).toContainText('Saved draft qb_moo_901');
+    expect(api.calls.slice(readySaveStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
+      'POST:qbank.save-draft',
+      'GET:state',
+    ]);
+    const readySavePost = api.calls[readySaveStart];
+    expect(readySavePost.body.id).toBe('qb_moo_901');
+    expect(readySavePost.body.item.stem).toBe(readySavedStem);
+    const savedReady = api.currentPayload().qbank.find(item => item.id === 'qb_moo_901');
+    expect(savedReady.revision).toMatch(/^[0-9a-f]{64}$/);
+    await expect(page.locator('#selected-item-revision')).toHaveText(savedReady.revision);
+
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-live-preview').check();
+    await page.getByRole('button', { name: 'Draft preview' }).click();
+    await page.locator('#review-saved-revision').check();
+    await checkConfirmations(page);
+    const readyAttestStart = api.calls.length;
+    await page.locator('#attest-current-item').click();
+    await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_901.');
+    expect(api.calls.slice(readyAttestStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
+      'POST:qbank.attest',
+      'GET:state',
+    ]);
+    expect(api.calls[readyAttestStart].body.items).toEqual([{
+      id: 'qb_moo_901',
+      revision: savedReady.revision,
+      reviewedRevision: savedReady.revision,
+    }]);
+    expect(api.calls[readyAttestStart].body.confirmations).toEqual({
+      clinical: true,
+      evidence: true,
+      originalityAndNoPhi: true,
+    });
+
+    await page.locator('#review-item-selector').selectOption('question:qb_moo_905');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await expect(page.locator('#attestation-rail')).toContainText('Warning');
+    await page.locator('#review-live-preview').check();
+    await page.getByRole('button', { name: 'Draft preview' }).click();
+    await page.locator('#review-saved-revision').check();
+    await checkConfirmations(page);
+    await expect(page.locator('#attest-current-item')).toBeDisabled();
+    await page.locator('#ack-stem-negative_lead_in').check();
+    const warningRevision = api.currentPayload().qbank.find(item => item.id === 'qb_moo_905').revision;
+    await page.locator('#attest-current-item').click();
+    await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_905.');
+    expect(qbankPosts(api).at(-1).body.items).toEqual([{
+      id: 'qb_moo_905',
+      revision: warningRevision,
+      reviewedRevision: warningRevision,
+      acknowledgedWarnings: ['stem.negative_lead_in'],
+    }]);
+
+    await page.locator('#review-item-selector').selectOption('question:qb_moo_902');
+    await expect(page.locator('#attestation-rail')).toContainText('Blocked');
+    await page.getByRole('button', { name: 'Edit question' }).first().click();
+    await expect(page.locator('#save-draft')).toBeDisabled();
+    await expect(page.locator('#attest-current-item')).toBeDisabled();
+    const repairedStem = 'A fictional patient develops several days of expansive mood, little sleep, pressured speech, and risky spending. Which syndrome best explains this pattern?';
+    await page.locator('#question-stem').fill(repairedStem);
+    await expect(page.locator('#attestation-rail')).toContainText('Ready');
+    await expect(page.locator('#save-draft')).toBeEnabled();
+    await expect(page.locator('#attest-current-item')).toBeDisabled();
+    await page.locator('#save-draft').click();
+    await expect(page.locator('#qbank-action-result')).toContainText('Saved draft qb_moo_902');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-live-preview').check();
+    await page.getByRole('button', { name: 'Draft preview' }).click();
+    await page.locator('#review-saved-revision').check();
+    await checkConfirmations(page);
+    await page.locator('#attest-current-item').click();
+    await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_902.');
+
+    await page.locator('#review-item-selector').selectOption('question:qb_moo_906');
+    await expect(page.locator('#preview-status-label')).toHaveText('Not found');
+    await expect(page.locator('#learner-preview-frame')).toHaveAttribute('src', /reviewItem=qb_moo_906/);
+    await expect(page.frameLocator('#learner-preview-frame')
+      .frameLocator('.toolframe').locator('.qcard-stem')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Draft preview' }).click();
+    await expect(page.locator('#draft-preview-title')).toHaveText('Saved Draft preview · Not deployed');
+    await expect(page.locator('.draft-stem').first()).toContainText('fluctuating attention');
+    await page.locator('#review-saved-revision').check();
+    await page.locator('#ack-live-unavailable').check();
+    await checkConfirmations(page);
+    const missingRevision = api.currentPayload().qbank.find(item => item.id === 'qb_moo_906').revision;
+    await page.locator('#attest-current-item').click();
+    await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_906.');
+    expect(qbankPosts(api).at(-1).body.items).toEqual([{
+      id: 'qb_moo_906',
+      revision: missingRevision,
+      reviewedRevision: missingRevision,
+    }]);
+    expect(api.calls.filter(call => call.method === 'POST').every(call => (
+      !Object.hasOwn(call.body || {}, 'facultyKey')
+      && !JSON.stringify(call.body || {}).includes(FACULTY_KEY)
+    ))).toBe(true);
+  });
+
+  test('surfaces preview failures honestly, retries with fresh tokens, and opens clean fallbacks', async ({ page }) => {
+    await page.clock.install();
+    const contentState = [
+      ...initialContentState(),
+      {
+        slug: 'wrong_route.md',
+        title: 'Synthetic wrong learner route',
+        kind: 'page',
+        status: 'pending',
+        at: '',
+        by: '',
+      },
+    ];
+    await installRepositoryApi(page, workflowBank(), { contentState });
+
+    let markdownMode = 'error';
+    let toolMode = 'pass';
+    let outerMode = 'pass';
+    await page.route('**/content/t_mood.md', route => {
+      if (markdownMode === 'error') return route.fulfill({ status: 500, body: 'Synthetic Markdown failure' });
+      return route.continue();
+    });
+    await page.route('**/tools/mse.html', route => {
+      if (toolMode === 'error') return route.fulfill({ status: 500, body: 'Synthetic nested-tool failure' });
+      return route.continue();
+    });
+    await page.route(url => (
+      url.origin === new URL(MS3_URL).origin
+      && url.pathname === '/'
+      && url.searchParams.has('reviewKey')
+    ), route => {
+      if (outerMode === 'silent') {
+        return route.fulfill({
+          status: 200,
+          contentType: 'text/html',
+          body: '<!doctype html><html><body><h1>Silent learner shell</h1></body></html>',
+        });
+      }
+      if (outerMode === 'abort') return route.abort('failed');
+      return route.continue();
+    });
+
+    await unlock(page);
+    await expect(page.locator('#preview-status-label')).toHaveText('Error');
+    await expect(page.locator('#preview-status')).toBeFocused();
+    await expect(page.locator('#review-separate-tab')).toBeDisabled();
+    const pagePopupPromise = page.waitForEvent('popup');
+    await page.locator('#open-full-page').click();
+    const pagePopup = await pagePopupPromise;
+    await expect(pagePopup).toHaveURL(`${MS3_URL}/?page=t_mood.md`);
+    expect(new URL(pagePopup.url()).searchParams.has('reviewKey')).toBe(false);
+    expect(new URL(pagePopup.url()).searchParams.has('reviewToken')).toBe(false);
+    await pagePopup.close();
+    await expect(page.locator('#review-separate-tab')).toBeEnabled();
+    await page.locator('#review-separate-tab').check();
+    await page.locator('#review-content-accuracy').check();
+    await page.locator('#review-content-interactions').check();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+
+    markdownMode = 'pass';
+    outerMode = 'silent';
+    const firstFailureSrc = await page.locator('#learner-preview-frame').getAttribute('src');
+    await page.locator('#retry-preview').click();
+    const silentSrc = await page.locator('#learner-preview-frame').getAttribute('src');
+    expect(silentSrc).not.toBe(firstFailureSrc);
+    await expect(page.frameLocator('#learner-preview-frame').getByRole('heading', {
+      name: 'Silent learner shell',
+    })).toBeVisible();
+    await page.clock.runFor(10_000);
+    await expect(page.locator('#preview-status-label')).toHaveText('Preview protocol unavailable');
+
+    await page.frameLocator('#learner-preview-frame').locator('body').evaluate(() => {
+      location.reload();
+    });
+    await expect(page.locator('#preview-status-label')).toHaveText('Network or embedded-preview failure');
+    await expect(page.locator('#preview-status')).toBeFocused();
+    await expect(page.locator('#app-status')).toContainText('Use Retry or the documented fallback');
+
+    outerMode = 'pass';
+    await page.locator('#retry-preview').click();
+    const readySrc = await page.locator('#learner-preview-frame').getAttribute('src');
+    expect(readySrc).not.toBe(silentSrc);
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+
+    toolMode = 'error';
+    await page.locator('#review-item-selector').selectOption('tool:mse.html');
+    await expect(page.locator('#preview-status-label')).toHaveText('Error');
+    await expect(page.locator('#preview-status')).toBeFocused();
+    const toolPopupPromise = page.waitForEvent('popup');
+    await page.locator('#open-full-page').click();
+    const toolPopup = await toolPopupPromise;
+    await expect(toolPopup).toHaveURL(`${MS3_URL}/?tool=mse.html`);
+    expect(new URL(toolPopup.url()).searchParams.has('reviewKey')).toBe(false);
+    expect(new URL(toolPopup.url()).searchParams.has('reviewToken')).toBe(false);
+    await toolPopup.close();
+    await page.locator('#review-separate-tab').check();
+    await page.locator('#review-content-accuracy').check();
+    await page.locator('#review-content-interactions').check();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+
+    toolMode = 'pass';
+    await page.locator('#review-item-selector').selectOption('page:wrong_route.md');
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic wrong learner route');
+    await expect(page.locator('#preview-status-label')).toHaveText('Not found');
+    await expect(page.locator('#preview-status')).toContainText('exact item');
+  });
+
+  test('rejects spoofed preview messages, locks the selected route, and revokes checks on reload', async ({ page }) => {
+    await page.clock.install();
+    await installRepositoryApi(page, workflowBank());
+    let outerMode = 'silent';
+    await page.route(url => (
+      url.origin === new URL(MS3_URL).origin
+      && url.pathname === '/'
+      && url.searchParams.has('reviewKey')
+    ), route => {
+      if (outerMode === 'silent') {
+        return route.fulfill({
+          status: 200,
+          contentType: 'text/html',
+          body: '<!doctype html><html><body><h1>Controlled silent preview</h1></body></html>',
+        });
+      }
+      return route.continue();
+    });
+
+    await unlock(page);
+    await expect(page.locator('#preview-status-label')).toHaveText('Loading');
+    const loadingSrc = await page.locator('#learner-preview-frame').getAttribute('src');
+    const loadingUrl = new URL(loadingSrc);
+    const valid = {
+      type: 'faculty-preview-status',
+      reviewKey: loadingUrl.searchParams.get('reviewKey'),
+      reviewToken: loadingUrl.searchParams.get('reviewToken'),
+      status: 'ready',
+      surface: 'page',
+    };
+    await page.evaluate(({ validMessage, learnerOrigin }) => {
+      const frame = document.querySelector('#learner-preview-frame');
+      const emit = (data, origin = learnerOrigin, source = frame.contentWindow) => {
+        window.dispatchEvent(new MessageEvent('message', { data, origin, source }));
+      };
+      emit(validMessage, 'https://spoofed.example');
+      emit(validMessage, learnerOrigin, window);
+      emit({ ...validMessage, reviewKey: 'page:t_anxiety.md' });
+      emit({ ...validMessage, reviewToken: 'f'.repeat(32) });
+      emit({ ...validMessage, surface: 'tool' });
+      emit({ ...validMessage, status: 'pending' });
+      emit({ ...validMessage, unexpected: 'reject this shape' });
+      emit(null);
+      window.postMessage(validMessage, '*');
+      window.__staleFacultyPreviewSource = frame.contentWindow;
+    }, { validMessage: valid, learnerOrigin: new URL(MS3_URL).origin });
+    await expect(page.locator('#preview-status-label')).toHaveText('Loading');
+    await expect(page.locator('#review-complete-item')).toHaveCount(0);
+    await expect(page.locator('#attest-current-item')).toBeDisabled();
+
+    await page.clock.runFor(10_000);
+    await expect(page.locator('#preview-status-label')).toHaveText('Preview protocol unavailable');
+    await page.locator('#retry-preview').click();
+    const retrySrc = await page.locator('#learner-preview-frame').getAttribute('src');
+    expect(retrySrc).not.toBe(loadingSrc);
+    const retryUrl = new URL(retrySrc);
+    const currentValid = {
+      ...valid,
+      reviewToken: retryUrl.searchParams.get('reviewToken'),
+    };
+    await page.evaluate(({ data, origin }) => {
+      window.dispatchEvent(new MessageEvent('message', {
+        data,
+        origin,
+        source: window.__staleFacultyPreviewSource,
+      }));
+    }, { data: valid, origin: new URL(MS3_URL).origin });
+    await expect(page.locator('#preview-status-label')).toHaveText('Loading');
+    await page.evaluate(({ data, origin }) => {
+      const frame = document.querySelector('#learner-preview-frame');
+      window.dispatchEvent(new MessageEvent('message', {
+        data,
+        origin,
+        source: frame.contentWindow,
+      }));
+    }, { data: currentValid, origin: new URL(MS3_URL).origin });
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-complete-item').check();
+    await page.locator('#review-content-accuracy').check();
+    await page.locator('#review-content-interactions').check();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+
+    outerMode = 'pass';
+    await page.locator('#review-item-selector').selectOption('tool:mse.html');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-item-selector').selectOption('page:t_mood.md');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    const lockedSrc = await page.locator('#learner-preview-frame').getAttribute('src');
+    await page.frameLocator('#learner-preview-frame').locator('.navitem[data-f="t_anxiety.md"]').click();
+    await expect(page.frameLocator('#learner-preview-frame').locator('#content h1')).toHaveText(
+      'Mood Disorders on the Inpatient Unit',
+    );
+    await expect(page.locator('#learner-preview-frame')).toHaveAttribute('src', lockedSrc);
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+
+    await page.locator('#review-item-selector').selectOption('tool:mse.html');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-complete-item').check();
+    await page.locator('#review-content-accuracy').check();
+    await page.locator('#review-content-interactions').check();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+    const nestedTool = page.frames().find(frame => {
+      try { return new URL(frame.url()).pathname === '/tools/mse.html'; } catch { return false; }
+    });
+    expect(nestedTool).toBeTruthy();
+    await nestedTool.evaluate(() => location.reload());
+    await expect(page.locator('#preview-status-label')).toHaveText('Error');
+    await expect(page.locator('#review-complete-item')).toHaveCount(0);
+    await expect(page.locator('#review-content-accuracy')).not.toBeChecked();
+    await expect(page.locator('#attest-current-item')).toBeDisabled();
+
+    await page.locator('#review-item-selector').selectOption('page:t_mood.md');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-complete-item').check();
+    await page.locator('#review-content-accuracy').check();
+    await page.locator('#review-content-interactions').check();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+    const outerFrame = page.frames().find(frame => {
+      try {
+        return frame.parentFrame() === page.mainFrame()
+          && new URL(frame.url()).origin === new URL(MS3_URL).origin;
+      } catch { return false; }
+    });
+    expect(outerFrame).toBeTruthy();
+    await outerFrame.evaluate(() => location.reload());
+    await expect(page.locator('#preview-status-label')).toHaveText('Network or embedded-preview failure');
+    await expect(page.locator('#review-complete-item')).toHaveCount(0);
+    await expect(page.locator('#review-content-accuracy')).not.toBeChecked();
+    await expect(page.locator('#attest-current-item')).toBeDisabled();
+  });
+
+  test('supports keyboard review, guards dirty navigation, recovers conflicts, and invalidates stale receipts', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank());
+    await unlock(page);
+
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#next-review-item').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#selected-item-type')).toHaveText('Tool');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#previous-review-item').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#selected-item-type')).toHaveText('Page');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+
+    await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#view-edit').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#view-edit')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#selected-item-view')).toHaveText('Edit question');
+    const keyboardStem = 'A fictional adult reports five weeks of low mood, anhedonia, early waking, and impaired function without elevated energy. Which syndrome best fits this presentation?';
+    await page.locator('#question-stem').focus();
+    await page.keyboard.press('ControlOrMeta+A');
+    await page.keyboard.type(keyboardStem);
+    await page.locator('#next-review-item').focus();
+    await page.keyboard.press('Enter');
+    const guard = page.getByRole('alertdialog', { name: 'Unsaved question changes' });
+    await expect(guard).toBeVisible();
+    await expect(guard).toBeFocused();
+    await expect(page.locator('#selected-item-identity')).toHaveText('qb_moo_901');
+    await page.keyboard.press('Escape');
+    await expect(guard).toHaveCount(0);
+    await expect(page.locator('#question-stem')).toHaveValue(keyboardStem);
+
+    const saveStart = api.calls.length;
+    await page.locator('#question-stem').focus();
+    await page.keyboard.press('ControlOrMeta+S');
+    await expect(page.locator('#qbank-action-result')).toContainText('Saved draft qb_moo_901');
+    expect(api.calls.slice(saveStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
+      'POST:qbank.save-draft',
+      'GET:state',
+    ]);
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Choose one curriculum item' })).toBeVisible();
+    await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
+    await page.locator('#view-edit').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#question-stem')).toHaveValue(keyboardStem);
+
+    const localConflictStem = 'This local keyboard edit must remain until the reviewer chooses recovery. Which syndrome best fits?';
+    const remoteStem = 'Another faculty reviewer saved this repository version first. Which syndrome now best fits?';
+    await page.locator('#question-stem').focus();
+    await page.keyboard.press('ControlOrMeta+A');
+    await page.keyboard.type(localConflictStem);
+    api.conflictNextSave('qb_moo_901', remoteStem);
+    await page.keyboard.press('ControlOrMeta+S');
+    const conflict = page.locator('#qbank-conflict');
+    await expect(conflict).toBeVisible();
+    await expect(conflict).toBeFocused();
+    await expect(page.locator('#question-stem')).toHaveValue(localConflictStem);
+    await conflict.getByRole('button', { name: 'Reload' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(conflict).toHaveCount(0);
+    await page.locator('#view-edit').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#question-stem')).toHaveValue(remoteStem);
+
+    await page.locator('#view-live').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-live-preview').focus();
+    await page.keyboard.press('Space');
+    await page.locator('#view-draft').focus();
+    await page.keyboard.press('Enter');
+    await page.locator('#review-saved-revision').focus();
+    await page.keyboard.press('Space');
+    await expect(page.locator('#review-saved-revision')).toBeChecked();
+    await page.locator('#view-edit').focus();
+    await page.keyboard.press('Enter');
+    await page.locator('#question-stem').focus();
+    await page.keyboard.press('End');
+    await page.keyboard.type(' Updated locally.');
+    await page.locator('#view-draft').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#draft-preview-title')).toHaveText('Unsaved local preview · Not deployed');
+    await expect(page.locator('#review-saved-revision')).not.toBeChecked();
+    await expect(page.locator('#review-saved-revision')).toBeDisabled();
+
+    await page.locator('#view-edit').focus();
+    await page.keyboard.press('Enter');
+    await page.locator('#revert-question').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#question-stem')).toHaveValue(remoteStem);
+    await page.locator('#view-live').focus();
+    await page.keyboard.press('Enter');
+    await page.locator('#review-live-preview').focus();
+    await page.keyboard.press('Space');
+    await page.locator('#view-draft').focus();
+    await page.keyboard.press('Enter');
+    await page.locator('#review-saved-revision').focus();
+    await page.keyboard.press('Space');
+    for (const id of CONFIRMATION_IDS) {
+      await page.locator(`#${id}`).focus();
+      await page.keyboard.press('Space');
+    }
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+    await page.locator('#attest-current-item').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_901.');
+    expect(qbankPosts(api).at(-1).body.items).toHaveLength(1);
+    expect(qbankPosts(api).at(-1).body.items[0].id).toBe('qb_moo_901');
+  });
+
+  test('keeps clean full-page behavior and a queue-preview-rail order at 390 by 844', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/content/t_mood.md', route => route.fulfill({
+      status: 500,
+      body: 'Synthetic fallback trigger',
+    }));
+    await unlock(page);
+    await page.getByLabel('Reviewer label').fill('Privacy Reviewer');
+    await expect(page.locator('#preview-status-label')).toHaveText('Error');
+    const embeddedUrl = await page.locator('#learner-preview-frame').getAttribute('src');
+    for (const privateValue of [
+      FACULTY_KEY,
+      'Privacy Reviewer',
+      'confirm-clinical',
+      'originalityAndNoPhi',
+      'commit',
+    ]) expect(embeddedUrl).not.toContain(privateValue);
+
+    const popupPromise = page.waitForEvent('popup');
+    await page.locator('#open-full-page').click();
+    const fullPage = await popupPromise;
+    await expect(fullPage).toHaveURL(`${MS3_URL}/?page=t_mood.md`);
+    const fullUrl = fullPage.url();
+    for (const privateValue of [
+      FACULTY_KEY,
+      'Privacy Reviewer',
+      'reviewKey',
+      'reviewToken',
+      'confirm-clinical',
+      'originalityAndNoPhi',
+      'commit',
+    ]) expect(fullUrl).not.toContain(privateValue);
+    await expect(fullPage.locator('#faculty-preview-lock-notice')).toHaveCount(0);
+    await expect(fullPage.locator('#content h1')).toHaveText('Mood Disorders on the Inpatient Unit');
+    await fullPage.locator('.navitem[data-f="t_anxiety.md"]').click();
+    await expect(fullPage.locator('#content h1')).toContainText('Anxiety');
+    await fullPage.locator('.navitem[data-f="t_mood.md"]').click();
+    const externalPromise = fullPage.waitForEvent('popup');
+    await fullPage.locator('#content').getByRole('link', {
+      name: 'Mental Status Exam tool',
+    }).click();
+    const externalTool = await externalPromise;
+    await expect(externalTool).toHaveURL(`${MS3_URL}/tools/mse.html`);
+    await externalTool.close();
+    await fullPage.locator('.navitem[data-f="__home__"]').click();
+    await expect(fullPage.locator('[data-act="studyexport"]')).toBeVisible();
+    const [download] = await Promise.all([
+      fullPage.waitForEvent('download', { timeout: 5_000 }),
+      fullPage.locator('[data-act="studyexport"]').click(),
+    ]);
+    expect(download.suggestedFilename()).toMatch(/^clerkship_study_.*\.json$/);
+    await fullPage.close();
+
+    await page.unroute('**/content/t_mood.md');
+    await page.locator('#retry-preview').click();
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
+    await page.locator('#view-edit').click();
+    await expect(page.locator('#view-edit')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#question-view-edit')).toBeVisible();
+    await expect(page.locator('#review-item-selector option:checked')).toHaveAttribute('aria-current', 'true');
+    const layout = await page.evaluate(() => {
+      const box = selector => document.querySelector(selector).getBoundingClientRect();
+      const queue = box('#review-queue-strip');
+      const editor = box('.preview-column');
+      const rail = box('#attestation-rail');
+      return {
+        queueBottom: queue.bottom,
+        editorTop: editor.top,
+        editorBottom: editor.bottom,
+        railTop: rail.top,
+        documentWidth: document.documentElement.scrollWidth,
+        bodyWidth: document.body.scrollWidth,
+        viewportWidth: window.innerWidth,
+      };
+    });
+    expect(layout.queueBottom).toBeLessThanOrEqual(layout.editorTop);
+    expect(layout.editorBottom).toBeLessThanOrEqual(layout.railTop);
+    expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth);
+    expect(layout.bodyWidth).toBeLessThanOrEqual(layout.viewportWidth);
   });
 });
