@@ -1,183 +1,2309 @@
 {
-  "_note": "Structured evidence/source metadata for high-risk clerkship pages and tools. Use IDs from topic_meta.evidenceIds, tool_registry.evidenceIds, and communication_cases.evidenceIds. Educational metadata only; faculty review remains required for clinical recommendations.",
+  "schemaVersion": 2,
+  "owner": "Joshua Moss, MD",
+  "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
+  "updated": "2026-07-18",
+  "surveillance": {
+    "version": 1,
+    "updated": "2026-07-08",
+    "owner": "Joshua Moss, MD",
+    "defaults": {
+      "proxy": "datacenter",
+      "retry_before_flag": 2,
+      "snapshot": true,
+      "respect_robots": true
+    },
+    "link_monitor": {
+      "job": "link-source-monitor",
+      "cadence": "weekly",
+      "engine": "github_action_lychee",
+      "treat_as_finding": {
+        "hard_404": true,
+        "soft_404": true,
+        "permanent_redirect_301": true,
+        "temporary_redirect_302": false,
+        "rate_limited_429": false,
+        "tls_error": true
+      },
+      "severity_default": "P1",
+      "high_traffic_paths_P0": [
+        "00_START_HERE/**",
+        "04_Acute_and_Safety/**",
+        "index.html"
+      ]
+    },
+    "resource_intake": {
+      "job": "resource-intake",
+      "cadence": "on_demand",
+      "engine": "apify_website_content_crawler",
+      "inclusion": {
+        "require_domains": [
+          "psychiatry.org",
+          "jamanetwork.com",
+          "thelancet.com",
+          "nejm.org",
+          "cochranelibrary.com"
+        ],
+        "exclude_if_present_in": "config/citation_index.json"
+      },
+      "max_candidates_per_run": 25,
+      "severity_default": "P2",
+      "notes": "Manual-trigger first. Journals are copyright-sensitive\u2014capture citation + link, not full text."
+    }
+  },
   "sources": [
     {
       "id": "cssrs-columbia-lighthouse",
-      "title": "Columbia-Suicide Severity Rating Scale (C-SSRS)",
-      "organization": "The Columbia Lighthouse Project",
-      "year": 2011,
-      "url": "https://cssrs.columbia.edu/",
-      "evidenceLevel": "validated suicide-risk screening instrument and implementation resource",
-      "lastReviewed": "2026-07-07",
-      "facultyReviewStatus": "reviewed",
-      "relatedTopicTags": ["suicide", "safety", "risk-assessment"],
-      "clerkshipRelevance": "Direct questioning, suicidal ideation/behavior structure, and escalation language for supervised safety assessment.",
-      "shelfComatRelevance": "High",
-      "clinicalWorkflowRelevance": "High",
-      "localPolicyDependent": true,
-      "updateCadence": "annual"
+      "type": "instrument",
+      "citation": {
+        "title": "Columbia-Suicide Severity Rating Scale (C-SSRS)",
+        "authors": [],
+        "organization": "The Columbia Lighthouse Project",
+        "year": 2011,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://cssrs.columbia.edu/"
+      },
+      "identity": {
+        "status": "pending",
+        "source": "legacy-migration",
+        "verifiedAt": "",
+        "note": "Faculty review status was preserved; bibliographic identity was not inferred."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "validated suicide-risk screening instrument and implementation resource",
+        "facultyReviewStatus": "reviewed",
+        "lastReviewed": "2026-07-07",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "suicide",
+          "safety",
+          "risk-assessment"
+        ],
+        "clerkshipRelevance": "Direct questioning, suicidal ideation/behavior structure, and escalation language for supervised safety assessment.",
+        "shelfComatRelevance": "High",
+        "clinicalWorkflowRelevance": "High"
+      }
     },
     {
       "id": "va-dod-suicide-cpg-2024",
-      "title": "VA/DoD Clinical Practice Guideline for Assessment and Management of Patients at Risk for Suicide",
-      "organization": "U.S. Department of Veterans Affairs / Department of Defense",
-      "year": 2024,
-      "url": "https://www.healthquality.va.gov/guidelines/mh/srb/",
-      "evidenceLevel": "clinical practice guideline",
-      "lastReviewed": "2026-07-07",
-      "facultyReviewStatus": "reviewed",
-      "relatedTopicTags": ["suicide", "safety-planning", "risk-formulation"],
-      "clerkshipRelevance": "Supports risk formulation, safety planning, and the distinction between screening and disposition.",
-      "shelfComatRelevance": "High",
-      "clinicalWorkflowRelevance": "High",
-      "localPolicyDependent": true,
-      "updateCadence": "annual"
+      "type": "guideline",
+      "citation": {
+        "title": "VA/DoD Clinical Practice Guideline for Assessment and Management of Patients at Risk for Suicide",
+        "authors": [],
+        "organization": "U.S. Department of Veterans Affairs / Department of Defense",
+        "year": 2024,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.healthquality.va.gov/guidelines/mh/srb/"
+      },
+      "identity": {
+        "status": "pending",
+        "source": "legacy-migration",
+        "verifiedAt": "",
+        "note": "Faculty review status was preserved; bibliographic identity was not inferred."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "clinical practice guideline",
+        "facultyReviewStatus": "reviewed",
+        "lastReviewed": "2026-07-07",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "suicide",
+          "safety-planning",
+          "risk-formulation"
+        ],
+        "clerkshipRelevance": "Supports risk formulation, safety planning, and the distinction between screening and disposition.",
+        "shelfComatRelevance": "High",
+        "clinicalWorkflowRelevance": "High"
+      }
     },
     {
       "id": "joint-commission-suicide-prevention",
-      "title": "Suicide Prevention Resources",
-      "organization": "The Joint Commission",
-      "year": 2026,
-      "url": "https://www.jointcommission.org/en-us/knowledge-library/suicide-prevention",
-      "evidenceLevel": "accreditation and safety standard resource",
-      "lastReviewed": "2026-07-07",
-      "facultyReviewStatus": "reviewed",
-      "relatedTopicTags": ["suicide", "hospital-safety", "documentation"],
-      "clerkshipRelevance": "Frames suicide prevention as a supervised hospital safety process, not a stand-alone student decision.",
-      "shelfComatRelevance": "Medium",
-      "clinicalWorkflowRelevance": "High",
-      "localPolicyDependent": true,
-      "updateCadence": "annual"
+      "type": "other-authoritative",
+      "citation": {
+        "title": "Suicide Prevention Resources",
+        "authors": [],
+        "organization": "The Joint Commission",
+        "year": 2026,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.jointcommission.org/en-us/knowledge-library/suicide-prevention"
+      },
+      "identity": {
+        "status": "pending",
+        "source": "legacy-migration",
+        "verifiedAt": "",
+        "note": "Faculty review status was preserved; bibliographic identity was not inferred."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "accreditation and safety standard resource",
+        "facultyReviewStatus": "reviewed",
+        "lastReviewed": "2026-07-07",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "suicide",
+          "hospital-safety",
+          "documentation"
+        ],
+        "clerkshipRelevance": "Frames suicide prevention as a supervised hospital safety process, not a stand-alone student decision.",
+        "shelfComatRelevance": "Medium",
+        "clinicalWorkflowRelevance": "High"
+      }
     },
     {
       "id": "nice-violence-aggression-ng10",
-      "title": "Violence and aggression: short-term management in mental health, health and community settings",
-      "organization": "National Institute for Health and Care Excellence",
-      "year": 2015,
-      "url": "https://www.nice.org.uk/guidance/ng10",
-      "evidenceLevel": "clinical guideline",
-      "lastReviewed": "2026-07-09",
-      "facultyReviewStatus": "reviewed",
-      "relatedTopicTags": ["violence", "aggression", "de-escalation", "restrictive-interventions"],
-      "clerkshipRelevance": "Supports supervised prevention, de-escalation, least-restrictive intervention, and local-policy escalation for violence and aggression.",
-      "shelfComatRelevance": "Medium",
-      "clinicalWorkflowRelevance": "High",
-      "localPolicyDependent": true,
-      "updateCadence": "annual"
+      "type": "guideline",
+      "citation": {
+        "title": "Violence and aggression: short-term management in mental health, health and community settings",
+        "authors": [],
+        "organization": "National Institute for Health and Care Excellence",
+        "year": 2015,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.nice.org.uk/guidance/ng10"
+      },
+      "identity": {
+        "status": "pending",
+        "source": "legacy-migration",
+        "verifiedAt": "",
+        "note": "Faculty review status was preserved; bibliographic identity was not inferred."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "clinical guideline",
+        "facultyReviewStatus": "reviewed",
+        "lastReviewed": "2026-07-09",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "violence",
+          "aggression",
+          "de-escalation",
+          "restrictive-interventions"
+        ],
+        "clerkshipRelevance": "Supports supervised prevention, de-escalation, least-restrictive intervention, and local-policy escalation for violence and aggression.",
+        "shelfComatRelevance": "Medium",
+        "clinicalWorkflowRelevance": "High"
+      }
     },
     {
       "id": "apa-violence-risk-assessment-2011",
-      "title": "Resource Document on Psychiatric Violence Risk Assessment",
-      "organization": "American Psychiatric Association",
-      "year": 2011,
-      "url": "https://www.psychiatry.org/psychiatrists/search-directories-databases/resource-documents/2011/psychiatric-violence-risk-assessment",
-      "evidenceLevel": "resource document",
-      "lastReviewed": "2026-07-09",
-      "facultyReviewStatus": "reviewed",
-      "relatedTopicTags": ["violence", "risk-assessment", "structured-clinical-judgment"],
-      "clerkshipRelevance": "Supports teaching violence risk as structured clinical judgment with limits, supervision, and dynamic risk formulation.",
-      "shelfComatRelevance": "Medium",
-      "clinicalWorkflowRelevance": "High",
-      "localPolicyDependent": true,
-      "updateCadence": "annual"
+      "type": "other-authoritative",
+      "citation": {
+        "title": "Resource Document on Psychiatric Violence Risk Assessment",
+        "authors": [],
+        "organization": "American Psychiatric Association",
+        "year": 2011,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.psychiatry.org/psychiatrists/search-directories-databases/resource-documents/2011/psychiatric-violence-risk-assessment"
+      },
+      "identity": {
+        "status": "pending",
+        "source": "legacy-migration",
+        "verifiedAt": "",
+        "note": "Faculty review status was preserved; bibliographic identity was not inferred."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "resource document",
+        "facultyReviewStatus": "reviewed",
+        "lastReviewed": "2026-07-09",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "violence",
+          "risk-assessment",
+          "structured-clinical-judgment"
+        ],
+        "clerkshipRelevance": "Supports teaching violence risk as structured clinical judgment with limits, supervision, and dynamic risk formulation.",
+        "shelfComatRelevance": "Medium",
+        "clinicalWorkflowRelevance": "High"
+      }
     },
     {
       "id": "asam-alcohol-withdrawal-2020",
-      "title": "The ASAM Clinical Practice Guideline on Alcohol Withdrawal Management",
-      "organization": "American Society of Addiction Medicine",
-      "year": 2020,
-      "url": "https://www.asam.org/quality-care/clinical-guidelines/alcohol-withdrawal-management-guideline",
-      "evidenceLevel": "clinical practice guideline",
-      "lastReviewed": "2026-07-07",
-      "facultyReviewStatus": "reviewed",
-      "relatedTopicTags": ["withdrawal", "alcohol", "ciwa", "sud"],
-      "clerkshipRelevance": "Supports recognition, escalation, CIWA use, thiamine, and protocol-based treatment under supervision.",
-      "shelfComatRelevance": "High",
-      "clinicalWorkflowRelevance": "High",
-      "localPolicyDependent": true,
-      "updateCadence": "annual"
+      "type": "guideline",
+      "citation": {
+        "title": "The ASAM Clinical Practice Guideline on Alcohol Withdrawal Management",
+        "authors": [],
+        "organization": "American Society of Addiction Medicine",
+        "year": 2020,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.asam.org/quality-care/clinical-guidelines/alcohol-withdrawal-management-guideline"
+      },
+      "identity": {
+        "status": "pending",
+        "source": "legacy-migration",
+        "verifiedAt": "",
+        "note": "Faculty review status was preserved; bibliographic identity was not inferred."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "clinical practice guideline",
+        "facultyReviewStatus": "reviewed",
+        "lastReviewed": "2026-07-07",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "withdrawal",
+          "alcohol",
+          "ciwa",
+          "sud"
+        ],
+        "clerkshipRelevance": "Supports recognition, escalation, CIWA use, thiamine, and protocol-based treatment under supervision.",
+        "shelfComatRelevance": "High",
+        "clinicalWorkflowRelevance": "High"
+      }
     },
     {
       "id": "bap-catatonia-2023",
-      "title": "Evidence-based consensus guidelines for the management of catatonia",
-      "organization": "British Association for Psychopharmacology",
-      "year": 2023,
-      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10101189/",
-      "doi": "10.1177/02698811231158232",
-      "evidenceLevel": "evidence-based consensus guideline",
-      "lastReviewed": "2026-07-07",
-      "facultyReviewStatus": "reviewed",
-      "relatedTopicTags": ["catatonia", "bfcrs", "lorazepam-challenge", "ect"],
-      "clerkshipRelevance": "Supports recognition, BFCRS use, antipsychotic caution, and escalation for lorazepam challenge/ECT.",
-      "shelfComatRelevance": "High",
-      "clinicalWorkflowRelevance": "High",
-      "localPolicyDependent": true,
-      "updateCadence": "annual"
+      "type": "consensus",
+      "citation": {
+        "title": "Evidence-based consensus guidelines for the management of catatonia",
+        "authors": [],
+        "organization": "British Association for Psychopharmacology",
+        "year": 2023,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "10.1177/02698811231158232",
+        "pmid": "",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10101189/"
+      },
+      "identity": {
+        "status": "pending",
+        "source": "legacy-migration",
+        "verifiedAt": "",
+        "note": "Faculty review status was preserved; bibliographic identity was not inferred."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "evidence-based consensus guideline",
+        "facultyReviewStatus": "reviewed",
+        "lastReviewed": "2026-07-07",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "catatonia",
+          "bfcrs",
+          "lorazepam-challenge",
+          "ect"
+        ],
+        "clerkshipRelevance": "Supports recognition, BFCRS use, antipsychotic caution, and escalation for lorazepam challenge/ECT.",
+        "shelfComatRelevance": "High",
+        "clinicalWorkflowRelevance": "High"
+      }
     },
     {
       "id": "nice-delirium-cg103",
-      "title": "Delirium: prevention, diagnosis and management in hospital and long-term care",
-      "organization": "National Institute for Health and Care Excellence",
-      "year": 2023,
-      "url": "https://www.nice.org.uk/guidance/cg103",
-      "evidenceLevel": "clinical guideline",
-      "lastReviewed": "2026-07-07",
-      "facultyReviewStatus": "reviewed",
-      "relatedTopicTags": ["delirium", "confusion", "inattention", "geriatric"],
-      "clerkshipRelevance": "Supports delirium recognition, prevention, nonpharmacologic management, and avoidance of sedating past medical causes.",
-      "shelfComatRelevance": "High",
-      "clinicalWorkflowRelevance": "High",
-      "localPolicyDependent": true,
-      "updateCadence": "annual"
+      "type": "guideline",
+      "citation": {
+        "title": "Delirium: prevention, diagnosis and management in hospital and long-term care",
+        "authors": [],
+        "organization": "National Institute for Health and Care Excellence",
+        "year": 2023,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.nice.org.uk/guidance/cg103"
+      },
+      "identity": {
+        "status": "pending",
+        "source": "legacy-migration",
+        "verifiedAt": "",
+        "note": "Faculty review status was preserved; bibliographic identity was not inferred."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "clinical guideline",
+        "facultyReviewStatus": "reviewed",
+        "lastReviewed": "2026-07-07",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "delirium",
+          "confusion",
+          "inattention",
+          "geriatric"
+        ],
+        "clerkshipRelevance": "Supports delirium recognition, prevention, nonpharmacologic management, and avoidance of sedating past medical causes.",
+        "shelfComatRelevance": "High",
+        "clinicalWorkflowRelevance": "High"
+      }
     },
     {
       "id": "project-beta-deescalation-2012",
-      "title": "Verbal De-escalation of the Agitated Patient: Consensus Statement of the AAEP Project BETA De-escalation Workgroup",
-      "organization": "American Association for Emergency Psychiatry Project BETA",
-      "year": 2012,
-      "url": "https://pubmed.ncbi.nlm.nih.gov/22461917/",
-      "evidenceLevel": "consensus statement",
-      "lastReviewed": "2026-07-07",
-      "facultyReviewStatus": "reviewed",
-      "relatedTopicTags": ["agitation", "de-escalation", "restraint"],
-      "clerkshipRelevance": "Supports least-restrictive verbal de-escalation and relational communication under safety constraints.",
-      "shelfComatRelevance": "Medium",
-      "clinicalWorkflowRelevance": "High",
-      "localPolicyDependent": true,
-      "updateCadence": "annual"
+      "type": "consensus",
+      "citation": {
+        "title": "Verbal De-escalation of the Agitated Patient: Consensus Statement of the AAEP Project BETA De-escalation Workgroup",
+        "authors": [],
+        "organization": "American Association for Emergency Psychiatry Project BETA",
+        "year": 2012,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/22461917/"
+      },
+      "identity": {
+        "status": "pending",
+        "source": "legacy-migration",
+        "verifiedAt": "",
+        "note": "Faculty review status was preserved; bibliographic identity was not inferred."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "consensus statement",
+        "facultyReviewStatus": "reviewed",
+        "lastReviewed": "2026-07-07",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "agitation",
+          "de-escalation",
+          "restraint"
+        ],
+        "clerkshipRelevance": "Supports least-restrictive verbal de-escalation and relational communication under safety constraints.",
+        "shelfComatRelevance": "Medium",
+        "clinicalWorkflowRelevance": "High"
+      }
     },
     {
       "id": "project-beta-psychopharm-agitation-2012",
-      "title": "The Psychopharmacology of Agitation: Consensus Statement of the AAEP Project BETA Psychopharmacology Workgroup",
-      "organization": "American Association for Emergency Psychiatry Project BETA",
-      "year": 2012,
-      "url": "https://escholarship.org/uc/item/5fz8c8gs",
-      "evidenceLevel": "consensus statement",
-      "lastReviewed": "2026-07-07",
-      "facultyReviewStatus": "reviewed",
-      "relatedTopicTags": ["agitation", "psychopharmacology", "emergency-psychiatry"],
-      "clerkshipRelevance": "Supports treating the driver of agitation and using medication collaboratively when possible.",
-      "shelfComatRelevance": "Medium",
-      "clinicalWorkflowRelevance": "High",
-      "localPolicyDependent": true,
-      "updateCadence": "annual"
+      "type": "consensus",
+      "citation": {
+        "title": "The Psychopharmacology of Agitation: Consensus Statement of the AAEP Project BETA Psychopharmacology Workgroup",
+        "authors": [],
+        "organization": "American Association for Emergency Psychiatry Project BETA",
+        "year": 2012,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://escholarship.org/uc/item/5fz8c8gs"
+      },
+      "identity": {
+        "status": "pending",
+        "source": "legacy-migration",
+        "verifiedAt": "",
+        "note": "Faculty review status was preserved; bibliographic identity was not inferred."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "consensus statement",
+        "facultyReviewStatus": "reviewed",
+        "lastReviewed": "2026-07-07",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "agitation",
+          "psychopharmacology",
+          "emergency-psychiatry"
+        ],
+        "clerkshipRelevance": "Supports treating the driver of agitation and using medication collaboratively when possible.",
+        "shelfComatRelevance": "Medium",
+        "clinicalWorkflowRelevance": "High"
+      }
+    },
+    {
+      "id": "engel-1977-biopsychosocial-model",
+      "type": "primary-study",
+      "citation": {
+        "title": "The need for a new medical model: a challenge for biomedicine.",
+        "authors": [
+          {
+            "family": "Engel",
+            "given": "G L"
+          }
+        ],
+        "organization": "",
+        "year": 1977,
+        "journal": "Science",
+        "volume": "196",
+        "pages": "129-136",
+        "doi": "10.1126/science.847460",
+        "pmid": "847460",
+        "url": "https://doi.org/10.1126/science.847460"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent KL5HP3MU matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "KL5HP3MU"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "1",
+        "role": "required",
+        "teachingRole": "The biopsychosocial operating system",
+        "weekNumbers": [
+          1
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 1 curriculum names Engel 1977."
+      },
+      "appraisal": {
+        "studyDesign": "Conceptual article proposing the biopsychosocial model as an alternative to the dominant biomedical model.",
+        "population": "Not applicable \u2014 conceptual/review article",
+        "comparator": "Not applicable \u2014 conceptual/review article",
+        "outcomes": "Not applicable \u2014 conceptual/review article",
+        "limitations": "Conceptual proposal rather than an empirical evaluation; the abstract reports no enrolled sample, comparator, or measured outcomes.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "rosenhan-1973-sane-places",
+      "type": "primary-study",
+      "citation": {
+        "title": "On being sane in insane places.",
+        "authors": [
+          {
+            "family": "Rosenhan",
+            "given": "D L"
+          }
+        ],
+        "organization": "",
+        "year": 1973,
+        "journal": "Science",
+        "volume": "179",
+        "pages": "250-258",
+        "doi": "10.1126/science.179.4070.250",
+        "pmid": "4683124",
+        "url": "https://doi.org/10.1126/science.179.4070.250"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-primary-article",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent TSN2F24F matched the primary article and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "TSN2F24F"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "2",
+        "role": "required",
+        "teachingRole": "Diagnostic humility / labeling",
+        "weekNumbers": [
+          1
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 1 curriculum names Rosenhan 1973."
+      },
+      "appraisal": {
+        "studyDesign": "Two-part covert field experiment and institutional observation across psychiatric hospitals.",
+        "population": "Eight known-sane pseudopatients sought admission to 12 hospitals; a later expectancy phase involved staff judgments on 193 genuine admissions when no pseudopatients were sent.",
+        "comparator": "Known-sane status and normal post-admission behavior versus hospital diagnostic judgments; later staff suspicions were compared with the fact that no pseudopatients were presented.",
+        "outcomes": "Pseudopatients were not detected as sane, all except one were admitted with schizophrenia, and stays lasted 7-52 days; in the expectancy phase, staff flagged genuine patients despite zero pseudopatients.",
+        "limitations": "Small purposive and deceptive sample; the article cautions that pseudopatients cannot represent true patients' subjective experiences, and the second phase could not determine the true status of suspected patients.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "appelbaum-grisso-1988-capacity",
+      "type": "primary-study",
+      "citation": {
+        "title": "Assessing patients' capacities to consent to treatment.",
+        "authors": [
+          {
+            "family": "Appelbaum",
+            "given": "P S"
+          },
+          {
+            "family": "Grisso",
+            "given": "T"
+          }
+        ],
+        "organization": "",
+        "year": 1988,
+        "journal": "The New England Journal of Medicine",
+        "volume": "319",
+        "pages": "1635-1638",
+        "doi": "10.1056/nejm198812223192504",
+        "pmid": "3200278",
+        "url": "https://doi.org/10.1056/nejm198812223192504"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent S6MZZGRA matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "S6MZZGRA"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "3",
+        "role": "required",
+        "teachingRole": "The four-abilities capacity model",
+        "weekNumbers": [
+          1
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 1 curriculum names Appelbaum and Grisso 1988."
+      },
+      "appraisal": {
+        "studyDesign": "Conceptual clinical-legal review and practical assessment framework.",
+        "population": "Patients whose ability to accept or refuse a specific treatment is questioned; no enrolled study sample.",
+        "comparator": "Not applicable \u2014 conceptual/review article",
+        "outcomes": "Defines four abilities: communicating a choice, understanding information, appreciating the situation and consequences, and manipulating information rationally; it also distinguishes clinical assessment from legal adjudication.",
+        "limitations": "Conceptual and legal framework; the abstract reports no validation cohort, diagnostic-accuracy comparison, or patient outcomes.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "stanley-brown-2012-safety-planning",
+      "type": "primary-study",
+      "citation": {
+        "title": "Safety Planning Intervention: A Brief Intervention to Mitigate Suicide Risk",
+        "authors": [
+          {
+            "family": "Stanley",
+            "given": "Barbara"
+          },
+          {
+            "family": "Brown",
+            "given": "Gregory K."
+          }
+        ],
+        "organization": "",
+        "year": 2012,
+        "journal": "Cognitive and Behavioral Practice",
+        "volume": "19",
+        "pages": "256-264",
+        "doi": "10.1016/j.cbpra.2011.01.001",
+        "pmid": "",
+        "url": "https://doi.org/10.1016/j.cbpra.2011.01.001"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent IDSQYW4X matched the publisher title, first author, year, DOI, and journal; no PMID is assigned."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "IDSQYW4X"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "4",
+        "role": "required",
+        "teachingRole": "The most practical tool on the list",
+        "weekNumbers": [
+          3
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 3 curriculum names the Stanley-Brown safety-planning model."
+      },
+      "appraisal": {
+        "studyDesign": "Descriptive clinical-practice intervention article with a case example; not an outcome trial.",
+        "population": "Suicidal patients evaluated in emergency departments and other acute-care settings are the target population; no analytic sample was enrolled.",
+        "comparator": "Not applicable \u2014 conceptual/review article",
+        "outcomes": "Describes a written, prioritized six-component plan covering warning signs, internal coping, social distraction, supportive contacts, professional resources, and lethal-means restriction; no empirical effectiveness outcome was measured.",
+        "limitations": "Descriptive, non-comparative article; it cannot itself establish effectiveness, and subsequent Safety Planning Intervention outcome studies are outside its scope.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "lieberman-2005-catie",
+      "type": "primary-study",
+      "citation": {
+        "title": "Effectiveness of antipsychotic drugs in patients with chronic schizophrenia.",
+        "authors": [
+          {
+            "family": "Lieberman",
+            "given": "Jeffrey A"
+          },
+          {
+            "family": "Stroup",
+            "given": "T Scott"
+          },
+          {
+            "family": "McEvoy",
+            "given": "Joseph P"
+          },
+          {
+            "family": "Swartz",
+            "given": "Marvin S"
+          },
+          {
+            "family": "Rosenheck",
+            "given": "Robert A"
+          },
+          {
+            "family": "Perkins",
+            "given": "Diana O"
+          },
+          {
+            "family": "Keefe",
+            "given": "Richard S E"
+          },
+          {
+            "family": "Davis",
+            "given": "Sonia M"
+          },
+          {
+            "family": "Davis",
+            "given": "Clarence E"
+          },
+          {
+            "family": "Lebowitz",
+            "given": "Barry D"
+          },
+          {
+            "family": "Severe",
+            "given": "Joanne"
+          },
+          {
+            "family": "Hsiao",
+            "given": "John K"
+          }
+        ],
+        "organization": "Clinical Antipsychotic Trials of Intervention Effectiveness (CATIE) Investigators",
+        "year": 2005,
+        "journal": "The New England Journal of Medicine",
+        "volume": "353",
+        "pages": "1209-1223",
+        "doi": "10.1056/nejmoa051688",
+        "pmid": "16172203",
+        "url": "https://doi.org/10.1056/nejmoa051688"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent 2TPA9P9D matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "2TPA9P9D"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "5",
+        "role": "required",
+        "teachingRole": "Pick by profile, not class",
+        "weekNumbers": [
+          2
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 2 curriculum names CATIE."
+      },
+      "appraisal": {
+        "studyDesign": "Multisite, double-blind randomized comparative-effectiveness trial lasting up to 18 months.",
+        "population": "1,493 patients with schizophrenia recruited at 57 U.S. sites; 1,432 received at least one dose.",
+        "comparator": "Olanzapine, perphenazine, quetiapine, risperidone, and, after FDA approval, ziprasidone.",
+        "outcomes": "Seventy-four percent discontinued assigned treatment before 18 months; olanzapine had longer persistence than some agents but greater weight and metabolic effects, while perphenazine had similar effectiveness to several newer agents and more extrapyramidal effects.",
+        "limitations": "Very high discontinuation limits long-term outcome ascertainment; time to discontinuation combines efficacy, tolerability, and other reasons rather than isolating symptom efficacy.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "rush-2006-stard",
+      "type": "primary-study",
+      "citation": {
+        "title": "Acute and longer-term outcomes in depressed outpatients requiring one or several treatment steps: a STAR*D report.",
+        "authors": [
+          {
+            "family": "Rush",
+            "given": "A John"
+          },
+          {
+            "family": "Trivedi",
+            "given": "Madhukar H"
+          },
+          {
+            "family": "Wisniewski",
+            "given": "Stephen R"
+          },
+          {
+            "family": "Nierenberg",
+            "given": "Andrew A"
+          },
+          {
+            "family": "Stewart",
+            "given": "Jonathan W"
+          },
+          {
+            "family": "Warden",
+            "given": "Diane"
+          },
+          {
+            "family": "Niederehe",
+            "given": "George"
+          },
+          {
+            "family": "Thase",
+            "given": "Michael E"
+          },
+          {
+            "family": "Lavori",
+            "given": "Philip W"
+          },
+          {
+            "family": "Lebowitz",
+            "given": "Barry D"
+          },
+          {
+            "family": "McGrath",
+            "given": "Patrick J"
+          },
+          {
+            "family": "Rosenbaum",
+            "given": "Jerrold F"
+          },
+          {
+            "family": "Sackeim",
+            "given": "Harold A"
+          },
+          {
+            "family": "Kupfer",
+            "given": "David J"
+          },
+          {
+            "family": "Luther",
+            "given": "James"
+          },
+          {
+            "family": "Fava",
+            "given": "Maurizio"
+          }
+        ],
+        "organization": "",
+        "year": 2006,
+        "journal": "American Journal of Psychiatry",
+        "volume": "163",
+        "pages": "1905-1917",
+        "doi": "10.1176/ajp.2006.163.11.1905",
+        "pmid": "17074942",
+        "url": "https://doi.org/10.1176/ajp.2006.163.11.1905"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent LGJ9CSR3 matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "LGJ9CSR3"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "6",
+        "role": "required",
+        "teachingRole": "Measurement-based care",
+        "weekNumbers": [
+          2
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 2 curriculum names STAR*D."
+      },
+      "appraisal": {
+        "studyDesign": "Multicenter sequenced effectiveness-trial report covering one to four acute treatment steps and a 12-month naturalistic follow-up.",
+        "population": "Broadly representative adults with nonpsychotic major depressive disorder treated as outpatients; N=3,671 at step 1 and N=123 at step 4.",
+        "comparator": "Outcomes across successive treatment steps among patients who failed to remit or could not tolerate a preceding step; no single fixed parallel comparator spans all four steps.",
+        "outcomes": "QIDS-SR remission rates were 36.8%, 30.6%, 13.7%, and 13.0% across steps 1-4, with reported cumulative remission of 67%; needing more steps was associated with higher relapse during follow-up.",
+        "limitations": "Later-step estimates come from progressively smaller, selected subsets, and the follow-up phase was naturalistic.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "brown-1972-expressed-emotion",
+      "type": "primary-study",
+      "citation": {
+        "title": "Influence of family life on the course of schizophrenic disorders: a replication.",
+        "authors": [
+          {
+            "family": "Brown",
+            "given": "G W"
+          },
+          {
+            "family": "Birley",
+            "given": "J L T"
+          },
+          {
+            "family": "Wing",
+            "given": "J K"
+          }
+        ],
+        "organization": "",
+        "year": 1972,
+        "journal": "The British Journal of Psychiatry",
+        "volume": "121",
+        "pages": "241-258",
+        "doi": "10.1192/bjp.121.3.241",
+        "pmid": "5073778",
+        "url": "https://doi.org/10.1192/bjp.121.3.241"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-primary-article",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent E8BCCFSN matched the primary article and PubMed title, first author, year, DOI, PMID, and journal; the publisher supplies Birley's middle initial T."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "E8BCCFSN"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "7",
+        "role": "required",
+        "teachingRole": "Expressed emotion \u2192 relapse",
+        "weekNumbers": [
+          4
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "Faculty approved Brown, Birley, and Wing 1972 as the canonical Tier 1 Week 4 article on 2026-07-12. Brown 1962 remains a later contextual companion and teaching-page reconciliation item; no teaching page was changed in this milestone."
+      },
+      "appraisal": {
+        "studyDesign": "Prospective, nonrandomized nine-month follow-up study in which family emotional measures, prior patient behavior, and later relapse were assessed independently.",
+        "population": "101 patients aged 18-64 with possible or probable schizophrenia, selected from people living with relatives in the Camberwell catchment plus a recent-illness Bexley group.",
+        "comparator": "High versus low relative expressed emotion, with analyses also considering face-to-face contact, medication, prior disturbance, and other clinical and social factors.",
+        "outcomes": "Thirty-five patients relapsed; high relative expressed emotion was associated with relapse during the nine months after discharge, and the association persisted after adjustment for measured background factors.",
+        "limitations": "The exposure could not be randomized; the authors could not determine whether relative expressed emotion caused later behavior, reflected earlier patient behavior, or was reciprocal, and the restricted cohort limits generalizability.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "bush-1996-catatonia-rating-scale",
+      "type": "primary-study",
+      "citation": {
+        "title": "Catatonia. I. Rating scale and standardized examination.",
+        "authors": [
+          {
+            "family": "Bush",
+            "given": "G"
+          },
+          {
+            "family": "Fink",
+            "given": "M"
+          },
+          {
+            "family": "Petrides",
+            "given": "G"
+          },
+          {
+            "family": "Dowling",
+            "given": "F"
+          },
+          {
+            "family": "Francis",
+            "given": "A"
+          }
+        ],
+        "organization": "",
+        "year": 1996,
+        "journal": "Acta Psychiatrica Scandinavica",
+        "volume": "93",
+        "pages": "129-136",
+        "doi": "10.1111/j.1600-0447.1996.tb09814.x",
+        "pmid": "8686483",
+        "url": "https://doi.org/10.1111/j.1600-0447.1996.tb09814.x"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent 5DH2GK2V matched the publisher and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "5DH2GK2V"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "8",
+        "role": "required",
+        "teachingRole": "BFCRS; the dx you can't miss",
+        "weekNumbers": [
+          2
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 2 curriculum names Bush 1996 and the Bush-Francis Catatonia Rating Scale."
+      },
+      "appraisal": {
+        "studyDesign": "Rating-scale and screening-instrument development with interrater reliability and diagnostic-agreement testing, plus a consecutive-admission prevalence assessment.",
+        "population": "Forty-four simultaneous ratings of 28 cases meeting the 14-item screen threshold; separately, 215 consecutive admissions to one academic psychiatric inpatient facility.",
+        "comparator": "Agreement between raters and diagnostic agreement with catatonia criteria proposed by other authors; no treatment comparator.",
+        "outcomes": "A 23-item scale and 14-item screen had total-score interrater reliabilities of 0.93 and 0.95, respectively; 15 of 215 consecutive admissions met catatonia criteria.",
+        "limitations": "Reliability testing involved only 28 cases and prevalence came from one academic inpatient site; diagnostic agreement used existing criteria rather than an independent gold standard or prospective outcomes.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "wampold-1997-bona-fide-psychotherapies",
+      "type": "systematic-review",
+      "citation": {
+        "title": "A meta-analysis of outcome studies comparing bona fide psychotherapies: Empirically, \"all must have prizes.\"",
+        "authors": [
+          {
+            "family": "Wampold",
+            "given": "Bruce E."
+          },
+          {
+            "family": "Mondin",
+            "given": "Gregory W."
+          },
+          {
+            "family": "Moody",
+            "given": "Marcia"
+          },
+          {
+            "family": "Stich",
+            "given": "Frederick"
+          },
+          {
+            "family": "Benson",
+            "given": "Kurt"
+          },
+          {
+            "family": "Ahn",
+            "given": "Hyun-nie"
+          }
+        ],
+        "organization": "",
+        "year": 1997,
+        "journal": "Psychological Bulletin",
+        "volume": "122",
+        "pages": "203-215",
+        "doi": "10.1037/0033-2909.122.3.203",
+        "pmid": "",
+        "url": "https://doi.org/10.1037/0033-2909.122.3.203"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent PDWXBEMZ matched the primary article title, first author, year, DOI, and journal; no PMID is assigned."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "PDWXBEMZ"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "9",
+        "role": "required",
+        "teachingRole": "Common factors",
+        "weekNumbers": [
+          3
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 3 curriculum names Wampold 1997."
+      },
+      "appraisal": {
+        "studyDesign": "Meta-analysis of direct outcome-study comparisons between bona fide psychotherapies drawn from six journals.",
+        "population": "Participants represented in included comparative psychotherapy outcome studies; the abstract does not report a pooled sample size or diagnostic composition.",
+        "comparator": "Bona fide psychotherapies directly compared with other bona fide psychotherapies.",
+        "outcomes": "Between-treatment effect sizes were homogeneous around zero; even under liberal assumptions the upper bound of the true difference was about 0.20, supporting roughly equivalent efficacy across included comparisons.",
+        "limitations": "The evidence base was limited to direct comparisons found in six journals; pooled participant and diagnostic details were not reported in the abstract, so the result should not be generalized to every therapy-problem pairing.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "linehan-1991-dbt",
+      "type": "primary-study",
+      "citation": {
+        "title": "Cognitive-Behavioral Treatment of Chronically Parasuicidal Borderline Patients",
+        "authors": [
+          {
+            "family": "Linehan",
+            "given": "Marsha M."
+          },
+          {
+            "family": "Armstrong",
+            "given": "Hubert E."
+          },
+          {
+            "family": "Suarez",
+            "given": "Alejandra"
+          },
+          {
+            "family": "Allmon",
+            "given": "Douglas"
+          },
+          {
+            "family": "Heard",
+            "given": "Heidi L."
+          }
+        ],
+        "organization": "",
+        "year": 1991,
+        "journal": "Archives of General Psychiatry",
+        "volume": "48",
+        "pages": "1060-1064",
+        "doi": "10.1001/archpsyc.1991.01810360024003",
+        "pmid": "1845222",
+        "url": "https://doi.org/10.1001/archpsyc.1991.01810360024003"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent SHMA7MDE matched the publisher and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "SHMA7MDE"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "10",
+        "role": "required",
+        "teachingRole": "DBT origin; BPD is treatable",
+        "weekNumbers": [
+          3
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 3 curriculum names Linehan 1991."
+      },
+      "appraisal": {
+        "studyDesign": "One-year randomized clinical trial with assessments every four months.",
+        "population": "Chronically parasuicidal women meeting criteria for borderline personality disorder.",
+        "comparator": "Dialectical behavior therapy versus community treatment as usual.",
+        "outcomes": "DBT produced fewer and less medically severe parasuicide events, better retention in individual therapy, and fewer inpatient psychiatric days; groups did not differ on depression, hopelessness, suicidal ideation, or reasons for living.",
+        "limitations": "The narrowly selected all-women, chronically parasuicidal borderline-personality sample and one-year horizon limit generalizability; several symptom measures showed no between-group difference.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "pharoah-2010-family-intervention",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Family intervention for schizophrenia",
+        "authors": [
+          {
+            "family": "Pharoah",
+            "given": "Fiona"
+          },
+          {
+            "family": "Mari",
+            "given": "Jair"
+          },
+          {
+            "family": "Rathbone",
+            "given": "John"
+          },
+          {
+            "family": "Wong",
+            "given": "Winson"
+          }
+        ],
+        "organization": "",
+        "year": 2010,
+        "journal": "Cochrane Database of Systematic Reviews",
+        "volume": "",
+        "pages": "CD000088",
+        "doi": "10.1002/14651858.cd000088.pub2",
+        "pmid": "21154340",
+        "url": "https://doi.org/10.1002/14651858.cd000088.pub2"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed-agree-cochrane-publisher-disagrees",
+        "verifiedAt": "2026-07-12",
+        "note": "Faculty-approved exception recorded 2026-07-12: retain Zotero parent P4M5H9VM, PubMed PMID 21154340, and the .pub2 DOI because Zotero and PubMed agree on that 2010 update identity; current Cochrane publisher metadata disagrees and lists .pub3. No Zotero record was changed."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "P4M5H9VM"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "11",
+        "role": "required",
+        "teachingRole": "NNT ~7 for relapse",
+        "weekNumbers": [
+          4
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 4 curriculum names Pharoah 2010."
+      },
+      "appraisal": {
+        "studyDesign": "Cochrane systematic review and fixed-effect meta-analysis of 53 randomized or quasi-randomized trials, with searching updated through September 2008.",
+        "population": "People with schizophrenia, schizoaffective disorder, or schizophrenia-like conditions and their families in community settings.",
+        "comparator": "Community-oriented family psychosocial intervention versus standard care.",
+        "outcomes": "Family intervention may reduce relapse in 32 RCTs with 2,981 participants (RR 0.55, 95% CI 0.50-0.60; NNT 7), may reduce admission and improve medication adherence, and showed no evidence for a suicide effect.",
+        "limitations": "Poor trial methods may overestimate effects; randomization and evaluator blinding were often inadequately described, and small negative studies may have been missed.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "march-2004-tads",
+      "type": "primary-study",
+      "citation": {
+        "title": "Fluoxetine, Cognitive-Behavioral Therapy, and Their Combination for Adolescents With Depression: Treatment for Adolescents With Depression Study (TADS) Randomized Controlled Trial",
+        "authors": [
+          {
+            "family": "March",
+            "given": "John"
+          },
+          {
+            "family": "Silva",
+            "given": "Susan"
+          },
+          {
+            "family": "Petrycki",
+            "given": "Stephen"
+          },
+          {
+            "family": "Curry",
+            "given": "John"
+          },
+          {
+            "family": "Wells",
+            "given": "Karen"
+          },
+          {
+            "family": "Fairbank",
+            "given": "John"
+          },
+          {
+            "family": "Burns",
+            "given": "Barbara"
+          },
+          {
+            "family": "Domino",
+            "given": "Marisa"
+          },
+          {
+            "family": "McNulty",
+            "given": "Steven"
+          },
+          {
+            "family": "Vitiello",
+            "given": "Benedetto"
+          },
+          {
+            "family": "Severe",
+            "given": "Joanne"
+          }
+        ],
+        "organization": "Treatment for Adolescents With Depression Study (TADS) Team",
+        "year": 2004,
+        "journal": "JAMA",
+        "volume": "292",
+        "pages": "807-820",
+        "doi": "10.1001/jama.292.7.807",
+        "pmid": "15315995",
+        "url": "https://doi.org/10.1001/jama.292.7.807"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent 6DTR4GC8 matched the publisher and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "6DTR4GC8"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "12",
+        "role": "required",
+        "teachingRole": "Combination best for teens",
+        "weekNumbers": [
+          2
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "Faculty approved TADS for Week 2 on 2026-07-12; no teaching page or Zotero record was changed in this milestone."
+      },
+      "appraisal": {
+        "studyDesign": "Twelve-week, four-arm randomized controlled trial at 13 U.S. academic and community clinics; medication and placebo arms were double-blind and CBT-containing arms were unblinded.",
+        "population": "Volunteer sample of 439 adolescents aged 12-17 years with primary DSM-IV major depressive disorder; adolescents at high suicide risk and those with primary substance-use disorders were excluded.",
+        "comparator": "Fluoxetine plus CBT versus fluoxetine alone, CBT alone, and placebo.",
+        "outcomes": "Response was 71.0%, 60.6%, 43.2%, and 34.8%, respectively; combined treatment had the best benefit-risk tradeoff. Suicidal thinking improved in all groups; seven participants attempted suicide and none died by suicide.",
+        "limitations": "Excluding adolescents at high suicide risk and primary substance-use cases limits safety and generalizability; seven suicide attempts were too few, leaving the trial inadequately powered for statistical safety comparison. The 12-week horizon, unblinded CBT conditions, and lack of a CBT-plus-placebo arm also limit inference.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "felitti-1998-ace",
+      "type": "primary-study",
+      "citation": {
+        "title": "Relationship of Childhood Abuse and Household Dysfunction to Many of the Leading Causes of Death in Adults: The Adverse Childhood Experiences (ACE) Study",
+        "authors": [
+          {
+            "family": "Felitti",
+            "given": "Vincent J."
+          },
+          {
+            "family": "Anda",
+            "given": "Robert F."
+          },
+          {
+            "family": "Nordenberg",
+            "given": "Dale"
+          },
+          {
+            "family": "Williamson",
+            "given": "David F."
+          },
+          {
+            "family": "Spitz",
+            "given": "Alison M."
+          },
+          {
+            "family": "Edwards",
+            "given": "Valerie"
+          },
+          {
+            "family": "Koss",
+            "given": "Mary P."
+          },
+          {
+            "family": "Marks",
+            "given": "James S."
+          }
+        ],
+        "organization": "",
+        "year": 1998,
+        "journal": "American Journal of Preventive Medicine",
+        "volume": "14",
+        "pages": "245-258",
+        "doi": "10.1016/s0749-3797(98)00017-8",
+        "pmid": "9635069",
+        "url": "https://doi.org/10.1016/s0749-3797(98)00017-8"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-publisher-doi",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent ZT9DMH79 matched the publisher and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "ZT9DMH79"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "13",
+        "role": "required",
+        "teachingRole": "Reframes every patient",
+        "weekNumbers": [
+          6
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked Week 6 curriculum names Felitti 1998."
+      },
+      "appraisal": {
+        "studyDesign": "Questionnaire-based observational analysis using logistic regression to relate retrospectively reported childhood exposures to adult health risks and disease.",
+        "population": "9,508 respondents (70.5% of 13,494 adult HMO members who had completed a standardized medical evaluation), with 8,056 complete cases analyzed.",
+        "comparator": "Cumulative adverse-childhood-experience categories from 0-7, including comparison of four or more categories with none.",
+        "outcomes": "ACE count showed graded associations with adult health risks and disease; four or more versus no categories was associated with 4- to 12-fold higher risks for alcoholism, drug abuse, depression, and suicide attempt.",
+        "limitations": "Retrospective self-report, nonresponse, and an observational baseline analysis permit association rather than causal inference and may limit generalizability beyond this HMO sample.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "caspi-2003-5htt-stress",
+      "type": "primary-study",
+      "citation": {
+        "title": "Influence of Life Stress on Depression: Moderation by a Polymorphism in the 5-HTT Gene",
+        "authors": [
+          {
+            "family": "Caspi",
+            "given": "Avshalom"
+          },
+          {
+            "family": "Sugden",
+            "given": "Karen"
+          },
+          {
+            "family": "Moffitt",
+            "given": "Terrie E."
+          },
+          {
+            "family": "Taylor",
+            "given": "Alan"
+          },
+          {
+            "family": "Craig",
+            "given": "Ian W."
+          },
+          {
+            "family": "Harrington",
+            "given": "HonaLee"
+          },
+          {
+            "family": "McClay",
+            "given": "Joseph"
+          },
+          {
+            "family": "Mill",
+            "given": "Jonathan"
+          },
+          {
+            "family": "Martin",
+            "given": "Judy"
+          },
+          {
+            "family": "Braithwaite",
+            "given": "Antony"
+          },
+          {
+            "family": "Poulton",
+            "given": "Richie"
+          }
+        ],
+        "organization": "",
+        "year": 2003,
+        "journal": "Science",
+        "volume": "301",
+        "pages": "386-389",
+        "doi": "10.1126/science.1083968",
+        "pmid": "12869766",
+        "url": "https://doi.org/10.1126/science.1083968"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent ZTWERT6K matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "ZTWERT6K"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "14a",
+        "role": "required",
+        "teachingRole": "Candidate-gene rise\u2026",
+        "weekNumbers": [
+          6
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "Faculty approved Caspi 2003 for Week 6 on 2026-07-12; no teaching page or Zotero record was changed in this milestone."
+      },
+      "appraisal": {
+        "studyDesign": "Prospective-longitudinal observational study of a representative birth cohort.",
+        "population": "Members of a representative birth cohort assessed for stressful life events, 5-HTT promoter genotype, and depression-related outcomes.",
+        "comparator": "Short-allele carriers with one or two copies versus long-allele homozygotes across levels of stressful life events.",
+        "outcomes": "Short-allele carriers showed more depressive symptoms, diagnosable depression, and suicidality in relation to stressful life events, consistent with a reported gene-by-environment interaction.",
+        "limitations": "This was an observational finding in one cohort; it does not by itself establish causality or independent replication and generalizability.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "border-2019-candidate-gene",
+      "type": "primary-study",
+      "citation": {
+        "title": "No Support for Historical Candidate Gene or Candidate Gene-by-Interaction Hypotheses for Major Depression Across Multiple Large Samples",
+        "authors": [
+          {
+            "family": "Border",
+            "given": "Richard"
+          },
+          {
+            "family": "Johnson",
+            "given": "Emma C."
+          },
+          {
+            "family": "Evans",
+            "given": "Luke M."
+          },
+          {
+            "family": "Smolen",
+            "given": "Andrew"
+          },
+          {
+            "family": "Berley",
+            "given": "Noah"
+          },
+          {
+            "family": "Sullivan",
+            "given": "Patrick F."
+          },
+          {
+            "family": "Keller",
+            "given": "Matthew C."
+          }
+        ],
+        "organization": "",
+        "year": 2019,
+        "journal": "American Journal of Psychiatry",
+        "volume": "176",
+        "pages": "376-387",
+        "doi": "10.1176/appi.ajp.2018.18070881",
+        "pmid": "30845820",
+        "url": "https://doi.org/10.1176/appi.ajp.2018.18070881"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-primary-article",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent XRADQ2TY matched the primary article and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "XRADQ2TY"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "14b",
+        "role": "required",
+        "teachingRole": "\u2026and fall (replication crisis)",
+        "weekNumbers": [
+          6
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "Faculty approved Border 2019 for Week 6 on 2026-07-12; no teaching page or Zotero record was changed in this milestone."
+      },
+      "appraisal": {
+        "studyDesign": "Preregistered association analyses across large population-based and case-control samples.",
+        "population": "Multiple samples ranging from 62,138 to 443,264 participants across subsamples, using several depression phenotypes and environmental moderators.",
+        "comparator": "Main effects and gene-by-environment effects for 18 historical depression candidate genes, with candidate-gene sets also compared with noncandidate genes.",
+        "outcomes": "No clear candidate-polymorphism association or candidate gene-by-environment effect was found; candidate genes as a set were no more associated with depression than noncandidate genes.",
+        "limitations": "The analysis addresses 18 historical candidate genes and specified phenotypes and moderators; it does not test whether depression has genome-wide polygenic influences.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "franklin-2017-suicide-risk-meta-analysis",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Risk factors for suicidal thoughts and behaviors: A meta-analysis of 50 years of research.",
+        "authors": [
+          {
+            "family": "Franklin",
+            "given": "Joseph C."
+          },
+          {
+            "family": "Ribeiro",
+            "given": "Jessica D."
+          },
+          {
+            "family": "Fox",
+            "given": "Kathryn R."
+          },
+          {
+            "family": "Bentley",
+            "given": "Kate H."
+          },
+          {
+            "family": "Kleiman",
+            "given": "Evan M."
+          },
+          {
+            "family": "Huang",
+            "given": "Xieyining"
+          },
+          {
+            "family": "Musacchio",
+            "given": "Katherine M."
+          },
+          {
+            "family": "Jaroszewski",
+            "given": "Adam C."
+          },
+          {
+            "family": "Chang",
+            "given": "Bernard P."
+          },
+          {
+            "family": "Nock",
+            "given": "Matthew K."
+          }
+        ],
+        "organization": "",
+        "year": 2017,
+        "journal": "Psychological Bulletin",
+        "volume": "143",
+        "pages": "187-232",
+        "doi": "10.1037/bul0000084",
+        "pmid": "27841450",
+        "url": "https://doi.org/10.1037/bul0000084"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-and-pubmed",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent FP88WVWT matched the PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "FP88WVWT"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "15",
+        "role": "required",
+        "teachingRole": "We can't predict; document reasoning",
+        "weekNumbers": [
+          5
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked curriculum maps Franklin 2017 to Week 5."
+      },
+      "appraisal": {
+        "studyDesign": "Random-effects meta-analysis of longitudinal predictors of suicidal thoughts and behaviors across 365 studies, 3,428 effect sizes, and 50 years.",
+        "population": "Participants in longitudinal studies predicting later suicidal ideation, attempt, or death; pooled demographic composition was not reported in the abstract.",
+        "comparator": "Risk-factor categories and exposure levels versus later specific suicidal-thought-or-behavior outcomes; no treatment comparator.",
+        "outcomes": "Prediction was only slightly better than chance across odds-ratio, hazard-ratio, and diagnostic-accuracy analyses; no broad category predicted far above chance and accuracy did not improve over 50 years.",
+        "limitations": "The underlying literature used homogeneous risk factors, rarely examined combinations, and had narrow methods. Mean follow-up was nearly 10 years (median 5 years), and fewer than 1% of effects used horizons of one month or less; the meta-analysis may therefore miss short-term dynamic signals and should not be overgeneralized to acute bedside prediction.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "volkow-2016-addiction-brain-disease",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "Neurobiologic Advances from the Brain Disease Model of Addiction",
+        "authors": [
+          {
+            "family": "Volkow",
+            "given": "Nora D."
+          },
+          {
+            "family": "Koob",
+            "given": "George F."
+          },
+          {
+            "family": "McLellan",
+            "given": "A. Thomas"
+          }
+        ],
+        "organization": "",
+        "year": 2016,
+        "journal": "New England Journal of Medicine",
+        "volume": "374",
+        "pages": "363-371",
+        "doi": "10.1056/nejmra1511480",
+        "pmid": "26816013",
+        "url": "https://doi.org/10.1056/nejmra1511480"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "zotero-local-api-pubmed-and-primary-article",
+        "verifiedAt": "2026-07-12",
+        "note": "Zotero parent 9FCMTHM2 matched the primary article and PubMed title, first author, year, DOI, PMID, and journal."
+      },
+      "zotero": {
+        "libraryType": "user",
+        "libraryId": 0,
+        "itemKey": "9FCMTHM2"
+      },
+      "requiredAccess": "fulltext",
+      "curriculum": {
+        "tier": 1,
+        "selection": "16",
+        "role": "required",
+        "teachingRole": "Combats stigma",
+        "weekNumbers": [
+          5
+        ],
+        "topicSlugs": [],
+        "pairedTools": [],
+        "mappingStatus": "mapped",
+        "mappingNote": "The tracked curriculum maps Volkow 2016 to Week 5."
+      },
+      "appraisal": {
+        "studyDesign": "Narrative and conceptual review of neurobiological evidence supporting the brain-disease model of addiction.",
+        "population": "Not applicable \u2014 conceptual/review article",
+        "comparator": "Not applicable \u2014 conceptual/review article",
+        "outcomes": "The review synthesizes a three-stage addiction cycle and links it to adaptations in reward, stress, and executive-control circuits that impair behavioral control.",
+        "limitations": "The review has no defined study population, comparator, or pooled clinical-effect estimate; it also notes that the model does not identify an abnormality shared by every person with addiction and does not by itself explain untreated recovery.",
+        "reviewStatus": "reviewed",
+        "reviewedAt": "2026-07-12"
+      },
+      "governance": {
+        "lastReviewed": "2026-07-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "fda-drug-safety",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "FDA Drug Safety Communications",
+        "authors": [],
+        "organization": "U.S. Food and Drug Administration",
+        "year": 2026,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications"
+      },
+      "identity": {
+        "status": "exception",
+        "source": "legacy-surveillance-migration",
+        "verifiedAt": "2026-07-08",
+        "note": "authoritative monitoring endpoint; bibliographic article identity not applicable"
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "lastReviewed": "2026-07-08",
+        "reviewCadence": "monthly",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      },
+      "surveillance": {
+        "job": "guideline-surveillance",
+        "type": "html",
+        "modality": "full_text",
+        "severity_default": "P0",
+        "cadence": "monthly",
+        "watch_for": [
+          "boxed warning",
+          "contraindication",
+          "REMS",
+          "withdrawal",
+          "recall"
+        ],
+        "affects_hint": [
+          "05_Psychopharmacology/**"
+        ],
+        "verified": true,
+        "notes": "Highest patient-safety yield. Pair with drug-label checks for teaching meds. Live HEAD/GET recheck returned 200 on 2026-07-08; July 6 404 treated as transient/stale."
+      }
+    },
+    {
+      "id": "clozapine-rems",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "FDA Clozapine Safety / REMS Removed",
+        "authors": [],
+        "organization": "U.S. Food and Drug Administration",
+        "year": 2025,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine"
+      },
+      "identity": {
+        "status": "exception",
+        "source": "legacy-surveillance-migration",
+        "verifiedAt": "2026-07-08",
+        "note": "authoritative monitoring endpoint; bibliographic article identity not applicable"
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "lastReviewed": "2026-07-08",
+        "reviewCadence": "monthly",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      },
+      "surveillance": {
+        "job": "guideline-surveillance",
+        "type": "html",
+        "modality": "full_text",
+        "severity_default": "P1",
+        "cadence": "monthly",
+        "watch_for": [
+          "REMS",
+          "ANC",
+          "neutropenia",
+          "Medication Guide",
+          "prescribing information",
+          "monitor"
+        ],
+        "affects_hint": [
+          "05_Psychopharmacology/Protocol_Library/**",
+          "03_Core_Topics/Psychosis/**"
+        ],
+        "verified": true,
+        "notes": "FDA removed the clozapine REMS effective 2025-06-13. Prescribers/pharmacies/patients no longer participate in the REMS or report ANC results to REMS before dispensing; ANC monitoring remains recommended per prescribing information."
+      }
+    },
+    {
+      "id": "spravato-rems",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "Spravato (esketamine) REMS",
+        "authors": [],
+        "organization": "SPRAVATO REMS",
+        "year": 2026,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.spravatorems.com/pdfs/REMSProgramOverview"
+      },
+      "identity": {
+        "status": "exception",
+        "source": "legacy-surveillance-migration",
+        "verifiedAt": "2026-07-08",
+        "note": "authoritative monitoring endpoint; bibliographic article identity not applicable"
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "lastReviewed": "2026-07-08",
+        "reviewCadence": "monthly",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      },
+      "surveillance": {
+        "job": "guideline-surveillance",
+        "type": "pdf",
+        "modality": "full_text",
+        "severity_default": "P1",
+        "cadence": "monthly",
+        "watch_for": [
+          "monitoring",
+          "requirement",
+          "certified",
+          "administration",
+          "pulse oximetry"
+        ],
+        "affects_hint": [
+          "05_Psychopharmacology/**",
+          "03_Core_Topics/Mood/**"
+        ],
+        "verified": true,
+        "notes": "Official SPRAVATO REMS Program Overview PDF. The REMS landing page returns HTTP 200 with an empty body to simple fetches, which caused a false empty-content alarm; monitor the official PDF for durable text-diff surveillance."
+      }
+    },
+    {
+      "id": "apa-practice-guidelines",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "APA Practice Guidelines (index)",
+        "authors": [],
+        "organization": "American Psychiatric Association",
+        "year": 2026,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.psychiatry.org/psychiatrists/practice/clinical-practice-guidelines"
+      },
+      "identity": {
+        "status": "exception",
+        "source": "legacy-surveillance-migration",
+        "verifiedAt": "2026-07-08",
+        "note": "authoritative monitoring endpoint; bibliographic article identity not applicable"
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "lastReviewed": "2026-07-08",
+        "reviewCadence": "monthly",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      },
+      "surveillance": {
+        "job": "guideline-surveillance",
+        "type": "html+pdf",
+        "modality": "full_text",
+        "severity_default": "P1",
+        "cadence": "monthly",
+        "watch_for": [
+          "updated",
+          "new guideline",
+          "revision",
+          "withdrawn",
+          "PDF"
+        ],
+        "affects_hint": [
+          "03_Core_Topics/**",
+          "04_Acute_and_Safety/**",
+          "07_Evidence_and_Reading/Guidelines/**"
+        ],
+        "verified": false,
+        "notes": "Index page lists per-topic guidelines (MDD, schizophrenia, bipolar, SUD, suicidal behaviors, eating disorders). Diff the index for add/remove/date changes; fetch changed PDFs."
+      }
+    },
+    {
+      "id": "dsm-5-tr",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "DSM-5-TR (APPI)",
+        "authors": [],
+        "organization": "American Psychiatric Association Publishing",
+        "year": 2022,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.appi.org/products/dsm"
+      },
+      "identity": {
+        "status": "exception",
+        "source": "legacy-surveillance-migration",
+        "verifiedAt": "2026-07-08",
+        "note": "authoritative monitoring endpoint; bibliographic article identity not applicable"
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "lastReviewed": "2026-07-08",
+        "reviewCadence": "monthly",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      },
+      "surveillance": {
+        "job": "guideline-surveillance",
+        "type": "login",
+        "modality": "signal_only",
+        "severity_default": "P1",
+        "cadence": "monthly",
+        "watch_for": [
+          "text revision",
+          "errata",
+          "coding update",
+          "printing"
+        ],
+        "affects_hint": [
+          "03_Core_Topics/**",
+          "02_Clinical_Skills/Differential_Diagnosis/**"
+        ],
+        "verified": false,
+        "legal_note": "Do not scrape or store DSM text. Monitor edition/errata/coding-update announcements only."
+      }
+    },
+    {
+      "id": "uspstf-mental-health",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "USPSTF Recommendations (mental health topics)",
+        "authors": [],
+        "organization": "U.S. Preventive Services Task Force",
+        "year": 2026,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.uspreventiveservicestaskforce.org/uspstf/topic_search_results?topic_status=P"
+      },
+      "identity": {
+        "status": "exception",
+        "source": "legacy-surveillance-migration",
+        "verifiedAt": "2026-07-08",
+        "note": "authoritative monitoring endpoint; bibliographic article identity not applicable"
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "lastReviewed": "2026-07-08",
+        "reviewCadence": "monthly",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      },
+      "surveillance": {
+        "job": "guideline-surveillance",
+        "type": "html",
+        "modality": "full_text",
+        "severity_default": "P1",
+        "cadence": "monthly",
+        "watch_for": [
+          "depression",
+          "anxiety",
+          "suicide",
+          "perinatal",
+          "grade",
+          "final recommendation"
+        ],
+        "affects_hint": [
+          "02_Clinical_Skills/Screeners/**",
+          "03_Core_Topics/Mood/**",
+          "03_Core_Topics/Perinatal/**",
+          "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/**"
+        ],
+        "verified": false,
+        "notes": "Screening grades change and are board-relevant."
+      }
+    },
+    {
+      "id": "samhsa-guidelines",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "SAMHSA Evidence-Based Practices Resource Center",
+        "authors": [],
+        "organization": "Substance Abuse and Mental Health Services Administration",
+        "year": 2026,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.samhsa.gov/libraries/evidence-based-practices-resource-center"
+      },
+      "identity": {
+        "status": "exception",
+        "source": "legacy-surveillance-migration",
+        "verifiedAt": "2026-07-08",
+        "note": "authoritative monitoring endpoint; bibliographic article identity not applicable"
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "lastReviewed": "2026-07-08",
+        "reviewCadence": "monthly",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      },
+      "surveillance": {
+        "job": "guideline-surveillance",
+        "type": "html+pdf",
+        "modality": "full_text",
+        "severity_default": "P2",
+        "cadence": "monthly",
+        "watch_for": [
+          "crisis",
+          "988",
+          "treatment improvement protocol",
+          "TIP",
+          "advisory"
+        ],
+        "affects_hint": [
+          "04_Acute_and_Safety/**",
+          "03_Core_Topics/SUD_Withdrawal/**"
+        ],
+        "verified": true,
+        "link_check": "browser_required",
+        "notes": "Replaces retired /resource-search/all path. Official SAMHSA pages may return 403 to simple datacenter HTTP clients; verify with browser/Apify before treating access denial as broken."
+      }
+    },
+    {
+      "id": "aacap-parameters",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "AACAP Clinical Practice Guidelines / Practice Parameters",
+        "authors": [],
+        "organization": "American Academy of Child and Adolescent Psychiatry",
+        "year": 2026,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.aacap.org/AACAP/Practice/Clinical%20Practice%20Guidelines/AACAP/Resources_for_Primary_Care/Practice_Parameters_and_Resource_Centers/Practice_Parameters.aspx"
+      },
+      "identity": {
+        "status": "exception",
+        "source": "legacy-surveillance-migration",
+        "verifiedAt": "2026-07-08",
+        "note": "authoritative monitoring endpoint; bibliographic article identity not applicable"
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "lastReviewed": "2026-07-08",
+        "reviewCadence": "monthly",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      },
+      "surveillance": {
+        "job": "guideline-surveillance",
+        "type": "html",
+        "modality": "full_text",
+        "severity_default": "P2",
+        "cadence": "monthly",
+        "watch_for": [
+          "parameter",
+          "updated",
+          "new"
+        ],
+        "affects_hint": [
+          "14_Tracks/CAP_Fellow/**"
+        ],
+        "verified": true,
+        "link_check": "browser_required",
+        "notes": "Current AACAP page states Practice Parameters are discontinued/historical and should be accessed for historical purposes only. Site can hang for simple HTTP clients; verify with browser/Apify before treating no-response as broken."
+      }
     },
     {
       "id": "canmat-isbd-bipolar-2018",
-      "title": "Canadian Network for Mood and Anxiety Treatments (CANMAT) and International Society for Bipolar Disorders (ISBD) 2018 guidelines for the management of patients with bipolar disorder",
-      "organization": "Canadian Network for Mood and Anxiety Treatments / International Society for Bipolar Disorders",
-      "year": 2018,
-      "url": "https://pubmed.ncbi.nlm.nih.gov/29536616/",
-      "doi": "10.1111/bdi.12609",
-      "evidenceLevel": "clinical practice guideline",
-      "lastReviewed": "2026-07-13",
-      "facultyReviewStatus": "pending",
-      "relatedTopicTags": ["bipolar", "mania", "mixed-features", "antidepressant-switch"],
-      "clerkshipRelevance": "Supports recognition of mania and mixed features, treatment-emergent (antidepressant-induced) switch risk, and suicide-risk awareness in mixed states under supervision.",
-      "shelfComatRelevance": "High",
-      "clinicalWorkflowRelevance": "High",
-      "localPolicyDependent": true,
-      "updateCadence": "annual"
+      "type": "guideline",
+      "citation": {
+        "title": "Canadian Network for Mood and Anxiety Treatments (CANMAT) and International Society for Bipolar Disorders (ISBD) 2018 guidelines for the management of patients with bipolar disorder",
+        "authors": [
+          {
+            "family": "Yatham",
+            "given": "LN"
+          },
+          {
+            "family": "Kennedy",
+            "given": "SH"
+          },
+          {
+            "family": "Parikh",
+            "given": "SV"
+          },
+          {
+            "family": "et al.",
+            "given": ""
+          }
+        ],
+        "organization": "Canadian Network for Mood and Anxiety Treatments / International Society for Bipolar Disorders",
+        "year": 2018,
+        "journal": "Bipolar Disorders",
+        "volume": "20",
+        "pages": "97-170",
+        "doi": "10.1111/bdi.12609",
+        "pmid": "29536616",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/29536616/"
+      },
+      "identity": {
+        "status": "pending",
+        "source": "main-branch-migration-2026-07-18",
+        "verifiedAt": "",
+        "note": "Added to main after source branch diverged; bibliographic identity populated from known metadata; Zotero verification pending."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "clinical practice guideline",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-07-13",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "bipolar",
+          "mania",
+          "mixed-features",
+          "antidepressant-switch"
+        ],
+        "clerkshipRelevance": "Supports recognition of mania and mixed features, treatment-emergent (antidepressant-induced) switch risk, and suicide-risk awareness in mixed states under supervision.",
+        "shelfComatRelevance": "High",
+        "clinicalWorkflowRelevance": "High"
+      }
     }
   ]
 }
