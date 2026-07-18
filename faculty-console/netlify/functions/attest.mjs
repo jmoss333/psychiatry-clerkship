@@ -235,9 +235,13 @@ function encodedRepositoryPath(path) {
   return path.split('/').map(segment => encodeURIComponent(segment)).join('/');
 }
 
-function repositoryUrl(settings, path, includeRef = true) {
+function repositoryUrl(settings, path, includeRef = true, ref = settings.branch) {
   const base = `${GITHUB_API}/repos/${settings.repo}/contents/${encodedRepositoryPath(path)}`;
-  return includeRef ? `${base}?ref=${encodeURIComponent(settings.branch)}` : base;
+  return includeRef ? `${base}?ref=${encodeURIComponent(ref)}` : base;
+}
+
+function gitRepositoryUrl(settings, path) {
+  return `${GITHUB_API}/repos/${settings.repo}/git/${encodedRepositoryPath(path)}`;
 }
 
 async function githubRequest(fetchImpl, input, init) {
@@ -306,10 +310,10 @@ function parseRepositoryJson(bytes) {
 }
 
 function createRepositoryGateway({ settings, fetchImpl }) {
-  async function read(path, { maxBytes = 0 } = {}) {
+  async function read(path, { maxBytes = 0, ref = settings.branch } = {}) {
     const objectResponse = await githubRequest(
       fetchImpl,
-      repositoryUrl(settings, path),
+      repositoryUrl(settings, path, true, ref),
       { headers: githubHeaders(settings.token) },
     );
     const object = await githubJson(objectResponse);
@@ -329,7 +333,7 @@ function createRepositoryGateway({ settings, fetchImpl }) {
         || (typeof object.content === 'string' && !object.content.trim())) {
       const rawResponse = await githubRequest(
         fetchImpl,
-        repositoryUrl(settings, path),
+        repositoryUrl(settings, path, true, ref),
         { headers: githubHeaders(settings.token, 'application/vnd.github.raw+json') },
       );
       const contentLength = Number(rawResponse.headers?.get?.('Content-Length'));
@@ -392,7 +396,137 @@ function createRepositoryGateway({ settings, fetchImpl }) {
     return { commit, revision };
   }
 
-  return { read, write };
+  async function head() {
+    const response = await githubRequest(
+      fetchImpl,
+      gitRepositoryUrl(settings, `ref/heads/${settings.branch}`),
+      { headers: githubHeaders(settings.token) },
+    );
+    const payload = await githubJson(response);
+    if (payload.object?.type !== 'commit') {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    return normalizeGitObjectId(payload.object.sha);
+  }
+
+  async function writeAtHead(path, value, {
+    expectedBlobSha,
+    message,
+    indent,
+    parentHead,
+  }) {
+    const submittedBlobSha = normalizeGitObjectId(expectedBlobSha);
+    const submittedParentHead = normalizeGitObjectId(parentHead);
+    const serialized = `${JSON.stringify(value, null, indent)}\n`;
+    const bytes = Buffer.from(serialized, 'utf8');
+    if (path === QBANK_PATH) enforceByteLimit(bytes.byteLength, MAX_BANK_BYTES);
+
+    const parentResponse = await githubRequest(
+      fetchImpl,
+      gitRepositoryUrl(settings, `commits/${submittedParentHead}`),
+      { headers: githubHeaders(settings.token) },
+    );
+    const parent = await githubJson(parentResponse);
+    const parentTree = normalizeGitObjectId(parent.tree?.sha);
+    if (normalizeGitObjectId(parent.sha) !== submittedParentHead) {
+      throw new GithubError('github_response_invalid', 502);
+    }
+
+    const blobResponse = await githubRequest(
+      fetchImpl,
+      gitRepositoryUrl(settings, 'blobs'),
+      {
+        method: 'POST',
+        headers: githubHeaders(settings.token),
+        body: JSON.stringify({
+          content: bytes.toString('base64'),
+          encoding: 'base64',
+        }),
+      },
+    );
+    const blob = await githubJson(blobResponse);
+    const revision = normalizeGitObjectId(blob.sha);
+    if (revision === submittedBlobSha) {
+      throw new GithubError('github_response_invalid', 502);
+    }
+
+    const treeResponse = await githubRequest(
+      fetchImpl,
+      gitRepositoryUrl(settings, 'trees'),
+      {
+        method: 'POST',
+        headers: githubHeaders(settings.token),
+        body: JSON.stringify({
+          base_tree: parentTree,
+          tree: [{
+            path,
+            mode: '100644',
+            type: 'blob',
+            sha: revision,
+          }],
+        }),
+      },
+    );
+    const tree = await githubJson(treeResponse);
+    const treeSha = normalizeGitObjectId(tree.sha);
+
+    const commitResponse = await githubRequest(
+      fetchImpl,
+      gitRepositoryUrl(settings, 'commits'),
+      {
+        method: 'POST',
+        headers: githubHeaders(settings.token),
+        body: JSON.stringify({
+          message,
+          tree: treeSha,
+          parents: [submittedParentHead],
+          committer: {
+            name: 'Faculty Attestation Console',
+            email: settings.attesterEmail,
+          },
+        }),
+      },
+    );
+    const commitPayload = await githubJson(commitResponse);
+    const commitSha = normalizeGitObjectId(commitPayload.sha);
+    const commit = typeof commitPayload.html_url === 'string' ? commitPayload.html_url : null;
+    let commitUrl;
+    try {
+      commitUrl = new URL(commit);
+    } catch {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    if (commitUrl.protocol !== 'https:' || commitSha === submittedParentHead) {
+      throw new GithubError('github_response_invalid', 502);
+    }
+
+    let refResponse;
+    try {
+      refResponse = await githubRequest(
+        fetchImpl,
+        gitRepositoryUrl(settings, `refs/heads/${settings.branch}`),
+        {
+          method: 'PATCH',
+          headers: githubHeaders(settings.token),
+          body: JSON.stringify({ sha: commitSha, force: false }),
+        },
+      );
+    } catch (error) {
+      if (error instanceof GithubError
+          && (error.conflict || error.code === 'github_validation_failed')) {
+        throw new GithubError('github_conflict', 409, { retryable: true });
+      }
+      throw error;
+    }
+    const ref = await githubJson(refResponse);
+    if (ref.object?.type !== 'commit'
+        || normalizeGitObjectId(ref.object.sha) !== commitSha) {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    return { commit, revision };
+  }
+
+  return { read, write, head, writeAtHead };
 }
 
 function invalidRepositoryFile() {
@@ -679,10 +813,14 @@ async function commitQbankMutation({ repository, action, body, attester }) {
   const expectedManifestRevision = requireManifestRevision(body.manifestRevision);
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
-    const bankFile = await repository.read(QBANK_PATH, { maxBytes: MAX_BANK_BYTES });
+    const parentHead = await repository.head();
+    const bankFile = await repository.read(QBANK_PATH, {
+      maxBytes: MAX_BANK_BYTES,
+      ref: parentHead,
+    });
     let manifestFile;
     try {
-      manifestFile = await repository.read(MANIFEST_PATH);
+      manifestFile = await repository.read(MANIFEST_PATH, { ref: parentHead });
     } catch (error) {
       if (error instanceof GithubError && error.notFound) throw manifestConflict();
       throw error;
@@ -697,12 +835,15 @@ async function commitQbankMutation({ repository, action, body, attester }) {
       throw attempt === 1 ? normalizeRetryTargetError(error) : error;
     }
     try {
-      const saved = await repository.write(
+      const saved = await repository.writeAtHead(
         QBANK_PATH,
         result.bank,
-        bankFile.sha,
-        mutationMessage(action, result, attester, today()),
-        2,
+        {
+          expectedBlobSha: bankFile.sha,
+          message: mutationMessage(action, result, attester, today()),
+          indent: 2,
+          parentHead,
+        },
       );
       return qbankSuccess(action, result, saved, manifestPages);
     } catch (error) {

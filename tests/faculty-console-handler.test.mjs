@@ -19,9 +19,16 @@ const QBANK_SHA = 'c'.repeat(40);
 const FIRST_WRITE_SHA = 'd'.repeat(40);
 const SECOND_WRITE_SHA = 'e'.repeat(40);
 const UNRELATED_RACE_SHA = 'f'.repeat(40);
+const MANIFEST_RACE_SHA = '4'.repeat(40);
 const SAME_ITEM_RACE_SHA = '1'.repeat(40);
 const RETIREMENT_RACE_SHA = '2'.repeat(40);
 const DELETION_RACE_SHA = '3'.repeat(40);
+const BRANCH_HEAD_SHA = '6'.repeat(40);
+const PARENT_TREE_SHA = '7'.repeat(40);
+const FIRST_TREE_SHA = '8'.repeat(40);
+const SECOND_TREE_SHA = '9'.repeat(40);
+const FIRST_COMMIT_SHA = '0'.repeat(40);
+const SECOND_COMMIT_SHA = '5'.repeat(40);
 
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
@@ -118,6 +125,16 @@ function clone(value) {
   return structuredClone(value);
 }
 
+function atomicBank(mock, index = 0) {
+  return JSON.parse(Buffer.from(mock.blobBodies[index].content, 'base64').toString('utf8'));
+}
+
+function assertNoQbankWrite(mock) {
+  assert.equal(mock.blobBodies.length, 0);
+  assert.equal(mock.refBodies.length, 0);
+  assert.equal(mock.effectiveWrites.length, 0);
+}
+
 function jsonResponse(status, value, headers = {}) {
   return new Response(JSON.stringify(value), {
     status,
@@ -132,25 +149,123 @@ function repositoryPath(url) {
   return index === -1 ? '' : decodeURIComponent(pathname.slice(index + marker.length));
 }
 
+function gitPath(url) {
+  const marker = '/git/';
+  const pathname = new URL(url).pathname;
+  const index = pathname.indexOf(marker);
+  return index === -1 ? '' : decodeURIComponent(pathname.slice(index + marker.length));
+}
+
 function createGithubMock({
   files = defaultFiles(),
   beforeRequest,
   onPut,
+  onRefUpdate,
 } = {}) {
   const calls = [];
   const putBodies = [];
+  const blobBodies = [];
+  const treeBodies = [];
+  const commitBodies = [];
+  const refBodies = [];
+  const effectiveWrites = [];
+  const blobs = new Map();
+  const trees = new Map();
+  const commits = new Map();
   let putAttempt = 0;
+  let branchHead = BRANCH_HEAD_SHA;
+  let refAttempt = 0;
+
+  function advanceBranch(mutate, sha = MANIFEST_RACE_SHA) {
+    mutate?.(files);
+    branchHead = sha;
+  }
 
   const fetchImpl = async (input, init = {}) => {
     const url = String(input);
     const method = (init.method || 'GET').toUpperCase();
     const headers = new Headers(init.headers || {});
     const path = repositoryPath(url);
-    const call = { url, method, headers, body: init.body, path };
+    const git = gitPath(url);
+    const call = { url, method, headers, body: init.body, path, git };
     calls.push(call);
 
-    const intercepted = await beforeRequest?.(call, { files, calls, putBodies });
+    const intercepted = await beforeRequest?.(call, {
+      files,
+      calls,
+      putBodies,
+      blobBodies,
+      treeBodies,
+      commitBodies,
+      refBodies,
+      effectiveWrites,
+      advanceBranch,
+    });
     if (intercepted) return intercepted;
+
+    if (method === 'GET' && git === 'ref/heads/main') {
+      return jsonResponse(200, { object: { type: 'commit', sha: branchHead } });
+    }
+
+    if (method === 'GET' && git.startsWith('commits/')) {
+      return jsonResponse(200, { sha: git.slice('commits/'.length), tree: { sha: PARENT_TREE_SHA } });
+    }
+
+    if (method === 'POST' && git === 'blobs') {
+      const body = JSON.parse(String(init.body));
+      blobBodies.push(body);
+      const sha = blobBodies.length === 1 ? FIRST_WRITE_SHA : SECOND_WRITE_SHA;
+      blobs.set(sha, JSON.parse(Buffer.from(body.content, 'base64').toString('utf8')));
+      return jsonResponse(201, { sha });
+    }
+
+    if (method === 'POST' && git === 'trees') {
+      const body = JSON.parse(String(init.body));
+      treeBodies.push(body);
+      const sha = treeBodies.length === 1 ? FIRST_TREE_SHA : SECOND_TREE_SHA;
+      trees.set(sha, body.tree?.[0]?.sha);
+      return jsonResponse(201, { sha });
+    }
+
+    if (method === 'POST' && git === 'commits') {
+      const body = JSON.parse(String(init.body));
+      commitBodies.push(body);
+      const sha = commitBodies.length === 1 ? FIRST_COMMIT_SHA : SECOND_COMMIT_SHA;
+      commits.set(sha, {
+        parent: body.parents?.[0],
+        blob: trees.get(body.tree),
+      });
+      return jsonResponse(201, {
+        sha,
+        html_url: `https://github.example/commit/${sha}`,
+      });
+    }
+
+    if (method === 'PATCH' && git === 'refs/heads/main') {
+      refAttempt += 1;
+      const body = JSON.parse(String(init.body));
+      refBodies.push(body);
+      const interceptedRef = await onRefUpdate?.({
+        attempt: refAttempt,
+        call,
+        body,
+        files,
+        advanceBranch,
+        branchHead,
+      });
+      if (interceptedRef) return interceptedRef;
+
+      const proposed = commits.get(body.sha);
+      if (!proposed || body.force !== false || proposed.parent !== branchHead) {
+        return jsonResponse(422, { message: 'Synthetic non-fast-forward ref update.' });
+      }
+      const bank = blobs.get(proposed.blob);
+      files[QBANK_PATH].json = clone(bank);
+      files[QBANK_PATH].sha = proposed.blob;
+      branchHead = body.sha;
+      effectiveWrites.push({ path: QBANK_PATH, sha: proposed.blob, head: branchHead });
+      return jsonResponse(200, { object: { type: 'commit', sha: branchHead } });
+    }
 
     const file = files[path];
     if (!file) return jsonResponse(404, { message: 'Synthetic file not found.' });
@@ -203,7 +318,17 @@ function createGithubMock({
     return jsonResponse(405, { message: 'Synthetic method not allowed.' });
   };
 
-  return { fetchImpl, calls, putBodies, files };
+  return {
+    fetchImpl,
+    calls,
+    putBodies,
+    blobBodies,
+    treeBodies,
+    commitBodies,
+    refBodies,
+    effectiveWrites,
+    files,
+  };
 }
 
 function handlerWith(mock, envOverrides = {}) {
@@ -568,7 +693,7 @@ for (const [name, sha] of [
     const response = await handlerWith(mock)(apiRequest('GET'));
 
     await expectError(response, { status: 502, code: 'github_response_invalid' });
-    assert.equal(mock.putBodies.length, 0);
+    assertNoQbankWrite(mock);
   });
 }
 
@@ -586,7 +711,7 @@ for (const [name, sha] of [
     const response = await handlerWith(mock)(apiRequest('GET'));
 
     await expectError(response, { status: 502, code: 'github_response_invalid' });
-    assert.equal(mock.putBodies.length, 0);
+    assertNoQbankWrite(mock);
   });
 }
 
@@ -693,7 +818,7 @@ for (const [name, manifestRevision] of [
 
     await expectError(response, { status: 400, code: 'qbank.invalid_input' });
     assert.equal(mock.calls.length, 0);
-    assert.equal(mock.putBodies.length, 0);
+    assertNoQbankWrite(mock);
   });
 }
 
@@ -714,10 +839,12 @@ test('qbank.save-draft compares manifest revisions case-insensitively after norm
   }));
 
   assert.equal(response.status, 200);
-  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.blobBodies.length, 1);
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 1);
 });
 
-test('qbank.save-draft rejects a first-attempt manifest mismatch without a PUT', async () => {
+test('qbank.save-draft rejects a first-attempt manifest mismatch without creating Git objects', async () => {
   const item = validItem({ status: 'attested' });
   const edited = clone(item);
   edited.stem = 'A revised fictional inpatient has sustained sadness. What diagnosis best fits?';
@@ -736,7 +863,47 @@ test('qbank.save-draft rejects a first-attempt manifest mismatch without a PUT',
   await expectError(response, { status: 409, code: 'qbank.conflict' });
   assert.equal(mock.calls.filter(call => call.path === QBANK_PATH).length, 1);
   assert.equal(mock.calls.filter(call => call.path === MANIFEST_PATH).length, 1);
+  assertNoQbankWrite(mock);
+});
+
+test('qbank.save-draft rejects a manifest-only branch race without an effective write', async () => {
+  const item = validItem({ status: 'attested' });
+  const originalBank = makeBank([item]);
+  const files = defaultFiles(originalBank);
+  let raced = false;
+  const mock = createGithubMock({
+    files,
+    onRefUpdate: ({ advanceBranch }) => {
+      if (raced) return undefined;
+      raced = true;
+      advanceBranch(mutableFiles => {
+        mutableFiles[MANIFEST_PATH].json.md[0][2] = 'Mood Disorders Updated Elsewhere';
+        mutableFiles[MANIFEST_PATH].sha = MANIFEST_RACE_SHA;
+      });
+      return undefined;
+    },
+  });
+  const edited = clone(item);
+  edited.stem = 'A revised fictional inpatient has sustained sadness. What diagnosis best fits?';
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
+      id: item.id,
+      baseRevision: itemRevision(item),
+      item: edited,
+    },
+  }));
+
+  await expectError(response, { status: 409, code: 'qbank.conflict' });
+  assert.equal(raced, true);
+  assert.deepEqual(mock.files[QBANK_PATH].json, originalBank);
+  assert.equal(mock.files[QBANK_PATH].sha, QBANK_SHA);
   assert.equal(mock.putBodies.length, 0);
+  assert.equal(mock.commitBodies.length, 1);
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 0);
 });
 
 test('qbank.save-draft maps a missing current manifest to a safe conflict without leaking internals', async () => {
@@ -761,7 +928,7 @@ test('qbank.save-draft maps a missing current manifest to a safe conflict withou
   assert.equal(JSON.stringify(payload).includes('notFound'), false);
   assert.equal(mock.calls.filter(call => call.path === QBANK_PATH).length, 1);
   assert.equal(mock.calls.filter(call => call.path === MANIFEST_PATH).length, 1);
-  assert.equal(mock.putBodies.length, 0);
+  assertNoQbankWrite(mock);
 });
 
 test('qbank.save-draft preserves a non-404 manifest read failure', async () => {
@@ -788,10 +955,10 @@ test('qbank.save-draft preserves a non-404 manifest read failure', async () => {
   }));
 
   await expectError(response, { status: 403, code: 'github_forbidden' });
-  assert.equal(mock.putBodies.length, 0);
+  assertNoQbankWrite(mock);
 });
 
-test('qbank.save-draft performs exactly one successful PUT and returns the saved item revision and assessment', async () => {
+test('qbank.save-draft performs one atomic Git commit and returns the saved item revision and assessment', async () => {
   const item = validItem({ status: 'attested' });
   const mock = createGithubMock({ files: defaultFiles(makeBank([item])) });
   const edited = clone(item);
@@ -816,17 +983,35 @@ test('qbank.save-draft performs exactly one successful PUT and returns the saved
   assert.match(payload.commit, /^https:\/\/github\.example\/commit\//);
   assert.match(payload.revision, /^[a-f0-9]{64}$/);
   assert.equal(payload.assessment.gate, 'ready');
-  assert.equal(mock.putBodies.length, 1);
-  assert.equal(mock.putBodies[0].path, QBANK_PATH);
-  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  assert.equal(mock.putBodies.length, 0);
+  assert.equal(mock.blobBodies.length, 1);
+  assert.equal(mock.treeBodies.length, 1);
+  assert.equal(mock.commitBodies.length, 1);
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 1);
+  const saved = atomicBank(mock);
   assert.equal(saved.items[0].stem, edited.stem);
   assert.equal(saved.items[0].status, 'draft');
   assert.equal(payload.revision, itemRevision(saved.items[0]));
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 1);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 1);
+  assert.equal(new URL(mock.calls.find(call => call.path === QBANK_PATH).url).searchParams.get('ref'), BRANCH_HEAD_SHA);
+  assert.equal(new URL(mock.calls.find(call => call.path === MANIFEST_PATH).url).searchParams.get('ref'), BRANCH_HEAD_SHA);
+  assert.deepEqual(mock.blobBodies[0], {
+    content: mock.blobBodies[0].content,
+    encoding: 'base64',
+  });
+  assert.deepEqual(mock.treeBodies[0], {
+    base_tree: PARENT_TREE_SHA,
+    tree: [{ path: QBANK_PATH, mode: '100644', type: 'blob', sha: FIRST_WRITE_SHA }],
+  });
+  assert.equal(mock.commitBodies[0].tree, FIRST_TREE_SHA);
+  assert.deepEqual(mock.commitBodies[0].parents, [BRANCH_HEAD_SHA]);
+  assert.match(mock.commitBodies[0].message, /^qbank: save draft qb_moo_900 by Synthetic Reviewer/);
+  assert.deepEqual(mock.refBodies[0], { sha: FIRST_COMMIT_SHA, force: false });
 });
 
-test('qbank.attest performs exactly one successful PUT and returns stable target revisions and assessments', async () => {
+test('qbank.attest performs one atomic Git commit and returns stable target revisions and assessments', async () => {
   const first = validItem({ id: 'qb_moo_900', stem: stems[0] });
   const second = validItem({ id: 'qb_moo_901', correctKey: 'B', stem: stems[1] });
   const firstRevision = itemRevision(first);
@@ -851,8 +1036,10 @@ test('qbank.attest performs exactly one successful PUT and returns stable target
   assert.equal(payload.ok, true);
   assert.equal(payload.action, 'qbank.attest');
   assert.equal(payload.updated, 2);
-  assert.equal(mock.putBodies.length, 1);
-  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  assert.equal(mock.putBodies.length, 0);
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 1);
+  const saved = atomicBank(mock);
   assert.equal(saved.items[0].status, 'attested');
   assert.equal(saved.items[1].status, 'attested');
   assert.equal(payload.revision[first.id], itemRevision(saved.items[0]));
@@ -877,7 +1064,7 @@ test('qbank.attest rejects a legacy green request without reviewed-revision evid
   }));
 
   await expectError(response, { status: 422, code: 'attest.review_required' });
-  assert.equal(mock.putBodies.length, 0);
+  assertNoQbankWrite(mock);
 });
 
 test('qbank.attest rejects a legacy warning request without reviewed-revision evidence', async () => {
@@ -896,7 +1083,7 @@ test('qbank.attest rejects a legacy warning request without reviewed-revision ev
     },
   }));
   await expectError(response, { status: 422, code: 'attest.review_required' });
-  assert.equal(mock.putBodies.length, 0);
+  assertNoQbankWrite(mock);
 });
 
 test('qbank.attest requires the loaded manifest revision before repository access', async () => {
@@ -914,20 +1101,22 @@ test('qbank.attest requires the loaded manifest revision before repository acces
 
   await expectError(response, { status: 400, code: 'qbank.invalid_input' });
   assert.equal(mock.calls.length, 0);
-  assert.equal(mock.putBodies.length, 0);
+  assertNoQbankWrite(mock);
 });
 
-test('retries one GitHub 409 after an unrelated-item race and preserves the unrelated update', async () => {
+test('retries one atomic ref conflict after an unrelated-item race and preserves the unrelated update', async () => {
   const target = validItem({ status: 'attested' });
   const unrelated = validItem({ id: 'qb_moo_901', stem: stems[1] });
   const files = defaultFiles(makeBank([target, unrelated]));
   const mock = createGithubMock({
     files,
-    onPut: ({ attempt, files: mutableFiles }) => {
+    onRefUpdate: ({ attempt, advanceBranch }) => {
       if (attempt !== 1) return undefined;
-      mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated faculty edit won the first race.';
-      mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
-      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+      advanceBranch(mutableFiles => {
+        mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated faculty edit won the first race.';
+        mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
+      }, UNRELATED_RACE_SHA);
+      return undefined;
     },
   });
   const edited = clone(target);
@@ -944,27 +1133,31 @@ test('retries one GitHub 409 after an unrelated-item race and preserves the unre
     },
   }));
   assert.equal(response.status, 200);
-  assert.equal(mock.putBodies.length, 2);
-  assert.equal(mock.putBodies[1].body.sha, UNRELATED_RACE_SHA);
-  const retriedBank = JSON.parse(Buffer.from(mock.putBodies[1].body.content, 'base64').toString('utf8'));
+  assert.equal(mock.blobBodies.length, 2);
+  assert.equal(mock.refBodies.length, 2);
+  assert.equal(mock.effectiveWrites.length, 1);
+  assert.deepEqual(mock.commitBodies[1].parents, [UNRELATED_RACE_SHA]);
+  const retriedBank = atomicBank(mock, 1);
   assert.equal(retriedBank.items[0].stem, edited.stem);
   assert.equal(retriedBank.items[1].pearl, 'An unrelated faculty edit won the first race.');
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 2);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
 });
 
-test('returns a conflict with no second PUT when the manifest drifts during a qbank retry', async () => {
+test('returns a conflict with no second ref update when the manifest drifts during a qbank retry', async () => {
   const target = validItem({ status: 'attested' });
   const unrelated = validItem({ id: 'qb_moo_901', stem: stems[1] });
   const files = defaultFiles(makeBank([target, unrelated]));
   const mock = createGithubMock({
     files,
-    onPut: ({ attempt, files: mutableFiles }) => {
+    onRefUpdate: ({ attempt, advanceBranch }) => {
       if (attempt !== 1) return undefined;
-      mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
-      mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
-      mutableFiles[MANIFEST_PATH].sha = '5'.repeat(40);
-      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+      advanceBranch(mutableFiles => {
+        mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
+        mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
+        mutableFiles[MANIFEST_PATH].sha = '5'.repeat(40);
+      }, UNRELATED_RACE_SHA);
+      return undefined;
     },
   });
   const edited = clone(target);
@@ -981,23 +1174,26 @@ test('returns a conflict with no second PUT when the manifest drifts during a qb
   }));
 
   await expectError(response, { status: 409, code: 'qbank.conflict' });
-  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 0);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 2);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
 });
 
-test('returns a conflict with no second PUT when the manifest is removed during a qbank retry', async () => {
+test('returns a conflict with no second ref update when the manifest is removed during a qbank retry', async () => {
   const target = validItem({ status: 'attested' });
   const unrelated = validItem({ id: 'qb_moo_901', stem: stems[1] });
   const files = defaultFiles(makeBank([target, unrelated]));
   const mock = createGithubMock({
     files,
-    onPut: ({ attempt, files: mutableFiles }) => {
+    onRefUpdate: ({ attempt, advanceBranch }) => {
       if (attempt !== 1) return undefined;
-      mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
-      mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
-      delete mutableFiles[MANIFEST_PATH];
-      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+      advanceBranch(mutableFiles => {
+        mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
+        mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
+        delete mutableFiles[MANIFEST_PATH];
+      }, UNRELATED_RACE_SHA);
+      return undefined;
     },
   });
   const edited = clone(target);
@@ -1014,23 +1210,26 @@ test('returns a conflict with no second PUT when the manifest is removed during 
   }));
 
   await expectError(response, { status: 409, code: 'qbank.conflict' });
-  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 0);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 2);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
 });
 
-test('validates the retry manifest before a second qbank PUT', async () => {
+test('validates the retry manifest before a second atomic write', async () => {
   const target = validItem({ status: 'attested' });
   const unrelated = validItem({ id: 'qb_moo_901', stem: stems[1] });
   const files = defaultFiles(makeBank([target, unrelated]));
   const mock = createGithubMock({
     files,
-    onPut: ({ attempt, files: mutableFiles }) => {
+    onRefUpdate: ({ attempt, advanceBranch }) => {
       if (attempt !== 1) return undefined;
-      mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
-      mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
-      mutableFiles[MANIFEST_PATH].json = { md: 'not-an-array', tools: [] };
-      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+      advanceBranch(mutableFiles => {
+        mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
+        mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
+        mutableFiles[MANIFEST_PATH].json = { md: 'not-an-array', tools: [] };
+      }, UNRELATED_RACE_SHA);
+      return undefined;
     },
   });
   const edited = clone(target);
@@ -1047,7 +1246,8 @@ test('validates the retry manifest before a second qbank PUT', async () => {
   }));
 
   await expectError(response, { status: 502, code: 'repository_file_invalid' });
-  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 0);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
 });
 
@@ -1055,20 +1255,22 @@ test('preserves a non-404 manifest failure during a qbank retry', async () => {
   const target = validItem({ status: 'attested' });
   const unrelated = validItem({ id: 'qb_moo_901', stem: stems[1] });
   const files = defaultFiles(makeBank([target, unrelated]));
-  let firstPutFailed = false;
+  let firstRefFailed = false;
   const mock = createGithubMock({
     files,
     beforeRequest: call => (
-      firstPutFailed && call.method === 'GET' && call.path === MANIFEST_PATH
+      firstRefFailed && call.method === 'GET' && call.path === MANIFEST_PATH
         ? jsonResponse(403, { message: 'Synthetic upstream details must not escape.' })
         : undefined
     ),
-    onPut: ({ attempt, files: mutableFiles }) => {
+    onRefUpdate: ({ attempt, advanceBranch }) => {
       if (attempt !== 1) return undefined;
-      firstPutFailed = true;
-      mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
-      mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
-      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+      firstRefFailed = true;
+      advanceBranch(mutableFiles => {
+        mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
+        mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
+      }, UNRELATED_RACE_SHA);
+      return undefined;
     },
   });
   const edited = clone(target);
@@ -1085,20 +1287,23 @@ test('preserves a non-404 manifest failure during a qbank retry', async () => {
   }));
 
   await expectError(response, { status: 403, code: 'github_forbidden' });
-  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 0);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
 });
 
-test('returns a same-item conflict with no second PUT when the target changes during a GitHub 409 race', async () => {
+test('returns a same-item conflict with no second ref update when the target changes during a race', async () => {
   const target = validItem({ status: 'attested' });
   const files = defaultFiles(makeBank([target]));
   const mock = createGithubMock({
     files,
-    onPut: ({ attempt, files: mutableFiles }) => {
+    onRefUpdate: ({ attempt, advanceBranch }) => {
       if (attempt !== 1) return undefined;
-      mutableFiles[QBANK_PATH].json.items[0].pearl = 'A competing edit changed this same item.';
-      mutableFiles[QBANK_PATH].sha = SAME_ITEM_RACE_SHA;
-      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+      advanceBranch(mutableFiles => {
+        mutableFiles[QBANK_PATH].json.items[0].pearl = 'A competing edit changed this same item.';
+        mutableFiles[QBANK_PATH].sha = SAME_ITEM_RACE_SHA;
+      }, SAME_ITEM_RACE_SHA);
+      return undefined;
     },
   });
   const edited = clone(target);
@@ -1115,22 +1320,25 @@ test('returns a same-item conflict with no second PUT when the target changes du
   }));
 
   await expectError(response, { status: 409, code: 'qbank.conflict' });
-  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 0);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 2);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 2);
 });
 
-test('normalizes target retirement during a save retry to a conflict with no second PUT', async () => {
+test('normalizes target retirement during a save retry to a conflict with no second ref update', async () => {
   const target = validItem({ status: 'attested' });
   const files = defaultFiles(makeBank([target]));
   const mock = createGithubMock({
     files,
-    onPut: ({ attempt, files: mutableFiles }) => {
+    onRefUpdate: ({ attempt, advanceBranch }) => {
       if (attempt !== 1) return undefined;
-      mutableFiles[QBANK_PATH].json.items[0].retired = true;
-      mutableFiles[QBANK_PATH].json.items[0].retiredReason = 'Retired during the synthetic race.';
-      mutableFiles[QBANK_PATH].sha = RETIREMENT_RACE_SHA;
-      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+      advanceBranch(mutableFiles => {
+        mutableFiles[QBANK_PATH].json.items[0].retired = true;
+        mutableFiles[QBANK_PATH].json.items[0].retiredReason = 'Retired during the synthetic race.';
+        mutableFiles[QBANK_PATH].sha = RETIREMENT_RACE_SHA;
+      }, RETIREMENT_RACE_SHA);
+      return undefined;
     },
   });
   const edited = clone(target);
@@ -1147,7 +1355,8 @@ test('normalizes target retirement during a save retry to a conflict with no sec
   }));
 
   await expectError(response, { status: 409, code: 'qbank.conflict' });
-  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 0);
 });
 
 test('normalizes deletion of any attestation target during retry to one atomic conflict', async () => {
@@ -1156,11 +1365,13 @@ test('normalizes deletion of any attestation target during retry to one atomic c
   const files = defaultFiles(makeBank([first, second]));
   const mock = createGithubMock({
     files,
-    onPut: ({ attempt, files: mutableFiles }) => {
+    onRefUpdate: ({ attempt, advanceBranch }) => {
       if (attempt !== 1) return undefined;
-      mutableFiles[QBANK_PATH].json.items = [mutableFiles[QBANK_PATH].json.items[0]];
-      mutableFiles[QBANK_PATH].sha = DELETION_RACE_SHA;
-      return jsonResponse(409, { message: 'Synthetic SHA conflict.' });
+      advanceBranch(mutableFiles => {
+        mutableFiles[QBANK_PATH].json.items = [mutableFiles[QBANK_PATH].json.items[0]];
+        mutableFiles[QBANK_PATH].sha = DELETION_RACE_SHA;
+      }, DELETION_RACE_SHA);
+      return undefined;
     },
   });
 
@@ -1177,21 +1388,26 @@ test('normalizes deletion of any attestation target during retry to one atomic c
   }));
 
   await expectError(response, { status: 409, code: 'qbank.conflict' });
-  assert.equal(mock.putBodies.length, 1);
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 0);
 });
 
 for (const [name, githubPayload] of [
-  ['missing commit and content receipts', {}],
-  ['missing commit receipt', { content: { sha: FIRST_WRITE_SHA } }],
-  ['missing content receipt', { commit: { html_url: 'https://github.example/commit/written' } }],
+  ['missing commit SHA and URL', {}],
+  ['missing commit URL', { sha: FIRST_COMMIT_SHA }],
+  ['missing commit SHA', { html_url: 'https://github.example/commit/written' }],
 ]) {
-  test(`rejects a successful GitHub PUT response with ${name}`, async () => {
+  test(`rejects a successful Git commit response with ${name}`, async () => {
     const item = validItem({ status: 'attested' });
     const edited = clone(item);
     edited.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
     const mock = createGithubMock({
       files: defaultFiles(makeBank([item])),
-      onPut: () => jsonResponse(200, githubPayload),
+      beforeRequest: call => (
+        call.method === 'POST' && call.git === 'commits'
+          ? jsonResponse(201, githubPayload)
+          : undefined
+      ),
     });
 
     const response = await handlerWith(mock)(apiRequest('POST', {
@@ -1205,7 +1421,9 @@ for (const [name, githubPayload] of [
     }));
 
     await expectError(response, { status: 502, code: 'github_response_invalid' });
-    assert.equal(mock.putBodies.length, 1);
+    assert.equal(mock.calls.filter(call => call.method === 'POST' && call.git === 'commits').length, 1);
+    assert.equal(mock.refBodies.length, 0);
+    assert.equal(mock.effectiveWrites.length, 0);
   });
 }
 
@@ -1216,16 +1434,17 @@ for (const [name, receiptSha] of [
   ['non-hex', 'g'.repeat(40)],
   ['wrong-length', 'a'.repeat(39)],
 ]) {
-  test(`rejects a successful GitHub PUT response with a ${name} content SHA`, async () => {
+  test(`rejects a successful Git blob response with a ${name} SHA`, async () => {
     const item = validItem({ status: 'attested' });
     const edited = clone(item);
     edited.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
     const mock = createGithubMock({
       files: defaultFiles(makeBank([item])),
-      onPut: () => jsonResponse(200, {
-        content: { sha: receiptSha },
-        commit: { html_url: 'https://github.example/commit/written' },
-      }),
+      beforeRequest: call => (
+        call.method === 'POST' && call.git === 'blobs'
+          ? jsonResponse(201, { sha: receiptSha })
+          : undefined
+      ),
     });
 
     const response = await handlerWith(mock)(apiRequest('POST', {
@@ -1239,8 +1458,42 @@ for (const [name, receiptSha] of [
     }));
 
     await expectError(response, { status: 502, code: 'github_response_invalid' });
-    assert.equal(mock.putBodies.length, 1);
-    assert.match(mock.putBodies[0].body.sha, /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/);
+    const blobCall = mock.calls.find(call => call.method === 'POST' && call.git === 'blobs');
+    const blobRequest = JSON.parse(blobCall.body);
+    assert.equal(blobRequest.encoding, 'base64');
+    assert.equal(JSON.parse(Buffer.from(blobRequest.content, 'base64').toString('utf8')).items[0].stem, edited.stem);
+    assert.equal(mock.refBodies.length, 0);
+    assert.equal(mock.effectiveWrites.length, 0);
+  });
+}
+
+for (const [name, refPayload] of [
+  ['missing object', {}],
+  ['wrong object type', { object: { type: 'blob', sha: FIRST_COMMIT_SHA } }],
+  ['wrong commit SHA', { object: { type: 'commit', sha: SECOND_COMMIT_SHA } }],
+]) {
+  test(`rejects a successful Git ref response with ${name}`, async () => {
+    const item = validItem({ status: 'attested' });
+    const edited = clone(item);
+    edited.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
+    const mock = createGithubMock({
+      files: defaultFiles(makeBank([item])),
+      onRefUpdate: () => jsonResponse(200, refPayload),
+    });
+
+    const response = await handlerWith(mock)(apiRequest('POST', {
+      body: {
+        action: 'qbank.save-draft',
+        manifestRevision: MANIFEST_SHA,
+        id: item.id,
+        baseRevision: itemRevision(item),
+        item: edited,
+      },
+    }));
+
+    await expectError(response, { status: 502, code: 'github_response_invalid' });
+    assert.equal(mock.refBodies.length, 1);
+    assert.equal(mock.effectiveWrites.length, 0);
   });
 }
 
@@ -1297,7 +1550,7 @@ test('qbank and content no-op requests perform no commit', async () => {
     },
   }));
   await expectError(qbankResponse, { status: 422, code: 'qbank.no_changes' });
-  assert.equal(qbankMock.putBodies.length, 0);
+  assertNoQbankWrite(qbankMock);
 
   const contentMock = createGithubMock();
   const contentResponse = await handlerWith(contentMock)(apiRequest('POST', {
