@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Daily Review — Spaced Repetition</title>
 <style>
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 :root{
   --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --surface2:#faf6f0; --hover:#f0e9e0;
   --border:#ddd3c6; --border2:#e7ded2;
@@ -217,7 +218,7 @@ function App(){
             e("span",{className:"deckchip",style:{background:"var(--bg-alt)",color:"var(--text-light)"}}, c.deckTitle.length>42?c.deckTitle.slice(0,40)+"…":c.deckTitle),
             e("span",{className:"scount"}, (sess.pos+1)+" / "+sess.total)),
           e("div",{className:"qtext"}, c.q),
-          c.audio? e("details",{className:"oeaudio"}, e("summary",null,"🎧 Listen — paper overview"+(c.audioDur?(" · "+c.audioDur):"")), e("audio",{controls:true,preload:"none",src:"../audio_oe/"+c.audio})) : null,
+          c.audio? e("details",{className:"oeaudio"}, e("summary",null,"🎧 Listen — paper overview"+(c.audioDur?(" · "+c.audioDur):"")), e("audio",{controls:true,preload:"none",src:"../audio_oe/"+c.audio,"aria-label":"Paper overview audio"})) : null,
           e("div",{className:"opts"}, c.o.map(function(o,i){
             var cls="opt"; if(sess.revealed){ if(i===ci)cls+=" correct"; else if(i===sess.chosen)cls+=" wrong"; else cls+=" dim"; }
             return e("button",{key:i,className:cls,disabled:sess.revealed,onClick:function(){choose(i);}},
@@ -227,6 +228,8 @@ function App(){
           sess.revealed? e("div",{className:"fb"},
             e("b",null, gotIt?"✓ Correct. ":"✗ Not quite. "),
             (fbOpt.fb||corrOpt.fb||"") ) : null,
+          e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"},
+            sess.revealed ? (gotIt?"Correct. ":"Not quite. ")+(fbOpt.fb||corrOpt.fb||"") : ""),
           sess.revealed? e("div",{className:"grades"},
             e("button",{className:"gr again"+(!gotIt?" sug":""),onClick:function(){grade(0);}},"Again",e("span",{className:"gk"},"<10m")),
             e("button",{className:"gr hard",onClick:function(){grade(1);}},"Hard",e("span",{className:"gk"},"1")),

@@ -62,6 +62,9 @@ jobs:
       - name: Unit — root node regression tests (tests/*.test.mjs)
         run: node --test tests/*.test.mjs
 
+      - name: Validate — WCAG AA contrast tokens
+        run: node tests/contrast-check.mjs
+
       - name: Install — managed SP proxy dependencies
         run: npm --prefix sp-proxy ci
 

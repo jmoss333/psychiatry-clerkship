@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <style>
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   :root{
     --bg:#f6f3ee;--bg-alt:#faf6f0;--surface:#ffffff;--border:#ddd3c6;
     --primary:#c25a3c;--primary-dark:#a84830;--primary-light:#f3ebe5;
@@ -99,6 +100,8 @@ function Scale(props){
         e("span",{style:{marginLeft:"12px"}}, e("span",{className:"badge b"+b[1]}, b[0]))),
       e("div",null, e("span",{style:{fontSize:".82rem",color:"var(--text-light)",marginRight:"10px"}}, complete?"complete":(answered+"/"+items.length+" answered")),
         e("button",{className:"btn",onClick:function(){setAns({})}},"Reset"))),
+    e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"},
+      complete ? ("Score "+total+" of "+(items.length*3)+", "+b[0]) : ""),
     e("div",{className:"interp"}, props.interp)
   );
 }
