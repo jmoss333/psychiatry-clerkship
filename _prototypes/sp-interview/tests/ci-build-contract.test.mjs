@@ -154,10 +154,14 @@ function extractRunSteps(source) {
       for (let bodyIndex = index + 1; bodyIndex < sourceLines.length; bodyIndex += 1) {
         const bodyLine = sourceLines[bodyIndex];
         if (bodyLine.trim() && leadingIndent(bodyLine) <= runIndent) break;
-        lines.push({ text: bodyLine.trim(), sourceLine: bodyIndex });
+        lines.push({
+          text: bodyLine.trim(),
+          sourceLine: bodyIndex,
+          indent: leadingIndent(bodyLine),
+        });
         endLine = bodyIndex;
       }
-      steps.push({ startLine: index, endLine, lines });
+      steps.push({ startLine: index, endLine, lines, indicator: blockRun[3] });
       index = endLine;
       continue;
     }
@@ -167,26 +171,124 @@ function extractRunSteps(source) {
     steps.push({
       startLine: index,
       endLine: index,
-      lines: [{ text: inlineRun[3], sourceLine: index }],
+      lines: [{
+        text: inlineRun[3],
+        sourceLine: index,
+        indent: leadingIndent(sourceLine),
+      }],
+      indicator: null,
     });
   }
   return steps;
 }
 
+function stripShellComment(command) {
+  let quote = null;
+  let escaped = false;
+  for (let index = 0; index < command.length; index += 1) {
+    const character = command[index];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (character === '\\' && quote !== "'") {
+      escaped = true;
+      continue;
+    }
+    if (quote) {
+      if (character === quote) quote = null;
+      continue;
+    }
+    if (character === "'" || character === '"') {
+      quote = character;
+      continue;
+    }
+    if (
+      character === '#'
+      && (index === 0 || /[\s;&|()]/.test(command[index - 1]))
+    ) {
+      return command.slice(0, index).trimEnd();
+    }
+  }
+  return command;
+}
+
+function normalizeShellCommand(command) {
+  return stripShellComment(command)
+    .replace(/['"\\]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function normalizeActiveRunCommands(step) {
-  const commands = [];
+  const rawCommands = [];
+  if (step.indicator?.startsWith('>')) {
+    const contentIndents = step.lines
+      .filter((line) => line.text)
+      .map((line) => line.indent);
+    const baseIndent = contentIndents.length ? Math.min(...contentIndents) : 0;
+    let paragraph = [];
+    const flushParagraph = () => {
+      if (paragraph.length) rawCommands.push(paragraph.join(' '));
+      paragraph = [];
+    };
+    for (const line of step.lines) {
+      if (!line.text) {
+        flushParagraph();
+        continue;
+      }
+      if (line.indent > baseIndent) {
+        flushParagraph();
+        rawCommands.push(line.text);
+        continue;
+      }
+      paragraph.push(line.text);
+    }
+    flushParagraph();
+    return rawCommands.map(normalizeShellCommand).filter(Boolean);
+  }
+
   let continuedCommand = '';
   for (const line of step.lines) {
-    if (!line.text || line.text.startsWith('#')) continue;
+    if (!line.text) continue;
     const continues = line.text.endsWith('\\');
-    const fragment = continues ? line.text.slice(0, -1).trimEnd() : line.text;
-    continuedCommand = `${continuedCommand} ${fragment}`.trim();
+    const fragment = continues ? line.text.slice(0, -1) : line.text;
+    continuedCommand += fragment;
     if (continues) continue;
-    commands.push(continuedCommand.replace(/\s+/g, ' '));
+    rawCommands.push(continuedCommand);
     continuedCommand = '';
   }
-  if (continuedCommand) commands.push(continuedCommand.replace(/\s+/g, ' '));
-  return commands;
+  if (continuedCommand) rawCommands.push(continuedCommand);
+  return rawCommands.map(normalizeShellCommand).filter(Boolean);
+}
+
+function extractSmokeEnvironmentKeys(source) {
+  const keys = [];
+  const sourceLines = source.split(/\r?\n/);
+  let environmentIndent = -1;
+  for (const sourceLine of sourceLines) {
+    const trimmed = sourceLine.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const indent = leadingIndent(sourceLine);
+    if (environmentIndent >= 0 && indent > environmentIndent) {
+      const key = trimmed.match(/^['"]?(SMOKE_[A-Z0-9_]+)['"]?\s*:/)?.[1];
+      if (key) keys.push(key);
+      continue;
+    }
+    environmentIndent = -1;
+
+    const environment = sourceLine.match(/^(\s*)(-\s+)?env:\s*(.*?)\s*$/);
+    if (!environment) continue;
+    const inlineMapping = environment[3];
+    environmentIndent = environment[1].length + (environment[2]?.length ?? 0);
+    if (!inlineMapping || inlineMapping.startsWith('#')) continue;
+    for (const match of inlineMapping.matchAll(
+      /(?:^|[{,]\s*)['"]?(SMOKE_[A-Z0-9_]+)['"]?\s*:/g,
+    )) {
+      keys.push(match[1]);
+    }
+  }
+  return keys;
 }
 
 function countExactLines(lines, marker) {
@@ -232,29 +334,28 @@ function uniqueCommandPosition(runSteps, command) {
 
 function assertSmokeLauncherContract(ci) {
   const allRunSteps = extractRunSteps(ci);
+  const activeRunCommands = allRunSteps.flatMap(normalizeActiveRunCommands);
   assert.equal(
     countRunCommands(allRunSteps, SMOKE_LAUNCHER_COMMAND),
     1,
     'tested smoke-server launcher must run exactly once in CI',
   );
-  const activeCi = ci
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith('#'))
-    .join('\n');
-  assert.doesNotMatch(
-    activeCi,
-    SMOKE_CONFIGURATION_PATTERN,
-    'CI must use the launcher default ports, directories, and readiness controls',
-  );
-  for (const step of allRunSteps) {
-    for (const command of normalizeActiveRunCommands(step)) {
-      assert.doesNotMatch(
-        command,
-        /\bpython3\s+-m\s*http\.server(?:\s|$)/,
-        'CI must not duplicate smoke-server startup outside the tested launcher',
-      );
-    }
+  for (const configuration of [
+    ...extractSmokeEnvironmentKeys(ci),
+    ...activeRunCommands,
+  ]) {
+    assert.doesNotMatch(
+      configuration,
+      SMOKE_CONFIGURATION_PATTERN,
+      'CI must use the launcher default ports, directories, and readiness controls',
+    );
+  }
+  for (const command of activeRunCommands) {
+    assert.doesNotMatch(
+      command,
+      /(?:^|(?:&&|\|\||[;|&()])\s*)python3\s+-m\s*http\.server(?:\s|$)/,
+      'CI must not duplicate smoke-server startup outside the tested launcher',
+    );
   }
 
   const smokeJob = extractWorkflowJob(ci, 'smoke-tests');
@@ -429,6 +530,140 @@ test('smoke launcher contract ignores commented inline-server examples', () => {
   );
   assert.notEqual(commentedInlineServer, ci, 'test fixture must add a commented server example');
   assert.doesNotThrow(() => assertSmokeLauncherContract(commentedInlineServer));
+});
+
+test('smoke launcher contract rejects folded-scalar server syntax', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const foldedInlineServer = ci.replace(
+    `        run: ${SMOKE_LAUNCHER_COMMAND}`,
+    [
+      `        run: ${SMOKE_LAUNCHER_COMMAND}`,
+      '',
+      '      - name: Folded server fixture',
+      '        run: >',
+      '          python3 -m',
+      '          http.server 4300 &',
+    ].join('\n'),
+  );
+  assert.notEqual(foldedInlineServer, ci, 'test fixture must add a folded inline server');
+  assert.throws(
+    () => assertSmokeLauncherContract(foldedInlineServer),
+    /must not duplicate smoke-server startup/,
+  );
+});
+
+test('smoke launcher contract rejects token-concatenating server continuation', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const concatenatedInlineServer = ci.replace(
+    `run: ${SMOKE_LAUNCHER_COMMAND}`,
+    [
+      'run: |',
+      `          ${SMOKE_LAUNCHER_COMMAND}`,
+      '          python3 -mhttp.\\',
+      '          server 4300 &',
+    ].join('\n'),
+  );
+  assert.notEqual(concatenatedInlineServer, ci, 'test fixture must split the module token');
+  assert.throws(
+    () => assertSmokeLauncherContract(concatenatedInlineServer),
+    /must not duplicate smoke-server startup/,
+  );
+});
+
+test('smoke launcher contract rejects shell-quoted server module syntax', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const quotedInlineServer = ci.replace(
+    `run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          python3 -m"http.server" 4300 &`,
+  );
+  assert.notEqual(quotedInlineServer, ci, 'test fixture must quote the server module');
+  assert.throws(
+    () => assertSmokeLauncherContract(quotedInlineServer),
+    /must not duplicate smoke-server startup/,
+  );
+});
+
+test('smoke launcher contract ignores configuration tokens in step labels', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const relabeled = ci.replace(
+    /(\n\s*- name: )[^\n]+(\n\s+run: bash tests\/smoke\/start-local-servers\.sh)/,
+    '$1Document SMOKE_MS3_PORT launcher behavior$2',
+  );
+  assert.notEqual(relabeled, ci, 'test fixture must add a configuration token to the label');
+  assert.doesNotThrow(() => assertSmokeLauncherContract(relabeled));
+});
+
+test('smoke launcher contract ignores inline shell comments about servers', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const inlineComment = ci.replace(
+    `run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          echo "server documentation" # python3 -m http.server 4300 &`,
+  );
+  assert.notEqual(inlineComment, ci, 'test fixture must add an inline server comment');
+  assert.doesNotThrow(() => assertSmokeLauncherContract(inlineComment));
+});
+
+test('smoke launcher contract rejects quoted inline configuration keys', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const quotedInlineOverride = ci.replace(
+    `        run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `        env: { "SMOKE_FUTURE_SETTING": "enabled" }\n        run: ${SMOKE_LAUNCHER_COMMAND}`,
+  );
+  assert.notEqual(quotedInlineOverride, ci, 'test fixture must add a quoted flow key');
+  assert.throws(
+    () => assertSmokeLauncherContract(quotedInlineOverride),
+    /must use the launcher default ports, directories, and readiness controls/,
+  );
+});
+
+test('smoke launcher contract rejects anchored multiline configuration keys', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const anchoredOverride = ci.replace(
+    `        run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `        env: &launcher_environment\n          "SMOKE_FUTURE_SETTING": "enabled"\n        run: ${SMOKE_LAUNCHER_COMMAND}`,
+  );
+  assert.notEqual(anchoredOverride, ci, 'test fixture must add an anchored environment key');
+  assert.throws(
+    () => assertSmokeLauncherContract(anchoredOverride),
+    /must use the launcher default ports, directories, and readiness controls/,
+  );
+});
+
+test('smoke launcher contract allows harmless server module output', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const harmlessOutput = ci.replace(
+    `run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          echo "http.server"`,
+  );
+  assert.notEqual(harmlessOutput, ci, 'test fixture must add harmless module output');
+  assert.doesNotThrow(() => assertSmokeLauncherContract(harmlessOutput));
+});
+
+test('smoke launcher contract allows non-server Python imports', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const harmlessImport = ci.replace(
+    `run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          python3 -c 'import http.server'`,
+  );
+  assert.notEqual(harmlessImport, ci, 'test fixture must add a harmless Python import');
+  assert.doesNotThrow(() => assertSmokeLauncherContract(harmlessImport));
+});
+
+test('smoke launcher contract preserves more-indented folded lines', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const moreIndentedFoldedLines = ci.replace(
+    `        run: ${SMOKE_LAUNCHER_COMMAND}`,
+    [
+      `        run: ${SMOKE_LAUNCHER_COMMAND}`,
+      '',
+      '      - name: More-indented folded fixture',
+      '        run: >',
+      '          python3 -m',
+      '            http.server 4300 &',
+    ].join('\n'),
+  );
+  assert.notEqual(moreIndentedFoldedLines, ci, 'test fixture must indent the second folded line');
+  assert.doesNotThrow(() => assertSmokeLauncherContract(moreIndentedFoldedLines));
 });
 
 // F26's other half: CI invoking run-all.sh (locked above) only helps if
