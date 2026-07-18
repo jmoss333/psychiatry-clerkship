@@ -461,6 +461,13 @@ async function makeCurrentQuestionPreviewReady(harness) {
   await document.getElementById('learner-preview-frame').dispatch('load');
   await reportPreviewStatus(window, controller, 'ready');
   await setChecked(document, 'review-live-preview');
+  await confirmCurrentSavedDraft(document);
+}
+
+async function confirmCurrentSavedDraft(document) {
+  await document.getElementById('view-draft').dispatch('click');
+  await setChecked(document, 'review-saved-revision');
+  await document.getElementById('view-live').dispatch('click');
 }
 
 test('exports the injectable faculty-console browser entry', () => {
@@ -537,12 +544,15 @@ test('creates one semantic queue, workspace, and persistent field labels', () =>
   assert.match(appSource, /not verified identit/i);
   assert.match(appSource, /Revert/);
   assert.match(appSource, /Save draft/);
-  assert.match(appSource, /Attest this warning question/);
+  assert.match(appSource, /Attest this question/);
   assert.match(appSource, /Review[^\n]+Resolve[^\n]+Confirm/);
   assert.match(appSource, /Ready|Warning|Blocked/);
   assert.doesNotMatch(appSource, /role:\s*'tablist'/);
   assert.doesNotMatch(appSource, /function renderTabNavigation|function renderBatchSummary|function renderBatchConfirmation/);
   assert.doesNotMatch(appSource, /Attest selected green drafts|Mark reviewed & next|queue checkbox|green batch/i);
+  assert.doesNotMatch(appSource, /\bassessBatch\b|\blegacyBatchEligible\b|\breviewedInSession\b|\bbatchConfirmation\b/);
+  assert.doesNotMatch(appSource, /function attestWarning\b|function attestBatch\b|function sameAttestationEntries\b/);
+  assert.doesNotMatch(appSource, /\bstate\.batch\b|function selectedBatchQuestions\b|function safeBatchAssessment\b|function openBatchConfirmation\b/);
 });
 
 test('renders repository text without HTML parsing sinks', () => {
@@ -878,6 +888,8 @@ test('targeted queue, reviewer, view, editor, and rail updates keep the learner 
   const reviewer = document.getElementById('reviewer-label');
   reviewer.value = 'Faculty reviewer';
   await reviewer.dispatch('input');
+  assert.match(document.getElementById('rail-step-confirm').textContent,
+    /Reviewer: Faculty reviewer/);
   await setValue(document, 'review-search', 'qb_moo_902');
   await document.getElementById('view-edit').dispatch('click');
   await setValue(document, 'question-stem', 'A targeted local edit. What is the diagnosis?');
@@ -887,6 +899,201 @@ test('targeted queue, reviewer, view, editor, and rail updates keep the learner 
   assert.equal(document.getElementById('learner-preview-frame'), frame);
   assert.equal(document.getElementById('learner-preview-frame').contentWindow, frameWindow);
   assert.match(document.getElementById('selected-item-view').textContent, /Edit question/);
+});
+
+test('Live deploy, Draft preview, and Edit question are the only mutually exclusive question views', async () => {
+  const tier2 = {
+    q: '<b>Which finding confirms the diagnosis?</b>',
+    options: [
+      { key: 'A', t: 'Sustained syndrome', c: true },
+      { key: 'B', t: 'Fluctuating attention' },
+      { key: 'C', t: 'Elevated energy' },
+    ],
+    why: 'The sustained syndrome is the tier-two discriminator.',
+  };
+  const exact = validDomQuestion({
+    type: 'two-tier',
+    stem: '<img src=x onerror=alert(1)> Exact saved stem?',
+    options: [
+      { key: 'A', t: 'Exact answer A', c: true },
+      { key: 'B', t: 'Exact answer B', trap: { name: 'B trap', note: 'B correction' } },
+      { key: 'C', t: 'Exact answer C', trap: { name: 'C trap', note: 'C correction' } },
+      { key: 'D', t: 'Exact answer D', trap: { name: 'D trap', note: 'D correction' } },
+    ],
+    why: 'Exact rationale text.',
+    pearl: 'Exact teaching pearl.',
+    evidence: 'Exact evidence anchor.',
+    pages: ['t_mood.md', '<script>source-page</script>'],
+    link: { label: 'Exact learning link', href: '?page=t_mood.md' },
+    tier2,
+  });
+  const { controller, document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({ question: exact })),
+  });
+  const frame = document.getElementById('learner-preview-frame');
+  const frameWindow = frame.contentWindow;
+  const viewButtons = document.findAll('button').filter(button => (
+    (button.getAttribute('id') || '').startsWith('view-')
+  ));
+  assert.deepEqual(viewButtons.map(button => button.getAttribute('id')), [
+    'view-live', 'view-draft', 'view-edit',
+  ]);
+
+  for (const [mode, label] of [
+    ['live', 'Live deploy'],
+    ['draft', 'Draft preview'],
+    ['edit', 'Edit question'],
+  ]) {
+    await document.getElementById(`view-${mode}`).dispatch('click');
+    assert.equal(controller.state.viewMode, mode);
+    assert.equal(document.getElementById('selected-item-view').textContent, label);
+    for (const candidate of ['live', 'draft', 'edit']) {
+      assert.equal(
+        document.getElementById(`view-${candidate}`).getAttribute('aria-pressed'),
+        String(candidate === mode),
+      );
+      assert.equal(
+        document.getElementById(`question-view-${candidate}`).getAttribute('hidden'),
+        candidate === mode ? null : '',
+      );
+      assert.equal(
+        document.getElementById(`question-view-${candidate}`).getAttribute('aria-labelledby'),
+        `view-${candidate}`,
+      );
+    }
+    assert.equal(document.getElementById('learner-preview-frame'), frame);
+    assert.equal(document.getElementById('learner-preview-frame').contentWindow, frameWindow);
+  }
+
+  await document.getElementById('view-draft').dispatch('click');
+  const draft = document.getElementById('question-view-draft');
+  assert.equal(document.getElementById('draft-preview-title').textContent,
+    'Saved Draft preview · Not deployed');
+  for (const exactText of [
+    exact.stem,
+    ...exact.options.map(optionItem => optionItem.t),
+    tier2.q,
+    ...tier2.options.map(optionItem => optionItem.t),
+    tier2.why,
+    exact.why,
+    exact.pearl,
+    exact.evidence,
+    ...exact.pages,
+    exact.link.label,
+    exact.link.href,
+  ]) assert.match(draft.textContent, new RegExp(exactText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  const draftElements = document.elements().filter(element => draft.contains(element));
+  assert.equal(draftElements.filter(element => element.tagName === 'OL').length, 2);
+  assert.equal(draftElements.filter(element => (
+    element.tagName === 'STRONG' && element.textContent === 'Correct answer'
+  )).length, 2);
+  assert.equal(draft.contains(frame), false);
+  assert.equal(draftElements.some(element => ['IFRAME', 'IMG', 'SCRIPT'].includes(element.tagName)), false);
+});
+
+test('the exact saved-revision receipt is explicit, Draft-only, and revoked by edit or reload', async () => {
+  let current = validDomQuestion();
+  const other = validDomQuestion({
+    id: 'qb_moo_903',
+    revision: testRevision('other-question'),
+    stem: 'A different item must revoke the prior review receipt. What is the diagnosis?',
+  });
+  const { controller, document, window } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({ questions: [current, other] })),
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const id = current.id;
+  const revision = current.revision;
+  const frame = document.getElementById('learner-preview-frame');
+  await frame.dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  assert.equal(controller.state.reviewedRevisions.has(id), false,
+    'Preview readiness must never manufacture a saved-revision receipt.');
+  await setChecked(document, 'review-live-preview');
+  assert.equal(controller.state.reviewedRevisions.has(id), false,
+    'Live review must remain separate from exact saved-revision review.');
+  assert.equal(document.getElementById('review-saved-revision').disabled, true);
+
+  await document.getElementById('view-draft').dispatch('click');
+  assert.equal(document.getElementById('review-saved-revision').disabled, false);
+  await setChecked(document, 'review-saved-revision');
+  assert.equal(controller.state.reviewedRevisions.get(id), revision);
+  assert.match(controller.state.reviewedRevisions.get(id), /^[0-9a-f]{64}$/);
+
+  await document.getElementById('view-edit').dispatch('click');
+  assert.equal(document.getElementById('review-saved-revision').disabled, true);
+  await setValue(document, 'question-stem', 'An unsaved local stem must revoke the receipt?');
+  assert.equal(controller.state.reviewedRevisions.has(id), false);
+  await document.getElementById('view-draft').dispatch('click');
+  assert.equal(document.getElementById('draft-preview-title').textContent,
+    'Unsaved local preview · Not deployed');
+  assert.match(document.getElementById('question-view-draft').textContent,
+    /An unsaved local stem must revoke the receipt/);
+  assert.equal(document.getElementById('review-saved-revision').disabled, true);
+
+  await document.getElementById('revert-question').dispatch('click');
+  assert.equal(controller.state.reviewedRevisions.has(id), false);
+  assert.equal(document.getElementById('review-saved-revision').disabled, false);
+  await setChecked(document, 'review-saved-revision');
+  assert.equal(controller.state.reviewedRevisions.get(id), revision);
+  await setValue(document, 'review-item-selector', 'question:qb_moo_903', 'change');
+  assert.equal(controller.state.reviewedRevisions.has(id), false);
+  await setValue(document, 'review-item-selector', 'question:qb_moo_902', 'change');
+  await document.getElementById('view-draft').dispatch('click');
+  await setChecked(document, 'review-saved-revision');
+  assert.equal(controller.state.reviewedRevisions.get(id), revision);
+  current = { ...current, revision: testRevision('different-reloaded-revision') };
+  assert.equal(await controller.load({ silent: true }), true);
+  assert.equal(controller.state.original.revision, current.revision);
+  assert.equal(controller.state.reviewedRevisions.has(id), false);
+});
+
+test('question rail requires separate Live and Draft proof and uses the exact unavailable acknowledgement', async () => {
+  const readyHarness = await startHarness({
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const {
+    controller: readyController,
+    document: readyDocument,
+    window: readyWindow,
+  } = readyHarness;
+  await readyDocument.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(readyWindow, readyController, 'ready');
+  assert.match(readyDocument.getElementById('rail-step-review').textContent,
+    /I reviewed the complete item in the learner view/);
+  assert.match(readyDocument.getElementById('rail-step-review').textContent,
+    /I reviewed this exact saved revision/);
+  await setChecked(readyDocument, 'review-live-preview');
+  assert.equal(readyDocument.getElementById('confirm-clinical').disabled, true);
+  await confirmCurrentSavedDraft(readyDocument);
+  assert.equal(readyDocument.getElementById('confirm-clinical').disabled, false);
+
+  const fallbackHarness = await startHarness({
+    tokenFactory: (() => {
+      const tokens = ['c'.repeat(32), 'd'.repeat(32)];
+      return () => tokens.shift();
+    })(),
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const {
+    controller: fallbackController,
+    document: fallbackDocument,
+    window: fallbackWindow,
+  } = fallbackHarness;
+  await reportPreviewStatus(fallbackWindow, fallbackController, 'error');
+  await fallbackDocument.getElementById('retry-preview').dispatch('click');
+  await reportPreviewStatus(fallbackWindow, fallbackController, 'error');
+  assert.match(fallbackDocument.getElementById('rail-step-review').textContent,
+    /The live question is unavailable; I reviewed the saved revision that will be deployed/);
+  await setChecked(fallbackDocument, 'ack-live-unavailable');
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    assert.equal(fallbackDocument.getElementById(id).disabled, true);
+  }
+  await confirmCurrentSavedDraft(fallbackDocument);
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(fallbackDocument, id);
+  }
+  assert.equal(fallbackDocument.getElementById('attest-current-item').disabled, false);
 });
 
 test('editor mutation and Revert revoke review evidence without replacing the preview', async () => {
@@ -920,16 +1127,12 @@ test('editor mutation and Revert revoke review evidence without replacing the pr
       accuracy: true,
       interactions: true,
     });
-    controller.state.reviewedInSession.add('qb_moo_902');
     controller.state.reviewedRevisions.set('qb_moo_902', validDomQuestion().revision);
-    controller.state.batch.add('qb_moo_902');
     controller.state.confirmations.clinical = true;
   };
   const assertEvidenceRevokedAndPreviewPreserved = () => {
     assert.deepEqual(controller.state.reviewChecks, emptyChecks);
-    assert.equal(controller.state.reviewedInSession.has('qb_moo_902'), false);
     assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
-    assert.equal(controller.state.batch.has('qb_moo_902'), false);
     assert.equal(controller.state.confirmations.clinical, false);
     assert.equal(controller.state.preview, preview);
     assert.equal(controller.state.preview.request.token, previewToken);
@@ -1133,6 +1336,8 @@ test('preview Ready preserves its browsing context and later status or navigatio
 
   await setChecked(document, 'review-live-preview');
   assert.equal(controller.state.reviewChecks.liveReviewed, true);
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
+  await confirmCurrentSavedDraft(document);
   assert.equal(controller.state.reviewedRevisions.get('qb_moo_902'), validDomQuestion().revision);
   await reportPreviewStatus(window, controller, 'ready');
   assert.equal(controller.state.reviewChecks.liveReviewed, true,
@@ -1151,6 +1356,7 @@ test('preview Ready preserves its browsing context and later status or navigatio
   await notFoundFrame.dispatch('load');
   await reportPreviewStatus(window, controller, 'ready');
   await setChecked(document, 'review-live-preview');
+  await confirmCurrentSavedDraft(document);
   await reportPreviewStatus(window, controller, 'not_found');
   assert.equal(notFoundRetry.status, 'not_found');
   assert.equal(controller.state.reviewChecks.liveReviewed, false);
@@ -1162,6 +1368,7 @@ test('preview Ready preserves its browsing context and later status or navigatio
   await navigationFrame.dispatch('load');
   await reportPreviewStatus(window, controller, 'ready');
   await setChecked(document, 'review-live-preview');
+  await confirmCurrentSavedDraft(document);
   await navigationFrame.dispatch('load');
   assert.equal(navigationRetry.status, 'frame_failure');
   assert.equal(controller.state.reviewChecks.liveReviewed, false);
@@ -1185,6 +1392,7 @@ test('preview fallback gates question Retry and opens only clean page or tool ro
   await questionDocument.getElementById('retry-preview').dispatch('click');
   await reportPreviewStatus(questionWindow, questionController, 'error');
   assert.equal(questionDocument.getElementById('ack-live-unavailable').disabled, false);
+  await confirmCurrentSavedDraft(questionDocument);
   await setChecked(questionDocument, 'ack-live-unavailable');
   for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
     await setChecked(questionDocument, id);
@@ -1278,6 +1486,7 @@ test('terminal preview fallback revokes question evidence after a current-frame 
   await frame.dispatch('load');
   runPreviewTimer(window, preview);
   assert.equal(preview.status, 'protocol_unavailable');
+  await confirmCurrentSavedDraft(document);
   await setChecked(document, 'ack-live-unavailable');
   for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
     await setChecked(document, id);
@@ -1301,7 +1510,6 @@ test('terminal preview fallback revokes question evidence after a current-frame 
     accuracy: false,
     interactions: false,
   });
-  assert.equal(controller.state.reviewedInSession.has('qb_moo_902'), false);
   assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
   assert.equal(document.getElementById('attest-current-item').disabled, true);
   assert.equal(document.getElementById('question-view-live').getAttribute('hidden'), null);
@@ -1327,6 +1535,7 @@ test('terminal preview fallback revokes question evidence on a late first load a
   runPreviewTimer(window, preview);
   assert.equal(preview.status, 'frame_failure');
   assert.equal(preview.loadCount, 0);
+  await confirmCurrentSavedDraft(document);
   await setChecked(document, 'ack-live-unavailable');
   assert.equal(controller.state.reviewChecks.liveUnavailableAcknowledged, true);
   assert.equal(controller.state.reviewedRevisions.get('qb_moo_902'), validDomQuestion().revision);
@@ -1346,7 +1555,6 @@ test('terminal preview fallback revokes question evidence on a late first load a
     accuracy: false,
     interactions: false,
   });
-  assert.equal(controller.state.reviewedInSession.has('qb_moo_902'), false);
   assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
   assert.equal(document.getElementById('question-view-live').getAttribute('hidden'), null);
   assert.equal(document.activeElement?.getAttribute('id'), 'preview-status');
@@ -1414,6 +1622,7 @@ test('preview repository reload resets attempts and all review acknowledgements'
   await firstFrame.dispatch('load');
   await reportPreviewStatus(window, controller, 'ready');
   await setChecked(document, 'review-live-preview');
+  await confirmCurrentSavedDraft(document);
   await setChecked(document, 'confirm-clinical');
   assert.equal(controller.state.reviewChecks.liveReviewed, true);
   assert.equal(controller.state.confirmations.clinical, true);
@@ -1748,7 +1957,7 @@ test('rebuilds the candidate immediately, shows blockers before warnings, and ma
   assert.equal(controller.state.localAssessment.gate, 'warning');
   assert.match(document.getElementById('safety-issues').textContent, /Review this synthetic warning/);
   assert.equal(document.getElementById('save-draft').disabled, false);
-  assert.equal(document.getElementById('attest-warning').disabled, true);
+  assert.equal(document.getElementById('attest-current-item').disabled, true);
   assert.equal(document.links().some(link => link.getAttribute('href') === '#question-stem'), true);
   const warningStem = document.getElementById('question-stem');
   assert.equal(warningStem.getAttribute('aria-invalid'), null);
@@ -2060,6 +2269,7 @@ test('handles 409 with an accessible reload or keep-local conflict alert and nev
   };
   const { controller, document } = await startHarness({ fetchImpl });
   await setValue(document, 'question-stem', 'My unsaved local edit?');
+  controller.state.reviewedRevisions.set('qb_moo_902', local.revision);
   await document.getElementById('save-draft').dispatch('click');
   await flushAsyncWork();
 
@@ -2069,6 +2279,7 @@ test('handles 409 with an accessible reload or keep-local conflict alert and nev
   assert.equal(document.activeElement, conflict);
   assert.ok(document.find('button', 'Reload'));
   assert.ok(document.find('button', 'Keep local copy'));
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
   await document.find('button', 'Keep local copy').dispatch('click');
   assert.equal(controller.state.editor.stem, 'My unsaved local edit?');
   assert.ok(controller.state.dirtyFields.includes('stem'));
@@ -2385,15 +2596,15 @@ test('requires all human confirmations and each current warning acknowledgement 
     assessItemImpl: warningAssessment,
   });
   await makeCurrentQuestionPreviewReady({ controller, document, window });
-  const attest = document.getElementById('attest-warning');
+  const attest = document.getElementById('attest-current-item');
   assert.equal(attest.disabled, true);
   for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
     await setChecked(document, id);
   }
-  assert.equal(document.getElementById('attest-warning').disabled, true);
+  assert.equal(document.getElementById('attest-current-item').disabled, true);
   await setChecked(document, 'ack-stem-negative_lead_in');
-  assert.equal(document.getElementById('attest-warning').disabled, false);
-  await document.getElementById('attest-warning').dispatch('click');
+  assert.equal(document.getElementById('attest-current-item').disabled, false);
+  await document.getElementById('attest-current-item').dispatch('click');
   await flushAsyncWork();
 
   assert.deepEqual(Object.keys(posted).sort(), [
@@ -2404,6 +2615,7 @@ test('requires all human confirmations and each current warning acknowledgement 
   assert.deepEqual(posted.items, [{
     id: 'qb_moo_902',
     revision: testRevision('revision-one'),
+    reviewedRevision: testRevision('revision-one'),
     acknowledgedWarnings: ['stem.negative_lead_in'],
   }]);
   assert.deepEqual(posted.confirmations, {
@@ -2414,6 +2626,152 @@ test('requires all human confirmations and each current warning acknowledgement 
   assert.equal(controller.state.original.status, 'attested');
   assert.equal(controller.state.original.revision, testRevision('revision-attested'));
   assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-result');
+});
+
+test('Ready attestation posts one exact-revision entry and holds the completed question for Next item', async () => {
+  const attestedRevision = testRevision('ready-attested');
+  const second = validDomQuestion({
+    id: 'qb_moo_903',
+    revision: testRevision('ready-next'),
+    stem: 'A second saved question should not be auto-selected. What is the diagnosis?',
+  });
+  let questions = [validDomQuestion(), second];
+  let posted;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      posted = JSON.parse(options.body);
+      questions = questions.map(questionItem => (
+        questionItem.id === 'qb_moo_902'
+          ? { ...questionItem, status: 'attested', revision: attestedRevision }
+          : questionItem
+      ));
+      return jsonResponse({
+        ok: true,
+        action: 'qbank.attest',
+        updated: 1,
+        revision: { qb_moo_902: attestedRevision },
+        assessment: { qb_moo_902: { gate: 'ready', blockers: [], warnings: [] } },
+        commit: 'https://github.example/commit/ready-attested',
+      });
+    }
+    return jsonResponse(serverState({ questions }));
+  };
+  const harness = await startHarness({
+    fetchImpl,
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { controller, document } = harness;
+  await makeCurrentQuestionPreviewReady(harness);
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(document, id);
+  }
+  const attestButtons = document.findAll('button').filter(button => (
+    button.textContent === 'Attest this question'
+  ));
+  assert.equal(attestButtons.length, 1);
+  assert.equal(attestButtons[0].disabled, false);
+  await attestButtons[0].dispatch('click');
+  await flushAsyncWork();
+
+  assert.deepEqual(posted.items, [{
+    id: 'qb_moo_902',
+    revision: testRevision('revision-one'),
+    reviewedRevision: testRevision('revision-one'),
+  }]);
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902');
+  assert.equal(controller.state.completedHoldKey, 'question:qb_moo_902');
+  assert.equal(controller.state.original.status, 'attested');
+  assert.match(document.getElementById('qbank-action-result').textContent,
+    /Attested 1 question: qb_moo_902/);
+  assert.equal(document.getElementById('next-review-item').textContent, 'Next item');
+  assert.equal(document.getElementById('next-review-item').disabled, false);
+  assert.equal(document.activeElement?.getAttribute('id'), 'next-review-item');
+});
+
+test('a successful attestation POST with a stale confirming GET stays unconfirmed', async () => {
+  const original = validDomQuestion();
+  const returnedRevision = testRevision('unconfirmed-attestation');
+  let posted;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      posted = JSON.parse(options.body);
+      return jsonResponse({
+        ok: true,
+        action: 'qbank.attest',
+        updated: 1,
+        revision: { qb_moo_902: returnedRevision },
+        assessment: { qb_moo_902: { gate: 'ready', blockers: [], warnings: [] } },
+        commit: 'https://github.example/commit/not-confirmed',
+      });
+    }
+    return jsonResponse(serverState({ question: original }));
+  };
+  const harness = await startHarness({
+    fetchImpl,
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { controller, document } = harness;
+  await makeCurrentQuestionPreviewReady(harness);
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(document, id);
+  }
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.deepEqual(posted.items, [{
+    id: 'qb_moo_902',
+    revision: original.revision,
+    reviewedRevision: original.revision,
+  }]);
+  assert.equal(controller.state.original.status, 'draft');
+  assert.equal(controller.state.original.revision, original.revision);
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902');
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.match(document.getElementById('qbank-action-error').textContent, /refresh_failed/);
+  assert.doesNotMatch(document.app.textContent, /Attested 1 question/);
+  assert.equal(controller.state.qbankMessage, '');
+});
+
+test('an attestation GET with a matching revision but Draft status stays unconfirmed', async () => {
+  const original = validDomQuestion();
+  const returnedRevision = testRevision('matching-draft-attestation');
+  let postCompleted = false;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      postCompleted = true;
+      return jsonResponse({
+        ok: true,
+        action: 'qbank.attest',
+        updated: 1,
+        revision: { qb_moo_902: returnedRevision },
+        assessment: { qb_moo_902: { gate: 'ready', blockers: [], warnings: [] } },
+        commit: 'https://github.example/commit/draft-not-confirmed',
+      });
+    }
+    return jsonResponse(serverState({
+      question: postCompleted
+        ? validDomQuestion({ revision: returnedRevision, status: 'draft' })
+        : original,
+    }));
+  };
+  const harness = await startHarness({
+    fetchImpl,
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { controller, document } = harness;
+  await makeCurrentQuestionPreviewReady(harness);
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(document, id);
+  }
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(controller.state.original.revision, original.revision);
+  assert.equal(controller.state.original.status, 'draft');
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.qbankMessage, '');
+  assert.match(document.getElementById('qbank-action-error').textContent, /refresh_failed/);
+  assert.doesNotMatch(document.app.textContent, /Attested 1 question/);
 });
 
 test('save-time 401 reauthentication retries the exact captured attestation and manifest revision', async () => {
@@ -2455,7 +2813,7 @@ test('save-time 401 reauthentication retries the exact captured attestation and 
     await setChecked(document, id);
   }
   await setChecked(document, 'ack-stem-negative_lead_in');
-  await document.getElementById('attest-warning').dispatch('click');
+  await document.getElementById('attest-current-item').dispatch('click');
   await flushAsyncWork();
 
   assert.equal(posts.length, 1);
@@ -2501,11 +2859,14 @@ test('attestation keeps the captured entry and confirmations immutable while POS
     await setChecked(document, id);
   }
   await setChecked(document, 'ack-stem-pending_warning');
-  await document.getElementById('attest-warning').dispatch('click');
+  await document.getElementById('attest-current-item').dispatch('click');
   await flushAsyncWork();
 
   assert.equal(controller.state.pending, true);
   assert.equal(document.getElementById('console-background')?.getAttribute('inert'), '');
+  assert.match(document.getElementById('qbank-action-result').textContent,
+    /Saving and confirming this attestation/);
+  assert.doesNotMatch(document.getElementById('qbank-action-result').textContent, /Attested/);
   const clinical = document.getElementById('confirm-clinical');
   clinical.checked = false;
   await clinical.dispatch('change');
@@ -2531,6 +2892,7 @@ test('attestation keeps the captured entry and confirmations immutable while POS
   assert.deepEqual(posted.items, [{
     id: 'qb_moo_902',
     revision: testRevision('revision-one'),
+    reviewedRevision: testRevision('revision-one'),
     acknowledgedWarnings: ['stem.pending_warning'],
   }]);
 
@@ -2655,10 +3017,7 @@ test('a successful load with a changed manifest revision invalidates all review-
   const fetchImpl = async () => jsonResponse(serverState({ manifestRevision }));
   const { controller } = await startHarness({ fetchImpl });
 
-  controller.state.reviewedInSession.add('qb_moo_902');
   controller.state.reviewedRevisions.set('qb_moo_902', validDomQuestion().revision);
-  controller.state.batch.add('qb_moo_902');
-  controller.state.batchConfirmation = { entries: [{ id: 'qb_moo_902' }] };
   controller.state.confirmations = {
     clinical: true,
     evidence: true,
@@ -2668,10 +3027,7 @@ test('a successful load with a changed manifest revision invalidates all review-
   manifestRevision = 'c'.repeat(40);
   assert.equal(await controller.load({ silent: true }), true);
 
-  assert.deepEqual([...controller.state.reviewedInSession], []);
   assert.deepEqual([...controller.state.reviewedRevisions], []);
-  assert.deepEqual([...controller.state.batch], []);
-  assert.equal(controller.state.batchConfirmation, null);
   assert.deepEqual(controller.state.confirmations, {
     clinical: false,
     evidence: false,
@@ -2684,9 +3040,7 @@ test('a valid changed-manifest GET invalidates approvals even when post-write re
   const fetchImpl = async () => jsonResponse(serverState({ manifestRevision }));
   const { controller } = await startHarness({ fetchImpl });
 
-  controller.state.reviewedInSession.add('qb_moo_902');
   controller.state.reviewedRevisions.set('qb_moo_902', validDomQuestion().revision);
-  controller.state.batch.add('qb_moo_902');
   controller.state.confirmations = {
     clinical: true,
     evidence: true,
@@ -2701,9 +3055,7 @@ test('a valid changed-manifest GET invalidates approvals even when post-write re
   });
 
   assert.equal(loaded, false);
-  assert.deepEqual([...controller.state.reviewedInSession], []);
   assert.deepEqual([...controller.state.reviewedRevisions], []);
-  assert.deepEqual([...controller.state.batch], []);
   assert.deepEqual(controller.state.confirmations, {
     clinical: false,
     evidence: false,
