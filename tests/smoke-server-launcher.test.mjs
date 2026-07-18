@@ -261,12 +261,63 @@ exec ${shellQuote(realPythonExecutable())} "$@"
   return bin;
 }
 
+function realCurlExecutable() {
+  const result = spawnSync('/bin/sh', ['-c', 'command -v curl'], {
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout.trim();
+}
+
+function installHostileCurlFixture(context, proxyPort) {
+  const home = path.join(context.temporary, 'hostile-curl-home');
+  const bin = path.join(context.temporary, 'curl-bin');
+  const trace = path.join(context.temporary, 'curl-args.tsv');
+  const proxyUrl = `http://127.0.0.1:${proxyPort}`;
+  fs.mkdirSync(home);
+  fs.mkdirSync(bin);
+  fs.writeFileSync(path.join(home, '.curlrc'), `proxy = "${proxyUrl}"\n`);
+  const wrapper = path.join(bin, 'curl');
+  fs.writeFileSync(wrapper, `#!/usr/bin/env bash
+printf '%s\\t%s\\t%s\\n' "\${1:-}" "\${2:-}" "\${3:-}" >> ${shellQuote(trace)}
+exec ${shellQuote(realCurlExecutable())} "$@"
+`);
+  fs.chmodSync(wrapper, 0o755);
+  return { bin, home, proxyUrl, trace };
+}
+
+function installSignalRaceBashEnv(context) {
+  const bashEnv = path.join(context.temporary, 'signal-race.bash');
+  fs.writeFileSync(bashEnv, [
+    'set -T',
+    'SMOKE_PID_ASSIGNMENTS=0',
+    `trap 'if [ "\${BASH_COMMAND:-}" = "pid=\\$!" ]; then`,
+    '  SMOKE_PID_ASSIGNMENTS=$((SMOKE_PID_ASSIGNMENTS + 1))',
+    '  if [ "$SMOKE_PID_ASSIGNMENTS" -eq 3 ]; then',
+    '    kill -TERM "$$"',
+    '  fi',
+    "fi' DEBUG",
+    '',
+  ].join('\n'));
+  return bashEnv;
+}
+
+function assertExpectedStartupRecords(records, ports) {
+  assert.deepEqual(records.map(({ label, port }) => [label, port]), [
+    ['ms3', ports[0]],
+    ['res', ports[1]],
+    ['faculty', ports[2]],
+  ]);
+  assert.equal(new Set(records.map(({ pid }) => pid)).size, 3);
+}
+
 async function assertFailureCleanedUp(stateDir, ports) {
   const startupJournal = path.join(stateDir, '.startup-pids.tsv');
-  if (fs.existsSync(startupJournal)) {
-    for (const { pid } of readPidFile(startupJournal)) {
-      assert.equal(isPidAlive(pid), false, `launcher leaked PID ${pid}`);
-    }
+  assert.equal(fs.existsSync(startupJournal), true, 'startup journal must be retained on failure');
+  const records = readPidFile(startupJournal);
+  assertExpectedStartupRecords(records, ports);
+  for (const { pid } of records) {
+    assert.equal(isPidAlive(pid), false, `launcher leaked PID ${pid}`);
   }
   assert.equal(fs.existsSync(path.join(stateDir, 'server-pids.tsv')), false);
   await waitForPortsClosed(ports);
@@ -288,13 +339,39 @@ test('--print-config reports the default CI mappings without starting servers', 
 
 test('launcher serves all three configured marker sites and leaves their PIDs alive', async (t) => {
   const context = createTestContext(t);
-  const reservations = await reserveLoopbackPorts(3);
-  const ports = reservations.map(({ port }) => port);
+  const reservations = await reserveLoopbackPorts(4);
+  const ports = reservations.slice(0, 3).map(({ port }) => port);
+  const proxyPort = reservations[3].port;
   await releaseReservations(reservations);
-  const result = await runLauncher(context, { env: makeLauncherEnvironment(context, ports) });
+  const curlFixture = installHostileCurlFixture(context, proxyPort);
+  const env = makeLauncherEnvironment(context, ports, {
+    PATH: `${curlFixture.bin}${path.delimiter}${process.env.PATH}`,
+    HOME: curlFixture.home,
+    CURL_HOME: curlFixture.home,
+    XDG_CONFIG_HOME: curlFixture.home,
+    ALL_PROXY: curlFixture.proxyUrl,
+    all_proxy: curlFixture.proxyUrl,
+    HTTP_PROXY: curlFixture.proxyUrl,
+    http_proxy: curlFixture.proxyUrl,
+    HTTPS_PROXY: curlFixture.proxyUrl,
+    https_proxy: curlFixture.proxyUrl,
+    NO_PROXY: '',
+    no_proxy: '',
+    SMOKE_READY_ATTEMPTS: '2',
+    SMOKE_READY_DELAY_SECONDS: '0',
+  });
+  const result = await runLauncher(context, { env });
   assert.equal(result.timedOut, false);
   assert.equal(result.code, 0, result.stdout + result.stderr);
   assert.match(result.stdout, /Servers ready/);
+  const curlInvocations = fs.readFileSync(curlFixture.trace, 'utf8')
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => line.split('\t'));
+  assert.equal(curlInvocations.length, 3);
+  for (const invocation of curlInvocations) {
+    assert.deepEqual(invocation, ['-q', '--noproxy', '*']);
+  }
   const manifest = readPidFile(path.join(context.stateDir, 'server-pids.tsv'));
   assert.deepEqual(manifest.map(({ label, port }) => [label, port]), [
     ['ms3', ports[0]],
@@ -326,7 +403,7 @@ test('launcher rejects a missing directory before starting any server', async (t
   await waitForPortsClosed(ports);
 });
 
-test('launcher rejects invalid and duplicate port configuration before startup', async (t) => {
+test('launcher rejects invalid and duplicate startup configuration before startup', async (t) => {
   const context = createTestContext(t);
   const cases = [
     { name: 'zero', override: { SMOKE_MS3_PORT: '0' }, pattern: /must be an integer from 1 through 65535/ },
@@ -334,6 +411,7 @@ test('launcher rejects invalid and duplicate port configuration before startup',
     { name: 'overflow-sized', override: { SMOKE_MS3_PORT: '18446744073709555816' }, pattern: /must be an integer from 1 through 65535/ },
     { name: 'nonnumeric', override: { SMOKE_MS3_PORT: 'abc' }, pattern: /must be an integer from 1 through 65535/ },
     { name: 'duplicate', override: { SMOKE_RES_PORT: '4200', SMOKE_MS3_PORT: '4200' }, pattern: /ports must be distinct/ },
+    { name: 'overflow-sized attempts', override: { SMOKE_READY_ATTEMPTS: '18446744073709551617' }, pattern: /SMOKE_READY_ATTEMPTS must be an integer of at least 1/ },
   ];
   for (const fixture of cases) {
     const result = await runLauncher(context, {
@@ -385,15 +463,24 @@ test('launcher times out an unreachable readiness path and cleans up every serve
     SMOKE_READY_ATTEMPTS: '2',
     SMOKE_READY_DELAY_SECONDS: '0',
     SMOKE_READY_PATH: '/never-ready',
+    TMPDIR: context.temporary,
   });
+  delete env.SMOKE_SERVER_STATE_DIR;
   const result = await runLauncher(context, { env });
   assert.notEqual(result.code, 0);
   assert.match(result.stderr, /ms3 server did not become ready after 2 attempts/);
   assert.doesNotMatch(result.stdout, /Servers ready/);
+  const stateRecords = parseRecords(result.stdout, 'STATE_DIR');
+  assert.equal(stateRecords.length, 1);
+  const stateDir = stateRecords[0][0];
+  assert.equal(path.dirname(stateDir), context.temporary);
+  assert.match(path.basename(stateDir), /^smoke-servers\./);
   for (const label of ['ms3', 'res', 'faculty']) {
-    assert.equal(fs.existsSync(path.join(context.stateDir, `${label}.log`)), true);
+    assert.equal(fs.existsSync(path.join(stateDir, `${label}.log`)), true);
   }
-  await assertFailureCleanedUp(context.stateDir, ports);
+  await assertFailureCleanedUp(stateDir, ports);
+  fs.rmSync(stateDir, { recursive: true });
+  assert.equal(fs.existsSync(stateDir), false);
 });
 
 test('launcher cleans up every child when it receives SIGTERM during startup', async (t) => {
@@ -401,17 +488,20 @@ test('launcher cleans up every child when it receives SIGTERM during startup', a
   const reservations = await reserveLoopbackPorts(3);
   const ports = reservations.map(({ port }) => port);
   await releaseReservations(reservations);
-  let shellPid;
+  const bashEnv = installSignalRaceBashEnv(context);
   const resultPromise = runLauncher(context, {
     env: makeLauncherEnvironment(context, ports, {
+      BASH_ENV: bashEnv,
       SMOKE_READY_ATTEMPTS: '100',
       SMOKE_READY_DELAY_SECONDS: '0.1',
       SMOKE_READY_PATH: '/never-ready',
     }),
-    onSpawn(child) { shellPid = child.pid; },
   });
-  await waitForPidRecords(path.join(context.stateDir, '.startup-pids.tsv'), 3);
-  process.kill(shellPid, 'SIGTERM');
+  const startupJournal = path.join(context.stateDir, '.startup-pids.tsv');
+  const startupRecords = await waitForPidRecords(startupJournal, 3);
+  assert.equal(fs.existsSync(startupJournal), true);
+  assertExpectedStartupRecords(startupRecords, ports);
+  assert.equal(fs.existsSync(path.join(context.stateDir, 'server-pids.tsv')), false);
   const result = await resultPromise;
   assert.equal(result.timedOut, false);
   assert.equal(result.code, 143, result.stdout + result.stderr);

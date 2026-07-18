@@ -25,6 +25,7 @@ STARTUP_COMPLETE=0
 STARTUP_JOURNAL=""
 PID_MANIFEST=""
 PID_TMP=""
+DEFERRED_SIGNAL_STATUS=0
 
 error() {
   printf 'ERROR: %s\n' "$*" >&2
@@ -69,10 +70,15 @@ normalize_attempts() {
   case "$raw" in
     ''|*[!0-9]*) die 'SMOKE_READY_ATTEMPTS must be an integer of at least 1' ;;
   esac
-  normalized=$((10#$raw))
-  if [ "$normalized" -lt 1 ]; then
+  normalized="$raw"
+  while [ "${#normalized}" -gt 1 ] && [ "${normalized#0}" != "$normalized" ]; do
+    normalized="${normalized#0}"
+  done
+  # Eighteen decimal digits always fit Bash 3.2 signed integer arithmetic.
+  if [ "$normalized" = '0' ] || [ "${#normalized}" -gt 18 ]; then
     die 'SMOKE_READY_ATTEMPTS must be an integer of at least 1'
   fi
+  normalized=$((10#$normalized))
   printf '%s\n' "$normalized"
 }
 
@@ -207,7 +213,13 @@ start_server() {
   local directory="$3"
   local log="$STATE_DIR/$label.log"
   local pid
+  local deferred_status
   refuse_existing_artifact "$log" "$label log"
+  # Defer signal exit only until the child is visible to cleanup and the journal.
+  DEFERRED_SIGNAL_STATUS=0
+  trap 'DEFERRED_SIGNAL_STATUS=129' HUP
+  trap 'DEFERRED_SIGNAL_STATUS=130' INT
+  trap 'DEFERRED_SIGNAL_STATUS=143' TERM
   python3 -m http.server "$port" \
     --bind 127.0.0.1 \
     --directory "$directory" >"$log" 2>&1 &
@@ -217,6 +229,12 @@ start_server() {
   LOGS+=("$log")
   PIDS+=("$pid")
   printf '%s\t%s\t%s\n' "$label" "$pid" "$port" >> "$STARTUP_JOURNAL"
+  trap 'exit 129' HUP
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+  deferred_status="$DEFERRED_SIGNAL_STATUS"
+  DEFERRED_SIGNAL_STATUS=0
+  if [ "$deferred_status" -ne 0 ]; then exit "$deferred_status"; fi
   printf 'Started\t%s\t%s\n' "$label" "$pid"
 }
 
@@ -231,7 +249,7 @@ wait_until_ready() {
       error "$label server PID $pid exited before becoming ready"
       return 1
     fi
-    if curl --connect-timeout 1 --max-time 2 -fsS "$url" >/dev/null 2>&1; then
+    if curl -q --noproxy '*' --connect-timeout 1 --max-time 2 -fsS "$url" >/dev/null 2>&1; then
       if ! kill -0 "$pid" >/dev/null 2>&1; then
         error "$label server PID $pid exited before becoming ready"
         return 1
@@ -284,6 +302,7 @@ refuse_existing_artifact "$PID_MANIFEST" 'PID manifest'
 refuse_existing_artifact "$STARTUP_JOURNAL" 'startup journal'
 refuse_existing_artifact "$PID_TMP" 'temporary PID manifest'
 : > "$STARTUP_JOURNAL"
+printf 'STATE_DIR\t%s\n' "$STATE_DIR"
 
 trap on_exit EXIT
 trap 'exit 129' HUP
@@ -310,7 +329,6 @@ done
 mv "$PID_TMP" "$PID_MANIFEST"
 rm -f "$STARTUP_JOURNAL"
 
-printf 'STATE_DIR\t%s\n' "$STATE_DIR"
 for ((index = 0; index < ${#PIDS[@]}; index++)); do
   printf 'SERVER_PID\t%s\t%s\n' "${LABELS[$index]}" "${PIDS[$index]}"
 done
