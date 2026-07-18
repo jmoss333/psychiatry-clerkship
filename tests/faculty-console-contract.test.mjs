@@ -2253,6 +2253,48 @@ test('saves only on explicit action with the exact revision-safe payload, then c
   );
 });
 
+test('a successful draft POST with an unconfirmed GET never reports the draft as saved', async () => {
+  const original = validDomQuestion();
+  const returnedRevision = testRevision('unconfirmed-draft-save');
+
+  for (const [label, confirmingState] of [
+    ['stale revision', serverState({ question: original })],
+    ['missing item', serverState({ questions: [] })],
+  ]) {
+    let postCompleted = false;
+    const fetchImpl = async (url, options = {}) => {
+      if (options.method === 'POST') {
+        postCompleted = true;
+        return jsonResponse({
+          ok: true,
+          action: 'qbank.save-draft',
+          updated: 1,
+          revision: returnedRevision,
+          assessment: { gate: 'ready', blockers: [], warnings: [] },
+          commit: 'https://github.example/commit/not-confirmed-draft',
+        });
+      }
+      return jsonResponse(postCompleted
+        ? confirmingState
+        : serverState({ question: original }));
+    };
+    const { controller, document } = await startHarness({ fetchImpl });
+    const localStem = `Keep this ${label} local draft?`;
+    await setValue(document, 'question-stem', localStem);
+    await document.getElementById('save-draft').dispatch('click');
+    await flushAsyncWork();
+
+    assert.equal(controller.state.original.revision, original.revision, label);
+    assert.equal(controller.state.editor.stem, localStem, label);
+    assert.ok(controller.state.dirtyFields.includes('stem'), label);
+    assert.equal(controller.state.qbankMessage, '', label);
+    assert.equal(controller.state.qbankCommitUrl, null, label);
+    assert.match(document.getElementById('qbank-action-error').textContent, /refresh_failed/, label);
+    assert.doesNotMatch(document.app.textContent, /Saved draft qb_moo_902/, label);
+    assert.equal(document.links().some(link => link.textContent === 'View commit ↗'), false, label);
+  }
+});
+
 test('retains the local candidate on ordinary save failure', async () => {
   const fetchImpl = async (url, options = {}) => {
     if (options.method === 'POST') {

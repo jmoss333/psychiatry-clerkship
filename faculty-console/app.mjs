@@ -2907,8 +2907,8 @@ export function startFacultyConsole({
         showQbankError('invalid_response: The save receipt did not include a question revision. Local work was retained.');
         return false;
       }
-      state.qbankMessage = `Saved draft ${id}. Checks current for the refreshed repository version.`;
-      state.qbankCommitUrl = safeExternalUrl(payload.commit);
+      const successMessage = `Saved draft ${id}. Checks current for the refreshed repository version.`;
+      const successCommitUrl = safeExternalUrl(payload.commit);
       const refreshed = await load({
         silent: true,
         focusId: 'qbank-action-result',
@@ -2920,6 +2920,9 @@ export function startFacultyConsole({
         state.navigationAfterSave = null;
         return false;
       }
+      state.qbankMessage = successMessage;
+      state.qbankCommitUrl = successCommitUrl;
+      renderShell('qbank-action-result');
       const navigation = state.navigationAfterSave;
       state.navigationAfterSave = null;
       if (navigation) requestNavigation(navigation);
