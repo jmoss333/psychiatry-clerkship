@@ -36,6 +36,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install — registry schema validation dependencies
+        run: python3 -m pip install --requirement requirements.txt
+
       - name: Lint — no hard-coded machine paths in tracked Python
         run: |
           if git grep -nE "/(Users|sessions)/[a-z]" -- "*.py"; then
@@ -54,6 +57,12 @@ jobs:
 
       - name: Validate — family systems scenarios contract
         run: python3 13_Faculty_Resources/_automation/test_family_systems_scenarios.py
+
+      - name: Test — registry schema gate
+        run: python3 13_Faculty_Resources/_automation/test_validate_registry_schemas.py
+
+      - name: Validate — registry schemas
+        run: python3 13_Faculty_Resources/_automation/validate_registry_schemas.py
 
       - uses: actions/setup-node@v4
         with:
@@ -92,6 +101,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      - name: Install — registry schema validation dependencies
+        run: python3 -m pip install --requirement requirements.txt
 
       - uses: actions/setup-node@v4
         with:

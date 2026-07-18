@@ -28,6 +28,9 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
 ## Validate & test
 ```bash
 # Python contract validators (also run first inside build_and_check.sh and in CI)
+python3 -m pip install -r requirements.txt
+python3 13_Faculty_Resources/_automation/validate_registry_schemas.py
+python3 13_Faculty_Resources/_automation/test_validate_registry_schemas.py
 python3 13_Faculty_Resources/_automation/validate_topic_meta.py
 python3 13_Faculty_Resources/_automation/validate_attestation_consistency.py
 
