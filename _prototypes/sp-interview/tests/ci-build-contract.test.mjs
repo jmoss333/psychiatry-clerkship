@@ -144,29 +144,48 @@ function leadingIndent(line) {
   return line.length - line.trimStart().length;
 }
 
-function extractRunBlocks(ci) {
+function extractRunSteps(ci) {
   const sourceLines = ci.split(/\r?\n/);
-  const blocks = [];
+  const steps = [];
   for (let index = 0; index < sourceLines.length; index += 1) {
-    const run = sourceLines[index].match(/^(\s*)run:\s*\|\s*$/);
-    if (!run) continue;
-
-    const runIndent = run[1].length;
-    const lines = [];
-    let endLine = index;
-    for (let bodyIndex = index + 1; bodyIndex < sourceLines.length; bodyIndex += 1) {
-      const sourceLine = sourceLines[bodyIndex];
-      if (sourceLine.trim() && leadingIndent(sourceLine) <= runIndent) break;
-      lines.push({
-        text: sourceLine.trim(),
-        indent: leadingIndent(sourceLine),
+    const sourceLine = sourceLines[index];
+    const blockRun = sourceLine.match(/^(\s*)(-\s+)?run:\s*([|>][+-]?)\s*$/);
+    if (blockRun) {
+      const runIndent = blockRun[1].length + (blockRun[2]?.length ?? 0);
+      const lines = [];
+      let endLine = index;
+      for (let bodyIndex = index + 1; bodyIndex < sourceLines.length; bodyIndex += 1) {
+        const bodyLine = sourceLines[bodyIndex];
+        if (bodyLine.trim() && leadingIndent(bodyLine) <= runIndent) break;
+        lines.push({
+          text: bodyLine.trim(),
+          indent: leadingIndent(bodyLine),
+        });
+        endLine = bodyIndex;
+      }
+      steps.push({
+        startLine: index,
+        endLine,
+        lines,
+        indicator: blockRun[3],
       });
-      endLine = bodyIndex;
+      index = endLine;
+      continue;
     }
-    blocks.push({ startLine: index, endLine, lines });
-    index = endLine;
+
+    const inlineRun = sourceLine.match(/^(\s*)(-\s+)?run:\s+(.+?)\s*$/);
+    if (!inlineRun) continue;
+    steps.push({
+      startLine: index,
+      endLine: index,
+      lines: [{
+        text: inlineRun[3],
+        indent: leadingIndent(sourceLine),
+      }],
+      indicator: null,
+    });
   }
-  return blocks;
+  return steps;
 }
 
 function countExactLines(lines, marker) {
@@ -190,22 +209,22 @@ function findMatchingEndIndex(lines, openerIndex, marker) {
   ));
 }
 
-function countRunCommands(runBlocks, command) {
-  return runBlocks.reduce(
-    (count, block) => count + countExactLines(block.lines, command),
+function countRunCommands(runSteps, command) {
+  return runSteps.reduce(
+    (count, step) => count + countExactLines(step.lines, command),
     0,
   );
 }
 
 function assertSmokeServerContract(ci) {
-  const runBlocks = extractRunBlocks(ci);
+  const runSteps = extractRunSteps(ci);
   const serverCommands = [];
   for (const { port, directory } of SMOKE_SERVERS) {
     const command = `python3 -m http.server ${port} --directory ${directory} &`;
     serverCommands.push(command);
     const invocation = new RegExp(`^python3 -m http\\.server ${port}(?:\\s|$)`);
-    const invocations = runBlocks.flatMap((block) => (
-      block.lines.filter((line) => invocation.test(line.text))
+    const invocations = runSteps.flatMap((step) => (
+      step.lines.filter((line) => invocation.test(line.text))
     ));
     assert.equal(
       invocations.length,
@@ -219,8 +238,8 @@ function assertSmokeServerContract(ci) {
     );
   }
 
-  const matchingServerBlocks = runBlocks.filter((block) => (
-    serverCommands.every((command) => hasExactLine(block.lines, command))
+  const matchingServerBlocks = runSteps.filter((step) => (
+    serverCommands.every((command) => hasExactLine(step.lines, command))
   ));
   assert.equal(
     matchingServerBlocks.length,
@@ -309,11 +328,11 @@ function assertSmokeServerContract(ci) {
   for (const project of ['interview-room', 'faculty-console']) {
     const command = `npx playwright test --project=${project}`;
     assert.equal(
-      countRunCommands(runBlocks, command),
+      countRunCommands(runSteps, command),
       1,
       `${project} browser project must run exactly once`,
     );
-    const projectBlock = runBlocks.find((block) => hasExactLine(block.lines, command));
+    const projectBlock = runSteps.find((step) => hasExactLine(step.lines, command));
     assert.ok(
       projectBlock.startLine > serverBlock.endLine,
       `${project} browser project must follow successful server readiness`,
@@ -468,6 +487,46 @@ test('localhost server contract rejects competing server mappings on a required 
   );
 });
 
+test('localhost server contract rejects an inline competing server mapping', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const readyMarker = '          echo "Servers ready"';
+  const competing = ci.replace(
+    readyMarker,
+    [
+      readyMarker,
+      '',
+      '      - name: Competing inline server fixture',
+      '        run: python3 -m http.server 4200 --directory _build/res &',
+    ].join('\n'),
+  );
+  assert.notEqual(competing, ci, 'test fixture must add an inline competing server');
+  assert.throws(
+    () => assertSmokeServerContract(competing),
+    /4200 must have exactly one active server invocation/,
+  );
+});
+
+test('localhost server contract rejects competing mappings in alternate block scalars', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const readyMarker = '          echo "Servers ready"';
+  for (const indicator of ['|', '|-', '|+', '>', '>-', '>+']) {
+    const competing = ci.replace(
+      readyMarker,
+      [
+        readyMarker,
+        '',
+        `      - run: ${indicator}`,
+        '          python3 -m http.server 4200 --directory _build/res &',
+      ].join('\n'),
+    );
+    assert.notEqual(competing, ci, `test fixture must add a ${indicator} competing server`);
+    assert.throws(
+      () => assertSmokeServerContract(competing),
+      /4200 must have exactly one active server invocation/,
+    );
+  }
+});
+
 // F26's other half: CI invoking run-all.sh (locked above) only helps if
 // run-all.sh itself keeps every suite wired — deleting one line would
 // silently re-orphan a test with CI green.
@@ -492,7 +551,7 @@ function assertCiGatesFailClosed(ci) {
 
   // The managed-proxy/interview gate runs all three suites in one errexit shell
   // (GitHub Actions default bash -e), so any single failure fails the job.
-  const runBlocks = extractRunBlocks(ci);
+  const runSteps = extractRunSteps(ci);
   const commands = [
     'npm --prefix sp-proxy test',
     'bash _prototypes/sp-interview/tests/run-all.sh',
@@ -500,13 +559,13 @@ function assertCiGatesFailClosed(ci) {
   ];
   for (const command of commands) {
     assert.equal(
-      countRunCommands(runBlocks, command),
+      countRunCommands(runSteps, command),
       1,
       `SP gate must run ${command} exactly once`,
     );
   }
-  const gates = runBlocks.filter((block) => (
-    commands.every((command) => hasExactLine(block.lines, command))
+  const gates = runSteps.filter((step) => (
+    commands.every((command) => hasExactLine(step.lines, command))
   ));
   assert.equal(gates.length, 1, 'SP managed-proxy gate commands must share one run block');
 }

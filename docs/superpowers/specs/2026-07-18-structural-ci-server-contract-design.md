@@ -28,7 +28,7 @@
 
 ## Design
 
-Add a small, dependency-free validator inside `ci-build-contract.test.mjs`. It accepts workflow text and checks exact executable lines inside indentation-bounded `run: |` blocks rather than the step name. Commented commands and prefix or suffix lookalikes do not count.
+Add a small, dependency-free validator inside `ci-build-contract.test.mjs`. It accepts workflow text and checks exact executable lines in both single-line `run: <command>` steps and indentation-bounded block scalars rather than the step name. The narrow run-step reader recognizes `|`, `|-`, `|+`, `>`, `>-`, and `>+`, with or without the optional list-item dash before `run:`; it is not a general YAML or shell parser. Commented commands and prefix or suffix lookalikes do not count.
 
 For each required port, the validator will require exactly one active `python3 -m http.server` invocation and require it to equal the approved command:
 
