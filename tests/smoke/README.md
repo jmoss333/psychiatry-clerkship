@@ -15,24 +15,39 @@ Five automated browser checks run on every PR to `main` via the `smoke-tests` CI
 ## Running locally
 
 ```bash
+# From the repository root:
+npm --prefix tests/smoke ci
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+bash tests/smoke/start-local-servers.sh
+
+# Defaults printed by the launcher:
+#   MS3             http://127.0.0.1:4200/
+#   Resident        http://127.0.0.1:4201/
+#   Faculty console http://127.0.0.1:4202/
+# The launcher prints the exact `kill` command to stop all three servers.
+
 cd tests/smoke
-npm ci
+SP_INTERVIEW_BASE_URL=http://localhost:4200/tools/ npx playwright test
+npx playwright test --project=nav-ms3
+npx playwright test --project=nav-res
+npx playwright test --project=faculty-console
+npx playwright test --project=lfs
+npx playwright test --project=visual
+```
 
-# Build sites first (from repo root)
-bash ../../13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
-bash ../../13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+```bash
+export SMOKE_MS3_PORT=4300
+export SMOKE_RES_PORT=4301
+export SMOKE_FACULTY_PORT=4302
+bash tests/smoke/start-local-servers.sh
 
-# Serve
-python3 -m http.server 4200 --directory ../../_build/ms3 &
-python3 -m http.server 4201 --directory ../../_build/res &
-python3 -m http.server 4202 --directory ../../faculty-console &
-
-SP_INTERVIEW_BASE_URL=http://localhost:4200/tools/ npx playwright test # all checks
-npx playwright test --project=nav-ms3                              # nav crawl — MS3 only
-npx playwright test --project=nav-res                              # nav crawl — resident only
-npx playwright test --project=faculty-console                      # unified faculty attestation workspace
-npx playwright test --project=lfs                                  # LFS check (needs MS3_DEPLOY_URL set)
-npx playwright test --project=visual                               # visual regression
+cd tests/smoke
+MS3_BASE_URL=http://127.0.0.1:4300 \
+RES_BASE_URL=http://127.0.0.1:4301 \
+FACULTY_CONSOLE_BASE_URL=http://127.0.0.1:4302 \
+SP_INTERVIEW_BASE_URL=http://127.0.0.1:4300/tools/ \
+npx playwright test
 ```
 
 ## Visual baselines
@@ -72,13 +87,7 @@ docker run --rm \
   bash -c "
     set -e
     cd /work
-    python3 -m http.server 4200 --directory _build/ms3 &>/dev/null &
-    python3 -m http.server 4201 --directory _build/res &>/dev/null &
-    for port in 4200 4201; do
-      for i in \$(seq 1 15); do
-        curl -sf http://localhost:\$port/ >/dev/null 2>&1 && break; sleep 1
-      done
-    done
+    bash tests/smoke/start-local-servers.sh
     cd tests/smoke
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --quiet
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npx playwright test --project=visual --update-snapshots
@@ -92,9 +101,7 @@ docker run --rm \
   mcr.microsoft.com/playwright:v1.46.1-jammy \
   bash -c "
     cd /work
-    python3 -m http.server 4200 --directory _build/ms3 &>/dev/null &
-    python3 -m http.server 4201 --directory _build/res &>/dev/null &
-    sleep 2
+    bash tests/smoke/start-local-servers.sh
     cd tests/smoke
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --quiet
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npx playwright test --project=visual
