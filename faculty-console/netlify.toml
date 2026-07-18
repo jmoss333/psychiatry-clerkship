@@ -11,10 +11,12 @@
   functions = "netlify/functions"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "24"
 
 # Private governance tool — never index it.
 [[headers]]
   for = "/*"
   [headers.values]
+    Content-Security-Policy = "frame-ancestors 'none'"
     X-Robots-Tag = "noindex, nofollow"
+    X-Frame-Options = "DENY"
