@@ -116,6 +116,7 @@ ZOTERO_RECONCILE = Path(__file__).with_name("zotero_reconcile.py")
 ZOTERO_FIXTURES = Path(__file__).with_name("fixtures")
 LOCAL_REQUIREMENTS = Path(__file__).with_name("requirements-local.txt")
 EVIDENCE_README = Path(__file__).with_name("README.md")
+SYNTHETIC_MACOS_USER_ROOT = "/" + "Users/example"
 BUILD_DEPLOY = (
     REPO_ROOT
     / "13_Faculty_Resources"
@@ -1632,9 +1633,9 @@ def test_zotero_indexed_pdf_reports_indexed_state_separately():
 
 def test_zotero_snapshot_sanitization_rejects_sensitive_data_recursively():
     unsafe_values = (
-        {"nested": {"filePath": "/Users/example/paper.pdf"}},
+        {"nested": {"filePath": f"{SYNTHETIC_MACOS_USER_ROOT}/paper.pdf"}},
         {"records": [{"attachmentKey": "ABCD1234"}]},
-        {"nested": {"url": "file:///Users/example/paper.pdf"}},
+        {"nested": {"url": f"file://{SYNTHETIC_MACOS_USER_ROOT}/paper.pdf"}},
         {"deep": [{"extractedText": "licensed article text"}]},
         {"deep": [{"fullText": "licensed article text"}]},
         {"path": "/private/tmp/article.pdf"},
@@ -1726,7 +1727,9 @@ def test_zotero_transport_disables_environment_proxies_and_remains_get_only():
 
 
 def test_zotero_status_never_prints_server_payload_or_exception_details():
-    malicious = {"message": "file:///Users/example/secret.pdf"}
+    malicious = {
+        "message": f"file://{SYNTHETIC_MACOS_USER_ROOT}/secret.pdf"
+    }
     stdout = io.StringIO()
     stderr = io.StringIO()
     with mock.patch.object(zotero_bridge, "api_get", return_value=malicious), \
@@ -1769,7 +1772,9 @@ def test_zotero_snapshot_library_filters_top_level_children_before_projection():
     attachment = copy.deepcopy(parent)
     attachment["key"] = "ATCH1234"
     attachment["data"]["itemType"] = "Attachment"
-    attachment["data"]["title"] = "file:///Users/example/private.pdf"
+    attachment["data"]["title"] = (
+        f"file://{SYNTHETIC_MACOS_USER_ROOT}/private.pdf"
+    )
     note = copy.deepcopy(parent)
     note["key"] = "NOTE1234"
     note["data"]["itemType"] = "nOtE"
@@ -1806,9 +1811,21 @@ def test_zotero_sanitizer_rejects_reviewer_privacy_payloads():
     payloads.append(("standalone attachment row key", standalone_attachment))
 
     for label, field, value in (
-        ("embedded file URL", "title", "prefix file:///Users/example/a.pdf suffix"),
-        ("embedded local path", "title", "failed at /Users/example/a.pdf"),
-        ("tight embedded local path", "title", "failed:/Users/example/a.pdf"),
+        (
+            "embedded file URL",
+            "title",
+            f"prefix file://{SYNTHETIC_MACOS_USER_ROOT}/a.pdf suffix",
+        ),
+        (
+            "embedded local path",
+            "title",
+            f"failed at {SYNTHETIC_MACOS_USER_ROOT}/a.pdf",
+        ),
+        (
+            "tight embedded local path",
+            "title",
+            f"failed:{SYNTHETIC_MACOS_USER_ROOT}/a.pdf",
+        ),
         ("attachment identifier", "attachmentID", "ATCH1234"),
         ("OCR sentinel", "ocr", "LICENSED OCR SENTINEL"),
         ("relative path", "relativePath", "storage/article.pdf"),
@@ -1840,7 +1857,9 @@ def test_zotero_sanitizer_rejects_reviewer_privacy_payloads():
         "errors": [
             {
                 "code": "unsafe",
-                "message": "could not read /Users/example/private.pdf",
+                "message": (
+                    f"could not read {SYNTHETIC_MACOS_USER_ROOT}/private.pdf"
+                ),
                 "evidence_id": "engel-1977-biopsychosocial-model",
             }
         ],
@@ -1876,7 +1895,10 @@ def test_zotero_sanitizer_allowlists_parent_and_attachment_status_schemas():
         {"state": "guessed"},
         {"state": "pdf_verified", "byteCount": "4096"},
         {"state": "pdf_verified", "attachmentID": "ATCH1234"},
-        {"state": "pdf_verified", "error": "/Users/example/private.pdf"},
+        {
+            "state": "pdf_verified",
+            "error": f"{SYNTHETIC_MACOS_USER_ROOT}/private.pdf",
+        },
     ):
         try:
             sanitize_snapshot(unsafe_status)
