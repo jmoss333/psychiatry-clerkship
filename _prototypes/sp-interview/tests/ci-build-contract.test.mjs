@@ -266,10 +266,46 @@ function normalizeActiveRunCommands(step) {
     .filter(Boolean);
 }
 
+function scanShellCommandPrefixes(command) {
+  const segmentStarts = [0];
+  for (const boundary of command.matchAll(/&&|\|\||[;|&()]/g)) {
+    segmentStarts.push(boundary.index + boundary[0].length);
+  }
+  return segmentStarts.map((start) => {
+    let remainder = command.slice(start).trimStart();
+    const assignments = [];
+    const consumeAssignments = () => {
+      while (true) {
+        const assignment = remainder.match(
+          /^([A-Za-z_][A-Za-z0-9_]*)=[^\s;&|()]*\s*/,
+        );
+        if (!assignment) break;
+        assignments.push(assignment[1]);
+        remainder = remainder.slice(assignment[0].length);
+      }
+    };
+    consumeAssignments();
+    const utility = remainder.match(/^(export|env)(?:\s+|$)/)?.[1] ?? null;
+    if (utility) {
+      remainder = remainder.slice(utility.length).trimStart();
+      consumeAssignments();
+    }
+    return { assignments, remainder, utility };
+  });
+}
+
 function hasSmokeRunOverride(command) {
-  const assignment = /(?:^|(?:&&|\|\||[;|&()])\s*)(?:(?:export|env)\s+)?SMOKE_[A-Z0-9_]+\s*=/;
-  const exportedName = /(?:^|(?:&&|\|\||[;|&()])\s*)export\s+SMOKE_[A-Z0-9_]+(?:\s|$)/;
-  return assignment.test(command) || exportedName.test(command);
+  return scanShellCommandPrefixes(command).some(({ assignments, remainder, utility }) => (
+    assignments.some((name) => /^SMOKE_[A-Z0-9_]+$/.test(name))
+      || (utility === 'export' && /^SMOKE_[A-Z0-9_]+(?:\s|$)/.test(remainder))
+  ));
+}
+
+function hasSmokeServerInvocation(command) {
+  return scanShellCommandPrefixes(command).some(({ remainder, utility }) => (
+    utility !== 'export'
+      && /^(?:\/usr\/bin\/)?python3(?:\s+-u)*\s+-m\s*http\.server(?:\s|$)/.test(remainder)
+  ));
 }
 
 function extractSmokeEnvironmentKeys(source) {
@@ -365,9 +401,9 @@ function assertSmokeLauncherContract(ci) {
     );
   }
   for (const command of activeRunCommands) {
-    assert.doesNotMatch(
-      command,
-      /(?:^|(?:&&|\|\||[;|&()])\s*)(?:env\s+)?(?:\/usr\/bin\/)?python3(?:\s+-u)*\s+-m\s*http\.server(?:\s|$)/,
+    assert.equal(
+      hasSmokeServerInvocation(command),
+      false,
       'CI must not duplicate smoke-server startup outside the tested launcher',
     );
   }
@@ -608,6 +644,34 @@ test('smoke launcher contract rejects bounded workflow mutations', async (t) => 
       name: 'unbuffered Python invocation',
       mutate: (source) => addRunFixture(source, 'unbuffered Python', '|', [
         { text: 'python3 -u -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'launcher override after leading assignment',
+      mutate: (source) => addRunFixture(source, 'launcher assignment prefix', '|', [
+        { text: 'CI=1 SMOKE_MS3_PORT=4300 bash tests/smoke/start-local-servers.sh' },
+      ]),
+      expected: configurationError,
+    },
+    {
+      name: 'launcher export after leading assignment',
+      mutate: (source) => addRunFixture(source, 'launcher export prefix', '|', [
+        { text: 'export CI=1 SMOKE_MS3_PORT=4300' },
+      ]),
+      expected: configurationError,
+    },
+    {
+      name: 'env server after leading assignment',
+      mutate: (source) => addRunFixture(source, 'env assignment prefix', '|', [
+        { text: 'env PYTHONUNBUFFERED=1 python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'server after leading assignment',
+      mutate: (source) => addRunFixture(source, 'assignment prefix', '|', [
+        { text: 'PYTHONUNBUFFERED=1 python3 -m http.server 4300 &' },
       ]),
       expected: serverError,
     },
