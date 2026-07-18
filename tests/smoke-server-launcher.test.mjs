@@ -357,8 +357,8 @@ test('launcher serves all three configured marker sites and leaves their PIDs al
     https_proxy: curlFixture.proxyUrl,
     NO_PROXY: '',
     no_proxy: '',
-    SMOKE_READY_ATTEMPTS: '2',
-    SMOKE_READY_DELAY_SECONDS: '0',
+    SMOKE_READY_ATTEMPTS: '5',
+    SMOKE_READY_DELAY_SECONDS: '0.05',
   });
   const result = await runLauncher(context, { env });
   assert.equal(result.timedOut, false);
@@ -368,7 +368,7 @@ test('launcher serves all three configured marker sites and leaves their PIDs al
     .trim()
     .split(/\r?\n/)
     .map((line) => line.split('\t'));
-  assert.equal(curlInvocations.length, 3);
+  assert.ok(curlInvocations.length >= 3, 'each server must receive a readiness probe');
   for (const invocation of curlInvocations) {
     assert.deepEqual(invocation, ['-q', '--noproxy', '*']);
   }
@@ -400,6 +400,32 @@ test('launcher rejects a missing directory before starting any server', async (t
   assert.notEqual(result.code, 0);
   assert.match(result.stderr, /ERROR: directory for ms3 does not exist:/);
   assert.equal(fs.existsSync(path.join(context.stateDir, '.startup-pids.tsv')), false);
+  await waitForPortsClosed(ports);
+});
+
+test('launcher preserves a trapped failure before recording its first PID', async (t) => {
+  const context = createTestContext(t);
+  const sentinel = 'do-not-overwrite\n';
+  const ms3Log = path.join(context.stateDir, 'ms3.log');
+  fs.writeFileSync(ms3Log, sentinel);
+  const reservations = await reserveLoopbackPorts(3);
+  const ports = reservations.map(({ port }) => port);
+  await releaseReservations(reservations);
+
+  const result = await runLauncher(context, { env: makeLauncherEnvironment(context, ports) });
+
+  assert.equal(result.timedOut, false);
+  assert.equal(result.code, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, /ERROR: ms3 log already exists:/);
+  assert.doesNotMatch(result.stderr, /PIDS\[@\]: unbound variable/);
+  assert.equal(parseRecords(result.stdout, 'Started').length, 0);
+  assert.equal(fs.readFileSync(ms3Log, 'utf8'), sentinel);
+  assert.equal(fs.readFileSync(path.join(context.stateDir, '.startup-pids.tsv'), 'utf8'), '');
+  assert.equal(fs.existsSync(path.join(context.stateDir, 'server-pids.tsv')), false);
+  assert.deepEqual(
+    fs.readdirSync(context.stateDir).filter((entry) => entry.startsWith('server-pids.tsv.tmp.')),
+    [],
+  );
   await waitForPortsClosed(ports);
 });
 

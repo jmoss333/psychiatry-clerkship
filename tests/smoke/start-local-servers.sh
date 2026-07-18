@@ -159,6 +159,7 @@ cleanup_processes() {
   local pid
   local attempt=0
   local alive
+  if [ "${#PIDS[@]}" -eq 0 ]; then return 0; fi
   for pid in "${PIDS[@]}"; do
     kill -TERM "$pid" >/dev/null 2>&1 || true
   done
