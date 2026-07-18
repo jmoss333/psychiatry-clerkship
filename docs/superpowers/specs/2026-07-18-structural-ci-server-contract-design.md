@@ -1,6 +1,6 @@
 # Structural CI Server Contract Design
 
-**Date:** 2026-07-18  
+**Date:** 2026-07-18
 **Scope:** Replace the label-sensitive localhost-server assertion in the SP Interview CI contract.
 
 ## Problem
