@@ -29,6 +29,11 @@ const FIRST_TREE_SHA = '8'.repeat(40);
 const SECOND_TREE_SHA = '9'.repeat(40);
 const FIRST_COMMIT_SHA = '0'.repeat(40);
 const SECOND_COMMIT_SHA = '5'.repeat(40);
+const MANIFEST_RACE_HEAD_SHA = 'a'.repeat(64);
+const UNRELATED_RACE_HEAD_SHA = 'b'.repeat(64);
+const SAME_ITEM_RACE_HEAD_SHA = 'c'.repeat(64);
+const RETIREMENT_RACE_HEAD_SHA = 'd'.repeat(64);
+const DELETION_RACE_HEAD_SHA = 'e'.repeat(64);
 
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
@@ -176,7 +181,7 @@ function createGithubMock({
   let branchHead = BRANCH_HEAD_SHA;
   let refAttempt = 0;
 
-  function advanceBranch(mutate, sha = MANIFEST_RACE_SHA) {
+  function advanceBranch(mutate, sha = MANIFEST_RACE_HEAD_SHA) {
     mutate?.(files);
     branchHead = sha;
   }
@@ -906,6 +911,30 @@ test('qbank.save-draft rejects a manifest-only branch race without an effective 
   assert.equal(mock.effectiveWrites.length, 0);
 });
 
+test('qbank.save-draft preserves a stable-head ref validation failure without retrying', async () => {
+  const item = validItem({ status: 'attested' });
+  const edited = clone(item);
+  edited.stem = 'A revised fictional inpatient has sustained sadness. What diagnosis best fits?';
+  const mock = createGithubMock({
+    files: defaultFiles(makeBank([item])),
+    onRefUpdate: () => jsonResponse(422, { message: 'Synthetic branch rule rejection.' }),
+  });
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
+      id: item.id,
+      baseRevision: itemRevision(item),
+      item: edited,
+    },
+  }));
+
+  await expectError(response, { status: 422, code: 'github_validation_failed' });
+  assert.equal(mock.refBodies.length, 1);
+  assert.equal(mock.effectiveWrites.length, 0);
+});
+
 test('qbank.save-draft maps a missing current manifest to a safe conflict without leaking internals', async () => {
   const item = validItem({ status: 'attested' });
   const edited = clone(item);
@@ -1115,7 +1144,7 @@ test('retries one atomic ref conflict after an unrelated-item race and preserves
       advanceBranch(mutableFiles => {
         mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated faculty edit won the first race.';
         mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
-      }, UNRELATED_RACE_SHA);
+      }, UNRELATED_RACE_HEAD_SHA);
       return undefined;
     },
   });
@@ -1136,7 +1165,7 @@ test('retries one atomic ref conflict after an unrelated-item race and preserves
   assert.equal(mock.blobBodies.length, 2);
   assert.equal(mock.refBodies.length, 2);
   assert.equal(mock.effectiveWrites.length, 1);
-  assert.deepEqual(mock.commitBodies[1].parents, [UNRELATED_RACE_SHA]);
+  assert.deepEqual(mock.commitBodies[1].parents, [UNRELATED_RACE_HEAD_SHA]);
   const retriedBank = atomicBank(mock, 1);
   assert.equal(retriedBank.items[0].stem, edited.stem);
   assert.equal(retriedBank.items[1].pearl, 'An unrelated faculty edit won the first race.');
@@ -1156,7 +1185,7 @@ test('returns a conflict with no second ref update when the manifest drifts duri
         mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
         mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
         mutableFiles[MANIFEST_PATH].sha = '5'.repeat(40);
-      }, UNRELATED_RACE_SHA);
+      }, UNRELATED_RACE_HEAD_SHA);
       return undefined;
     },
   });
@@ -1192,7 +1221,7 @@ test('returns a conflict with no second ref update when the manifest is removed 
         mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
         mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
         delete mutableFiles[MANIFEST_PATH];
-      }, UNRELATED_RACE_SHA);
+      }, UNRELATED_RACE_HEAD_SHA);
       return undefined;
     },
   });
@@ -1228,7 +1257,7 @@ test('validates the retry manifest before a second atomic write', async () => {
         mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
         mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
         mutableFiles[MANIFEST_PATH].json = { md: 'not-an-array', tools: [] };
-      }, UNRELATED_RACE_SHA);
+      }, UNRELATED_RACE_HEAD_SHA);
       return undefined;
     },
   });
@@ -1269,7 +1298,7 @@ test('preserves a non-404 manifest failure during a qbank retry', async () => {
       advanceBranch(mutableFiles => {
         mutableFiles[QBANK_PATH].json.items[1].pearl = 'An unrelated edit caused the retry.';
         mutableFiles[QBANK_PATH].sha = UNRELATED_RACE_SHA;
-      }, UNRELATED_RACE_SHA);
+      }, UNRELATED_RACE_HEAD_SHA);
       return undefined;
     },
   });
@@ -1302,7 +1331,7 @@ test('returns a same-item conflict with no second ref update when the target cha
       advanceBranch(mutableFiles => {
         mutableFiles[QBANK_PATH].json.items[0].pearl = 'A competing edit changed this same item.';
         mutableFiles[QBANK_PATH].sha = SAME_ITEM_RACE_SHA;
-      }, SAME_ITEM_RACE_SHA);
+      }, SAME_ITEM_RACE_HEAD_SHA);
       return undefined;
     },
   });
@@ -1337,7 +1366,7 @@ test('normalizes target retirement during a save retry to a conflict with no sec
         mutableFiles[QBANK_PATH].json.items[0].retired = true;
         mutableFiles[QBANK_PATH].json.items[0].retiredReason = 'Retired during the synthetic race.';
         mutableFiles[QBANK_PATH].sha = RETIREMENT_RACE_SHA;
-      }, RETIREMENT_RACE_SHA);
+      }, RETIREMENT_RACE_HEAD_SHA);
       return undefined;
     },
   });
@@ -1370,7 +1399,7 @@ test('normalizes deletion of any attestation target during retry to one atomic c
       advanceBranch(mutableFiles => {
         mutableFiles[QBANK_PATH].json.items = [mutableFiles[QBANK_PATH].json.items[0]];
         mutableFiles[QBANK_PATH].sha = DELETION_RACE_SHA;
-      }, DELETION_RACE_SHA);
+      }, DELETION_RACE_HEAD_SHA);
       return undefined;
     },
   });

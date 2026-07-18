@@ -512,9 +512,19 @@ function createRepositoryGateway({ settings, fetchImpl }) {
         },
       );
     } catch (error) {
-      if (error instanceof GithubError
-          && (error.conflict || error.code === 'github_validation_failed')) {
+      if (error instanceof GithubError && error.conflict) {
         throw new GithubError('github_conflict', 409, { retryable: true });
+      }
+      if (error instanceof GithubError && error.code === 'github_validation_failed') {
+        let branchAdvanced = false;
+        try {
+          branchAdvanced = await head() !== submittedParentHead;
+        } catch {
+          // Preserve the original ref validation result when classification is unavailable.
+        }
+        if (branchAdvanced) {
+          throw new GithubError('github_conflict', 409, { retryable: true });
+        }
       }
       throw error;
     }
