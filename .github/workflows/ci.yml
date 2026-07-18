@@ -149,7 +149,7 @@ jobs:
         env:
           SP_INTERVIEW_BASE_URL: http://localhost:4200/tools/
 
-      - name: "Check 1b: Faculty qbank workbench"
+      - name: "Check 1b: Unified faculty attestation workspace"
         run: |
           cd tests/smoke
           npx playwright test --project=faculty-console

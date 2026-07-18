@@ -8,7 +8,7 @@ Five automated browser checks run on every PR to `main` via the `smoke-tests` CI
 |---|------|---------------|
 | 1 | Nav crawl | Every page in `nav.json` and the resident inline nav returns HTTP 200 and renders non-empty real content. Samples topic cards for two-tier practice panel. Covers both MS3 and resident sites. |
 | 1a | Interview Room acceptance | The standardized-patient interview surface enforces its reviewed pack, managed endpoint, privacy, and interaction contracts. |
-| 1b | Faculty qbank workbench | The shared-key login, filters, full two-tier editor, draft/reload workflow, session review, green batch, individual warning acknowledgement, red blocker, retired-item exclusion, and conflict recovery work against a synthetic in-memory repository. |
+| 1b | Unified faculty attestation workspace | A mixed page/tool/question queue uses the real local learner build, exact-question routing, individual content and question attestations, honest preview failures and fallbacks, conflict recovery, privacy defenses, keyboard/accessibility behavior, and a no-overflow 390×844 layout against a synthetic in-memory repository. |
 | 2 | LFS integrity | Audio files served by the Netlify deploy preview are real bytes, not ~133-byte Git-LFS pointer stubs. Runs against the deploy preview URL; skips gracefully if the preview isn't live yet. |
 | 3 | Visual regression | Screenshots of the resident sidebar and a representative topic page (first viewport) at desktop (1280×800) and mobile (390×844) compared against committed baselines using pixelmatch. Threshold: 20% pixel diff. |
 
@@ -30,7 +30,7 @@ python3 -m http.server 4202 --directory ../../faculty-console &
 SP_INTERVIEW_BASE_URL=http://localhost:4200/tools/ npx playwright test # all checks
 npx playwright test --project=nav-ms3                              # nav crawl — MS3 only
 npx playwright test --project=nav-res                              # nav crawl — resident only
-npx playwright test --project=faculty-console                      # faculty question-bank workbench
+npx playwright test --project=faculty-console                      # unified faculty attestation workspace
 npx playwright test --project=lfs                                  # LFS check (needs MS3_DEPLOY_URL set)
 npx playwright test --project=visual                               # visual regression
 ```
