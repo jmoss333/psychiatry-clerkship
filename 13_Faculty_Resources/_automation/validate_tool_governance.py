@@ -424,13 +424,17 @@ def write_atomic_json(output_path: Path, document: dict) -> None:
         item_ids.append(item["id"])
     if len(set(item_ids)) != len(item_ids) or item_ids != sorted(item_ids):
         raise GovernanceError("tool-governance.json: invalid item ids")
+    try:
+        payload = canonical_json_bytes(document)
+    except (TypeError, ValueError) as error:
+        raise GovernanceError("tool-governance.json: unable to serialize output") from error
     output_path = Path(output_path)
     try:
         with tempfile.NamedTemporaryFile(
             mode="wb", dir=output_path.parent, prefix=f".{output_path.name}.", delete=False
         ) as handle:
             temporary_path = Path(handle.name)
-            handle.write(canonical_json_bytes(document))
+            handle.write(payload)
             handle.flush()
             os.fsync(handle.fileno())
         os.replace(temporary_path, output_path)

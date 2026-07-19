@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from decimal import Decimal
 from pathlib import Path
 from unittest.mock import patch
 
@@ -391,6 +392,30 @@ class RepositoryProducerTests(unittest.TestCase):
                         governance.write_atomic_json(output, candidate)
 
                     self.assertEqual(output.read_bytes(), b"stable-output\n")
+
+    def test_atomic_output_serialization_failure_leaves_no_temporary_file(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_synthetic_repository(root)
+            document = governance.build_governance_document(
+                root, "ms3", revision="e" * 40
+            )[0]
+            document["schemaVersion"] = Decimal("1")
+            output = root / "tool-governance.json"
+            output.write_bytes(b"stable-output\n")
+
+            try:
+                governance.write_atomic_json(output, document)
+            except Exception as error:
+                raised = error
+            else:
+                raised = None
+
+            self.assertIsInstance(raised, governance.GovernanceError)
+            self.assertEqual(str(raised), "tool-governance.json: unable to serialize output")
+            self.assertNotIn("Decimal", str(raised))
+            self.assertEqual(output.read_bytes(), b"stable-output\n")
+            self.assertEqual(list(root.glob(".tool-governance.json.*")), [])
 
     def test_cli_is_offline_and_writes_only_requested_complete_output(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
