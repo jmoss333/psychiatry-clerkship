@@ -224,9 +224,63 @@ test('static QA accepts preferred and legacy metadata markers but rejects missin
     const conflicting = run(process.execPath, [CHECKER, site]);
     assert.equal(conflicting.status, 1, conflicting.stdout + conflicting.stderr);
     assert.match(conflicting.stdout + conflicting.stderr, /conflicting metadata markers: fixture\.html/i);
+
+    for (const [label, header] of [
+      ['preferred', '<!-- [CLERKSHIP-META v1] tool="secret-tool" audience="ms3"'],
+      ['legacy', '<!-- [RC-META] tool="secret-tool" audience="ms3"'],
+    ]) {
+      writeFixture(header);
+      const malformed = run(process.execPath, [CHECKER, site]);
+      assert.equal(malformed.status, 1, `${label}: ${malformed.stdout}${malformed.stderr}`);
+      assert.match(malformed.stdout + malformed.stderr, /malformed metadata marker: fixture\.html/i);
+      assert.doesNotMatch(malformed.stdout + malformed.stderr, /secret-tool/i);
+    }
+
+    writeFixture(
+      '<!-- [RC-META] tool="fixture" audience="ms3" -->'
+      + '<!-- [RC-META] tool="fixture" audience="ms3" -->',
+    );
+    const multiple = run(process.execPath, [CHECKER, site]);
+    assert.equal(multiple.status, 1, multiple.stdout + multiple.stderr);
+    assert.match(multiple.stdout + multiple.stderr, /multiple metadata markers: fixture\.html/i);
   } finally {
     fs.rmSync(site, { recursive: true, force: true });
     fs.rmSync(sourceMap, { force: true });
+  }
+});
+
+test('resident build removes copied governance output when resident generation fails', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resident-governance-failure-'));
+  const ms3 = path.join(temporary, 'ms3');
+  const resident = path.join(temporary, 'resident');
+  const automation = path.join(ROOT, '13_Faculty_Resources/_automation');
+  const failureHarness = [
+    'import runpy, sys',
+    'sys.path.insert(0, sys.argv[1])',
+    'import validate_tool_governance as governance',
+    'def fail(*args, **kwargs):',
+    "    raise governance.GovernanceError('synthetic failure')",
+    'governance.build_governance_document = fail',
+    "runpy.run_path(sys.argv[2], run_name='__main__')",
+  ].join('\n');
+  try {
+    const built = run(PYTHON, [BUILD], {
+      env: { ...process.env, OUT_DIR: ms3 },
+      timeout: 60_000,
+    });
+    assert.equal(built.status, 0, built.stdout + built.stderr);
+    assert.equal(fs.existsSync(path.join(ms3, 'tool-governance.json')), true);
+
+    const failed = run(PYTHON, ['-c', failureHarness, automation, RESIDENT_BUILD], {
+      env: { ...process.env, MS3_DIR: ms3, OUT_DIR: resident },
+      timeout: 60_000,
+    });
+    assert.notEqual(failed.status, 0, failed.stdout + failed.stderr);
+    assert.equal(fs.existsSync(path.join(resident, 'tool-governance.json')), false);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(`${ms3}.source-map.json`, { force: true });
+    fs.rmSync(`${resident}.source-map.json`, { force: true });
   }
 });
 

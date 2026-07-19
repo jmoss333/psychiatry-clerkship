@@ -43,6 +43,7 @@ SITE_EXTRAS = {
         ("_prototypes/canon-quiz/rp-canon-quiz.html", "rp-canon-quiz.html"),
     ),
 }
+EXPECTED_TOOL_COUNTS = {"ms3": 22, "resident": 24}
 
 
 class GovernanceError(ValueError):
@@ -344,8 +345,23 @@ def canonical_json_bytes(document: dict) -> bytes:
     return (json.dumps(document, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
+def validate_expected_tool_count(site: str, item_count: int) -> None:
+    """Require the fixed production inventory size for one learner site."""
+    expected_count = EXPECTED_TOOL_COUNTS.get(site)
+    if expected_count is None:
+        raise GovernanceError("site: unsupported value")
+    if item_count != expected_count:
+        raise GovernanceError(
+            f"tool-governance.json: {site} item count must equal {expected_count}"
+        )
+
+
 def build_governance_document(
-    root: Path, site: str, *, revision: str | None = None
+    root: Path,
+    site: str,
+    *,
+    revision: str | None = None,
+    enforce_expected_count: bool = False,
 ) -> tuple[dict, list[str]]:
     """Build one site inventory entirely from local tracked inputs."""
     root = Path(root).resolve()
@@ -381,13 +397,17 @@ def build_governance_document(
     ids = [item["id"] for item in items]
     if len(set(ids)) != len(ids):
         raise GovernanceError("tool-governance.json: duplicate item id")
+    if enforce_expected_count:
+        validate_expected_tool_count(site, len(items))
     warnings = []
     if legacy_paths:
         warnings.append("legacy metadata warning: " + ", ".join(sorted(legacy_paths)))
     return {"schemaVersion": 1, "contract": descriptor, "items": items}, warnings
 
 
-def validate_repository(root: Path, *, revision: str | None = None) -> tuple[list[str], dict[str, dict]]:
+def validate_repository(
+    root: Path, *, revision: str | None = None, enforce_expected_count: bool = True
+) -> tuple[list[str], dict[str, dict]]:
     """Validate both current source inventories and return their generated documents."""
     root = Path(root).resolve()
     resolved_revision = revision or current_revision(root)
@@ -395,7 +415,10 @@ def validate_repository(root: Path, *, revision: str | None = None) -> tuple[lis
     legacy_paths = set()
     for site in ("ms3", "resident"):
         document, warnings = build_governance_document(
-            root, site, revision=resolved_revision
+            root,
+            site,
+            revision=resolved_revision,
+            enforce_expected_count=enforce_expected_count,
         )
         documents[site] = document
         for warning in warnings:
@@ -406,7 +429,9 @@ def validate_repository(root: Path, *, revision: str | None = None) -> tuple[lis
     return diagnostics, documents
 
 
-def validate_built_tool_inventory(document: dict, tools_directory: Path) -> None:
+def validate_built_tool_inventory(
+    document: dict, tools_directory: Path, *, site: str | None = None
+) -> None:
     """Require the final built HTML tool set to exactly match governance item IDs."""
     items = document.get("items") if isinstance(document, dict) else None
     if not isinstance(items, list):
@@ -420,15 +445,22 @@ def validate_built_tool_inventory(document: dict, tools_directory: Path) -> None
         if not slug or "/" in slug or "\\" in slug:
             raise GovernanceError("tool-governance.json: invalid item id")
         expected.add(f"{slug}.html")
+    if len(expected) != len(items):
+        raise GovernanceError("tool-governance.json: invalid item ids")
+    if site is not None:
+        validate_expected_tool_count(site, len(items))
     tools_directory = Path(tools_directory)
     try:
-        actual = {
+        html_names = [
             entry.name
             for entry in tools_directory.iterdir()
-            if entry.is_file() and entry.suffix == ".html"
-        }
+            if entry.is_file() and entry.suffix.lower() == ".html"
+        ]
     except OSError as error:
         raise GovernanceError("tool-governance.json: built tools directory unreadable") from error
+    if any(not name.endswith(".html") for name in html_names):
+        raise GovernanceError("tool-governance.json: noncanonical HTML filename")
+    actual = set(html_names)
     if actual != expected:
         missing = ", ".join(sorted(expected - actual))
         extra = ", ".join(sorted(actual - expected))
@@ -496,13 +528,21 @@ def main() -> int:
         print("tool governance INVALID — --output requires --site")
         return 2
     try:
+        production_root = args.root.resolve() == AUTOMATION_DIRECTORY.parents[1]
         if args.site:
             document, diagnostics = build_governance_document(
-                args.root, args.site, revision=args.revision
+                args.root,
+                args.site,
+                revision=args.revision,
+                enforce_expected_count=production_root,
             )
             documents = {args.site: document}
         else:
-            diagnostics, documents = validate_repository(args.root, revision=args.revision)
+            diagnostics, documents = validate_repository(
+                args.root,
+                revision=args.revision,
+                enforce_expected_count=production_root,
+            )
         for diagnostic in diagnostics:
             print(diagnostic)
         if args.output:

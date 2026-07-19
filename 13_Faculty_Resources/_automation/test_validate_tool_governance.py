@@ -375,6 +375,39 @@ class RepositoryProducerTests(unittest.TestCase):
             ):
                 governance.validate_built_tool_inventory(document, tools)
 
+    def test_production_count_invariant_rejects_a_coordinated_source_drop(self) -> None:
+        entries = governance._tool_entries(ROOT, "ms3")
+        with patch.object(governance, "_tool_entries", return_value=entries[:-1]):
+            with self.assertRaisesRegex(
+                governance.GovernanceError,
+                r"tool-governance.json: ms3 item count must equal 22",
+            ):
+                governance.build_governance_document(
+                    ROOT, "ms3", enforce_expected_count=True
+                )
+
+    def test_built_inventory_rejects_uppercase_html_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_synthetic_repository(root)
+            document, _warnings = governance.build_governance_document(
+                root, "ms3", revision="f" * 40
+            )
+            tools = root / "built/tools"
+            tools.mkdir(parents=True)
+            for item in document["items"]:
+                (tools / f"{item['id'].removeprefix('tools/')}.html").write_text(
+                    "<!doctype html>\n", encoding="utf-8"
+                )
+            (tools / "extra.HTML").write_text("<!doctype html>\n", encoding="utf-8")
+
+            with patch.object(governance, "EXPECTED_TOOL_COUNTS", {"ms3": 3, "resident": 5}):
+                with self.assertRaisesRegex(
+                    governance.GovernanceError,
+                    r"tool-governance.json: noncanonical HTML filename",
+                ):
+                    governance.validate_built_tool_inventory(document, tools, site="ms3")
+
     def test_cli_default_root_validates_the_repository(self) -> None:
         result = subprocess.run(
             [sys.executable, str(VALIDATOR)], check=False, capture_output=True, text=True

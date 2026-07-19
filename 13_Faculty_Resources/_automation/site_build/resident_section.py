@@ -11,6 +11,8 @@ OUT=os.environ.get("OUT_DIR", os.path.join(ROOT,"mmc-resident-deploy"))
 
 if os.path.exists(OUT): shutil.rmtree(OUT)
 shutil.copytree(MS3, OUT)   # start as a full copy of the polished/dark/motion MS3 build
+_copied_governance=os.path.join(OUT,"tool-governance.json")
+if os.path.exists(_copied_governance): os.remove(_copied_governance)
 
 # ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the 4 files
 # that rode along via the MS3 copytree above; resident gets its own prototypes only (below).
@@ -254,8 +256,10 @@ from validate_tool_governance import (
 )
 
 try:
-    _governance, _governance_warnings = build_governance_document(Path(LIB), "resident")
-    validate_built_tool_inventory(_governance, Path(OUT) / "tools")
+    _governance, _governance_warnings = build_governance_document(
+        Path(LIB), "resident", enforce_expected_count=True
+    )
+    validate_built_tool_inventory(_governance, Path(OUT) / "tools", site="resident")
     write_atomic_json(Path(OUT) / "tool-governance.json", _governance)
 except GovernanceError as error:
     raise SystemExit(f"tool governance INVALID — {error}") from error

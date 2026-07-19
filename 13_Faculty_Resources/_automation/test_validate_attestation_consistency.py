@@ -348,7 +348,7 @@ class AttestationConsistencyTests(unittest.TestCase):
         self.assertTrue(
             any(
                 "reviewed.json says reviewed" in error
-                and "RC-META status is draft-pending-attestation" in error
+                and "metadata status is draft-pending-attestation" in error
                 for error in errors
             ),
             errors,

@@ -716,7 +716,7 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
         )
     if meta_status and is_reviewed(meta_status) != is_reviewed(pack_status):
         errors.append(
-            "%s: RC-META status %s disagrees with pack status %s"
+            "%s: metadata status %s disagrees with pack status %s"
             % (slug, meta_status, pack_status)
         )
 
@@ -805,19 +805,19 @@ def validate(root):
             meta = parse_rc_meta(source, src)
         except GovernanceError as error:
             if str(error).endswith(": metadata marker missing"):
-                errors.append("%s: manifest tool is missing an [RC-META] header" % slug)
+                errors.append("%s: manifest tool is missing a recognized metadata header" % slug)
             else:
                 errors.append("%s: manifest tool has an invalid metadata header" % slug)
             meta = {}
         meta_status = meta.get("status")
         if meta_status and is_reviewed(ledger_status) and not is_reviewed(meta_status):
             errors.append(
-                "%s: reviewed.json says reviewed but RC-META status is %s"
+                "%s: reviewed.json says reviewed but metadata status is %s"
                 % (slug, meta_status)
             )
         if meta_status and not is_reviewed(ledger_status) and is_reviewed(meta_status):
             errors.append(
-                "%s: RC-META says reviewed but reviewed.json status is %s"
+                "%s: metadata says reviewed but reviewed.json status is %s"
                 % (slug, ledger_status)
             )
 

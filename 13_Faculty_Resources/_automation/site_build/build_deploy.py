@@ -455,8 +455,10 @@ from validate_tool_governance import (
 )
 
 try:
-    _governance, _governance_warnings = build_governance_document(Path(LIB), "ms3")
-    validate_built_tool_inventory(_governance, Path(OUT) / "tools")
+    _governance, _governance_warnings = build_governance_document(
+        Path(LIB), "ms3", enforce_expected_count=True
+    )
+    validate_built_tool_inventory(_governance, Path(OUT) / "tools", site="ms3")
     write_atomic_json(Path(OUT) / "tool-governance.json", _governance)
 except GovernanceError as error:
     raise SystemExit(f"tool governance INVALID — {error}") from error
