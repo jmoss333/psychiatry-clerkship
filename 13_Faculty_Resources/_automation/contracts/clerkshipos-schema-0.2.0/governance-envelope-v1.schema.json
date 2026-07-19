@@ -1,0 +1,161 @@
+{
+  "$ref": "#/definitions/GovernanceEnvelopeV1",
+  "definitions": {
+    "GovernanceEnvelopeV1": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+        },
+        "type": {
+          "$ref": "#/definitions/GovernanceEnvelopeV1/properties/id"
+        },
+        "profile": {
+          "$ref": "#/definitions/GovernanceEnvelopeV1/properties/id"
+        },
+        "audiences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GovernanceEnvelopeV1/properties/id"
+          },
+          "minItems": 1,
+          "description": "{\"uniqueItems\":true}",
+          "uniqueItems": true
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "$ref": "#/definitions/GovernanceEnvelopeV1/properties/id"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^(?!\\/)(?!.*\\/$)(?!.*\\/\\/)(?!.*(?:^|\\/)\\.{1,2}(?:\\/|$))(?!.*[\\\\\\u0000-\\u001F\\u007F?#]).+$"
+            },
+            "revision": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "repository",
+            "path",
+            "revision",
+            "sha256"
+          ],
+          "additionalProperties": false
+        },
+        "lifecycle": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "candidate",
+            "active",
+            "deprecated",
+            "retired",
+            "archived"
+          ]
+        },
+        "reviewStatus": {
+          "type": "string",
+          "enum": [
+            "unreviewed",
+            "needs-review",
+            "in-review",
+            "reviewed",
+            "changes-requested"
+          ]
+        },
+        "authorship": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "human-authored",
+                "ai-assisted",
+                "ai-drafted",
+                "mixed",
+                "unknown"
+              ]
+            },
+            "contributorIds": {
+              "$ref": "#/definitions/GovernanceEnvelopeV1/properties/audiences"
+            }
+          },
+          "required": [
+            "kind",
+            "contributorIds"
+          ],
+          "additionalProperties": false
+        },
+        "attestationStatus": {
+          "type": "string",
+          "enum": [
+            "unattested",
+            "needs-attestation",
+            "faculty-attested",
+            "expired",
+            "revoked"
+          ]
+        },
+        "safetySeverity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "moderate",
+            "high",
+            "critical"
+          ]
+        },
+        "reviewCategory": {
+          "type": "string",
+          "enum": [
+            "general",
+            "clinical",
+            "legal",
+            "formulary",
+            "local-policy"
+          ]
+        },
+        "clinicalClaim": {
+          "type": "boolean"
+        },
+        "patientDataPolicy": {
+          "type": "string",
+          "enum": [
+            "none",
+            "synthetic-only"
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "type",
+        "profile",
+        "audiences",
+        "source",
+        "lifecycle",
+        "reviewStatus",
+        "authorship",
+        "attestationStatus",
+        "safetySeverity",
+        "reviewCategory",
+        "clinicalClaim",
+        "patientDataPolicy"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
