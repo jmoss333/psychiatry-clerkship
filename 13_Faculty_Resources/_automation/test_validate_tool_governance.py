@@ -90,6 +90,27 @@ class VendoredContractTests(unittest.TestCase):
                 ):
                     governance.load_vendored_contract()
 
+    def test_missing_contract_files_raise_stable_governance_errors(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            missing = Path(temporary) / "missing-contract-file.json"
+            cases = (
+                ("SCHEMA_PATH", "governance-envelope-v1.schema.json: unreadable"),
+                ("MANIFEST_PATH", "manifest.json: unreadable"),
+            )
+            for attribute, expected in cases:
+                with self.subTest(attribute=attribute), patch.object(
+                    governance, attribute, missing
+                ):
+                    try:
+                        governance.load_vendored_contract()
+                    except Exception as error:
+                        raised = error
+                    else:
+                        raised = None
+                    self.assertIsInstance(raised, governance.GovernanceError)
+                    self.assertEqual(str(raised), expected)
+                    self.assertNotIn(str(missing), str(raised))
+
 
 class MetadataMarkerTests(unittest.TestCase):
     def test_preferred_and_legacy_markers_parse_from_synthetic_bytes(self) -> None:
@@ -118,6 +139,19 @@ class MetadataMarkerTests(unittest.TestCase):
             r"synthetic/dual.html: conflicting metadata markers",
         ):
             governance.parse_metadata_marker(source, "synthetic/dual.html")
+
+    def test_unclosed_recognized_marker_start_fails_closed_without_source_text(self) -> None:
+        source = (
+            b'<!-- [CLERKSHIP-META v1] tool="synthetic-tool" audience="alpha" -->\n'
+            b'<!-- [RC-META] tool="sensitive-synthetic" audience="alpha"'
+        )
+
+        with self.assertRaisesRegex(
+            governance.GovernanceError,
+            r"synthetic/unclosed.html: malformed metadata marker",
+        ) as raised:
+            governance.parse_metadata_marker(source, "synthetic/unclosed.html")
+        self.assertNotIn("sensitive-synthetic", str(raised.exception))
 
     def test_duplicate_malformed_and_required_metadata_fail_closed(self) -> None:
         cases = {
@@ -181,21 +215,42 @@ class NormalizationTests(unittest.TestCase):
         self.assertNotIn("AI-drafted wording", serialized)
 
     def test_explicit_attested_metadata_is_faculty_attested(self) -> None:
-        source = (
-            b'<!-- [RC-META] tool="synthetic-tool" audience="alpha" status="attested" -->\n'
-        )
-        marker = governance.parse_metadata_marker(source, "synthetic/attested.html")
+        for status in ("attested", "faculty-attested"):
+            with self.subTest(status=status):
+                source = (
+                    b'<!-- [RC-META] tool="synthetic-tool" audience="alpha" status="'
+                    + status.encode("ascii")
+                    + b'" -->\n'
+                )
+                marker = governance.parse_metadata_marker(source, "synthetic/attested.html")
+
+                envelope = governance.normalize_tool(
+                    source,
+                    "synthetic/attested.html",
+                    "synthetic-attested.html",
+                    marker,
+                    revision="b" * 40,
+                    ledger_status="reviewed",
+                )
+
+                self.assertEqual(envelope["attestationStatus"], "faculty-attested")
+
+    def test_ledger_attested_never_promotes_marker_without_attestation(self) -> None:
+        source = b'<!-- [RC-META] tool="synthetic-tool" audience="alpha" -->\n'
+        marker = governance.parse_metadata_marker(source, "synthetic/ledger-only.html")
 
         envelope = governance.normalize_tool(
             source,
-            "synthetic/attested.html",
-            "synthetic-attested.html",
+            "synthetic/ledger-only.html",
+            "synthetic-ledger.html",
             marker,
             revision="b" * 40,
-            ledger_status="reviewed",
+            ledger_status="attested",
         )
 
-        self.assertEqual(envelope["attestationStatus"], "faculty-attested")
+        self.assertEqual(envelope["reviewStatus"], "unreviewed")
+        self.assertNotEqual(envelope["attestationStatus"], "faculty-attested")
+        self.assertEqual(envelope["attestationStatus"], "unattested")
 
     def test_unsafe_policy_and_malformed_source_path_fail_schema_validation(self) -> None:
         source = b'<!-- [RC-META] tool="synthetic-tool" audience="alpha" -->\n'
@@ -307,6 +362,35 @@ class RepositoryProducerTests(unittest.TestCase):
                 governance.write_atomic_json(output, document)
 
             self.assertEqual(output.read_bytes(), b"stable-output\n")
+
+    def test_atomic_output_rejects_invalid_aggregate_invariants(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_synthetic_repository(root)
+            document = governance.build_governance_document(
+                root, "ms3", revision="e" * 40
+            )[0]
+            cases = {
+                "schema-version": lambda candidate: candidate.update({"schemaVersion": 2}),
+                "duplicate-id": lambda candidate: candidate["items"].append(
+                    json.loads(json.dumps(candidate["items"][0]))
+                ),
+                "unsorted-ids": lambda candidate: candidate["items"].reverse(),
+            }
+            for label, mutate in cases.items():
+                with self.subTest(label=label):
+                    candidate = json.loads(json.dumps(document))
+                    mutate(candidate)
+                    output = root / f"{label}.json"
+                    output.write_bytes(b"stable-output\n")
+
+                    with self.assertRaisesRegex(
+                        governance.GovernanceError,
+                        r"tool-governance.json: invalid (schemaVersion|item ids)",
+                    ):
+                        governance.write_atomic_json(output, candidate)
+
+                    self.assertEqual(output.read_bytes(), b"stable-output\n")
 
     def test_cli_is_offline_and_writes_only_requested_complete_output(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

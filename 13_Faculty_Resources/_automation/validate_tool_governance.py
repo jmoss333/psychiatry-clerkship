@@ -61,6 +61,7 @@ class MetadataMarker:
 MARKER_PATTERN = re.compile(
     rb"<!--\s*\[(CLERKSHIP-META v1|RC-META)\]\s*(.*?)-->", re.DOTALL
 )
+MARKER_START_PATTERN = re.compile(rb"<!--\s*\[(?:CLERKSHIP-META v1|RC-META)\]")
 FIELD_PATTERN = re.compile(rb'([A-Za-z][A-Za-z0-9_-]*)="([^"\r\n]*)"')
 WHITESPACE_PATTERN = re.compile(rb"\s*")
 
@@ -78,6 +79,8 @@ def parse_audience_list(value: str, relative_path: str) -> tuple[str, ...]:
 def parse_metadata_marker(source: bytes, relative_path: str) -> MetadataMarker:
     """Parse one preferred or temporary legacy metadata marker from source bytes."""
     matches = list(MARKER_PATTERN.finditer(source))
+    if len(list(MARKER_START_PATTERN.finditer(source))) != len(matches):
+        raise GovernanceError(f"{relative_path}: malformed metadata marker")
     if not matches:
         raise GovernanceError(f"{relative_path}: metadata marker missing")
     marker_types = {match.group(1) for match in matches}
@@ -116,14 +119,20 @@ def parse_metadata_marker(source: bytes, relative_path: str) -> MetadataMarker:
 
 def load_vendored_contract() -> tuple[dict, dict]:
     """Return the byte-pinned Draft-07 schema and its pinned descriptor."""
-    raw_schema = SCHEMA_PATH.read_bytes()
+    try:
+        raw_schema = SCHEMA_PATH.read_bytes()
+    except OSError as error:
+        raise GovernanceError("governance-envelope-v1.schema.json: unreadable") from error
     if hashlib.sha256(raw_schema).hexdigest() != EXPECTED_SCHEMA_SHA256:
         raise GovernanceError(f"{SCHEMA_PATH.name}: SHA-256 mismatch")
     try:
         schema = json.loads(raw_schema)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise GovernanceError("governance-envelope-v1.schema.json: unreadable") from error
+    try:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
-        raise GovernanceError("vendored contract: unreadable") from error
+        raise GovernanceError("manifest.json: unreadable") from error
     descriptor = manifest.get("contract")
     if descriptor != EXPECTED_CONTRACT_DESCRIPTOR:
         raise GovernanceError("manifest.json: invalid contract descriptor")
@@ -204,9 +213,10 @@ def normalize_tool(
     ledger_status: object = None,
 ) -> dict:
     """Normalize one tool source into a conservative GovernanceEnvelopeV1 item."""
-    source_status = marker.fields.get("status", ledger_status)
+    marker_status = marker.fields.get("status")
+    source_status = marker_status if marker_status is not None else ledger_status
     attestation_value = marker.fields.get(
-        "attestationStatus", marker.fields.get("attestation", source_status)
+        "attestationStatus", marker.fields.get("attestation", marker_status)
     )
     authorship_kind = marker.fields.get("authorship", "").strip().lower()
     if authorship_kind not in {
@@ -400,14 +410,20 @@ def write_atomic_json(output_path: Path, document: dict) -> None:
     """Write a fully validated generated document with one atomic replacement."""
     if set(document) != {"schemaVersion", "contract", "items"}:
         raise GovernanceError("tool-governance.json: invalid document fields")
+    if document["schemaVersion"] != 1:
+        raise GovernanceError("tool-governance.json: invalid schemaVersion")
     if document["contract"] != EXPECTED_CONTRACT_DESCRIPTOR:
         raise GovernanceError("tool-governance.json: invalid contract descriptor")
     if not isinstance(document["items"], list):
         raise GovernanceError("tool-governance.json: invalid items field")
+    item_ids = []
     for item in document["items"]:
         if not isinstance(item, dict):
             raise GovernanceError("tool-governance.json: invalid item")
         validate_envelope(item, "tool-governance.json")
+        item_ids.append(item["id"])
+    if len(set(item_ids)) != len(item_ids) or item_ids != sorted(item_ids):
+        raise GovernanceError("tool-governance.json: invalid item ids")
     output_path = Path(output_path)
     try:
         with tempfile.NamedTemporaryFile(
