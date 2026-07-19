@@ -16,7 +16,7 @@ import validate_tool_governance as governance
 
 ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR = Path(__file__).with_name("validate_tool_governance.py")
-PINNED_LEGACY_SOURCES = {
+EXPECTED_LEGACY_MARKER_SOURCES = {
     "03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html",
     "04_Acute_and_Safety/Catatonia/bfcrs.html",
     "04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html",
@@ -38,12 +38,12 @@ def write_synthetic_repository(root: Path) -> None:
     reviewed.parent.mkdir(parents=True, exist_ok=True)
     reviewed.write_text(json.dumps({"base.html": {"status": "reviewed"}}), encoding="utf-8")
     sources = {
-        "synthetic/base.html": b'<!-- [CLERKSHIP-META v1] tool="synthetic-base" audience="alpha" -->\n',
-        "01_Six_Week_Curriculum/learning-path.html": b'<!-- [RC-META] tool="synthetic-path" audience="alpha" -->\n',
-        "_prototypes/orientation-video/orientation-video.html": b'<!-- [RC-META] tool="synthetic-video" audience="alpha" -->\n',
-        "_prototypes/agitation-trainer/rp-agitation.html": b'<!-- [RC-META] tool="synthetic-a" audience="alpha" -->\n',
-        "_prototypes/brief-psych/rp-brief-psych.html": b'<!-- [RC-META] tool="synthetic-b" audience="alpha" -->\n',
-        "_prototypes/canon-quiz/rp-canon-quiz.html": b'<!-- [RC-META] tool="synthetic-c" audience="alpha" -->\n',
+        "synthetic/base.html": b'<!-- [CLERKSHIP-META v1] tool="synthetic-base" audience="trainee" -->\n',
+        "01_Six_Week_Curriculum/learning-path.html": b'<!-- [RC-META] tool="synthetic-path" audience="trainee" -->\n',
+        "_prototypes/orientation-video/orientation-video.html": b'<!-- [RC-META] tool="synthetic-video" audience="trainee" -->\n',
+        "_prototypes/agitation-trainer/rp-agitation.html": b'<!-- [RC-META] tool="synthetic-a" audience="trainee" -->\n',
+        "_prototypes/brief-psych/rp-brief-psych.html": b'<!-- [RC-META] tool="synthetic-b" audience="trainee" -->\n',
+        "_prototypes/canon-quiz/rp-canon-quiz.html": b'<!-- [RC-META] tool="synthetic-c" audience="trainee" -->\n',
     }
     for relative, value in sources.items():
         path = root / relative
@@ -123,23 +123,23 @@ class VendoredContractTests(unittest.TestCase):
 class MetadataMarkerTests(unittest.TestCase):
     def test_preferred_and_legacy_markers_parse_from_synthetic_bytes(self) -> None:
         preferred = governance.parse_metadata_marker(
-            b'<!-- [CLERKSHIP-META v1] tool="synthetic-tool" audience="alpha, beta" -->',
+            b'<!-- [CLERKSHIP-META v1] tool="synthetic-tool" audience="ms3, resident" -->',
             "synthetic/preferred.html",
         )
         legacy = governance.parse_metadata_marker(
-            b'<!-- [RC-META] tool="synthetic-legacy" audience="alpha" -->',
+            b'<!-- [RC-META] tool="synthetic-legacy" audience="trainee" -->',
             "synthetic/legacy.html",
         )
 
         self.assertEqual(preferred.kind, "preferred")
         self.assertEqual(preferred.fields["tool"], "synthetic-tool")
         self.assertEqual(legacy.kind, "legacy")
-        self.assertEqual(legacy.fields["audience"], "alpha")
+        self.assertEqual(legacy.fields["audience"], "trainee")
 
     def test_conflicting_preferred_and_legacy_markers_fail_closed(self) -> None:
         source = (
-            b'<!-- [CLERKSHIP-META v1] tool="synthetic-tool" audience="alpha" -->\n'
-            b'<!-- [RC-META] tool="synthetic-tool" audience="alpha" -->'
+            b'<!-- [CLERKSHIP-META v1] tool="synthetic-tool" audience="trainee" -->\n'
+            b'<!-- [RC-META] tool="synthetic-tool" audience="trainee" -->'
         )
 
         with self.assertRaisesRegex(
@@ -150,8 +150,8 @@ class MetadataMarkerTests(unittest.TestCase):
 
     def test_unclosed_recognized_marker_start_fails_closed_without_source_text(self) -> None:
         source = (
-            b'<!-- [CLERKSHIP-META v1] tool="synthetic-tool" audience="alpha" -->\n'
-            b'<!-- [RC-META] tool="sensitive-synthetic" audience="alpha"'
+            b'<!-- [CLERKSHIP-META v1] tool="synthetic-tool" audience="trainee" -->\n'
+            b'<!-- [RC-META] tool="sensitive-synthetic" audience="trainee"'
         )
 
         with self.assertRaisesRegex(
@@ -164,20 +164,20 @@ class MetadataMarkerTests(unittest.TestCase):
     def test_duplicate_malformed_and_required_metadata_fail_closed(self) -> None:
         cases = {
             "duplicate": (
-                b'<!-- [RC-META] tool="synthetic-a" tool="synthetic-b" audience="alpha" -->',
+                b'<!-- [RC-META] tool="synthetic-a" tool="synthetic-b" audience="trainee" -->',
                 "tool",
             ),
             "trailing": (
-                b'<!-- [RC-META] tool="synthetic" audience="alpha" unexpected -->',
+                b'<!-- [RC-META] tool="synthetic" audience="trainee" unexpected -->',
                 "metadata",
             ),
-            "missing-tool": (b'<!-- [RC-META] audience="alpha" -->', "tool"),
+            "missing-tool": (b'<!-- [RC-META] audience="trainee" -->', "tool"),
             "empty-audience": (
                 b'<!-- [RC-META] tool="synthetic" audience="" -->',
                 "audience",
             ),
             "duplicate-audience": (
-                b'<!-- [RC-META] tool="synthetic" audience="alpha, alpha" -->',
+                b'<!-- [RC-META] tool="synthetic" audience="trainee, trainee" -->',
                 "audience",
             ),
         }
@@ -195,7 +195,7 @@ class MetadataMarkerTests(unittest.TestCase):
 class NormalizationTests(unittest.TestCase):
     def test_reviewed_metadata_stays_unattested_and_unknown_authorship(self) -> None:
         source = (
-            b'<!-- [CLERKSHIP-META v1] tool="synthetic-tool" audience="alpha, beta" '
+            b'<!-- [CLERKSHIP-META v1] tool="synthetic-tool" audience="ms3, resident" '
             b'status="reviewed" summary="Synthetic AI-drafted wording only" -->\n'
         )
         marker = governance.parse_metadata_marker(source, "synthetic/source.html")
@@ -210,7 +210,7 @@ class NormalizationTests(unittest.TestCase):
         )
 
         self.assertEqual(envelope["id"], "tools/synthetic-output")
-        self.assertEqual(envelope["audiences"], ["alpha", "beta"])
+        self.assertEqual(envelope["audiences"], ["ms3", "resident"])
         self.assertEqual(envelope["reviewStatus"], "reviewed")
         self.assertEqual(envelope["attestationStatus"], "needs-attestation")
         self.assertEqual(
@@ -226,7 +226,7 @@ class NormalizationTests(unittest.TestCase):
         for status in ("attested", "faculty-attested"):
             with self.subTest(status=status):
                 source = (
-                    b'<!-- [RC-META] tool="synthetic-tool" audience="alpha" status="'
+                    b'<!-- [RC-META] tool="synthetic-tool" audience="trainee" status="'
                     + status.encode("ascii")
                     + b'" -->\n'
                 )
@@ -244,7 +244,7 @@ class NormalizationTests(unittest.TestCase):
                 self.assertEqual(envelope["attestationStatus"], "faculty-attested")
 
     def test_ledger_attested_never_promotes_marker_without_attestation(self) -> None:
-        source = b'<!-- [RC-META] tool="synthetic-tool" audience="alpha" -->\n'
+        source = b'<!-- [RC-META] tool="synthetic-tool" audience="trainee" -->\n'
         marker = governance.parse_metadata_marker(source, "synthetic/ledger-only.html")
 
         envelope = governance.normalize_tool(
@@ -261,7 +261,7 @@ class NormalizationTests(unittest.TestCase):
         self.assertEqual(envelope["attestationStatus"], "unattested")
 
     def test_unsafe_policy_and_malformed_source_path_fail_schema_validation(self) -> None:
-        source = b'<!-- [RC-META] tool="synthetic-tool" audience="alpha" -->\n'
+        source = b'<!-- [RC-META] tool="synthetic-tool" audience="trainee" -->\n'
         marker = governance.parse_metadata_marker(source, "synthetic/source.html")
         envelope = governance.normalize_tool(
             source,
@@ -288,7 +288,7 @@ class NormalizationTests(unittest.TestCase):
                     governance.validate_envelope(candidate, "synthetic/source.html")
 
     def test_nested_built_slug_is_rejected_before_id_normalization(self) -> None:
-        source = b'<!-- [RC-META] tool="synthetic-tool" audience="alpha" -->\n'
+        source = b'<!-- [RC-META] tool="synthetic-tool" audience="trainee" -->\n'
         marker = governance.parse_metadata_marker(source, "synthetic/source.html")
 
         with self.assertRaisesRegex(
@@ -344,13 +344,13 @@ class RepositoryProducerTests(unittest.TestCase):
         self.assertEqual(len(diagnostics), 1)
         self.assertTrue(diagnostics[0].startswith("legacy metadata warning: "))
 
-    def test_current_emitted_sources_leave_only_the_five_pinned_legacy_markers(self) -> None:
+    def test_current_emitted_sources_leave_only_the_expected_legacy_markers(self) -> None:
         diagnostics, _documents = governance.validate_repository(ROOT)
 
         legacy_paths = set(
             diagnostics[0].removeprefix("legacy metadata warning: ").split(", ")
         )
-        self.assertEqual(legacy_paths, PINNED_LEGACY_SOURCES)
+        self.assertEqual(legacy_paths, EXPECTED_LEGACY_MARKER_SOURCES)
 
     def test_built_tool_inventory_matches_generated_governance_ids(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -526,6 +526,34 @@ class RepositoryProducerTests(unittest.TestCase):
         self.assertNotEqual(failed_first.returncode, 0)
         self.assertEqual(failed_first.stdout, failed_second.stdout)
         self.assertEqual(preserved_output, b"stable-output\n")
+
+    def test_invalid_audience_cannot_reach_output_or_diagnostics(self) -> None:
+        sentinel = "SYNTHETIC-PRIVATE-AUDIENCE-SENTINEL-42"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_synthetic_repository(root)
+            (root / "synthetic/base.html").write_bytes(
+                (
+                    '<!-- [CLERKSHIP-META v1] tool="synthetic-base" '
+                    f'audience="ms3,{sentinel}" -->\n'
+                ).encode("utf-8")
+            )
+            output = root / "tool-governance.json"
+            output.write_bytes(b"stable-output\n")
+
+            result = run_validator(
+                root,
+                "--site",
+                "ms3",
+                "--revision",
+                "e" * 40,
+                "--output",
+                str(output),
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(output.read_bytes(), b"stable-output\n")
+            self.assertNotIn(sentinel, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":

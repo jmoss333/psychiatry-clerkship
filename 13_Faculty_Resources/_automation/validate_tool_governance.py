@@ -44,6 +44,7 @@ SITE_EXTRAS = {
     ),
 }
 EXPECTED_TOOL_COUNTS = {"ms3": 22, "resident": 24}
+ALLOWED_AUDIENCES = frozenset({"trainee", "ms3", "resident", "faculty"})
 
 
 class GovernanceError(ValueError):
@@ -70,9 +71,11 @@ WHITESPACE_PATTERN = re.compile(rb"\s*")
 def parse_audience_list(value: str, relative_path: str) -> tuple[str, ...]:
     """Return the unique, trimmed declared audiences or fail without echoing values."""
     audiences = tuple(part.strip() for part in value.split(","))
-    if not audiences or any(not audience for audience in audiences):
-        raise GovernanceError(f"{relative_path}: invalid audience field")
-    if len(set(audiences)) != len(audiences):
+    if (
+        not audiences
+        or any(not audience or audience not in ALLOWED_AUDIENCES for audience in audiences)
+        or len(set(audiences)) != len(audiences)
+    ):
         raise GovernanceError(f"{relative_path}: invalid audience field")
     return audiences
 
