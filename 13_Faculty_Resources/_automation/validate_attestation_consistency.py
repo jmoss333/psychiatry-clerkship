@@ -14,6 +14,8 @@ import sys
 from datetime import date
 from urllib.parse import urlparse
 
+from validate_tool_governance import GovernanceError, parse_metadata_marker
+
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 REVIEWED_PATH = os.path.join("13_Faculty_Resources", "reviewed.json")
@@ -132,12 +134,9 @@ def _validate_engine(slug, pack):
     return errors
 
 
-def parse_rc_meta(source):
-    """Return key/value pairs from one HTML RC-META comment, if present."""
-    match = re.search(r"<!--\s*\[RC-META\]\s*(.*?)-->", source, re.S)
-    if not match:
-        return None
-    return dict(re.findall(r"([A-Za-z][\w-]*)=\"([^\"]*)\"", match.group(1)))
+def parse_rc_meta(source, relative_path):
+    """Return fields from the shared preferred-or-legacy metadata parser."""
+    return parse_metadata_marker(source, relative_path).fields
 
 
 def parse_iso_date(value):
@@ -795,16 +794,20 @@ def validate(root):
         ledger_status = norm_status(reviewed.get(slug, {}).get("status"))
         source_path = os.path.join(root, src)
         try:
-            with open(source_path, encoding="utf-8") as handle:
-                source = handle.read(32768)
+            with open(source_path, "rb") as handle:
+                source = handle.read()
         except FileNotFoundError:
             errors.append(
                 "%s: source file listed in manifest is missing (%s)" % (slug, src)
             )
             continue
-        meta = parse_rc_meta(source)
-        if meta is None:
-            errors.append("%s: manifest tool is missing an [RC-META] header" % slug)
+        try:
+            meta = parse_rc_meta(source, src)
+        except GovernanceError as error:
+            if str(error).endswith(": metadata marker missing"):
+                errors.append("%s: manifest tool is missing an [RC-META] header" % slug)
+            else:
+                errors.append("%s: manifest tool has an invalid metadata header" % slug)
             meta = {}
         meta_status = meta.get("status")
         if meta_status and is_reviewed(ledger_status) and not is_reviewed(meta_status):

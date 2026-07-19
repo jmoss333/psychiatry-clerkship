@@ -82,6 +82,12 @@ jobs:
       - name: Validate — ReConnect snapshot provenance
         run: python3 13_Faculty_Resources/_automation/validate_reconnect_snapshot_provenance.py
 
+      - name: Unit — tool governance
+        run: python3 13_Faculty_Resources/_automation/test_validate_tool_governance.py
+
+      - name: Validate — tool governance
+        run: python3 13_Faculty_Resources/_automation/validate_tool_governance.py
+
       - uses: actions/setup-node@v7
         with:
           node-version: "20"

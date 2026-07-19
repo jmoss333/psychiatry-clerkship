@@ -1,5 +1,6 @@
 # Derive the MMC resident variant from the already-built MS3 deploy (run AFTER build_deploy.py).
-import os, shutil, json, re, glob
+import os, shutil, json, re, glob, sys
+from pathlib import Path
 
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location.
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -241,3 +242,23 @@ for x,dd in postings.items():
 open(OUT+"/search-index.json","w",encoding="utf-8").write(json.dumps({"version":1,"n":len(docs),"synonyms":syn,"docs":docs,"postings":post,"df":df},ensure_ascii=False))
 print("RESIDENT build: pages",len(docs),"| out",OUT)
 print(" sections:",[s["section"] for s in nav])
+
+# ---------- TOOL GOVERNANCE ----------
+# Build from canonical sources, then verify the final resident tools exactly match its IDs.
+sys.path.insert(0, os.path.dirname(HERE))
+from validate_tool_governance import (
+    GovernanceError,
+    build_governance_document,
+    validate_built_tool_inventory,
+    write_atomic_json,
+)
+
+try:
+    _governance, _governance_warnings = build_governance_document(Path(LIB), "resident")
+    validate_built_tool_inventory(_governance, Path(OUT) / "tools")
+    write_atomic_json(Path(OUT) / "tool-governance.json", _governance)
+except GovernanceError as error:
+    raise SystemExit(f"tool governance INVALID — {error}") from error
+for _warning in _governance_warnings:
+    print(_warning)
+print("tool governance: emitted", len(_governance["items"]), "items")

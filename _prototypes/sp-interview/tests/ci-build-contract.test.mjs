@@ -15,11 +15,20 @@ const BUILD = path.join(
   ROOT,
   '13_Faculty_Resources/_automation/site_build/build_deploy.py',
 );
+const RESIDENT_BUILD = path.join(
+  ROOT,
+  '13_Faculty_Resources/_automation/site_build/resident_section.py',
+);
 const CHECKER = path.join(
   ROOT,
   '13_Faculty_Resources/_automation/site_build/check-static-site.mjs',
 );
+const BUILD_GATE = path.join(
+  ROOT,
+  '13_Faculty_Resources/_automation/site_build/build_and_check.sh',
+);
 const CI = path.join(ROOT, '.github/workflows/ci.yml');
+const PYTHON = process.env.CLERKSHIP_META_PYTHON || 'python3';
 
 const EXPECTED_ASSETS = [
   ['_prototypes/sp-interview/sp-interview.pack.json', 'sp-interview.pack.json'],
@@ -45,7 +54,7 @@ test('manifest drives both Interview Room runtime assets into a real site build'
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'sp-build-contract-'));
   const output = path.join(temporary, 'site');
   try {
-    const result = run('python3', [BUILD], {
+    const result = run(PYTHON, [BUILD], {
       env: { ...process.env, OUT_DIR: output },
       timeout: 60_000,
     });
@@ -60,6 +69,44 @@ test('manifest drives both Interview Room runtime assets into a real site build'
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
     fs.rmSync(`${output}.source-map.json`, { force: true });
+  }
+});
+
+test('both builders emit governance inventories matching their final tools', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-governance-build-'));
+  const ms3 = path.join(temporary, 'ms3');
+  const resident = path.join(temporary, 'resident');
+  const assertInventory = (site, expectedCount) => {
+    const document = JSON.parse(fs.readFileSync(path.join(site, 'tool-governance.json'), 'utf8'));
+    const built = fs.readdirSync(path.join(site, 'tools'))
+      .filter((name) => name.endsWith('.html'))
+      .map((name) => `tools/${name.slice(0, -'.html'.length)}`)
+      .sort();
+    assert.equal(document.items.length, expectedCount);
+    assert.deepEqual(document.items.map(({ id }) => id), built);
+  };
+  try {
+    const built = run(PYTHON, [BUILD], {
+      env: { ...process.env, OUT_DIR: ms3 },
+      timeout: 60_000,
+    });
+    assert.equal(built.status, 0, built.stdout + built.stderr);
+    assertInventory(ms3, 22);
+    assert.match(
+      fs.readFileSync(path.join(ms3, '_headers'), 'utf8'),
+      /\/tool-governance\.json\n  Cache-Control: public, max-age=0, must-revalidate/,
+    );
+
+    const residentBuilt = run(PYTHON, [RESIDENT_BUILD], {
+      env: { ...process.env, MS3_DIR: ms3, OUT_DIR: resident },
+      timeout: 60_000,
+    });
+    assert.equal(residentBuilt.status, 0, residentBuilt.stdout + residentBuilt.stderr);
+    assertInventory(resident, 24);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(`${ms3}.source-map.json`, { force: true });
+    fs.rmSync(`${resident}.source-map.json`, { force: true });
   }
 });
 
@@ -132,6 +179,69 @@ test('static QA rejects a CDN dependency inside a shipped JS asset', () => {
     fs.rmSync(site, { recursive: true, force: true });
     fs.rmSync(sourceMap, { force: true });
   }
+});
+
+test('static QA accepts preferred and legacy metadata markers but rejects missing or conflicting markers', () => {
+  const site = fs.mkdtempSync(path.join(os.tmpdir(), 'metadata-static-contract-'));
+  const sourceMap = `${site}.source-map.json`;
+  const tools = path.join(site, 'tools');
+  fs.mkdirSync(tools);
+  fs.writeFileSync(
+    path.join(site, 'nav.json'),
+    JSON.stringify([{ section: 'Fixture', items: [{ k: 'tool', f: 'fixture.html' }] }]),
+  );
+  const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
+  fs.writeFileSync(
+    sourceMap,
+    JSON.stringify({ sources: [...manifest.tools, ...manifest.md].map(([source]) => source) }),
+  );
+  const writeFixture = (header) => fs.writeFileSync(
+    path.join(tools, 'fixture.html'),
+    `<!doctype html><title>Fixture</title><meta name="viewport" content="width=device-width">${header}`,
+  );
+  try {
+    writeFixture('<!-- [CLERKSHIP-META v1] tool="fixture" audience="ms3" -->');
+    const preferred = run(process.execPath, [CHECKER, site]);
+    assert.equal(preferred.status, 0, preferred.stdout + preferred.stderr);
+    assert.doesNotMatch(preferred.stdout + preferred.stderr, /metadata marker/i);
+
+    writeFixture('<!-- [RC-META] tool="fixture" audience="ms3" -->');
+    const legacy = run(process.execPath, [CHECKER, site]);
+    assert.equal(legacy.status, 0, legacy.stdout + legacy.stderr);
+    assert.match(legacy.stdout + legacy.stderr, /legacy metadata warning: tools\/fixture\.html/i);
+
+    writeFixture('');
+    const missing = run(process.execPath, [CHECKER, site], {
+      env: { ...process.env, STRICT: '1' },
+    });
+    assert.equal(missing.status, 1, missing.stdout + missing.stderr);
+    assert.match(missing.stdout + missing.stderr, /tool missing recognized metadata marker: fixture\.html/i);
+
+    writeFixture(
+      '<!-- [RC-META] tool="fixture" audience="ms3" -->'
+      + '<!-- [CLERKSHIP-META v1] tool="fixture" audience="ms3" -->',
+    );
+    const conflicting = run(process.execPath, [CHECKER, site]);
+    assert.equal(conflicting.status, 1, conflicting.stdout + conflicting.stderr);
+    assert.match(conflicting.stdout + conflicting.stderr, /conflicting metadata markers: fixture\.html/i);
+  } finally {
+    fs.rmSync(site, { recursive: true, force: true });
+    fs.rmSync(sourceMap, { force: true });
+  }
+});
+
+test('build and CI run governance validation before site builds', () => {
+  const buildGate = fs.readFileSync(BUILD_GATE, 'utf8');
+  const ci = fs.readFileSync(CI, 'utf8');
+  const governanceValidator = 'python3 "$LIB/13_Faculty_Resources/_automation/validate_tool_governance.py"';
+
+  assert.match(buildGate, new RegExp(governanceValidator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.ok(
+    buildGate.indexOf(governanceValidator) < buildGate.indexOf('case "$SITE" in'),
+    'governance validation must precede both build targets',
+  );
+  assert.match(ci, /Unit — tool governance[\s\S]*test_validate_tool_governance\.py/);
+  assert.match(ci, /Validate — tool governance[\s\S]*validate_tool_governance\.py/);
 });
 
 const SMOKE_LAUNCHER_COMMAND = 'bash tests/smoke/start-local-servers.sh';

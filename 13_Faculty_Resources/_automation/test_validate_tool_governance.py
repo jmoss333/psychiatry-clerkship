@@ -16,6 +16,13 @@ import validate_tool_governance as governance
 
 ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR = Path(__file__).with_name("validate_tool_governance.py")
+PINNED_LEGACY_SOURCES = {
+    "03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html",
+    "04_Acute_and_Safety/Catatonia/bfcrs.html",
+    "04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html",
+    "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html",
+    "04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html",
+}
 
 
 def write_synthetic_repository(root: Path) -> None:
@@ -336,6 +343,37 @@ class RepositoryProducerTests(unittest.TestCase):
         self.assertEqual(len(documents["resident"]["items"]), 24)
         self.assertEqual(len(diagnostics), 1)
         self.assertTrue(diagnostics[0].startswith("legacy metadata warning: "))
+
+    def test_current_emitted_sources_leave_only_the_five_pinned_legacy_markers(self) -> None:
+        diagnostics, _documents = governance.validate_repository(ROOT)
+
+        legacy_paths = set(
+            diagnostics[0].removeprefix("legacy metadata warning: ").split(", ")
+        )
+        self.assertEqual(legacy_paths, PINNED_LEGACY_SOURCES)
+
+    def test_built_tool_inventory_matches_generated_governance_ids(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_synthetic_repository(root)
+            document, _warnings = governance.build_governance_document(
+                root, "ms3", revision="f" * 40
+            )
+            tools = root / "built/tools"
+            tools.mkdir(parents=True)
+            for item in document["items"]:
+                (tools / f"{item['id'].removeprefix('tools/')}.html").write_text(
+                    "<!doctype html>\n", encoding="utf-8"
+                )
+
+            governance.validate_built_tool_inventory(document, tools)
+
+            (tools / "unexpected.html").write_text("<!doctype html>\n", encoding="utf-8")
+            with self.assertRaisesRegex(
+                governance.GovernanceError,
+                r"tool-governance.json: built tool inventory mismatch",
+            ):
+                governance.validate_built_tool_inventory(document, tools)
 
     def test_cli_default_root_validates_the_repository(self) -> None:
         result = subprocess.run(

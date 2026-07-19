@@ -43,6 +43,7 @@ const SITE = process.argv[2];
 if (!SITE) { console.error('usage: node check-static-site.mjs <siteDir>'); process.exit(1); }
 const STRICT = process.env.STRICT === '1';
 const hard = [], soft = [], info = [];
+const legacyMetadataPaths = [];
 const H = (m) => hard.push(m);
 const S = (m) => soft.push(m);
 const I = (m) => info.push(m);
@@ -214,7 +215,7 @@ for (const f of jsAssets) {
   if (CDN_HOST.test(js)) H(`external CDN dependency in tools/${f} — vendor the script locally so bedside/offline use does not blank the tool`);
 }
 
-/* ---------- 5. per-tool HTML checks (RC-META, title, viewport, dose, storage) ---------- */
+/* ---------- 5. per-tool HTML checks (metadata, title, viewport, dose, storage) ---------- */
 for (const f of toolFiles) {
   const html = readFileSync(p('tools', f), 'utf8');
   if (CDN_HOST.test(html)) H(`external CDN dependency in tools/${f} — vendor the script locally so bedside/offline use does not blank the tool`);
@@ -236,7 +237,17 @@ for (const f of toolFiles) {
       H(`missing relative script source in ${f}: ${source}`);
     }
   }
-  if (!/\[RC-META\]/.test(html)) S(`tool missing [RC-META]: ${f}`);
+  const preferredMarkers = html.match(/<!--\s*\[CLERKSHIP-META v1\]\s*[^]*?-->/g) || [];
+  const legacyMarkers = html.match(/<!--\s*\[RC-META\]\s*[^]*?-->/g) || [];
+  if (preferredMarkers.length === 0 && legacyMarkers.length === 0) {
+    S(`tool missing recognized metadata marker: ${f}`);
+  } else if (preferredMarkers.length > 0 && legacyMarkers.length > 0) {
+    H(`conflicting metadata markers: ${f}`);
+  } else if (preferredMarkers.length + legacyMarkers.length !== 1) {
+    H(`multiple metadata markers: ${f}`);
+  } else if (legacyMarkers.length === 1) {
+    legacyMetadataPaths.push(`tools/${f}`);
+  }
   if (!/<title>/i.test(html)) H(`tool missing <title>: ${f}`);
   if (!/name=["']viewport["']/i.test(html)) H(`tool missing viewport meta: ${f}`);
   // Dose-literal rule scope: HARD for the new education/trainer layer (rp-*, *-trainer)
@@ -253,6 +264,9 @@ for (const f of toolFiles) {
   // Sanctioned localStorage namespaces: cw_* (shared hub) and rp_* (resident platform).
   const keys = [...html.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*['"]([^'"]+)['"]/g)].map(m => m[1]);
   for (const k of keys) if (!k.startsWith('cw_') && !k.startsWith('rp_')) H(`non-namespaced storage key in ${f}: "${k}" (use cw_* or rp_*)`);
+}
+if (legacyMetadataPaths.length) {
+  S(`legacy metadata warning: ${legacyMetadataPaths.sort().join(', ')}`);
 }
 
 /* ---------- 5b. <video> embeds must resolve to a shipped asset (no broken players) ---------- */

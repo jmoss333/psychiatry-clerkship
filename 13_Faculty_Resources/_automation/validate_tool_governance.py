@@ -406,6 +406,42 @@ def validate_repository(root: Path, *, revision: str | None = None) -> tuple[lis
     return diagnostics, documents
 
 
+def validate_built_tool_inventory(document: dict, tools_directory: Path) -> None:
+    """Require the final built HTML tool set to exactly match governance item IDs."""
+    items = document.get("items") if isinstance(document, dict) else None
+    if not isinstance(items, list):
+        raise GovernanceError("tool-governance.json: invalid items field")
+    expected = set()
+    for item in items:
+        item_id = item.get("id") if isinstance(item, dict) else None
+        if not isinstance(item_id, str) or not item_id.startswith("tools/"):
+            raise GovernanceError("tool-governance.json: invalid item id")
+        slug = item_id.removeprefix("tools/")
+        if not slug or "/" in slug or "\\" in slug:
+            raise GovernanceError("tool-governance.json: invalid item id")
+        expected.add(f"{slug}.html")
+    tools_directory = Path(tools_directory)
+    try:
+        actual = {
+            entry.name
+            for entry in tools_directory.iterdir()
+            if entry.is_file() and entry.suffix == ".html"
+        }
+    except OSError as error:
+        raise GovernanceError("tool-governance.json: built tools directory unreadable") from error
+    if actual != expected:
+        missing = ", ".join(sorted(expected - actual))
+        extra = ", ".join(sorted(actual - expected))
+        detail = []
+        if missing:
+            detail.append(f"missing: {missing}")
+        if extra:
+            detail.append(f"extra: {extra}")
+        raise GovernanceError(
+            "tool-governance.json: built tool inventory mismatch (" + "; ".join(detail) + ")"
+        )
+
+
 def write_atomic_json(output_path: Path, document: dict) -> None:
     """Write a fully validated generated document with one atomic replacement."""
     if set(document) != {"schemaVersion", "contract", "items"}:

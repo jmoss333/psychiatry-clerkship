@@ -264,7 +264,15 @@ def remove_rate(pack, model):
     rates[:] = [rate for rate in rates if rate.get("model") != model]
 
 
-def write_fixture(root, *, ledger_status, tool_status, pack):
+def write_fixture(
+    root,
+    *,
+    ledger_status,
+    tool_status,
+    pack,
+    marker="RC-META",
+    extra_markers="",
+):
     root = Path(root)
     reviewed_path = root / "13_Faculty_Resources" / "reviewed.json"
     manifest_path = (
@@ -302,8 +310,8 @@ def write_fixture(root, *, ledger_status, tool_status, pack):
         encoding="utf-8",
     )
     source_path.write_text(
-        '<!doctype html>\n<!-- [RC-META] tool="The Interview Room" '
-        f'status="{tool_status}" -->\n',
+        f'<!doctype html>\n<!-- [{marker}] tool="The Interview Room" '
+        f'audience="ms3,resident" status="{tool_status}" -->\n{extra_markers}',
         encoding="utf-8",
     )
     pack_path.write_text(json.dumps(pack), encoding="utf-8")
@@ -407,6 +415,40 @@ class AttestationConsistencyTests(unittest.TestCase):
             )
             errors = self.validate(root)
         self.assertEqual(errors, [])
+
+    def test_preferred_and_legacy_markers_preserve_identical_attestation_checks(self):
+        results = {}
+        for marker in ("RC-META", "CLERKSHIP-META v1"):
+            with self.subTest(marker=marker), tempfile.TemporaryDirectory() as root:
+                write_fixture(
+                    root,
+                    ledger_status="reviewed",
+                    tool_status="draft-pending-attestation",
+                    pack=pending_pack(),
+                    marker=marker,
+                )
+                results[marker] = self.validate(root)
+        self.assertEqual(results["CLERKSHIP-META v1"], results["RC-META"])
+        self.assertTrue(
+            any("reviewed.json says reviewed" in error for error in results["RC-META"]),
+            results,
+        )
+
+    def test_conflicting_markers_fail_without_echoing_metadata_values(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(
+                root,
+                ledger_status="pending",
+                tool_status="draft-pending-attestation",
+                pack=pending_pack(),
+                extra_markers=(
+                    '<!-- [CLERKSHIP-META v1] tool="The Interview Room" '
+                    'status="secret-status" -->\n'
+                ),
+            )
+            errors = self.validate(root)
+        self.assertIn("sp-interview.html: manifest tool has an invalid metadata header", errors)
+        self.assertFalse(any("secret-status" in error for error in errors), errors)
 
     def test_engine_output_token_pins_are_required_positive_safe_integers(self):
         fields = ("maxActorOutputTokens", "maxEvaluatorOutputTokens")
