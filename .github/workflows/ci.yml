@@ -76,6 +76,12 @@ jobs:
       - name: Validate — registry schemas
         run: python3 13_Faculty_Resources/_automation/validate_registry_schemas.py
 
+      - name: Test — ReConnect snapshot provenance
+        run: python3 13_Faculty_Resources/_automation/test_validate_reconnect_snapshot_provenance.py
+
+      - name: Validate — ReConnect snapshot provenance
+        run: python3 13_Faculty_Resources/_automation/validate_reconnect_snapshot_provenance.py
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
