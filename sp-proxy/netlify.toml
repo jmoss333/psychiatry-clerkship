@@ -11,3 +11,17 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+# Deterministic route for the client-facing endpoint.
+# The function self-registers via `export const config = { path: '/api/sp' }`, but that
+# in-source route was observed NOT registering on the live deploy: GET/POST to /api/sp fell
+# through to the static 404 page (which carries no Access-Control-Allow-Origin), so the browser
+# reported the failure as "Load failed" instead of reaching the function. This explicit rewrite
+# pins /api/sp to the function regardless of in-source route registration. Status 200 = rewrite
+# (proxy), not a 3xx redirect, so the method, body, and headers (incl. x-student-key) are preserved
+# and the function still owns CORS/OPTIONS.
+[[redirects]]
+  from = "/api/sp"
+  to = "/.netlify/functions/sp"
+  status = 200
+  force = true
