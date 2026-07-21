@@ -447,9 +447,12 @@ test('CI gates and tested smoke launcher are structurally ordered', () => {
     'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3',
     'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res',
   ];
+  const normalizeActionPin = (value) => value.replace(/(actions\/[\w.-]+)@v\d+/g, '$1');
   let prior = -1;
   for (const marker of managedGateOrder) {
-    const index = ciLines.findIndex((line) => line.trim() === marker);
+    const index = ciLines.findIndex(
+      (line) => normalizeActionPin(line.trim()) === normalizeActionPin(marker),
+    );
     assert.ok(index > prior, `${marker} must occur after the preceding managed-SP gate`);
     prior = index;
   }
