@@ -159,17 +159,30 @@ def review_status(value: object) -> str:
     normalized = str(value or "").strip().lower()
     if normalized == "reviewed":
         return "reviewed"
-    if normalized in {"pending", "draft", "flagged", "needs-review"}:
+    if normalized in {
+        "pending",
+        "draft",
+        "flagged",
+        "needs-review",
+        "draft-pending-attestation",
+    }:
         return "needs-review"
     return "unreviewed"
 
 
 def attestation_status(value: object) -> str:
-    """Map only explicit attestation terms to faculty-attested."""
+    """Map source attestation claims conservatively without granting authority."""
     normalized = str(value or "").strip().lower()
     if normalized in {"attested", "faculty-attested"}:
-        return "faculty-attested"
-    if normalized in {"reviewed", "pending", "draft", "flagged", "needs-review"}:
+        return "needs-attestation"
+    if normalized in {
+        "reviewed",
+        "pending",
+        "draft",
+        "flagged",
+        "needs-review",
+        "draft-pending-attestation",
+    }:
         return "needs-attestation"
     return "unattested"
 

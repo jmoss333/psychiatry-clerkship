@@ -706,18 +706,15 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
     pack_status = norm_status(pack.get("status"))
     if is_reviewed(ledger_status) and not is_reviewed(pack_status):
         errors.append(
-            "%s: reviewed.json says reviewed but pack status is %s"
-            % (slug, pack_status)
+            "%s: reviewed-ledger-pack-status-mismatch" % slug
         )
     if not is_reviewed(ledger_status) and is_reviewed(pack_status):
         errors.append(
-            "%s: pack says %s but reviewed.json status is %s"
-            % (slug, pack_status, ledger_status)
+            "%s: pack-reviewed-ledger-status-mismatch" % slug
         )
     if meta_status and is_reviewed(meta_status) != is_reviewed(pack_status):
         errors.append(
-            "%s: metadata status %s disagrees with pack status %s"
-            % (slug, meta_status, pack_status)
+            "%s: metadata-pack-status-mismatch" % slug
         )
 
     errors.extend(_validate_engine(slug, pack))
@@ -812,13 +809,11 @@ def validate(root):
         meta_status = meta.get("status")
         if meta_status and is_reviewed(ledger_status) and not is_reviewed(meta_status):
             errors.append(
-                "%s: reviewed.json says reviewed but metadata status is %s"
-                % (slug, meta_status)
+                "%s: reviewed-ledger-metadata-status-mismatch" % slug
             )
         if meta_status and not is_reviewed(ledger_status) and is_reviewed(meta_status):
             errors.append(
-                "%s: metadata says reviewed but reviewed.json status is %s"
-                % (slug, ledger_status)
+                "%s: metadata-reviewed-ledger-status-mismatch" % slug
             )
 
         pack_path = os.path.splitext(source_path)[0] + ".pack.json"
@@ -841,13 +836,11 @@ def validate(root):
         faculty_status = norm_status(faculty.get("status"))
         if is_reviewed(ledger_status) and not is_reviewed(faculty_status):
             errors.append(
-                "%s: reviewed.json says reviewed but topic_meta.facultyReview.status is %s"
-                % (slug, faculty_status)
+                "%s: reviewed-ledger-topic-meta-status-mismatch" % slug
             )
         if not is_reviewed(ledger_status) and is_reviewed(faculty_status):
             errors.append(
-                "%s: topic_meta says reviewed but reviewed.json status is %s"
-                % (slug, ledger_status)
+                "%s: topic-meta-reviewed-ledger-status-mismatch" % slug
             )
         if is_reviewed(ledger_status):
             if not faculty.get("lastReviewed"):

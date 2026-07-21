@@ -222,12 +222,20 @@ class NormalizationTests(unittest.TestCase):
         self.assertNotIn("Synthetic", serialized)
         self.assertNotIn("AI-drafted wording", serialized)
 
-    def test_explicit_attested_metadata_is_faculty_attested(self) -> None:
-        for status in ("attested", "faculty-attested"):
-            with self.subTest(status=status):
+    def test_explicit_metadata_attestation_claims_need_attestation(self) -> None:
+        claims = (
+            ("status", "attested"),
+            ("status", "faculty-attested"),
+            ("attestation", "attested"),
+            ("attestationStatus", "faculty-attested"),
+        )
+        for field, value in claims:
+            with self.subTest(field=field, value=value):
                 source = (
-                    b'<!-- [RC-META] tool="synthetic-tool" audience="trainee" status="'
-                    + status.encode("ascii")
+                    b'<!-- [RC-META] tool="synthetic-tool" audience="trainee" '
+                    + field.encode("ascii")
+                    + b'="'
+                    + value.encode("ascii")
                     + b'" -->\n'
                 )
                 marker = governance.parse_metadata_marker(source, "synthetic/attested.html")
@@ -241,7 +249,25 @@ class NormalizationTests(unittest.TestCase):
                     ledger_status="reviewed",
                 )
 
-                self.assertEqual(envelope["attestationStatus"], "faculty-attested")
+                self.assertEqual(envelope["attestationStatus"], "needs-attestation")
+
+    def test_draft_pending_attestation_maps_to_pending_review_and_attestation(self) -> None:
+        source = (
+            b'<!-- [RC-META] tool="synthetic-tool" audience="trainee" '
+            b'status="draft-pending-attestation" -->\n'
+        )
+        marker = governance.parse_metadata_marker(source, "synthetic/draft.html")
+
+        envelope = governance.normalize_tool(
+            source,
+            "synthetic/draft.html",
+            "synthetic-draft.html",
+            marker,
+            revision="d" * 40,
+        )
+
+        self.assertEqual(envelope["reviewStatus"], "needs-review")
+        self.assertEqual(envelope["attestationStatus"], "needs-attestation")
 
     def test_ledger_attested_never_promotes_marker_without_attestation(self) -> None:
         source = b'<!-- [RC-META] tool="synthetic-tool" audience="trainee" -->\n'

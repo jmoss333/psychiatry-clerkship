@@ -2,6 +2,8 @@
 """Fixture tests for the attestation consistency validator."""
 
 import copy
+import contextlib
+import io
 import json
 import tempfile
 import unittest
@@ -336,7 +338,7 @@ class AttestationConsistencyTests(unittest.TestCase):
             )
             return self.validate(root)
 
-    def test_reviewed_ledger_with_pending_tool_header_fails(self):
+    def test_reviewed_ledger_with_pending_tool_header_uses_fixed_mismatch_category(self):
         with tempfile.TemporaryDirectory() as root:
             write_fixture(
                 root,
@@ -347,12 +349,32 @@ class AttestationConsistencyTests(unittest.TestCase):
             errors = self.validate(root)
         self.assertTrue(
             any(
-                "reviewed.json says reviewed" in error
-                and "metadata status is draft-pending-attestation" in error
+                error == "sp-interview.html: reviewed-ledger-metadata-status-mismatch"
                 for error in errors
             ),
             errors,
         )
+
+    def test_marker_status_mismatch_does_not_echo_sensitive_marker_value(self):
+        sentinel = "sensitive-marker-status-should-not-leak"
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(
+                root,
+                ledger_status="reviewed",
+                tool_status=sentinel,
+                pack=pending_pack(),
+            )
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                errors = self.validate(root)
+
+        self.assertIn(
+            "sp-interview.html: reviewed-ledger-metadata-status-mismatch", errors
+        )
+        self.assertNotIn(sentinel, "\n".join(errors))
+        self.assertNotIn(sentinel, stdout.getvalue())
+        self.assertNotIn(sentinel, stderr.getvalue())
 
     def test_attested_pack_containing_a_draft_case_fails(self):
         pack = pending_pack()
@@ -430,7 +452,10 @@ class AttestationConsistencyTests(unittest.TestCase):
                 results[marker] = self.validate(root)
         self.assertEqual(results["CLERKSHIP-META v1"], results["RC-META"])
         self.assertTrue(
-            any("reviewed.json says reviewed" in error for error in results["RC-META"]),
+            any(
+                error == "sp-interview.html: reviewed-ledger-metadata-status-mismatch"
+                for error in results["RC-META"]
+            ),
             results,
         )
 
