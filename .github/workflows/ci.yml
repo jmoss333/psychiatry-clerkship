@@ -20,7 +20,7 @@ jobs:
   build-test-validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: false
 
@@ -32,7 +32,7 @@ jobs:
           fi
           echo "agent docs parity OK"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
@@ -82,7 +82,7 @@ jobs:
       - name: Validate — ReConnect snapshot provenance
         run: python3 13_Faculty_Resources/_automation/validate_reconnect_snapshot_provenance.py
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
 
@@ -112,18 +112,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-test-validate
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
       - name: Install — registry schema validation dependencies
         run: python3 -m pip install --requirement requirements.txt
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
 
@@ -134,7 +134,7 @@ jobs:
 
       - name: Cache Playwright browsers
         id: pw-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-1.46.1-${{ runner.os }}
@@ -196,7 +196,7 @@ jobs:
           npx playwright test --project=visual
 
       - name: Upload smoke test artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: smoke-test-results-${{ github.run_number }}
