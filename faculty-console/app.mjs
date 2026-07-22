@@ -133,6 +133,7 @@ export function startFacultyConsole({
     viewMode: 'live',
     preview: null,
     previewAttempt: 0,
+    previewReadyFocusTarget: null,
     reviewChecks: emptyReviewChecks(),
     pending: false,
     reviewerLabel: DEFAULT_REVIEWER,
@@ -413,6 +414,7 @@ export function startFacultyConsole({
     preview.timerId = scheduleTimeout(() => {
       if (state.preview !== preview || preview.status !== 'loading') return;
       preview.status = preview.frameLoaded ? 'protocol_unavailable' : 'frame_failure';
+      state.previewReadyFocusTarget = null;
       clearReviewAcknowledgements();
       applyQuestionView('live');
       announce(preview.frameLoaded
@@ -440,6 +442,7 @@ export function startFacultyConsole({
     state.viewMode = 'live';
     state.preview = null;
     state.previewAttempt = 0;
+    state.previewReadyFocusTarget = null;
     state.reopenConfirmation = null;
   }
 
@@ -457,6 +460,7 @@ export function startFacultyConsole({
     state.viewMode = 'live';
     state.preview = null;
     state.previewAttempt = 0;
+    state.previewReadyFocusTarget = null;
     if (item.type === 'question') setSelected(item.identity, { force: true });
     else {
       state.selectedId = null;
@@ -554,6 +558,7 @@ export function startFacultyConsole({
       return;
     }
     setSelectedReviewKey(nextKey, { force: true });
+    state.previewReadyFocusTarget = 'attestation-rail-title';
     renderShell('attestation-rail-title');
     announce(`${receipt.message} Moving to the next review item.`);
   }
@@ -925,6 +930,7 @@ export function startFacultyConsole({
   function recordPreviewFrameFailure(preview, message) {
     cancelPreviewTimer(preview);
     preview.status = 'frame_failure';
+    state.previewReadyFocusTarget = null;
     clearReviewAcknowledgements();
     applyQuestionView('live');
     announce(message);
@@ -3210,10 +3216,14 @@ export function startFacultyConsole({
     if (preview.status === 'ready' && event.data.status === 'ready') return;
     cancelPreviewTimer(preview);
     preview.status = event.data.status;
+    const focusTarget = event.data.status === 'ready' && state.previewReadyFocusTarget
+      ? state.previewReadyFocusTarget
+      : 'preview-status';
+    state.previewReadyFocusTarget = null;
     clearReviewAcknowledgements();
     if (event.data.status !== 'ready') applyQuestionView('live');
     announce(`Deployed ${event.data.surface} preview: ${event.data.status.replace('_', ' ')}.`);
-    refreshPreviewChromeAndRail('preview-status');
+    refreshPreviewChromeAndRail(focusTarget);
   }
 
   window.addEventListener('message', handlePreviewStatus);

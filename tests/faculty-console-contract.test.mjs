@@ -2631,7 +2631,7 @@ test('page and tool use the same compact checklist and clear content checks on s
       questions: [],
     })),
   });
-  const { controller, document } = harness;
+  const { controller, document, window } = harness;
 
   assert.equal(controller.state.selectedKey, 'page:t_mood.md');
   assert.equal(document.getElementById('selected-item-type').textContent, 'Page');
@@ -2730,7 +2730,7 @@ test('content attestation confirms one page, keeps its receipt, and advances to 
     return jsonResponse(serverState({ items, questions: [] }));
   };
   const harness = await startHarness({ fetchImpl });
-  const { controller, document } = harness;
+  const { controller, document, window } = harness;
   await completeCurrentContentReview(harness);
   await document.getElementById('attest-current-item').dispatch('click');
   await flushAsyncWork();
@@ -2758,8 +2758,10 @@ test('content attestation confirms one page, keeps its receipt, and advances to 
     'https://github.example/commit/content-page',
   );
   assert.equal(document.activeElement?.getAttribute('id'), 'attestation-rail-title');
+  await reportPreviewStatus(window, controller, 'ready');
+  assert.equal(document.activeElement?.getAttribute('id'), 'attestation-rail-title');
   assert.equal(document.status.textContent,
-    'Attested t_mood.md. Moving to the next review item.');
+    'Deployed tool preview: ready.');
 });
 
 test('confirmed auto-advance honors active filters and wraps to the first remaining eligible item', async () => {
