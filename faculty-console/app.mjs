@@ -147,6 +147,7 @@ export function startFacultyConsole({
     warningAcks: new Set(),
     qbankMessage: '',
     qbankCommitUrl: null,
+    recentReceipt: null,
     qbankError: '',
     conflict: null,
     navigationGuard: null,
@@ -528,6 +529,35 @@ export function startFacultyConsole({
     else clearReviewSelection();
   }
 
+  function nextEligibleReviewKey(completedKey) {
+    if (state.queueFilters.status === 'complete') return null;
+    const orderedScope = filterReviewItems(state.reviewItems, {
+      ...state.queueFilters,
+      status: 'all',
+    });
+    const eligible = orderedScope.filter(item => item.completion === 'needs-review');
+    if (!eligible.length) return null;
+    const completedIndex = orderedScope.findIndex(item => item.key === completedKey);
+    const after = orderedScope.slice(Math.max(completedIndex + 1, 0))
+      .find(item => item.completion === 'needs-review');
+    return after?.key || eligible[0].key;
+  }
+
+  function advanceAfterConfirmedAttestation(receipt) {
+    state.recentReceipt = Object.freeze({ ...receipt });
+    state.completedHoldKey = null;
+    const nextKey = nextEligibleReviewKey(receipt.key);
+    if (!nextKey) {
+      clearReviewSelection();
+      renderShell('review-queue-title');
+      announce(`${receipt.message} Review queue complete.`);
+      return;
+    }
+    setSelectedReviewKey(nextKey, { force: true });
+    renderShell('attestation-rail-title');
+    announce(`${receipt.message} Moving to the next review item.`);
+  }
+
   function renderLogin(message = '') {
     document.title = 'Faculty attestation workspace';
     const keyInput = el('input', {
@@ -725,6 +755,7 @@ export function startFacultyConsole({
       clearKey();
       state.server = null;
       state.reviewItems = [];
+      state.recentReceipt = null;
       clearReviewSelection();
       state.navigationGuard = null;
       state.navigationAfterSave = null;
@@ -1716,6 +1747,20 @@ export function startFacultyConsole({
       class: 'queue-strip',
       'aria-labelledby': 'review-queue-title',
     }, [
+      state.recentReceipt ? el('section', {
+        id: 'recent-attestation-receipt',
+        class: 'recent-attestation-receipt',
+        'aria-label': 'Most recent confirmed attestation',
+      }, [
+        el('strong', {}, ['Confirmed: ']),
+        state.recentReceipt.message,
+        state.recentReceipt.commitUrl ? ' ' : null,
+        state.recentReceipt.commitUrl ? el('a', {
+          href: state.recentReceipt.commitUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        }, ['View commit ↗']) : null,
+      ]) : null,
       el('div', { class: 'queue-primary' }, [
         el('div', { class: 'queue-heading' }, [
           el('p', { class: 'eyebrow' }, ['Ordered review queue']),
@@ -2869,13 +2914,18 @@ export function startFacultyConsole({
         ? `Attested ${slug}.`
         : `Reopened ${slug} for review.`;
       state.contentCommitUrl = commitUrl;
-      if (snapshot.reviewed) state.completedHoldKey = snapshot.key;
       resetApprovalInputs();
-      refreshPreviewChromeAndRail('content-action-result');
-      const next = document.getElementById('next-review-item');
-      if (snapshot.reviewed && next && !next.disabled) next.focus();
-      else document.getElementById('content-action-result')?.focus();
-      announce(state.contentMessage);
+      if (snapshot.reviewed) {
+        advanceAfterConfirmedAttestation({
+          key: snapshot.key,
+          message: state.contentMessage,
+          commitUrl,
+        });
+      } else {
+        refreshPreviewChromeAndRail('content-action-result');
+        document.getElementById('content-action-result')?.focus();
+        announce(state.contentMessage);
+      }
       return true;
     } catch (error) {
       state.pending = false;
@@ -3077,6 +3127,10 @@ export function startFacultyConsole({
       }
       const successMessage = `Attested ${requestIds.length} question${requestIds.length === 1 ? '' : 's'}: ${requestIds.join(', ')}.`;
       const successCommitUrl = safeExternalUrl(payload.commit);
+      if (payload.commit && !successCommitUrl) {
+        showQbankError('invalid_response: Commit receipt was not a safe HTTPS URL.');
+        return false;
+      }
       const selectedId = state.selectedId;
       const selectedKey = state.selectedKey;
       const refreshed = await load({
@@ -3096,11 +3150,11 @@ export function startFacultyConsole({
       resetApprovalInputs();
       state.qbankMessage = successMessage;
       state.qbankCommitUrl = successCommitUrl;
-      renderShell();
-      const next = document.getElementById('next-review-item');
-      if (next && !next.disabled) next.focus();
-      else document.getElementById('qbank-action-result')?.focus();
-      announce(successMessage);
+      advanceAfterConfirmedAttestation({
+        key: selectedKey,
+        message: successMessage,
+        commitUrl: successCommitUrl,
+      });
       return true;
     } catch (error) {
       state.reauthAction = null;

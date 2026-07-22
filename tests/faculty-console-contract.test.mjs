@@ -624,6 +624,7 @@ test('uses the approved clinical workbench layout and accessible primary contras
   assert.match(html, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   for (const className of [
     'queue-strip',
+    'recent-attestation-receipt',
     'queue-primary',
     'queue-filters',
     'workspace',
@@ -2707,7 +2708,7 @@ test('compact checklist guidance focuses the first unmet content requirement wit
   assert.equal(document.getElementById('attest-current-item').textContent, 'Attest & continue');
 });
 
-test('content attestation submits exactly one page slug, confirms it, and holds the item for Next item', async () => {
+test('content attestation confirms one page, keeps its receipt, and advances to the next eligible item', async () => {
   let items = [
     { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
     { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
@@ -2740,20 +2741,59 @@ test('content attestation submits exactly one page slug, confirms it, and holds 
     attester: 'Joshua Moss, MD',
   });
   assert.equal(Object.keys(posted.changes).length, 1);
-  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
-  assert.equal(controller.state.completedHoldKey, 'page:t_mood.md');
+  assert.equal(controller.state.selectedKey, 'tool:mse.html');
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.deepEqual(controller.state.recentReceipt, {
+    key: 'page:t_mood.md',
+    message: 'Attested t_mood.md.',
+    commitUrl: 'https://github.example/commit/content-page',
+  });
   assert.equal(controller.state.reviewItems.find(item => item.key === 'page:t_mood.md').savedStatus,
     'reviewed');
   assert.equal(controller.state.contentMessage, 'Attested t_mood.md.');
-  assert.match(document.getElementById('content-action-result').textContent, /Attested t_mood\.md/);
+  assert.match(document.getElementById('recent-attestation-receipt').textContent,
+    /Attested t_mood\.md/);
   assert.equal(
     document.links().find(link => link.textContent === 'View commit ↗')?.getAttribute('href'),
     'https://github.example/commit/content-page',
   );
-  assert.equal(document.getElementById('next-review-item').textContent, 'Next item');
-  assert.equal(document.getElementById('next-review-item').disabled, false);
-  assert.equal(document.activeElement?.getAttribute('id'), 'next-review-item');
-  assert.equal(document.status.textContent, 'Attested t_mood.md.');
+  assert.equal(document.activeElement?.getAttribute('id'), 'attestation-rail-title');
+  assert.equal(document.status.textContent,
+    'Attested t_mood.md. Moving to the next review item.');
+});
+
+test('confirmed auto-advance honors active filters and wraps to the first remaining eligible item', async () => {
+  let items = [
+    { slug: 'a_first.md', title: 'First page', kind: 'page', status: 'unreviewed' },
+    { slug: 'b_tool.html', title: 'Excluded tool', kind: 'tool', status: 'unreviewed' },
+    { slug: 'c_last.md', title: 'Last page', kind: 'page', status: 'unreviewed' },
+  ];
+  const harness = await startHarness({
+    fetchImpl: async (url, options = {}) => {
+      if (options.method === 'POST') {
+        const posted = JSON.parse(options.body);
+        const [[slug]] = Object.entries(posted.changes);
+        items = items.map(item => item.slug === slug ? { ...item, status: 'reviewed' } : item);
+        return jsonResponse({
+          ok: true,
+          updated: 1,
+          commit: 'https://github.example/commit/filtered-wrap',
+        });
+      }
+      return jsonResponse(serverState({ items, questions: [] }));
+    },
+  });
+  const { controller, document } = harness;
+  await setValue(document, 'review-type-filter', 'page', 'change');
+  await setValue(document, 'review-item-selector', 'page:c_last.md', 'change');
+  await completeCurrentContentReview(harness);
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(controller.state.queueFilters.type, 'page');
+  assert.equal(controller.state.selectedKey, 'page:a_first.md');
+  assert.notEqual(controller.state.selectedKey, 'tool:b_tool.html');
+  assert.equal(controller.state.recentReceipt.key, 'page:c_last.md');
 });
 
 test('content POST with a stale confirming GET remains unconfirmed and never announces success', async () => {
@@ -2802,6 +2842,7 @@ test('content POST with a stale confirming GET remains unconfirmed and never ann
   assert.equal(controller.state.pending, false);
   assert.equal(controller.state.selectedKey, 'page:t_mood.md');
   assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.recentReceipt, null);
   assert.equal(controller.state.reviewItems.find(item => item.key === 'page:t_mood.md').savedStatus,
     'unreviewed');
   assert.match(controller.state.contentMessage, /refresh_failed/);
@@ -3050,17 +3091,21 @@ test('requires all human confirmations and each current warning acknowledgement 
     evidence: true,
     originalityAndNoPhi: true,
   });
-  assert.equal(controller.state.original.status, 'attested');
-  assert.equal(controller.state.original.revision, testRevision('revision-attested'));
-  assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-result');
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'question:qb_moo_902').savedStatus,
+    'attested');
+  assert.equal(controller.state.selectedKey, null);
+  assert.match(document.getElementById('recent-attestation-receipt').textContent,
+    /Attested 1 question: qb_moo_902/);
+  assert.equal(document.activeElement?.getAttribute('id'), 'review-queue-title');
+  assert.match(document.status.textContent, /Review queue complete/);
 });
 
-test('Ready attestation posts one exact-revision entry and holds the completed question for Next item', async () => {
+test('Ready attestation posts one exact-revision entry and advances to the next eligible question', async () => {
   const attestedRevision = testRevision('ready-attested');
   const second = validDomQuestion({
     id: 'qb_moo_903',
     revision: testRevision('ready-next'),
-    stem: 'A second saved question should not be auto-selected. What is the diagnosis?',
+    stem: 'A second saved question is next in the review queue. What is the diagnosis?',
   });
   let questions = [validDomQuestion(), second];
   let posted;
@@ -3106,14 +3151,18 @@ test('Ready attestation posts one exact-revision entry and holds the completed q
     revision: testRevision('revision-one'),
     reviewedRevision: testRevision('revision-one'),
   }]);
-  assert.equal(controller.state.selectedKey, 'question:qb_moo_902');
-  assert.equal(controller.state.completedHoldKey, 'question:qb_moo_902');
-  assert.equal(controller.state.original.status, 'attested');
-  assert.match(document.getElementById('qbank-action-result').textContent,
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903');
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'question:qb_moo_902').savedStatus,
+    'attested');
+  assert.deepEqual(controller.state.recentReceipt, {
+    key: 'question:qb_moo_902',
+    message: 'Attested 1 question: qb_moo_902.',
+    commitUrl: 'https://github.example/commit/ready-attested',
+  });
+  assert.match(document.getElementById('recent-attestation-receipt').textContent,
     /Attested 1 question: qb_moo_902/);
-  assert.equal(document.getElementById('next-review-item').textContent, 'Next item');
-  assert.equal(document.getElementById('next-review-item').disabled, false);
-  assert.equal(document.activeElement?.getAttribute('id'), 'next-review-item');
+  assert.equal(document.activeElement?.getAttribute('id'), 'attestation-rail-title');
 });
 
 test('a successful attestation POST with a stale confirming GET stays unconfirmed', async () => {
@@ -3155,9 +3204,48 @@ test('a successful attestation POST with a stale confirming GET stays unconfirme
   assert.equal(controller.state.original.revision, original.revision);
   assert.equal(controller.state.selectedKey, 'question:qb_moo_902');
   assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.recentReceipt, null);
   assert.match(document.getElementById('qbank-action-error').textContent, /refresh_failed/);
   assert.doesNotMatch(document.app.textContent, /Attested 1 question/);
   assert.equal(controller.state.qbankMessage, '');
+});
+
+test('question commit URL must be safe HTTPS before any confirming GET or auto-advance', async () => {
+  const original = validDomQuestion();
+  const returnedRevision = testRevision('unsafe-question-commit');
+  let getCount = 0;
+  const harness = await startHarness({
+    fetchImpl: async (url, options = {}) => {
+      if (options.method === 'POST') {
+        return jsonResponse({
+          ok: true,
+          action: 'qbank.attest',
+          updated: 1,
+          revision: { qb_moo_902: returnedRevision },
+          assessment: { qb_moo_902: { gate: 'ready', blockers: [], warnings: [] } },
+          commit: 'http://github.example/commit/unsafe-question',
+        });
+      }
+      getCount += 1;
+      return jsonResponse(serverState({ question: original }));
+    },
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { controller, document } = harness;
+  await makeCurrentQuestionPreviewReady(harness);
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(document, id);
+  }
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(getCount, 1);
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902');
+  assert.equal(controller.state.recentReceipt, null);
+  assert.match(document.getElementById('qbank-action-error').textContent,
+    /invalid_response: Commit receipt was not a safe HTTPS URL/);
+  assert.equal(document.links().some(link => link.getAttribute('href')
+    === 'http://github.example/commit/unsafe-question'), false);
 });
 
 test('an attestation GET with a matching revision but Draft status stays unconfirmed', async () => {
@@ -3256,8 +3344,10 @@ test('save-time 401 reauthentication retries the exact captured attestation and 
   assert.equal(posts.length, 2);
   assert.equal(posts[0].body.manifestRevision, DEFAULT_MANIFEST_REVISION);
   assert.deepEqual(posts[1].body, posts[0].body);
-  assert.equal(controller.state.original.revision, attestedRevision);
-  assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-result');
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'question:qb_moo_902').revision,
+    attestedRevision);
+  assert.equal(controller.state.selectedKey, null);
+  assert.equal(document.activeElement?.getAttribute('id'), 'review-queue-title');
 });
 
 test('attestation keeps the captured entry and confirmations immutable while POST and refresh are pending', async () => {
@@ -3329,8 +3419,11 @@ test('attestation keeps the captured entry and confirmations immutable while POS
   })));
   await flushAsyncWork();
   assert.equal(controller.state.pending, false);
-  assert.equal(controller.state.original.status, 'attested');
-  assert.equal(controller.state.original.revision, attestedRevision);
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'question:qb_moo_902').savedStatus,
+    'attested');
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'question:qb_moo_902').revision,
+    attestedRevision);
+  assert.equal(controller.state.selectedKey, null);
 });
 
 test('save and refresh keep the editor and navigation inert until the captured revision is confirmed', async () => {
