@@ -167,10 +167,10 @@ function validAssessment(assessment) {
   return assessment.blockers.length > 0;
 }
 
-export function deriveAttestationEligibility(context = {}) {
+function deriveAttestationBlockers(context = {}) {
   const blockers = [];
   const item = context.item;
-  if (!item) return { eligible: false, blockers: ['selection.missing'] };
+  if (!item) return ['selection.missing'];
   if (context.dirty) blockers.push('question.unsaved_changes');
   if (!['loading', 'ready', 'not_found', 'error', 'protocol_unavailable', 'frame_failure']
     .includes(context.previewStatus)) blockers.push('preview.invalid_state');
@@ -206,5 +206,219 @@ export function deriveAttestationEligibility(context = {}) {
       blockers.push('content.resolve_checks_required');
     }
   }
-  return { eligible: blockers.length === 0, blockers };
+  return blockers;
+}
+
+function requirement({
+  id,
+  group,
+  label,
+  complete,
+  status = 'actionable',
+  blockerCode = '',
+  focusId,
+}) {
+  const isComplete = complete === true;
+  return Object.freeze({
+    id,
+    group,
+    label,
+    complete: isComplete,
+    status: isComplete ? 'complete' : status,
+    blockerCode,
+    focusId,
+  });
+}
+
+function addContentRequirements(add, context) {
+  const item = context.item;
+  const previewStatus = context.previewStatus;
+  const failedPreview = PREVIEW_FAILURES.has(previewStatus);
+  const validPreview = ['loading', 'ready', ...PREVIEW_FAILURES].includes(previewStatus);
+  add({
+    id: 'content.status',
+    group: 'Learner review',
+    label: 'This item still needs faculty review',
+    complete: item.savedStatus === 'unreviewed',
+    status: 'blocked',
+    blockerCode: 'content.status_not_attestable',
+    focusId: 'selected-item-status',
+  });
+  add({
+    id: 'preview.ready',
+    group: 'Learner review',
+    label: failedPreview ? 'Use the documented preview fallback' : 'Learner preview is ready',
+    complete: previewStatus === 'ready' || failedPreview,
+    status: validPreview && previewStatus === 'loading' ? 'blocked' : 'unavailable',
+    blockerCode: validPreview ? 'preview.loading' : 'preview.invalid_state',
+    focusId: 'preview-status',
+  });
+  if (previewStatus === 'ready') {
+    add({
+      id: 'review.complete_item',
+      group: 'Learner review',
+      label: 'I reviewed the complete item',
+      complete: context.completeItemReviewed,
+      blockerCode: 'review.complete_item_required',
+      focusId: 'review-complete-item',
+    });
+  } else if (failedPreview) {
+    add({
+      id: 'review.separate_tab',
+      group: 'Learner review',
+      label: 'I reviewed this item in the separate tab',
+      complete: context.separateTabReviewed,
+      blockerCode: 'review.separate_tab_required',
+      focusId: 'review-separate-tab',
+    });
+  }
+  add({
+    id: 'content.accuracy',
+    group: 'Content validation',
+    label: 'Accurate and appropriate for a third-year student',
+    complete: context.contentChecks?.accuracy,
+    blockerCode: 'content.resolve_checks_required',
+    focusId: 'review-content-accuracy',
+  });
+  add({
+    id: 'content.interactions',
+    group: 'Content validation',
+    label: 'Relevant links, media, or interactions work',
+    complete: context.contentChecks?.interactions,
+    blockerCode: 'content.resolve_checks_required',
+    focusId: 'review-content-interactions',
+  });
+}
+
+function addQuestionRequirements(add, context) {
+  const item = context.item;
+  const assessment = context.assessment;
+  const assessmentIsValid = validAssessment(assessment);
+  const failedPreview = PREVIEW_FAILURES.has(context.previewStatus);
+  const invalidPreview = !['loading', 'ready', ...PREVIEW_FAILURES].includes(context.previewStatus);
+  const retryRequired = ['error', 'protocol_unavailable', 'frame_failure']
+    .includes(context.previewStatus) && context.retryAttempted !== true;
+  const saved = context.dirty !== true && item.savedStatus === 'draft';
+  add({
+    id: 'question.saved',
+    group: 'Learner review',
+    label: 'Current saved Draft has no unsaved edits',
+    complete: saved,
+    status: 'blocked',
+    blockerCode: context.dirty ? 'question.unsaved_changes' : 'question.not_draft',
+    focusId: context.dirty ? 'save-draft' : 'selected-item-status',
+  });
+  add({
+    id: 'preview.available',
+    group: 'Learner review',
+    label: retryRequired ? 'Retry the learner preview once' : 'Learner preview state is reviewable',
+    complete: !invalidPreview && context.previewStatus !== 'loading' && !retryRequired,
+    status: failedPreview ? 'unavailable' : 'blocked',
+    blockerCode: invalidPreview
+      ? 'preview.invalid_state'
+      : context.previewStatus === 'loading'
+        ? 'preview.loading'
+        : 'preview.retry_required',
+    focusId: 'preview-status',
+  });
+  if (context.previewStatus === 'ready') {
+    add({
+      id: 'review.live',
+      group: 'Learner review',
+      label: 'I reviewed the complete item in the learner view',
+      complete: context.liveReviewed,
+      blockerCode: 'review.live_required',
+      focusId: 'review-live-preview',
+    });
+  } else if (failedPreview) {
+    add({
+      id: 'review.live_unavailable',
+      group: 'Learner review',
+      label: 'The live question is unavailable; I reviewed the saved revision',
+      complete: context.liveUnavailableAcknowledged,
+      blockerCode: 'review.live_unavailable_ack_required',
+      focusId: 'ack-live-unavailable',
+    });
+  }
+  add({
+    id: 'review.saved_revision',
+    group: 'Learner review',
+    label: 'I reviewed this exact saved revision',
+    complete: reviewedRevisionMatches(item, context.reviewedRevision),
+    blockerCode: 'review.saved_revision_required',
+    focusId: 'review-saved-revision',
+  });
+  add({
+    id: 'question.gate',
+    group: 'Question resolution',
+    label: assessmentIsValid && assessment.gate === 'warning'
+      ? 'Current structural warnings are reviewed'
+      : 'Current structural checks permit attestation',
+    complete: assessmentIsValid && ['ready', 'warning'].includes(assessment.gate),
+    status: 'blocked',
+    blockerCode: assessmentIsValid ? 'question.gate_not_attestable' : 'checks.runtime_failure',
+    focusId: 'edit-question-from-rail',
+  });
+  if (assessmentIsValid && assessment.gate === 'warning') {
+    for (const warning of assessment.warnings) {
+      const code = clean(warning.code);
+      add({
+        id: `warning.${code}`,
+        group: 'Question resolution',
+        label: `${code}: ${clean(warning.message) || 'Warning reviewed'}`,
+        complete: context.warningAcks?.has?.(code),
+        blockerCode: 'question.warning_ack_required',
+        focusId: `ack-${code.replace(/[^A-Za-z0-9_-]/g, '-')}`,
+      });
+    }
+  }
+  for (const [key, label, focusId] of [
+    ['clinical', 'I verified the clinical answer and rationale', 'confirm-clinical'],
+    ['evidence', 'I verified the named library page and evidence anchor', 'confirm-evidence'],
+    ['originalityAndNoPhi', 'I verified an original fictional vignette with no PHI', 'confirm-originality'],
+  ]) {
+    add({
+      id: `confirmation.${key}`,
+      group: 'Faculty confirmation',
+      label,
+      complete: context.confirmations?.[key],
+      blockerCode: 'question.confirmations_required',
+      focusId,
+    });
+  }
+}
+
+export function deriveAttestationChecklist(context = {}) {
+  const requirements = [];
+  const blockers = deriveAttestationBlockers(context);
+  const add = definition => requirements.push(requirement(definition));
+  if (!context.item) {
+    add({
+      id: 'selection.present',
+      group: 'Learner review',
+      label: 'Select one review item',
+      complete: false,
+      status: 'blocked',
+      blockerCode: 'selection.missing',
+      focusId: 'review-item-selector',
+    });
+  } else if (context.item.type === 'question') {
+    addQuestionRequirements(add, context);
+  } else {
+    addContentRequirements(add, context);
+  }
+  const completedCount = requirements.filter(item => item.complete).length;
+  return Object.freeze({
+    requirements: Object.freeze(requirements),
+    completedCount,
+    totalCount: requirements.length,
+    firstUnmet: requirements.find(item => !item.complete) || null,
+    eligible: blockers.length === 0,
+    blockers: Object.freeze(blockers),
+  });
+}
+
+export function deriveAttestationEligibility(context = {}) {
+  const checklist = deriveAttestationChecklist(context);
+  return { eligible: checklist.eligible, blockers: [...checklist.blockers] };
 }

@@ -4,6 +4,7 @@ import {
   buildPreviewRequest,
   buildExternalReviewUrl,
   createReviewToken,
+  deriveAttestationChecklist,
   deriveAttestationEligibility,
   deriveReviewCounts,
   filterReviewItems,
@@ -334,6 +335,76 @@ test('page and tool Ready review paths require exact faculty checks', () => {
     })), {
       eligible: false,
       blockers: ['review.complete_item_required'],
+    });
+  }
+});
+
+test('derives an ordered Ready content checklist and its first unmet focus target', () => {
+  const page = normalizeReviewItems(server)[0];
+  const checklist = deriveAttestationChecklist(contentContext(page, {
+    completeItemReviewed: false,
+    contentChecks: { accuracy: true, interactions: true },
+  }));
+
+  assert.deepEqual(checklist.requirements.map(({ id, complete, focusId }) => ({
+    id, complete, focusId,
+  })), [
+    { id: 'content.status', complete: true, focusId: 'selected-item-status' },
+    { id: 'preview.ready', complete: true, focusId: 'preview-status' },
+    { id: 'review.complete_item', complete: false, focusId: 'review-complete-item' },
+    { id: 'content.accuracy', complete: true, focusId: 'review-content-accuracy' },
+    { id: 'content.interactions', complete: true, focusId: 'review-content-interactions' },
+  ]);
+  assert.equal(checklist.completedCount, 4);
+  assert.equal(checklist.totalCount, 5);
+  assert.equal(checklist.firstUnmet.id, 'review.complete_item');
+  assert.equal(checklist.eligible, false);
+  assert.deepEqual(checklist.blockers, ['review.complete_item_required']);
+});
+
+test('derives separate fallback and warning requirements with stable focus targets', () => {
+  const items = normalizeReviewItems(fullServerFixture);
+  const page = items.find(item => item.type === 'page');
+  const warningQuestion = items.find(item => item.identity === 'qb_moo_903');
+  const fallback = deriveAttestationChecklist(contentContext(page, {
+    previewStatus: 'not_found',
+    completeItemReviewed: false,
+    separateTabReviewed: false,
+  }));
+  assert.equal(fallback.requirements.some(item => item.id === 'review.complete_item'), false);
+  assert.equal(fallback.firstUnmet.id, 'review.separate_tab');
+  assert.equal(fallback.firstUnmet.focusId, 'review-separate-tab');
+
+  const warning = deriveAttestationChecklist(questionContext(warningQuestion, {
+    assessment: WARNING_ASSESSMENT,
+    warningAcks: new Set(),
+  }));
+  const warningRequirement = warning.requirements.find(item => (
+    item.id === 'warning.stem.weak_lead_in'
+  ));
+  assert.equal(warningRequirement.complete, false);
+  assert.equal(warningRequirement.focusId, 'ack-stem-weak_lead_in');
+  assert.deepEqual(warning.blockers, ['question.warning_ack_required']);
+});
+
+test('checklist eligibility remains identical to the public eligibility result', () => {
+  const items = normalizeReviewItems(fullServerFixture);
+  const readyQuestion = items.find(item => item.identity === 'qb_moo_902');
+  const warningQuestion = items.find(item => item.identity === 'qb_moo_903');
+  const contexts = [
+    contentContext(items.find(item => item.type === 'page')),
+    contentContext(items.find(item => item.type === 'page'), { previewStatus: 'loading' }),
+    questionContext(readyQuestion),
+    questionContext(warningQuestion, {
+      assessment: WARNING_ASSESSMENT,
+      warningAcks: new Set(),
+    }),
+  ];
+  for (const context of contexts) {
+    const checklist = deriveAttestationChecklist(context);
+    assert.deepEqual(deriveAttestationEligibility(context), {
+      eligible: checklist.eligible,
+      blockers: [...checklist.blockers],
     });
   }
 });
