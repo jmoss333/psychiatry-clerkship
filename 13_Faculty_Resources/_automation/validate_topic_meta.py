@@ -12,6 +12,7 @@ Exits non-zero and prints every violation.
 Usage:  python3 validate_topic_meta.py [path/to/topic_meta.json]
 """
 import json, os, re, sys
+from pathlib import Path
 
 path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "..", "topic_meta.json")
@@ -22,6 +23,10 @@ if not os.path.exists(path):
 
 d = json.load(open(path, encoding="utf-8"))
 repo_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+evidence_tools = os.path.join(repo_root, "tools", "evidence_registry")
+if evidence_tools not in sys.path:
+    sys.path.insert(0, evidence_tools)
+from registry import index_sources, load_evidence_registry
 topic_keys = {k for k in d if k != "_note"}
 def require_unique(label, values):
     seen = set()
@@ -36,15 +41,13 @@ def require_unique(label, values):
 
 evidence_path = os.path.join(repo_root, "evidence_registry.json")
 evidence_ids = set()
-if os.path.exists(evidence_path):
-    try:
-        ev = json.load(open(evidence_path, encoding="utf-8"))
-        source_ids = [x.get("id") for x in ev.get("sources", []) if isinstance(x, dict) and x.get("id")]
-        require_unique("evidence_registry.json", source_ids)
-        evidence_ids = set(source_ids)
-    except Exception as exc:
-        print("evidence_registry.json INVALID — %s" % exc)
-        sys.exit(1)
+try:
+    evidence_ids = set(index_sources(load_evidence_registry(Path(evidence_path))))
+    if not evidence_ids:
+        raise ValueError("evidence registry contains no sources")
+except Exception as exc:
+    print("evidence_registry.json INVALID — %s" % exc)
+    sys.exit(1)
 tool_registry_path = os.path.join(repo_root, "tool_registry.json")
 if os.path.exists(tool_registry_path):
     try:
@@ -53,7 +56,7 @@ if os.path.exists(tool_registry_path):
         for tool in tr.get("tools", []):
             ids = tool.get("evidenceIds", []) if isinstance(tool, dict) else []
             for eid in ids:
-                if evidence_ids and eid not in evidence_ids:
+                if eid not in evidence_ids:
                     print("tool_registry.json INVALID — %s references unknown evidence id %s" % (tool.get("file"), eid))
                     sys.exit(1)
     except Exception as exc:
@@ -83,7 +86,7 @@ if os.path.exists(communication_cases_path):
                     sys.exit(1)
             ids = case.get("evidenceIds", []) if isinstance(case, dict) else []
             for eid in ids:
-                if evidence_ids and eid not in evidence_ids:
+                if eid not in evidence_ids:
                     print("communication_cases.json INVALID — %s references unknown evidence id %s" % (cid, eid))
                     sys.exit(1)
     except Exception as exc:
@@ -106,7 +109,7 @@ def validate_reasoning_cases(reasoning_cases_path):
                     sys.exit(1)
             ids = case.get("evidenceIds", []) if isinstance(case, dict) else []
             for eid in ids:
-                if evidence_ids and eid not in evidence_ids:
+                if eid not in evidence_ids:
                     print("%s INVALID — %s references unknown evidence id %s" % (label, case.get("id"), eid))
                     sys.exit(1)
     except Exception as exc:
@@ -165,7 +168,7 @@ if os.path.exists(family_systems_path):
                     sys.exit(1)
             ids = scenario.get("evidenceIds", []) if isinstance(scenario, dict) else []
             for eid in ids:
-                if evidence_ids and eid not in evidence_ids:
+                if eid not in evidence_ids:
                     print("family_systems_scenarios.json INVALID — %s references unknown evidence id %s" % (sid, eid))
                     sys.exit(1)
     except Exception as exc:
@@ -289,7 +292,7 @@ for k, v in d.items():
         elif fr.get("status") not in ("draft", "pending", "reviewed", "retired"):
             bad(k, "'facultyReview.status' must be draft, pending, reviewed, or retired")
     for eid in v.get("evidenceIds", []) if isinstance(v.get("evidenceIds"), list) else []:
-        if evidence_ids and eid not in evidence_ids:
+        if eid not in evidence_ids:
             bad(k, "evidenceIds references unknown source '%s'" % eid)
     if v.get("safetyLevel") == "high":
         if not v.get("evidenceIds"):

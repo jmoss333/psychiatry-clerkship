@@ -1,0 +1,2 @@
+-r requirements-core.in
+anki==26.5

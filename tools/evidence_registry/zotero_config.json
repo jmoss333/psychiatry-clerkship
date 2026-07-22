@@ -1,0 +1,15 @@
+{
+  "baseUrl": "http://127.0.0.1:23119",
+  "apiVersion": "3",
+  "library": {"type": "user", "id": 0},
+  "rootCollection": {"key": "ZD6GBSYZ", "name": "Psychiatry Clerkship Library"},
+  "weekCollections": [
+    {"week": 1, "key": "5KLVFZDV", "name": "Week 1 - Foundations"},
+    {"week": 2, "key": "DS6JSHHX", "name": "Week 2 - Mood Psychosis Pharm"},
+    {"week": 3, "key": "HIKYWT9S", "name": "Week 3 - Psychotherapy Personality"},
+    {"week": 4, "key": "K78U3AD4", "name": "Week 4 - Family Systems EE"},
+    {"week": 5, "key": "F7SMP42D", "name": "Week 5 - Acute Emergency"},
+    {"week": 6, "key": "LUUFRIE9", "name": "Week 6 - Integration Exam"}
+  ],
+  "expectedTier1Tags": ["Tier 1", "MS3-required", "landmark"]
+}

@@ -1,0 +1,569 @@
+{
+  "generated": "2026-07-13",
+  "bank_version": "pilot-01",
+  "total_items": 24,
+  "note": "Pilot = 2 per category (breadth-first calibration sample). Quotas per 01_BLUEPRINT_CROSSWALK.md. Intended difficulty only; no empirical difficulty/discrimination until student-response data exist.",
+  "per_category": {
+    "mood": {
+      "pilot": 2,
+      "v1_180": 22,
+      "v2_360": 44,
+      "exp_480": 59,
+      "pilot_ids": [
+        "qbx_mood_001",
+        "qbx_mood_002"
+      ]
+    },
+    "anxiety": {
+      "pilot": 2,
+      "v1_180": 20,
+      "v2_360": 40,
+      "exp_480": 53,
+      "pilot_ids": [
+        "qbx_anx_001",
+        "qbx_anx_002"
+      ]
+    },
+    "neurocog": {
+      "pilot": 2,
+      "v1_180": 16,
+      "v2_360": 32,
+      "exp_480": 43,
+      "pilot_ids": [
+        "qbx_cog_001",
+        "qbx_cog_002"
+      ]
+    },
+    "pharm": {
+      "pilot": 2,
+      "v1_180": 20,
+      "v2_360": 40,
+      "exp_480": 53,
+      "pilot_ids": [
+        "qbx_pha_001",
+        "qbx_pha_002"
+      ]
+    },
+    "substance": {
+      "pilot": 2,
+      "v1_180": 14,
+      "v2_360": 28,
+      "exp_480": 37,
+      "pilot_ids": [
+        "qbx_sud_001",
+        "qbx_sud_002"
+      ]
+    },
+    "safety": {
+      "pilot": 2,
+      "v1_180": 16,
+      "v2_360": 32,
+      "exp_480": 43,
+      "pilot_ids": [
+        "qbx_saf_001",
+        "qbx_saf_002"
+      ]
+    },
+    "psychosis": {
+      "pilot": 2,
+      "v1_180": 12,
+      "v2_360": 24,
+      "exp_480": 32,
+      "pilot_ids": [
+        "qbx_psy_001",
+        "qbx_psy_002"
+      ]
+    },
+    "childdev": {
+      "pilot": 2,
+      "v1_180": 12,
+      "v2_360": 24,
+      "exp_480": 32,
+      "pilot_ids": [
+        "qbx_cdev_001",
+        "qbx_cdev_002"
+      ]
+    },
+    "otherdx": {
+      "pilot": 2,
+      "v1_180": 14,
+      "v2_360": 28,
+      "exp_480": 37,
+      "pilot_ids": [
+        "qbx_oth_001",
+        "qbx_oth_002"
+      ]
+    },
+    "relational": {
+      "pilot": 2,
+      "v1_180": 16,
+      "v2_360": 32,
+      "exp_480": 43,
+      "pilot_ids": [
+        "qbx_rel_001",
+        "qbx_rel_002"
+      ]
+    },
+    "personality": {
+      "pilot": 2,
+      "v1_180": 8,
+      "v2_360": 16,
+      "exp_480": 21,
+      "pilot_ids": [
+        "qbx_per_001",
+        "qbx_per_002"
+      ]
+    },
+    "ethics": {
+      "pilot": 2,
+      "v1_180": 10,
+      "v2_360": 20,
+      "exp_480": 27,
+      "pilot_ids": [
+        "qbx_eth_001",
+        "qbx_eth_002"
+      ]
+    }
+  },
+  "cross_cutting": {
+    "type": {
+      "sba": 19,
+      "two-tier": 3,
+      "relational": 2
+    },
+    "intended_difficulty": {
+      "standard": 14,
+      "foundational": 5,
+      "advanced": 5
+    },
+    "difficulty_numeric": {
+      "1": 5,
+      "2": 14,
+      "3": 5
+    },
+    "correct_key": {
+      "A": 6,
+      "B": 6,
+      "C": 6,
+      "D": 6
+    },
+    "exam_alignment": {
+      "both": 15,
+      "shelf": 4,
+      "comat": 5
+    },
+    "cognitive_process": {
+      "diagnostic-reasoning": 6,
+      "treatment-selection": 4,
+      "recognition": 4,
+      "next-step-management": 8,
+      "adverse-effect-recognition": 1,
+      "communication-decision": 1
+    },
+    "nbme_physician_task": {
+      "Diagnosis": 12,
+      "Pharmacotherapy/Intervention/Management": 12
+    },
+    "nbme_site_of_care": {
+      "Ambulatory": 15,
+      "Emergency Department": 5,
+      "Inpatient": 4
+    },
+    "nbme_patient_age": {
+      "13 and older": 21,
+      "Birth to 12": 3
+    },
+    "patient_age_group": {
+      "adult-18-64": 18,
+      "adolescent-13-17": 1,
+      "birth-12": 3,
+      "older-adult-65plus": 2
+    },
+    "comat_presentation": {
+      "Depressive/Bipolar/Related": 8,
+      "Schizophrenia Spectrum/Psychotic": 4,
+      "Anxiety/Trauma/Dissociative/OCD": 2,
+      "Substance-Related/Addictive": 2,
+      "Neurocognitive": 2,
+      "Personality": 2,
+      "Neurodevelopmental/Gender Dysphoria/Disruptive-Impulse-Conduct": 2,
+      "Feeding-Eating-Elimination/Sexual-Paraphilic": 1,
+      "Psychiatric Illness due to Medical Condition/Somatic/Sleep-Wake": 1
+    },
+    "comat_physician_task": {
+      "History & Physical (incl. Dx)": 8,
+      "Management": 10,
+      "Scientific Mechanisms of Disease": 1,
+      "Health Promotion/Prevention/Care Delivery": 5
+    },
+    "competency": {
+      "dx": 12,
+      "safety": 12,
+      "management": 8,
+      "pharm": 3,
+      "next-step": 3,
+      "psychosocial": 3
+    },
+    "osteopathic_tagged": [
+      "qbx_mood_002",
+      "qbx_sud_001",
+      "qbx_cog_001",
+      "qbx_oth_002",
+      "qbx_eth_001",
+      "qbx_rel_001"
+    ]
+  },
+  "nbme_target_bands": {
+    "site": {
+      "Ambulatory": "60-65%",
+      "Emergency Department": "20-30%",
+      "Inpatient": "5-10%"
+    },
+    "physician_task": {
+      "Diagnosis": "65-70%",
+      "Pharmacotherapy/Intervention/Management": "30-35%"
+    },
+    "patient_age": {
+      "Birth to 12": "10-15%",
+      "13 and older": "85-90%"
+    }
+  },
+  "per_item": [
+    {
+      "id": "qbx_mood_001",
+      "category": "mood",
+      "type": "sba",
+      "difficulty": 2,
+      "exam_alignment": "both",
+      "setting": "ambulatory",
+      "age": "adult-18-64",
+      "correct": "B",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Depressive/Bipolar/Related",
+      "tested_decision": "The best next step before prescribing pharmacotherapy for a depressive episode with bipolar red flags."
+    },
+    {
+      "id": "qbx_mood_002",
+      "category": "mood",
+      "type": "sba",
+      "difficulty": 2,
+      "exam_alignment": "both",
+      "setting": "ambulatory",
+      "age": "adolescent-13-17",
+      "correct": "C",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Depressive/Bipolar/Related",
+      "tested_decision": "The most appropriate initial treatment for a moderately depressed adolescent."
+    },
+    {
+      "id": "qbx_psy_001",
+      "category": "psychosis",
+      "type": "sba",
+      "difficulty": 1,
+      "exam_alignment": "shelf",
+      "setting": "ambulatory",
+      "age": "adult-18-64",
+      "correct": "C",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Schizophrenia Spectrum/Psychotic",
+      "tested_decision": "The most likely diagnosis given the total duration of continuous illness."
+    },
+    {
+      "id": "qbx_psy_002",
+      "category": "psychosis",
+      "type": "two-tier",
+      "difficulty": 2,
+      "exam_alignment": "both",
+      "setting": "ambulatory",
+      "age": "adult-18-64",
+      "correct": "B",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Schizophrenia Spectrum/Psychotic",
+      "tested_decision": "The next pharmacologic step after two adequate failed antipsychotic trials."
+    },
+    {
+      "id": "qbx_anx_001",
+      "category": "anxiety",
+      "type": "sba",
+      "difficulty": 1,
+      "exam_alignment": "shelf",
+      "setting": "ambulatory",
+      "age": "adult-18-64",
+      "correct": "D",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Anxiety/Trauma/Dissociative/OCD",
+      "tested_decision": "The most likely diagnosis given symptom duration after a traumatic event."
+    },
+    {
+      "id": "qbx_anx_002",
+      "category": "anxiety",
+      "type": "sba",
+      "difficulty": 2,
+      "exam_alignment": "both",
+      "setting": "ambulatory",
+      "age": "birth-12",
+      "correct": "A",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Anxiety/Trauma/Dissociative/OCD",
+      "tested_decision": "The most appropriate initial treatment for a child with mild-to-moderate OCD."
+    },
+    {
+      "id": "qbx_sud_001",
+      "category": "substance",
+      "type": "two-tier",
+      "difficulty": 3,
+      "exam_alignment": "comat",
+      "setting": "emergency-department",
+      "age": "adult-18-64",
+      "correct": "A",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Emergency Department",
+      "comat_presentation": "Substance-Related/Addictive",
+      "tested_decision": "The correct sequence of thiamine and glucose administration in a malnourished, altered patient."
+    },
+    {
+      "id": "qbx_sud_002",
+      "category": "substance",
+      "type": "sba",
+      "difficulty": 1,
+      "exam_alignment": "both",
+      "setting": "emergency-department",
+      "age": "adult-18-64",
+      "correct": "B",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Emergency Department",
+      "comat_presentation": "Substance-Related/Addictive",
+      "tested_decision": "The immediate intervention for suspected opioid overdose with respiratory depression."
+    },
+    {
+      "id": "qbx_cog_001",
+      "category": "neurocog",
+      "type": "sba",
+      "difficulty": 2,
+      "exam_alignment": "comat",
+      "setting": "ambulatory",
+      "age": "older-adult-65plus",
+      "correct": "D",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Neurocognitive",
+      "tested_decision": "The best next step for acute confusion temporally linked to a newly added anticholinergic."
+    },
+    {
+      "id": "qbx_cog_002",
+      "category": "neurocog",
+      "type": "sba",
+      "difficulty": 3,
+      "exam_alignment": "both",
+      "setting": "ambulatory",
+      "age": "older-adult-65plus",
+      "correct": "A",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Neurocognitive",
+      "tested_decision": "The most likely neurocognitive diagnosis given fluctuating cognition, visual hallucinations, and parkinsonism."
+    },
+    {
+      "id": "qbx_pha_001",
+      "category": "pharm",
+      "type": "two-tier",
+      "difficulty": 2,
+      "exam_alignment": "shelf",
+      "setting": "emergency-department",
+      "age": "adult-18-64",
+      "correct": "C",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Emergency Department",
+      "comat_presentation": "Depressive/Bipolar/Related",
+      "tested_decision": "The most likely diagnosis and immediate step for a hyperthermic, hyperreflexic patient on serotonergic drugs."
+    },
+    {
+      "id": "qbx_pha_002",
+      "category": "pharm",
+      "type": "sba",
+      "difficulty": 3,
+      "exam_alignment": "shelf",
+      "setting": "ambulatory",
+      "age": "adult-18-64",
+      "correct": "D",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Schizophrenia Spectrum/Psychotic",
+      "tested_decision": "Which antipsychotic to avoid in a patient with metabolic risk factors."
+    },
+    {
+      "id": "qbx_saf_001",
+      "category": "safety",
+      "type": "sba",
+      "difficulty": 2,
+      "exam_alignment": "both",
+      "setting": "emergency-department",
+      "age": "adult-18-64",
+      "correct": "B",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Emergency Department",
+      "comat_presentation": "Depressive/Bipolar/Related",
+      "tested_decision": "The best next step after identifying elevated suicide risk with access to a firearm."
+    },
+    {
+      "id": "qbx_saf_002",
+      "category": "safety",
+      "type": "sba",
+      "difficulty": 1,
+      "exam_alignment": "both",
+      "setting": "emergency-department",
+      "age": "adult-18-64",
+      "correct": "A",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Emergency Department",
+      "comat_presentation": "Schizophrenia Spectrum/Psychotic",
+      "tested_decision": "The best initial approach to an agitated but not yet dangerous patient."
+    },
+    {
+      "id": "qbx_per_001",
+      "category": "personality",
+      "type": "sba",
+      "difficulty": 2,
+      "exam_alignment": "both",
+      "setting": "inpatient",
+      "age": "adult-18-64",
+      "correct": "C",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Inpatient",
+      "comat_presentation": "Personality",
+      "tested_decision": "The best team response when a patient idealizes some staff and devalues others."
+    },
+    {
+      "id": "qbx_per_002",
+      "category": "personality",
+      "type": "sba",
+      "difficulty": 3,
+      "exam_alignment": "both",
+      "setting": "ambulatory",
+      "age": "adult-18-64",
+      "correct": "B",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Personality",
+      "tested_decision": "The most likely diagnosis for rapid, interpersonally triggered mood shifts with chronic emptiness and self-harm."
+    },
+    {
+      "id": "qbx_cdev_001",
+      "category": "childdev",
+      "type": "sba",
+      "difficulty": 1,
+      "exam_alignment": "both",
+      "setting": "ambulatory",
+      "age": "birth-12",
+      "correct": "D",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Neurodevelopmental/Gender Dysphoria/Disruptive-Impulse-Conduct",
+      "tested_decision": "The most likely diagnosis for inattentive/hyperactive symptoms present at home and school."
+    },
+    {
+      "id": "qbx_cdev_002",
+      "category": "childdev",
+      "type": "sba",
+      "difficulty": 2,
+      "exam_alignment": "both",
+      "setting": "ambulatory",
+      "age": "birth-12",
+      "correct": "C",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Neurodevelopmental/Gender Dysphoria/Disruptive-Impulse-Conduct",
+      "tested_decision": "The most likely diagnosis for defiant behavior without violation of others' basic rights."
+    },
+    {
+      "id": "qbx_oth_001",
+      "category": "otherdx",
+      "type": "sba",
+      "difficulty": 2,
+      "exam_alignment": "both",
+      "setting": "inpatient",
+      "age": "adult-18-64",
+      "correct": "A",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Inpatient",
+      "comat_presentation": "Feeding-Eating-Elimination/Sexual-Paraphilic",
+      "tested_decision": "The most important complication to monitor as nutrition is reintroduced in severe anorexia."
+    },
+    {
+      "id": "qbx_oth_002",
+      "category": "otherdx",
+      "type": "sba",
+      "difficulty": 3,
+      "exam_alignment": "comat",
+      "setting": "ambulatory",
+      "age": "adult-18-64",
+      "correct": "B",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Psychiatric Illness due to Medical Condition/Somatic/Sleep-Wake",
+      "tested_decision": "The most likely diagnosis when a positive Hoover sign demonstrates internal inconsistency of weakness."
+    },
+    {
+      "id": "qbx_eth_001",
+      "category": "ethics",
+      "type": "sba",
+      "difficulty": 2,
+      "exam_alignment": "comat",
+      "setting": "inpatient",
+      "age": "adult-18-64",
+      "correct": "D",
+      "nbme_task": "Diagnosis",
+      "nbme_site": "Inpatient",
+      "comat_presentation": "Depressive/Bipolar/Related",
+      "tested_decision": "The best next step when a patient refuses recommended treatment."
+    },
+    {
+      "id": "qbx_eth_002",
+      "category": "ethics",
+      "type": "sba",
+      "difficulty": 2,
+      "exam_alignment": "both",
+      "setting": "ambulatory",
+      "age": "adult-18-64",
+      "correct": "C",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Depressive/Bipolar/Related",
+      "tested_decision": "The best next step when a patient voices a specific, serious threat toward an identifiable person."
+    },
+    {
+      "id": "qbx_rel_001",
+      "category": "relational",
+      "type": "relational",
+      "difficulty": 2,
+      "exam_alignment": "comat",
+      "setting": "ambulatory",
+      "age": "adult-18-64",
+      "correct": "A",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Ambulatory",
+      "comat_presentation": "Depressive/Bipolar/Related",
+      "tested_decision": "The best thing to say to a worried parent when planning means safety for a depressed young adult."
+    },
+    {
+      "id": "qbx_rel_002",
+      "category": "relational",
+      "type": "relational",
+      "difficulty": 2,
+      "exam_alignment": "both",
+      "setting": "inpatient",
+      "age": "adult-18-64",
+      "correct": "D",
+      "nbme_task": "Pharmacotherapy/Intervention/Management",
+      "nbme_site": "Inpatient",
+      "comat_presentation": "Depressive/Bipolar/Related",
+      "tested_decision": "The most appropriate discharge step for a patient whose acute suicidality has improved."
+    }
+  ]
+}

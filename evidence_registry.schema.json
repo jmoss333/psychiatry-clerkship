@@ -2,34 +2,638 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "evidence_registry",
   "type": "object",
-  "required": ["sources"],
+  "required": ["schemaVersion", "owner", "usageNotice", "updated", "surveillance", "sources"],
   "properties": {
-    "_note": { "type": "string" },
+    "schemaVersion": {
+      "const": 2
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "usageNotice": {
+      "const": "Educational metadata only; faculty review remains required for clinical recommendations."
+    },
+    "updated": {
+      "$ref": "#/definitions/date"
+    },
+    "surveillance": {
+      "$ref": "#/definitions/globalSurveillance"
+    },
     "sources": {
       "type": "array",
+      "minItems": 1,
       "items": {
-        "type": "object",
-        "required": ["id", "title", "organization", "year", "url", "evidenceLevel", "lastReviewed", "facultyReviewStatus", "relatedTopicTags"],
-        "properties": {
-          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
-          "title": { "type": "string" },
-          "organization": { "type": "string" },
-          "year": { "type": ["integer", "string"] },
-          "url": { "type": "string" },
-          "doi": { "type": "string" },
-          "evidenceLevel": { "type": "string" },
-          "lastReviewed": { "type": "string" },
-          "facultyReviewStatus": { "type": "string", "enum": ["draft", "pending", "reviewed", "retired"] },
-          "relatedTopicTags": { "type": "array", "items": { "type": "string" } },
-          "clerkshipRelevance": { "type": "string" },
-          "shelfComatRelevance": { "type": "string" },
-          "clinicalWorkflowRelevance": { "type": "string" },
-          "localPolicyDependent": { "type": "boolean" },
-          "updateCadence": { "type": "string" }
-        },
-        "additionalProperties": false
+        "$ref": "#/definitions/source"
       }
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "definitions": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "format": "date"
+    },
+    "dateOrEmpty": {
+      "anyOf": [
+        {
+          "const": ""
+        },
+        {
+          "$ref": "#/definitions/date"
+        }
+      ]
+    },
+    "stableId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "author": {
+      "type": "object",
+      "required": ["family"],
+      "properties": {
+        "family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "given": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "citation": {
+      "type": "object",
+      "required": [
+        "title",
+        "authors",
+        "organization",
+        "year",
+        "journal",
+        "volume",
+        "pages",
+        "doi",
+        "pmid",
+        "url"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/author"
+          }
+        },
+        "organization": {
+          "type": "string"
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "journal": {
+          "type": "string"
+        },
+        "volume": {
+          "type": "string"
+        },
+        "pages": {
+          "type": "string"
+        },
+        "doi": {
+          "type": "string"
+        },
+        "pmid": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1,
+          "format": "uri"
+        }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "authors": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "organization": {
+              "minLength": 1
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "identity": {
+      "type": "object",
+      "required": ["status", "source", "verifiedAt", "note"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["verified", "exception", "pending"]
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verifiedAt": {
+          "$ref": "#/definitions/dateOrEmpty"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "zotero": {
+      "type": "object",
+      "required": ["libraryType", "libraryId", "itemKey"],
+      "properties": {
+        "libraryType": {
+          "type": "string",
+          "enum": ["user", "group"]
+        },
+        "libraryId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "itemKey": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{8}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "curriculum": {
+      "type": "object",
+      "required": ["tier", "role", "weekNumbers", "topicSlugs", "pairedTools"],
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "selection": {
+          "type": "string",
+          "pattern": "^[0-9]+[a-z]*$"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["required", "optional", "faculty-only"]
+        },
+        "teachingRole": {
+          "type": "string"
+        },
+        "weekNumbers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          }
+        },
+        "topicSlugs": {
+          "$ref": "#/definitions/stringArray"
+        },
+        "pairedTools": {
+          "$ref": "#/definitions/stringArray"
+        },
+        "mappingStatus": {
+          "type": "string",
+          "enum": ["mapped", "needs-faculty-confirmation", "citation-conflict"]
+        },
+        "mappingNote": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "appraisal": {
+      "type": "object",
+      "required": [
+        "studyDesign",
+        "population",
+        "comparator",
+        "outcomes",
+        "limitations",
+        "reviewStatus"
+      ],
+      "properties": {
+        "studyDesign": {
+          "type": "string",
+          "minLength": 1
+        },
+        "population": {
+          "type": "string",
+          "minLength": 1
+        },
+        "comparator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "outcomes": {
+          "type": "string",
+          "minLength": 1
+        },
+        "limitations": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewStatus": {
+          "type": "string",
+          "enum": ["pending-faculty-review", "reviewed"]
+        },
+        "reviewedAt": {
+          "$ref": "#/definitions/dateOrEmpty"
+        }
+      },
+      "additionalProperties": false
+    },
+    "governance": {
+      "type": "object",
+      "required": [
+        "lastReviewed",
+        "reviewCadence",
+        "supersededBy",
+        "correctionStatus"
+      ],
+      "properties": {
+        "evidenceLevel": {
+          "type": "string"
+        },
+        "facultyReviewStatus": {
+          "type": "string",
+          "enum": ["draft", "pending", "reviewed", "retired"]
+        },
+        "lastReviewed": {
+          "$ref": "#/definitions/date"
+        },
+        "reviewCadence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supersededBy": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/stableId"
+          }
+        },
+        "correctionStatus": {
+          "type": "string",
+          "enum": ["none-known", "corrected", "expression-of-concern", "retracted"]
+        },
+        "localPolicyDependent": {
+          "type": "boolean"
+        },
+        "relatedTopicTags": {
+          "$ref": "#/definitions/stringArray"
+        },
+        "clerkshipRelevance": {
+          "type": "string"
+        },
+        "shelfComatRelevance": {
+          "type": "string"
+        },
+        "clinicalWorkflowRelevance": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sourceSurveillance": {
+      "type": "object",
+      "required": [
+        "job",
+        "type",
+        "modality",
+        "severity_default",
+        "cadence",
+        "watch_for",
+        "affects_hint",
+        "verified"
+      ],
+      "properties": {
+        "job": {
+          "const": "guideline-surveillance"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["html", "pdf", "html+pdf", "login"]
+        },
+        "modality": {
+          "type": "string",
+          "enum": ["full_text", "signal_only"]
+        },
+        "severity_default": {
+          "type": "string",
+          "enum": ["P0", "P1", "P2"]
+        },
+        "cadence": {
+          "const": "monthly"
+        },
+        "watch_for": {
+          "$ref": "#/definitions/stringArray"
+        },
+        "affects_hint": {
+          "$ref": "#/definitions/stringArray"
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "legal_note": {
+          "type": "string"
+        },
+        "link_check": {
+          "type": "string",
+          "enum": ["browser_required"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "surveillanceDefaults": {
+      "type": "object",
+      "required": ["proxy", "retry_before_flag", "snapshot", "respect_robots"],
+      "properties": {
+        "proxy": {
+          "type": "string",
+          "enum": ["datacenter", "residential"]
+        },
+        "retry_before_flag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "snapshot": {
+          "type": "boolean"
+        },
+        "respect_robots": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "findingTreatments": {
+      "type": "object",
+      "required": [
+        "hard_404",
+        "soft_404",
+        "permanent_redirect_301",
+        "temporary_redirect_302",
+        "rate_limited_429",
+        "tls_error"
+      ],
+      "properties": {
+        "hard_404": {
+          "type": "boolean"
+        },
+        "soft_404": {
+          "type": "boolean"
+        },
+        "permanent_redirect_301": {
+          "type": "boolean"
+        },
+        "temporary_redirect_302": {
+          "type": "boolean"
+        },
+        "rate_limited_429": {
+          "type": "boolean"
+        },
+        "tls_error": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "linkMonitor": {
+      "type": "object",
+      "required": [
+        "job",
+        "cadence",
+        "engine",
+        "treat_as_finding",
+        "severity_default",
+        "high_traffic_paths_P0"
+      ],
+      "properties": {
+        "job": {
+          "const": "link-source-monitor"
+        },
+        "cadence": {
+          "const": "weekly"
+        },
+        "engine": {
+          "const": "github_action_lychee"
+        },
+        "treat_as_finding": {
+          "$ref": "#/definitions/findingTreatments"
+        },
+        "severity_default": {
+          "type": "string",
+          "enum": ["P0", "P1", "P2"]
+        },
+        "high_traffic_paths_P0": {
+          "$ref": "#/definitions/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "resourceInclusion": {
+      "type": "object",
+      "required": ["require_domains", "exclude_if_present_in"],
+      "properties": {
+        "require_domains": {
+          "$ref": "#/definitions/stringArray"
+        },
+        "exclude_if_present_in": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "resourceIntake": {
+      "type": "object",
+      "required": [
+        "job",
+        "cadence",
+        "engine",
+        "inclusion",
+        "max_candidates_per_run",
+        "severity_default",
+        "notes"
+      ],
+      "properties": {
+        "job": {
+          "const": "resource-intake"
+        },
+        "cadence": {
+          "const": "on_demand"
+        },
+        "engine": {
+          "const": "apify_website_content_crawler"
+        },
+        "inclusion": {
+          "$ref": "#/definitions/resourceInclusion"
+        },
+        "max_candidates_per_run": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "severity_default": {
+          "type": "string",
+          "enum": ["P0", "P1", "P2"]
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "globalSurveillance": {
+      "type": "object",
+      "required": [
+        "version",
+        "updated",
+        "owner",
+        "defaults",
+        "link_monitor",
+        "resource_intake"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "updated": {
+          "$ref": "#/definitions/date"
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "defaults": {
+          "$ref": "#/definitions/surveillanceDefaults"
+        },
+        "link_monitor": {
+          "$ref": "#/definitions/linkMonitor"
+        },
+        "resource_intake": {
+          "$ref": "#/definitions/resourceIntake"
+        }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": ["id", "type", "citation", "identity", "requiredAccess", "governance"],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/stableId"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "primary-study",
+            "systematic-review",
+            "guideline",
+            "instrument",
+            "consensus",
+            "other-authoritative"
+          ]
+        },
+        "citation": {
+          "$ref": "#/definitions/citation"
+        },
+        "identity": {
+          "$ref": "#/definitions/identity"
+        },
+        "zotero": {
+          "$ref": "#/definitions/zotero"
+        },
+        "requiredAccess": {
+          "type": "string",
+          "enum": ["metadata", "abstract", "fulltext"]
+        },
+        "curriculum": {
+          "$ref": "#/definitions/curriculum"
+        },
+        "appraisal": {
+          "$ref": "#/definitions/appraisal"
+        },
+        "governance": {
+          "$ref": "#/definitions/governance"
+        },
+        "surveillance": {
+          "$ref": "#/definitions/sourceSurveillance"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["curriculum"],
+            "properties": {
+              "curriculum": {
+                "required": ["tier"],
+                "properties": {
+                  "tier": {
+                    "const": 1
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "required": ["zotero", "curriculum", "appraisal"],
+            "properties": {
+              "citation": {
+                "properties": {
+                  "authors": {
+                    "minItems": 1
+                  },
+                  "journal": {
+                    "minLength": 1
+                  },
+                  "year": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              },
+              "identity": {
+                "properties": {
+                  "status": {
+                    "const": "verified"
+                  }
+                }
+              },
+              "requiredAccess": {
+                "const": "fulltext"
+              },
+              "curriculum": {
+                "required": ["selection", "teachingRole", "mappingStatus"]
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
 }

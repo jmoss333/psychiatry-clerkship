@@ -1,0 +1,56 @@
+{
+  "reviewed": {
+    "synthetic/synthetic-source.md": {
+      "status": "reviewed",
+      "reviewedBy": "Synthetic Source Reviewer",
+      "reviewedAt": "2026-07-01"
+    }
+  },
+  "evidenceRecords": {
+    "evidence-alpha-v1": {
+      "id": "evidence-alpha-v1",
+      "title": "Synthetic evidence record",
+      "version": "1",
+      "facultyReviewStatus": "reviewed",
+      "lastReviewed": "2026-07-01"
+    }
+  },
+  "policyRecords": {
+    "policy-alpha-v1": {
+      "id": "policy-alpha-v1",
+      "version": "1.0",
+      "owner": "Synthetic Policy Owner",
+      "path": "synthetic/policy-alpha.md",
+      "anchor": "policy-alpha",
+      "passageSha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    }
+  },
+  "history": {
+    "schemaVersion": 1,
+    "identityEntries": [],
+    "releases": [
+      {
+        "releaseId": "synthetic-release-n",
+        "releaseDate": "2026-07-01",
+        "memberships": []
+      }
+    ]
+  },
+  "review": {
+    "cardApprovedBy": "Synthetic Card Reviewer",
+    "cardApprovedAt": "2026-07-02"
+  },
+  "acceptedQuarantine": {
+    "namespace": "core",
+    "uid": "synthetic_quarantine_001",
+    "identity": "base",
+    "reasonCode": "SYNTHETIC_REVIEW_EXCLUSION",
+    "subjectSha256": null,
+    "sourcePath": "synthetic/synthetic-source.md",
+    "firstSeenCommit": "ad7dd2851f4621a4177cd4ce34438af3751620d6",
+    "reviewOwner": "Synthetic Review Owner",
+    "disposition": "exclude",
+    "reviewedBy": "Synthetic Quarantine Reviewer",
+    "reviewedAt": "2026-07-03"
+  }
+}

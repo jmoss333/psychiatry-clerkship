@@ -12,28 +12,32 @@
 
 ---
 
-## TIER 1 — The rotation core (download all 16 first)
-These are the 15/16-paper reading pathway. Every trainee reads these; they anchor the 6-week curriculum and the 6 Journal-Club packets.
+<!-- evidence-registry:tier1:start -->
+<!-- Generated from evidence_registry.json by tools/evidence_registry/registry.py. Do not hand-edit this block. -->
+## TIER 1 — The rotation core (17 articles across 16 numbered selections)
 
-| # | Citation (author · year · journal) | Title | Why | Access |
+Every trainee reads these articles; they anchor the 6-week curriculum and the Journal Club packets. Access requirements are curricular targets, not live observations of local PDF availability.
+
+| Selection | Citation | Title | Read for | Required access |
 |---|---|---|---|---|
-| 1 | Engel · 1977 · *Science* 196:129 | The need for a new medical model: a challenge for biomedicine | The biopsychosocial operating system | 🔒 |
-| 2 | Rosenhan · 1973 · *Science* 179:250 | On being sane in insane places | Diagnostic humility / labeling | 🔒 |
-| 3 | Appelbaum & Grisso · 1988 · *NEJM* 319:1635 | Assessing patients' capacities to consent to treatment | The four-abilities capacity model | 🔒 |
-| 4 | Stanley & Brown · 2012 · *Cogn Behav Pract* 19:256 | Safety Planning Intervention | The most practical tool on the list | 🔓 |
-| 5 | Lieberman et al. (CATIE) · 2005 · *NEJM* 353:1209 | Effectiveness of antipsychotic drugs in chronic schizophrenia | Pick by profile, not class | 🔒 |
-| 6 | Rush et al. (STAR*D) · 2006 · *AJP* 163:1905 | Acute & longer-term outcomes in depressed outpatients (steps) | Measurement-based care | 🔒 |
-| 7 | Brown, Birley & Wing · 1972 · *Br J Psychiatry* 121:241 | Influence of family life on the course of schizophrenic disorders | Expressed emotion → relapse | 🔒 |
-| 8 | Bush et al. · 1996 · *Acta Psychiatr Scand* 93:129 | Catatonia I: rating scale and standardized examination | BFCRS; the dx you can't miss | 🔒 |
-| 9 | Wampold et al. · 1997 · *Psychol Bull* 122:203 | Bona fide psychotherapies: "all must have prizes" | Common factors | 🔒 |
-| 10 | Linehan et al. · 1991 · *Arch Gen Psychiatry* 48:1060 | CBT of chronically parasuicidal borderline patients | DBT origin; BPD is treatable | 🔒 |
-| 11 | Pharoah et al. · 2010 · *Cochrane* CD000088 | Family intervention for schizophrenia | NNT ~7 for relapse | 🔒 |
-| 12 | March et al. (TADS) · 2004 · *JAMA* 292:807 | Fluoxetine, CBT, and their combination for adolescent depression | Combination best for teens | 🔒 |
-| 13 | Felitti et al. (ACE) · 1998 · *Am J Prev Med* 14:245 | Childhood abuse/household dysfunction & leading causes of death | Reframes every patient | 🔒 |
-| 14a | Caspi et al. · 2003 · *Science* 301:386 | 5-HTTLPR × life stress moderation of depression | Candidate-gene rise… | 🔒 |
-| 14b | Border et al. · 2019 · *AJP* 176:376 | No support for historical candidate-gene hypotheses for depression | …and fall (replication crisis) | 🔒 |
-| 15 | Franklin et al. · 2017 · *Psychol Bull* 143:187 | Risk factors for suicidal thoughts/behaviors: 50-year meta-analysis | We can't predict; document reasoning | 🔒 |
-| 16 | Volkow, Koob & McLellan · 2016 · *NEJM* 374:363 | Neurobiologic advances from the brain disease model of addiction | Combats stigma | 🔒 |
+| 1 | Engel · 1977 · *Science* 196:129-136 · [DOI](https://doi.org/10.1126/science.847460) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/847460/) | The need for a new medical model: a challenge for biomedicine. | The biopsychosocial operating system | Full text |
+| 2 | Rosenhan · 1973 · *Science* 179:250-258 · [DOI](https://doi.org/10.1126/science.179.4070.250) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/4683124/) | On being sane in insane places. | Diagnostic humility / labeling | Full text |
+| 3 | Appelbaum & Grisso · 1988 · *The New England Journal of Medicine* 319:1635-1638 · [DOI](https://doi.org/10.1056/nejm198812223192504) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/3200278/) | Assessing patients' capacities to consent to treatment. | The four-abilities capacity model | Full text |
+| 4 | Stanley & Brown · 2012 · *Cognitive and Behavioral Practice* 19:256-264 · [DOI](https://doi.org/10.1016/j.cbpra.2011.01.001) | Safety Planning Intervention: A Brief Intervention to Mitigate Suicide Risk | The most practical tool on the list | Full text |
+| 5 | Lieberman et al. · 2005 · *The New England Journal of Medicine* 353:1209-1223 · [DOI](https://doi.org/10.1056/nejmoa051688) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/16172203/) | Effectiveness of antipsychotic drugs in patients with chronic schizophrenia. | Pick by profile, not class | Full text |
+| 6 | Rush et al. · 2006 · *American Journal of Psychiatry* 163:1905-1917 · [DOI](https://doi.org/10.1176/ajp.2006.163.11.1905) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/17074942/) | Acute and longer-term outcomes in depressed outpatients requiring one or several treatment steps: a STAR*D report. | Measurement-based care | Full text |
+| 7 | Brown et al. · 1972 · *The British Journal of Psychiatry* 121:241-258 · [DOI](https://doi.org/10.1192/bjp.121.3.241) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/5073778/) | Influence of family life on the course of schizophrenic disorders: a replication. | Expressed emotion → relapse | Full text |
+| 8 | Bush et al. · 1996 · *Acta Psychiatrica Scandinavica* 93:129-136 · [DOI](https://doi.org/10.1111/j.1600-0447.1996.tb09814.x) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/8686483/) | Catatonia. I. Rating scale and standardized examination. | BFCRS; the dx you can't miss | Full text |
+| 9 | Wampold et al. · 1997 · *Psychological Bulletin* 122:203-215 · [DOI](https://doi.org/10.1037/0033-2909.122.3.203) | A meta-analysis of outcome studies comparing bona fide psychotherapies: Empirically, "all must have prizes." | Common factors | Full text |
+| 10 | Linehan et al. · 1991 · *Archives of General Psychiatry* 48:1060-1064 · [DOI](https://doi.org/10.1001/archpsyc.1991.01810360024003) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/1845222/) | Cognitive-Behavioral Treatment of Chronically Parasuicidal Borderline Patients | DBT origin; BPD is treatable | Full text |
+| 11 | Pharoah et al. · 2010 · *Cochrane Database of Systematic Reviews*:CD000088 · [DOI](https://doi.org/10.1002/14651858.cd000088.pub2) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/21154340/) | Family intervention for schizophrenia | NNT ~7 for relapse | Full text |
+| 12 | March et al. · 2004 · *JAMA* 292:807-820 · [DOI](https://doi.org/10.1001/jama.292.7.807) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/15315995/) | Fluoxetine, Cognitive-Behavioral Therapy, and Their Combination for Adolescents With Depression: Treatment for Adolescents With Depression Study (TADS) Randomized Controlled Trial | Combination best for teens | Full text |
+| 13 | Felitti et al. · 1998 · *American Journal of Preventive Medicine* 14:245-258 · [DOI](https://doi.org/10.1016/s0749-3797(98)00017-8) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/9635069/) | Relationship of Childhood Abuse and Household Dysfunction to Many of the Leading Causes of Death in Adults: The Adverse Childhood Experiences (ACE) Study | Reframes every patient | Full text |
+| 14a | Caspi et al. · 2003 · *Science* 301:386-389 · [DOI](https://doi.org/10.1126/science.1083968) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/12869766/) | Influence of Life Stress on Depression: Moderation by a Polymorphism in the 5-HTT Gene | Candidate-gene rise… | Full text |
+| 14b | Border et al. · 2019 · *American Journal of Psychiatry* 176:376-387 · [DOI](https://doi.org/10.1176/appi.ajp.2018.18070881) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/30845820/) | No Support for Historical Candidate Gene or Candidate Gene-by-Interaction Hypotheses for Major Depression Across Multiple Large Samples | …and fall (replication crisis) | Full text |
+| 15 | Franklin et al. · 2017 · *Psychological Bulletin* 143:187-232 · [DOI](https://doi.org/10.1037/bul0000084) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/27841450/) | Risk factors for suicidal thoughts and behaviors: A meta-analysis of 50 years of research. | We can't predict; document reasoning | Full text |
+| 16 | Volkow et al. · 2016 · *New England Journal of Medicine* 374:363-371 · [DOI](https://doi.org/10.1056/nejmra1511480) · [PubMed](https://pubmed.ncbi.nlm.nih.gov/26816013/) | Neurobiologic Advances from the Brain Disease Model of Addiction | Combats stigma | Full text |
+<!-- evidence-registry:tier1:end -->
 
 ---
 

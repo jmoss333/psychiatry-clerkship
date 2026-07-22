@@ -1,0 +1,17 @@
+{
+  "snapshotVersion": 1,
+  "library": {"type": "user", "id": 0},
+  "collections": [
+    {"key": "ZD6GBSYZ", "data": {"name": "Psychiatry Clerkship Library"}},
+    {"key": "5KLVFZDV", "data": {"name": "Week 1 - Foundations"}},
+    {"key": "DS6JSHHX", "data": {"name": "Week 2 - Mood Psychosis Pharm"}},
+    {"key": "HIKYWT9S", "data": {"name": "Week 3 - Psychotherapy Personality"}},
+    {"key": "K78U3AD4", "data": {"name": "Week 4 - Family Systems EE"}},
+    {"key": "F7SMP42D", "data": {"name": "Week 5 - Acute Emergency"}},
+    {"key": "LUUFRIE9", "data": {"name": "Week 6 - Integration Exam"}}
+  ],
+  "items": [
+    {"key": "AAAA1111", "data": {"itemType": "journalArticle", "title": "The need for a new medical model: a challenge for biomedicine", "creators": [{"creatorType": "author", "lastName": "Engel"}], "date": "1977", "publicationTitle": "Science", "DOI": "", "archiveLocation": "", "tags": [{"tag": "Tier 1"}, {"tag": "MS3-required"}, {"tag": "landmark"}], "collections": ["ZD6GBSYZ"]}},
+    {"key": "BBBB2222", "data": {"itemType": "journalArticle", "title": "The need for a new medical model — a challenge for biomedicine.", "creators": [{"creatorType": "author", "lastName": "Engel"}], "date": "1977", "publicationTitle": "Science", "DOI": "", "archiveLocation": "", "tags": [{"tag": "Tier 1"}, {"tag": "MS3-required"}, {"tag": "landmark"}], "collections": ["ZD6GBSYZ"]}}
+  ]
+}

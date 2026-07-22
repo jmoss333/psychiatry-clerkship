@@ -136,12 +136,9 @@ def compute(history_dir, reviewed_path):
     last_run = _load(os.path.join(history_dir, "last_run.json"), {})
     freshness = []
     citation_freshness = []
-    try:
-        reg = L.load_registry()
-        cad = {s["id"]: s.get("cadence", "monthly") for s in reg.get("sources", [])}
-        cad["link-monitor"] = "weekly"
-    except Exception:
-        cad = {}
+    reg = L.load_registry()
+    cad = {s["id"]: s.get("cadence", "monthly") for s in reg.get("sources", [])}
+    cad["link-monitor"] = "weekly"
     for sid, ts in sorted(last_run.items()):
         age = _days_since(ts)
         limit = CADENCE_DAYS.get(cad.get(sid, "monthly"), 31)

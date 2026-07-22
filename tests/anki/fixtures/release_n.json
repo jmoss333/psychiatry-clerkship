@@ -1,0 +1,25 @@
+{
+  "release": {
+    "id": "migration-release-n",
+    "date": "2026-07-14",
+    "epoch": 1784000000,
+    "governedInputSha256": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "marker": "Release N",
+  "active": {
+    "core": [
+      "migration_core_copy",
+      "migration_core_quarantine",
+      "migration_core_retired"
+    ],
+    "application": [
+      "migration_application_quarantine",
+      "migration_application_retired"
+    ],
+    "qbank": [
+      "qb_sud_014",
+      "qb_otherdx_999",
+      "qb_pha_002"
+    ]
+  }
+}

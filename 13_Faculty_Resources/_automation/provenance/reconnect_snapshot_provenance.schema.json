@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ReConnect snapshot provenance inventory",
+  "description": "Strict, read-only provenance for byte-identical ReConnect snapshots retained in the clerkship source tree.",
+  "type": "object",
+  "required": ["schemaVersion", "description", "records"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "snapshotPath",
+          "snapshotSha256",
+          "sourceRepository",
+          "sourcePath",
+          "sourceRevision",
+          "sourceSha256",
+          "relation",
+          "clinicalReviewRequired",
+          "syncPolicy"
+        ],
+        "properties": {
+          "snapshotPath": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*[\\r\\n])(?!.*(?:^|/)\\.\\.?(?:/|$))(?!.*//)(?!.*\\\\)(?:[^/]+/)*_source/(?:[^/]+/)*[^/]+$"
+          },
+          "snapshotSha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "sourceRepository": {
+            "const": "https://github.com/jmoss333/reconnect-psychiatry-system.git"
+          },
+          "sourcePath": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))(?!.*//)(?!.*\\\\).+$"
+          },
+          "sourceRevision": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "sourceSha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "relation": { "const": "exact-copy" },
+          "clinicalReviewRequired": { "const": true },
+          "syncPolicy": { "const": "manual-reviewed-only" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

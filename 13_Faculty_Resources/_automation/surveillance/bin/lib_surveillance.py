@@ -5,10 +5,11 @@ Shared helpers for the curriculum surveillance pipeline.
 Location-relative (works regardless of session mount prefix): all paths are
 derived from this file's location, mirroring oe_scanner/oe_scan.py.
 
-Stdlib-only so it runs in CI and locally with no install. (Collectors that read
-the YAML registry import pyyaml separately via load_registry().)
+Stdlib-only so it runs in CI and locally with no install. The canonical evidence
+registry is projected into the collectors' legacy-shaped dictionary.
 """
-import os, re, csv, json, hashlib, datetime
+import os, re, csv, json, hashlib, datetime, sys
+from pathlib import Path
 
 HERE = os.path.dirname(os.path.abspath(__file__))            # .../surveillance/bin
 SURV_ROOT = os.path.dirname(HERE)                            # .../surveillance
@@ -18,12 +19,13 @@ CONFIG = os.path.join(SURV_ROOT, "config")
 HISTORY = os.path.join(SURV_ROOT, "history")
 BASELINES = os.path.join(HISTORY, "baselines")
 CITATION_INDEX = os.path.join(CONFIG, "citation_index.json")
-REGISTRY = os.path.join(CONFIG, "source_registry.yaml")
+EVIDENCE_REGISTRY = Path(LIB_ROOT) / "evidence_registry.json"
+REGISTRY = EVIDENCE_REGISTRY
 
 SEVERITY_ORDER = ["P2", "P1", "P0"]
 # A finding touching these areas is escalated one level (see REVIEW_RULES.md §1).
 ACUTE_PREFIXES = ("04_Acute_and_Safety/",)
-# A broken link whose SOURCE page is here is P0 (see source_registry link_monitor).
+# A broken link whose SOURCE page is here is P0 (see evidence registry link_monitor).
 HIGH_TRAFFIC_P0 = ("00_START_HERE/", "04_Acute_and_Safety/", "index.html")
 
 # ---------------------------------------------------------------- time / hashing
@@ -60,8 +62,13 @@ def invert_citations(index):
     return {k: sorted(v) for k, v in inv.items()}
 
 def load_registry(path=REGISTRY):
-    import yaml  # only needed by collectors
-    return yaml.safe_load(open(path, encoding="utf-8"))
+    tools_dir = Path(LIB_ROOT) / "tools" / "evidence_registry"
+    tools_path = str(tools_dir)
+    if tools_path not in sys.path:
+        sys.path.insert(0, tools_path)
+    from registry import build_surveillance_projection, load_evidence_registry
+
+    return build_surveillance_projection(load_evidence_registry(Path(path)))
 
 # ---------------------------------------------------------------- finding logic
 def resolve_affects(finding, inverted):

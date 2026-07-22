@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "proposalType", "generatedFromCommit", "inputSha256", "historyAppend", "context"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "proposalType": {"const": "release_history"},
+    "generatedFromCommit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "inputSha256": {"$ref": "#/definitions/sha256"},
+    "historyAppend": {"$ref": "#/definitions/historyAppend"},
+    "context": {"$ref": "#/definitions/context"}
+  },
+  "definitions": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "historyAppend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["newIdentityEntries", "releaseRecord"],
+      "properties": {
+        "newIdentityEntries": {
+          "type": "array",
+          "items": {"$ref": "../../anki/release_history.schema.json#/definitions/identityEntry"}
+        },
+        "releaseRecord": {"$ref": "../../anki/release_history.schema.json#/definitions/release"}
+      }
+    },
+    "inspectedFiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "psychiatry_clerkship_ms3_core.apkg",
+        "psychiatry_clerkship_ms3_application.apkg",
+        "psychiatry_clerkship_ms3_complete.apkg",
+        "psychiatry_clerkship_qbank.apkg",
+        "psychiatry_clerkship_ms3_cards.csv",
+        "anki_release_receipt.json"
+      ],
+      "properties": {
+        "psychiatry_clerkship_ms3_core.apkg": {"$ref": "#/definitions/sha256"},
+        "psychiatry_clerkship_ms3_application.apkg": {"$ref": "#/definitions/sha256"},
+        "psychiatry_clerkship_ms3_complete.apkg": {"$ref": "#/definitions/sha256"},
+        "psychiatry_clerkship_qbank.apkg": {"$ref": "#/definitions/sha256"},
+        "psychiatry_clerkship_ms3_cards.csv": {"$ref": "#/definitions/sha256"},
+        "anki_release_receipt.json": {"$ref": "#/definitions/sha256"}
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidateManifestSha256", "inspectedFilesSha256", "historyBaselineSha256", "priorReleaseSeedSha256", "migrationProofSha256", "deterministicCsvSha256", "receiptContractSha256"],
+      "properties": {
+        "candidateManifestSha256": {"$ref": "#/definitions/sha256"},
+        "inspectedFilesSha256": {"$ref": "#/definitions/inspectedFiles"},
+        "historyBaselineSha256": {"$ref": "#/definitions/sha256"},
+        "priorReleaseSeedSha256": {"$ref": "#/definitions/sha256"},
+        "migrationProofSha256": {"$ref": "#/definitions/sha256"},
+        "deterministicCsvSha256": {"$ref": "#/definitions/sha256"},
+        "receiptContractSha256": {"$ref": "#/definitions/sha256"}
+      }
+    }
+  }
+}

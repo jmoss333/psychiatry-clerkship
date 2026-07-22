@@ -1,0 +1,1288 @@
+{
+  "schema_version": 1,
+  "bank_version": "pilot-01",
+  "_note": "Shelf-style / COMAT-aligned ORIGINAL psychiatry question bank — 24-item calibration pilot. AI-drafted, ALL items status='draft', pending faculty attestation by Joshua Moss, MD. Fictional composites only; no PHI; no reproduction of NBME/NBOME/USMLE/commercial-bank items. Parallel superset-schema artifact for Sol/Codex to reconcile with the live question_bank.json; does NOT modify the live file. Shape: 02_ITEM_SCHEMA.json. Blueprint: 01_BLUEPRINT_CROSSWALK.md. Rubric: 03_ITEM_WRITING_REVIEW_RUBRIC.md. Evidence access date 2026-07-13.",
+  "items": [
+    {
+      "id": "qbx_mood_001",
+      "version": 1,
+      "status": "draft",
+      "title": "Screen for prior mania before starting an antidepressant",
+      "type": "sba",
+      "category": "mood",
+      "competency": ["dx", "safety"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Diagnosis", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Depressive/Bipolar/Related", "physician_task": "History & Physical (incl. Dx)" }
+      },
+      "learning_objective": "Before treating an apparent depressive episode, establish whether the lifetime course is unipolar or bipolar, because antidepressant monotherapy can be harmful in bipolar disorder.",
+      "tested_decision": "The best next step before prescribing pharmacotherapy for a depressive episode with bipolar red flags.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "diagnostic-reasoning",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "adult-18-64",
+      "hy": true,
+      "pages": ["t_mood.md"],
+      "related_lesson_paths": [{ "label": "Mood disorders topic page", "path": "?page=t_mood.md" }],
+      "stem": "A 24-year-old woman presents to an outpatient clinic with 3 weeks of low mood, anhedonia, hypersomnia, and poor concentration. She has had two similar episodes since age 17. Her mother has bipolar I disorder. She recalls that an antidepressant started 2 years ago made her feel, for about a week, unusually energetic and talkative with a reduced need for sleep, after which it was stopped. She takes no medications now and denies current mania. Which of the following is the most appropriate next step before starting pharmacotherapy?",
+      "lead_in": "Which of the following is the most appropriate next step before starting pharmacotherapy?",
+      "options": [
+        { "key": "A", "t": "Start a selective serotonin reuptake inhibitor and reassess in 4 weeks", "trap": { "name": "Antidepressant monotherapy in unrecognized bipolar", "note": "Treating an apparent depression without ruling out bipolarity can precipitate a switch — the history must come first." } },
+        { "key": "B", "t": "Take a structured history for prior manic or hypomanic episodes to clarify unipolar versus bipolar illness", "c": true },
+        { "key": "C", "t": "Start a serotonin–norepinephrine reuptake inhibitor because two prior episodes suggest recurrent unipolar depression", "trap": { "name": "Recurrence = unipolar", "note": "Recurrent depressive episodes are common in bipolar disorder too; recurrence alone does not establish unipolarity." } },
+        { "key": "D", "t": "Order thyroid studies and defer any diagnostic reassessment until results return", "trap": { "name": "Workup as a substitute for the interview", "note": "Screening labs are reasonable, but they do not replace the mania history that changes the whole treatment plan." } }
+      ],
+      "correct_option": "B",
+      "why": "The prior antidepressant-associated week of decreased need for sleep, increased energy, and pressured speech is a probable hypomanic/manic switch, and a first-degree relative has bipolar I — so 'antidepressant monotherapy in unrecognized bipolar' is the trap to avoid. 'Recurrence = unipolar' ignores that bipolar depression recurs, and a lab 'workup as a substitute for the interview' skips the decisive step. The history of past (hypo)mania is what distinguishes safe from harmful pharmacotherapy.",
+      "complete_correct_answer_explanation": "The single most consequential branch point in treating a depressive presentation is unipolar versus bipolar, because antidepressant monotherapy in bipolar disorder can precipitate mania or mixed states and accelerate cycling. This patient has two bipolar red flags — early onset with a probable antidepressant-induced hypomanic episode (a week of decreased need for sleep, increased energy, talkativeness) and a first-degree relative with bipolar I. The correct next step is to take a careful history for lifetime manic/hypomanic episodes (DSM-5-TR criteria) before choosing a drug. If bipolarity is confirmed, first-line treatment is a mood stabilizer or a second-generation antipsychotic, not an antidepressant alone.",
+      "explanation_for_each_distractor": {
+        "A": "Starting an SSRI now is precisely the move that risks a manic switch in an undiagnosed bipolar patient; the diagnostic question must be resolved first.",
+        "C": "Two prior episodes do not establish unipolar illness — bipolar depression is also recurrent, and this patient carries specific bipolar risk markers.",
+        "D": "Thyroid studies are reasonable adjuncts but do not address the decisive unipolar-versus-bipolar question and should not delay the history."
+      },
+      "pearl": "Before any antidepressant, ask about past mania/hypomania — a first-degree bipolar relative and an antidepressant-associated 'high' are red flags for bipolar depression.",
+      "key_takeaway": "Rule out bipolarity by history before starting an antidepressant for depression.",
+      "common_reasoning_error": "Treating the presenting depression at face value without screening the longitudinal course for mania.",
+      "management_or_safety_caveat": "If bipolar depression is confirmed, avoid antidepressant monotherapy; use a mood stabilizer or SGA per guideline.",
+      "evidence": "Bipolar depression is distinguished from unipolar depression by a lifetime history of manic/hypomanic episodes; antidepressant monotherapy is avoided in bipolar disorder because of switch risk (DSM-5-TR; CANMAT/ISBD bipolar guideline).",
+      "references": [
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Bipolar and depressive disorder criteria." },
+        { "citation": "Yatham LN, Kennedy SH, Parikh SV, et al. CANMAT and ISBD 2018 guidelines for the management of patients with bipolar disorder. Bipolar Disord. 2018;20(2):97-170.", "type": "guideline", "doi": "10.1111/bdi.12609", "access_date": "2026-07-13", "verified": false, "note": "Identifier from record; faculty to confirm exact version. Antidepressant-monotherapy caution in bipolar depression." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["medication", "higher-intensity-review"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_mood_002",
+      "version": 1,
+      "status": "draft",
+      "title": "First-line treatment of adolescent major depression",
+      "type": "sba",
+      "category": "mood",
+      "competency": ["management", "pharm"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Depressive/Bipolar/Related", "physician_task": "Management" },
+        "osteopathic_competency": "Whole-person, family-inclusive treatment planning for an adolescent."
+      },
+      "learning_objective": "Select evidence-based first-line treatment for moderate adolescent major depressive disorder and attach appropriate safety monitoring.",
+      "tested_decision": "The most appropriate initial treatment for a moderately depressed adolescent.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "treatment-selection",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "adolescent-13-17",
+      "pages": ["t_mood.md"],
+      "related_lesson_paths": [{ "label": "Mood disorders topic page", "path": "?page=t_mood.md" }],
+      "stem": "A 15-year-old boy is brought by his mother to a pediatric clinic with 2 months of persistent sadness, loss of interest in soccer, declining grades, and social withdrawal. He has no manic history, no active suicidal ideation, and no prior treatment. His safety plan is in place and his mother is engaged. Which of the following is the most appropriate initial treatment?",
+      "lead_in": "Which of the following is the most appropriate initial treatment?",
+      "options": [
+        { "key": "A", "t": "Paroxetine plus supportive check-ins in 8 weeks", "trap": { "name": "Wrong SSRI in adolescents", "note": "Paroxetine has the least favorable benefit–risk in youth; fluoxetine has the strongest evidence base for adolescent depression." } },
+        { "key": "B", "t": "Bupropion monotherapy", "trap": { "name": "Off-first-line antidepressant", "note": "Bupropion is not a first-line agent for adolescent MDD; the SSRIs with pediatric evidence are." } },
+        { "key": "C", "t": "Fluoxetine combined with cognitive behavioral therapy", "c": true },
+        { "key": "D", "t": "Watchful waiting with no active treatment for 3 months", "trap": { "name": "Undertreating moderate depression", "note": "Moderate, functionally impairing depression warrants active treatment, not months of passive observation." } }
+      ],
+      "correct_option": "C",
+      "why": "For moderate adolescent MDD, the best-supported plan pairs an SSRI with the strongest pediatric evidence (fluoxetine) and CBT, with early monitoring for emergent suicidality. 'Wrong SSRI in adolescents' (paroxetine) and an 'off-first-line antidepressant' (bupropion) are the pharmacologic traps; 'undertreating moderate depression' with watchful waiting leaves impairing illness untreated.",
+      "complete_correct_answer_explanation": "Combination treatment with fluoxetine plus cognitive behavioral therapy has the best evidence for moderate-to-severe adolescent major depression, improving response over either alone. Fluoxetine and escitalopram are the SSRIs with pediatric approval, and fluoxetine has the largest trial base in this age group. Because antidepressants carry a boxed warning for increased suicidal ideation/behavior in patients under 25, the plan must include close monitoring, especially in the first weeks and after dose changes, together with family engagement and a safety plan.",
+      "explanation_for_each_distractor": {
+        "A": "Paroxetine is specifically avoided in youth because of an unfavorable benefit–risk profile; it is not the SSRI of choice here.",
+        "B": "Bupropion is not first-line for adolescent depression and lacks the pediatric evidence base the SSRIs have.",
+        "D": "Watchful waiting is appropriate only for mild, brief presentations; this functionally impairing episode warrants active treatment."
+      },
+      "pearl": "Adolescent MDD: fluoxetine + CBT is the best-evidenced combination — and monitor for emergent suicidality early (boxed warning under age 25).",
+      "key_takeaway": "Combine fluoxetine with CBT for moderate adolescent depression and monitor closely early in treatment.",
+      "common_reasoning_error": "Choosing any antidepressant without recognizing that agent selection and suicidality monitoring differ in youth.",
+      "management_or_safety_caveat": "Antidepressants carry a boxed warning for suicidal ideation in patients under 25; monitor closely and involve the family.",
+      "evidence": "Combined fluoxetine and CBT is first-line for moderate-to-severe adolescent MDD; antidepressants carry a boxed warning for suicidality in those under 25 (AACAP depression parameter; FDA SSRI labeling).",
+      "references": [
+        { "citation": "American Academy of Child and Adolescent Psychiatry (AACAP). Practice Parameter for the Assessment and Treatment of Children and Adolescents With Depressive Disorders. J Am Acad Child Adolesc Psychiatry. 2007;46(11):1503-1526.", "type": "guideline", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm current AACAP parameter/version." },
+        { "citation": "US Food and Drug Administration. Antidepressant medications: boxed warning on suicidality in patients under 25; fluoxetine prescribing information.", "type": "fda-label", "url": "https://www.accessdata.fda.gov/scripts/cder/daf/", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm current label text via DailyMed/Drugs@FDA." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["medication", "pediatric", "higher-intensity-review"],
+      "content_warning": "References suicidal ideation and its monitoring.",
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_psy_001",
+      "version": 1,
+      "status": "draft",
+      "title": "Schizophreniform vs schizophrenia — the duration criterion",
+      "type": "sba",
+      "category": "psychosis",
+      "competency": ["dx"],
+      "exam_alignment": "shelf",
+      "exam_emphasis_note": "Foundational DSM-5-TR duration-criterion discrimination in NBME diagnosis style.",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Diagnosis", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Schizophrenia Spectrum/Psychotic", "physician_task": "History & Physical (incl. Dx)" }
+      },
+      "learning_objective": "Apply the DSM-5-TR duration thresholds that separate brief psychotic disorder, schizophreniform disorder, and schizophrenia.",
+      "tested_decision": "The most likely diagnosis given the total duration of continuous illness.",
+      "intended_difficulty": "foundational",
+      "difficulty": 1,
+      "cognitive_process": "recognition",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "adult-18-64",
+      "pages": ["t_psychosis.md"],
+      "related_lesson_paths": [{ "label": "Psychotic disorders topic page", "path": "?page=t_psychosis.md" }],
+      "stem": "A 20-year-old man is evaluated in clinic for 3 months of continuous delusions of persecution, auditory hallucinations, and disorganized speech, with a decline in self-care and school performance. There is no substance use, no mood episode, and a normal medical workup. Which of the following is the most likely diagnosis?",
+      "lead_in": "Which of the following is the most likely diagnosis?",
+      "options": [
+        { "key": "A", "t": "Brief psychotic disorder", "trap": { "name": "Ignoring the 1-month floor", "note": "Brief psychotic disorder resolves within 1 month; 3 months of symptoms exceeds it." } },
+        { "key": "B", "t": "Schizophrenia", "trap": { "name": "Overshooting the 6-month threshold", "note": "Schizophrenia requires ≥6 months of continuous signs; at 3 months that threshold is not yet met." } },
+        { "key": "C", "t": "Schizophreniform disorder", "c": true },
+        { "key": "D", "t": "Schizoaffective disorder", "trap": { "name": "Diagnosing mood where there is none", "note": "Schizoaffective disorder requires a major mood episode concurrent with psychosis; none is described here." } }
+      ],
+      "correct_option": "C",
+      "why": "Continuous psychosis of 3 months, with mood and substance/medical causes excluded, fits schizophreniform disorder (1–6 months). 'Ignoring the 1-month floor' overcalls brief psychotic disorder, 'overshooting the 6-month threshold' prematurely calls schizophrenia, and 'diagnosing mood where there is none' misreads schizoaffective disorder, which needs a concurrent mood episode.",
+      "complete_correct_answer_explanation": "The schizophrenia-spectrum disorders are separated largely by duration once substance-induced and mood-related psychoses are excluded. Brief psychotic disorder lasts at least 1 day but fully remits within 1 month; schizophreniform disorder spans 1 to 6 months; schizophrenia requires at least 6 months of continuous disturbance (including prodromal/residual signs) with at least 1 month of active symptoms. At 3 months with no mood episode and a negative medical/substance workup, this is schizophreniform disorder — a provisional diagnosis that converts to schizophrenia if signs persist beyond 6 months.",
+      "explanation_for_each_distractor": {
+        "A": "Brief psychotic disorder must remit within 1 month; 3 months rules it out.",
+        "B": "Schizophrenia requires ≥6 months of continuous signs, which have not yet elapsed.",
+        "D": "Schizoaffective disorder requires a concurrent major mood episode, which is absent here."
+      },
+      "pearl": "Psychosis duration: <1 month = brief psychotic; 1–6 months = schizophreniform; ≥6 months = schizophrenia (mood/substance excluded).",
+      "key_takeaway": "1–6 months of primary psychosis is schizophreniform disorder.",
+      "common_reasoning_error": "Anchoring on symptom severity rather than the duration criterion that defines the specific diagnosis.",
+      "management_or_safety_caveat": "Schizophreniform is provisional; reassess at 6 months and confirm substance/medical causes remain excluded.",
+      "evidence": "DSM-5-TR duration criteria: brief psychotic disorder <1 month; schizophreniform 1–6 months; schizophrenia ≥6 months with ≥1 month active symptoms.",
+      "references": [
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Schizophrenia-spectrum duration criteria." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": [],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_psy_002",
+      "version": 1,
+      "status": "draft",
+      "title": "Clozapine for treatment-resistant schizophrenia",
+      "type": "two-tier",
+      "category": "psychosis",
+      "competency": ["pharm", "management"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Schizophrenia Spectrum/Psychotic", "physician_task": "Management" }
+      },
+      "learning_objective": "Recognize treatment-resistant schizophrenia (failure of two adequate antipsychotic trials) and identify clozapine as the indicated next agent, understanding why.",
+      "tested_decision": "The next pharmacologic step after two adequate failed antipsychotic trials.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "treatment-selection",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "adult-18-64",
+      "hy": true,
+      "pages": ["t_psychosis.md", "psychopharm_primer.md"],
+      "related_lesson_paths": [{ "label": "Psychopharmacology primer", "path": "?page=psychopharm_primer.md" }],
+      "stem": "A 29-year-old man with schizophrenia has completed two separate antipsychotic trials — risperidone and then olanzapine — each at an adequate dose for 6 weeks with documented adherence, yet he continues to have persistent hallucinations and functional impairment. Which of the following is the most appropriate next pharmacologic step?",
+      "lead_in": "Which of the following is the most appropriate next pharmacologic step?",
+      "options": [
+        { "key": "A", "t": "Combine risperidone and olanzapine at full doses", "trap": { "name": "Antipsychotic polypharmacy reflex", "note": "Routine two-antipsychotic combinations lack efficacy evidence and add side effects; they are not the indicated step for resistance." } },
+        { "key": "B", "t": "Start clozapine with the required absolute neutrophil count monitoring", "c": true },
+        { "key": "C", "t": "Add a benzodiazepine to control the psychosis", "trap": { "name": "The reflexive benzodiazepine", "note": "Benzodiazepines do not treat primary psychosis; they are not an antipsychotic strategy." } },
+        { "key": "D", "t": "Try a third first-line second-generation antipsychotic before considering clozapine", "trap": { "name": "Delaying clozapine", "note": "After two adequate failures the criterion for treatment resistance is met; further routine agents delay the one drug with proven superiority." } }
+      ],
+      "correct_option": "B",
+      "why": "Two adequate antipsychotic trials have failed, meeting the definition of treatment-resistant schizophrenia, so clozapine (with ANC monitoring) is indicated. The 'antipsychotic polypharmacy reflex' and 'the reflexive benzodiazepine' are not evidence-based resistance strategies, and 'delaying clozapine' for a third ordinary agent withholds the only drug with demonstrated superiority in this setting.",
+      "complete_correct_answer_explanation": "Treatment-resistant schizophrenia is defined as persistent symptoms despite two adequate trials (dose and duration) of different antipsychotics. Clozapine is the only agent with proven superior efficacy in this population and is the guideline-indicated next step, accepting mandatory absolute neutrophil count monitoring because of agranulocytosis risk. Neither antipsychotic combinations nor benzodiazepines have efficacy evidence for resistant psychosis, and adding a third routine antipsychotic simply delays effective treatment.",
+      "explanation_for_each_distractor": {
+        "A": "Antipsychotic polypharmacy is not supported for treatment resistance and increases adverse effects.",
+        "C": "Benzodiazepines do not treat primary psychosis and are not an antipsychotic strategy.",
+        "D": "The two-failed-trial criterion for resistance is already met; a third routine agent delays clozapine without evidence of benefit."
+      },
+      "pearl": "Two adequate antipsychotic failures = treatment-resistant schizophrenia → clozapine (with ANC monitoring). Don't delay it.",
+      "key_takeaway": "Clozapine is the indicated agent for treatment-resistant schizophrenia.",
+      "common_reasoning_error": "Cycling through additional ordinary antipsychotics or combinations instead of moving to clozapine once resistance is established.",
+      "management_or_safety_caveat": "Clozapine requires ANC monitoring for agranulocytosis and carries risks of myocarditis, seizures, metabolic effects, and severe constipation.",
+      "evidence": "Clozapine is superior to other antipsychotics for treatment-resistant schizophrenia after two adequate failed trials (Kane et al., Arch Gen Psychiatry 1988; APA Schizophrenia guideline 2020).",
+      "references": [
+        { "citation": "Kane J, Honigfeld G, Singer J, Meltzer H. Clozapine for the treatment-resistant schizophrenic. A double-blind comparison with chlorpromazine. Arch Gen Psychiatry. 1988;45(9):789-796.", "type": "landmark-trial", "pmid": "3046553", "doi": "10.1001/archpsyc.1988.01800330013001", "access_date": "2026-07-13", "verified": true, "note": "Foundational trial establishing clozapine efficacy in resistance." },
+        { "citation": "American Psychiatric Association. The American Psychiatric Association Practice Guideline for the Treatment of Patients With Schizophrenia, 3rd ed. Washington, DC: APA; 2020.", "type": "guideline", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm guideline recommendation and clozapine-monitoring specifics." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["medication", "higher-intensity-review"],
+      "tier2": {
+        "q": "What is the best reason clozapine is the correct choice here?",
+        "options": [
+          { "key": "A", "t": "It is the only antipsychotic with demonstrated superior efficacy specifically in treatment-resistant schizophrenia", "c": true },
+          { "key": "B", "t": "Combining two antipsychotics is generally more effective than any single agent" },
+          { "key": "C", "t": "Benzodiazepines potentiate antipsychotic effect on hallucinations" },
+          { "key": "D", "t": "A third second-generation antipsychotic is statistically likely to succeed where two failed" }
+        ],
+        "correct_option": "A",
+        "why": "The rationale is efficacy in resistance specifically: clozapine uniquely outperforms other agents once two adequate trials have failed. The distractor rationales mirror the tier-1 traps — polypharmacy superiority, benzodiazepine potentiation, and the low-yield third routine agent — none of which is supported."
+      },
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_anx_001",
+      "version": 1,
+      "status": "draft",
+      "title": "PTSD vs acute stress disorder — the 1-month line",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": ["dx"],
+      "exam_alignment": "shelf",
+      "exam_emphasis_note": "DSM-5-TR criterion/duration discrimination in NBME diagnosis style.",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Diagnosis", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Anxiety/Trauma/Dissociative/OCD", "physician_task": "History & Physical (incl. Dx)" }
+      },
+      "learning_objective": "Differentiate acute stress disorder from posttraumatic stress disorder by symptom duration after a qualifying trauma.",
+      "tested_decision": "The most likely diagnosis given symptom duration after a traumatic event.",
+      "intended_difficulty": "foundational",
+      "difficulty": 1,
+      "cognitive_process": "recognition",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "adult-18-64",
+      "pages": ["t_anxiety.md"],
+      "related_lesson_paths": [{ "label": "Anxiety, OCD & trauma topic page", "path": "?page=t_anxiety.md" }],
+      "stem": "A 32-year-old woman presents to clinic 10 weeks after a serious motor-vehicle collision. Since the crash she has had intrusive memories and nightmares, avoids driving, feels persistently on edge and hypervigilant, and startles easily; these symptoms have continued throughout the interval and impair her work. Which of the following is the most likely diagnosis?",
+      "lead_in": "Which of the following is the most likely diagnosis?",
+      "options": [
+        { "key": "A", "t": "Acute stress disorder", "trap": { "name": "Missing the 1-month ceiling", "note": "Acute stress disorder applies from 3 days to 1 month post-trauma; symptoms beyond 1 month point to PTSD." } },
+        { "key": "B", "t": "Adjustment disorder with anxiety", "trap": { "name": "Downgrading trauma to a stressor", "note": "A life-threatening event with re-experiencing/avoidance/hyperarousal defines a trauma disorder, not an adjustment disorder." } },
+        { "key": "C", "t": "Generalized anxiety disorder", "trap": { "name": "Ignoring the traumatic anchor", "note": "GAD is free-floating worry across domains, not trauma-cued re-experiencing and avoidance." } },
+        { "key": "D", "t": "Posttraumatic stress disorder", "c": true }
+      ],
+      "correct_option": "D",
+      "why": "Trauma-linked intrusion, avoidance, and hyperarousal persisting beyond 1 month is PTSD. 'Missing the 1-month ceiling' overcalls acute stress disorder, 'downgrading trauma to a stressor' misassigns adjustment disorder, and 'ignoring the traumatic anchor' misreads GAD, whose worry is not trauma-cued.",
+      "complete_correct_answer_explanation": "Acute stress disorder and PTSD share trauma-related intrusion, avoidance, negative cognitions/mood, and arousal symptoms; they are distinguished by timing. Acute stress disorder is diagnosed from 3 days to 1 month after the event; when the full symptom picture persists beyond 1 month, the diagnosis is PTSD. At 10 weeks with continuous, impairing trauma symptoms, this is PTSD.",
+      "explanation_for_each_distractor": {
+        "A": "Acute stress disorder is time-limited to the first month; symptoms at 10 weeks exceed that window.",
+        "B": "Adjustment disorder does not fit a Criterion-A trauma with the classic re-experiencing/avoidance/hyperarousal cluster.",
+        "C": "GAD is pervasive worry across life domains, not event-cued re-experiencing and avoidance."
+      },
+      "pearl": "Trauma symptoms 3 days–1 month = acute stress disorder; beyond 1 month = PTSD.",
+      "key_takeaway": "Trauma-related symptoms lasting more than 1 month are PTSD.",
+      "common_reasoning_error": "Defaulting to 'acute stress disorder' for any post-trauma presentation without checking duration.",
+      "management_or_safety_caveat": "Screen for co-occurring depression, substance use, and suicide risk in PTSD.",
+      "evidence": "DSM-5-TR: acute stress disorder spans 3 days–1 month post-trauma; PTSD is diagnosed when symptoms persist beyond 1 month.",
+      "references": [
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Trauma- and stressor-related disorder criteria." },
+        { "citation": "US Department of Veterans Affairs / Department of Defense. VA/DoD Clinical Practice Guideline for the Management of Posttraumatic Stress Disorder and Acute Stress Disorder.", "type": "guideline", "url": "https://www.healthquality.va.gov/", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm current version." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": [],
+      "content_warning": "References a traumatic event.",
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_anx_002",
+      "version": 1,
+      "status": "draft",
+      "title": "First-line treatment of pediatric OCD",
+      "type": "sba",
+      "category": "anxiety",
+      "competency": ["management"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Ambulatory", "patient_age": "Birth to 12" },
+        "comat": { "presentation": "Anxiety/Trauma/Dissociative/OCD", "physician_task": "Management" }
+      },
+      "learning_objective": "Identify cognitive behavioral therapy with exposure and response prevention as first-line for mild-to-moderate pediatric OCD.",
+      "tested_decision": "The most appropriate initial treatment for a child with mild-to-moderate OCD.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "treatment-selection",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "birth-12",
+      "pages": ["t_anxiety.md"],
+      "related_lesson_paths": [{ "label": "Anxiety, OCD & trauma topic page", "path": "?page=t_anxiety.md" }],
+      "stem": "An 8-year-old girl is brought to clinic because of 6 months of distressing intrusive fears of contamination and hours of daily hand-washing that she recognizes as excessive. Her functioning at home is affected but she attends school. There is no tic disorder and no recent streptococcal illness. Which of the following is the most appropriate initial treatment?",
+      "lead_in": "Which of the following is the most appropriate initial treatment?",
+      "options": [
+        { "key": "A", "t": "Cognitive behavioral therapy with exposure and response prevention", "c": true },
+        { "key": "B", "t": "Risperidone", "trap": { "name": "Antipsychotic for primary OCD", "note": "Antipsychotics are not first-line for OCD; they are an augmentation option in resistant cases, not initial therapy in a child." } },
+        { "key": "C", "t": "A benzodiazepine as needed for anxiety", "trap": { "name": "The reflexive benzodiazepine", "note": "Benzodiazepines do not treat OCD and are avoided as anxiety 'fixes,' especially in children." } },
+        { "key": "D", "t": "Reassurance that compulsions are a normal childhood phase", "trap": { "name": "Normalizing impairing symptoms", "note": "Hours of daily rituals with distress and impairment are not a normal phase and warrant treatment." } }
+      ],
+      "correct_option": "A",
+      "why": "Mild-to-moderate pediatric OCD responds to CBT with exposure and response prevention as first-line, adding an SSRI (e.g., sertraline, fluoxetine) if needed. 'Antipsychotic for primary OCD' and 'the reflexive benzodiazepine' are pharmacologic missteps, and 'normalizing impairing symptoms' dismisses genuinely disabling rituals.",
+      "complete_correct_answer_explanation": "Cognitive behavioral therapy centered on exposure and response prevention is the first-line treatment for mild-to-moderate OCD in children and adolescents, with an SSRI added for more severe illness or partial response. Antipsychotics have a role only as augmentation in treatment-resistant OCD, benzodiazepines are ineffective for the disorder, and telling the family this is a normal phase both misdiagnoses and delays effective care.",
+      "explanation_for_each_distractor": {
+        "B": "Antipsychotics are an augmentation strategy in resistant OCD, not initial monotherapy in a child.",
+        "C": "Benzodiazepines do not treat OCD and are generally avoided in children for anxiety.",
+        "D": "Impairing, distressing rituals for 6 months are pathological, not a developmental phase."
+      },
+      "pearl": "Pediatric OCD: start with CBT + exposure/response prevention; add an SSRI (sertraline/fluoxetine) if moderate–severe.",
+      "key_takeaway": "ERP-based CBT is first-line for pediatric OCD.",
+      "common_reasoning_error": "Reaching for medication (or dismissal) before offering the first-line behavioral therapy.",
+      "management_or_safety_caveat": "If an SSRI is added, monitor for the under-25 suicidality boxed warning and start low.",
+      "evidence": "CBT with exposure and response prevention is first-line for pediatric OCD, with SSRIs added for more severe illness (AACAP OCD parameter).",
+      "references": [
+        { "citation": "American Academy of Child and Adolescent Psychiatry (AACAP). Practice Parameter for the Assessment and Treatment of Children and Adolescents With Obsessive-Compulsive Disorder. J Am Acad Child Adolesc Psychiatry. 2012;51(1):98-113.", "type": "guideline", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm current AACAP OCD parameter." },
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "OCD diagnostic criteria." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["pediatric", "medication"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_sud_001",
+      "version": 1,
+      "status": "draft",
+      "title": "Thiamine before glucose in the malnourished patient",
+      "type": "two-tier",
+      "category": "substance",
+      "competency": ["next-step", "safety"],
+      "exam_alignment": "comat",
+      "exam_emphasis_note": "Holistic, whole-person management of a malnourished patient with alcohol use — COMAT emergency/management flavor.",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Emergency Department", "patient_age": "13 and older" },
+        "comat": { "presentation": "Substance-Related/Addictive", "physician_task": "Management" },
+        "osteopathic_competency": "Recognizing nutritional and metabolic vulnerability as part of whole-person emergency care."
+      },
+      "learning_objective": "Prevent Wernicke encephalopathy by giving thiamine before or with glucose in a malnourished patient with alcohol use disorder.",
+      "tested_decision": "The correct sequence of thiamine and glucose administration in a malnourished, altered patient.",
+      "intended_difficulty": "advanced",
+      "difficulty": 3,
+      "cognitive_process": "next-step-management",
+      "clinical_setting": "emergency-department",
+      "patient_age_group": "adult-18-64",
+      "hy": true,
+      "pages": ["t_sud.md", "toxidromes.md"],
+      "related_lesson_paths": [{ "label": "Substance use & withdrawal topic page", "path": "?page=t_sud.md" }],
+      "stem": "A disheveled 52-year-old man with a long history of heavy alcohol use is brought to the emergency department confused and unsteady. He appears malnourished. A fingerstick glucose is 44 mg/dL. Which of the following is the most appropriate immediate management?",
+      "lead_in": "Which of the following is the most appropriate immediate management?",
+      "options": [
+        { "key": "A", "t": "Administer thiamine together with (or before) intravenous dextrose", "c": true },
+        { "key": "B", "t": "Administer intravenous dextrose alone and recheck the neurologic exam", "trap": { "name": "Glucose before thiamine", "note": "Giving glucose without thiamine in a thiamine-deficient patient can precipitate or worsen Wernicke encephalopathy." } },
+        { "key": "C", "t": "Give lorazepam for presumed alcohol withdrawal before anything else", "trap": { "name": "It's just withdrawal", "note": "New confusion in alcohol use needs a real differential — hypoglycemia and Wernicke here — not a reflexive benzodiazepine." } },
+        { "key": "D", "t": "Obtain a head CT before providing any treatment", "trap": { "name": "Imaging before resuscitation", "note": "Correcting hypoglycemia and giving thiamine are immediate and should not wait on imaging." } }
+      ],
+      "correct_option": "A",
+      "why": "In a malnourished patient with alcohol use, thiamine must accompany or precede dextrose because a glucose load can consume marginal thiamine stores and trigger Wernicke encephalopathy. 'Glucose before thiamine' is the classic error; 'it's just withdrawal' skips the differential; 'imaging before resuscitation' delays two time-critical, low-risk treatments.",
+      "complete_correct_answer_explanation": "Thiamine is a cofactor for glucose metabolism, and administering a carbohydrate load to a thiamine-depleted patient can acutely precipitate Wernicke encephalopathy (confusion, ophthalmoplegia, ataxia). In a malnourished patient with alcohol use and hypoglycemia, the safe practice is to give thiamine together with — or before — dextrose, then continue evaluating for withdrawal and other causes. Both interventions are immediate and should not be delayed for imaging.",
+      "explanation_for_each_distractor": {
+        "B": "Dextrose without thiamine risks precipitating Wernicke encephalopathy in a depleted patient.",
+        "C": "Benzodiazepines treat withdrawal but do not address the hypoglycemia or thiamine deficiency driving this presentation.",
+        "D": "Head CT may follow, but it must not delay correcting hypoglycemia and giving thiamine."
+      },
+      "pearl": "Malnourished + alcohol + needs glucose → give thiamine with or before dextrose to prevent Wernicke.",
+      "key_takeaway": "Thiamine before (or with) glucose in the malnourished alcohol-using patient.",
+      "common_reasoning_error": "Treating the low glucose in isolation and forgetting the thiamine dependency of glucose metabolism.",
+      "management_or_safety_caveat": "Do not withhold glucose in true hypoglycemia — give both; ensure adequate parenteral thiamine dosing per protocol.",
+      "evidence": "Thiamine should be given before or with glucose in patients at risk of deficiency to avoid precipitating Wernicke encephalopathy (standard emergency/toxicology practice; DSM-5-TR substance-related disorders context).",
+      "references": [
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Substance-related and alcohol use disorder context." },
+        { "citation": "Schuckit MA. Recognition and management of withdrawal delirium (delirium tremens). N Engl J Med. 2014;371(22):2109-2113.", "type": "guideline", "doi": "10.1056/NEJMra1407298", "access_date": "2026-07-13", "verified": false, "note": "Identifier from record; faculty to confirm. Thiamine/glucose and withdrawal management." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["emergency", "medication", "higher-intensity-review"],
+      "tier2": {
+        "q": "Why must thiamine be given before or together with the glucose?",
+        "options": [
+          { "key": "A", "t": "Glucose metabolism consumes thiamine, so a carbohydrate load in a deficient patient can precipitate Wernicke encephalopathy", "c": true },
+          { "key": "B", "t": "Thiamine itself raises the blood glucose and corrects the hypoglycemia" },
+          { "key": "C", "t": "Dextrose blocks thiamine absorption from the gastrointestinal tract" },
+          { "key": "D", "t": "Thiamine competitively antagonizes alcohol at its receptor" }
+        ],
+        "correct_option": "A",
+        "why": "Thiamine is a cofactor for glucose metabolism, so giving glucose to a depleted patient can exhaust the last thiamine stores and precipitate Wernicke encephalopathy. The distractor rationales invent pharmacology the mechanism does not support."
+      },
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_sud_002",
+      "version": 1,
+      "status": "draft",
+      "title": "Opioid overdose — recognize and reverse",
+      "type": "sba",
+      "category": "substance",
+      "competency": ["next-step", "safety"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Emergency Department", "patient_age": "13 and older" },
+        "comat": { "presentation": "Substance-Related/Addictive", "physician_task": "Management" }
+      },
+      "learning_objective": "Recognize the opioid overdose toxidrome and select naloxone as the immediate reversal.",
+      "tested_decision": "The immediate intervention for suspected opioid overdose with respiratory depression.",
+      "intended_difficulty": "foundational",
+      "difficulty": 1,
+      "cognitive_process": "recognition",
+      "clinical_setting": "emergency-department",
+      "patient_age_group": "adult-18-64",
+      "pages": ["toxidromes.md", "t_sud.md"],
+      "related_lesson_paths": [{ "label": "Toxidromes reference", "path": "?page=toxidromes.md" }],
+      "stem": "A 26-year-old man is brought to the emergency department unresponsive. He has pinpoint pupils, a respiratory rate of 6 breaths per minute, and shallow breathing. A friend reports he uses heroin. After beginning airway support and oxygen, which of the following is the most appropriate next intervention?",
+      "lead_in": "After beginning airway support and oxygen, which of the following is the most appropriate next intervention?",
+      "options": [
+        { "key": "A", "t": "Flumazenil", "trap": { "name": "Wrong antidote", "note": "Flumazenil reverses benzodiazepines, not opioids, and can precipitate seizures; the toxidrome here is opioid." } },
+        { "key": "B", "t": "Naloxone", "c": true },
+        { "key": "C", "t": "Intravenous lorazepam", "trap": { "name": "Sedating a sedated patient", "note": "A benzodiazepine would deepen respiratory depression in an opioid overdose." } },
+        { "key": "D", "t": "Activated charcoal by mouth", "trap": { "name": "Charcoal in the obtunded patient", "note": "Oral charcoal is contraindicated in an unprotected airway and does nothing for the acute respiratory depression." } }
+      ],
+      "correct_option": "B",
+      "why": "Pinpoint pupils with respiratory depression and obtundation is the opioid toxidrome; naloxone is the reversal. The 'wrong antidote' flumazenil targets benzodiazepines, 'sedating a sedated patient' with lorazepam worsens hypoventilation, and 'charcoal in the obtunded patient' risks aspiration and does not treat the emergency.",
+      "complete_correct_answer_explanation": "The triad of depressed consciousness, miosis, and respiratory depression is the opioid toxidrome; the life threat is hypoventilation. After airway and oxygen, naloxone — an opioid antagonist — reverses respiratory depression and can be repeated or titrated. Flumazenil is for benzodiazepine reversal and is hazardous here; benzodiazepines would worsen sedation; oral activated charcoal is contraindicated with an unprotected airway.",
+      "explanation_for_each_distractor": {
+        "A": "Flumazenil reverses benzodiazepines, not opioids, and may precipitate seizures.",
+        "C": "A benzodiazepine deepens the respiratory depression that is the immediate threat.",
+        "D": "Activated charcoal is contraindicated in an obtunded patient with an unprotected airway."
+      },
+      "pearl": "Miosis + respiratory depression + obtundation = opioids → naloxone.",
+      "key_takeaway": "Reverse opioid overdose with naloxone after airway/oxygen.",
+      "common_reasoning_error": "Confusing antidotes (flumazenil for opioids) or reaching for a nonspecific sedative.",
+      "management_or_safety_caveat": "Naloxone can precipitate acute withdrawal and is short-acting — monitor for re-sedation and offer MOUD linkage after stabilization.",
+      "evidence": "Naloxone is the reversal agent for opioid-induced respiratory depression (SAMHSA/ASAM opioid overdose guidance; toxidrome standard).",
+      "references": [
+        { "citation": "American Society of Addiction Medicine (ASAM). National Practice Guideline for the Treatment of Opioid Use Disorder — 2020 Focused Update. J Addict Med. 2020;14(2S Suppl 1):1-91.", "type": "guideline", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm current ASAM guideline version; overdose reversal and MOUD." },
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Opioid intoxication/overdose and use disorder context." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["emergency", "medication"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_cog_001",
+      "version": 1,
+      "status": "draft",
+      "title": "Anticholinergic delirium — deprescribe the cause",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": ["dx", "management"],
+      "exam_alignment": "comat",
+      "exam_emphasis_note": "Whole-person deprescribing in an older adult — the drug list as the diagnosis; COMAT holistic flavor.",
+      "blueprint": {
+        "nbme": { "system": "Nervous System & Special Senses", "physician_task": "Diagnosis", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Neurocognitive", "physician_task": "Management" },
+        "osteopathic_competency": "Holistic medication review and deprescribing as part of whole-person geriatric care."
+      },
+      "learning_objective": "Recognize medication-induced (anticholinergic) delirium in an older adult and identify deprescribing the offending agent as the key step.",
+      "tested_decision": "The best next step for acute confusion temporally linked to a newly added anticholinergic.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "next-step-management",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "older-adult-65plus",
+      "pages": ["delirium.md", "t_geri.md"],
+      "related_lesson_paths": [{ "label": "Delirium recognition & screening", "path": "?page=delirium.md" }],
+      "stem": "A 78-year-old woman is brought to clinic by her daughter for 5 days of new confusion, worse in the evenings, with fluctuating attention. Ten days ago she was started on diphenhydramine nightly for sleep and oxybutynin for urinary urgency. Her vital signs are normal, she is afebrile, and a basic workup is unremarkable. Which of the following is the most appropriate next step?",
+      "lead_in": "Which of the following is the most appropriate next step?",
+      "options": [
+        { "key": "A", "t": "Start donepezil for a new major neurocognitive disorder", "trap": { "name": "Confused elder = dementia", "note": "Days-long fluctuating confusion is delirium until proven otherwise, not a new dementia to treat with a cholinesterase inhibitor." } },
+        { "key": "B", "t": "Start an antipsychotic to treat the confusion", "trap": { "name": "Medicating the symptom, not the cause", "note": "Antipsychotics are reserved for dangerous agitation; they do not fix a reversible drug-induced delirium and add anticholinergic burden if chosen poorly." } },
+        { "key": "C", "t": "Add a scheduled benzodiazepine at night", "trap": { "name": "The reflexive benzodiazepine", "note": "Benzodiazepines worsen delirium and add fall risk except in alcohol/sedative withdrawal." } },
+        { "key": "D", "t": "Discontinue the diphenhydramine and oxybutynin and reassess", "c": true }
+      ],
+      "correct_option": "D",
+      "why": "Acute fluctuating confusion beginning after two anticholinergics were added is anticholinergic delirium; removing the offending drugs is the treatment. 'Confused elder = dementia' misreads the tempo, 'medicating the symptom, not the cause' with an antipsychotic ignores the reversible driver, and 'the reflexive benzodiazepine' deepens delirium.",
+      "complete_correct_answer_explanation": "New confusion with evening worsening and fluctuating attention over days is delirium, not dementia. In older adults, the medication list is frequently the cause: diphenhydramine and oxybutynin are potent anticholinergics that commonly precipitate delirium. The key step is to deprescribe the offending agents and reassess, alongside general delirium care. Cholinesterase inhibitors treat dementia (wrong diagnosis and tempo), antipsychotics are reserved for dangerous agitation, and benzodiazepines worsen delirium except in withdrawal states.",
+      "explanation_for_each_distractor": {
+        "A": "Donepezil treats dementia; the acute fluctuating course here is delirium, and no dementia has been established.",
+        "B": "Antipsychotics manage dangerous agitation but do not correct a reversible drug-induced delirium.",
+        "C": "Benzodiazepines deepen delirium and increase falls except in alcohol/sedative withdrawal."
+      },
+      "pearl": "In older adults, the drug list is often the diagnosis — anticholinergics (diphenhydramine, oxybutynin) cause delirium; subtract before you add.",
+      "key_takeaway": "Deprescribe the offending anticholinergics to treat drug-induced delirium.",
+      "common_reasoning_error": "Labeling acute confusion as dementia and adding a new drug instead of removing the culprit.",
+      "management_or_safety_caveat": "Reserve antipsychotics for delirium with dangerous agitation; treat underlying causes and support orientation, sleep, and mobility.",
+      "evidence": "Anticholinergic medications are a common reversible cause of delirium in older adults; management includes removing offending agents (delirium best-practice; Beers Criteria for potentially inappropriate anticholinergics).",
+      "references": [
+        { "citation": "By the 2023 American Geriatrics Society Beers Criteria Update Expert Panel. American Geriatrics Society 2023 updated AGS Beers Criteria for potentially inappropriate medication use in older adults. J Am Geriatr Soc. 2023;71(7):2052-2081.", "type": "guideline", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm current Beers version; anticholinergic burden." },
+        { "citation": "Inouye SK. Delirium in older persons. N Engl J Med. 2006;354(11):1157-1165.", "type": "guideline", "doi": "10.1056/NEJMra052321", "access_date": "2026-07-13", "verified": false, "note": "Identifier from record; faculty to confirm. Delirium recognition/management." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["medication", "higher-intensity-review", "osteopathic-content"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_cog_002",
+      "version": 1,
+      "status": "draft",
+      "title": "Dementia with Lewy bodies vs Alzheimer disease",
+      "type": "sba",
+      "category": "neurocog",
+      "competency": ["dx", "safety"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Nervous System & Special Senses", "physician_task": "Diagnosis", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Neurocognitive", "physician_task": "History & Physical (incl. Dx)" }
+      },
+      "learning_objective": "Distinguish dementia with Lewy bodies from Alzheimer disease and recognize antipsychotic sensitivity as a management-critical feature.",
+      "tested_decision": "The most likely neurocognitive diagnosis given fluctuating cognition, visual hallucinations, and parkinsonism.",
+      "intended_difficulty": "advanced",
+      "difficulty": 3,
+      "cognitive_process": "diagnostic-reasoning",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "older-adult-65plus",
+      "pages": ["t_neurocog.md", "t_geri.md"],
+      "related_lesson_paths": [{ "label": "Neurocognitive disorders topic page", "path": "?page=t_neurocog.md" }],
+      "stem": "A 73-year-old man is evaluated for 1 year of progressive cognitive decline. His family reports his alertness fluctuates markedly from day to day, he has recurrent well-formed visual hallucinations of animals, and he has developed a shuffling gait with rigidity. His wife notes he acts out dreams during sleep. Which of the following is the most likely diagnosis?",
+      "lead_in": "Which of the following is the most likely diagnosis?",
+      "options": [
+        { "key": "A", "t": "Dementia with Lewy bodies", "c": true },
+        { "key": "B", "t": "Alzheimer disease", "trap": { "name": "Defaulting to Alzheimer", "note": "Early, prominent visual hallucinations, fluctuations, parkinsonism, and REM sleep behavior disorder point to Lewy body disease, not typical Alzheimer amnestic decline." } },
+        { "key": "C", "t": "Vascular neurocognitive disorder", "trap": { "name": "Assuming stepwise vascular", "note": "Vascular dementia classically shows stepwise decline and focal deficits/infarcts, not fluctuations with visual hallucinations and RBD." } },
+        { "key": "D", "t": "Frontotemporal dementia", "trap": { "name": "Mislabeling as frontotemporal", "note": "FTD leads with behavioral/personality change or language decline, not the visual-hallucination/parkinsonism/RBD triad." } }
+      ],
+      "correct_option": "A",
+      "why": "Fluctuating cognition, recurrent well-formed visual hallucinations, spontaneous parkinsonism, and REM sleep behavior disorder are the core features of dementia with Lewy bodies. 'Defaulting to Alzheimer,' 'assuming stepwise vascular,' and 'mislabeling as frontotemporal' each ignore this specific constellation.",
+      "complete_correct_answer_explanation": "Dementia with Lewy bodies is defined by core features of fluctuating cognition, recurrent well-formed visual hallucinations, spontaneous parkinsonism, and REM sleep behavior disorder. This is management-critical because patients with DLB have severe neuroleptic sensitivity — antipsychotics (especially first-generation) can cause life-threatening reactions — so recognizing DLB changes prescribing. Alzheimer disease presents with prominent early amnestic decline, vascular dementia with stepwise change and focal findings, and frontotemporal dementia with early behavioral or language change.",
+      "explanation_for_each_distractor": {
+        "B": "Alzheimer disease leads with amnestic decline; early visual hallucinations, fluctuations, and parkinsonism are atypical for it.",
+        "C": "Vascular dementia classically shows stepwise decline with focal deficits, not this triad.",
+        "D": "Frontotemporal dementia presents with behavioral/personality or language change first."
+      },
+      "pearl": "Fluctuations + visual hallucinations + parkinsonism + REM sleep behavior disorder = Lewy body dementia — and beware antipsychotic sensitivity.",
+      "key_takeaway": "The DLB core-feature constellation distinguishes it from Alzheimer disease.",
+      "common_reasoning_error": "Calling any progressive dementia 'Alzheimer' and missing the DLB features that change management.",
+      "management_or_safety_caveat": "Avoid or minimize antipsychotics in DLB due to severe neuroleptic sensitivity; if unavoidable, use lowest-risk agents cautiously.",
+      "evidence": "DLB core features are fluctuating cognition, recurrent visual hallucinations, parkinsonism, and REM sleep behavior disorder, with characteristic neuroleptic sensitivity (McKeith DLB consortium criteria; DSM-5-TR).",
+      "references": [
+        { "citation": "McKeith IG, Boeve BF, Dickson DW, et al. Diagnosis and management of dementia with Lewy bodies: Fourth consensus report of the DLB Consortium. Neurology. 2017;89(1):88-100.", "type": "guideline", "doi": "10.1212/WNL.0000000000004058", "access_date": "2026-07-13", "verified": false, "note": "Identifier from record; faculty to confirm. Core clinical features." },
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Neurocognitive disorder criteria." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["medication", "higher-intensity-review"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_pha_001",
+      "version": 1,
+      "status": "draft",
+      "title": "Serotonin syndrome recognition and first step",
+      "type": "two-tier",
+      "category": "pharm",
+      "competency": ["dx", "safety"],
+      "exam_alignment": "shelf",
+      "exam_emphasis_note": "Adverse-effect recognition and mechanism — NBME foundational-science flavor.",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Diagnosis", "site_of_care": "Emergency Department", "patient_age": "13 and older" },
+        "comat": { "presentation": "Depressive/Bipolar/Related", "physician_task": "Scientific Mechanisms of Disease" }
+      },
+      "learning_objective": "Recognize serotonin syndrome from its neuromuscular signature and identify stopping serotonergic agents plus supportive care as the first step.",
+      "tested_decision": "The most likely diagnosis and immediate step for a hyperthermic, hyperreflexic patient on serotonergic drugs.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "adverse-effect-recognition",
+      "clinical_setting": "emergency-department",
+      "patient_age_group": "adult-18-64",
+      "hy": true,
+      "pages": ["toxidromes.md", "psychopharm_primer.md"],
+      "related_lesson_paths": [{ "label": "Toxidromes reference", "path": "?page=toxidromes.md" }],
+      "stem": "A 30-year-old woman on a stable dose of sertraline is brought to the emergency department 8 hours after linezolid was started for an infection. She is agitated and diaphoretic with a temperature of 39.1°C, and her legs show inducible clonus and hyperreflexia that is greater in the lower extremities. Which of the following best describes her condition and the appropriate first step?",
+      "lead_in": "Which of the following best describes her condition and the appropriate first step?",
+      "options": [
+        { "key": "A", "t": "Neuroleptic malignant syndrome; restart her antipsychotic slowly", "trap": { "name": "SS mislabeled as NMS", "note": "NMS features lead-pipe rigidity and hyporeflexia with dopamine antagonists; clonus and hyperreflexia after adding a serotonergic drug point to serotonin syndrome." } },
+        { "key": "B", "t": "Anticholinergic toxicity; give physostigmine", "trap": { "name": "Wrong toxidrome", "note": "Anticholinergic toxicity causes dry skin and absent bowel sounds, not diaphoresis with clonus." } },
+        { "key": "C", "t": "Serotonin syndrome; stop all serotonergic agents and provide supportive care", "c": true },
+        { "key": "D", "t": "Malignant hyperthermia; administer dantrolene as the primary treatment", "trap": { "name": "Anesthesia-only reflex", "note": "Malignant hyperthermia follows volatile anesthetics/succinylcholine, not an SSRI–linezolid combination." } }
+      ],
+      "correct_option": "C",
+      "why": "Rapid onset of hyperthermia, diaphoresis, inducible clonus, and lower-extremity–predominant hyperreflexia after adding linezolid (an MAO inhibitor) to sertraline is serotonin syndrome; the first step is to stop serotonergic agents and support the patient. 'SS mislabeled as NMS,' 'wrong toxidrome,' and the 'anesthesia-only reflex' each miss the neuromuscular signature and the drug trigger.",
+      "complete_correct_answer_explanation": "Serotonin syndrome is a clinical diagnosis marked by the triad of neuromuscular excitation (clonus, hyperreflexia, often lower-extremity predominant), autonomic instability (hyperthermia, diaphoresis, tachycardia), and altered mental status, developing within hours of increasing serotonergic activity — here, adding linezolid (which has MAO-inhibitory activity) to sertraline. First steps are discontinuing all serotonergic agents and supportive care (cooling, IV fluids, benzodiazepines for agitation); cyproheptadine is a serotonin antagonist option in more severe cases. It is distinguished from NMS (rigidity/hyporeflexia, slower onset, dopamine antagonists), anticholinergic toxicity (dry, no clonus), and malignant hyperthermia (anesthetic trigger).",
+      "explanation_for_each_distractor": {
+        "A": "NMS causes lead-pipe rigidity and hyporeflexia over days with dopamine antagonists — the opposite neuromuscular picture and trigger.",
+        "B": "Anticholinergic toxicity is dry and clonus-free; physostigmine is inappropriate here.",
+        "D": "Malignant hyperthermia is triggered by volatile anesthetics/succinylcholine, not this drug combination."
+      },
+      "pearl": "Clonus + hyperreflexia + hyperthermia after a new serotonergic drug = serotonin syndrome → stop the agents, support, consider cyproheptadine.",
+      "key_takeaway": "Recognize serotonin syndrome by clonus/hyperreflexia and stop serotonergic agents first.",
+      "common_reasoning_error": "Confusing serotonin syndrome with NMS and missing the neuromuscular and temporal clues.",
+      "management_or_safety_caveat": "Watch for hyperthermia-driven complications; benzodiazepines for agitation, aggressive cooling, and cyproheptadine for moderate-to-severe cases.",
+      "evidence": "Serotonin syndrome presents with neuromuscular excitation, autonomic instability, and altered mental status after increased serotonergic activity; management is withdrawal of the agent and supportive care (Boyer & Shannon, NEJM 2005).",
+      "references": [
+        { "citation": "Boyer EW, Shannon M. The serotonin syndrome. N Engl J Med. 2005;352(11):1112-1120.", "type": "systematic-review", "pmid": "15784664", "doi": "10.1056/NEJMra041867", "access_date": "2026-07-13", "verified": true, "note": "Authoritative clinical review of serotonin syndrome." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["medication", "emergency", "higher-intensity-review"],
+      "tier2": {
+        "q": "What best explains why this is serotonin syndrome rather than neuroleptic malignant syndrome?",
+        "options": [
+          { "key": "A", "t": "Onset within hours with clonus and hyperreflexia after adding a serotonergic agent reflects serotonergic neuromuscular excitation", "c": true },
+          { "key": "B", "t": "Lead-pipe rigidity with hyporeflexia developing over days after a dopamine antagonist" },
+          { "key": "C", "t": "Dry skin, flushing, and urinary retention from muscarinic blockade" },
+          { "key": "D", "t": "A ryanodine-receptor response to volatile anesthetics or succinylcholine" }
+        ],
+        "correct_option": "A",
+        "why": "The serotonergic trigger plus clonus and hyperreflexia over hours is the serotonin-syndrome signature; the distractor rationales are the mechanisms of the tier-1 traps — NMS, anticholinergic toxicity, and malignant hyperthermia."
+      },
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_pha_002",
+      "version": 1,
+      "status": "draft",
+      "title": "Choose an antipsychotic by side-effect profile",
+      "type": "sba",
+      "category": "pharm",
+      "competency": ["pharm", "management"],
+      "exam_alignment": "shelf",
+      "exam_emphasis_note": "Adverse-effect/foundational reasoning about agent selection — NBME flavor.",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Schizophrenia Spectrum/Psychotic", "physician_task": "Management" }
+      },
+      "learning_objective": "Select an antipsychotic by matching side-effect profile to patient risk factors rather than by drug recency.",
+      "tested_decision": "Which antipsychotic to avoid in a patient with metabolic risk factors.",
+      "intended_difficulty": "advanced",
+      "difficulty": 3,
+      "cognitive_process": "treatment-selection",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "adult-18-64",
+      "pages": ["psychopharm_primer.md", "landmark_trials.md", "med_monitoring.md"],
+      "related_lesson_paths": [{ "label": "Psychopharmacology primer", "path": "?page=psychopharm_primer.md" }],
+      "stem": "A 40-year-old man with schizophrenia needs a maintenance antipsychotic. He has obesity, prediabetes, and dyslipidemia, and prioritizes avoiding further weight gain. He has no history of significant extrapyramidal symptoms. Which of the following agents is most important to avoid given his risk profile?",
+      "lead_in": "Which of the following agents is most important to avoid given his risk profile?",
+      "options": [
+        { "key": "A", "t": "Aripiprazole", "trap": { "name": "Avoiding the metabolically favorable agent", "note": "Aripiprazole is among the more weight/metabolically neutral options — a reasonable choice here, not one to avoid." } },
+        { "key": "B", "t": "Ziprasidone", "trap": { "name": "Discarding a low-metabolic option", "note": "Ziprasidone is relatively weight-neutral (watch QTc); it is not the agent to avoid for metabolic risk." } },
+        { "key": "C", "t": "Lurasidone", "trap": { "name": "Overlooking a weight-neutral choice", "note": "Lurasidone is comparatively weight/metabolically neutral and would be reasonable here." } },
+        { "key": "D", "t": "Olanzapine", "c": true }
+      ],
+      "correct_option": "D",
+      "why": "Olanzapine carries the greatest weight gain and metabolic burden among these options, so it is the one to avoid in a patient with obesity, prediabetes, and dyslipidemia. Choosing by side-effect profile — not by 'newer = better' — is the point; aripiprazole, ziprasidone, and lurasidone are comparatively metabolically favorable, so avoiding them would be the error.",
+      "complete_correct_answer_explanation": "Antipsychotic selection is driven by matching each agent's side-effect profile to the individual patient rather than by drug novelty. Olanzapine (like clozapine) has the highest liability for weight gain, dyslipidemia, and glucose dysregulation, making it the agent to avoid in someone with established metabolic risk. Aripiprazole, ziprasidone, and lurasidone are relatively weight- and metabolically neutral and would be preferable. CATIE reinforced that agents differ mainly in tolerability, and that a first-generation comparator (perphenazine) performed comparably to several second-generation agents — so choose by side-effect profile, not recency.",
+      "explanation_for_each_distractor": {
+        "A": "Aripiprazole is metabolically favorable and a reasonable choice — not one to avoid.",
+        "B": "Ziprasidone is relatively weight-neutral (monitor QTc); it is not the metabolic offender here.",
+        "C": "Lurasidone is comparatively weight/metabolically neutral and would be appropriate."
+      },
+      "pearl": "Match the antipsychotic to the patient's side-effect risk — olanzapine/clozapine are the metabolic heavyweights to avoid in metabolic risk.",
+      "key_takeaway": "Avoid olanzapine when metabolic risk is high; choose by side-effect profile.",
+      "common_reasoning_error": "Selecting by 'newest/most effective on average' rather than by the individual's tolerability risks.",
+      "management_or_safety_caveat": "Whatever agent is chosen, monitor weight, waist, glucose/HbA1c, and lipids at baseline and on schedule.",
+      "evidence": "Antipsychotics differ mainly in side-effect burden; olanzapine causes the most weight/metabolic effects, and CATIE showed efficacy comparable across several agents including a first-generation comparator (Lieberman et al., NEJM 2005).",
+      "references": [
+        { "citation": "Lieberman JA, Stroup TS, McEvoy JP, et al. Effectiveness of antipsychotic drugs in patients with chronic schizophrenia. N Engl J Med. 2005;353(12):1209-1223.", "type": "landmark-trial", "pmid": "16172203", "doi": "10.1056/NEJMoa051688", "access_date": "2026-07-13", "verified": true, "note": "CATIE. Comparator was perphenazine (a first-generation agent), NOT haloperidol; olanzapine most effective on all-cause discontinuation but greatest metabolic burden." },
+        { "citation": "American Psychiatric Association. The American Psychiatric Association Practice Guideline for the Treatment of Patients With Schizophrenia, 3rd ed. Washington, DC: APA; 2020.", "type": "guideline", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm; metabolic monitoring recommendations." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["medication", "higher-intensity-review"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_saf_001",
+      "version": 1,
+      "status": "draft",
+      "title": "Suicide risk — lethal-means counseling as the next step",
+      "type": "sba",
+      "category": "safety",
+      "competency": ["safety", "next-step"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Diagnosis", "site_of_care": "Emergency Department", "patient_age": "13 and older" },
+        "comat": { "presentation": "Depressive/Bipolar/Related", "physician_task": "Health Promotion/Prevention/Care Delivery" }
+      },
+      "learning_objective": "Incorporate access to lethal means into suicide risk assessment and act on it with means-restriction counseling.",
+      "tested_decision": "The best next step after identifying elevated suicide risk with access to a firearm.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "next-step-management",
+      "clinical_setting": "emergency-department",
+      "patient_age_group": "adult-18-64",
+      "hy": true,
+      "pages": ["pg_suicide.md", "suicide.md"],
+      "related_lesson_paths": [{ "label": "Suicide risk & safety planning", "path": "?page=pg_suicide.md" }],
+      "stem": "A 45-year-old man is evaluated in the emergency department after telling his wife he 'can't go on.' He has major depression, recent job loss, and increasing hopelessness, and he reports thoughts of ending his life. On further history he mentions there is a handgun at home. He is calm and future-oriented about seeing his doctor next week. Which of the following is the most appropriate next step?",
+      "lead_in": "Which of the following is the most appropriate next step?",
+      "options": [
+        { "key": "A", "t": "Reassure the family and arrange routine outpatient follow-up because he is calm and future-oriented", "trap": { "name": "Face-value reassurance", "note": "Calm demeanor and future plans do not offset stated ideation with access to a lethal means; reassurance is not a risk plan." } },
+        { "key": "B", "t": "Counsel on restricting access to the firearm and other lethal means as part of the risk assessment and safety plan", "c": true },
+        { "key": "C", "t": "Have him sign a no-suicide contract and discharge him", "trap": { "name": "No-suicide contract as safety", "note": "No-suicide contracts do not reduce risk and are not a substitute for means safety and a collaborative safety plan." } },
+        { "key": "D", "t": "Document that he denies a specific plan and conclude the risk is low", "trap": { "name": "Denies plan = low risk", "note": "Absence of a stated plan does not make risk low when ideation, hopelessness, and lethal-means access are present." } }
+      ],
+      "correct_option": "B",
+      "why": "Stated ideation with hopelessness and firearm access is an actionable risk that calls for lethal-means counseling within the assessment and safety plan. 'Face-value reassurance,' the 'no-suicide contract as safety,' and 'denies plan = low risk' each substitute a false reassurance for the one intervention with evidence — reducing access to lethal means.",
+      "complete_correct_answer_explanation": "Suicide risk assessment must include access to lethal means, and means restriction (especially firearms) is among the few interventions with evidence for reducing suicide deaths. The correct next step is collaborative lethal-means counseling — engaging the patient (and, with permission, family) to secure or remove the firearm — as part of a structured risk assessment and safety planning intervention, with disposition determined by overall risk under supervision. A calm affect, absence of a stated plan, or a no-suicide 'contract' does not lower risk and must not drive premature discharge.",
+      "explanation_for_each_distractor": {
+        "A": "Calm demeanor and future orientation do not neutralize active ideation with firearm access.",
+        "C": "No-suicide contracts are ineffective and are not a substitute for means safety and safety planning.",
+        "D": "Denying a specific plan does not establish low risk given ideation, hopelessness, and lethal-means access."
+      },
+      "pearl": "Always ask about access to lethal means — firearm counseling/means restriction is a core, evidence-based part of the suicide safety plan.",
+      "key_takeaway": "Act on lethal-means access with means-restriction counseling, not reassurance or a contract.",
+      "common_reasoning_error": "Treating calm affect or a denied plan as evidence of low risk and skipping means safety.",
+      "management_or_safety_caveat": "Determine disposition from overall risk under supervision; a student never independently discharges a patient with active suicidal ideation.",
+      "evidence": "Restricting access to lethal means reduces suicide; means-safety counseling and safety planning are core to suicide risk management (safety planning intervention; VA/DoD suicide-risk guideline).",
+      "references": [
+        { "citation": "US Department of Veterans Affairs / Department of Defense. VA/DoD Clinical Practice Guideline for the Assessment and Management of Patients at Risk for Suicide.", "type": "guideline", "url": "https://www.healthquality.va.gov/", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm current version; lethal-means counseling and safety planning." },
+        { "citation": "Stanley B, Brown GK. Safety Planning Intervention: A Brief Intervention to Mitigate Suicide Risk. Cogn Behav Pract. 2012;19(2):256-264.", "type": "primary-study", "doi": "10.1016/j.cbpra.2011.01.001", "access_date": "2026-07-13", "verified": false, "note": "Journal not indexed in PubMed; DOI to be confirmed by faculty." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["emergency", "higher-intensity-review"],
+      "content_warning": "Depicts suicidal ideation; frames around recognition, means safety, and escalation without method detail.",
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_saf_002",
+      "version": 1,
+      "status": "draft",
+      "title": "Agitation — verbal de-escalation first",
+      "type": "sba",
+      "category": "safety",
+      "competency": ["safety", "management"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Emergency Department", "patient_age": "13 and older" },
+        "comat": { "presentation": "Schizophrenia Spectrum/Psychotic", "physician_task": "Management" }
+      },
+      "learning_objective": "Prioritize verbal de-escalation and staff support in managing agitation before coercive measures.",
+      "tested_decision": "The best initial approach to an agitated but not yet dangerous patient.",
+      "intended_difficulty": "foundational",
+      "difficulty": 1,
+      "cognitive_process": "next-step-management",
+      "clinical_setting": "emergency-department",
+      "patient_age_group": "adult-18-64",
+      "pages": ["agitation.md"],
+      "related_lesson_paths": [{ "label": "Agitation & restraint decision aid", "path": "tools/deescalation.html" }],
+      "stem": "A 34-year-old man with psychosis is pacing and speaking loudly in the emergency department after a long wait. He is irritable but has not threatened anyone or become physically aggressive. Which of the following is the most appropriate initial approach?",
+      "lead_in": "Which of the following is the most appropriate initial approach?",
+      "options": [
+        { "key": "A", "t": "Verbally de-escalate while alerting staff and keeping a safe exit", "c": true },
+        { "key": "B", "t": "Immediately place him in four-point physical restraints", "trap": { "name": "Restraint-first reflex", "note": "Restraints are a last resort for imminent danger, not a first response to loud, non-violent agitation." } },
+        { "key": "C", "t": "Give an intramuscular antipsychotic and benzodiazepine before any conversation", "trap": { "name": "Agitation = antipsychotic", "note": "Involuntary medication precedes de-escalation only when there is imminent danger; here, engage verbally first and offer voluntary options." } },
+        { "key": "D", "t": "Leave him alone until he calms down on his own", "trap": { "name": "Disengagement", "note": "Ignoring escalating agitation forfeits the chance to de-escalate and can allow the situation to worsen unmonitored." } }
+      ],
+      "correct_option": "A",
+      "why": "For agitation without imminent danger, verbal de-escalation with staff support and a safe environment is first-line. The 'restraint-first reflex' and 'agitation = antipsychotic' jump to coercive measures reserved for imminent danger, and 'disengagement' abandons a de-escalation opportunity.",
+      "complete_correct_answer_explanation": "Best practice (Project BETA) treats agitation on a continuum: engage the patient verbally, build a collaborative relationship, and de-escalate, reserving involuntary medication and restraint for imminent danger to self or others. Offering to meet needs, giving space, and involving staff both improves outcomes and protects safety. A student's role is to help engage and to summon support early — not to independently restrain or forcibly medicate.",
+      "explanation_for_each_distractor": {
+        "B": "Physical restraint is a last resort for imminent danger, not an opening move for non-violent agitation.",
+        "C": "Involuntary medication precedes verbal engagement only when danger is imminent; offer voluntary options first.",
+        "D": "Disengaging forfeits de-escalation and leaves escalating agitation unmonitored."
+      },
+      "pearl": "Agitation without imminent danger → verbal de-escalation and staff support first; restraint/forced meds are last resorts.",
+      "key_takeaway": "De-escalate verbally before coercive measures.",
+      "common_reasoning_error": "Reaching for restraints or IM medication before attempting de-escalation.",
+      "management_or_safety_caveat": "Call for help early, ensure a safe exit, and escalate to medication/restraint only for imminent danger under supervision.",
+      "evidence": "Verbal de-escalation is the first-line approach to agitation, with medication/restraint reserved for imminent danger (Richmond et al., Project BETA, West J Emerg Med 2012).",
+      "references": [
+        { "citation": "Richmond JS, Berlin JS, Fishkind AB, et al. Verbal De-escalation of the Agitated Patient: Consensus Statement of the American Association for Emergency Psychiatry Project BETA De-escalation Workgroup. West J Emerg Med. 2012;13(1):17-25.", "type": "guideline", "pmid": "22461917", "doi": "10.5811/westjem.2011.9.6864", "access_date": "2026-07-13", "verified": true, "note": "Consensus statement on verbal de-escalation." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["emergency"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_per_001",
+      "version": 1,
+      "status": "draft",
+      "title": "Borderline personality disorder — staff splitting",
+      "type": "sba",
+      "category": "personality",
+      "competency": ["management", "psychosocial"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Inpatient", "patient_age": "13 and older" },
+        "comat": { "presentation": "Personality", "physician_task": "Management" }
+      },
+      "learning_objective": "Recognize splitting on an inpatient team and respond with consistent limits and team communication.",
+      "tested_decision": "The best team response when a patient idealizes some staff and devalues others.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "next-step-management",
+      "clinical_setting": "inpatient",
+      "patient_age_group": "adult-18-64",
+      "pages": ["t_personality.md"],
+      "related_lesson_paths": [{ "label": "Personality disorders topic page", "path": "?page=t_personality.md" }],
+      "stem": "A 27-year-old woman admitted after self-harm tells the night nurse that the day team 'doesn't care' and that only the night nurse truly understands her, and she asks the nurse to bend a unit rule 'just this once.' The team notices staff beginning to disagree sharply about her care. Which of the following is the most appropriate team response?",
+      "lead_in": "Which of the following is the most appropriate team response?",
+      "options": [
+        { "key": "A", "t": "Have the favored nurse grant the exception to maintain rapport", "trap": { "name": "Rewarding the split", "note": "Special exceptions reinforce splitting and undermine the consistent structure the patient needs." } },
+        { "key": "B", "t": "Confront her about being manipulative in a group meeting", "trap": { "name": "Punitive confrontation", "note": "Shaming labels the behavior as bad intent and damages alliance; the goal is consistency and validation, not confrontation." } },
+        { "key": "C", "t": "As a team, hold consistent limits while validating her distress", "c": true },
+        { "key": "D", "t": "Transfer her care entirely to the favored nurse", "trap": { "name": "Institutionalizing the split", "note": "Concentrating care in the idealized staff member entrenches the split and burns out that clinician." } }
+      ],
+      "correct_option": "C",
+      "why": "Idealization/devaluation with staff conflict is splitting; the response is unified team communication and consistent limits held with validation. 'Rewarding the split,' 'punitive confrontation,' and 'institutionalizing the split' each either feed the dynamic or rupture the alliance.",
+      "complete_correct_answer_explanation": "Splitting — experiencing people as all-good or all-bad — commonly emerges in borderline personality disorder and can fracture treatment teams. The therapeutic response is for the team to communicate openly, agree on a consistent plan, and apply uniform limits while validating the patient's genuine distress. This provides the predictable structure that reduces crises. Granting exceptions, shaming the patient, or funneling care to the idealized staff member all reinforce the split or damage the alliance.",
+      "explanation_for_each_distractor": {
+        "A": "Bending rules for the idealized staff member rewards and perpetuates splitting.",
+        "B": "Public confrontation shames the patient and harms the alliance without providing structure.",
+        "D": "Concentrating care in the favored nurse entrenches the split and is unsustainable."
+      },
+      "pearl": "Splitting is managed by the team, not the individual — consistent limits + open team communication + validation.",
+      "key_takeaway": "Meet splitting with unified team limits and validation.",
+      "common_reasoning_error": "Personalizing the idealization/devaluation and responding individually rather than as a coordinated team.",
+      "management_or_safety_caveat": "Maintain safety monitoring for self-harm; limits are held supportively, not punitively.",
+      "evidence": "Consistent limits and team communication are the recommended response to splitting in borderline personality disorder (DSM-5-TR; borderline PD management principles).",
+      "references": [
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Borderline personality disorder features." },
+        { "citation": "Gunderson JG. Clinical practice. Borderline personality disorder. N Engl J Med. 2011;364(21):2037-2042.", "type": "guideline", "doi": "10.1056/NEJMcp1007358", "access_date": "2026-07-13", "verified": false, "note": "Identifier from record; faculty to confirm. Management principles including team consistency." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": [],
+      "content_warning": "References self-harm without method detail.",
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_per_002",
+      "version": 1,
+      "status": "draft",
+      "title": "Borderline personality disorder vs bipolar II",
+      "type": "sba",
+      "category": "personality",
+      "competency": ["dx"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Diagnosis", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Personality", "physician_task": "History & Physical (incl. Dx)" }
+      },
+      "learning_objective": "Distinguish borderline personality disorder from bipolar II by the character and triggers of mood instability.",
+      "tested_decision": "The most likely diagnosis for rapid, interpersonally triggered mood shifts with chronic emptiness and self-harm.",
+      "intended_difficulty": "advanced",
+      "difficulty": 3,
+      "cognitive_process": "diagnostic-reasoning",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "adult-18-64",
+      "pages": ["t_personality.md", "t_mood.md"],
+      "related_lesson_paths": [{ "label": "Personality disorders topic page", "path": "?page=t_personality.md" }],
+      "stem": "A 24-year-old woman reports mood that shifts within hours — often from calm to intense anger or despair — almost always after feeling rejected by a partner or friend. She describes chronic emptiness, a pattern of unstable intense relationships, and recurrent self-harm during these episodes. She has never had a distinct multi-day period of decreased need for sleep with sustained elevated, expansive mood and increased goal-directed activity. Which of the following is the most likely diagnosis?",
+      "lead_in": "Which of the following is the most likely diagnosis?",
+      "options": [
+        { "key": "A", "t": "Bipolar I disorder", "trap": { "name": "Calling reactivity mania", "note": "Bipolar I requires a sustained manic episode; hours-long, rejection-triggered shifts are not mania." } },
+        { "key": "B", "t": "Borderline personality disorder", "c": true },
+        { "key": "C", "t": "Cyclothymic disorder", "trap": { "name": "Mislabeling reactive shifts as cyclothymia", "note": "Cyclothymia is ≥2 years of subsyndromal hypomanic and depressive periods, not minutes-to-hours interpersonally cued swings." } },
+        { "key": "D", "t": "Bipolar II disorder", "trap": { "name": "Reactivity mistaken for hypomania", "note": "Bipolar II needs discrete hypomanic episodes lasting ≥4 days with a sustained mood change; her shifts are brief and rejection-triggered." } }
+      ],
+      "correct_option": "B",
+      "why": "Rapid, rejection-triggered mood shifts lasting hours, with chronic emptiness, unstable relationships, and self-harm, are the affective instability of borderline personality disorder, not discrete mood episodes. 'Calling reactivity mania,' 'mislabeling reactive shifts as cyclothymia,' and 'reactivity mistaken for hypomania' all misread interpersonally cued lability as an episodic mood disorder.",
+      "complete_correct_answer_explanation": "Borderline personality disorder features affective instability that is rapid (minutes to hours), reactive to interpersonal events (especially perceived rejection), and embedded in a pervasive pattern of unstable relationships, identity disturbance, chronic emptiness, impulsivity, and recurrent self-harm. Bipolar spectrum disorders instead require discrete, sustained mood episodes: bipolar I a manic episode, bipolar II a hypomanic episode of at least 4 days with a distinct change in functioning, and cyclothymia at least 2 years of fluctuating subsyndromal symptoms. The absence of any sustained episode and the interpersonal triggering point to borderline personality disorder.",
+      "explanation_for_each_distractor": {
+        "A": "Bipolar I requires a sustained manic episode, absent here.",
+        "C": "Cyclothymia is a 2-year pattern of subsyndromal ups and downs, not brief reactive swings.",
+        "D": "Bipolar II requires discrete hypomanic episodes of ≥4 days; her shifts are hours-long and rejection-cued."
+      },
+      "pearl": "Rapid, rejection-triggered mood swings + emptiness + unstable relationships + self-harm = borderline PD, not bipolar.",
+      "key_takeaway": "Interpersonally reactive, hours-long lability points to borderline PD, not episodic bipolar illness.",
+      "common_reasoning_error": "Equating 'mood swings' with bipolar disorder without checking episode duration and triggers.",
+      "management_or_safety_caveat": "Evidence-based psychotherapy (e.g., DBT) is first-line for borderline PD; avoid reflexive mood-stabilizer/polypharmacy and monitor self-harm risk.",
+      "evidence": "Borderline personality disorder shows rapid, reactive affective instability distinct from the sustained episodes required for bipolar I/II and cyclothymia (DSM-5-TR).",
+      "references": [
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Borderline PD and bipolar-spectrum criteria." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": [],
+      "content_warning": "References self-harm without method detail.",
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_cdev_001",
+      "version": 1,
+      "status": "draft",
+      "title": "ADHD diagnosis in a school-age child",
+      "type": "sba",
+      "category": "childdev",
+      "competency": ["dx"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Diagnosis", "site_of_care": "Ambulatory", "patient_age": "Birth to 12" },
+        "comat": { "presentation": "Neurodevelopmental/Gender Dysphoria/Disruptive-Impulse-Conduct", "physician_task": "History & Physical (incl. Dx)" }
+      },
+      "learning_objective": "Apply the DSM-5-TR requirements for ADHD, including cross-situational impairment and onset before age 12.",
+      "tested_decision": "The most likely diagnosis for inattentive/hyperactive symptoms present at home and school.",
+      "intended_difficulty": "foundational",
+      "difficulty": 1,
+      "cognitive_process": "recognition",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "birth-12",
+      "pages": ["t_neurodev.md"],
+      "related_lesson_paths": [{ "label": "Neurodevelopmental disorders topic page", "path": "?page=t_neurodev.md" }],
+      "stem": "A 9-year-old boy is brought to clinic because for over a year he has trouble sustaining attention, is easily distracted, forgets and loses things, fidgets constantly, and interrupts others. His teacher reports the same behaviors disrupt the classroom, and his parents see them at home. He is meeting academic expectations only with significant support. There is no mood, psychotic, or major stressor history. Which of the following is the most likely diagnosis?",
+      "lead_in": "Which of the following is the most likely diagnosis?",
+      "options": [
+        { "key": "A", "t": "Oppositional defiant disorder", "trap": { "name": "Confusing inattention with defiance", "note": "ODD centers on angry/defiant, argumentative behavior toward authority, not the attention/hyperactivity pattern described." } },
+        { "key": "B", "t": "Generalized anxiety disorder", "trap": { "name": "Anxiety mimicking inattention", "note": "Anxiety can impair concentration, but there is no excessive worry here — the picture is cross-situational inattention/hyperactivity." } },
+        { "key": "C", "t": "Normal developmental behavior for age", "trap": { "name": "Normalizing impairing symptoms", "note": "Symptoms in two settings for over a year that impair functioning exceed normal variation." } },
+        { "key": "D", "t": "Attention-deficit/hyperactivity disorder", "c": true }
+      ],
+      "correct_option": "D",
+      "why": "Persistent inattentive and hyperactive-impulsive symptoms present in more than one setting for over a year, with onset before age 12 and functional impairment, meet ADHD criteria. 'Confusing inattention with defiance,' 'anxiety mimicking inattention,' and 'normalizing impairing symptoms' each ignore the cross-situational, impairing pattern.",
+      "complete_correct_answer_explanation": "ADHD requires a persistent pattern of inattention and/or hyperactivity-impulsivity that is present in two or more settings (here home and school), began before age 12, has lasted at least 6 months, and impairs functioning, with symptoms not better explained by another disorder. This child fits that pattern. Oppositional defiant disorder is defined by angry/defiant behavior, anxiety by excessive worry, and normal development would not produce cross-situational impairment for over a year.",
+      "explanation_for_each_distractor": {
+        "A": "ODD is about defiant, argumentative, vindictive behavior, not the core inattention/hyperactivity here.",
+        "B": "GAD could impair concentration but there is no pervasive worry; the pattern is ADHD.",
+        "C": "Cross-situational, impairing symptoms for over a year exceed normal developmental variation."
+      },
+      "pearl": "ADHD = inattention/hyperactivity in ≥2 settings, onset before age 12, ≥6 months, with impairment.",
+      "key_takeaway": "Cross-situational, early-onset, impairing inattention/hyperactivity is ADHD.",
+      "common_reasoning_error": "Diagnosing from a single setting or conflating ADHD with defiance or anxiety.",
+      "management_or_safety_caveat": "If treated, stimulants are first-line for school-age ADHD; screen cardiovascular history and monitor growth, sleep, and appetite.",
+      "evidence": "DSM-5-TR ADHD criteria require symptoms in ≥2 settings, onset before age 12, ≥6 months' duration, and functional impairment (AACAP ADHD parameter).",
+      "references": [
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "ADHD diagnostic criteria." },
+        { "citation": "Wolraich ML, Hagan JF, Allan C, et al. (AAP). Clinical Practice Guideline for the Diagnosis, Evaluation, and Treatment of Attention-Deficit/Hyperactivity Disorder in Children and Adolescents. Pediatrics. 2019;144(4):e20192528.", "type": "guideline", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm current AAP guideline version." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["pediatric"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_cdev_002",
+      "version": 1,
+      "status": "draft",
+      "title": "Oppositional defiant disorder vs conduct disorder",
+      "type": "sba",
+      "category": "childdev",
+      "competency": ["dx"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Behavioral Health", "physician_task": "Diagnosis", "site_of_care": "Ambulatory", "patient_age": "Birth to 12" },
+        "comat": { "presentation": "Neurodevelopmental/Gender Dysphoria/Disruptive-Impulse-Conduct", "physician_task": "History & Physical (incl. Dx)" }
+      },
+      "learning_objective": "Distinguish oppositional defiant disorder from conduct disorder by whether the rights of others or major age-appropriate norms are violated.",
+      "tested_decision": "The most likely diagnosis for defiant behavior without violation of others' basic rights.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "diagnostic-reasoning",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "birth-12",
+      "pages": ["t_impulse.md", "t_neurodev.md"],
+      "related_lesson_paths": [{ "label": "Impulse-control & disruptive disorders", "path": "?page=t_impulse.md" }],
+      "stem": "A 10-year-old boy is brought to clinic because for the past year he frequently loses his temper, argues with adults, refuses to follow rules, and deliberately annoys his siblings, often blaming them for his mistakes. He has not been physically cruel to people or animals, has not stolen or destroyed property, and has not been aggressive or deceitful beyond arguing. Which of the following is the most likely diagnosis?",
+      "lead_in": "Which of the following is the most likely diagnosis?",
+      "options": [
+        { "key": "A", "t": "Conduct disorder", "trap": { "name": "Overcalling conduct disorder", "note": "Conduct disorder requires violating others' basic rights or major norms — aggression, cruelty, theft, destruction — which are absent here." } },
+        { "key": "B", "t": "Antisocial personality disorder", "trap": { "name": "Adult diagnosis in a child", "note": "Antisocial personality disorder cannot be diagnosed before age 18." } },
+        { "key": "C", "t": "Oppositional defiant disorder", "c": true },
+        { "key": "D", "t": "Intermittent explosive disorder", "trap": { "name": "Mislabeling defiance as explosive aggression", "note": "IED centers on recurrent impulsive aggressive outbursts out of proportion to provocation, not a pattern of argumentative defiance." } }
+      ],
+      "correct_option": "C",
+      "why": "A year of angry, argumentative, defiant, and vindictive behavior without violating others' rights is oppositional defiant disorder. 'Overcalling conduct disorder' ignores the absence of aggression/theft/destruction, 'adult diagnosis in a child' misapplies antisocial personality disorder, and 'mislabeling defiance as explosive aggression' misreads intermittent explosive disorder.",
+      "complete_correct_answer_explanation": "Oppositional defiant disorder is a pattern of angry/irritable mood, argumentative/defiant behavior, and vindictiveness lasting at least 6 months, without the serious rights-violating conduct that defines conduct disorder (aggression to people/animals, destruction of property, deceitfulness/theft, serious rule violations). Antisocial personality disorder requires age 18 and a prior conduct-disorder history, and intermittent explosive disorder is defined by recurrent impulsive aggressive outbursts. The absence of rights violations makes ODD the best fit.",
+      "explanation_for_each_distractor": {
+        "A": "Conduct disorder requires violation of others' basic rights or major norms, which are absent.",
+        "B": "Antisocial personality disorder cannot be diagnosed before age 18.",
+        "D": "Intermittent explosive disorder is defined by impulsive aggressive outbursts, not argumentative defiance."
+      },
+      "pearl": "ODD = defiance/anger without violating others' rights; conduct disorder = aggression, cruelty, theft, destruction.",
+      "key_takeaway": "Defiance without rights violations is ODD, not conduct disorder.",
+      "common_reasoning_error": "Escalating a defiant child straight to conduct disorder or an adult personality diagnosis.",
+      "management_or_safety_caveat": "Parent management training and school collaboration are first-line; assess for comorbid ADHD, anxiety, and maltreatment.",
+      "evidence": "DSM-5-TR distinguishes ODD (defiant/angry behavior) from conduct disorder (violation of others' rights or major age-appropriate norms).",
+      "references": [
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Disruptive, impulse-control, and conduct disorders criteria." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["pediatric"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_oth_001",
+      "version": 1,
+      "status": "draft",
+      "title": "Anorexia nervosa — refeeding syndrome monitoring",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": ["dx", "safety"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Other Systems", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Inpatient", "patient_age": "13 and older" },
+        "comat": { "presentation": "Feeding-Eating-Elimination/Sexual-Paraphilic", "physician_task": "Management" }
+      },
+      "learning_objective": "Anticipate refeeding syndrome in severe anorexia nervosa and monitor/replete falling phosphate during nutritional rehabilitation.",
+      "tested_decision": "The most important complication to monitor as nutrition is reintroduced in severe anorexia.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "next-step-management",
+      "clinical_setting": "inpatient",
+      "patient_age_group": "adult-18-64",
+      "hy": true,
+      "pages": ["t_eating.md", "nutrition_metabolic.md"],
+      "related_lesson_paths": [{ "label": "Eating disorders topic page", "path": "?page=t_eating.md" }],
+      "stem": "An 18-year-old woman with severe anorexia nervosa (very low body weight, bradycardia) is admitted for nutritional rehabilitation. As enteral feeding begins, which of the following laboratory changes is most important to monitor for and correct?",
+      "lead_in": "Which of the following laboratory changes is most important to monitor for and correct?",
+      "options": [
+        { "key": "A", "t": "Falling serum phosphate", "c": true },
+        { "key": "B", "t": "Rising serum sodium from dehydration", "trap": { "name": "Fixating on sodium", "note": "The hallmark and most dangerous refeeding electrolyte shift is hypophosphatemia, not hypernatremia." } },
+        { "key": "C", "t": "Rising serum calcium", "trap": { "name": "Wrong electrolyte", "note": "Hypercalcemia is not the defining refeeding abnormality; phosphate, potassium, and magnesium fall." } },
+        { "key": "D", "t": "Falling blood urea nitrogen", "trap": { "name": "Irrelevant marker", "note": "BUN trends are not the refeeding safety signal; phosphate is." } }
+      ],
+      "correct_option": "A",
+      "why": "Reintroducing nutrition drives an insulin-mediated intracellular shift of phosphate (and potassium and magnesium), so falling phosphate is the key refeeding-syndrome signal to monitor and correct. 'Fixating on sodium,' 'wrong electrolyte,' and 'irrelevant marker' each miss hypophosphatemia as the danger.",
+      "complete_correct_answer_explanation": "Refeeding syndrome occurs when carbohydrate reintroduction after starvation triggers an insulin surge that drives phosphate, potassium, and magnesium into cells, depleting already low stores. Hypophosphatemia is the hallmark and can cause cardiac and respiratory failure, arrhythmia, rhabdomyolysis, and death. Management is to advance calories cautiously, monitor electrolytes closely, and supplement phosphate (and potassium/magnesium and thiamine) as needed. Sodium, calcium, and BUN are not the defining safety signals.",
+      "explanation_for_each_distractor": {
+        "B": "Hypernatremia is not the hallmark of refeeding; hypophosphatemia is.",
+        "C": "Calcium is not the defining refeeding abnormality.",
+        "D": "BUN trends do not signal refeeding risk; phosphate does."
+      },
+      "pearl": "Refeeding syndrome = falling phosphate (and K, Mg) as feeding starts — advance calories slowly and replete electrolytes.",
+      "key_takeaway": "Monitor and correct falling phosphate during refeeding in anorexia nervosa.",
+      "common_reasoning_error": "Feeding aggressively to restore weight without anticipating the intracellular electrolyte shift.",
+      "management_or_safety_caveat": "Start low and go slow with calories; supplement phosphate/potassium/magnesium/thiamine and monitor cardiac status on telemetry.",
+      "evidence": "Refeeding syndrome is characterized by hypophosphatemia (and hypokalemia/hypomagnesemia) with cautious caloric advancement and electrolyte repletion (eating disorder refeeding guidance).",
+      "references": [
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Feeding and eating disorders context." },
+        { "citation": "Mehanna HM, Moledina J, Travis J. Refeeding syndrome: what it is, and how to prevent and treat it. BMJ. 2008;336(7659):1495-1498.", "type": "guideline", "doi": "10.1136/bmj.a301", "access_date": "2026-07-13", "verified": false, "note": "Identifier from record; faculty to confirm. Refeeding pathophysiology and management." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["emergency", "medication", "higher-intensity-review"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_oth_002",
+      "version": 1,
+      "status": "draft",
+      "title": "Functional neurological symptom disorder — a rule-in diagnosis",
+      "type": "sba",
+      "category": "otherdx",
+      "competency": ["dx"],
+      "exam_alignment": "comat",
+      "exam_emphasis_note": "Mind-body integration and positive rule-in signs — COMAT holistic/DO flavor.",
+      "blueprint": {
+        "nbme": { "system": "Nervous System & Special Senses", "physician_task": "Diagnosis", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Psychiatric Illness due to Medical Condition/Somatic/Sleep-Wake", "physician_task": "History & Physical (incl. Dx)" },
+        "osteopathic_competency": "Integrating physical examination findings with psychological context in whole-person assessment."
+      },
+      "learning_objective": "Recognize functional neurological symptom (conversion) disorder as a rule-in diagnosis supported by positive examination signs, not a diagnosis of exclusion.",
+      "tested_decision": "The most likely diagnosis when a positive Hoover sign demonstrates internal inconsistency of weakness.",
+      "intended_difficulty": "advanced",
+      "difficulty": 3,
+      "cognitive_process": "diagnostic-reasoning",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "adult-18-64",
+      "pages": ["t_somatic.md"],
+      "related_lesson_paths": [{ "label": "Somatic symptom & related disorders", "path": "?page=t_somatic.md" }],
+      "stem": "A 29-year-old woman presents with 2 weeks of right leg weakness that began after an acute psychosocial stressor. On examination, voluntary right hip extension appears absent when tested directly, but strong involuntary right hip extension is felt under her heel when she flexes the left hip against resistance (a positive Hoover sign). Reflexes, sensation, and imaging are normal. Which of the following is the most likely diagnosis?",
+      "lead_in": "Which of the following is the most likely diagnosis?",
+      "options": [
+        { "key": "A", "t": "Malingering", "trap": { "name": "Assuming intentional feigning", "note": "Functional symptoms are not consciously produced; malingering requires an external incentive and intentional deception, not evidence here." } },
+        { "key": "B", "t": "Functional neurological symptom disorder", "c": true },
+        { "key": "C", "t": "Acute ischemic stroke", "trap": { "name": "Forcing a structural lesion", "note": "The positive Hoover sign demonstrates internal inconsistency incompatible with a fixed corticospinal lesion, and imaging is normal." } },
+        { "key": "D", "t": "Somatic symptom disorder", "trap": { "name": "Confusing with somatic symptom disorder", "note": "Somatic symptom disorder centers on distressing symptoms plus excessive thoughts/behaviors, not a neurological deficit incompatible with disease on exam." } }
+      ],
+      "correct_option": "B",
+      "why": "A positive Hoover sign shows the weakness is internally inconsistent — extension returns involuntarily — which rules in functional neurological symptom disorder. 'Assuming intentional feigning' misattributes conscious deception, 'forcing a structural lesion' ignores the positive sign and normal imaging, and 'confusing with somatic symptom disorder' misclassifies a neurological-deficit presentation.",
+      "complete_correct_answer_explanation": "Functional neurological symptom disorder is a positive, rule-in diagnosis: clinical signs demonstrate that motor or sensory findings are internally inconsistent or incompatible with recognized neurological disease. The Hoover sign does this for leg weakness — voluntary hip extension seems absent on direct testing but returns involuntarily during contralateral hip flexion against resistance. This is not conscious feigning (which would be malingering or factitious disorder), not a structural lesion (imaging normal, sign positive), and not somatic symptom disorder (which is defined by distressing somatic symptoms with disproportionate thoughts/behaviors rather than an exam-incompatible deficit).",
+      "explanation_for_each_distractor": {
+        "A": "Malingering requires intentional feigning for external gain; functional symptoms are not consciously produced.",
+        "C": "A positive Hoover sign and normal imaging are incompatible with a fixed corticospinal stroke.",
+        "D": "Somatic symptom disorder involves distressing symptoms with excessive thoughts/behaviors, not an exam-incompatible neurological deficit."
+      },
+      "pearl": "Functional neurological disorder is ruled IN by positive signs (e.g., Hoover), not diagnosed by exclusion.",
+      "key_takeaway": "A positive Hoover sign supports functional neurological symptom disorder.",
+      "common_reasoning_error": "Treating functional disorders as diagnoses of exclusion or assuming the patient is feigning.",
+      "management_or_safety_caveat": "Communicate the diagnosis positively and non-stigmatizingly; still exclude comorbid neurological disease when clinically indicated.",
+      "evidence": "Functional neurological symptom disorder is diagnosed by positive signs of internal inconsistency (e.g., Hoover sign) rather than exclusion (DSM-5-TR somatic symptom and related disorders).",
+      "references": [
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Functional neurological symptom (conversion) disorder criteria; positive clinical signs." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["osteopathic-content"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_eth_001",
+      "version": 1,
+      "status": "draft",
+      "title": "Decisional capacity — refusal is not incapacity",
+      "type": "sba",
+      "category": "ethics",
+      "competency": ["dx", "safety"],
+      "exam_alignment": "comat",
+      "exam_emphasis_note": "Autonomy and whole-person, patient-centered care delivery — COMAT flavor.",
+      "blueprint": {
+        "nbme": { "system": "Social Sciences", "physician_task": "Diagnosis", "site_of_care": "Inpatient", "patient_age": "13 and older" },
+        "comat": { "presentation": "Depressive/Bipolar/Related", "physician_task": "Health Promotion/Prevention/Care Delivery" },
+        "osteopathic_competency": "Respecting patient autonomy within holistic, relationship-centered care."
+      },
+      "learning_objective": "Assess decisional capacity as four decision-specific abilities and recognize that disagreement alone does not establish incapacity.",
+      "tested_decision": "The best next step when a patient refuses recommended treatment.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "diagnostic-reasoning",
+      "clinical_setting": "inpatient",
+      "patient_age_group": "adult-18-64",
+      "pages": ["ethics_legal.md", "exp_consult.md"],
+      "related_lesson_paths": [{ "label": "Capacity assessment tool", "path": "tools/capacity.html" }],
+      "stem": "A 58-year-old man admitted with a diabetic foot infection declines a recommended below-knee amputation. He is alert, has no psychotic symptoms, and states he understands he could die without surgery but wants to try antibiotics first because he has seen a relative recover that way. His care team is frustrated by his refusal. Which of the following is the most appropriate next step?",
+      "lead_in": "Which of the following is the most appropriate next step?",
+      "options": [
+        { "key": "A", "t": "Declare him to lack capacity because he is refusing a life-saving operation", "trap": { "name": "Refusal = no capacity", "note": "Capacity is decision-specific and assessed; a patient may make a risky choice and still have capacity." } },
+        { "key": "B", "t": "Seek a court order to proceed with surgery over his objection", "trap": { "name": "Skipping to the courts", "note": "Legal escalation is premature before a structured capacity assessment and a conversation about his reasoning." } },
+        { "key": "C", "t": "Ask a family member to consent on his behalf", "trap": { "name": "Bypassing the capacitated patient", "note": "Surrogate consent applies only when the patient lacks capacity; an apparently capacitated patient's own choice governs." } },
+        { "key": "D", "t": "Assess his decision-making capacity for this specific treatment decision", "c": true }
+      ],
+      "correct_option": "D",
+      "why": "The next step is a structured, decision-specific capacity assessment across the four abilities — understanding, appreciation, reasoning, and communicating a choice — because refusal alone is not incapacity. 'Refusal = no capacity,' 'skipping to the courts,' and 'bypassing the capacitated patient' all substitute frustration or shortcut for the required assessment.",
+      "complete_correct_answer_explanation": "Decision-making capacity is clinical, decision-specific, and defined by four abilities: to understand the relevant information, to appreciate how it applies to one's own situation, to reason with the information, and to communicate a choice. A patient who demonstrates all four may make a choice the team disagrees with and still retain capacity. Here the man articulates understanding and a coherent rationale, so the correct step is to complete a structured capacity assessment rather than override, litigate, or seek surrogate consent. Surrogate decision-making and legal escalation apply only if capacity is found lacking.",
+      "explanation_for_each_distractor": {
+        "A": "Refusing a recommended operation is not, by itself, evidence of incapacity; capacity must be assessed.",
+        "B": "Court involvement is premature before a capacity assessment and a discussion of his reasoning.",
+        "C": "Surrogate consent applies only when the patient lacks capacity, which has not been established."
+      },
+      "pearl": "Capacity = understand, appreciate, reason, express a choice — decision-specific; a risky choice is not the same as incapacity.",
+      "key_takeaway": "Assess the four abilities for the specific decision before overriding a refusal.",
+      "common_reasoning_error": "Inferring incapacity from disagreement with the recommended plan.",
+      "management_or_safety_caveat": "If capacity is lacking, follow the surrogate/least-restrictive pathway; legal standards for competence vary by jurisdiction.",
+      "evidence": "Capacity comprises understanding, appreciation, reasoning, and expressing a choice, and is decision-specific; disagreement does not equal incapacity (Appelbaum, NEJM 2007).",
+      "references": [
+        { "citation": "Appelbaum PS. Clinical practice. Assessment of patients' competence to consent to treatment. N Engl J Med. 2007;357(18):1834-1840.", "type": "guideline", "pmid": "17978292", "doi": "10.1056/NEJMcp074045", "access_date": "2026-07-13", "verified": true, "note": "Standard framework for the four abilities of capacity." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["legal-jurisdiction", "higher-intensity-review"],
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_eth_002",
+      "version": 1,
+      "status": "draft",
+      "title": "Confidentiality vs duty to protect a third party",
+      "type": "sba",
+      "category": "ethics",
+      "competency": ["safety", "psychosocial"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Social Sciences", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Depressive/Bipolar/Related", "physician_task": "Health Promotion/Prevention/Care Delivery" }
+      },
+      "learning_objective": "Balance patient confidentiality against a clinician's duty to protect an identifiable third party from a serious, imminent threat.",
+      "tested_decision": "The best next step when a patient voices a specific, serious threat toward an identifiable person.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "next-step-management",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "adult-18-64",
+      "pages": ["ethics_legal.md", "violence.md"],
+      "related_lesson_paths": [{ "label": "Ethics & law topic page", "path": "?page=ethics_legal.md" }],
+      "stem": "During an outpatient visit, a 35-year-old man with escalating anger describes a specific, serious plan to harm a named coworker within days and has the means to do so. He asks you to keep everything he says confidential. Which of the following is the most appropriate next step?",
+      "lead_in": "Which of the following is the most appropriate next step?",
+      "options": [
+        { "key": "A", "t": "Maintain strict confidentiality because he explicitly requested it", "trap": { "name": "Confidentiality as absolute", "note": "Confidentiality yields when there is a serious, imminent threat to an identifiable person; it is not absolute." } },
+        { "key": "B", "t": "End the session and document the threat without any protective action", "trap": { "name": "Documentation instead of action", "note": "Recording the threat does not discharge the duty to take reasonable protective steps." } },
+        { "key": "C", "t": "Protect the identifiable third party and manage acute risk, per local law", "c": true },
+        { "key": "D", "t": "Immediately call the police to arrest the patient as the only necessary action", "trap": { "name": "Single-channel response", "note": "Protecting a threatened party may involve several steps (risk management, warning/protecting, sometimes hospitalization); reflexively narrowing to arrest is incomplete and jurisdiction-dependent." } }
+      ],
+      "correct_option": "C",
+      "why": "A serious, imminent threat to an identifiable person triggers a duty to take reasonable protective steps while managing acute risk, within local law. 'Confidentiality as absolute' and 'documentation instead of action' fail to act, and the 'single-channel response' collapses a range of protective options into one jurisdiction-dependent action.",
+      "complete_correct_answer_explanation": "Patient confidentiality is a strong but not absolute duty; when a patient poses a serious, imminent risk of harm to an identifiable third party, clinicians have a duty to take reasonable steps to protect the potential victim. What that requires — warning the person, notifying law enforcement, hospitalizing the patient, or intensifying treatment — varies by jurisdiction and case, so the correct step is to manage the acute risk and take reasonable protective action consistent with local legal requirements, rather than either preserving confidentiality absolutely or reflexively defaulting to a single action.",
+      "explanation_for_each_distractor": {
+        "A": "Confidentiality is overridden by a serious, imminent threat to an identifiable person.",
+        "B": "Documenting the threat does not satisfy the duty to take protective action.",
+        "D": "Arrest is only one possible step and is jurisdiction-dependent; protection may require several coordinated actions."
+      },
+      "pearl": "Serious, imminent threat to an identifiable person → duty to protect overrides confidentiality; the exact steps depend on jurisdiction.",
+      "key_takeaway": "Take reasonable protective action for a credible, imminent threat, following local law.",
+      "common_reasoning_error": "Treating confidentiality as absolute or assuming one uniform legal rule applies everywhere.",
+      "management_or_safety_caveat": "Duty-to-protect/warn statutes vary by jurisdiction; involve supervising clinicians and follow institutional and local legal policy.",
+      "evidence": "Confidentiality yields to a duty to protect identifiable third parties from serious, imminent harm, with specific obligations varying by jurisdiction (professional ethics; jurisdiction-dependent duty-to-protect law).",
+      "references": [
+        { "citation": "American Psychiatric Association. The Principles of Medical Ethics With Annotations Especially Applicable to Psychiatry. Washington, DC: APA; 2013 (as amended).", "type": "guideline", "url": "https://www.psychiatry.org/", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm current edition; confidentiality limits." },
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Clinical risk-context reference; legal duty is jurisdiction-specific and out of DSM scope." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["legal-jurisdiction", "emergency", "higher-intensity-review"],
+      "content_warning": "Describes a threat of violence without graphic detail.",
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_rel_001",
+      "version": 1,
+      "status": "draft",
+      "title": "Family meeting — means safety, validate then act",
+      "type": "relational",
+      "subtype": "what-would-you-say",
+      "category": "relational",
+      "competency": ["psychosocial", "safety"],
+      "exam_alignment": "comat",
+      "exam_emphasis_note": "Relationship-centered, family-inclusive care delivery — COMAT/holistic flavor and the clerkship's signature archetype.",
+      "blueprint": {
+        "nbme": { "system": "Social Sciences", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Ambulatory", "patient_age": "13 and older" },
+        "comat": { "presentation": "Depressive/Bipolar/Related", "physician_task": "Health Promotion/Prevention/Care Delivery" },
+        "osteopathic_competency": "Engaging family and social supports in whole-person safety planning."
+      },
+      "learning_objective": "Choose a family-facing response that validates first, then advances means safety with a concrete, verifiable step, staying within the student role.",
+      "tested_decision": "The best thing to say to a worried parent when planning means safety for a depressed young adult.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "communication-decision",
+      "clinical_setting": "ambulatory",
+      "patient_age_group": "adult-18-64",
+      "pages": ["exp_family.md", "family_playbook.md", "pg_suicide.md"],
+      "related_lesson_paths": [{ "label": "Family engagement playbook", "path": "?page=family_playbook.md" }],
+      "stem": "You are meeting with the mother of a 19-year-old man recently hospitalized for depression with suicidal ideation. She is tearful and says, 'I don't know how to keep him safe at home — am I supposed to watch him every second?' The team has recommended securing medications and removing firearm access. Before uncovering the options, consider the function of the best reply: it should validate her fear and then translate 'keep him safe' into a concrete, verifiable means-safety step she can actually do. Which of the following responses is best?",
+      "lead_in": "Which of the following responses is best?",
+      "options": [
+        { "key": "A", "t": "'This is frightening, and you should not have to watch him every second. Let's make it concrete — today we lock up his medications and remove the firearm, and decide exactly who does each.'", "c": true },
+        { "key": "B", "t": "'I understand you're scared, but most people who have suicidal thoughts never act on them, so I really wouldn't worry too much about it once he is back home with you.'", "trap": { "name": "Quoting statistics at families", "note": "Reciting base rates minimizes her fear and replaces a concrete safety plan with reassurance." } },
+        { "key": "C", "t": "'The safest thing is for you to supervise him constantly — keep him in your sight at all times, and don't leave him alone even for a few minutes, day or night.'", "trap": { "name": "Making the family responsible", "note": "Assigning impossible around-the-clock surveillance sets the family up to fail and is not an evidence-based safety step." } },
+        { "key": "D", "t": "'Let's try not to dwell on the frightening parts right now — he honestly seems so much better today that I really think he is going to be just fine at home.'", "trap": { "name": "Avoiding the topic", "note": "Deflecting from safety forfeits the means-restriction conversation that actually reduces risk." } }
+      ],
+      "correct_option": "A",
+      "why": "The best reply validates her fear, relieves the impossible expectation, and converts safety into a concrete, assignable means-restriction plan (lock medications, remove the firearm, decide who does each). 'Quoting statistics at families,' 'making the family responsible,' and 'avoiding the topic' each abandon the one intervention — means safety — that reduces risk.",
+      "complete_correct_answer_explanation": "A strong relational answer validates before redirecting, keeps the family from an impossible role, and advances safety with a specific, verifiable action. Here that means acknowledging the fear, removing the '24/7 watch' expectation, and operationalizing means restriction — securing medications and removing firearm access — with clear ownership of each task. Reassuring statistics, demanding constant surveillance, or minimizing the risk all fail the function the moment requires and are named relational traps.",
+      "explanation_for_each_distractor": {
+        "B": "Quoting base rates minimizes the parent's fear and substitutes reassurance for a concrete plan.",
+        "C": "Requiring constant supervision is impossible and shifts the treatment burden onto the family.",
+        "D": "Avoiding the safety conversation forfeits the means-restriction step that reduces risk."
+      },
+      "pearl": "With families: validate first, lift the impossible expectation, then make means safety concrete and assignable.",
+      "key_takeaway": "Validate, then translate 'keep him safe' into a specific means-restriction plan.",
+      "common_reasoning_error": "Reassuring with statistics or offloading responsibility to the family instead of concrete means safety.",
+      "management_or_safety_caveat": "Means restriction (securing medications, removing firearms) is evidence-based; coordinate follow-up and keep the plan within the supervised team.",
+      "evidence": "Effective family safety communication validates and then advances concrete means restriction; means safety reduces suicide risk (lethal-means counseling; family engagement principles).",
+      "references": [
+        { "citation": "US Department of Veterans Affairs / Department of Defense. VA/DoD Clinical Practice Guideline for the Assessment and Management of Patients at Risk for Suicide.", "type": "guideline", "url": "https://www.healthquality.va.gov/", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm version; lethal-means counseling with families." },
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Depressive disorder and suicidality context." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["higher-intensity-review"],
+      "content_warning": "Depicts a family discussion about suicide safety without method detail.",
+      "authoring_batch": "pilot-01"
+    },
+    {
+      "id": "qbx_rel_002",
+      "version": 1,
+      "status": "draft",
+      "title": "Discharge transition — the plan the system can hold",
+      "type": "relational",
+      "subtype": "transition-of-care",
+      "category": "relational",
+      "competency": ["safety", "management"],
+      "exam_alignment": "both",
+      "blueprint": {
+        "nbme": { "system": "Social Sciences", "physician_task": "Pharmacotherapy/Intervention/Management", "site_of_care": "Inpatient", "patient_age": "13 and older" },
+        "comat": { "presentation": "Depressive/Bipolar/Related", "physician_task": "Health Promotion/Prevention/Care Delivery" }
+      },
+      "learning_objective": "Design a safe discharge transition that pairs a timely follow-up linkage with means safety, rather than treating a safety plan as clearance.",
+      "tested_decision": "The most appropriate discharge step for a patient whose acute suicidality has improved.",
+      "intended_difficulty": "standard",
+      "difficulty": 2,
+      "cognitive_process": "next-step-management",
+      "clinical_setting": "inpatient",
+      "patient_age_group": "adult-18-64",
+      "pages": ["exp_family.md", "pg_suicide.md", "collateral_workflow.md"],
+      "related_lesson_paths": [{ "label": "Transitions of care & collateral", "path": "?page=collateral_workflow.md" }],
+      "stem": "A 40-year-old woman hospitalized for a depressive episode with suicidal ideation has improved and is ready for discharge. She has a completed safety plan. The team is deciding what most reduces her risk in the vulnerable post-discharge period. Which of the following is the most appropriate discharge step?",
+      "lead_in": "Which of the following is the most appropriate discharge step?",
+      "options": [
+        { "key": "A", "t": "Discharge with the completed safety plan alone, since she already has one in place", "trap": { "name": "Safety plan = discharge permission slip", "note": "A safety plan is one component of risk management, not by itself evidence that outpatient follow-up and means safety are in place." } },
+        { "key": "B", "t": "Give her a clinic phone number to call for an appointment whenever she feels ready", "trap": { "name": "Passive referral", "note": "An open-ended 'call us' referral has poor follow-through; the post-discharge window needs an actively arranged, timely linkage." } },
+        { "key": "C", "t": "Deliberately delay any follow-up for several weeks so she can settle in at home first", "trap": { "name": "Ignoring the high-risk window", "note": "The days-to-weeks after discharge carry elevated suicide risk; follow-up should be early, not delayed." } },
+        { "key": "D", "t": "Schedule follow-up within a few days, confirm means safety, and arrange a warm handoff", "c": true }
+      ],
+      "correct_option": "D",
+      "why": "The post-discharge window is high-risk, so the safest transition pairs an actively arranged early follow-up with confirmed means safety and a warm handoff. 'Safety plan = discharge permission slip' and 'passive referral' overestimate what a plan or a phone number accomplishes, and 'ignoring the high-risk window' delays the very contact that protects her.",
+      "complete_correct_answer_explanation": "Suicide risk is elevated in the days-to-weeks after psychiatric discharge, so a safe transition is more than a completed safety plan. Best practice is to arrange a timely follow-up appointment (ideally within a week), confirm means safety, and provide a warm handoff — direct communication with the receiving outpatient clinician — so the plan is one the system can actually hold. A safety plan alone, a passive 'call us' referral, or a deliberately delayed follow-up all leave the highest-risk period uncovered.",
+      "explanation_for_each_distractor": {
+        "A": "A safety plan is one part of risk management, not confirmation that follow-up and means safety are arranged.",
+        "B": "Open-ended 'call when ready' referrals have poor follow-through during the vulnerable window.",
+        "C": "Delaying follow-up leaves the highest-risk post-discharge period without contact."
+      },
+      "pearl": "Discharge safety = early, actively arranged follow-up + means safety + warm handoff — not the safety plan alone.",
+      "key_takeaway": "Pair timely follow-up and means safety with a warm handoff at discharge.",
+      "common_reasoning_error": "Treating a completed safety plan as clearance and under-arranging the post-discharge linkage.",
+      "management_or_safety_caveat": "Post-discharge is a high-risk window; ensure timely contact, means safety, and communication with the outpatient team; a student does not independently determine discharge readiness.",
+      "evidence": "The post-discharge period carries elevated suicide risk; timely follow-up, means safety, and care-transition linkage reduce risk (VA/DoD suicide-risk guideline; transitions-of-care evidence).",
+      "references": [
+        { "citation": "US Department of Veterans Affairs / Department of Defense. VA/DoD Clinical Practice Guideline for the Assessment and Management of Patients at Risk for Suicide.", "type": "guideline", "url": "https://www.healthquality.va.gov/", "access_date": "2026-07-13", "verified": false, "note": "Faculty to confirm version; post-discharge follow-up and means safety." },
+        { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Depressive disorder and suicidality context." }
+      ],
+      "reference_access_date": "2026-07-13",
+      "faculty_review_flags": ["higher-intensity-review"],
+      "content_warning": "References suicidal ideation and discharge safety without method detail.",
+      "authoring_batch": "pilot-01"
+    }
+  ]
+}

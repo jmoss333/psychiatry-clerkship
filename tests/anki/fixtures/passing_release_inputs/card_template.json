@@ -1,0 +1,36 @@
+{
+  "id": "synthetic_core_001",
+  "state": "approved",
+  "kind": "basic",
+  "family": "Discriminator",
+  "audience": "MS3",
+  "week": 1,
+  "domain": "Diagnosis",
+  "task": "Recognize",
+  "risk": {"level": "Routine", "facets": []},
+  "front": "Prompt synthetic_core_001 asks marker_synthetic_core_001?",
+  "answer": "Answer token_synthetic_core_001 differs feature_synthetic_core_001.",
+  "explanation": "The invented marker distinguishes the invented token.",
+  "caveat": "Use this only with faculty supervision and notify the teaching team.",
+  "source": {
+    "path": "synthetic/synthetic-source.md",
+    "slug": "synthetic-source.md",
+    "anchor": "condition-alpha",
+    "url": "https://example.invalid/synthetic-source#condition-alpha",
+    "quote": "Condition Alpha uses an invented neutral marker.",
+    "quoteSha256": "f7ffab898bc63f9534c789775b2604296ba13f2df87c5e1e4b52292d0f72f8be"
+  },
+  "render": {
+    "templateVersion": "pcl-ms3-core-basic-v2",
+    "templateContractSha256": "7b59204c571c255e0ea255a9ca7437df83dd34c2da449a7f9e070350ea077000"
+  },
+  "provenance": {
+    "authoringMethod": "human",
+    "authoringTool": null,
+    "humanEditor": "Synthetic Faculty",
+    "humanEditedAt": "2026-07-01"
+  },
+  "review": {"sequenceBasis": "weekly_map"},
+  "reinforces": null,
+  "supersedes": null
+}

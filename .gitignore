@@ -25,6 +25,7 @@ node_modules/
 # They are intentionally not tracked here — source is truth, deploy is generated.
 /_build/
 /_dist/
+/.worktrees/
 
 # ---- Large binary assets (originals; use Git LFS or external storage if you need them versioned) ----
 # Audio / video
@@ -70,6 +71,5 @@ node_modules/
 # ---- Generated faculty and Adobe polish package ----
 /outputs/faculty_polish_top10/
 
-# ---- Local design and PDF verification artifacts ----
-/.superpowers/
-/tmp/pdfs/
+# ---- Local Zotero reconciliation artifacts (metadata only; never curriculum authority) ----
+/outputs/evidence_registry/

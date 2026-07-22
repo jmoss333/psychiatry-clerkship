@@ -134,29 +134,659 @@ test('static QA rejects a CDN dependency inside a shipped JS asset', () => {
   }
 });
 
-test('Node 20 and the aggregate SP gates run before either site build', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
+const SMOKE_LAUNCHER_COMMAND = 'bash tests/smoke/start-local-servers.sh';
+const SMOKE_CONFIGURATION_PATTERN = /\bSMOKE_[A-Z0-9_]+\b/;
+
+function leadingIndent(line) {
+  return line.length - line.trimStart().length;
+}
+
+function extractRunSteps(source) {
+  const sourceLines = source.split(/\r?\n/);
+  const steps = [];
+  for (let index = 0; index < sourceLines.length; index += 1) {
+    const sourceLine = sourceLines[index];
+    const blockRun = sourceLine.match(
+      /^(\s*)(-\s+)?run:\s*([|>](?:[1-9][+-]?|[+-][1-9]?|))\s*(?:#.*)?$/,
+    );
+    if (blockRun) {
+      const runIndent = blockRun[1].length + (blockRun[2]?.length ?? 0);
+      const lines = [];
+      let endLine = index;
+      for (let bodyIndex = index + 1; bodyIndex < sourceLines.length; bodyIndex += 1) {
+        const bodyLine = sourceLines[bodyIndex];
+        if (bodyLine.trim() && leadingIndent(bodyLine) <= runIndent) break;
+        lines.push({
+          text: bodyLine.trim(),
+          sourceLine: bodyIndex,
+          indent: leadingIndent(bodyLine),
+        });
+        endLine = bodyIndex;
+      }
+      const indentationIndicator = Number(blockRun[3].match(/[1-9]/)?.[0] ?? 0);
+      steps.push({
+        startLine: index,
+        endLine,
+        lines,
+        indicator: blockRun[3],
+        contentIndent: indentationIndicator ? runIndent + indentationIndicator : null,
+      });
+      index = endLine;
+      continue;
+    }
+
+    const inlineRun = sourceLine.match(/^(\s*)(-\s+)?run:\s+(.+?)\s*$/);
+    if (!inlineRun) continue;
+    steps.push({
+      startLine: index,
+      endLine: index,
+      lines: [{
+        text: inlineRun[3],
+        sourceLine: index,
+        indent: leadingIndent(sourceLine),
+      }],
+      indicator: null,
+      contentIndent: null,
+    });
+  }
+  return steps;
+}
+
+function stripShellComment(command) {
+  let quote = null;
+  let escaped = false;
+  for (let index = 0; index < command.length; index += 1) {
+    const character = command[index];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (character === '\\' && quote !== "'") {
+      escaped = true;
+      continue;
+    }
+    if (quote) {
+      if (character === quote) quote = null;
+      continue;
+    }
+    if (character === "'" || character === '"') {
+      quote = character;
+      continue;
+    }
+    if (
+      character === '#'
+      && (index === 0 || /[\s;&|()]/.test(command[index - 1]))
+    ) {
+      return command.slice(0, index).trimEnd();
+    }
+  }
+  return command;
+}
+
+function normalizeShellCommand(command) {
+  return stripShellComment(command)
+    .replace(/['"]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function resolveRunScalar(step) {
+  if (!step.indicator) return step.lines[0]?.text ?? '';
+  const contentIndents = step.lines
+    .filter((line) => line.text)
+    .map((line) => line.indent);
+  const baseIndent = step.contentIndent
+    ?? (contentIndents.length ? Math.min(...contentIndents) : 0);
+  const rendered = step.lines.map((line) => (
+    line.text
+      ? `${' '.repeat(Math.max(0, line.indent - baseIndent))}${line.text}`
+      : ''
+  ));
+  let resolved = '';
+  for (let index = 0; index < rendered.length; index += 1) {
+    resolved += rendered[index];
+    if (index === rendered.length - 1) continue;
+    const current = step.lines[index];
+    const next = step.lines[index + 1];
+    const folds = step.indicator.startsWith('>')
+      && current.text
+      && next.text
+      && current.indent === baseIndent
+      && next.indent === baseIndent;
+    resolved += folds ? ' ' : '\n';
+  }
+  return resolved;
+}
+
+function normalizeActiveRunCommands(step) {
+  const resolved = resolveRunScalar(step).replace(/\\\r?\n/g, '');
+  return resolved
+    .split(/\r?\n/)
+    .map(normalizeShellCommand)
+    .filter(Boolean);
+}
+
+function scanShellCommandPrefixes(command) {
+  const segmentStarts = [0];
+  for (const boundary of command.matchAll(/&&|\|\||[;|&()]/g)) {
+    segmentStarts.push(boundary.index + boundary[0].length);
+  }
+  return segmentStarts.map((start) => {
+    let remainder = command.slice(start).trimStart();
+    const assignments = [];
+    const consumeAssignments = () => {
+      while (true) {
+        const assignment = remainder.match(
+          /^([A-Za-z_][A-Za-z0-9_]*)=[^\s;&|()]*\s*/,
+        );
+        if (!assignment) break;
+        assignments.push(assignment[1]);
+        remainder = remainder.slice(assignment[0].length);
+      }
+    };
+    consumeAssignments();
+    const utility = remainder.match(/^(export|env)(?:\s+|$)/)?.[1] ?? null;
+    if (utility) {
+      remainder = remainder.slice(utility.length).trimStart();
+      consumeAssignments();
+    }
+    return { assignments, remainder, utility };
+  });
+}
+
+function hasSmokeRunOverride(command) {
+  return scanShellCommandPrefixes(command).some(({ assignments, remainder, utility }) => (
+    assignments.some((name) => /^SMOKE_[A-Z0-9_]+$/.test(name))
+      || (utility === 'export' && /^SMOKE_[A-Z0-9_]+(?:\s|$)/.test(remainder))
+  ));
+}
+
+function hasSmokeServerInvocation(command) {
+  return scanShellCommandPrefixes(command).some(({ remainder, utility }) => (
+    utility !== 'export'
+      && /^(?:\/usr\/bin\/)?python3(?:\s+-u)*\s+-m\s*http\.server(?:\s|$)/.test(remainder)
+  ));
+}
+
+function extractSmokeEnvironmentKeys(source) {
+  const keys = [];
+  const sourceLines = source.split(/\r?\n/);
+  let environmentIndent = -1;
+  for (const sourceLine of sourceLines) {
+    const trimmed = sourceLine.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const indent = leadingIndent(sourceLine);
+    if (environmentIndent >= 0 && indent > environmentIndent) {
+      const key = trimmed.match(/^['"]?(SMOKE_[A-Z0-9_]+)['"]?\s*:/)?.[1];
+      if (key) keys.push(key);
+      continue;
+    }
+    environmentIndent = -1;
+
+    const environment = sourceLine.match(/^(\s*)(-\s+)?env:\s*(.*?)\s*$/);
+    if (!environment) continue;
+    const inlineMapping = environment[3];
+    environmentIndent = environment[1].length + (environment[2]?.length ?? 0);
+    if (!inlineMapping || inlineMapping.startsWith('#')) continue;
+    for (const match of inlineMapping.matchAll(
+      /(?:^|[{,]\s*)['"]?(SMOKE_[A-Z0-9_]+)['"]?\s*:/g,
+    )) {
+      keys.push(match[1]);
+    }
+  }
+  return keys;
+}
+
+function countExactLines(lines, marker) {
+  return lines.filter((line) => line.text === marker).length;
+}
+
+function hasExactLine(lines, marker) {
+  return lines.some((line) => line.text === marker);
+}
+
+function countRunCommands(runSteps, command) {
+  return runSteps.reduce(
+    (count, step) => count + countExactLines(step.lines, command),
+    0,
+  );
+}
+
+function extractWorkflowJob(ci, jobName) {
+  const lines = ci.split(/\r?\n/);
+  const header = `  ${jobName}:`;
+  const start = lines.findIndex((line) => line === header);
+  assert.notEqual(start, -1, `${jobName} workflow job must exist`);
+  let end = lines.length;
+  for (let index = start + 1; index < lines.length; index += 1) {
+    if (/^  [A-Za-z0-9_-]+:\s*$/.test(lines[index])) {
+      end = index;
+      break;
+    }
+  }
+  return lines.slice(start, end).join('\n');
+}
+
+function uniqueCommandPosition(runSteps, command) {
+  const matches = [];
+  for (const step of runSteps) {
+    for (const line of step.lines) {
+      if (line.text === command) matches.push(line.sourceLine);
+    }
+  }
+  assert.equal(matches.length, 1, `${command} must run exactly once in the smoke-tests job`);
+  return matches[0];
+}
+
+function assertSmokeLauncherContract(ci) {
+  const allRunSteps = extractRunSteps(ci);
+  const activeRunCommands = allRunSteps.flatMap(normalizeActiveRunCommands);
+  assert.equal(
+    countRunCommands(allRunSteps, SMOKE_LAUNCHER_COMMAND),
+    1,
+    'tested smoke-server launcher must run exactly once in CI',
+  );
+  for (const configuration of extractSmokeEnvironmentKeys(ci)) {
+    assert.doesNotMatch(
+      configuration,
+      SMOKE_CONFIGURATION_PATTERN,
+      'CI must use the launcher default ports, directories, and readiness controls',
+    );
+  }
+  for (const command of activeRunCommands) {
+    assert.equal(
+      hasSmokeRunOverride(command),
+      false,
+      'CI must use the launcher default ports, directories, and readiness controls',
+    );
+  }
+  for (const command of activeRunCommands) {
+    assert.equal(
+      hasSmokeServerInvocation(command),
+      false,
+      'CI must not duplicate smoke-server startup outside the tested launcher',
+    );
+  }
+
+  const smokeJob = extractWorkflowJob(ci, 'smoke-tests');
+  const smokeRunSteps = extractRunSteps(smokeJob);
   const ordered = [
-    'uses: actions/setup-node@v4',
+    'bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3',
+    'bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res',
+    'npm ci',
+    'npx playwright install chromium --with-deps',
+    SMOKE_LAUNCHER_COMMAND,
+    'npx playwright test --project=nav-ms3 --project=nav-res',
+    'npx playwright test --project=interview-room',
+    'npx playwright test --project=faculty-console',
+    'npx playwright test --project=lfs',
+    'npx playwright test --project=visual',
+  ];
+  let prior = -1;
+  for (const command of ordered) {
+    const position = uniqueCommandPosition(smokeRunSteps, command);
+    assert.ok(position > prior, `${command} must follow the preceding smoke-job command`);
+    prior = position;
+  }
+  assert.match(
+    smokeJob,
+    /SP_INTERVIEW_BASE_URL:\s*http:\/\/localhost:4200\/tools\//,
+  );
+}
+
+test('CI gates and tested smoke launcher are structurally ordered', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const ciLines = ci.split(/\r?\n/);
+  const managedGateOrder = [
+    '- uses: actions/setup-node@v4',
     'node-version: "20"',
-    'npm --prefix sp-proxy ci',
+    'run: npm --prefix sp-proxy ci',
     'npm --prefix sp-proxy test',
     'bash _prototypes/sp-interview/tests/run-all.sh',
     'python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py',
-    'build_and_check.sh ms3',
-    'build_and_check.sh res',
+    'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3',
+    'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res',
   ];
+  const normalizeActionPin = (value) => value.replace(/(actions\/[\w.-]+)@v\d+/g, '$1');
   let prior = -1;
-  for (const marker of ordered) {
-    const index = ci.indexOf(marker);
+  for (const marker of managedGateOrder) {
+    const index = ciLines.findIndex(
+      (line) => normalizeActionPin(line.trim()) === normalizeActionPin(marker),
+    );
     assert.ok(index > prior, `${marker} must occur after the preceding managed-SP gate`);
     prior = index;
   }
+  assertSmokeLauncherContract(ci);
+});
 
-  const server = ci.indexOf('Serve built sites on localhost');
-  const interviewRoom = ci.indexOf('--project=interview-room');
-  assert.ok(server >= 0 && interviewRoom > server, 'Interview Room browser acceptance must follow site servers');
-  assert.match(ci, /SP_INTERVIEW_BASE_URL:\s*http:\/\/localhost:4200\/tools\//);
+test('smoke launcher contract ignores labels and rejects boundary drift', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const relabeled = ci.replace(
+    /(\n\s*- name: )[^\n]+(\n\s+run: bash tests\/smoke\/start-local-servers\.sh)/,
+    '$1Arbitrary wording that must not affect behavior$2',
+  );
+  assert.notEqual(relabeled, ci, 'test fixture must relabel the launcher step');
+  assert.doesNotThrow(() => assertSmokeLauncherContract(relabeled));
+
+  const overridden = ci.replace(
+    `        run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `        env:\n          SMOKE_MS3_PORT: "4300"\n        run: ${SMOKE_LAUNCHER_COMMAND}`,
+  );
+  assert.notEqual(overridden, ci, 'test fixture must add a launcher override');
+  assert.throws(
+    () => assertSmokeLauncherContract(overridden),
+    /must use the launcher default ports, directories, and readiness controls/,
+  );
+
+  assert.throws(
+    () => assertSmokeLauncherContract(ci.replace(SMOKE_LAUNCHER_COMMAND, 'echo launcher-removed')),
+    /launcher must run exactly once/,
+  );
+
+  const duplicated = ci.replace(
+    `run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          ${SMOKE_LAUNCHER_COMMAND}`,
+  );
+  assert.throws(
+    () => assertSmokeLauncherContract(duplicated),
+    /launcher must run exactly once/,
+  );
+
+  const withoutLauncherStep = ci.replace(
+    /\n\s*- name: [^\n]+\n\s+run: bash tests\/smoke\/start-local-servers\.sh\n/,
+    '\n',
+  );
+  assert.notEqual(withoutLauncherStep, ci, 'test fixture must remove the launcher step');
+  const movedBeforeBuild = withoutLauncherStep.replace(
+    '          bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3',
+    `          ${SMOKE_LAUNCHER_COMMAND}\n          bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3`,
+  );
+  assert.notEqual(movedBeforeBuild, withoutLauncherStep, 'test fixture must move the launcher before builds');
+  assert.throws(
+    () => assertSmokeLauncherContract(movedBeforeBuild),
+    /must follow the preceding smoke-job command/,
+  );
+
+  for (const projectCommand of [
+    'npx playwright test --project=nav-ms3 --project=nav-res',
+    'npx playwright test --project=interview-room',
+    'npx playwright test --project=faculty-console',
+    'npx playwright test --project=lfs',
+    'npx playwright test --project=visual',
+  ]) {
+    const movedProject = ci
+      .replace(projectCommand, '')
+      .replace(
+        `run: ${SMOKE_LAUNCHER_COMMAND}`,
+        `run: |\n          ${projectCommand}\n          ${SMOKE_LAUNCHER_COMMAND}`,
+      );
+    assert.throws(
+      () => assertSmokeLauncherContract(movedProject),
+      /must follow the preceding smoke-job command/,
+    );
+  }
+
+  const duplicatedInlineServer = ci.replace(
+    `run: ${SMOKE_LAUNCHER_COMMAND}`,
+    `run: |\n          ${SMOKE_LAUNCHER_COMMAND}\n          cd _build/ms3 && python3   -m http.server 4200 &`,
+  );
+  assert.throws(
+    () => assertSmokeLauncherContract(duplicatedInlineServer),
+    /must not duplicate smoke-server startup/,
+  );
+});
+
+function addRunFixture(ci, name, header, lines) {
+  const launcher = '        run: ' + SMOKE_LAUNCHER_COMMAND;
+  return ci.replace(
+    launcher,
+    [
+      launcher,
+      '',
+      '      - name: ' + name,
+      '        run: ' + header,
+      ...lines.map(({ text, extraIndent = 0 }) => (
+        ' '.repeat(10 + extraIndent) + text
+      )),
+    ].join('\n'),
+  );
+}
+
+function addEnvironmentFixture(ci, environment) {
+  const launcher = '        run: ' + SMOKE_LAUNCHER_COMMAND;
+  return ci.replace(launcher, environment + '\n' + launcher);
+}
+
+test('smoke launcher contract rejects bounded workflow mutations', async (t) => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const serverError = /must not duplicate smoke-server startup/;
+  const configurationError = /must use the launcher default ports, directories, and readiness controls/;
+  const cases = [
+    {
+      name: 'compact module flag',
+      mutate: (source) => addRunFixture(source, 'compact module flag', '|', [
+        { text: 'python3 -mhttp.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'literal shell continuation',
+      mutate: (source) => addRunFixture(source, 'literal shell continuation', '|', [
+        { text: 'python3 -m \\' },
+        { text: 'http.server 4300 &', extraIndent: 2 },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'folded scalar',
+      mutate: (source) => addRunFixture(source, 'folded scalar', '>', [
+        { text: 'python3 -m' },
+        { text: 'http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'token-concatenating continuation',
+      mutate: (source) => addRunFixture(source, 'token-concatenating continuation', '|', [
+        { text: 'python3 -mhttp.\\' },
+        { text: 'server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'quoted module',
+      mutate: (source) => addRunFixture(source, 'quoted module', '|', [
+        { text: 'python3 -m"http.server" 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'literal header with inline comment',
+      mutate: (source) => addRunFixture(source, 'header comment', '| # explanation', [
+        { text: 'python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'literal header with indentation indicator',
+      mutate: (source) => addRunFixture(source, 'indentation indicator', '|2', [
+        { text: 'python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'literal header with indentation and chomping indicators',
+      mutate: (source) => addRunFixture(source, 'indicator combination', '|2- # explanation', [
+        { text: 'python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'folded scalar followed by shell continuation',
+      mutate: (source) => addRunFixture(source, 'fold then continue', '>', [
+        { text: 'python3 -m \\' },
+        { text: 'http.server 4300 &', extraIndent: 2 },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'env-prefixed Python invocation',
+      mutate: (source) => addRunFixture(source, 'env prefix', '|', [
+        { text: 'env python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'absolute Python invocation',
+      mutate: (source) => addRunFixture(source, 'absolute Python', '|', [
+        { text: '/usr/bin/python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'unbuffered Python invocation',
+      mutate: (source) => addRunFixture(source, 'unbuffered Python', '|', [
+        { text: 'python3 -u -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'launcher override after leading assignment',
+      mutate: (source) => addRunFixture(source, 'launcher assignment prefix', '|', [
+        { text: 'CI=1 SMOKE_MS3_PORT=4300 bash tests/smoke/start-local-servers.sh' },
+      ]),
+      expected: configurationError,
+    },
+    {
+      name: 'launcher export after leading assignment',
+      mutate: (source) => addRunFixture(source, 'launcher export prefix', '|', [
+        { text: 'export CI=1 SMOKE_MS3_PORT=4300' },
+      ]),
+      expected: configurationError,
+    },
+    {
+      name: 'env server after leading assignment',
+      mutate: (source) => addRunFixture(source, 'env assignment prefix', '|', [
+        { text: 'env PYTHONUNBUFFERED=1 python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'server after leading assignment',
+      mutate: (source) => addRunFixture(source, 'assignment prefix', '|', [
+        { text: 'PYTHONUNBUFFERED=1 python3 -m http.server 4300 &' },
+      ]),
+      expected: serverError,
+    },
+    {
+      name: 'block environment mapping',
+      mutate: (source) => addEnvironmentFixture(
+        source,
+        '        env:\n          SMOKE_FUTURE_SETTING: "enabled"',
+      ),
+      expected: configurationError,
+    },
+    {
+      name: 'quoted flow environment mapping',
+      mutate: (source) => addEnvironmentFixture(
+        source,
+        '        env: { "SMOKE_FUTURE_SETTING": "enabled" }',
+      ),
+      expected: configurationError,
+    },
+    {
+      name: 'anchored environment mapping',
+      mutate: (source) => addEnvironmentFixture(
+        source,
+        '        env: &launcher_environment\n          "SMOKE_FUTURE_SETTING": "enabled"',
+      ),
+      expected: configurationError,
+    },
+    {
+      name: 'SMOKE assignment',
+      mutate: (source) => addRunFixture(source, 'SMOKE assignment', '|', [
+        { text: 'SMOKE_FUTURE_SETTING=enabled' },
+      ]),
+      expected: configurationError,
+    },
+    {
+      name: 'SMOKE export',
+      mutate: (source) => addRunFixture(source, 'SMOKE export', '|', [
+        { text: 'export SMOKE_FUTURE_SETTING' },
+      ]),
+      expected: configurationError,
+    },
+  ];
+  for (const fixture of cases) {
+    await t.test(fixture.name, () => {
+      const mutated = fixture.mutate(ci);
+      assert.notEqual(mutated, ci, 'test fixture must add ' + fixture.name);
+      assert.throws(() => assertSmokeLauncherContract(mutated), fixture.expected);
+    });
+  }
+});
+
+test('smoke launcher contract accepts inert workflow mentions', async (t) => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const cases = [
+    {
+      name: 'commented server example',
+      mutate: (source) => addRunFixture(source, 'commented example', '|', [
+        { text: '# python3 -mhttp.server 4300 &' },
+      ]),
+    },
+    {
+      name: 'configuration token in step label',
+      mutate: (source) => source.replace(
+        /(\n\s*- name: )[^\n]+(\n\s+run: bash tests\/smoke\/start-local-servers\.sh)/,
+        '$1Document SMOKE_MS3_PORT launcher behavior$2',
+      ),
+    },
+    {
+      name: 'server command in inline shell comment',
+      mutate: (source) => addRunFixture(source, 'inline comment', '|', [
+        { text: 'echo "server documentation" # python3 -m http.server 4300 &' },
+      ]),
+    },
+    {
+      name: 'server module output',
+      mutate: (source) => addRunFixture(source, 'module output', '|', [
+        { text: 'echo "http.server"' },
+      ]),
+    },
+    {
+      name: 'non-server Python import',
+      mutate: (source) => addRunFixture(source, 'Python import', '|', [
+        { text: "python3 -c 'import http.server'" },
+      ]),
+    },
+    {
+      name: 'more-indented folded line',
+      mutate: (source) => addRunFixture(source, 'more-indented folded line', '>', [
+        { text: 'python3 -m' },
+        { text: 'http.server 4300 &', extraIndent: 2 },
+      ]),
+    },
+    {
+      name: 'unset SMOKE mention',
+      mutate: (source) => addRunFixture(source, 'unset mention', '|', [
+        { text: 'unset SMOKE_FUTURE_SETTING' },
+      ]),
+    },
+    {
+      name: 'echoed SMOKE mention',
+      mutate: (source) => addRunFixture(source, 'echo mention', '|', [
+        { text: 'echo "SMOKE_FUTURE_SETTING"' },
+      ]),
+    },
+  ];
+  for (const fixture of cases) {
+    await t.test(fixture.name, () => {
+      const mutated = fixture.mutate(ci);
+      assert.notEqual(mutated, ci, 'test fixture must add ' + fixture.name);
+      assert.doesNotThrow(() => assertSmokeLauncherContract(mutated));
+    });
+  }
 });
 
 // F26's other half: CI invoking run-all.sh (locked above) only helps if
@@ -176,24 +806,47 @@ test('run-all.sh keeps the review-filter suite wired', () => {
 
 // F25 — a gate that runs but can never fail the build is worse than no gate. The
 // order test above does not catch a step neutered with `|| true` / continue-on-error.
-test('CI gates fail the build — no step swallows a nonzero exit', () => {
-  const ci = fs.readFileSync(CI, 'utf8');
+function assertCiGatesFailClosed(ci) {
   assert.equal(/\|\|\s*true\b/.test(ci), false, 'no CI step may mask failure with "|| true"');
   assert.equal(/continue-on-error:\s*true/.test(ci), false, 'no CI step may continue-on-error');
   assert.equal(/^\s*set \+e\b/m.test(ci), false, 'no CI step may disable errexit with "set +e"');
 
   // The managed-proxy/interview gate runs all three suites in one errexit shell
   // (GitHub Actions default bash -e), so any single failure fails the job.
-  const gate = ci.slice(
-    ci.indexOf('Test — SP Interview and managed proxy'),
-    ci.indexOf('Build + static QA gate (ms3)'),
-  );
-  assert.ok(gate.length > 0, 'SP managed-proxy gate step must exist');
-  for (const marker of [
+  const runSteps = extractRunSteps(ci);
+  const commands = [
     'npm --prefix sp-proxy test',
     'bash _prototypes/sp-interview/tests/run-all.sh',
     'python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py',
-  ]) {
-    assert.ok(gate.includes(marker), `SP gate must run ${marker}`);
+  ];
+  for (const command of commands) {
+    assert.equal(
+      countRunCommands(runSteps, command),
+      1,
+      `SP gate must run ${command} exactly once`,
+    );
   }
+  const gates = runSteps.filter((step) => (
+    commands.every((command) => hasExactLine(step.lines, command))
+  ));
+  assert.equal(gates.length, 1, 'SP managed-proxy gate commands must share one run block');
+}
+
+test('CI gates fail the build — no step swallows a nonzero exit', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  assertCiGatesFailClosed(ci);
+});
+
+test('managed SP fail-closed gate ignores workflow labels', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const relabeled = ci
+    .replace('Test — SP Interview and managed proxy', 'Arbitrary managed test wording')
+    .replace('Build + static QA gate (ms3)', 'Arbitrary managed build wording');
+  for (const label of [
+    'Test — SP Interview and managed proxy',
+    'Build + static QA gate (ms3)',
+  ]) {
+    assert.equal(relabeled.includes(label), false, `test fixture must relabel ${label}`);
+  }
+  assert.doesNotThrow(() => assertCiGatesFailClosed(relabeled));
 });

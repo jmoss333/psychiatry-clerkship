@@ -20,7 +20,7 @@ jobs:
   build-test-validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: false
 
@@ -32,9 +32,12 @@ jobs:
           fi
           echo "agent docs parity OK"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
+
+      - name: Install — registry schema validation dependencies
+        run: python3 -m pip install --requirement requirements.txt
 
       - name: Lint — no hard-coded machine paths in tracked Python
         run: |
@@ -46,16 +49,40 @@ jobs:
       - name: Unit — media guard
         run: python3 13_Faculty_Resources/_automation/site_build/test_media_guard.py
 
+      - name: Unit — evidence registry
+        run: python3 tools/evidence_registry/test_registry.py
+
+      - name: Validate — evidence registry and generated views
+        run: python3 tools/evidence_registry/validate.py --check-generated
+
+      - name: Unit — citation surveillance
+        run: python3 13_Faculty_Resources/_automation/surveillance/bin/run_citation_check.py --self-test
+
       - name: Validate — topic_meta.json contract
         run: python3 13_Faculty_Resources/_automation/validate_topic_meta.py
 
       - name: Validate — longitudinal case contract
         run: python3 13_Faculty_Resources/_automation/test_longitudinal_case.py
 
+      - name: Unit — shelf/COMAT question bank data-quality gate
+        run: python3 09_Exam_Prep/shelf_comat_bank/engine/test_qbank.py
+
       - name: Validate — family systems scenarios contract
         run: python3 13_Faculty_Resources/_automation/test_family_systems_scenarios.py
 
-      - uses: actions/setup-node@v4
+      - name: Test — registry schema gate
+        run: python3 13_Faculty_Resources/_automation/test_validate_registry_schemas.py
+
+      - name: Validate — registry schemas
+        run: python3 13_Faculty_Resources/_automation/validate_registry_schemas.py
+
+      - name: Test — ReConnect snapshot provenance
+        run: python3 13_Faculty_Resources/_automation/test_validate_reconnect_snapshot_provenance.py
+
+      - name: Validate — ReConnect snapshot provenance
+        run: python3 13_Faculty_Resources/_automation/validate_reconnect_snapshot_provenance.py
+
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
 
@@ -85,15 +112,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-test-validate
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
-      - uses: actions/setup-node@v4
+      - name: Install — registry schema validation dependencies
+        run: python3 -m pip install --requirement requirements.txt
+
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
 
@@ -104,7 +134,7 @@ jobs:
 
       - name: Cache Playwright browsers
         id: pw-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-1.46.1-${{ runner.os }}
@@ -115,27 +145,8 @@ jobs:
           npm ci
           npx playwright install chromium --with-deps
 
-      - name: Serve built sites on localhost (including faculty console)
-        run: |
-          python3 -m http.server 4200 --directory _build/ms3 &
-          python3 -m http.server 4201 --directory _build/res &
-          python3 -m http.server 4202 --directory faculty-console &
-          # Fail closed unless every required surface accepts connections.
-          for port in 4200 4201 4202; do
-            ready=false
-            for i in $(seq 1 15); do
-              if curl -sf "http://localhost:$port/" >/dev/null 2>&1; then
-                ready=true
-                break
-              fi
-              sleep 1
-            done
-            if [ "$ready" != true ]; then
-              echo "::error::Server on port $port did not become ready"
-              exit 1
-            fi
-          done
-          echo "Servers ready"
+      - name: Start local review servers
+        run: bash tests/smoke/start-local-servers.sh
 
       - name: "Check 1: nav crawl — ms3 + res"
         run: |
@@ -185,7 +196,7 @@ jobs:
           npx playwright test --project=visual
 
       - name: Upload smoke test artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: smoke-test-results-${{ github.run_number }}

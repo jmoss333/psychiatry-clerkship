@@ -6,9 +6,11 @@ test('question bank announces the verdict in an aria-live region', async ({ page
   // start a session
   await page.getByRole('button', { name: /start practice/i }).click();
   // choose a confidence, then any answer option (A–E buttons)
-  await page.getByRole('button', { name: /Likely/i }).click();
-  const opt = page.locator('.qcard button').filter({ hasText: /^[A-E]\./ }).first();
-  await opt.click();
+  await page.locator('.conf-btn[data-conf="likely"]').click();
+  await page.locator('#optsList .opt').first().click();
+  // Two-tier items do not emit a verdict until the rationale is answered.
+  const rationale = page.locator('#tier2Opts .opt').first();
+  if (await rationale.count()) await rationale.click();
   // a persistent live region should now carry a verdict
   const live = page.locator('[aria-live]');
   await expect(live).toHaveCount(1);
