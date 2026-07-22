@@ -14,6 +14,8 @@ import sys
 from datetime import date
 from urllib.parse import urlparse
 
+from validate_tool_governance import GovernanceError, parse_metadata_marker
+
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 REVIEWED_PATH = os.path.join("13_Faculty_Resources", "reviewed.json")
@@ -132,12 +134,9 @@ def _validate_engine(slug, pack):
     return errors
 
 
-def parse_rc_meta(source):
-    """Return key/value pairs from one HTML RC-META comment, if present."""
-    match = re.search(r"<!--\s*\[RC-META\]\s*(.*?)-->", source, re.S)
-    if not match:
-        return None
-    return dict(re.findall(r"([A-Za-z][\w-]*)=\"([^\"]*)\"", match.group(1)))
+def parse_rc_meta(source, relative_path):
+    """Return fields from the shared preferred-or-legacy metadata parser."""
+    return parse_metadata_marker(source, relative_path).fields
 
 
 def parse_iso_date(value):
@@ -707,18 +706,15 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
     pack_status = norm_status(pack.get("status"))
     if is_reviewed(ledger_status) and not is_reviewed(pack_status):
         errors.append(
-            "%s: reviewed.json says reviewed but pack status is %s"
-            % (slug, pack_status)
+            "%s: reviewed-ledger-pack-status-mismatch" % slug
         )
     if not is_reviewed(ledger_status) and is_reviewed(pack_status):
         errors.append(
-            "%s: pack says %s but reviewed.json status is %s"
-            % (slug, pack_status, ledger_status)
+            "%s: pack-reviewed-ledger-status-mismatch" % slug
         )
     if meta_status and is_reviewed(meta_status) != is_reviewed(pack_status):
         errors.append(
-            "%s: RC-META status %s disagrees with pack status %s"
-            % (slug, meta_status, pack_status)
+            "%s: metadata-pack-status-mismatch" % slug
         )
 
     errors.extend(_validate_engine(slug, pack))
@@ -795,27 +791,29 @@ def validate(root):
         ledger_status = norm_status(reviewed.get(slug, {}).get("status"))
         source_path = os.path.join(root, src)
         try:
-            with open(source_path, encoding="utf-8") as handle:
-                source = handle.read(32768)
+            with open(source_path, "rb") as handle:
+                source = handle.read()
         except FileNotFoundError:
             errors.append(
                 "%s: source file listed in manifest is missing (%s)" % (slug, src)
             )
             continue
-        meta = parse_rc_meta(source)
-        if meta is None:
-            errors.append("%s: manifest tool is missing an [RC-META] header" % slug)
+        try:
+            meta = parse_rc_meta(source, src)
+        except GovernanceError as error:
+            if str(error).endswith(": metadata marker missing"):
+                errors.append("%s: manifest tool is missing a recognized metadata header" % slug)
+            else:
+                errors.append("%s: manifest tool has an invalid metadata header" % slug)
             meta = {}
         meta_status = meta.get("status")
         if meta_status and is_reviewed(ledger_status) and not is_reviewed(meta_status):
             errors.append(
-                "%s: reviewed.json says reviewed but RC-META status is %s"
-                % (slug, meta_status)
+                "%s: reviewed-ledger-metadata-status-mismatch" % slug
             )
         if meta_status and not is_reviewed(ledger_status) and is_reviewed(meta_status):
             errors.append(
-                "%s: RC-META says reviewed but reviewed.json status is %s"
-                % (slug, ledger_status)
+                "%s: metadata-reviewed-ledger-status-mismatch" % slug
             )
 
         pack_path = os.path.splitext(source_path)[0] + ".pack.json"
@@ -838,13 +836,11 @@ def validate(root):
         faculty_status = norm_status(faculty.get("status"))
         if is_reviewed(ledger_status) and not is_reviewed(faculty_status):
             errors.append(
-                "%s: reviewed.json says reviewed but topic_meta.facultyReview.status is %s"
-                % (slug, faculty_status)
+                "%s: reviewed-ledger-topic-meta-status-mismatch" % slug
             )
         if not is_reviewed(ledger_status) and is_reviewed(faculty_status):
             errors.append(
-                "%s: topic_meta says reviewed but reviewed.json status is %s"
-                % (slug, ledger_status)
+                "%s: topic-meta-reviewed-ledger-status-mismatch" % slug
             )
         if is_reviewed(ledger_status):
             if not faculty.get("lastReviewed"):

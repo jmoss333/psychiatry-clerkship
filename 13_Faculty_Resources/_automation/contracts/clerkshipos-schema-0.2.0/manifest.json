@@ -1,0 +1,11 @@
+{
+  "contract": {
+    "name": "GovernanceEnvelopeV1",
+    "package": "@clerkshipos/schema",
+    "version": "0.2.0",
+    "repository": "https://github.com/jmoss333/clerkshipos.git",
+    "revision": "f4c29921b0dae325632d1f9d948d651235d9b213",
+    "artifactPath": "packages/schema/artifacts/contracts/governance-envelope-v1.schema.json",
+    "sha256": "9def8f3edfaa11c549a0bd258eaff048754775675b71e96bf1ffccf15e41f36e"
+  }
+}

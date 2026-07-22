@@ -1,5 +1,6 @@
 # Derive the MMC resident variant from the already-built MS3 deploy (run AFTER build_deploy.py).
-import os, shutil, json, re, glob
+import os, shutil, json, re, glob, sys
+from pathlib import Path
 
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location.
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -10,6 +11,8 @@ OUT=os.environ.get("OUT_DIR", os.path.join(ROOT,"mmc-resident-deploy"))
 
 if os.path.exists(OUT): shutil.rmtree(OUT)
 shutil.copytree(MS3, OUT)   # start as a full copy of the polished/dark/motion MS3 build
+_copied_governance=os.path.join(OUT,"tool-governance.json")
+if os.path.exists(_copied_governance): os.remove(_copied_governance)
 
 # ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the 4 files
 # that rode along via the MS3 copytree above; resident gets its own prototypes only (below).
@@ -241,3 +244,25 @@ for x,dd in postings.items():
 open(OUT+"/search-index.json","w",encoding="utf-8").write(json.dumps({"version":1,"n":len(docs),"synonyms":syn,"docs":docs,"postings":post,"df":df},ensure_ascii=False))
 print("RESIDENT build: pages",len(docs),"| out",OUT)
 print(" sections:",[s["section"] for s in nav])
+
+# ---------- TOOL GOVERNANCE ----------
+# Build from canonical sources, then verify the final resident tools exactly match its IDs.
+sys.path.insert(0, os.path.dirname(HERE))
+from validate_tool_governance import (
+    GovernanceError,
+    build_governance_document,
+    validate_built_tool_inventory,
+    write_atomic_json,
+)
+
+try:
+    _governance, _governance_warnings = build_governance_document(
+        Path(LIB), "resident", enforce_expected_count=True
+    )
+    validate_built_tool_inventory(_governance, Path(OUT) / "tools", site="resident")
+    write_atomic_json(Path(OUT) / "tool-governance.json", _governance)
+except GovernanceError as error:
+    raise SystemExit(f"tool governance INVALID — {error}") from error
+for _warning in _governance_warnings:
+    print(_warning)
+print("tool governance: emitted", len(_governance["items"]), "items")
