@@ -301,10 +301,14 @@ function buildQueue(items, catFilter, diffFilter, sizeLimit){
   return q;
 }
 
-/* Items eligible to serve to learners. Retired items (near-duplicate/redundant per
-   question_bank.schema.json) are NEVER queued. Drafts ARE served and marked. */
+/* Items eligible to serve to learners: faculty-attested, non-retired only. Drafts and
+   retired near-duplicates (per question_bank.schema.json) never reach the learner pool.
+   The faculty REVIEW_CONTEXT path in init() reads BANK.items directly, so draft items
+   stay previewable from the attestation console. */
 function activeItems(){
-  return (BANK && BANK.items ? BANK.items : []).filter(function(it){ return !it.retired; });
+  return (BANK && BANK.items ? BANK.items : []).filter(function(it){
+    return !it.retired && it.status==='attested';
+  });
 }
 
 /* ---- rendering helpers -------------------------------------------------------- */
@@ -325,7 +329,7 @@ function renderSetup(){
   var total = items.length;
   return '<div class="setup">'
     +'<h2>Practice bank</h2>'
-    +'<p class="sub">'+total+' items across 12 categories. Select filters, then start. Draft items are included and marked; they teach well even before formal faculty attestation. Retired near-duplicates are excluded.</p>'
+    +'<p class="sub">'+total+' faculty-attested items across 12 categories. Select filters, then start. Draft items pending faculty review and retired near-duplicates are excluded.</p>'
     +'<div class="filters">'
     +'<div class="field"><label for="f-cat">Category</label><select id="f-cat">'+catOpts+'</select></div>'
     +'<div class="field"><label for="f-diff">Difficulty</label><select id="f-diff"><option value="all">All levels</option><option value="1">1 — Recognition</option><option value="2">2 — Shelf-standard</option><option value="3">3 — Stretch</option></select></div>'
