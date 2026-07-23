@@ -8,6 +8,7 @@
 
 **This term's line-up (most recent first):**
 
+- **Suicide Risk Assessment & Safety Planning** (Jul 23) — risk formulation over category, the evidence on stratification limits, safety planning, and acute pharmacology.
 - **MDD — Treatment Selection, Sequencing & Augmentation** (Jul 20) — VAST-D, augmentation agent selection, pharmacogenomics, and esketamine sequencing.
 - **Bipolar Mania — Recognition & Acute Management** (Jul 20) — mixed features, secondary mania, and maintenance planning.
 - **Acute Agitation & Delirium in the ED** (Jul 13) — hyperactive vs. hypoactive delirium, workup, and pharmacologic strategy.
