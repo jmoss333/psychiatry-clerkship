@@ -113,6 +113,11 @@
   ]
  ],
  "md": [
+  [ "08_Cases_and_Simulation/case-of-the-week/index_ms3.md", "cotw_index.md", "Case of the Week — Index" ],
+  [ "08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_MS3.md", "cotw_20260709_ssnms_ms3.md", "Case of the Week — Serotonin Syndrome vs NMS (MS3)" ],
+  [ "08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md", "cotw_20260713_agitation_ms3.md", "Case of the Week — Acute Agitation & Delirium (MS3)" ],
+  [ "08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md", "cotw_20260720_bipolar_ms3.md", "Case of the Week — Bipolar Mania (MS3)" ],
+  [ "08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md", "cotw_20260720_mdd_ms3.md", "Case of the Week — MDD Treatment Selection (MS3)" ],
   [
    "13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md",
    "welcome.md",
