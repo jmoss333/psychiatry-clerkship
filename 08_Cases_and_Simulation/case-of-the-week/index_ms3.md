@@ -8,6 +8,7 @@
 
 **This term's line-up (most recent first):**
 
+- **Suicide Risk Assessment & Safety Planning** (Jul 23) — structured assessment, the limits of risk scores, and collaborative safety planning.
 - **MDD — Treatment Selection & Augmentation** (Jul 20) — switch vs. augment vs. optimize when an antidepressant isn't working.
 - **Bipolar Mania — Recognition & Acute Management** (Jul 20) — spotting a manic episode and choosing first-line acute treatment.
 - **Acute Agitation & Delirium in the ED** (Jul 13) — treat the driver, de-escalate before PRN, PRN before restraint.
