@@ -37,12 +37,15 @@ for _rvf in RESIDENT_VIDEO_MEDIA:
     else: print("  WARN: resident onboarding video asset missing from source:",_rvf)
 
 # ---- resident-only pages (welcome overrides the MS3 welcome.md) ----
+# ---- Case of the Week: resident per-week pages are registry-driven (single source of truth:
+# 08_Cases_and_Simulation/case-of-the-week/cotw_registry.json). The shared cotw_index.md is
+# overwritten here with the resident index; per-week resident pages are appended below.
+_COTW_DIR="08_Cases_and_Simulation/case-of-the-week"
+_cotw_weeks=json.load(open(os.path.join(LIB,_COTW_DIR,"cotw_registry.json"),encoding="utf-8")).get("weeks",[])
+def _cotw_slug(w,level): return "cotw_%s_%s_%s.md"%(w["date"].replace("-",""),w["topic"],level)
 RES_EXTRA=[
  ("08_Cases_and_Simulation/case-of-the-week/index_resident.md","cotw_index.md"),
- ("08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md","cotw_20260709_ssnms_res.md"),
- ("08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md","cotw_20260713_agitation_res.md"),
- ("08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md","cotw_20260720_bipolar_res.md"),
- ("08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md","cotw_20260720_mdd_res.md"),
+]+[(os.path.join(_COTW_DIR,w["res_src"]),_cotw_slug(w,"res")) for w in _cotw_weeks]+[
  ("14_Tracks/Resident/resident_welcome.md","welcome.md"),
  ("14_Tracks/Resident/resident_curriculum.md","rotation.md"),
  ("14_Tracks/Resident/adv_psychopharmacology.md","adv_psychopharm.md"),
@@ -186,7 +189,7 @@ nav=[
  {"section":"Work with Family and Systems","items":[{"t":"Family Systems Practice","f":"family-systems.html","k":"tool"},{"t":"I Need Collateral: 10-Minute Workflow","f":"collateral_workflow.md","k":"md"},{"t":"Family & Discharge","f":"exp_family.md","k":"md"},{"t":"Family Meeting Playbook (90-min)","f":"family_playbook.md","k":"md"},{"t":"Family Therapy Modalities","f":"family_modalities.md","k":"md"}]},
  {"section":"Present and Work with the Team","items":[{"t":"Documentation & Oral Presentation","f":"doc_oral.md","k":"md"},{"t":"Treatment Team Rounding Prep","f":"oral.html","k":"tool"},{"t":"High-Yield Rounds Questions","f":"rounds_questions.md","k":"md"}]},
  {"section":"Practice and Exam Prep","items":[{"t":"Practice Questions — Question Bank","f":"question-bank-practice.html","k":"tool"},{"t":"One Patient, Six Weeks","f":"one-patient-six-weeks.html","k":"tool"},{"t":"Daily Review (Spaced Repetition)","f":"review.html","k":"tool","hidden":True},{"t":"Board-Style Question Bank","f":"shelf-mode.html","k":"tool","hidden":True},{"t":"Canon Quiz — 200-Paper Spine","f":"rp-canon-quiz.html","k":"tool"},{"t":"Rapid Review — Buzzwords","f":"rapid_review.md","k":"md"},{"t":"Landmark Trials — Listen & Test","f":"landmark_trials.md","k":"md"},{"t":"Anki Flashcard Decks","f":"anki.md","k":"md"}]},
- {"section":"Case of the Week","items":[{"t":"Index — All Cases","f":"cotw_index.md","k":"md"},{"t":"MDD — Treatment Selection (Jul 20)","f":"cotw_20260720_mdd_res.md","k":"md"},{"t":"Bipolar Mania (Jul 20)","f":"cotw_20260720_bipolar_res.md","k":"md"},{"t":"Acute Agitation & Delirium (Jul 13)","f":"cotw_20260713_agitation_res.md","k":"md"},{"t":"Serotonin Syndrome vs NMS (Jul 9)","f":"cotw_20260709_ssnms_res.md","k":"md"}]},
+ {"section":"Case of the Week","items":[{"t":"Index — All Cases","f":"cotw_index.md","k":"md"}]+[{"t":w["label"],"f":_cotw_slug(w,"res"),"k":"md"} for w in _cotw_weeks]},
  {"section":"Evidence and Reference","items":[{"t":"Evidence-Based Inpatient Psychiatry","f":"evidence_inpatient.md","k":"md"},{"t":"The Psychiatry Canon (200)","f":"canon_200.md","k":"md"},{"t":"Book Library","f":"book_library.md","k":"md"},{"t":"Podcast Library (Psychiatry & Psychotherapy)","f":"podcast_library.md","k":"md"}]+_HIDDEN_INHERITED},
  {"section":"Feedback","items":[{"t":"Improve this library — send feedback","f":"feedback.html","k":"tool"}]},
 ]
