@@ -563,8 +563,8 @@ test('creates one semantic queue, workspace, and persistent field labels', () =>
   assert.match(appSource, /not verified identit/i);
   assert.match(appSource, /Revert/);
   assert.match(appSource, /Save draft/);
-  assert.match(appSource, /Attest this question/);
-  assert.match(appSource, /Review[^\n]+Resolve[^\n]+Confirm/);
+  assert.match(appSource, /Attest & continue/);
+  assert.match(appSource, /Review checklist/);
   assert.match(appSource, /Ready|Warning|Blocked/);
   assert.doesNotMatch(appSource, /role:\s*'tablist'/);
   assert.doesNotMatch(appSource, /function renderTabNavigation|function renderBatchSummary|function renderBatchConfirmation/);
@@ -624,6 +624,7 @@ test('uses the approved clinical workbench layout and accessible primary contras
   assert.match(html, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   for (const className of [
     'queue-strip',
+    'recent-attestation-receipt',
     'queue-primary',
     'queue-filters',
     'workspace',
@@ -631,8 +632,14 @@ test('uses the approved clinical workbench layout and accessible primary contras
     'preview-shell',
     'view-switcher',
     'signoff-rail',
-    'rail-step',
+    'attestation-progress',
+    'attestation-checklist',
+    'attestation-group',
+    'requirement-row',
+    'attestation-action-bar',
+    'attestation-primary',
   ]) assert.match(html, new RegExp(`\\.${className}\\b`));
+  assert.match(html, /\.attestation-action-bar\s*\{[^}]*position:\s*sticky/s);
   assert.match(html, /textarea/);
   assert.match(html, /\.data-text\s*\{[^}]*overflow-wrap:\s*anywhere/s);
   assert.match(html, /\.modal-panel\s*\{[^}]*position:\s*fixed/s);
@@ -1369,7 +1376,8 @@ test('preview Ready preserves its browsing context and later status or navigatio
   assert.equal(preview.status, 'error');
   assert.equal(controller.state.reviewChecks.liveReviewed, false);
   assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
-  assert.equal(document.getElementById('attest-current-item').disabled, true);
+  assert.equal(document.getElementById('attest-current-item').disabled, false);
+  assert.match(document.getElementById('attest-current-item').textContent, /remaining requirement/);
 
   await document.getElementById('retry-preview').dispatch('click');
   const notFoundRetry = controller.state.preview;
@@ -1394,7 +1402,8 @@ test('preview Ready preserves its browsing context and later status or navigatio
   assert.equal(navigationRetry.status, 'frame_failure');
   assert.equal(controller.state.reviewChecks.liveReviewed, false);
   assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
-  assert.equal(document.getElementById('attest-current-item').disabled, true);
+  assert.equal(document.getElementById('attest-current-item').disabled, false);
+  assert.match(document.getElementById('attest-current-item').textContent, /remaining requirement/);
 });
 
 test('preview fallback gates question Retry and opens only clean page or tool routes externally', async () => {
@@ -1480,7 +1489,9 @@ test('preview fallback gates question Retry and opens only clean page or tool ro
   assert.equal(contentController.state.reviewChecks.separateTabReviewed, false);
   assert.equal(contentController.state.reviewChecks.accuracy, false);
   assert.equal(contentController.state.reviewChecks.interactions, false);
-  assert.equal(contentDocument.getElementById('attest-current-item').disabled, true);
+  assert.equal(contentDocument.getElementById('attest-current-item').disabled, false);
+  assert.match(contentDocument.getElementById('attest-current-item').textContent,
+    /remaining requirement/);
 
   await setValue(contentDocument, 'review-item-selector', 'tool:mse.html', 'change');
   await reportPreviewStatus(contentWindow, contentController, 'error');
@@ -1534,7 +1545,8 @@ test('terminal preview fallback revokes question evidence after a current-frame 
     interactions: false,
   });
   assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
-  assert.equal(document.getElementById('attest-current-item').disabled, true);
+  assert.equal(document.getElementById('attest-current-item').disabled, false);
+  assert.match(document.getElementById('attest-current-item').textContent, /remaining requirement/);
   assert.equal(document.getElementById('question-view-live').getAttribute('hidden'), null);
   assert.equal(document.getElementById('selected-item-view').textContent, 'Live deploy');
   assert.equal(document.activeElement?.getAttribute('id'), 'preview-status');
@@ -1627,7 +1639,8 @@ test('terminal preview fallback revokes page and tool checks after a current-fra
       accuracy: false,
       interactions: false,
     });
-    assert.equal(document.getElementById('attest-current-item').disabled, true);
+    assert.equal(document.getElementById('attest-current-item').disabled, false);
+    assert.match(document.getElementById('attest-current-item').textContent, /remaining requirement/);
     assert.equal(document.activeElement?.getAttribute('id'), 'preview-status');
     assert.match(document.getElementById('preview-status').textContent,
       /Network or embedded-preview failure/);
@@ -1981,7 +1994,8 @@ test('rebuilds the candidate immediately, shows blockers before warnings, and ma
   assert.equal(controller.state.localAssessment.gate, 'warning');
   assert.match(document.getElementById('safety-issues').textContent, /Review this synthetic warning/);
   assert.equal(document.getElementById('save-draft').disabled, false);
-  assert.equal(document.getElementById('attest-current-item').disabled, true);
+  assert.equal(document.getElementById('attest-current-item').disabled, false);
+  assert.match(document.getElementById('attest-current-item').textContent, /remaining requirement/);
   assert.equal(document.links().some(link => link.getAttribute('href') === '#question-stem'), true);
   const warningStem = document.getElementById('question-stem');
   assert.equal(warningStem.getAttribute('aria-invalid'), null);
@@ -2028,7 +2042,7 @@ test('dirty state takes sign-off precedence for an edited attested item', async 
   await setValue(document, 'review-item-selector', 'question:qb_moo_902', 'change');
   await setValue(document, 'question-stem', 'An attested item now has a local edit. What is the diagnosis?');
 
-  assert.match(document.getElementById('rail-step-review').className, /current/);
+  assert.match(document.getElementById('requirement-question-saved').className, /current/);
   assert.doesNotMatch(document.getElementById('rail-step-confirm').className, /current/);
 });
 
@@ -2607,7 +2621,7 @@ test('Lock uses the dirty guard and save-time 401 reauthentication retries the c
   assert.equal(window.sessionStorage.getItem('fac_key'), null);
 });
 
-test('page and tool use the same Live Review Resolve Confirm rail and clear content checks on selection', async () => {
+test('page and tool use the same compact checklist and clear content checks on selection', async () => {
   const harness = await startHarness({
     fetchImpl: async () => jsonResponse(serverState({
       items: [
@@ -2617,16 +2631,17 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
       questions: [],
     })),
   });
-  const { controller, document } = harness;
+  const { controller, document, window } = harness;
 
   assert.equal(controller.state.selectedKey, 'page:t_mood.md');
   assert.equal(document.getElementById('selected-item-type').textContent, 'Page');
   assert.equal(document.getElementById('selected-item-view').textContent, 'Live deploy');
   assert.ok(document.getElementById('learner-preview-frame'));
   assert.equal(document.getElementById('attestation-rail-title').textContent,
-    'Review → Resolve → Confirm');
-  assert.match(document.getElementById('rail-step-review').className, /current/);
-  assert.equal(document.find('button', 'Attest this page')?.disabled, true);
+    'Review checklist');
+  assert.match(document.getElementById('requirement-preview-ready').className, /current/);
+  assert.equal(document.getElementById('attest-current-item').disabled, false);
+  assert.match(document.getElementById('attest-current-item').textContent, /remaining requirements/);
 
   await makeCurrentContentPreviewReady(harness);
   assert.ok(document.find('label', 'I reviewed the complete item'));
@@ -2634,11 +2649,10 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
     'I verified that this is accurate and appropriate for a third-year student.'));
   assert.ok(document.find('label', 'I tested the relevant links, media, or interactions.'));
   await setChecked(document, 'review-complete-item');
-  assert.match(document.getElementById('rail-step-resolve').className, /current/);
   await setChecked(document, 'review-content-accuracy');
   await setChecked(document, 'review-content-interactions');
-  assert.match(document.getElementById('rail-step-confirm').className, /current/);
-  assert.equal(document.find('button', 'Attest this page')?.disabled, false);
+  assert.equal(document.getElementById('attest-current-item').textContent, 'Attest & continue');
+  assert.equal(document.getElementById('attest-current-item').disabled, false);
   assert.equal(document.getElementById('current-reviewer-label').textContent, 'Joshua Moss, MD');
 
   await setValue(document, 'reviewer-label', 'Updated faculty reviewer');
@@ -2650,8 +2664,9 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
   assert.equal(document.getElementById('selected-item-type').textContent, 'Tool');
   assert.equal(document.getElementById('selected-item-view').textContent, 'Live deploy');
   assert.ok(document.getElementById('learner-preview-frame'));
-  assert.match(document.getElementById('rail-step-review').className, /current/);
-  assert.equal(document.find('button', 'Attest this tool')?.disabled, true);
+  assert.match(document.getElementById('requirement-preview-ready').className, /current/);
+  assert.equal(document.getElementById('attest-current-item').disabled, false);
+  assert.match(document.getElementById('attest-current-item').textContent, /remaining requirements/);
   assert.deepEqual(controller.state.reviewChecks, {
     completeItemReviewed: false,
     liveReviewed: false,
@@ -2662,7 +2677,38 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
   });
 });
 
-test('content attestation submits exactly one page slug, confirms it, and holds the item for Next item', async () => {
+test('compact checklist guidance focuses the first unmet content requirement without posting', async () => {
+  let postCount = 0;
+  const harness = await startHarness({
+    fetchImpl: async (url, options = {}) => {
+      if (options.method === 'POST') postCount += 1;
+      return jsonResponse(serverState({
+        items: [{ slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' }],
+        questions: [],
+      }));
+    },
+  });
+  const { document } = harness;
+  await makeCurrentContentPreviewReady(harness);
+  await setChecked(document, 'review-content-accuracy');
+  await setChecked(document, 'review-content-interactions');
+
+  assert.match(document.getElementById('attestation-progress').textContent,
+    /4 of 5 required checks complete/);
+  const action = document.getElementById('attest-current-item');
+  assert.equal(action.disabled, false);
+  assert.equal(action.textContent, 'Review 1 remaining requirement');
+  await action.dispatch('click');
+
+  assert.equal(postCount, 0);
+  assert.equal(document.activeElement?.getAttribute('id'), 'review-complete-item');
+  assert.match(document.getElementById('requirement-review-complete_item').className, /guided/);
+
+  await setChecked(document, 'review-complete-item');
+  assert.equal(document.getElementById('attest-current-item').textContent, 'Attest & continue');
+});
+
+test('content attestation confirms one page, keeps its receipt, and advances to the next eligible item', async () => {
   let items = [
     { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
     { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
@@ -2684,7 +2730,7 @@ test('content attestation submits exactly one page slug, confirms it, and holds 
     return jsonResponse(serverState({ items, questions: [] }));
   };
   const harness = await startHarness({ fetchImpl });
-  const { controller, document } = harness;
+  const { controller, document, window } = harness;
   await completeCurrentContentReview(harness);
   await document.getElementById('attest-current-item').dispatch('click');
   await flushAsyncWork();
@@ -2695,20 +2741,61 @@ test('content attestation submits exactly one page slug, confirms it, and holds 
     attester: 'Joshua Moss, MD',
   });
   assert.equal(Object.keys(posted.changes).length, 1);
-  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
-  assert.equal(controller.state.completedHoldKey, 'page:t_mood.md');
+  assert.equal(controller.state.selectedKey, 'tool:mse.html');
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.deepEqual(controller.state.recentReceipt, {
+    key: 'page:t_mood.md',
+    message: 'Attested t_mood.md.',
+    commitUrl: 'https://github.example/commit/content-page',
+  });
   assert.equal(controller.state.reviewItems.find(item => item.key === 'page:t_mood.md').savedStatus,
     'reviewed');
   assert.equal(controller.state.contentMessage, 'Attested t_mood.md.');
-  assert.match(document.getElementById('content-action-result').textContent, /Attested t_mood\.md/);
+  assert.match(document.getElementById('recent-attestation-receipt').textContent,
+    /Attested t_mood\.md/);
   assert.equal(
     document.links().find(link => link.textContent === 'View commit ↗')?.getAttribute('href'),
     'https://github.example/commit/content-page',
   );
-  assert.equal(document.getElementById('next-review-item').textContent, 'Next item');
-  assert.equal(document.getElementById('next-review-item').disabled, false);
-  assert.equal(document.activeElement?.getAttribute('id'), 'next-review-item');
-  assert.equal(document.status.textContent, 'Attested t_mood.md.');
+  assert.equal(document.activeElement?.getAttribute('id'), 'attestation-rail-title');
+  await reportPreviewStatus(window, controller, 'ready');
+  assert.equal(document.activeElement?.getAttribute('id'), 'attestation-rail-title');
+  assert.equal(document.status.textContent,
+    'Deployed tool preview: ready.');
+});
+
+test('confirmed auto-advance honors active filters and wraps to the first remaining eligible item', async () => {
+  let items = [
+    { slug: 'a_first.md', title: 'First page', kind: 'page', status: 'unreviewed' },
+    { slug: 'b_tool.html', title: 'Excluded tool', kind: 'tool', status: 'unreviewed' },
+    { slug: 'c_last.md', title: 'Last page', kind: 'page', status: 'unreviewed' },
+  ];
+  const harness = await startHarness({
+    fetchImpl: async (url, options = {}) => {
+      if (options.method === 'POST') {
+        const posted = JSON.parse(options.body);
+        const [[slug]] = Object.entries(posted.changes);
+        items = items.map(item => item.slug === slug ? { ...item, status: 'reviewed' } : item);
+        return jsonResponse({
+          ok: true,
+          updated: 1,
+          commit: 'https://github.example/commit/filtered-wrap',
+        });
+      }
+      return jsonResponse(serverState({ items, questions: [] }));
+    },
+  });
+  const { controller, document } = harness;
+  await setValue(document, 'review-type-filter', 'page', 'change');
+  await setValue(document, 'review-item-selector', 'page:c_last.md', 'change');
+  await completeCurrentContentReview(harness);
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(controller.state.queueFilters.type, 'page');
+  assert.equal(controller.state.selectedKey, 'page:a_first.md');
+  assert.notEqual(controller.state.selectedKey, 'tool:b_tool.html');
+  assert.equal(controller.state.recentReceipt.key, 'page:c_last.md');
 });
 
 test('content POST with a stale confirming GET remains unconfirmed and never announces success', async () => {
@@ -2757,6 +2844,7 @@ test('content POST with a stale confirming GET remains unconfirmed and never ann
   assert.equal(controller.state.pending, false);
   assert.equal(controller.state.selectedKey, 'page:t_mood.md');
   assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.recentReceipt, null);
   assert.equal(controller.state.reviewItems.find(item => item.key === 'page:t_mood.md').savedStatus,
     'unreviewed');
   assert.match(controller.state.contentMessage, /refresh_failed/);
@@ -2911,7 +2999,9 @@ test('Reopen review is a confirmed More action and submits exactly that content 
     'unreviewed');
   assert.equal(controller.state.contentMessage, 'Reopened t_mood.md for review.');
   assert.equal(Boolean(document.find('button', 'Reopen review')), false);
-  assert.ok(document.find('button', 'Attest this page'));
+  assert.ok(document.getElementById('attest-current-item'));
+  assert.match(document.getElementById('attest-current-item').textContent,
+    /remaining requirements/);
 });
 
 test('content checks are not unsaved bulk state and the shortcut never submits them', async () => {
@@ -2974,13 +3064,16 @@ test('requires all human confirmations and each current warning acknowledgement 
   });
   await makeCurrentQuestionPreviewReady({ controller, document, window });
   const attest = document.getElementById('attest-current-item');
-  assert.equal(attest.disabled, true);
+  assert.equal(attest.disabled, false);
+  assert.match(attest.textContent, /remaining requirements/);
   for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
     await setChecked(document, id);
   }
-  assert.equal(document.getElementById('attest-current-item').disabled, true);
+  assert.equal(document.getElementById('attest-current-item').disabled, false);
+  assert.match(document.getElementById('attest-current-item').textContent, /remaining requirement/);
   await setChecked(document, 'ack-stem-negative_lead_in');
   assert.equal(document.getElementById('attest-current-item').disabled, false);
+  assert.equal(document.getElementById('attest-current-item').textContent, 'Attest & continue');
   await document.getElementById('attest-current-item').dispatch('click');
   await flushAsyncWork();
 
@@ -3000,17 +3093,21 @@ test('requires all human confirmations and each current warning acknowledgement 
     evidence: true,
     originalityAndNoPhi: true,
   });
-  assert.equal(controller.state.original.status, 'attested');
-  assert.equal(controller.state.original.revision, testRevision('revision-attested'));
-  assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-result');
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'question:qb_moo_902').savedStatus,
+    'attested');
+  assert.equal(controller.state.selectedKey, null);
+  assert.match(document.getElementById('recent-attestation-receipt').textContent,
+    /Attested 1 question: qb_moo_902/);
+  assert.equal(document.activeElement?.getAttribute('id'), 'review-queue-title');
+  assert.match(document.status.textContent, /Review queue complete/);
 });
 
-test('Ready attestation posts one exact-revision entry and holds the completed question for Next item', async () => {
+test('Ready attestation posts one exact-revision entry and advances to the next eligible question', async () => {
   const attestedRevision = testRevision('ready-attested');
   const second = validDomQuestion({
     id: 'qb_moo_903',
     revision: testRevision('ready-next'),
-    stem: 'A second saved question should not be auto-selected. What is the diagnosis?',
+    stem: 'A second saved question is next in the review queue. What is the diagnosis?',
   });
   let questions = [validDomQuestion(), second];
   let posted;
@@ -3043,10 +3140,11 @@ test('Ready attestation posts one exact-revision entry and holds the completed q
     await setChecked(document, id);
   }
   const attestButtons = document.findAll('button').filter(button => (
-    button.textContent === 'Attest this question'
+    button.getAttribute('id') === 'attest-current-item'
   ));
   assert.equal(attestButtons.length, 1);
   assert.equal(attestButtons[0].disabled, false);
+  assert.equal(attestButtons[0].textContent, 'Attest & continue');
   await attestButtons[0].dispatch('click');
   await flushAsyncWork();
 
@@ -3055,14 +3153,18 @@ test('Ready attestation posts one exact-revision entry and holds the completed q
     revision: testRevision('revision-one'),
     reviewedRevision: testRevision('revision-one'),
   }]);
-  assert.equal(controller.state.selectedKey, 'question:qb_moo_902');
-  assert.equal(controller.state.completedHoldKey, 'question:qb_moo_902');
-  assert.equal(controller.state.original.status, 'attested');
-  assert.match(document.getElementById('qbank-action-result').textContent,
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903');
+  assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'question:qb_moo_902').savedStatus,
+    'attested');
+  assert.deepEqual(controller.state.recentReceipt, {
+    key: 'question:qb_moo_902',
+    message: 'Attested 1 question: qb_moo_902.',
+    commitUrl: 'https://github.example/commit/ready-attested',
+  });
+  assert.match(document.getElementById('recent-attestation-receipt').textContent,
     /Attested 1 question: qb_moo_902/);
-  assert.equal(document.getElementById('next-review-item').textContent, 'Next item');
-  assert.equal(document.getElementById('next-review-item').disabled, false);
-  assert.equal(document.activeElement?.getAttribute('id'), 'next-review-item');
+  assert.equal(document.activeElement?.getAttribute('id'), 'attestation-rail-title');
 });
 
 test('a successful attestation POST with a stale confirming GET stays unconfirmed', async () => {
@@ -3104,9 +3206,48 @@ test('a successful attestation POST with a stale confirming GET stays unconfirme
   assert.equal(controller.state.original.revision, original.revision);
   assert.equal(controller.state.selectedKey, 'question:qb_moo_902');
   assert.equal(controller.state.completedHoldKey, null);
+  assert.equal(controller.state.recentReceipt, null);
   assert.match(document.getElementById('qbank-action-error').textContent, /refresh_failed/);
   assert.doesNotMatch(document.app.textContent, /Attested 1 question/);
   assert.equal(controller.state.qbankMessage, '');
+});
+
+test('question commit URL must be safe HTTPS before any confirming GET or auto-advance', async () => {
+  const original = validDomQuestion();
+  const returnedRevision = testRevision('unsafe-question-commit');
+  let getCount = 0;
+  const harness = await startHarness({
+    fetchImpl: async (url, options = {}) => {
+      if (options.method === 'POST') {
+        return jsonResponse({
+          ok: true,
+          action: 'qbank.attest',
+          updated: 1,
+          revision: { qb_moo_902: returnedRevision },
+          assessment: { qb_moo_902: { gate: 'ready', blockers: [], warnings: [] } },
+          commit: 'http://github.example/commit/unsafe-question',
+        });
+      }
+      getCount += 1;
+      return jsonResponse(serverState({ question: original }));
+    },
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { controller, document } = harness;
+  await makeCurrentQuestionPreviewReady(harness);
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    await setChecked(document, id);
+  }
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(getCount, 1);
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902');
+  assert.equal(controller.state.recentReceipt, null);
+  assert.match(document.getElementById('qbank-action-error').textContent,
+    /invalid_response: Commit receipt was not a safe HTTPS URL/);
+  assert.equal(document.links().some(link => link.getAttribute('href')
+    === 'http://github.example/commit/unsafe-question'), false);
 });
 
 test('an attestation GET with a matching revision but Draft status stays unconfirmed', async () => {
@@ -3205,8 +3346,10 @@ test('save-time 401 reauthentication retries the exact captured attestation and 
   assert.equal(posts.length, 2);
   assert.equal(posts[0].body.manifestRevision, DEFAULT_MANIFEST_REVISION);
   assert.deepEqual(posts[1].body, posts[0].body);
-  assert.equal(controller.state.original.revision, attestedRevision);
-  assert.equal(document.activeElement?.getAttribute('id'), 'qbank-action-result');
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'question:qb_moo_902').revision,
+    attestedRevision);
+  assert.equal(controller.state.selectedKey, null);
+  assert.equal(document.activeElement?.getAttribute('id'), 'review-queue-title');
 });
 
 test('attestation keeps the captured entry and confirmations immutable while POST and refresh are pending', async () => {
@@ -3278,8 +3421,11 @@ test('attestation keeps the captured entry and confirmations immutable while POS
   })));
   await flushAsyncWork();
   assert.equal(controller.state.pending, false);
-  assert.equal(controller.state.original.status, 'attested');
-  assert.equal(controller.state.original.revision, attestedRevision);
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'question:qb_moo_902').savedStatus,
+    'attested');
+  assert.equal(controller.state.reviewItems.find(item => item.key === 'question:qb_moo_902').revision,
+    attestedRevision);
+  assert.equal(controller.state.selectedKey, null);
 });
 
 test('save and refresh keep the editor and navigation inert until the captured revision is confirmed', async () => {

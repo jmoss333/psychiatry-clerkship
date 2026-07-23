@@ -19,11 +19,12 @@ faculty-console/
 
 1. Open the faculty site (its own Netlify URL), enter the faculty key, and provide a reviewer label.
 2. The console calls `GET /api/attest`. The key is sent only in the `x-faculty-key` header; it is never accepted from the URL or JSON body. The function reads `reviewed.json`, `site_manifest.json`, and `question_bank.json`, then returns the page/tool review state, active questions with their exact saved revisions, the normalized Git object ID for the loaded manifest, and current structural checks.
-3. Pages, tools, and questions appear in one filterable queue. Selecting an item opens its learner-facing surface beside one common **Review → Resolve → Confirm** rail.
+3. Pages, tools, and questions appear in one filterable queue. Selecting an item opens its learner-facing surface beside one compact **Review checklist**. The checklist shows exact progress and highlights the first unmet requirement.
 4. The embedded learner site reports a typed readiness result for the exact selected item. Preview requests carry a short-lived random review token, never the faculty key, reviewer label, confirmations, edits, or commit data.
 5. A question edit is saved as a **draft** first. The browser sends the exact loaded question and manifest revisions. Before each write attempt, the server captures one branch-head revision, rereads and validates both files at that exact snapshot, applies only editable fields, reruns the structural checks, and advances the branch only if its head is still unchanged. The browser then reloads the committed question; the success message and commit receipt appear only after that reload confirms the exact new revision.
-6. Attestation is a separate, one-item action. The server rechecks the exact saved question revision, current warnings, human confirmations, and manifest revision before changing status. Page/tool attestations likewise write only the selected slug. Attestation remains in its saving-and-confirming state until a repository reload matches the requested status and, for a question, revision.
-7. Netlify sees the commit and rebuilds the student sites. Badges update on the next deploy.
+6. Attestation is a separate, one-item action. Before the checklist is complete, its primary button focuses the first unmet requirement instead of becoming a silent disabled control. When complete, it becomes **Attest & continue**. The server rechecks the exact saved question revision, current warnings, human confirmations, and manifest revision before changing status. Page/tool attestations likewise write only the selected slug. Attestation remains in its saving-and-confirming state until a repository reload matches the requested status and, for a question, revision.
+7. Only after that confirming reload, the console displays a durable recent receipt with the safe commit link and moves to the next eligible item under the active filters. It wraps once to the first remaining eligible item; when none remain, it shows the completed queue with the last receipt still available.
+8. Netlify sees the commit and rebuilds the student sites. Badges update on the next deploy.
 
 **The GitHub token never leaves the server.** The browser only ever holds the faculty key (in `sessionStorage`, cleared when the tab closes).
 
@@ -31,7 +32,7 @@ faculty-console/
 
 ### 1. Choose one item
 
-Use the shared queue's search, item type, review status, category, gate, and difficulty filters. **Previous** and **Next** move deliberately through the filtered queue; a successful attestation stays on the completed item so its repository receipt can be inspected before choosing **Next item**.
+Use the shared queue's search, item type, review status, category, gate, and difficulty filters. **Previous** and **Next** move deliberately through the filtered queue. After a confirmed attestation, the console keeps the receipt above the queue and automatically selects the next item that still needs review within those filters.
 
 ### 2. Review the learner-facing surface
 
@@ -65,9 +66,11 @@ Ready and Warning questions both require an explicit **I reviewed this exact sav
 
 ### 4. Confirm one attestation
 
-The rail shows the self-entered reviewer label. For questions, complete all three faculty confirmations covering the clinical answer, named evidence, and an original fictional vignette without PHI. Then choose **Attest this question**. For pages and tools, choose **Attest this page** or **Attest this tool** after the Review and Resolve steps are complete.
+The checklist shows the self-entered reviewer label and a live count such as **4 of 5 required checks complete**. For questions, complete all three separate faculty confirmations covering the clinical answer, named evidence, and an original fictional vignette without PHI. Pages and tools retain their separate learner review, accuracy, and interaction checks.
 
-The interface submits only the selected item and waits for a confirming repository reload. A commit link is shown only after that confirmation. Completed page/tool reviews have no primary attestation button; use **More actions → Reopen review**, confirm the exact item, and complete a fresh review before re-attesting.
+The bottom action is always usable while the item is not being saved. If requirements remain, choose it to move focus to the first missing check. When all requirements are complete, it reads **Attest & continue**.
+
+The interface submits only the selected item and waits for a confirming repository reload. It never advances on the POST response alone. After confirmation, the recent receipt retains the commit link while the next eligible item opens. If no eligible item remains, the queue shows no selection and keeps the last confirmed receipt. Completed page/tool reviews have no primary attestation button; use **More actions → Reopen review**, confirm the exact item, and complete a fresh review before re-attesting.
 
 ### Embedded preview limits
 

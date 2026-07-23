@@ -10,6 +10,7 @@ import {
 } from '../../faculty-console/netlify/functions/qbank-actions.mjs';
 
 const MS3_URL = process.env.MS3_BASE_URL || 'http://localhost:4200';
+const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const FACULTY_KEY = 'synthetic-faculty-key';
 const MANIFEST_PAGES = ['t_mood.md'];
 const MANIFEST_REVISION = 'b'.repeat(40);
@@ -1194,7 +1195,10 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mood disorders page');
     await expect(page.locator('#selected-item-type')).toHaveText('Page');
     await expect(page.locator('#selected-item-view')).toHaveText('Live deploy');
-    await expect(page.locator('#attestation-rail-title')).toHaveText('Review → Resolve → Confirm');
+    await expect(page.locator('#attestation-rail-title')).toHaveText('Review checklist');
+    await expect(page.locator('#attestation-progress')).toContainText('required checks complete');
+    await expect(page.locator('#attest-current-item')).toContainText('remaining requirement');
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
 
     const frame = page.locator('#learner-preview-frame');
@@ -1202,7 +1206,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(frame).toHaveAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
     await expect(frame).toHaveAttribute('referrerpolicy', 'no-referrer');
     await expect(frame).toHaveAttribute('src', new RegExp(
-      '^http://localhost:4200/\\?page=t_mood\\.md&reviewKey=page%3At_mood\\.md&reviewToken=[0-9a-f]{32}$',
+      `^${escapeRegex(MS3_URL)}/\\?page=t_mood\\.md&reviewKey=page%3At_mood\\.md&reviewToken=[0-9a-f]{32}$`,
     ));
 
     await expect(page.getByRole('tab')).toHaveCount(0);
@@ -1229,7 +1233,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     ]) expect(previewMessageJson).not.toContain(privateValue);
   });
 
-  test('attests one page and tool, stays on each receipt, and reopens one page for re-attestation', async ({ page }) => {
+  test('attests one page and tool, auto-advances with receipts, and reopens one page for re-attestation', async ({ page }) => {
     const api = await installRepositoryApi(page, workflowBank());
     await unlock(page);
     await page.getByLabel('Reviewer label').fill('Dr Synthetic');
@@ -1239,16 +1243,17 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.locator('#review-content-accuracy').check();
     await page.locator('#review-content-interactions').check();
     await expect(page.locator('#attest-current-item')).toBeEnabled();
+    await expect(page.locator('#attest-current-item')).toHaveText('Attest & continue');
 
     const pageStart = api.calls.length;
     await page.locator('#attest-current-item').click();
-    await expect(page.locator('#content-action-result')).toContainText('Attested t_mood.md.');
-    await expect(page.locator('#content-action-result').getByRole('link', {
+    await expect(page.locator('#recent-attestation-receipt')).toContainText('Attested t_mood.md.');
+    await expect(page.locator('#recent-attestation-receipt').getByRole('link', {
       name: 'View commit',
     })).toHaveAttribute('href', /^https:\/\/github\.example\/commit\/faculty-/);
-    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mood disorders page');
-    await expect(page.locator('#selected-item-status')).toHaveText('Reviewed');
-    await expect(page.locator('#next-review-item')).toBeEnabled();
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mental status exam tool');
+    await expect(page.locator('#selected-item-type')).toHaveText('Tool');
+    await expect(page.locator('#attestation-rail-title')).toBeFocused();
     expect(api.calls.slice(pageStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
       'POST:content',
       'GET:state',
@@ -1260,19 +1265,16 @@ test.describe.serial('faculty unified attestation workspace', () => {
     });
     expect(api.currentContent().find(item => item.slug === 't_mood.md').status).toBe('reviewed');
 
-    await page.locator('#next-review-item').click();
-    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mental status exam tool');
-    await expect(page.locator('#selected-item-type')).toHaveText('Tool');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
     await expect(page.locator('#learner-preview-frame')).toHaveAttribute('src', new RegExp(
-      '^http://localhost:4200/\\?tool=mse\\.html&reviewKey=tool%3Amse\\.html&reviewToken=[0-9a-f]{32}$',
+      `^${escapeRegex(MS3_URL)}/\\?tool=mse\\.html&reviewKey=tool%3Amse\\.html&reviewToken=[0-9a-f]{32}$`,
     ));
     await page.locator('#review-complete-item').check();
     await page.locator('#review-content-accuracy').check();
     await page.locator('#review-content-interactions').check();
     const toolStart = api.calls.length;
     await page.locator('#attest-current-item').click();
-    await expect(page.locator('#content-action-result')).toContainText('Attested mse.html.');
+    await expect(page.locator('#recent-attestation-receipt')).toContainText('Attested mse.html.');
     expect(api.calls.slice(toolStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
       'POST:content',
       'GET:state',
@@ -1308,7 +1310,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.locator('#review-content-interactions').check();
     const reattestStart = api.calls.length;
     await page.locator('#attest-current-item').click();
-    await expect(page.locator('#content-action-result')).toContainText('Attested t_mood.md.');
+    await expect(page.locator('#recent-attestation-receipt')).toContainText('Attested t_mood.md.');
     expect(api.calls[reattestStart].body.changes).toEqual({ 't_mood.md': true });
   });
 
@@ -1349,7 +1351,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await checkConfirmations(page);
     const readyAttestStart = api.calls.length;
     await page.locator('#attest-current-item').click();
-    await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_901.');
+    await expect(page.locator('#recent-attestation-receipt')).toContainText('Attested 1 question: qb_moo_901.');
     expect(api.calls.slice(readyAttestStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
       'POST:qbank.attest',
       'GET:state',
@@ -1372,11 +1374,12 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.getByRole('button', { name: 'Draft preview' }).click();
     await page.locator('#review-saved-revision').check();
     await checkConfirmations(page);
-    await expect(page.locator('#attest-current-item')).toBeDisabled();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+    await expect(page.locator('#attest-current-item')).toContainText('remaining requirement');
     await page.locator('#ack-stem-negative_lead_in').check();
     const warningRevision = api.currentPayload().qbank.find(item => item.id === 'qb_moo_905').revision;
     await page.locator('#attest-current-item').click();
-    await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_905.');
+    await expect(page.locator('#recent-attestation-receipt')).toContainText('Attested 1 question: qb_moo_905.');
     expect(qbankPosts(api).at(-1).body.items).toEqual([{
       id: 'qb_moo_905',
       revision: warningRevision,
@@ -1388,12 +1391,14 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(page.locator('#attestation-rail')).toContainText('Blocked');
     await page.getByRole('button', { name: 'Edit question' }).first().click();
     await expect(page.locator('#save-draft')).toBeDisabled();
-    await expect(page.locator('#attest-current-item')).toBeDisabled();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+    await expect(page.locator('#attest-current-item')).toContainText('remaining requirement');
     const repairedStem = 'A fictional patient develops several days of expansive mood, little sleep, pressured speech, and risky spending. Which syndrome best explains this pattern?';
     await page.locator('#question-stem').fill(repairedStem);
     await expect(page.locator('#attestation-rail')).toContainText('Ready');
     await expect(page.locator('#save-draft')).toBeEnabled();
-    await expect(page.locator('#attest-current-item')).toBeDisabled();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+    await expect(page.locator('#attest-current-item')).toContainText('remaining requirement');
     await page.locator('#save-draft').click();
     await expect(page.locator('#qbank-action-result')).toContainText('Saved draft qb_moo_902');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
@@ -1402,9 +1407,9 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.locator('#review-saved-revision').check();
     await checkConfirmations(page);
     await page.locator('#attest-current-item').click();
-    await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_902.');
+    await expect(page.locator('#recent-attestation-receipt')).toContainText('Attested 1 question: qb_moo_902.');
 
-    await page.locator('#review-item-selector').selectOption('question:qb_moo_906');
+    await expect(page.locator('#review-item-selector')).toHaveValue('question:qb_moo_906');
     await expect(page.locator('#preview-status-label')).toHaveText('Not found');
     await expect(page.locator('#learner-preview-frame')).toHaveAttribute('src', /reviewItem=qb_moo_906/);
     await expect(page.frameLocator('#learner-preview-frame')
@@ -1417,7 +1422,9 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await checkConfirmations(page);
     const missingRevision = api.currentPayload().qbank.find(item => item.id === 'qb_moo_906').revision;
     await page.locator('#attest-current-item').click();
-    await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_906.');
+    await expect(page.locator('#recent-attestation-receipt')).toContainText('Attested 1 question: qb_moo_906.');
+    await expect(page.locator('#review-item-selector')).toHaveValue('page:t_mood.md');
+    await expect(page.locator('#attestation-rail-title')).toBeFocused();
     expect(qbankPosts(api).at(-1).body.items).toEqual([{
       id: 'qb_moo_906',
       revision: missingRevision,
@@ -1584,7 +1591,8 @@ test.describe.serial('faculty unified attestation workspace', () => {
     }, { validMessage: valid, learnerOrigin: new URL(MS3_URL).origin });
     await expect(page.locator('#preview-status-label')).toHaveText('Loading');
     await expect(page.locator('#review-complete-item')).toHaveCount(0);
-    await expect(page.locator('#attest-current-item')).toBeDisabled();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+    await expect(page.locator('#attest-current-item')).toContainText('remaining requirement');
 
     await page.clock.runFor(10_000);
     await expect(page.locator('#preview-status-label')).toHaveText('Preview protocol unavailable');
@@ -1645,7 +1653,8 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(page.locator('#preview-status-label')).toHaveText('Error');
     await expect(page.locator('#review-complete-item')).toHaveCount(0);
     await expect(page.locator('#review-content-accuracy')).not.toBeChecked();
-    await expect(page.locator('#attest-current-item')).toBeDisabled();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+    await expect(page.locator('#attest-current-item')).toContainText('remaining requirement');
 
     await page.locator('#review-item-selector').selectOption('page:t_mood.md');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
@@ -1664,7 +1673,8 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(page.locator('#preview-status-label')).toHaveText('Network or embedded-preview failure');
     await expect(page.locator('#review-complete-item')).toHaveCount(0);
     await expect(page.locator('#review-content-accuracy')).not.toBeChecked();
-    await expect(page.locator('#attest-current-item')).toBeDisabled();
+    await expect(page.locator('#attest-current-item')).toBeEnabled();
+    await expect(page.locator('#attest-current-item')).toContainText('remaining requirement');
   });
 
   test('supports keyboard review, guards dirty navigation, recovers conflicts, and invalidates stale receipts', async ({ page }) => {
@@ -1775,7 +1785,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(page.locator('#attest-current-item')).toBeEnabled();
     await page.locator('#attest-current-item').focus();
     await page.keyboard.press('Enter');
-    await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_901.');
+    await expect(page.locator('#recent-attestation-receipt')).toContainText('Attested 1 question: qb_moo_901.');
     expect(qbankPosts(api).at(-1).body.items).toHaveLength(1);
     expect(qbankPosts(api).at(-1).body.items[0].id).toBe('qb_moo_901');
   });

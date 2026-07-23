@@ -11,6 +11,7 @@ import {
   buildExternalReviewUrl,
   buildPreviewRequest,
   createReviewToken,
+  deriveAttestationChecklist,
   deriveAttestationEligibility,
   deriveReviewCounts,
   filterReviewItems,
@@ -132,6 +133,7 @@ export function startFacultyConsole({
     viewMode: 'live',
     preview: null,
     previewAttempt: 0,
+    previewReadyFocusTarget: null,
     reviewChecks: emptyReviewChecks(),
     pending: false,
     reviewerLabel: DEFAULT_REVIEWER,
@@ -146,6 +148,7 @@ export function startFacultyConsole({
     warningAcks: new Set(),
     qbankMessage: '',
     qbankCommitUrl: null,
+    recentReceipt: null,
     qbankError: '',
     conflict: null,
     navigationGuard: null,
@@ -411,6 +414,7 @@ export function startFacultyConsole({
     preview.timerId = scheduleTimeout(() => {
       if (state.preview !== preview || preview.status !== 'loading') return;
       preview.status = preview.frameLoaded ? 'protocol_unavailable' : 'frame_failure';
+      state.previewReadyFocusTarget = null;
       clearReviewAcknowledgements();
       applyQuestionView('live');
       announce(preview.frameLoaded
@@ -438,6 +442,7 @@ export function startFacultyConsole({
     state.viewMode = 'live';
     state.preview = null;
     state.previewAttempt = 0;
+    state.previewReadyFocusTarget = null;
     state.reopenConfirmation = null;
   }
 
@@ -455,6 +460,7 @@ export function startFacultyConsole({
     state.viewMode = 'live';
     state.preview = null;
     state.previewAttempt = 0;
+    state.previewReadyFocusTarget = null;
     if (item.type === 'question') setSelected(item.identity, { force: true });
     else {
       state.selectedId = null;
@@ -525,6 +531,36 @@ export function startFacultyConsole({
     }
     if (visible[0]) setSelectedReviewKey(visible[0].key, { force: true });
     else clearReviewSelection();
+  }
+
+  function nextEligibleReviewKey(completedKey) {
+    if (state.queueFilters.status === 'complete') return null;
+    const orderedScope = filterReviewItems(state.reviewItems, {
+      ...state.queueFilters,
+      status: 'all',
+    });
+    const eligible = orderedScope.filter(item => item.completion === 'needs-review');
+    if (!eligible.length) return null;
+    const completedIndex = orderedScope.findIndex(item => item.key === completedKey);
+    const after = orderedScope.slice(Math.max(completedIndex + 1, 0))
+      .find(item => item.completion === 'needs-review');
+    return after?.key || eligible[0].key;
+  }
+
+  function advanceAfterConfirmedAttestation(receipt) {
+    state.recentReceipt = Object.freeze({ ...receipt });
+    state.completedHoldKey = null;
+    const nextKey = nextEligibleReviewKey(receipt.key);
+    if (!nextKey) {
+      clearReviewSelection();
+      renderShell('review-queue-title');
+      announce(`${receipt.message} Review queue complete.`);
+      return;
+    }
+    setSelectedReviewKey(nextKey, { force: true });
+    state.previewReadyFocusTarget = 'attestation-rail-title';
+    renderShell('attestation-rail-title');
+    announce(`${receipt.message} Moving to the next review item.`);
   }
 
   function renderLogin(message = '') {
@@ -724,6 +760,7 @@ export function startFacultyConsole({
       clearKey();
       state.server = null;
       state.reviewItems = [];
+      state.recentReceipt = null;
       clearReviewSelection();
       state.navigationGuard = null;
       state.navigationAfterSave = null;
@@ -893,6 +930,7 @@ export function startFacultyConsole({
   function recordPreviewFrameFailure(preview, message) {
     cancelPreviewTimer(preview);
     preview.status = 'frame_failure';
+    state.previewReadyFocusTarget = null;
     clearReviewAcknowledgements();
     applyQuestionView('live');
     announce(message);
@@ -1202,7 +1240,33 @@ export function startFacultyConsole({
         && state.reviewChecks.separateTabReviewed === true;
   }
 
-  function renderDraftReviewControl(item) {
+  function checklistRequirement(checklist, id) {
+    return list(checklist?.requirements).find(requirementItem => requirementItem.id === id) || null;
+  }
+
+  function renderRequirementRow(checklist, id, children) {
+    const requirementItem = checklistRequirement(checklist, id);
+    if (!requirementItem) return Array.isArray(children) ? el('div', {}, children) : children;
+    const current = checklist?.firstUnmet?.id === id;
+    return el('div', {
+      id: `requirement-${domToken(id)}`,
+      class: `requirement-row ${requirementItem.status}${current ? ' current' : ''}`,
+      'data-requirement-status': requirementItem.status,
+    }, children);
+  }
+
+  function renderSystemRequirement(checklist, id) {
+    const requirementItem = checklistRequirement(checklist, id);
+    if (!requirementItem) return null;
+    return renderRequirementRow(checklist, id, [
+      el('span', { class: 'requirement-indicator', 'aria-hidden': 'true' }, [
+        requirementItem.complete ? '✓' : '○',
+      ]),
+      el('span', { class: 'requirement-label' }, [requirementItem.label]),
+    ]);
+  }
+
+  function renderDraftReviewControl(item, checklist) {
     const question = state.editor || item.record;
     const saved = findQuestion(item.identity);
     const canReview = state.viewMode === 'draft'
@@ -1213,7 +1277,8 @@ export function startFacultyConsole({
       item,
       state.reviewedRevisions.get(item.identity),
     );
-    return el('div', { class: 'draft-review-control' }, [
+    return renderRequirementRow(checklist, 'review.saved_revision', [
+      el('div', { class: 'draft-review-control' }, [
       el('label', { class: 'checkbox-line', for: 'review-saved-revision' }, [
         el('input', {
           id: 'review-saved-revision',
@@ -1229,10 +1294,11 @@ export function startFacultyConsole({
           ? 'Save and reload local edits before recording this review.'
           : 'Open Draft preview to record this exact saved-revision review.',
       ]) : null,
+      ]),
     ]);
   }
 
-  function renderDeploymentReviewPath(item) {
+  function renderDeploymentReviewPath(item, checklist) {
     const status = state.preview?.status || 'frame_failure';
     if (status === 'loading') {
       return el('p', { class: 'muted' }, [
@@ -1243,7 +1309,8 @@ export function startFacultyConsole({
       const question = item.type === 'question';
       const id = question ? 'review-live-preview' : 'review-complete-item';
       const key = question ? 'liveReviewed' : 'completeItemReviewed';
-      return el('label', { class: 'checkbox-line', for: id }, [
+      return renderRequirementRow(checklist, question ? 'review.live' : 'review.complete_item', [
+        el('label', { class: 'checkbox-line', for: id }, [
         el('input', {
           id,
           type: 'checkbox',
@@ -1254,11 +1321,13 @@ export function startFacultyConsole({
         question
           ? 'I reviewed the complete item in the learner view'
           : 'I reviewed the complete item',
+        ]),
       ]);
     }
     if (PREVIEW_FAILURES.has(status) || !state.preview) {
       if (item.type !== 'question') {
-        return el('label', { class: 'checkbox-line', for: 'review-separate-tab' }, [
+        return renderRequirementRow(checklist, 'review.separate_tab', [
+          el('label', { class: 'checkbox-line', for: 'review-separate-tab' }, [
           el('input', {
             id: 'review-separate-tab',
             type: 'checkbox',
@@ -1272,11 +1341,13 @@ export function startFacultyConsole({
             ),
           }),
           'I reviewed this item in the separate tab',
+          ]),
         ]);
       }
       const retryRequired = RETRY_REQUIRED_QUESTION_FAILURES.has(status)
         && (state.preview?.attempt || 0) <= 1;
-      return el('div', {}, [
+      return renderRequirementRow(checklist, 'review.live_unavailable', [
+        el('div', {}, [
         el('label', { class: 'checkbox-line', for: 'ack-live-unavailable' }, [
           el('input', {
             id: 'ack-live-unavailable',
@@ -1295,27 +1366,29 @@ export function startFacultyConsole({
         retryRequired ? el('p', { class: 'hint' }, [
           'Retry preview once. This acknowledgement becomes available only if that attempt also fails.',
         ]) : null,
+        ]),
       ]);
     }
     return el('p', { class: 'muted' }, ['Preview verification is unavailable.']);
   }
 
-  function renderReviewPath(item) {
-    const deploymentReview = renderDeploymentReviewPath(item);
+  function renderReviewPath(item, checklist) {
+    const deploymentReview = renderDeploymentReviewPath(item, checklist);
     if (item.type !== 'question') return deploymentReview;
     return el('div', { class: 'question-review-path' }, [
       deploymentReview,
-      renderDraftReviewControl(item),
+      renderDraftReviewControl(item, checklist),
     ]);
   }
 
-  function renderContentChecks(item) {
+  function renderContentChecks(item, checklist) {
     return el('fieldset', { class: 'content-review-checks', disabled: state.pending }, [
       el('legend', {}, ['Content checks']),
       ...[
         ['accuracy', 'review-content-accuracy', 'I verified that this is accurate and appropriate for a third-year student.'],
         ['interactions', 'review-content-interactions', 'I tested the relevant links, media, or interactions.'],
-      ].map(([key, id, copy]) => el('label', { for: id }, [
+      ].map(([key, id, copy]) => renderRequirementRow(checklist, `content.${key}`, [
+        el('label', { for: id }, [
         el('input', {
           id,
           type: 'checkbox',
@@ -1324,12 +1397,13 @@ export function startFacultyConsole({
           onChange: event => updateReviewCheck(item, key, event.target.checked, id),
         }),
         copy,
+        ]),
       ])),
     ]);
   }
 
-  function currentAttestationEligibility(item, assessment, dirty) {
-    return deriveAttestationEligibility({
+  function currentAttestationChecklist(item, assessment, dirty) {
+    return deriveAttestationChecklist({
       item,
       assessment,
       dirty,
@@ -1350,7 +1424,12 @@ export function startFacultyConsole({
     });
   }
 
-  function renderQuestionResolution(assessment, disabled) {
+  function currentAttestationEligibility(item, assessment, dirty) {
+    const checklist = currentAttestationChecklist(item, assessment, dirty);
+    return { eligible: checklist.eligible, blockers: [...checklist.blockers] };
+  }
+
+  function renderQuestionResolution(assessment, disabled, checklist) {
     const gate = Object.hasOwn(GATE_LABELS, assessment?.gate)
       ? assessment.gate
       : 'blocked';
@@ -1363,7 +1442,8 @@ export function startFacultyConsole({
       warning: 'Review and acknowledge every current warning before attestation.',
       blocked: 'Resolve every structural blocker and save the question before attestation.',
     };
-    return el('div', { class: 'question-resolution' }, [
+    return renderRequirementRow(checklist, 'question.gate', [
+      el('div', { class: 'question-resolution' }, [
       gateLabel(gate),
       el('p', { class: 'hint' }, [gateCopy[gate]]),
       issues.length ? el('ul', { class: 'rail-issue-list' }, issues.map(issue => {
@@ -1378,7 +1458,7 @@ export function startFacultyConsole({
           }, [`${field}: ${text(issue?.message) || text(issue?.code) || 'Review this field.'}`]),
         ]);
       })) : null,
-      renderWarningAcknowledgements(assessment, disabled),
+      renderWarningAcknowledgements(assessment, disabled, checklist),
       el('button', {
         id: 'edit-question-from-rail',
         type: 'button',
@@ -1386,6 +1466,7 @@ export function startFacultyConsole({
         disabled: state.pending,
         onClick: () => switchQuestionView('edit', 'review-title'),
       }, ['Edit question']),
+      ]),
     ]);
   }
 
@@ -1407,10 +1488,42 @@ export function startFacultyConsole({
     ]);
   }
 
+  function primaryActionCopy(checklist) {
+    if (state.pending) return 'Saving and confirming…';
+    if (checklist.eligible) return 'Attest & continue';
+    const remaining = checklist.totalCount - checklist.completedCount;
+    return `${remaining === 1 ? 'Review' : 'Resolve'} ${remaining} remaining requirement${remaining === 1 ? '' : 's'}`;
+  }
+
+  function focusRequirement(requirementItem) {
+    const target = document.getElementById(requirementItem?.focusId);
+    if (!target) {
+      announce('The required review action is unavailable. Reload this item before attesting.');
+      document.getElementById('preview-status')?.focus();
+      return false;
+    }
+    target.focus();
+    const row = document.getElementById(`requirement-${domToken(requirementItem.id)}`);
+    if (row && !row.className.includes('guided')) row.className += ' guided';
+    announce(`${requirementItem.label}. Complete this requirement before attesting.`);
+    return true;
+  }
+
+  function guideOrAttestCurrentItem(item) {
+    const question = item?.type === 'question' ? state.editor : null;
+    const assessment = question ? (state.localAssessment || currentAssessment(question)) : null;
+    const dirty = question ? state.dirtyFields.length > 0 : false;
+    const checklist = currentAttestationChecklist(item, assessment, dirty);
+    if (!checklist.eligible) return focusRequirement(checklist.firstUnmet);
+    return item.type === 'question'
+      ? void attestCurrentQuestion(findQuestion(item.identity))
+      : void attestContentItem(item);
+  }
+
   function renderAttestationRail(item) {
     if (!item) {
       return el('aside', { id: 'attestation-rail', class: 'signoff-rail' }, [
-        el('h2', {}, ['Review → Resolve → Confirm']),
+        el('h2', {}, ['Review checklist']),
         el('p', { class: 'muted' }, ['No item is selected.']),
       ]);
     }
@@ -1419,16 +1532,7 @@ export function startFacultyConsole({
     const dirty = question ? state.dirtyFields.length > 0 : false;
     const blocked = question && (dirty || assessment?.gate === 'blocked' || item.savedStatus !== 'draft');
     const reviewComplete = reviewPathComplete(item);
-    const eligibility = currentAttestationEligibility(item, assessment, dirty);
-    const currentStep = dirty
-      ? 'review'
-      : item.completion === 'complete'
-        ? 'confirm'
-        : !question && !reviewComplete
-          ? 'review'
-          : !question && contentChecksComplete()
-            ? 'confirm'
-            : 'resolve';
+    const checklist = currentAttestationChecklist(item, assessment, dirty);
     return el('aside', {
       id: 'attestation-rail',
       class: 'signoff-rail',
@@ -1436,60 +1540,68 @@ export function startFacultyConsole({
     }, [
       el('header', { class: 'rail-heading' }, [
         el('p', { class: 'eyebrow' }, ['Single-item sign-off']),
-        el('h2', { id: 'attestation-rail-title' }, ['Review → Resolve → Confirm']),
+        el('h2', { id: 'attestation-rail-title', tabindex: '-1' }, ['Review checklist']),
+        el('p', { id: 'attestation-progress', class: 'attestation-progress' }, [
+          `${checklist.completedCount} of ${checklist.totalCount} required checks complete`,
+        ]),
       ]),
       renderActionFeedback(),
-      el('section', {
+      el('div', { id: 'attestation-checklist', class: 'attestation-checklist' }, [
+        el('section', {
         id: 'rail-step-review',
-        class: `rail-step${currentStep === 'review' ? ' current' : ''}`,
+        class: 'attestation-group',
       }, [
-        el('h3', {}, ['Review']),
+        el('h3', {}, ['Learner review']),
         el('p', {}, [item.type === 'question'
           ? 'Inspect the learner view, saved Draft, and governed question fields.'
           : 'Inspect the complete learner-facing page or tool.']),
-        renderReviewPath(item),
+        ...(item.type === 'question'
+          ? [
+              renderSystemRequirement(checklist, 'question.saved'),
+              renderSystemRequirement(checklist, 'preview.available'),
+            ]
+          : [
+              renderSystemRequirement(checklist, 'content.status'),
+              renderSystemRequirement(checklist, 'preview.ready'),
+            ]),
+        renderReviewPath(item, checklist),
       ]),
       el('section', {
         id: 'rail-step-resolve',
-        class: `rail-step${currentStep === 'resolve' ? ' current' : ''}`,
+        class: 'attestation-group',
       }, [
-        el('h3', {}, ['Resolve']),
+        el('h3', {}, [question ? 'Question resolution' : 'Content validation']),
         question
-          ? renderQuestionResolution(assessment, blocked || state.pending)
-          : renderContentChecks(item),
+          ? renderQuestionResolution(assessment, blocked || state.pending, checklist)
+          : renderContentChecks(item, checklist),
       ]),
       el('section', {
         id: 'rail-step-confirm',
-        class: `rail-step${currentStep === 'confirm' ? ' current' : ''}`,
+        class: 'attestation-group',
       }, [
-        el('h3', {}, ['Confirm']),
+        el('h3', {}, ['Faculty confirmation']),
         el('p', { class: 'reviewer-confirmation' }, [
           'Reviewer: ',
           el('strong', { id: 'current-reviewer-label' }, [state.reviewerLabel || 'Not provided']),
         ]),
-        question ? renderConfirmations(blocked || state.pending || !reviewComplete) : el('p', { class: 'muted' }, [
+        question ? renderConfirmations(blocked || state.pending || !reviewComplete, checklist) : el('p', { class: 'muted' }, [
           item.completion === 'complete'
             ? 'This item is recorded as reviewed. Reopen it only when another review is needed.'
             : reviewComplete
             ? 'The learner surface review is recorded. Complete both content checks to continue.'
             : 'Record the learner surface review before confirming this item.',
         ]),
-        question ? el('button', {
-          id: 'attest-current-item',
-          class: 'primary rail-action',
-          type: 'button',
-          disabled: state.pending || !eligibility.eligible,
-          onClick: () => void attestCurrentQuestion(findQuestion(item.identity)),
-        }, ['Attest this question']) : item.completion === 'complete'
-          ? renderContentMoreActions(item)
-          : el('button', {
-          id: 'attest-current-item',
-          class: 'primary rail-action',
-          type: 'button',
-          disabled: state.pending || !eligibility.eligible,
-          onClick: () => void attestContentItem(item),
-        }, [`Attest this ${item.type}`]),
       ]),
+      ]),
+      item.completion === 'complete'
+        ? el('div', { class: 'attestation-action-bar' }, [renderContentMoreActions(item)])
+        : el('div', { class: 'attestation-action-bar' }, [el('button', {
+          id: 'attest-current-item',
+          class: 'primary rail-action attestation-primary',
+          type: 'button',
+          disabled: state.pending,
+          onClick: () => guideOrAttestCurrentItem(item),
+        }, [primaryActionCopy(checklist)])]),
     ]);
   }
 
@@ -1641,6 +1753,20 @@ export function startFacultyConsole({
       class: 'queue-strip',
       'aria-labelledby': 'review-queue-title',
     }, [
+      state.recentReceipt ? el('section', {
+        id: 'recent-attestation-receipt',
+        class: 'recent-attestation-receipt',
+        'aria-label': 'Most recent confirmed attestation',
+      }, [
+        el('strong', {}, ['Confirmed: ']),
+        state.recentReceipt.message,
+        state.recentReceipt.commitUrl ? ' ' : null,
+        state.recentReceipt.commitUrl ? el('a', {
+          href: state.recentReceipt.commitUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        }, ['View commit ↗']) : null,
+      ]) : null,
       el('div', { class: 'queue-primary' }, [
         el('div', { class: 'queue-heading' }, [
           el('p', { class: 'eyebrow' }, ['Ordered review queue']),
@@ -2513,13 +2639,13 @@ export function startFacultyConsole({
     ]);
   }
 
-  function renderConfirmations(disabled) {
+  function renderConfirmations(disabled, checklist) {
     return el('fieldset', { class: 'human-confirmations', disabled }, [
       el('legend', {}, ['Faculty confirmations']),
       el('p', { class: 'hint' }, ['Automated checks support faculty judgment; they do not establish clinical truth.']),
       ...Object.entries(CONFIRMATION_COPY).map(([key, copy]) => {
         const id = key === 'originalityAndNoPhi' ? 'confirm-originality' : `confirm-${key}`;
-        return el('label', { for: id }, [
+        return renderRequirementRow(checklist, `confirmation.${key}`, [el('label', { for: id }, [
           el('input', {
             id,
             type: 'checkbox',
@@ -2531,12 +2657,12 @@ export function startFacultyConsole({
             },
           }),
           copy,
-        ]);
+        ])]);
       }),
     ]);
   }
 
-  function renderWarningAcknowledgements(assessment, disabled) {
+  function renderWarningAcknowledgements(assessment, disabled, checklist) {
     const warnings = list(assessment?.warnings);
     if (!warnings.length) return null;
     return el('fieldset', { class: 'warning-acknowledgements', disabled }, [
@@ -2544,7 +2670,7 @@ export function startFacultyConsole({
       ...warnings.map(warning => {
         const code = text(warning.code);
         const id = `ack-${domToken(code)}`;
-        return el('label', { for: id }, [
+        return renderRequirementRow(checklist, `warning.${code}`, [el('label', { for: id }, [
           el('input', {
             id,
             type: 'checkbox',
@@ -2557,7 +2683,7 @@ export function startFacultyConsole({
             },
           }),
           `${code}: ${text(warning.message)}`,
-        ]);
+        ])]);
       }),
     ]);
   }
@@ -2794,13 +2920,18 @@ export function startFacultyConsole({
         ? `Attested ${slug}.`
         : `Reopened ${slug} for review.`;
       state.contentCommitUrl = commitUrl;
-      if (snapshot.reviewed) state.completedHoldKey = snapshot.key;
       resetApprovalInputs();
-      refreshPreviewChromeAndRail('content-action-result');
-      const next = document.getElementById('next-review-item');
-      if (snapshot.reviewed && next && !next.disabled) next.focus();
-      else document.getElementById('content-action-result')?.focus();
-      announce(state.contentMessage);
+      if (snapshot.reviewed) {
+        advanceAfterConfirmedAttestation({
+          key: snapshot.key,
+          message: state.contentMessage,
+          commitUrl,
+        });
+      } else {
+        refreshPreviewChromeAndRail('content-action-result');
+        document.getElementById('content-action-result')?.focus();
+        announce(state.contentMessage);
+      }
       return true;
     } catch (error) {
       state.pending = false;
@@ -3002,6 +3133,10 @@ export function startFacultyConsole({
       }
       const successMessage = `Attested ${requestIds.length} question${requestIds.length === 1 ? '' : 's'}: ${requestIds.join(', ')}.`;
       const successCommitUrl = safeExternalUrl(payload.commit);
+      if (payload.commit && !successCommitUrl) {
+        showQbankError('invalid_response: Commit receipt was not a safe HTTPS URL.');
+        return false;
+      }
       const selectedId = state.selectedId;
       const selectedKey = state.selectedKey;
       const refreshed = await load({
@@ -3021,11 +3156,11 @@ export function startFacultyConsole({
       resetApprovalInputs();
       state.qbankMessage = successMessage;
       state.qbankCommitUrl = successCommitUrl;
-      renderShell();
-      const next = document.getElementById('next-review-item');
-      if (next && !next.disabled) next.focus();
-      else document.getElementById('qbank-action-result')?.focus();
-      announce(successMessage);
+      advanceAfterConfirmedAttestation({
+        key: selectedKey,
+        message: successMessage,
+        commitUrl: successCommitUrl,
+      });
       return true;
     } catch (error) {
       state.reauthAction = null;
@@ -3081,10 +3216,14 @@ export function startFacultyConsole({
     if (preview.status === 'ready' && event.data.status === 'ready') return;
     cancelPreviewTimer(preview);
     preview.status = event.data.status;
+    const focusTarget = event.data.status === 'ready' && state.previewReadyFocusTarget
+      ? state.previewReadyFocusTarget
+      : 'preview-status';
+    state.previewReadyFocusTarget = null;
     clearReviewAcknowledgements();
     if (event.data.status !== 'ready') applyQuestionView('live');
     announce(`Deployed ${event.data.surface} preview: ${event.data.status.replace('_', ' ')}.`);
-    refreshPreviewChromeAndRail('preview-status');
+    refreshPreviewChromeAndRail(focusTarget);
   }
 
   window.addEventListener('message', handlePreviewStatus);
