@@ -216,6 +216,14 @@ for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.joi
 
 # md content pages: [source rel, out name, title] — see site_manifest.json
 md=[tuple(x) for x in _manifest["md"]]
+# ---- Case of the Week: per-week pages are registry-driven (single source of truth:
+# 08_Cases_and_Simulation/case-of-the-week/cotw_registry.json). The weekly automation only
+# prepends one entry there + drops two source files — no edits to this script or the manifest.
+_COTW_DIR="08_Cases_and_Simulation/case-of-the-week"
+_cotw_weeks=json.load(open(os.path.join(LIB,_COTW_DIR,"cotw_registry.json"),encoding="utf-8")).get("weeks",[])
+def _cotw_slug(w,level):  # level: "ms3" | "res"
+    return "cotw_%s_%s_%s.md"%(w["date"].replace("-",""),w["topic"],level)
+md+=[(os.path.join(_COTW_DIR,w["ms3_src"]),_cotw_slug(w,"ms3"),w["label"]) for w in _cotw_weeks]
 missing=[]
 for src,dst,_ in md:
     p=os.path.join(LIB,src)
@@ -245,7 +253,7 @@ nav=[
  {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
  {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md")]},
  {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","One Patient, Six Weeks"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
- {"section":"Case of the Week","items":[_md("Index — All Cases","cotw_index.md"),_md("MDD — Treatment Selection (Jul 20)","cotw_20260720_mdd_ms3.md"),_md("Bipolar Mania (Jul 20)","cotw_20260720_bipolar_ms3.md"),_md("Acute Agitation & Delirium (Jul 13)","cotw_20260713_agitation_ms3.md"),_md("Serotonin Syndrome vs NMS (Jul 9)","cotw_20260709_ssnms_ms3.md")]},
+ {"section":"Case of the Week","items":[_md("Index — All Cases","cotw_index.md")]+[_md(w["label"],_cotw_slug(w,"ms3")) for w in _cotw_weeks]},
  {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
  {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback")]},
 ]
