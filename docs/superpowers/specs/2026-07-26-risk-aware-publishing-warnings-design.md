@@ -192,6 +192,12 @@ Stable ordering makes changes reviewable. Learner clients use `governance.json`
 rather than the source ledger so internal notes and future server-only attestation
 fields are not published.
 
+The existing `tool-governance.json` remains the cross-repository provenance and
+policy envelope for tools. It is not a second learner-status authority. Tool
+envelopes must derive review category, safety severity, review status, and
+attestation status from the same canonical ledger record, and validation must reject
+any difference between those envelope fields and `governance.json`.
+
 ### 4. Shared-shell presentation
 
 The MS3 and resident shells use the normalized artifact to render:
@@ -257,15 +263,17 @@ Attestation and reopening actions preserve risk classification:
 
 The migration is governance-only and does not alter clinical content.
 
-1. Inventory the 99 current ledger entries and all MS3/resident navigation targets.
-2. Preserve the existing 94 reviewed and five pending decisions.
+1. Inventory the current ledger entries and all MS3/resident navigation targets.
+   As of `origin/main` on 2026-07-26, the ledger has 110 records: 94 reviewed and
+   16 pending. Treat these counts as a measured baseline, not a permanent invariant.
+2. Preserve every existing reviewed or pending decision.
 3. Prepare proposed risk classifications using existing explicit signals such as
    `safetyLevel`, `LOCAL_POLICY`, `[RC-META]`, pack status, and navigation category.
 4. Route ambiguous clinical, legal, formulary, and local-policy classifications for
    faculty confirmation.
 5. Add the accepted classification to every ledger record.
 6. Enable schema and contradiction checks.
-7. Generate warning presentation for the five current pending surfaces.
+7. Generate warning presentation for every current pending surface.
 8. Move current learner consumers, including One Patient, Six Weeks, from the
    published source ledger to the normalized artifact.
 9. Enable strict missing-record enforcement only after the ledger is complete.
