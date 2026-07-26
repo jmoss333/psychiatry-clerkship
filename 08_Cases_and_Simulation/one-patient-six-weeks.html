@@ -111,7 +111,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 <script>
 (function(){
   var app=document.getElementById('app');
-  var state={caseData:null,current:requestedWeek(),progress:loadProgress(),review:{status:'pending',by:'Pending faculty review',at:''}};
+  var state={caseData:null,current:requestedWeek(),progress:loadProgress()};
 
   function esc(s){return String(s==null?'':s).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c];});}
   function requestedWeek(){try{var n=parseInt(new URLSearchParams(location.search).get('week')||'1',10);return Math.max(0,Math.min(5,n-1));}catch(_){return 0;}}
@@ -124,8 +124,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   function setWeek(i){state.current=Math.max(0,Math.min(state.caseData.weeks.length-1,i));state.progress.current=state.current;saveProgress();try{history.replaceState(null,'','?week='+(state.current+1));}catch(_){}render();}
   function weekList(){return '<div class="weeklist">'+state.caseData.weeks.map(function(w,i){var on=i===state.current,done=complete(w);return '<button type="button" class="weekbtn'+(on?' current':'')+'" data-week="'+i+'"'+(on?' aria-current="step"':'')+'"><span class="weektitle">'+esc(w.label)+': '+esc(w.title)+'</span><span class="weekmeta">'+esc((w.focus||[]).join(' · '))+'</span>'+(done?'<span class="done">Completed</span>':'');}).join('')+'</div>';}
   function sidebar(){var done=completedCount(),total=state.caseData.weeks.length,pct=Math.round(done*100/total);return '<aside class="side" aria-label="Six-week case timeline"><div class="progress"><b>'+done+' of '+total+' weeks completed</b><span class="small">Checklist progress saved in this browser only</span><div class="bar" role="progressbar" aria-label="Longitudinal case progress" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+pct+'%"></span></div></div>'+weekList()+'</aside>';}
-  function reviewBadge(){var r=state.review||{};if(r.status==='reviewed')return '<span class="pill review">Reviewed'+(r.by?' · '+esc(r.by):'')+(r.at?' · '+esc(r.at):'')+'</span>';return '<span class="pill review">Faculty review pending</span>';}
-  function patientCard(){var p=state.caseData.patient;return '<section class="card"><div class="patient-row"><div><h2 class="patient-title">'+esc(p.displayName)+': a changing story</h2><p class="patient-copy">'+esc(p.description)+'</p></div>'+reviewBadge()+'</div><div class="pillrow"><span class="pill">'+esc(state.caseData.setting)+'</span><span class="pill">Fictional composite</span><span class="pill">No free-text patient data</span></div><p class="storage">'+esc(p.frame)+'</p></section>';}
+  function patientCard(){var p=state.caseData.patient;return '<section class="card"><div class="patient-row"><div><h2 class="patient-title">'+esc(p.displayName)+': a changing story</h2><p class="patient-copy">'+esc(p.description)+'</p></div></div><div class="pillrow"><span class="pill">'+esc(state.caseData.setting)+'</span><span class="pill">Fictional composite</span><span class="pill">No free-text patient data</span></div><p class="storage">'+esc(p.frame)+'</p></section>';}
   function checklist(w){
     var r=record(w.id);
     return '<div><p class="check-title">Before you move on</p><div class="checks">'+w.checklist.map(function(item,i){
@@ -141,10 +140,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   function render(){if(!state.caseData){app.innerHTML='<div class="empty">No longitudinal case is available.</div>';return;}var w=week();app.innerHTML='<div class="layout">'+sidebar()+'<div class="main">'+patientCard()+weekCard(w)+'</div></div>';}
   app.addEventListener('click',function(ev){var weekButton=ev.target.closest&&ev.target.closest('[data-week]');if(weekButton){setWeek(parseInt(weekButton.getAttribute('data-week'),10)||0);return;}if(ev.target.closest&&ev.target.closest('[data-prev]')){setWeek(state.current-1);return;}if(ev.target.closest&&ev.target.closest('[data-next]')){if(complete(week()))setWeek(state.current+1);return;}if(ev.target.closest&&ev.target.closest('[data-reset]')){if(window.confirm('Reset the six-week checklist stored in this browser?')){state.progress={version:1,current:0,completed:{}};setWeek(0);}}});
   app.addEventListener('change',function(ev){var input=ev.target.closest&&ev.target.closest('[data-check]');if(!input)return;var w=week(),r=record(w.id);r.checks=r.checks||{};r.checks[input.getAttribute('data-check')]=!!input.checked;r.at=new Date().toISOString().slice(0,10);state.progress.completed[w.id]=r;saveProgress();render();});
-  Promise.all([
-    fetch('../longitudinal_case.json').then(function(r){if(!r.ok)throw new Error('missing case');return r.json();}),
-    fetch('../reviewed.json').then(function(r){return r.ok?r.json():{};}).catch(function(){return {};})
-  ]).then(function(rows){var data=rows[0],reviewed=rows[1]||{};state.caseData=data;state.review=reviewed['one-patient-six-weeks.html']||state.review;state.current=Math.max(0,Math.min(data.weeks.length-1,state.progress.current||state.current));render();}).catch(function(){app.innerHTML='<div class="empty">Could not load the longitudinal case. Rebuild the site or check longitudinal_case.json.</div>';});
+  fetch('../longitudinal_case.json').then(function(r){if(!r.ok)throw new Error('missing case');return r.json();}).then(function(data){state.caseData=data;state.current=Math.max(0,Math.min(data.weeks.length-1,state.progress.current||state.current));render();}).catch(function(){app.innerHTML='<div class="empty">Could not load the longitudinal case. Rebuild the site or check longitudinal_case.json.</div>';});
 })();
 </script>
 </body>

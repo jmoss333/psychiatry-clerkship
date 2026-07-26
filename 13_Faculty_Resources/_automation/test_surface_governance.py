@@ -3,6 +3,8 @@
 
 import json
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from copy import deepcopy
@@ -16,6 +18,7 @@ except ModuleNotFoundError:
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_SOURCE = ROOT / "13_Faculty_Resources/reviewed.schema.json"
+SCRIPT = Path(__file__).with_name("surface_governance.py")
 
 
 def reviewed_entry() -> dict:
@@ -356,6 +359,95 @@ class SiteDocumentTests(unittest.TestCase):
             original[0]["items"][0],
         )
 
+    def test_publish_site_governance_updates_all_public_surfaces_consistently(
+        self,
+    ) -> None:
+        self.assertTrue(
+            hasattr(governance, "publish_site_governance"),
+            "surface_governance.py must publish one consistent site governance set",
+        )
+        ledger = {
+            "synthetic.md": reviewed_entry(),
+            "synthetic.html": pending_entry(),
+        }
+        nav = [
+            {
+                "section": "Synthetic",
+                "items": [
+                    {"t": "Page", "f": "synthetic.md", "k": "md"},
+                    {"t": "Tool", "f": "synthetic.html", "k": "tool"},
+                ],
+            }
+        ]
+        search = {
+            "version": 1,
+            "n": 2,
+            "docs": [
+                {"t": "Page", "f": "synthetic.md", "k": "md"},
+                {"t": "Tool", "f": "synthetic.html", "k": "tool"},
+            ],
+            "postings": {},
+            "df": {},
+            "synonyms": {},
+        }
+        source = (
+            "<!doctype html><html><head><title>Synthetic</title></head>"
+            "<body><main>Tool</main></body></html>"
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_ledger(root, ledger)
+            output = root / "_build/ms3"
+            tools = output / "tools"
+            tools.mkdir(parents=True)
+            (tools / "synthetic.html").write_text(source, encoding="utf-8")
+            (output / "search-index.json").write_text(
+                json.dumps(search), encoding="utf-8"
+            )
+            (output / "reviewed.json").write_text(
+                "internal raw ledger", encoding="utf-8"
+            )
+
+            document = governance.publish_site_governance(
+                root, output, nav, "ms3"
+            )
+
+            published_nav = json.loads(
+                (output / "nav.json").read_text(encoding="utf-8")
+            )
+            published_search = json.loads(
+                (output / "search-index.json").read_text(encoding="utf-8")
+            )
+            published_document = json.loads(
+                (output / "governance.json").read_text(encoding="utf-8")
+            )
+            rendered_tool = (tools / "synthetic.html").read_text(encoding="utf-8")
+            raw_ledger_published = (output / "reviewed.json").exists()
+
+        self.assertEqual(published_document, document)
+        self.assertEqual(
+            published_nav[0]["items"][1]["governance"],
+            {
+                "status": "pending",
+                "riskKind": "local-policy",
+                "riskLevel": "high",
+            },
+        )
+        self.assertEqual(
+            published_search["docs"][0]["governance"],
+            {
+                "status": "reviewed",
+                "riskKind": "clinical",
+                "riskLevel": "high",
+            },
+        )
+        self.assertEqual(
+            published_search["docs"][1]["governance"],
+            published_nav[0]["items"][1]["governance"],
+        )
+        self.assertFalse(raw_ledger_published)
+        self.assertEqual(rendered_tool.count("SURFACE-GOVERNANCE:START"), 1)
+
 
 class DirectToolPresentationTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -500,6 +592,249 @@ class DirectToolPresentationTests(unittest.TestCase):
                 list(output.parent.glob(".governance.json.*.tmp")),
                 [],
             )
+
+
+class ProposalCliTests(unittest.TestCase):
+    def test_proposal_classifies_explicit_signals_without_mutating_the_ledger(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            faculty = root / "13_Faculty_Resources"
+            faculty.mkdir(parents=True)
+            ledger_path = faculty / "reviewed.json"
+            ledger_path.write_text(
+                '{\n'
+                '  "general.md": {"status": "reviewed", "at": "2026-07-01", '
+                '"by": "Synthetic Reviewer, MD"},\n'
+                '  "cotw_case.md": {"status": "pending", "at": "2026-07-01", '
+                '"by": "Synthetic Reviewer, MD"},\n'
+                '  "high.md": {"status": "pending", "at": "2026-07-02", '
+                '"by": "Synthetic Reviewer, MD"},\n'
+                '  "local.html": {"status": "pending", "at": "2026-07-03", '
+                '"by": "Synthetic Reviewer, MD"},\n'
+                '  "rp-brief-psych.html": {"status": "pending", '
+                '"at": "2026-07-03", "by": "Synthetic Reviewer, MD"}\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            before = ledger_path.read_bytes()
+            manifest = (
+                faculty / "_automation/site_build/site_manifest.json"
+            )
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "md": [
+                            ["synthetic/general.md", "general.md", "General"],
+                            ["synthetic/high.md", "high.md", "High"],
+                        ],
+                        "tools": [
+                            ["synthetic/local.html", "local.html", "Local"],
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (root / "topic_meta.json").write_text(
+                json.dumps({"high.md": {"safetyLevel": "high"}}),
+                encoding="utf-8",
+            )
+            sources = {
+                "synthetic/general.md": "# Synthetic general orientation",
+                "synthetic/high.md": "# Synthetic clinical teaching",
+                "08_Cases_and_Simulation/cotw_case.md": "# Synthetic case",
+                "_prototypes/brief-psych/rp-brief-psych.html": (
+                    "<!doctype html><title>Synthetic coaching tool</title>"
+                ),
+                "synthetic/local.html": (
+                    '<!-- [CLERKSHIP-META v1] tool="synthetic-local" '
+                    'audience="trainee" reviewCategory="local-policy" '
+                    'safetySeverity="high" -->'
+                ),
+            }
+            for relative, content in sources.items():
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content, encoding="utf-8")
+            output = root / "risk-review.json"
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--root",
+                    str(root),
+                    "--write-proposal",
+                    str(output),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(ledger_path.read_bytes(), before)
+            self.assertTrue(
+                output.exists(),
+                "proposal CLI must write the explicitly requested worksheet",
+            )
+            proposal = json.loads(output.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            proposal,
+            [
+                {
+                    "slug": "cotw_case.md",
+                    "status": "pending",
+                    "risk": {"kind": "clinical", "level": "high"},
+                    "basis": ["source path indicates high-risk clinical teaching"],
+                    "facultyConfirmationRequired": True,
+                },
+                {
+                    "slug": "general.md",
+                    "status": "reviewed",
+                    "risk": {"kind": "general", "level": "low"},
+                    "basis": ["No explicit risk signal found"],
+                    "facultyConfirmationRequired": True,
+                },
+                {
+                    "slug": "high.md",
+                    "status": "pending",
+                    "risk": {"kind": "clinical", "level": "high"},
+                    "basis": ["topic_meta.safetyLevel=high"],
+                    "facultyConfirmationRequired": True,
+                },
+                {
+                    "slug": "local.html",
+                    "status": "pending",
+                    "risk": {"kind": "local-policy", "level": "high"},
+                    "basis": [
+                        "metadata reviewCategory=local-policy",
+                        "metadata safetySeverity=high",
+                    ],
+                    "facultyConfirmationRequired": True,
+                },
+                {
+                    "slug": "rp-brief-psych.html",
+                    "status": "pending",
+                    "risk": {"kind": "clinical", "level": "moderate"},
+                    "basis": ["source path indicates clinical teaching"],
+                    "facultyConfirmationRequired": True,
+                },
+            ],
+        )
+
+    def test_confirmed_proposal_adds_only_risk_and_pending_review_context(
+        self,
+    ) -> None:
+        self.assertTrue(
+            hasattr(governance, "apply_confirmed_risk_proposal"),
+            "surface_governance.py must apply a fully confirmed mapping",
+        )
+        ledger = {
+            "reviewed.md": {
+                "status": "reviewed",
+                "at": "2026-07-01",
+                "by": "Synthetic Reviewer, MD",
+                "note": "Preserve this internal note.",
+                "contentHash": "a" * 64,
+            },
+            "pending.html": {
+                "status": "pending",
+                "at": "2026-07-02",
+                "by": "Historical Reviewer, MD",
+                "claimsHash": "b" * 64,
+            },
+        }
+        proposal = [
+            {
+                "slug": "pending.html",
+                "status": "pending",
+                "risk": {"kind": "clinical", "level": "high"},
+                "basis": ["Synthetic confirmation basis"],
+                "facultyConfirmationRequired": False,
+            },
+            {
+                "slug": "reviewed.md",
+                "status": "reviewed",
+                "risk": {"kind": "general", "level": "low"},
+                "basis": ["Synthetic confirmation basis"],
+                "facultyConfirmationRequired": False,
+            },
+        ]
+        original = deepcopy(ledger)
+
+        migrated = governance.apply_confirmed_risk_proposal(ledger, proposal)
+
+        self.assertEqual(ledger, original)
+        self.assertEqual(set(migrated), set(ledger))
+        self.assertEqual(
+            {slug: (entry["status"], entry["at"]) for slug, entry in migrated.items()},
+            {slug: (entry["status"], entry["at"]) for slug, entry in ledger.items()},
+        )
+        self.assertEqual(
+            migrated["reviewed.md"],
+            {
+                **ledger["reviewed.md"],
+                "risk": {"kind": "general", "level": "low"},
+            },
+        )
+        self.assertEqual(
+            migrated["pending.html"],
+            {
+                **ledger["pending.html"],
+                "risk": {"kind": "clinical", "level": "high"},
+                "by": "Pending faculty review",
+                "reason": "Pending faculty review of this learner surface.",
+            },
+        )
+
+    def test_unconfirmed_or_incomplete_proposals_cannot_change_the_ledger(self) -> None:
+        ledger = {
+            "synthetic.md": {
+                "status": "reviewed",
+                "at": "2026-07-01",
+                "by": "Synthetic Reviewer, MD",
+            }
+        }
+        cases = (
+            (
+                "unconfirmed",
+                [{
+                    "slug": "synthetic.md",
+                    "status": "reviewed",
+                    "risk": {"kind": "general", "level": "low"},
+                    "facultyConfirmationRequired": True,
+                }],
+                "risk proposal: synthetic.md is not faculty-confirmed",
+            ),
+            (
+                "missing-row",
+                [],
+                "risk proposal: ledger and proposal slugs differ",
+            ),
+            (
+                "status-drift",
+                [{
+                    "slug": "synthetic.md",
+                    "status": "pending",
+                    "risk": {"kind": "general", "level": "low"},
+                    "facultyConfirmationRequired": False,
+                }],
+                "risk proposal: synthetic.md review status changed",
+            ),
+        )
+        for label, proposal, expected in cases:
+            with self.subTest(label=label):
+                before = deepcopy(ledger)
+                with self.assertRaisesRegex(
+                    governance.SurfaceGovernanceError,
+                    f"^{expected.replace('.', '[.]')}$",
+                ):
+                    governance.apply_confirmed_risk_proposal(ledger, proposal)
+                self.assertEqual(ledger, before)
 
 
 if __name__ == "__main__":

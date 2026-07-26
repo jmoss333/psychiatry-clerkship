@@ -39,6 +39,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { validateSurfaceGovernance } from './surface-governance-check.mjs';
 
 const SITE = process.argv[2];
 if (!SITE) { console.error('usage: node check-static-site.mjs <siteDir>'); process.exit(1); }
@@ -71,6 +72,10 @@ const parsed = {};
 for (const f of jsonFiles) {
   try { parsed[f] = readJSON(f); }
   catch (e) { H(`Invalid JSON: ${f.replace(SITE, '.')} — ${e.message}`); }
+}
+
+for (const finding of validateSurfaceGovernance(SITE)) {
+  H(`surface governance → ${finding}`);
 }
 
 /* ---------- 2. nav.json target existence + collect nav sets ---------- */
@@ -141,7 +146,10 @@ if (existsSync(rvPath) && parsed[rvPath]) {
   const SHELF_VOCAB = ['mood','psychosis','anxiety','substance','neurocog','pharm',
     'safety','personality','childdev','otherdx','ethics','relational'];
   const meta = (existsSync(tmPath) && parsed[tmPath]) ? parsed[tmPath] : null;
-  const rev = (existsSync(rvPath) && parsed[rvPath]) ? parsed[rvPath] : {};
+  const govPath = p('governance.json');
+  const rev = (existsSync(govPath) && parsed[govPath]?.items)
+    ? parsed[govPath].items
+    : {};
   const qbP = p('question_bank.json');
   const qb = (existsSync(qbP) && parsed[qbP]) ? (parsed[qbP].items || []) : null;
   const isAttestedPage = (slug) => rev[slug] && rev[slug].status === 'reviewed';

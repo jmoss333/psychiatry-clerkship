@@ -5,6 +5,7 @@ import copy
 import contextlib
 import io
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -289,16 +290,24 @@ def write_fixture(
     for path in (reviewed_path, manifest_path, source_path, pack_path):
         path.parent.mkdir(parents=True, exist_ok=True)
 
-    reviewed_path.write_text(
-        json.dumps(
-            {
-                TOOL_SLUG: {
-                    "status": ledger_status,
-                    "at": "2026-07-13",
-                    "by": "Historical Reviewer, MD",
-                }
-            }
+    shutil.copyfile(
+        REPO_ROOT / "13_Faculty_Resources" / "reviewed.schema.json",
+        reviewed_path.with_name("reviewed.schema.json"),
+    )
+    ledger_entry = {
+        "status": ledger_status,
+        "risk": {"kind": "clinical", "level": "high"},
+        "at": "2026-07-13",
+        "by": (
+            "Historical Reviewer, MD"
+            if ledger_status == "reviewed"
+            else "Pending faculty review"
         ),
+    }
+    if ledger_status != "reviewed":
+        ledger_entry["reason"] = "Synthetic review is pending"
+    reviewed_path.write_text(
+        json.dumps({TOOL_SLUG: ledger_entry}),
         encoding="utf-8",
     )
     (root / "topic_meta.json").write_text("{}", encoding="utf-8")
@@ -337,6 +346,31 @@ class AttestationConsistencyTests(unittest.TestCase):
                 pack=pack,
             )
             return self.validate(root)
+
+    def test_malformed_ledger_risk_returns_one_stable_non_echoing_error(self):
+        sentinel = "sensitive-invalid-risk-kind"
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(
+                root,
+                ledger_status="pending",
+                tool_status="draft-pending-attestation",
+                pack=pending_pack(),
+            )
+            reviewed_path = Path(root) / "13_Faculty_Resources/reviewed.json"
+            reviewed = json.loads(reviewed_path.read_text(encoding="utf-8"))
+            reviewed[TOOL_SLUG]["risk"]["kind"] = sentinel
+            reviewed_path.write_text(json.dumps(reviewed), encoding="utf-8")
+
+            errors = self.validate(root)
+
+        self.assertEqual(
+            errors,
+            [
+                "reviewed.json: sp-interview.html invalid at "
+                "/sp-interview.html/risk/kind"
+            ],
+        )
+        self.assertNotIn(sentinel, "\n".join(errors))
 
     def test_reviewed_ledger_with_pending_tool_header_uses_fixed_mismatch_category(self):
         with tempfile.TemporaryDirectory() as root:

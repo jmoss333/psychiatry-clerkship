@@ -96,8 +96,22 @@
   @media(prefers-reduced-motion:reduce){.skel .bar{animation:none}}
   #content.toolmode{max-width:none;padding:0;margin:0}
   .toolframe{width:100%;height:calc(100vh - 46px);border:0;display:block;background:var(--bg)}
-  .toolrev{background:var(--accent-light);color:var(--accent-dark);border-bottom:1px solid var(--border);font-size:.76rem;font-weight:600;padding:6px 16px;letter-spacing:.02em}
-  #content.toolmode.hasrev .toolframe{height:calc(100vh - 46px - 30px)}
+  #content.toolmode.hasrev{display:flex;flex-direction:column;height:calc(100vh - 46px)}
+  #content.toolmode.hasrev .toolframe{height:auto;flex:1;min-height:0}
+  .governance-notice{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:11px 14px;margin:0 0 14px;border-radius:10px;font-size:.9rem;line-height:1.45}
+  .governance-notice .governance-title{display:block;font-weight:800}
+  .governance-notice .governance-risk{display:block;font-size:.78rem;font-weight:750;letter-spacing:.02em;color:var(--text-mid);margin-top:2px}
+  .governance-notice p{margin:6px 0 0}
+  .governance-notice.pending-high{border:3px solid var(--danger);background:var(--danger-light);color:var(--text);border-radius:0;margin:0;padding:14px 18px}
+  .governance-notice.pending-high .pgfb-b{margin-top:10px;background:var(--surface);color:var(--danger);border-color:var(--danger)}
+  .governance-notice.pending-compact{border-color:var(--warning);background:var(--warning-light)}
+  .governance-notice.reviewed-receipt{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark);font-size:.78rem;padding:7px 12px}
+  .governance-notice.unavailable{border-style:dashed;background:var(--warning-light);font-weight:700}
+  .md-body>.governance-notice.pending-high{margin:0 calc(50% - 50vw) 18px;padding-left:max(28px,calc(50vw - 410px));padding-right:max(28px,calc(50vw - 410px))}
+  .governance-badge{display:inline-block;flex:0 0 auto;border:1px solid currentColor;border-radius:999px;padding:1px 6px;font-size:.58rem;font-weight:800;line-height:1.35;color:var(--warning);background:var(--warning-light)}
+  .governance-badge.high{color:var(--danger);background:var(--danger-light)}
+  .navitem.on .governance-badge{color:var(--text);background:var(--surface)}
+  .result .governance-badge{margin-left:6px;vertical-align:middle}
   .pgfb{margin:30px 0 0;padding-top:16px;border-top:1px solid var(--border)}
   .pgfb-b{background:none;border:1px solid var(--border);border-radius:999px;padding:6px 15px;color:var(--text-light);cursor:pointer;font:inherit;font-size:.83rem}
   .pgfb-b:hover{border-color:var(--accent);color:var(--accent-dark)}
@@ -459,14 +473,20 @@
 <script>
   var navEl=document.getElementById('nav'), contentEl=document.getElementById('content');
   var searchEl=document.getElementById('search'), sxEl=document.getElementById('sx');
-  var currentItem=null; var REVIEWED={}; var SCROLL={};
+  var currentItem=null; var GOVERNANCE={status:'loading',items:{}}; var governanceFocusSlug=''; var SCROLL={};
   (function(){var _b=document.getElementById('banner'),_bx=document.getElementById('bannerX');try{if(localStorage.getItem('cw_banner_dismissed')==='1'&&_b)_b.classList.add('hide');}catch(_){ } if(_bx)_bx.addEventListener('click',function(){if(_b)_b.classList.add('hide');try{localStorage.setItem('cw_banner_dismissed','1');}catch(_){ }});})();
   function skel(){return '<div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div>';}
   var themeBtn=document.getElementById('themeBtn');
   function applyThemeIcon(){ var dk=document.documentElement.getAttribute('data-theme')==='dark'; if(themeBtn){ themeBtn.innerHTML=dk?'☀':'☾'; themeBtn.setAttribute('aria-pressed',String(dk)); themeBtn.setAttribute('title',dk?'Switch to light mode':'Switch to dark mode'); } }
   if(themeBtn){ themeBtn.addEventListener('click',function(){ var dk=document.documentElement.getAttribute('data-theme')==='dark'; var nx=dk?'light':'dark'; document.documentElement.setAttribute('data-theme',nx); try{localStorage.setItem('cw_theme',nx);}catch(_){ } var _if=document.querySelector('#content iframe'); if(_if&&_if.contentWindow){try{_if.contentWindow.postMessage({type:'theme',mode:nx},'*');}catch(_){ }} applyThemeIcon(); }); }
   applyThemeIcon();
-  fetch('reviewed.json').then(function(r){return r.ok?r.json():{}}).then(function(d){REVIEWED=(d&&d.items)?d.items:(d||{});try{if(currentItem&&REVIEWED[currentItem.f]){ if(currentItem.k==='tool'&&!contentEl.querySelector('.toolrev'))show(currentItem); else if(currentItem.k!=='tool'&&!contentEl.querySelector('.reviewed'))show(currentItem); }}catch(_){ }}).catch(function(){});
+  function rerenderCurrent(){
+    if(!currentItem||currentItem.k==='special'||(typeof facultyPreviewRequest!=='undefined'&&facultyPreviewRequest))return;
+    var btn=document.querySelector('.navitem[data-f="'+currentItem.f+'"]');
+    var extra=currentItem.k==='tool'?toolExtraFromParams(new URLSearchParams(location.search)):'';
+    show(currentItem,btn,{fromHistory:true,noRoute:true,governanceRefresh:true,toolExtra:extra});
+  }
+  fetch('governance.json').then(function(r){if(!r.ok)throw new Error('governance unavailable');return r.json();}).then(function(d){GOVERNANCE={status:'ready',items:(d&&d.items)||{}};rerenderCurrent();}).catch(function(){GOVERNANCE={status:'unavailable',items:{}};rerenderCurrent();});
   var TOPIC_META={};
   fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; try{ if(window.__renderModeCompanion) window.__renderModeCompanion(); }catch(_){ } if(currentItem&&TOPIC_META[currentItem.f]&&contentEl&&!contentEl.querySelector('.topic-tpl')) show(currentItem); }).catch(function(){});
   function makeCollapsible(body){
@@ -568,7 +588,46 @@
     h+='</div>'; return h;
   }
   function toolExtraFromParams(sp){ var out=''; try{ sp.forEach(function(v,k){ if(k!=='tool'&&k!=='page') out+='&'+encodeURIComponent(k)+'='+encodeURIComponent(v); }); }catch(_){} return out; }
-  function toolFrameSuffix(extra){ return extra?('?'+String(extra).replace(/^&/,'')):''; }
+  function toolFrameSuffixWithGovernance(extra){
+    var params=new URLSearchParams(String(extra||'').replace(/^&/,''));
+    params.set('governed','1');
+    var query=params.toString();
+    return query?('?'+query):'?governed=1';
+  }
+  function riskLabel(entry){
+    return String(entry.riskKind||'general').replace(/-/g,' ')+' · '+String(entry.riskLevel||'low')+' risk';
+  }
+  function renderGovernanceNotice(item){
+    var entry=GOVERNANCE.status==='ready'&&item&&GOVERNANCE.items[item.f];
+    if(!entry)return '<div class="governance-notice unavailable" role="status">Review status unavailable—verify with faculty</div>';
+    if(entry.status==='pending'&&entry.riskLevel==='high'){
+      return '<section class="governance-notice pending-high" role="alert" tabindex="-1"><strong class="governance-title">Pending faculty review</strong><span class="governance-risk">'+esc(riskLabel(entry))+'</span><p>'+esc(entry.warning||entry.reason||'Faculty review is pending.')+'</p>'+(entry.reason?'<p>'+esc(entry.reason)+'</p>':'')+'<button type="button" class="pgfb-b">Feedback on this page →</button></section>';
+    }
+    if(entry.status==='pending'){
+      return '<div class="governance-notice pending-compact" role="status"><strong class="governance-title">Pending faculty review</strong><span class="governance-risk">'+esc(riskLabel(entry))+'</span>'+(entry.reason?'<span>'+esc(entry.reason)+'</span>':'')+'</div>';
+    }
+    return '<div class="governance-notice reviewed-receipt" role="status">Reviewed by '+esc(entry.reviewer||'faculty')+(entry.reviewedAt?(' · '+esc(entry.reviewedAt)):'')+'</div>';
+  }
+  function governanceBadge(triplet){
+    if(!triplet||triplet.status!=='pending')return '';
+    var high=triplet.riskLevel==='high';
+    var label=high?'Pending review · High risk':'Pending review';
+    return '<span class="governance-badge'+(high?' high':'')+'" aria-label="'+label+'">'+label+'</span>';
+  }
+  function focusGovernanceNotice(opts){
+    if(facultyPreviewRequest)return;
+    var refreshCompletesNavigation=!!(opts&&opts.governanceRefresh&&governanceFocusSlug===currentItem.f);
+    if((opts&&opts.fromHistory)&&!refreshCompletesNavigation)return;
+    var notice=contentEl.querySelector('.governance-notice.pending-high');
+    if(notice){
+      governanceFocusSlug='';
+      requestAnimationFrame(function(){notice.focus();});
+    }else if(GOVERNANCE.status!=='ready'&&!(opts&&opts.fromHistory)){
+      governanceFocusSlug=currentItem.f;
+    }else if(GOVERNANCE.status==='ready'){
+      governanceFocusSlug='';
+    }
+  }
   function readFacultyPreviewRequest(){
     var sp=new URLSearchParams(location.search);
     var pageValues=sp.getAll('page'), toolValues=sp.getAll('tool');
@@ -814,7 +873,7 @@
         if(frame===currentToolFrame)postFacultyPreviewStatus('error',facultyPreviewRequest.surface);
       });
       currentToolFrame=frame;
-      frame.src=toolPath+toolFrameSuffix(opts&&opts.toolExtra);
+      frame.src=toolPath+toolFrameSuffixWithGovernance(opts&&opts.toolExtra);
       contentEl.innerHTML=bar;
       contentEl.appendChild(frame);
       window.scrollTo(0,0);
@@ -844,12 +903,12 @@
     if(item.k==='tool'){
       currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)&&!(opts&&opts.noRoute)) setRoute(item, opts&&opts.replace, opts);
       contentEl.classList.add('toolmode');
-      var _rv=REVIEWED&&REVIEWED[item.f]; var _bar=(_rv&&_rv.status==='reviewed')?('<div class="toolrev">✓ Reviewed by '+esc(_rv.by||'faculty')+(_rv.at?(' · '+_rv.at):'')+'</div>'):'';
+      var _bar=renderGovernanceNotice(item);
       contentEl.classList.toggle('hasrev', !!_bar);
       if(facultyPreviewRequest){contentEl.innerHTML=skel();loadFacultyPreviewTool(item,opts,_bar);return true;}
       currentToolFrame=null;
-      contentEl.innerHTML=_bar+'<iframe class="toolframe" src="tools/'+item.f+esc(toolFrameSuffix(opts&&opts.toolExtra))+'" title="'+esc(item.t)+'"></iframe>';
-      window.scrollTo(0,0); return;
+      contentEl.innerHTML=_bar+'<iframe class="toolframe" src="tools/'+item.f+esc(toolFrameSuffixWithGovernance(opts&&opts.toolExtra))+'" title="'+esc(item.t)+'"></iframe>';
+      focusGovernanceNotice(opts); window.scrollTo(0,0); return;
     }
     currentToolFrame=null;
     currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)&&!(opts&&opts.noRoute)) setRoute(item, opts&&opts.replace, opts);
@@ -861,11 +920,11 @@
       if(item.f==='welcome.md'){try{localStorage.setItem('cw_seen_welcome_v1','1');localStorage.setItem('cw_seen_start','1');}catch(_){ }}
       var _anchor=installTitleReviewButton(item.f)||contentEl.querySelector('h1');
       function _insertAfterTitle(node){ if(!node)return; if(_anchor&&_anchor.parentNode){ _anchor.parentNode.insertBefore(node,_anchor.nextSibling); _anchor=node; } else contentEl.insertBefore(node,contentEl.firstChild); }
-      var rv=REVIEWED&&REVIEWED[item.f];
+      var _governance=document.createElement('div'); _governance.innerHTML=renderGovernanceNotice(item); if(_governance.firstChild) _insertAfterTitle(_governance.firstChild);
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
-      makeCollapsible(contentEl); enhanceTables(contentEl); if(rv&&rv.status==='reviewed'){ var st=document.createElement('div'); st.className='reviewed page-review-footer'; st.textContent='\u2713 Reviewed by '+(rv.by||'faculty')+(rv.at?(' \u00b7 '+rv.at):''); contentEl.appendChild(st); } var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); try{if(window.__afterContent)window.__afterContent(item);}catch(_){ } try{contentEl.classList.remove('cc-rise');void contentEl.offsetWidth;contentEl.classList.add('cc-rise');}catch(_){ } var _sy=(opts&&opts.fromHistory&&SCROLL[item.f]!=null)?SCROLL[item.f]:0; window.scrollTo(0,_sy); postFacultyPreviewStatus('ready','page');
+      makeCollapsible(contentEl); enhanceTables(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); try{if(window.__afterContent)window.__afterContent(item);}catch(_){ } try{contentEl.classList.remove('cc-rise');void contentEl.offsetWidth;contentEl.classList.add('cc-rise');}catch(_){ } focusGovernanceNotice(opts); var _sy=(opts&&opts.fromHistory&&SCROLL[item.f]!=null)?SCROLL[item.f]:0; window.scrollTo(0,_sy); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
   }
 
@@ -899,7 +958,7 @@
       grp.id=_gid; h.setAttribute('aria-controls',_gid);
       sec.items.forEach(function(it){
         var b=document.createElement('button'); b.className='navitem'+(it.hidden?' navitem-hidden':'');
-        b.innerHTML='<span class="nt">'+it.t+'</span>'+(it.k==='tool'?' <span class="tool-tag">tool</span>':'');
+        b.innerHTML='<span class="nt">'+it.t+'</span>'+governanceBadge(it.governance)+(it.k==='tool'?' <span class="tool-tag">tool</span>':'');
         b.setAttribute('data-f',it.f); b.setAttribute('title',it.t); b._item=it; b.onclick=function(){show(it,b)}; grp.appendChild(b);
       });
       var open = Object.prototype.hasOwnProperty.call(navOpen,sec.section) ? !!navOpen[sec.section] : (sec.section==='Start here'||sec.section==='Overview'||!!sec.pinned);
@@ -1004,7 +1063,7 @@
     else{
       html+='<p class="srn">'+res.length+' result'+(res.length>1?'s':'')+' for <strong>'+esc(q)+'</strong></p><div class="results">';
       res.forEach(function(r){
-        html+='<button class="result" data-i="'+r.id+'"><span class="r-title">'+hl(r.d.t,q)+(r.d.k==='tool'?' <span class="tool-tag">tool</span>':'')+'</span><span class="r-sec">'+esc(r.d.sec)+'</span><span class="r-snip">'+hl(r.d.snip,q)+'&hellip;</span></button>';
+        html+='<button class="result" data-i="'+r.id+'"><span class="r-title">'+hl(r.d.t,q)+governanceBadge(r.d.governance)+(r.d.k==='tool'?' <span class="tool-tag">tool</span>':'')+'</span><span class="r-sec">'+esc(r.d.sec)+'</span><span class="r-snip">'+hl(r.d.snip,q)+'&hellip;</span></button>';
       });
       html+='</div>';
     }

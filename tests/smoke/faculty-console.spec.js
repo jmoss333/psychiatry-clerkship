@@ -1288,6 +1288,9 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.getByRole('button', { name: 'Reopen review' }).click();
     const reopenDialog = page.getByRole('alertdialog', { name: 'Reopen this review?' });
     await expect(reopenDialog).toContainText('This changes only t_mood.md.');
+    await reopenDialog.getByLabel('Reason for reopening').fill(
+      'Scheduled faculty re-review.',
+    );
     const reopenStart = api.calls.length;
     await reopenDialog.getByRole('button', { name: 'Confirm reopen' }).click();
     await expect(page.locator('#content-action-result')).toContainText('Reopened t_mood.md for review.');
@@ -1300,6 +1303,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
       target: 'content',
       changes: { 't_mood.md': false },
       attester: 'Dr Synthetic',
+      reasons: { 't_mood.md': 'Scheduled faculty re-review.' },
     });
     expect(api.currentContent().find(item => item.slug === 't_mood.md').status).toBe('pending');
     expect(api.gets.at(-1).items.find(item => item.slug === 't_mood.md').status).toBe('unreviewed');

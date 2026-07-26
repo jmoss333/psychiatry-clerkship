@@ -280,3 +280,17 @@ except GovernanceError as error:
 for _warning in _governance_warnings:
     print(_warning)
 print("tool governance: emitted", len(_governance["items"]), "items")
+
+# ---------- LEARNER-FACING SURFACE GOVERNANCE ----------
+# Rebuild the projection for resident navigation and replace inherited MS3
+# direct-tool blocks with the resident decision.
+from surface_governance import publish_site_governance
+
+_surface_governance = publish_site_governance(
+    Path(LIB), Path(OUT), nav, "resident"
+)
+print(
+    "surface governance: emitted",
+    len(_surface_governance["items"]),
+    "items",
+)

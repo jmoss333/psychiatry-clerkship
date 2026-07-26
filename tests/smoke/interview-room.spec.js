@@ -391,7 +391,8 @@ test('voice mode is keyboard-operable and managed identity stays canonical acros
   const active = page.locator('.msg.pt').filter({ hasText: OPENING });
   expect(await active.getByRole('button', { name: 'Stop' }).evaluate((element) => element.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
   await expect(page.getByRole('log', { name: 'Conversation transcript' })).toHaveAttribute('aria-live', 'off');
-  await expect(page.locator('[aria-live]:not([aria-live="off"]), [role="status"]:not([aria-live="off"]), [role="log"]:not([aria-live="off"]), [role="alert"]:not([aria-live="off"])')).toHaveCount(1);
+  await expect(page.locator('.surface-governance-pending-high[role="alert"]')).toBeVisible();
+  await expect(page.locator('[aria-live]:not([aria-live="off"]), [role="status"]:not([aria-live="off"]), [role="log"]:not([aria-live="off"]), [role="alert"]:not([aria-live="off"])')).toHaveCount(2);
   const record = page.getByRole('button', { name: /record|speak your question/i });
   await record.click();
   await expect.poll(async () => (await log(page)).events.includes('media:start')).toBe(true);

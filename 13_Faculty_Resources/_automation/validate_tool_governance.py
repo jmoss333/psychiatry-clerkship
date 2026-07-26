@@ -16,6 +16,12 @@ from jsonschema import Draft7Validator
 
 
 AUTOMATION_DIRECTORY = Path(__file__).resolve().parent
+if str(AUTOMATION_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(AUTOMATION_DIRECTORY))
+
+from surface_governance import SurfaceGovernanceError, load_validated_ledger
+
+
 CONTRACT_DIRECTORY = AUTOMATION_DIRECTORY / "contracts" / "clerkshipos-schema-0.2.0"
 SCHEMA_PATH = CONTRACT_DIRECTORY / "governance-envelope-v1.schema.json"
 MANIFEST_PATH = CONTRACT_DIRECTORY / "manifest.json"
@@ -227,14 +233,15 @@ def normalize_tool(
     marker: MetadataMarker,
     *,
     revision: str,
-    ledger_status: object = None,
+    ledger_entry: dict,
 ) -> dict:
     """Normalize one tool source into a conservative GovernanceEnvelopeV1 item."""
-    marker_status = marker.fields.get("status")
-    source_status = marker_status if marker_status is not None else ledger_status
-    attestation_value = marker.fields.get(
-        "attestationStatus", marker.fields.get("attestation", marker_status)
-    )
+    if not isinstance(ledger_entry, dict):
+        raise GovernanceError(f"{relative_path}: missing canonical ledger record")
+    ledger_status = ledger_entry.get("status")
+    risk = ledger_entry.get("risk")
+    if ledger_status not in {"pending", "reviewed"} or not isinstance(risk, dict):
+        raise GovernanceError(f"{relative_path}: invalid canonical ledger record")
     authorship_kind = marker.fields.get("authorship", "").strip().lower()
     if authorship_kind not in {
         "human-authored",
@@ -262,15 +269,17 @@ def normalize_tool(
         "lifecycle": _conservative_field(
             marker, relative_path, "lifecycle", "active", {"active"}
         ),
-        "reviewStatus": review_status(source_status),
+        "reviewStatus": (
+            "reviewed" if ledger_status == "reviewed" else "needs-review"
+        ),
         "authorship": {"kind": authorship_kind, "contributorIds": contributor_ids},
-        "attestationStatus": attestation_status(attestation_value),
-        "safetySeverity": _conservative_field(
-            marker, relative_path, "safetySeverity", "high", {"high", "critical"}
+        "attestationStatus": (
+            "faculty-attested"
+            if ledger_status == "reviewed"
+            else "needs-attestation"
         ),
-        "reviewCategory": _conservative_field(
-            marker, relative_path, "reviewCategory", "clinical", {"clinical"}
-        ),
+        "safetySeverity": risk.get("level"),
+        "reviewCategory": risk.get("kind"),
         "clinicalClaim": _conservative_field(
             marker, relative_path, "clinicalClaim", True, {True}
         ),
@@ -382,9 +391,10 @@ def build_governance_document(
     """Build one site inventory entirely from local tracked inputs."""
     root = Path(root).resolve()
     _schema, descriptor = load_vendored_contract()
-    ledger = _load_json(root / REVIEWED_RELATIVE, REVIEWED_RELATIVE.as_posix())
-    if not isinstance(ledger, dict):
-        raise GovernanceError("reviewed.json: invalid ledger")
+    try:
+        ledger = load_validated_ledger(root)
+    except SurfaceGovernanceError as error:
+        raise GovernanceError(str(error)) from error
     revision = revision or current_revision(root)
     items = []
     legacy_paths = []
@@ -397,8 +407,11 @@ def build_governance_document(
         marker = parse_metadata_marker(source, relative_path)
         if marker.kind == "legacy":
             legacy_paths.append(relative_path)
-        ledger_entry = ledger.get(built_slug, {})
-        ledger_status = ledger_entry.get("status") if isinstance(ledger_entry, dict) else None
+        ledger_entry = ledger.get(built_slug)
+        if ledger_entry is None:
+            raise GovernanceError(
+                f"{built_slug}: missing canonical ledger record"
+            )
         items.append(
             normalize_tool(
                 source,
@@ -406,7 +419,7 @@ def build_governance_document(
                 built_slug,
                 marker,
                 revision=revision,
-                ledger_status=ledger_status,
+                ledger_entry=ledger_entry,
             )
         )
     items.sort(key=lambda item: item["id"])

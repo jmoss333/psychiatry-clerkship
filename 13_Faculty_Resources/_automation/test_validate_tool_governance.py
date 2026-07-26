@@ -3,6 +3,7 @@
 
 import hashlib
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -25,6 +26,25 @@ EXPECTED_LEGACY_MARKER_SOURCES = {
 }
 
 
+def reviewed_ledger_entry() -> dict:
+    return {
+        "status": "reviewed",
+        "risk": {"kind": "general", "level": "low"},
+        "at": "2026-07-26",
+        "by": "Synthetic Reviewer, MD",
+    }
+
+
+def pending_ledger_entry() -> dict:
+    return {
+        "status": "pending",
+        "risk": {"kind": "clinical", "level": "high"},
+        "reason": "Synthetic review is pending",
+        "at": "2026-07-26",
+        "by": "Pending faculty review",
+    }
+
+
 def write_synthetic_repository(root: Path) -> None:
     manifest = {
         "tools": [
@@ -36,7 +56,27 @@ def write_synthetic_repository(root: Path) -> None:
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     reviewed = root / "13_Faculty_Resources/reviewed.json"
     reviewed.parent.mkdir(parents=True, exist_ok=True)
-    reviewed.write_text(json.dumps({"base.html": {"status": "reviewed"}}), encoding="utf-8")
+    shutil.copyfile(
+        ROOT / "13_Faculty_Resources/reviewed.schema.json",
+        reviewed.with_name("reviewed.schema.json"),
+    )
+    ledger_entry = reviewed_ledger_entry()
+    reviewed.write_text(
+        json.dumps(
+            {
+                slug: ledger_entry
+                for slug in (
+                    "base.html",
+                    "learning-path.html",
+                    "orientation-video.html",
+                    "rp-agitation.html",
+                    "rp-brief-psych.html",
+                    "rp-canon-quiz.html",
+                )
+            }
+        ),
+        encoding="utf-8",
+    )
     sources = {
         "synthetic/base.html": b'<!-- [CLERKSHIP-META v1] tool="synthetic-base" audience="trainee" -->\n',
         "01_Six_Week_Curriculum/learning-path.html": b'<!-- [RC-META] tool="synthetic-path" audience="trainee" -->\n',
@@ -193,7 +233,60 @@ class MetadataMarkerTests(unittest.TestCase):
 
 
 class NormalizationTests(unittest.TestCase):
-    def test_reviewed_metadata_stays_unattested_and_unknown_authorship(self) -> None:
+    def test_ledger_owns_review_attestation_category_and_severity(self) -> None:
+        source = (
+            b'<!-- [CLERKSHIP-META v1] tool="synthetic-tool" audience="trainee" '
+            b'status="reviewed" reviewCategory="clinical" safetySeverity="critical" -->\n'
+        )
+        marker = governance.parse_metadata_marker(source, "synthetic/source.html")
+        pending_entry = {
+            "status": "pending",
+            "risk": {"kind": "local-policy", "level": "high"},
+            "reason": "Synthetic review is pending",
+            "at": "2026-07-26",
+            "by": "Pending faculty review",
+        }
+
+        try:
+            pending = governance.normalize_tool(
+                source,
+                "synthetic/source.html",
+                "synthetic-output.html",
+                marker,
+                revision="a" * 40,
+                ledger_entry=pending_entry,
+            )
+            reviewed = governance.normalize_tool(
+                source,
+                "synthetic/source.html",
+                "synthetic-output.html",
+                marker,
+                revision="a" * 40,
+                ledger_entry={
+                    "status": "reviewed",
+                    "risk": {"kind": "general", "level": "low"},
+                    "at": "2026-07-26",
+                    "by": "Synthetic Reviewer, MD",
+                },
+            )
+        except TypeError:
+            pending = None
+            reviewed = None
+
+        self.assertIsNotNone(
+            pending,
+            "normalize_tool must consume the canonical ledger record",
+        )
+        self.assertEqual(pending["reviewStatus"], "needs-review")
+        self.assertEqual(pending["attestationStatus"], "needs-attestation")
+        self.assertEqual(pending["reviewCategory"], "local-policy")
+        self.assertEqual(pending["safetySeverity"], "high")
+        self.assertEqual(reviewed["reviewStatus"], "reviewed")
+        self.assertEqual(reviewed["attestationStatus"], "faculty-attested")
+        self.assertEqual(reviewed["reviewCategory"], "general")
+        self.assertEqual(reviewed["safetySeverity"], "low")
+
+    def test_reviewed_ledger_attests_independently_of_marker_and_authorship(self) -> None:
         source = (
             b'<!-- [CLERKSHIP-META v1] tool="synthetic-tool" audience="ms3, resident" '
             b'status="reviewed" summary="Synthetic AI-drafted wording only" -->\n'
@@ -206,13 +299,13 @@ class NormalizationTests(unittest.TestCase):
             "synthetic-output.html",
             marker,
             revision="a" * 40,
-            ledger_status="reviewed",
+            ledger_entry=reviewed_ledger_entry(),
         )
 
         self.assertEqual(envelope["id"], "tools/synthetic-output")
         self.assertEqual(envelope["audiences"], ["ms3", "resident"])
         self.assertEqual(envelope["reviewStatus"], "reviewed")
-        self.assertEqual(envelope["attestationStatus"], "needs-attestation")
+        self.assertEqual(envelope["attestationStatus"], "faculty-attested")
         self.assertEqual(
             envelope["authorship"],
             {"kind": "unknown", "contributorIds": ["provenance-unrecorded"]},
@@ -222,7 +315,7 @@ class NormalizationTests(unittest.TestCase):
         self.assertNotIn("Synthetic", serialized)
         self.assertNotIn("AI-drafted wording", serialized)
 
-    def test_explicit_metadata_attestation_claims_need_attestation(self) -> None:
+    def test_explicit_metadata_attestation_claims_cannot_override_the_ledger(self) -> None:
         claims = (
             ("status", "attested"),
             ("status", "faculty-attested"),
@@ -246,10 +339,10 @@ class NormalizationTests(unittest.TestCase):
                     "synthetic-attested.html",
                     marker,
                     revision="b" * 40,
-                    ledger_status="reviewed",
+                    ledger_entry=reviewed_ledger_entry(),
                 )
 
-                self.assertEqual(envelope["attestationStatus"], "needs-attestation")
+                self.assertEqual(envelope["attestationStatus"], "faculty-attested")
 
     def test_draft_pending_attestation_maps_to_pending_review_and_attestation(self) -> None:
         source = (
@@ -264,27 +357,31 @@ class NormalizationTests(unittest.TestCase):
             "synthetic-draft.html",
             marker,
             revision="d" * 40,
+            ledger_entry=pending_ledger_entry(),
         )
 
         self.assertEqual(envelope["reviewStatus"], "needs-review")
         self.assertEqual(envelope["attestationStatus"], "needs-attestation")
 
-    def test_ledger_attested_never_promotes_marker_without_attestation(self) -> None:
+    def test_noncanonical_ledger_status_is_rejected(self) -> None:
         source = b'<!-- [RC-META] tool="synthetic-tool" audience="trainee" -->\n'
         marker = governance.parse_metadata_marker(source, "synthetic/ledger-only.html")
 
-        envelope = governance.normalize_tool(
-            source,
-            "synthetic/ledger-only.html",
-            "synthetic-ledger.html",
-            marker,
-            revision="b" * 40,
-            ledger_status="attested",
-        )
-
-        self.assertEqual(envelope["reviewStatus"], "unreviewed")
-        self.assertNotEqual(envelope["attestationStatus"], "faculty-attested")
-        self.assertEqual(envelope["attestationStatus"], "unattested")
+        with self.assertRaisesRegex(
+            governance.GovernanceError,
+            r"synthetic/ledger-only[.]html: invalid canonical ledger record",
+        ):
+            governance.normalize_tool(
+                source,
+                "synthetic/ledger-only.html",
+                "synthetic-ledger.html",
+                marker,
+                revision="b" * 40,
+                ledger_entry={
+                    "status": "attested",
+                    "risk": {"kind": "general", "level": "low"},
+                },
+            )
 
     def test_unsafe_policy_and_malformed_source_path_fail_schema_validation(self) -> None:
         source = b'<!-- [RC-META] tool="synthetic-tool" audience="trainee" -->\n'
@@ -295,6 +392,7 @@ class NormalizationTests(unittest.TestCase):
             "synthetic-output.html",
             marker,
             revision="c" * 40,
+            ledger_entry=reviewed_ledger_entry(),
         )
         cases = {
             "policy": ("patientDataPolicy", "unsafe", "/patientDataPolicy"),
@@ -326,6 +424,7 @@ class NormalizationTests(unittest.TestCase):
                 "nested/synthetic-output.html",
                 marker,
                 revision="d" * 40,
+                ledger_entry=reviewed_ledger_entry(),
             )
 
 

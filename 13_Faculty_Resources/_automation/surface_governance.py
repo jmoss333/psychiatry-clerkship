@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Validate and present learner-facing review governance."""
 
+import argparse
 import json
 import os
 import re
+import sys
 import tempfile
 from copy import deepcopy
 from datetime import date
@@ -37,6 +39,13 @@ STATUS_SCRIPT_PATTERN = re.compile(
 )
 HEAD_CLOSE_PATTERN = re.compile(r"</head\s*>", re.IGNORECASE)
 BODY_OPEN_PATTERN = re.compile(r"<body(?:\s[^>]*)?>", re.IGNORECASE)
+METADATA_FIELD_PATTERN = re.compile(
+    r'\b(reviewCategory|safetySeverity)="([^"\r\n]+)"'
+)
+SITE_MANIFEST_RELATIVE = Path(
+    "13_Faculty_Resources/_automation/site_build/site_manifest.json"
+)
+TOPIC_META_RELATIVE = Path("topic_meta.json")
 
 
 class SurfaceGovernanceError(ValueError):
@@ -211,6 +220,33 @@ def annotate_navigation(nav: list, document: dict) -> list:
     return annotated
 
 
+def annotate_search_index(index: dict, document: dict) -> dict:
+    """Return a search-index copy with governance on every result document."""
+    if not isinstance(index, dict) or not isinstance(index.get("docs"), list):
+        raise SurfaceGovernanceError(
+            "surface governance: invalid search index"
+        )
+    annotated = deepcopy(index)
+    for item in annotated["docs"]:
+        if not isinstance(item, dict) or not isinstance(item.get("f"), str):
+            raise SurfaceGovernanceError(
+                "surface governance: invalid search document"
+            )
+        slug = item["f"]
+        try:
+            entry = document["items"][slug]
+        except (KeyError, TypeError) as error:
+            raise SurfaceGovernanceError(
+                f"surface governance: {slug} missing site record"
+            ) from error
+        item["governance"] = {
+            "status": entry["status"],
+            "riskKind": entry["riskKind"],
+            "riskLevel": entry["riskLevel"],
+        }
+    return annotated
+
+
 def _direct_status_markup(entry: dict) -> str:
     risk_label = (
         f"{entry['riskKind'].replace('-', ' ').title()} · "
@@ -336,3 +372,364 @@ def write_site_document(output_path: Path, document: dict) -> None:
         document, ensure_ascii=False, indent=2, sort_keys=True
     ) + "\n"
     _write_atomic_text(Path(output_path), rendered)
+
+
+def publish_site_governance(
+    root: Path,
+    output_directory: Path,
+    nav: list,
+    site: str,
+) -> dict:
+    """Publish matching artifact, nav, search, and direct-tool status."""
+    root = Path(root)
+    output_directory = Path(output_directory)
+    ledger = load_validated_ledger(root)
+    document = build_site_document(ledger, nav, site)
+    annotated_nav = annotate_navigation(nav, document)
+    search_index = _load_json(
+        output_directory / "search-index.json", "search-index.json"
+    )
+    annotated_search = annotate_search_index(search_index, document)
+
+    apply_tool_status(output_directory / "tools", document)
+    write_site_document(output_directory / "nav.json", annotated_nav)
+    write_site_document(
+        output_directory / "search-index.json", annotated_search
+    )
+    write_site_document(
+        output_directory / "governance.json", document
+    )
+    try:
+        (output_directory / "reviewed.json").unlink(missing_ok=True)
+    except OSError as error:
+        raise SurfaceGovernanceError(
+            "surface governance: raw ledger could not be removed"
+        ) from error
+    return document
+
+
+def _manifest_sources(root: Path) -> dict[str, str]:
+    manifest = _load_json(
+        root / SITE_MANIFEST_RELATIVE, "site_manifest.json"
+    )
+    if not isinstance(manifest, dict):
+        raise SurfaceGovernanceError("site_manifest.json: invalid inventory")
+    sources = {}
+    for collection in ("md", "tools"):
+        entries = manifest.get(collection, [])
+        if not isinstance(entries, list):
+            raise SurfaceGovernanceError(
+                f"site_manifest.json: invalid {collection} inventory"
+            )
+        for item in entries:
+            if (
+                not isinstance(item, list)
+                or len(item) != 3
+                or not all(isinstance(part, str) for part in item)
+            ):
+                raise SurfaceGovernanceError(
+                    f"site_manifest.json: invalid {collection} inventory"
+                )
+            source, slug, _title = item
+            sources[slug] = source
+    sources.update(
+        {
+            "learning-path.html": "01_Six_Week_Curriculum/learning-path.html",
+            "orientation-video.html": (
+                "_prototypes/orientation-video/orientation-video.html"
+            ),
+            "rp-agitation.html": "_prototypes/agitation-trainer/rp-agitation.html",
+            "rp-brief-psych.html": "_prototypes/brief-psych/rp-brief-psych.html",
+            "rp-canon-quiz.html": "_prototypes/canon-quiz/rp-canon-quiz.html",
+        }
+    )
+    return sources
+
+
+def _discover_source(root: Path, slug: str) -> str | None:
+    candidates = []
+    for candidate in root.rglob(slug):
+        try:
+            relative = candidate.relative_to(root)
+        except ValueError:
+            continue
+        if (
+            not candidate.is_file()
+            or any(
+                part.startswith(".") or part in {"_build", "docs", "tmp"}
+                for part in relative.parts[:-1]
+            )
+        ):
+            continue
+        candidates.append(relative.as_posix())
+    if not candidates:
+        return None
+    return sorted(candidates, key=lambda value: (value.count("/"), value))[0]
+
+
+def _source_text(root: Path, relative: str | None) -> str:
+    if relative is None:
+        return ""
+    candidate = root / relative
+    try:
+        resolved = candidate.resolve()
+        resolved.relative_to(root)
+        return resolved.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError, RuntimeError, ValueError) as error:
+        raise SurfaceGovernanceError(
+            "risk proposal: source inventory is unreadable"
+        ) from error
+
+
+def _infer_proposed_risk(
+    slug: str,
+    source_relative: str | None,
+    source: str,
+    topic_meta: dict,
+) -> tuple[dict, list[str]]:
+    fields = {}
+    for key, value in METADATA_FIELD_PATTERN.findall(source):
+        fields.setdefault(key, value)
+    basis = []
+    kind = "general"
+    level = "low"
+    category = fields.get("reviewCategory")
+    severity = fields.get("safetySeverity")
+    if category in {"general", "clinical", "legal", "formulary", "local-policy"}:
+        kind = category
+        basis.append(f"metadata reviewCategory={category}")
+    if severity in {"low", "moderate", "high", "critical"}:
+        level = "high" if severity == "critical" else severity
+        basis.append(f"metadata safetySeverity={severity}")
+
+    if "LOCAL_POLICY" in source and category is None:
+        kind = "local-policy"
+        level = "high"
+        basis.append("source LOCAL_POLICY marker")
+
+    meta = topic_meta.get(slug)
+    if (
+        isinstance(meta, dict)
+        and meta.get("safetyLevel") == "high"
+        and category is None
+    ):
+        kind = "clinical"
+        level = "high"
+        basis.append("topic_meta.safetyLevel=high")
+
+    signal = f"{source_relative or ''} {slug}".lower()
+    if not basis:
+        if any(
+            token in signal
+            for token in (
+                "ethics_legal",
+                "confidential",
+                "systems_medlegal",
+                "commitment",
+                "patient_right",
+            )
+        ) or slug == "capacity.html":
+            kind = "legal"
+            level = "high"
+            basis.append("source path indicates legal teaching")
+        elif any(
+            token in signal
+            for token in ("ect", "neuromodulation")
+        ):
+            kind = "clinical"
+            level = "high"
+            basis.append("source path indicates high-risk clinical teaching")
+        elif any(
+            token in signal
+            for token in (
+                "psychopharm",
+                "medication",
+                "pharmacol",
+                "formulary",
+                "prescrib",
+            )
+        ):
+            kind = "formulary"
+            level = "high"
+            basis.append("source path indicates formulary teaching")
+        elif (
+            slug.startswith("cotw_")
+            or slug
+            in {
+                "sp-interview.html",
+                "one-patient-six-weeks.html",
+                "rp-agitation.html",
+                "exp_consult.md",
+            }
+            or "04_acute_and_safety" in signal
+        ):
+            kind = "clinical"
+            level = "high"
+            basis.append("source path indicates high-risk clinical teaching")
+        elif any(
+            token in signal
+            for token in (
+                "02_clinical_skills",
+                "03_core_topics",
+                "06_family_and_relational",
+                "07_assessment",
+                "07_evidence_and_reading",
+                "08_cases_and_simulation",
+                "09_consult_liaison",
+                "09_exam_prep",
+                "10_neuromodulation",
+                "14_tracks/resident",
+            )
+        ) or slug in {
+            "anki.md",
+            "rp-brief-psych.html",
+            "rp-canon-quiz.html",
+            "cases.md",
+            "exp_tx.md",
+            "exp_family.md",
+            "osce.md",
+            "shelf.md",
+            "rapid_review.md",
+        }:
+            kind = "clinical"
+            level = "moderate"
+            basis.append("source path indicates clinical teaching")
+        else:
+            basis.append("No explicit risk signal found")
+    if kind in {"legal", "formulary", "local-policy"}:
+        level = "high"
+    return {"kind": kind, "level": level}, basis
+
+
+def build_risk_proposal(root: Path) -> list[dict]:
+    """Create a review worksheet without changing the source ledger."""
+    root = Path(root).resolve()
+    ledger = _load_json(root / REVIEWED_RELATIVE, "reviewed.json")
+    if not isinstance(ledger, dict):
+        raise SurfaceGovernanceError("reviewed.json: invalid ledger")
+    sources = _manifest_sources(root)
+    topic_meta = _load_json(root / TOPIC_META_RELATIVE, "topic_meta.json")
+    if not isinstance(topic_meta, dict):
+        raise SurfaceGovernanceError("topic_meta.json: invalid registry")
+    proposal = []
+    for slug in sorted(ledger):
+        entry = ledger[slug]
+        if not isinstance(entry, dict) or entry.get("status") not in {
+            "pending",
+            "reviewed",
+        }:
+            raise SurfaceGovernanceError(
+                f"risk proposal: {slug} has invalid review status"
+            )
+        source_relative = sources.get(slug) or _discover_source(root, slug)
+        risk, basis = _infer_proposed_risk(
+            slug,
+            source_relative,
+            _source_text(root, source_relative),
+            topic_meta,
+        )
+        proposal.append(
+            {
+                "slug": slug,
+                "status": entry["status"],
+                "risk": risk,
+                "basis": basis,
+                "facultyConfirmationRequired": True,
+            }
+        )
+    return proposal
+
+
+def apply_confirmed_risk_proposal(
+    ledger: dict[str, dict], proposal: list[dict]
+) -> dict[str, dict]:
+    """Return a migrated ledger only when the complete proposal is confirmed."""
+    if not isinstance(ledger, dict) or not isinstance(proposal, list):
+        raise SurfaceGovernanceError(
+            "risk proposal: ledger and proposal slugs differ"
+        )
+
+    rows = {}
+    for row in proposal:
+        if not isinstance(row, dict) or not isinstance(row.get("slug"), str):
+            raise SurfaceGovernanceError(
+                "risk proposal: ledger and proposal slugs differ"
+            )
+        slug = row["slug"]
+        if slug in rows:
+            raise SurfaceGovernanceError(
+                "risk proposal: ledger and proposal slugs differ"
+            )
+        rows[slug] = row
+    if set(rows) != set(ledger):
+        raise SurfaceGovernanceError(
+            "risk proposal: ledger and proposal slugs differ"
+        )
+
+    allowed_kinds = {"general", "clinical", "legal", "formulary", "local-policy"}
+    allowed_levels = {"low", "moderate", "high"}
+    for slug in sorted(ledger):
+        entry = ledger[slug]
+        row = rows[slug]
+        if row.get("facultyConfirmationRequired") is not False:
+            raise SurfaceGovernanceError(
+                f"risk proposal: {slug} is not faculty-confirmed"
+            )
+        if not isinstance(entry, dict) or row.get("status") != entry.get("status"):
+            raise SurfaceGovernanceError(
+                f"risk proposal: {slug} review status changed"
+            )
+        risk = row.get("risk")
+        if (
+            not isinstance(risk, dict)
+            or set(risk) != {"kind", "level"}
+            or risk.get("kind") not in allowed_kinds
+            or risk.get("level") not in allowed_levels
+        ):
+            raise SurfaceGovernanceError(
+                f"risk proposal: {slug} has invalid risk classification"
+            )
+
+    migrated = deepcopy(ledger)
+    for slug in sorted(migrated):
+        entry = migrated[slug]
+        entry["risk"] = deepcopy(rows[slug]["risk"])
+        if entry["status"] == "pending":
+            entry["by"] = "Pending faculty review"
+            entry["reason"] = (
+                "Pending faculty review of this learner surface."
+            )
+        else:
+            entry.pop("reason", None)
+    return migrated
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path(__file__).resolve().parents[2],
+    )
+    parser.add_argument("--write-proposal", type=Path)
+    args = parser.parse_args()
+    if args.write_proposal is None:
+        parser.error("--write-proposal is required")
+    try:
+        proposal = build_risk_proposal(args.root)
+        rendered = json.dumps(
+            proposal, ensure_ascii=False, indent=2, sort_keys=False
+        ) + "\n"
+        _write_atomic_text(args.write_proposal, rendered)
+    except SurfaceGovernanceError as error:
+        print(f"surface governance INVALID — {error}")
+        return 1
+    print(
+        f"surface governance proposal OK — {len(proposal)} item(s), "
+        "source ledger unchanged"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

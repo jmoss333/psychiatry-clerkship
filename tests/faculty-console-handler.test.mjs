@@ -511,6 +511,8 @@ test('learner deployment allows framing only by the exact faculty console origin
   Cache-Control: public, max-age=86400
 /search-index.json
   Cache-Control: public, max-age=86400
+/governance.json
+  Cache-Control: public, max-age=0, must-revalidate
 /evidence_registry.json
   Cache-Control: public, max-age=0, must-revalidate
 /tool_registry.json
@@ -522,8 +524,6 @@ test('learner deployment allows framing only by the exact faculty console origin
 /reasoning_cases.json
   Cache-Control: public, max-age=0, must-revalidate
 /family_systems_scenarios.json
-  Cache-Control: public, max-age=0, must-revalidate
-/reviewed.json
   Cache-Control: public, max-age=0, must-revalidate
 /favicon.svg
   Cache-Control: public, max-age=604800
