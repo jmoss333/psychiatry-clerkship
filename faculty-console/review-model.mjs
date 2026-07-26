@@ -26,12 +26,15 @@ export function normalizeReviewItems(server = {}) {
     const type = clean(record?.kind);
     const identity = clean(record?.slug);
     if (!Object.hasOwn(TYPE_ORDER, type) || !identity) throw new TypeError('Invalid content review item.');
+    const riskKind = clean(record?.risk?.kind);
+    const riskLevel = clean(record?.risk?.level);
     items.push({
       key: `${type}:${identity}`, type, identity,
       title: clean(record.title) || identity,
       savedStatus: clean(record.status), completion: completion(type, record.status),
       revision: '', gate: '',
-      searchText: [record.title, identity].map(clean).join(' ').toLowerCase(),
+      searchText: [record.title, identity, riskKind, riskLevel, riskLevel && 'risk']
+        .map(clean).join(' ').toLowerCase(),
       record,
     });
   }

@@ -74,6 +74,12 @@ function text(value) {
   return typeof value === 'string' ? value : '';
 }
 
+function titleCase(value) {
+  return text(value)
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, character => character.toUpperCase());
+}
+
 function record(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value) ? value : {};
 }
@@ -140,6 +146,8 @@ export function startFacultyConsole({
     contentMessage: '',
     contentCommitUrl: null,
     reopenConfirmation: null,
+    reopenReason: '',
+    reopenReasonKey: null,
     dirtyFields: [],
     localAssessment: null,
     confirmations: emptyConfirmations(),
@@ -439,6 +447,8 @@ export function startFacultyConsole({
     state.preview = null;
     state.previewAttempt = 0;
     state.reopenConfirmation = null;
+    state.reopenReason = '';
+    state.reopenReasonKey = null;
   }
 
   function setSelectedReviewKey(key, { force = false, preserveCompletedHold = false } = {}) {
@@ -1438,6 +1448,17 @@ export function startFacultyConsole({
         el('p', { class: 'eyebrow' }, ['Single-item sign-off']),
         el('h2', { id: 'attestation-rail-title' }, ['Review → Resolve → Confirm']),
       ]),
+      item.type !== 'question' && item.record?.risk
+        ? el('label', { for: 'content-risk-context', class: 'risk-context' }, [
+          'Governed publishing risk',
+          el('input', {
+            id: 'content-risk-context',
+            type: 'text',
+            readOnly: true,
+            value: `${titleCase(item.record.risk.kind)} · ${titleCase(item.record.risk.level)} risk`,
+          }),
+        ])
+        : null,
       renderActionFeedback(),
       el('section', {
         id: 'rail-step-review',
@@ -2448,6 +2469,8 @@ export function startFacultyConsole({
     if (state.pending || !current || !['page', 'tool'].includes(current.type)
         || current.completion !== 'complete') return false;
     state.reopenConfirmation = freezeSnapshot({ key: current.key, reviewed: false });
+    if (state.reopenReasonKey !== current.key) state.reopenReason = '';
+    state.reopenReasonKey = current.key;
     const background = document.getElementById('console-background');
     const modal = renderReopenConfirmation();
     if (!background || !modal) {
@@ -2464,12 +2487,15 @@ export function startFacultyConsole({
   function confirmReopenReview() {
     const snapshot = state.reopenConfirmation;
     const item = findReviewItem(snapshot?.key);
+    const reason = state.reopenReason.trim();
     if (!snapshot || snapshot.reviewed !== false || !item) {
       dismissReopenConfirmation();
       return false;
     }
+    if (!reason || reason.length > 240) return false;
+    const mutation = contentMutationSnapshot(item, false, reason);
     dismissReopenConfirmation(null);
-    void commitCurrentContent(item, snapshot.reviewed);
+    void commitCurrentContent(null, null, mutation);
     return true;
   }
 
@@ -2477,7 +2503,11 @@ export function startFacultyConsole({
     const snapshot = state.reopenConfirmation;
     const item = findReviewItem(snapshot?.key);
     if (!snapshot || snapshot.reviewed !== false || !item) return null;
-    const cancel = () => dismissReopenConfirmation();
+    const cancel = () => {
+      state.reopenReason = '';
+      state.reopenReasonKey = null;
+      dismissReopenConfirmation();
+    };
     return el('section', {
       id: 'reopen-confirmation',
       class: 'modal-panel guard-panel',
@@ -2495,12 +2525,30 @@ export function startFacultyConsole({
       el('p', {}, [
         `${item.title} will return to Needs review. This changes only ${item.identity}.`,
       ]),
+      el('label', { for: 'reopen-review-reason' }, [
+        'Reason for reopening',
+        el('textarea', {
+          id: 'reopen-review-reason',
+          maxlength: '240',
+          value: state.reopenReason,
+          onInput: event => {
+            state.reopenReason = event.target.value;
+            const confirm = document.getElementById('confirm-reopen-review');
+            if (confirm) {
+              const length = state.reopenReason.trim().length;
+              confirm.disabled = state.pending || length < 1 || length > 240;
+            }
+          },
+        }),
+      ]),
       el('div', { class: 'guard-actions' }, [
         el('button', {
           id: 'confirm-reopen-review',
           class: 'primary',
           type: 'button',
-          disabled: state.pending,
+          disabled: state.pending
+            || state.reopenReason.trim().length < 1
+            || state.reopenReason.trim().length > 240,
           onClick: confirmReopenReview,
         }, ['Confirm reopen']),
         el('button', {
@@ -2723,18 +2771,26 @@ export function startFacultyConsole({
     return panel;
   }
 
-  function contentMutationSnapshot(item, reviewed) {
+  function contentMutationSnapshot(item, reviewed, reopenReason = state.reopenReason) {
     if (!item || !['page', 'tool'].includes(item.type) || typeof reviewed !== 'boolean') {
       throw new TypeError('Invalid content review mutation.');
+    }
+    const body = {
+      target: 'content',
+      changes: { [item.identity]: reviewed },
+      attester: state.reviewerLabel,
+    };
+    if (!reviewed) {
+      const reason = text(reopenReason).trim();
+      if (!reason || reason.length > 240) {
+        throw new TypeError('A valid reopen reason is required.');
+      }
+      body.reasons = { [item.identity]: reason };
     }
     return freezeSnapshot({
       key: item.key,
       reviewed,
-      body: {
-        target: 'content',
-        changes: { [item.identity]: reviewed },
-        attester: state.reviewerLabel,
-      },
+      body,
     });
   }
 
@@ -2795,6 +2851,10 @@ export function startFacultyConsole({
         : `Reopened ${slug} for review.`;
       state.contentCommitUrl = commitUrl;
       if (snapshot.reviewed) state.completedHoldKey = snapshot.key;
+      if (!snapshot.reviewed) {
+        state.reopenReason = '';
+        state.reopenReasonKey = null;
+      }
       resetApprovalInputs();
       refreshPreviewChromeAndRail('content-action-result');
       const next = document.getElementById('next-review-item');

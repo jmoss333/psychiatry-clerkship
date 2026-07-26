@@ -607,6 +607,16 @@ function contentApiStatus(entry) {
   return entry.status === 'pending' ? 'unreviewed' : entry.status;
 }
 
+function contentRisk(entry) {
+  const risk = entry.risk;
+  if (!isRecord(risk)
+      || !['general', 'clinical', 'legal', 'formulary', 'local-policy'].includes(risk.kind)
+      || !['low', 'moderate', 'high'].includes(risk.level)) {
+    invalidRepositoryFile();
+  }
+  return { kind: risk.kind, level: risk.level };
+}
+
 function buildContentItems(reviewed, manifest) {
   if (!isRecord(reviewed)) invalidRepositoryFile();
   const { markdown, tools } = requireManifest(manifest);
@@ -620,6 +630,8 @@ function buildContentItems(reviewed, manifest) {
       status: contentApiStatus(entry),
       at: typeof entry.at === 'string' ? entry.at : '',
       by: typeof entry.by === 'string' ? entry.by : '',
+      risk: contentRisk(entry),
+      reason: typeof entry.reason === 'string' ? entry.reason : '',
     });
   }
   for (const [, slug, title] of tools) {
@@ -631,6 +643,8 @@ function buildContentItems(reviewed, manifest) {
       status: contentApiStatus(entry),
       at: typeof entry.at === 'string' ? entry.at : '',
       by: typeof entry.by === 'string' ? entry.by : '',
+      risk: contentRisk(entry),
+      reason: typeof entry.reason === 'string' ? entry.reason : '',
     });
   }
   return items;
@@ -680,6 +694,17 @@ function requireContentChanges(value) {
   return entries;
 }
 
+function requireReopenReason(value) {
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new HttpError('content.reason_required', 400, 'A reopen reason is required.');
+  }
+  const reason = value.trim();
+  if (reason.length > 240 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(reason)) {
+    throw new HttpError('content.invalid_reason', 400, 'The reopen reason is invalid.');
+  }
+  return reason;
+}
+
 async function commitContentMutation({ repository, body, attester }) {
   const changes = requireContentChanges(body.changes);
   if (!changes.length) {
@@ -701,13 +726,22 @@ async function commitContentMutation({ repository, body, attester }) {
       return { ok: true, target: 'content', updated: 0, commit: null };
     }
     for (const [slug, selected] of effectiveChanges) {
+      const current = reviewed[slug];
+      if (!isRecord(current)) invalidRepositoryFile();
+      contentRisk(current);
+      const next = { ...current, status: selected ? 'reviewed' : 'pending', at };
+      if (selected) {
+        next.by = attester;
+        delete next.reason;
+      } else {
+        next.by = 'Pending faculty review';
+        next.reason = requireReopenReason(body.reasons?.[slug]);
+      }
       Object.defineProperty(reviewed, slug, {
         configurable: true,
         enumerable: true,
         writable: true,
-        value: selected
-          ? { status: 'reviewed', at, by: attester }
-          : { status: 'pending', at, by: 'Pending faculty review' },
+        value: next,
       });
     }
 

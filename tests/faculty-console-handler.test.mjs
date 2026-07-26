@@ -113,8 +113,23 @@ function defaultFiles(bank = makeBank([
   return {
     [REVIEWED_PATH]: {
       json: {
-        't_mood.md': { status: 'reviewed', at: '2026-07-01', by: 'Synthetic Reviewer' },
-        'mse-tool': { status: 'pending', at: '2026-07-02', by: 'Pending faculty review' },
+        't_mood.md': {
+          status: 'reviewed',
+          risk: { kind: 'clinical', level: 'high' },
+          at: '2026-07-01',
+          by: 'Synthetic Reviewer',
+          note: 'Internal synthetic faculty note.',
+          contentHash: 'a'.repeat(64),
+        },
+        'mse-tool': {
+          status: 'pending',
+          risk: { kind: 'general', level: 'moderate' },
+          reason: 'Synthetic tool review is pending.',
+          at: '2026-07-02',
+          by: 'Pending faculty review',
+          note: 'Internal synthetic tool note.',
+          claimsHash: 'b'.repeat(64),
+        },
       },
       sha: REVIEWED_SHA,
     },
@@ -670,6 +685,21 @@ test('returns complete active qbank items, stable revisions, assessments, manife
   assert.equal(payload.items.length, 2);
   assert.equal(payload.items.find(item => item.slug === 't_mood.md')?.status, 'reviewed');
   assert.equal(payload.items.find(item => item.slug === 'mse-tool')?.status, 'unreviewed');
+  assert.deepEqual(
+    payload.items.find(item => item.slug === 't_mood.md')?.risk,
+    { kind: 'clinical', level: 'high' },
+  );
+  assert.deepEqual(
+    payload.items.find(item => item.slug === 'mse-tool')?.risk,
+    { kind: 'general', level: 'moderate' },
+  );
+  assert.equal(
+    payload.items.find(item => item.slug === 'mse-tool')?.reason,
+    'Synthetic tool review is pending.',
+  );
+  assert.equal(JSON.stringify(payload.items).includes('Internal synthetic'), false);
+  assert.equal(JSON.stringify(payload.items).includes('contentHash'), false);
+  assert.equal(JSON.stringify(payload.items).includes('claimsHash'), false);
   assert.equal(mock.files[REVIEWED_PATH].json['mse-tool'].status, 'pending');
   assert.equal(payload.qbank.length, 2);
   assert.deepEqual(payload.qbank.map(item => item.id), ['qb_moo_900', 'qb_moo_901']);
@@ -1763,6 +1793,7 @@ test('reopen preserves legacy pending storage and returns canonical unreviewed s
     body: {
       target: 'content',
       changes: { 't_mood.md': false, 'mse-tool': true },
+      reasons: { 't_mood.md': 'Clinical teaching changed and needs renewed review.' },
       attester: 'Synthetic Reviewer',
     },
   }));
@@ -1779,8 +1810,16 @@ test('reopen preserves legacy pending storage and returns canonical unreviewed s
   assert.equal(mock.putBodies[0].path, REVIEWED_PATH);
   const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
   assert.equal(saved['t_mood.md'].status, 'pending');
+  assert.equal(saved['t_mood.md'].reason, 'Clinical teaching changed and needs renewed review.');
+  assert.deepEqual(saved['t_mood.md'].risk, { kind: 'clinical', level: 'high' });
+  assert.equal(saved['t_mood.md'].note, 'Internal synthetic faculty note.');
+  assert.equal(saved['t_mood.md'].contentHash, 'a'.repeat(64));
   assert.equal(saved['mse-tool'].status, 'reviewed');
   assert.equal(saved['mse-tool'].by, 'Synthetic Reviewer');
+  assert.deepEqual(saved['mse-tool'].risk, { kind: 'general', level: 'moderate' });
+  assert.equal(saved['mse-tool'].note, 'Internal synthetic tool note.');
+  assert.equal(saved['mse-tool'].claimsHash, 'b'.repeat(64));
+  assert.equal(Object.hasOwn(saved['mse-tool'], 'reason'), false);
   assert.equal(mock.files[REVIEWED_PATH].json['t_mood.md'].status, 'pending');
 
   const refreshed = await handler(apiRequest('GET'));
@@ -1791,6 +1830,28 @@ test('reopen preserves legacy pending storage and returns canonical unreviewed s
     'unreviewed',
   );
   assert.equal(mock.files[REVIEWED_PATH].json['t_mood.md'].status, 'pending');
+});
+
+test('reopen requires one concise reason before repository mutation', async () => {
+  for (const [label, reasons, code] of [
+    ['missing', {}, 'content.reason_required'],
+    ['blank', { 't_mood.md': '   ' }, 'content.reason_required'],
+    ['oversized', { 't_mood.md': 'x'.repeat(241) }, 'content.invalid_reason'],
+  ]) {
+    const mock = createGithubMock();
+    const response = await handlerWith(mock)(apiRequest('POST', {
+      body: {
+        target: 'content',
+        changes: { 't_mood.md': false },
+        reasons,
+        attester: 'Synthetic Reviewer',
+      },
+    }));
+
+    await expectError(response, { status: 400, code });
+    assert.equal(mock.putBodies.length, 0, label);
+    assert.equal(mock.effectiveWrites.length, 0, label);
+  }
 });
 
 test('malformed JSON and missing server configuration fail with stable non-secret responses', async () => {

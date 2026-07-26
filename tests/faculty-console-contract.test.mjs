@@ -334,6 +334,7 @@ function serverState({
     status: 'reviewed',
     by: 'Dr <Faculty>',
     at: '2026-07-17',
+    risk: { kind: 'clinical', level: 'high' },
   }];
   return {
     student: 'https://students.example/',
@@ -645,8 +646,20 @@ test('uses the approved clinical workbench layout and accessible primary contras
 test('normalizes, filters, and counts the shared review queue', () => {
   const server = {
     items: [
-      { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
-      { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed' },
+      {
+        slug: 't_mood.md',
+        title: 'Mood disorders',
+        kind: 'page',
+        status: 'unreviewed',
+        risk: { kind: 'clinical', level: 'high' },
+      },
+      {
+        slug: 'mse.html',
+        title: 'Mental Status Exam',
+        kind: 'tool',
+        status: 'reviewed',
+        risk: { kind: 'general', level: 'low' },
+      },
     ],
     qbank: [
       validDomQuestion({ id: 'qb_moo_003', evidence: 'anchor-only phrase' }),
@@ -665,6 +678,10 @@ test('normalizes, filters, and counts the shared review queue', () => {
     search: 'anchor-only', type: 'all', status: 'needs-review',
     category: 'all', gate: 'all', difficulty: 'all',
   }).map(item => item.key), ['question:qb_moo_003']);
+  assert.deepEqual(filterReviewItems(items, {
+    search: 'clinical high', type: 'all', status: 'all',
+    category: 'all', gate: 'all', difficulty: 'all',
+  }).map(item => item.key), ['page:t_mood.md']);
   assert.deepEqual(deriveReviewCounts(items), {
     total: 4, needsReview: 3, complete: 1, page: 1, tool: 1, question: 2,
   });
@@ -674,7 +691,13 @@ test('renders one ordered queue for pages, tools, and questions', async () => {
   const { controller, document } = await startHarness({
     fetchImpl: async () => jsonResponse(serverState({
       items: [
-        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+        {
+          slug: 't_mood.md',
+          title: 'Mood disorders',
+          kind: 'page',
+          status: 'unreviewed',
+          risk: { kind: 'clinical', level: 'high' },
+        },
         { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed' },
       ],
       questions: [validDomQuestion()],
@@ -710,7 +733,13 @@ test('shows the selected item identity, type, saved status, view, and question r
   const { controller, document } = await startHarness({
     fetchImpl: async () => jsonResponse(serverState({
       items: [
-        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+        {
+          slug: 't_mood.md',
+          title: 'Mood disorders',
+          kind: 'page',
+          status: 'unreviewed',
+          risk: { kind: 'clinical', level: 'high' },
+        },
         { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed' },
       ],
       questions: [validDomQuestion()],
@@ -723,6 +752,8 @@ test('shows the selected item identity, type, saved status, view, and question r
   assert.match(document.getElementById('selected-item-type').textContent, /Page/);
   assert.match(document.getElementById('selected-item-status').textContent, /Not reviewed/);
   assert.match(document.getElementById('selected-item-view').textContent, /Live deploy/);
+  assert.equal(document.getElementById('content-risk-context').value, 'Clinical · High risk');
+  assert.equal(document.getElementById('content-risk-context').readOnly, true);
   assert.equal(document.getElementById('selected-item-revision'), null);
 
   const selector = document.getElementById('review-item-selector');
@@ -2856,7 +2887,13 @@ test('content 401 retry freezes the exact slug, boolean status, and reviewer lab
 test('Reopen review is a confirmed More action and submits exactly that content slug as false', async () => {
   assert.match(html, /summary:focus-visible/);
   let items = [
-    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'reviewed' },
+    {
+      slug: 't_mood.md',
+      title: 'Mood disorders',
+      kind: 'page',
+      status: 'reviewed',
+      risk: { kind: 'clinical', level: 'high' },
+    },
     { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed' },
   ];
   let posted;
@@ -2896,12 +2933,22 @@ test('Reopen review is a confirmed More action and submits exactly that content 
   assert.ok(document.getElementById('reopen-confirmation'));
   assert.equal(document.getElementById('learner-preview-frame'), frame);
   assert.equal(document.getElementById('learner-preview-frame').contentWindow, frameWindow);
+  assert.equal(document.getElementById('confirm-reopen-review').disabled, true);
+  await setValue(
+    document,
+    'reopen-review-reason',
+    'Updated clinical teaching requires renewed review.',
+  );
+  assert.equal(document.getElementById('confirm-reopen-review').disabled, false);
   await document.getElementById('confirm-reopen-review').dispatch('click');
   await flushAsyncWork();
 
   assert.deepEqual(posted, {
     target: 'content',
     changes: { 't_mood.md': false },
+    reasons: {
+      't_mood.md': 'Updated clinical teaching requires renewed review.',
+    },
     attester: 'Joshua Moss, MD',
   });
   assert.equal(Object.keys(posted.changes).length, 1);
