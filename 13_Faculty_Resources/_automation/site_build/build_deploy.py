@@ -1,5 +1,10 @@
 import os, shutil, json, sys
 from pathlib import Path
+# Shared, audience-neutral assembly logic (tokenizer, synonyms, tool keywords,
+# search index, HTML polish/dark passes, page contract). Extracted 2026-07-26 —
+# see common.py's module docstring. resident_section.py imports the same module,
+# so these no longer exist as two drifting copies.
+import common
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location instead of a
 # hard-coded sandbox mount, so the build runs under any Cowork session or the real filesystem.
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -267,190 +272,38 @@ _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared d
 _abort_missing(_missing_req)
 print("tools:",len(tools)," md copied:",len(md)-len(missing)," missing:",missing)
 
-# ---------- SEARCH INDEX (mirrors rc-search foundation: pre-tokenized inverted index + bidirectional synonyms) ----------
-def build_search_index():
-    import re
-    STOP=set("a an and are as at be by for from has in is it of on or that the to was with you your".split())
-    def tok(t):
-        return [w for w in re.sub(r'[^a-z0-9]+',' ',(t or "").lower()).split() if len(w)>=2 and w not in STOP]
-    # Synonym groups: ReConnect clinical groups (search-synonyms.json) + hub-specific abbreviations. Bidirectional.
-    GROUPS=[
-     ["bpd","borderline","borderline personality","emotionally unstable","eupd"],
-     ["anxiety","panic","panic attack","generalized anxiety","gad","worry"],
-     ["depression","depressed","mdd","major depressive","low mood","hopeless"],
-     ["bipolar","manic","mania","bipolar disorder","mood stabilizer"],
-     ["ptsd","trauma","post traumatic","complex trauma","cptsd"],
-     ["psychosis","psychotic","hallucination","delusion","thought disorder","schizophrenia"],
-     ["sud","substance","addiction","alcohol","drugs","substance use","opioid"],
-     ["si","suicide","suicidal","self harm","nssi","safety planning"],
-     ["sleep","insomnia"],
-     ["adolescent","teen","teenager","youth","child","children","minor","pediatric"],
-     ["geriatric","elderly","older adult","senior","dementia"],
-     ["perinatal","pregnant","postpartum","maternal","pregnancy"],
-     ["discharge","transition","aftercare","follow up","disposition"],
-     ["referral","consult","consultation","handoff"],
-     ["crisis","emergency","urgent","acute"],
-     ["assessment","screening","evaluation","screen"],
-     ["safety","safety plan","stanley brown","crisis plan"],
-     ["medication","med","rx","prescription","drug","pharmacology"],
-     ["family","caregiver","parent","partner","spouse","relational"],
-     ["mse","mental status exam","mental status"],
-     ["ciwa","alcohol withdrawal"],
-     ["cows","opioid withdrawal"],
-     ["cssrs","columbia","suicide severity"],
-     ["frst","violence","aggression","violence risk"],
-     ["ee","expressed emotion"],
-     ["ddx","differential","differential diagnosis"],
-     ["capacity","decisional capacity","consent","informed consent"],
-     ["catatonia","lorazepam","bush francis"],
-     ["delirium","confusion","encephalopathy","inattention"],
-     ["agitation","restraint","de-escalation","seclusion"],
-     ["nms","neuroleptic malignant"],
-     ["antipsychotic","neuroleptic","clozapine"],
-     ["lithium","valproate","lamotrigine"],
-     ["ss","serotonin syndrome"],
-     ["td","tardive dyskinesia","tardive"],
-     ["ama","against medical advice","discharge ama"],
-     ["dts","delirium tremens"],
-     ["wke","wernicke","wernicke encephalopathy"],
-     ["aws","alcohol withdrawal"],
-     ["eps","extrapyramidal","extrapyramidal symptoms"],
-     ["eating","eating disorder","anorexia","bulimia","binge eating","refeeding","arfid"],
-    ]
-    syn={}
-    for g in GROUPS:
-        toks=set()
-        for term in g: toks.update(tok(term))
-        for t in toks:
-            syn.setdefault(t,set()).update(toks-{t})
-    syn={k:sorted(v) for k,v in syn.items()}
-    TOOLKW={
-     "mse.html":"mental status exam appearance behavior speech mood affect thought process content perception cognition insight judgment interview",
-     "interview-circle.html":"interview circle radial domain map psychiatric intake history hpi chief complaint substance family social mental status safety risk non-linear conversation clinical skills interviewing not a checklist",
-     "communication-practice.html":"what do you say next communication practice branching dialogue rapid spoken drill say it out loud rehearsal timer 20 second suicide psychosis validation rupture repair medication ambivalence family meeting collateral motivational interviewing relational skills",
-     "diagnostic-reasoning.html":"diagnostic reasoning workbench differential diagnosis problem representation illness script bayesian updating diagnostic humility anchoring premature closure syndrome formulation inpatient psychiatry case practice delirium catatonia mania psychosis substance trauma personality",
-     "family-systems.html":"family systems practice collateral call family meeting discharge barrier map expressed emotion psychoeducation confidentiality boundaries means safety caregiver support inpatient psychiatry",
-     "one-patient-six-weeks.html":"one patient six weeks longitudinal case arc six week rotation timeline alliance interview mental status exam differential diagnosis medical rule out medication ambivalence family collateral safety suicide discharge handoff reflection",
-     "capacity.html":"decisional capacity informed consent refusal four abilities understand appreciate reason communicate",
-     "oral.html":"treatment team rounding prep rounds presentation oral one liner assessment plan handoff gather present practice timer collateral update 30 second sixty 60 second micro update",
-     "violence.html":"violence risk aggression frst agitation safety prediction de-escalation",
-     "cssrs.html":"columbia suicide severity rating scale cssrs suicidal ideation screening safety planning",
-     "withdrawal.html":"withdrawal alcohol ciwa opioid cows detox benzodiazepine taper thiamine",
-     "reflection.html":"reflection professional identity formation reflective writing pif",
-     "screeners.html":"phq-9 phq9 gad-7 gad7 depression anxiety screener screening score severity validated instrument cutoff",
-     "shelf-mode.html":"shelf mode comat shelf exam simulation timed vignette question bank board review mixed blueprint mock test practice questions",
-     "review.html":"daily review spaced repetition srs flashcards sm-2 retention schedule due cards study streak memory test enhanced learning forgetting curve anki",
-     "feedback.html":"feedback improve library suggest resource report broken link error confusing helpful rating comment survey suggestion box contact",
-     "decision-aids.html":"algorithms decision aids visual trees flowchart rule out first move escalation ladder agitation restraint nms serotonin syndrome hyperthermia alcohol withdrawal timeline delirium tremens ciwa score bands catatonia psychosis differential dark mode",
-     "bfcrs.html":"bush francis catatonia rating scale bfcrs bfcsi catatonia screening immobility stupor mutism posturing catalepsy waxy flexibility negativism mitgehen gegenhalten echopraxia lorazepam challenge severity score",
-     "learning-path.html":"learning path home dashboard six week progress streak daily review study plan start here",
-     "question-bank-practice.html":"practice questions question bank comat shelf exam vignette single best answer sba two-tier confidence calibration trap feedback spaced repetition category filter mood psychosis anxiety substance neurocognitive pharmacology safety personality relational ethics",
-    }
-    postings={}  # token -> {docid: weighted tf}
-    docs=[]
-    def addtok(docid,text,wt):
-        for t in tok(text):
-            d=postings.setdefault(t,{}); d[docid]=d.get(docid,0)+wt
-    for sec in nav:
-        for it in sec["items"]:
-            if it.get("hidden"): continue
-            f=it["f"]; k=it["k"]; title=it["t"]; section=sec["section"]
-            heads=""; body=""
-            if k=="md":
-                p=OUT+"/content/"+f
-                raw=open(p,encoding="utf-8").read() if os.path.exists(p) else ""
-                btxt=[]
-                for ln in raw.split("\n"):
-                    s=ln.strip()
-                    if s.startswith("#"): heads+=" "+s.lstrip("#").strip()
-                    else: btxt.append(s)
-                body=" ".join(btxt)
-            else:
-                body=TOOLKW.get(f,"")
-            docid=len(docs)
-            clean=re.sub(r'[#>*_`|\[\]()/-]+',' ',body); clean=re.sub(r'\s+',' ',clean).strip()
-            docs.append({"t":title,"f":f,"k":k,"sec":section,"snip":clean[:170]})
-            addtok(docid,title,4); addtok(docid,section,2); addtok(docid,heads,2); addtok(docid,body,1)
-    post={}; df={}
-    for t,dd in postings.items():
-        post[t]=[[docid,tf] for docid,tf in sorted(dd.items())]; df[t]=len(dd)
-    idx={"version":1,"n":len(docs),"synonyms":syn,"docs":docs,"postings":post,"df":df}
-    open(OUT+"/search-index.json","w",encoding="utf-8").write(json.dumps(idx,ensure_ascii=False))
-    print("search-index: docs",len(docs),"| tokens",len(post),"| synonym-keys",len(syn))
+# ---------- POLISH + A11Y + DARK-MODE PASS (shared with the resident build) ----------
+# Every page transform lives in common.py so both audience builds apply the identical
+# set. Previously these were two hand-maintained copies, and the resident-only rp-*
+# tools bypassed them entirely. assert_page_contract() at the end of this file
+# hard-fails any shipped page a transform silently missed.
+import glob as _glob
+import time as _time
+common.strip_review_banners(OUT)
+common.apply_contrast_fix(
+    _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]
+)
+_QV=str(int(_time.time()))          # cache-bust for quizzes.json
+common.apply_full_page_pass(OUT, cache_bust=_QV)
 
 
-# ---------- A11Y / POLISH PASS (audit response) ----------
-import re as _re, glob as _glob
-for _f in _glob.glob(OUT+"/content/*.md"):
-    _t=open(_f,encoding="utf-8").read()
-    _t=_re.sub(r'(?m)^> \*\*Review status:\*\*.*\n?','',_t)
-    open(_f,"w",encoding="utf-8").write(_t)
-for _f in _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]:
-    _t=open(_f,encoding="utf-8").read(); _t2=_t.replace("#87786a","#665a4f")
-    if _t2!=_t: open(_f,"w",encoding="utf-8").write(_t2)
-for _f in _glob.glob(OUT+"/tools/*.html"):
-    _t=open(_f,encoding="utf-8").read(); _o=_t
-    _t=_t.replace('<div id="root"></div>','<main id="root"></main>')
-    if 'id="root"' not in _t and '<main' in _t:
-        # WP-05 gap: 2/20 tool sources (family-systems-practice, one-patient-six-weeks) already
-        # ship a <main> wrapper but no id — give the skip-link below a resolvable #root anchor
-        # without duplicating an id= that's already present on the tag.
-        _t=_re.sub(r'<main(?![^>]*\bid=)', '<main id="root"', _t, count=1)
-    _t=_t.replace('<head>','<head>\n<link rel="icon" href="/favicon.svg">',1)
-    # WP-05: skip-to-content link (WCAG 2.1 AA 2.4.1 Bypass Blocks) — first focusable element in body.
-    if 'class="skip-link"' not in _t and '<body' in _t:
-        _t=_re.sub(r'(<body[^>]*>)', r'\1\n<a class="skip-link" href="#root">Skip to content</a>', _t, count=1)
-    if '.skip-link{' not in _t and '</head>' in _t:
-        _t=_t.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}</style>\n</head>', 1)
-    if _t!=_o: open(_f,"w",encoding="utf-8").write(_t)
-_ih=open(OUT+"/index.html",encoding="utf-8").read(); _ih_o=_ih
-if 'rel="icon"' not in _ih: _ih=_ih.replace('<head>','<head>\n<link rel="icon" href="/favicon.svg">',1)
-# Shell (spa_index.html) already ships its own skip-link (href="#content") — guard so the build
-# never double-injects a second one into the SPA index.
-if 'class="skip-link"' not in _ih and '<body' in _ih:
-    _ih=_re.sub(r'(<body[^>]*>)', r'\1\n<a class="skip-link" href="#root">Skip to content</a>', _ih, count=1)
-if '.skip-link{' not in _ih and '</head>' in _ih:
-    _ih=_ih.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}</style>\n</head>', 1)
-if _ih!=_ih_o: open(OUT+"/index.html","w",encoding="utf-8").write(_ih)
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(OUT+"/404.html","w",encoding="utf-8").write('<!doctype html><meta charset="utf-8"><title>Not found</title><meta name="robots" content="noindex,nofollow"><style>body{font-family:system-ui,sans-serif;background:#f6f3ee;color:#2f2924;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#174d43}</style><div><h1 style="color:#9f3f2a">Page not found</h1><p><a href="/">Return to the clerkship hub</a></p></div>')
 open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reviewed.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n")
-print("polish pass: banners stripped, contrast darkened, <main>+favicon on tools, robots/404/_headers written")
+print("polish pass: banners stripped, contrast darkened, chrome+dark applied, robots/404/_headers written")
 
-# ---------- DARK MODE PASS (Slice 2): inject dark tokens + pre-paint theme init across every page ----------
-_DARK='[data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--bg2:#211d1a;--surface:#2a2520;--surface2:#332e28;--hover:#3d3630;--border:#3d3630;--border2:#2f2a25;--text:#e8e2da;--text-mid:#b3a596;--mid:#b3a596;--text-light:#8a7c6e;--light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-d:#dd9277;--primary-light:rgba(212,137,110,.16);--primary-l:rgba(212,137,110,.16);--primary-ink:#e6a98f;--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-d:#6cbcaa;--accent-light:rgba(90,173,154,.16);--accent-l:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--success-l:rgba(90,173,142,.16);--good:#5aad8e;--good-bg:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--warning-l:rgba(196,164,92,.16);--warn:#c4a45c;--warn-bg:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--danger-l:rgba(212,104,88,.16);--bad:#d46858;--bad-bg:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--info-l:rgba(122,158,196,.16);--on-brand:#211d1a;--focus:#7aa2ff;--shadow:0 1px 3px rgba(0,0,0,.35);--shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 2px 10px rgba(0,0,0,.4);--shadow-lg:0 8px 28px rgba(0,0,0,.45);}'
-_INIT="<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>"
-_MOTION='@media(prefers-reduced-motion:no-preference){@keyframes ccRise{from{transform:translateY(10px)}to{transform:none}}.cc-rise{animation:ccRise .28s ease both}}button:active,a.btn:active,.btn:active,.tab:active,.opt:active,.tyo:active,.tile:active,.chip:active,.navitem:active,.navsec:active,.qbtn:active,.deckbtn:active,.thmbtn:active{transform:scale(.975)}html{-webkit-tap-highlight-color:transparent}'
-# In-iframe link interceptor: when a tool runs inside the SPA shell, route its index.html?page=/?tool= links to the parent so they open in-app (no nested SPA / no dead-end new tab).
-_IFRAMENAV="<!--ifn--><script>(function(){if(window.self===window.top)return;document.addEventListener('click',function(ev){var a=ev.target&&ev.target.closest&&ev.target.closest('a[href]');if(!a)return;var m=(a.getAttribute('href')||'').match(/index\\.html\\?(page|tool)=([^&#\"']+)/);if(m){ev.preventDefault();try{window.parent.postMessage({type:'openPage',f:decodeURIComponent(m[2])},'*');}catch(_){}}}, true);})();</script>"
-import time as _time
-_QV=str(int(_time.time()))
-for _f in _glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]:
-    _t=open(_f,encoding="utf-8").read(); _o=_t
-    if "--on-brand:#" not in _t:
-        _t=_t.replace("--surface:#ffffff;","--surface:#ffffff; --on-brand:#ffffff;",1)
-    _t=_re.sub(r'(background(?:-color)?)\s*:\s*#(?:fff|ffffff)\b', r'\1:var(--surface)', _t)
-    _t=_re.sub(r'color\s*:\s*#(?:fff|ffffff)\b', 'color:var(--on-brand)', _t)
-    if "cw_theme" not in _t:
-        _t=_t.replace("<head>", "<head>\n"+_INIT, 1)
-    if '[data-theme="dark"]' not in _t and 'clinical-warm.css' not in _t and "</head>" in _t:
-        # shared dark tokens now come from the linked clinical-warm.css (one file, not 34 inline copies)
-        _t=_t.replace("</head>", '<link rel="stylesheet" href="/clinical-warm.css">\n</head>', 1)
-    if "cc-rise" not in _t and "</style>" in _t:
-        _t=_t.replace("</style>", _MOTION+"\n</style>", 1)
-    if not _f.endswith("/index.html") and "<!--ifn-->" not in _t and "</body>" in _t:
-        _t=_t.replace("</body>", _IFRAMENAV+"\n</body>", 1)
-    _t=_t.replace('"quizzes.json"','"quizzes.json?v='+_QV+'"').replace("'quizzes.json'","'quizzes.json?v="+_QV+"'")
-    if _t!=_o: open(_f,"w",encoding="utf-8").write(_t)
-print("dark-mode pass: tokens + init injected across tools + index")
 
 # ---------- MEDIA GUARD: drop <video> embeds whose asset was never exported ----------
 # Keeps per-week / per-tool embeds from shipping as broken players when only the reels exist.
 from media_guard import strip_missing_media
 strip_missing_media(OUT)
 
-build_search_index()
+common.build_search_index(nav, OUT, label="ms3")
+
+# Postcondition gate (architecture review rec 1.3): prove every shipped page actually
+# received the chrome/dark transforms rather than silently missing them.
+common.assert_page_contract(OUT, label="ms3")
 
 # ---------- TOOL GOVERNANCE ----------
 # Source hashes remain over canonical source files; this final comparison proves the emitted
