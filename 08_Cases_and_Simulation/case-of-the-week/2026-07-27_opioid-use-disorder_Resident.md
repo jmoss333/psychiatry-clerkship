@@ -40,7 +40,7 @@ The magnitude matters for calibration. In a cohort of hospitalized patients usin
 
 **Q2. She now refuses buprenorphine. Lay out the realistic options and their trade-offs.**
 
-*Teaching point:* Four viable paths. The wrong answer is the one that is happening now — as-needed full agonists with no disease-directed treatment.
+*Teaching point:* Four viable paths. The wrong answer is the one that is happening now — as-needed full agonists with no disease-directed treatment [15].
 
 | Option | Mechanism / approach | Trade-offs |
 |---|---|---|
@@ -49,7 +49,7 @@ The magnitude matters for calibration. In a cohort of hospitalized patients usin
 | **High-dose / rapid initiation** | Larger initial buprenorphine dosing in patients already in clear withdrawal | Faster to therapeutic blockade; still carries precipitation risk; least acceptable to *this* patient. |
 | **XR-naltrexone** | Mu antagonist | Requires a **7–10 day opioid-free interval**; not feasible in a patient with acute pain requiring opioid analgesia. Practically excluded here. |
 
-**Two options are genuinely live for her: methadone, or low-dose buprenorphine initiation.** Given a traumatic buprenorphine experience, acute pain requiring full-agonist analgesia, and six weeks of IV antibiotics ahead, **methadone** is often the more pragmatic inpatient answer — it treats withdrawal and craving, is compatible with concurrent full-agonist analgesia, and does not ask her to re-experience the thing that harmed her. Low-dose buprenorphine initiation remains a strong alternative if she prefers buprenorphine's safety profile or if OTP access is a barrier [1,2,5,6,7].
+**Two options are genuinely live for her: methadone, or low-dose buprenorphine initiation.** Given a traumatic buprenorphine experience, acute pain requiring full-agonist analgesia, and six weeks of IV antibiotics ahead, **methadone** is often the more pragmatic inpatient answer — it treats withdrawal and craving, is compatible with concurrent full-agonist analgesia, and does not ask her to re-experience the thing that harmed her. Low-dose buprenorphine initiation remains a strong alternative if she prefers buprenorphine's safety profile or if OTP access is a barrier [1,2,5,6,7,13].
 
 **Q3. Take low-dose initiation seriously as a strategy. What is the actual evidence, and what should we tell patients to expect?**
 
@@ -81,7 +81,7 @@ Core principles:
 *Teaching point:* Patient-directed discharge in this population is best understood as a **treatable symptom of undertreated withdrawal and pain**, not a fixed patient characteristic [2].
 
 Address the modifiable drivers first:
-- **Adequate MOUD** — the single most effective retention intervention available on day 4.
+- **Adequate MOUD** — the single most effective retention intervention available on day 4. The principle generalizes across settings: treatment *started at the point of contact* drives downstream engagement far more than a referral does, as the ED-initiated buprenorphine trial showed starkly (78% engaged in treatment at 30 days vs. 37% with referral alone) [14].
 - **A written, non-negotiated-daily analgesic plan.**
 - **Nicotine replacement** — frequently forgotten, frequently decisive.
 - **Autonomy and predictability** — smoking breaks, phone access, visitor policy, and a named point of contact. Rigid unit policies drive more early discharges than craving does.
