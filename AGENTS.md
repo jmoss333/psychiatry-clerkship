@@ -68,5 +68,13 @@ cd tests/smoke && npm ci && npx playwright test
 - Clinical tools are **single-file HTML** (Clinical Warm palette — build-injected from
   `13_Faculty_Resources/_automation/site_build/clinical-warm.css`). Dose literals
   are banned in `rp-*` / `*-trainer` tools (QA gate).
+- **Crisis contacts (988 etc.) live in `crisis_resources.json` only.** Never hard-code a crisis
+  number in a content page or tool. A page opts in with a `<!-- crisis-block -->` marker
+  (`<!-- crisis-block-html -->` in tools); `site_build/crisis_block.py` renders it and
+  `build_deploy.py` injects at build time, so `res` inherits it via `resident_section.py`.
+  Dropping the marker from a required safety surface **hard-fails the build**. Data is derived
+  from the ReConnect crisis dataset and independently re-verified — refresh with
+  `_automation/sync_crisis_from_reconnect.py --reconnect <path>` (dev-only, report-only; never
+  runs on Netlify).
 - **No PHI.** Clinical content is synthetic / de-identified only; never commit patient identifiers to
   git-tracked files, memory, or scratch outputs.
