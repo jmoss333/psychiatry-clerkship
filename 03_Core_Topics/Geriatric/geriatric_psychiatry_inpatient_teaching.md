@@ -28,6 +28,8 @@
 - The drug list is often the diagnosis — deprescribing is active treatment.
 - Non-pharmacologic management is first-line for dementia-related agitation; antipsychotics are time-limited exceptions.
 
+<!-- crisis-block -->
+
 **Pair with** — the [Delirium guidance](?page=delirium.md), the <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity tool</a>, and the [Differential Diagnosis scaffolds](?page=ddx.md).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

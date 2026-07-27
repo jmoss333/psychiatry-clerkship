@@ -72,7 +72,9 @@ cd tests/smoke && npm ci && npx playwright test
   number in a content page or tool. A page opts in with a `<!-- crisis-block -->` marker
   (`<!-- crisis-block-html -->` in tools); `site_build/crisis_block.py` renders it and
   `build_deploy.py` injects at build time, so `res` inherits it via `resident_section.py`.
-  Dropping the marker from a required safety surface **hard-fails the build**. Data is derived
+  Dropping the marker from a required safety surface **hard-fails the build**. Scope rule for
+  adding a surface: the learner must plausibly be *doing* risk work there (assessing, rehearsing,
+  or planning disposition) — not merely reading a page that mentions suicide. Data is derived
   from the ReConnect crisis dataset and independently re-verified — refresh with
   `_automation/sync_crisis_from_reconnect.py --reconnect <path>` (dev-only, report-only; never
   runs on Netlify).

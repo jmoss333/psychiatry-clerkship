@@ -223,8 +223,22 @@ for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.joi
 sys.path.insert(0,HERE)
 import crisis_block as _crisis
 _crisis_data=_crisis.load(LIB)
-_CRISIS_REQUIRED_TOOLS={"cssrs.html"}
-_CRISIS_REQUIRED_MD={"suicide.md","pg_suicide.md","violence.md","agitation.md","t_perinatal.md"}
+# Required surfaces = where a learner is plausibly DOING risk work (assessing, rehearsing, or
+# planning disposition around self-harm/violence), not merely reading about it. Reference and
+# reading pages are deliberately excluded so the block stays meaningful rather than wallpaper.
+_CRISIS_REQUIRED_TOOLS={
+    "cssrs.html","sp-interview.html","communication-practice.html",
+    "family-systems.html","one-patient-six-weeks.html",
+}
+_CRISIS_REQUIRED_MD={
+    # direct risk assessment & acute safety
+    "suicide.md","pg_suicide.md","violence.md","agitation.md","ethics_legal.md",
+    # populations where self-harm risk is core to the page's own teaching
+    "t_mood.md","t_personality.md","t_psychosis.md","t_sud.md","t_geri.md",
+    "t_eating.md","t_dissociative.md","t_adjustment.md","t_perinatal.md",
+    # bedside work & disposition — the peri-discharge transition is the highest-risk window
+    "brief_psychotherapy.md","exp_family.md","family_playbook.md","collateral_workflow.md",
+}
 _crisis_tools_done=set()
 for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.join(OUT,"tools")) if _f.endswith(".html")]:
     _t=open(_tool_html,encoding="utf-8").read()

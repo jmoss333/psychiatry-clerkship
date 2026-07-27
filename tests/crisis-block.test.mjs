@@ -10,13 +10,38 @@ const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
 
 // Source surfaces that must carry the build marker. The build asserts the same set, so this
 // test catches a dropped marker at `node --test` time rather than only at deploy time.
+// Scope rule: surfaces where a learner is plausibly DOING risk work — assessing, rehearsing,
+// or planning disposition — not reference pages that merely mention suicide.
+const MD = '<!-- crisis-block -->';
+const HTML = '<!-- crisis-block-html -->';
 const markedSources = new Map([
-  ['04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md', '<!-- crisis-block -->'],
-  ['14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/suicide_risk_and_safety_pocket_card.md', '<!-- crisis-block -->'],
-  ['04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md', '<!-- crisis-block -->'],
-  ['04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md', '<!-- crisis-block -->'],
-  ['03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md', '<!-- crisis-block -->'],
-  ['04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html', '<!-- crisis-block-html -->'],
+  // direct risk assessment & acute safety
+  ['04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md', MD],
+  ['14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/suicide_risk_and_safety_pocket_card.md', MD],
+  ['04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md', MD],
+  ['04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md', MD],
+  ['03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md', MD],
+  // populations where self-harm risk is core to the page's own teaching
+  ['03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md', MD],
+  ['03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md', MD],
+  ['03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md', MD],
+  ['03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md', MD],
+  ['03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md', MD],
+  ['03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md', MD],
+  ['03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md', MD],
+  ['03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md', MD],
+  ['03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md', MD],
+  // bedside work & disposition — peri-discharge is the highest-risk window
+  ['02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md', MD],
+  ['14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/family_discharge_student_module.md', MD],
+  ['06_Family_and_Relational/family_meeting_playbook_90min.md', MD],
+  ['06_Family_and_Relational/collateral_micro_workflow.md', MD],
+  // tools where the learner is actively assessing or rehearsing risk
+  ['04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html', HTML],
+  ['_prototypes/sp-interview/sp-interview.html', HTML],
+  ['02_Clinical_Skills/Communication_Practice/communication-practice.html', HTML],
+  ['06_Family_and_Relational/family-systems-practice.html', HTML],
+  ['08_Cases_and_Simulation/one-patient-six-weeks.html', HTML],
 ]);
 
 // Verified 2026-07-27 against the official source recorded on each record.
