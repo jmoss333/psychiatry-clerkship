@@ -1,4 +1,6 @@
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -11,6 +13,7 @@ sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 from maintenance.validate_scheduled_workflows import (  # noqa: E402
     EXPECTED_CRONS,
     PINNED_ACTIONS,
+    SCOPED_FILES,
     validate_repository,
 )
 
@@ -51,6 +54,29 @@ def cron_for(name):
 
 
 class ScheduledWorkflowTests(unittest.TestCase):
+    def validate_mutation(self, name, old, new):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture_root = Path(directory)
+            workflow_dir = fixture_root / ".github" / "workflows"
+            workflow_dir.mkdir(parents=True)
+            for workflow_name in SCOPED_FILES:
+                shutil.copy2(
+                    ROOT / ".github" / "workflows" / workflow_name,
+                    workflow_dir / workflow_name,
+                )
+            path = workflow_dir / name
+            source = path.read_text(encoding="utf-8")
+            self.assertEqual(source.count(old), 1, f"mutation anchor in {name}")
+            path.write_text(source.replace(old, new, 1), encoding="utf-8")
+            return validate_repository(fixture_root)
+
+    def assert_mutation_rejected(self, name, old, new, message):
+        errors = self.validate_mutation(name, old, new)
+        self.assertTrue(
+            any(message in error for error in errors),
+            f"expected {message!r} in {errors!r}",
+        )
+
     def test_repository_workflow_contract_is_valid(self):
         self.assertEqual(validate_repository(ROOT), [])
 
@@ -127,6 +153,280 @@ class ScheduledWorkflowTests(unittest.TestCase):
         }
         for name, permissions in expected.items():
             self.assertEqual(load_workflow(name)["permissions"], permissions, name)
+
+    def test_issue_workflows_and_ci_have_exact_safe_concurrency(self):
+        expected = {
+            "maintenance-governance-digest.yml": {
+                "group": "maintenance-governance",
+                "cancel-in-progress": "false",
+            },
+            "maintenance-monthly-review.yml": {
+                "group": "maintenance-monthly",
+                "cancel-in-progress": "false",
+            },
+            "maintenance-rotation-readiness.yml": {
+                "group": "maintenance-rotation",
+                "cancel-in-progress": "false",
+            },
+        }
+        for name, concurrency in expected.items():
+            self.assertEqual(load_workflow(name).get("concurrency"), concurrency, name)
+        self.assertEqual(
+            load_workflow("ci.yml").get("concurrency"),
+            {
+                "group": "ci-${{ github.event_name }}-${{ github.ref }}",
+                "cancel-in-progress": "${{ github.event_name != 'schedule' }}",
+            },
+        )
+
+    def test_ci_concurrency_separates_events_and_preserves_normal_cancellation(self):
+        concurrency = load_workflow("ci.yml")["concurrency"]
+        template = concurrency["group"]
+
+        def group(event_name, ref):
+            return template.replace(
+                "${{ github.event_name }}",
+                event_name,
+            ).replace("${{ github.ref }}", ref)
+
+        main_ref = "refs/heads/main"
+        schedule_group = group("schedule", main_ref)
+        push_group = group("push", main_ref)
+        manual_group = group("workflow_dispatch", main_ref)
+        self.assertEqual(push_group, group("push", main_ref))
+        self.assertEqual(
+            group("pull_request", "refs/pull/7/merge"),
+            group("pull_request", "refs/pull/7/merge"),
+        )
+        self.assertNotEqual(schedule_group, push_group)
+        self.assertNotEqual(schedule_group, manual_group)
+        self.assertNotEqual(push_group, manual_group)
+        self.assertEqual(
+            concurrency["cancel-in-progress"],
+            "${{ github.event_name != 'schedule' }}",
+        )
+        self.assertEqual(
+            {
+                event_name: event_name != "schedule"
+                for event_name in (
+                    "schedule",
+                    "push",
+                    "pull_request",
+                    "workflow_dispatch",
+                )
+            },
+            {
+                "schedule": False,
+                "push": True,
+                "pull_request": True,
+                "workflow_dispatch": True,
+            },
+        )
+
+    def test_validator_rejects_decoy_gates_and_neutralized_finalizers(self):
+        cases = (
+            (
+                "ci.yml",
+                (
+                    "        run: python3 "
+                    "13_Faculty_Resources/_automation/maintenance/"
+                    "validate_scheduled_workflows.py"
+                ),
+                (
+                    "        run: echo \"python3 "
+                    "13_Faculty_Resources/_automation/maintenance/"
+                    "validate_scheduled_workflows.py\""
+                ),
+                "required CI gate",
+            ),
+            (
+                "ci.yml",
+                "        run: node --test tests/*.test.mjs",
+                (
+                    "        run: |\n"
+                    "          # node --test tests/*.test.mjs\n"
+                    "          true"
+                ),
+                "required CI gate",
+            ),
+            (
+                "ci.yml",
+                (
+                    "        run: python3 "
+                    "13_Faculty_Resources/_automation/maintenance/"
+                    "validate_scheduled_workflows.py"
+                ),
+                (
+                    "        run: |\n"
+                    "          python3 "
+                    "13_Faculty_Resources/_automation/maintenance/"
+                    "validate_scheduled_workflows.py\n"
+                    "          exit 0"
+                ),
+                "required CI gate",
+            ),
+            (
+                "maintenance-governance-digest.yml",
+                "          esac\n",
+                "          esac\n          exit 0\n",
+                "finalizer",
+            ),
+        )
+        for name, old, new, message in cases:
+            with self.subTest(name=name, mutation=new):
+                self.assert_mutation_rejected(name, old, new, message)
+
+    def test_validator_rejects_direct_issue_api_and_registry_mutation(self):
+        marker = "      - name: Preserve governance gate result\n"
+        direct_rest = (
+            "      - name: Close an issue through the REST API\n"
+            "        run: >-\n"
+            "          curl --request PATCH --data '{\"state\":\"closed\"}'\n"
+            "          https://api.github.com/repos/example/repo/issues/1\n\n"
+            + marker
+        )
+        self.assert_mutation_rejected(
+            "maintenance-governance-digest.yml",
+            marker,
+            direct_rest,
+            "direct GitHub issue API",
+        )
+
+        for registry in (
+            "question_bank.json",
+            "topic_meta.json",
+            "13_Faculty_Resources/reviewed.json",
+        ):
+            with self.subTest(registry=registry):
+                python_write = (
+                    "      - name: Write a clinical registry\n"
+                    "        run: >-\n"
+                    "          python3 -c \"from pathlib import Path;\n"
+                    f"          Path('{registry}').write_text('{{}}')\"\n\n"
+                    + marker
+                )
+                self.assert_mutation_rejected(
+                    "maintenance-governance-digest.yml",
+                    marker,
+                    python_write,
+                    "clinical or attestation registry",
+                )
+
+    def test_validator_walks_jobs_and_required_step_conditions(self):
+        cases = (
+            (
+                "maintenance-governance-digest.yml",
+                "  governance:\n    runs-on: ubuntu-latest\n",
+                (
+                    "  governance:\n"
+                    "    uses: attacker/reusable/.github/workflows/pwn.yml@main\n"
+                    "    runs-on: ubuntu-latest\n"
+                ),
+                "job-level uses",
+            ),
+            (
+                "maintenance-governance-digest.yml",
+                "  governance:\n    runs-on: ubuntu-latest\n",
+                (
+                    "  governance:\n"
+                    "    permissions:\n"
+                    "      contents: write\n"
+                    "    runs-on: ubuntu-latest\n"
+                ),
+                "job-level permissions",
+            ),
+            (
+                "ci.yml",
+                (
+                    "      - name: Unit — scheduled maintenance\n"
+                    "        run: python3 -m unittest"
+                ),
+                (
+                    "      - name: Unit — scheduled maintenance\n"
+                    "        if: github.event_name != 'schedule'\n"
+                    "        run: python3 -m unittest"
+                ),
+                "exclude schedule",
+            ),
+            (
+                "maintenance-governance-digest.yml",
+                (
+                    "      - name: Build faculty governance digest\n"
+                    "        id: governance\n"
+                ),
+                (
+                    "      - name: Build faculty governance digest\n"
+                    "        id: governance\n"
+                    "        if: github.event_name != 'schedule'\n"
+                ),
+                "exclude schedule",
+            ),
+        )
+        for name, old, new, message in cases:
+            with self.subTest(name=name, mutation=message):
+                self.assert_mutation_rejected(name, old, new, message)
+
+    def test_validator_rejects_extra_jobs_and_issue_writing_steps(self):
+        self.assert_mutation_rejected(
+            "maintenance-governance-digest.yml",
+            "jobs:\n  governance:\n",
+            (
+                "jobs:\n"
+                "  bypass:\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps:\n"
+                "      - run: gh issue create --title bypass --body bypass\n"
+                "  governance:\n"
+            ),
+            "job IDs",
+        )
+
+        marker = "      - name: Preserve governance gate result\n"
+        self.assert_mutation_rejected(
+            "maintenance-governance-digest.yml",
+            marker,
+            (
+                "      - name: Create an unowned issue\n"
+                "        run: gh issue create --title bypass --body bypass\n\n"
+                + marker
+            ),
+            "step inventory",
+        )
+
+    def test_validator_rejects_unsafe_concurrency(self):
+        safe_issue = (
+            "concurrency:\n"
+            "  group: maintenance-governance\n"
+            "  cancel-in-progress: false\n"
+        )
+        unsafe_issue = (
+            "concurrency:\n"
+            "  group: maintenance-${{ github.run_id }}\n"
+            "  cancel-in-progress: true\n"
+        )
+        self.assert_mutation_rejected(
+            "maintenance-governance-digest.yml",
+            safe_issue,
+            unsafe_issue,
+            "concurrency",
+        )
+
+        safe_ci = (
+            "concurrency:\n"
+            "  group: ci-${{ github.event_name }}-${{ github.ref }}\n"
+            "  cancel-in-progress: ${{ github.event_name != 'schedule' }}\n"
+        )
+        unsafe_ci = (
+            "concurrency:\n"
+            "  group: ci-${{ github.ref }}\n"
+            "  cancel-in-progress: true\n"
+        )
+        self.assert_mutation_rejected(
+            "ci.yml",
+            safe_ci,
+            unsafe_ci,
+            "concurrency",
+        )
 
     def test_ci_schedule_reaches_both_authoritative_jobs_and_release_gates(self):
         ci = load_workflow("ci.yml")

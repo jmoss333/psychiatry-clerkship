@@ -11,7 +11,7 @@ import sys
 from datetime import date
 from pathlib import Path
 from urllib.parse import urlencode, urlsplit
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 
 DISCLAIMER = (
@@ -38,6 +38,11 @@ MANUAL_CHECKLIST = (
 
 class IssueRoutingError(RuntimeError):
     """A report or GitHub issue boundary did not meet the safe contract."""
+
+
+class _NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, msg, headers, newurl):
+        return None
 
 
 def _bounded_count(value, label):
@@ -89,6 +94,10 @@ def _iso_date(value, label):
 def _links(run_url, artifact_url):
     artifact = artifact_url if artifact_url else "unavailable"
     return [f"Run: {run_url}", f"Artifact: {artifact}"]
+
+
+def _has_ownership_marker(body, marker):
+    return isinstance(body, str) and body.splitlines()[:1] == [marker]
 
 
 def _governance_body(report, run_url, artifact_url):
@@ -272,8 +281,7 @@ def route_issue(
             isinstance(issue, dict)
             and issue.get("state") == "open"
             and "pull_request" not in issue
-            and isinstance(issue.get("body"), str)
-            and marker in issue["body"]
+            and _has_ownership_marker(issue.get("body"), marker)
         ):
             number = issue.get("number")
             if type(number) is not int or number <= 0:
@@ -296,13 +304,14 @@ def route_issue(
 
 
 class _GitHubIssues:
-    def __init__(self, repository, token):
+    def __init__(self, repository, token, *, opener=None):
         if not isinstance(repository, str) or SAFE_REPOSITORY.fullmatch(repository) is None:
             raise IssueRoutingError("GITHUB_REPOSITORY is invalid")
         if not isinstance(token, str) or not token:
             raise IssueRoutingError("GITHUB_TOKEN is unavailable")
         self.base = f"https://api.github.com/repos/{repository}/issues"
         self.token = token
+        self.opener = opener or build_opener(_NoRedirect())
 
     def _request(self, method, url, payload=None):
         body = None if payload is None else json.dumps(payload).encode("utf-8")
@@ -317,8 +326,17 @@ class _GitHubIssues:
                 **({"Content-Type": "application/json"} if body is not None else {}),
             },
         )
-        with urlopen(request, timeout=20) as response:
+        try:
+            response = self.opener.open(request, timeout=20)
+        except Exception as exc:
+            close = getattr(exc, "close", None)
+            if callable(close):
+                close()
+            raise IssueRoutingError("GitHub request failed") from exc
+        try:
             raw = response.read(1_048_577)
+        finally:
+            response.close()
         if len(raw) > 1_048_576:
             raise IssueRoutingError("GitHub response is too large")
         try:
@@ -332,7 +350,6 @@ class _GitHubIssues:
             query = urlencode(
                 {
                     "state": "open",
-                    "labels": "maintenance",
                     "per_page": 100,
                     "page": page,
                 }

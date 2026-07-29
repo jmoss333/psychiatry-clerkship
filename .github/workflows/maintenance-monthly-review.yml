@@ -9,6 +9,10 @@ permissions:
   contents: read
   issues: write
 
+concurrency:
+  group: maintenance-monthly
+  cancel-in-progress: false
+
 jobs:
   monthly:
     runs-on: ubuntu-latest

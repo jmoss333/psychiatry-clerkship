@@ -304,10 +304,24 @@ def _run_git(root, args, *, allow_failure=False):
 def _cron_present(source, expected_cron):
     try:
         parsed = yaml.load(source, Loader=yaml.BaseLoader)
-        trigger = parsed["on"]
-        schedule = trigger["schedule"]
-    except (TypeError, KeyError, yaml.YAMLError) as exc:
+    except yaml.YAMLError as exc:
         raise HeartbeatError("workflow schedule YAML is malformed") from exc
+    if not isinstance(parsed, dict) or "on" not in parsed:
+        raise HeartbeatError("workflow schedule YAML is malformed")
+    trigger = parsed["on"]
+    if isinstance(trigger, str):
+        if not trigger:
+            raise HeartbeatError("workflow schedule YAML is malformed")
+        return False
+    if isinstance(trigger, list):
+        if any(not isinstance(item, str) or not item for item in trigger):
+            raise HeartbeatError("workflow schedule YAML is malformed")
+        return False
+    if not isinstance(trigger, dict):
+        raise HeartbeatError("workflow schedule YAML is malformed")
+    if "schedule" not in trigger:
+        return False
+    schedule = trigger["schedule"]
     if not isinstance(schedule, list):
         raise HeartbeatError("workflow schedule YAML is malformed")
     crons = []
@@ -350,10 +364,7 @@ def derive_schedule_activation(root, workflow_file, expected_cron):
         )
         if shown.returncode != 0:
             break
-        try:
-            present = _cron_present(shown.stdout, expected_cron)
-        except HeartbeatError:
-            present = False
+        present = _cron_present(shown.stdout, expected_cron)
         if not present:
             break
         candidate = commit
@@ -366,14 +377,10 @@ def derive_schedule_activation(root, workflow_file, expected_cron):
         allow_failure=True,
     )
     if parent.returncode == 0:
-        try:
-            if _cron_present(parent.stdout, expected_cron):
-                raise HeartbeatError(
-                    "workflow schedule activation boundary is ambiguous"
-                )
-        except HeartbeatError as exc:
-            if "ambiguous" in str(exc):
-                raise
+        if _cron_present(parent.stdout, expected_cron):
+            raise HeartbeatError(
+                "workflow schedule activation boundary is ambiguous"
+            )
     timestamp = _run_git(
         root,
         ["show", "-s", "--format=%cI", candidate],

@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
 from maintenance.workflow_heartbeat import (  # noqa: E402
     EXPECTATIONS,
+    HeartbeatError,
     derive_schedule_activation,
     evaluate_runs,
     fetch_runs,
@@ -328,6 +329,62 @@ class WorkflowHeartbeatTests(unittest.TestCase):
                 activation,
                 datetime(2026, 7, 28, 14, tzinfo=timezone.utc),
             )
+
+    def test_malformed_ancestral_yaml_invalidates_activation_provenance(self):
+        malformed_sources = (
+            "name: CI\non:\n  schedule: [\n",
+            "name: CI\non:\n  schedule: {}\n",
+        )
+        for malformed in malformed_sources:
+            with self.subTest(malformed=malformed):
+                with tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    subprocess.run(["git", "init", "-q", str(root)], check=True)
+                    subprocess.run(
+                        ["git", "-C", str(root), "config", "user.name", "Fixture"],
+                        check=True,
+                    )
+                    subprocess.run(
+                        [
+                            "git",
+                            "-C",
+                            str(root),
+                            "config",
+                            "user.email",
+                            "fixture@example.invalid",
+                        ],
+                        check=True,
+                    )
+                    workflows = root / ".github" / "workflows"
+                    workflows.mkdir(parents=True)
+                    ci = workflows / "ci.yml"
+                    self._commit(
+                        root,
+                        ci,
+                        "name: CI\non:\n  workflow_dispatch:\n",
+                        "create old workflow",
+                        "2026-06-01T00:00:00+00:00",
+                    )
+                    self._commit(
+                        root,
+                        ci,
+                        malformed,
+                        "malformed schedule history",
+                        "2026-07-20T00:00:00+00:00",
+                    )
+                    self._commit(
+                        root,
+                        ci,
+                        (
+                            "name: CI\non:\n  workflow_dispatch:\n  schedule:\n"
+                            "    - cron: \"0 8 * * 0\"\n"
+                        ),
+                        "restore scheduled workflow",
+                        "2026-07-28T10:00:00+00:00",
+                    )
+
+                    with self.assertRaisesRegex(HeartbeatError, "malformed"):
+                        derive_schedule_activation(root, "ci.yml", "0 8 * * 0")
 
     def _commit(self, root, path, content, message, timestamp):
         path.write_text(content, encoding="utf-8")

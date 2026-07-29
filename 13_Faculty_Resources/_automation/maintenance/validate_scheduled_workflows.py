@@ -79,6 +79,325 @@ EXPECTED_PERMISSIONS = {
 SP_STATUS_URL = "https://sp-interview-proxy.netlify.app/api/sp/health-status"
 MS3_URL = "https://une-ms3-psychiatry.netlify.app"
 RES_URL = "https://mmc-psychiatry-residents-sanford.netlify.app"
+EXPECTED_CONCURRENCY = {
+    "ci.yml": {
+        "group": "ci-${{ github.event_name }}-${{ github.ref }}",
+        "cancel-in-progress": "${{ github.event_name != 'schedule' }}",
+    },
+    "maintenance-governance-digest.yml": {
+        "group": "maintenance-governance",
+        "cancel-in-progress": "false",
+    },
+    "maintenance-monthly-review.yml": {
+        "group": "maintenance-monthly",
+        "cancel-in-progress": "false",
+    },
+    "maintenance-rotation-readiness.yml": {
+        "group": "maintenance-rotation",
+        "cancel-in-progress": "false",
+    },
+}
+EXPECTED_JOB_IDS = {
+    "ci.yml": {"build-test-validate", "smoke-tests"},
+    "maintenance-sp-health-monitor.yml": {"monitor"},
+    "maintenance-production-canary.yml": {"production-canary"},
+    "maintenance-heartbeat.yml": {"heartbeat"},
+    "maintenance-governance-digest.yml": {"governance"},
+    "maintenance-monthly-review.yml": {"monthly"},
+    "maintenance-rotation-readiness.yml": {"rotation"},
+}
+ISSUE_STEP_INVENTORIES = {
+    "maintenance-governance-digest.yml": (
+        ("uses", "actions/checkout"),
+        ("uses", "actions/setup-python"),
+        ("uses", "actions/setup-node"),
+        ("name", "Build faculty governance digest"),
+        ("uses", "actions/upload-artifact"),
+        ("name", "Route faculty governance review"),
+        ("name", "Preserve governance gate result"),
+    ),
+    "maintenance-monthly-review.yml": (
+        ("uses", "actions/checkout"),
+        ("uses", "actions/setup-python"),
+        ("name", "Install evidence validation dependencies"),
+        ("name", "Build evidence and operations review"),
+        ("uses", "actions/upload-artifact"),
+        ("name", "Route evidence and operations review"),
+        ("name", "Preserve monthly gate result"),
+    ),
+    "maintenance-rotation-readiness.yml": (
+        ("uses", "actions/checkout"),
+        ("uses", "actions/setup-python"),
+        ("name", "Build rotation readiness passport"),
+        ("uses", "actions/upload-artifact"),
+        ("name", "Route due rotation review"),
+        ("name", "Translate rotation routing result"),
+    ),
+}
+CRITICAL_STEPS = {
+    "ci.yml": {
+        "build-test-validate": (
+            (
+                "Unit — scheduled maintenance",
+                "python3 -m unittest discover -s tests/maintenance "
+                "-p 'test_*.py' -v",
+                None,
+                "required CI gate",
+            ),
+            (
+                "Validate — scheduled workflow contracts",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                "validate_scheduled_workflows.py",
+                None,
+                "required CI gate",
+            ),
+            (
+                "Unit — root node regression tests (tests/*.test.mjs)",
+                "node --test tests/*.test.mjs",
+                None,
+                "required CI gate",
+            ),
+            (
+                "Build + static QA gate (ms3)",
+                "bash 13_Faculty_Resources/_automation/site_build/"
+                "build_and_check.sh ms3",
+                None,
+                "required CI build gate",
+            ),
+            (
+                "Build + static QA gate (res)",
+                "bash 13_Faculty_Resources/_automation/site_build/"
+                "build_and_check.sh res",
+                None,
+                "required CI build gate",
+            ),
+        ),
+        "smoke-tests": (
+            (
+                "Build sites (ms3 + res)",
+                "bash 13_Faculty_Resources/_automation/site_build/"
+                "build_and_check.sh ms3\n"
+                "bash 13_Faculty_Resources/_automation/site_build/"
+                "build_and_check.sh res",
+                None,
+                "required CI smoke build",
+            ),
+            (
+                "Check 1: nav crawl — ms3 + res",
+                "cd tests/smoke\n"
+                "npx playwright test --project=nav-ms3 --project=nav-res",
+                None,
+                "required CI navigation gate",
+            ),
+            (
+                "Check 2: LFS integrity — Netlify deploy preview",
+                """cd tests/smoke
+# Derive the deploy-preview URL from the PR number (if this is a PR run).
+# Netlify deploy previews use the pattern:
+#   https://deploy-preview-{PR}--{site-slug}.netlify.app
+# Probe first; skip gracefully if the deploy isn't live yet.
+PR_NUM="${{ github.event.pull_request.number }}"
+if [ "${{ github.event_name }}" = "pull_request" ] && [ -n "$PR_NUM" ]; then
+  MS3_CANDIDATE="https://deploy-preview-${PR_NUM}--une-ms3-psychiatry.netlify.app"
+  RES_CANDIDATE="https://deploy-preview-${PR_NUM}--mmc-psychiatry-residents-sanford.netlify.app"
+  if curl -sf --head --max-time 8 "$MS3_CANDIDATE" >/dev/null 2>&1; then
+    export MS3_DEPLOY_URL="$MS3_CANDIDATE"
+    export RES_DEPLOY_URL="$RES_CANDIDATE"
+    echo "Deploy preview ready — LFS check will run against $MS3_CANDIDATE"
+  else
+    echo "Deploy preview not yet live — LFS check will be skipped (set MS3_DEPLOY_URL manually to force)"
+  fi
+else
+  export MS3_DEPLOY_URL="https://une-ms3-psychiatry.netlify.app"
+  export RES_DEPLOY_URL="https://mmc-psychiatry-residents-sanford.netlify.app"
+  echo "Scheduled/manual release rehearsal — LFS check will run against production learner sites"
+fi
+npx playwright test --project=lfs""",
+                None,
+                "required CI LFS gate",
+            ),
+        ),
+    },
+    "maintenance-sp-health-monitor.yml": {
+        "monitor": (
+            (
+                "Check public content-free Interview Room receipt",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                "sp_health_monitor.py --url "
+                "https://sp-interview-proxy.netlify.app/api/sp/health-status "
+                '--out "$RUNNER_TEMP/sp-health-monitor.json"',
+                None,
+                "required SP health gate",
+            ),
+        ),
+    },
+    "maintenance-production-canary.yml": {
+        "production-canary": (
+            (
+                "Install Playwright and Chromium",
+                "cd tests/smoke\nnpm ci\n"
+                "npx playwright install chromium --with-deps",
+                None,
+                "required production canary install",
+            ),
+            (
+                "Crawl both public learner sites",
+                "cd tests/smoke\n"
+                "npx playwright test --project=nav-ms3 --project=nav-res",
+                None,
+                "required production navigation gate",
+            ),
+            (
+                "Build content-free release twin",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                "production_canary.py --config "
+                "13_Faculty_Resources/_automation/maintenance/"
+                'maintenance_config.json --source-sha "$GITHUB_SHA" '
+                '--out "$RUNNER_TEMP/release-twin.json"',
+                "always()",
+                "required production release-twin gate",
+            ),
+        ),
+    },
+    "maintenance-heartbeat.yml": {
+        "heartbeat": (
+            (
+                "Install workflow parser",
+                "python3 -m pip install PyYAML==6.0.2",
+                None,
+                "required heartbeat parser install",
+            ),
+            (
+                "Evaluate scheduled workflow freshness",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                'workflow_heartbeat.py --out "$RUNNER_TEMP/'
+                'workflow-heartbeat.json"',
+                None,
+                "required heartbeat gate",
+            ),
+        ),
+    },
+    "maintenance-governance-digest.yml": {
+        "governance": (
+            (
+                "Build faculty governance digest",
+                """mkdir -p "$RUN_DIR"
+set +e
+node 13_Faculty_Resources/_automation/maintenance/governance_digest.mjs \\
+  --out-json "$RUN_DIR/governance.json" \\
+  --out-md "$RUN_DIR/governance.md"
+code=$?
+set -e
+echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+exit 0""",
+                None,
+                "required governance capture",
+            ),
+            (
+                "Route faculty governance review",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                "maintenance_issue.py --kind governance "
+                '--report "$RUN_DIR/governance.json" --run-url "$RUN_URL" '
+                '--artifact-url "$ARTIFACT_URL"',
+                "always()",
+                "required governance router",
+            ),
+            (
+                "Preserve governance gate result",
+                """code="${{ steps.governance.outputs.exit_code }}"
+case "$code" in
+  "0") exit 0 ;;
+  "1"|"2") exit "$code" ;;
+  *) exit 2 ;;
+esac""",
+                "always()",
+                "governance finalizer",
+            ),
+        ),
+    },
+    "maintenance-monthly-review.yml": {
+        "monthly": (
+            (
+                "Build evidence and operations review",
+                """mkdir -p "$RUN_DIR"
+set +e
+python3 tools/evidence_registry/validate.py --check-generated
+evidence_code=$?
+python3 13_Faculty_Resources/_automation/maintenance/monthly_review.py \\
+  --out-json "$RUN_DIR/monthly.json" \\
+  --out-md "$RUN_DIR/monthly.md"
+review_code=$?
+set -e
+if [ "$evidence_code" -ne 0 ] && [ "$review_code" -eq 0 ]; then
+  review_code=2
+fi
+echo "exit_code=$review_code" >> "$GITHUB_OUTPUT"
+exit 0""",
+                None,
+                "required monthly capture",
+            ),
+            (
+                "Route evidence and operations review",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                "maintenance_issue.py --kind monthly "
+                '--report "$RUN_DIR/monthly.json" --run-url "$RUN_URL" '
+                '--artifact-url "$ARTIFACT_URL"',
+                "always()",
+                "required monthly router",
+            ),
+            (
+                "Preserve monthly gate result",
+                """code="${{ steps.monthly.outputs.exit_code }}"
+case "$code" in
+  "0") exit 0 ;;
+  "1"|"2") exit "$code" ;;
+  *) exit 2 ;;
+esac""",
+                "always()",
+                "monthly finalizer",
+            ),
+        ),
+    },
+    "maintenance-rotation-readiness.yml": {
+        "rotation": (
+            (
+                "Build rotation readiness passport",
+                """mkdir -p "$RUN_DIR"
+set +e
+python3 13_Faculty_Resources/_automation/maintenance/rotation_readiness.py \\
+  --config 13_Faculty_Resources/_automation/maintenance/rotation_blocks.json \\
+  --out-json "$RUN_DIR/rotation.json" \\
+  --out-md "$RUN_DIR/rotation.md"
+code=$?
+set -e
+echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+exit 0""",
+                None,
+                "required rotation capture",
+            ),
+            (
+                "Route due rotation review",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                "maintenance_issue.py --kind rotation "
+                '--report "$RUN_DIR/rotation.json" --run-url "$RUN_URL" '
+                '--artifact-url "$ARTIFACT_URL"',
+                "${{ always() && steps.rotation.outputs.exit_code == '10' }}",
+                "required rotation router",
+            ),
+            (
+                "Translate rotation routing result",
+                """code="${{ steps.rotation.outputs.exit_code }}"
+case "$code" in
+  "0"|"10") exit 0 ;;
+  "1"|"2") exit "$code" ;;
+  *) exit 2 ;;
+esac""",
+                "always()",
+                "rotation finalizer",
+            ),
+        ),
+    },
+}
 
 
 def _error(errors, name, message):
@@ -110,6 +429,92 @@ def _steps(workflow):
                 step for step in job["steps"] if isinstance(step, dict)
             )
     return result
+
+
+def _validate_job_boundaries(name, workflow, errors):
+    jobs = workflow.get("jobs")
+    if not isinstance(jobs, dict):
+        return
+    expected_job_ids = EXPECTED_JOB_IDS.get(name)
+    if expected_job_ids is not None and set(jobs) != expected_job_ids:
+        _error(errors, name, "job IDs do not match the exact workflow contract")
+    for job_id, job in jobs.items():
+        if not isinstance(job, dict):
+            _error(errors, name, f"job {job_id!r} must be a mapping")
+            continue
+        if "uses" in job:
+            _error(errors, name, f"job-level uses is forbidden for {job_id!r}")
+        if "permissions" in job:
+            _error(
+                errors,
+                name,
+                f"job-level permissions override is forbidden for {job_id!r}",
+            )
+        if name in EXPECTED_CRONS and "if" in job:
+            _error(
+                errors,
+                name,
+                f"job {job_id!r} must not exclude schedule events",
+            )
+
+
+def _step_identity(step):
+    uses = step.get("uses")
+    if isinstance(uses, str):
+        return "uses", uses.partition("@")[0]
+    return "name", step.get("name")
+
+
+def _validate_issue_step_inventory(name, workflow, errors):
+    expected = ISSUE_STEP_INVENTORIES.get(name)
+    if expected is None:
+        return
+    job_id = next(iter(EXPECTED_JOB_IDS[name]))
+    jobs = workflow.get("jobs")
+    job = jobs.get(job_id) if isinstance(jobs, dict) else None
+    raw_steps = job.get("steps") if isinstance(job, dict) else None
+    if not isinstance(raw_steps, list) or any(
+        not isinstance(step, dict) for step in raw_steps
+    ):
+        _error(errors, name, "issue-writing step inventory is malformed")
+        return
+    actual = tuple(_step_identity(step) for step in raw_steps)
+    if actual != expected:
+        _error(errors, name, "step inventory does not match issue-writing contract")
+
+
+def _normalized_run(step):
+    run = step.get("run")
+    return run.strip() if isinstance(run, str) else None
+
+
+def _validate_critical_steps(name, workflow, errors):
+    jobs = workflow.get("jobs")
+    if not isinstance(jobs, dict):
+        return
+    for job_id, expected_steps in CRITICAL_STEPS.get(name, {}).items():
+        job = jobs.get(job_id)
+        if not isinstance(job, dict) or not isinstance(job.get("steps"), list):
+            _error(errors, name, f"required job {job_id!r} is missing")
+            continue
+        steps = [step for step in job["steps"] if isinstance(step, dict)]
+        for step_name, expected_run, expected_if, label in expected_steps:
+            matches = [step for step in steps if step.get("name") == step_name]
+            if len(matches) != 1:
+                _error(
+                    errors,
+                    name,
+                    f"{label} must appear exactly once",
+                )
+                continue
+            step = matches[0]
+            if _normalized_run(step) != expected_run.strip():
+                _error(errors, name, f"{label} command structure is invalid")
+            if expected_if is None:
+                if "if" in step:
+                    _error(errors, name, f"{label} must not exclude schedule events")
+            elif step.get("if") != expected_if:
+                _error(errors, name, f"{label} must not exclude schedule events")
 
 
 def _runs(steps):
@@ -193,6 +598,12 @@ def _validate_permissions(name, workflow, errors):
         _error(errors, name, "permissions do not match the least-privilege contract")
 
 
+def _validate_concurrency(name, workflow, errors):
+    expected = EXPECTED_CONCURRENCY.get(name)
+    if expected is not None and workflow.get("concurrency") != expected:
+        _error(errors, name, "concurrency does not match the safe event contract")
+
+
 def _validate_ci(workflow, errors):
     name = "ci.yml"
     trigger = workflow.get("on")
@@ -221,36 +632,25 @@ def _validate_ci(workflow, errors):
         ms3 = next(
             index
             for index, step in enumerate(build_steps)
-            if "build_and_check.sh ms3" in step.get("run", "")
+            if step.get("name") == "Build + static QA gate (ms3)"
         )
         res = next(
             index
             for index, step in enumerate(build_steps)
-            if "build_and_check.sh res" in step.get("run", "")
+            if step.get("name") == "Build + static QA gate (res)"
         )
         if ms3 >= res:
             raise ValueError
     except (StopIteration, ValueError, AttributeError):
         _error(errors, name, "build-test-validate must build ms3 then res")
 
-    smoke_run = _runs(smoke_steps)
-    if (
-        "build_and_check.sh ms3" not in smoke_run
-        or "build_and_check.sh res" not in smoke_run
-        or smoke_run.index("build_and_check.sh ms3")
-        > smoke_run.index("build_and_check.sh res")
-    ):
+    smoke_builds = [
+        step
+        for step in smoke_steps
+        if step.get("name") == "Build sites (ms3 + res)"
+    ]
+    if len(smoke_builds) != 1:
         _error(errors, name, "smoke-tests must build ms3 then res")
-    for required in (
-        "python3 -m unittest discover -s tests/maintenance -p 'test_*.py' -v",
-        "validate_scheduled_workflows.py",
-        "node --test tests/*.test.mjs",
-    ):
-        if required not in _runs(build_steps):
-            _error(errors, name, f"required gate is missing: {required}")
-    for required in ("github.event_name", MS3_URL, RES_URL, "--project=lfs"):
-        if required not in smoke_run:
-            _error(errors, name, f"scheduled/manual LFS contract is missing: {required}")
 
 
 def _validate_production_canary(workflow, errors):
@@ -362,10 +762,13 @@ def _validate_forbidden(name, steps, errors):
     forbidden = {
         "visual baseline mutation": r"--update-snapshots|update-baselines",
         "automatic issue closure": r"\b(?:gh\s+)?issue\s+close\b",
+        "direct GitHub issue API": (
+            r"https://api\.github\.com/[^\s\"']*/issues(?:/[^\s\"']*)?"
+            r"|\bgh\s+api\b[^\n]*(?:/issues\b|issues/)"
+        ),
         "direct push to main": r"\bgit\s+push[^\n]*(?:origin\s+)?main\b",
-        "clinical registry mutation": (
-            r"(?:>|>>|tee|cp|mv)\s+[^\n]*"
-            r"(?:question_bank\.json|reviewed\.json|topic_meta\.json)"
+        "clinical or attestation registry": (
+            r"\b(?:question_bank|reviewed|topic_meta)\.json\b"
         ),
     }
     for label, pattern in forbidden.items():
@@ -386,9 +789,13 @@ def validate_repository(root=REPO_ROOT):
             sources[name] = source
     for name, workflow in documents.items():
         steps = _steps(workflow)
+        _validate_job_boundaries(name, workflow, errors)
+        _validate_issue_step_inventory(name, workflow, errors)
         _validate_actions(name, sources[name], steps, errors)
         _validate_uploads(name, steps, errors)
         _validate_permissions(name, workflow, errors)
+        _validate_concurrency(name, workflow, errors)
+        _validate_critical_steps(name, workflow, errors)
         _validate_forbidden(name, steps, errors)
         if name in EXPECTED_CRONS:
             _validate_cron(name, workflow, errors)

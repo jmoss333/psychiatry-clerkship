@@ -1,7 +1,10 @@
 import json
 import sys
+import threading
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -9,6 +12,7 @@ sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
 from maintenance.maintenance_issue import (  # noqa: E402
     IssueRoutingError,
+    _GitHubIssues,
     route_issue,
 )
 
@@ -152,7 +156,7 @@ class MaintenanceIssueTests(unittest.TestCase):
                 {
                     "number": 22,
                     "state": "open",
-                    "body": "prior\n<!-- maintenance:governance -->",
+                    "body": "<!-- maintenance:governance -->\nprior",
                 }
             ],
             create_issue=lambda _payload: self.fail("unexpected create"),
@@ -164,6 +168,152 @@ class MaintenanceIssueTests(unittest.TestCase):
         self.assertEqual(set(updated[0][1]), {"title", "body"})
         self.assertNotIn("state", updated[0][1])
         self.assertNotIn("closed", json.dumps(updated[0][1]).lower())
+
+    def test_only_exact_first_line_marker_is_authoritative(self):
+        created = []
+        issues = [
+            {
+                "number": 20,
+                "state": "open",
+                "body": "quoted\n<!-- maintenance:governance -->",
+            },
+            {
+                "number": 21,
+                "state": "open",
+                "body": "prefix <!-- maintenance:governance -->",
+            },
+            {
+                "number": 22,
+                "state": "open",
+                "body": "<!-- maintenance:governance --> suffix",
+            },
+        ]
+        result = route_issue(
+            "governance",
+            governance_report(),
+            run_url=RUN_URL,
+            artifact_url=ARTIFACT_URL,
+            list_issues=lambda: issues,
+            create_issue=lambda payload: created.append(payload) or {"number": 23},
+            update_issue=lambda *_args: self.fail("unexpected update"),
+        )
+        self.assertEqual(result, {"action": "created", "number": 23})
+        self.assertEqual(len(created), 1)
+
+    def test_issue_listing_finds_marker_after_label_removal(self):
+        marker_issue = {
+            "number": 22,
+            "state": "open",
+            "body": "<!-- maintenance:governance -->\nprior",
+            "labels": [],
+        }
+
+        class Response:
+            status = 200
+
+            def read(self, size):
+                self.assertion = size
+                return json.dumps([marker_issue]).encode("utf-8")
+
+            def close(self):
+                self.closed = True
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                self.close()
+
+        class Opener:
+            def __init__(self):
+                self.requests = []
+
+            def open(self, request, timeout):
+                self.requests.append((request, timeout))
+                return Response()
+
+        opener = Opener()
+        try:
+            client = _GitHubIssues(
+                "example/repo",
+                "PRIVATE TOKEN SENTINEL",
+                opener=opener,
+            )
+        except TypeError as exc:
+            self.fail(f"GitHub issue client does not accept an opener: {exc}")
+        updated = []
+        result = route_issue(
+            "governance",
+            governance_report("blocked"),
+            run_url=RUN_URL,
+            artifact_url=ARTIFACT_URL,
+            list_issues=client.list,
+            create_issue=lambda _payload: self.fail("unexpected create"),
+            update_issue=lambda number, payload: updated.append((number, payload))
+            or {"number": number},
+        )
+        self.assertEqual(result, {"action": "updated", "number": 22})
+        self.assertEqual(updated[0][0], 22)
+        query = parse_qs(urlsplit(opener.requests[0][0].full_url).query)
+        self.assertEqual(
+            query,
+            {"state": ["open"], "per_page": ["100"], "page": ["1"]},
+        )
+
+    def test_default_client_rejects_redirect_without_forwarding_authorization(self):
+        source_headers = []
+        sink_headers = []
+
+        class SinkHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                sink_headers.append(self.headers.get("Authorization"))
+                body = b"[]"
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, _format, *_args):
+                return
+
+        sink = ThreadingHTTPServer(("127.0.0.1", 0), SinkHandler)
+
+        class SourceHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                source_headers.append(self.headers.get("Authorization"))
+                self.send_response(302)
+                self.send_header(
+                    "Location",
+                    f"http://127.0.0.1:{sink.server_port}/target",
+                )
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+
+            def log_message(self, _format, *_args):
+                return
+
+        source = ThreadingHTTPServer(("127.0.0.1", 0), SourceHandler)
+        threads = [
+            threading.Thread(target=server.serve_forever, daemon=True)
+            for server in (source, sink)
+        ]
+        for thread in threads:
+            thread.start()
+        try:
+            client = _GitHubIssues("example/repo", "PRIVATE TOKEN SENTINEL")
+            client.base = f"http://127.0.0.1:{source.server_port}/issues"
+            with self.assertRaises(IssueRoutingError):
+                client.list()
+        finally:
+            for server in (source, sink):
+                server.shutdown()
+                server.server_close()
+            for thread in threads:
+                thread.join(timeout=2)
+
+        self.assertEqual(source_headers, ["Bearer PRIVATE TOKEN SENTINEL"])
+        self.assertEqual(sink_headers, [])
 
     def test_two_open_marker_matches_fail_closed(self):
         issues = [

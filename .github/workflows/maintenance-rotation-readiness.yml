@@ -9,6 +9,10 @@ permissions:
   contents: read
   issues: write
 
+concurrency:
+  group: maintenance-rotation
+  cancel-in-progress: false
+
 jobs:
   rotation:
     runs-on: ubuntu-latest
