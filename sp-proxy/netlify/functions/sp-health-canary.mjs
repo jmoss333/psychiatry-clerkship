@@ -92,6 +92,36 @@ function safeLog(log, failureCode) {
   }
 }
 
+function cancelReaderBestEffort(reader) {
+  try {
+    Promise.resolve(reader.cancel()).catch(() => {});
+  } catch {
+    // Cancellation is advisory; the timeout receipt still needs to be written.
+  }
+}
+
+async function readWithAbort(reader, signal) {
+  if (signal.aborted) {
+    cancelReaderBestEffort(reader);
+    throw new CanaryFailure('timeout');
+  }
+
+  let onAbort;
+  const aborted = new Promise((_, reject) => {
+    onAbort = () => {
+      cancelReaderBestEffort(reader);
+      reject(new CanaryFailure('timeout'));
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+
+  try {
+    return await Promise.race([reader.read(), aborted]);
+  } finally {
+    signal.removeEventListener('abort', onAbort);
+  }
+}
+
 async function readBoundedJson(response, signal) {
   const reader = response?.body?.getReader?.();
   if (!reader) throw new CanaryFailure('invalid_json');
@@ -99,13 +129,13 @@ async function readBoundedJson(response, signal) {
   let total = 0;
   try {
     while (true) {
-      const { done, value } = await reader.read();
+      const { done, value } = await readWithAbort(reader, signal);
       if (signal.aborted) throw new CanaryFailure('timeout');
       if (done) break;
       if (!(value instanceof Uint8Array)) throw new CanaryFailure('invalid_json');
       total += value.byteLength;
       if (total > HEALTH_BODY_LIMIT) {
-        Promise.resolve(reader.cancel()).catch(() => {});
+        cancelReaderBestEffort(reader);
         throw new CanaryFailure('contract');
       }
       chunks.push(value);

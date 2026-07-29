@@ -489,6 +489,73 @@ test('scheduled canary keeps the deadline active through a never-settling respon
   assert.doesNotMatch(JSON.stringify(store.writes), /PRIVATE_SLOW_BODY|PRIVATE_LATE_BODY/);
 });
 
+test('scheduled canary times out a signal-ignoring body read and cancels it best-effort', async () => {
+  const never = new Promise(() => {});
+  let readCalls = 0;
+  let cancelCalls = 0;
+  const logs = [];
+  const store = memoryStore();
+  const { handler } = await createCanaryHarness({
+    store,
+    log: (event) => logs.push(event),
+    setTimeoutImpl(callback, milliseconds) {
+      assert.equal(milliseconds, 8_000);
+      setImmediate(callback);
+      return 79;
+    },
+    clearTimeoutImpl(id) {
+      assert.equal(id, 79);
+    },
+    fetchImpl: async () => ({
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      body: {
+        getReader() {
+          return {
+            read() {
+              readCalls += 1;
+              return never;
+            },
+            cancel() {
+              cancelCalls += 1;
+              return never;
+            },
+          };
+        },
+      },
+    }),
+  });
+
+  const outcome = await Promise.race([
+    handler(scheduledRequest()).then(
+      () => ({ state: 'resolved' }),
+      (error) => ({ state: 'rejected', error }),
+    ),
+    new Promise((resolve) => {
+      setTimeout(() => resolve({ state: 'hung' }), 100);
+    }),
+  ]);
+
+  assert.equal(outcome.state, 'rejected');
+  assert.equal(outcome.error?.message, 'Interview Room health canary failed.');
+  assert.doesNotMatch(outcome.error?.message ?? '', /PRIVATE_|https?:|passcode|header/i);
+  assert.equal(readCalls, 1);
+  assert.equal(cancelCalls, 1);
+  assert.deepEqual(store.writes, [{
+    key: 'latest',
+    value: {
+      schemaVersion: 1,
+      state: 'failed',
+      failureCode: 'timeout',
+      checkedAt: CHECKED_AT,
+    },
+  }]);
+  assert.doesNotMatch(
+    JSON.stringify({ writes: store.writes, logs }),
+    /PRIVATE_|test-only-passcode|x-student-key|prompt|reply/i,
+  );
+});
+
 test('scheduled canary stops reading an oversized response body and writes a contract failure', async () => {
   const chunk = new TextEncoder().encode('x'.repeat(4_096));
   let bytesPulled = 0;
