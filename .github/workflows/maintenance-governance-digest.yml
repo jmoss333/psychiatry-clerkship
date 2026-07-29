@@ -16,8 +16,6 @@ concurrency:
 jobs:
   governance:
     runs-on: ubuntu-latest
-    env:
-      RUN_DIR: ${{ runner.temp }}/maintenance-governance
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -34,11 +32,11 @@ jobs:
       - name: Build faculty governance digest
         id: governance
         run: |
-          mkdir -p "$RUN_DIR"
+          mkdir -p "$RUNNER_TEMP/maintenance-governance"
           set +e
           node 13_Faculty_Resources/_automation/maintenance/governance_digest.mjs \
-            --out-json "$RUN_DIR/governance.json" \
-            --out-md "$RUN_DIR/governance.md"
+            --out-json "$RUNNER_TEMP/maintenance-governance/governance.json" \
+            --out-md "$RUNNER_TEMP/maintenance-governance/governance.md"
           code=$?
           set -e
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
@@ -64,7 +62,7 @@ jobs:
         run: >-
           python3 13_Faculty_Resources/_automation/maintenance/maintenance_issue.py
           --kind governance
-          --report "$RUN_DIR/governance.json"
+          --report "$RUNNER_TEMP/maintenance-governance/governance.json"
           --run-url "$RUN_URL"
           --artifact-url "$ARTIFACT_URL"
 

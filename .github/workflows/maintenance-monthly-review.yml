@@ -16,8 +16,6 @@ concurrency:
 jobs:
   monthly:
     runs-on: ubuntu-latest
-    env:
-      RUN_DIR: ${{ runner.temp }}/maintenance-monthly
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -34,13 +32,13 @@ jobs:
       - name: Build evidence and operations review
         id: monthly
         run: |
-          mkdir -p "$RUN_DIR"
+          mkdir -p "$RUNNER_TEMP/maintenance-monthly"
           set +e
           python3 tools/evidence_registry/validate.py --check-generated
           evidence_code=$?
           python3 13_Faculty_Resources/_automation/maintenance/monthly_review.py \
-            --out-json "$RUN_DIR/monthly.json" \
-            --out-md "$RUN_DIR/monthly.md"
+            --out-json "$RUNNER_TEMP/maintenance-monthly/monthly.json" \
+            --out-md "$RUNNER_TEMP/maintenance-monthly/monthly.md"
           review_code=$?
           set -e
           if [ "$evidence_code" -ne 0 ] && [ "$review_code" -eq 0 ]; then
@@ -69,7 +67,7 @@ jobs:
         run: >-
           python3 13_Faculty_Resources/_automation/maintenance/maintenance_issue.py
           --kind monthly
-          --report "$RUN_DIR/monthly.json"
+          --report "$RUNNER_TEMP/maintenance-monthly/monthly.json"
           --run-url "$RUN_URL"
           --artifact-url "$ARTIFACT_URL"
 

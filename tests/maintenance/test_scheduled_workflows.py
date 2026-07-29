@@ -177,6 +177,25 @@ class ScheduledWorkflowTests(unittest.TestCase):
         ):
             self.assertIs(workflow["values"][key], False)
 
+    def test_validator_rejects_runner_context_before_runner_assignment(self):
+        errors = self.validate_mutation(
+            "maintenance-heartbeat.yml",
+            "  heartbeat:\n    runs-on: ubuntu-latest\n",
+            (
+                "  heartbeat:\n"
+                "    env:\n"
+                "      RUN_DIR: ${{ runner.temp }}/heartbeat\n"
+                "    runs-on: ubuntu-latest\n"
+            ),
+        )
+        self.assertIn(
+            (
+                "maintenance-heartbeat.yml: runner context is unavailable "
+                "in job-level env"
+            ),
+            errors,
+        )
+
     def test_validator_rejects_duplicate_keys_at_every_workflow_depth(self):
         cases = (
             (

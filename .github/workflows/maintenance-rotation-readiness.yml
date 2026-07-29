@@ -16,8 +16,6 @@ concurrency:
 jobs:
   rotation:
     runs-on: ubuntu-latest
-    env:
-      RUN_DIR: ${{ runner.temp }}/maintenance-rotation
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -30,12 +28,12 @@ jobs:
       - name: Build rotation readiness passport
         id: rotation
         run: |
-          mkdir -p "$RUN_DIR"
+          mkdir -p "$RUNNER_TEMP/maintenance-rotation"
           set +e
           python3 13_Faculty_Resources/_automation/maintenance/rotation_readiness.py \
             --config 13_Faculty_Resources/_automation/maintenance/rotation_blocks.json \
-            --out-json "$RUN_DIR/rotation.json" \
-            --out-md "$RUN_DIR/rotation.md"
+            --out-json "$RUNNER_TEMP/maintenance-rotation/rotation.json" \
+            --out-md "$RUNNER_TEMP/maintenance-rotation/rotation.md"
           code=$?
           set -e
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
@@ -61,7 +59,7 @@ jobs:
         run: >-
           python3 13_Faculty_Resources/_automation/maintenance/maintenance_issue.py
           --kind rotation
-          --report "$RUN_DIR/rotation.json"
+          --report "$RUNNER_TEMP/maintenance-rotation/rotation.json"
           --run-url "$RUN_URL"
           --artifact-url "$ARTIFACT_URL"
 
