@@ -1,0 +1,43 @@
+name: Maintenance — Workflow Heartbeat
+
+on:
+  schedule:
+    - cron: "45 10 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          lfs: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Install workflow parser
+        run: python3 -m pip install PyYAML==6.0.2
+
+      - name: Evaluate scheduled workflow freshness
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/maintenance/workflow_heartbeat.py
+          --out "$RUNNER_TEMP/workflow-heartbeat.json"
+
+      - name: Upload workflow heartbeat
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: maintenance-workflow-heartbeat-${{ github.run_id }}
+          path: ${{ runner.temp }}/workflow-heartbeat.json
+          if-no-files-found: warn
+          retention-days: 90
