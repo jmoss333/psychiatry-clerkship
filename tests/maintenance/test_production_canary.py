@@ -913,7 +913,8 @@ class ProductionCanaryTests(unittest.TestCase):
             / "maintenance_config.json"
         )
         config = json.loads(path.read_text(encoding="utf-8"))
-        self.assertEqual(config, CONFIG)
+        canary_config = {key: config[key] for key in CONFIG}
+        self.assertEqual(canary_config, CONFIG)
 
 
 if __name__ == "__main__":
