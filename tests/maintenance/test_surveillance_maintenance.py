@@ -89,6 +89,7 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
         when="2026-07-28",
         summary="historical finding",
         stem="guideline_delta",
+        affects=None,
     ):
         finding = {
             "finding_id": fingerprint,
@@ -100,7 +101,7 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
             "severity": severity,
             "summary": summary,
             "status": status,
-            "affects": [],
+            "affects": list(affects or []),
         }
         path = self.temp_dir / f"{stem}_{when}.json"
         path.write_text(json.dumps([finding]), encoding="utf-8")
@@ -391,6 +392,40 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
             ],
         )
 
+    def test_issue_snapshot_fetch_uses_fingerprint_marker_not_mutable_label(self):
+        calls = []
+        raw_issue = {
+            "number": 126,
+            "html_url": "https://github.com/owner/repo/issues/126",
+            "state": "open",
+            "closed_at": None,
+            "body": "<!-- surveillance:fp=source::modified::label-removed -->",
+            "labels": [{"name": "P1"}],
+        }
+
+        unrelated_issue = {
+            "number": 127,
+            "html_url": "https://github.com/owner/repo/issues/127",
+            "state": "open",
+            "closed_at": None,
+            "body": "Ordinary issue without a surveillance fingerprint.",
+            "labels": [],
+        }
+
+        def fake_gh(method, url, token, data=None):
+            calls.append((method, url, token, data))
+            return [raw_issue, unrelated_issue], {}
+
+        with mock.patch.object(sync_findings, "_gh", side_effect=fake_gh):
+            snapshot = sync_findings.fetch_issue_snapshot("owner/repo", "token")
+
+        self.assertEqual(len(calls), 1)
+        self.assertNotIn("labels=", calls[0][1])
+        self.assertEqual(
+            [item["fingerprint"] for item in snapshot],
+            ["source::modified::label-removed"],
+        )
+
     def test_closed_issue_overrides_historical_open_status(self):
         self.write_report_fixture(
             fingerprint="source::modified::abc",
@@ -436,6 +471,83 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
             [item["fingerprint"] for item in state["p1"]],
             ["source::modified::overflow"],
         )
+
+    def test_live_snapshot_preserves_only_unresolved_absent_history(self):
+        cases = (
+            (
+                "source::modified::historical-open",
+                "issue-open",
+                "guideline_delta",
+                "04_Acute_and_Safety/historical-open.md",
+            ),
+            (
+                "source::modified::historical-triaged",
+                "triaged",
+                "link_audit",
+                "04_Acute_and_Safety/historical-triaged.md",
+            ),
+            (
+                "source::modified::historical-actioned",
+                "actioned",
+                "citation_audit",
+                "04_Acute_and_Safety/historical-actioned.md",
+            ),
+            (
+                "source::modified::historical-dismissed",
+                "dismissed",
+                "resource_intake",
+                "04_Acute_and_Safety/historical-dismissed.md",
+            ),
+        )
+        for fingerprint, status, stem, affected_page in cases:
+            self.write_report_fixture(
+                fingerprint=fingerprint,
+                status=status,
+                stem=stem,
+                affects=[affected_page],
+            )
+
+        state = build_status.compute(
+            self.temp_dir,
+            reviewed_path=self.fixture_reviewed(),
+            issues_path=FIXTURES / "issues-open-closed.json",
+        )
+
+        self.assertEqual(
+            {item["fingerprint"] for item in state["p1"]},
+            {
+                "source::modified::historical-open",
+                "source::modified::historical-triaged",
+            },
+        )
+        self.assertEqual(
+            {item["page"] for item in state["overdue"]},
+            {
+                "04_Acute_and_Safety/historical-open.md",
+                "04_Acute_and_Safety/historical-triaged.md",
+            },
+        )
+
+    def test_resource_intake_freshness_uses_on_demand_registry_cadence(self):
+        (self.temp_dir / "last_run.json").write_text(
+            json.dumps({"resource-intake": "2026-01-01T00:00:00+00:00"}),
+            encoding="utf-8",
+        )
+        reviewed = self.fixture_reviewed()
+        for age, expected_stale in ((32, False), (3650, False), (3651, True)):
+            with self.subTest(age=age):
+                with mock.patch.object(build_status, "_days_since", return_value=age):
+                    state = build_status.compute(
+                        self.temp_dir,
+                        reviewed_path=reviewed,
+                    )
+
+                resource_intake = next(
+                    item
+                    for item in state["freshness"]
+                    if item["source"] == "resource-intake"
+                )
+                self.assertIs(resource_intake["stale"], expected_stale)
 
     def test_report_history_uses_only_newest_record_per_fingerprint(self):
         self.write_report_fixture(

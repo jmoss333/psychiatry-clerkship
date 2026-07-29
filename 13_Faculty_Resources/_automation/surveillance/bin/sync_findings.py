@@ -80,7 +80,7 @@ def normalize_issue_snapshot(items):
 def fetch_issue_snapshot(repo, token):
     """Return every surveillance issue as a normalized live-state snapshot."""
     raw = []
-    url = f"{API}/repos/{repo}/issues?state=all&labels=surveillance&per_page=100"
+    url = f"{API}/repos/{repo}/issues?state=all&per_page=100"
     while url:
         items, headers = _gh("GET", url, token)
         raw.extend(items or [])

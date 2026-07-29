@@ -152,7 +152,7 @@ def compute(history_dir, reviewed_path, issues_path=None):
                 finding["github_issue"] = issue["url"]
                 active_findings.append(finding)
                 continue
-            if finding.get("status") == "new":
+            if finding.get("status") not in ("dismissed", "actioned"):
                 active_findings.append(finding)
     else:
         active_findings = [f for f in findings
@@ -191,7 +191,8 @@ def compute(history_dir, reviewed_path, issues_path=None):
     citation_freshness = []
     reg = L.load_registry()
     cad = {s["id"]: s.get("cadence", "monthly") for s in reg.get("sources", [])}
-    cad["link-monitor"] = "weekly"
+    cad["link-monitor"] = reg["link_monitor"]["cadence"]
+    cad[reg["resource_intake"]["job"]] = reg["resource_intake"]["cadence"]
     for sid, ts in sorted(last_run.items()):
         age = _days_since(ts)
         limit = CADENCE_DAYS.get(cad.get(sid, "monthly"), 31)
