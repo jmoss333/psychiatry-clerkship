@@ -15,9 +15,6 @@ concurrency:
 jobs:
   resource-intake:
     runs-on: ubuntu-latest
-    env:
-      RUN_DIR: ${{ runner.temp }}/surveillance
-      REPORT_STATE: ${{ runner.temp }}/surveillance/report-branch-state.json
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -33,23 +30,23 @@ jobs:
         run: pip install --quiet pyyaml
 
       - name: Prepare run directory
-        run: mkdir -p "$RUN_DIR"
+        run: mkdir -p "$RUNNER_TEMP/surveillance"
 
       - name: Hydrate rolling surveillance inbox
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
           python3 13_Faculty_Resources/_automation/surveillance/bin/report_branch.py hydrate
-          --state "$REPORT_STATE"
+          --state "$RUNNER_TEMP/surveillance/report-branch-state.json"
 
       - name: Crawl candidate resources
         env:
           APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
         run: |
           python3 13_Faculty_Resources/_automation/surveillance/bin/run_resource_intake.py \
-            --out "$RUN_DIR/findings.json" \
-            --checked-out "$RUN_DIR/checked-sources.json" \
-            2>&1 | tee "$RUN_DIR/collector.log"
+            --out "$RUNNER_TEMP/surveillance/findings.json" \
+            --checked-out "$RUNNER_TEMP/surveillance/checked-sources.json" \
+            2>&1 | tee "$RUNNER_TEMP/surveillance/collector.log"
 
       - name: Sync findings into digest and report
         env:
@@ -57,15 +54,15 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: >-
           python3 13_Faculty_Resources/_automation/surveillance/bin/sync_findings.py
-          --findings "$RUN_DIR/findings.json"
-          --checked-sources "$RUN_DIR/checked-sources.json"
-          --issues-out "$RUN_DIR/issue-state.json"
+          --findings "$RUNNER_TEMP/surveillance/findings.json"
+          --checked-sources "$RUNNER_TEMP/surveillance/checked-sources.json"
+          --issues-out "$RUNNER_TEMP/surveillance/issue-state.json"
           --job resource-intake
 
       - name: Rebuild faculty status page from live issue state
         run: >-
           python3 13_Faculty_Resources/_automation/surveillance/bin/build_status.py
-          --issues-json "$RUN_DIR/issue-state.json"
+          --issues-json "$RUNNER_TEMP/surveillance/issue-state.json"
 
       - name: Upload surveillance evidence
         if: always()
@@ -88,4 +85,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
           python3 13_Faculty_Resources/_automation/surveillance/bin/report_branch.py publish
-          --state "$REPORT_STATE"
+          --state "$RUNNER_TEMP/surveillance/report-branch-state.json"
