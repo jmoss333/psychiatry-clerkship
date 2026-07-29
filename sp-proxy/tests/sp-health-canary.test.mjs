@@ -130,6 +130,31 @@ test('exports the scheduled config and leaves public status route ownership to T
   assert.equal('config' in status, false);
 });
 
+test('runtime env access falls back per key when Netlify omits a system variable', async (t) => {
+  const { canary } = await healthModules();
+  const fallbackKey = 'SP_TEST_RUNTIME_ENV_FALLBACK';
+  const priorNetlify = globalThis.Netlify;
+  const priorFallback = process.env[fallbackKey];
+  t.after(() => {
+    if (priorNetlify === undefined) delete globalThis.Netlify;
+    else globalThis.Netlify = priorNetlify;
+    if (priorFallback === undefined) delete process.env[fallbackKey];
+    else process.env[fallbackKey] = priorFallback;
+  });
+
+  globalThis.Netlify = {
+    env: {
+      get(name) {
+        return name === 'SP_TEST_NETLIFY_ENV' ? 'netlify-value' : undefined;
+      },
+    },
+  };
+  process.env[fallbackKey] = 'process-value';
+
+  assert.equal(canary.readRuntimeEnv('SP_TEST_NETLIFY_ENV'), 'netlify-value');
+  assert.equal(canary.readRuntimeEnv(fallbackKey), 'process-value');
+});
+
 test('validateHealth accepts only the bounded health contract and freezes its result', async () => {
   const { receipt } = await healthModules();
   for (const [packStatus, learnerReady] of [
