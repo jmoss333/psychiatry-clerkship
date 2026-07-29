@@ -255,13 +255,13 @@ export function createHealthCanary({
   };
 }
 
-function readNetlifyEnv(name) {
-  return globalThis.Netlify?.env?.get?.(name);
+export function readRuntimeEnv(name) {
+  return globalThis.Netlify?.env?.get?.(name) ?? process.env[name];
 }
 
 export default async function handler(request) {
   const canary = createHealthCanary({
-    readEnv: readNetlifyEnv,
+    readEnv: readRuntimeEnv,
     fetchImpl: globalThis.fetch,
     store: getStore({ name: HEALTH_STORE_NAME, consistency: 'strong' }),
     log(event) {
