@@ -7,9 +7,11 @@ import hashlib
 import json
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 import yaml
+from yaml.nodes import MappingNode, ScalarNode, SequenceNode
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -315,6 +317,41 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "680b952fb7ebb7f79d8c200f6a4b9e9cc490225a3238b83ada466d0816cf989d"
     ),
 }
+
+
+class _DuplicateMappingKeyError(yaml.YAMLError):
+    """A YAML mapping repeats a key at the same nesting level."""
+
+
+class _UniqueKeyBaseLoader(yaml.BaseLoader):
+    """BaseLoader semantics with recursive duplicate-key rejection."""
+
+
+def _construct_unique_mapping(loader, node, deep=False):
+    mapping = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        try:
+            duplicate = key in mapping
+        except TypeError as exc:
+            raise yaml.constructor.ConstructorError(
+                "while constructing a mapping",
+                node.start_mark,
+                "found an unhashable key",
+                key_node.start_mark,
+            ) from exc
+        if duplicate:
+            raise _DuplicateMappingKeyError("duplicate mapping key")
+        mapping[key] = loader.construct_object(value_node, deep=deep)
+    return mapping
+
+
+_UniqueKeyBaseLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+    _construct_unique_mapping,
+)
+
+
 CRITICAL_STEPS = {
     "ci.yml": {
         "build-test-validate": (
@@ -589,7 +626,10 @@ def _load(root, name, errors):
     path = root / WORKFLOW_DIR / name
     try:
         source = path.read_text(encoding="utf-8")
-        parsed = yaml.load(source, Loader=yaml.BaseLoader)
+        parsed = yaml.load(source, Loader=_UniqueKeyBaseLoader)
+    except _DuplicateMappingKeyError:
+        _error(errors, name, "duplicate mapping key is forbidden")
+        return None, ""
     except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
         _error(errors, name, f"cannot parse workflow ({type(exc).__name__})")
         return None, ""
@@ -772,7 +812,50 @@ def _validate_cron(name, workflow, errors):
         _error(errors, name, f"schedule must be exactly {expected!r}")
 
 
+def _mapping_node_value(node, key):
+    if not isinstance(node, MappingNode):
+        return None
+    for key_node, value_node in node.value:
+        if isinstance(key_node, ScalarNode) and key_node.value == key:
+            return value_node
+    return None
+
+
+def _step_use_source_lines(source):
+    document = yaml.compose(source, Loader=yaml.BaseLoader)
+    jobs = _mapping_node_value(document, "jobs")
+    if not isinstance(jobs, MappingNode):
+        return []
+    lines = source.splitlines()
+    occurrences = []
+    seen_source_keys = set()
+    for _job_key, job in jobs.value:
+        steps = _mapping_node_value(job, "steps")
+        if not isinstance(steps, SequenceNode):
+            continue
+        for step in steps.value:
+            if not isinstance(step, MappingNode):
+                continue
+            for key_node, value_node in step.value:
+                if (
+                    not isinstance(key_node, ScalarNode)
+                    or key_node.value != "uses"
+                    or not isinstance(value_node, ScalarNode)
+                    or key_node.start_mark.index in seen_source_keys
+                ):
+                    continue
+                seen_source_keys.add(key_node.start_mark.index)
+                occurrences.append(
+                    (
+                        value_node.value,
+                        lines[key_node.start_mark.line],
+                    )
+                )
+    return occurrences
+
+
 def _validate_actions(name, source, steps, errors):
+    parsed_counts = Counter()
     for step in steps:
         uses = step.get("uses")
         if not isinstance(uses, str) or uses.startswith("./"):
@@ -785,15 +868,32 @@ def _validate_actions(name, source, steps, errors):
         ):
             _error(errors, name, f"unapproved action reference {uses!r}")
             continue
-        expected_line = re.compile(
-            rf"uses:\s*{re.escape(action)}@{revision}\s+#\s*{PIN_TAGS[action]}\s*$",
-            re.MULTILINE,
+        parsed_counts[(action, revision)] += 1
+
+    tagged_counts = Counter()
+    for uses, source_line in _step_use_source_lines(source):
+        action, separator, revision = uses.partition("@")
+        if (
+            separator != "@"
+            or action not in PINNED_ACTIONS
+            or revision != PINNED_ACTIONS[action]
+        ):
+            continue
+        tagged_line = re.compile(
+            rf"[ \t]*(?:-[ \t]+)?uses:[ \t]*{re.escape(action)}@"
+            rf"{revision}[ \t]+#[ \t]*{PIN_TAGS[action]}[ \t]*"
         )
-        if expected_line.search(source) is None:
+        if tagged_line.fullmatch(source_line):
+            tagged_counts[(action, revision)] += 1
+
+    for (action, revision), parsed_count in parsed_counts.items():
+        tagged_count = tagged_counts[(action, revision)]
+        if tagged_count != parsed_count:
             _error(
                 errors,
                 name,
-                f"{action} pin must retain semantic tag {PIN_TAGS[action]}",
+                f"{action} pin must retain semantic tag on every occurrence "
+                f"({tagged_count}/{parsed_count})",
             )
 
 

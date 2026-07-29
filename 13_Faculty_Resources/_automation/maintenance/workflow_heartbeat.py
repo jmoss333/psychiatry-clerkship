@@ -30,6 +30,7 @@ EXPECTATIONS = {
 }
 SAFE_REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}$")
 SAFE_WORKFLOW = re.compile(r"^[A-Za-z0-9_.-]{1,128}\.ya?ml$")
+SAFE_GIT_SHA = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
 MAX_API_BYTES = 2_000_000
 API_TIMEOUT_SECONDS = 20
 
@@ -120,6 +121,7 @@ def _normalize_run(workflow_file, raw, now):
     status = raw.get("status")
     conclusion = raw.get("conclusion")
     run_url = raw.get("html_url")
+    head_sha = raw.get("head_sha")
     if (
         type(run_id) is not int
         or run_id <= 0
@@ -128,6 +130,8 @@ def _normalize_run(workflow_file, raw, now):
         or not conclusion
         or len(conclusion) > 64
         or not _safe_run_url(run_url)
+        or not isinstance(head_sha, str)
+        or SAFE_GIT_SHA.fullmatch(head_sha) is None
     ):
         raise HeartbeatError("workflow run is malformed")
     created = _parse_timestamp(raw.get("created_at"))
@@ -145,16 +149,47 @@ def _normalize_run(workflow_file, raw, now):
         "conclusion": conclusion,
         "ageHours": round(age, 3),
         "state": "success",
-    }, updated
+    }, created, updated, head_sha
 
 
-def evaluate_runs(expectations, runs_by_workflow, *, now, activation_times):
+def _normalize_activation(value, now=None):
+    if not isinstance(value, dict) or set(value) != {
+        "activated_at",
+        "blob_sha",
+        "commit_sha",
+    }:
+        raise HeartbeatError("activation provenance is malformed")
+    activated_at = _as_utc(value["activated_at"])
+    commit_sha = value["commit_sha"]
+    blob_sha = value["blob_sha"]
+    if (
+        (now is not None and activated_at > now)
+        or not isinstance(commit_sha, str)
+        or SAFE_GIT_SHA.fullmatch(commit_sha) is None
+        or not isinstance(blob_sha, str)
+        or SAFE_GIT_SHA.fullmatch(blob_sha) is None
+    ):
+        raise HeartbeatError("activation provenance is malformed")
+    return activated_at, commit_sha, blob_sha
+
+
+def evaluate_runs(
+    expectations,
+    runs_by_workflow,
+    *,
+    now,
+    activation_records,
+    run_provenance,
+):
     """Evaluate only completed scheduled runs and produce a bounded receipt."""
     now = _as_utc(now)
     if not isinstance(expectations, dict) or not isinstance(runs_by_workflow, dict):
         raise HeartbeatError("heartbeat inputs are malformed")
-    if not isinstance(activation_times, dict):
-        raise HeartbeatError("activation times are malformed")
+    if not isinstance(activation_records, dict) or not isinstance(
+        run_provenance,
+        dict,
+    ):
+        raise HeartbeatError("activation provenance is malformed")
 
     workflows = []
     gate = "ready"
@@ -173,7 +208,7 @@ def evaluate_runs(expectations, runs_by_workflow, *, now, activation_times):
             gate = "blocked"
             continue
 
-        completed = []
+        parsed_completed = []
         malformed = False
         for raw in runs:
             if not isinstance(raw, dict):
@@ -184,13 +219,66 @@ def evaluate_runs(expectations, runs_by_workflow, *, now, activation_times):
             if raw.get("status") != "completed":
                 continue
             try:
-                normalized, updated = _normalize_run(workflow_file, raw, now)
+                normalized, created, updated, head_sha = _normalize_run(
+                    workflow_file,
+                    raw,
+                    now,
+                )
             except HeartbeatError:
                 malformed = True
                 break
-            completed.append((updated, normalized))
+            parsed_completed.append(
+                (created, updated, head_sha, normalized)
+            )
         if malformed:
             workflows.append(_empty_workflow(workflow_file, "unavailable"))
+            gate = "blocked"
+            continue
+
+        activation_record = activation_records.get(workflow_file)
+        if activation_record is None:
+            workflows.append(
+                _empty_workflow(workflow_file, "provenance_unavailable")
+            )
+            gate = "blocked"
+            continue
+        try:
+            activation, _commit_sha, _blob_sha = _normalize_activation(
+                activation_record,
+                now,
+            )
+        except HeartbeatError:
+            workflows.append(
+                _empty_workflow(workflow_file, "provenance_unavailable")
+            )
+            gate = "blocked"
+            continue
+
+        workflow_provenance = run_provenance.get(workflow_file)
+        if not isinstance(workflow_provenance, dict):
+            workflows.append(
+                _empty_workflow(workflow_file, "provenance_unavailable")
+            )
+            gate = "blocked"
+            continue
+        completed = []
+        proof_unavailable = False
+        for created, updated, head_sha, normalized in parsed_completed:
+            contains_activation = workflow_provenance.get(head_sha)
+            if type(contains_activation) is not bool:
+                proof_unavailable = True
+                break
+            if (
+                not contains_activation
+                or created < activation
+                or updated < activation
+            ):
+                continue
+            completed.append((updated, normalized))
+        if proof_unavailable:
+            workflows.append(
+                _empty_workflow(workflow_file, "provenance_unavailable")
+            )
             gate = "blocked"
             continue
         if completed:
@@ -204,27 +292,6 @@ def evaluate_runs(expectations, runs_by_workflow, *, now, activation_times):
             workflows.append(latest)
             continue
 
-        activation = activation_times.get(workflow_file)
-        if activation is None:
-            workflows.append(
-                _empty_workflow(workflow_file, "provenance_unavailable")
-            )
-            gate = "blocked"
-            continue
-        try:
-            activation = _as_utc(activation)
-        except HeartbeatError:
-            workflows.append(
-                _empty_workflow(workflow_file, "provenance_unavailable")
-            )
-            gate = "blocked"
-            continue
-        if activation > now:
-            workflows.append(
-                _empty_workflow(workflow_file, "provenance_unavailable")
-            )
-            gate = "blocked"
-            continue
         raw_age = (now - activation).total_seconds() / 3600
         age = round(raw_age, 3)
         state = "pending_first_run" if raw_age <= limit else "missing"
@@ -301,6 +368,63 @@ def _run_git(root, args, *, allow_failure=False):
     return result
 
 
+def _git_sha(result):
+    value = result.stdout.strip()
+    if SAFE_GIT_SHA.fullmatch(value) is None:
+        raise HeartbeatError("git activation provenance is malformed")
+    return value
+
+
+def _run_matches_activation(root, workflow_file, head_sha, activation):
+    """Prove a run commit descends from activation and has its exact blob."""
+    root = Path(root)
+    if SAFE_WORKFLOW.fullmatch(workflow_file or "") is None:
+        raise HeartbeatError("workflow file is invalid")
+    if not isinstance(head_sha, str) or SAFE_GIT_SHA.fullmatch(head_sha) is None:
+        raise HeartbeatError("workflow run head SHA is malformed")
+    _activated_at, activation_commit, activation_blob = _normalize_activation(
+        activation
+    )
+    relative = f".github/workflows/{workflow_file}"
+
+    commit = _run_git(
+        root,
+        ["cat-file", "-e", f"{head_sha}^{{commit}}"],
+        allow_failure=True,
+    )
+    if commit.returncode != 0:
+        raise HeartbeatError("git run provenance is unavailable")
+    ancestor = _run_git(
+        root,
+        [
+            "merge-base",
+            "--is-ancestor",
+            activation_commit,
+            head_sha,
+        ],
+        allow_failure=True,
+    )
+    if ancestor.returncode == 1:
+        return False
+    if ancestor.returncode != 0:
+        raise HeartbeatError("git run provenance is unavailable")
+    blob = _run_git(
+        root,
+        ["rev-parse", f"{head_sha}:{relative}"],
+        allow_failure=True,
+    )
+    if blob.returncode != 0:
+        tree_entry = _run_git(
+            root,
+            ["ls-tree", "--name-only", head_sha, "--", relative],
+            allow_failure=True,
+        )
+        if tree_entry.returncode == 0 and not tree_entry.stdout.strip():
+            return False
+        raise HeartbeatError("git run provenance is unavailable")
+    return _git_sha(blob) == activation_blob
+
+
 def _cron_present(source, expected_cron):
     try:
         parsed = yaml.load(source, Loader=yaml.BaseLoader)
@@ -340,7 +464,7 @@ def _cron_present(source, expected_cron):
 
 
 def derive_schedule_activation(root, workflow_file, expected_cron):
-    """Derive the start of the current contiguous expected-cron history."""
+    """Derive the commit that introduced the exact current workflow blob."""
     root = Path(root)
     if SAFE_WORKFLOW.fullmatch(workflow_file or "") is None:
         raise HeartbeatError("workflow file is invalid")
@@ -351,45 +475,56 @@ def derive_schedule_activation(root, workflow_file, expected_cron):
     head = _run_git(root, ["show", f"HEAD:{relative}"])
     if not _cron_present(head.stdout, expected_cron):
         raise HeartbeatError("expected schedule is not active at HEAD")
+    head_blob = _git_sha(_run_git(root, ["rev-parse", f"HEAD:{relative}"]))
     history = _run_git(
         root,
         ["rev-list", "--first-parent", "HEAD", "--", relative],
     )
     commits = [line for line in history.stdout.splitlines() if line]
-    if not commits:
+    if not commits or any(SAFE_GIT_SHA.fullmatch(item) is None for item in commits):
         raise HeartbeatError("workflow schedule has no git provenance")
 
     candidate = None
     for commit in commits:
-        shown = _run_git(
+        blob = _run_git(
             root,
-            ["show", f"{commit}:{relative}"],
+            ["rev-parse", f"{commit}:{relative}"],
             allow_failure=True,
         )
-        if shown.returncode != 0:
-            break
-        present = _cron_present(shown.stdout, expected_cron)
-        if not present:
+        if blob.returncode != 0:
+            tree_entry = _run_git(
+                root,
+                ["ls-tree", "--name-only", commit, "--", relative],
+                allow_failure=True,
+            )
+            if tree_entry.returncode == 0 and not tree_entry.stdout.strip():
+                break
+            raise HeartbeatError("git activation provenance is unavailable")
+        if _git_sha(blob) != head_blob:
+            previous = _run_git(
+                root,
+                ["show", f"{commit}:{relative}"],
+                allow_failure=True,
+            )
+            if previous.returncode != 0:
+                raise HeartbeatError(
+                    "git activation provenance is unavailable"
+                )
+            _cron_present(previous.stdout, expected_cron)
             break
         candidate = commit
     if candidate is None:
         raise HeartbeatError("workflow schedule activation is unavailable")
 
-    parent = _run_git(
-        root,
-        ["show", f"{candidate}^:{relative}"],
-        allow_failure=True,
-    )
-    if parent.returncode == 0:
-        if _cron_present(parent.stdout, expected_cron):
-            raise HeartbeatError(
-                "workflow schedule activation boundary is ambiguous"
-            )
     timestamp = _run_git(
         root,
         ["show", "-s", "--format=%cI", candidate],
     ).stdout.strip()
-    return _parse_git_timestamp(timestamp)
+    return {
+        "activated_at": _parse_git_timestamp(timestamp),
+        "blob_sha": head_blob,
+        "commit_sha": candidate,
+    }
 
 
 def main(argv=None, *, opener=None, now=_utc_now):
@@ -402,6 +537,7 @@ def main(argv=None, *, opener=None, now=_utc_now):
     token = os.environ.get("GITHUB_TOKEN")
     runs = {}
     activations = {}
+    provenance = {}
     for workflow_file in EXPECTATIONS:
         try:
             runs[workflow_file] = fetch_runs(
@@ -413,25 +549,47 @@ def main(argv=None, *, opener=None, now=_utc_now):
         except HeartbeatError:
             runs[workflow_file] = None
             continue
-        if not any(
-            isinstance(item, dict)
-            and item.get("event") == "schedule"
-            and item.get("status") == "completed"
-            for item in runs[workflow_file]
-        ):
+        try:
+            activation = derive_schedule_activation(
+                args.repo_root,
+                workflow_file,
+                _expected_cron(workflow_file),
+            )
+        except HeartbeatError:
+            continue
+        activations[workflow_file] = activation
+        provenance[workflow_file] = {}
+        for item in runs[workflow_file]:
+            if (
+                not isinstance(item, dict)
+                or item.get("event") != "schedule"
+                or item.get("status") != "completed"
+            ):
+                continue
+            head_sha = item.get("head_sha")
+            if (
+                not isinstance(head_sha, str)
+                or SAFE_GIT_SHA.fullmatch(head_sha) is None
+                or head_sha in provenance[workflow_file]
+            ):
+                continue
             try:
-                activations[workflow_file] = derive_schedule_activation(
-                    args.repo_root,
-                    workflow_file,
-                    _expected_cron(workflow_file),
+                provenance[workflow_file][head_sha] = (
+                    _run_matches_activation(
+                        args.repo_root,
+                        workflow_file,
+                        head_sha,
+                        activation,
+                    )
                 )
             except HeartbeatError:
-                pass
+                provenance[workflow_file][head_sha] = None
     receipt = evaluate_runs(
         EXPECTATIONS,
         runs,
         now=checked_at,
-        activation_times=activations,
+        activation_records=activations,
+        run_provenance=provenance,
     )
     try:
         args.out.parent.mkdir(parents=True, exist_ok=True)

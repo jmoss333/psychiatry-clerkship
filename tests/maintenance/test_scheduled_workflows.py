@@ -107,6 +107,95 @@ class ScheduledWorkflowTests(unittest.TestCase):
         for name in EXPECTED:
             self.assertEqual(len(cron_for(name)), 1)
 
+    def test_validator_rejects_duplicate_keys_at_every_workflow_depth(self):
+        cases = (
+            (
+                "maintenance-sp-health-monitor.yml",
+                (
+                    "name: Maintenance — Interview Room Health Monitor\n\n"
+                    "on:\n"
+                ),
+                (
+                    "name: Maintenance — Interview Room Health Monitor\n\n"
+                    "on:\n"
+                    "  pull_request_target:\n\n"
+                    "on:\n"
+                ),
+            ),
+            (
+                "maintenance-sp-health-monitor.yml",
+                "jobs:\n  monitor:\n",
+                (
+                    "jobs:\n"
+                    "  monitor:\n"
+                    "    runs-on: ubuntu-latest\n"
+                    "    steps:\n"
+                    "      - run: echo duplicate job\n"
+                    "  monitor:\n"
+                ),
+            ),
+            (
+                "maintenance-sp-health-monitor.yml",
+                (
+                    "      - uses: actions/checkout@"
+                    "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\n"
+                    "        with:\n"
+                    "          lfs: false\n"
+                ),
+                (
+                    "      - uses: actions/checkout@"
+                    "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\n"
+                    "        with:\n"
+                    "          lfs: true\n"
+                    "        with:\n"
+                    "          lfs: false\n"
+                ),
+            ),
+            (
+                "maintenance-production-canary.yml",
+                (
+                    "        env:\n"
+                    "          MS3_BASE_URL: "
+                    "https://une-ms3-psychiatry.netlify.app\n"
+                    "          RES_BASE_URL: "
+                    "https://mmc-psychiatry-residents-sanford.netlify.app\n"
+                ),
+                (
+                    "        env:\n"
+                    "          BASH_ENV: /tmp/neutralize\n"
+                    "        env:\n"
+                    "          MS3_BASE_URL: "
+                    "https://une-ms3-psychiatry.netlify.app\n"
+                    "          RES_BASE_URL: "
+                    "https://mmc-psychiatry-residents-sanford.netlify.app\n"
+                ),
+            ),
+        )
+        for name, old, new in cases:
+            with self.subTest(name=name, duplicate=new):
+                self.assert_mutation_rejected(
+                    name,
+                    old,
+                    new,
+                    "duplicate mapping key",
+                )
+
+    def test_validator_accepts_nonduplicating_yaml_anchors_and_aliases(self):
+        errors = self.validate_mutation(
+            "maintenance-heartbeat.yml",
+            (
+                "permissions:\n"
+                "  actions: read\n"
+                "  contents: read\n"
+            ),
+            (
+                "permissions:\n"
+                "  actions: &read_permission read\n"
+                "  contents: *read_permission\n"
+            ),
+        )
+        self.assertEqual(errors, [])
+
     def test_all_action_references_are_immutable_approved_pins(self):
         expected_pins = {
             "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1",
@@ -129,6 +218,68 @@ class ScheduledWorkflowTests(unittest.TestCase):
                 action, separator, revision = uses.partition("@")
                 self.assertEqual(separator, "@", name)
                 self.assertEqual(revision, expected_pins[action], name)
+
+    def test_every_remote_action_occurrence_requires_its_own_pin_comment(self):
+        cases = (
+            (
+                (
+                    "    needs: build-test-validate\n"
+                    "    steps:\n"
+                    "      - uses: actions/checkout@"
+                    "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\n"
+                ),
+                (
+                    "    needs: build-test-validate\n"
+                    "    steps:\n"
+                    "      - uses: actions/checkout@"
+                    "3d3c42e5aac5ba805825da76410c181273ba90b1\n"
+                ),
+            ),
+            (
+                (
+                    "          lfs: false\n\n"
+                    "      - uses: actions/setup-python@"
+                    "5fda3b95a4ea91299a34e894583c3862153e4b97 # v7\n"
+                    "        with:\n"
+                    "          python-version: \"3.11\"\n\n"
+                    "      - name: Install — registry schema"
+                ),
+                (
+                    "          lfs: false\n\n"
+                    "      - uses: actions/setup-python@"
+                    "5fda3b95a4ea91299a34e894583c3862153e4b97\n"
+                    "        with:\n"
+                    "          python-version: \"3.11\"\n\n"
+                    "      - name: Install — registry schema"
+                ),
+            ),
+            (
+                (
+                    "    needs: build-test-validate\n"
+                    "    steps:\n"
+                    "      - uses: actions/checkout@"
+                    "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\n"
+                ),
+                (
+                    "    needs: build-test-validate\n"
+                    "    steps:\n"
+                    "      - name: Pin comment decoy\n"
+                    "        run: |\n"
+                    "          uses: actions/checkout@"
+                    "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\n"
+                    "      - uses: actions/checkout@"
+                    "3d3c42e5aac5ba805825da76410c181273ba90b1\n"
+                ),
+            ),
+        )
+        for old, new in cases:
+            with self.subTest(action=old.split("actions/", 1)[1].split("@", 1)[0]):
+                self.assert_mutation_rejected(
+                    "ci.yml",
+                    old,
+                    new,
+                    "pin must retain semantic tag on every occurrence",
+                )
 
     def test_artifact_retention_is_bounded_and_maintenance_evidence_is_90_days(self):
         names = [
