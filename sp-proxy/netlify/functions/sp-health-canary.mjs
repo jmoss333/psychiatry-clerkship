@@ -64,27 +64,27 @@ function requireConfiguration(readEnv) {
 }
 
 async function readNextRun(request) {
+  let body;
   try {
-    const body = await request.json();
-    if (!body
-      || typeof body !== 'object'
-      || Array.isArray(body)
-      || Object.keys(body).length !== 1
-      || typeof body.next_run !== 'string') {
-      throw new CanaryFailure('configuration');
-    }
-    const milliseconds = Date.parse(body.next_run);
-    if (!Number.isFinite(milliseconds)) throw new CanaryFailure('configuration');
-    const canonical = new Date(milliseconds).toISOString();
-    if (body.next_run !== canonical
-      && body.next_run !== canonical.replace(/\.000Z$/, 'Z')) {
-      throw new CanaryFailure('configuration');
-    }
-    return canonical;
-  } catch (error) {
-    if (error instanceof CanaryFailure) throw error;
-    throw new CanaryFailure('configuration');
+    body = await request.json();
+  } catch {
+    throw new CanaryFailure('invalid_json');
   }
+  if (!body
+    || typeof body !== 'object'
+    || Array.isArray(body)
+    || Object.keys(body).length !== 1
+    || typeof body.next_run !== 'string') {
+    throw new CanaryFailure('contract');
+  }
+  const milliseconds = Date.parse(body.next_run);
+  if (!Number.isFinite(milliseconds)) throw new CanaryFailure('contract');
+  const canonical = new Date(milliseconds).toISOString();
+  if (body.next_run !== canonical
+    && body.next_run !== canonical.replace(/\.000Z$/, 'Z')) {
+    throw new CanaryFailure('contract');
+  }
+  return canonical;
 }
 
 function safeLog(log, failureCode) {

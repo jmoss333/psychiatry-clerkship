@@ -165,6 +165,28 @@ test('scheduled canary normalizes Netlify next_run timestamps without millisecon
   assert.equal(store.writes[0].value.nextRun, NEXT_RUN);
 });
 
+test('scheduled canary classifies malformed JSON and invalid envelopes without logging payloads', async () => {
+  for (const item of [
+    { rawBody: '{', want: 'invalid_json' },
+    { rawBody: JSON.stringify({ next_run: 'manual' }), want: 'contract' },
+  ]) {
+    const logs = [];
+    const store = memoryStore();
+    const { handler } = await createCanaryHarness({
+      store,
+      log: (event) => logs.push(event),
+    });
+    const request = new Request('https://scheduled.invalid', {
+      method: 'POST',
+      body: item.rawBody,
+    });
+
+    await assert.rejects(handler(request), /^Error: Interview Room health canary failed\.$/);
+    assert.equal(store.writes.at(-1).value.failureCode, item.want);
+    assert.doesNotMatch(JSON.stringify({ logs, writes: store.writes }), /manual|next_run/i);
+  }
+});
+
 test('validateHealth accepts only the bounded health contract and freezes its result', async () => {
   const { receipt } = await healthModules();
   for (const [packStatus, learnerReady] of [
