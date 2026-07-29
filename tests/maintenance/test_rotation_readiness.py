@@ -1,8 +1,9 @@
 import json
 import sys
 import unittest
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -12,6 +13,7 @@ sys.path.insert(0, str(AUTOMATION))
 from maintenance.rotation_readiness import (
     MANUAL_CHECKLIST,
     RotationConfigError,
+    _utc_today,
     evaluate_rotation,
     render_rotation_markdown,
     rotation_exit_code,
@@ -20,6 +22,41 @@ from maintenance.rotation_readiness import (
 
 
 class RotationReadinessTests(unittest.TestCase):
+    def test_raw_evaluator_and_renderer_reject_invalid_opaque_id(self):
+        invalid_block = {
+            "id": "learner@example.com",
+            "startsOn": "2026-08-10",
+            "endsOn": "2026-09-20",
+            "status": "planned",
+        }
+        with self.assertRaisesRegex(RotationConfigError, "opaque"):
+            evaluate_rotation([invalid_block], today=date(2026, 8, 3))
+
+        invalid_passport = {
+            "schemaVersion": 1,
+            "state": "due",
+            "blockId": "learner@example.com",
+            "startsOn": "2026-08-10",
+            "endsOn": "2026-09-20",
+            "daysUntilStart": 7,
+            "manualChecklist": list(MANUAL_CHECKLIST),
+        }
+        with self.assertRaisesRegex(RotationConfigError, "opaque"):
+            render_rotation_markdown(invalid_passport)
+
+    def test_cli_clock_uses_utc_date(self):
+        class FakeDateTime:
+            @classmethod
+            def now(cls, tz):
+                self.assertIs(tz, timezone.utc)
+                return datetime(2026, 7, 29, 0, 5, tzinfo=timezone.utc)
+
+        with mock.patch(
+            "maintenance.rotation_readiness.datetime",
+            FakeDateTime,
+        ):
+            self.assertEqual(_utc_today(), date(2026, 7, 29))
+
     def test_empty_configuration_is_honest_and_quiet(self):
         blocks = validate_rotation_config({"schemaVersion": 1, "blocks": []})
         passport = evaluate_rotation(blocks, today=date(2026, 8, 3))

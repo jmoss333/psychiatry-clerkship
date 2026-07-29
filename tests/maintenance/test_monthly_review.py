@@ -233,6 +233,80 @@ class MonthlyReviewTests(unittest.TestCase):
         )
         self.assertEqual(report["gate"], "review")
 
+    def test_future_evidence_and_receipt_timestamps_fail_closed(self):
+        self.registry["sources"][2]["governance"]["lastReviewed"] = "2026-07-16"
+        self.write_json("evidence_registry.json", self.registry)
+        self.git_dates["docs/runbook.md"] = "2026-07-16T00:00:00+00:00"
+        self.write_json(
+            "receipts/openevidence.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-07-16T00:00:00+00:00",
+                "state": "success",
+            },
+        )
+        self.write_json(
+            "receipts/red-team.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-07-16T00:00:00+00:00",
+                "state": "passed",
+                "packSha256": sha256(self.pack_bytes).hexdigest(),
+            },
+        )
+
+        report = self.build_report()
+
+        self.assertEqual(
+            report["evidence"]["cadence"],
+            {"current": 0, "due": 1, "overdue": 1, "unknown": 2},
+        )
+        self.assertEqual(
+            report["operations"]["runbooks"],
+            {"total": 1, "current": 0, "stale": 0, "unknown": 1},
+        )
+        self.assertEqual(report["operations"]["openEvidenceReceipt"], "invalid")
+        self.assertEqual(report["operations"]["redTeamReceipt"], "invalid")
+        self.assertEqual(report["gate"], "review")
+
+    def test_future_sp_pack_git_timestamp_is_not_treated_as_known_recency(self):
+        self.git_dates[
+            "_prototypes/sp-interview/sp-interview.pack.json"
+        ] = "2026-07-16T00:00:00+00:00"
+        self.write_json(
+            "receipts/red-team.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-07-14T00:00:00+00:00",
+                "state": "passed",
+                "packSha256": sha256(self.pack_bytes).hexdigest(),
+            },
+        )
+        report = self.build_report()
+        self.assertEqual(
+            report["operations"]["redTeamReceipt"],
+            "unknown_pack_change",
+        )
+
+    def test_symlinked_receipt_cannot_escape_repository_root(self):
+        with tempfile.TemporaryDirectory() as outside:
+            outside_receipt = Path(outside) / "openevidence.json"
+            outside_receipt.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "checkedAt": "2026-07-14T00:00:00+00:00",
+                        "state": "success",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (self.root / "receipts" / "openevidence.json").symlink_to(
+                outside_receipt
+            )
+            with self.assertRaisesRegex(MonthlyReviewError, "repository"):
+                self.build_report()
+
     def test_cli_clock_uses_utc_date(self):
         class FakeDateTime:
             @classmethod

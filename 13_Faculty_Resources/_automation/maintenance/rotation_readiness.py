@@ -7,7 +7,7 @@ import argparse
 import json
 import re
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 
@@ -30,6 +30,18 @@ MANUAL_CHECKLIST = (
 
 class RotationConfigError(ValueError):
     """Rotation configuration is malformed or violates privacy boundaries."""
+
+
+def _opaque_id(value, label="block id"):
+    if not isinstance(value, str) or OPAQUE_ID_RE.fullmatch(value) is None:
+        raise RotationConfigError(
+            f"{label} must be a non-identifying opaque rotation ID"
+        )
+    return value
+
+
+def _utc_today():
+    return datetime.now(timezone.utc).date()
 
 
 def _parse_date(value, label):
@@ -66,11 +78,7 @@ def validate_rotation_config(value):
         if set(raw) != BLOCK_KEYS:
             raise RotationConfigError(f"block {index} contains an unexpected key")
 
-        block_id = raw["id"]
-        if not isinstance(block_id, str) or OPAQUE_ID_RE.fullmatch(block_id) is None:
-            raise RotationConfigError(
-                f"block {index} id must be a non-identifying opaque rotation ID"
-            )
+        block_id = _opaque_id(raw["id"], f"block {index} id")
         if block_id in seen_ids:
             raise RotationConfigError("rotation config contains a duplicate block id")
         seen_ids.add(block_id)
@@ -108,7 +116,7 @@ def _passport(state, block, today):
     if block is None:
         block_id = starts_on = ends_on = days_until_start = None
     else:
-        block_id = block["id"]
+        block_id = _opaque_id(block["id"])
         starts_on = block["startsOn"]
         ends_on = block["endsOn"]
         days_until_start = (date.fromisoformat(starts_on) - today).days
@@ -127,10 +135,10 @@ def evaluate_rotation(blocks, today):
     """Select the relevant block and calculate its readiness routing state."""
     if not isinstance(today, date):
         raise RotationConfigError("today must be a date")
-    if not blocks:
+    ordered = validate_rotation_config({"schemaVersion": 1, "blocks": blocks})
+    if not ordered:
         return _passport("configuration_required", None, today)
 
-    ordered = sorted(blocks, key=lambda block: (block["startsOn"], block["id"]))
     for block in ordered:
         starts = _parse_date(block["startsOn"], "startsOn")
         ends = _parse_date(block["endsOn"], "endsOn")
@@ -162,11 +170,14 @@ def rotation_exit_code(passport):
 
 
 def render_rotation_markdown(passport):
+    block_id = passport["blockId"]
+    if block_id is not None:
+        block_id = _opaque_id(block_id, "passport blockId")
     lines = [
         "# Rotation readiness passport",
         "",
         f"- State: `{passport['state']}`",
-        f"- Block ID: `{passport['blockId'] or 'not configured'}`",
+        f"- Block ID: `{block_id or 'not configured'}`",
         f"- Starts: `{passport['startsOn'] or 'not configured'}`",
         f"- Ends: `{passport['endsOn'] or 'not configured'}`",
         f"- Days until start: `{passport['daysUntilStart'] if passport['daysUntilStart'] is not None else 'unknown'}`",
@@ -195,7 +206,7 @@ def main(argv=None):
     try:
         value = json.loads(args.config.read_text(encoding="utf-8"))
         blocks = validate_rotation_config(value)
-        passport = evaluate_rotation(blocks, today=date.today())
+        passport = evaluate_rotation(blocks, today=_utc_today())
         args.out_json.parent.mkdir(parents=True, exist_ok=True)
         args.out_md.parent.mkdir(parents=True, exist_ok=True)
         args.out_json.write_text(

@@ -33,8 +33,26 @@ def _safe_relative_path(value, label):
     return value
 
 
+def _repository_path(root, relative_path, label):
+    """Resolve a configured path without permitting symlink escape."""
+    relative_path = _safe_relative_path(relative_path, label)
+    try:
+        resolved_root = Path(root).resolve(strict=True)
+        if not resolved_root.is_dir():
+            raise MonthlyReviewError("repository root is not a directory")
+        resolved_path = (resolved_root / relative_path).resolve(strict=False)
+        resolved_path.relative_to(resolved_root)
+    except MonthlyReviewError:
+        raise
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise MonthlyReviewError(
+            f"{label} must resolve within the repository root"
+        ) from exc
+    return resolved_path
+
+
 def _load_json(root, relative_path, label):
-    path = root / _safe_relative_path(relative_path, label)
+    path = _repository_path(root, relative_path, label)
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
@@ -101,7 +119,11 @@ def _evidence_counts(registry, today, generated_views_valid):
 
         last_reviewed = _exact_date(governance.get("lastReviewed"))
         review_cadence = governance.get("reviewCadence")
-        if last_reviewed is None or review_cadence not in {"monthly", "annual"}:
+        if (
+            last_reviewed is None
+            or last_reviewed > today
+            or review_cadence not in {"monthly", "annual"}
+        ):
             cadence["unknown"] += 1
             continue
         next_review = _add_months(
@@ -163,12 +185,17 @@ def _runbook_counts(root, configured_docs, today, git_last_changed):
         configured_path = _safe_relative_path(
             item["path"], f"operationalDocs[{index}].path"
         )
+        document_path = _repository_path(
+            root,
+            configured_path,
+            f"operationalDocs[{index}].path",
+        )
         max_age = item["maxAgeDays"]
         if type(max_age) is not int or max_age < 1:
             raise MonthlyReviewError(
                 f"operationalDocs[{index}].maxAgeDays must be a positive integer"
             )
-        if not (root / configured_path).is_file():
+        if not document_path.is_file():
             counts["unknown"] += 1
             continue
         changed_at = _utc_datetime(
@@ -176,7 +203,7 @@ def _runbook_counts(root, configured_docs, today, git_last_changed):
                 ["git", "log", "-1", "--format=%cI", "--", configured_path]
             )
         )
-        if changed_at is None:
+        if changed_at is None or changed_at.date() > today:
             counts["unknown"] += 1
         elif (today - changed_at.date()).days > max_age:
             counts["stale"] += 1
@@ -199,7 +226,7 @@ def _receipt_state(root, receipt_config, today):
         raise MonthlyReviewError(
             "receipts.openEvidence.maxAgeDays must be a positive integer"
         )
-    path = root / relative_path
+    path = _repository_path(root, relative_path, "receipts.openEvidence.path")
     if not path.exists():
         return "missing"
     try:
@@ -209,13 +236,13 @@ def _receipt_state(root, receipt_config, today):
     if not isinstance(receipt, dict) or receipt.get("state") != "success":
         return "failed"
     checked_at = _utc_datetime(receipt.get("checkedAt"))
-    if checked_at is None:
+    if checked_at is None or checked_at.date() > today:
         return "invalid"
     return "stale" if (today - checked_at.date()).days > max_age else "current"
 
 
 def _sp_expectations(root):
-    pack_path = root / SP_PACK_PATH
+    pack_path = _repository_path(root, SP_PACK_PATH, "canonical SP pack")
     try:
         pack_bytes = pack_path.read_bytes()
         pack = json.loads(pack_bytes)
@@ -230,7 +257,13 @@ def _sp_expectations(root):
     }
 
 
-def _red_team_state(root, receipt_config, expected_pack_hash, git_last_changed):
+def _red_team_state(
+    root,
+    receipt_config,
+    expected_pack_hash,
+    today,
+    git_last_changed,
+):
     if not isinstance(receipt_config, dict) or set(receipt_config) != {"path"}:
         raise MonthlyReviewError("red-team receipt config has an invalid shape")
     relative_path = _safe_relative_path(receipt_config["path"], "receipts.redTeam.path")
@@ -239,7 +272,7 @@ def _red_team_state(root, receipt_config, expected_pack_hash, git_last_changed):
             ["git", "log", "-1", "--format=%cI", "--", SP_PACK_PATH]
         )
     )
-    path = root / relative_path
+    path = _repository_path(root, relative_path, "receipts.redTeam.path")
     if not path.exists():
         return "missing"
     try:
@@ -248,12 +281,12 @@ def _red_team_state(root, receipt_config, expected_pack_hash, git_last_changed):
         return "invalid"
     if not isinstance(receipt, dict) or receipt.get("state") != "passed":
         return "failed"
+    checked_at = _utc_datetime(receipt.get("checkedAt"))
+    if checked_at is None or checked_at.date() > today:
+        return "invalid"
     if receipt.get("packSha256") != expected_pack_hash:
         return "pack_mismatch"
-    checked_at = _utc_datetime(receipt.get("checkedAt"))
-    if checked_at is None:
-        return "invalid"
-    if changed_at is None:
+    if changed_at is None or changed_at.date() > today:
         return "unknown_pack_change"
     return "current" if checked_at > changed_at else "stale"
 
@@ -300,7 +333,7 @@ def build_monthly_review(root, config, today, git_last_changed):
     }:
         raise MonthlyReviewError("receipts config has an invalid shape")
     expected_sp = _sp_expectations(root)
-    apa_path = _safe_relative_path(config.get("apaCrosswalk"), "apaCrosswalk")
+    apa_path = _repository_path(root, config.get("apaCrosswalk"), "apaCrosswalk")
     operations = {
         "runbooks": _runbook_counts(
             root,
@@ -309,7 +342,7 @@ def build_monthly_review(root, config, today, git_last_changed):
             git_last_changed,
         ),
         "attendedOnlyReviewCount": 2,
-        "apaCrosswalkPresent": (root / apa_path).is_file(),
+        "apaCrosswalkPresent": apa_path.is_file(),
         "openEvidenceReceipt": _receipt_state(
             root,
             receipts["openEvidence"],
@@ -319,6 +352,7 @@ def build_monthly_review(root, config, today, git_last_changed):
             root,
             receipts["redTeam"],
             expected_sp["packSha256"],
+            today,
             git_last_changed,
         ),
     }
