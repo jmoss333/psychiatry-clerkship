@@ -8,5 +8,8 @@
   },
   "dependencies": {
     "@netlify/blobs": "10.7.9"
+  },
+  "devDependencies": {
+    "@netlify/zip-it-and-ship-it": "14.5.4"
   }
 }
