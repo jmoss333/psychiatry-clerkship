@@ -335,6 +335,10 @@ class _UniqueKeyActionsLoader(yaml.SafeLoader):
 
 
 _BOOL_TAG = "tag:yaml.org,2002:bool"
+_NULL_TAG = "tag:yaml.org,2002:null"
+_INT_TAG = "tag:yaml.org,2002:int"
+_FLOAT_TAG = "tag:yaml.org,2002:float"
+_BOOL_PATTERN = re.compile(r"^(?:true|True|TRUE|false|False|FALSE)$")
 # Keep PyYAML's process-global SafeLoader resolvers untouched.
 _UniqueKeyActionsLoader.yaml_implicit_resolvers = {
     initial: list(resolvers)
@@ -348,9 +352,57 @@ for _initial, _resolvers in _UniqueKeyActionsLoader.yaml_implicit_resolvers.item
     ]
 _UniqueKeyActionsLoader.add_implicit_resolver(
     _BOOL_TAG,
-    re.compile(r"^(?:true|True|TRUE|false|False|FALSE)$"),
+    _BOOL_PATTERN,
     list("tTfF"),
 )
+
+
+def _construct_actions_bool(loader, node):
+    value = loader.construct_scalar(node)
+    if _BOOL_PATTERN.fullmatch(value) is None:
+        raise yaml.constructor.ConstructorError(
+            "while constructing a boolean",
+            node.start_mark,
+            "expected true or false",
+            node.start_mark,
+        )
+    return value.lower() == "true"
+
+
+def _construct_actions_null(loader, node):
+    value = loader.construct_scalar(node)
+    if value not in {"", "~", "null", "Null", "NULL"}:
+        raise yaml.constructor.ConstructorError(
+            "while constructing a null",
+            node.start_mark,
+            "expected an empty or null value",
+            node.start_mark,
+        )
+    return None
+
+
+def _construct_actions_int(loader, node):
+    value = loader.construct_scalar(node)
+    if ":" in value:
+        raise yaml.constructor.ConstructorError(
+            "while constructing an integer",
+            node.start_mark,
+            "legacy sexagesimal values are not supported",
+            node.start_mark,
+        )
+    return yaml.constructor.SafeConstructor.construct_yaml_int(loader, node)
+
+
+def _construct_actions_float(loader, node):
+    value = loader.construct_scalar(node)
+    if ":" in value:
+        raise yaml.constructor.ConstructorError(
+            "while constructing a float",
+            node.start_mark,
+            "legacy sexagesimal values are not supported",
+            node.start_mark,
+        )
+    return yaml.constructor.SafeConstructor.construct_yaml_float(loader, node)
 
 
 def _construct_unique_mapping(loader, node, deep=False):
@@ -375,6 +427,22 @@ def _construct_unique_mapping(loader, node, deep=False):
 _UniqueKeyActionsLoader.add_constructor(
     yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
     _construct_unique_mapping,
+)
+_UniqueKeyActionsLoader.add_constructor(
+    _BOOL_TAG,
+    _construct_actions_bool,
+)
+_UniqueKeyActionsLoader.add_constructor(
+    _NULL_TAG,
+    _construct_actions_null,
+)
+_UniqueKeyActionsLoader.add_constructor(
+    _INT_TAG,
+    _construct_actions_int,
+)
+_UniqueKeyActionsLoader.add_constructor(
+    _FLOAT_TAG,
+    _construct_actions_float,
 )
 
 

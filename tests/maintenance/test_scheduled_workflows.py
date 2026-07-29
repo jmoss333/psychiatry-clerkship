@@ -135,6 +135,12 @@ class ScheduledWorkflowTests(unittest.TestCase):
                 "  false_value: false\n"
                 "  quoted_false: \"false\"\n"
                 "  explicit_string_false: !!str false\n"
+                "  explicit_true_lower: !!bool true\n"
+                "  explicit_true_title: !!bool True\n"
+                "  explicit_true_upper: !!bool TRUE\n"
+                "  explicit_false_lower: !!bool false\n"
+                "  explicit_false_title: !!bool False\n"
+                "  explicit_false_upper: !!bool FALSE\n"
             )
         )
 
@@ -158,6 +164,18 @@ class ScheduledWorkflowTests(unittest.TestCase):
             workflow["values"]["explicit_string_false"],
             "false",
         )
+        for key in (
+            "explicit_true_lower",
+            "explicit_true_title",
+            "explicit_true_upper",
+        ):
+            self.assertIs(workflow["values"][key], True)
+        for key in (
+            "explicit_false_lower",
+            "explicit_false_title",
+            "explicit_false_upper",
+        ):
+            self.assertIs(workflow["values"][key], False)
 
     def test_validator_rejects_duplicate_keys_at_every_workflow_depth(self):
         cases = (
@@ -952,6 +970,117 @@ class ScheduledWorkflowTests(unittest.TestCase):
                         replacement,
                         "workflow contract",
                     )
+
+    def test_explicit_legacy_boolean_tags_fail_with_bounded_error(self):
+        name = "maintenance-governance-digest.yml"
+        expected = [
+            f"{name}: cannot parse workflow (ConstructorError)",
+        ]
+        for legacy in ("yes", "no", "on", "off"):
+            with self.subTest(legacy=legacy):
+                errors = self.validate_mutation(
+                    name,
+                    "  cancel-in-progress: false\n",
+                    f"  cancel-in-progress: !!bool {legacy}\n",
+                )
+                self.assertEqual(errors, expected)
+
+    def test_explicit_false_boolean_case_variants_preserve_contract(self):
+        name = "maintenance-governance-digest.yml"
+        for spelling in ("false", "False", "FALSE"):
+            with self.subTest(spelling=spelling):
+                self.assertEqual(
+                    self.validate_mutation(
+                        name,
+                        "  cancel-in-progress: false\n",
+                        f"  cancel-in-progress: !!bool {spelling}\n",
+                    ),
+                    [],
+                )
+
+    def test_explicit_invalid_null_tags_fail_with_bounded_error(self):
+        name = "maintenance-governance-digest.yml"
+        expected = [
+            f"{name}: cannot parse workflow (ConstructorError)",
+        ]
+        for invalid in ("false", "nope"):
+            with self.subTest(invalid=invalid):
+                errors = self.validate_mutation(
+                    name,
+                    "  workflow_dispatch:\n",
+                    f"  workflow_dispatch: !!null {invalid}\n",
+                )
+                self.assertEqual(errors, expected)
+
+    def test_valid_null_spellings_preserve_trigger_contract(self):
+        name = "maintenance-governance-digest.yml"
+        for spelling in (
+            "null",
+            "Null",
+            "NULL",
+            "~",
+            "!!null null",
+            '!!null ""',
+        ):
+            with self.subTest(spelling=spelling):
+                self.assertEqual(
+                    self.validate_mutation(
+                        name,
+                        "  workflow_dispatch:\n",
+                        f"  workflow_dispatch: {spelling}\n",
+                    ),
+                    [],
+                )
+
+    def test_legacy_sexagesimal_integer_forms_fail_with_bounded_error(self):
+        name = "maintenance-governance-digest.yml"
+        expected = [
+            f"{name}: cannot parse workflow (ConstructorError)",
+        ]
+        for spelling in ("1:30", "!!int 1:30"):
+            with self.subTest(spelling=spelling):
+                errors = self.validate_mutation(
+                    name,
+                    "          retention-days: 90\n",
+                    f"          retention-days: {spelling}\n",
+                )
+                self.assertEqual(errors, expected)
+
+    def test_legacy_sexagesimal_float_forms_fail_with_bounded_error(self):
+        name = "maintenance-governance-digest.yml"
+        expected = [
+            f"{name}: cannot parse workflow (ConstructorError)",
+        ]
+        for spelling in ("0:3.11", "!!float 0:3.11"):
+            with self.subTest(spelling=spelling):
+                errors = self.validate_mutation(
+                    name,
+                    '          python-version: "3.11"\n',
+                    f"          python-version: {spelling}\n",
+                )
+                self.assertEqual(errors, expected)
+
+    def test_supported_numeric_forms_preserve_action_input_contract(self):
+        name = "maintenance-governance-digest.yml"
+        for spelling in ("!!int 0132", "!!int 0x5A", "!!int 0o132"):
+            with self.subTest(kind="integer", spelling=spelling):
+                self.assertEqual(
+                    self.validate_mutation(
+                        name,
+                        "          retention-days: 90\n",
+                        f"          retention-days: {spelling}\n",
+                    ),
+                    [],
+                )
+        with self.subTest(kind="float", spelling="!!float 3.110"):
+            self.assertEqual(
+                self.validate_mutation(
+                    name,
+                    '          python-version: "3.11"\n',
+                    "          python-version: !!float 3.110\n",
+                ),
+                [],
+            )
 
     def test_ci_schedule_reaches_both_authoritative_jobs_and_release_gates(self):
         ci = load_workflow("ci.yml")
