@@ -15,5 +15,97 @@
   "spProxy": {
     "baseUrl": "https://sp-interview-proxy.netlify.app",
     "siteId": "455d2740-4020-4d9c-b9f8-82f72f4b2897"
-  }
+  },
+  "operationalDocs": [
+    {
+      "path": "13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md",
+      "maxAgeDays": 90
+    },
+    {
+      "path": "13_Faculty_Resources/_automation/site_build/NETLIFY_LFS_RUNBOOK.md",
+      "maxAgeDays": 90
+    },
+    {
+      "path": "13_Faculty_Resources/_automation/surveillance/README.md",
+      "maxAgeDays": 90
+    },
+    {
+      "path": "13_Faculty_Resources/_automation/surveillance/REVIEW_RULES.md",
+      "maxAgeDays": 90
+    },
+    {
+      "path": "tools/evidence_registry/README.md",
+      "maxAgeDays": 90
+    },
+    {
+      "path": "sp-proxy/README.md",
+      "maxAgeDays": 90
+    },
+    {
+      "path": "sp-proxy/REDTEAM_CHECKLIST.md",
+      "maxAgeDays": 90
+    }
+  ],
+  "accessibilityDebtBaseline": [
+    "audio_oe/OE-01_Anthony_s_Recovery_Model_Beyond_Symptom_Remission__Meaningful_recovery_beyond_the_clinical_checklist.m4a",
+    "audio_oe/OE-02_CBT_versus_Imipramine_for_Management_of_Panic_Disorder__CBT_Outlasts_Medication_for_Panic_Disorder.m4a",
+    "audio_oe/OE-03_Ciprianis_Comprehensive_Meta_Analysis_of_21_Antidepressant_Drugs__Which_Antidepressants_Actually_Work_Best.m4a",
+    "audio_oe/OE-04_Clarifying_Confusion_The_Inouye_CAM_Study_Summary__Master_the_CAM_delirium_screening_tool.m4a",
+    "audio_oe/OE-05_Clinical_Standards_and_Efficacy_of_Electroconvulsive_Therapy__ECT_Outperforms_Medications_for_Severe_Depression.m4a",
+    "audio_oe/OE-06_Comparative_Efficacy_and_Tolerability_of_32_Oral_Antipsychotics__Pick_antipsychotics_based_on_side_effects.m4a",
+    "audio_oe/OE-07_Divalproex_versus_Lithium_for_Acute_Mania_The_Bowden_Trial__Divalproex_Rivals_Lithium_for_Acute_Mania.m4a",
+    "audio_oe/OE-08_Dole_and_Nyswander_The_Foundations_of_Methadone_Maintenance__The_1965_Trial_That_Established_Methadone.m4a",
+    "audio_oe/OE-09_Evidence_Based_Strategies_for_Systematic_Suicide_Prevention__Treating_depression_and_restricting_lethal_means.m4a",
+    "audio_oe/OE-10_Family_Focused_Therapy_and_Relapse_Prevention_in_Bipolar_Disorder__Family_Focused_Therapy_Prevents_Bipolar_Relapse.m4a",
+    "audio_oe/OE-11_Foundations_of_Dialectical_Behavior_Therapy_for_Borderline_Personality_Disorder__How_Marsha_Linehan_proved_BPD_is_treatable.m4a",
+    "audio_oe/OE-12_Foundations_of_Office_Based_Buprenorphine_Treatment__Bringing_Buprenorphine_to_Primary_Care.m4a",
+    "audio_oe/OE-13_Lithium_and_the_Prevention_of_Suicide_in_Mood_Disorders__Lithium_Slashes_Suicide_Risk_by_87_Percent.m4a",
+    "audio_oe/OE-14_Measurement_Based_Care_for_Major_Depressive_Disorder__Measurement_Based_Care_Doubles_Depression_Remission.m4a",
+    "audio_oe/OE-15_Memantine_and_the_Evolution_of_Severe_Alzheimers_Therapy__Memantine_for_Moderate_to_Severe_Alzheimer_s.m4a",
+    "audio_oe/OE-16_Metabolic_Monitoring_Protocols_for_Second_Generation_Antipsychotics__ADA_APA_Antipsychotic_Metabolic_Monitoring_Consensus.m4a",
+    "audio_oe/OE-17_Pediatric_Antidepressants_and_the_FDA_Black_Box_Warning__Why_Pediatric_Antidepressant_Warnings_Backfired.m4a",
+    "audio_oe/OE-18_Project_MATCH_Brief_Interventions_and_Motivational_Enhancement_Efficiency__Project_MATCH_proves_brief_therapy_works.m4a",
+    "audio_oe/OE-19_RAISE_ETP_Coordinated_Specialty_Care_for_First_Episode_Psychosis__RAISE_ETP_Standards_for_First_Episode_Psychosis.m4a",
+    "audio_oe/OE-20_STEP_BD_The_Role_of_Antidepressants_in_Bipolar_Depression__Antidepressants_fail_to_treat_bipolar_depression.m4a",
+    "audio_oe/OE-21_Sackeim_Study_Pharmacotherapy_Strategies_for_Post_ECT_Relapse_Prevention__Lithium_and_Nortriptyline_Prevent_ECT_Relapse.m4a",
+    "audio_oe/OE-22_Sertraline_Efficacy_in_PTSD_Management_The_Brady_Study__The_Brady_Study_of_Sertraline_for_PTSD.m4a",
+    "audio_oe/OE-23_Shared_Decision_Making_in_Psychiatric_Care__Shared_Decision_Making_for_Severe_Mental_Illness.m4a",
+    "audio_oe/OE-24_Social_Determinants_and_Clinical_Frameworks_in_Modern_Psychiatry__Social_reality_is_core_psychiatry.m4a",
+    "audio_oe/OE-25_TADS_Evaluating_Combination_Therapy_for_Adolescent_Depression__Fluoxetine_and_CBT_for_depressed_teens.m4a",
+    "audio_oe/OE-26_The_BALANCE_Trial_Lithium_vs_Valproate_for_Bipolar_Maintenance__Lithium_Beats_Valproate_for_Bipolar_Maintenance.m4a",
+    "audio_oe/OE-27_The_Bush_Francis_Catatonia_Rating_Scale_and_Lorazepam_Protocol__Bush_Francis_Scale_and_the_Lorazepam_Challenge.m4a",
+    "audio_oe/OE-28_The_CATIE_Trial_Rethinking_Antipsychotic_Efficacy_and_Selection__Side_Effects_Drive_Antipsychotic_Selection.m4a",
+    "audio_oe/OE-29_The_CATIE_AD_Trial_Antipsychotic_Risks_in_Alzheimers_Patients__Why_Antipsychotics_Failed_in_CATIE_AD.m4a",
+    "audio_oe/OE-30_The_CLARITY_AD_Trial_Lecanemab_for_Early_Alzheimers_Disease__Lecanemab_slows_early_Alzheimer_s_decline.m4a",
+    "audio_oe/OE-31_The_COMBINE_Study_Optimizing_Alcohol_Use_Disorder_Treatment__Naltrexone_and_medical_management_for_AUD.m4a",
+    "audio_oe/OE-32_The_Columbia_Suicide_Severity_Rating_Scale_Foundation_and_Validation__Validating_the_Columbia_Suicide_Severity_Scale.m4a",
+    "audio_oe/OE-33_The_Definitive_Meta_Analysis_of_Psychotherapy_for_Depression__Is_CBT_Actually_Better_Than_Other_Therapies.m4a",
+    "audio_oe/OE-34_The_Engel_Biopsychosocial_Model_Foundations_of_Modern_Psychiatry__Engel_s_Biopsychosocial_Model_for_Modern_Psychiatry.m4a",
+    "audio_oe/OE-35_The_FIN11_Study_Antipsychotic_Treatment_and_Schizophrenia_Mortality__Antipsychotics_reduce_schizophrenia_mortality.m4a",
+    "audio_oe/OE-36_The_Genesis_of_Modern_Psychopharmacology_Chlorpromazine_1952__How_chlorpromazine_replaced_the_lobotomy.m4a",
+    "audio_oe/OE-37_The_Gold_Standard_Foundations_of_CPT_and_PE_for_PTSD__Resick_Trial_Gold_Standard_PTSD_Evidence.m4a",
+    "audio_oe/OE-38_The_HELP_Trial_Multicomponent_Strategies_for_Delirium_Prevention__Stopping_delirium_with_the_HELP_trial.m4a",
+    "audio_oe/OE-39_The_IMPACT_Trial_Collaborative_Care_for_Late_Life_Depression__Collaborative_Care_Doubles_Depression_Recovery_Rates.m4a",
+    "audio_oe/OE-40_The_Kane_Study_Clozapine_in_Treatment_Resistant_Schizophrenia__Clozapine_for_Treatment_Resistant_Schizophrenia.m4a",
+    "audio_oe/OE-41_The_Leucht_Meta_Analysis_Antipsychotic_Maintenance_and_Relapse_Prevention__Maintenance_Antipsychotics_and_the_NNT_of_3.m4a",
+    "audio_oe/OE-42_The_MoCA_Validation_Study_Superior_Screening_for_Cognitive_Impairment__Why_MoCA_Catches_What_MMSE_Misses.m4a",
+    "audio_oe/OE-43_The_NIMH_Treatment_of_Depression_Collaborative_Research_Program__Talk_Therapy_Matches_Antidepressants_for_Major_Depression.m4a",
+    "audio_oe/OE-44_The_POTS_Trial_Advancing_Pediatric_OCD_Treatment_Standards__CBT_plus_SSRIs_for_Pediatric_OCD.m4a",
+    "audio_oe/OE-45_The_Rosenhan_Study_Diagnostic_Validity_and_Institutional_Bias__Why_Doctors_Couldn_t_Spot_Sane_Patients.m4a",
+    "audio_oe/OE-46_The_STAR_D_Trial_Benchmarking_Depression_Treatment_Outcomes__The_STARD_Trial_Remission_Reality_Check.m4a",
+    "audio_oe/OE-47_The_Stanley_and_Brown_Safety_Planning_Intervention_Guide__Safety_Planning_Beats_No_Suicide_Contracts.m4a",
+    "audio_oe/OE-48_The_Therapeutic_Alliance_and_Psychotherapy_Outcomes_Study_Summary__Therapeutic_Alliance_Predicts_Treatment_Outcomes.m4a",
+    "audio_oe/OE-49_Validating_the_CAM_ICU_for_Delirium_Screening__Detecting_delirium_in_patients_who_cannot_speak.m4a",
+    "audio_oe/OE-50_Zarate_2006_Ketamine_for_Treatment_Resistant_Depression_Study_Summary__Ketamine_treats_resistant_depression_in_hours.m4a"
+  ],
+  "receipts": {
+    "openEvidence": {
+      "path": "13_Faculty_Resources/_automation/maintenance/receipts/openevidence.json",
+      "maxAgeDays": 35
+    },
+    "redTeam": {
+      "path": "13_Faculty_Resources/_automation/maintenance/receipts/sp-red-team.json"
+    }
+  },
+  "apaCrosswalk": "13_Faculty_Resources/APA_Downloads_2026-06-29/metadata/library_crosswalk.csv"
 }
