@@ -294,34 +294,34 @@ EXPECTED_STEP_INVENTORIES = {
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     "ci.yml": "2ff54dfbdbb36163e046c821c0a4454b07afe45b293a16aafe0590e662598d6f",
     "maintenance-governance-digest.yml": (
-        "7cf19d1a4632f6e93b198e83d658782c54fd07e4ff8b42708a6bc7a98d4c2e6c"
+        "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
     ),
     "maintenance-heartbeat.yml": (
         "349273a885cb7d2aae2fab884ac4e3ef104452f9a1db7ecc26e813f7b6dcd806"
     ),
     "maintenance-monthly-review.yml": (
-        "688f255cb90f5acb6c07049dbcab0e75c7638058a9ab44aeb4a9f862bf94a689"
+        "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
     ),
     "maintenance-production-canary.yml": (
         "702912e1672d439ee6951003eb0a832015f4b616035d6a004513f2f3fa9eab27"
     ),
     "maintenance-rotation-readiness.yml": (
-        "525ebf39884a49f953d7df6a959d79e13812a184030a944c7630517f77dc8ef7"
+        "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"
     ),
     "maintenance-sp-health-monitor.yml": (
         "dc644a9c81060952d2339617a383e26a5565ee7b49afe7acaae31dffece28a29"
     ),
     "surveillance-citations.yml": (
-        "d50618ba88eb7b63b86c23a21599ab3d79b973f247b53b173152e37e15022e1a"
+        "3ae306c847088fbfccdbe6abe95d7e5f0ea927df8122bdde1b2ac02bd37d5f7a"
     ),
     "surveillance-guideline.yml": (
-        "c99e18e19ca4f362103dedf9b3788cf8ad6418faafcff9518aa93dedbf1f628b"
+        "ba27d694f588f7a8019b37a25d6f28636ffa14e62a4e19f35daf9f013890e8c3"
     ),
     "surveillance-link-monitor.yml": (
-        "017d2b856b6ab4a6d75f18ff9bb33150de23dbb16c5c026977a8dbf90d813ab5"
+        "b7aa9fa53f463ce5d93c82039c8160c1093c29c1cbf4389ebfa5b89399a6d52b"
     ),
     "surveillance-resource-intake.yml": (
-        "e8cd95360a7e3492601a78cf23c0bf7ba6fd3a3dbed2b2b4075e339d44a48a2d"
+        "0fee528d5f705d53b69112d0b08917c6ad8380443435e7ae41e2abf1c402440e"
     ),
 }
 
@@ -593,11 +593,11 @@ npx playwright test --project=lfs""",
         "governance": (
             (
                 "Build faculty governance digest",
-                """mkdir -p "$RUN_DIR"
+                """mkdir -p "$RUNNER_TEMP/maintenance-governance"
 set +e
 node 13_Faculty_Resources/_automation/maintenance/governance_digest.mjs \\
-  --out-json "$RUN_DIR/governance.json" \\
-  --out-md "$RUN_DIR/governance.md"
+  --out-json "$RUNNER_TEMP/maintenance-governance/governance.json" \\
+  --out-md "$RUNNER_TEMP/maintenance-governance/governance.md"
 code=$?
 set -e
 echo "exit_code=$code" >> "$GITHUB_OUTPUT"
@@ -609,7 +609,8 @@ exit 0""",
                 "Route faculty governance review",
                 "python3 13_Faculty_Resources/_automation/maintenance/"
                 "maintenance_issue.py --kind governance "
-                '--report "$RUN_DIR/governance.json" --run-url "$RUN_URL" '
+                '--report "$RUNNER_TEMP/maintenance-governance/governance.json" '
+                '--run-url "$RUN_URL" '
                 '--artifact-url "$ARTIFACT_URL"',
                 "always()",
                 "required governance router",
@@ -631,13 +632,13 @@ esac""",
         "monthly": (
             (
                 "Build evidence and operations review",
-                """mkdir -p "$RUN_DIR"
+                """mkdir -p "$RUNNER_TEMP/maintenance-monthly"
 set +e
 python3 tools/evidence_registry/validate.py --check-generated
 evidence_code=$?
 python3 13_Faculty_Resources/_automation/maintenance/monthly_review.py \\
-  --out-json "$RUN_DIR/monthly.json" \\
-  --out-md "$RUN_DIR/monthly.md"
+  --out-json "$RUNNER_TEMP/maintenance-monthly/monthly.json" \\
+  --out-md "$RUNNER_TEMP/maintenance-monthly/monthly.md"
 review_code=$?
 set -e
 if [ "$evidence_code" -ne 0 ] && [ "$review_code" -eq 0 ]; then
@@ -652,7 +653,8 @@ exit 0""",
                 "Route evidence and operations review",
                 "python3 13_Faculty_Resources/_automation/maintenance/"
                 "maintenance_issue.py --kind monthly "
-                '--report "$RUN_DIR/monthly.json" --run-url "$RUN_URL" '
+                '--report "$RUNNER_TEMP/maintenance-monthly/monthly.json" '
+                '--run-url "$RUN_URL" '
                 '--artifact-url "$ARTIFACT_URL"',
                 "always()",
                 "required monthly router",
@@ -674,12 +676,12 @@ esac""",
         "rotation": (
             (
                 "Build rotation readiness passport",
-                """mkdir -p "$RUN_DIR"
+                """mkdir -p "$RUNNER_TEMP/maintenance-rotation"
 set +e
 python3 13_Faculty_Resources/_automation/maintenance/rotation_readiness.py \\
   --config 13_Faculty_Resources/_automation/maintenance/rotation_blocks.json \\
-  --out-json "$RUN_DIR/rotation.json" \\
-  --out-md "$RUN_DIR/rotation.md"
+  --out-json "$RUNNER_TEMP/maintenance-rotation/rotation.json" \\
+  --out-md "$RUNNER_TEMP/maintenance-rotation/rotation.md"
 code=$?
 set -e
 echo "exit_code=$code" >> "$GITHUB_OUTPUT"
@@ -691,7 +693,8 @@ exit 0""",
                 "Route due rotation review",
                 "python3 13_Faculty_Resources/_automation/maintenance/"
                 "maintenance_issue.py --kind rotation "
-                '--report "$RUN_DIR/rotation.json" --run-url "$RUN_URL" '
+                '--report "$RUNNER_TEMP/maintenance-rotation/rotation.json" '
+                '--run-url "$RUN_URL" '
                 '--artifact-url "$ARTIFACT_URL"',
                 "${{ always() && steps.rotation.outputs.exit_code == '10' }}",
                 "required rotation router",
@@ -811,6 +814,17 @@ def _validate_job_boundaries(name, workflow, errors):
                 errors,
                 name,
                 f"job continue-on-error is forbidden for {job_id!r}",
+            )
+        job_env = job.get("env")
+        if isinstance(job_env, dict) and any(
+            isinstance(value, str)
+            and re.search(r"\$\{\{[^}]*\brunner\s*(?:\.|\[)", value)
+            for value in job_env.values()
+        ):
+            _error(
+                errors,
+                name,
+                "runner context is unavailable in job-level env",
             )
         if name in EXPECTED_CRONS and "if" in job:
             _error(
