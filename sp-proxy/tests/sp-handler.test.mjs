@@ -522,6 +522,77 @@ test('GET exposes exact reviewed summaries while opening is canonical and provid
   assert.deepEqual(harness.budgetSpy.calls, []);
 });
 
+test('real authenticated GET makes zero actor, evaluator, budget, ticket, speech, or provider calls', async () => {
+  const calls = {
+    actor: 0,
+    evaluator: 0,
+    budget: 0,
+    ticket: 0,
+    transcription: 0,
+    synthesis: 0,
+    provider: 0,
+  };
+  const forbidden = (name) => new Proxy({}, {
+    get() {
+      return () => {
+        calls[name] += 1;
+        throw new Error(`${name} must not run during health`);
+      };
+    },
+  });
+  const handler = createSpHandler({
+    http: createTestHttp(),
+    packLoader: { async load() { return snapshot(); } },
+    governance,
+    budget() {
+      calls.budget += 1;
+      throw new Error('budget must not run during health');
+    },
+    anthropic: {
+      async prepare() {
+        calls.provider += 1;
+        throw new Error('provider must not run during health');
+      },
+    },
+    ticketCodec: forbidden('ticket'),
+    actor: forbidden('actor'),
+    evaluator: forbidden('evaluator'),
+    transcription: forbidden('transcription'),
+    synthesis: forbidden('synthesis'),
+    provider: forbidden('provider'),
+    config: {
+      rotationId: 'rotation-health-only',
+      actorModel: MODEL,
+      evaluatorModel: MODEL,
+      maxActorOutputTokens: 300,
+      maxEvaluatorOutputTokens: 1_500,
+      voiceRuntime: {
+        stackId: 'openai-quality-v1',
+        transcriptionProvider: 'openai',
+        transcriptionModel: 'whisper-1',
+        synthesisProvider: 'openai',
+        synthesisModel: 'tts-1-hd',
+        zeroRetentionEntitled: false,
+      },
+      now: () => NOW_MS,
+    },
+  });
+
+  const response = await handler(learnerRequest({ method: 'GET', contentType: null }));
+
+  assert.equal(response.status, 200);
+  assert.equal((await json(response)).schemaVersion, 1);
+  assert.deepEqual(calls, {
+    actor: 0,
+    evaluator: 0,
+    budget: 0,
+    ticket: 0,
+    transcription: 0,
+    synthesis: 0,
+    provider: 0,
+  });
+});
+
 test('learner authentication, origin, and method failures use exact offline-only errors', async () => {
   const cases = [
     {
