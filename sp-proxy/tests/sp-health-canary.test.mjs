@@ -155,6 +155,16 @@ test('runtime env access falls back per key when Netlify omits a system variable
   assert.equal(canary.readRuntimeEnv(fallbackKey), 'process-value');
 });
 
+test('scheduled canary normalizes Netlify next_run timestamps without milliseconds', async () => {
+  const store = memoryStore();
+  const { handler } = await createCanaryHarness({ store });
+
+  await handler(scheduledRequest('2026-07-28T18:00:00Z'));
+
+  assert.equal(store.writes.length, 1);
+  assert.equal(store.writes[0].value.nextRun, NEXT_RUN);
+});
+
 test('validateHealth accepts only the bounded health contract and freezes its result', async () => {
   const { receipt } = await healthModules();
   for (const [packStatus, learnerReady] of [
