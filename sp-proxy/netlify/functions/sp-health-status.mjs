@@ -71,8 +71,3 @@ export default async function handler(request) {
   });
   return status(request);
 }
-
-export const config = Object.freeze({
-  path: '/api/sp/health-status',
-  method: ['GET'],
-});

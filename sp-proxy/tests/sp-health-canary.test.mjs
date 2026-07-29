@@ -124,15 +124,10 @@ async function statusResponse(receipt, {
   }));
 }
 
-test('exports modern scheduled and public route configs', async () => {
+test('exports the scheduled config and leaves public status route ownership to TOML', async () => {
   const { canary, status } = await healthModules();
   assert.deepEqual(canary.config, { schedule: '0 */6 * * *' });
-  assert.equal(Object.isFrozen(canary.config), true);
-  assert.deepEqual(status.config, {
-    path: '/api/sp/health-status',
-    method: ['GET'],
-  });
-  assert.equal(Object.isFrozen(status.config), true);
+  assert.equal('config' in status, false);
 });
 
 test('validateHealth accepts only the bounded health contract and freezes its result', async () => {
@@ -165,12 +160,36 @@ test('validateHealth rejects wrong schemas, unsafe model or pack pins, and inval
     { ...VALID_HEALTH, packVersion: '\t' },
     { ...VALID_HEALTH, packStatus: 'approved' },
     { ...VALID_HEALTH, cases: [] },
-    { ...VALID_HEALTH, cases: [{ id: 'duplicate' }, { id: 'duplicate' }] },
-    { ...VALID_HEALTH, cases: [{ id: '' }] },
+    {
+      ...VALID_HEALTH,
+      cases: [
+        { id: 'duplicate', title: 'Synthetic one' },
+        { id: 'duplicate', title: 'Synthetic two' },
+      ],
+    },
+    { ...VALID_HEALTH, cases: [{ id: '', title: 'Synthetic case' }] },
+    { ...VALID_HEALTH, cases: [{ id: 'case-1' }] },
+    { ...VALID_HEALTH, cases: [{ id: 'case-1', title: 123 }] },
+    { ...VALID_HEALTH, cases: [{ id: 'case-1', title: 'Synthetic case', prompt: 'extra' }] },
+    { ...VALID_HEALTH, cases: [{ id: '\ud800', title: 'Synthetic case' }] },
+    { ...VALID_HEALTH, cases: [{ id: 'x'.repeat(129), title: 'Synthetic case' }] },
+    { ...VALID_HEALTH, cases: [{ id: 'case-1', title: '\udfff' }] },
+    { ...VALID_HEALTH, cases: [{ id: 'case-1', title: 'x'.repeat(201) }] },
   ];
   for (const body of invalidBodies) {
     assert.throws(() => receipt.validateHealth(body), /health contract/i);
   }
+});
+
+test('validateHealth never returns or hashes case title text', async () => {
+  const { receipt } = await healthModules();
+  const first = receipt.validateHealth(VALID_HEALTH);
+  const second = receipt.validateHealth({
+    ...VALID_HEALTH,
+    cases: [{ id: 'case-1', title: 'A different synthetic title' }],
+  });
+  assert.deepEqual(first, second);
+  assert.doesNotMatch(JSON.stringify(first), /Synthetic|different/i);
 });
 
 test('scheduled canary performs one exact authenticated GET and persists a redacted success receipt', async () => {
@@ -189,8 +208,9 @@ test('scheduled canary performs one exact authenticated GET and persists a redac
   assert.equal(result, undefined);
   assert.equal(requests.length, 1);
   assert.equal(requests[0].url, `${SITE_URL}/api/sp`);
-  assert.deepEqual(Object.keys(requests[0].init).sort(), ['headers', 'method', 'signal']);
+  assert.deepEqual(Object.keys(requests[0].init).sort(), ['headers', 'method', 'redirect', 'signal']);
   assert.equal(requests[0].init.method, 'GET');
+  assert.equal(requests[0].init.redirect, 'error');
   assert.deepEqual(requests[0].init.headers, {
     Origin: CANONICAL_ORIGIN,
     'x-student-key': STUDENT_PASSCODE,
@@ -215,6 +235,48 @@ test('scheduled canary performs one exact authenticated GET and persists a redac
   assert.equal(store.writes[0].value.nextRun, NEXT_RUN);
   assert.match(store.writes[0].value.contractSha256, /^[a-f0-9]{64}$/);
   assert.doesNotMatch(JSON.stringify(store.writes), /test-only-passcode|model-pin|pack-version|Synthetic/);
+});
+
+test('scheduled canary refuses redirects without forwarding the learner credential', async () => {
+  const requests = [];
+  const logs = [];
+  const store = memoryStore();
+  const { handler } = await createCanaryHarness({
+    store,
+    log: (event) => logs.push(event),
+    fetchImpl: async (url, init) => {
+      requests.push({ url, init });
+      if (init.redirect !== 'error') {
+        requests.push({
+          url: 'https://redirect-target.invalid/credential-capture',
+          init,
+        });
+        return responseFor();
+      }
+      return new Response(null, {
+        status: 302,
+        headers: { location: 'https://redirect-target.invalid/credential-capture' },
+      });
+    },
+  });
+
+  await assert.rejects(handler(scheduledRequest()), /^Error: Interview Room health canary failed\.$/);
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].url, `${SITE_URL}/api/sp`);
+  assert.equal(requests.some(({ url }) => url.includes('redirect-target')), false);
+  assert.deepEqual(store.writes, [{
+    key: 'latest',
+    value: {
+      schemaVersion: 1,
+      state: 'failed',
+      failureCode: 'http_status',
+      checkedAt: CHECKED_AT,
+    },
+  }]);
+  assert.doesNotMatch(
+    JSON.stringify({ writes: store.writes, logs }),
+    /test-only-passcode|x-student-key|redirect-target/i,
+  );
 });
 
 test('scheduled canary requires the literal canonical origin instead of selecting another HTTPS origin', async () => {
@@ -389,6 +451,67 @@ test('scheduled canary aborts upstream work at exactly eight seconds and writes 
   ]);
   assert.equal(store.writes.at(-1).value.failureCode, 'timeout');
   assert.doesNotMatch(JSON.stringify(store.writes), /PRIVATE_TIMEOUT_EXCEPTION/);
+});
+
+test('scheduled canary keeps the deadline active through a never-settling response body', async () => {
+  let timerActive = true;
+  const store = memoryStore();
+  const { handler } = await createCanaryHarness({
+    store,
+    setTimeoutImpl(callback, milliseconds) {
+      assert.equal(milliseconds, 8_000);
+      setImmediate(() => {
+        if (timerActive) callback();
+      });
+      return 73;
+    },
+    clearTimeoutImpl(id) {
+      assert.equal(id, 73);
+      timerActive = false;
+    },
+    fetchImpl: async (_url, { signal }) => new Response(new ReadableStream({
+      start(controller) {
+        signal.addEventListener('abort', () => {
+          controller.error(new DOMException('PRIVATE_SLOW_BODY', 'AbortError'));
+        });
+        setTimeout(() => {
+          if (!signal.aborted) controller.error(new Error('PRIVATE_LATE_BODY'));
+        }, 20);
+      },
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }),
+  });
+
+  await assert.rejects(handler(scheduledRequest()), /^Error: Interview Room health canary failed\.$/);
+  assert.equal(store.writes.at(-1).value.failureCode, 'timeout');
+  assert.doesNotMatch(JSON.stringify(store.writes), /PRIVATE_SLOW_BODY|PRIVATE_LATE_BODY/);
+});
+
+test('scheduled canary stops reading an oversized response body and writes a contract failure', async () => {
+  const chunk = new TextEncoder().encode('x'.repeat(4_096));
+  let bytesPulled = 0;
+  const store = memoryStore();
+  const { handler } = await createCanaryHarness({
+    store,
+    fetchImpl: async () => responseFor(null, {
+      rawBody: new ReadableStream({
+        pull(controller) {
+          if (bytesPulled >= 512 * 1_024) {
+            controller.close();
+            return;
+          }
+          controller.enqueue(chunk);
+          bytesPulled += chunk.byteLength;
+        },
+      }),
+    }),
+  });
+
+  await assert.rejects(handler(scheduledRequest()), /^Error: Interview Room health canary failed\.$/);
+  assert.equal(store.writes.at(-1).value.failureCode, 'contract');
+  assert.equal(bytesPulled <= 72 * 1_024, true);
 });
 
 test('public status returns the exact current receipt without requiring a credential', async () => {

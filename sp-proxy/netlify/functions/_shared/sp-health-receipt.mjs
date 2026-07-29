@@ -39,6 +39,9 @@ const FAILURE_CODES = new Set([
   'receipt_write',
 ]);
 const SHA256 = /^[a-f0-9]{64}$/;
+const CASE_KEYS = Object.freeze(['id', 'title']);
+const CASE_ID_LIMIT = 128;
+const CASE_TITLE_LIMIT = 200;
 
 function exactKeys(value, expected) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
@@ -50,6 +53,26 @@ function exactKeys(value, expected) {
 
 function nonempty(value) {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+function hasUnpairedSurrogate(value) {
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code >= 0xd800 && code <= 0xdbff) {
+      const next = value.charCodeAt(index + 1);
+      if (!(next >= 0xdc00 && next <= 0xdfff)) return true;
+      index += 1;
+    } else if (code >= 0xdc00 && code <= 0xdfff) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function boundedText(value, maximum) {
+  return nonempty(value)
+    && !hasUnpairedSurrogate(value)
+    && [...value].length <= maximum;
 }
 
 function utcTimestamp(value) {
@@ -76,7 +99,9 @@ export function validateHealth(body) {
 
   const caseIds = [];
   for (const item of body.cases) {
-    if (!item || typeof item !== 'object' || Array.isArray(item) || !nonempty(item.id)) {
+    if (!exactKeys(item, CASE_KEYS)
+      || !boundedText(item.id, CASE_ID_LIMIT)
+      || !boundedText(item.title, CASE_TITLE_LIMIT)) {
       throw invalidHealthContract();
     }
     caseIds.push(item.id);

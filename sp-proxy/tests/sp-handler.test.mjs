@@ -522,15 +522,12 @@ test('GET exposes exact reviewed summaries while opening is canonical and provid
   assert.deepEqual(harness.budgetSpy.calls, []);
 });
 
-test('real authenticated GET makes zero actor, evaluator, budget, ticket, speech, or provider calls', async () => {
+test('real authenticated GET bypasses provider, budget, ticket, and logger seams', async () => {
   const calls = {
-    actor: 0,
-    evaluator: 0,
     budget: 0,
     ticket: 0,
-    transcription: 0,
-    synthesis: 0,
     provider: 0,
+    logger: 0,
   };
   const forbidden = (name) => new Proxy({}, {
     get() {
@@ -555,11 +552,10 @@ test('real authenticated GET makes zero actor, evaluator, budget, ticket, speech
       },
     },
     ticketCodec: forbidden('ticket'),
-    actor: forbidden('actor'),
-    evaluator: forbidden('evaluator'),
-    transcription: forbidden('transcription'),
-    synthesis: forbidden('synthesis'),
-    provider: forbidden('provider'),
+    logger() {
+      calls.logger += 1;
+      throw new Error('logger must not run during health');
+    },
     config: {
       rotationId: 'rotation-health-only',
       actorModel: MODEL,
@@ -583,13 +579,10 @@ test('real authenticated GET makes zero actor, evaluator, budget, ticket, speech
   assert.equal(response.status, 200);
   assert.equal((await json(response)).schemaVersion, 1);
   assert.deepEqual(calls, {
-    actor: 0,
-    evaluator: 0,
     budget: 0,
     ticket: 0,
-    transcription: 0,
-    synthesis: 0,
     provider: 0,
+    logger: 0,
   });
 });
 

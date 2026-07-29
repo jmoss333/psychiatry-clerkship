@@ -10,6 +10,7 @@ const CANONICAL_HEALTH_ORIGIN = 'https://une-ms3-psychiatry.netlify.app';
 const HEALTH_STORE_NAME = 'sp-health-canary';
 const HEALTH_STORE_KEY = 'latest';
 const REQUEST_TIMEOUT_MS = 8_000;
+const HEALTH_BODY_LIMIT = 64 * 1_024;
 const GENERIC_FAILURE = 'Interview Room health canary failed.';
 
 class CanaryFailure extends Error {
@@ -91,6 +92,43 @@ function safeLog(log, failureCode) {
   }
 }
 
+async function readBoundedJson(response, signal) {
+  const reader = response?.body?.getReader?.();
+  if (!reader) throw new CanaryFailure('invalid_json');
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (signal.aborted) throw new CanaryFailure('timeout');
+      if (done) break;
+      if (!(value instanceof Uint8Array)) throw new CanaryFailure('invalid_json');
+      total += value.byteLength;
+      if (total > HEALTH_BODY_LIMIT) {
+        Promise.resolve(reader.cancel()).catch(() => {});
+        throw new CanaryFailure('contract');
+      }
+      chunks.push(value);
+    }
+  } catch (error) {
+    if (error instanceof CanaryFailure) throw error;
+    if (signal.aborted || error?.name === 'AbortError') throw new CanaryFailure('timeout');
+    throw new CanaryFailure('invalid_json');
+  }
+
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+  } catch {
+    throw new CanaryFailure('invalid_json');
+  }
+}
+
 export function createHealthCanary({
   readEnv,
   fetchImpl,
@@ -117,18 +155,40 @@ export function createHealthCanary({
       const nextRun = await readNextRun(request);
       const controller = new AbortController();
       const timer = setTimeoutImpl(() => controller.abort(), REQUEST_TIMEOUT_MS);
-      let response;
+      let health;
       try {
-        response = await fetchImpl(`${siteOrigin}/api/sp`, {
-          method: 'GET',
-          headers: {
-            Origin: CANONICAL_HEALTH_ORIGIN,
-            'x-student-key': studentPasscode,
-            Accept: 'application/json',
-          },
-          signal: controller.signal,
-        });
+        let response;
+        try {
+          response = await fetchImpl(`${siteOrigin}/api/sp`, {
+            method: 'GET',
+            headers: {
+              Origin: CANONICAL_HEALTH_ORIGIN,
+              'x-student-key': studentPasscode,
+              Accept: 'application/json',
+            },
+            redirect: 'error',
+            signal: controller.signal,
+          });
+        } catch (error) {
+          throw new CanaryFailure(
+            controller.signal.aborted || error?.name === 'AbortError' ? 'timeout' : 'transport',
+          );
+        }
+
+        if (response?.status !== 200) throw new CanaryFailure('http_status');
+        const contentType = response.headers?.get?.('content-type') ?? '';
+        if (!/^application\/json(?:\s*;|$)/i.test(contentType)) {
+          throw new CanaryFailure('content_type');
+        }
+        const body = await readBoundedJson(response, controller.signal);
+        try {
+          health = validateHealth(body);
+        } catch (error) {
+          if (error instanceof CanaryFailure) throw error;
+          throw new CanaryFailure('contract');
+        }
       } catch (error) {
+        if (error instanceof CanaryFailure) throw error;
         throw new CanaryFailure(
           controller.signal.aborted || error?.name === 'AbortError' ? 'timeout' : 'transport',
         );
@@ -136,23 +196,6 @@ export function createHealthCanary({
         clearTimeoutImpl(timer);
       }
 
-      if (response?.status !== 200) throw new CanaryFailure('http_status');
-      const contentType = response.headers?.get?.('content-type') ?? '';
-      if (!/^application\/json(?:\s*;|$)/i.test(contentType)) {
-        throw new CanaryFailure('content_type');
-      }
-      let body;
-      try {
-        body = await response.json();
-      } catch {
-        throw new CanaryFailure('invalid_json');
-      }
-      let health;
-      try {
-        health = validateHealth(body);
-      } catch {
-        throw new CanaryFailure('contract');
-      }
       const successReceipt = Object.freeze({
         schemaVersion: 1,
         state: 'success',
@@ -198,4 +241,4 @@ export default async function handler(request) {
   return canary(request);
 }
 
-export const config = Object.freeze({ schedule: '0 */6 * * *' });
+export const config = { schedule: '0 */6 * * *' };

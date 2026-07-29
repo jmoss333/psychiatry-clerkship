@@ -251,8 +251,12 @@ git commit -m "fix: make surveillance schedules truthful and reviewable"
 - Create: `sp-proxy/netlify/functions/sp-health-canary.mjs`
 - Create: `sp-proxy/netlify/functions/sp-health-status.mjs`
 - Create: `sp-proxy/tests/sp-health-canary.test.mjs`
+- Create: `sp-proxy/tests/sp-deploy-manifest.test.mjs`
 - Modify: `sp-proxy/tests/sp-handler.test.mjs`
 - Modify: `sp-proxy/tests/sp-deploy-routing.test.mjs`
+- Modify: `sp-proxy/netlify.toml`
+- Modify: `sp-proxy/package.json`
+- Modify: `sp-proxy/package-lock.json`
 - Modify: `sp-proxy/README.md`
 - Modify: `sp-proxy/REDTEAM_CHECKLIST.md`
 
@@ -261,8 +265,8 @@ git commit -m "fix: make surveillance schedules truthful and reviewable"
   `URL`; public route `/api/sp`; site-scoped Netlify Blob store `sp-health-canary`.
 - Produces: `validateHealth(body) -> frozen internal result`;
   `createHealthCanary(deps) -> async handler`; `createHealthStatus(deps) -> async handler`;
-  Blob key `latest`; public `GET /api/sp/health-status`;
-  `config.schedule === "0 */6 * * *"`.
+  Blob key `latest`; TOML-owned public `GET /api/sp/health-status`;
+  Netlify deployment manifest schedule `0 */6 * * *` with no public canary route.
 
 - [ ] **Step 1: Write failing scheduled-canary and durable-receipt tests**
 
@@ -307,6 +311,13 @@ canonical origin, arbitrary first HTTPS origin, fetch timeout, Blob-write failur
 failure codes. On validation failure, assert a sanitized failure receipt is attempted before a
 generic throw and neither stored data nor logs contain an exception message, URL, raw model/pack
 identifier, passcode, header, case content, prompt, or reply. Assert `config.schedule` exactly.
+Require exact, scalar-length-bounded `{id, title}` case summaries, reject unpaired surrogates, and
+prove title text is neither returned nor hashed.
+
+Add redirect and response-body regressions: `redirect: "error"` must prevent a second request from
+receiving the learner credential; the eight-second deadline must remain active through a bounded
+64 KiB body read and validation; and an oversized or never-settling body must produce only a
+sanitized failure receipt and generic throw.
 
 Add public status tests for success, failed, stale, missing, and malformed receipts; GET-only routing;
 `Cache-Control: no-store`; bounded response keys; and no credential requirement. The status route
@@ -318,10 +329,14 @@ same late-slot check rather than concealing the missed durable invocation.
 
 - [ ] **Step 2: Add a real-handler side-effect test**
 
-In `sp-handler.test.mjs`, invoke the actual `createSpHandler` with an authenticated `GET` and injected
-actor, evaluator, budget, ticket, transcription, synthesis, and provider fakes. Assert HTTP 200 and
-zero calls to every fake. This test must exercise the real `/api/sp` health branch, not just the
-canary's fetch mock. Extend the deploy-routing test for `/api/sp/health-status`.
+In `sp-handler.test.mjs`, invoke the actual `createSpHandler` with an authenticated `GET` and assert
+zero calls to its real provider, budget, ticket, and logger seams. The canary test separately proves
+its one request is the exact `GET /api/sp` URL and never `/api/sp/voice`. Extend the deploy-routing
+test for `/api/sp/health-status`.
+
+Use pinned devDependency `@netlify/zip-it-and-ship-it` 14.5.4 to generate a real deployment manifest.
+Assert the canary schedule is exactly `0 */6 * * *`, neither health function owns a source route,
+and the status function remains available at its default function URL for the explicit TOML rewrite.
 
 - [ ] **Step 3: Run the new SP tests and verify they fail**
 
@@ -329,11 +344,12 @@ Run:
 
 ```bash
 node --test sp-proxy/tests/sp-health-canary.test.mjs \
+  sp-proxy/tests/sp-deploy-manifest.test.mjs \
   sp-proxy/tests/sp-handler.test.mjs \
   sp-proxy/tests/sp-deploy-routing.test.mjs
 ```
 
-Expected: module/route/behavior failures for the missing canary and status implementation.
+Expected: module/route/manifest/behavior failures for the missing canary and status implementation.
 
 - [ ] **Step 4: Implement the scheduled function and Blob receipt**
 
@@ -356,19 +372,25 @@ Use an eight-second abort timeout. Send only:
     'x-student-key': studentPasscode,
     Accept: 'application/json',
   },
+  redirect: 'error',
   signal,
 }
 ```
 
-Validate before persisting. Hash the normalized model/pack contract and store no raw identifiers.
+Keep the deadline active through a size-bounded 64 KiB body read and validation. Require exact,
+bounded `{id, title}` summaries but hash only the normalized model/pack pins and case IDs; never
+store or hash title text. Validate before persisting and store no raw identifiers.
 Use a fixed allow-list of failure codes such as `configuration`, `timeout`, `transport`,
 `http_status`, `content_type`, `invalid_json`, `contract`, and `receipt_write`; never persist an
 upstream body or exception string. A failure best-effort writes `{schemaVersion, state, failureCode,
 checkedAt}` and then throws a generic error. The scheduled handler returns no body. Export:
 
 ```javascript
-export const config = Object.freeze({ schedule: '0 */6 * * *' });
+export const config = { schedule: '0 */6 * * *' };
 ```
+
+This direct literal is required for static extraction by the pinned Netlify packager. Do not add a
+`path` property: the scheduled canary must not own a public route.
 
 - [ ] **Step 5: Implement the public status function**
 
@@ -376,14 +398,9 @@ Read only Blob key `latest` with strong consistency, validate its exact schema, 
 bounded content-free fields. A successful receipt is current only when it is no more than eight
 hours old and `now <= nextRun + 10 minutes`; otherwise it is stale/late-slot. Respond to GET only and
 set `Content-Type: application/json`, `Cache-Control: no-store`, and
-`X-Content-Type-Options: nosniff`. Export the modern Netlify config:
-
-```javascript
-export const config = Object.freeze({
-  path: '/api/sp/health-status',
-  method: ['GET'],
-});
-```
+`X-Content-Type-Options: nosniff`. Do not export in-source path/method config. The explicit
+`netlify.toml` 200/force rewrite is the sole public route owner and targets the default
+`/.netlify/functions/sp-health-status` URL; the handler itself remains GET-only.
 
 - [ ] **Step 6: Document the operational receipt and manual boundary**
 
@@ -399,6 +416,7 @@ Run:
 
 ```bash
 node --test sp-proxy/tests/sp-health-canary.test.mjs \
+  sp-proxy/tests/sp-deploy-manifest.test.mjs \
   sp-proxy/tests/sp-handler.test.mjs \
   sp-proxy/tests/sp-deploy-routing.test.mjs
 npm --prefix sp-proxy test
@@ -411,9 +429,12 @@ git add sp-proxy/netlify/functions/_shared/sp-health-receipt.mjs \
   sp-proxy/netlify/functions/sp-health-canary.mjs \
   sp-proxy/netlify/functions/sp-health-status.mjs \
   sp-proxy/tests/sp-health-canary.test.mjs \
+  sp-proxy/tests/sp-deploy-manifest.test.mjs \
   sp-proxy/tests/sp-handler.test.mjs \
   sp-proxy/tests/sp-deploy-routing.test.mjs \
-  sp-proxy/README.md sp-proxy/REDTEAM_CHECKLIST.md
+  sp-proxy/netlify.toml sp-proxy/package.json sp-proxy/package-lock.json \
+  sp-proxy/README.md sp-proxy/REDTEAM_CHECKLIST.md \
+  docs/superpowers/plans/2026-07-28-scheduled-maintenance-steward.md
 git commit -m "feat: publish Interview Room health receipts"
 ```
 
