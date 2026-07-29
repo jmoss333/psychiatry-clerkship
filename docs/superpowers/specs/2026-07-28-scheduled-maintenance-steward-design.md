@@ -59,6 +59,7 @@ All GitHub and Netlify cron expressions run in UTC. Human-facing Codex heartbeat
 | Link surveillance | Monday 06:00 UTC | `0 6 * * 1` | GitHub Actions | Issues + artifact + rolling review PR |
 | Citation surveillance | Monday 07:00 UTC | `0 7 * * 1` | GitHub Actions | Issues + artifact + rolling review PR |
 | Guideline surveillance | First day monthly, 06:00 UTC | `0 6 1 * *` | GitHub Actions | Issues + artifact + rolling review PR |
+| Resource intake | On demand only | Manual dispatch | GitHub Actions | Issues + 90-day artifact + rolling review PR |
 | Interview Room authenticated health | Every 6 hours | `0 */6 * * *` | Netlify scheduled function | Durable content-free receipt |
 | Interview Room health receipt monitor | Every 6 hours, 15 minutes later | `15 */6 * * *` | GitHub Actions | Alert-only + 90-day artifact |
 | Production learner canary + release twin | Daily 09:20 UTC | `20 9 * * *` | GitHub Actions | Alert-only + 90-day artifact |
@@ -74,6 +75,9 @@ All GitHub and Netlify cron expressions run in UTC. Human-facing Codex heartbeat
 GitHub schedules become active only after their workflow files reach the default branch. Codex
 heartbeats may be activated immediately, but they must label repository-native schedules as
 `pending_merge` until the default branch contains them.
+
+The Codex rows are target controller configurations, not repository jobs. Their current active,
+paused, and next-run state must be verified in the Codex automation control plane.
 
 ## Architecture
 
@@ -212,13 +216,19 @@ plane access.
 
 The repository heartbeat queries GitHub’s Actions API with the built-in token and evaluates the
 latest completed scheduled run for each expected workflow. It fails when a run is absent, too old,
-or concluded other than `success`. First-run grace is explicit: a schedule contract introduced less
-than its allowed age ago may report `pending_first_run` without failing. Activation time is derived
-from the oldest commit in the current contiguous default-branch history whose parsed workflow still
-contains the exact expected cron, with its parent absent or different, using a full-history
-checkout. This also handles adding a schedule to a pre-existing file such as `ci.yml` and later
-remove/re-add cycles; it is never inferred from file creation or hard-coded to the authoring date.
-Missing git provenance blocks rather than granting an indefinite grace period.
+or concluded other than `success`. First-run grace is explicit: an exact workflow version introduced
+less than its allowed age ago may report `pending_first_run` without failing. After confirming that
+the parsed `HEAD` workflow contains the expected cron, activation is the oldest commit in the current
+first-parent suffix whose workflow Git blob exactly equals the blob at `HEAD`. Any workflow-byte
+change, including one that retains the cron, starts a new activation window. Activation always
+follows the resulting first-parent path history rather than an assumed authoring or rebase date.
+
+The API `head_sha` is validated for provenance but omitted from the bounded receipt. A completed run
+qualifies only when it was created and updated on or after activation, its head commit descends from
+the activation commit, and the workflow blob at that run head exactly equals the activation blob.
+This handles a schedule added to an older file, same-cron workflow changes, and remove/re-add cycles
+without inferring activation from file creation or the design date. Missing or malformed API, YAML,
+git, ancestry, or blob proof blocks rather than granting indefinite grace.
 
 The Codex heartbeat is the independent deadman. It reads the current default-branch workflow runs,
 the latest release-twin artifact, open automation/surveillance issues, and authenticated Netlify
@@ -310,8 +320,8 @@ The explicit `hx-` token, fixed length, and mixed letter/digit requirement rejec
 plain numeric institutional IDs such as `rot-2026-joshua` and `rot-2026-12345678`. Automation still
 treats the value as opaque and cannot prove what a human chose to encode.
 
-The daily evaluator writes one of `configuration_required`, `not_due`, `due`, `overdue`, or
-`complete`. Exactly seven days before a planned block it creates or updates one GitHub issue
+The daily evaluator writes one of `configuration_required`, `not_due`, `due`, `overdue`, `active`,
+or `complete`. Exactly seven days before a planned block it creates or updates one GitHub issue
 containing a manual checklist:
 
 - issue a new non-identifying `SP_ROTATION_ID`;
@@ -380,9 +390,10 @@ rather than generating one.
 11. Rotation tests cover empty, not-due, exactly-seven-days, overdue, overlapping, exact opaque-ID
     grammar, issue routing, successful due/overdue workflow conclusion, and privacy-invalid
     configurations.
-12. Workflow contract validation parses every new YAML file and verifies cadence, immutable action
-    pins, permissions, 90-day artifact retention, activation-derived first-run grace, and no
-    forbidden clinical mutation.
+12. Workflow contract validation parses all 11 scoped workflows and locks their typed triggers,
+    permissions, concurrency, environment, job IDs, step order, action inputs, commands, immutable
+    pins and per-occurrence semantic-tag comments, retention, and mutation boundaries. Heartbeat
+    tests separately prove exact-blob activation and run-head ancestry/blob matching.
 13. Full repository validators, the current root Node suite, SP tests, sequential MS3/resident
     builds, and Playwright smoke tests pass from the isolated worktree.
 14. The branch is published, a review PR exists, external heartbeats are active, and dry-run/live

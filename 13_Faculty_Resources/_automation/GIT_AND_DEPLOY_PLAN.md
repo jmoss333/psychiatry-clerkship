@@ -1,6 +1,6 @@
 # Git + Netlify-from-Git Plan — Psychiatry Clerkship Library
 
-**Owner:** Joshua Moss, MD · **Created:** 2026-07-01 · **Updated:** 2026-07-07
+**Owner:** Joshua Moss, MD · **Created:** 2026-07-01 · **Updated:** 2026-07-29
 **Goal:** put the library under version control and move both sites to *deploy-on-push* so concurrent editing (multiple chats/sessions) can never again silently clobber the live sites.
 
 > **Status (2026-07-07): build-on-push is LIVE and verified on both sites.** §1 cleanup ✅ · §2 pushed to `jmoss333/psychiatry-clerkship` (private) ✅ · §6 media migrated to Git LFS (100 `.m4a` + 7 `.mp4`) ✅ · resident source/deploy drift reconciled ✅ · Netlify LFS env vars set on both sites ✅ · both sites git-linked and production deploys ready ✅ · media verified live as real files, not pointer stubs ✅ · build-ignore hook added to skip doc-only rebuilds (§7) ✅. **The manual `netlify deploy --dir` flow can be retired.** Ongoing watch-item: Git-LFS bandwidth (see §6).
@@ -138,5 +138,27 @@ To broaden what's skippable, widen the ignore pattern in the script (e.g. add ot
 
 **Post-first-push check:** confirm the minimal `netlify.toml` didn't disturb either site's UI build command / publish dir (it shouldn't — it sets only `ignore`). If a deploy ever uses the wrong publish dir, delete `netlify.toml` and move the ignore command into each site's UI ("Ignore builds").
 
+## 8. Scheduled operations and hosted evidence (2026-07-29)
+
+The [scheduled maintenance operations runbook](maintenance/README.md) is now the operator source of
+truth for cadence, artifacts, production canaries, workflow heartbeat provenance, review issues,
+rotation readiness, and pause/resume procedures. The
+[surveillance runbook](surveillance/README.md) owns the rolling generated-report inbox.
+
+- GitHub cron runs only after the workflow exists on the default branch. A workflow file on a topic
+  branch is implementation evidence, not an active schedule.
+- The daily public-site canary verifies the deployed root, navigation, search index, and served-media
+  cache/integrity contracts. It complements, but does not replace, the build and static-QA gates.
+- The Interview Room proxy writes a bounded Netlify Blob health receipt every six hours. GitHub
+  checks its public content-free status 15 minutes later; operators still inspect the scheduled
+  function inventory/logs after deploy, configuration, or red-team changes.
+- GitHub artifacts retain maintenance/surveillance evidence for 90 days; the existing CI smoke
+  artifact remains at 14 days. Reports contain no credentials, learner identity, patient data, or
+  clinical content.
+- GitHub can compare the red-team receipt with the canonical SP pack in git. Only the external,
+  authenticated Netlify deadman can separately compare it with the latest hosted SP deploy.
+
 ---
-*Prepared 2026-07-01; updated 2026-07-02 (repo pushed; audio LFS-migrated; resident build reconciled; both sites git-linked, deploying on push, audio verified live; build-ignore hook added). Baseline commit `a7793cc`. Migration complete — manual deploys can be retired; watch Git-LFS bandwidth per §6/§7.*
+*Prepared 2026-07-01; deployment migration completed 2026-07-02; scheduled-operations handoff linked
+2026-07-29. Baseline commit `a7793cc`. Manual deploys can remain retired; follow the maintenance
+runbook and watch Git-LFS bandwidth per §6/§7.*

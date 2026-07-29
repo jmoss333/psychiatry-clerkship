@@ -839,13 +839,17 @@ def test_stale_or_failed_scheduled_run_blocks():
 
 Cover success, stale, failure, cancelled, missing, first-run grace, workflow API unavailable, exact
 boundary age, manual runs not satisfying scheduled-run freshness, and missing git activation
-provenance. Inject the activation timestamp in unit tests. Add a history fixture where an old
-`ci.yml` file receives `0 8 * * 0` in a new commit and assert grace begins at that schedule-changing
-commit rather than at file creation.
+provenance. Add history fixtures for a schedule added to an old `ci.yml`, a same-cron workflow
+change, a pre-activation success, a non-descendant or wrong-blob run `head_sha`, remove/re-add,
+malformed historical YAML, and unavailable git proof. Assert grace and run eligibility begin with
+the exact current workflow blob's activation commit rather than file creation or cron continuity.
 
 - [ ] **Step 2: Write failing parsed-workflow contract tests**
 
-Parse YAML with `yaml.BaseLoader` so the `on` key is not coerced. Assert the exact schedule map:
+Parse YAML with the isolated Actions-compatible loader. It must reject duplicate mapping keys and
+unsupported legacy scalar forms, preserve `on` and typed trigger values, and normalize only action
+`with:` values to runner strings before comparing the canonical whole-workflow projection. Assert
+the exact schedule map:
 
 ```python
 EXPECTED = {
@@ -901,7 +905,8 @@ Use the Actions API endpoint:
 GET /repos/{owner}/{repo}/actions/workflows/{workflow-file}/runs?event=schedule&per_page=10
 ```
 
-Normalize only workflow file, run ID/URL, created/updated timestamps, status, conclusion, and age.
+Read and validate `head_sha` only for git provenance; do not serialize it. Normalize only workflow
+file, run ID/URL, created/updated timestamps, status, conclusion, and age.
 Default freshness limits are 30 hours daily, 8 days weekly, and 35 days monthly. The script reads
 `GITHUB_TOKEN` only at request time, never serializes it, writes a receipt even on failure, and exits
 2 when blocked. The expectation list is exact:
@@ -920,15 +925,17 @@ Default freshness limits are 30 hours daily, 8 days weekly, and 35 days monthly.
 }
 ```
 
-The heartbeat does not assess its own current workflow. For a workflow with no scheduled run, use a
-full-history default-branch checkout to enumerate the workflow's commits, load each historical file,
-parse it with `yaml.BaseLoader`, and walk backward from `HEAD` while the exact expected cron remains
-present. The oldest commit in that current contiguous suffix is the activation commit; its parent
-must contain a different/absent contract (or no file). Use that commit's UTC timestamp as schedule
-activation. This works for both new files and an old `ci.yml` receiving a new schedule, including a
-later remove/re-add cycle. Absence remains `pending_first_run` only while that derived activation age
-is within the workflow's freshness limit. Missing/invalid git or YAML provenance is blocked, never
-an indefinite grace period.
+The heartbeat does not assess its own current workflow. Use a full-history default-branch checkout.
+Confirm the parsed `HEAD` workflow contains the expected cron, record its exact Git blob SHA, and
+walk the workflow path's first-parent history while that blob remains identical. The oldest commit
+in the current exact-blob suffix is the activation commit. Any workflow-byte change, even with the
+same cron, creates a new activation window.
+
+A completed scheduled run qualifies only when its validated `head_sha` descends from that activation
+commit, contains that exact workflow blob, and was created and updated on or after activation.
+Absence remains `pending_first_run` only while the activation age is within the workflow's freshness
+limit. Missing or malformed API, YAML, git, ancestry, or blob proof is blocked, never indefinite
+grace.
 
 - [ ] **Step 5: Implement the public SP monitor and safe issue router**
 
@@ -1046,7 +1053,10 @@ git commit -m "feat: wire scheduled maintenance workflows"
 - Create: `13_Faculty_Resources/_automation/maintenance/README.md`
 - Modify: `README.md`
 - Modify: `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`
+- Modify: `13_Faculty_Resources/_automation/maintenance/maintenance_config.json`
 - Modify: `13_Faculty_Resources/_automation/surveillance/README.md`
+- Modify: `docs/superpowers/specs/2026-07-28-scheduled-maintenance-steward-design.md`
+- Modify: `docs/superpowers/plans/2026-07-28-scheduled-maintenance-steward.md`
 
 **Interfaces:**
 - Consumes: all prior task CLIs, workflow names, artifact names, and manual gates.
@@ -1087,6 +1097,7 @@ python3 13_Faculty_Resources/_automation/validate_topic_meta.py
 python3 13_Faculty_Resources/_automation/validate_attestation_consistency.py
 python3 tools/evidence_registry/validate.py --check-generated
 python3 -m unittest discover -s tests/maintenance -p 'test_*.py' -v
+python3 13_Faculty_Resources/_automation/maintenance/validate_scheduled_workflows.py
 node --test tests/*.test.mjs
 npm --prefix sp-proxy test
 ```
@@ -1141,8 +1152,11 @@ Expected: no clinical/attestation diff and no committed credential assignment.
 ```bash
 git add README.md \
   13_Faculty_Resources/_automation/maintenance/README.md \
+  13_Faculty_Resources/_automation/maintenance/maintenance_config.json \
   13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md \
-  13_Faculty_Resources/_automation/surveillance/README.md
+  13_Faculty_Resources/_automation/surveillance/README.md \
+  docs/superpowers/specs/2026-07-28-scheduled-maintenance-steward-design.md \
+  docs/superpowers/plans/2026-07-28-scheduled-maintenance-steward.md
 git commit -m "docs: add scheduled maintenance operations runbook"
 ```
 

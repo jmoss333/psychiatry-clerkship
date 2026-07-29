@@ -18,6 +18,10 @@
   },
   "operationalDocs": [
     {
+      "path": "13_Faculty_Resources/_automation/maintenance/README.md",
+      "maxAgeDays": 90
+    },
+    {
       "path": "13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md",
       "maxAgeDays": 90
     },

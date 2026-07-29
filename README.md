@@ -42,4 +42,13 @@ references it. Internal RSS/RSSM naming is retained here; a public mirror would 
 Content never forks. `14_Tracks/<audience>/` holds only a short ordered list of links into the shared body.
 MS3 is the default build; later tracks are overlays.
 
+## Operations and maintenance
+
+The [scheduled maintenance operations runbook](13_Faculty_Resources/_automation/maintenance/README.md)
+is the operator source of truth for UTC schedules, 90-day evidence, production canaries,
+faculty-review queues, rotation readiness, pause/resume steps, and privacy boundaries.
+[Curriculum surveillance](13_Faculty_Resources/_automation/surveillance/README.md) documents the
+rolling report inbox and its human review lifecycle. Scheduled GitHub workflows become active only
+from the default branch; branch-local cron files are not live schedules.
+
 **Status tags:** ✅ Exists · 🔧 Revise · ➕ Expand · ✳️ Create · 🔀 Merge · 🗄️ Archive
