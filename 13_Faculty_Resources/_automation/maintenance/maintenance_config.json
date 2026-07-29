@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "sites": [
+    {
+      "name": "ms3",
+      "baseUrl": "https://une-ms3-psychiatry.netlify.app",
+      "siteId": "94717a39-679b-4c78-ae02-7b19e809592e"
+    },
+    {
+      "name": "res",
+      "baseUrl": "https://mmc-psychiatry-residents-sanford.netlify.app",
+      "siteId": "af64d5d4-e0b5-4f03-9857-be40e3b48329"
+    }
+  ],
+  "spProxy": {
+    "baseUrl": "https://sp-interview-proxy.netlify.app",
+    "siteId": "455d2740-4020-4d9c-b9f8-82f72f4b2897"
+  }
+}
