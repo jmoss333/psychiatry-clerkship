@@ -384,7 +384,6 @@
     },
     {
       "id": "sp_mania_redirect_001",
-      "status": "draft-pending-attestation",
       "title": "Marcus — Day 1 After a Sleepless Week",
       "topic": "Manic episode: containment, redirection, and risk inventory",
       "setting": "Adult inpatient psychiatry, morning after overnight admission (roommate called campus security)",
@@ -410,11 +409,7 @@
         "va-dod-suicide-cpg-2024",
         "canmat-isbd-bipolar-2018"
       ],
-      "facultyReview": {
-        "status": "draft",
-        "reviewer": "",
-        "lastReviewed": ""
-      },
+      "facultyReview": { "status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-22" },
       "speechProfile": {
         "id": "marcus-pressured-v1",
         "status": "draft-pending-attestation",
@@ -1221,7 +1216,6 @@
     },
     {
       "id": "sp_psychosis_paranoid_001",
-      "status": "draft-pending-attestation",
       "title": "Ray — First Days, Guarded and Afraid",
       "topic": "Paranoid psychosis: non-threatening stance, curious neutrality, and the command-hallucination safety screen",
       "setting": "Adult inpatient psychiatry, day 2, first sit-down interview (brought in by a sibling after weeks of withdrawal)",
@@ -1247,11 +1241,7 @@
         "va-dod-suicide-cpg-2024",
         "nice-violence-aggression-ng10"
       ],
-      "facultyReview": {
-        "status": "draft",
-        "reviewer": "",
-        "lastReviewed": ""
-      },
+      "facultyReview": { "status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-22" },
       "speechProfile": {
         "id": "ray-guarded-v1",
         "status": "draft-pending-attestation",

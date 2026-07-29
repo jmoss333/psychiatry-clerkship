@@ -451,6 +451,13 @@ for _f in _glob.glob(OUT+"/tools/*.html"):
         _t=_re.sub(r'(<body[^>]*>)', r'\1\n<a class="skip-link" href="#root">Skip to content</a>', _t, count=1)
     if '.skip-link{' not in _t and '</head>' in _t:
         _t=_t.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}</style>\n</head>', 1)
+    # WP-03 remainder: bare accent text (--primary #c25a3c) is ~3.9:1 on the light
+    # backgrounds — fails WCAG AA for normal-size text. Repoint to --primary-dark:
+    # the literal fallback covers tools whose light :root lacks the token, and the
+    # dark theme (clinical-warm.css) overrides --primary-dark to #dd9277, which passes.
+    # The closing paren in the pattern leaves --primary-dark/--primary-light alone;
+    # only text color is rewritten (backgrounds/borders keep the brand accent).
+    _t=_re.sub(r'color:\s*var\(--primary\)', 'color:var(--primary-dark,#a84830)', _t)
     if _t!=_o: open(_f,"w",encoding="utf-8").write(_t)
 _ih=open(OUT+"/index.html",encoding="utf-8").read(); _ih_o=_ih
 if 'rel="icon"' not in _ih: _ih=_ih.replace('<head>','<head>\n<link rel="icon" href="/favicon.svg">',1)
