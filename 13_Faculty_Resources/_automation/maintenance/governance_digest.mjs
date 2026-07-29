@@ -124,6 +124,7 @@ function reviewQueuePresent(digest) {
 export function buildGovernanceDigest(inputs) {
   const source = object(inputs, 'root');
   if (!Array.isArray(source.bank)) fail('bank must be an array');
+  source.bank.forEach((item, index) => object(item, `bank[${index}]`));
   const manifestPages = uniqueSlugs(source.manifestPages, 'manifestPages');
   const manifestItems = uniqueSlugs(
     source.manifestItems ?? source.manifestPages,
@@ -218,15 +219,27 @@ export function parseAttestationValidatorResult(result) {
   const stdout = typeof result.stdout === 'string' ? result.stdout : '';
   const stderr = typeof result.stderr === 'string' ? result.stderr : '';
   if (stderr.trim()) throw new Error('attestation validator wrote unexpected stderr');
-  if (result.status === 0 && /^attestation consistency OK\b/.test(stdout.trim())) return [];
-  const lines = stdout.split(/\r?\n/).filter((line) => /^\s*-\s+/.test(line));
   if (
-    result.status === 1
-    && /^attestation consistency INVALID\b/.test(stdout.trim())
-    && lines.length > 0
-    && lines.length <= 256
+    result.status === 0
+    && /^attestation consistency OK — [1-9][0-9]* manifest item\(s\), [0-9]+ topic facultyReview (?:entry|entries) aligned\.\n?$/.test(stdout)
   ) {
-    return lines.map((line) => line.replace(/^\s*-\s+/, ''));
+    return [];
+  }
+  if (result.status === 1) {
+    const lines = stdout.replace(/\n$/, '').split(/\r?\n/);
+    const header = /^attestation consistency INVALID — ([1-9][0-9]*) issue\(s\):$/.exec(
+      lines[0] ?? '',
+    );
+    const bullets = lines.slice(1);
+    if (
+      header
+      && bullets.length > 0
+      && bullets.length <= 256
+      && Number(header[1]) === bullets.length
+      && bullets.every((line) => /^  - [^\r\n]+$/.test(line))
+    ) {
+      return bullets.map((line) => line.replace(/^  - /, ''));
+    }
   }
   throw new Error('attestation validator did not return a recognized contract');
 }
@@ -252,28 +265,33 @@ function parseArgs(argv) {
   return result;
 }
 
-export function main(argv = process.argv.slice(2)) {
+export function main(argv = process.argv.slice(2), dependencies = {}) {
+  const read = dependencies.readJson ?? readJson;
+  const validateAttestation = dependencies.runAttestationValidator
+    ?? runAttestationValidator;
+  const write = dependencies.writeFile ?? writeFileSync;
+  const logError = dependencies.logError ?? console.error;
   try {
     const args = parseArgs(argv);
-    const manifest = readJson('13_Faculty_Resources/_automation/site_build/site_manifest.json');
+    const manifest = read('13_Faculty_Resources/_automation/site_build/site_manifest.json');
     const { manifestPages, manifestItems } = manifestInputs(manifest);
-    const bankWrapper = readJson('question_bank.json');
+    const bankWrapper = read('question_bank.json');
     const digest = buildGovernanceDigest({
       bank: bankWrapper.items,
       manifestPages,
       manifestItems,
-      topicMeta: readJson('topic_meta.json'),
-      reviewed: readJson('13_Faculty_Resources/reviewed.json'),
-      needsReattest: readJson(
+      topicMeta: read('topic_meta.json'),
+      reviewed: read('13_Faculty_Resources/reviewed.json'),
+      needsReattest: read(
         '13_Faculty_Resources/_automation/surveillance/config/needs_reattest.json',
       ),
-      attestationErrors: runAttestationValidator(),
+      attestationErrors: validateAttestation(),
     });
-    writeFileSync(args['--out-json'], `${JSON.stringify(digest, null, 2)}\n`, 'utf8');
-    writeFileSync(args['--out-md'], renderGovernanceMarkdown(digest), 'utf8');
+    write(args['--out-json'], `${JSON.stringify(digest, null, 2)}\n`, 'utf8');
+    write(args['--out-md'], renderGovernanceMarkdown(digest), 'utf8');
     return digest.gate === 'blocked' ? 2 : 0;
   } catch {
-    console.error('governance digest failed');
+    logError('governance digest failed');
     return 1;
   }
 }

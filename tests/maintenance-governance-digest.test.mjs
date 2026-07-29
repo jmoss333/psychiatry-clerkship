@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   buildGovernanceDigest,
+  main,
   parseAttestationValidatorResult,
   renderGovernanceMarkdown,
 } from '../13_Faculty_Resources/_automation/maintenance/governance_digest.mjs';
@@ -187,7 +188,23 @@ test('attestation subprocess output is recognized narrowly', () => {
   ]);
   for (const result of [
     { status: 0, stdout: 'unexpected success', stderr: '' },
+    {
+      status: 0,
+      stdout: [
+        'attestation consistency OK — 87 manifest item(s), 13 topic facultyReview entries aligned.',
+        '  - t_mood.md: contradictory drift',
+      ].join('\n'),
+      stderr: '',
+    },
     { status: 1, stdout: 'Traceback: PRIVATE', stderr: '' },
+    {
+      status: 1,
+      stdout: [
+        'attestation consistency INVALID — 2 issue(s):',
+        '  - t_mood.md: only one bullet',
+      ].join('\n'),
+      stderr: '',
+    },
     { status: 2, stdout: '', stderr: 'runtime failure' },
   ]) {
     assert.throws(
@@ -289,6 +306,8 @@ test('markdown is content-free and reports faculty authority', () => {
 test('malformed inputs fail closed', () => {
   const invalid = [
     { bank: {} },
+    { bank: [READY_ITEM, null] },
+    { bank: [READY_ITEM, 'corrupt record'] },
     { manifestPages: ['../private.md'] },
     { manifestItems: ['tool.html', 'tool.html'] },
     { topicMeta: [] },
@@ -302,4 +321,104 @@ test('malformed inputs fail closed', () => {
       /governance|manifest|slug|attestation|input/i,
     );
   }
+});
+
+function cliDependencies({ bank = [READY_ITEM], attestationErrors = [] } = {}) {
+  const files = {
+    '13_Faculty_Resources/_automation/site_build/site_manifest.json': {
+      md: [['source.md', 't_mood.md', 'PRIVATE PAGE TITLE']],
+      tools: [],
+    },
+    'question_bank.json': { items: bank },
+    'topic_meta.json': { 't_mood.md': TOPIC_META['t_mood.md'] },
+    '13_Faculty_Resources/reviewed.json': {
+      't_mood.md': { status: 'reviewed', by: 'PRIVATE REVIEWER NAME' },
+    },
+    '13_Faculty_Resources/_automation/surveillance/config/needs_reattest.json': {
+      slugs: [],
+    },
+  };
+  const writes = new Map();
+  const errors = [];
+  return {
+    writes,
+    errors,
+    dependencies: {
+      readJson(relativePath) {
+        if (!(relativePath in files)) throw new Error('unexpected file');
+        return structuredClone(files[relativePath]);
+      },
+      runAttestationValidator() {
+        return structuredClone(attestationErrors);
+      },
+      writeFile(outputPath, value, encoding) {
+        assert.equal(encoding, 'utf8');
+        writes.set(outputPath, value);
+      },
+      logError(message) {
+        errors.push(message);
+      },
+    },
+  };
+}
+
+test('CLI writes both artifacts and returns 0 for a non-blocking review queue', () => {
+  const harness = cliDependencies();
+  assert.equal(
+    main(['--out-json', '/tmp/digest.json', '--out-md', '/tmp/digest.md'], harness.dependencies),
+    0,
+  );
+  assert.deepEqual([...harness.writes.keys()].sort(), ['/tmp/digest.json', '/tmp/digest.md']);
+  const digest = JSON.parse(harness.writes.get('/tmp/digest.json'));
+  assert.equal(digest.gate, 'review');
+  assert.match(harness.writes.get('/tmp/digest.md'), /Faculty review remains required/);
+  assert.doesNotMatch(
+    [...harness.writes.values()].join('\n'),
+    /PRIVATE PAGE TITLE|PRIVATE REVIEWER NAME|Synthetic teaching vignette/,
+  );
+  assert.deepEqual(harness.errors, []);
+});
+
+test('CLI writes artifacts before returning 2 for blockers or attestation drift', () => {
+  for (const options of [
+    { bank: [BLOCKED_ITEM] },
+    {
+      bank: [READY_ITEM],
+      attestationErrors: [{ code: 'consistency', slugPrefix: 't_mood.md' }],
+    },
+  ]) {
+    const harness = cliDependencies(options);
+    assert.equal(
+      main(
+        ['--out-json', '/tmp/blocked.json', '--out-md', '/tmp/blocked.md'],
+        harness.dependencies,
+      ),
+      2,
+    );
+    assert.equal(harness.writes.size, 2);
+    assert.equal(JSON.parse(harness.writes.get('/tmp/blocked.json')).gate, 'blocked');
+  }
+});
+
+test('CLI returns 1 and writes no artifacts for malformed or runtime input', () => {
+  const malformed = cliDependencies({ bank: [READY_ITEM, null] });
+  assert.equal(
+    main(['--out-json', '/tmp/bad.json', '--out-md', '/tmp/bad.md'], malformed.dependencies),
+    1,
+  );
+  assert.equal(malformed.writes.size, 0);
+  assert.deepEqual(malformed.errors, ['governance digest failed']);
+
+  const runtime = cliDependencies();
+  runtime.dependencies.writeFile = () => {
+    throw new Error('disk failure');
+  };
+  assert.equal(
+    main(
+      ['--out-json', '/tmp/runtime.json', '--out-md', '/tmp/runtime.md'],
+      runtime.dependencies,
+    ),
+    1,
+  );
+  assert.deepEqual(runtime.errors, ['governance digest failed']);
 });
