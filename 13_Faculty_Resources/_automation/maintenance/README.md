@@ -1,9 +1,12 @@
 # Scheduled Maintenance Operations
 
 This is the operator index for the repository's scheduled checks. The checks observe,
-validate, retain content-free evidence, and route decisions to people. They do not edit
-clinical teaching content, attest or approve it, close review issues, rotate credentials,
-enable managed voice, or invent rotation dates.
+validate, retain bounded evidence, and route decisions to people. Maintenance receipts
+and digests do not retain clinical teaching content. Surveillance evidence may include
+bounded excerpts from authoritative public sources so faculty can review a detected
+change; it never includes PHI, patient data, learner identity, or credentials. The checks
+do not edit clinical teaching content, attest or approve it, close review issues, rotate
+credentials, enable managed voice, or invent rotation dates.
 
 See also [Curriculum Surveillance](../surveillance/README.md), the
 [Git and Netlify deployment plan](../GIT_AND_DEPLOY_PLAN.md), and the Interview Room
@@ -39,9 +42,9 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 | Citation surveillance | Monday 07:00 UTC, `0 7 * * 1` | `surveillance-citations.yml` | `surveillance-citation-monitor-${{ github.run_id }}` — 90 days |
 | Guideline surveillance | First day monthly 06:00 UTC, `0 6 1 * *` | `surveillance-guideline.yml` | `surveillance-guideline-monitor-${{ github.run_id }}` — 90 days |
 | Resource intake | On demand only | `surveillance-resource-intake.yml` | `surveillance-resource-intake-${{ github.run_id }}` — 90 days |
-| External automation deadman | Daily 08:30 local | Planned Codex heartbeat | Notification; no repository artifact |
-| Policy/provider/Zotero review | First Tuesday 09:00 local | Planned Codex heartbeat | Read-only review proposal |
-| Rotation follow-up | Monday 09:15 local | Planned Codex heartbeat | Notification only when actionable |
+| External automation deadman | Daily 08:30 local | Controller-managed Codex heartbeat; verify current status | Notification; no repository artifact |
+| Policy/provider/Zotero review | First Tuesday 09:00 local | Controller-managed Codex heartbeat; verify current status | Read-only review proposal |
+| Rotation follow-up | Monday 09:15 local | Controller-managed Codex heartbeat; verify current status | Notification only when actionable |
 
 ## State meanings
 
@@ -279,6 +282,14 @@ For a Codex heartbeat, open Codex Automations, choose the exact automation, and 
 On resume, re-check its prompt, `America/New_York` cadence, read-only scope, notification
 policy, and next-run time. A paused or unavailable controller must be reported honestly;
 it does not make the repository checks green.
+
+The Netlify scheduled canary has no repository runtime pause switch. To pause it, remove
+the scheduled-function export through a reviewed SP-proxy change and deploy, preserve the
+latest bounded receipt and invocation evidence, and coordinate the GitHub receipt monitor
+and external deadman so their expected blocking state is explicit. To resume, restore the
+schedule through review, deploy, confirm a fresh six-hour invocation and receipt, and run
+the required success/failure log check plus red-team checklist. Never delete or invalidate
+a credential merely to simulate a pause.
 
 ## Operator response
 

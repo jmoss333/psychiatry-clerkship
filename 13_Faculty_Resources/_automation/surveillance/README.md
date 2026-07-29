@@ -151,7 +151,8 @@ the workflow files reach the default branch. To configure the external collector
    login). Unknowns stay `signal_only` — the safe default.
 3. **Baseline the guideline job**: Actions → *Surveillance — Guideline Monitor* → Run
    workflow. First run records hashes and opens no issues.
-4. **First link run** confirms the registry URLs (flips `verified` / files unreachable).
+4. **First link run** reports which registry URLs are reachable or unreachable. It does not edit
+   `source_registry.yaml`; any registry update remains a human-reviewed change.
 5. Schedules then run automatically: weekly links and citations, monthly guidelines;
    resource intake remains manual.
 

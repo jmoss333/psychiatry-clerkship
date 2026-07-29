@@ -4,7 +4,7 @@
 
 **Goal:** Build and activate the approved layered maintenance steward for surveillance, hosted reliability, faculty governance, evidence operations, and rotation readiness.
 
-**Architecture:** Deterministic repository and production checks run in GitHub Actions or a Netlify scheduled function; authenticated control-plane and local-source checks run as independent Codex heartbeats. Every layer emits a content-free receipt, preserves faculty authority, and separates a clean check from missing evidence.
+**Architecture:** Deterministic repository and production checks run in GitHub Actions or a Netlify scheduled function; authenticated control-plane and local-source checks run as independent Codex heartbeats. Every layer emits a bounded receipt or review artifact, preserves faculty authority, and separates a clean check from missing evidence. Maintenance receipts exclude clinical teaching content; surveillance artifacts may retain bounded authoritative-source excerpts but never PHI, patient data, learner identity, or credentials.
 
 **Tech Stack:** Python 3.11 standard library plus existing PyYAML/jsonschema dependencies, Node.js 20 ESM and `node:test`, GitHub Actions, Playwright, Netlify Functions, GitHub CLI, Codex heartbeat automations.
 

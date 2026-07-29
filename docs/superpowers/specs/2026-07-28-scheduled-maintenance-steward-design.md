@@ -1,15 +1,15 @@
 # Scheduled Maintenance Steward — Design
 
-**Date:** 2026-07-28  
-**Owner:** Joshua Moss, MD  
+**Date:** 2026-07-28
+**Owner:** Joshua Moss, MD
 **Scope:** Psychiatry Clerkship Library, its two learner sites, and the Interview Room proxy
 
 ## Decision
 
 Build one layered maintenance steward with repository-native schedules for deterministic checks and
 Codex heartbeats for checks that must remain independent of GitHub Actions or need authenticated
-connectors. The system observes, validates, creates content-free receipts, and routes work for human
-review. It never edits clinical teaching content, marks content reviewed or attested, enables managed
+connectors. The system observes, validates, creates bounded receipts or review evidence, and routes
+work for human review. It never edits clinical teaching content, marks content reviewed or attested, enables managed
 voice, refreshes visual baselines, or invents rotation dates.
 
 This design deliberately repairs the existing surveillance spine before adding more schedules. The
@@ -364,8 +364,10 @@ rather than generating one.
 - Every third-party action in a modified or new workflow is pinned to a live-verified immutable
   commit SHA with its semantic tag in a comment. Artifacts use the verified
   `actions/upload-artifact` v7 commit and the repository-supported 90-day maximum retention.
-- All reports and fixtures are synthetic or content-free. No PHI, learner identity, or real patient
-  data is permitted.
+- Maintenance receipts and fixtures are synthetic or exclude clinical teaching content.
+  Surveillance evidence may retain bounded excerpts from authoritative public sources for faculty
+  comparison. No report or fixture may contain PHI, learner identity, credentials, or real patient
+  data.
 
 ## Acceptance criteria
 
