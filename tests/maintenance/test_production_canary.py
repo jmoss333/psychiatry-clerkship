@@ -904,6 +904,56 @@ class ProductionCanaryTests(unittest.TestCase):
             second["sites"][0]["mediaIntegrityAggregateSha256"],
         )
 
+    def test_cli_projects_checked_in_shared_config_before_strict_validation(self):
+        config_path = (
+            ROOT
+            / "13_Faculty_Resources"
+            / "_automation"
+            / "maintenance"
+            / "maintenance_config.json"
+        )
+        shared_config = json.loads(config_path.read_text(encoding="utf-8"))
+        self.assertTrue(set(shared_config) - set(CONFIG))
+        with self.assertRaisesRegex(production_canary.CanaryError, "config keys"):
+            production_canary._validate_config(shared_config)
+
+        out_path = self.temp_dir / "release-twin.json"
+        opener = FixtureOpener(valid_responses())
+        with (
+            mock.patch.object(
+                production_canary,
+                "MEDIA_MANIFEST_PATH",
+                self.manifest_path,
+            ),
+            mock.patch.object(production_canary, "SP_PACK_PATH", self.pack_path),
+            mock.patch.object(production_canary, "build_opener", return_value=opener),
+        ):
+            exit_code = production_canary.main(
+                [
+                    "--config",
+                    str(config_path),
+                    "--out",
+                    str(out_path),
+                    "--source-sha",
+                    SOURCE_SHA,
+                ]
+            )
+
+        self.assertEqual(exit_code, 0)
+        receipt = json.loads(out_path.read_text(encoding="utf-8"))
+        self.assertEqual(receipt["sourceSha"], SOURCE_SHA)
+        self.assertEqual(
+            [site["baseUrl"] for site in receipt["sites"]],
+            [site["baseUrl"] for site in CONFIG["sites"]],
+        )
+
+    def test_load_config_requires_a_json_object(self):
+        config_path = self.temp_dir / "array-config.json"
+        config_path.write_text("[]\n", encoding="utf-8")
+
+        with self.assertRaisesRegex(production_canary.CanaryError, "must be an object"):
+            production_canary._load_config(config_path)
+
     def test_checked_in_config_has_exact_public_urls_and_netlify_site_ids(self):
         path = (
             ROOT

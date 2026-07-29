@@ -666,7 +666,12 @@ def probe(config, opener, now, source_sha):
 
 def _load_config(path):
     _, config = _read_json_file(path, "maintenance config")
-    return config
+    if not isinstance(config, dict):
+        raise CanaryError("maintenance config must be an object")
+    return {
+        key: config.get(key)
+        for key in ("schemaVersion", "sites", "spProxy")
+    }
 
 
 def _utc_now():
