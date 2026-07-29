@@ -365,9 +365,9 @@ rather than generating one.
   commit SHA with its semantic tag in a comment. Artifacts use the verified
   `actions/upload-artifact` v7 commit and the repository-supported 90-day maximum retention.
 - Maintenance receipts and fixtures are synthetic or exclude clinical teaching content.
-  Surveillance evidence may retain bounded excerpts from authoritative public sources for faculty
-  comparison. No report or fixture may contain PHI, learner identity, credentials, or real patient
-  data.
+  Surveillance evidence may retain complete normalized text for authoritative public sources
+  configured as `full_text`, plus bounded change excerpts; `signal_only` sources remain hash-only.
+  No report or fixture may contain PHI, learner identity, credentials, or real patient data.
 
 ## Acceptance criteria
 

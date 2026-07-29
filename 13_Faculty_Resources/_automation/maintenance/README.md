@@ -2,9 +2,10 @@
 
 This is the operator index for the repository's scheduled checks. The checks observe,
 validate, retain bounded evidence, and route decisions to people. Maintenance receipts
-and digests do not retain clinical teaching content. Surveillance evidence may include
-bounded excerpts from authoritative public sources so faculty can review a detected
-change; it never includes PHI, patient data, learner identity, or credentials. The checks
+and digests do not retain clinical teaching content. Surveillance evidence may retain
+complete normalized text for authoritative public sources explicitly configured as
+`full_text`, plus bounded change excerpts; `signal_only` sources remain hash-only. It
+never includes PHI, patient data, learner identity, or credentials. The checks
 do not edit clinical teaching content, attest or approve it, close review issues, rotate
 credentials, enable managed voice, or invent rotation dates.
 
