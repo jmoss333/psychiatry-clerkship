@@ -53,6 +53,8 @@ Restraint and seclusion are safety interventions, never treatments. They do not 
 - Restraint and seclusion are time-limited safety measures, never treatments, and demand monitoring plus a debrief.
 - Watch yourself: stay near the door, never block the patient's exit, and call for help early.
 
+<!-- crisis-block -->
+
 ## Pair with
 
 Pair this with the Violence Risk tool, the delirium guidance, and the catatonia guidance.

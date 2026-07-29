@@ -171,3 +171,5 @@ Using a synthetic or de-identified case:
 
 Plain-English note: this module translates the larger family systems and
 discharge work into specific student behaviors: ask, map, verify, and debrief.
+
+<!-- crisis-block -->
