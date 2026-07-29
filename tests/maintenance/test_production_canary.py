@@ -2,11 +2,15 @@ import copy
 import json
 import sys
 import tempfile
+import threading
 import unittest
 from email.message import Message
 from hashlib import sha256
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest import mock
+from urllib.error import HTTPError
+from urllib.request import Request
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -54,6 +58,7 @@ SEARCH_BYTES = json.dumps(
                 "snip": "Synthetic fixture",
             }
         ],
+        "synonyms": {"welcome": ["orientation", "introduction"]},
         "postings": {"welcome": [[0, 4]]},
         "df": {"welcome": 1},
     },
@@ -163,7 +168,12 @@ class FixtureResponse:
     def __init__(self, spec):
         self.status = spec["status"]
         self.headers = Message()
-        for name, value in spec["headers"].items():
+        header_items = (
+            spec["headers"].items()
+            if isinstance(spec["headers"], dict)
+            else spec["headers"]
+        )
+        for name, value in header_items:
             self.headers[name] = value
         self._body = spec["body"]
         self._offset = 0
@@ -395,6 +405,59 @@ class ProductionCanaryTests(unittest.TestCase):
                 )
                 self.assert_probe_error("Cache-Control", responses)
 
+    def test_duplicate_critical_headers_are_rejected(self):
+        cases = (
+            ("/", "Content-Type"),
+            ("/", "Cache-Control"),
+            ("/", "X-Content-Type-Options"),
+            ("/", "Referrer-Policy"),
+            ("/", "Content-Security-Policy"),
+            ("/nav.json", "Content-Type"),
+            ("/nav.json", "Cache-Control"),
+            ("/search-index.json", "Content-Type"),
+            ("/search-index.json", "Cache-Control"),
+            (f"/{MEDIA_PATH}", "Content-Type"),
+            (f"/{MEDIA_PATH}", "Cache-Control"),
+            (f"/{MEDIA_PATH}", "Content-Range"),
+            (f"/{MEDIA_PATH}", "ETag"),
+        )
+        for suffix, header in cases:
+            with self.subTest(suffix=suffix, header=header):
+                responses = valid_responses()
+
+                def duplicate(spec, header=header):
+                    original = spec["headers"][header]
+                    spec["headers"] = [
+                        *spec["headers"].items(),
+                        (header, original),
+                    ]
+
+                self.mutate_all(responses, suffix, duplicate)
+                self.assert_probe_error("exactly once", responses)
+
+    def test_nav_and_search_bodies_are_bounded_with_or_without_content_length(self):
+        for suffix in ("/nav.json", "/search-index.json"):
+            with self.subTest(content_length=suffix):
+                responses = valid_responses()
+                self.mutate_all(
+                    responses,
+                    suffix,
+                    lambda spec: spec["headers"].__setitem__(
+                        "Content-Length",
+                        "999999999",
+                    ),
+                )
+                self.assert_probe_error("too large", responses)
+
+        responses = valid_responses()
+        oversized = b"x" * 8_388_609
+        self.mutate_all(
+            responses,
+            "/nav.json",
+            lambda spec: spec.__setitem__("body", oversized),
+        )
+        self.assert_probe_error("too large", responses)
+
     def test_root_nav_and_search_require_success_and_json_content_types(self):
         for suffix in ("/", "/nav.json", "/search-index.json"):
             with self.subTest(status=suffix):
@@ -440,14 +503,119 @@ class ProductionCanaryTests(unittest.TestCase):
 
     def test_search_index_fields_are_validated_independently(self):
         valid = json.loads(SEARCH_BYTES)
-        mutations = (
+        mutations = [
             ("version", lambda value: value.__setitem__("version", 2)),
             ("n", lambda value: value.__setitem__("n", "1")),
             ("n mismatch", lambda value: value.__setitem__("n", 2)),
             ("docs", lambda value: value.__setitem__("docs", [])),
             ("doc identity", lambda value: value.__setitem__("docs", [{}])),
+            ("missing synonyms", lambda value: value.pop("synonyms")),
+            ("synonyms object", lambda value: value.__setitem__("synonyms", [])),
+            (
+                "synonym term",
+                lambda value: value.__setitem__("synonyms", {" ": ["orientation"]}),
+            ),
+            (
+                "synonym array",
+                lambda value: value.__setitem__("synonyms", {"welcome": "orientation"}),
+            ),
+            (
+                "empty synonym array",
+                lambda value: value.__setitem__("synonyms", {"welcome": []}),
+            ),
+            (
+                "blank synonym",
+                lambda value: value.__setitem__("synonyms", {"welcome": [" "]}),
+            ),
+            (
+                "non-string synonym",
+                lambda value: value.__setitem__("synonyms", {"welcome": [7]}),
+            ),
             ("postings", lambda value: value.__setitem__("postings", {})),
+            (
+                "empty posting list",
+                lambda value: value.__setitem__("postings", {"welcome": []}),
+            ),
+            (
+                "posting pair",
+                lambda value: value.__setitem__("postings", {"welcome": [[0]]}),
+            ),
+            (
+                "posting object",
+                lambda value: value.__setitem__("postings", {"welcome": [{"id": 0}]}),
+            ),
+            (
+                "string document id",
+                lambda value: value.__setitem__("postings", {"welcome": [["0", 4]]}),
+            ),
+            (
+                "boolean document id",
+                lambda value: value.__setitem__("postings", {"welcome": [[True, 4]]}),
+            ),
+            (
+                "negative document id",
+                lambda value: value.__setitem__("postings", {"welcome": [[-1, 4]]}),
+            ),
+            (
+                "out-of-range document id",
+                lambda value: value.__setitem__("postings", {"welcome": [[1, 4]]}),
+            ),
+            (
+                "zero term frequency",
+                lambda value: value.__setitem__("postings", {"welcome": [[0, 0]]}),
+            ),
+            (
+                "boolean term frequency",
+                lambda value: value.__setitem__("postings", {"welcome": [[0, True]]}),
+            ),
+            (
+                "fractional term frequency",
+                lambda value: value.__setitem__("postings", {"welcome": [[0, 1.5]]}),
+            ),
+            (
+                "string term frequency",
+                lambda value: value.__setitem__("postings", {"welcome": [[0, "4"]]}),
+            ),
             ("df", lambda value: value.__setitem__("df", {})),
+            (
+                "df extra term",
+                lambda value: value.__setitem__(
+                    "df",
+                    {"welcome": 1, "unexpected": 1},
+                ),
+            ),
+            (
+                "df count mismatch",
+                lambda value: value.__setitem__("df", {"welcome": 2}),
+            ),
+            (
+                "df zero",
+                lambda value: value.__setitem__("df", {"welcome": 0}),
+            ),
+            (
+                "df boolean",
+                lambda value: value.__setitem__("df", {"welcome": True}),
+            ),
+        ]
+        for field in ("t", "f", "k", "sec", "snip"):
+            mutations.append(
+                (
+                    f"missing doc {field}",
+                    lambda value, field=field: value["docs"][0].pop(field),
+                )
+            )
+        for field in ("t", "f", "k", "sec"):
+            mutations.append(
+                (
+                    f"blank doc {field}",
+                    lambda value, field=field: value["docs"][0].__setitem__(field, " "),
+                )
+            )
+        mutations.append(
+            (
+                "non-string doc snip",
+                lambda value: value["docs"][0].__setitem__("snip", None),
+            )
         )
         for label, mutation in mutations:
             with self.subTest(label=label):
@@ -461,6 +629,36 @@ class ProductionCanaryTests(unittest.TestCase):
                     lambda spec, encoded=encoded: spec.__setitem__("body", encoded),
                 )
                 self.assert_probe_error("search-index.json", responses)
+
+        two_docs = copy.deepcopy(valid)
+        two_docs["n"] = 2
+        two_docs["docs"].append(
+            {
+                "t": "Quiz",
+                "f": "quiz.html",
+                "k": "tool",
+                "sec": "Practice",
+                "snip": "",
+            }
+        )
+        impossible_postings = (
+            ("duplicate ids", [[0, 4], [0, 2]]),
+            ("descending ids", [[1, 2], [0, 4]]),
+        )
+        for label, postings in impossible_postings:
+            with self.subTest(label=label):
+                body = copy.deepcopy(two_docs)
+                body["postings"] = {"welcome": postings}
+                body["df"] = {"welcome": 2}
+                responses = valid_responses()
+                encoded = json.dumps(body, separators=(",", ":")).encode()
+                self.mutate_all(
+                    responses,
+                    "/search-index.json",
+                    lambda spec, encoded=encoded: spec.__setitem__("body", encoded),
+                )
+                self.assert_probe_error("search-index.json", responses)
+
         for body in (b"{", b"{}", b"[]"):
             with self.subTest(body=body):
                 responses = valid_responses()
@@ -623,6 +821,58 @@ class ProductionCanaryTests(unittest.TestCase):
                 config = copy.deepcopy(CONFIG)
                 config["sites"][0]["baseUrl"] = value
                 self.assert_probe_error("HTTPS URL", config=config)
+
+    def test_default_opener_rejects_redirect_without_requesting_location(self):
+        hits = {"/start": 0, "/target": 0}
+
+        class RedirectDiagnosticHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                hits[self.path] = hits.get(self.path, 0) + 1
+                if self.path == "/start":
+                    self.send_response(302)
+                    self.send_header(
+                        "Location",
+                        f"http://127.0.0.1:{self.server.server_port}/target",
+                    )
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return
+                if self.path == "/target":
+                    self.send_response(200)
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return
+                self.send_error(404)
+
+            def log_message(self, format, *args):
+                return
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), RedirectDiagnosticHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        response = None
+        error = None
+        try:
+            request = Request(f"http://127.0.0.1:{server.server_port}/start")
+            try:
+                response = production_canary._open_response(
+                    production_canary.build_opener(),
+                    request,
+                    "redirect diagnostic",
+                )
+            except production_canary.CanaryError as exc:
+                error = exc
+        finally:
+            if response is not None:
+                response.close()
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+        self.assertIsNotNone(error, "the production opener followed a redirect")
+        self.assertEqual(hits, {"/start": 1, "/target": 0})
+        self.assertIsInstance(error.__cause__, HTTPError)
+        self.assertTrue(error.__cause__.closed)
 
     def test_pack_and_model_metadata_are_required(self):
         mutations = (

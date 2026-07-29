@@ -14,7 +14,11 @@ from hashlib import sha256
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlsplit
-from urllib.request import Request, build_opener
+from urllib.request import (
+    HTTPRedirectHandler,
+    Request,
+    build_opener as urllib_build_opener,
+)
 from uuid import UUID
 
 
@@ -25,6 +29,7 @@ DEFAULT_CONFIG_PATH = Path(__file__).with_name("maintenance_config.json")
 
 RANGE_VALUE = "bytes=0-511"
 RANGE_SIZE = 512
+MAX_JSON_BYTES = 8_388_608
 TIMEOUT_SECONDS = 30
 KNOWN_PACK_STATUSES = {"draft-pending-attestation", "reviewed", "attested"}
 LEARNER_READY_STATUSES = {"reviewed", "attested"}
@@ -59,6 +64,18 @@ REQUIRED_CSP = {
 
 class CanaryError(RuntimeError):
     """A public release contract failed closed."""
+
+
+class NoRedirectHandler(HTTPRedirectHandler):
+    """Reject redirects so probes cannot leave their validated origin."""
+
+    def redirect_request(self, request, file_pointer, code, message, headers, new_url):
+        return None
+
+
+def build_opener():
+    """Build the production opener with redirects disabled."""
+    return urllib_build_opener(NoRedirectHandler())
 
 
 def _require_nonempty_string(value, label):
@@ -237,12 +254,6 @@ def _load_expected_sp():
     }
 
 
-def _header(response, name):
-    headers = getattr(response, "headers", None)
-    value = headers.get(name) if headers is not None else None
-    return value.strip() if isinstance(value, str) else ""
-
-
 def _single_header(response, name):
     headers = getattr(response, "headers", None)
     if headers is None:
@@ -282,7 +293,7 @@ def _parse_cache_control(value, label):
 
 
 def _require_cache(response, label, max_age, *, must_revalidate=False):
-    directives = _parse_cache_control(_header(response, "Cache-Control"), label)
+    directives = _parse_cache_control(_single_header(response, "Cache-Control"), label)
     if directives.get("public") != "public" or directives.get("max-age") != (
         f"max-age={max_age}"
     ):
@@ -292,7 +303,7 @@ def _require_cache(response, label, max_age, *, must_revalidate=False):
 
 
 def _require_content_type(response, label, allowed):
-    raw = _header(response, "Content-Type")
+    raw = _single_header(response, "Content-Type")
     media_type = raw.split(";", 1)[0].strip().lower()
     if media_type not in allowed:
         raise CanaryError(f"{label} Content-Type is invalid")
@@ -337,6 +348,19 @@ def _open_response(opener, request, label):
         raise CanaryError(f"{label} request failed") from exc
 
 
+def _read_bounded_json_body(response, label):
+    declared_length = _single_header(response, "Content-Length")
+    if declared_length:
+        if re.fullmatch(r"[0-9]+", declared_length) is None:
+            raise CanaryError(f"{label} Content-Length is invalid")
+        if int(declared_length) > MAX_JSON_BYTES:
+            raise CanaryError(f"{label} response is too large")
+    body = response.read(MAX_JSON_BYTES + 1)
+    if len(body) > MAX_JSON_BYTES:
+        raise CanaryError(f"{label} response is too large")
+    return body
+
+
 def _probe_root(base_url, opener):
     response = _open_response(opener, _request(f"{base_url}/"), "root")
     try:
@@ -344,14 +368,14 @@ def _probe_root(base_url, opener):
             raise CanaryError(f"root HTTP {_status(response)}")
         _require_content_type(response, "root", {"text/html"})
         _require_cache(response, "root", 0, must_revalidate=True)
-        if _header(response, "X-Content-Type-Options").lower() != "nosniff":
+        if _single_header(response, "X-Content-Type-Options").lower() != "nosniff":
             raise CanaryError("root X-Content-Type-Options header is invalid")
         if (
-            _header(response, "Referrer-Policy").lower()
+            _single_header(response, "Referrer-Policy").lower()
             != "strict-origin-when-cross-origin"
         ):
             raise CanaryError("root Referrer-Policy header is invalid")
-        _parse_csp(_header(response, "Content-Security-Policy"))
+        _parse_csp(_single_header(response, "Content-Security-Policy"))
     finally:
         response.close()
 
@@ -369,7 +393,7 @@ def _fetch_json(base_url, filename, opener, *, max_age, must_revalidate=False):
             max_age,
             must_revalidate=must_revalidate,
         )
-        body = response.read()
+        body = _read_bounded_json_body(response, label)
     finally:
         response.close()
     return body, _parse_json_bytes(body, label)
@@ -408,7 +432,7 @@ def _validate_nav(nav):
 def _validate_search(search):
     if not isinstance(search, dict):
         raise CanaryError("search-index.json must be an object")
-    for key in ("version", "n", "docs", "postings", "df"):
+    for key in ("version", "n", "docs", "synonyms", "postings", "df"):
         if key not in search:
             raise CanaryError(f"search-index.json is missing {key}")
     if type(search["version"]) is not int or search["version"] != 1:
@@ -423,32 +447,81 @@ def _validate_search(search):
     ):
         raise CanaryError("search-index.json docs must be a non-empty object array")
     for index, doc in enumerate(docs):
-        for field in ("t", "f", "k"):
+        for field in ("t", "f", "k", "sec"):
             _require_nonempty_string(
                 doc.get(field),
                 f"search-index.json docs[{index}] {field}",
             )
+        if "snip" not in doc or not isinstance(doc["snip"], str):
+            raise CanaryError(f"search-index.json docs[{index}] snip must be a string")
     if search["n"] != len(docs):
         raise CanaryError("search-index.json n does not match docs")
+
+    synonyms = search["synonyms"]
+    if not isinstance(synonyms, dict):
+        raise CanaryError("search-index.json synonyms must be an object")
+    for term, related_terms in synonyms.items():
+        if not isinstance(term, str) or not term.strip():
+            raise CanaryError("search-index.json synonym terms must be non-blank strings")
+        if not isinstance(related_terms, list) or not related_terms:
+            raise CanaryError(
+                f"search-index.json synonyms[{term!r}] must be a non-empty array"
+            )
+        if any(
+            not isinstance(related, str) or not related.strip()
+            for related in related_terms
+        ):
+            raise CanaryError(
+                f"search-index.json synonyms[{term!r}] values must be non-blank strings"
+            )
+
     postings = search["postings"]
-    if (
-        not isinstance(postings, dict)
-        or not postings
-        or any(not isinstance(key, str) or not key for key in postings)
-        or any(not isinstance(value, list) for value in postings.values())
-    ):
+    if not isinstance(postings, dict) or not postings:
         raise CanaryError("search-index.json postings must be a non-empty object")
+    posting_counts = {}
+    for term, rows in postings.items():
+        if not isinstance(term, str) or not term.strip():
+            raise CanaryError("search-index.json posting terms must be non-blank strings")
+        if not isinstance(rows, list) or not rows:
+            raise CanaryError(
+                f"search-index.json postings[{term!r}] must be a non-empty array"
+            )
+        previous_document_id = -1
+        for row in rows:
+            if not isinstance(row, list) or len(row) != 2:
+                raise CanaryError(
+                    f"search-index.json postings[{term!r}] entries must be [doc_id, tf]"
+                )
+            document_id, term_frequency = row
+            if (
+                type(document_id) is not int
+                or document_id < 0
+                or document_id >= search["n"]
+            ):
+                raise CanaryError(
+                    f"search-index.json postings[{term!r}] has invalid document id"
+                )
+            if document_id <= previous_document_id:
+                raise CanaryError(
+                    f"search-index.json postings[{term!r}] document ids must be unique and ascending"
+                )
+            if type(term_frequency) is not int or term_frequency <= 0:
+                raise CanaryError(
+                    f"search-index.json postings[{term!r}] term frequency must be a positive integer"
+                )
+            previous_document_id = document_id
+        posting_counts[term] = len(rows)
+
     document_frequencies = search["df"]
-    if (
-        not isinstance(document_frequencies, dict)
-        or not document_frequencies
-        or any(not isinstance(key, str) or not key for key in document_frequencies)
-        or any(
-            type(value) is not int or value <= 0
-            for value in document_frequencies.values()
-        )
+    if not isinstance(document_frequencies, dict) or set(document_frequencies) != set(
+        postings
     ):
         raise CanaryError("search-index.json df must be a non-empty count object")
+    for term, count in document_frequencies.items():
+        if type(count) is not int or count <= 0 or count != posting_counts[term]:
+            raise CanaryError(
+                f"search-index.json df[{term!r}] must equal its unique posting count"
+            )
 
 
 def _validate_etag(response):
@@ -481,7 +554,7 @@ def _probe_media(base_url, path, opener):
             MEDIA_CONTENT_TYPES[suffix],
         )
         _require_cache(response, "media", 604800)
-        content_range = _header(response, "Content-Range")
+        content_range = _single_header(response, "Content-Range")
         matched = re.fullmatch(r"bytes 0-511/([0-9]+)", content_range)
         if matched is None or int(matched.group(1)) <= RANGE_SIZE:
             raise CanaryError("media Content-Range must be bytes 0-511/total with total > 512")
