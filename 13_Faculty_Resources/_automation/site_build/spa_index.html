@@ -38,9 +38,14 @@
   input.search{width:100%;padding:8px 28px 8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.9rem;background:#fff;color:var(--text)}
   input.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
   .search-wrap .sx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:1rem;display:none}
-  .mode-companion{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:10px;margin:0 0 12px;box-shadow:0 1px 3px rgba(59,51,44,.08)}
-  .mc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
-  .mc-title{font-size:.68rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
+  .mode-companion{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:0;margin:0 0 12px;box-shadow:0 1px 3px rgba(59,51,44,.08);overflow:hidden}
+  .mc-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;background:transparent;color:var(--text);font:inherit;font-weight:900;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:10px;cursor:pointer}
+  .mc-toggle:hover{background:var(--accent-light);color:var(--accent-dark)}
+  .mc-chev{display:inline-block;color:var(--text-light);transition:transform .15s}
+  .mc-toggle[aria-expanded="true"] .mc-chev{transform:rotate(90deg)}
+  .mc-body{padding:0 10px 10px}
+  .mc-body[hidden]{display:none}
+  .mc-head{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:0 0 8px}
   .mc-home{border:1px solid var(--border);background:var(--bg-alt);color:var(--accent-dark);border-radius:999px;padding:3px 8px;font:inherit;font-size:.68rem;font-weight:800;cursor:pointer}
   .mc-home:hover{border-color:var(--accent);background:var(--accent-light)}
   .mc-modes{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 9px}
@@ -1266,18 +1271,23 @@
     if(x.href){ return '<a class="'+cls+'" href="'+esc(x.href)+'"><span class="t">'+esc(x.t)+'</span><span class="tag">'+esc(tag)+'</span></a>'; }
     return '<button type="button" class="'+cls+'" data-mc-f="'+esc(x.f)+'"><span class="t">'+esc(x.t)+'</span><span class="tag">'+esc(tag)+'</span></button>';
   }
+  var mcOpen=false;
   function renderModeCompanion(){
     var root=document.getElementById('modeCompanion'); if(!root)return;
     var mode=dashboardMode(), cfg=dashCfg(mode), modes=[['ward','Ward'],['shelf','Shelf'],['family','Family'],['safety','Safety'],['5min','5 min']];
     var matches=itemsForMode(mode), tools=toolsForMode(mode,matches), pages=matches.slice(0,3);
-    var h='<div class="mc-head"><div class="mc-title">'+esc(cfg.label)+' mode</div><button type="button" class="mc-home" data-mc-home="1">Progress</button></div>';
+    var h='<button type="button" class="mc-toggle" aria-expanded="'+(mcOpen?'true':'false')+'" aria-controls="mcBody"><span class="mc-toggle-t">'+esc(cfg.label)+' mode</span><span class="mc-chev" aria-hidden="true">▸</span></button>';
+    h+='<div id="mcBody" class="mc-body"'+(mcOpen?'':' hidden')+'>';
+    h+='<div class="mc-head"><button type="button" class="mc-home" data-mc-home="1">Progress</button></div>';
     h+='<div class="mc-modes">'+modes.map(function(m){return '<button type="button" class="mc-mode'+(mode===m[0]?' on':'')+'" data-mc-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div>';
     h+='<div class="mc-section"><div class="mc-label">Pages</div><div class="mc-list">'+(pages.length?pages.map(function(x){return companionButton(x,'page');}).join(''):'<div class="mc-empty">Recommendations load after navigation data is ready.</div>')+'</div></div>';
     h+='<div class="mc-section"><div class="mc-label">Tools</div><div class="mc-list">'+(tools.length?tools.slice(0,3).map(function(x){return companionButton(x,'tool');}).join(''):'<div class="mc-empty">No mode tools yet.</div>')+'</div></div>';
+    h+='</div>';
     root.innerHTML=h;
   }
   window.__renderModeCompanion=renderModeCompanion;
   (function(){ var root=document.getElementById('modeCompanion'); if(!root)return; root.addEventListener('click',function(e){
+    var tg=e.target.closest?e.target.closest('.mc-toggle'):null; if(tg){ mcOpen=!mcOpen; var bd=document.getElementById('mcBody'); if(bd){ if(mcOpen){bd.removeAttribute('hidden');}else{bd.setAttribute('hidden','');} } tg.setAttribute('aria-expanded',mcOpen?'true':'false'); return; }
     var mb=e.target.closest?e.target.closest('[data-mc-mode]'):null; if(mb){ setDashboardMode(mb.getAttribute('data-mc-mode')); if(currentItem&&currentItem.f==='__home__'&&window.renderHome){ contentEl.innerHTML=window.renderHome(); try{window.__afterSpecial('__home__');}catch(_){ } } else if(currentItem&&currentItem.k==='md'){ var nb=null, all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===currentItem.f){ nb=all[i]; break; } } show(currentItem,nb,{replace:true}); } return; }
     var home=e.target.closest?e.target.closest('[data-mc-home]'):null; if(home){ navClick('__home__'); return; }
     var item=e.target.closest?e.target.closest('[data-mc-f]'):null; if(item){ navClick(item.getAttribute('data-mc-f')); }
