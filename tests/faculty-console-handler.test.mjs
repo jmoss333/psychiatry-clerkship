@@ -501,6 +501,8 @@ test('learner deployment allows framing only by the exact faculty console origin
   Cache-Control: public, max-age=0, must-revalidate
 /tool_registry.json
   Cache-Control: public, max-age=0, must-revalidate
+/tool-governance.json
+  Cache-Control: public, max-age=0, must-revalidate
 /communication_cases.json
   Cache-Control: public, max-age=0, must-revalidate
 /reasoning_cases.json

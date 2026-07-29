@@ -1087,6 +1087,7 @@ test.describe('learner preview protocol', () => {
       expectedLearnerPreviewStatus('page', 'page:t_mood.md', 'ready'),
     ]);
 
+    await page.locator('#modeCompanion .mc-toggle').click();
     const companionTool = page.locator('#modeCompanion .mc-item.is-tool').first();
     await expect(companionTool).toBeVisible();
     await companionTool.click();
@@ -1161,6 +1162,7 @@ test.describe('learner preview protocol', () => {
     await expect(page.locator('#faculty-preview-lock-notice')).toHaveText(
       'Open the full page from the faculty console to navigate elsewhere',
     );
+    await page.locator('#modeCompanion .mc-toggle').click();
     await page.locator('#modeCompanion [data-mc-mode="shelf"]').click();
     const shelfQuestionBank = page.locator(
       '#modeCompanion .mc-item.is-tool[href="?tool=question-bank-practice.html"]',

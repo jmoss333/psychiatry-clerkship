@@ -216,6 +216,14 @@ for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.joi
 
 # md content pages: [source rel, out name, title] — see site_manifest.json
 md=[tuple(x) for x in _manifest["md"]]
+# ---- Case of the Week: per-week pages are registry-driven (single source of truth:
+# 08_Cases_and_Simulation/case-of-the-week/cotw_registry.json). The weekly automation only
+# prepends one entry there + drops two source files — no edits to this script or the manifest.
+_COTW_DIR="08_Cases_and_Simulation/case-of-the-week"
+_cotw_weeks=json.load(open(os.path.join(LIB,_COTW_DIR,"cotw_registry.json"),encoding="utf-8")).get("weeks",[])
+def _cotw_slug(w,level):  # level: "ms3" | "res"
+    return "cotw_%s_%s_%s.md"%(w["date"].replace("-",""),w["topic"],level)
+md+=[(os.path.join(_COTW_DIR,w["ms3_src"]),_cotw_slug(w,"ms3"),w["label"]) for w in _cotw_weeks]
 missing=[]
 for src,dst,_ in md:
     p=os.path.join(LIB,src)
@@ -245,10 +253,11 @@ nav=[
  {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
  {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md")]},
  {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","One Patient, Six Weeks"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
+ {"section":"Case of the Week","items":[_md("Index — All Cases","cotw_index.md")]+[_md(w["label"],_cotw_slug(w,"ms3")) for w in _cotw_weeks]},
  {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
  {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback")]},
 ]
-_navorder=["Welcome and Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Evidence and Reference","Feedback"]
+_navorder=["Welcome and Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
 open(OUT+"/nav.json","w").write(json.dumps(nav))
 _missing_req=[]
@@ -413,7 +422,7 @@ if _ih!=_ih_o: open(OUT+"/index.html","w",encoding="utf-8").write(_ih)
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(OUT+"/404.html","w",encoding="utf-8").write('<!doctype html><meta charset="utf-8"><title>Not found</title><meta name="robots" content="noindex,nofollow"><style>body{font-family:system-ui,sans-serif;background:#f6f3ee;color:#2f2924;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#174d43}</style><div><h1 style="color:#9f3f2a">Page not found</h1><p><a href="/">Return to the clerkship hub</a></p></div>')
-open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reviewed.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n")
+open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reviewed.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n")
 print("polish pass: banners stripped, contrast darkened, <main>+favicon on tools, robots/404/_headers written")
 
 # ---------- DARK MODE PASS (Slice 2): inject dark tokens + pre-paint theme init across every page ----------
@@ -449,3 +458,26 @@ from media_guard import strip_missing_media
 strip_missing_media(OUT)
 
 build_search_index()
+
+# ---------- TOOL GOVERNANCE ----------
+# Source hashes remain over canonical source files; this final comparison proves the emitted
+# inventory exactly covers the completed built tools directory before publishing the artifact.
+sys.path.insert(0, os.path.dirname(HERE))
+from validate_tool_governance import (
+    GovernanceError,
+    build_governance_document,
+    validate_built_tool_inventory,
+    write_atomic_json,
+)
+
+try:
+    _governance, _governance_warnings = build_governance_document(
+        Path(LIB), "ms3", enforce_expected_count=True
+    )
+    validate_built_tool_inventory(_governance, Path(OUT) / "tools", site="ms3")
+    write_atomic_json(Path(OUT) / "tool-governance.json", _governance)
+except GovernanceError as error:
+    raise SystemExit(f"tool governance INVALID — {error}") from error
+for _warning in _governance_warnings:
+    print(_warning)
+print("tool governance: emitted", len(_governance["items"]), "items")
