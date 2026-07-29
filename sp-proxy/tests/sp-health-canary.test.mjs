@@ -130,29 +130,60 @@ test('exports the scheduled config and leaves public status route ownership to T
   assert.equal('config' in status, false);
 });
 
-test('runtime env access falls back per key when Netlify omits a system variable', async (t) => {
+test('runtime env access uses the serverless process environment, not the Edge API', async (t) => {
   const { canary } = await healthModules();
-  const fallbackKey = 'SP_TEST_RUNTIME_ENV_FALLBACK';
+  const runtimeKey = 'SP_TEST_RUNTIME_ENV';
   const priorNetlify = globalThis.Netlify;
-  const priorFallback = process.env[fallbackKey];
+  const priorRuntime = process.env[runtimeKey];
   t.after(() => {
     if (priorNetlify === undefined) delete globalThis.Netlify;
     else globalThis.Netlify = priorNetlify;
-    if (priorFallback === undefined) delete process.env[fallbackKey];
-    else process.env[fallbackKey] = priorFallback;
+    if (priorRuntime === undefined) delete process.env[runtimeKey];
+    else process.env[runtimeKey] = priorRuntime;
   });
 
   globalThis.Netlify = {
     env: {
-      get(name) {
-        return name === 'SP_TEST_NETLIFY_ENV' ? 'netlify-value' : undefined;
+      get() {
+        throw new Error('EDGE_ENV_SENTINEL');
       },
     },
   };
-  process.env[fallbackKey] = 'process-value';
+  process.env[runtimeKey] = 'process-value';
 
-  assert.equal(canary.readRuntimeEnv('SP_TEST_NETLIFY_ENV'), 'netlify-value');
-  assert.equal(canary.readRuntimeEnv(fallbackKey), 'process-value');
+  assert.equal(canary.readRuntimeEnv(runtimeKey), 'process-value');
+});
+
+test('scheduled canary normalizes Netlify next_run timestamps without milliseconds', async () => {
+  const store = memoryStore();
+  const { handler } = await createCanaryHarness({ store });
+
+  await handler(scheduledRequest('2026-07-28T18:00:00Z'));
+
+  assert.equal(store.writes.length, 1);
+  assert.equal(store.writes[0].value.nextRun, NEXT_RUN);
+});
+
+test('scheduled canary classifies malformed JSON and invalid envelopes without logging payloads', async () => {
+  for (const item of [
+    { rawBody: '{', want: 'invalid_json' },
+    { rawBody: JSON.stringify({ next_run: 'manual' }), want: 'contract' },
+  ]) {
+    const logs = [];
+    const store = memoryStore();
+    const { handler } = await createCanaryHarness({
+      store,
+      log: (event) => logs.push(event),
+    });
+    const request = new Request('https://scheduled.invalid', {
+      method: 'POST',
+      body: item.rawBody,
+    });
+
+    await assert.rejects(handler(request), /^Error: Interview Room health canary failed\.$/);
+    assert.equal(store.writes.at(-1).value.failureCode, item.want);
+    assert.doesNotMatch(JSON.stringify({ logs, writes: store.writes }), /manual|next_run/i);
+  }
 });
 
 test('validateHealth accepts only the bounded health contract and freezes its result', async () => {
