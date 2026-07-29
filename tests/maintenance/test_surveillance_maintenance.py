@@ -51,6 +51,18 @@ class FakeRunner:
         return response
 
 
+class RealGitRunner:
+    def __init__(self):
+        self.calls = []
+
+    def __call__(self, command, **kwargs):
+        command = list(command)
+        self.calls.append((command, kwargs))
+        if command[:3] == ["gh", "pr", "list"]:
+            return subprocess.CompletedProcess(command, 0, "[]\n", "")
+        return subprocess.run(command, **kwargs)
+
+
 def completed(command, returncode=0, stdout="", stderr=""):
     return subprocess.CompletedProcess(list(command), returncode, stdout, stderr)
 
@@ -475,8 +487,7 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
                 "git",
                 "diff",
                 "--name-only",
-                "origin/main",
-                f"origin/{branch}",
+                f"origin/main...origin/{branch}",
             ): completed(
                 [],
                 stdout=(
@@ -521,8 +532,7 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
                 "git",
                 "diff",
                 "--name-only",
-                "origin/main",
-                f"origin/{branch}",
+                f"origin/main...origin/{branch}",
             ): completed(
                 [],
                 stdout="13_Faculty_Resources/_automation/surveillance/STATUS.md\n",
@@ -567,6 +577,143 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
                 "expectedRemoteSha": sha,
                 "openPrNumber": 19,
             },
+        )
+
+    def test_hydrate_allows_diverged_main_when_inbox_changes_only_generated_paths(self):
+        report_branch = load_report_branch()
+        origin = self.temp_dir / "origin.git"
+        repo = self.temp_dir / "repo"
+
+        subprocess.run(
+            ["git", "init", "--bare", str(origin)],
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "init", "-b", "main", str(repo)],
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        for key, value in (
+            ("user.name", "Surveillance Test"),
+            ("user.email", "surveillance-test@example.invalid"),
+        ):
+            subprocess.run(
+                ["git", "config", key, value],
+                cwd=repo,
+                check=True,
+                text=True,
+                capture_output=True,
+            )
+
+        history = repo / report_branch.ALLOWED_PATHS[0]
+        status_md = repo / report_branch.ALLOWED_PATHS[1]
+        status_html = repo / report_branch.ALLOWED_PATHS[2]
+        history.mkdir(parents=True)
+        (history / ".gitkeep").write_text("", encoding="utf-8")
+        status_md.write_text("base status\n", encoding="utf-8")
+        status_html.write_text("<p>base status</p>\n", encoding="utf-8")
+        (repo / "README.md").write_text("base\n", encoding="utf-8")
+        subprocess.run(
+            ["git", "add", "."],
+            cwd=repo,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "base"],
+            cwd=repo,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "remote", "add", "origin", str(origin)],
+            cwd=repo,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "push", "-u", "origin", "main"],
+            cwd=repo,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+
+        branch = "automation/surveillance-inbox"
+        subprocess.run(
+            ["git", "switch", "-c", branch],
+            cwd=repo,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        status_md.write_text("inbox status\n", encoding="utf-8")
+        subprocess.run(
+            ["git", "commit", "-am", "inbox report"],
+            cwd=repo,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "push", "-u", "origin", branch],
+            cwd=repo,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        expected_remote_sha = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo,
+            check=True,
+            text=True,
+            capture_output=True,
+        ).stdout.strip()
+
+        subprocess.run(
+            ["git", "switch", "main"],
+            cwd=repo,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        (repo / "README.md").write_text("main advanced independently\n", encoding="utf-8")
+        subprocess.run(
+            ["git", "commit", "-am", "advance main"],
+            cwd=repo,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "push", "origin", "main"],
+            cwd=repo,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+
+        state_path = self.temp_dir / "diverged-state.json"
+        report_branch.hydrate(
+            repo_root=repo,
+            state_path=state_path,
+            base="main",
+            branch=branch,
+            runner=RealGitRunner(),
+        )
+
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+        self.assertEqual(state["expectedRemoteSha"], expected_remote_sha)
+        self.assertEqual(status_md.read_text(encoding="utf-8"), "inbox status\n")
+        self.assertEqual(
+            (repo / "README.md").read_text(encoding="utf-8"),
+            "main advanced independently\n",
         )
 
     def test_publish_stages_only_allowed_generated_paths(self):
@@ -766,7 +913,7 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
                 checkout = next(step for step in steps if step.get("uses", "").startswith("actions/checkout@"))
                 self.assertEqual(
                     checkout["with"],
-                    {"fetch-depth": "0", "lfs": "false"},
+                    {"fetch-depth": "0", "lfs": "false", "ref": "main"},
                 )
                 artifact = next(step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@"))
                 self.assertEqual(artifact["if"], "always()")

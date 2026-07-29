@@ -131,7 +131,10 @@ def hydrate(
     if expected_remote_sha:
         diff = _run(
             runner,
-            ["git", "diff", "--name-only", f"origin/{base}", f"origin/{branch}"],
+            [
+                "git", "diff", "--name-only",
+                f"origin/{base}...origin/{branch}",
+            ],
             repo_root,
         )
         paths = [line.strip() for line in diff.stdout.splitlines() if line.strip()]
