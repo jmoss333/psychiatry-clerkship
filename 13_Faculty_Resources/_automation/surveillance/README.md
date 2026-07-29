@@ -5,11 +5,12 @@ checks that our links still work, and gathers candidate resources — then leave
 **GitHub issues** and **dated reports** for faculty to review. It never edits teaching
 content. Design rationale: `ADR-001-curriculum-surveillance.md`.
 
-## The three jobs
+## The four jobs
 
 | Job | Cadence | What it does | Tool |
 |---|---|---|---|
-| `link-source-monitor` | Weekly | Verifies every cited/outbound link (404, soft-404, redirect, TLS) | GitHub Action (lychee); Apify `logiover/bulk-url-status-checker` fallback |
+| `link-source-monitor` | Weekly | Verifies outbound links in Markdown/HTML (404, redirect, TLS) | GitHub Action (lychee); Apify `logiover/bulk-url-status-checker` fallback |
+| `citation-monitor` | Weekly | Verifies registry source URLs plus DOI/PMID identifiers | Stdlib HTTP checks against source sites, doi.org, and NCBI |
 | `guideline-surveillance` | Monthly | Detects changes at FDA / APA / DSM / USPSTF / SAMHSA / AACAP | Apify `apify/website-content-crawler` + own semantic diff |
 | `resource-intake` | On-demand | Gathers candidate resources against strict filters | Apify `apify/website-content-crawler` (scoped) |
 
@@ -26,6 +27,7 @@ _automation/surveillance/
 │   ├── run_link_monitor.py        ← parse lychee JSON → findings
 │   ├── run_guideline_surv.py      ← Apify crawl + normalize/hash/diff vs baseline → findings
 │   ├── run_resource_intake.py     ← scoped Apify crawl → P2 candidates
+│   ├── report_branch.py           ← hydrate/publish the protected rolling report branch
 │   ├── open_update_pr.py          ← actionable delta → attestation-routed PR (Phase 1)
 │   ├── lib_ai_draft.py            ← ADVISORY AI-drafted edit for a PR (Phase 2; needs ANTHROPIC_API_KEY)
 │   └── run_citation_check.py      ← live source-URL + DOI/PMID validity → findings (Phase 2)
@@ -36,6 +38,7 @@ _automation/surveillance/
 │   └── citation_index.json        ← curriculum file → sources it depends on
 └── history/                       ← dated datasets (git-native audit trail)
     ├── link_audit_YYYY-MM-DD.{csv,json}
+    ├── citation_audit_YYYY-MM-DD.{csv,json}
     ├── guideline_delta_YYYY-MM-DD.json
     ├── resource_intake_YYYY-MM-DD.{csv,json}
     ├── digest_YYYY-MM.md          ← batched P2 items
@@ -43,6 +46,7 @@ _automation/surveillance/
     └── last_run.json              ← per-source last_checked stamps
 
 .github/workflows/  →  surveillance-link-monitor.yml (weekly),
+                       surveillance-citations.yml (weekly),
                        surveillance-guideline.yml (monthly),
                        surveillance-resource-intake.yml (manual)
 ```
@@ -50,19 +54,22 @@ _automation/surveillance/
 ## Data flow
 
 ```
-Apify Actor / GH Action
-   → writes findings (finding.schema.json) to an Apify dataset
-   → webhook fires a GitHub Action
-        → dataset pulled; each finding’s affects[] resolved via citation_index.json
-        → P0/P1 → open/update issue (idempotent by fingerprint)
-        → P2   → appended to monthly digest
-        → dated report committed to history/
+Collector / GitHub Action
+   → writes findings.json + checked-sources.json
+   → sync resolves affects[] and reads the live surveillance issue queue
+        → P0/P1 → open issue (idempotent by fingerprint)
+        → P2   → append to monthly digest
+        → write dated report + content-free issue-state.json
+   → status builder overlays live open/closed issue truth
+   → generated history/status only → rolling automation/surveillance-inbox PR
    → faculty review → edit page manually if needed → re-stamp reviewed.json → close issue
 ```
 
-Wiring pattern: **Apify webhook → GitHub Action**, not a native integration — it keeps
-issue logic in the repo, testable and idempotent. Implemented in `.github/workflows/`
-(three workflows) calling `bin/`. Scope the token to `issues` + `contents` on this repo.
+Wiring pattern: **collector → GitHub Action → one rolling review PR**. The four
+workflows share the `surveillance-inbox` concurrency group. They hydrate prior generated
+state, collect and sync, upload 90-day run artifacts, then publish only `history/**`,
+`STATUS.md`, and `status.html` to `automation/surveillance-inbox`. They never push
+scheduled output directly to `main`.
 
 ## Netlify note (done)
 
@@ -78,6 +85,9 @@ Every run regenerates the faculty view (via `bin/build_status.py`):
 - **`STATUS.md`** — GitHub renders it in-repo: open P0/P1, pages needing re-review
   (attestation older than the change that affects them), and per-source freshness.
 - **`status.html`** — standalone dashboard; open via `file://` or copy into a faculty area.
+- Every render identifies issue authority as either `live` (a normalized GitHub issue
+  snapshot was supplied) or `offline-report-fallback`. The fallback is explicit and
+  must not be interpreted as the current GitHub queue.
 - DOI/PMID findings are triaged separately: live teaching-page citations are grouped
   by affected page, while imported NotebookLM bundles, `_source` reports, faculty-only
   files, and prototypes are excluded from page re-review counts.
@@ -99,14 +109,15 @@ for an event.
 
 ## Cost & secrets
 
-- All three jobs sit in Apify’s free/near-free tiers at this volume. Set a monthly
-  compute-unit cap + alert; `resource-intake` is the only one that can grow — it’s
-  manual-trigger and capped at `max_candidates_per_run: 25`.
-- Secrets: `APIFY_TOKEN`, `GITHUB_TOKEN` (fine-grained, this repo, issues+contents).
+- The Apify-backed guideline/intake work sits in the free/near-free tier at this
+  volume. Set a monthly compute-unit cap + alert; `resource-intake` is the only job
+  that can grow — it is manual-triggered and capped at `max_candidates_per_run: 25`.
+- Secrets: `APIFY_TOKEN` and the built-in `GITHUB_TOKEN`. Workflows grant only
+  contents, issues, and pull-request write access for the report/issue review loop.
 
 ## Running it
 
-Enabled by three workflows in `.github/workflows/`. To go live:
+Enabled by four workflows in `.github/workflows/`. To go live:
 
 1. **Set repo secret** (Settings → Secrets and variables → Actions): `APIFY_TOKEN`.
    `GITHUB_TOKEN` is provided to Actions automatically (workflows request `issues: write`
@@ -123,6 +134,7 @@ Local dry-run (no network, no GitHub calls) — the behavior proven before shipp
 ```bash
 cd 13_Faculty_Resources/_automation/surveillance/bin
 python3 sync_findings.py --findings sample.json --job guideline-surveillance \
+    --checked-sources checked-sources.json --issues-out /tmp/issue-state.json \
     --dry-run --existing-fixture existing_fps.json --out-dir /tmp/surv
 ```
 
@@ -150,8 +162,10 @@ teach), `open_update_pr.py` opens an **attestation-routed pull request** (branch
 - carries the source diff, affected pages, recommended action, and an **attestation checklist** in the
   PR body, for Dr. Moss to confirm the edit and re-stamp `reviewed.json`.
 
-It runs as the last step of the guideline workflow (needs `pull-requests: write`), is
-`continue-on-error`, and caps new PRs via `MAX_NEW_PRS`. Test it offline (no git/gh):
+It runs after the generated report inbox is published (needs `pull-requests: write`) and
+caps new PRs via `MAX_NEW_PRS`. An actionable P0/P1 routing failure fails visibly; the
+report artifact and rolling inbox publication remain available for review. Test it
+offline (no git/gh):
 
 ```
 python3 bin/open_update_pr.py --findings fixtures/guideline_delta_example.json --dry-run --out-dir /tmp/surv_pr

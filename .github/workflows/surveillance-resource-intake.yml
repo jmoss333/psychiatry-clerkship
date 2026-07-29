@@ -1,58 +1,90 @@
 name: Surveillance — Resource Intake
 
-# On-demand only: scoped crawl of allow-listed domains for candidate resources.
-# All results are P2 -> they batch into the monthly digest (history/digest_YYYY-MM.md),
-# never individual issues. Highest-noise job, so it is manual-trigger and capped.
-#
-# Requires repo secret: APIFY_TOKEN.
-
 on:
   workflow_dispatch:
 
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
 
 concurrency:
-  group: surveillance-intake
+  group: surveillance-inbox
   cancel-in-progress: false
 
 jobs:
   resource-intake:
     runs-on: ubuntu-latest
+    env:
+      RUN_DIR: ${{ runner.temp }}/surveillance
+      REPORT_STATE: ${{ runner.temp }}/surveillance/report-branch-state.json
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          fetch-depth: 0
           lfs: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Install dependencies
         run: pip install --quiet pyyaml
 
-      - name: Crawl candidates -> findings
+      - name: Prepare run directory
+        run: mkdir -p "$RUN_DIR"
+
+      - name: Hydrate rolling surveillance inbox
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/report_branch.py hydrate
+          --state "$REPORT_STATE"
+
+      - name: Crawl candidate resources
         env:
           APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
-        run: >-
-          python3 13_Faculty_Resources/_automation/surveillance/bin/run_resource_intake.py
-          --out findings.json
+        run: |
+          python3 13_Faculty_Resources/_automation/surveillance/bin/run_resource_intake.py \
+            --out "$RUN_DIR/findings.json" \
+            --checked-out "$RUN_DIR/checked-sources.json" \
+            2>&1 | tee "$RUN_DIR/collector.log"
 
-      - name: Sync -> digest + report (no issues; all P2)
+      - name: Sync findings into digest and report
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: >-
           python3 13_Faculty_Resources/_automation/surveillance/bin/sync_findings.py
-          --findings findings.json --job resource-intake
+          --findings "$RUN_DIR/findings.json"
+          --checked-sources "$RUN_DIR/checked-sources.json"
+          --issues-out "$RUN_DIR/issue-state.json"
+          --job resource-intake
 
-      - name: Rebuild faculty status page
-        run: python3 13_Faculty_Resources/_automation/surveillance/bin/build_status.py
+      - name: Rebuild faculty status page from live issue state
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/build_status.py
+          --issues-json "$RUN_DIR/issue-state.json"
 
-      - name: Commit digest + report + status
-        run: |
-          git config user.name "surveillance-bot"
-          git config user.email "surveillance-bot@users.noreply.github.com"
-          git add 13_Faculty_Resources/_automation/surveillance
-          git commit -m "surveillance: resource intake $(date -u +%F)" || { echo "no changes"; exit 0; }
-          git push || (git pull --rebase --autostash && git push)
+      - name: Upload surveillance evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: surveillance-resource-intake-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/surveillance/findings.json
+            ${{ runner.temp }}/surveillance/checked-sources.json
+            ${{ runner.temp }}/surveillance/issue-state.json
+            ${{ runner.temp }}/surveillance/collector.log
+            13_Faculty_Resources/_automation/surveillance/history
+            13_Faculty_Resources/_automation/surveillance/STATUS.md
+            13_Faculty_Resources/_automation/surveillance/status.html
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Publish rolling surveillance inbox
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/report_branch.py publish
+          --state "$REPORT_STATE"

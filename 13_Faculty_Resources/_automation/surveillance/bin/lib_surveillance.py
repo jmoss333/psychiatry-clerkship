@@ -70,6 +70,19 @@ def load_registry(path=REGISTRY):
 
     return build_surveillance_projection(load_evidence_registry(Path(path)))
 
+def validate_checked_sources(value):
+    """Return a canonical checked-source receipt or reject ambiguous freshness."""
+    if not isinstance(value, list):
+        raise ValueError("checked sources must be a JSON array")
+    checked = []
+    for item in value:
+        if not isinstance(item, str) or not item.strip():
+            raise ValueError("checked sources must contain only non-empty strings")
+        checked.append(item.strip())
+    if len(checked) != len(set(checked)):
+        raise ValueError("checked sources must be unique")
+    return sorted(checked)
+
 # ---------------------------------------------------------------- finding logic
 def resolve_affects(finding, inverted):
     """Fill affects[] from the citation index if the collector didn't set it."""
@@ -150,6 +163,7 @@ def issue_body(f):
 _STEM = {
     "guideline-surveillance": "guideline_delta",
     "link-source-monitor": "link_audit",
+    "citation-monitor": "citation_audit",
     "resource-intake": "resource_intake",
 }
 
@@ -159,9 +173,10 @@ def write_report(job, findings, when=None, base=None):
     os.makedirs(base, exist_ok=True)
     stem = _STEM.get(job, job)
     jpath = os.path.join(base, f"{stem}_{when}.json")
-    json.dump(findings, open(jpath, "w", encoding="utf-8"), indent=2)
+    with open(jpath, "w", encoding="utf-8") as fh:
+        json.dump(findings, fh, indent=2)
     out = [jpath]
-    if job in ("link-source-monitor", "resource-intake"):
+    if job in ("link-source-monitor", "citation-monitor", "resource-intake"):
         cpath = os.path.join(base, f"{stem}_{when}.csv")
         cols = ["detected_at", "severity", "source_id", "change_type",
                 "summary", "source_url", "affects", "status"]
@@ -202,10 +217,12 @@ def update_last_run(source_ids, when=None, base=None):
     os.makedirs(base, exist_ok=True)
     path = os.path.join(base, "last_run.json")
     try:
-        data = json.load(open(path, encoding="utf-8"))
+        with open(path, encoding="utf-8") as fh:
+            data = json.load(fh)
     except Exception:
         data = {}
     for sid in source_ids:
         data[sid] = when
-    json.dump(data, open(path, "w", encoding="utf-8"), indent=2, sort_keys=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(data, fh, indent=2, sort_keys=True)
     return path
