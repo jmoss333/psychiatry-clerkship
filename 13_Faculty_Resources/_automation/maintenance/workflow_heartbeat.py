@@ -312,9 +312,13 @@ def _cron_present(source, expected_cron):
     if isinstance(trigger, str):
         if not trigger:
             raise HeartbeatError("workflow schedule YAML is malformed")
+        if trigger == "schedule":
+            raise HeartbeatError("workflow schedule YAML is malformed")
         return False
     if isinstance(trigger, list):
         if any(not isinstance(item, str) or not item for item in trigger):
+            raise HeartbeatError("workflow schedule YAML is malformed")
+        if "schedule" in trigger:
             raise HeartbeatError("workflow schedule YAML is malformed")
         return False
     if not isinstance(trigger, dict):

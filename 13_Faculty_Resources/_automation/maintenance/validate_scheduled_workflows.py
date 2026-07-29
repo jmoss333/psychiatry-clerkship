@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 import sys
 from pathlib import Path
@@ -105,33 +107,212 @@ EXPECTED_JOB_IDS = {
     "maintenance-governance-digest.yml": {"governance"},
     "maintenance-monthly-review.yml": {"monthly"},
     "maintenance-rotation-readiness.yml": {"rotation"},
+    "surveillance-citations.yml": {"citation-check"},
+    "surveillance-guideline.yml": {"guideline-delta"},
+    "surveillance-link-monitor.yml": {"link-audit"},
+    "surveillance-resource-intake.yml": {"resource-intake"},
 }
-ISSUE_STEP_INVENTORIES = {
+EXPECTED_STEP_INVENTORIES = {
+    "ci.yml": {
+        "build-test-validate": (
+            ("uses", "actions/checkout"),
+            ("name", "Agent docs parity — AGENTS.md must equal CLAUDE.md"),
+            ("uses", "actions/setup-python"),
+            ("name", "Install — registry schema validation dependencies"),
+            ("name", "Unit — scheduled maintenance"),
+            ("name", "Validate — scheduled workflow contracts"),
+            ("name", "Lint — no hard-coded machine paths in tracked Python"),
+            ("name", "Unit — media guard"),
+            ("name", "Unit — evidence registry"),
+            ("name", "Validate — evidence registry and generated views"),
+            ("name", "Unit — citation surveillance"),
+            ("name", "Validate — topic_meta.json contract"),
+            ("name", "Validate — longitudinal case contract"),
+            ("name", "Unit — shelf/COMAT question bank data-quality gate"),
+            ("name", "Validate — family systems scenarios contract"),
+            ("name", "Test — registry schema gate"),
+            ("name", "Validate — registry schemas"),
+            ("name", "Test — ReConnect snapshot provenance"),
+            ("name", "Validate — ReConnect snapshot provenance"),
+            ("name", "Unit — tool governance"),
+            ("name", "Validate — tool governance"),
+            ("uses", "actions/setup-node"),
+            ("name", "Unit — root node regression tests (tests/*.test.mjs)"),
+            ("name", "Validate — WCAG AA contrast tokens"),
+            ("name", "Install — managed SP proxy dependencies"),
+            ("name", "Test — SP Interview and managed proxy"),
+            ("name", "Build + static QA gate (ms3)"),
+            ("name", "Build + static QA gate (res)"),
+        ),
+        "smoke-tests": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Install — registry schema validation dependencies"),
+            ("uses", "actions/setup-node"),
+            ("name", "Build sites (ms3 + res)"),
+            ("uses", "actions/cache"),
+            ("name", "Install Playwright + Chromium"),
+            ("name", "Start local review servers"),
+            ("name", "Check 1: nav crawl — ms3 + res"),
+            ("name", "Check 1a: Interview Room acceptance — ms3"),
+            ("name", "Check 1b: Unified faculty attestation workspace"),
+            ("name", "Check 2: LFS integrity — Netlify deploy preview"),
+            ("name", "Check 3: visual regression — resident site"),
+            ("uses", "actions/upload-artifact"),
+        ),
+    },
+    "maintenance-governance-digest.yml": {
+        "governance": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("uses", "actions/setup-node"),
+            ("name", "Build faculty governance digest"),
+            ("uses", "actions/upload-artifact"),
+            ("name", "Route faculty governance review"),
+            ("name", "Preserve governance gate result"),
+        ),
+    },
+    "maintenance-heartbeat.yml": {
+        "heartbeat": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Install workflow parser"),
+            ("name", "Evaluate scheduled workflow freshness"),
+            ("uses", "actions/upload-artifact"),
+        ),
+    },
+    "maintenance-monthly-review.yml": {
+        "monthly": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Install evidence validation dependencies"),
+            ("name", "Build evidence and operations review"),
+            ("uses", "actions/upload-artifact"),
+            ("name", "Route evidence and operations review"),
+            ("name", "Preserve monthly gate result"),
+        ),
+    },
+    "maintenance-production-canary.yml": {
+        "production-canary": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("uses", "actions/setup-node"),
+            ("name", "Install Playwright and Chromium"),
+            ("name", "Crawl both public learner sites"),
+            ("name", "Build content-free release twin"),
+            ("uses", "actions/upload-artifact"),
+        ),
+    },
+    "maintenance-rotation-readiness.yml": {
+        "rotation": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Build rotation readiness passport"),
+            ("uses", "actions/upload-artifact"),
+            ("name", "Route due rotation review"),
+            ("name", "Translate rotation routing result"),
+        ),
+    },
+    "maintenance-sp-health-monitor.yml": {
+        "monitor": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Check public content-free Interview Room receipt"),
+            ("uses", "actions/upload-artifact"),
+        ),
+    },
+    "surveillance-citations.yml": {
+        "citation-check": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Install dependencies"),
+            ("name", "Prepare run directory"),
+            ("name", "Hydrate rolling surveillance inbox"),
+            ("name", "Check source URLs and cited identifiers"),
+            ("name", "Sync findings into issues and reports"),
+            ("name", "Rebuild faculty status page from live issue state"),
+            ("uses", "actions/upload-artifact"),
+            ("name", "Publish rolling surveillance inbox"),
+        ),
+    },
+    "surveillance-guideline.yml": {
+        "guideline-delta": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Install dependencies"),
+            ("name", "Prepare run directory"),
+            ("name", "Hydrate rolling surveillance inbox"),
+            ("name", "Crawl and diff sources"),
+            ("name", "Sync findings into issues and reports"),
+            ("name", "Rebuild faculty status page from live issue state"),
+            ("uses", "actions/upload-artifact"),
+            ("name", "Publish rolling surveillance inbox"),
+            ("name", "Open attestation update PRs"),
+        ),
+    },
+    "surveillance-link-monitor.yml": {
+        "link-audit": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Prepare run directory"),
+            ("name", "Hydrate rolling surveillance inbox"),
+            ("uses", "lycheeverse/lychee-action"),
+            ("name", "Parse lychee report into findings"),
+            ("name", "Sync findings into issues and reports"),
+            ("name", "Rebuild faculty status page from live issue state"),
+            ("uses", "actions/upload-artifact"),
+            ("name", "Publish rolling surveillance inbox"),
+        ),
+    },
+    "surveillance-resource-intake.yml": {
+        "resource-intake": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Install dependencies"),
+            ("name", "Prepare run directory"),
+            ("name", "Hydrate rolling surveillance inbox"),
+            ("name", "Crawl candidate resources"),
+            ("name", "Sync findings into digest and report"),
+            ("name", "Rebuild faculty status page from live issue state"),
+            ("uses", "actions/upload-artifact"),
+            ("name", "Publish rolling surveillance inbox"),
+        ),
+    },
+}
+# SHA-256 of each BaseLoader-parsed workflow serialized canonically. These
+# reviewed semantic fingerprints lock every allowed trigger, job, and step
+# key/value. Source-text action-pin comments are validated separately.
+EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
+    "ci.yml": "6957ba096dc9512f4126d0894ac833921448d3fd14044bea76f72a37231f877e",
     "maintenance-governance-digest.yml": (
-        ("uses", "actions/checkout"),
-        ("uses", "actions/setup-python"),
-        ("uses", "actions/setup-node"),
-        ("name", "Build faculty governance digest"),
-        ("uses", "actions/upload-artifact"),
-        ("name", "Route faculty governance review"),
-        ("name", "Preserve governance gate result"),
+        "70f57a5662cfd03aa978bde7582f716ae174ee6e992467c067d02508e349eb62"
+    ),
+    "maintenance-heartbeat.yml": (
+        "7e23746edc01a56129500d8334648ec6c098f578b09c3c99ec1a25f887c146c6"
     ),
     "maintenance-monthly-review.yml": (
-        ("uses", "actions/checkout"),
-        ("uses", "actions/setup-python"),
-        ("name", "Install evidence validation dependencies"),
-        ("name", "Build evidence and operations review"),
-        ("uses", "actions/upload-artifact"),
-        ("name", "Route evidence and operations review"),
-        ("name", "Preserve monthly gate result"),
+        "26d91cfb13af4e4d095a2d1488b5d59cea5e6b5c59aa2686dccc65e48a97007a"
+    ),
+    "maintenance-production-canary.yml": (
+        "fb0cf7f7ff6f37fef89237f2cb1a5a7447b971e2f08cf90aec0e0aecee76ece3"
     ),
     "maintenance-rotation-readiness.yml": (
-        ("uses", "actions/checkout"),
-        ("uses", "actions/setup-python"),
-        ("name", "Build rotation readiness passport"),
-        ("uses", "actions/upload-artifact"),
-        ("name", "Route due rotation review"),
-        ("name", "Translate rotation routing result"),
+        "f2479c8da0fa76b70397cb89fabca5992138b6556fba65def1dcc7cc4cceeb08"
+    ),
+    "maintenance-sp-health-monitor.yml": (
+        "37235ac00ed3ea15d226fae7269ba90c2c78a7ef5c1b2e83875221d77d65b3db"
+    ),
+    "surveillance-citations.yml": (
+        "70994985fe3aecc4fc4fa711de9eabbba0a7845de6787e5357abcd8096009639"
+    ),
+    "surveillance-guideline.yml": (
+        "9db487d116a4040514a1c11c9acc502b904e6e95537bff04ea4dccce791347da"
+    ),
+    "surveillance-link-monitor.yml": (
+        "a936748032e04aeb852e6d3e2727ab5692d431584bbe8ee9fb7e43d39abd178e"
+    ),
+    "surveillance-resource-intake.yml": (
+        "680b952fb7ebb7f79d8c200f6a4b9e9cc490225a3238b83ada466d0816cf989d"
     ),
 }
 CRITICAL_STEPS = {
@@ -432,6 +613,12 @@ def _steps(workflow):
 
 
 def _validate_job_boundaries(name, workflow, errors):
+    if "defaults" in workflow:
+        _error(errors, name, "workflow defaults override is forbidden")
+    if "shell" in workflow:
+        _error(errors, name, "workflow shell override is forbidden")
+    if "continue-on-error" in workflow:
+        _error(errors, name, "workflow continue-on-error is forbidden")
     jobs = workflow.get("jobs")
     if not isinstance(jobs, dict):
         return
@@ -450,6 +637,16 @@ def _validate_job_boundaries(name, workflow, errors):
                 name,
                 f"job-level permissions override is forbidden for {job_id!r}",
             )
+        if "defaults" in job:
+            _error(errors, name, f"job defaults override is forbidden for {job_id!r}")
+        if "shell" in job:
+            _error(errors, name, f"job shell override is forbidden for {job_id!r}")
+        if "continue-on-error" in job:
+            _error(
+                errors,
+                name,
+                f"job continue-on-error is forbidden for {job_id!r}",
+            )
         if name in EXPECTED_CRONS and "if" in job:
             _error(
                 errors,
@@ -465,22 +662,55 @@ def _step_identity(step):
     return "name", step.get("name")
 
 
-def _validate_issue_step_inventory(name, workflow, errors):
-    expected = ISSUE_STEP_INVENTORIES.get(name)
-    if expected is None:
-        return
-    job_id = next(iter(EXPECTED_JOB_IDS[name]))
+def _validate_step_inventory(name, workflow, errors):
     jobs = workflow.get("jobs")
-    job = jobs.get(job_id) if isinstance(jobs, dict) else None
-    raw_steps = job.get("steps") if isinstance(job, dict) else None
-    if not isinstance(raw_steps, list) or any(
-        not isinstance(step, dict) for step in raw_steps
-    ):
-        _error(errors, name, "issue-writing step inventory is malformed")
+    if not isinstance(jobs, dict):
         return
-    actual = tuple(_step_identity(step) for step in raw_steps)
-    if actual != expected:
-        _error(errors, name, "step inventory does not match issue-writing contract")
+    for job_id, expected in EXPECTED_STEP_INVENTORIES[name].items():
+        job = jobs.get(job_id)
+        raw_steps = job.get("steps") if isinstance(job, dict) else None
+        if not isinstance(raw_steps, list) or any(
+            not isinstance(step, dict) for step in raw_steps
+        ):
+            _error(errors, name, f"step inventory is malformed for job {job_id!r}")
+            continue
+        actual = tuple(_step_identity(step) for step in raw_steps)
+        if actual != expected:
+            _error(
+                errors,
+                name,
+                f"step inventory does not match exact contract for job {job_id!r}",
+            )
+
+
+def _validate_execution_boundaries(name, workflow, errors):
+    for step in _steps(workflow):
+        if "defaults" in step:
+            _error(errors, name, "step defaults override is forbidden")
+        if "shell" in step:
+            _error(errors, name, "step shell override is forbidden")
+        if "continue-on-error" in step:
+            _error(errors, name, "step continue-on-error is forbidden")
+
+
+def _contract_digest(value):
+    canonical = json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
+
+
+def _validate_exact_workflow_contract(name, workflow, errors):
+    if _contract_digest(workflow) != EXPECTED_WORKFLOW_CONTRACT_DIGESTS[name]:
+        _error(
+            errors,
+            name,
+            "workflow contract, including job and step contract, "
+            "does not match exact contract",
+        )
 
 
 def _normalized_run(step):
@@ -678,7 +908,13 @@ def _validate_sp_monitor(workflow, errors):
     scrubbed = run.replace(SP_STATUS_URL, "")
     if "/api/sp" in scrubbed:
         _error(errors, name, "monitor calls a non-status Interview Room route")
-    if re.search(r"passcode|student-key|authorization", run, re.IGNORECASE):
+    values = "\n".join(str(value) for value in _values(workflow))
+    if re.search(
+        r"passcode|student-key|authorization|x[-_ ]?key|"
+        r"github\.token|secrets\.",
+        values,
+        re.IGNORECASE,
+    ):
         _error(errors, name, "monitor workflow references a credential")
 
 
@@ -790,7 +1026,9 @@ def validate_repository(root=REPO_ROOT):
     for name, workflow in documents.items():
         steps = _steps(workflow)
         _validate_job_boundaries(name, workflow, errors)
-        _validate_issue_step_inventory(name, workflow, errors)
+        _validate_step_inventory(name, workflow, errors)
+        _validate_execution_boundaries(name, workflow, errors)
+        _validate_exact_workflow_contract(name, workflow, errors)
         _validate_actions(name, sources[name], steps, errors)
         _validate_uploads(name, steps, errors)
         _validate_permissions(name, workflow, errors)
