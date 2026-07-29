@@ -263,7 +263,7 @@ export function createHealthCanary({
 }
 
 export function readRuntimeEnv(name) {
-  return globalThis.Netlify?.env?.get?.(name) ?? process.env[name];
+  return process.env[name];
 }
 
 export default async function handler(request) {
