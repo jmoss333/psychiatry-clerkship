@@ -4,12 +4,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import yaml
-
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
+from maintenance import validate_scheduled_workflows as workflow_validator  # noqa: E402
 from maintenance.validate_scheduled_workflows import (  # noqa: E402
     EXPECTED_CRONS,
     EXPECTED_JOB_IDS,
@@ -36,10 +35,24 @@ EXPECTED = {
 
 
 def load_workflow(name):
-    return yaml.load(
-        (ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8"),
-        Loader=yaml.BaseLoader,
-    )
+    errors = []
+    workflow, _source = workflow_validator._load(ROOT, name, errors)
+    if errors:
+        raise AssertionError(errors)
+    return workflow
+
+
+def load_source_document(source):
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        workflow_dir = root / ".github" / "workflows"
+        workflow_dir.mkdir(parents=True)
+        (workflow_dir / "ci.yml").write_text(source, encoding="utf-8")
+        errors = []
+        workflow, _source = workflow_validator._load(root, "ci.yml", errors)
+        if errors:
+            raise AssertionError(errors)
+        return workflow
 
 
 def steps(name):
@@ -98,7 +111,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
                     r"\A[0-9a-f]{64}\Z",
                 )
 
-    def test_exact_schedule_map_is_parsed_with_base_loader(self):
+    def test_exact_schedule_map_is_parsed_with_actions_loader(self):
         self.assertEqual(EXPECTED_CRONS, EXPECTED)
         self.assertEqual(
             {name: cron_for(name)[0] for name in EXPECTED},
@@ -106,6 +119,45 @@ class ScheduledWorkflowTests(unittest.TestCase):
         )
         for name in EXPECTED:
             self.assertEqual(len(cron_for(name)), 1)
+
+    def test_loader_preserves_github_boolean_and_on_types(self):
+        workflow = load_source_document(
+            (
+                "name: Scalar fixture\n"
+                "on:\n"
+                "  workflow_dispatch:\n"
+                "values:\n"
+                "  yes_value: yes\n"
+                "  no_value: no\n"
+                "  on_value: on\n"
+                "  off_value: off\n"
+                "  true_value: true\n"
+                "  false_value: false\n"
+                "  quoted_false: \"false\"\n"
+                "  explicit_string_false: !!str false\n"
+            )
+        )
+
+        self.assertIn("on", workflow)
+        self.assertEqual(
+            {
+                key: workflow["values"][key]
+                for key in ("yes_value", "no_value", "on_value", "off_value")
+            },
+            {
+                "yes_value": "yes",
+                "no_value": "no",
+                "on_value": "on",
+                "off_value": "off",
+            },
+        )
+        self.assertIs(workflow["values"]["true_value"], True)
+        self.assertIs(workflow["values"]["false_value"], False)
+        self.assertEqual(workflow["values"]["quoted_false"], "false")
+        self.assertEqual(
+            workflow["values"]["explicit_string_false"],
+            "false",
+        )
 
     def test_validator_rejects_duplicate_keys_at_every_workflow_depth(self):
         cases = (
@@ -281,6 +333,69 @@ class ScheduledWorkflowTests(unittest.TestCase):
                     "pin must retain semantic tag on every occurrence",
                 )
 
+    def test_remote_action_step_alias_cannot_reuse_one_pin_comment(self):
+        self.assert_mutation_rejected(
+            "maintenance-sp-health-monitor.yml",
+            (
+                "      - uses: actions/checkout@"
+                "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\n"
+                "        with:\n"
+                "          lfs: false\n"
+            ),
+            (
+                "      - &checkout_step\n"
+                "        uses: actions/checkout@"
+                "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\n"
+                "        with:\n"
+                "          lfs: false\n"
+                "      - *checkout_step\n"
+            ),
+            "pin must retain semantic tag on every occurrence",
+        )
+
+    def test_action_with_inputs_preserve_string_coercion_semantics(self):
+        cases = (
+            (
+                "          lfs: false\n",
+                "          lfs: \"false\"\n",
+            ),
+            (
+                "          fetch-depth: 0\n",
+                "          fetch-depth: \"0\"\n",
+            ),
+            (
+                "          retention-days: 90\n",
+                "          retention-days: \"90\"\n",
+            ),
+        )
+        for old, new in cases:
+            with self.subTest(new=new.strip()):
+                self.assertEqual(
+                    self.validate_mutation(
+                        "maintenance-heartbeat.yml",
+                        old,
+                        new,
+                    ),
+                    [],
+                )
+        heartbeat_steps = steps("maintenance-heartbeat.yml")
+        checkout = next(
+            step
+            for step in heartbeat_steps
+            if step.get("uses", "").startswith("actions/checkout@")
+        )
+        upload = next(
+            step
+            for step in heartbeat_steps
+            if step.get("uses", "").startswith("actions/upload-artifact@")
+        )
+        self.assertEqual(
+            checkout["with"],
+            {"fetch-depth": "0", "lfs": "false"},
+        )
+        self.assertEqual(upload["with"]["retention-days"], "90")
+        self.assertIsInstance(upload["with"]["retention-days"], str)
+
     def test_artifact_retention_is_bounded_and_maintenance_evidence_is_90_days(self):
         names = [
             *EXPECTED,
@@ -327,19 +442,30 @@ class ScheduledWorkflowTests(unittest.TestCase):
         expected = {
             "maintenance-governance-digest.yml": {
                 "group": "maintenance-governance",
-                "cancel-in-progress": "false",
+                "cancel-in-progress": False,
             },
             "maintenance-monthly-review.yml": {
                 "group": "maintenance-monthly",
-                "cancel-in-progress": "false",
+                "cancel-in-progress": False,
             },
             "maintenance-rotation-readiness.yml": {
                 "group": "maintenance-rotation",
-                "cancel-in-progress": "false",
+                "cancel-in-progress": False,
             },
         }
         for name, concurrency in expected.items():
-            self.assertEqual(load_workflow(name).get("concurrency"), concurrency, name)
+            actual = load_workflow(name).get("concurrency")
+            self.assertEqual(actual, concurrency, name)
+            self.assertIs(actual["cancel-in-progress"], False)
+        for name in (
+            "surveillance-citations.yml",
+            "surveillance-guideline.yml",
+            "surveillance-link-monitor.yml",
+            "surveillance-resource-intake.yml",
+        ):
+            concurrency = load_workflow(name).get("concurrency")
+            self.assertEqual(concurrency["group"], "surveillance-inbox")
+            self.assertIs(concurrency["cancel-in-progress"], False)
         self.assertEqual(
             load_workflow("ci.yml").get("concurrency"),
             {
@@ -809,6 +935,23 @@ class ScheduledWorkflowTests(unittest.TestCase):
             unsafe_ci,
             "concurrency",
         )
+
+    def test_static_concurrency_rejects_string_false_spellings(self):
+        for name in (
+            "maintenance-governance-digest.yml",
+            "surveillance-citations.yml",
+        ):
+            for replacement in (
+                '  cancel-in-progress: "false"\n',
+                "  cancel-in-progress: !!str false\n",
+            ):
+                with self.subTest(name=name, replacement=replacement.strip()):
+                    self.assert_mutation_rejected(
+                        name,
+                        "  cancel-in-progress: false\n",
+                        replacement,
+                        "workflow contract",
+                    )
 
     def test_ci_schedule_reaches_both_authoritative_jobs_and_release_gates(self):
         ci = load_workflow("ci.yml")

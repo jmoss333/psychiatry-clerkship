@@ -90,15 +90,22 @@ EXPECTED_CONCURRENCY = {
     },
     "maintenance-governance-digest.yml": {
         "group": "maintenance-governance",
-        "cancel-in-progress": "false",
+        "cancel-in-progress": False,
     },
     "maintenance-monthly-review.yml": {
         "group": "maintenance-monthly",
-        "cancel-in-progress": "false",
+        "cancel-in-progress": False,
     },
     "maintenance-rotation-readiness.yml": {
         "group": "maintenance-rotation",
-        "cancel-in-progress": "false",
+        "cancel-in-progress": False,
+    },
+    **{
+        name: {
+            "group": "surveillance-inbox",
+            "cancel-in-progress": False,
+        }
+        for name in SURVEILLANCE_FILES
     },
 }
 EXPECTED_JOB_IDS = {
@@ -281,40 +288,40 @@ EXPECTED_STEP_INVENTORIES = {
         ),
     },
 }
-# SHA-256 of each BaseLoader-parsed workflow serialized canonically. These
-# reviewed semantic fingerprints lock every allowed trigger, job, and step
-# key/value. Source-text action-pin comments are validated separately.
+# SHA-256 of each GitHub-compatible workflow projection serialized canonically.
+# Native true/false values stay typed, `on` stays a string, and action inputs
+# use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "ci.yml": "6957ba096dc9512f4126d0894ac833921448d3fd14044bea76f72a37231f877e",
+    "ci.yml": "2ff54dfbdbb36163e046c821c0a4454b07afe45b293a16aafe0590e662598d6f",
     "maintenance-governance-digest.yml": (
-        "70f57a5662cfd03aa978bde7582f716ae174ee6e992467c067d02508e349eb62"
+        "7cf19d1a4632f6e93b198e83d658782c54fd07e4ff8b42708a6bc7a98d4c2e6c"
     ),
     "maintenance-heartbeat.yml": (
-        "7e23746edc01a56129500d8334648ec6c098f578b09c3c99ec1a25f887c146c6"
+        "349273a885cb7d2aae2fab884ac4e3ef104452f9a1db7ecc26e813f7b6dcd806"
     ),
     "maintenance-monthly-review.yml": (
-        "26d91cfb13af4e4d095a2d1488b5d59cea5e6b5c59aa2686dccc65e48a97007a"
+        "688f255cb90f5acb6c07049dbcab0e75c7638058a9ab44aeb4a9f862bf94a689"
     ),
     "maintenance-production-canary.yml": (
-        "fb0cf7f7ff6f37fef89237f2cb1a5a7447b971e2f08cf90aec0e0aecee76ece3"
+        "702912e1672d439ee6951003eb0a832015f4b616035d6a004513f2f3fa9eab27"
     ),
     "maintenance-rotation-readiness.yml": (
-        "f2479c8da0fa76b70397cb89fabca5992138b6556fba65def1dcc7cc4cceeb08"
+        "525ebf39884a49f953d7df6a959d79e13812a184030a944c7630517f77dc8ef7"
     ),
     "maintenance-sp-health-monitor.yml": (
-        "37235ac00ed3ea15d226fae7269ba90c2c78a7ef5c1b2e83875221d77d65b3db"
+        "dc644a9c81060952d2339617a383e26a5565ee7b49afe7acaae31dffece28a29"
     ),
     "surveillance-citations.yml": (
-        "70994985fe3aecc4fc4fa711de9eabbba0a7845de6787e5357abcd8096009639"
+        "d50618ba88eb7b63b86c23a21599ab3d79b973f247b53b173152e37e15022e1a"
     ),
     "surveillance-guideline.yml": (
-        "9db487d116a4040514a1c11c9acc502b904e6e95537bff04ea4dccce791347da"
+        "c99e18e19ca4f362103dedf9b3788cf8ad6418faafcff9518aa93dedbf1f628b"
     ),
     "surveillance-link-monitor.yml": (
-        "a936748032e04aeb852e6d3e2727ab5692d431584bbe8ee9fb7e43d39abd178e"
+        "017d2b856b6ab4a6d75f18ff9bb33150de23dbb16c5c026977a8dbf90d813ab5"
     ),
     "surveillance-resource-intake.yml": (
-        "680b952fb7ebb7f79d8c200f6a4b9e9cc490225a3238b83ada466d0816cf989d"
+        "e8cd95360a7e3492601a78cf23c0bf7ba6fd3a3dbed2b2b4075e339d44a48a2d"
     ),
 }
 
@@ -323,8 +330,27 @@ class _DuplicateMappingKeyError(yaml.YAMLError):
     """A YAML mapping repeats a key at the same nesting level."""
 
 
-class _UniqueKeyBaseLoader(yaml.BaseLoader):
-    """BaseLoader semantics with recursive duplicate-key rejection."""
+class _UniqueKeyActionsLoader(yaml.SafeLoader):
+    """GitHub-compatible boolean/on semantics plus unique mapping keys."""
+
+
+_BOOL_TAG = "tag:yaml.org,2002:bool"
+# Keep PyYAML's process-global SafeLoader resolvers untouched.
+_UniqueKeyActionsLoader.yaml_implicit_resolvers = {
+    initial: list(resolvers)
+    for initial, resolvers in yaml.SafeLoader.yaml_implicit_resolvers.items()
+}
+for _initial, _resolvers in _UniqueKeyActionsLoader.yaml_implicit_resolvers.items():
+    _UniqueKeyActionsLoader.yaml_implicit_resolvers[_initial] = [
+        (tag, pattern)
+        for tag, pattern in _resolvers
+        if tag != _BOOL_TAG
+    ]
+_UniqueKeyActionsLoader.add_implicit_resolver(
+    _BOOL_TAG,
+    re.compile(r"^(?:true|True|TRUE|false|False|FALSE)$"),
+    list("tTfF"),
+)
 
 
 def _construct_unique_mapping(loader, node, deep=False):
@@ -346,7 +372,7 @@ def _construct_unique_mapping(loader, node, deep=False):
     return mapping
 
 
-_UniqueKeyBaseLoader.add_constructor(
+_UniqueKeyActionsLoader.add_constructor(
     yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
     _construct_unique_mapping,
 )
@@ -622,11 +648,41 @@ def _error(errors, name, message):
     errors.append(f"{name}: {message}")
 
 
+def _action_input_string(value):
+    if value is None:
+        return ""
+    if type(value) is bool:
+        return "true" if value else "false"
+    if type(value) in {int, float}:
+        return str(value)
+    return value
+
+
+def _normalize_action_inputs(workflow):
+    jobs = workflow.get("jobs")
+    if not isinstance(jobs, dict):
+        return
+    for job in jobs.values():
+        if not isinstance(job, dict) or not isinstance(job.get("steps"), list):
+            continue
+        for step in job["steps"]:
+            if (
+                not isinstance(step, dict)
+                or not isinstance(step.get("uses"), str)
+                or not isinstance(step.get("with"), dict)
+            ):
+                continue
+            step["with"] = {
+                key: _action_input_string(value)
+                for key, value in step["with"].items()
+            }
+
+
 def _load(root, name, errors):
     path = root / WORKFLOW_DIR / name
     try:
         source = path.read_text(encoding="utf-8")
-        parsed = yaml.load(source, Loader=_UniqueKeyBaseLoader)
+        parsed = yaml.load(source, Loader=_UniqueKeyActionsLoader)
     except _DuplicateMappingKeyError:
         _error(errors, name, "duplicate mapping key is forbidden")
         return None, ""
@@ -636,6 +692,7 @@ def _load(root, name, errors):
     if not isinstance(parsed, dict):
         _error(errors, name, "workflow root must be a mapping")
         return None, source
+    _normalize_action_inputs(parsed)
     return parsed, source
 
 
@@ -828,6 +885,8 @@ def _step_use_source_lines(source):
         return []
     lines = source.splitlines()
     occurrences = []
+    # An aliased action step reuses this mark and therefore cannot reuse one
+    # semantic-tag comment for multiple parsed `uses` occurrences.
     seen_source_keys = set()
     for _job_key, job in jobs.value:
         steps = _mapping_node_value(job, "steps")
