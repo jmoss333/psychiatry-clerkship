@@ -300,6 +300,18 @@ test('build and CI run governance validation before site builds', () => {
 
 const SMOKE_LAUNCHER_COMMAND = 'bash tests/smoke/start-local-servers.sh';
 const SMOKE_CONFIGURATION_PATTERN = /\bSMOKE_[A-Z0-9_]+\b/;
+const MANAGED_GATE_ORDER = [
+  '- uses: actions/setup-node',
+  'node-version: "20"',
+  'run: npm --prefix sp-proxy ci',
+  'npm --prefix sp-proxy test',
+  'bash _prototypes/sp-interview/tests/run-all.sh',
+  'python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py',
+  'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3',
+  'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res',
+];
+const ACTION_PIN_PATTERN =
+  /(actions\/[\w.-]+)@[0-9a-f]{40}\s+#\s+v\d+/g;
 
 function leadingIndent(line) {
   return line.length - line.trimStart().length;
@@ -542,6 +554,22 @@ function uniqueCommandPosition(runSteps, command) {
   return matches[0];
 }
 
+function normalizeActionPin(value) {
+  return value.replace(ACTION_PIN_PATTERN, '$1');
+}
+
+function assertManagedGateOrder(ci) {
+  const ciLines = extractWorkflowJob(ci, 'build-test-validate').split(/\r?\n/);
+  let prior = -1;
+  for (const marker of MANAGED_GATE_ORDER) {
+    const index = ciLines.findIndex(
+      (line) => normalizeActionPin(line.trim()) === normalizeActionPin(marker),
+    );
+    assert.ok(index > prior, `${marker} must occur after the preceding managed-SP gate`);
+    prior = index;
+  }
+}
+
 function assertSmokeLauncherContract(ci) {
   const allRunSteps = extractRunSteps(ci);
   const activeRunCommands = allRunSteps.flatMap(normalizeActiveRunCommands);
@@ -600,27 +628,32 @@ function assertSmokeLauncherContract(ci) {
 
 test('CI gates and tested smoke launcher are structurally ordered', () => {
   const ci = fs.readFileSync(CI, 'utf8');
-  const ciLines = ci.split(/\r?\n/);
-  const managedGateOrder = [
-    '- uses: actions/setup-node@v4',
-    'node-version: "20"',
-    'run: npm --prefix sp-proxy ci',
-    'npm --prefix sp-proxy test',
-    'bash _prototypes/sp-interview/tests/run-all.sh',
-    'python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py',
-    'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3',
-    'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res',
-  ];
-  const normalizeActionPin = (value) => value.replace(/(actions\/[\w.-]+)@v\d+/g, '$1');
-  let prior = -1;
-  for (const marker of managedGateOrder) {
-    const index = ciLines.findIndex(
-      (line) => normalizeActionPin(line.trim()) === normalizeActionPin(marker),
-    );
-    assert.ok(index > prior, `${marker} must occur after the preceding managed-SP gate`);
-    prior = index;
-  }
+  assertManagedGateOrder(ci);
   assertSmokeLauncherContract(ci);
+});
+
+test('managed gate ordering accepts immutable action pins but rejects mutable refs', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const immutableSetupNode =
+    '- uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7';
+  assert.match(ci, new RegExp(immutableSetupNode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.doesNotThrow(() => assertManagedGateOrder(ci));
+
+  const hostileRefs = [
+    '- uses: actions/setup-node@main',
+    '- uses: actions/setup-node@v7',
+    '- uses: actions/setup-node@820762786026',
+    immutableSetupNode.replace(' # v7', ''),
+  ];
+  for (const hostileRef of hostileRefs) {
+    const mutated = ci.replace(immutableSetupNode, hostileRef);
+    assert.notEqual(mutated, ci, `test fixture must install hostile ref: ${hostileRef}`);
+    assert.throws(
+      () => assertManagedGateOrder(mutated),
+      /must occur after the preceding managed-SP gate/,
+      hostileRef,
+    );
+  }
 });
 
 test('smoke launcher contract ignores labels and rejects boundary drift', () => {

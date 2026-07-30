@@ -1,65 +1,97 @@
 name: Surveillance — Link Monitor
 
-# Weekly: verify every external link in the library's markdown/html still resolves.
-# Broken/redirect links become GitHub issues (P0 on high-traffic pages, else P1).
-# Internal relative links are intentionally out of scope here (checked by the site
-# build); this job targets external citation/source rot.
-
 on:
   schedule:
-    - cron: "0 6 * * 1"        # Mondays 06:00 UTC
+    - cron: "0 6 * * 1"
   workflow_dispatch:
   repository_dispatch:
-    types: [surveillance-link]  # external trigger (e.g. Apify webhook)
+    types: [surveillance-link]
 
 permissions:
-  contents: write               # commit dated report under history/
-  issues: write                 # open findings as issues
+  contents: write
+  issues: write
+  pull-requests: write
 
 concurrency:
-  group: surveillance-link
+  group: surveillance-inbox
   cancel-in-progress: false
 
 jobs:
   link-audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          fetch-depth: 0
           lfs: false
+          ref: main
 
-      - name: Check links (lychee)
-        uses: lycheeverse/lychee-action@v2
-        with:
-          args: "--no-progress --config 13_Faculty_Resources/_automation/surveillance/lychee.toml './**/*.md' './**/*.html'"
-          format: json
-          output: lychee.json
-          fail: false           # a broken link must not fail the workflow
-
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.11"
 
-      - name: Parse lychee report -> findings
-        run: >-
-          python3 13_Faculty_Resources/_automation/surveillance/bin/run_link_monitor.py
-          --lychee lychee.json --out findings.json
+      - name: Prepare run directory
+        run: mkdir -p "$RUNNER_TEMP/surveillance"
 
-      - name: Sync findings -> issues + report
+      - name: Hydrate rolling surveillance inbox
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/report_branch.py hydrate
+          --state "$RUNNER_TEMP/surveillance/report-branch-state.json"
+
+      - name: Check links (lychee)
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2
+        with:
+          args: "--no-progress --config 13_Faculty_Resources/_automation/surveillance/lychee.toml './**/*.md' './**/*.html'"
+          format: json
+          output: ${{ runner.temp }}/surveillance/lychee.json
+          fail: false
+
+      - name: Parse lychee report into findings
+        run: |
+          python3 13_Faculty_Resources/_automation/surveillance/bin/run_link_monitor.py \
+            --lychee "$RUNNER_TEMP/surveillance/lychee.json" \
+            --out "$RUNNER_TEMP/surveillance/findings.json" \
+            --checked-out "$RUNNER_TEMP/surveillance/checked-sources.json" \
+            2>&1 | tee "$RUNNER_TEMP/surveillance/collector.log"
+
+      - name: Sync findings into issues and reports
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: >-
           python3 13_Faculty_Resources/_automation/surveillance/bin/sync_findings.py
-          --findings findings.json --job link-source-monitor
+          --findings "$RUNNER_TEMP/surveillance/findings.json"
+          --checked-sources "$RUNNER_TEMP/surveillance/checked-sources.json"
+          --issues-out "$RUNNER_TEMP/surveillance/issue-state.json"
+          --job link-source-monitor
 
-      - name: Rebuild faculty status page
-        run: python3 13_Faculty_Resources/_automation/surveillance/bin/build_status.py
+      - name: Rebuild faculty status page from live issue state
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/build_status.py
+          --issues-json "$RUNNER_TEMP/surveillance/issue-state.json"
 
-      - name: Commit report + status
-        run: |
-          git config user.name "surveillance-bot"
-          git config user.email "surveillance-bot@users.noreply.github.com"
-          git add 13_Faculty_Resources/_automation/surveillance
-          git commit -m "surveillance: link audit $(date -u +%F)" || { echo "no changes"; exit 0; }
-          git push || (git pull --rebase --autostash && git push)
+      - name: Upload surveillance evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: surveillance-link-monitor-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/surveillance/findings.json
+            ${{ runner.temp }}/surveillance/checked-sources.json
+            ${{ runner.temp }}/surveillance/issue-state.json
+            ${{ runner.temp }}/surveillance/lychee.json
+            ${{ runner.temp }}/surveillance/collector.log
+            13_Faculty_Resources/_automation/surveillance/history
+            13_Faculty_Resources/_automation/surveillance/STATUS.md
+            13_Faculty_Resources/_automation/surveillance/status.html
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Publish rolling surveillance inbox
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/report_branch.py publish
+          --state "$RUNNER_TEMP/surveillance/report-branch-state.json"

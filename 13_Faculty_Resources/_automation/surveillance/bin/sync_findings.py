@@ -10,15 +10,18 @@ Pipeline:
      (state=all — open or closed), so re-runs never open duplicates and a
      dismissed fingerprint is never reopened.
   5. P0/P1 with a NEW fingerprint -> open an issue. P2 -> monthly digest.
-  6. Write a dated report + last_run stamp under history/.
+  6. Write a dated report, checked-source freshness stamps, and issue snapshot.
 
 Stdlib only (urllib). Env: GITHUB_TOKEN, GITHUB_REPOSITORY (owner/repo).
 
 Examples:
   # Real run in CI:
-  GITHUB_TOKEN=*** python3 sync_findings.py --findings findings.json --job link-source-monitor
+  GITHUB_TOKEN=*** python3 sync_findings.py --findings findings.json \
+      --checked-sources checked-sources.json --issues-out issue-state.json \
+      --job link-source-monitor
   # Local dry run (no network); simulate existing issues via a fingerprint fixture:
   python3 sync_findings.py --findings f.json --job guideline-surveillance \
+      --checked-sources checked-sources.json --issues-out /tmp/issue-state.json \
       --dry-run --existing-fixture existing_fps.json --out-dir /tmp/surv
 """
 import os, sys, json, time, argparse, urllib.request, urllib.error
@@ -49,38 +52,68 @@ def _next_link(link_header):
     return None
 
 
-def fetch_existing_fingerprints(repo, token):
-    """Fingerprints already present in any surveillance-labelled issue (state=all)."""
-    fps = set()
-    url = f"{API}/repos/{repo}/issues?state=all&labels=surveillance&per_page=100"
+def normalize_issue_snapshot(items):
+    """Project GitHub issue responses into a content- and secret-free live ledger."""
+    snapshot = []
+    for item in items or []:
+        if not isinstance(item, dict) or item.get("pull_request"):
+            continue
+        match = L.FP_RE.search(item.get("body") or "")
+        if not match:
+            continue
+        labels = []
+        for label in item.get("labels") or []:
+            name = label.get("name") if isinstance(label, dict) else label
+            if isinstance(name, str) and name:
+                labels.append(name)
+        snapshot.append({
+            "number": item.get("number"),
+            "url": item.get("html_url"),
+            "state": str(item.get("state") or "").upper(),
+            "closedAt": item.get("closed_at"),
+            "fingerprint": match.group(1),
+            "labels": sorted(set(labels)),
+        })
+    return sorted(snapshot, key=lambda item: (item["number"] is None, item["number"] or 0))
+
+
+def fetch_issue_snapshot(repo, token):
+    """Return every surveillance issue as a normalized live-state snapshot."""
+    raw = []
+    url = f"{API}/repos/{repo}/issues?state=all&per_page=100"
     while url:
         items, headers = _gh("GET", url, token)
-        for it in items or []:
-            m = L.FP_RE.search(it.get("body") or "")
-            if m:
-                fps.add(m.group(1))
+        raw.extend(items or [])
         url = _next_link(headers.get("Link", ""))
-    return fps
+    return normalize_issue_snapshot(raw)
 
 
 def create_issue(repo, token, f):
     data = {"title": L.issue_title(f), "body": L.issue_body(f), "labels": L.issue_labels(f)}
     res, _ = _gh("POST", f"{API}/repos/{repo}/issues", token, data)
-    return res.get("html_url")
+    return res
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--findings", required=True, help="JSON array of findings")
     ap.add_argument("--job", required=True,
-                    choices=["guideline-surveillance", "link-source-monitor", "resource-intake"])
+                    choices=["guideline-surveillance", "link-source-monitor",
+                             "citation-monitor", "resource-intake"])
+    ap.add_argument("--checked-sources", required=True,
+                    help="JSON array of source IDs the collector actually checked")
+    ap.add_argument("--issues-out", required=True,
+                    help="Write normalized live GitHub issue state here")
     ap.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPO))
     ap.add_argument("--dry-run", action="store_true", help="No GitHub calls; print intended actions")
     ap.add_argument("--existing-fixture", help="(dry-run) JSON array of fingerprints to treat as already-issued")
     ap.add_argument("--out-dir", help="Override history/ output dir (used by tests)")
     args = ap.parse_args()
 
-    findings = json.load(open(args.findings, encoding="utf-8"))
+    with open(args.findings, encoding="utf-8") as fh:
+        findings = json.load(fh)
+    with open(args.checked_sources, encoding="utf-8") as fh:
+        checked_sources = L.validate_checked_sources(json.load(fh))
     inv = L.invert_citations(L.load_citation_index())
 
     for f in findings:
@@ -94,11 +127,22 @@ def main():
 
     token = os.environ.get("GITHUB_TOKEN")
     if args.dry_run:
-        existing = set(json.load(open(args.existing_fixture))) if args.existing_fixture else set()
+        if args.existing_fixture:
+            with open(args.existing_fixture, encoding="utf-8") as fh:
+                fixture = json.load(fh)
+            if fixture and isinstance(fixture[0], dict):
+                issue_snapshot = normalize_issue_snapshot(fixture)
+                existing = {item["fingerprint"] for item in issue_snapshot}
+            else:
+                issue_snapshot = []
+                existing = set(fixture)
+        else:
+            issue_snapshot, existing = [], set()
     else:
         if not token:
             sys.exit("ERROR: GITHUB_TOKEN required (or use --dry-run)")
-        existing = fetch_existing_fingerprints(args.repo, token)
+        issue_snapshot = fetch_issue_snapshot(args.repo, token)
+        existing = {item["fingerprint"] for item in issue_snapshot}
 
     max_new = int(os.environ.get("MAX_NEW_ISSUES", "25"))
     created, deduped, overflow = [], [], []
@@ -119,7 +163,7 @@ def main():
             overflow.append(f)
             continue
         try:
-            f["github_issue"] = create_issue(args.repo, token, f)
+            created_issue = create_issue(args.repo, token, f)
         except Exception as e:   # e.g. GitHub secondary rate limit (HTTP 403)
             print(f"WARN: issue create failed ({e}); routing remaining findings to digest.",
                   file=sys.stderr)
@@ -127,15 +171,25 @@ def main():
             f["status"] = "new"
             overflow.append(f)
             continue
+        f["github_issue"] = created_issue.get("html_url")
         print(f"CREATED {f['github_issue']}  {L.issue_title(f)}")
         f["status"] = "issue-open"
         created.append(f)
         existing.add(f["fingerprint"])
+        normalized = normalize_issue_snapshot([created_issue])
+        if normalized:
+            issue_snapshot.extend(normalized)
         time.sleep(1.5)   # throttle: stay under GitHub's secondary rate limit
 
     reports = L.write_report(args.job, findings, base=args.out_dir)
     digest = L.append_digest(digest_findings + overflow, base=args.out_dir)
-    L.update_last_run(sorted({f["source_id"] for f in findings}), base=args.out_dir)
+    L.update_last_run(checked_sources, base=args.out_dir)
+    with open(args.issues_out, "w", encoding="utf-8") as fh:
+        json.dump(
+            sorted(issue_snapshot, key=lambda item: (item["number"] is None, item["number"] or 0)),
+            fh,
+            indent=2,
+        )
 
     print(f"\nSummary [{args.job}]: {len(created)} created, {len(deduped)} deduped, "
           f"{len(digest_findings)} P2 digested, {len(overflow)} overflow->digest.")

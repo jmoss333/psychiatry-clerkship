@@ -81,6 +81,7 @@ def fetch_apify(cfg, token):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="findings.json")
+    ap.add_argument("--checked-out", default="checked-sources.json")
     ap.add_argument("--fixture", help="offline: JSON array of crawled items")
     args = ap.parse_args()
 
@@ -98,7 +99,10 @@ def main():
         sys.exit("ERROR: APIFY_TOKEN required (or pass --fixture)")
 
     findings = to_candidates(items, cfg, existing)
-    json.dump(findings, open(args.out, "w", encoding="utf-8"), indent=2)
+    with open(args.out, "w", encoding="utf-8") as fh:
+        json.dump(findings, fh, indent=2)
+    with open(args.checked_out, "w", encoding="utf-8") as fh:
+        json.dump(L.validate_checked_sources(["resource-intake"]), fh, indent=2)
     print(f"resource-intake: {len(findings)} candidate(s) -> {args.out}")
 
 
