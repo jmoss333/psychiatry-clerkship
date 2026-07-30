@@ -179,9 +179,10 @@ def _browser_required_soft_failure(source, code):
     return code in (401, 403) or code is None
 
 
-def check_registry_sources():
+def check_registry_sources(checked=None):
     """Verify each registry source URL still resolves. Returns list of findings."""
     findings = []
+    checked = checked if checked is not None else []
     reg = L.load_registry()
     for s in reg.get("sources", []):
         url = s.get("url")
@@ -191,6 +192,7 @@ def check_registry_sources():
             # copyrighted/paywalled (e.g. DSM login): reachability only, but many
             # such portals block bots — skip to avoid false positives.
             continue
+        checked.append(s.get("id"))
         ok, ct, code, redir, detail = classify(url)
         time.sleep(THROTTLE_S)
         if ok:
@@ -236,7 +238,8 @@ def scan_curriculum_citations(root):
             if _skip_citation_path(rel):
                 continue
             try:
-                text = open(p, encoding="utf-8", errors="replace").read()
+                with open(p, encoding="utf-8", errors="replace") as fh:
+                    text = fh.read()
             except Exception:
                 continue
             for m in DOI_RE.finditer(text):
@@ -250,12 +253,14 @@ def scan_curriculum_citations(root):
                                      "esummary.fcgi?db=pubmed&id=%s&retmode=json" % pmid), rel
 
 
-def check_citations(root):
+def check_citations(root, checked=None):
     """Validate unique DOIs/PMIDs found in curriculum. Returns list of findings."""
     findings, seen = [], {}
+    checked = checked if checked is not None else []
     for kind, ident, url, rel in scan_curriculum_citations(root):
         seen.setdefault((kind, ident), []).append(rel)
     for (kind, ident), files in sorted(seen.items()):
+        checked.append("%s:%s" % (kind, ident))
         url = ("https://doi.org/" + ident if kind == "doi"
                else "https://pubmed.ncbi.nlm.nih.gov/%s/" % ident)
         check_url = (url if kind == "doi"
@@ -317,6 +322,7 @@ def self_test():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="findings.json")
+    ap.add_argument("--checked-out", default="checked-sources.json")
     ap.add_argument("--root", default=L.LIB_ROOT, help="Curriculum root to scan for DOIs/PMIDs.")
     ap.add_argument("--skip-citations", action="store_true", help="Registry source URLs only.")
     ap.add_argument("--skip-sources", action="store_true", help="DOIs/PMIDs only.")
@@ -326,11 +332,11 @@ def main():
     if a.self_test:
         sys.exit(0 if self_test() else 1)
 
-    findings = []
+    findings, checked = [], []
     if not a.skip_sources:
-        findings += check_registry_sources()
+        findings += check_registry_sources(checked)
     if not a.skip_citations:
-        findings += check_citations(a.root)
+        findings += check_citations(a.root, checked)
 
     # de-dup by fingerprint (a DOI cited on many pages already merged in check_citations)
     uniq, seen = [], set()
@@ -339,7 +345,10 @@ def main():
             continue
         seen.add(f["fingerprint"]); uniq.append(f)
 
-    json.dump(uniq, open(a.out, "w", encoding="utf-8"), indent=2)
+    with open(a.out, "w", encoding="utf-8") as fh:
+        json.dump(uniq, fh, indent=2)
+    with open(a.checked_out, "w", encoding="utf-8") as fh:
+        json.dump(L.validate_checked_sources(checked), fh, indent=2)
     print("citation-check: %d finding(s) -> %s" % (len(uniq), a.out))
 
 

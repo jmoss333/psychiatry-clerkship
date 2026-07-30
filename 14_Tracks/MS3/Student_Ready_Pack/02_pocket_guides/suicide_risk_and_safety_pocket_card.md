@@ -109,6 +109,10 @@ A strong safety plan includes:
 Do not treat a safety plan as a discharge permission slip. It is one component
 of a broader risk and disposition plan.
 
+Step 5 is not abstract — these are the contacts that belong in it:
+
+<!-- crisis-block -->
+
 ## Practice What To Say Next
 
 Use the communication practice tool to rehearse the words before you need them

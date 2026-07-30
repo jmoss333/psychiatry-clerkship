@@ -1,0 +1,58 @@
+name: Maintenance — Production Learner Canary
+
+on:
+  schedule:
+    - cron: "20 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-canary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          lfs: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "20"
+
+      - name: Install Playwright and Chromium
+        run: |
+          cd tests/smoke
+          npm ci
+          npx playwright install chromium --with-deps
+
+      - name: Crawl both public learner sites
+        run: |
+          cd tests/smoke
+          npx playwright test --project=nav-ms3 --project=nav-res
+        env:
+          MS3_BASE_URL: https://une-ms3-psychiatry.netlify.app
+          RES_BASE_URL: https://mmc-psychiatry-residents-sanford.netlify.app
+
+      - name: Build content-free release twin
+        if: always()
+        run: >-
+          python3 13_Faculty_Resources/_automation/maintenance/production_canary.py
+          --config 13_Faculty_Resources/_automation/maintenance/maintenance_config.json
+          --source-sha "$GITHUB_SHA"
+          --out "$RUNNER_TEMP/release-twin.json"
+
+      - name: Upload production canary evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: maintenance-production-canary-${{ github.run_id }}
+          path: |
+            tests/smoke/test-results/
+            ${{ runner.temp }}/release-twin.json
+          if-no-files-found: warn
+          retention-days: 90

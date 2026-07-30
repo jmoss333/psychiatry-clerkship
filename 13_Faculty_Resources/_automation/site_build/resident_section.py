@@ -90,6 +90,10 @@ for src,dst in PROTO_TOOLS:
             _t=re.sub(r'(<body[^>]*>)', r'\1\n<a class="skip-link" href="#root">Skip to content</a>', _t, count=1)
         if '.skip-link{' not in _t and '</head>' in _t:
             _t=_t.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}</style>\n</head>', 1)
+        # WP-03 remainder (mirrors build_deploy.py's polish pass): bare accent text
+        # (--primary #c25a3c) fails AA for normal-size light-mode text — repoint to
+        # --primary-dark with a literal fallback; the dark theme override still wins.
+        _t=re.sub(r'color:\s*var\(--primary\)', 'color:var(--primary-dark,#a84830)', _t)
         if _t!=_o: open(_dp,"w",encoding="utf-8").write(_t)
 # vendor React (shared across all three rp-* tools; files are byte-for-byte identical)
 _vendor_src=os.path.join(LIB,"_prototypes/agitation-trainer/vendor")

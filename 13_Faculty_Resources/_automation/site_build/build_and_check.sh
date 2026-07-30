@@ -34,6 +34,7 @@ python3 "$LIB/13_Faculty_Resources/_automation/validate_topic_meta.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_attestation_consistency.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_registry_schemas.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_reconnect_snapshot_provenance.py"
+python3 "$LIB/13_Faculty_Resources/_automation/validate_crisis_resources.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_tool_governance.py"
 
 case "$SITE" in

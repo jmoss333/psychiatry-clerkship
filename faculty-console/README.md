@@ -17,7 +17,7 @@ faculty-console/
 
 ## How it works
 
-1. Open the faculty site (its own Netlify URL), enter the faculty key, and provide a reviewer label.
+1. Open the faculty site (its own Netlify URL) and enter the faculty key. The reviewer attribution shown in the console is configured server-side (the site's `ATTESTER_NAME` environment variable, defaulting to Joshua Moss, MD) and cannot be edited in the browser.
 2. The console calls `GET /api/attest`. The key is sent only in the `x-faculty-key` header; it is never accepted from the URL or JSON body. The function reads `reviewed.json`, `site_manifest.json`, and `question_bank.json`, then returns the page/tool review state, active questions with their exact saved revisions, the normalized Git object ID for the loaded manifest, and current structural checks.
 3. Pages, tools, and questions appear in one filterable queue. Selecting an item opens its learner-facing surface beside one common **Review → Resolve → Confirm** rail.
 4. The embedded learner site reports a typed readiness result for the exact selected item. Preview requests carry a short-lived random review token, never the faculty key, reviewer label, confirmations, edits, or commit data.
@@ -65,7 +65,7 @@ Ready and Warning questions both require an explicit **I reviewed this exact sav
 
 ### 4. Confirm one attestation
 
-The rail shows the self-entered reviewer label. For questions, complete all three faculty confirmations covering the clinical answer, named evidence, and an original fictional vignette without PHI. Then choose **Attest this question**. For pages and tools, choose **Attest this page** or **Attest this tool** after the Review and Resolve steps are complete.
+The rail shows the server-configured reviewer attribution (`ATTESTER_NAME`). For questions, complete all three faculty confirmations covering the clinical answer, named evidence, and an original fictional vignette without PHI. Then choose **Attest this question**. For pages and tools, choose **Attest this page** or **Attest this tool** after the Review and Resolve steps are complete.
 
 The interface submits only the selected item and waits for a confirming repository reload. A commit link is shown only after that confirmation. Completed page/tool reviews have no primary attestation button; use **More actions → Reopen review**, confirm the exact item, and complete a fresh review before re-attesting.
 
@@ -140,6 +140,7 @@ If the console uses a different origin, update the learner site's exact `frame-a
 | `GIT_BRANCH` | `main` *(optional; default)* |
 | `STUDENT_SITE_URL` | learner site to embed *(optional; defaults to `https://une-ms3-psychiatry.netlify.app`)* |
 | `ALLOWED_ORIGIN` | the exact faculty site origin, e.g. `https://clerkship-faculty-attest.netlify.app` *(optional; tightens API CORS)* |
+| `ATTESTER_NAME` | reviewer attribution recorded in `by:` fields and commit messages *(optional; defaults to `Joshua Moss, MD`)* |
 
 Deploy. Open the site, enter the key, and you're attesting.
 
@@ -149,10 +150,10 @@ Deploy. Open the site, enter the key, and you're attesting.
 
 - **Token scope is the blast radius.** A fine-grained PAT limited to this one repo with Contents-only access means a leaked token can, at worst, edit files in this repo — not touch your other repos or account.
 - **The key is a shared secret**, checked server-side in constant time before a POST body is read. It is appropriate only for a small trusted faculty group.
-- **Reviewer labels are self-asserted, not verified identities.** The label improves the Git history but does not prove which person used the shared key. If verified per-person attribution is required, replace the shared key with institutional SSO or OAuth before treating the label as an identity record.
+- **Attribution is server-derived, not self-asserted.** The reviewer label comes from the `ATTESTER_NAME` environment variable; any `attester` field in a request body is ignored, so a browser cannot freely edit the recorded identity. This still does not prove *which person* used the shared key — if verified per-person attribution is required, replace the shared key with institutional SSO or OAuth (or per-person keys mapped to names) before treating the label as an identity record.
 - **Framing is exact-origin only.** The built learner site sets `frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app` and intentionally omits `X-Frame-Options`, because `SAMEORIGIN` would block that named cross-origin console. There is no wildcard. A different console origin requires an explicit learner-policy change and learner redeploy; `ALLOWED_ORIGIN` and `STUDENT_SITE_URL` do not expand the framing allowlist. The faculty console itself remains non-embeddable with `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
 - **Question-bank concurrency is branch-atomic.** Every question-bank write attempt captures one branch-head Git object ID, reads both the bank and manifest from that exact snapshot, compares the manifest's normalized 40- or 64-hex object ID with the loaded value, and checks exact per-item revisions. It builds the new commit from that parent and advances the branch with a non-forced reference update. If any commit changes the branch in between, the proposed question-bank commit does not reach the branch; the server either safely retries from the new snapshot once or returns a conflict. Missing or changed manifest state also becomes a safe conflict, while other upstream failures retain their generic error handling.
-- **Audit trail:** every successful mutation is a Git commit. The interface submits one selected item at a time; attestation messages retain the server's compatible count-and-reviewer format, while a question draft-save message names its item. The Git diff records the exact changed entry. Git history is durable, but the self-entered reviewer label retains the identity limitation above.
+- **Audit trail:** every successful mutation is a Git commit. The interface submits one selected item at a time; attestation messages retain the server's compatible count-and-reviewer format, while a question draft-save message names its item. The Git diff records the exact changed entry. Git history is durable, but the server-derived reviewer label retains the shared-key identity limitation above.
 
 ## After it's live: remove the on-site attestation tools
 

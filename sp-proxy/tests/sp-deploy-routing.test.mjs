@@ -16,6 +16,7 @@ test('public Interview Room paths rewrite to their deployed functions', () => {
   for (const [from, target] of [
     ['/api/sp', '/.netlify/functions/sp'],
     ['/api/sp/voice', '/.netlify/functions/sp-voice'],
+    ['/api/sp/health-status', '/.netlify/functions/sp-health-status'],
   ]) {
     const block = redirectBlock(from);
     assert.notEqual(block, '', `missing Netlify rewrite for ${from}`);

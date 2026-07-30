@@ -35,6 +35,8 @@ When you have five minutes, not fifty: lead with **support**, name the **affect*
 - Chain analysis *replaces* a punitive response to self-harm — understand the behavior, don't just document it.
 - Safety planning with follow-up beats a "contract for safety," which has no evidence and can create false reassurance.
 
+<!-- crisis-block -->
+
 **Pair with** — the [Motivational Interviewing](?page=motivational_interviewing.md) page, the [suicide-risk & safety pocket card](?page=pg_suicide.md), the [Personality Disorders](?page=t_personality.md) page (DBT-informed stance), the [Family Meeting Playbook](?page=family_playbook.md), and the [Evidence-Based Inpatient Psychiatry](?page=evidence_inpatient.md) reference for the underlying trials.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

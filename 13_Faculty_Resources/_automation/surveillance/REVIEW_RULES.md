@@ -19,7 +19,7 @@ Escalation override: any finding whose `affects[]` includes a path in
 
 - Every finding carries a stable `fingerprint = hash(source_id + change_type + change_signature)`.
 - Before opening an issue, the sync **searches open+closed issues** for that
-  fingerprint (carried in a hidden `<!-- fp:... -->` marker and a label).
+  fingerprint (carried in a hidden `<!-- surveillance:fp=... -->` marker and a label).
   - Match found & open → **comment/update**, do not create.
   - Match found & **dismissed/closed-as-wontfix** → **do nothing** (a dismissed
     fingerprint is not reopened; the source must produce a *new* signature to re-fire).
@@ -37,8 +37,14 @@ Escalation override: any finding whose `affects[]` includes a path in
 ## 4. "Last verified" / anti-false-currency
 
 - An automated monitor can create a **false sense** that content is current. Counter it:
-  - Each source in the registry gets a `last_checked` stamp written to
-    `history/last_run.json` each run.
+  - Every collector writes a checked-source receipt. Only unique, non-empty source IDs
+    in that validated receipt advance `history/last_run.json`; zero findings still
+    advance sources that were actually checked, while a missing/malformed receipt fails.
+  - A missing, empty, malformed, or unrecognized link-check report fails rather than
+    being converted into a clean run.
+  - Status uses a normalized live GitHub issue snapshot to let closed issues override
+    stale historical `issue-open` records. Without that snapshot, both status surfaces
+    say `offline-report-fallback` and do not imply live authority.
   - A page is only "current" when its `reviewed.json` date is **≥** the newest
     `detected_at` among findings that `affect` it. The digest lists any page failing
     this test as **"review overdue."**
@@ -73,3 +79,14 @@ Escalation override: any finding whose `affects[]` includes a path in
 A finding is `actioned` only when either (a) the affected page(s) were re-stamped in
 `reviewed.json`, or (b) a human explicitly confirmed no change was warranted (logged in
 the issue). Nothing auto-closes.
+
+## 8. Generated-report publication boundary
+
+- Scheduled runs never push reports to `main`.
+- One rolling branch, `automation/surveillance-inbox`, carries generated review state.
+- The only allowed paths are `history/**`, `STATUS.md`, and `status.html` under this
+  surveillance directory. Any other dirty path or inbox diff aborts publication.
+- An existing remote inbox is hydrated by exact SHA and updated with an exact
+  force-with-lease. This prevents a scheduled run from overwriting a concurrent update.
+- Faculty authority is unchanged: the rolling PR contains reports and status only,
+  never teaching content, `reviewed.json`, or attestation decisions.

@@ -11,6 +11,9 @@ import {
 
 const MS3_URL = process.env.MS3_BASE_URL || 'http://localhost:4200';
 const FACULTY_KEY = 'synthetic-faculty-key';
+// Attribution is server-derived (ATTESTER_NAME); the mock GET payload carries it
+// and the mock POST handler stamps it, mirroring attest.mjs.
+const SERVER_ATTESTER = 'Dr Server Attribution';
 const MANIFEST_PAGES = ['t_mood.md'];
 const MANIFEST_REVISION = 'b'.repeat(40);
 const REVIEW_TOKEN = '0123456789abcdef0123456789abcdef';
@@ -317,6 +320,7 @@ function buildGetPayload(bank, contentState = initialContentState()) {
   }));
   return {
     student: `${MS3_URL}/`,
+    attester: SERVER_ATTESTER,
     items,
     qbankRevision: itemRevision(bank).slice(0, 40),
     manifestRevision: MANIFEST_REVISION,
@@ -420,7 +424,7 @@ async function installRepositoryApi(page, initialBank, {
         }
         item.status = reviewed ? 'reviewed' : 'pending';
         item.at = reviewed ? '2026-07-17T12:00:00.000Z' : '';
-        item.by = reviewed ? String(body.attester || '') : '';
+        item.by = reviewed ? SERVER_ATTESTER : '';
         const receipt = {
           ok: true,
           updated: 1,
@@ -1234,7 +1238,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
   test('attests one page and tool, stays on each receipt, and reopens one page for re-attestation', async ({ page }) => {
     const api = await installRepositoryApi(page, workflowBank());
     await unlock(page);
-    await page.getByLabel('Reviewer label').fill('Dr Synthetic');
+    await expect(page.locator('#reviewer-label')).toHaveText(SERVER_ATTESTER);
 
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
     await page.locator('#review-complete-item').check();
@@ -1258,7 +1262,6 @@ test.describe.serial('faculty unified attestation workspace', () => {
     expect(api.calls[pageStart].body).toEqual({
       target: 'content',
       changes: { 't_mood.md': true },
-      attester: 'Dr Synthetic',
     });
     expect(api.currentContent().find(item => item.slug === 't_mood.md').status).toBe('reviewed');
 
@@ -1299,7 +1302,6 @@ test.describe.serial('faculty unified attestation workspace', () => {
     expect(api.calls[reopenStart].body).toEqual({
       target: 'content',
       changes: { 't_mood.md': false },
-      attester: 'Dr Synthetic',
     });
     expect(api.currentContent().find(item => item.slug === 't_mood.md').status).toBe('pending');
     expect(api.gets.at(-1).items.find(item => item.slug === 't_mood.md').status).toBe('unreviewed');
@@ -1319,7 +1321,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
       missingDeployedIds: ['qb_moo_906'],
     });
     await unlock(page);
-    await page.getByLabel('Reviewer label').fill('Dr Question Reviewer');
+    await expect(page.locator('#reviewer-label')).toHaveText(SERVER_ATTESTER);
 
     await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
@@ -1790,12 +1792,13 @@ test.describe.serial('faculty unified attestation workspace', () => {
       body: 'Synthetic fallback trigger',
     }));
     await unlock(page);
-    await page.getByLabel('Reviewer label').fill('Privacy Reviewer');
+    await expect(page.locator('#reviewer-label')).toHaveText(SERVER_ATTESTER);
     await expect(page.locator('#preview-status-label')).toHaveText('Error');
     const embeddedUrl = await page.locator('#learner-preview-frame').getAttribute('src');
     for (const privateValue of [
       FACULTY_KEY,
-      'Privacy Reviewer',
+      SERVER_ATTESTER,
+      encodeURIComponent(SERVER_ATTESTER),
       'confirm-clinical',
       'originalityAndNoPhi',
       'commit',
@@ -1808,7 +1811,8 @@ test.describe.serial('faculty unified attestation workspace', () => {
     const fullUrl = fullPage.url();
     for (const privateValue of [
       FACULTY_KEY,
-      'Privacy Reviewer',
+      SERVER_ATTESTER,
+      encodeURIComponent(SERVER_ATTESTER),
       'reviewKey',
       'reviewToken',
       'confirm-clinical',
