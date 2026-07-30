@@ -68,10 +68,37 @@ assert.deepEqual(
   ],
   'all deterministic regression cases must remain in the canonical pack',
 );
+// Snapshot of who the shipped pack currently exposes to learners. Marcus and Ray were
+// attested 2026-07-22 (Joshua Moss, MD), so all three personas are now eligible. This
+// assertion tracks pack state; the behavioural proof that the filter still fails closed
+// for an unattested case lives in the synthetic eligibleWith() block below.
 assert.deepEqual(
   testApi.eligibleCases(pack).map((caseDef) => caseDef.id),
-  ['sp_depression_gated_si_001'],
+  [
+    'sp_depression_gated_si_001',
+    'sp_mania_redirect_001',
+    'sp_psychosis_paranoid_001',
+  ],
 );
+// Discriminating coverage for the learner-facing attestation gate. Every case in the
+// shipped pack is now attested, so the snapshot above passes for a fail-open
+// implementation too. Vary only facultyReview.status on a synthetic pack, so a
+// regression that drops the filter (serving unattested personas to learners) turns red.
+assert.deepEqual(
+  testApi
+    .eligibleCases({
+      cases: [
+        { id: 'synthetic_reviewed', facultyReview: { status: 'reviewed' } },
+        { id: 'synthetic_draft', facultyReview: { status: 'draft' } },
+        { id: 'synthetic_pending', facultyReview: { status: 'draft-pending-attestation' } },
+        { id: 'synthetic_no_review_block' },
+      ],
+    })
+    .map((caseDef) => caseDef.id),
+  ['synthetic_reviewed'],
+  'only attested cases may be offered to learners',
+);
+
 assert.equal(testApi.isManagedVoiceEligible(pack, pack.cases[0]), false);
 
 // Discriminating coverage for the client managed-voice billing gate. The shipped

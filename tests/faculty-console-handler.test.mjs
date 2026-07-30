@@ -401,6 +401,7 @@ function handlerWith(mock, envOverrides = {}) {
       GITHUB_REPO: 'synthetic/faculty-console',
       GIT_BRANCH: 'main',
       STUDENT_SITE_URL: 'https://students.example/',
+      ATTESTER_NAME: 'Synthetic Reviewer',
       ...envOverrides,
     },
   });
@@ -1825,4 +1826,44 @@ test('returns generic unauthorized before exposing a missing GitHub configuratio
   await expectError(response, { status: 401, code: 'unauthorized' });
   assert.equal(request.bodyUsed, false);
   assert.equal(mock.calls.length, 0);
+});
+
+test('attribution is server-derived: GET exposes it, body.attester is ignored, default applies', async () => {
+  // (a) GET state carries the server-configured attribution label for display.
+  const stateMock = createGithubMock();
+  const stateResponse = await handlerWith(stateMock)(apiRequest('GET'));
+  assert.equal(stateResponse.status, 200);
+  const statePayload = await stateResponse.json();
+  assert.equal(statePayload.attester, 'Synthetic Reviewer');
+
+  // (b) A client-supplied attester never overrides the server label.
+  const spoofMock = createGithubMock();
+  const spoofResponse = await handlerWith(spoofMock)(apiRequest('POST', {
+    body: {
+      target: 'content',
+      changes: { 'mse-tool': true },
+      attester: 'Spoofed Reviewer',
+    },
+  }));
+  assert.equal(spoofResponse.status, 200);
+  assert.equal(spoofMock.putBodies.length, 1);
+  const spoofSaved = JSON.parse(
+    Buffer.from(spoofMock.putBodies[0].body.content, 'base64').toString('utf8'),
+  );
+  assert.equal(spoofSaved['mse-tool'].by, 'Synthetic Reviewer');
+  assert.match(spoofMock.putBodies[0].body.message, /by Synthetic Reviewer/);
+  assert.doesNotMatch(spoofMock.putBodies[0].body.message, /Spoofed Reviewer/);
+
+  // (c) With no ATTESTER_NAME configured, the label falls back to the default.
+  const defaultMock = createGithubMock();
+  const defaultResponse = await handlerWith(defaultMock, { ATTESTER_NAME: '' })(
+    apiRequest('POST', {
+      body: { target: 'content', changes: { 'mse-tool': true } },
+    }),
+  );
+  assert.equal(defaultResponse.status, 200);
+  const defaultSaved = JSON.parse(
+    Buffer.from(defaultMock.putBodies[0].body.content, 'base64').toString('utf8'),
+  );
+  assert.equal(defaultSaved['mse-tool'].by, 'Joshua Moss, MD');
 });

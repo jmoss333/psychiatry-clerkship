@@ -9,6 +9,10 @@ sp-proxy/
   index.html                  placeholder page (the site is just the function)
   netlify.toml                base-dir config (publish + functions)
   netlify/functions/sp.mjs    the endpoint: converse + evaluate + health
+  netlify/functions/sp-health-canary.mjs
+                              scheduled authenticated health receipt
+  netlify/functions/sp-health-status.mjs
+                              public content-free receipt status
   package.json                @netlify/blobs (durable daily quota counter)
   REDTEAM_CHECKLIST.md        run after every deploy and every model/pack change
 ```
@@ -26,6 +30,30 @@ sp-proxy/
 - **Health** (`GET /api/sp`): the versioned actor/evaluator model pins, pack version/status, and
   reviewed case summaries — this is what the tool's "Test connection" button calls.
 - **Logs are metadata only** — case id, turn number, rapport, date. Never message text.
+
+## Scheduled health receipts
+
+The published proxy runs `sp-health-canary` every six hours. It reuses the server-side learner
+passcode, requires the exact canonical MS3 origin, and makes one authenticated `GET /api/sp`.
+Because the check is GET-only, it does not invoke the actor, evaluator, budget ledger,
+transcription, synthesis, or another paid provider operation.
+
+Each run replaces Blob key `latest` in the site-scoped, strong-consistency `sp-health-canary` store
+with a content-free receipt. Success records only timestamps, case count, learner-ready state, and a
+SHA-256 contract identifier; failure records only a bounded failure code and timestamp. It never
+stores credentials, raw model or pack identifiers, case content, learner activity, request headers,
+URLs, or exception text. A `draft-pending-attestation` pack can be reachable and healthy while
+`learnerReady` remains false; the receipt is not a faculty approval.
+
+Public `GET /api/sp/health-status` requires no credential and exposes only that bounded receipt with
+`Cache-Control: no-store`. A success becomes non-success when it is more than eight hours old or the
+recorded `nextRun` is over ten minutes late, so a missed invocation or lost Blob write cannot hide
+behind the prior success. GitHub checks this surface after each scheduled slot, and the independent
+Codex deadman supplies the separate alert path.
+
+This check proves authenticated read-only reachability only. It does not exercise live actor POSTs,
+model or voice behavior, authorize managed voice, or replace the deploy/model/pack red-team
+checklist and external activation gates below.
 
 ## One-time setup (~10 min, Netlify dashboard)
 

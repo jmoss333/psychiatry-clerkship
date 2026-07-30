@@ -125,4 +125,6 @@ Using a fictional, synthetic, or fully de-identified case:
 4. Write the 30-second team update.
 5. Identify one point that still needs supervisor/local-policy input.
 
+<!-- crisis-block -->
+
 *Educational scaffold only. Do not enter PHI. Follow supervision, consent, confidentiality rules, and local policy.*

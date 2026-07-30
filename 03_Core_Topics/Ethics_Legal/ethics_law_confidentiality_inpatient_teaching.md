@@ -36,6 +36,8 @@
 - Informed consent = capacity + disclosure + voluntariness; the emergency exception covers necessary urgent care.
 - Sexual contact with a patient is always an ethics violation.
 
+<!-- crisis-block -->
+
 **Pair with** — the <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity tool</a>, the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), the <a href="tools/violence.html" target="_blank" rel="noopener">Violence Risk (FRST) tool</a>, and [Culture, Disparities & Formulation](?page=cultural_psychiatry.md).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Laws vary by state — follow your institution's policy and local statute.*
