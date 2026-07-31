@@ -5331,5 +5331,21 @@
    "shelf-mode.html",
    "review.html"
   ]
+ },
+ "cotw_index.md": {
+  "read": 2,
+  "hy": false,
+  "tldr": "The rotating weekly teaching case - one de-identified synthetic vignette a week, with guided discussion questions, a ranked differential, and a workup-and-management ladder.",
+  "points": [
+   "A new case is added each week; the current one sits at the top of the Case of the Week sidebar.",
+   "~20-30 minute small-group discussion - no pre-reading required.",
+   "Every case ships in matched MS3 and resident versions."
+  ],
+  "safetyLevel": "moderate",
+  "facultyReview": {
+   "status": "pending",
+   "reviewer": "Joshua Moss, MD",
+   "lastReviewed": "2026-07-27"
+  }
  }
 }
