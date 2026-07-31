@@ -25,6 +25,8 @@
 - Interview-room setup (your position, the exit, the alarm, removed objects) is a clinical intervention, not just etiquette.
 - Restraint and involuntary medication are last resorts for imminent danger, time-limited and policy-bound — de-escalation and offered PO medication come first.
 
+<!-- crisis-block -->
+
 **Pair with** the Agitation & Restraint guidance, the interactive Violence Risk / Brøset tool, the Psychosis page, and the Decisional Capacity module.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

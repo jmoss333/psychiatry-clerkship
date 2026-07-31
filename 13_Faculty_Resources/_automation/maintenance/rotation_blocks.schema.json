@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rotation_blocks.schema.json",
+  "title": "Privacy-safe psychiatry rotation blocks",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "blocks"],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "startsOn", "endsOn", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^rot-[0-9]{4}-hx-(?=[a-f0-9]{16}$)(?=[a-f0-9]*[a-f])(?=[a-f0-9]*[0-9])[a-f0-9]{16}$"
+          },
+          "startsOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "endsOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "enum": ["planned", "active", "completed"]
+          }
+        }
+      }
+    }
+  }
+}

@@ -36,6 +36,8 @@
 - **AN has among the highest mortality of any psychiatric illness** (medical + suicide) — take medical instability seriously and screen suicide risk.
 - Watch for **water-loading**: a weight that jumps too fast can be dilutional, not recovery.
 
+<!-- crisis-block -->
+
 **Pair with** — the [Nutrition & Metabolic Health](?page=nutrition_metabolic.md) page, the [Differential Diagnosis scaffolds](?page=ddx.md), the [Algorithms & Decision Aids](tools/decision-aids.html), and the eating-disorder items in the [High-Yield Rounds Questions](?page=rounds_questions.md).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Reviewed and attested by Joshua Moss, MD — 2026-07-01.*

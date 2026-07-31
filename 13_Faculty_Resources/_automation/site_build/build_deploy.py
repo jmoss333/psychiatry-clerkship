@@ -214,6 +214,39 @@ def _rewrite_tool_vendor_deps(_path):
 for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.join(OUT,"tools")) if _f.endswith(".html")]:
     _rewrite_tool_vendor_deps(_tool_html)
 
+# ---- CRISIS-CONTACT BLOCK -------------------------------------------------------------
+# 988 and the other crisis contacts live in ONE place: crisis_resources.json (derived from
+# the ReConnect Psychiatry System crisis dataset, independently re-verified against official
+# sources). crisis_block.py renders it; pages opt in with a marker comment. No crisis number
+# is ever hand-maintained in a content page or tool.
+# Required targets are asserted below — a safety surface can never silently lose the block.
+sys.path.insert(0,HERE)
+import crisis_block as _crisis
+_crisis_data=_crisis.load(LIB)
+# Required surfaces = where a learner is plausibly DOING risk work (assessing, rehearsing, or
+# planning disposition around self-harm/violence), not merely reading about it. Reference and
+# reading pages are deliberately excluded so the block stays meaningful rather than wallpaper.
+_CRISIS_REQUIRED_TOOLS={
+    "cssrs.html","sp-interview.html","communication-practice.html",
+    "family-systems.html","one-patient-six-weeks.html",
+}
+_CRISIS_REQUIRED_MD={
+    # direct risk assessment & acute safety
+    "suicide.md","pg_suicide.md","violence.md","agitation.md","ethics_legal.md",
+    # populations where self-harm risk is core to the page's own teaching
+    "t_mood.md","t_personality.md","t_psychosis.md","t_sud.md","t_geri.md",
+    "t_eating.md","t_dissociative.md","t_adjustment.md","t_perinatal.md",
+    # bedside work & disposition — the peri-discharge transition is the highest-risk window
+    "brief_psychotherapy.md","exp_family.md","family_playbook.md","collateral_workflow.md",
+}
+_crisis_tools_done=set()
+for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.join(OUT,"tools")) if _f.endswith(".html")]:
+    _t=open(_tool_html,encoding="utf-8").read()
+    _t,_did=_crisis.inject_html(_t,_crisis_data)
+    if _did:
+        open(_tool_html,"w",encoding="utf-8").write(_t)
+        _crisis_tools_done.add(os.path.basename(_tool_html))
+
 # md content pages: [source rel, out name, title] — see site_manifest.json
 md=[tuple(x) for x in _manifest["md"]]
 # ---- Case of the Week: per-week pages are registry-driven (single source of truth:
@@ -225,10 +258,26 @@ def _cotw_slug(w,level):  # level: "ms3" | "res"
     return "cotw_%s_%s_%s.md"%(w["date"].replace("-",""),w["topic"],level)
 md+=[(os.path.join(_COTW_DIR,w["ms3_src"]),_cotw_slug(w,"ms3"),w["label"]) for w in _cotw_weeks]
 missing=[]
+_crisis_md_done=set()
 for src,dst,_ in md:
     p=os.path.join(LIB,src)
-    if os.path.exists(p): shutil.copy2(p, OUT+"/content/"+dst)
+    if os.path.exists(p):
+        shutil.copy2(p, OUT+"/content/"+dst)
+        _t=open(p,encoding="utf-8").read()
+        _t,_did=_crisis.inject_markdown(_t,_crisis_data)
+        if _did:
+            open(OUT+"/content/"+dst,"w",encoding="utf-8").write(_t)
+            _crisis_md_done.add(dst)
     else: missing.append(src)
+
+# Fail the build if a required safety surface lost its crisis block (marker deleted, page
+# renamed, or dropped from the manifest). Silent loss of 988 is the failure this prevents.
+_crisis_gap=sorted((_CRISIS_REQUIRED_MD-_crisis_md_done)|(_CRISIS_REQUIRED_TOOLS-_crisis_tools_done))
+if _crisis_gap:
+    print("BUILD ABORTED — crisis-contact block missing from required safety surface(s):")
+    for _g in _crisis_gap: print("   -",_g,"(expected the crisis-block marker in its source)")
+    raise SystemExit(1)
+print("crisis block injected:",len(_crisis_md_done),"content page(s) +",len(_crisis_tools_done),"tool(s)")
 
 # ---- QA-gate source map: every source path this build knows about, written NEXT TO the
 # build dir (<OUT>.source-map.json), never inside it — nothing ships. check-static-site.mjs

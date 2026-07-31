@@ -34,6 +34,8 @@ without arguing, shaming, or making promises about discharge.
 - Lithium runs a **narrow therapeutic window (~0.6–1.2 mEq/L)**: check baseline and periodic renal and thyroid function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.
 - For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic — but **avoid valproate in anyone who could become pregnant** (teratogenic, including neural-tube defects); confirm before it is ordered.
 
+<!-- crisis-block -->
+
 **Pair with** — the <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam tool</a> for documenting mood, affect, and psychotic features; the [Differential Diagnosis scaffolds](?page=ddx.md) for the medical-mimic differential; the [suicide-risk & safety pocket card](?page=pg_suicide.md) for structured risk assessment and safety planning; and the [What Do You Say Next? mania case](?tool=communication-practice.html&case=mania_limit_sleep_001).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

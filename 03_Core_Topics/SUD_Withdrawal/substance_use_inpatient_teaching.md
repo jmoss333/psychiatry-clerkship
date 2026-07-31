@@ -35,6 +35,8 @@
 - A patient who uses substances with new confusion gets a real differential — Wernicke, trauma, infection, hepatic encephalopathy — not a reflex withdrawal label.
 - Naloxone plus MOUD linkage at discharge is a concrete, evidence-based way to save a life.
 
+<!-- crisis-block -->
+
 **Pair with** — the **Withdrawal scales CIWA-Ar / COWS card** (the Withdrawal (CIWA-Ar/COWS) card), the **Benzodiazepine taper protocol** (the protocol library (benzo taper, clozapine)), and the **Differential Diagnosis scaffolds**.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
