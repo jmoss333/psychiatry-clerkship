@@ -450,7 +450,7 @@ for _f in _glob.glob(OUT+"/tools/*.html"):
     if 'class="skip-link"' not in _t and '<body' in _t:
         _t=_re.sub(r'(<body[^>]*>)', r'\1\n<a class="skip-link" href="#root">Skip to content</a>', _t, count=1)
     if '.skip-link{' not in _t and '</head>' in _t:
-        _t=_t.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}</style>\n</head>', 1)
+        _t=_t.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}@media(pointer:coarse){.chip,.tab,.btn,.seg,button,[role="tab"],[role="button"]{min-height:44px}}</style>\n</head>', 1)
     # WP-03 remainder: bare accent text (--primary #c25a3c) is ~3.9:1 on the light
     # backgrounds — fails WCAG AA for normal-size text. Repoint to --primary-dark:
     # the literal fallback covers tools whose light :root lacks the token, and the
@@ -466,7 +466,7 @@ if 'rel="icon"' not in _ih: _ih=_ih.replace('<head>','<head>\n<link rel="icon" h
 if 'class="skip-link"' not in _ih and '<body' in _ih:
     _ih=_re.sub(r'(<body[^>]*>)', r'\1\n<a class="skip-link" href="#root">Skip to content</a>', _ih, count=1)
 if '.skip-link{' not in _ih and '</head>' in _ih:
-    _ih=_ih.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}</style>\n</head>', 1)
+    _ih=_ih.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}@media(pointer:coarse){.chip,.tab,.btn,.seg,button,[role="tab"],[role="button"]{min-height:44px}}</style>\n</head>', 1)
 if _ih!=_ih_o: open(OUT+"/index.html","w",encoding="utf-8").write(_ih)
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
