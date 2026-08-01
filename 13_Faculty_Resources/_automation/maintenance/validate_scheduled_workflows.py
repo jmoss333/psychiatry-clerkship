@@ -132,6 +132,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Validate — scheduled workflow contracts"),
             ("name", "Lint — no hard-coded machine paths in tracked Python"),
             ("name", "Unit — media guard"),
+            ("name", "Unit — shared build logic (common.py)"),
             ("name", "Unit — evidence registry"),
             ("name", "Validate — evidence registry and generated views"),
             ("name", "Unit — citation surveillance"),
@@ -292,7 +293,7 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "ci.yml": "2ff54dfbdbb36163e046c821c0a4454b07afe45b293a16aafe0590e662598d6f",
+    "ci.yml": "141d5719392ed720735616e7b9b1df5fd4ec8e9b2c122c5b1dd08e5670f42645",
     "maintenance-governance-digest.yml": (
         "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
     ),
