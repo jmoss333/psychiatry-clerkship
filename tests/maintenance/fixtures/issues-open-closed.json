@@ -1,0 +1,18 @@
+[
+  {
+    "number": 123,
+    "url": "https://github.com/owner/repo/issues/123",
+    "state": "CLOSED",
+    "closedAt": "2026-07-28T12:00:00Z",
+    "fingerprint": "source::modified::abc",
+    "labels": ["P1", "surveillance"]
+  },
+  {
+    "number": 124,
+    "url": "https://github.com/owner/repo/issues/124",
+    "state": "OPEN",
+    "closedAt": null,
+    "fingerprint": "source::modified::open",
+    "labels": ["P0", "surveillance"]
+  }
+]

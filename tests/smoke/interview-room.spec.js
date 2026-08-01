@@ -6,6 +6,11 @@ const sourcePack = JSON.parse(fs.readFileSync(
   'utf8',
 ));
 const CASE_ID = 'sp_depression_gated_si_001';
+// The learner selector renders one card per attested persona — all three since Marcus and
+// Ray were attested 2026-07-22, where previously only Dana rendered. This spec drives the
+// Dana encounter specifically (its fakes, opening line and voice profile are all Dana's),
+// so selection locators are scoped to her card instead of matching across every card.
+const CASE_HEADING = sourcePack.cases.find((c) => c.id === CASE_ID).title.split(' — ')[0];
 const OPENING = 'I have barely slept, and it is getting hard to do ordinary things.';
 const PATIENT_REPLY = 'Mostly I stay in bed and avoid everyone.';
 const LATE_REPLY = 'This late response must never enter the room.';
@@ -340,11 +345,30 @@ async function installFakes(page, scenario = {}) {
   }, { scenario, opening: OPENING, reply: PATIENT_REPLY, lateReply: LATE_REPLY, caseId: CASE_ID });
 }
 
+function caseCard(page) {
+  return page.locator('.case').filter({
+    has: page.getByRole('heading', { name: CASE_HEADING, exact: true }),
+  });
+}
+
+function supportedButton(page) {
+  return caseCard(page).getByRole('button', { name: /Begin — Supported/i });
+}
+
+// Asserts a gate blocks entry to EVERY offered persona's room. Scoping to one card would
+// let a regression that unblocks only the other personas slip through.
+async function expectEveryRoomEntryDisabled(page) {
+  const supported = page.getByRole('button', { name: /Begin — Supported/i });
+  const count = await supported.count();
+  expect(count).toBeGreaterThan(0);
+  for (let i = 0; i < count; i += 1) await expect(supported.nth(i)).toBeDisabled();
+}
+
 async function openRoom(page, scenario = {}) {
   await installFakes(page, scenario);
   await page.goto('sp-interview.html');
   await expect(page).toHaveTitle(/Interview Room/);
-  await expect(page.getByRole('button', { name: /Begin — Supported/i }).first()).toBeVisible();
+  await expect(supportedButton(page)).toBeVisible();
 }
 
 function voiceMode(page) {
@@ -361,7 +385,7 @@ async function chooseManaged(page) {
 }
 
 async function beginSupported(page) {
-  await page.getByRole('button', { name: /Begin — Supported/i }).click();
+  await supportedButton(page).click();
   await expect(page.locator('.msg.pt').filter({ hasText: OPENING })).toBeVisible();
 }
 
@@ -416,7 +440,7 @@ test('voice mode is keyboard-operable and managed identity stays canonical acros
   await page.getByRole('button', { name: 'Back to cases' }).click();
   await select.selectOption('device');
   await expect(select).toHaveValue('device');
-  await page.getByRole('button', { name: /Begin — Supported/i }).click();
+  await supportedButton(page).click();
   await expect(page.locator('.msg.pt').filter({ hasText: OPENING })).toBeVisible();
 
   const captured = await log(page);
@@ -540,7 +564,8 @@ test('consent cannot be accepted after the tab credential expires', async ({ pag
   await expect(select.locator('option[value="managed"]')).toHaveCount(1);
   await select.selectOption('managed');
   await expect(page.getByRole('dialog', { name: /before using managed voice/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Begin — Supported/i })).toBeDisabled();
+  // The pending-consent gate must hold for every persona on the selector, not just Dana.
+  await expectEveryRoomEntryDisabled(page);
   await page.evaluate(() => sessionStorage.removeItem('cw_sp_passcode'));
   await page.getByRole('button', { name: 'Use managed voice' }).click();
   await expect(page.getByRole('dialog', { name: /before using managed voice/i })).toHaveCount(0);

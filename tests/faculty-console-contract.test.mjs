@@ -338,6 +338,7 @@ function serverState({
   }];
   return {
     student: 'https://students.example/',
+    attester: 'Joshua Moss, MD',
     qbankRevision: 'a'.repeat(40),
     manifestRevision,
     manifestPages,
@@ -525,7 +526,7 @@ test('creates one semantic queue, workspace, and persistent field labels', () =>
 
   for (const label of [
     'Faculty key',
-    'Reviewer label',
+    'Reviewer',
     'Search pages, tools, and questions',
     'Review item',
     'Item type',
@@ -561,7 +562,7 @@ test('creates one semantic queue, workspace, and persistent field labels', () =>
     'I verified that the vignette is an original fictional composite with no PHI.',
   ]) assert.ok(appSource.includes(label), `Missing persistent label: ${label}`);
 
-  assert.match(appSource, /not verified identit/i);
+  assert.match(appSource, /configured server-side \(ATTESTER_NAME\)/);
   assert.match(appSource, /Revert/);
   assert.match(appSource, /Save draft/);
   assert.match(appSource, /Attest this question/);
@@ -937,17 +938,16 @@ test('targeted queue, reviewer, view, editor, and rail updates keep the learner 
   const frame = document.getElementById('learner-preview-frame');
   const frameWindow = frame.contentWindow;
 
-  const reviewer = document.getElementById('reviewer-label');
-  reviewer.value = 'Faculty reviewer';
-  await reviewer.dispatch('input');
+  // Attribution is server-derived and read-only in the shell.
+  assert.equal(document.getElementById('reviewer-label').textContent, 'Joshua Moss, MD');
   assert.match(document.getElementById('rail-step-confirm').textContent,
-    /Reviewer: Faculty reviewer/);
+    /Reviewer: Joshua Moss, MD/);
   await setValue(document, 'review-search', 'qb_moo_902');
   await document.getElementById('view-edit').dispatch('click');
   await setValue(document, 'question-stem', 'A targeted local edit. What is the diagnosis?');
   await setChecked(document, 'confirm-clinical');
 
-  assert.equal(controller.state.reviewerLabel, 'Faculty reviewer');
+  assert.equal(controller.state.reviewerLabel, 'Joshua Moss, MD');
   assert.equal(document.getElementById('learner-preview-frame'), frame);
   assert.equal(document.getElementById('learner-preview-frame').contentWindow, frameWindow);
   assert.match(document.getElementById('selected-item-view').textContent, /Edit question/);
@@ -2261,13 +2261,12 @@ test('saves only on explicit action with the exact revision-safe payload, then c
   await flushAsyncWork();
 
   assert.deepEqual(Object.keys(posted).sort(), [
-    'action', 'attester', 'baseRevision', 'id', 'item', 'manifestRevision',
+    'action', 'baseRevision', 'id', 'item', 'manifestRevision',
   ]);
   assert.equal(posted.action, 'qbank.save-draft');
   assert.equal(posted.manifestRevision, DEFAULT_MANIFEST_REVISION);
   assert.equal(posted.id, 'qb_moo_902');
   assert.equal(posted.baseRevision, testRevision('revision-one'));
-  assert.equal(posted.attester, 'Joshua Moss, MD');
   assert.equal(posted.item.stem, changedStem);
   assert.equal(posted.item.id, 'qb_moo_902');
   assert.equal(posted.item.status, 'attested');
@@ -2672,9 +2671,8 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
   assert.equal(document.find('button', 'Attest this page')?.disabled, false);
   assert.equal(document.getElementById('current-reviewer-label').textContent, 'Joshua Moss, MD');
 
-  await setValue(document, 'reviewer-label', 'Updated faculty reviewer');
-  assert.equal(document.getElementById('current-reviewer-label').textContent,
-    'Updated faculty reviewer');
+  // The reviewer label is server-derived and display-only — no editable control exists.
+  assert.equal(document.getElementById('reviewer-label').tagName, 'P');
   await setValue(document, 'review-item-selector', 'tool:mse.html', 'change');
 
   assert.equal(controller.state.selectedKey, 'tool:mse.html');
@@ -2723,7 +2721,6 @@ test('content attestation submits exactly one page slug, confirms it, and holds 
   assert.deepEqual(posted, {
     target: 'content',
     changes: { 't_mood.md': true },
-    attester: 'Joshua Moss, MD',
   });
   assert.equal(Object.keys(posted.changes).length, 1);
   assert.equal(controller.state.selectedKey, 'page:t_mood.md');
@@ -2833,7 +2830,7 @@ test('content commit URL must be safe HTTPS before any confirming GET', async ()
   assert.doesNotMatch(document.status.textContent, /Attested/);
 });
 
-test('content 401 retry freezes the exact slug, boolean status, and reviewer label', async () => {
+test('content 401 retry freezes the exact slug and boolean status', async () => {
   let items = [
     { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
     { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
@@ -2860,7 +2857,6 @@ test('content 401 retry freezes the exact slug, boolean status, and reviewer lab
   };
   const harness = await startHarness({ fetchImpl });
   const { controller, document } = harness;
-  await setValue(document, 'reviewer-label', 'Original faculty reviewer');
   await completeCurrentContentReview(harness);
   await document.getElementById('attest-current-item').dispatch('click');
   await flushAsyncWork();
@@ -2868,7 +2864,6 @@ test('content 401 retry freezes the exact slug, boolean status, and reviewer lab
   assert.equal(posts.length, 1);
   assert.ok(document.getElementById('faculty-key'));
   controller.state.selectedKey = 'tool:mse.html';
-  controller.state.reviewerLabel = 'Changed after the frozen request';
   controller.state.reviewChecks.accuracy = false;
   const keyInput = document.getElementById('faculty-key');
   keyInput.value = 'correct-key';
@@ -2880,7 +2875,6 @@ test('content 401 retry freezes the exact slug, boolean status, and reviewer lab
   assert.deepEqual(posts[1].body, {
     target: 'content',
     changes: { 't_mood.md': true },
-    attester: 'Original faculty reviewer',
   });
 });
 
@@ -2949,7 +2943,6 @@ test('Reopen review is a confirmed More action and submits exactly that content 
     reasons: {
       't_mood.md': 'Updated clinical teaching requires renewed review.',
     },
-    attester: 'Joshua Moss, MD',
   });
   assert.equal(Object.keys(posted.changes).length, 1);
   assert.equal(controller.state.selectedKey, 'page:t_mood.md');
@@ -3032,7 +3025,7 @@ test('requires all human confirmations and each current warning acknowledgement 
   await flushAsyncWork();
 
   assert.deepEqual(Object.keys(posted).sort(), [
-    'action', 'attester', 'confirmations', 'items', 'manifestRevision',
+    'action', 'confirmations', 'items', 'manifestRevision',
   ]);
   assert.equal(posted.action, 'qbank.attest');
   assert.equal(posted.manifestRevision, DEFAULT_MANIFEST_REVISION);

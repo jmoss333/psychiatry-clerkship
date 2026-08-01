@@ -280,6 +280,13 @@ for (const f of toolFiles) {
   // Sanctioned localStorage namespaces: cw_* (shared hub) and rp_* (resident platform).
   const keys = [...html.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*['"]([^'"]+)['"]/g)].map(m => m[1]);
   for (const k of keys) if (!k.startsWith('cw_') && !k.startsWith('rp_')) H(`non-namespaced storage key in ${f}: "${k}" (use cw_* or rp_*)`);
+  // WP-03 remainder: bare accent text (--primary #c25a3c, ~3.9:1 light) fails AA for
+  // normal-size text. The build polish pass repoints every bare usage to
+  // var(--primary-dark,#a84830); a bare occurrence in shipped output means the rewrite
+  // regressed or a new pattern slipped past it.
+  if (/color:\s*var\(--primary\)/.test(html)) {
+    H(`bare color:var(--primary) in tools/${f} — AA contrast: polish pass must rewrite to var(--primary-dark,#a84830)`);
+  }
 }
 if (legacyMetadataPaths.length) {
   S(`legacy metadata warning: ${legacyMetadataPaths.sort().join(', ')}`);

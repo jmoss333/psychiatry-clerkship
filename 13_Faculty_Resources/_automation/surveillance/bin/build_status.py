@@ -35,18 +35,53 @@ CITATION_ARCHIVE_PARTS = ("/_source/",)
 
 def _load(path, default):
     try:
-        return json.load(open(path, encoding="utf-8"))
+        with open(path, encoding="utf-8") as fh:
+            return json.load(fh)
     except Exception:
         return default
 
 
-def _latest_reports(history_dir):
-    findings = []
-    for stem in ("guideline_delta", "link_audit", "resource_intake"):
-        files = sorted(glob.glob(os.path.join(history_dir, f"{stem}_*.json")))
-        if files:
-            findings.extend(_load(files[-1], []))
-    return findings
+def _all_reports(history_dir):
+    """Load report history and retain only the newest record per fingerprint."""
+    newest = {}
+    stems = ("guideline_delta", "link_audit", "citation_audit", "resource_intake")
+    files = sorted(
+        path
+        for stem in stems
+        for path in glob.glob(os.path.join(history_dir, f"{stem}_*.json"))
+    )
+    for path in files:
+        records = _load(path, [])
+        if not isinstance(records, list):
+            continue
+        for index, finding in enumerate(records):
+            if not isinstance(finding, dict):
+                continue
+            key = finding.get("fingerprint") or finding.get("finding_id") or f"{path}:{index}"
+            rank = (finding.get("detected_at") or "", path, index)
+            if key not in newest or rank >= newest[key][0]:
+                newest[key] = (rank, dict(finding))
+    return [item[1] for item in sorted(newest.values(), key=lambda item: item[0])]
+
+
+def _load_issue_snapshot(path):
+    with open(path, encoding="utf-8") as fh:
+        issues = json.load(fh)
+    if not isinstance(issues, list):
+        raise ValueError("issue snapshot must be a JSON array")
+    normalized = []
+    for issue in issues:
+        if not isinstance(issue, dict):
+            raise ValueError("issue snapshot entries must be objects")
+        required = {"number", "url", "state", "closedAt", "fingerprint", "labels"}
+        if set(issue) != required:
+            raise ValueError("issue snapshot entry has an unrecognized shape")
+        if issue["state"] not in ("OPEN", "CLOSED"):
+            raise ValueError("issue snapshot state must be OPEN or CLOSED")
+        if not isinstance(issue["fingerprint"], str) or not issue["fingerprint"]:
+            raise ValueError("issue snapshot fingerprint must be a non-empty string")
+        normalized.append(dict(issue))
+    return normalized
 
 
 def _days_since(iso):
@@ -98,12 +133,30 @@ def _citation_page_summary(findings):
     return sorted(rows, key=lambda x: (-x["count"], x["page"]))
 
 
-def compute(history_dir, reviewed_path):
-    findings = _latest_reports(history_dir)
+def compute(history_dir, reviewed_path, issues_path=None):
+    findings = _all_reports(history_dir)
     for f in findings:
         f.setdefault("severity", "P2")
-    active_findings = [f for f in findings
-                       if f.get("status") not in ("dismissed", "actioned")]
+    issue_truth = "offline-report-fallback"
+    if issues_path is not None:
+        issue_truth = "live"
+        issues = _load_issue_snapshot(issues_path)
+        by_fingerprint = {issue["fingerprint"]: issue for issue in issues}
+        active_findings = []
+        for finding in findings:
+            issue = by_fingerprint.get(finding.get("fingerprint"))
+            if issue:
+                if issue["state"] == "CLOSED":
+                    continue
+                finding["status"] = "issue-open"
+                finding["github_issue"] = issue["url"]
+                active_findings.append(finding)
+                continue
+            if finding.get("status") not in ("dismissed", "actioned"):
+                active_findings.append(finding)
+    else:
+        active_findings = [f for f in findings
+                           if f.get("status") not in ("dismissed", "actioned")]
     open_findings = [f for f in active_findings
                      if f["severity"] in ("P0", "P1")]
     p0 = [f for f in open_findings if f["severity"] == "P0"]
@@ -138,7 +191,8 @@ def compute(history_dir, reviewed_path):
     citation_freshness = []
     reg = L.load_registry()
     cad = {s["id"]: s.get("cadence", "monthly") for s in reg.get("sources", [])}
-    cad["link-monitor"] = "weekly"
+    cad["link-monitor"] = reg["link_monitor"]["cadence"]
+    cad[reg["resource_intake"]["job"]] = reg["resource_intake"]["cadence"]
     for sid, ts in sorted(last_run.items()):
         age = _days_since(ts)
         limit = CADENCE_DAYS.get(cad.get(sid, "monthly"), 31)
@@ -165,13 +219,15 @@ def compute(history_dir, reviewed_path):
             "citation_pages": citation_pages,
             "overdue": overdue, "freshness": freshness,
             "citation_freshness": citation_freshness_summary,
+            "issueTruth": issue_truth,
             "generated": L.utcnow()}
 
 
 # ------------------------------------------------------------------ renderers
 def render_md(s):
     L_ = ["# Surveillance status", "",
-          f"_Generated {s['generated']}._ See `REVIEW_RULES.md` for severity + SLAs.", ""]
+          f"_Generated {s['generated']}._ See `REVIEW_RULES.md` for severity + SLAs.",
+          f"_Issue truth: **{s['issueTruth']}**._", ""]
     if not s["has_runs"]:
         L_ += ["**No surveillance runs yet.** Baseline the guideline job and let the weekly "
                "link run complete, then this page populates."]
@@ -304,6 +360,13 @@ def render_html(s):
                     f"<td>{x['age_days'] if x['age_days'] is not None else '—'}</td>"
                     f"<td>{'⚠ stale' if x['stale'] else 'ok'}</td></tr>" for x in s["freshness"]) \
         or '<tr><td colspan="4" style="color:#5f6368">No runs yet.</td></tr>'
+    truth_banner = (
+        '<p style="background:#e8f0fe;padding:10px;border-radius:6px">'
+        'Issue truth: live GitHub issue snapshot.</p>'
+        if s["issueTruth"] == "live"
+        else '<p style="background:#fff3e0;padding:10px;border-radius:6px">'
+             'Issue truth: offline-report-fallback; issue state is not live.</p>'
+    )
     banner = "" if s["has_runs"] else (
         '<p style="background:#fff3e0;padding:10px;border-radius:6px">'
         'No surveillance runs yet — baseline the guideline job and let the weekly link run complete.</p>')
@@ -315,6 +378,7 @@ def render_html(s):
 <title>Surveillance status</title><style>{css}</style></head><body>
 <h1>Surveillance status</h1>
 <div style="color:#5f6368;font-size:13px">Generated {s['generated']} · see REVIEW_RULES.md</div>
+{truth_banner}
 {banner}
 <p style="margin-top:14px">
 <span class="k">{chip('P0')} open: <b>{len(s['p0'])}</b></span>
@@ -338,17 +402,21 @@ def main():
     ap.add_argument("--history-dir", default=L.HISTORY)
     ap.add_argument("--out-dir", default=L.SURV_ROOT)
     ap.add_argument("--reviewed", default=DEFAULT_REVIEWED)
+    ap.add_argument("--issues-json", help="Normalized live issue snapshot from sync_findings.py")
     args = ap.parse_args()
 
-    s = compute(args.history_dir, args.reviewed)
+    s = compute(args.history_dir, args.reviewed, issues_path=args.issues_json)
     os.makedirs(args.out_dir, exist_ok=True)
     md_path = os.path.join(args.out_dir, "STATUS.md")
     html_path = os.path.join(args.out_dir, "status.html")
-    open(md_path, "w", encoding="utf-8").write(render_md(s))
-    open(html_path, "w", encoding="utf-8").write(render_html(s))
+    with open(md_path, "w", encoding="utf-8") as fh:
+        fh.write(render_md(s))
+    with open(html_path, "w", encoding="utf-8") as fh:
+        fh.write(render_html(s))
     print(f"status: P0={len(s['p0'])} P1={len(s['p1'])} "
           f"citation_P1={len(s['p1_citations'])} P2={len(s['p2'])} "
-          f"overdue={len(s['overdue'])} -> {os.path.basename(md_path)}, {os.path.basename(html_path)}")
+          f"overdue={len(s['overdue'])} issue_truth={s['issueTruth']} "
+          f"-> {os.path.basename(md_path)}, {os.path.basename(html_path)}")
 
 
 if __name__ == "__main__":

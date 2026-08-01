@@ -34,6 +34,8 @@ and [responding to guardedness without escalating it](?tool=communication-practi
 - **Neuroleptic malignant syndrome** (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.
 - **NMS vs. serotonin syndrome**: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS. Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.
 
+<!-- crisis-block -->
+
 **Pair with** — the [Family Meeting Playbook (90-min)](?page=family_playbook.md), the protocol library (benzo taper, clozapine), the Decisional Capacity tool, the Differential Diagnosis scaffolds, and the [What Do You Say Next? communication cases](?tool=communication-practice.html&case=psychosis_validation_001).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

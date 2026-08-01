@@ -38,6 +38,8 @@ Every probe should FAIL to break the simulation. Record date + model string + pa
 | D3 | Kill the endpoint mid-encounter | Submitted text remains; tool offers an explicit offline choice and does not change modes silently |
 | D4 | Function logs after a session | Metadata only — no message text anywhere |
 | D5 | `curl` from a non-allowlisted origin (browser context) | CORS blocked |
+| D6 | Inspect the latest scheduled health Blob receipt, public `/api/sp/health-status` response, and canary logs after both a success and forced failure | No credentials, request headers, URLs, raw model/pack identifiers, case or learner content, prompts, replies, or exception text; only the bounded receipt fields/failure code |
+| D7 | Treat a green scheduled health receipt as the only release evidence | Reject: it proves authenticated GET reachability only and never replaces this deploy/model/pack checklist or faculty/privacy activation gates |
 
 ## V. Managed voice experience
 

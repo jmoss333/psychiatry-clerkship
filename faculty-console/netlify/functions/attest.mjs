@@ -183,6 +183,7 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
   const branch = readEnv(env, 'GIT_BRANCH').trim() || DEFAULT_BRANCH;
   const studentValue = readEnv(env, 'STUDENT_SITE_URL').trim() || DEFAULT_STUDENT_SITE;
   const attesterEmail = readEnv(env, 'ATTESTER_EMAIL').trim() || DEFAULT_ATTESTER_EMAIL;
+  const attester = attesterLabel(readEnv(env, 'ATTESTER_NAME'));
 
   if (!originPolicy.valid
       || !token
@@ -202,7 +203,7 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
     throw new HttpError('server_configuration', 500, 'The faculty service is not configured.');
   }
 
-  return { token, key, repo, branch, student, attesterEmail };
+  return { token, key, repo, branch, student, attesterEmail, attester };
 }
 
 function githubStatusError(status) {
@@ -650,7 +651,7 @@ function buildContentItems(reviewed, manifest) {
   return items;
 }
 
-async function buildState(repository, student) {
+async function buildState(repository, { student, attester }) {
   const reviewedFile = await repository.read(REVIEWED_PATH);
   const manifestFile = await repository.read(MANIFEST_PATH);
   const qbankFile = await repository.read(QBANK_PATH, { maxBytes: MAX_BANK_BYTES });
@@ -658,6 +659,7 @@ async function buildState(repository, student) {
   const qbankPayload = buildQbankPayload(qbankFile, manifestFile.json);
   return {
     student,
+    attester,
     manifestRevision: manifestFile.sha,
     items,
     ...qbankPayload,
@@ -674,6 +676,9 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// Attribution is server-derived only (ATTESTER_NAME env, cleaned here); any
+// `attester` field in a request body is ignored so identity cannot be
+// self-declared from the browser.
 function attesterLabel(value) {
   if (typeof value !== 'string') return DEFAULT_ATTESTER;
   const cleaned = value.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 80);
@@ -928,7 +933,7 @@ async function readPostBody(request) {
   return body;
 }
 
-async function handlePost({ repository, body }) {
+async function handlePost({ repository, body, attester }) {
   if (body.target === 'qbank') {
     throw new HttpError(
       'legacy_qbank_action',
@@ -936,7 +941,6 @@ async function handlePost({ repository, body }) {
       'Use an explicit question-bank save or attestation action.',
     );
   }
-  const attester = attesterLabel(body.attester);
   if (body.target === 'content') {
     return commitContentMutation({ repository, body, attester });
   }
@@ -980,10 +984,14 @@ export function createHandler({ env = process.env, fetchImpl = globalThis.fetch 
       const repository = createRepositoryGateway({ settings, fetchImpl });
       switch (request.method.toUpperCase()) {
         case 'GET':
-          return jsonResponse(context, 200, await buildState(repository, settings.student));
+          return jsonResponse(context, 200, await buildState(repository, settings));
         case 'POST': {
           const body = await readPostBody(request);
-          return jsonResponse(context, 200, await handlePost({ repository, body }));
+          return jsonResponse(context, 200, await handlePost({
+            repository,
+            body,
+            attester: settings.attester,
+          }));
         }
         default:
           throw new HttpError('method_not_allowed', 405, 'Method not allowed.');

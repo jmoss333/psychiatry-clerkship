@@ -1,4 +1,8 @@
 {
+  "cotw_20260727_oud_ms3.md": {"status": "pending", "at": "2026-07-27", "by": "Pending faculty review", "risk": {"kind": "clinical", "level": "high"}, "reason": "Pending faculty review of this learner surface."},
+  "cotw_20260727_oud_res.md": {"status": "pending", "at": "2026-07-27", "by": "Pending faculty review", "risk": {"kind": "clinical", "level": "high"}, "reason": "Pending faculty review of this learner surface."},
+  "cotw_20260726_etohwd_ms3.md": {"status": "pending", "at": "2026-07-26", "by": "Pending faculty review", "risk": {"kind": "clinical", "level": "high"}, "reason": "Pending faculty review of this learner surface."},
+  "cotw_20260726_etohwd_res.md": {"status": "pending", "at": "2026-07-26", "by": "Pending faculty review", "risk": {"kind": "clinical", "level": "high"}, "reason": "Pending faculty review of this learner surface."},
   "cotw_20260723_suiciderisk_ms3.md": {"status": "pending", "at": "2026-07-23", "by": "Pending faculty review", "risk": {"kind": "clinical", "level": "high"}, "reason": "Pending faculty review of this learner surface."},
   "cotw_20260723_suiciderisk_res.md": {"status": "pending", "at": "2026-07-23", "by": "Pending faculty review", "risk": {"kind": "clinical", "level": "high"}, "reason": "Pending faculty review of this learner surface."},
   "cotw_index.md": {"status": "pending", "at": "2026-07-23", "by": "Pending faculty review", "risk": {"kind": "clinical", "level": "high"}, "reason": "Pending faculty review of this learner surface."},
