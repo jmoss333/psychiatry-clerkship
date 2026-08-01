@@ -3865,7 +3865,7 @@
     },
     {
       "id": "qb_pha_011",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "pharm",
       "competency": [
@@ -3892,7 +3892,7 @@
         },
         {
           "key": "B",
-          "t": "Baseline absolute neutrophil count and enrollment in the clozapine monitoring program with ongoing ANC monitoring — agranulocytosis is the central safety concern requiring structured hematologic surveillance per the prescribing information.",
+          "t": "Baseline absolute neutrophil count and ongoing ANC monitoring per the prescribing information — agranulocytosis is the central safety concern requiring structured hematologic surveillance.",
           "c": true
         },
         {

@@ -10,7 +10,7 @@
 - **Benzodiazepine taper.** A structured, gradual taper to prevent withdrawal seizures/destabilization (the unit's BHU2 benzodiazepine-taper order-set spec).
 
 ## Antipsychotic safety
-- **Clozapine workflow.** Initiation and continuation with the required hematologic monitoring (ANC for agranulocytosis), plus vigilance for myocarditis, ileus, seizure, and metabolic effects (the unit's BHU2 clozapine workflow + order-set spec).
+- **Clozapine workflow.** Initiation and continuation with hematologic monitoring (ANC for agranulocytosis) per the prescribing information (the FDA eliminated the clozapine REMS in 2025; monitoring continues per the PI, not REMS-enforced), plus vigilance for myocarditis, ileus, seizure, and metabolic effects (the unit's BHU2 clozapine workflow + order-set spec).
 
 ## Acute safety
 - **Delirium prevention/management order set.** Bundles the non-pharmacologic measures first, plus judicious, time-limited pharmacology (the unit's BHU2 delirium order-set spec). See the **delirium guidance**.
