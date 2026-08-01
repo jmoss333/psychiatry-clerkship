@@ -19,7 +19,9 @@
 - Gather collateral from the partner or family, asking specifically about prior mania and prior postpartum episodes.
 - Round on sleep nightly and confirm the safety plan and family-supervision arrangements are current.
 
-**Disposition & discharge essentials** — Readiness is functional and safety-based: resolving acute risk to mother and infant, restored sleep, a tolerated medication plan, and confirmed supervision and supports at home. Discharge with a timely outpatient follow-up, clear medication monitoring (lithium levels and renal/thyroid follow-up where relevant), a written safety plan with crisis contacts (988; 911 for imminent danger), means-restriction counseling, and an engaged partner or family who understand the warning signs — especially that postpartum psychosis can recur and that future pregnancies warrant advance planning with the team.
+**Disposition & discharge essentials** — Readiness is functional and safety-based: resolving acute risk to mother and infant, restored sleep, a tolerated medication plan, and confirmed supervision and supports at home. Discharge with a timely outpatient follow-up, clear medication monitoring (lithium levels and renal/thyroid follow-up where relevant), a written safety plan with crisis contacts (listed below), means-restriction counseling, and an engaged partner or family who understand the warning signs — especially that postpartum psychosis can recur and that future pregnancies warrant advance planning with the team.
+
+<!-- crisis-block -->
 
 **High-yield pearls** —
 - Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. It affects ~1–2 per 1,000 births, usually within the first 1–4 weeks, and recurs in ~30–50% of subsequent deliveries — so future pregnancies warrant advance planning with the team.

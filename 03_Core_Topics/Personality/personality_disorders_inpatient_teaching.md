@@ -35,6 +35,8 @@ The goal is validation plus a steady frame, not either/or.
 - Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any class (Lieslehto 2023); reach for skills, not pills.
 - Your countertransference is clinical data—track it and use supervision.
 
+<!-- crisis-block -->
+
 **Pair with** — the [suicide-risk & safety pocket card](?page=pg_suicide.md), the <a href="tools/reflection.html" target="_blank" rel="noopener">Reflection & Identity tool</a>, the [Family Therapy Modalities](?page=family_modalities.md) material, and the [What Do You Say Next? rupture-repair cases](?tool=communication-practice.html&case=bpd_rupture_repair_001).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

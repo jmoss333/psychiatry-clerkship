@@ -14,6 +14,8 @@
 
 **Management.** The most evidence-based single intervention is **means restriction** — counsel the patient and family to remove or secure firearms and lethal medication before discharge; reducing access to a lethal method reduces deaths. On the unit, determine the level of care (e.g., 1:1 observation, environmental safety) with your supervisor. Build a collaborative **safety plan** (Stanley–Brown format): the patient's personal warning signs → internal coping strategies → people and settings that provide distraction → people to ask for help → professionals and crisis resources → and making the environment safer through means restriction. A safety plan is a working tool the patient co-authors — it is **not** a "no-suicide contract," which has no evidence of protecting anyone and can create false reassurance. Treat the underlying disorder in parallel; where indicated, remember lithium and clozapine carry specific anti-suicidal evidence.
 
+<!-- crisis-block -->
+
 **What the student does.**
 - Ask directly and document the specifics — plan, intent, means, preparatory behavior — never a bare "denies SI."
 - Chase collateral and the record for a prior attempt and for firearm access — the two facts most likely to change the plan.

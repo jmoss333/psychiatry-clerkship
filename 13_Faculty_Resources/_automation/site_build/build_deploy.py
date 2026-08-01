@@ -219,6 +219,39 @@ def _rewrite_tool_vendor_deps(_path):
 for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.join(OUT,"tools")) if _f.endswith(".html")]:
     _rewrite_tool_vendor_deps(_tool_html)
 
+# ---- CRISIS-CONTACT BLOCK -------------------------------------------------------------
+# 988 and the other crisis contacts live in ONE place: crisis_resources.json (derived from
+# the ReConnect Psychiatry System crisis dataset, independently re-verified against official
+# sources). crisis_block.py renders it; pages opt in with a marker comment. No crisis number
+# is ever hand-maintained in a content page or tool.
+# Required targets are asserted below — a safety surface can never silently lose the block.
+sys.path.insert(0,HERE)
+import crisis_block as _crisis
+_crisis_data=_crisis.load(LIB)
+# Required surfaces = where a learner is plausibly DOING risk work (assessing, rehearsing, or
+# planning disposition around self-harm/violence), not merely reading about it. Reference and
+# reading pages are deliberately excluded so the block stays meaningful rather than wallpaper.
+_CRISIS_REQUIRED_TOOLS={
+    "cssrs.html","sp-interview.html","communication-practice.html",
+    "family-systems.html","one-patient-six-weeks.html",
+}
+_CRISIS_REQUIRED_MD={
+    # direct risk assessment & acute safety
+    "suicide.md","pg_suicide.md","violence.md","agitation.md","ethics_legal.md",
+    # populations where self-harm risk is core to the page's own teaching
+    "t_mood.md","t_personality.md","t_psychosis.md","t_sud.md","t_geri.md",
+    "t_eating.md","t_dissociative.md","t_adjustment.md","t_perinatal.md",
+    # bedside work & disposition — the peri-discharge transition is the highest-risk window
+    "brief_psychotherapy.md","exp_family.md","family_playbook.md","collateral_workflow.md",
+}
+_crisis_tools_done=set()
+for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.join(OUT,"tools")) if _f.endswith(".html")]:
+    _t=open(_tool_html,encoding="utf-8").read()
+    _t,_did=_crisis.inject_html(_t,_crisis_data)
+    if _did:
+        open(_tool_html,"w",encoding="utf-8").write(_t)
+        _crisis_tools_done.add(os.path.basename(_tool_html))
+
 # md content pages: [source rel, out name, title] — see site_manifest.json
 md=[tuple(x) for x in _manifest["md"]]
 # ---- Case of the Week: per-week pages are registry-driven (single source of truth:
@@ -229,11 +262,34 @@ _cotw_weeks=json.load(open(os.path.join(LIB,_COTW_DIR,"cotw_registry.json"),enco
 def _cotw_slug(w,level):  # level: "ms3" | "res"
     return "cotw_%s_%s_%s.md"%(w["date"].replace("-",""),w["topic"],level)
 md+=[(os.path.join(_COTW_DIR,w["ms3_src"]),_cotw_slug(w,"ms3"),w["label"]) for w in _cotw_weeks]
+# Per-case topic_meta is DERIVED from the same registry at build time (cotw_meta.py) rather
+# than hand-added every week — that is what keeps `metadata missing (topic_meta)` from
+# reappearing, and what puts cases on the shelfBlueprint crosswalk. Hand-written entries win.
+import cotw_meta as _cotw_meta
+_cm_add,_cm_skip,_,_cm_untagged=_cotw_meta.inject(OUT,_cotw_weeks,"ms3")
+print("cotw topic_meta: %d derived, %d hand-written kept"%(_cm_add,_cm_skip))
+if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent from the crosswalk): "+", ".join(_cm_untagged))
 missing=[]
+_crisis_md_done=set()
 for src,dst,_ in md:
     p=os.path.join(LIB,src)
-    if os.path.exists(p): shutil.copy2(p, OUT+"/content/"+dst)
+    if os.path.exists(p):
+        shutil.copy2(p, OUT+"/content/"+dst)
+        _t=open(p,encoding="utf-8").read()
+        _t,_did=_crisis.inject_markdown(_t,_crisis_data)
+        if _did:
+            open(OUT+"/content/"+dst,"w",encoding="utf-8").write(_t)
+            _crisis_md_done.add(dst)
     else: missing.append(src)
+
+# Fail the build if a required safety surface lost its crisis block (marker deleted, page
+# renamed, or dropped from the manifest). Silent loss of 988 is the failure this prevents.
+_crisis_gap=sorted((_CRISIS_REQUIRED_MD-_crisis_md_done)|(_CRISIS_REQUIRED_TOOLS-_crisis_tools_done))
+if _crisis_gap:
+    print("BUILD ABORTED — crisis-contact block missing from required safety surface(s):")
+    for _g in _crisis_gap: print("   -",_g,"(expected the crisis-block marker in its source)")
+    raise SystemExit(1)
+print("crisis block injected:",len(_crisis_md_done),"content page(s) +",len(_crisis_tools_done),"tool(s)")
 
 # ---- QA-gate source map: every source path this build knows about, written NEXT TO the
 # build dir (<OUT>.source-map.json), never inside it — nothing ships. check-static-site.mjs
@@ -290,8 +346,8 @@ common.apply_full_page_pass(OUT, cache_bust=_QV)
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(OUT+"/404.html","w",encoding="utf-8").write('<!doctype html><meta charset="utf-8"><title>Not found</title><meta name="robots" content="noindex,nofollow"><style>body{font-family:system-ui,sans-serif;background:#f6f3ee;color:#2f2924;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#174d43}</style><div><h1 style="color:#9f3f2a">Page not found</h1><p><a href="/">Return to the clerkship hub</a></p></div>')
-open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reviewed.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n")
-print("polish pass: banners stripped, contrast darkened, chrome+dark applied, robots/404/_headers written")
+open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reviewed.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n")
+print("polish pass: banners stripped, contrast darkened, <main>+favicon on tools, robots/404/_headers written")
 
 
 # ---------- MEDIA GUARD: drop <video> embeds whose asset was never exported ----------

@@ -38,6 +38,8 @@
 - Psychotherapy is the mainstay; no drug treats dissociation itself — treat comorbidities.
 - Non-epileptic (dissociative) seizures are a consult-liaison classic — diagnose positively, avoid antiseizure escalation.
 
+<!-- crisis-block -->
+
 **Pair with** — the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), [Somatic Symptom & Related Disorders](?page=t_somatic.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS screener</a>.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

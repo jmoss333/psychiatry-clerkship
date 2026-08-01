@@ -147,5 +147,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   ]).then(function(rows){var data=rows[0],reviewed=rows[1]||{};state.caseData=data;state.review=reviewed['one-patient-six-weeks.html']||state.review;state.current=Math.max(0,Math.min(data.weeks.length-1,state.progress.current||state.current));render();}).catch(function(){app.innerHTML='<div class="empty">Could not load the longitudinal case. Rebuild the site or check longitudinal_case.json.</div>';});
 })();
 </script>
+<!-- Static (non-React) on purpose: crisis contacts must render even if the app script
+     fails. Build-injected from crisis_resources.json — do not hand-edit numbers here. -->
+<!-- crisis-block-html -->
 </body>
 </html>

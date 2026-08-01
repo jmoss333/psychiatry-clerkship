@@ -1131,5 +1131,8 @@ try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,co
 ReactDOM.createRoot(document.getElementById('root')).render(e(App));
 })();
 </script>
+<!-- Static (non-React) on purpose: crisis contacts must render even if the app script
+     fails. Build-injected from crisis_resources.json — do not hand-edit numbers here. -->
+<!-- crisis-block-html -->
 </body>
 </html>

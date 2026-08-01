@@ -187,5 +187,8 @@ app.addEventListener('change',function(ev){var box=ev.target&&ev.target.matches&
 fetch('../communication_cases.json').then(function(r){if(!r.ok)throw new Error('missing cases');return r.json();}).then(function(d){state.cases=(d&&d.cases)||[];if(state.requestedCase){state.matchedRequest=setCurrentById(state.requestedCase);if(state.matchedRequest&&!caseMatches(currentCase(),state.filter)){state.filter=tagsFor(currentCase())[0]||'all';}}render();}).catch(function(){app.innerHTML='<div class="empty">Could not load communication cases. Rebuild the site or check communication_cases.json.</div>';});
 })();
 </script>
+<!-- Static (non-React) on purpose: crisis contacts must render even if the app script
+     fails. Build-injected from crisis_resources.json — do not hand-edit numbers here. -->
+<!-- crisis-block-html -->
 </body>
 </html>

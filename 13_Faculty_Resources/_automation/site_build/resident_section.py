@@ -205,6 +205,12 @@ if os.path.exists(_tmp):
     _addcta("agitation.md",{"label":"Open the Agitation Ladder trainer","href":"tools/rp-agitation.html"})
     _addcta("brief_psychotherapy.md",{"label":"Open Five Good Minutes","href":"tools/rp-brief-psych.html"})
     open(_tmp,"w",encoding="utf-8").write(json.dumps(_tm,ensure_ascii=False))
+# Per-case cotw topic_meta, derived from cotw_registry.json (see cotw_meta.py). Resident
+# inherits the MS3 tree wholesale, so this also prunes the inherited *_ms3.md cotw keys.
+import cotw_meta as _cotw_meta
+_cm_add,_cm_skip,_cm_prune,_cm_untagged=_cotw_meta.inject(OUT,_cotw_weeks,"res")
+print("cotw topic_meta: %d derived, %d hand-written kept, %d ms3 keys pruned"%(_cm_add,_cm_skip,_cm_prune))
+if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent from the crosswalk): "+", ".join(_cm_untagged))
 # ---------- MEDIA GUARD: drop <video> embeds whose asset was never exported (resident build) ----------
 # Resident inherits ms3's already-guarded pages via copytree, but re-writes some content from
 # source and adds its own media — so guard the final OUT before indexing.

@@ -293,10 +293,14 @@ def build_search_index(nav, out_dir, tool_keywords=None, label=""):
 CONTRAST_FIX = ("#87786a", "#665a4f")
 
 SKIP_LINK = '<a class="skip-link" href="#root">Skip to content</a>'
+# A-5: coarse pointers get 44px minimum hit targets (WCAG 2.1 AA 2.5.5 Target Size).
+# Ships in the same <style> block as the skip-link so one injection covers both.
 SKIP_LINK_CSS = (
     "<style>.skip-link{position:absolute;left:-999px;top:0;"
     "background:var(--surface,#fff);color:var(--primary-dark,#a84830);"
-    "padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}</style>"
+    "padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}"
+    "@media(pointer:coarse){.chip,.tab,.btn,.seg,button,"
+    '[role="tab"],[role="button"]{min-height:44px}}</style>'
 )
 FAVICON_LINK = '<link rel="icon" href="/favicon.svg">'
 CLINICAL_CSS_LINK = '<link rel="stylesheet" href="/clinical-warm.css">'
@@ -378,6 +382,19 @@ def apply_page_chrome(path, is_index=False):
         t = re.sub(r"(<body[^>]*>)", r"\1\n" + SKIP_LINK, t, count=1)
     if ".skip-link{" not in t and "</head>" in t:
         t = t.replace("</head>", SKIP_LINK_CSS + "\n</head>", 1)
+
+    # WP-03: bare accent text (--primary #c25a3c) is ~3.9:1 on the light backgrounds and
+    # fails WCAG AA for normal-size text. Repoint to --primary-dark; the literal fallback
+    # covers tools whose light :root lacks the token, and clinical-warm.css overrides
+    # --primary-dark to #dd9277 in dark mode, which also passes. The closing paren in the
+    # pattern leaves --primary-dark/--primary-light alone, and only text colour is
+    # rewritten — backgrounds and borders keep the brand accent.
+    # check-static-site.mjs hard-fails on any bare occurrence surviving into the build.
+    # Tool pages only — the SPA shell is deliberately excluded, matching the pre-refactor
+    # pass. The pattern also matches `border-color:var(--primary)`, so widening it to the
+    # index would silently restyle shell borders as well as text.
+    if not is_index:
+        t = re.sub(r"color:\s*var\(--primary\)", "color:var(--primary-dark,#a84830)", t)
 
     if t != o:
         open(path, "w", encoding="utf-8").write(t)
