@@ -257,6 +257,13 @@ _cotw_weeks=json.load(open(os.path.join(LIB,_COTW_DIR,"cotw_registry.json"),enco
 def _cotw_slug(w,level):  # level: "ms3" | "res"
     return "cotw_%s_%s_%s.md"%(w["date"].replace("-",""),w["topic"],level)
 md+=[(os.path.join(_COTW_DIR,w["ms3_src"]),_cotw_slug(w,"ms3"),w["label"]) for w in _cotw_weeks]
+# Per-case topic_meta is DERIVED from the same registry at build time (cotw_meta.py) rather
+# than hand-added every week — that is what keeps `metadata missing (topic_meta)` from
+# reappearing, and what puts cases on the shelfBlueprint crosswalk. Hand-written entries win.
+import cotw_meta as _cotw_meta
+_cm_add,_cm_skip,_,_cm_untagged=_cotw_meta.inject(OUT,_cotw_weeks,"ms3")
+print("cotw topic_meta: %d derived, %d hand-written kept"%(_cm_add,_cm_skip))
+if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent from the crosswalk): "+", ".join(_cm_untagged))
 missing=[]
 _crisis_md_done=set()
 for src,dst,_ in md:
