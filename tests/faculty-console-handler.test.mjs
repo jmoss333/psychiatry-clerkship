@@ -481,6 +481,7 @@ test('learner deployment allows framing only by the exact faculty console origin
 
   const learnerHeaders = JSON.parse(literal);
   const expectedLearnerHeaders = `/*
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), camera=(), microphone=(self)
@@ -492,6 +493,8 @@ test('learner deployment allows framing only by the exact faculty console origin
 /audio/*
   Cache-Control: public, max-age=604800
 /audio_oe/*
+  Cache-Control: public, max-age=604800
+/media/*
   Cache-Control: public, max-age=604800
 /tools/quizzes.json
   Cache-Control: public, max-age=86400
@@ -520,6 +523,7 @@ test('learner deployment allows framing only by the exact faculty console origin
   assert.match(rootHeaders, /^\s*X-Content-Type-Options: nosniff\s*$/m);
   assert.match(rootHeaders, /^\s*Referrer-Policy: strict-origin-when-cross-origin\s*$/m);
   assert.match(rootHeaders, /^\s*Permissions-Policy: geolocation=\(\), camera=\(\), microphone=\(self\)\s*$/m);
+  assert.match(rootHeaders, /^\s*Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\s*$/m);
   assert.doesNotMatch(rootHeaders, /^\s*X-Frame-Options:/mi);
 
   const csp = rootHeaders.match(/^\s*Content-Security-Policy: (.+)$/m)?.[1];

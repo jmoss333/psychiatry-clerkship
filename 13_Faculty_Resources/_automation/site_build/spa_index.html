@@ -532,7 +532,7 @@
   function reviewableTotal(p){ return reviewStats(p).total; }
   function buildReviewButton(file,p){
     p=p||progLoad(); var done=!!(p[file]&&p[file].done);
-    return '<button type="button" class="markrev'+(done?' on':'')+'" data-f="'+esc(file||'')+'" aria-pressed="'+(done?'true':'false')+'">'+(done?'✓ Reviewed':'Mark reviewed')+'</button>';
+    return '<button type="button" class="markrev'+(done?' on':'')+'" data-f="'+esc(file||'')+'" aria-pressed="'+(done?'true':'false')+'">'+(done?'✓ Read':'Mark as read')+'</button>';
   }
   function installTitleReviewButton(file){
     var h1=contentEl.querySelector('h1'); if(!h1)return null;
@@ -543,14 +543,14 @@
   }
   function buildReviewLedger(file){
     var p=progLoad(), stats=reviewStats(p), done=!!(p[file]&&p[file].done), at=done&&p[file].at;
-    var h='<div class="review-ledger" data-review-for="'+esc(file||'')+'"><span class="k">Review coverage</span><span class="v"><span class="revcount">'+stats.done+' of '+stats.total+' reviewable pages</span><span class="review-date">'+(at?(' · reviewed '+esc(at)):' · not yet reviewed')+'</span></span></div>';
+    var h='<div class="review-ledger" data-review-for="'+esc(file||'')+'"><span class="k">Study progress</span><span class="v"><span class="revcount">'+stats.done+' of '+stats.total+' pages read</span><span class="review-date">'+(at?(' · read '+esc(at)):' · not yet read')+'</span></span></div>';
     return h;
   }
   function refreshReviewLedger(file,p){
     p=p||progLoad(); var stats=reviewStats(p), done=!!(p[file]&&p[file].done), at=done&&p[file].at;
-    [].forEach.call(contentEl.querySelectorAll('.revcount'),function(el){ el.textContent=stats.done+' of '+stats.total+' reviewable pages'; });
-    [].forEach.call(contentEl.querySelectorAll('.review-date'),function(el){ el.textContent=at?(' · reviewed '+at):' · not yet reviewed'; });
-    [].forEach.call(contentEl.querySelectorAll('.markrev'),function(el){ if(el.getAttribute('data-f')!==file)return; el.classList.toggle('on',done); el.setAttribute('aria-pressed',String(done)); el.textContent=done?'✓ Reviewed':'Mark reviewed'; });
+    [].forEach.call(contentEl.querySelectorAll('.revcount'),function(el){ el.textContent=stats.done+' of '+stats.total+' pages read'; });
+    [].forEach.call(contentEl.querySelectorAll('.review-date'),function(el){ el.textContent=at?(' · read '+at):' · not yet read'; });
+    [].forEach.call(contentEl.querySelectorAll('.markrev'),function(el){ if(el.getAttribute('data-f')!==file)return; el.classList.toggle('on',done); el.setAttribute('aria-pressed',String(done)); el.textContent=done?'✓ Read':'Mark as read'; });
   }
   function seedSRS(file){ try{ var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}}; } var id='TOPIC#'+file; if(!s.cards[id]){ s.cards[id]={ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } }catch(_){ } }
   function ctaHref(h){ h=h||''; var mt=h.match(/^tools\/([^\/?#]+\.html)$/); return mt?('?tool='+mt[1]):h; }
@@ -855,6 +855,7 @@
     currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)&&!(opts&&opts.noRoute)) setRoute(item, opts&&opts.replace, opts);
     contentEl.innerHTML=skel();
     fetch('content/'+item.f).then(function(r){if(!r.ok){var pageError=new Error('faculty preview page failed');pageError.facultyPreviewStatus=r.status===404?'not_found':'error';throw pageError;}return r.text()}).then(function(t){
+      t=(function(_t){var _i=_t.indexOf('\n## ');var _h=_i>-1?_t.slice(0,_i):_t;var _r=_i>-1?_t.slice(_i):'';return _h.replace(/^[ \t]*(Generated|Audience):.*$/gim,'').replace(/\n{3,}/g,'\n\n')+_r;})(t);
       contentEl.innerHTML=marked.parse(t);
       var _mobileTitle=document.getElementById('mobileTitle'), _pageHeading=contentEl.querySelector('h1');
       if(_mobileTitle&&_pageHeading)_mobileTitle.textContent=_pageHeading.textContent;
@@ -1384,12 +1385,12 @@
     if(shelf){ var t=new Date(shelf+'T00:00:00').getTime(); if(!isNaN(t)) shelfDays=Math.ceil((t-Date.now())/86400000); }
     var fresh=(rev===0 && dc.due===0 && !last);
     var h='<div class="hm" id="hmRoot"><h1>Your progress</h1>';
-    if(fresh){ h+='<p class="sub">Welcome — nothing tracked yet. Open any content page and tap <strong>Mark reviewed</strong>, or start a review session, and this page fills in.</p>'; }
+    if(fresh){ h+='<p class="sub">Welcome — nothing tracked yet. Open any content page and tap <strong>Mark as read</strong>, or start a review session, and this page fills in.</p>'; }
     else{ h+='<p class="sub">Where you are, and the next best thing to do.</p>'; }
     h+=renderWardDashboard();
     h+='<div class="hm-sec" style="border:1px solid var(--accent);background:var(--accent-light);border-radius:14px;padding:14px 16px;margin:0 0 16px"><h2 style="margin-top:0">Study on the go · Anki decks</h2><div class="sub" style="margin:0 0 8px">Take the question bank and high-yield concepts with you as spaced-repetition flashcards for your phone.</div><button class="hm-li" data-f="anki.md" style="border-bottom:none"><span class="t"><strong>Get the Anki decks</strong></span><span class="sec">Open →</span></button></div>';
     h+='<div class="hm-grid">';
-    h+='<div class="hm-card"><div class="k">Review coverage</div><div class="hm-row"><div class="hm-ring" style="--p:'+pct+'"><i>'+pct+'%</i></div><div class="v">'+rev+'<small> / '+tot+' pages</small></div></div></div>';
+    h+='<div class="hm-card"><div class="k">Study progress</div><div class="hm-row"><div class="hm-ring" style="--p:'+pct+'"><i>'+pct+'%</i></div><div class="v">'+rev+'<small> / '+tot+' pages read</small></div></div></div>';
     h+='<div class="hm-card"><div class="k">Due today</div><div class="v">'+dc.due+(dc.overdue?'<small> · '+dc.overdue+' overdue</small>':'')+'</div>'+(dc.due?'<button class="hm-btn" data-act="review">Start review</button>':'<span class="hm-empty">Nothing due — nice.</span>')+'</div>';
     h+='<div class="hm-card"><div class="k">Study streak</div><div class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></div></div>';
     h+='<div class="hm-card"><div class="k">Shelf countdown</div><div class="v">'+(shelfDays!=null?(shelfDays>=0?shelfDays+'<small> days</small>':'<small>past</small>'):'<small>set a date on Start here</small>')+'</div></div>';
@@ -1397,7 +1398,7 @@
     if(last&&LAB[last]===undefined){ h+='<div class="hm-sec"><h2>Continue where you left off</h2><button class="hm-li" data-f="'+last+'"><span class="t">Resume your last page</span><span class="sec">Resume →</span></button></div>'; }
     var weak=weakTopics();
     if(weak.length){ h+='<div class="hm-sec"><h2>Focus next · your weak spots</h2>'; weak.slice(0,5).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+esc(x.t)+'</span><span class="sec">'+esc(x.reason)+'</span></button>'; }); h+='</div>'; }
-    if(scan.hy.length){ h+='<div class="hm-sec"><h2>High-yield · not yet reviewed</h2>'; scan.hy.slice(0,8).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+x.t+'</span><span class="sec">'+x.sec+'</span></button>'; }); h+='</div>'; }
+    if(scan.hy.length){ h+='<div class="hm-sec"><h2>High-yield · not yet read</h2>'; scan.hy.slice(0,8).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+x.t+'</span><span class="sec">'+x.sec+'</span></button>'; }); h+='</div>'; }
     var covk=Object.keys(scan.cov); if(covk.length){ h+='<div class="hm-sec"><h2>Coverage by section</h2><div class="hm-bars">'; covk.forEach(function(k){ var c=scan.cov[k]; var p=c.tot?Math.round(c.done/c.tot*100):0; h+='<div class="brow"><span class="lab">'+k+'</span><span class="track"><span class="fill" style="width:'+p+'%"></span></span><span class="pc">'+c.done+'/'+c.tot+'</span></div>'; }); h+='</div></div>'; }
     var mb=masteryByBlueprint(); var mbStarted=mb.filter(function(x){return x.score!=null;});
     h+='<div class="hm-sec"><h2>Mastery by blueprint <span style="font-weight:400;color:var(--text-light)">· from your practice</span></h2>';

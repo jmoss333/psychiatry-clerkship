@@ -1,5 +1,9 @@
 # Derive the MMC resident variant from the already-built MS3 deploy (run AFTER build_deploy.py).
 import os, shutil, json, re, glob, sys
+# Shared, audience-neutral assembly logic — the same module build_deploy.py uses.
+# Extracted 2026-07-26; before that this file carried its own drifted copies of the
+# tokenizer, synonym table, tool keywords, index builder, and skip-link injection.
+import common
 from pathlib import Path
 
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location.
@@ -57,10 +61,11 @@ RES_EXTRA=[
 for src,dst in RES_EXTRA:
     p=os.path.join(LIB,src)
     if os.path.exists(p):
-        t=open(p,encoding="utf-8").read()
-        t=re.sub(r'(?m)^> \*\*Review status:\*\*.*\n?','',t)   # strip learner-facing banner
-        t=t.replace("#87786a","#665a4f")
-        open(OUT+"/content/"+dst,"w",encoding="utf-8").write(t)
+        shutil.copyfile(p, OUT+"/content/"+dst)
+# Resident-only markdown is written fresh above (not inherited via the copytree), so it
+# needs the same banner-strip + contrast fix every MS3 content page already received.
+common.strip_review_banners(OUT)
+common.apply_contrast_fix(glob.glob(OUT+"/content/*.md"))
 
 # ---- resident-only prototype tools (reconciled into source build 2026-07-02) ----
 # Previously hand-copied straight into the deploy dir (source/deploy drift); now built from
@@ -80,26 +85,21 @@ for src,dst in PROTO_TOOLS:
     pack_src=p[:-len(".html")]+".pack.json"
     if os.path.exists(pack_src):
         shutil.copyfile(pack_src, OUT+"/tools/"+dst[:-len(".html")]+".pack.json")
-    # WP-05: these 3 rp-* tools bypass build_deploy.py's polish pass entirely (raw copy, above),
-    # so they'd otherwise ship without the skip-to-content link every other built page gets.
-    # All 3 already carry <main id="root">, so only the skip-link + its CSS need injecting here.
-    _dp=OUT+"/tools/"+dst
-    if os.path.exists(_dp):
-        _t=open(_dp,encoding="utf-8").read(); _o=_t
-        if 'class="skip-link"' not in _t and '<body' in _t:
-            _t=re.sub(r'(<body[^>]*>)', r'\1\n<a class="skip-link" href="#root">Skip to content</a>', _t, count=1)
-        if '.skip-link{' not in _t and '</head>' in _t:
-            _t=_t.replace('</head>', '<style>.skip-link{position:absolute;left:-999px;top:0;background:var(--surface,#fff);color:var(--primary-dark,#a84830);padding:8px 12px;z-index:1000}.skip-link:focus{left:8px}</style>\n</head>', 1)
-        # WP-03 remainder (mirrors build_deploy.py's polish pass): bare accent text
-        # (--primary #c25a3c) fails AA for normal-size light-mode text — repoint to
-        # --primary-dark with a literal fallback; the dark theme override still wins.
-        _t=re.sub(r'color:\s*var\(--primary\)', 'color:var(--primary-dark,#a84830)', _t)
-        if _t!=_o: open(_dp,"w",encoding="utf-8").write(_t)
+
+# Apply the full shared page pass over the resident build. Idempotent, so the pages
+# inherited from the MS3 copytree are untouched and only the newly-written rp-* tools
+# actually change. This replaces the hand-rolled skip-link-only subset that shipped
+# these three tools without the motion CSS and the in-iframe link interceptor.
+common.apply_full_page_pass(OUT)
 # vendor React (shared across all three rp-* tools; files are byte-for-byte identical)
 _vendor_src=os.path.join(LIB,"_prototypes/agitation-trainer/vendor")
 _vendor_dst=OUT+"/tools/vendor"
-if os.path.isdir(_vendor_src) and not os.path.exists(_vendor_dst):
-    shutil.copytree(_vendor_src, _vendor_dst)
+if os.path.isdir(_vendor_src):
+    os.makedirs(_vendor_dst,exist_ok=True)
+    for _vf in os.listdir(_vendor_src):
+        _vdst=os.path.join(_vendor_dst,_vf)
+        if not os.path.exists(_vdst):
+            shutil.copyfile(os.path.join(_vendor_src,_vf), _vdst)
 
 # ---- QA-gate source map: resident = MS3's wired sources (this build starts as a copytree
 # of the MS3 build) + resident-only extras. Written next to the build dir, never inside it;
@@ -139,20 +139,9 @@ else:
     print("  WARN: resident reasoning cases missing from source:",_resident_reasoning)
 
 # ---- resident nav ----
-TOOLS=[("mse.html","Mental Status Exam"),("interview-circle.html","The Interview Circle"),("communication-practice.html","What Do You Say Next?"),("diagnostic-reasoning.html","Diagnostic Reasoning Workbench"),("family-systems.html","Family Systems Practice"),("capacity.html","Decisional Capacity"),("oral.html","Treatment Team Rounding Prep"),
- ("violence.html","Violence Risk (FRST)"),("cssrs.html","Columbia C-SSRS Screener"),("screeners.html","Screeners: PHQ-9 & GAD-7"),
- ("withdrawal.html","Withdrawal: CIWA-Ar/COWS"),("decision-aids.html","Algorithms & Decision Aids"),
- ("bfcrs.html","Bush-Francis Catatonia Scale (BFCRS)"),("reflection.html","Reflection & Identity"),
- ("shelf-mode.html","Board-Style Question Bank"),
- ("question-bank-practice.html","Practice Questions — Question Bank"),
- ("one-patient-six-weeks.html","One Patient, Six Weeks"),
- ("review.html","Daily Review (Spaced Repetition)"),
- ("feedback.html","Improve this library — send feedback")]
-# Hidden from the sidebar list + search per Dr. Moss's request (2026-07-06) — superseded by the
-# question bank practice tool. Files still ship (inherited via the MS3 copytree above) and stay
-# fully reachable by direct link / the home "Start review" card / per-page tool docks (all look
-# items up by filename, not by sidebar visibility) — see the `hidden` flag on the nav item below.
-HIDDEN_TOOLS={"shelf-mode.html","review.html"}
+# NOTE: the former TOOLS list and HIDDEN_TOOLS set lived here. Both were dead code —
+# declared but never read (the nav below hardcodes "hidden":True inline). Removed
+# 2026-07-26; site_manifest.json is the source of truth for what ships.
 _HIDDEN_INHERITED=[
   {"t":"Orientation Packet","f":"orientation.md","k":"md","hidden":True},
   {"t":"Week 1 — Foundations","f":"week1.md","k":"md","hidden":True},
@@ -201,18 +190,6 @@ _navorder=["Welcome and Orientation","Start the Encounter","Understand the Probl
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
 open(OUT+"/nav.json","w").write(json.dumps(nav))
 
-# ---- resident search index (same engine as MS3, over the resident nav) ----
-STOP=set("a an and are as at be by for from has in is it of on or that the to was with you your".split())
-def tok(t): return [w for w in re.sub(r'[^a-z0-9]+',' ',(t or "").lower()).split() if len(w)>=2 and w not in STOP]
-GROUPS=[["bpd","borderline","borderline personality"],["anxiety","panic","gad","worry"],["depression","depressed","mdd","major depressive"],["bipolar","manic","mania","mood stabilizer"],["ptsd","trauma","post traumatic"],["psychosis","psychotic","hallucination","delusion","schizophrenia"],["sud","substance","addiction","alcohol","opioid"],["si","suicide","suicidal","self harm","safety planning"],["geriatric","elderly","older adult","dementia"],["perinatal","pregnant","postpartum"],["discharge","disposition","aftercare"],["consult","consultation","handoff"],["capacity","decisional capacity","consent"],["catatonia","lorazepam","bush francis","bfcrs"],["delirium","confusion","inattention"],["agitation","restraint","de-escalation","seclusion"],["nms","neuroleptic malignant"],["antipsychotic","neuroleptic","clozapine"],["lithium","valproate","lamotrigine"],["ect","neuromodulation","tms"],["commitment","involuntary","blue paper","hold"],["supervision","epa","milestone","teaching","feedback"],["clozapine","trs","treatment resistant"],["mse","mental status exam"],["ciwa","alcohol withdrawal"],["cows","opioid withdrawal"],["cssrs","columbia"],["frst","violence"],["ddx","differential","differential diagnosis"],["ss","serotonin syndrome"],["td","tardive dyskinesia","tardive"],["ama","against medical advice","discharge ama"],["dts","delirium tremens"],["wke","wernicke","wernicke encephalopathy"],["aws","alcohol withdrawal"],["eps","extrapyramidal","extrapyramidal symptoms"],["eating","eating disorder","anorexia","bulimia","binge eating","refeeding","arfid"]]
-syn={}
-for g in GROUPS:
-    tt=set()
-    for term in g: tt.update(tok(term))
-    for x in tt: syn.setdefault(x,set()).update(tt-{x})
-syn={k:sorted(v) for k,v in syn.items()}
-TOOLKW={"mse.html":"mental status exam appearance behavior speech mood affect thought","interview-circle.html":"interview circle radial domain map intake history hpi substance family social mental status safety conversation interviewing checklist","communication-practice.html":"what do you say next communication practice branching dialogue rapid spoken drill say it out loud rehearsal timer 20 second suicide psychosis validation rupture repair medication ambivalence family meeting collateral motivational interviewing relational skills","diagnostic-reasoning.html":"diagnostic reasoning workbench differential diagnosis problem representation illness script bayesian updating diagnostic humility anchoring premature closure syndrome formulation inpatient psychiatry case practice delirium catatonia mania psychosis substance trauma personality","family-systems.html":"family systems practice collateral call family meeting discharge barrier map expressed emotion psychoeducation confidentiality boundaries means safety caregiver support inpatient psychiatry","capacity.html":"decisional capacity informed consent four abilities","oral.html":"rounding presentation oral assessment plan handoff timer collateral update 30 second sixty 60 second micro update","violence.html":"violence risk aggression frst de-escalation","cssrs.html":"columbia suicide severity rating scale ideation safety planning","withdrawal.html":"withdrawal alcohol ciwa opioid cows benzodiazepine thiamine","reflection.html":"reflection professional identity formation","screeners.html":"phq-9 gad-7 depression anxiety screener cutoff","shelf-mode.html":"board style question bank exam simulation vignette mixed blueprint mock test","decision-aids.html":"algorithms decision aids trees escalation ladder nms serotonin withdrawal timeline ciwa catatonia","bfcrs.html":"bush francis catatonia rating scale immobility mutism posturing waxy flexibility lorazepam challenge","review.html":"daily review spaced repetition srs flashcards retention due cards streak board review test enhanced learning forgetting curve","feedback.html":"feedback improve library suggest resource report broken link error confusing helpful comment suggestion box","learning-path.html":"learning path home dashboard rotation progress daily review","rp-agitation.html":"agitation ladder prn trainer restraint de-escalation seclusion intramuscular haloperidol lorazepam olanzapine decision escalation","rp-brief-psych.html":"five good minutes brief psychotherapy coach supportive bedside therapeutic conversation skills","rp-canon-quiz.html":"canon quiz 200 paper spine landmark trials evidence self test board review recall",
-"question-bank-practice.html":"practice questions question bank comat shelf exam vignette single best answer sba two-tier confidence calibration trap feedback spaced repetition category filter mood psychosis anxiety substance neurocognitive pharmacology safety personality relational ethics","one-patient-six-weeks.html":"one patient six weeks longitudinal case arc six week rotation timeline alliance interview mental status exam differential diagnosis medical rule out medication ambivalence family collateral safety suicide discharge handoff reflection"}
 # ---------- resident-only inline tool CTAs (topic_meta is shared, so patch OUT's copy) ----------
 # agitation.md keeps its Decision Aids link and gains the Agitation Ladder trainer;
 # brief_psychotherapy.md gains the Five Good Minutes coach. MS3's topic_meta is untouched.
@@ -228,39 +205,26 @@ if os.path.exists(_tmp):
     _addcta("agitation.md",{"label":"Open the Agitation Ladder trainer","href":"tools/rp-agitation.html"})
     _addcta("brief_psychotherapy.md",{"label":"Open Five Good Minutes","href":"tools/rp-brief-psych.html"})
     open(_tmp,"w",encoding="utf-8").write(json.dumps(_tm,ensure_ascii=False))
+# Per-case cotw topic_meta, derived from cotw_registry.json (see cotw_meta.py). Resident
+# inherits the MS3 tree wholesale, so this also prunes the inherited *_ms3.md cotw keys.
+import cotw_meta as _cotw_meta
+_cm_add,_cm_skip,_cm_prune,_cm_untagged=_cotw_meta.inject(OUT,_cotw_weeks,"res")
+print("cotw topic_meta: %d derived, %d hand-written kept, %d ms3 keys pruned"%(_cm_add,_cm_skip,_cm_prune))
+if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent from the crosswalk): "+", ".join(_cm_untagged))
 # ---------- MEDIA GUARD: drop <video> embeds whose asset was never exported (resident build) ----------
 # Resident inherits ms3's already-guarded pages via copytree, but re-writes some content from
 # source and adds its own media — so guard the final OUT before indexing.
 from media_guard import strip_missing_media
 strip_missing_media(OUT)
 
-postings={}; docs=[]
-def addtok(docid,text,wt):
-    for x in tok(text):
-        d=postings.setdefault(x,{}); d[docid]=d.get(docid,0)+wt
-for sec in nav:
-    for it in sec["items"]:
-        if it.get("hidden"): continue
-        f=it["f"]; k=it["k"]; title=it["t"]; section=sec["section"]; heads=""; body=""
-        if k=="md":
-            p=OUT+"/content/"+f
-            raw=open(p,encoding="utf-8").read() if os.path.exists(p) else ""
-            btxt=[]
-            for ln in raw.split("\n"):
-                ss=ln.strip()
-                if ss.startswith("#"): heads+=" "+ss.lstrip("#").strip()
-                else: btxt.append(ss)
-            body=" ".join(btxt)
-        else: body=TOOLKW.get(f,"")
-        docid=len(docs)
-        clean=re.sub(r'[#>*_`|\[\]()/-]+',' ',body); clean=re.sub(r'\s+',' ',clean).strip()
-        docs.append({"t":title,"f":f,"k":k,"sec":section,"snip":clean[:170]})
-        addtok(docid,title,4); addtok(docid,section,2); addtok(docid,heads,2); addtok(docid,body,1)
-post={}; df={}
-for x,dd in postings.items():
-    post[x]=[[i,tf] for i,tf in sorted(dd.items())]; df[x]=len(dd)
-open(OUT+"/search-index.json","w",encoding="utf-8").write(json.dumps({"version":1,"n":len(docs),"synonyms":syn,"docs":docs,"postings":post,"df":df},ensure_ascii=False))
-print("RESIDENT build: pages",len(docs),"| out",OUT)
+# ---- resident search index: same engine, same synonyms, same tool keywords as MS3 ----
+common.build_search_index(nav, OUT, label="resident")
+
+# Postcondition gate (architecture review rec 1.3): the rp-* tools used to bypass the
+# page pass entirely and ship degraded. This makes that impossible to reintroduce.
+common.assert_page_contract(OUT, label="resident")
+
+print("RESIDENT build: out",OUT)
 print(" sections:",[s["section"] for s in nav])
 
 # ---------- TOOL GOVERNANCE ----------
