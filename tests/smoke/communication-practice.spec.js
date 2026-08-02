@@ -186,14 +186,33 @@ test('keyboard-only flow preserves focus and sparse announcements', async ({ pag
   const errors = collectRuntimeErrors(page);
   await page.setViewportSize({ width: 1280, height: 800 });
   await openTool(page, '?case=guardedness_privacy_001');
+  const cases = await page.evaluate(async () => {
+    const data = await fetch('../communication_cases.json').then((response) => response.json());
+    return data.cases.map(({ id, title, skillTags, linkedPages, choices }) => ({
+      id,
+      title,
+      skillTags,
+      linkedPages,
+      choices: choices.map(({ id: choiceId, feedback }) => ({ id: choiceId, feedback })),
+    }));
+  });
+  const initialCase = cases.find((item) => item.id === 'guardedness_privacy_001');
+  const familyCase = cases.find((item) => item.id === 'family_meeting_opening_001');
+  const collateralCase = cases.find((item) => item.id === 'collateral_questions_001');
+  expect(initialCase).toBeTruthy();
+  expect(familyCase).toBeTruthy();
+  expect(collateralCase).toBeTruthy();
+  const feedback = initialCase.choices.find((item) => item.id === 'b').feedback;
 
   const heading = page.locator('#phase-heading');
   const liveRegion = page.locator('[aria-live="polite"][aria-atomic="true"]');
   const start = page.getByRole('button', { name: 'Start 20-second response' });
+  await observeAnnouncements(page);
   await tabUntilFocused(page, start);
   await page.keyboard.press('Enter');
   await expect(heading).toBeFocused();
   await expect(liveRegion).toHaveCount(1);
+  await expect(liveRegion).toHaveText('Spoken response started. 20 seconds.');
 
   const starterCue = page.locator('[data-starter-cue] summary');
   await tabUntilFocused(page, starterCue);
@@ -208,25 +227,23 @@ test('keyboard-only flow preserves focus and sparse announcements', async ({ pag
   await page.keyboard.press('Enter');
   await expect(heading).toBeFocused();
   await expect(liveRegion).toHaveCount(1);
-  await observeAnnouncements(page);
+  await expect(liveRegion).toHaveText('Compare your sentence with the choices.');
 
   const choice = page.locator('[data-choice-id="b"]');
   await tabUntilFocused(page, choice);
   await page.keyboard.press('Enter');
   await expect(heading).toBeFocused();
   await expect(liveRegion).toHaveCount(1);
+  await expect(liveRegion).toHaveText(feedback);
   await expect(page.locator('[data-selected-choice]')).toBeHidden();
   await expect(page.locator('[data-feedback]')).toHaveAttribute(
     'aria-describedby',
     await page.locator('[data-selected-choice]').getAttribute('id'),
   );
-  const feedback = await page.evaluate(async () => {
-    const data = await fetch('../communication_cases.json').then((response) => response.json());
-    return data.cases.find((item) => item.id === 'guardedness_privacy_001').choices.find((item) => item.id === 'b').feedback;
-  });
   const messages = await page.evaluate(() => window.__repAnnouncements || []);
+  expect(messages).toContain('Spoken response started. 20 seconds.');
   expect(messages.filter((message) => message === feedback)).toHaveLength(1);
-  expect(messages).not.toContain('Best next line');
+  expect(messages.some((message) => message.includes('Best next line'))).toBe(false);
   expect(messages.filter((message) => /^\d+ seconds? remaining\.$/.test(message))).toEqual([]);
 
   const deeperCoaching = page.locator('[data-deeper-coaching] summary');
@@ -241,6 +258,16 @@ test('keyboard-only flow preserves focus and sparse announcements', async ({ pag
   const related = page.getByRole('button', { name: 'Try the next related case' });
   await tabUntilFocused(page, related);
   await page.keyboard.press('Enter');
+  const relatedId = await page.locator('[data-desktop-navigator] [aria-current="true"]').getAttribute('data-case-select');
+  const relatedCase = cases.find((item) => item.id === relatedId);
+  expect(relatedId).not.toBe(initialCase.id);
+  expect(relatedCase).toBeTruthy();
+  expect(
+    relatedCase.skillTags.some((tag) => initialCase.skillTags.includes(tag)) ||
+    relatedCase.linkedPages.some((pageName) => initialCase.linkedPages.includes(pageName)),
+  ).toBe(true);
+  await expect(page.locator('[data-rep-panel]')).toHaveAttribute('data-phase', 'orient');
+  await expect(heading).toHaveText(relatedCase.title);
   await expect(heading).toBeFocused();
   await expect(liveRegion).toHaveCount(1);
 
@@ -267,6 +294,9 @@ test('keyboard-only flow preserves focus and sparse announcements', async ({ pag
   const desktopCase = page.locator('[data-desktop-navigator] [data-case-select="family_meeting_opening_001"]');
   await tabUntilFocused(page, desktopCase);
   await page.keyboard.press('Enter');
+  await expect(page.locator('[data-rep-panel]')).toHaveAttribute('data-phase', 'orient');
+  await expect(desktopCase).toHaveAttribute('aria-current', 'true');
+  await expect(heading).toHaveText(familyCase.title);
   await expect(heading).toBeFocused();
   await expect(liveRegion).toHaveCount(1);
 
@@ -299,6 +329,9 @@ test('keyboard-only flow preserves focus and sparse announcements', async ({ pag
   await tabUntilFocused(page, mobileCase);
   await page.keyboard.press('Enter');
   await expect(picker).toBeHidden();
+  await expect(page.locator('[data-rep-panel]')).toHaveAttribute('data-phase', 'orient');
+  await expect(page.locator('[data-desktop-navigator] [data-case-select="collateral_questions_001"]')).toHaveAttribute('aria-current', 'true');
+  await expect(heading).toHaveText(collateralCase.title);
   await expect(heading).toBeFocused();
   await expect(liveRegion).toHaveCount(1);
   expect(errors).toEqual([]);
