@@ -28,7 +28,27 @@ async function expectPhase(page, phase, standaloneActions) {
   await expect(panel).toBeVisible();
   await expect(panel.locator('[data-primary-task]')).toHaveCount(1);
   await expect(panel.locator('[data-primary-action]')).toHaveCount(standaloneActions);
+  await expect(page.locator('#rep-status[aria-live="polite"][aria-atomic="true"]')).toHaveCount(1);
   return panel;
+}
+
+async function observeAnnouncements(page) {
+  await page.evaluate(() => {
+    const status = document.querySelector('#rep-status');
+    window.__repAnnouncements = [];
+    new MutationObserver((records) => {
+      for (const record of records) {
+        if (record.type === 'characterData') {
+          const text = record.target.data.trim();
+          if (text) window.__repAnnouncements.push(text);
+        }
+        for (const node of record.addedNodes) {
+          const text = node.textContent?.trim();
+          if (text) window.__repAnnouncements.push(text);
+        }
+      }
+    }).observe(status, { childList: true, characterData: true, subtree: true });
+  });
 }
 
 function collectRuntimeErrors(page) {
@@ -130,16 +150,9 @@ test('phase focus and announcements follow one completed rep', async ({ page }) 
     const data = await fetch('../communication_cases.json').then((response) => response.json());
     return data.cases.find((item) => item.id === 'guardedness_privacy_001');
   });
-  await page.evaluate(() => {
-    window.__repAnnouncements = [];
-    new MutationObserver(() => {
-      const text = document.querySelector('#rep-status')?.textContent?.trim();
-      if (text) window.__repAnnouncements.push(text);
-    }).observe(document.body, { subtree: true, childList: true, characterData: true });
-  });
+  await observeAnnouncements(page);
   await page.getByRole('button', { name: 'Start 20-second response' }).click();
   await expect(page.locator('#phase-heading')).toBeFocused();
-  await expect(page.locator('#rep-status[aria-live="polite"][aria-atomic="true"]')).toHaveCount(1);
   const cue = page.getByText('Need one starter cue?', { exact: true });
   await cue.focus();
   await page.clock.fastForward(1_000);
@@ -152,7 +165,6 @@ test('phase focus and announcements follow one completed rep', async ({ page }) 
   await expect(page.locator('[data-selected-choice]')).toBeHidden();
   const selectedId = await page.locator('[data-selected-choice]').getAttribute('id');
   await expect(page.locator('[data-feedback]')).toHaveAttribute('aria-describedby', selectedId);
-  await expect(page.locator('#rep-status[aria-live="polite"][aria-atomic="true"]')).toHaveCount(1);
   const messages = await page.evaluate(() => window.__repAnnouncements || []);
   const authoredFeedback = caseData.choices.find((choiceData) => choiceData.id === 'b').feedback;
   expect(messages).toContain('Spoken response started. 20 seconds.');
@@ -164,19 +176,12 @@ test('phase focus and announcements follow one completed rep', async ({ page }) 
 test('timer announces only start five seconds and completion', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
   await openTool(page, '?case=guardedness_privacy_001');
-  await page.evaluate(() => {
-    window.__repAnnouncements = [];
-    new MutationObserver(() => {
-      const text = document.querySelector('#rep-status')?.textContent?.trim();
-      if (text) window.__repAnnouncements.push(text);
-    }).observe(document.body, { subtree: true, childList: true, characterData: true });
-  });
+  await observeAnnouncements(page);
   await page.getByRole('button', { name: 'Start 20-second response' }).click();
   await expect(page.locator('[data-countdown][role="timer"][aria-live="off"]')).toHaveText('20 seconds');
   await page.clock.fastForward(15_001);
   await page.clock.fastForward(5_001);
   await expectPhase(page, 'compare', 0);
-  await expect(page.locator('#rep-status[aria-live="polite"][aria-atomic="true"]')).toHaveCount(1);
   await expect.poll(() => page.evaluate(() => window.__repAnnouncements || [])).toEqual([
     'Spoken response started. 20 seconds.',
     '5 seconds remaining.',
@@ -232,6 +237,30 @@ test('review status remains visible', async ({ page }) => {
   await expect(page.getByText('Reviewed', { exact: true })).toBeVisible();
   await openTool(page, '?case=guardedness_privacy_001');
   await expect(page.getByText('draft · faculty review needed', { exact: true })).toBeVisible();
+});
+
+test('local history reset requires confirmation and remains unavailable when empty', async ({ page }) => {
+  await openTool(page);
+  await expect(page.locator('[data-reset-history]')).toHaveCount(0);
+
+  const stored = JSON.stringify({ guardedness_privacy_001: { choiceId: 'b', quality: 'best', at: '2026-08-01' } });
+  await page.evaluate((value) => localStorage.setItem('cw_comm_v1', value), stored);
+  await openTool(page);
+  await expect(page.locator('[data-reset-history]')).toBeVisible();
+
+  let dismissedMessage = '';
+  page.once('dialog', async (dialog) => {
+    dismissedMessage = dialog.message();
+    await dialog.dismiss();
+  });
+  await page.locator('[data-reset-history]').click();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBe(stored);
+  expect(dismissedMessage).toBe('Reset all What Do You Say Next practice history stored in this browser? This does not affect page progress, daily review, dashboard settings, or other tools.');
+
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.locator('[data-reset-history]').click();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBeNull();
+  await expect(page.locator('[data-reset-history]')).toHaveCount(0);
 });
 
 test('safety boundary remains visible', async ({ page }) => {
