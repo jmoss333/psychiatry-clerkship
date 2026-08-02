@@ -239,13 +239,76 @@ test('review status remains visible', async ({ page }) => {
   await expect(page.getByText('draft · faculty review needed', { exact: true })).toBeVisible();
 });
 
-test('local history reset requires confirmation and remains unavailable when empty', async ({ page }) => {
+test('storage contract preserves prior and unrelated data', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
+  await openTool(page);
+  await page.evaluate(() => {
+    localStorage.setItem('cw_comm_v1', JSON.stringify({
+      psychosis_validation_001: { choiceId: 'b', quality: 'best', at: '2026-07-31' },
+    }));
+    localStorage.setItem('cw_unrelated_test', JSON.stringify({ keep: true }));
+  });
+  const cwKeysBefore = await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith('cw_')).sort());
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-rep-panel]')).toBeVisible();
+  await expect(page.locator('[data-desktop-navigator] [data-case-select="psychosis_validation_001"] .case-status')).toHaveText('Practiced well');
+
+  await page.getByRole('button', { name: 'Start 20-second response' }).click();
+  await page.getByRole('button', { name: 'Finish now' }).click();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBe(JSON.stringify({
+    psychosis_validation_001: { choiceId: 'b', quality: 'best', at: '2026-07-31' },
+  }));
+
+  await page.locator('[data-desktop-navigator] [data-case-select="suicide_direct_question_001"]').click();
+  await startAndFinish(page);
+  await page.locator('[data-choice-id="b"]').click();
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('cw_comm_v1')))).toEqual({
+    psychosis_validation_001: { choiceId: 'b', quality: 'best', at: '2026-07-31' },
+    suicide_direct_question_001: { choiceId: 'b', quality: 'best', at: '2026-08-01' },
+  });
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_unrelated_test'))).toBe(JSON.stringify({ keep: true }));
+  await expect.poll(() => page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith('cw_')).sort())).toEqual(cwKeysBefore);
+});
+
+for (const [name, raw] of [
+  ['malformed JSON', '{bad json'],
+  ['null', 'null'],
+  ['array', '[]'],
+  ['primitive', '"not an attempt map"'],
+  ['malformed records', JSON.stringify({
+    psychosis_validation_001: { choiceId: 'b', quality: 'constructor', at: '2026-07-31' },
+    suicide_direct_question_001: { choiceId: '', quality: 'best', at: '2026-07-31' },
+  })],
+]) {
+  test(`corrupt history: ${name}`, async ({ page }) => {
+    const errors = collectRuntimeErrors(page);
+    await openTool(page);
+    await page.evaluate((value) => {
+      localStorage.setItem('cw_comm_v1', value);
+      localStorage.setItem('cw_unrelated_test', JSON.stringify({ keep: true }));
+    }, raw);
+    const seeded = await page.evaluate(() => localStorage.getItem('cw_comm_v1'));
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expectPhase(page, 'orient', 1);
+    await expect(page.locator('[data-desktop-navigator] [data-case-select="psychosis_validation_001"] .case-status')).toHaveText('Not practiced');
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBe(seeded);
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_unrelated_test'))).toBe(JSON.stringify({ keep: true }));
+    expect(errors).toEqual([]);
+  });
+}
+
+test('history reset removes only communication attempts', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
+  const errors = collectRuntimeErrors(page);
   await openTool(page);
   await expect(page.locator('[data-reset-history]')).toHaveCount(0);
-
-  const stored = JSON.stringify({ guardedness_privacy_001: { choiceId: 'b', quality: 'best', at: '2026-08-01' } });
-  await page.evaluate((value) => localStorage.setItem('cw_comm_v1', value), stored);
-  await openTool(page);
+  await page.evaluate(() => {
+    localStorage.setItem('cw_comm_v1', JSON.stringify({
+      guardedness_privacy_001: { choiceId: 'b', quality: 'best', at: '2026-08-01' },
+    }));
+    localStorage.setItem('cw_unrelated_test', JSON.stringify({ keep: true }));
+  });
+  await page.reload({ waitUntil: 'domcontentloaded' });
   const details = page.locator('[data-desktop-navigator] [data-practice-details]');
   await details.getByText('Practice details', { exact: true }).click();
   const reset = page.locator('[data-desktop-navigator] [data-reset-history]');
@@ -257,14 +320,103 @@ test('local history reset requires confirmation and remains unavailable when emp
     await dialog.dismiss();
   });
   await reset.click();
-  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBe(stored);
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).not.toBeNull();
   expect(dismissedMessage).toBe('Reset all What Do You Say Next practice history stored in this browser? This does not affect page progress, daily review, dashboard settings, or other tools.');
 
+  await page.getByRole('button', { name: 'Start 20-second response' }).click();
+  await observeAnnouncements(page);
+  await page.locator('[data-desktop-navigator] [data-practice-details] summary').click();
+  const resetDuringSpeaking = page.locator('[data-desktop-navigator] [data-reset-history]');
+  await expect(resetDuringSpeaking).toBeVisible();
   page.once('dialog', (dialog) => dialog.accept());
-  await reset.click();
+  await resetDuringSpeaking.click();
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#rep-status')).toHaveText('');
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBeNull();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_unrelated_test'))).toBe(JSON.stringify({ keep: true }));
+  const snapshot = await page.evaluate(() => ({
+    phase: document.querySelector('[data-rep-panel]')?.getAttribute('data-phase'),
+    countdown: document.querySelector('[data-countdown]')?.textContent || null,
+    status: document.querySelector('#rep-status')?.textContent,
+    announcements: (window.__repAnnouncements || []).slice(),
+  }));
+  await page.clock.fastForward(30_000);
+  await expect.poll(() => page.evaluate(() => ({
+    phase: document.querySelector('[data-rep-panel]')?.getAttribute('data-phase'),
+    countdown: document.querySelector('[data-countdown]')?.textContent || null,
+    status: document.querySelector('#rep-status')?.textContent,
+    announcements: (window.__repAnnouncements || []).slice(),
+  }))).toEqual(snapshot);
   await expect(page.locator('[data-reset-history]')).toHaveCount(0);
+  expect(errors).toEqual([]);
 });
+
+test('valid deep links select their requested case', async ({ page }) => {
+  await openTool(page, '?case=family_meeting_opening_001&filter=family');
+  const navigator = page.locator('[data-desktop-navigator]');
+  await expect(navigator.locator('[data-case-select="family_meeting_opening_001"]')).toHaveAttribute('aria-current', 'true');
+  await expect(navigator.locator('[data-filter="family"]')).toHaveAttribute('aria-pressed', 'true');
+
+  await openTool(page, '?filter=family');
+  await expect(navigator.locator('[data-case-select="family_meeting_opening_001"]')).toHaveAttribute('aria-current', 'true');
+  await expectPhase(page, 'orient', 1);
+
+  await openTool(page, '?case=family_meeting_opening_001&filter=safety');
+  await expect(navigator.locator('[data-case-select="family_meeting_opening_001"]')).toHaveAttribute('aria-current', 'true');
+  await expect(navigator.locator('[data-filter="family"]')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('invalid routes recover honestly', async ({ page }) => {
+  await openTool(page, '?filter=not-a-filter');
+  await expect(page.locator('[data-desktop-navigator] [data-filter="all"]')).toHaveAttribute('aria-pressed', 'true');
+
+  await openTool(page, '?case=removed_case&filter=family');
+  await expect(page.locator('[data-desktop-navigator] [data-case-select="family_meeting_opening_001"]')).toHaveAttribute('aria-current', 'true');
+  await expect(page.locator('[data-route-notice]')).toHaveText('That practice case is no longer available.');
+});
+
+test('load failure offers a working retry', async ({ page }) => {
+  let requestCount = 0;
+  await page.route('**/communication_cases.json', async (route) => {
+    requestCount += 1;
+    if (requestCount === 1) {
+      await route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
+    } else {
+      await route.continue();
+    }
+  });
+
+  await page.goto(TOOL, { waitUntil: 'domcontentloaded' });
+  const error = page.locator('[data-load-error]');
+  await expect(error).toContainText('Could not load communication cases.');
+  await expect(error.getByRole('button', { name: 'Retry' })).toBeVisible();
+  await expect(error.getByRole('link', { name: 'Return to the library' })).toHaveAttribute('href', '../index.html');
+  await error.getByRole('button', { name: 'Retry' }).click();
+  await expect(page.locator('[data-rep-panel][data-phase="orient"]')).toBeVisible();
+});
+
+for (const [name, body] of [
+  ['missing cases', '{}'],
+  ['empty cases', JSON.stringify({ cases: [] })],
+  ['non-array cases', JSON.stringify({ cases: {} })],
+]) {
+  test(`invalid case bank: ${name} offers retry`, async ({ page }) => {
+    let requestCount = 0;
+    await page.route('**/communication_cases.json', async (route) => {
+      requestCount += 1;
+      if (requestCount === 1) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body });
+      } else {
+        await route.continue();
+      }
+    });
+    await page.goto(TOOL, { waitUntil: 'domcontentloaded' });
+    const error = page.locator('[data-load-error]');
+    await expect(error).toContainText('Could not load communication cases.');
+    await error.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.locator('[data-rep-panel][data-phase="orient"]')).toBeVisible();
+  });
+}
 
 test('safety boundary remains visible', async ({ page }) => {
   await openTool(page);
