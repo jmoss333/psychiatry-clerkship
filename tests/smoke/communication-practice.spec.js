@@ -379,6 +379,20 @@ test('case and filter changes interrupt speaking', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('matching filters interrupt speaking without stale activity', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
+  const errors = collectRuntimeErrors(page);
+  await openTool(page, '?case=guardedness_privacy_001');
+  await page.getByRole('button', { name: 'Start 20-second response' }).click();
+  await page.locator('[data-desktop-navigator]').getByRole('button', { name: 'Psychosis', exact: true }).click();
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#rep-status')).toHaveText('');
+  await page.clock.fastForward(30_000);
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#rep-status')).toHaveText('');
+  expect(errors).toEqual([]);
+});
+
 test('surprise interrupts speaking without writing progress', async ({ page }) => {
   await page.addInitScript(() => { Math.random = () => 0.999; });
   await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
@@ -448,6 +462,30 @@ test('no cases recovery never leaves a stale rep', async ({ page }) => {
   await expect(page.locator('[data-rep-panel]')).toHaveCount(0);
   await navigator.getByRole('button', { name: 'Show all cases' }).click();
   await expectPhase(page, 'orient', 1);
+});
+
+test('no-match filters interrupt speaking and recover at orient', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
+  const errors = collectRuntimeErrors(page);
+  await page.route('**/communication_cases.json', async (route) => {
+    const response = await route.fetch();
+    const data = await response.json();
+    data.cases = data.cases.filter((item) => item.id === 'psychosis_validation_001');
+    await route.fulfill({ response, json: data });
+  });
+  await openTool(page);
+  const navigator = page.locator('[data-desktop-navigator]');
+  await page.getByRole('button', { name: 'Start 20-second response' }).click();
+  await navigator.getByRole('button', { name: 'Family', exact: true }).click();
+  await expect(page.locator('[data-rep-panel]')).toHaveCount(0);
+  await expect(page.locator('#rep-status')).toHaveText('');
+  await page.clock.fastForward(30_000);
+  await expect(page.locator('[data-rep-panel]')).toHaveCount(0);
+  await expect(page.locator('#rep-status')).toHaveText('');
+  await navigator.getByRole('button', { name: 'Show all cases' }).click();
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#phase-heading')).toBeFocused();
+  expect(errors).toEqual([]);
 });
 
 test('reduced motion removes transitions', async ({ page }) => {
