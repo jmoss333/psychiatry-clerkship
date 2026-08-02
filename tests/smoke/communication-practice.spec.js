@@ -371,8 +371,16 @@ test('invalid routes recover honestly', async ({ page }) => {
   await expect(page.locator('[data-desktop-navigator] [data-filter="all"]')).toHaveAttribute('aria-pressed', 'true');
 
   await openTool(page, '?case=removed_case&filter=family');
-  await expect(page.locator('[data-desktop-navigator] [data-case-select="family_meeting_opening_001"]')).toHaveAttribute('aria-current', 'true');
+  const navigator = page.locator('[data-desktop-navigator]');
+  await expect(navigator.locator('[data-case-select="family_meeting_opening_001"]')).toHaveAttribute('aria-current', 'true');
   await expect(page.locator('[data-route-notice]')).toHaveText('That practice case is no longer available.');
+  await navigator.locator('[data-case-select="collateral_questions_001"]').click();
+  await expect(page.locator('[data-route-notice]')).toHaveCount(0);
+
+  await openTool(page, '?case=removed_case&filter=family');
+  await expect(page.locator('[data-route-notice]')).toHaveText('That practice case is no longer available.');
+  await navigator.getByRole('button', { name: 'All', exact: true }).click();
+  await expect(page.locator('[data-route-notice]')).toHaveCount(0);
 });
 
 test('load failure offers a working retry', async ({ page }) => {
