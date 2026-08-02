@@ -65,6 +65,14 @@ async function startAndFinish(page) {
   await page.getByRole('button', { name: 'Finish now' }).click();
 }
 
+async function tabUntilFocused(page, locator, { reverse = false, limit = 45 } = {}) {
+  for (let step = 0; step < limit; step += 1) {
+    if (await locator.evaluate((element) => document.activeElement === element)) return;
+    await page.keyboard.press(reverse ? 'Shift+Tab' : 'Tab');
+  }
+  await expect(locator).toBeFocused();
+}
+
 test('one rep reveals choices only after speaking and feedback only after comparison', async ({ page }) => {
   const errors = collectRuntimeErrors(page);
   await openTool(page, '?case=guardedness_privacy_001');
@@ -170,6 +178,129 @@ test('phase focus and announcements follow one completed rep', async ({ page }) 
   expect(messages).toContain('Spoken response started. 20 seconds.');
   expect(messages.filter((text) => text === authoredFeedback)).toHaveLength(1);
   expect(messages.filter((text) => text.includes('Best next line')).length).toBe(0);
+  expect(errors).toEqual([]);
+});
+
+test('keyboard-only flow preserves focus and sparse announcements', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
+  const errors = collectRuntimeErrors(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openTool(page, '?case=guardedness_privacy_001');
+
+  const heading = page.locator('#phase-heading');
+  const liveRegion = page.locator('[aria-live="polite"][aria-atomic="true"]');
+  const start = page.getByRole('button', { name: 'Start 20-second response' });
+  await tabUntilFocused(page, start);
+  await page.keyboard.press('Enter');
+  await expect(heading).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
+
+  const starterCue = page.locator('[data-starter-cue] summary');
+  await tabUntilFocused(page, starterCue);
+  await page.keyboard.press('Space');
+  await expect(page.locator('[data-starter-cue]')).toHaveAttribute('open', '');
+  await page.clock.fastForward(1_000);
+  await expect(starterCue).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
+
+  const finish = page.getByRole('button', { name: 'Finish now' });
+  await tabUntilFocused(page, finish, { reverse: true });
+  await page.keyboard.press('Enter');
+  await expect(heading).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
+  await observeAnnouncements(page);
+
+  const choice = page.locator('[data-choice-id="b"]');
+  await tabUntilFocused(page, choice);
+  await page.keyboard.press('Enter');
+  await expect(heading).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
+  await expect(page.locator('[data-selected-choice]')).toBeHidden();
+  await expect(page.locator('[data-feedback]')).toHaveAttribute(
+    'aria-describedby',
+    await page.locator('[data-selected-choice]').getAttribute('id'),
+  );
+  const feedback = await page.evaluate(async () => {
+    const data = await fetch('../communication_cases.json').then((response) => response.json());
+    return data.cases.find((item) => item.id === 'guardedness_privacy_001').choices.find((item) => item.id === 'b').feedback;
+  });
+  const messages = await page.evaluate(() => window.__repAnnouncements || []);
+  expect(messages.filter((message) => message === feedback)).toHaveLength(1);
+  expect(messages).not.toContain('Best next line');
+  expect(messages.filter((message) => /^\d+ seconds? remaining\.$/.test(message))).toEqual([]);
+
+  const deeperCoaching = page.locator('[data-deeper-coaching] summary');
+  await tabUntilFocused(page, deeperCoaching);
+  await page.keyboard.press('Space');
+  await expect(page.locator('[data-deeper-coaching]')).toHaveAttribute('open', '');
+  const tryToday = page.getByRole('button', { name: 'Name choice' });
+  await tabUntilFocused(page, tryToday);
+  await page.keyboard.press('Enter');
+  await expect(page.locator('[data-deeper-coaching]')).toHaveAttribute('open', '');
+
+  const related = page.getByRole('button', { name: 'Try the next related case' });
+  await tabUntilFocused(page, related);
+  await page.keyboard.press('Enter');
+  await expect(heading).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
+
+  await tabUntilFocused(page, start);
+  await page.keyboard.press('Enter');
+  await expect(heading).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
+  await expect(page.locator('[data-starter-cue]')).not.toHaveAttribute('open', '');
+  await tabUntilFocused(page, finish);
+  await page.keyboard.press('Enter');
+  await expect(heading).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
+  await tabUntilFocused(page, choice);
+  await page.keyboard.press('Enter');
+  await expect(heading).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
+  await expect(page.locator('[data-deeper-coaching]')).not.toHaveAttribute('open', '');
+  await tabUntilFocused(page, deeperCoaching);
+  await page.keyboard.press('Space');
+  await expect(page.locator('[data-deeper-coaching]')).toHaveAttribute('open', '');
+  await page.keyboard.press('Space');
+  await expect(page.locator('[data-deeper-coaching]')).not.toHaveAttribute('open', '');
+
+  const desktopCase = page.locator('[data-desktop-navigator] [data-case-select="family_meeting_opening_001"]');
+  await tabUntilFocused(page, desktopCase);
+  await page.keyboard.press('Enter');
+  await expect(heading).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const browse = page.getByRole('button', { name: 'Browse cases' });
+  await tabUntilFocused(page, browse);
+  await page.keyboard.press('Enter');
+  const picker = page.getByRole('dialog', { name: 'Browse communication cases' });
+  await expect(picker).toBeVisible();
+  await expect(liveRegion).toHaveCount(1);
+  await expect(picker.getByRole('button', { name: 'All', exact: true })).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(picker).toBeHidden();
+  await expect(browse).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
+
+  await page.keyboard.press('Enter');
+  await expect(picker).toBeVisible();
+  const closePicker = picker.getByRole('button', { name: 'Close case browser' });
+  await tabUntilFocused(page, closePicker, { reverse: true });
+  await page.keyboard.press('Enter');
+  await expect(picker).toBeHidden();
+  await expect(browse).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
+
+  await page.keyboard.press('Enter');
+  await expect(picker).toBeVisible();
+  const mobileCase = picker.locator('[data-case-select="collateral_questions_001"]');
+  await tabUntilFocused(page, mobileCase);
+  await page.keyboard.press('Enter');
+  await expect(picker).toBeHidden();
+  await expect(heading).toBeFocused();
+  await expect(liveRegion).toHaveCount(1);
   expect(errors).toEqual([]);
 });
 
