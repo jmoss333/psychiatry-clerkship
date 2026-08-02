@@ -246,19 +246,22 @@ test('local history reset requires confirmation and remains unavailable when emp
   const stored = JSON.stringify({ guardedness_privacy_001: { choiceId: 'b', quality: 'best', at: '2026-08-01' } });
   await page.evaluate((value) => localStorage.setItem('cw_comm_v1', value), stored);
   await openTool(page);
-  await expect(page.locator('[data-reset-history]')).toBeVisible();
+  const details = page.locator('[data-desktop-navigator] [data-practice-details]');
+  await details.getByText('Practice details', { exact: true }).click();
+  const reset = page.locator('[data-desktop-navigator] [data-reset-history]');
+  await expect(reset).toBeVisible();
 
   let dismissedMessage = '';
   page.once('dialog', async (dialog) => {
     dismissedMessage = dialog.message();
     await dialog.dismiss();
   });
-  await page.locator('[data-reset-history]').click();
+  await reset.click();
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBe(stored);
   expect(dismissedMessage).toBe('Reset all What Do You Say Next practice history stored in this browser? This does not affect page progress, daily review, dashboard settings, or other tools.');
 
   page.once('dialog', (dialog) => dialog.accept());
-  await page.locator('[data-reset-history]').click();
+  await reset.click();
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBeNull();
   await expect(page.locator('[data-reset-history]')).toHaveCount(0);
 });
@@ -266,4 +269,191 @@ test('local history reset requires confirmation and remains unavailable when emp
 test('safety boundary remains visible', async ({ page }) => {
   await openTool(page);
   await expect(page.getByText(SAFETY, { exact: true })).toBeVisible();
+});
+
+test('desktop navigator keeps browsing useful but secondary', async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openTool(page, '?case=guardedness_privacy_001');
+
+  const navigator = page.locator('[data-desktop-navigator]');
+  await expect(navigator).toBeVisible();
+  await expect(page.locator('[data-mobile-summary]')).toBeHidden();
+  await expect(navigator).toContainText('0 of 10 practiced');
+  await expect(navigator.locator('[data-case-select]')).toHaveCount(10);
+  await expect(navigator.locator('.case-status')).toHaveText(Array(10).fill('Not practiced'));
+  await expect(navigator.locator('[data-case-select="guardedness_privacy_001"]')).toHaveAttribute('aria-current', 'true');
+
+  await navigator.getByRole('button', { name: 'Family', exact: true }).click();
+  await expect(navigator.locator('[data-case-select]')).toHaveCount(3);
+  await expect(navigator.locator('[data-case-select="family_meeting_opening_001"]')).toHaveAttribute('aria-current', 'true');
+  await expectPhase(page, 'orient', 1);
+
+  const beforeSurprise = await navigator.locator('[aria-current="true"]').getAttribute('data-case-select');
+  const storedBefore = await page.evaluate(() => localStorage.getItem('cw_comm_v1'));
+  await navigator.getByRole('button', { name: 'Surprise me' }).click();
+  await expectPhase(page, 'orient', 1);
+  await expect(navigator.locator('[aria-current="true"]')).not.toHaveAttribute('data-case-select', beforeSurprise);
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBe(storedBefore);
+
+  const details = navigator.locator('[data-practice-details]');
+  await expect(details).not.toHaveAttribute('open', '');
+  await details.getByText('Practice details', { exact: true }).click();
+  await expect(details).toContainText('Family');
+  await expect(details).toContainText('Local practice history');
+  await expect(details.getByRole('button', { name: 'Reset local history' })).toHaveCount(0);
+
+  const strip = navigator.locator('[data-filter-strip]');
+  await expect(strip).toHaveCSS('flex-wrap', 'nowrap');
+  await expect(strip).toHaveCSS('overflow-x', /auto|scroll/);
+  expect(await strip.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('desktop navigator maps stored practice quality to one status per case', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('cw_comm_v1', JSON.stringify({
+      suicide_direct_question_001: { choiceId: 'a', quality: 'best', at: '2026-08-02' },
+      psychosis_validation_001: { choiceId: 'a', quality: 'partial', at: '2026-08-02' },
+      guardedness_privacy_001: { choiceId: 'a', quality: 'missed', at: '2026-08-02' },
+      rupture_limit_setting_001: { choiceId: 'a', quality: 'harmful', at: '2026-08-02' },
+    }));
+  });
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openTool(page);
+  const navigator = page.locator('[data-desktop-navigator]');
+  for (const [id, status] of [
+    ['suicide_direct_question_001', 'Practiced well'],
+    ['psychosis_validation_001', 'Practiced'],
+    ['guardedness_privacy_001', 'Review'],
+    ['rupture_limit_setting_001', 'Retry'],
+    ['bpd_rupture_repair_001', 'Not practiced'],
+  ]) {
+    await expect(navigator.locator(`[data-case-select="${id}"] .case-status`)).toHaveText(status);
+  }
+  await expect(navigator.locator('[data-practice-details] summary')).toHaveText('Practice details');
+  await navigator.locator('[data-practice-details] summary').click();
+  await expect(navigator.getByRole('button', { name: 'Reset local history' })).toBeVisible();
+});
+
+test('related case progression returns to orient', async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  await openTool(page, '?case=guardedness_privacy_001');
+  const originalId = await page.locator('[data-desktop-navigator] [aria-current="true"]').getAttribute('data-case-select');
+  await startAndFinish(page);
+  await page.locator('[data-choice-id="b"]').click();
+  await page.getByRole('button', { name: 'Try the next related case' }).click();
+  await expectPhase(page, 'orient', 1);
+  const selectedId = await page.locator('[data-desktop-navigator] [aria-current="true"]').getAttribute('data-case-select');
+  expect(selectedId).not.toBe(originalId);
+  expect(await page.evaluate(async ({ originalId: from, selectedId: to }) => {
+    const data = await fetch('../communication_cases.json').then((response) => response.json());
+    const original = data.cases.find((item) => item.id === from);
+    const selected = data.cases.find((item) => item.id === to);
+    return selected.skillTags.some((tag) => original.skillTags.includes(tag)) ||
+      selected.linkedPages.some((linkedPage) => original.linkedPages.includes(linkedPage));
+  }, { originalId, selectedId })).toBe(true);
+  await expect(page.locator('[data-desktop-navigator] [data-case-select="guardedness_privacy_001"] .case-status')).toHaveText('Practiced well');
+  expect(errors).toEqual([]);
+});
+
+test('case and filter changes interrupt speaking', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
+  const errors = collectRuntimeErrors(page);
+  await openTool(page, '?case=guardedness_privacy_001');
+  await page.getByRole('button', { name: 'Start 20-second response' }).click();
+  await page.locator('[data-desktop-navigator] [data-case-select="psychosis_validation_001"]').click();
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#rep-status')).toHaveText('');
+  await page.clock.fastForward(30_000);
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#rep-status')).toHaveText('');
+
+  await page.getByRole('button', { name: 'Start 20-second response' }).click();
+  await page.locator('[data-desktop-navigator]').getByRole('button', { name: 'Family', exact: true }).click();
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#rep-status')).toHaveText('');
+  await page.clock.fastForward(30_000);
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#rep-status')).toHaveText('');
+  expect(errors).toEqual([]);
+});
+
+test('surprise interrupts speaking without writing progress', async ({ page }) => {
+  await page.addInitScript(() => { Math.random = () => 0.999; });
+  await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
+  const errors = collectRuntimeErrors(page);
+  await openTool(page, '?case=guardedness_privacy_001');
+  const storedBefore = await page.evaluate(() => localStorage.getItem('cw_comm_v1'));
+  await page.getByRole('button', { name: 'Start 20-second response' }).click();
+  await page.locator('[data-desktop-navigator]').getByRole('button', { name: 'Surprise me' }).click();
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#phase-heading')).not.toHaveText('Patient says they do not want to answer questions');
+  await expect(page.locator('#rep-status')).toHaveText('');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBe(storedBefore);
+  await page.clock.fastForward(30_000);
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#rep-status')).toHaveText('');
+  expect(errors).toEqual([]);
+});
+
+test('mobile case browser is modal and returns focus', async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openTool(page);
+  await expect(page.locator('[data-desktop-navigator]')).toBeHidden();
+  await expect(page.locator('[data-mobile-summary]')).toBeVisible();
+
+  const browse = page.getByRole('button', { name: 'Browse cases' });
+  await browse.click();
+  const picker = page.getByRole('dialog', { name: 'Browse communication cases' });
+  await expect(picker).toBeVisible();
+  await expect(picker.getByRole('button', { name: /All/ })).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(picker).toBeHidden();
+  await expect(browse).toBeFocused();
+
+  await browse.click();
+  await picker.locator('[data-case-select="family_meeting_opening_001"]').click();
+  await expect(picker).toBeHidden();
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#phase-heading')).toBeFocused();
+
+  await browse.click();
+  await picker.getByRole('button', { name: 'Close case browser' }).click();
+  await expect(picker).toBeHidden();
+  await expect(browse).toBeFocused();
+
+  await browse.click();
+  await picker.getByRole('button', { name: 'Family', exact: true }).click();
+  await expect(picker).toBeVisible();
+  await expect(picker.locator('[data-case-select]')).toHaveCount(3);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('no cases recovery never leaves a stale rep', async ({ page }) => {
+  await page.route('**/communication_cases.json', async (route) => {
+    const response = await route.fetch();
+    const data = await response.json();
+    data.cases = data.cases.filter((item) => item.id === 'psychosis_validation_001');
+    await route.fulfill({ response, json: data });
+  });
+  await openTool(page);
+  const navigator = page.locator('[data-desktop-navigator]');
+  await navigator.getByRole('button', { name: 'Family', exact: true }).click();
+  await expect(navigator.getByText('No cases match this filter', { exact: true })).toBeVisible();
+  await expect(navigator.getByRole('button', { name: 'Show all cases' })).toBeVisible();
+  await expect(page.locator('[data-rep-panel]')).toHaveCount(0);
+  await navigator.getByRole('button', { name: 'Show all cases' }).click();
+  await expectPhase(page, 'orient', 1);
+});
+
+test('reduced motion removes transitions', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openTool(page);
+  expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+  await expect(page.locator('[data-rep-panel]')).toHaveCSS('animation-name', 'none');
+  await expect(page.locator('[data-rep-panel]')).toHaveCSS('transition-duration', '0s');
 });
