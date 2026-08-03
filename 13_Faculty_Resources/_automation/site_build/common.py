@@ -386,6 +386,32 @@ def copy_required_sources(pairs, lib_root, dest_dir, label=""):
     return len(pairs)
 
 
+def apply_verified_replacements(text, substitutions, label=""):
+    """Apply (needle, replacement) pairs in order; abort if ANY needle is absent.
+
+    The resident rebrand previously used bare str.replace() chains, so a reword
+    of the MS3 shell copy silently shipped MS3 branding and the MS3 audience
+    disclaimer on the resident site. Every needle is checked at its application
+    point (order matters: earlier replacements may legitimately consume later
+    needles' context) and all failures are reported together.
+    """
+    stale = []
+    for needle, replacement in substitutions:
+        if needle in text:
+            text = text.replace(needle, replacement)
+        else:
+            stale.append(needle)
+    if stale:
+        print(
+            "BUILD ABORTED — %d rebrand needle(s) failed to match%s:"
+            % (len(stale), " (" + label + ")" if label else "")
+        )
+        for needle in stale:
+            print("   - %r" % (needle[:100],))
+        raise SystemExit(1)
+    return text
+
+
 def apply_page_chrome(path, is_index=False):
     """Skip-link, root anchor, favicon. Idempotent."""
     t = open(path, encoding="utf-8").read()

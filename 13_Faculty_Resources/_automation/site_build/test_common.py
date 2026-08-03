@@ -312,5 +312,26 @@ class TestCopyRequiredSources(unittest.TestCase):
             shutil.rmtree(dest)
 
 
+class TestApplyVerifiedReplacements(unittest.TestCase):
+    def test_applies_substitutions_in_order(self):
+        out = common.apply_verified_replacements(
+            "MS3 Clerkship hub",
+            [("MS3 Clerkship", "Resident Rotation"), ("hub", "library")],
+        )
+        self.assertEqual(out, "Resident Rotation library")
+
+    def test_stale_needle_aborts(self):
+        """A reworded spa_index header must FAIL the resident build, not
+        silently revert resident branding to MS3 text (audit finding: six
+        unverified ix.replace() calls)."""
+        with self.assertRaises(SystemExit) as ctx:
+            common.apply_verified_replacements(
+                "the header was reworded",
+                [("old header copy", "resident copy")],
+                label="resident index rebrand",
+            )
+        self.assertEqual(ctx.exception.code, 1)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
