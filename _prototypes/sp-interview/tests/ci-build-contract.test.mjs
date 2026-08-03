@@ -1001,6 +1001,46 @@ test('run-all.sh keeps the review-filter suite wired', () => {
   );
 });
 
+// 2026-08 audit WS5: the publish gate must run the dependency-free node suites
+// so a deploy performed during a GitHub Actions outage still runs contract tests
+// (July 2026 billing-outage precedent). Heavier npm-dependent suites stay CI-only.
+test('publish gate runs the dependency-free node suites before building', () => {
+  const buildGate = fs.readFileSync(BUILD_GATE, 'utf8');
+  assert.match(
+    buildGate,
+    /node --test "\$LIB"\/tests\/\*\.test\.mjs/,
+    'build_and_check.sh must run the root node contract suite',
+  );
+  assert.match(
+    buildGate,
+    /node "\$LIB\/tests\/contrast-check\.mjs"/,
+    'build_and_check.sh must run the WCAG contrast token check',
+  );
+  assert.ok(
+    buildGate.indexOf('node --test') < buildGate.indexOf('case "$SITE" in'),
+    'node suites must run before both build targets',
+  );
+});
+
+// 2026-08 audit WS5: run-all.sh is a hand-enumerated roster; this closes the
+// other half of F26 — a suite file that exists but is not wired (or a deleted
+// roster line) must fail CI for every suite, not just review-filter.
+test('run-all.sh enumerates every SP Interview test suite', () => {
+  const testsDir = path.join(ROOT, '_prototypes/sp-interview/tests');
+  const runAll = fs.readFileSync(path.join(testsDir, 'run-all.sh'), 'utf8');
+  const suites = fs
+    .readdirSync(testsDir)
+    .filter((name) => /\.test\.(mjs|js)$/.test(name))
+    .sort();
+  assert.ok(suites.length >= 15, 'suite census lost known suites — check testsDir');
+  for (const suite of suites) {
+    assert.ok(
+      runAll.includes(`node ${suite}`) || runAll.includes(`node --test ${suite}`),
+      `${suite} exists but run-all.sh never invokes it — add a roster line`,
+    );
+  }
+});
+
 // F25 — a gate that runs but can never fail the build is worse than no gate. The
 // order test above does not catch a step neutered with `|| true` / continue-on-error.
 function assertCiGatesFailClosed(ci) {
