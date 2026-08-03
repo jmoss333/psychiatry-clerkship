@@ -115,7 +115,7 @@ def ensure_fingerprint(f):
 
 # ---------------------------------------------------------------- GitHub rendering
 FP_MARKER = "<!-- surveillance:fp={fp} -->"
-FP_RE = re.compile(r"surveillance:fp=([A-Za-z0-9:_\-]+)")
+FP_RE = re.compile(r"surveillance:fp=([A-Za-z0-9:._\-]+)")
 
 def issue_title(f):
     return f"[{f['severity']}][{f['source_id']}] {f['summary']}"[:250]
