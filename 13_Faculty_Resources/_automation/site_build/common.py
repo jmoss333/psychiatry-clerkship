@@ -26,9 +26,11 @@ statically-inspectable literal in that file.
 """
 
 import glob
+import hashlib
 import json
 import os
 import re
+import shutil
 
 # ---------------------------------------------------------------------------
 # Tokenizer (was duplicated: build_deploy.py + resident_section.py)
@@ -143,7 +145,18 @@ def build_synonyms(groups=None):
             toks.update(tok(term))
         for t in toks:
             syn.setdefault(t, set()).update(toks - {t})
-    return {k: sorted(v) for k, v in syn.items()}
+    return {k: sorted(syn[k]) for k in sorted(syn)}
+
+
+def quiz_cache_bust(quizzes_path):
+    """Content-hash cache-bust for quizzes.json.
+
+    Replaces the int(time.time()) value that made every deploy byte-differ in
+    review.html/shelf-mode.html and busted learner caches even when quizzes.json
+    was unchanged. Same content -> same URL -> reproducible builds + honest caching.
+    """
+    with open(quizzes_path, "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()[:12]
 
 
 # ---------------------------------------------------------------------------
@@ -360,6 +373,55 @@ def apply_contrast_fix(paths):
             open(f, "w", encoding="utf-8").write(t2)
             n += 1
     return n
+
+
+def copy_required_sources(pairs, lib_root, dest_dir, label=""):
+    """Copy (source_rel, dest_name) pairs into dest_dir, aborting on ANY missing source.
+
+    The resident derived-twin build starts as a copytree of the finished MS3
+    build, so a bare `if os.path.exists(...)` skip means a renamed resident-only
+    source silently ships the inherited MS3 file under the resident nav title
+    with every gate green (2026-08-01 audit, reproduced). Collect every missing
+    source and abort, mirroring build_deploy.py's _abort_missing convention.
+    """
+    missing = [src for src, _ in pairs if not os.path.exists(os.path.join(lib_root, src))]
+    if missing:
+        print(
+            "BUILD ABORTED — %d required source file(s) missing%s:"
+            % (len(missing), " (" + label + ")" if label else "")
+        )
+        for src in missing:
+            print("   -", src)
+        raise SystemExit(1)
+    for src, dst in pairs:
+        shutil.copyfile(os.path.join(lib_root, src), os.path.join(dest_dir, dst))
+    return len(pairs)
+
+
+def apply_verified_replacements(text, substitutions, label=""):
+    """Apply (needle, replacement) pairs in order; abort if ANY needle is absent.
+
+    The resident rebrand previously used bare str.replace() chains, so a reword
+    of the MS3 shell copy silently shipped MS3 branding and the MS3 audience
+    disclaimer on the resident site. Every needle is checked at its application
+    point (order matters: earlier replacements may legitimately consume later
+    needles' context) and all failures are reported together.
+    """
+    stale = []
+    for needle, replacement in substitutions:
+        if needle in text:
+            text = text.replace(needle, replacement)
+        else:
+            stale.append(needle)
+    if stale:
+        print(
+            "BUILD ABORTED — %d rebrand needle(s) failed to match%s:"
+            % (len(stale), " (" + label + ")" if label else "")
+        )
+        for needle in stale:
+            print("   - %r" % (needle[:100],))
+        raise SystemExit(1)
+    return text
 
 
 def apply_page_chrome(path, is_index=False):
