@@ -376,6 +376,18 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
             "(STATUS.md / history/) — that files phantom findings",
         )
 
+    def test_lychee_excludes_superpowers_planning_docs(self):
+        # docs/superpowers/{plans,specs}/ are dated internal design docs (see repo
+        # CLAUDE.md), not learner-facing curriculum. They routinely quote example
+        # localhost URLs (dev-server walkthroughs) that 404 in CI and file phantom
+        # findings-about-findings, e.g. #288 (localhost:8080 in a WS2 review plan).
+        config = tomllib.loads((SURV / "lychee.toml").read_text(encoding="utf-8"))
+        self.assertIn(
+            "docs/superpowers",
+            config.get("exclude_path", []),
+            "link monitor must not crawl dated plan/spec docs under docs/superpowers/",
+        )
+
     def test_issue_snapshot_normalization_excludes_pull_requests(self):
         raw = [
             {

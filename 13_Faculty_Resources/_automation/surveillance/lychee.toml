@@ -13,6 +13,10 @@ exclude_path = [
   # Never crawl the monitor's own committed reports (STATUS.md, history/) —
   # broken URLs quoted there are findings-about-findings, not curriculum defects.
   "13_Faculty_Resources/_automation/surveillance",
+  # Dated internal design docs (plans/specs), not learner-facing curriculum. They
+  # quote example localhost URLs/commands (dev-server walkthroughs) that 404 in
+  # CI and file phantom findings, e.g. #288 (localhost:8080 in a review plan).
+  "docs/superpowers",
 ]
 exclude = [
   "doi\\.org",
