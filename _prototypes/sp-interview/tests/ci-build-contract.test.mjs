@@ -1022,6 +1022,25 @@ test('publish gate runs the dependency-free node suites before building', () => 
   );
 });
 
+// 2026-08 audit WS5: run-all.sh is a hand-enumerated roster; this closes the
+// other half of F26 — a suite file that exists but is not wired (or a deleted
+// roster line) must fail CI for every suite, not just review-filter.
+test('run-all.sh enumerates every SP Interview test suite', () => {
+  const testsDir = path.join(ROOT, '_prototypes/sp-interview/tests');
+  const runAll = fs.readFileSync(path.join(testsDir, 'run-all.sh'), 'utf8');
+  const suites = fs
+    .readdirSync(testsDir)
+    .filter((name) => /\.test\.(mjs|js)$/.test(name))
+    .sort();
+  assert.ok(suites.length >= 15, 'suite census lost known suites — check testsDir');
+  for (const suite of suites) {
+    assert.ok(
+      runAll.includes(`node ${suite}`) || runAll.includes(`node --test ${suite}`),
+      `${suite} exists but run-all.sh never invokes it — add a roster line`,
+    );
+  }
+});
+
 // F25 — a gate that runs but can never fail the build is worse than no gate. The
 // order test above does not catch a step neutered with `|| true` / continue-on-error.
 function assertCiGatesFailClosed(ci) {
