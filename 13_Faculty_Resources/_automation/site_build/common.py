@@ -29,6 +29,7 @@ import glob
 import json
 import os
 import re
+import shutil
 
 # ---------------------------------------------------------------------------
 # Tokenizer (was duplicated: build_deploy.py + resident_section.py)
@@ -360,6 +361,29 @@ def apply_contrast_fix(paths):
             open(f, "w", encoding="utf-8").write(t2)
             n += 1
     return n
+
+
+def copy_required_sources(pairs, lib_root, dest_dir, label=""):
+    """Copy (source_rel, dest_name) pairs into dest_dir, aborting on ANY missing source.
+
+    The resident derived-twin build starts as a copytree of the finished MS3
+    build, so a bare `if os.path.exists(...)` skip means a renamed resident-only
+    source silently ships the inherited MS3 file under the resident nav title
+    with every gate green (2026-08-01 audit, reproduced). Collect every missing
+    source and abort, mirroring build_deploy.py's _abort_missing convention.
+    """
+    missing = [src for src, _ in pairs if not os.path.exists(os.path.join(lib_root, src))]
+    if missing:
+        print(
+            "BUILD ABORTED — %d required source file(s) missing%s:"
+            % (len(missing), " (" + label + ")" if label else "")
+        )
+        for src in missing:
+            print("   -", src)
+        raise SystemExit(1)
+    for src, dst in pairs:
+        shutil.copyfile(os.path.join(lib_root, src), os.path.join(dest_dir, dst))
+    return len(pairs)
 
 
 def apply_page_chrome(path, is_index=False):

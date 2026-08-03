@@ -277,5 +277,40 @@ class TestSearchIndex(_SiteFixture):
         self.assertTrue(os.path.exists(os.path.join(self.dir, "search-index.json")))
 
 
+class TestCopyRequiredSources(unittest.TestCase):
+    def test_copies_all_pairs(self):
+        lib = tempfile.mkdtemp()
+        dest = tempfile.mkdtemp()
+        try:
+            os.makedirs(os.path.join(lib, "14_Tracks"))
+            with open(os.path.join(lib, "14_Tracks", "a.md"), "w", encoding="utf-8") as fh:
+                fh.write("# resident welcome")
+            n = common.copy_required_sources([("14_Tracks/a.md", "welcome.md")], lib, dest)
+            self.assertEqual(n, 1)
+            with open(os.path.join(dest, "welcome.md"), encoding="utf-8") as fh:
+                self.assertEqual(fh.read(), "# resident welcome")
+        finally:
+            shutil.rmtree(lib)
+            shutil.rmtree(dest)
+
+    def test_missing_source_aborts_with_exit_1(self):
+        """Audit repro 2026-08-01: renaming resident_welcome.md produced a GREEN
+        resident build that shipped MS3 welcome content under the resident nav
+        title. A missing required source must abort the build."""
+        lib = tempfile.mkdtemp()
+        dest = tempfile.mkdtemp()
+        try:
+            with self.assertRaises(SystemExit) as ctx:
+                common.copy_required_sources(
+                    [("14_Tracks/RENAMED.md", "welcome.md"),
+                     ("14_Tracks/also_gone.md", "rotation.md")],
+                    lib, dest, label="resident content",
+                )
+            self.assertEqual(ctx.exception.code, 1)
+        finally:
+            shutil.rmtree(lib)
+            shutil.rmtree(dest)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
