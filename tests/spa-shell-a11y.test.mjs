@@ -36,3 +36,42 @@ test('Path/Library segmented toggle exposes aria-pressed state', () => {
   assert.match(shell, /mPath\.setAttribute\('aria-pressed','true'\)/);
   assert.match(shell, /mLib\.setAttribute\('aria-pressed','true'\)/);
 });
+
+// Review finding (WS4 batch 4): the desktop #routeStatus live region must stay hidden on
+// mobile (so #mobileTitle isn't announced twice), but that override lived unpinned inside
+// the shell's mobile media query. Extract the built shell's mobile block the same way the
+// rest of this suite extracts markup/JS (indexOf-bounded slice on the shipped shell text,
+// since spa_index.html is copied byte-for-byte into the build output) and assert the rule
+// is present inside it, not just anywhere in the file.
+test('the built shell mobile media query hides the desktop route live region', () => {
+  const mobileBlockStart = shell.indexOf('.mobile-chrome{position:sticky');
+  assert.ok(mobileBlockStart > -1, 'mobile chrome rule must exist to anchor the media query block');
+  const mobileBlockEnd = shell.indexOf('Tool launcher badges', mobileBlockStart);
+  assert.ok(mobileBlockEnd > mobileBlockStart, 'must find the end of the mobile @media block');
+  const mobileBlock = shell.slice(mobileBlockStart, mobileBlockEnd);
+  assert.match(mobileBlock, /#routeStatus\{display:none\}/);
+});
+
+// Review finding (WS4 batch 4, mobile sheet focus war): closeSheet() unconditionally focused
+// sheetInvoker (the persistent "More" FAB) whenever it was still connected, even after a tool
+// pick had already synchronously moved focus to #content via announceRoute(). Standard
+// dialog-close pattern: only restore focus to the invoker if the dialog still owns focus.
+// No DOM harness exists in this suite (no jsdom/vm — every other test here pins structure via
+// string/regex extraction), so this pins the guard structurally rather than executing the DOM.
+test('closeSheet only restores focus to the invoker when the sheet still owns focus', () => {
+  const closeSheetStart = shell.indexOf('function closeSheet(');
+  assert.ok(closeSheetStart > -1, 'closeSheet must exist');
+  const closeSheetEnd = shell.indexOf('function clearBar(', closeSheetStart);
+  assert.ok(closeSheetEnd > closeSheetStart, 'must find the end of closeSheet');
+  const closeSheetBody = shell.slice(closeSheetStart, closeSheetEnd);
+  assert.match(
+    closeSheetBody,
+    /sh\s*&&\s*sh\.contains\(document\.activeElement\)/,
+    'must check whether the sheet element still contains the active element before restoring focus',
+  );
+  assert.doesNotMatch(
+    closeSheetBody,
+    /sheetInvoker&&sheetInvoker\.isConnected\)\{sheetInvoker\.setAttribute\('aria-expanded','false'\);sheetInvoker\.focus\(\);\}/,
+    'must not unconditionally focus the invoker whenever it is connected',
+  );
+});

@@ -1073,9 +1073,10 @@
   var sheetInvoker=null;
   function closeSheet(){
     var sh=document.querySelector('.tl-sheet'), bd=document.querySelector('.tl-sheet-backdrop');
+    var focusWasInSheet=!!(sh&&sh.contains(document.activeElement));
     if(sh&&sh.parentNode)sh.parentNode.removeChild(sh);
     if(bd&&bd.parentNode)bd.parentNode.removeChild(bd);
-    if(sheetInvoker&&sheetInvoker.isConnected){sheetInvoker.setAttribute('aria-expanded','false');sheetInvoker.focus();}
+    if(sheetInvoker&&sheetInvoker.isConnected){sheetInvoker.setAttribute('aria-expanded','false'); if(focusWasInSheet)sheetInvoker.focus();}
     sheetInvoker=null;
   }
   function clearBar(){ if(barEl&&barEl.parentNode)barEl.parentNode.removeChild(barEl); barEl=null; mobileToolBarCompact=null; document.body.classList.remove('has-tlbar'); closeSheet(); }
