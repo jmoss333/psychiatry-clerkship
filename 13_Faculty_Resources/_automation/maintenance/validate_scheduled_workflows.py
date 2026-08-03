@@ -146,6 +146,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Validate — ReConnect snapshot provenance"),
             ("name", "Unit — tool governance"),
             ("name", "Validate — tool governance"),
+            ("name", "Install — faculty export tool dependencies"),
+            ("name", "Unit — faculty export tools (adobe packet, faculty polish, pdf library)"),
             ("uses", "actions/setup-node"),
             ("name", "Unit — root node regression tests (tests/*.test.mjs)"),
             ("name", "Validate — WCAG AA contrast tokens"),
@@ -293,7 +295,7 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "ci.yml": "141d5719392ed720735616e7b9b1df5fd4ec8e9b2c122c5b1dd08e5670f42645",
+    "ci.yml": "4bf61f2382a695bbf2925f3ce8816a2a04576f70b21bd372e815eccaeba1703b",
     "maintenance-governance-digest.yml": (
         "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
     ),
