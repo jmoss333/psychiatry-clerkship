@@ -1,5 +1,5 @@
 # 01 · Six-Week Curriculum
-The reuse-first weekly arc (full detail in `_AUDIT_AND_ROADMAP.md §6`). Each week folder collects that week's readings, skill, case, and reflection.
+The reuse-first weekly arc (full detail in `docs/superpowers/plans/_AUDIT_AND_ROADMAP.md §6`). Each week folder collects that week's readings, skill, case, and reflection.
 Mapped onto the Landmark reading pathway.
 
 | Week | Theme | Suggested reading anchors | Signature skill |

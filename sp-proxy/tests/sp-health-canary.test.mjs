@@ -530,9 +530,15 @@ test('scheduled canary keeps the deadline active through a never-settling respon
         signal.addEventListener('abort', () => {
           controller.error(new DOMException('PRIVATE_SLOW_BODY', 'AbortError'));
         });
-        setTimeout(() => {
+        // Hang backstop, deliberately not wall-clock: the deadline's abort is
+        // queued on setImmediate (in setTimeoutImpl, before this stream exists),
+        // so FIFO ordering guarantees the abort runs first when the deadline is
+        // kept active — under any CPU load. A real 20ms timer here loses that
+        // race whenever the process is descheduled >20ms (timers phase runs
+        // before the check phase), flipping the receipt to invalid_json.
+        setImmediate(() => {
           if (!signal.aborted) controller.error(new Error('PRIVATE_LATE_BODY'));
-        }, 20);
+        });
       },
     }), {
       status: 200,
