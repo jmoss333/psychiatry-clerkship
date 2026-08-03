@@ -793,6 +793,66 @@ test('a settled operation logs one metadata-only spend event for abuse attributi
   });
 });
 
+test('a logger that throws during settle never discards an already-succeeded converse reply', async () => {
+  const calls = { logger: 0 };
+  const handler = createSpHandler({
+    http: createTestHttp(),
+    packLoader: { async load() { return snapshot(); } },
+    governance,
+    budget: createBudgetSpy().ledger,
+    anthropic: createAnthropicSpy().anthropic,
+    ticketCodec: null,
+    logger() {
+      calls.logger += 1;
+      throw new Error('budget_settled logger sentinel');
+    },
+    config: {
+      rotationId: 'rotation-2026-07-a',
+      actorModel: MODEL,
+      evaluatorModel: MODEL,
+      maxActorOutputTokens: 300,
+      maxEvaluatorOutputTokens: 1_500,
+      voiceRuntime: {
+        stackId: 'openai-quality-v1',
+        transcriptionProvider: 'openai',
+        transcriptionModel: 'whisper-1',
+        synthesisProvider: 'openai',
+        synthesisModel: 'tts-1-hd',
+        zeroRetentionEntitled: false,
+      },
+      now: () => NOW_MS,
+    },
+  });
+
+  const response = await handler(learnerRequest({ body: converseBody() }));
+  assert.equal(response.status, 200);
+  const responseBody = await json(response);
+  assert.equal(responseBody.reply, 'I have just been feeling worn down.');
+  assert.equal(responseBody.ticket, null);
+  assert.deepEqual(Object.keys(responseBody.state), ['intents', 'flags', 'rapport', 'unlocked']);
+  assert.equal(calls.logger, 1);
+});
+
+test('an evaluation settle logs the metadata-only spend event with operation "evaluation"', async () => {
+  const harness = makeHarness({
+    anthropicSpy: createAnthropicSpy({ text: JSON.stringify(feedback()) }),
+  });
+  const response = await harness.handler(learnerRequest({ body: evaluateBody() }));
+  assert.equal(response.status, 200);
+  const spend = harness.logs.filter((event) => event.event === 'budget_settled');
+  assert.equal(spend.length, 1);
+  assert.deepEqual(spend[0], {
+    event: 'budget_settled',
+    rotationId: 'rotation-2026-07-a',
+    encounterId: ENCOUNTER_ID,
+    caseId: 'sp_depression_gated_si_001',
+    operation: 'evaluation',
+    turnId: 1,
+    inputTokens: 120,
+    outputTokens: 24,
+  });
+});
+
 test('evaluation validates and returns the exact feedback object directly', async () => {
   const expected = feedback();
   const harness = makeHarness({

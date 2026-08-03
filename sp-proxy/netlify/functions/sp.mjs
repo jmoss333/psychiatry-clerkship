@@ -1198,16 +1198,20 @@ async function executeBudgeted({
   }
   // Metadata-only spend attribution: identifies WHICH client is burning the
   // shared rotation budget without ever logging message content.
-  logger?.({
-    event: 'budget_settled',
-    rotationId: runtime.rotationId,
-    encounterId: input.encounterId,
-    caseId: input.caseId,
-    operation: outbound.kind,
-    turnId: outbound.turnId,
-    inputTokens: providerResult.usage.inputTokens,
-    outputTokens: providerResult.usage.outputTokens,
-  });
+  try {
+    logger?.({
+      event: 'budget_settled',
+      rotationId: runtime.rotationId,
+      encounterId: input.encounterId,
+      caseId: input.caseId,
+      operation: outbound.kind,
+      turnId: outbound.turnId,
+      inputTokens: providerResult.usage.inputTokens,
+      outputTokens: providerResult.usage.outputTokens,
+    });
+  } catch {
+    // Logging must never discard a completed actor reply.
+  }
   if (request.signal.aborted) throw requestCancelled();
 
   if (outbound.kind === 'evaluation') return result;
