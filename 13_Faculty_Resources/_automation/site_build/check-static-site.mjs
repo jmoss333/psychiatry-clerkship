@@ -279,9 +279,39 @@ for (const f of toolFiles) {
   if (/color:\s*var\(--primary\)/.test(html)) {
     H(`bare color:var(--primary) in tools/${f} — AA contrast: polish pass must rewrite to var(--primary-dark,#a84830)`);
   }
+  // Computed keys bypass the literal-only namespace regex above; surface the
+  // indirection so it gets a human look (SOFT: build_and_check.sh runs non-STRICT).
+  const computedKeys = [...html.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*(?!['"])/g)];
+  if (computedKeys.length) S(`computed localStorage key(s) in ${f} (${computedKeys.length}) — namespace rule cannot verify indirection; prefer literal cw_*/rp_* keys`);
+  // Dark-mode regression gate (audit WS4): a hard-coded light background in a page
+  // that takes its dark tokens from clinical-warm.css renders light-on-light in dark
+  // mode (WCAG 1.4.3 — measured 2.05-2.43:1). Pages shipping their own
+  // [data-theme="dark"] block manage their own backgrounds and are exempt.
+  if (html.includes('clinical-warm.css') && !html.includes('[data-theme="dark"]')) {
+    for (const m of html.matchAll(/background(?:-color)?\s*:\s*(#[ef][0-9a-fA-F]{2}(?:[0-9a-fA-F]{3})?)\b/g)) {
+      H(`light background literal ${m[1]} in ${f} — renders light-on-light in dark mode; use a token (var(--surface)/var(--*-light)) with a light fallback`);
+    }
+  }
 }
 if (legacyMetadataPaths.length) {
   S(`legacy metadata warning: ${legacyMetadataPaths.sort().join(', ')}`);
+}
+
+/* ---------- 5c. SPA shell (index.html) — CDN + storage-namespace scans ---------- */
+// The shell is the single largest JS surface shipped (all quiz/SRS/pretest logic,
+// 38 localStorage references) but was exempt from every per-page check: an
+// un-namespaced key or a CDN script added to spa_index.html shipped ungated.
+// Tool-specific checks (metadata markers, dose literals, viewport) stay tools-only.
+const shellPath = p('index.html');
+if (existsSync(shellPath)) {
+  const shell = readFileSync(shellPath, 'utf8');
+  if (CDN_HOST.test(shell)) H('external CDN dependency in index.html — vendor the script locally so bedside/offline use does not blank the shell');
+  const shellKeys = [...shell.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*['"]([^'"]+)['"]/g)].map(m => m[1]);
+  for (const k of shellKeys) if (!k.startsWith('cw_') && !k.startsWith('rp_')) H(`non-namespaced storage key in index.html: "${k}" (use cw_* or rp_*)`);
+  const shellComputed = [...shell.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*(?!['"])/g)];
+  if (shellComputed.length) S(`computed localStorage key(s) in index.html (${shellComputed.length}) — namespace rule cannot verify indirection; prefer literal cw_*/rp_* keys`);
+} else {
+  H('index.html missing from built site');
 }
 
 /* ---------- 5b. <video> embeds must resolve to a shipped asset (no broken players) ---------- */
