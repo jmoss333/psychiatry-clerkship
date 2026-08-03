@@ -3,7 +3,7 @@
 **Owner:** Joshua Moss, MD | Psychiatrist · **Assembled:** 2026-07-01
 **Purpose:** Single source of truth for every open faculty-attestation item across the MS3 + Resident builds. Consolidates four previously-separate tracking surfaces so nothing is quoted to learners as settled until it carries your check here.
 
-> **Why this exists.** Attestation state was scattered across four files: `_QA_REPORT.md` (June 26 per-file table, still blank), `Tier3_attestation_sheet_2026-07-01.md` (high-stakes numbers), `library_review_2026-07-01.md` (independent fable-5 audit, Top-10), and `openevidence_library_accuracy_review_2026-07-01.md` (OE Tiers). This ledger supersedes them for **sign-off tracking**; each source file remains the detailed record. When a block is fully checked, tell me and I apply + stamp `Reviewed by Joshua Moss, MD — <date>`.
+> **Why this exists.** Attestation state was scattered across four files: `_QA_REPORT.md` (June 26 per-file table, still blank; now archived at 99_Archive/root-planning-2026-07/), `Tier3_attestation_sheet_2026-07-01.md` (high-stakes numbers), `library_review_2026-07-01.md` (independent fable-5 audit, Top-10), and `openevidence_library_accuracy_review_2026-07-01.md` (OE Tiers). This ledger supersedes them for **sign-off tracking**; each source file remains the detailed record. When a block is fully checked, tell me and I apply + stamp `Reviewed by Joshua Moss, MD — <date>`.
 
 **Legend:** ☐ not reviewed · ✅ approved · ✏️ approved with wording change (note it) · ⏸️ hold
 **Tags:** [MS3] / [Resident] / [both] · **P0** safety/accuracy first · **Attest?** = needs your clinical sign-off before shipping
