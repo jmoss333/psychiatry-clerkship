@@ -1,4 +1,5 @@
 {
+  "_note": "HISTORICAL — point-in-time faculty attestation export from 2026-07-05 (claims 144/144 attested). Superseded by the live status fields in question_bank.json, which has since retired qb_pha_012/qb_sud_015/qb_sud_016 and re-drafted items. Nothing consumes this file; kept for provenance only.",
   "exported": "2026-07-05T00:00:00Z",
   "by": "Joshua Moss, MD",
   "items": {

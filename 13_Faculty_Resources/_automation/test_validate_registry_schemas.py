@@ -314,6 +314,34 @@ class RegistrySchemaGateTests(unittest.TestCase):
         self.assertLess(first.stdout.index("question_bank.json: INVALID at /"),
                         first.stdout.index("tool_registry.json: INVALID at /"))
 
+    def test_question_bank_id_prefix_must_match_category(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads(
+                (root / "question_bank.json").read_text(encoding="utf-8")
+            )
+            item = next(i for i in document["items"] if i["id"] == "qb_cdev_001")
+            item["id"] = "qb_chd_003"
+            (root / "question_bank.json").write_text(
+                json.dumps(document), encoding="utf-8"
+            )
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("question_bank.json: INVALID at /items/", result.stdout)
+        self.assertIn("qb_chd_003", result.stdout)
+        self.assertIn("canonical prefix", result.stdout)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_question_bank_grandfathered_legacy_ids_still_pass(self) -> None:
+        # qb_chd_001/002 and qb_oth_001/002 predate the cdev/otherdx conventions
+        # and are permanent identities (SRS cards + cw_qb_v1 key on them).
+        result = run_validator(ROOT)
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("question_bank.json: OK", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
