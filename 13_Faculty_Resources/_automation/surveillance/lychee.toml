@@ -10,6 +10,9 @@ exclude_path = [
   "_prototypes",
   "_build",
   "99_Archive",
+  # Never crawl the monitor's own committed reports (STATUS.md, history/) —
+  # broken URLs quoted there are findings-about-findings, not curriculum defects.
+  "13_Faculty_Resources/_automation/surveillance",
 ]
 exclude = [
   "doi\\.org",

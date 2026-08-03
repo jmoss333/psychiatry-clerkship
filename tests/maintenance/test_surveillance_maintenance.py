@@ -367,6 +367,15 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
             ["link:www.samhsa.gov::broken-link::6bae3107ce29193b"],
         )
 
+    def test_lychee_excludes_surveillance_generated_tree(self):
+        config = tomllib.loads((SURV / "lychee.toml").read_text(encoding="utf-8"))
+        self.assertIn(
+            "13_Faculty_Resources/_automation/surveillance",
+            config.get("exclude_path", []),
+            "link monitor must not crawl its own committed reports "
+            "(STATUS.md / history/) — that files phantom findings",
+        )
+
     def test_issue_snapshot_normalization_excludes_pull_requests(self):
         raw = [
             {
