@@ -496,6 +496,38 @@ def apply_dark_mode(path, is_index=False, cache_bust=None):
     return t != o
 
 
+# ---------------------------------------------------------------------------
+# Shared learner-logic snippets — single-sourced, build-injected.
+# ---------------------------------------------------------------------------
+# The SM-2 grader is learner-facing scheduling logic shared by three tools
+# (question bank, family systems, daily review). Hand-synced copies drifted
+# (2026-08 audit: review.html carried a third divergent variant). The canonical
+# body lives in one .js file per marker; each consumer carries only the marker.
+# tests/sm2-behavior.test.mjs pins the behaviour; tests/family-srs-parity.test.mjs
+# pins consumer wiring; page_contract_failures() below turns a skipped injection
+# into a hard build failure.
+SNIPPET_MARKERS = {
+    "/*__SM2_APPLY_GRADE__*/": "sm2_apply_grade.js",
+}
+
+
+def inject_shared_snippets(path):
+    """Replace shared-snippet markers with their canonical bodies. Idempotent."""
+    t = open(path, encoding="utf-8").read()
+    out = t
+    for marker, fname in SNIPPET_MARKERS.items():
+        if marker in out:
+            snip = open(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), fname),
+                encoding="utf-8",
+            ).read()
+            out = out.replace(marker, snip)
+    if out != t:
+        open(path, "w", encoding="utf-8").write(out)
+        return True
+    return False
+
+
 def apply_full_page_pass(out_dir, cache_bust=None):
     """Run chrome + dark-mode over every shipped HTML page in a build.
 
@@ -510,6 +542,7 @@ def apply_full_page_pass(out_dir, cache_bust=None):
         pages.append(index)
     for p in pages:
         is_index = os.path.abspath(p) == os.path.abspath(index)
+        inject_shared_snippets(p)
         apply_page_chrome(p, is_index=is_index)
         apply_dark_mode(p, is_index=is_index, cache_bust=cache_bust)
     return len(pages)
@@ -552,6 +585,9 @@ def page_contract_failures(out_dir):
             missing.append("favicon link")
         if not is_index and "<!--ifn-->" not in t:
             missing.append("in-iframe link interceptor")
+        for marker in SNIPPET_MARKERS:
+            if marker in t:
+                missing.append("unexpanded shared-snippet marker %s" % marker)
 
         if missing:
             failures.append((os.path.relpath(p, out_dir), missing))
