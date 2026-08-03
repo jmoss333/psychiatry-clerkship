@@ -277,5 +277,96 @@ class TestSearchIndex(_SiteFixture):
         self.assertTrue(os.path.exists(os.path.join(self.dir, "search-index.json")))
 
 
+class TestCopyRequiredSources(unittest.TestCase):
+    def test_copies_all_pairs(self):
+        lib = tempfile.mkdtemp()
+        dest = tempfile.mkdtemp()
+        try:
+            os.makedirs(os.path.join(lib, "14_Tracks"))
+            with open(os.path.join(lib, "14_Tracks", "a.md"), "w", encoding="utf-8") as fh:
+                fh.write("# resident welcome")
+            n = common.copy_required_sources([("14_Tracks/a.md", "welcome.md")], lib, dest)
+            self.assertEqual(n, 1)
+            with open(os.path.join(dest, "welcome.md"), encoding="utf-8") as fh:
+                self.assertEqual(fh.read(), "# resident welcome")
+        finally:
+            shutil.rmtree(lib)
+            shutil.rmtree(dest)
+
+    def test_missing_source_aborts_with_exit_1(self):
+        """Audit repro 2026-08-01: renaming resident_welcome.md produced a GREEN
+        resident build that shipped MS3 welcome content under the resident nav
+        title. A missing required source must abort the build."""
+        lib = tempfile.mkdtemp()
+        dest = tempfile.mkdtemp()
+        try:
+            with self.assertRaises(SystemExit) as ctx:
+                common.copy_required_sources(
+                    [("14_Tracks/RENAMED.md", "welcome.md"),
+                     ("14_Tracks/also_gone.md", "rotation.md")],
+                    lib, dest, label="resident content",
+                )
+            self.assertEqual(ctx.exception.code, 1)
+        finally:
+            shutil.rmtree(lib)
+            shutil.rmtree(dest)
+
+
+class TestApplyVerifiedReplacements(unittest.TestCase):
+    def test_applies_substitutions_in_order(self):
+        out = common.apply_verified_replacements(
+            "MS3 Clerkship hub",
+            [("MS3 Clerkship", "Resident Rotation"), ("hub", "library")],
+        )
+        self.assertEqual(out, "Resident Rotation library")
+
+    def test_stale_needle_aborts(self):
+        """A reworded spa_index header must FAIL the resident build, not
+        silently revert resident branding to MS3 text (audit finding: six
+        unverified ix.replace() calls)."""
+        with self.assertRaises(SystemExit) as ctx:
+            common.apply_verified_replacements(
+                "the header was reworded",
+                [("old header copy", "resident copy")],
+                label="resident index rebrand",
+            )
+        self.assertEqual(ctx.exception.code, 1)
+
+
+class TestReproducibility(unittest.TestCase):
+    def test_quiz_cache_bust_stable_for_identical_content(self):
+        d = tempfile.mkdtemp()
+        try:
+            qp = os.path.join(d, "quizzes.json")
+            with open(qp, "w", encoding="utf-8") as fh:
+                fh.write('{"decks":[]}')
+            first = common.quiz_cache_bust(qp)
+            second = common.quiz_cache_bust(qp)
+            self.assertEqual(first, second)
+            self.assertEqual(len(first), 12)
+        finally:
+            shutil.rmtree(d)
+
+    def test_quiz_cache_bust_changes_when_content_changes(self):
+        d = tempfile.mkdtemp()
+        try:
+            qp = os.path.join(d, "quizzes.json")
+            with open(qp, "w", encoding="utf-8") as fh:
+                fh.write('{"decks":[]}')
+            first = common.quiz_cache_bust(qp)
+            with open(qp, "w", encoding="utf-8") as fh:
+                fh.write('{"decks":[{"t":"new"}]}')
+            self.assertNotEqual(first, common.quiz_cache_bust(qp))
+        finally:
+            shutil.rmtree(d)
+
+    def test_synonym_keys_sorted_for_reproducible_index(self):
+        """The synonyms dict was populated by iterating Python sets, so JSON key
+        order varied with hash randomization — one of the two sources that made
+        identical builds byte-differ."""
+        syn = common.build_synonyms()
+        self.assertEqual(list(syn.keys()), sorted(syn.keys()))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

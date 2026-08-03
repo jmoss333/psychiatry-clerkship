@@ -29,6 +29,58 @@ PAIRS = (
 )
 
 
+# Canonical id prefix per blueprint category. The schema pattern ^qb_[a-z]+_[0-9]{3}$
+# cannot express this pairing, so it is enforced semantically here. Ids are permanent
+# identities (SRS cards QB#<id> and cw_qb_v1 responses key on them), so the four
+# pre-convention legacy ids are grandfathered rather than renamed.
+QBANK_CANONICAL_PREFIXES = {
+    "mood": "mood",
+    "psychosis": "psy",
+    "anxiety": "anx",
+    "substance": "sud",
+    "neurocog": "cog",
+    "pharm": "pha",
+    "safety": "saf",
+    "personality": "per",
+    "childdev": "cdev",
+    "otherdx": "otherdx",
+    "ethics": "eth",
+    "relational": "rel",
+}
+QBANK_GRANDFATHERED_IDS = frozenset(
+    {"qb_chd_001", "qb_chd_002", "qb_oth_001", "qb_oth_002"}
+)
+
+
+def qbank_prefix_diagnostics(document):
+    """Semantic gate: each item id must use its category's canonical prefix."""
+    diagnostics = []
+    items = document.get("items", []) if isinstance(document, dict) else []
+    for index, item in enumerate(items):
+        if not isinstance(item, dict):
+            continue
+        item_id = item.get("id")
+        category = item.get("category")
+        if not isinstance(item_id, str) or category not in QBANK_CANONICAL_PREFIXES:
+            continue  # shape problems are the schema's job
+        if item_id in QBANK_GRANDFATHERED_IDS:
+            continue
+        expected = "qb_%s_" % QBANK_CANONICAL_PREFIXES[category]
+        if not item_id.startswith(expected):
+            diagnostics.append(
+                "question_bank.json: INVALID at /items/%d/id: %r does not use the "
+                "canonical prefix %r for category %r (grandfathered: %s)"
+                % (
+                    index,
+                    item_id,
+                    expected,
+                    category,
+                    ", ".join(sorted(QBANK_GRANDFATHERED_IDS)),
+                )
+            )
+    return diagnostics
+
+
 def json_pointer(path) -> str:
     """Format an iterable path as an RFC 6901-style JSON Pointer."""
     parts = (str(part).replace("~", "~0").replace("/", "~1") for part in path)
@@ -171,12 +223,18 @@ def validate_root(root: Path) -> tuple[list[str], bool]:
             diagnostics.append(f"{schema_name}: INVALID SCHEMA at /: unresolvable local $ref")
             has_errors = True
             continue
-        if errors:
+        semantic = (
+            qbank_prefix_diagnostics(document)
+            if document_name == "question_bank.json"
+            else []
+        )
+        if errors or semantic:
             has_errors = True
             diagnostics.extend(
                 f"{document_name}: INVALID at {json_pointer(error.absolute_path)}: {error.message}"
                 for error in errors
             )
+            diagnostics.extend(semantic)
         else:
             diagnostics.append(f"{document_name}: OK ({schema_name})")
     return diagnostics, has_errors
