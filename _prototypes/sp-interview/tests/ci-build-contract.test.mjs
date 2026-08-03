@@ -35,6 +35,15 @@ const EXPECTED_ASSETS = [
   ['_prototypes/sp-interview/sp-interview.voice.js', 'sp-interview.voice.js'],
 ];
 
+// 2026-08 audit WS4 follow-up: check-static-site.mjs §5c hard-fails a built site
+// missing index.html (the SPA shell CDN/storage-namespace scan added alongside the
+// tools/*.js CDN scan below). These synthetic fixture sites exercise the checker's
+// *other* rules and never shipped a shell — give each one a minimal, compliant stub
+// (no CDN host substring, no non-cw_*/rp_* localStorage literal) so the new shell
+// scan reports clean and the fixture's pre-existing hard/soft expectations hold.
+const FIXTURE_INDEX_HTML = '<!doctype html><html><head><title>Fixture Shell</title>'
+  + '<meta name="viewport" content="width=device-width"></head><body></body></html>';
+
 function run(command, args, options = {}) {
   return spawnSync(command, args, {
     cwd: ROOT,
@@ -115,6 +124,7 @@ test('static QA rejects a missing relative script dependency', () => {
   const sourceMap = `${site}.source-map.json`;
   const tools = path.join(site, 'tools');
   fs.mkdirSync(tools);
+  fs.writeFileSync(path.join(site, 'index.html'), FIXTURE_INDEX_HTML);
   fs.writeFileSync(
     path.join(tools, 'fixture.html'),
     '<!doctype html><title>Fixture</title><meta name="viewport" content="width=device-width"><!-- [RC-META] --><script src="./missing.js"></script>',
@@ -150,6 +160,7 @@ test('static QA rejects a CDN dependency inside a shipped JS asset', () => {
   const sourceMap = `${site}.source-map.json`;
   const tools = path.join(site, 'tools');
   fs.mkdirSync(tools);
+  fs.writeFileSync(path.join(site, 'index.html'), FIXTURE_INDEX_HTML);
   fs.writeFileSync(
     path.join(tools, 'fixture.html'),
     '<!doctype html><title>Fixture</title><meta name="viewport" content="width=device-width"><!-- [RC-META] --><script src="./fixture.js"></script>',
@@ -186,6 +197,7 @@ test('static QA accepts preferred and legacy metadata markers but rejects missin
   const sourceMap = `${site}.source-map.json`;
   const tools = path.join(site, 'tools');
   fs.mkdirSync(tools);
+  fs.writeFileSync(path.join(site, 'index.html'), FIXTURE_INDEX_HTML);
   fs.writeFileSync(
     path.join(site, 'nav.json'),
     JSON.stringify([{ section: 'Fixture', items: [{ k: 'tool', f: 'fixture.html' }] }]),
