@@ -334,12 +334,11 @@ print("tools:",len(tools)," md copied:",len(md)-len(missing)," missing:",missing
 # tools bypassed them entirely. assert_page_contract() at the end of this file
 # hard-fails any shipped page a transform silently missed.
 import glob as _glob
-import time as _time
 common.strip_review_banners(OUT)
 common.apply_contrast_fix(
     _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]
 )
-_QV=str(int(_time.time()))          # cache-bust for quizzes.json
+_QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
 common.apply_full_page_pass(OUT, cache_bust=_QV)
 
 
