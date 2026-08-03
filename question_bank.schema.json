@@ -16,7 +16,7 @@
           "id": {
             "type": "string",
             "pattern": "^qb_[a-z]+_[0-9]{3}$",
-            "description": "Stable forever. Prefix matches the blueprint category (qb_sud_001)."
+            "description": "Stable forever. Prefix matches the blueprint category's canonical prefix — mood, psy, anx, sud, cog, pha, saf, per, cdev, otherdx, eth, rel (e.g. qb_sud_001). Enforced semantically by validate_registry_schemas.py; qb_chd_001/002 and qb_oth_001/002 are grandfathered legacy ids."
           },
           "status": {
             "type": "string",
