@@ -202,7 +202,7 @@ function dstr(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 var framed=(window.self!==window.top);
 function openRead(t){ if(framed){try{window.parent.postMessage({type:"openPage",f:t},"*");return;}catch(_){}} window.open("../index.html?page="+encodeURIComponent(t),"_blank","noopener"); }
 function openTool(t){ if(framed){try{window.parent.postMessage({type:"openPage",f:t},"*");return;}catch(_){}} window.open(t,"_blank","noopener"); }
-function srsDue(){ try{ var s=JSON.parse(localStorage.getItem("cw_srs_v1")); if(!s||!s.cards) return null; var now=Date.now(),n=0,seen=0; for(var k in s.cards){ seen++; if(s.cards[k].due<=now)n++; } return {due:n,started:seen>0}; }catch(_){ return null; } }
+function srsDue(){ try{ var s=JSON.parse(localStorage.getItem("cw_srs_v1")); if(!s||!s.cards) return null; var now=Date.now(),n=0,seen=0; for(var k in s.cards){ if(k.indexOf("deck#")!==0&&k.indexOf("TOPIC#")!==0) continue; seen++; if(s.cards[k].due<=now)n++; } return {due:n,started:seen>0}; }catch(_){ return null; } }
 function srsLabel(){ var d=srsDue(); if(!d||!d.started) return "🎯 Spaced repetition — start"; return d.due>0? ("🎯 Spaced repetition — "+d.due+" due") : "🎯 Spaced repetition — caught up ✓"; }
 function goLibrary(){ if(framed){try{window.parent.postMessage({type:"openLibrary"},"*");return;}catch(_){}} window.open("../index.html","_blank","noopener"); }
 function doSearch(q){ q=(q||"").trim(); if(!q) return; if(framed){try{window.parent.postMessage({type:"search",q:q},"*");return;}catch(_){}} window.open("../index.html","_blank","noopener"); }
