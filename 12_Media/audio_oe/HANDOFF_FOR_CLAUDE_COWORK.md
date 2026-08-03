@@ -2,7 +2,7 @@
 
 ## Location
 
-`/Users/jm/Psychiatry-Clerkship-Library/13_Faculty_Resources/Handoffs/openevidence_notebooklm_brief_audio_2026-06-30`
+`/Users/jm/Psychiatry-Clerkship-Library/12_Media/audio_oe (relocated 2026-08-03; original Handoffs path retired)`
 
 ## Contents
 
