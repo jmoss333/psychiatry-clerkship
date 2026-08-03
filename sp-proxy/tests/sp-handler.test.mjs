@@ -775,6 +775,24 @@ test('converse reserves the exact sent bytes, settles captured usage, and return
   });
 });
 
+test('a settled operation logs one metadata-only spend event for abuse attribution', async () => {
+  const harness = makeHarness();
+  const response = await harness.handler(learnerRequest({ body: converseBody() }));
+  assert.equal(response.status, 200);
+  const spend = harness.logs.filter((event) => event.event === 'budget_settled');
+  assert.equal(spend.length, 1);
+  assert.deepEqual(spend[0], {
+    event: 'budget_settled',
+    rotationId: 'rotation-2026-07-a',
+    encounterId: ENCOUNTER_ID,
+    caseId: 'sp_depression_gated_si_001',
+    operation: 'actor',
+    turnId: 1,
+    inputTokens: 120,
+    outputTokens: 24,
+  });
+});
+
 test('evaluation validates and returns the exact feedback object directly', async () => {
   const expected = feedback();
   const harness = makeHarness({
@@ -1173,7 +1191,10 @@ test('ticket failures are fail-soft after opening or settled converse text', asy
     const response = await harness.handler(learnerRequest({ body }));
     assert.equal(response.status, 200);
     assert.equal((await json(response)).ticket, null);
-    assert.deepEqual(harness.logs, [{ event: 'speech_ticket_unavailable', mode: body.mode }]);
+    assert.deepEqual(
+      harness.logs.filter((event) => event.event === 'speech_ticket_unavailable'),
+      [{ event: 'speech_ticket_unavailable', mode: body.mode }],
+    );
     if (body.mode === 'converse') {
       assert.equal(harness.anthropicSpy.calls.filter(({ method }) => method === 'call').length, 1);
       assert.equal(harness.budgetSpy.calls.filter(({ method }) => method === 'settle').length, 1);

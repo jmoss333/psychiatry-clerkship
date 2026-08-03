@@ -1196,6 +1196,18 @@ async function executeBudgeted({
   } catch {
     throw operationUnavailable();
   }
+  // Metadata-only spend attribution: identifies WHICH client is burning the
+  // shared rotation budget without ever logging message content.
+  logger?.({
+    event: 'budget_settled',
+    rotationId: runtime.rotationId,
+    encounterId: input.encounterId,
+    caseId: input.caseId,
+    operation: outbound.kind,
+    turnId: outbound.turnId,
+    inputTokens: providerResult.usage.inputTokens,
+    outputTokens: providerResult.usage.outputTokens,
+  });
   if (request.signal.aborted) throw requestCancelled();
 
   if (outbound.kind === 'evaluation') return result;
