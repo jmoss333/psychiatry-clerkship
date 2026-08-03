@@ -26,6 +26,7 @@ statically-inspectable literal in that file.
 """
 
 import glob
+import hashlib
 import json
 import os
 import re
@@ -144,7 +145,18 @@ def build_synonyms(groups=None):
             toks.update(tok(term))
         for t in toks:
             syn.setdefault(t, set()).update(toks - {t})
-    return {k: sorted(v) for k, v in syn.items()}
+    return {k: sorted(syn[k]) for k in sorted(syn)}
+
+
+def quiz_cache_bust(quizzes_path):
+    """Content-hash cache-bust for quizzes.json.
+
+    Replaces the int(time.time()) value that made every deploy byte-differ in
+    review.html/shelf-mode.html and busted learner caches even when quizzes.json
+    was unchanged. Same content -> same URL -> reproducible builds + honest caching.
+    """
+    with open(quizzes_path, "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()[:12]
 
 
 # ---------------------------------------------------------------------------

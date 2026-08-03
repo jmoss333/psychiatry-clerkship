@@ -333,5 +333,40 @@ class TestApplyVerifiedReplacements(unittest.TestCase):
         self.assertEqual(ctx.exception.code, 1)
 
 
+class TestReproducibility(unittest.TestCase):
+    def test_quiz_cache_bust_stable_for_identical_content(self):
+        d = tempfile.mkdtemp()
+        try:
+            qp = os.path.join(d, "quizzes.json")
+            with open(qp, "w", encoding="utf-8") as fh:
+                fh.write('{"decks":[]}')
+            first = common.quiz_cache_bust(qp)
+            second = common.quiz_cache_bust(qp)
+            self.assertEqual(first, second)
+            self.assertEqual(len(first), 12)
+        finally:
+            shutil.rmtree(d)
+
+    def test_quiz_cache_bust_changes_when_content_changes(self):
+        d = tempfile.mkdtemp()
+        try:
+            qp = os.path.join(d, "quizzes.json")
+            with open(qp, "w", encoding="utf-8") as fh:
+                fh.write('{"decks":[]}')
+            first = common.quiz_cache_bust(qp)
+            with open(qp, "w", encoding="utf-8") as fh:
+                fh.write('{"decks":[{"t":"new"}]}')
+            self.assertNotEqual(first, common.quiz_cache_bust(qp))
+        finally:
+            shutil.rmtree(d)
+
+    def test_synonym_keys_sorted_for_reproducible_index(self):
+        """The synonyms dict was populated by iterating Python sets, so JSON key
+        order varied with hash randomization — one of the two sources that made
+        identical builds byte-differ."""
+        syn = common.build_synonyms()
+        self.assertEqual(list(syn.keys()), sorted(syn.keys()))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
