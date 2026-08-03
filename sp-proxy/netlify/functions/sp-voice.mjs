@@ -1022,4 +1022,12 @@ export default async function handler(request) {
   }
 }
 
-export const config = Object.freeze({ path: '/api/sp/voice' });
+// Same rationale as sp.mjs: bound per-client burn on the shared rotation budget.
+export const config = Object.freeze({
+  path: '/api/sp/voice',
+  rateLimit: Object.freeze({
+    windowLimit: 20,
+    windowSize: 60,
+    aggregateBy: Object.freeze(['ip', 'domain']),
+  }),
+});
