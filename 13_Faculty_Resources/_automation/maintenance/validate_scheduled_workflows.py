@@ -293,7 +293,7 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "ci.yml": "141d5719392ed720735616e7b9b1df5fd4ec8e9b2c122c5b1dd08e5670f42645",
+    "ci.yml": "b4c4d124d2594057f2972aa8e42e4e1dacca46ae21d65250586c8c70b9551506",
     "maintenance-governance-digest.yml": (
         "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
     ),

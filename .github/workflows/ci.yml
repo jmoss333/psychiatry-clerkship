@@ -154,7 +154,10 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-1.46.1-${{ runner.os }}
+          # Key derives from the smoke lockfile so a Playwright bump rolls the
+          # cache automatically (a hand-pinned version went permanently stale
+          # after the 1.46.1→1.61.1 bump). Keep in sync with refresh-baselines.yml.
+          key: playwright-${{ hashFiles('tests/smoke/package-lock.json') }}-${{ runner.os }}
 
       - name: Install Playwright + Chromium
         run: |

@@ -47,7 +47,8 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-1.46.1-${{ runner.os }}
+          # Same derived key as ci.yml — a Playwright bump rolls both caches.
+          key: playwright-${{ hashFiles('tests/smoke/package-lock.json') }}-${{ runner.os }}
 
       - name: Install Playwright + Chromium
         run: cd tests/smoke && npm ci && npx playwright install chromium --with-deps
