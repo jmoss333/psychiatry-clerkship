@@ -408,6 +408,31 @@ class TestSharedSnippets(unittest.TestCase):
             any("unexpanded shared-snippet marker" in m for _, ms in failures for m in ms)
         )
 
+    def test_duplicated_marker_fails_the_page_contract(self):
+        """A consumer that pastes the marker twice gets two live copies of
+        applyGrade() silently defined — worse than the unexpanded-marker case,
+        since nothing about it looks broken at a glance. Must hard-fail too.
+        """
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d, True)
+        os.makedirs(os.path.join(d, "tools"))
+        page = (
+            '<a class="skip-link">s</a><div id="root"></div>'
+            "<script>cw_theme;var DAY=86400000;\n"
+            + self.MARKER + "\n" + self.MARKER
+            + '\n</script><style>[data-theme="dark"]{}</style>'
+            '<link rel="icon"><!--ifn-->'
+        )
+        p = os.path.join(d, "tools", "t.html")
+        open(p, "w", encoding="utf-8").write(page)
+        self.assertTrue(common.inject_shared_snippets(p))
+
+        failures = common.page_contract_failures(d)
+        self.assertTrue(
+            any("injected more than once" in m for _, ms in failures for m in ms),
+            failures,
+        )
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

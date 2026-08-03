@@ -553,6 +553,21 @@ def apply_full_page_pass(out_dir, cache_bust=None):
 # ---------------------------------------------------------------------------
 
 
+def _snippet_signature(snippet_text):
+    """A single stable line from a snippet body, safe to count occurrences of.
+
+    Used to catch a snippet injected more than once — e.g. a consumer that
+    pasted the marker twice, so `inject_shared_snippets()` (which replaces
+    *all* marker occurrences) expands two live copies of the function. That's
+    worse than an unexpanded marker: nothing about the page looks broken.
+    """
+    for line in snippet_text.splitlines():
+        line = line.strip()
+        if line.startswith("function "):
+            return line
+    return None
+
+
 def page_contract_failures(out_dir):
     """Return [(relative_path, [unmet requirement, ...]), ...] for shipped HTML.
 
@@ -566,6 +581,14 @@ def page_contract_failures(out_dir):
     pages = sorted(glob.glob(os.path.join(out_dir, "tools", "*.html")))
     if os.path.exists(index_abs):
         pages.append(index_abs)
+
+    snippet_signatures = {}
+    for marker, fname in SNIPPET_MARKERS.items():
+        snip = open(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), fname),
+            encoding="utf-8",
+        ).read()
+        snippet_signatures[marker] = _snippet_signature(snip)
 
     for p in pages:
         t = open(p, encoding="utf-8").read()
@@ -588,6 +611,15 @@ def page_contract_failures(out_dir):
         for marker in SNIPPET_MARKERS:
             if marker in t:
                 missing.append("unexpanded shared-snippet marker %s" % marker)
+            else:
+                sig = snippet_signatures.get(marker)
+                if sig and t.count(sig) > 1:
+                    missing.append(
+                        "shared-snippet body for marker %s injected more than "
+                        "once (%d copies) — a duplicated marker in the source "
+                        "expands into duplicate function definitions"
+                        % (marker, t.count(sig))
+                    )
 
         if missing:
             failures.append((os.path.relpath(p, out_dir), missing))
