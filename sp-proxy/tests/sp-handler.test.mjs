@@ -376,7 +376,14 @@ function assertError(responseBody, code, disposition = 'offline-only') {
 
 test('exports the injected handler, exact Netlify path, and unchanged parity surface', () => {
   assert.equal(typeof createSpHandler, 'function');
-  assert.deepEqual(netlifyConfig, { path: '/api/sp' });
+  assert.deepEqual(netlifyConfig, {
+    path: '/api/sp',
+    rateLimit: {
+      windowLimit: 20,
+      windowSize: 60,
+      aggregateBy: ['ip', 'domain'],
+    },
+  });
   assert.deepEqual(Object.keys(_internals), [
     'deriveState',
     'computeCoverage',

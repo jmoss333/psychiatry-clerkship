@@ -1430,7 +1430,19 @@ export default async function handler(request) {
   }
 }
 
-export const config = Object.freeze({ path: '/api/sp' });
+// Rate limit mirrors faculty-console/netlify/functions/attest.mjs. 20 req/min/IP
+// caps a scripted passcode holder's burn rate so exhausting the shared $20
+// rotation budget takes hours (time to rotate SP_STUDENT_PASSCODE), while
+// human-paced interviewing stays far below the window. Tunable if ward-wifi
+// NAT ever causes collateral 429s.
+export const config = Object.freeze({
+  path: '/api/sp',
+  rateLimit: Object.freeze({
+    windowLimit: 20,
+    windowSize: 60,
+    aggregateBy: Object.freeze(['ip', 'domain']),
+  }),
+});
 
 // Exported for parity tests only: this surface must remain byte-for-byte stable in shape.
 export const _internals = { deriveState, computeCoverage, actorSystem, evaluatorSystem };
