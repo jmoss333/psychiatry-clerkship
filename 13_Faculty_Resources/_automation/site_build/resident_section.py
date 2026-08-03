@@ -85,6 +85,45 @@ for src,dst in PROTO_TOOLS:
     if os.path.exists(pack_src):
         shutil.copyfile(pack_src, OUT+"/tools/"+dst[:-len(".html")]+".pack.json")
 
+# ---- crisis-contact symmetry (2026-08-01 audit) ----
+# Resident-written files never passed through crisis_block: a marker in a
+# resident-only source shipped as an inert HTML comment with zero build failure —
+# the exact silent-loss mode PR #269 was built to prevent, just on the other
+# pipeline. Mirror build_deploy.py's inject + required-surface hard-fail here.
+# Pages inherited via the MS3 copytree arrive already injected and are untouched
+# (inject_* no-ops without a marker).
+import crisis_block as _crisis
+_crisis_data=_crisis.load(LIB)
+# Required resident-only surfaces = where a resident is plausibly DOING risk work
+# (assessing, rehearsing, or planning disposition) — same scope rule as
+# build_deploy.py's _CRISIS_REQUIRED sets. Populated per faculty decision;
+# empty sets still keep the assertion and injection path wired.
+_RES_CRISIS_REQUIRED_MD=set()
+_RES_CRISIS_REQUIRED_TOOLS=set()
+_crisis_md_done=set()
+for _src,_dst in RES_EXTRA:
+    _cp=OUT+"/content/"+_dst
+    _t=open(_cp,encoding="utf-8").read()
+    _t,_did=_crisis.inject_markdown(_t,_crisis_data)
+    if _did:
+        open(_cp,"w",encoding="utf-8").write(_t)
+        _crisis_md_done.add(_dst)
+_crisis_tools_done=set()
+for _src,_dst in PROTO_TOOLS:
+    _tp=OUT+"/tools/"+_dst
+    if not os.path.exists(_tp): continue   # missing rp-* is caught by the nav→missing-tool hard check
+    _t=open(_tp,encoding="utf-8").read()
+    _t,_did=_crisis.inject_html(_t,_crisis_data)
+    if _did:
+        open(_tp,"w",encoding="utf-8").write(_t)
+        _crisis_tools_done.add(_dst)
+_crisis_gap=sorted((_RES_CRISIS_REQUIRED_MD-_crisis_md_done)|(_RES_CRISIS_REQUIRED_TOOLS-_crisis_tools_done))
+if _crisis_gap:
+    print("BUILD ABORTED — crisis-contact block missing from required safety surface(s):")
+    for _g in _crisis_gap: print("   -",_g,"(expected the crisis-block marker in its source)")
+    raise SystemExit(1)
+print("crisis block injected (resident):",len(_crisis_md_done),"content page(s) +",len(_crisis_tools_done),"tool(s)")
+
 # Apply the full shared page pass over the resident build. Idempotent, so the pages
 # inherited from the MS3 copytree are untouched and only the newly-written rp-* tools
 # actually change. This replaces the hand-rolled skip-link-only subset that shipped
