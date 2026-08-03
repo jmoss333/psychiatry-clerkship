@@ -390,17 +390,27 @@ test('spoken reps request no media and accept no text', async ({ page }) => {
   await expect.poll(() => page.evaluate(() => window.__mediaCounts)).toEqual({ getUserMedia: 0, MediaRecorder: 0, SpeechRecognition: 0, webkitSpeechRecognition: 0 });
 });
 
-test('review status remains visible', async ({ page }) => {
+test('all faculty review statuses are labeled truthfully within the orient budget', async ({ page }) => {
   await page.route('**/communication_cases.json', async (route) => {
     const response = await route.fetch();
     const data = await response.json();
     data.cases[0].facultyReview = { status: 'reviewed', reviewer: 'Faculty reviewer', lastReviewed: '2026-08-01' };
+    data.cases[1].facultyReview = { status: 'pending', reviewer: '', lastReviewed: '' };
+    data.cases[2].facultyReview = { status: 'retired', reviewer: '', lastReviewed: '' };
+    data.cases[3].facultyReview = { status: 'draft', reviewer: '', lastReviewed: '' };
     await route.fulfill({ response, json: data });
   });
-  await openTool(page, '?case=suicide_direct_question_001');
-  await expect(page.getByText('Reviewed', { exact: true })).toBeVisible();
-  await openTool(page, '?case=guardedness_privacy_001');
-  await expect(page.getByText('draft · faculty review needed', { exact: true })).toBeVisible();
+  for (const [caseId, label] of [
+    ['suicide_direct_question_001', 'Reviewed · Faculty reviewer · 2026-08-01'],
+    ['psychosis_validation_001', 'Pending faculty review'],
+    ['guardedness_privacy_001', 'Retired'],
+    ['rupture_limit_setting_001', 'Draft · faculty review needed'],
+  ]) {
+    await openTool(page, `?case=${caseId}`);
+    const panel = page.locator('[data-rep-panel][data-phase="orient"]');
+    await expect(panel.getByText(label, { exact: true })).toBeVisible();
+    expect(await visibleWordCount(panel), `Orient word budget for ${caseId}`).toBeLessThan(60);
+  }
 });
 
 test('storage contract preserves prior and unrelated data', async ({ page }) => {
@@ -493,8 +503,10 @@ test('history reset removes only communication attempts', async ({ page }) => {
   const resetDuringSpeaking = page.locator('[data-desktop-navigator] [data-reset-history]');
   await expect(resetDuringSpeaking).toBeVisible();
   page.once('dialog', (dialog) => dialog.accept());
-  await resetDuringSpeaking.click();
+  await tabUntilFocused(page, resetDuringSpeaking);
+  await page.keyboard.press('Enter');
   await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#phase-heading')).toBeFocused();
   await expect(page.locator('#rep-status')).toHaveText('');
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBeNull();
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_unrelated_test'))).toBe(JSON.stringify({ keep: true }));
@@ -608,10 +620,13 @@ test('desktop navigator keeps browsing useful but secondary', async ({ page }) =
   await expect(navigator.locator('.case-status')).toHaveText(Array(10).fill('Not practiced'));
   await expect(navigator.locator('[data-case-select="guardedness_privacy_001"]')).toHaveAttribute('aria-current', 'true');
 
-  await navigator.getByRole('button', { name: 'Family', exact: true }).click();
+  const familyFilter = navigator.getByRole('button', { name: 'Family', exact: true });
+  await tabUntilFocused(page, familyFilter);
+  await page.keyboard.press('Enter');
   await expect(navigator.locator('[data-case-select]')).toHaveCount(3);
   await expect(navigator.locator('[data-case-select="family_meeting_opening_001"]')).toHaveAttribute('aria-current', 'true');
   await expectPhase(page, 'orient', 1);
+  await expect(navigator.getByRole('button', { name: 'Family', exact: true })).toBeFocused();
 
   const beforeSurprise = await navigator.locator('[aria-current="true"]').getAttribute('data-case-select');
   const storedBefore = await page.evaluate(() => localStorage.getItem('cw_comm_v1'));
@@ -632,6 +647,62 @@ test('desktop navigator keeps browsing useful but secondary', async ({ page }) =
   await expect(strip).toHaveCSS('overflow-x', /auto|scroll/);
   expect(await strip.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
   expect(errors).toEqual([]);
+});
+
+test('overall filter and domain progress stay truthful in both navigators', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('cw_comm_v1', JSON.stringify({
+      suicide_direct_question_001: { choiceId: 'b', quality: 'best', at: '2026-08-02' },
+      psychosis_validation_001: { choiceId: 'b', quality: 'best', at: '2026-08-02' },
+      family_meeting_opening_001: { choiceId: 'b', quality: 'best', at: '2026-08-02' },
+      medication_ambivalence_001: { choiceId: 'b', quality: 'best', at: '2026-08-02' },
+    }));
+  });
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openTool(page);
+
+  const desktop = page.locator('[data-desktop-navigator]');
+  await expect(desktop.locator('.sidehead')).toHaveText('4 of 10 practiced');
+  await desktop.getByRole('button', { name: 'Family', exact: true }).click();
+  await expect(desktop.locator('.sidehead')).toHaveText('4 of 10 practiced');
+  let desktopDetails = desktop.locator('[data-practice-details]');
+  await desktopDetails.getByText('Practice details', { exact: true }).click();
+  await expect(desktopDetails).toContainText('Local practice history: 1 of 3 visible cases practiced.');
+
+  const expectedDomains = [
+    ['Safety', '1/4'],
+    ['Psychosis', '1/2'],
+    ['Family', '1/3'],
+    ['Medication', '1/2'],
+    ['Rupture', '0/3'],
+    ['Guarded', '0/1'],
+  ];
+  const desktopDomains = desktopDetails.getByRole('group', { name: 'Communication skill domain progress' });
+  for (const [label, count] of expectedDomains) {
+    await expect(desktopDomains.getByRole('group', { name: `${label}: ${count.replace('/', ' of ')} practiced` })).toBeVisible();
+  }
+
+  await desktop.getByRole('button', { name: 'Medication', exact: true }).click();
+  await expect(desktop.locator('.sidehead')).toHaveText('4 of 10 practiced');
+  desktopDetails = desktop.locator('[data-practice-details]');
+  await desktopDetails.getByText('Practice details', { exact: true }).click();
+  await expect(desktopDetails).toContainText('Local practice history: 1 of 2 visible cases practiced.');
+
+  const mobileDetails = page.locator('#case-picker [data-practice-details]');
+  expect((await mobileDetails.textContent()).replace(/\s+/g, ' ').trim()).toBe(
+    (await desktopDetails.textContent()).replace(/\s+/g, ' ').trim(),
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('[data-mobile-summary]')).toContainText('4 of 10 practiced');
+  await page.getByRole('button', { name: 'Browse cases' }).click();
+  await mobileDetails.getByText('Practice details', { exact: true }).click();
+  await expect(mobileDetails).toBeVisible();
+  await expect(mobileDetails).toContainText('Local practice history: 1 of 2 visible cases practiced.');
+  const mobileDomains = mobileDetails.getByRole('group', { name: 'Communication skill domain progress' });
+  for (const [label, count] of expectedDomains) {
+    await expect(mobileDomains.getByRole('group', { name: `${label}: ${count.replace('/', ' of ')} practiced` })).toBeVisible();
+  }
 });
 
 test('desktop navigator maps stored practice quality to one status per case', async ({ page }) => {
@@ -681,6 +752,40 @@ test('related case progression returns to orient', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('related progression keeps the destination visible in the active navigator', async ({ page }) => {
+  await openTool(page, '?case=family_meeting_opening_001&filter=family');
+  await startAndFinish(page);
+  await page.locator('[data-choice-id="b"]').click();
+  await page.getByRole('button', { name: 'Try the next related case' }).click();
+
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#phase-heading')).toBeFocused();
+  await expect(page.locator('[data-desktop-navigator] [data-filter="family"]')).toHaveAttribute('aria-pressed', 'true');
+  const desktopCurrent = page.locator('[data-desktop-navigator] [data-case-select][aria-current="true"]');
+  const mobileCurrent = page.locator('#case-picker [data-case-select][aria-current="true"]');
+  await expect(desktopCurrent).toHaveCount(1);
+  await expect(mobileCurrent).toHaveCount(1);
+  const destination = await desktopCurrent.getAttribute('data-case-select');
+  expect(destination).not.toBe('family_meeting_opening_001');
+  await expect(mobileCurrent).toHaveAttribute('data-case-select', destination);
+  await expect(page.locator('#phase-heading')).toHaveText(await desktopCurrent.locator('.case-title').innerText());
+});
+
+test('deeper coaching preserves tailored supervisor huddles', async ({ page }) => {
+  for (const [caseId, prompt] of [
+    ['medication_ambivalence_001', 'After this line lands, what would tell me I am exploring ambivalence instead of persuading?'],
+    ['guardedness_privacy_001', 'After this line lands, how can I lower pressure while still explaining safety limits clearly?'],
+    ['collateral_questions_001', 'After this line lands, what family system detail or collateral question would most change the plan?'],
+  ]) {
+    await openTool(page, `?case=${caseId}`);
+    await startAndFinish(page);
+    await page.locator('[data-choice-id="b"]').click();
+    const coaching = page.locator('[data-deeper-coaching]');
+    await coaching.getByText('Deeper coaching', { exact: true }).click();
+    await expect(coaching.getByText(prompt, { exact: true })).toBeVisible();
+  }
+});
+
 test('case and filter changes interrupt speaking', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
   const errors = collectRuntimeErrors(page);
@@ -708,8 +813,11 @@ test('matching filters interrupt speaking without stale activity', async ({ page
   const errors = collectRuntimeErrors(page);
   await openTool(page, '?case=guardedness_privacy_001');
   await page.getByRole('button', { name: 'Start 20-second response' }).click();
-  await page.locator('[data-desktop-navigator]').getByRole('button', { name: 'Psychosis', exact: true }).click();
+  const psychosisFilter = page.locator('[data-desktop-navigator]').getByRole('button', { name: 'Psychosis', exact: true });
+  await tabUntilFocused(page, psychosisFilter);
+  await page.keyboard.press('Enter');
   await expectPhase(page, 'orient', 1);
+  await expect(page.locator('#phase-heading')).toBeFocused();
   await expect(page.locator('#rep-status')).toHaveText('');
   await page.clock.fastForward(30_000);
   await expectPhase(page, 'orient', 1);
