@@ -136,6 +136,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Unit — evidence registry"),
             ("name", "Validate — evidence registry and generated views"),
             ("name", "Unit — citation surveillance"),
+            ("name", "Unit — resource intake sanitization"),
             ("name", "Validate — topic_meta.json contract"),
             ("name", "Validate — longitudinal case contract"),
             ("name", "Unit — shelf/COMAT question bank data-quality gate"),
@@ -293,7 +294,7 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "ci.yml": "141d5719392ed720735616e7b9b1df5fd4ec8e9b2c122c5b1dd08e5670f42645",
+    "ci.yml": "fe74d532df3685097a49442b18a712f9b3ffd9d43f4620d97abc01bf91ccffd0",
     "maintenance-governance-digest.yml": (
         "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
     ),
