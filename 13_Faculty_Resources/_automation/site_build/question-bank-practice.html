@@ -111,6 +111,13 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body
 .sum-card .v{font-family:var(--font-head);font-size:1.4rem;color:var(--text)}
 .sum-card .v small{font-size:.75rem;color:var(--text-light);font-family:var(--font-body)}
 .cal-warn{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:0 8px 8px 0;padding:10px 13px;font-size:.86rem;color:var(--warning);margin-bottom:14px}
+/* Un-attested items are served but always labelled (2026-07-15 decision log). Same
+   warning tokens as .cal-warn/.chip-draft, which clear WCAG AA at normal size in both
+   themes (--warning on --warning-light: 5.06:1 light, 4.74:1 dark). The wording states
+   the status outright, so the meaning never rests on colour or on the icon. */
+.draft-notice{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:0 8px 8px 0;padding:10px 13px;font-size:.86rem;color:var(--warning);margin:12px 18px 0}
+.setup-draft-note{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:0 8px 8px 0;padding:10px 13px;font-size:.86rem;color:var(--warning);margin:0 0 14px}
+.setup-draft-note .chip-draft{margin-right:4px}
 .sum-certlist{margin-bottom:16px}
 .sum-certlist h3{font-family:var(--font-head);font-size:.95rem;color:var(--text);margin:0 0 8px}
 .sum-certlist .row{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:.84rem}
@@ -301,14 +308,18 @@ function buildQueue(items, catFilter, diffFilter, sizeLimit){
   return q;
 }
 
-/* Items eligible to serve to learners: faculty-attested, non-retired only. Drafts and
-   retired near-duplicates (per question_bank.schema.json) never reach the learner pool.
-   The faculty REVIEW_CONTEXT path in init() reads BANK.items directly, so draft items
-   stay previewable from the attestation console. */
+/* Items eligible to serve to learners. Retired items (near-duplicate/redundant per
+   question_bank.schema.json) are NEVER queued. Drafts ARE served, and every surface that
+   shows one labels it — see renderMeta() and the .draft-notice callout in renderQuestion().
+
+   Policy, not an oversight: the 2026-07-15 decision log
+   (docs/superpowers/plans/2026-07-15-audit-remediation-master.md) records "Keep serving
+   un-attested draft qbank items (marked) — do not gate the practice bank to attested-only",
+   confirmed by Dr. Moss. a04a848 gated it to attested-only anyway and the pool fell 192->143;
+   this restores the documented behaviour. Drafts remain drafts: `status` is still the source
+   of truth, nothing here mutates it, and attestation stays server-side. */
 function activeItems(){
-  return (BANK && BANK.items ? BANK.items : []).filter(function(it){
-    return !it.retired && it.status==='attested';
-  });
+  return (BANK && BANK.items ? BANK.items : []).filter(function(it){ return !it.retired; });
 }
 
 /* ---- rendering helpers -------------------------------------------------------- */
@@ -327,9 +338,19 @@ function renderSetup(){
     if(cats[k]) catOpts+='<option value="'+k+'">'+CAT_LABELS[k]+'</option>';
   });
   var total = items.length;
+  var draftCount = items.filter(function(it){ return it.status!=='attested'; }).length;
   return '<div class="setup">'
     +'<h2>Practice bank</h2>'
-    +'<p class="sub">'+total+' faculty-attested items across 12 categories. Select filters, then start. Draft items pending faculty review and retired near-duplicates are excluded.</p>'
+    +'<p class="sub">'+total+' items across 12 categories. Select filters, then start. '
+      +'Retired near-duplicates are excluded.</p>'
+    +(draftCount
+      ? '<p class="setup-draft-note" role="note">'
+        +'<span class="chip chip-draft"><span aria-hidden="true">&#9888;</span> Draft — not yet faculty-reviewed</span> '
+        +draftCount+' of these '+total+' questions carry this label. They have not yet been '
+        +'reviewed by faculty, so treat their answers and explanations as unverified — check them '
+        +'against a primary source before relying on them clinically. Every draft is labelled again '
+        +'on the question itself.</p>'
+      : '')
     +'<div class="filters">'
     +'<div class="field"><label for="f-cat">Category</label><select id="f-cat">'+catOpts+'</select></div>'
     +'<div class="field"><label for="f-diff">Difficulty</label><select id="f-diff"><option value="all">All levels</option><option value="1">1 — Recognition</option><option value="2">2 — Shelf-standard</option><option value="3">3 — Stretch</option></select></div>'
@@ -349,7 +370,9 @@ function renderMeta(item){
   if(item.type==='two-tier') h+='<span class="chip">Two-tier</span>';
   if(item.type==='relational') h+='<span class="chip chip-rel">Relational</span>';
   if(item.hy) h+='<span class="chip chip-hy">&#9733; High-yield</span>';
-  if(item.status==='draft') h+='<span class="chip chip-draft">&#9888; Pending faculty review</span>';
+  /* The glyph is decorative — the wording carries the meaning, so the label never depends
+     on colour or on the icon being announced. */
+  if(item.status!=='attested') h+='<span class="chip chip-draft"><span aria-hidden="true">&#9888;</span> Draft — not yet faculty-reviewed</span>';
   h += '</div>';
   return h;
 }
@@ -464,9 +487,23 @@ function getFeedbackHtml(item, selectedKey, tier2Key, confidence, correct, twoTi
   return h;
 }
 
+/* Un-attested items are served (2026-07-15 decision) but never served silently: the meta
+   chip above marks them at a glance, and this callout states plainly what "draft" means
+   before the learner reads the stem. role="note" so it is reachable as its own region and
+   is not mistaken for part of the question. */
+function renderDraftNotice(item){
+  if(item.status==='attested') return '';
+  return '<div class="draft-notice" role="note">'
+    +'<strong><span aria-hidden="true">&#9888;</span> Draft — not yet faculty-reviewed.</strong> '
+    +'This question and its explanation have not been checked by faculty. Practise with it, '
+    +'but verify anything you would act on against a primary source.'
+    +'</div>';
+}
+
 function renderQuestion(item){
   var h = '<div class="qcard">';
   h += renderMeta(item);
+  h += renderDraftNotice(item);
   h += '<div class="qcard-stem">';
   if(item.type==='relational'&&item.subtype){
     h += '<span class="subtype">'+esc(SUBTYPE_LABELS[item.subtype]||item.subtype)+'</span>';
