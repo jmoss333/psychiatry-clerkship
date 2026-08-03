@@ -37,6 +37,17 @@ python3 "$LIB/13_Faculty_Resources/_automation/validate_reconnect_snapshot_prove
 python3 "$LIB/13_Faculty_Resources/_automation/validate_crisis_resources.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_tool_governance.py"
 
+# Node contract suites — the light half of an intentional heavy/light split.
+# Dependency-free (no npm install) and fast (~2 s combined), so they run inside
+# the Netlify publish gate as well as CI: deploy correctness must not depend on
+# GitHub Actions availability (July 2026 billing-outage precedent). The heavier
+# npm-dependent suites (sp-proxy, sp-interview run-all.sh, Playwright smoke)
+# stay CI-only — see .github/workflows/ci.yml.
+echo "── Node contract tests: tests/*.test.mjs"
+node --test "$LIB"/tests/*.test.mjs
+echo "── WCAG contrast tokens: tests/contrast-check.mjs"
+node "$LIB/tests/contrast-check.mjs"
+
 case "$SITE" in
   ms3)
     echo "── build: MS3 → $MS3_OUT"
