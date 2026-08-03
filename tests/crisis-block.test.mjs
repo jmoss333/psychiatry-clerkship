@@ -113,3 +113,20 @@ test('no safety surface hand-maintains a crisis number inline', () => {
     );
   }
 });
+
+test('resident derivation has a crisis injection path and required-surface assertion (pipeline symmetry)', () => {
+  const residentSrc = fs.readFileSync(
+    path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', 'resident_section.py'),
+    'utf8',
+  );
+  assert.match(residentSrc, /import crisis_block/, 'resident_section.py must import crisis_block');
+  assert.match(residentSrc, /inject_markdown/, 'resident-written markdown must pass through inject_markdown');
+  assert.match(residentSrc, /inject_html/, 'resident-written tools must pass through inject_html');
+  assert.match(residentSrc, /_RES_CRISIS_REQUIRED_MD/, 'resident build must declare a required-surface md set');
+  assert.match(residentSrc, /_RES_CRISIS_REQUIRED_TOOLS/, 'resident build must declare a required-surface tool set');
+  assert.match(
+    residentSrc,
+    /BUILD ABORTED — crisis-contact block missing/,
+    'a required resident surface losing its crisis block must hard-fail the build',
+  );
+});
