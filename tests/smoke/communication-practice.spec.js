@@ -391,17 +391,18 @@ test('spoken reps request no media and accept no text', async ({ page }) => {
 });
 
 test('all faculty review statuses are labeled truthfully within the orient budget', async ({ page }) => {
+  const reviewer = 'Faculty <Review> & Longitudinal Quality Council';
   await page.route('**/communication_cases.json', async (route) => {
     const response = await route.fetch();
     const data = await response.json();
-    data.cases[0].facultyReview = { status: 'reviewed', reviewer: 'Faculty reviewer', lastReviewed: '2026-08-01' };
+    data.cases[0].facultyReview = { status: 'reviewed', reviewer, lastReviewed: '2026-08-01' };
     data.cases[1].facultyReview = { status: 'pending', reviewer: '', lastReviewed: '' };
     data.cases[2].facultyReview = { status: 'retired', reviewer: '', lastReviewed: '' };
     data.cases[3].facultyReview = { status: 'draft', reviewer: '', lastReviewed: '' };
     await route.fulfill({ response, json: data });
   });
   for (const [caseId, label] of [
-    ['suicide_direct_question_001', 'Reviewed · Faculty reviewer · 2026-08-01'],
+    ['suicide_direct_question_001', 'Reviewed'],
     ['psychosis_validation_001', 'Pending faculty review'],
     ['guardedness_privacy_001', 'Retired'],
     ['rupture_limit_setting_001', 'Draft · faculty review needed'],
@@ -409,8 +410,28 @@ test('all faculty review statuses are labeled truthfully within the orient budge
     await openTool(page, `?case=${caseId}`);
     const panel = page.locator('[data-rep-panel][data-phase="orient"]');
     await expect(panel.getByText(label, { exact: true })).toBeVisible();
+    await expect(panel).not.toContainText(reviewer);
+    await expect(panel).not.toContainText('2026-08-01');
     expect(await visibleWordCount(panel), `Orient word budget for ${caseId}`).toBeLessThan(60);
   }
+});
+
+test('reviewer attribution remains escaped inside deeper coaching', async ({ page }) => {
+  const reviewer = 'Faculty <Review> & Longitudinal Quality Council';
+  await page.route('**/communication_cases.json', async (route) => {
+    const response = await route.fetch();
+    const data = await response.json();
+    data.cases[0].facultyReview = { status: 'reviewed', reviewer, lastReviewed: '2026-08-01' };
+    await route.fulfill({ response, json: data });
+  });
+  await openTool(page, '?case=suicide_direct_question_001');
+  await expect(page.locator('[data-rep-panel]')).not.toContainText(reviewer);
+  await startAndFinish(page);
+  await page.locator('[data-choice-id="b"]').click();
+  const attribution = page.getByText(`Reviewed by ${reviewer} on 2026-08-01.`, { exact: true });
+  await expect(attribution).toBeHidden();
+  await page.locator('[data-deeper-coaching] summary').click();
+  await expect(attribution).toBeVisible();
 });
 
 test('storage contract preserves prior and unrelated data', async ({ page }) => {
@@ -907,16 +928,26 @@ test('no-match filters interrupt speaking and recover at orient', async ({ page 
   });
   await openTool(page);
   const navigator = page.locator('[data-desktop-navigator]');
-  await page.getByRole('button', { name: 'Start 20-second response' }).click();
-  await navigator.getByRole('button', { name: 'Family', exact: true }).click();
+  const storedBefore = await page.evaluate(() => localStorage.getItem('cw_comm_v1'));
+  const start = page.getByRole('button', { name: 'Start 20-second response' });
+  await tabUntilFocused(page, start);
+  await page.keyboard.press('Enter');
+  const familyFilter = navigator.getByRole('button', { name: 'Family', exact: true });
+  await tabUntilFocused(page, familyFilter);
+  await page.keyboard.press('Enter');
   await expect(page.locator('[data-rep-panel]')).toHaveCount(0);
   await expect(page.locator('#rep-status')).toHaveText('');
+  const showAll = navigator.getByRole('button', { name: 'Show all cases' });
+  await expect(showAll).toBeFocused();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBe(storedBefore);
   await page.clock.fastForward(30_000);
   await expect(page.locator('[data-rep-panel]')).toHaveCount(0);
   await expect(page.locator('#rep-status')).toHaveText('');
-  await navigator.getByRole('button', { name: 'Show all cases' }).click();
+  await expect(showAll).toBeFocused();
+  await page.keyboard.press('Enter');
   await expectPhase(page, 'orient', 1);
   await expect(page.locator('#phase-heading')).toBeFocused();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBe(storedBefore);
   expect(errors).toEqual([]);
 });
 
