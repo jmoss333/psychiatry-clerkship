@@ -8,7 +8,7 @@ derived from this file's location, mirroring oe_scanner/oe_scan.py.
 Stdlib-only so it runs in CI and locally with no install. The canonical evidence
 registry is projected into the collectors' legacy-shaped dictionary.
 """
-import os, re, csv, json, hashlib, datetime, sys
+import os, re, csv, json, hashlib, datetime, sys, urllib.request
 from pathlib import Path
 
 HERE = os.path.dirname(os.path.abspath(__file__))            # .../surveillance/bin
@@ -112,6 +112,41 @@ def ensure_fingerprint(f):
         signature = ev.get("new_hash") or ev.get("redirect_to") or f.get("source_url") or f.get("summary", "")
         f["fingerprint"] = fingerprint(f["source_id"], f["change_type"], signature)
     return f["fingerprint"]
+
+# ---------------------------------------------------------------- crawled-input hygiene
+# One sanitizer for every crawled-origin string that reaches a markdown surface
+# (issue bodies, monthly digests, issue titles). Crawled pages are untrusted:
+# a hostile <title> must not inject fences, links, images, or HTML into
+# repo-committed files or faculty/agent-read issues (issue #108).
+_CTRL_RE = re.compile(r"[\x00-\x1f\x7f]")
+_MARKUP_TRANS = str.maketrans({"`": "'", "<": "(", ">": ")", "[": "(", "]": ")", "|": "/"})
+_SAFE_URL_RE = re.compile(r"^https?://[^\s`<>\[\]|\\'\"]+$")
+
+def sanitize_crawled_text(text, max_len=200):
+    """Strip control chars/newlines, disarm markdown/HTML metacharacters, cap length."""
+    cleaned = _CTRL_RE.sub(" ", str(text or ""))
+    cleaned = " ".join(cleaned.translate(_MARKUP_TRANS).split())
+    return cleaned[:max_len]
+
+def sanitize_crawled_url(url):
+    """Return url only if it is a plain absolute http(s) URL safe to embed in
+    markdown; else ''. Unsafe crawled URLs are dropped, not repaired."""
+    url = str(url or "").strip()
+    return url if _SAFE_URL_RE.match(url) else ""
+
+# ---------------------------------------------------------------- apify auth
+APIFY_CRAWLER_URL = ("https://api.apify.com/v2/acts/apify~website-content-crawler/"
+                     "run-sync-get-dataset-items")
+
+def build_apify_request(payload, token):
+    """Authenticated Apify request. The token travels ONLY in the Authorization
+    header — never in the URL, where it would leak into proxy/access/error logs
+    and urllib exception text in CI logs."""
+    req = urllib.request.Request(APIFY_CRAWLER_URL,
+                                 data=json.dumps(payload).encode(), method="POST")
+    req.add_header("Content-Type", "application/json")
+    req.add_header("Authorization", "Bearer %s" % token)
+    return req
 
 # ---------------------------------------------------------------- GitHub rendering
 FP_MARKER = "<!-- surveillance:fp={fp} -->"
