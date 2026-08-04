@@ -546,7 +546,8 @@ def build_index(records: list[PdfRecord], tool_entries: list[WebsiteEntry], gene
     )
     lines.extend(["", "| Title | Source | Site slug |", "|---|---|---|"])
     for entry in tool_entries:
-        lines.append(f"| {entry.title.replace('|', '\\|')} | {entry.source_path} | {entry.site_slug} |")
+        escaped_title = entry.title.replace("|", "\\|")
+        lines.append(f"| {escaped_title} | {entry.source_path} | {entry.site_slug} |")
     lines.append("")
     return "\n".join(lines)
 

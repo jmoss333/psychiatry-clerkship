@@ -119,7 +119,11 @@ if os.path.isdir(_aud): shutil.copytree(_aud, OUT+"/audio")
 
 # ---- OE NotebookLM brief audio: copy + deck-align into quizzes.json (exact-title join) ----
 import csv as _csv, re as _re2
-_oedir=LIB+"/13_Faculty_Resources/Handoffs/openevidence_notebooklm_brief_audio_2026-06-30"
+# OE NotebookLM brief audio is a hard deploy input (live /audio_oe/ media).
+# Fail closed below: a moved or missing source dir must abort the build, not
+# silently ship a site with no OE audio (the pre-2026-08 Handoffs/ path was
+# nearly deleted as stale precisely because this block used to skip silently).
+_oedir=LIB+"/12_Media/audio_oe"
 if os.path.isdir(_oedir) and os.path.exists(_oedir+"/MANIFEST.csv"):
     os.makedirs(OUT+"/audio_oe", exist_ok=True)
     _oemap={}
@@ -140,6 +144,8 @@ if os.path.isdir(_oedir) and os.path.exists(_oedir+"/MANIFEST.csv"):
             _na+=1
     json.dump(_q, open(_qp,"w",encoding="utf-8"))
     print("OE audio: copied",len(_oemap),"files | deck-aligned",_na,"quiz decks")
+else:
+    _abort_missing([_oedir+"/MANIFEST.csv"])
 _rv=LIB+"/13_Faculty_Resources/reviewed.json"
 shutil.copy2(_rv, OUT+"/reviewed.json") if os.path.exists(_rv) else open(OUT+"/reviewed.json","w").write("{}")
 _tm=LIB+"/topic_meta.json"
@@ -334,12 +340,11 @@ print("tools:",len(tools)," md copied:",len(md)-len(missing)," missing:",missing
 # tools bypassed them entirely. assert_page_contract() at the end of this file
 # hard-fails any shipped page a transform silently missed.
 import glob as _glob
-import time as _time
 common.strip_review_banners(OUT)
 common.apply_contrast_fix(
     _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]
 )
-_QV=str(int(_time.time()))          # cache-bust for quizzes.json
+_QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
 common.apply_full_page_pass(OUT, cache_bust=_QV)
 
 

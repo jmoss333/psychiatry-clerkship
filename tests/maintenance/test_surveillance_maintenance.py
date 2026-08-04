@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -338,6 +339,54 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
             findings = run_citation_check.check_citations(self.temp_dir, checked)
         self.assertEqual(findings, [])
         self.assertEqual(checked, ["doi:10.1000/example"])
+
+    def test_fingerprint_marker_roundtrips_dotted_link_fingerprints(self):
+        # Link-monitor fingerprints embed URL domains ('link:www.samhsa.gov::...').
+        # A character class missing '.' truncated read-back to 'link:www', so the
+        # same finding re-filed as a new issue every weekly run (#211/#246/#265).
+        fingerprint = "link:www.samhsa.gov::broken-link::6bae3107ce29193b"
+        body = L.FP_MARKER.format(fp=fingerprint)
+        match = L.FP_RE.search(body)
+        self.assertIsNotNone(match)
+        self.assertEqual(match.group(1), fingerprint)
+
+    def test_issue_snapshot_preserves_dotted_domain_fingerprints(self):
+        raw = [
+            {
+                "number": 265,
+                "html_url": "https://github.com/owner/repo/issues/265",
+                "state": "open",
+                "closed_at": None,
+                "body": "<!-- surveillance:fp=link:www.samhsa.gov::broken-link::6bae3107ce29193b -->",
+                "labels": [{"name": "surveillance"}],
+            },
+        ]
+        snapshot = sync_findings.normalize_issue_snapshot(raw)
+        self.assertEqual(
+            [item["fingerprint"] for item in snapshot],
+            ["link:www.samhsa.gov::broken-link::6bae3107ce29193b"],
+        )
+
+    def test_lychee_excludes_surveillance_generated_tree(self):
+        config = tomllib.loads((SURV / "lychee.toml").read_text(encoding="utf-8"))
+        self.assertIn(
+            "13_Faculty_Resources/_automation/surveillance",
+            config.get("exclude_path", []),
+            "link monitor must not crawl its own committed reports "
+            "(STATUS.md / history/) — that files phantom findings",
+        )
+
+    def test_lychee_excludes_superpowers_planning_docs(self):
+        # docs/superpowers/{plans,specs}/ are dated internal design docs (see repo
+        # CLAUDE.md), not learner-facing curriculum. They routinely quote example
+        # localhost URLs (dev-server walkthroughs) that 404 in CI and file phantom
+        # findings-about-findings, e.g. #288 (localhost:8080 in a WS2 review plan).
+        config = tomllib.loads((SURV / "lychee.toml").read_text(encoding="utf-8"))
+        self.assertIn(
+            "docs/superpowers",
+            config.get("exclude_path", []),
+            "link monitor must not crawl dated plan/spec docs under docs/superpowers/",
+        )
 
     def test_issue_snapshot_normalization_excludes_pull_requests(self):
         raw = [

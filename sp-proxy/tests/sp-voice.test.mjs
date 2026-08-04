@@ -395,7 +395,14 @@ async function errorBody(response) {
 }
 
 test('exports the exact Netlify path and disabled health reads no pack, provider key, body, or budget', async () => {
-  assert.deepEqual(netlifyConfig, { path: '/api/sp/voice' });
+  assert.deepEqual(netlifyConfig, {
+    path: '/api/sp/voice',
+    rateLimit: {
+      windowLimit: 20,
+      windowSize: 60,
+      aggregateBy: ['ip', 'domain'],
+    },
+  });
   const harness = dependencies();
   const handler = createVoiceHandler(harness.input);
 

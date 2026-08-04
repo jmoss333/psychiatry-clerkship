@@ -8,9 +8,9 @@ references it. Internal RSS/RSSM naming is retained here; a public mirror would 
 
 ## Start here
 - `00_START_HERE/COMPREHENSIVE_NOTEBOOKLM_RESOURCE.md` — uploadable NotebookLM master resource for the full clerkship library.
-- `_AUDIT_AND_ROADMAP.md` — the full audit, gap analysis, curriculum, and roadmap (Phases 1–9).
+- `docs/superpowers/plans/_AUDIT_AND_ROADMAP.md` — the full audit, gap analysis, curriculum, and roadmap (Phases 1–9).
 - `_MASTER_INDEX.xlsx` — searchable index of catalogued assets (filter by status/priority/category).
-- `_CODEX_AUDIT_INTEGRATION.md` — verdict + merge log for the parallel Codex audit (exhaustive 11,700-file census + MS3 student pack now folded in).
+- `99_Archive/root-planning-2026-07/_CODEX_AUDIT_INTEGRATION.md` — verdict + merge log for the parallel Codex audit (exhaustive 11,700-file census + MS3 student pack now folded in).
 - `00_START_HERE/` — orientation, syllabus, "A Day on the Unit"; `_audit-census-codex/` holds the exhaustive census + parallel reports.
 
 ## Built so far (live content)
