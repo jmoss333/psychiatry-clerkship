@@ -584,18 +584,23 @@ test('malformed members cannot shrink a four-item batch below the balance thresh
   assert.deepEqual(codes(result.issues), ['batch.answer_key_balance']);
 });
 
-test('current repository bank has 189 blocker-free active items and documents the all-A draft cohort', () => {
+test('current repository bank has 189 blocker-free active items, mostly-A draft cohort plus one demoted attested item', () => {
   const bank = JSON.parse(fs.readFileSync(path.join(repo, 'question_bank.json'), 'utf8'));
   const manifest = JSON.parse(fs.readFileSync(path.join(repo, '13_Faculty_Resources/_automation/site_build/site_manifest.json'), 'utf8'));
   const manifestPages = (manifest.md || []).map(([, slug]) => slug);
   const result = assessBank(bank.items, { manifestPages, activeItems: bank.items });
 
+  // qb_pha_011 was demoted from attested to draft (clozapine ANC-monitoring
+  // wording correction, post-2025 REMS elimination -- see PR #280) -- its
+  // correct answer is B, not A, so it's a legitimate exception to the
+  // "all-A draft cohort" pattern rather than a fresh AI-drafted item with
+  // an unretouched key.
   assert.equal(result.counts.total, 189);
-  assert.equal(result.counts.draft, 46);
-  assert.equal(result.counts.attested, 143);
+  assert.equal(result.counts.draft, 47);
+  assert.equal(result.counts.attested, 142);
   assert.equal(Object.keys(result.byId).length, 189);
   assert.equal(Object.values(result.byId).flatMap(entry => entry.blockers).length, 0);
-  assert.deepEqual(result.answerKeys, { A: 46, B: 0, C: 0, D: 0 });
+  assert.deepEqual(result.answerKeys, { A: 46, B: 1, C: 0, D: 0 });
   for (const item of bank.items.filter(entry => entry.retired)) {
     assert.equal(Object.hasOwn(result.byId, item.id), false);
   }
