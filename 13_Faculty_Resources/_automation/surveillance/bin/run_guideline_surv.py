@@ -106,10 +106,7 @@ def fetch_apify(source, token):
         "respectRobotsTxtFile": True,
         "proxyConfiguration": {"useApifyProxy": True},
     }
-    url = ("https://api.apify.com/v2/acts/apify~website-content-crawler/"
-           f"run-sync-get-dataset-items?token={token}")
-    req = urllib.request.Request(url, data=json.dumps(payload).encode(), method="POST")
-    req.add_header("Content-Type", "application/json")
+    req = L.build_apify_request(payload, token)
     with urllib.request.urlopen(req, timeout=300) as r:
         items = json.loads(r.read().decode() or "[]")
     return "\n".join((it.get("text") or it.get("markdown") or "") for it in items)
@@ -121,6 +118,7 @@ def main():
     ap.add_argument("--baseline-dir", default=L.BASELINES)
     ap.add_argument("--source", help="only this source_id")
     ap.add_argument("--fixture", help="offline: JSON map source_id -> extracted text")
+    ap.add_argument("--checked-out", default="checked-sources.json")
     args = ap.parse_args()
 
     reg = L.load_registry()
@@ -141,16 +139,21 @@ def main():
         except Exception as e:
             print(f"  ! fetch failed for {s['id']}: {e}", file=sys.stderr)
             raw = ""
+        else:
+            checked.append(s["id"])
         finding, record = evaluate(s, raw, args.baseline_dir)
         if record is not None:
-            json.dump(record, open(os.path.join(args.baseline_dir, f"{s['id']}.json"), "w",
-                                   encoding="utf-8"), indent=2)
+            baseline_path = os.path.join(args.baseline_dir, f"{s['id']}.json")
+            with open(baseline_path, "w", encoding="utf-8") as fh:
+                json.dump(record, fh, indent=2)
         if finding:
             findings.append(finding)
-        checked.append(s["id"])
         print(f"  {s['id']}: {'CHANGE' if finding and finding['change_type']=='modified' else ('ALARM' if finding else 'ok')}")
 
-    json.dump(findings, open(args.out, "w", encoding="utf-8"), indent=2)
+    with open(args.out, "w", encoding="utf-8") as fh:
+        json.dump(findings, fh, indent=2)
+    with open(args.checked_out, "w", encoding="utf-8") as fh:
+        json.dump(L.validate_checked_sources(checked), fh, indent=2)
     print(f"guideline-surveillance: {len(findings)} finding(s) across {len(checked)} source(s) -> {args.out}")
 
 

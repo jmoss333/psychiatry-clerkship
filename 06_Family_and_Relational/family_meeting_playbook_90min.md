@@ -40,6 +40,8 @@ Chart who attended, the consent and disclosure limits, the shared understanding 
 
 Letting information-sharing eat the whole meeting; correcting expressed emotion instead of understanding it; promising what the system can't deliver; running the meeting *at* the family rather than *with* them; and convening so late that there's no time to act on what you learn.
 
+<!-- crisis-block -->
+
 **Pair with** the [Family Therapy Modalities](?page=family_modalities.md) overview and the expressed-emotion teaching, the [Family & Discharge](?page=exp_family.md) module, and Week 4 of the curriculum.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

@@ -337,7 +337,9 @@ test('--print-config reports the default CI mappings without starting servers', 
   assert.doesNotMatch(result.stdout, /Servers ready/);
 });
 
-test('launcher serves all three configured marker sites and leaves their PIDs alive', async (t) => {
+test('launcher serves all three configured marker sites and leaves their PIDs alive', {
+  skip: process.env.NETLIFY === 'true' && 'server spawning is blocked in Netlify build containers',
+}, async (t) => {
   const context = createTestContext(t);
   const reservations = await reserveLoopbackPorts(4);
   const ports = reservations.slice(0, 3).map(({ port }) => port);

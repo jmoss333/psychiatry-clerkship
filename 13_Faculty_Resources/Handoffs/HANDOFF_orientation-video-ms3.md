@@ -18,7 +18,7 @@ Everything below edits **library source + build scripts**, never a deploy folder
 
 ## Why (context)
 
-`Design-Plan-Alignment-and-Video_2026-07-02.md` evaluated this video *for the MS3 `orientation.md` page*. It ended up wired into `resident_section.py`'s `PROTO_TOOLS` instead — likely grouped in with the other 3 hand-built resident prototypes (`rp-agitation`, `rp-brief-psych`, `rp-canon-quiz`) without re-checking audience fit.
+`Design-Plan-Alignment-and-Video_2026-07-02.md` (now archived at 99_Archive/root-planning-2026-07/) evaluated this video *for the MS3 `orientation.md` page*. It ended up wired into `resident_section.py`'s `PROTO_TOOLS` instead — likely grouped in with the other 3 hand-built resident prototypes (`rp-agitation`, `rp-brief-psych`, `rp-canon-quiz`) without re-checking audience fit.
 
 ## Changes
 

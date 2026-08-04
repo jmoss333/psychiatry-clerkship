@@ -684,6 +684,8 @@ export function startFacultyConsole({
       }
       state.server = { ...payload, student: studentBase.href };
       state.reviewItems = reviewItems;
+      // Attribution is server-derived (ATTESTER_NAME); the console only displays it.
+      state.reviewerLabel = text(payload.attester) || DEFAULT_REVIEWER;
       const contentHoldKey = expectedContentStatus?.status === 'reviewed'
         ? confirmedContentItem?.key || null
         : null;
@@ -1507,17 +1509,11 @@ export function startFacultyConsole({
     if (!state.server) return;
     renderedIssueRecords = [];
     document.title = 'Faculty attestation workspace';
-    const reviewer = el('input', {
+    // Read-only: attribution comes from the server (ATTESTER_NAME), never the browser.
+    const reviewer = el('p', {
       id: 'reviewer-label',
-      type: 'text',
-      maxlength: '80',
-      value: state.reviewerLabel,
-      onInput: event => {
-        state.reviewerLabel = event.target.value;
-        const current = document.getElementById('current-reviewer-label');
-        if (current) current.textContent = state.reviewerLabel || 'Not provided';
-      },
-    });
+      class: 'reviewer-value',
+    }, [state.reviewerLabel || 'Not provided']);
 
     const item = currentReviewItem();
     const modal = renderNavigationGuard() || renderReopenConfirmation();
@@ -1548,11 +1544,11 @@ export function startFacultyConsole({
       ]),
       el('section', { class: 'reviewer-strip', 'aria-label': 'Reviewer context' }, [
         el('div', { class: 'field' }, [
-          el('label', { for: 'reviewer-label' }, ['Reviewer label']),
+          el('p', { class: 'reviewer-heading' }, ['Reviewer']),
           reviewer,
         ]),
         el('p', { class: 'reviewer-note' }, [
-          'Self-asserted under the shared faculty key; this label is not verified identity.',
+          'Attribution is configured server-side (ATTESTER_NAME) and cannot be edited in the browser.',
         ]),
       ]),
       renderSharedQueueStrip(visibleReviewItems()),
@@ -2733,7 +2729,6 @@ export function startFacultyConsole({
       body: {
         target: 'content',
         changes: { [item.identity]: reviewed },
-        attester: state.reviewerLabel,
       },
     });
   }
@@ -2862,8 +2857,7 @@ export function startFacultyConsole({
           id,
           baseRevision: text(state.original?.revision),
           item: clone(state.editor),
-          attester: state.reviewerLabel,
-        },
+          },
       });
     }
     const { id, body } = snapshot;
@@ -2957,8 +2951,7 @@ export function startFacultyConsole({
             evidence: state.confirmations.evidence,
             originalityAndNoPhi: state.confirmations.originalityAndNoPhi,
           },
-          attester: state.reviewerLabel,
-        },
+          },
       });
     }
     invalidatePreview({ resetAttempt: true });

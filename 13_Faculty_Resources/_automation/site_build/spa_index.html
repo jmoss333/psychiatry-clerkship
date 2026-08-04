@@ -38,9 +38,14 @@
   input.search{width:100%;padding:8px 28px 8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.9rem;background:#fff;color:var(--text)}
   input.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
   .search-wrap .sx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:1rem;display:none}
-  .mode-companion{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:10px;margin:0 0 12px;box-shadow:0 1px 3px rgba(59,51,44,.08)}
-  .mc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
-  .mc-title{font-size:.68rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
+  .mode-companion{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:0;margin:0 0 12px;box-shadow:0 1px 3px rgba(59,51,44,.08);overflow:hidden}
+  .mc-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;background:transparent;color:var(--text);font:inherit;font-weight:900;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:10px;cursor:pointer}
+  .mc-toggle:hover{background:var(--accent-light);color:var(--accent-dark)}
+  .mc-chev{display:inline-block;color:var(--text-light);transition:transform .15s}
+  .mc-toggle[aria-expanded="true"] .mc-chev{transform:rotate(90deg)}
+  .mc-body{padding:0 10px 10px}
+  .mc-body[hidden]{display:none}
+  .mc-head{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:0 0 8px}
   .mc-home{border:1px solid var(--border);background:var(--bg-alt);color:var(--accent-dark);border-radius:999px;padding:3px 8px;font:inherit;font-size:.68rem;font-weight:800;cursor:pointer}
   .mc-home:hover{border-color:var(--accent);background:var(--accent-light)}
   .mc-modes{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 9px}
@@ -114,9 +119,9 @@
   .md-body .table-scroll-viewport{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
   .md-body .table-scroll table{width:max-content;min-width:100%;margin:0}
   .table-scroll-hint{display:none;margin:0 0 5px;color:var(--text-light);font-size:.78rem;font-weight:700;letter-spacing:.02em}
+  .md-body .table-scroll.is-scrollable .table-scroll-hint{display:block}
+  .md-body .table-scroll.is-scrollable::after{content:"";position:absolute;right:1px;bottom:1px;width:28px;height:calc(100% - 24px);pointer-events:none;background:linear-gradient(90deg,transparent,var(--surface))}
   @media(max-width:820px){
-    .md-body .table-scroll.is-scrollable .table-scroll-hint{display:block}
-    .md-body .table-scroll.is-scrollable::after{content:"";position:absolute;right:1px;bottom:1px;width:28px;height:calc(100% - 24px);pointer-events:none;background:linear-gradient(90deg,transparent,var(--surface))}
     .md-body .table-scroll th,.md-body .table-scroll td{min-width:9rem}
     .md-body .table-scroll th:first-child,.md-body .table-scroll td:first-child{min-width:7rem}
   }
@@ -264,12 +269,17 @@
   .md-body .sec-c.open .sec-b{display:block}
   .md-body .sec-b>:first-child{margin-top:6px}
   .mobile-chrome{display:none}
+  .vh-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
   .menubtn{display:none}
   @media(max-width:820px){
     :root{--mobile-bottom-clearance:calc(84px + env(safe-area-inset-bottom,0px))}
     .layout{grid-template-columns:1fr}
     main,#content{min-width:0}
     .mobile-chrome{position:sticky;top:0;z-index:18;display:grid;grid-template-columns:minmax(44px,auto) minmax(0,1fr) minmax(44px,auto);align-items:center;gap:8px;min-height:56px;padding:calc(6px + env(safe-area-inset-top,0px)) 12px 6px;background:var(--bg);border-bottom:1px solid var(--border)}
+    /* #mobileTitle is exposed to the accessibility tree at this breakpoint and already
+       announces route changes; keep #routeStatus desktop-only so mobile AT users don't
+       hear the same route announced twice. */
+    #routeStatus{display:none}
     .menubtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;border:none;border-radius:9px;padding:8px 12px;background:var(--primary-dark);color:#fff;font:inherit;font-weight:700;cursor:pointer}
     .menubtn span{display:none}
     .mobile-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;color:var(--text);font-family:var(--font-head);font-size:1rem;font-weight:600}
@@ -357,6 +367,7 @@
   .hm-li .t{flex:1}
   .hm-li .sec{font-size:.68rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em}
   .hm-empty{color:var(--text-mid);font-size:.94rem}
+  .hm-substat{font-size:.72rem;color:var(--text-mid);margin-top:6px}
   .pt-q{margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid var(--border)}
   .pt-stem{font-weight:600;margin:0 0 8px}
   .pt-opt{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--bg-alt);border-radius:8px;padding:8px 10px;margin:4px 0;font:inherit;color:var(--text);cursor:pointer}
@@ -432,7 +443,7 @@
     <h1>Inpatient Psychiatry</h1>
     <div class="by">MS3 Clerkship · Joshua Moss, MD</div>
     <button id="themeBtn" class="themebtn" type="button" aria-label="Toggle dark mode" title="Switch to dark mode">&#9790;</button>
-    <div class="modetoggle" id="modetoggle"><span class="knob"></span><button id="mPath">&#9678; Path</button><button id="mLib">Library</button></div>
+    <div class="modetoggle" id="modetoggle" role="group" aria-label="Content mode"><span class="knob"></span><button id="mPath" aria-pressed="false">&#9678; Path</button><button id="mLib" aria-pressed="true">Library</button></div>
     <div class="search-wrap">
       <label class="sr-only" for="search">Search the psychiatry clerkship hub</label>
       <input id="search" class="search" type="search" placeholder="Search the hub&hellip;" autocomplete="off" spellcheck="false" aria-label="Search the psychiatry clerkship hub">
@@ -448,6 +459,7 @@
       <span class="mobile-chrome-spacer" aria-hidden="true"></span>
     </div>
     <div class="banner" id="banner"><span id="bannerText">Private teaching site for the MS3 inpatient psychiatry rotation. Educational use; fictional composites only, no PHI. Some pages are pending faculty review.</span><button class="bannerx" id="bannerX" type="button" aria-label="Dismiss notice">&times;</button></div>
+    <span id="routeStatus" class="vh-live" aria-live="polite"></span>
     <div id="content" class="md-body" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></div>
   </main>
 </div>
@@ -463,7 +475,7 @@
   applyThemeIcon();
   fetch('reviewed.json').then(function(r){return r.ok?r.json():{}}).then(function(d){REVIEWED=(d&&d.items)?d.items:(d||{});try{if(currentItem&&REVIEWED[currentItem.f]){ if(currentItem.k==='tool'&&!contentEl.querySelector('.toolrev'))show(currentItem); else if(currentItem.k!=='tool'&&!contentEl.querySelector('.reviewed'))show(currentItem); }}catch(_){ }}).catch(function(){});
   var TOPIC_META={};
-  fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; try{ if(window.__renderModeCompanion) window.__renderModeCompanion(); }catch(_){ } if(currentItem&&TOPIC_META[currentItem.f]&&contentEl&&!contentEl.querySelector('.topic-tpl')) show(currentItem); }).catch(function(){});
+  fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ if(window.__renderModeCompanion) window.__renderModeCompanion(); }catch(_){ } if(currentItem&&TOPIC_META[currentItem.f]&&contentEl&&!contentEl.querySelector('.topic-tpl')) show(currentItem); }).catch(function(){});
   function makeCollapsible(body){
     if(!body) return;
     var kids=[].slice.call(body.children);
@@ -512,7 +524,7 @@
     [].forEach.call(body.querySelectorAll('table'),function(table,index){
       if(table.parentNode&&table.parentNode.classList.contains('table-scroll-viewport'))return;
       var shell=document.createElement('div'); shell.className='table-scroll';
-      var hint=document.createElement('p'); hint.className='table-scroll-hint'; hint.setAttribute('aria-hidden','true'); hint.textContent='Swipe to see all columns';
+      var hint=document.createElement('p'); hint.className='table-scroll-hint'; hint.setAttribute('aria-hidden','true'); hint.textContent='Scroll to see all columns →';
       var viewport=document.createElement('div'); viewport.className='table-scroll-viewport'; viewport.tabIndex=0; viewport.setAttribute('role','region'); viewport.setAttribute('aria-label',tableLabel(table,index));
       table.parentNode.insertBefore(shell,table); shell.appendChild(hint); shell.appendChild(viewport); viewport.appendChild(table);
     });
@@ -527,7 +539,7 @@
   function reviewableTotal(p){ return reviewStats(p).total; }
   function buildReviewButton(file,p){
     p=p||progLoad(); var done=!!(p[file]&&p[file].done);
-    return '<button type="button" class="markrev'+(done?' on':'')+'" data-f="'+esc(file||'')+'" aria-pressed="'+(done?'true':'false')+'">'+(done?'✓ Reviewed':'Mark reviewed')+'</button>';
+    return '<button type="button" class="markrev'+(done?' on':'')+'" data-f="'+esc(file||'')+'" aria-pressed="'+(done?'true':'false')+'">'+(done?'✓ Read':'Mark as read')+'</button>';
   }
   function installTitleReviewButton(file){
     var h1=contentEl.querySelector('h1'); if(!h1)return null;
@@ -538,16 +550,23 @@
   }
   function buildReviewLedger(file){
     var p=progLoad(), stats=reviewStats(p), done=!!(p[file]&&p[file].done), at=done&&p[file].at;
-    var h='<div class="review-ledger" data-review-for="'+esc(file||'')+'"><span class="k">Review coverage</span><span class="v"><span class="revcount">'+stats.done+' of '+stats.total+' reviewable pages</span><span class="review-date">'+(at?(' · reviewed '+esc(at)):' · not yet reviewed')+'</span></span></div>';
+    var h='<div class="review-ledger" data-review-for="'+esc(file||'')+'"><span class="k">Study progress</span><span class="v"><span class="revcount">'+stats.done+' of '+stats.total+' pages read</span><span class="review-date">'+(at?(' · read '+esc(at)):' · not yet read')+'</span></span></div>';
     return h;
   }
   function refreshReviewLedger(file,p){
     p=p||progLoad(); var stats=reviewStats(p), done=!!(p[file]&&p[file].done), at=done&&p[file].at;
-    [].forEach.call(contentEl.querySelectorAll('.revcount'),function(el){ el.textContent=stats.done+' of '+stats.total+' reviewable pages'; });
-    [].forEach.call(contentEl.querySelectorAll('.review-date'),function(el){ el.textContent=at?(' · reviewed '+at):' · not yet reviewed'; });
-    [].forEach.call(contentEl.querySelectorAll('.markrev'),function(el){ if(el.getAttribute('data-f')!==file)return; el.classList.toggle('on',done); el.setAttribute('aria-pressed',String(done)); el.textContent=done?'✓ Reviewed':'Mark reviewed'; });
+    [].forEach.call(contentEl.querySelectorAll('.revcount'),function(el){ el.textContent=stats.done+' of '+stats.total+' pages read'; });
+    [].forEach.call(contentEl.querySelectorAll('.review-date'),function(el){ el.textContent=at?(' · read '+at):' · not yet read'; });
+    [].forEach.call(contentEl.querySelectorAll('.markrev'),function(el){ if(el.getAttribute('data-f')!==file)return; el.classList.toggle('on',done); el.setAttribute('aria-pressed',String(done)); el.textContent=done?'✓ Read':'Mark as read'; });
   }
-  function seedSRS(file){ try{ var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}}; } var id='TOPIC#'+file; if(!s.cards[id]){ s.cards[id]={ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } }catch(_){ } }
+  function topicHasQuiz(file){ var m=(typeof TOPIC_META!=='undefined'&&TOPIC_META)?TOPIC_META[file]:null; return !!(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length); }
+  function seedSRS(file){ try{ if(!topicHasQuiz(file))return; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}}; } var id='TOPIC#'+file; if(!s.cards[id]){ s.cards[id]={ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } }catch(_){ } }
+  /* One-time self-healing migration: drop never-graded TOPIC# cards whose topic has no
+     servable quiz — they were seeded by the unguarded seedSRS, can never be graded in
+     Daily Review, and inflate "Due today" forever. Runs whenever topic_meta loads;
+     idempotent; deliberately refuses to run on an empty TOPIC_META (failed fetch). */
+  function srsDropPhantomTopics(){ try{ if(typeof TOPIC_META==='undefined'||!TOPIC_META||!Object.keys(TOPIC_META).length)return; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1||!s.cards)return; var changed=false; for(var id in s.cards){ if(id.indexOf('TOPIC#')!==0)continue; var c=s.cards[id]; if(c&&!c.reps&&!topicHasQuiz(id.slice(6))){ delete s.cards[id]; changed=true; } } if(changed){ localStorage.setItem('cw_srs_v1',JSON.stringify(s)); if(document.getElementById('hmRoot')&&window.renderHome)renderHome(); } }catch(_){ } }
+  /* ---- end srs seed + phantom migration ---- */
   function ctaHref(h){ h=h||''; var mt=h.match(/^tools\/([^\/?#]+\.html)$/); return mt?('?tool='+mt[1]):h; }
   function ctaAttrs(h){ return /^\?(page|tool)=/.test(h)?'':' target="_blank" rel="noopener"'; }
   var WF_STAGE_LABELS={encounter:'Encounter',diagnosis:'Diagnosis',safety:'Safety',treatment:'Treatment',communication:'Communication',family:'Family',team:'Team',exam:'Exam'};
@@ -758,8 +777,8 @@
     h+='</div></div></details>'; return h;
   }
   var modeEl=document.getElementById('modetoggle'), mPath=document.getElementById('mPath'), mLib=document.getElementById('mLib');
-  function reflectLibrary(){ if(modeEl) modeEl.classList.add('lib'); if(mLib) mLib.classList.add('on'); if(mPath) mPath.classList.remove('on'); contentEl.classList.remove('pathmode'); contentEl.classList.remove('toolmode'); try{localStorage.setItem('cw_mode','library')}catch(_){ } }
-  function showPath(){ if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;} setDrawer(false); try{ if(window.__clearDock) window.__clearDock(); }catch(_){ } if(modeEl) modeEl.classList.remove('lib'); if(mPath) mPath.classList.add('on'); if(mLib) mLib.classList.remove('on'); contentEl.classList.remove('toolmode'); contentEl.classList.add('pathmode'); contentEl.innerHTML='<iframe class="pathframe" src="tools/learning-path.html" title="Learning Path"></iframe>'; try{localStorage.setItem('cw_mode','path')}catch(_){ } setMobileTitle({t:'Learning Path',f:'__path__'}); }
+  function reflectLibrary(){ if(modeEl) modeEl.classList.add('lib'); if(mLib){ mLib.classList.add('on'); mLib.setAttribute('aria-pressed','true'); } if(mPath){ mPath.classList.remove('on'); mPath.setAttribute('aria-pressed','false'); } contentEl.classList.remove('pathmode'); contentEl.classList.remove('toolmode'); try{localStorage.setItem('cw_mode','library')}catch(_){ } }
+  function showPath(){ if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;} setDrawer(false); try{ if(window.__clearDock) window.__clearDock(); }catch(_){ } if(modeEl) modeEl.classList.remove('lib'); if(mPath){ mPath.classList.add('on'); mPath.setAttribute('aria-pressed','true'); } if(mLib){ mLib.classList.remove('on'); mLib.setAttribute('aria-pressed','false'); } contentEl.classList.remove('toolmode'); contentEl.classList.add('pathmode'); contentEl.innerHTML='<iframe class="pathframe" src="tools/learning-path.html" title="Learning Path"></iframe>'; try{localStorage.setItem('cw_mode','path')}catch(_){ } setMobileTitle({t:'Learning Path',f:'__path__'}); announceRoute({t:'Learning Path',f:'__path__'}); }
 
   var sideEl=document.getElementById('side'), menuBtn=document.getElementById('menuBtn'), backdrop=document.getElementById('drawerBackdrop');
   function setDrawer(open){ if(!sideEl)return; var mob=matchMedia('(max-width:820px)').matches; sideEl.classList.toggle('open',open); if(menuBtn)menuBtn.setAttribute('aria-expanded',String(open)); if(backdrop)backdrop.hidden=!open; if(mob&&!open){sideEl.setAttribute('inert','');sideEl.setAttribute('aria-hidden','true');} else {sideEl.removeAttribute('inert');sideEl.removeAttribute('aria-hidden');} }
@@ -775,6 +794,15 @@
     if(!title)return;
     if(!item){title.textContent='Inpatient Psychiatry';return;}
     title.textContent=item.f==='__home__'?'Today / Progress':(item.f==='__start__'?'Start here':item.t);
+  }
+  var routeAnnounced=false;
+  function announceRoute(item){
+    var rs=document.getElementById('routeStatus');
+    if(rs){ rs.textContent=!item?'':((item.f==='__home__'?'Today / Progress':(item.f==='__start__'?'Start here':(item.f==='__path__'?'Learning Path':item.t)))+' loaded'); }
+    // Skip the focus move on the very first render so initial keyboard position
+    // (nav/search) is not stolen; announce-only is correct for page load.
+    if(routeAnnounced){ try{ contentEl.focus({preventScroll:true}); }catch(_){ try{ contentEl.focus(); }catch(__){ } } }
+    routeAnnounced=true;
   }
   function setRoute(it, replace, opts){ if(facultyPreviewRequest){restoreFacultyPreviewRoute();document.title=pageTitle(it);return;} var extra=(it&&it.k==='tool'&&opts&&opts.toolExtra)?opts.toolExtra:''; var q = it ? ((it.k==='tool'?'?tool=':'?page=')+encodeURIComponent(it.f)+extra) : location.pathname; try{ if(replace) history.replaceState({f:it&&it.f},'',q); else if(location.search!==q) history.pushState({f:it&&it.f},'',q); }catch(_){ } document.title=pageTitle(it); }
   function failFacultyPreviewTool(item,status){
@@ -834,7 +862,7 @@
       contentEl.classList.remove('toolmode'); contentEl.classList.remove('pathmode');
       contentEl.innerHTML = (item.f==='__start__') ? (window.renderStart?window.renderStart():'') : (window.renderHome?window.renderHome():'');
       try{ if(window.__afterSpecial) window.__afterSpecial(item.f); }catch(_){ }
-      window.scrollTo(0,0); return;
+      announceRoute(item); window.scrollTo(0,0); return;
     }
     if(item.k==='tool'){
       currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)&&!(opts&&opts.noRoute)) setRoute(item, opts&&opts.replace, opts);
@@ -844,12 +872,13 @@
       if(facultyPreviewRequest){contentEl.innerHTML=skel();loadFacultyPreviewTool(item,opts,_bar);return true;}
       currentToolFrame=null;
       contentEl.innerHTML=_bar+'<iframe class="toolframe" src="tools/'+item.f+esc(toolFrameSuffix(opts&&opts.toolExtra))+'" title="'+esc(item.t)+'"></iframe>';
-      window.scrollTo(0,0); return;
+      announceRoute(item); window.scrollTo(0,0); return;
     }
     currentToolFrame=null;
     currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)&&!(opts&&opts.noRoute)) setRoute(item, opts&&opts.replace, opts);
     contentEl.innerHTML=skel();
     fetch('content/'+item.f).then(function(r){if(!r.ok){var pageError=new Error('faculty preview page failed');pageError.facultyPreviewStatus=r.status===404?'not_found':'error';throw pageError;}return r.text()}).then(function(t){
+      t=(function(_t){var _i=_t.indexOf('\n## ');var _h=_i>-1?_t.slice(0,_i):_t;var _r=_i>-1?_t.slice(_i):'';return _h.replace(/^[ \t]*(Generated|Audience):.*$/gim,'').replace(/\n{3,}/g,'\n\n')+_r;})(t);
       contentEl.innerHTML=marked.parse(t);
       var _mobileTitle=document.getElementById('mobileTitle'), _pageHeading=contentEl.querySelector('h1');
       if(_mobileTitle&&_pageHeading)_mobileTitle.textContent=_pageHeading.textContent;
@@ -860,7 +889,7 @@
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
-      makeCollapsible(contentEl); enhanceTables(contentEl); if(rv&&rv.status==='reviewed'){ var st=document.createElement('div'); st.className='reviewed page-review-footer'; st.textContent='\u2713 Reviewed by '+(rv.by||'faculty')+(rv.at?(' \u00b7 '+rv.at):''); contentEl.appendChild(st); } var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); try{if(window.__afterContent)window.__afterContent(item);}catch(_){ } try{contentEl.classList.remove('cc-rise');void contentEl.offsetWidth;contentEl.classList.add('cc-rise');}catch(_){ } var _sy=(opts&&opts.fromHistory&&SCROLL[item.f]!=null)?SCROLL[item.f]:0; window.scrollTo(0,_sy); postFacultyPreviewStatus('ready','page');
+      makeCollapsible(contentEl); enhanceTables(contentEl); if(rv&&rv.status==='reviewed'){ var st=document.createElement('div'); st.className='reviewed page-review-footer'; st.textContent='\u2713 Reviewed by '+(rv.by||'faculty')+(rv.at?(' \u00b7 '+rv.at):''); contentEl.appendChild(st); } var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); try{if(window.__afterContent)window.__afterContent(item);}catch(_){ } try{contentEl.classList.remove('cc-rise');void contentEl.offsetWidth;contentEl.classList.add('cc-rise');}catch(_){ } var _sy=(opts&&opts.fromHistory&&SCROLL[item.f]!=null)?SCROLL[item.f]:0; window.scrollTo(0,_sy); announceRoute(item); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
   }
 
@@ -1052,9 +1081,10 @@
   var sheetInvoker=null;
   function closeSheet(){
     var sh=document.querySelector('.tl-sheet'), bd=document.querySelector('.tl-sheet-backdrop');
+    var focusWasInSheet=!!(sh&&sh.contains(document.activeElement));
     if(sh&&sh.parentNode)sh.parentNode.removeChild(sh);
     if(bd&&bd.parentNode)bd.parentNode.removeChild(bd);
-    if(sheetInvoker&&sheetInvoker.isConnected){sheetInvoker.setAttribute('aria-expanded','false');sheetInvoker.focus();}
+    if(sheetInvoker&&sheetInvoker.isConnected){sheetInvoker.setAttribute('aria-expanded','false'); if(focusWasInSheet)sheetInvoker.focus();}
     sheetInvoker=null;
   }
   function clearBar(){ if(barEl&&barEl.parentNode)barEl.parentNode.removeChild(barEl); barEl=null; mobileToolBarCompact=null; document.body.classList.remove('has-tlbar'); closeSheet(); }
@@ -1116,7 +1146,11 @@
   /* ---- helpers reading existing storage ---- */
   function LS(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }
   function srsState(){ try{ return JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); }catch(_){ return null; } }
-  function dueCount(){ var s=srsState(),n=0,od=0; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ n++; if(c.due<sod.getTime())od++; } } } return {due:n,overdue:od}; }
+  function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('deck#')===0||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
+  function dueBreakdown(){ var s=srsState(),b={daily:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ var k=srsBucket(id); b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } return b; }
+  function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due,overdue:b.daily.overdue}; }
+  /* ---- end due breakdown ---- */
+  function dueSubstatHtml(bd){ var parts=[]; if(bd.qb.due)parts.push(bd.qb.due+' in the question bank'); if(bd.fam.due)parts.push(bd.fam.due+' in family practice'); if(bd.other.due)parts.push(bd.other.due+' in other practice tools'); return parts.length?'<div class="hm-substat">Also scheduled: '+parts.join(' · ')+'</div>':''; }
   function navScan(){ var p=(typeof progLoad==='function')?progLoad():{}, meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}; var hy=[],cov={}; var wraps=document.querySelectorAll('#nav .navsec-wrap'); [].forEach.call(wraps,function(w){ var sec=((w.querySelector('.navsec-t')||{}).textContent)||''; if(sec==='Overview')return; [].forEach.call(w.querySelectorAll('.navitem'),function(b){ var it=b._item; if(!it)return; if(it.k==='md'){ if(!cov[sec])cov[sec]={done:0,tot:0}; cov[sec].tot++; if(p[it.f]&&p[it.f].done)cov[sec].done++; } if(meta[it.f]&&meta[it.f].hy&&!(p[it.f]&&p[it.f].done))hy.push({f:it.f,t:it.t,sec:sec}); }); }); return {hy:hy,cov:cov}; }
   function allNavItems(){ var out=[]; [].forEach.call(document.querySelectorAll('#nav .navitem'),function(b){ var it=b._item; if(it&&it.k!=='special')out.push({f:it.f,t:it.t,k:it.k}); }); return out; }
   function dashboardState(){ try{return JSON.parse(localStorage.getItem('cw_dashboard_v1')||'{}')||{};}catch(_){return {};} }
@@ -1266,18 +1300,23 @@
     if(x.href){ return '<a class="'+cls+'" href="'+esc(x.href)+'"><span class="t">'+esc(x.t)+'</span><span class="tag">'+esc(tag)+'</span></a>'; }
     return '<button type="button" class="'+cls+'" data-mc-f="'+esc(x.f)+'"><span class="t">'+esc(x.t)+'</span><span class="tag">'+esc(tag)+'</span></button>';
   }
+  var mcOpen=false;
   function renderModeCompanion(){
     var root=document.getElementById('modeCompanion'); if(!root)return;
     var mode=dashboardMode(), cfg=dashCfg(mode), modes=[['ward','Ward'],['shelf','Shelf'],['family','Family'],['safety','Safety'],['5min','5 min']];
     var matches=itemsForMode(mode), tools=toolsForMode(mode,matches), pages=matches.slice(0,3);
-    var h='<div class="mc-head"><div class="mc-title">'+esc(cfg.label)+' mode</div><button type="button" class="mc-home" data-mc-home="1">Progress</button></div>';
+    var h='<button type="button" class="mc-toggle" aria-expanded="'+(mcOpen?'true':'false')+'" aria-controls="mcBody"><span class="mc-toggle-t">'+esc(cfg.label)+' mode</span><span class="mc-chev" aria-hidden="true">▸</span></button>';
+    h+='<div id="mcBody" class="mc-body"'+(mcOpen?'':' hidden')+'>';
+    h+='<div class="mc-head"><button type="button" class="mc-home" data-mc-home="1">Progress</button></div>';
     h+='<div class="mc-modes">'+modes.map(function(m){return '<button type="button" class="mc-mode'+(mode===m[0]?' on':'')+'" data-mc-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div>';
     h+='<div class="mc-section"><div class="mc-label">Pages</div><div class="mc-list">'+(pages.length?pages.map(function(x){return companionButton(x,'page');}).join(''):'<div class="mc-empty">Recommendations load after navigation data is ready.</div>')+'</div></div>';
     h+='<div class="mc-section"><div class="mc-label">Tools</div><div class="mc-list">'+(tools.length?tools.slice(0,3).map(function(x){return companionButton(x,'tool');}).join(''):'<div class="mc-empty">No mode tools yet.</div>')+'</div></div>';
+    h+='</div>';
     root.innerHTML=h;
   }
   window.__renderModeCompanion=renderModeCompanion;
   (function(){ var root=document.getElementById('modeCompanion'); if(!root)return; root.addEventListener('click',function(e){
+    var tg=e.target.closest?e.target.closest('.mc-toggle'):null; if(tg){ mcOpen=!mcOpen; var bd=document.getElementById('mcBody'); if(bd){ if(mcOpen){bd.removeAttribute('hidden');}else{bd.setAttribute('hidden','');} } tg.setAttribute('aria-expanded',mcOpen?'true':'false'); return; }
     var mb=e.target.closest?e.target.closest('[data-mc-mode]'):null; if(mb){ setDashboardMode(mb.getAttribute('data-mc-mode')); if(currentItem&&currentItem.f==='__home__'&&window.renderHome){ contentEl.innerHTML=window.renderHome(); try{window.__afterSpecial('__home__');}catch(_){ } } else if(currentItem&&currentItem.k==='md'){ var nb=null, all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===currentItem.f){ nb=all[i]; break; } } show(currentItem,nb,{replace:true}); } return; }
     var home=e.target.closest?e.target.closest('[data-mc-home]'):null; if(home){ navClick('__home__'); return; }
     var item=e.target.closest?e.target.closest('[data-mc-f]'):null; if(item){ navClick(item.getAttribute('data-mc-f')); }
@@ -1368,26 +1407,26 @@
   window.renderHome=function(){
     var scan=navScan();
     var rev=0, tot=0; for(var _ck in scan.cov){ rev+=scan.cov[_ck].done; tot+=scan.cov[_ck].tot; }
-    var pct=tot?Math.round(rev/tot*100):0; var dc=dueCount(); var s=srsState();
+    var pct=tot?Math.round(rev/tot*100):0; var bd=dueBreakdown(); var dc=dueCount(); var s=srsState();
     var streak=(s&&s.stats&&s.stats.streak)||0;
     var last=LS('cw_last'); var shelf=LS('cw_shelf_date'); var shelfDays=null;
     if(shelf){ var t=new Date(shelf+'T00:00:00').getTime(); if(!isNaN(t)) shelfDays=Math.ceil((t-Date.now())/86400000); }
-    var fresh=(rev===0 && dc.due===0 && !last);
+    var fresh=(rev===0 && bd.daily.due+bd.qb.due+bd.fam.due+bd.other.due===0 && !last);
     var h='<div class="hm" id="hmRoot"><h1>Your progress</h1>';
-    if(fresh){ h+='<p class="sub">Welcome — nothing tracked yet. Open any content page and tap <strong>Mark reviewed</strong>, or start a review session, and this page fills in.</p>'; }
+    if(fresh){ h+='<p class="sub">Welcome — nothing tracked yet. Open any content page and tap <strong>Mark as read</strong>, or start a review session, and this page fills in.</p>'; }
     else{ h+='<p class="sub">Where you are, and the next best thing to do.</p>'; }
     h+=renderWardDashboard();
     h+='<div class="hm-sec" style="border:1px solid var(--accent);background:var(--accent-light);border-radius:14px;padding:14px 16px;margin:0 0 16px"><h2 style="margin-top:0">Study on the go · Anki decks</h2><div class="sub" style="margin:0 0 8px">Take the question bank and high-yield concepts with you as spaced-repetition flashcards for your phone.</div><button class="hm-li" data-f="anki.md" style="border-bottom:none"><span class="t"><strong>Get the Anki decks</strong></span><span class="sec">Open →</span></button></div>';
     h+='<div class="hm-grid">';
-    h+='<div class="hm-card"><div class="k">Review coverage</div><div class="hm-row"><div class="hm-ring" style="--p:'+pct+'"><i>'+pct+'%</i></div><div class="v">'+rev+'<small> / '+tot+' pages</small></div></div></div>';
-    h+='<div class="hm-card"><div class="k">Due today</div><div class="v">'+dc.due+(dc.overdue?'<small> · '+dc.overdue+' overdue</small>':'')+'</div>'+(dc.due?'<button class="hm-btn" data-act="review">Start review</button>':'<span class="hm-empty">Nothing due — nice.</span>')+'</div>';
+    h+='<div class="hm-card"><div class="k">Study progress</div><div class="hm-row"><div class="hm-ring" style="--p:'+pct+'"><i>'+pct+'%</i></div><div class="v">'+rev+'<small> / '+tot+' pages read</small></div></div></div>';
+    h+='<div class="hm-card"><div class="k">Due today</div><div class="v">'+bd.daily.due+(bd.daily.overdue?'<small> · '+bd.daily.overdue+' overdue</small>':'')+'</div>'+(bd.daily.due?'<button class="hm-btn" data-act="review">Start review</button>':'<span class="hm-empty">Nothing due — nice.</span>')+dueSubstatHtml(bd)+'</div>';
     h+='<div class="hm-card"><div class="k">Study streak</div><div class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></div></div>';
     h+='<div class="hm-card"><div class="k">Shelf countdown</div><div class="v">'+(shelfDays!=null?(shelfDays>=0?shelfDays+'<small> days</small>':'<small>past</small>'):'<small>set a date on Start here</small>')+'</div></div>';
     h+='</div>';
     if(last&&LAB[last]===undefined){ h+='<div class="hm-sec"><h2>Continue where you left off</h2><button class="hm-li" data-f="'+last+'"><span class="t">Resume your last page</span><span class="sec">Resume →</span></button></div>'; }
     var weak=weakTopics();
     if(weak.length){ h+='<div class="hm-sec"><h2>Focus next · your weak spots</h2>'; weak.slice(0,5).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+esc(x.t)+'</span><span class="sec">'+esc(x.reason)+'</span></button>'; }); h+='</div>'; }
-    if(scan.hy.length){ h+='<div class="hm-sec"><h2>High-yield · not yet reviewed</h2>'; scan.hy.slice(0,8).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+x.t+'</span><span class="sec">'+x.sec+'</span></button>'; }); h+='</div>'; }
+    if(scan.hy.length){ h+='<div class="hm-sec"><h2>High-yield · not yet read</h2>'; scan.hy.slice(0,8).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+x.t+'</span><span class="sec">'+x.sec+'</span></button>'; }); h+='</div>'; }
     var covk=Object.keys(scan.cov); if(covk.length){ h+='<div class="hm-sec"><h2>Coverage by section</h2><div class="hm-bars">'; covk.forEach(function(k){ var c=scan.cov[k]; var p=c.tot?Math.round(c.done/c.tot*100):0; h+='<div class="brow"><span class="lab">'+k+'</span><span class="track"><span class="fill" style="width:'+p+'%"></span></span><span class="pc">'+c.done+'/'+c.tot+'</span></div>'; }); h+='</div></div>'; }
     var mb=masteryByBlueprint(); var mbStarted=mb.filter(function(x){return x.score!=null;});
     h+='<div class="hm-sec"><h2>Mastery by blueprint <span style="font-weight:400;color:var(--text-light)">· from your practice</span></h2>';

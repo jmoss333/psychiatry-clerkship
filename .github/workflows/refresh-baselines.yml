@@ -26,15 +26,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
 
@@ -44,10 +44,11 @@ jobs:
           bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-1.46.1-${{ runner.os }}
+          # Same derived key as ci.yml — a Playwright bump rolls both caches.
+          key: playwright-${{ hashFiles('tests/smoke/package-lock.json') }}-${{ runner.os }}
 
       - name: Install Playwright + Chromium
         run: cd tests/smoke && npm ci && npx playwright install chromium --with-deps

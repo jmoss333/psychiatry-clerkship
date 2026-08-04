@@ -8,9 +8,9 @@ references it. Internal RSS/RSSM naming is retained here; a public mirror would 
 
 ## Start here
 - `00_START_HERE/COMPREHENSIVE_NOTEBOOKLM_RESOURCE.md` — uploadable NotebookLM master resource for the full clerkship library.
-- `_AUDIT_AND_ROADMAP.md` — the full audit, gap analysis, curriculum, and roadmap (Phases 1–9).
+- `docs/superpowers/plans/_AUDIT_AND_ROADMAP.md` — the full audit, gap analysis, curriculum, and roadmap (Phases 1–9).
 - `_MASTER_INDEX.xlsx` — searchable index of catalogued assets (filter by status/priority/category).
-- `_CODEX_AUDIT_INTEGRATION.md` — verdict + merge log for the parallel Codex audit (exhaustive 11,700-file census + MS3 student pack now folded in).
+- `99_Archive/root-planning-2026-07/_CODEX_AUDIT_INTEGRATION.md` — verdict + merge log for the parallel Codex audit (exhaustive 11,700-file census + MS3 student pack now folded in).
 - `00_START_HERE/` — orientation, syllabus, "A Day on the Unit"; `_audit-census-codex/` holds the exhaustive census + parallel reports.
 
 ## Built so far (live content)
@@ -41,5 +41,14 @@ references it. Internal RSS/RSSM naming is retained here; a public mirror would 
 ## Multi-track model
 Content never forks. `14_Tracks/<audience>/` holds only a short ordered list of links into the shared body.
 MS3 is the default build; later tracks are overlays.
+
+## Operations and maintenance
+
+The [scheduled maintenance operations runbook](13_Faculty_Resources/_automation/maintenance/README.md)
+is the operator source of truth for UTC schedules, 90-day evidence, production canaries,
+faculty-review queues, rotation readiness, pause/resume steps, and privacy boundaries.
+[Curriculum surveillance](13_Faculty_Resources/_automation/surveillance/README.md) documents the
+rolling report inbox and its human review lifecycle. Scheduled GitHub workflows become active only
+from the default branch; branch-local cron files are not live schedules.
 
 **Status tags:** ✅ Exists · 🔧 Revise · ➕ Expand · ✳️ Create · 🔀 Merge · 🗄️ Archive

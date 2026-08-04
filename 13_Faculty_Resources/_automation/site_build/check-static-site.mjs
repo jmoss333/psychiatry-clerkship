@@ -21,7 +21,7 @@
  *   - search-index references a missing file
  *   - a dose literal in any tools/*.html or *.pack.json   (e.g. "5 mg")
  *   - a non-cw_-prefixed localStorage key in any tools/*.html
- *   - a tool HTML missing [RC-META], <title>, or viewport meta
+ *   - a tool HTML with a malformed, conflicting, or multiple recognized metadata marker
  *   - a *.pack.json whose choiceBank tokenId is not defined in localPolicies
  *   - a content-convention source page not wired into the build's source map
  *     (<siteDir>.source-map.json, emitted by build_deploy.py / resident_section.py)
@@ -29,6 +29,7 @@
  *   - a duplicate (or missing) item id in question_bank.json
  *   - a relative/root-local <script src> whose shipped target is absent
  * SOFT findings (warn; fail only under STRICT=1):
+ *   - a tool HTML missing both recognized metadata markers ([CLERKSHIP-META v1] / [RC-META])
  *   - near-duplicate question stems in question_bank.json (≥85% token overlap)
  *   - nav markdown files missing from topic_meta.json
  *   - nav items missing from reviewed.json
@@ -43,6 +44,7 @@ const SITE = process.argv[2];
 if (!SITE) { console.error('usage: node check-static-site.mjs <siteDir>'); process.exit(1); }
 const STRICT = process.env.STRICT === '1';
 const hard = [], soft = [], info = [];
+const legacyMetadataPaths = [];
 const H = (m) => hard.push(m);
 const S = (m) => soft.push(m);
 const I = (m) => info.push(m);
@@ -214,7 +216,7 @@ for (const f of jsAssets) {
   if (CDN_HOST.test(js)) H(`external CDN dependency in tools/${f} — vendor the script locally so bedside/offline use does not blank the tool`);
 }
 
-/* ---------- 5. per-tool HTML checks (RC-META, title, viewport, dose, storage) ---------- */
+/* ---------- 5. per-tool HTML checks (metadata, title, viewport, dose, storage) ---------- */
 for (const f of toolFiles) {
   const html = readFileSync(p('tools', f), 'utf8');
   if (CDN_HOST.test(html)) H(`external CDN dependency in tools/${f} — vendor the script locally so bedside/offline use does not blank the tool`);
@@ -236,7 +238,24 @@ for (const f of toolFiles) {
       H(`missing relative script source in ${f}: ${source}`);
     }
   }
-  if (!/\[RC-META\]/.test(html)) S(`tool missing [RC-META]: ${f}`);
+  const preferredStarts = html.match(/<!--\s*\[CLERKSHIP-META v1\]/g) || [];
+  const legacyStarts = html.match(/<!--\s*\[RC-META\]/g) || [];
+  const preferredMarkers = html.match(/<!--\s*\[CLERKSHIP-META v1\]\s*[^]*?-->/g) || [];
+  const legacyMarkers = html.match(/<!--\s*\[RC-META\]\s*[^]*?-->/g) || [];
+  if (
+    preferredStarts.length !== preferredMarkers.length
+    || legacyStarts.length !== legacyMarkers.length
+  ) {
+    H(`malformed metadata marker: ${f}`);
+  } else if (preferredMarkers.length === 0 && legacyMarkers.length === 0) {
+    S(`tool missing recognized metadata marker: ${f}`);
+  } else if (preferredMarkers.length > 0 && legacyMarkers.length > 0) {
+    H(`conflicting metadata markers: ${f}`);
+  } else if (preferredMarkers.length + legacyMarkers.length !== 1) {
+    H(`multiple metadata markers: ${f}`);
+  } else if (legacyMarkers.length === 1) {
+    legacyMetadataPaths.push(`tools/${f}`);
+  }
   if (!/<title>/i.test(html)) H(`tool missing <title>: ${f}`);
   if (!/name=["']viewport["']/i.test(html)) H(`tool missing viewport meta: ${f}`);
   // Dose-literal rule scope: HARD for the new education/trainer layer (rp-*, *-trainer)
@@ -253,6 +272,46 @@ for (const f of toolFiles) {
   // Sanctioned localStorage namespaces: cw_* (shared hub) and rp_* (resident platform).
   const keys = [...html.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*['"]([^'"]+)['"]/g)].map(m => m[1]);
   for (const k of keys) if (!k.startsWith('cw_') && !k.startsWith('rp_')) H(`non-namespaced storage key in ${f}: "${k}" (use cw_* or rp_*)`);
+  // WP-03 remainder: bare accent text (--primary #c25a3c, ~3.9:1 light) fails AA for
+  // normal-size text. The build polish pass repoints every bare usage to
+  // var(--primary-dark,#a84830); a bare occurrence in shipped output means the rewrite
+  // regressed or a new pattern slipped past it.
+  if (/color:\s*var\(--primary\)/.test(html)) {
+    H(`bare color:var(--primary) in tools/${f} — AA contrast: polish pass must rewrite to var(--primary-dark,#a84830)`);
+  }
+  // Computed keys bypass the literal-only namespace regex above; surface the
+  // indirection so it gets a human look (SOFT: build_and_check.sh runs non-STRICT).
+  const computedKeys = [...html.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*(?!['"])/g)];
+  if (computedKeys.length) S(`computed localStorage key(s) in ${f} (${computedKeys.length}) — namespace rule cannot verify indirection; prefer literal cw_*/rp_* keys`);
+  // Dark-mode regression gate (audit WS4): a hard-coded light background in a page
+  // that takes its dark tokens from clinical-warm.css renders light-on-light in dark
+  // mode (WCAG 1.4.3 — measured 2.05-2.43:1). Pages shipping their own
+  // [data-theme="dark"] block manage their own backgrounds and are exempt.
+  if (html.includes('clinical-warm.css') && !html.includes('[data-theme="dark"]')) {
+    for (const m of html.matchAll(/background(?:-color)?\s*:\s*(#[ef][0-9a-fA-F]{2}(?:[0-9a-fA-F]{3})?)\b/g)) {
+      H(`light background literal ${m[1]} in ${f} — renders light-on-light in dark mode; use a token (var(--surface)/var(--*-light)) with a light fallback`);
+    }
+  }
+}
+if (legacyMetadataPaths.length) {
+  S(`legacy metadata warning: ${legacyMetadataPaths.sort().join(', ')}`);
+}
+
+/* ---------- 5c. SPA shell (index.html) — CDN + storage-namespace scans ---------- */
+// The shell is the single largest JS surface shipped (all quiz/SRS/pretest logic,
+// 38 localStorage references) but was exempt from every per-page check: an
+// un-namespaced key or a CDN script added to spa_index.html shipped ungated.
+// Tool-specific checks (metadata markers, dose literals, viewport) stay tools-only.
+const shellPath = p('index.html');
+if (existsSync(shellPath)) {
+  const shell = readFileSync(shellPath, 'utf8');
+  if (CDN_HOST.test(shell)) H('external CDN dependency in index.html — vendor the script locally so bedside/offline use does not blank the shell');
+  const shellKeys = [...shell.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*['"]([^'"]+)['"]/g)].map(m => m[1]);
+  for (const k of shellKeys) if (!k.startsWith('cw_') && !k.startsWith('rp_')) H(`non-namespaced storage key in index.html: "${k}" (use cw_* or rp_*)`);
+  const shellComputed = [...shell.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*(?!['"])/g)];
+  if (shellComputed.length) S(`computed localStorage key(s) in index.html (${shellComputed.length}) — namespace rule cannot verify indirection; prefer literal cw_*/rp_* keys`);
+} else {
+  H('index.html missing from built site');
 }
 
 /* ---------- 5b. <video> embeds must resolve to a shipped asset (no broken players) ---------- */

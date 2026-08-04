@@ -1,7 +1,7 @@
 # Inpatient Psychiatry — Your 6-Week MS3 Rotation
 ### UNE COM third-year clerkship · with Joshua Moss, MD · Maine Medical Center – Sanford
 
-<video src="media/intro-trailer.mp4" controls playsinline poster="media/intro-trailer-poster.jpg"
+<video src="media/intro-trailer.mp4" controls playsinline preload="none" poster="media/intro-trailer-poster.jpg"
   aria-label="Clerkship Hub introduction trailer: a 78-second tour of the hub — the six-week arc, the bedside tools, and how to get started."
   style="width:100%;max-width:960px;aspect-ratio:16/9;border-radius:12px;display:block;margin:14px 0">
 </video>

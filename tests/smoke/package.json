@@ -10,6 +10,6 @@
     "update-baselines": "playwright test --project=visual --update-snapshots"
   },
   "devDependencies": {
-    "@playwright/test": "1.46.1"
+    "@playwright/test": "1.62.1"
   }
 }

@@ -15,16 +15,34 @@ const BUILD = path.join(
   ROOT,
   '13_Faculty_Resources/_automation/site_build/build_deploy.py',
 );
+const RESIDENT_BUILD = path.join(
+  ROOT,
+  '13_Faculty_Resources/_automation/site_build/resident_section.py',
+);
 const CHECKER = path.join(
   ROOT,
   '13_Faculty_Resources/_automation/site_build/check-static-site.mjs',
 );
+const BUILD_GATE = path.join(
+  ROOT,
+  '13_Faculty_Resources/_automation/site_build/build_and_check.sh',
+);
 const CI = path.join(ROOT, '.github/workflows/ci.yml');
+const PYTHON = process.env.CLERKSHIP_META_PYTHON || 'python3';
 
 const EXPECTED_ASSETS = [
   ['_prototypes/sp-interview/sp-interview.pack.json', 'sp-interview.pack.json'],
   ['_prototypes/sp-interview/sp-interview.voice.js', 'sp-interview.voice.js'],
 ];
+
+// 2026-08 audit WS4 follow-up: check-static-site.mjs §5c hard-fails a built site
+// missing index.html (the SPA shell CDN/storage-namespace scan added alongside the
+// tools/*.js CDN scan below). These synthetic fixture sites exercise the checker's
+// *other* rules and never shipped a shell — give each one a minimal, compliant stub
+// (no CDN host substring, no non-cw_*/rp_* localStorage literal) so the new shell
+// scan reports clean and the fixture's pre-existing hard/soft expectations hold.
+const FIXTURE_INDEX_HTML = '<!doctype html><html><head><title>Fixture Shell</title>'
+  + '<meta name="viewport" content="width=device-width"></head><body></body></html>';
 
 function run(command, args, options = {}) {
   return spawnSync(command, args, {
@@ -45,7 +63,7 @@ test('manifest drives both Interview Room runtime assets into a real site build'
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'sp-build-contract-'));
   const output = path.join(temporary, 'site');
   try {
-    const result = run('python3', [BUILD], {
+    const result = run(PYTHON, [BUILD], {
       env: { ...process.env, OUT_DIR: output },
       timeout: 60_000,
     });
@@ -63,11 +81,50 @@ test('manifest drives both Interview Room runtime assets into a real site build'
   }
 });
 
+test('both builders emit governance inventories matching their final tools', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-governance-build-'));
+  const ms3 = path.join(temporary, 'ms3');
+  const resident = path.join(temporary, 'resident');
+  const assertInventory = (site, expectedCount) => {
+    const document = JSON.parse(fs.readFileSync(path.join(site, 'tool-governance.json'), 'utf8'));
+    const built = fs.readdirSync(path.join(site, 'tools'))
+      .filter((name) => name.endsWith('.html'))
+      .map((name) => `tools/${name.slice(0, -'.html'.length)}`)
+      .sort();
+    assert.equal(document.items.length, expectedCount);
+    assert.deepEqual(document.items.map(({ id }) => id), built);
+  };
+  try {
+    const built = run(PYTHON, [BUILD], {
+      env: { ...process.env, OUT_DIR: ms3 },
+      timeout: 60_000,
+    });
+    assert.equal(built.status, 0, built.stdout + built.stderr);
+    assertInventory(ms3, 22);
+    assert.match(
+      fs.readFileSync(path.join(ms3, '_headers'), 'utf8'),
+      /\/tool-governance\.json\n  Cache-Control: public, max-age=0, must-revalidate/,
+    );
+
+    const residentBuilt = run(PYTHON, [RESIDENT_BUILD], {
+      env: { ...process.env, MS3_DIR: ms3, OUT_DIR: resident },
+      timeout: 60_000,
+    });
+    assert.equal(residentBuilt.status, 0, residentBuilt.stdout + residentBuilt.stderr);
+    assertInventory(resident, 24);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(`${ms3}.source-map.json`, { force: true });
+    fs.rmSync(`${resident}.source-map.json`, { force: true });
+  }
+});
+
 test('static QA rejects a missing relative script dependency', () => {
   const site = fs.mkdtempSync(path.join(os.tmpdir(), 'sp-static-contract-'));
   const sourceMap = `${site}.source-map.json`;
   const tools = path.join(site, 'tools');
   fs.mkdirSync(tools);
+  fs.writeFileSync(path.join(site, 'index.html'), FIXTURE_INDEX_HTML);
   fs.writeFileSync(
     path.join(tools, 'fixture.html'),
     '<!doctype html><title>Fixture</title><meta name="viewport" content="width=device-width"><!-- [RC-META] --><script src="./missing.js"></script>',
@@ -103,6 +160,7 @@ test('static QA rejects a CDN dependency inside a shipped JS asset', () => {
   const sourceMap = `${site}.source-map.json`;
   const tools = path.join(site, 'tools');
   fs.mkdirSync(tools);
+  fs.writeFileSync(path.join(site, 'index.html'), FIXTURE_INDEX_HTML);
   fs.writeFileSync(
     path.join(tools, 'fixture.html'),
     '<!doctype html><title>Fixture</title><meta name="viewport" content="width=device-width"><!-- [RC-META] --><script src="./fixture.js"></script>',
@@ -134,8 +192,138 @@ test('static QA rejects a CDN dependency inside a shipped JS asset', () => {
   }
 });
 
+test('static QA accepts preferred and legacy metadata markers but rejects missing or conflicting markers', () => {
+  const site = fs.mkdtempSync(path.join(os.tmpdir(), 'metadata-static-contract-'));
+  const sourceMap = `${site}.source-map.json`;
+  const tools = path.join(site, 'tools');
+  fs.mkdirSync(tools);
+  fs.writeFileSync(path.join(site, 'index.html'), FIXTURE_INDEX_HTML);
+  fs.writeFileSync(
+    path.join(site, 'nav.json'),
+    JSON.stringify([{ section: 'Fixture', items: [{ k: 'tool', f: 'fixture.html' }] }]),
+  );
+  const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
+  fs.writeFileSync(
+    sourceMap,
+    JSON.stringify({ sources: [...manifest.tools, ...manifest.md].map(([source]) => source) }),
+  );
+  const writeFixture = (header) => fs.writeFileSync(
+    path.join(tools, 'fixture.html'),
+    `<!doctype html><title>Fixture</title><meta name="viewport" content="width=device-width">${header}`,
+  );
+  try {
+    writeFixture('<!-- [CLERKSHIP-META v1] tool="fixture" audience="ms3" -->');
+    const preferred = run(process.execPath, [CHECKER, site]);
+    assert.equal(preferred.status, 0, preferred.stdout + preferred.stderr);
+    assert.doesNotMatch(preferred.stdout + preferred.stderr, /metadata marker/i);
+
+    writeFixture('<!-- [RC-META] tool="fixture" audience="ms3" -->');
+    const legacy = run(process.execPath, [CHECKER, site]);
+    assert.equal(legacy.status, 0, legacy.stdout + legacy.stderr);
+    assert.match(legacy.stdout + legacy.stderr, /legacy metadata warning: tools\/fixture\.html/i);
+
+    writeFixture('');
+    const missing = run(process.execPath, [CHECKER, site], {
+      env: { ...process.env, STRICT: '1' },
+    });
+    assert.equal(missing.status, 1, missing.stdout + missing.stderr);
+    assert.match(missing.stdout + missing.stderr, /tool missing recognized metadata marker: fixture\.html/i);
+
+    writeFixture(
+      '<!-- [RC-META] tool="fixture" audience="ms3" -->'
+      + '<!-- [CLERKSHIP-META v1] tool="fixture" audience="ms3" -->',
+    );
+    const conflicting = run(process.execPath, [CHECKER, site]);
+    assert.equal(conflicting.status, 1, conflicting.stdout + conflicting.stderr);
+    assert.match(conflicting.stdout + conflicting.stderr, /conflicting metadata markers: fixture\.html/i);
+
+    for (const [label, header] of [
+      ['preferred', '<!-- [CLERKSHIP-META v1] tool="secret-tool" audience="ms3"'],
+      ['legacy', '<!-- [RC-META] tool="secret-tool" audience="ms3"'],
+    ]) {
+      writeFixture(header);
+      const malformed = run(process.execPath, [CHECKER, site]);
+      assert.equal(malformed.status, 1, `${label}: ${malformed.stdout}${malformed.stderr}`);
+      assert.match(malformed.stdout + malformed.stderr, /malformed metadata marker: fixture\.html/i);
+      assert.doesNotMatch(malformed.stdout + malformed.stderr, /secret-tool/i);
+    }
+
+    writeFixture(
+      '<!-- [RC-META] tool="fixture" audience="ms3" -->'
+      + '<!-- [RC-META] tool="fixture" audience="ms3" -->',
+    );
+    const multiple = run(process.execPath, [CHECKER, site]);
+    assert.equal(multiple.status, 1, multiple.stdout + multiple.stderr);
+    assert.match(multiple.stdout + multiple.stderr, /multiple metadata markers: fixture\.html/i);
+  } finally {
+    fs.rmSync(site, { recursive: true, force: true });
+    fs.rmSync(sourceMap, { force: true });
+  }
+});
+
+test('resident build removes copied governance output when resident generation fails', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resident-governance-failure-'));
+  const ms3 = path.join(temporary, 'ms3');
+  const resident = path.join(temporary, 'resident');
+  const automation = path.join(ROOT, '13_Faculty_Resources/_automation');
+  const failureHarness = [
+    'import runpy, sys',
+    'sys.path.insert(0, sys.argv[1])',
+    'import validate_tool_governance as governance',
+    'def fail(*args, **kwargs):',
+    "    raise governance.GovernanceError('synthetic failure')",
+    'governance.build_governance_document = fail',
+    "runpy.run_path(sys.argv[2], run_name='__main__')",
+  ].join('\n');
+  try {
+    const built = run(PYTHON, [BUILD], {
+      env: { ...process.env, OUT_DIR: ms3 },
+      timeout: 60_000,
+    });
+    assert.equal(built.status, 0, built.stdout + built.stderr);
+    assert.equal(fs.existsSync(path.join(ms3, 'tool-governance.json')), true);
+
+    const failed = run(PYTHON, ['-c', failureHarness, automation, RESIDENT_BUILD], {
+      env: { ...process.env, MS3_DIR: ms3, OUT_DIR: resident },
+      timeout: 60_000,
+    });
+    assert.notEqual(failed.status, 0, failed.stdout + failed.stderr);
+    assert.equal(fs.existsSync(path.join(resident, 'tool-governance.json')), false);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(`${ms3}.source-map.json`, { force: true });
+    fs.rmSync(`${resident}.source-map.json`, { force: true });
+  }
+});
+
+test('build and CI run governance validation before site builds', () => {
+  const buildGate = fs.readFileSync(BUILD_GATE, 'utf8');
+  const ci = fs.readFileSync(CI, 'utf8');
+  const governanceValidator = 'python3 "$LIB/13_Faculty_Resources/_automation/validate_tool_governance.py"';
+
+  assert.match(buildGate, new RegExp(governanceValidator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.ok(
+    buildGate.indexOf(governanceValidator) < buildGate.indexOf('case "$SITE" in'),
+    'governance validation must precede both build targets',
+  );
+  assert.match(ci, /Unit — tool governance[\s\S]*test_validate_tool_governance\.py/);
+  assert.match(ci, /Validate — tool governance[\s\S]*validate_tool_governance\.py/);
+});
+
 const SMOKE_LAUNCHER_COMMAND = 'bash tests/smoke/start-local-servers.sh';
 const SMOKE_CONFIGURATION_PATTERN = /\bSMOKE_[A-Z0-9_]+\b/;
+const MANAGED_GATE_ORDER = [
+  '- uses: actions/setup-node',
+  'node-version: "20"',
+  'run: npm --prefix sp-proxy ci',
+  'npm --prefix sp-proxy test',
+  'bash _prototypes/sp-interview/tests/run-all.sh',
+  'python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py',
+  'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3',
+  'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res',
+];
+const ACTION_PIN_PATTERN =
+  /(actions\/[\w.-]+)@[0-9a-f]{40}\s+#\s+v\d+/g;
 
 function leadingIndent(line) {
   return line.length - line.trimStart().length;
@@ -378,6 +566,22 @@ function uniqueCommandPosition(runSteps, command) {
   return matches[0];
 }
 
+function normalizeActionPin(value) {
+  return value.replace(ACTION_PIN_PATTERN, '$1');
+}
+
+function assertManagedGateOrder(ci) {
+  const ciLines = extractWorkflowJob(ci, 'build-test-validate').split(/\r?\n/);
+  let prior = -1;
+  for (const marker of MANAGED_GATE_ORDER) {
+    const index = ciLines.findIndex(
+      (line) => normalizeActionPin(line.trim()) === normalizeActionPin(marker),
+    );
+    assert.ok(index > prior, `${marker} must occur after the preceding managed-SP gate`);
+    prior = index;
+  }
+}
+
 function assertSmokeLauncherContract(ci) {
   const allRunSteps = extractRunSteps(ci);
   const activeRunCommands = allRunSteps.flatMap(normalizeActiveRunCommands);
@@ -436,24 +640,32 @@ function assertSmokeLauncherContract(ci) {
 
 test('CI gates and tested smoke launcher are structurally ordered', () => {
   const ci = fs.readFileSync(CI, 'utf8');
-  const ciLines = ci.split(/\r?\n/);
-  const managedGateOrder = [
-    '- uses: actions/setup-node@v4',
-    'node-version: "20"',
-    'run: npm --prefix sp-proxy ci',
-    'npm --prefix sp-proxy test',
-    'bash _prototypes/sp-interview/tests/run-all.sh',
-    'python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py',
-    'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3',
-    'run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res',
-  ];
-  let prior = -1;
-  for (const marker of managedGateOrder) {
-    const index = ciLines.findIndex((line) => line.trim() === marker);
-    assert.ok(index > prior, `${marker} must occur after the preceding managed-SP gate`);
-    prior = index;
-  }
+  assertManagedGateOrder(ci);
   assertSmokeLauncherContract(ci);
+});
+
+test('managed gate ordering accepts immutable action pins but rejects mutable refs', () => {
+  const ci = fs.readFileSync(CI, 'utf8');
+  const immutableSetupNode =
+    '- uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7';
+  assert.match(ci, new RegExp(immutableSetupNode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.doesNotThrow(() => assertManagedGateOrder(ci));
+
+  const hostileRefs = [
+    '- uses: actions/setup-node@main',
+    '- uses: actions/setup-node@v7',
+    '- uses: actions/setup-node@820762786026',
+    immutableSetupNode.replace(' # v7', ''),
+  ];
+  for (const hostileRef of hostileRefs) {
+    const mutated = ci.replace(immutableSetupNode, hostileRef);
+    assert.notEqual(mutated, ci, `test fixture must install hostile ref: ${hostileRef}`);
+    assert.throws(
+      () => assertManagedGateOrder(mutated),
+      /must occur after the preceding managed-SP gate/,
+      hostileRef,
+    );
+  }
 });
 
 test('smoke launcher contract ignores labels and rejects boundary drift', () => {
@@ -799,6 +1011,46 @@ test('run-all.sh keeps the review-filter suite wired', () => {
     /node review-filter\.test\.mjs/,
     'review-filter.test.mjs must stay invoked by run-all.sh',
   );
+});
+
+// 2026-08 audit WS5: the publish gate must run the dependency-free node suites
+// so a deploy performed during a GitHub Actions outage still runs contract tests
+// (July 2026 billing-outage precedent). Heavier npm-dependent suites stay CI-only.
+test('publish gate runs the dependency-free node suites before building', () => {
+  const buildGate = fs.readFileSync(BUILD_GATE, 'utf8');
+  assert.match(
+    buildGate,
+    /node --test "\$LIB"\/tests\/\*\.test\.mjs/,
+    'build_and_check.sh must run the root node contract suite',
+  );
+  assert.match(
+    buildGate,
+    /node "\$LIB\/tests\/contrast-check\.mjs"/,
+    'build_and_check.sh must run the WCAG contrast token check',
+  );
+  assert.ok(
+    buildGate.indexOf('node --test') < buildGate.indexOf('case "$SITE" in'),
+    'node suites must run before both build targets',
+  );
+});
+
+// 2026-08 audit WS5: run-all.sh is a hand-enumerated roster; this closes the
+// other half of F26 — a suite file that exists but is not wired (or a deleted
+// roster line) must fail CI for every suite, not just review-filter.
+test('run-all.sh enumerates every SP Interview test suite', () => {
+  const testsDir = path.join(ROOT, '_prototypes/sp-interview/tests');
+  const runAll = fs.readFileSync(path.join(testsDir, 'run-all.sh'), 'utf8');
+  const suites = fs
+    .readdirSync(testsDir)
+    .filter((name) => /\.test\.(mjs|js)$/.test(name))
+    .sort();
+  assert.ok(suites.length >= 15, 'suite census lost known suites — check testsDir');
+  for (const suite of suites) {
+    assert.ok(
+      runAll.includes(`node ${suite}`) || runAll.includes(`node --test ${suite}`),
+      `${suite} exists but run-all.sh never invokes it — add a roster line`,
+    );
+  }
 });
 
 // F25 — a gate that runs but can never fail the build is worse than no gate. The

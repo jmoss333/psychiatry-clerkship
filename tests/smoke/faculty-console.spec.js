@@ -11,6 +11,9 @@ import {
 
 const MS3_URL = process.env.MS3_BASE_URL || 'http://localhost:4200';
 const FACULTY_KEY = 'synthetic-faculty-key';
+// Attribution is server-derived (ATTESTER_NAME); the mock GET payload carries it
+// and the mock POST handler stamps it, mirroring attest.mjs.
+const SERVER_ATTESTER = 'Dr Server Attribution';
 const MANIFEST_PAGES = ['t_mood.md'];
 const MANIFEST_REVISION = 'b'.repeat(40);
 const REVIEW_TOKEN = '0123456789abcdef0123456789abcdef';
@@ -317,6 +320,7 @@ function buildGetPayload(bank, contentState = initialContentState()) {
   }));
   return {
     student: `${MS3_URL}/`,
+    attester: SERVER_ATTESTER,
     items,
     qbankRevision: itemRevision(bank).slice(0, 40),
     manifestRevision: MANIFEST_REVISION,
@@ -420,7 +424,7 @@ async function installRepositoryApi(page, initialBank, {
         }
         item.status = reviewed ? 'reviewed' : 'pending';
         item.at = reviewed ? '2026-07-17T12:00:00.000Z' : '';
-        item.by = reviewed ? String(body.attester || '') : '';
+        item.by = reviewed ? SERVER_ATTESTER : '';
         const receipt = {
           ok: true,
           updated: 1,
@@ -1083,6 +1087,7 @@ test.describe('learner preview protocol', () => {
       expectedLearnerPreviewStatus('page', 'page:t_mood.md', 'ready'),
     ]);
 
+    await page.locator('#modeCompanion .mc-toggle').click();
     const companionTool = page.locator('#modeCompanion .mc-item.is-tool').first();
     await expect(companionTool).toBeVisible();
     await companionTool.click();
@@ -1157,6 +1162,7 @@ test.describe('learner preview protocol', () => {
     await expect(page.locator('#faculty-preview-lock-notice')).toHaveText(
       'Open the full page from the faculty console to navigate elsewhere',
     );
+    await page.locator('#modeCompanion .mc-toggle').click();
     await page.locator('#modeCompanion [data-mc-mode="shelf"]').click();
     const shelfQuestionBank = page.locator(
       '#modeCompanion .mc-item.is-tool[href="?tool=question-bank-practice.html"]',
@@ -1232,7 +1238,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
   test('attests one page and tool, stays on each receipt, and reopens one page for re-attestation', async ({ page }) => {
     const api = await installRepositoryApi(page, workflowBank());
     await unlock(page);
-    await page.getByLabel('Reviewer label').fill('Dr Synthetic');
+    await expect(page.locator('#reviewer-label')).toHaveText(SERVER_ATTESTER);
 
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
     await page.locator('#review-complete-item').check();
@@ -1256,7 +1262,6 @@ test.describe.serial('faculty unified attestation workspace', () => {
     expect(api.calls[pageStart].body).toEqual({
       target: 'content',
       changes: { 't_mood.md': true },
-      attester: 'Dr Synthetic',
     });
     expect(api.currentContent().find(item => item.slug === 't_mood.md').status).toBe('reviewed');
 
@@ -1297,7 +1302,6 @@ test.describe.serial('faculty unified attestation workspace', () => {
     expect(api.calls[reopenStart].body).toEqual({
       target: 'content',
       changes: { 't_mood.md': false },
-      attester: 'Dr Synthetic',
     });
     expect(api.currentContent().find(item => item.slug === 't_mood.md').status).toBe('pending');
     expect(api.gets.at(-1).items.find(item => item.slug === 't_mood.md').status).toBe('unreviewed');
@@ -1317,7 +1321,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
       missingDeployedIds: ['qb_moo_906'],
     });
     await unlock(page);
-    await page.getByLabel('Reviewer label').fill('Dr Question Reviewer');
+    await expect(page.locator('#reviewer-label')).toHaveText(SERVER_ATTESTER);
 
     await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
@@ -1712,6 +1716,10 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Choose one curriculum item' })).toBeVisible();
     await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
+    // The preview must settle before entering Edit: a still-pending preview can
+    // time out or fail later, and that lifecycle handler resets the workspace to
+    // the Live view mid-edit (observed on slow CI runners under Playwright 1.62).
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
     await page.locator('#view-edit').focus();
     await page.keyboard.press('Enter');
     await expect(page.locator('#question-stem')).toHaveValue(keyboardStem);
@@ -1788,12 +1796,13 @@ test.describe.serial('faculty unified attestation workspace', () => {
       body: 'Synthetic fallback trigger',
     }));
     await unlock(page);
-    await page.getByLabel('Reviewer label').fill('Privacy Reviewer');
+    await expect(page.locator('#reviewer-label')).toHaveText(SERVER_ATTESTER);
     await expect(page.locator('#preview-status-label')).toHaveText('Error');
     const embeddedUrl = await page.locator('#learner-preview-frame').getAttribute('src');
     for (const privateValue of [
       FACULTY_KEY,
-      'Privacy Reviewer',
+      SERVER_ATTESTER,
+      encodeURIComponent(SERVER_ATTESTER),
       'confirm-clinical',
       'originalityAndNoPhi',
       'commit',
@@ -1806,7 +1815,8 @@ test.describe.serial('faculty unified attestation workspace', () => {
     const fullUrl = fullPage.url();
     for (const privateValue of [
       FACULTY_KEY,
-      'Privacy Reviewer',
+      SERVER_ATTESTER,
+      encodeURIComponent(SERVER_ATTESTER),
       'reviewKey',
       'reviewToken',
       'confirm-clinical',

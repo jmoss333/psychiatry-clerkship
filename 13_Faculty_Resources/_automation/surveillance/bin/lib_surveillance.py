@@ -8,7 +8,7 @@ derived from this file's location, mirroring oe_scanner/oe_scan.py.
 Stdlib-only so it runs in CI and locally with no install. The canonical evidence
 registry is projected into the collectors' legacy-shaped dictionary.
 """
-import os, re, csv, json, hashlib, datetime, sys
+import os, re, csv, json, hashlib, datetime, sys, urllib.request
 from pathlib import Path
 
 HERE = os.path.dirname(os.path.abspath(__file__))            # .../surveillance/bin
@@ -70,6 +70,19 @@ def load_registry(path=REGISTRY):
 
     return build_surveillance_projection(load_evidence_registry(Path(path)))
 
+def validate_checked_sources(value):
+    """Return a canonical checked-source receipt or reject ambiguous freshness."""
+    if not isinstance(value, list):
+        raise ValueError("checked sources must be a JSON array")
+    checked = []
+    for item in value:
+        if not isinstance(item, str) or not item.strip():
+            raise ValueError("checked sources must contain only non-empty strings")
+        checked.append(item.strip())
+    if len(checked) != len(set(checked)):
+        raise ValueError("checked sources must be unique")
+    return sorted(checked)
+
 # ---------------------------------------------------------------- finding logic
 def resolve_affects(finding, inverted):
     """Fill affects[] from the citation index if the collector didn't set it."""
@@ -100,9 +113,44 @@ def ensure_fingerprint(f):
         f["fingerprint"] = fingerprint(f["source_id"], f["change_type"], signature)
     return f["fingerprint"]
 
+# ---------------------------------------------------------------- crawled-input hygiene
+# One sanitizer for every crawled-origin string that reaches a markdown surface
+# (issue bodies, monthly digests, issue titles). Crawled pages are untrusted:
+# a hostile <title> must not inject fences, links, images, or HTML into
+# repo-committed files or faculty/agent-read issues (issue #108).
+_CTRL_RE = re.compile(r"[\x00-\x1f\x7f]")
+_MARKUP_TRANS = str.maketrans({"`": "'", "<": "(", ">": ")", "[": "(", "]": ")", "|": "/"})
+_SAFE_URL_RE = re.compile(r"^https?://[^\s`<>\[\]|\\'\"]+$")
+
+def sanitize_crawled_text(text, max_len=200):
+    """Strip control chars/newlines, disarm markdown/HTML metacharacters, cap length."""
+    cleaned = _CTRL_RE.sub(" ", str(text or ""))
+    cleaned = " ".join(cleaned.translate(_MARKUP_TRANS).split())
+    return cleaned[:max_len]
+
+def sanitize_crawled_url(url):
+    """Return url only if it is a plain absolute http(s) URL safe to embed in
+    markdown; else ''. Unsafe crawled URLs are dropped, not repaired."""
+    url = str(url or "").strip()
+    return url if _SAFE_URL_RE.match(url) else ""
+
+# ---------------------------------------------------------------- apify auth
+APIFY_CRAWLER_URL = ("https://api.apify.com/v2/acts/apify~website-content-crawler/"
+                     "run-sync-get-dataset-items")
+
+def build_apify_request(payload, token):
+    """Authenticated Apify request. The token travels ONLY in the Authorization
+    header — never in the URL, where it would leak into proxy/access/error logs
+    and urllib exception text in CI logs."""
+    req = urllib.request.Request(APIFY_CRAWLER_URL,
+                                 data=json.dumps(payload).encode(), method="POST")
+    req.add_header("Content-Type", "application/json")
+    req.add_header("Authorization", "Bearer %s" % token)
+    return req
+
 # ---------------------------------------------------------------- GitHub rendering
 FP_MARKER = "<!-- surveillance:fp={fp} -->"
-FP_RE = re.compile(r"surveillance:fp=([A-Za-z0-9:_\-]+)")
+FP_RE = re.compile(r"surveillance:fp=([A-Za-z0-9:._\-]+)")
 
 def issue_title(f):
     return f"[{f['severity']}][{f['source_id']}] {f['summary']}"[:250]
@@ -150,6 +198,7 @@ def issue_body(f):
 _STEM = {
     "guideline-surveillance": "guideline_delta",
     "link-source-monitor": "link_audit",
+    "citation-monitor": "citation_audit",
     "resource-intake": "resource_intake",
 }
 
@@ -159,9 +208,10 @@ def write_report(job, findings, when=None, base=None):
     os.makedirs(base, exist_ok=True)
     stem = _STEM.get(job, job)
     jpath = os.path.join(base, f"{stem}_{when}.json")
-    json.dump(findings, open(jpath, "w", encoding="utf-8"), indent=2)
+    with open(jpath, "w", encoding="utf-8") as fh:
+        json.dump(findings, fh, indent=2)
     out = [jpath]
-    if job in ("link-source-monitor", "resource-intake"):
+    if job in ("link-source-monitor", "citation-monitor", "resource-intake"):
         cpath = os.path.join(base, f"{stem}_{when}.csv")
         cols = ["detected_at", "severity", "source_id", "change_type",
                 "summary", "source_url", "affects", "status"]
@@ -202,10 +252,12 @@ def update_last_run(source_ids, when=None, base=None):
     os.makedirs(base, exist_ok=True)
     path = os.path.join(base, "last_run.json")
     try:
-        data = json.load(open(path, encoding="utf-8"))
+        with open(path, encoding="utf-8") as fh:
+            data = json.load(fh)
     except Exception:
         data = {}
     for sid in source_ids:
         data[sid] = when
-    json.dump(data, open(path, "w", encoding="utf-8"), indent=2, sort_keys=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(data, fh, indent=2, sort_keys=True)
     return path

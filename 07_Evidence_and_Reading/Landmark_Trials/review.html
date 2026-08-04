@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<!-- [RC-META] tool="Daily Review — Spaced Repetition" version="1.1" built="2026-07-07" category="practice" audience="trainee,ms3" settings="self-study" time="5min" summary="Browser-local spaced-repetition dashboard for clerkship review cards. Educational; fictional composites only; no PHI." -->
+<!-- [CLERKSHIP-META v1] tool="Daily Review — Spaced Repetition" version="1.1" built="2026-07-07" category="practice" audience="trainee,ms3" settings="self-study" time="5min" summary="Browser-local spaced-repetition dashboard for clerkship review cards. Educational; fictional composites only; no PHI." -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
@@ -107,18 +107,16 @@ function saveS(s){try{localStorage.setItem(KEY,JSON.stringify(s));}catch(_){ }}
 function rollDay(s){var t=todayStr();if(s.day.lastDay!==t){s.day.lastDay=t;s.day.newToday=0;}return s;}
 function bumpStreak(s){var t=todayStr();if(s.stats.lastStudy===t)return;s.stats.streak=(s.stats.lastStudy===yestStr()?(s.stats.streak||0)+1:1);s.stats.lastStudy=t;}
 
-/* ---------- SM-2-lite ---------- */
-function applyGrade(st,g){
-  st=st||{ease:2.5,ivl:0,due:0,reps:0,lapses:0};
-  var ease=st.ease||2.5, ivl=st.ivl||0, reps=st.reps||0, lapses=st.lapses||0;
-  if(g===0){ease=Math.max(1.3,ease-0.20);reps=0;lapses++;ivl=0;}
-  else if(g===1){ease=Math.max(1.3,ease-0.15);ivl=reps===0?1:Math.max(1,Math.round(ivl*1.2));reps++;}
-  else if(g===2){ivl=reps===0?1:(reps===1?3:Math.round(ivl*ease));reps++;}
-  else {ease=ease+0.15;ivl=reps===0?3:Math.round((ivl||1)*ease*1.3);reps++;}
-  ivl=Math.min(ivl,365);
-  return {ease:ease,ivl:ivl,reps:reps,lapses:lapses,due:(g===0?Date.now():Date.now()+ivl*DAY),last:Date.now()};
-}
-function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl<1)return "learning";return "young";}
+/* ---------- SM-2 ---------- */
+/* Migrated 2026-08-03 to the canonical shared SM-2 grader (applyGrade, build-
+   injected from site_build/sm2_apply_grade.js) — master-plan decision D7,
+   accepted. Deltas vs. the old SM-2-lite for existing cards: (1) first-Good
+   schedules 1 d, was the 1→3-day ladder; (2) first-Easy schedules 4 d, was
+   3 d; (3) reps no longer reset on a lapse; (4) same-session requeue of
+   misses (q.push(card) below) is unchanged. */
+var GRADE_NAMES=["Again","Hard","Good","Easy"]; // grade buttons stay 0-3; mapped onto the canonical string grades
+/*__SM2_APPLY_GRADE__*/
+function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl<=1)return "learning";return "young";}
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 
 /* ---------- theme ---------- */
@@ -176,7 +174,8 @@ function App(){
     var s=sessRef.current; if(!s||!s.revealed)return;
     var st=loadS(); st=rollDay(st);
     var card=s.card; var existed=!!st.cards[card.id];
-    var was=st.cards[card.id]; st.cards[card.id]=applyGrade(was,g);
+    var was=st.cards[card.id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0};
+    st.cards[card.id]=applyGrade(was,GRADE_NAMES[g]);
     if(!existed){ st.day.newToday=(st.day.newToday||0)+1; }
     bumpStreak(st);
     st.stats.totalReviews=(st.stats.totalReviews||0)+1;

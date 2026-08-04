@@ -28,20 +28,23 @@ def _norm_path(p):
 
 def _entries(report):
     """Yield (source_file, url, code, text) across lychee schema variants."""
-    fmap = report.get("fail_map") or report.get("error_map") or {}
-    for src, items in fmap.items():
-        for it in items or []:
-            if isinstance(it, str):
-                yield src, it, None, ""
-                continue
-            url = it.get("url") or it.get("uri") or ""
-            status = it.get("status") or {}
-            if isinstance(status, dict):
-                code = status.get("code")
-                text = status.get("text") or status.get("details") or ""
-            else:
-                code, text = None, str(status)
-            yield src, url, code, text
+    for key in ("fail_map", "error_map"):
+        fmap = report.get(key)
+        if not isinstance(fmap, dict):
+            continue
+        for src, items in fmap.items():
+            for it in items or []:
+                if isinstance(it, str):
+                    yield src, it, None, ""
+                    continue
+                url = it.get("url") or it.get("uri") or ""
+                status = it.get("status") or {}
+                if isinstance(status, dict):
+                    code = status.get("code")
+                    text = status.get("text") or status.get("details") or ""
+                else:
+                    code, text = None, str(status)
+                yield src, url, code, text
 
 
 def to_findings(report):
@@ -84,27 +87,37 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--lychee", required=True, help="lychee --format json output file")
     ap.add_argument("--out", default="findings.json")
+    ap.add_argument("--checked-out", default="checked-sources.json")
     args = ap.parse_args()
 
-    report = None
     try:
         with open(args.lychee, encoding="utf-8") as fh:
             raw = fh.read().strip()
-        if raw:
-            report = json.loads(raw)
     except FileNotFoundError:
-        pass
+        sys.exit(f"ERROR: lychee report is missing: {args.lychee}")
     except Exception as e:
-        print(f"WARNING: lychee report unreadable ({e}); treating as no findings. "
-              f"Inspect the lychee step logs.", file=sys.stderr)
+        sys.exit(f"ERROR: lychee report is unreadable: {e}")
 
-    if not report:
-        json.dump([], open(args.out, "w", encoding="utf-8"))
-        print(f"link-monitor: no usable lychee report (empty/missing) -> 0 findings; wrote {args.out}")
-        return
+    if not raw:
+        sys.exit("ERROR: lychee report is empty")
+    try:
+        report = json.loads(raw)
+    except json.JSONDecodeError as e:
+        sys.exit(f"ERROR: lychee report is not valid JSON: {e}")
+    if not isinstance(report, dict):
+        sys.exit("ERROR: lychee report must be a JSON object")
+    recognized = [
+        key for key in ("fail_map", "error_map")
+        if key in report and isinstance(report[key], dict)
+    ]
+    if not recognized:
+        sys.exit("ERROR: lychee report has no recognized fail_map/error_map object")
 
     findings = to_findings(report)
-    json.dump(findings, open(args.out, "w", encoding="utf-8"), indent=2)
+    with open(args.out, "w", encoding="utf-8") as fh:
+        json.dump(findings, fh, indent=2)
+    with open(args.checked_out, "w", encoding="utf-8") as fh:
+        json.dump(L.validate_checked_sources(["link-monitor"]), fh, indent=2)
     print(f"link-monitor: {len(findings)} broken/redirect link finding(s) -> {args.out}")
 
 

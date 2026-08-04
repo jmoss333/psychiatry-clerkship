@@ -11,3 +11,28 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+# Deterministic routes for the client-facing endpoints.
+# The functions self-register in source, but those routes were observed NOT registering on the
+# live deploy: /api/sp fell through to the static 404 page (which carries no
+# Access-Control-Allow-Origin), so the browser reported "Load failed" instead of reaching the
+# function. These explicit rewrites pin all public paths regardless of in-source registration.
+# Status 200 = rewrite (proxy), not a 3xx redirect, so methods, bodies, and headers (including
+# x-student-key) are preserved and the functions still own CORS/OPTIONS.
+[[redirects]]
+  from = "/api/sp"
+  to = "/.netlify/functions/sp"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/sp/voice"
+  to = "/.netlify/functions/sp-voice"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/sp/health-status"
+  to = "/.netlify/functions/sp-health-status"
+  status = 200
+  force = true
