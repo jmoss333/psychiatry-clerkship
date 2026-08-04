@@ -69,6 +69,9 @@ jobs:
       - name: Unit — citation surveillance
         run: python3 13_Faculty_Resources/_automation/surveillance/bin/run_citation_check.py --self-test
 
+      - name: Unit — resource intake sanitization
+        run: python3 13_Faculty_Resources/_automation/surveillance/bin/run_resource_intake.py --self-test
+
       - name: Validate — topic_meta.json contract
         run: python3 13_Faculty_Resources/_automation/validate_topic_meta.py
 
@@ -98,6 +101,15 @@ jobs:
 
       - name: Validate — tool governance
         run: python3 13_Faculty_Resources/_automation/validate_tool_governance.py
+
+      - name: Install — faculty export tool dependencies
+        run: python3 -m pip install --requirement requirements-dev.txt
+
+      - name: Unit — faculty export tools (adobe packet, faculty polish, pdf library)
+        run: |
+          python3 tools/adobe_packet_export/test_export_ms3_adobe_packet_data.py
+          python3 tools/faculty_polish_export/test_export_top10_faculty_polish.py
+          python3 tools/pdf_library_export/test_export_website_pdf_library.py
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
@@ -154,7 +166,10 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-1.46.1-${{ runner.os }}
+          # Key derives from the smoke lockfile so a Playwright bump rolls the
+          # cache automatically (a hand-pinned version went permanently stale
+          # after the 1.46.1→1.61.1 bump). Keep in sync with refresh-baselines.yml.
+          key: playwright-${{ hashFiles('tests/smoke/package-lock.json') }}-${{ runner.os }}
 
       - name: Install Playwright + Chromium
         run: |

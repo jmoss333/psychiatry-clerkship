@@ -106,10 +106,7 @@ def fetch_apify(source, token):
         "respectRobotsTxtFile": True,
         "proxyConfiguration": {"useApifyProxy": True},
     }
-    url = ("https://api.apify.com/v2/acts/apify~website-content-crawler/"
-           f"run-sync-get-dataset-items?token={token}")
-    req = urllib.request.Request(url, data=json.dumps(payload).encode(), method="POST")
-    req.add_header("Content-Type", "application/json")
+    req = L.build_apify_request(payload, token)
     with urllib.request.urlopen(req, timeout=300) as r:
         items = json.loads(r.read().decode() or "[]")
     return "\n".join((it.get("text") or it.get("markdown") or "") for it in items)
