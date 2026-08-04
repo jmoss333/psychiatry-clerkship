@@ -89,7 +89,7 @@ netlify deploy --prod --dir=~/mmc-resident-deploy       # Resident
 > ~~Note: the deployed sites currently carry ~10 pages beyond this build script's list…~~ **Resolved 2026-07-02:** a from-scratch build was diffed against both live deploys. MS3 had **no** real-content gap (the 4 "extra" files were `.netlify/plugins/node_modules` junk). Resident was missing **4 tools**, now reconciled into `resident_section.py` (see §0b). Fresh builds are now byte-identical to live. Re-run this diff after any parallel-session edits.
 
 ## 6. ✅ MEDIA — migrated to Git LFS (2026-07-02; hardened 2026-07-07)
-**Done:** the **100 `.m4a` files (~344 MB)** — landmark-trial overviews (`07_Evidence_and_Reading/Landmark_Trials/audio/`) and NotebookLM briefs (`…/openevidence_notebooklm_brief_audio_2026-06-30/`) — plus **7 `.mp4` files** are now Git LFS-tracked and pushed (`git lfs fsck` OK). Both Netlify sites must have `GIT_LFS_ENABLED=true` and `GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4`. A local build confirms media lands in both `_build/ms3` and `_build/res`. **Still verify empirically after LFS changes:** media URLs should return real multi-MB files (HTTP 200, appropriate audio/video content type), not ~130-byte pointer stubs — see §3 caution. Historical context (why this mattered) below.
+**Done:** the **100 `.m4a` files (~344 MB)** — landmark-trial overviews (`07_Evidence_and_Reading/Landmark_Trials/audio/`) and NotebookLM briefs (`12_Media/audio_oe/`) — plus **7 `.mp4` files** are now Git LFS-tracked and pushed (`git lfs fsck` OK). Both Netlify sites must have `GIT_LFS_ENABLED=true` and `GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4`. A local build confirms media lands in both `_build/ms3` and `_build/res`. **Still verify empirically after LFS changes:** media URLs should return real multi-MB files (HTTP 200, appropriate audio/video content type), not ~130-byte pointer stubs — see §3 caution. Historical context (why this mattered) below.
 
 <sub>Originally these were **gitignored**, so a git-CI build would have deployed both sites **without audio** (silent regression); the manual `netlify deploy --dir` flow didn't hit this because it copies audio from local disk. That risk is closed once the empirical check passes.</sub>
 
@@ -101,7 +101,7 @@ git lfs install
 sed -i '' '/^\*\.mp3$/d;/^\*\.m4a$/d;/^\*\.wav$/d' .gitignore
 git add .gitattributes .gitignore
 git add 07_Evidence_and_Reading/Landmark_Trials/audio \
-        13_Faculty_Resources/Handoffs/openevidence_notebooklm_brief_audio_2026-06-30
+        12_Media/audio_oe
 git lfs ls-files | head        # verify the 100 files are LFS-tracked (not regular blobs)
 git commit -m "chore: track site audio via Git LFS (landmark + NotebookLM briefs)"
 git push

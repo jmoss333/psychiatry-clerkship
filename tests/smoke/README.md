@@ -78,13 +78,13 @@ If you need to iterate offline or validate before pushing:
 bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
 bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
 
-# 2. Run inside the same container image as CI (mcr.microsoft.com/playwright:v1.46.1-jammy)
+# 2. Run inside the same container image as CI (mcr.microsoft.com/playwright:v1.61.1-jammy)
 #    A named volume keeps node_modules off your host filesystem.
 docker run --rm \
   --ipc=host \
   -v "$(pwd)":/work \
   -v smoke_node_modules:/work/tests/smoke/node_modules \
-  mcr.microsoft.com/playwright:v1.46.1-jammy \
+  mcr.microsoft.com/playwright:v1.61.1-jammy \
   bash -c "
     set -e
     cd /work
@@ -99,7 +99,7 @@ docker run --rm \
   --ipc=host \
   -v "$(pwd)":/work \
   -v smoke_node_modules:/work/tests/smoke/node_modules \
-  mcr.microsoft.com/playwright:v1.46.1-jammy \
+  mcr.microsoft.com/playwright:v1.61.1-jammy \
   bash -c "
     cd /work
     bash tests/smoke/start-local-servers.sh
@@ -121,3 +121,4 @@ git commit -m "chore(smoke): refresh visual baselines (Linux/Chromium)"
 - After changing capture config in `visual-regression.spec.js` (viewport size, element selector, settle time)
 - After a Playwright version bump (rendering may differ between versions)
 - **Never** commit baselines generated on a laptop — always use the CI workflow or the Docker command above
+- The container tag above must match the `@playwright/test` version in `tests/smoke/package.json`; the CI browser-cache keys need no edit — they derive from `package-lock.json` via `hashFiles`.

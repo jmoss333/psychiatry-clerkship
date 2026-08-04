@@ -58,10 +58,9 @@ RES_EXTRA=[
  ("14_Tracks/Resident/canon_200.md","canon_200.md"),
  ("14_Tracks/Resident/cl_reference.md","cl_reference.md"),
 ]
-for src,dst in RES_EXTRA:
-    p=os.path.join(LIB,src)
-    if os.path.exists(p):
-        shutil.copyfile(p, OUT+"/content/"+dst)
+# Fail closed (2026-08-01 audit): the copytree base means a missing resident-only
+# source would silently ship the inherited MS3 file under the resident nav title.
+common.copy_required_sources(RES_EXTRA, LIB, OUT+"/content", label="resident content")
 # Resident-only markdown is written fresh above (not inherited via the copytree), so it
 # needs the same banner-strip + contrast fix every MS3 content page already received.
 common.strip_review_banners(OUT)
@@ -107,36 +106,47 @@ if os.path.isdir(_vendor_src):
 _ms3map=MS3.rstrip("/\\")+".source-map.json"
 _srcs=set(json.load(open(_ms3map,encoding="utf-8"))["sources"]) if os.path.exists(_ms3map) else set()
 _srcs|={s for s,_ in RES_EXTRA}|{s for s,_ in PROTO_TOOLS}
-if os.path.exists(os.path.join(LIB,"reasoning_cases_resident.json")):
-    _srcs.add("reasoning_cases_resident.json")
+_srcs.add("reasoning_cases_resident.json")   # required — build aborts below if missing
 open(OUT.rstrip("/\\")+".source-map.json","w",encoding="utf-8").write(json.dumps({"sources":sorted(_srcs)}))
 
 # ---- rebrand index.html (copied, already dark/motion/polished) ----
+# Data-driven, verified rebrand: every needle must match spa_index's current copy
+# or the build aborts (previously six bare replace() calls that silently no-oped
+# after any shell reword, reverting resident branding to MS3 text).
+RESIDENT_REBRAND=[
+ ('<div class="by">MS3 Clerkship · Joshua Moss, MD</div>','<div class="by">Resident Rotation · Sanford BHU · Joshua Moss, MD</div>'),
+ ('<h1>Inpatient Psychiatry</h1>','<h1>MMC Psychiatry</h1>'),
+ ('MS3 Psychiatry Clerkship','MMC Psychiatry Residency'),
+ ('MS3 Clerkship','Resident Rotation'),
+ ('Private teaching site for the MS3 inpatient psychiatry rotation. Educational use; fictional composites only, no PHI. Some pages are pending faculty review.',
+  'Private teaching site for the MMC general-psychiatry resident inpatient rotation at the Sanford Behavioral Health Unit. Educational use; fictional composites only, no PHI. Pending faculty attestation.'),
+ ('A private learning hub for the third-year inpatient psychiatry clerkship.',
+  'A private learning hub for the MMC general-psychiatry resident inpatient rotation (Sanford BHU).'),
+]
 ix=open(OUT+"/index.html",encoding="utf-8").read()
-ix=ix.replace('<div class="by">MS3 Clerkship · Joshua Moss, MD</div>','<div class="by">Resident Rotation · Sanford BHU · Joshua Moss, MD</div>')
-ix=ix.replace('<h1>Inpatient Psychiatry</h1>','<h1>MMC Psychiatry</h1>')
-ix=ix.replace('MS3 Psychiatry Clerkship','MMC Psychiatry Residency')
-ix=ix.replace('MS3 Clerkship','Resident Rotation')
-ix=ix.replace('Private teaching site for the MS3 inpatient psychiatry rotation. Educational use; fictional composites only, no PHI. Some pages are pending faculty review.',
-              'Private teaching site for the MMC general-psychiatry resident inpatient rotation at the Sanford Behavioral Health Unit. Educational use; fictional composites only, no PHI. Pending faculty attestation.')
-ix=ix.replace('A private learning hub for the third-year inpatient psychiatry clerkship.',
-              'A private learning hub for the MMC general-psychiatry resident inpatient rotation (Sanford BHU).')
+ix=common.apply_verified_replacements(ix, RESIDENT_REBRAND, label="resident index rebrand")
 open(OUT+"/index.html","w",encoding="utf-8").write(ix)
 
 # ---- rebrand learning-path (Path-mode home) ----
 lp=OUT+"/tools/learning-path.html"
-if os.path.exists(lp):
-    s=open(lp,encoding="utf-8").read()
-    s=s.replace("Inpatient Psychiatry — Learning Path","MMC Psychiatry — Learning Path")
-    s=s.replace("MS3 Clerkship · Joshua Moss, MD","Resident Rotation · Joshua Moss, MD")
-    open(lp,"w",encoding="utf-8").write(s)
+if not os.path.exists(lp):
+    print("BUILD ABORTED — resident rebrand target missing:",lp)
+    raise SystemExit(1)
+s=open(lp,encoding="utf-8").read()
+s=common.apply_verified_replacements(s,[
+ ("Inpatient Psychiatry — Learning Path","MMC Psychiatry — Learning Path"),
+ ("MS3 Clerkship · Joshua Moss, MD","Resident Rotation · Joshua Moss, MD"),
+],label="resident learning-path rebrand")
+open(lp,"w",encoding="utf-8").write(s)
 
 # ---- resident-level reasoning cases: same tool, harder audience-specific payload ----
 _resident_reasoning=os.path.join(LIB,"reasoning_cases_resident.json")
-if os.path.exists(_resident_reasoning):
-    shutil.copy2(_resident_reasoning, OUT+"/reasoning_cases.json")
-else:
-    print("  WARN: resident reasoning cases missing from source:",_resident_reasoning)
+if not os.path.exists(_resident_reasoning):
+    # Silent MS3 downgrade guard: the copytree base means a missing resident payload
+    # ships MS3-level cases under the resident site with every gate green.
+    print("BUILD ABORTED — resident reasoning cases missing from source:",_resident_reasoning)
+    raise SystemExit(1)
+shutil.copy2(_resident_reasoning, OUT+"/reasoning_cases.json")
 
 # ---- resident nav ----
 # NOTE: the former TOOLS list and HIDDEN_TOOLS set lived here. Both were dead code —

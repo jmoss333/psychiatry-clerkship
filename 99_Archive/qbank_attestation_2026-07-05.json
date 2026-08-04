@@ -1,0 +1,733 @@
+{
+  "_note": "HISTORICAL — point-in-time faculty attestation export from 2026-07-05 (claims 144/144 attested). Superseded by the live status fields in question_bank.json, which has since retired qb_pha_012/qb_sud_015/qb_sud_016 and re-drafted items. Nothing consumes this file; kept for provenance only.",
+  "exported": "2026-07-05T00:00:00Z",
+  "by": "Joshua Moss, MD",
+  "items": {
+    "qb_sud_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_per_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_per_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_chd_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_chd_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_oth_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_oth_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_eth_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_eth_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_005": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_006": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_007": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_008": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_009": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_010": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_011": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_012": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_013": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_014": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_015": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cog_016": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_005": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_006": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_007": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_008": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_009": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_010": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_011": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_saf_012": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_005": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_006": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_007": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_008": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_009": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_010": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_011": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_012": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_013": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_sud_014": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_005": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_006": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_007": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_008": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_009": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_010": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_011": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_012": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_013": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_014": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_015": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_pha_016": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_005": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_006": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_007": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_008": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_009": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_010": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_011": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_012": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_013": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_014": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_015": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_mood_016": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_005": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_006": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_007": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_008": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_009": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_010": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_011": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_012": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_013": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_psy_014": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_005": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_006": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_007": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_008": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_009": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_010": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_011": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_anx_012": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_eth_007": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_eth_008": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_eth_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_eth_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_eth_005": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_eth_006": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_per_005": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_per_006": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_per_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_per_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cdev_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cdev_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cdev_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_cdev_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_005": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_006": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_007": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_008": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_009": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_010": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_011": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_012": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_rel_013": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_otherdx_001": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_otherdx_002": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_otherdx_003": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_otherdx_004": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_otherdx_005": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_otherdx_006": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_otherdx_007": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_otherdx_008": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    },
+    "qb_otherdx_009": {
+      "status": "attested",
+      "at": "2026-07-05",
+      "by": "Joshua Moss, MD"
+    }
+  },
+  "summary": {
+    "total": 144,
+    "attested": 144,
+    "flagged": 0,
+    "pending": 0
+  }
+}

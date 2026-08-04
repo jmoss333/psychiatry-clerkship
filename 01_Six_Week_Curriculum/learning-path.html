@@ -64,14 +64,14 @@
   .tag{font-size:.6rem;font-weight:700;border-radius:999px;padding:1px 7px;margin-left:7px;vertical-align:middle}
   .tag.tool{background:var(--accent-light);color:var(--accent-dark);border:1px solid #cfe1db}
   .tag.read{background:var(--primary-light);color:var(--primary-dark)}
-  .tag.recall{background:#efe7f3;color:#6b4d7a}
+  .tag.recall{background:var(--info-light);color:var(--info)}
   .disc{font-size:.78rem;color:var(--text-light);border-top:1px solid var(--border);margin-top:22px;padding-top:12px}
-  .fac{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;color:#41618a;text-decoration:none;background:#eef3f7;border:1px solid #d4e0ec;border-radius:8px;padding:6px 11px;margin-top:10px}
+  .fac{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;color:var(--info);text-decoration:none;background:var(--info-light);border:1px solid #d4e0ec;border-radius:8px;padding:6px 11px;margin-top:10px}
   /* deck overlay */
   .ov{position:fixed;inset:0;z-index:60;background:rgba(51,41,35,.46);backdrop-filter:blur(4px);display:flex;justify-content:center;align-items:center;padding:16px}
   .deck{width:min(540px,100%);background:var(--surface);border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)}
   .dhead{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #efe7dc;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
-  .dx{width:28px;height:28px;border-radius:8px;border:1px solid #e4d8c9;background:#f1ece6;color:var(--text-mid);cursor:pointer;font-size:16px}
+  .dx{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-mid);cursor:pointer;font-size:16px}
   .dbody{padding:22px 20px;min-height:200px;display:flex;flex-direction:column;gap:12px;justify-content:center}
   .dtag{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
   .dq{font-family:var(--font-head);font-size:1.3rem;font-weight:600;line-height:1.32}
@@ -202,7 +202,7 @@ function dstr(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 var framed=(window.self!==window.top);
 function openRead(t){ if(framed){try{window.parent.postMessage({type:"openPage",f:t},"*");return;}catch(_){}} window.open("../index.html?page="+encodeURIComponent(t),"_blank","noopener"); }
 function openTool(t){ if(framed){try{window.parent.postMessage({type:"openPage",f:t},"*");return;}catch(_){}} window.open(t,"_blank","noopener"); }
-function srsDue(){ try{ var s=JSON.parse(localStorage.getItem("cw_srs_v1")); if(!s||!s.cards) return null; var now=Date.now(),n=0,seen=0; for(var k in s.cards){ seen++; if(s.cards[k].due<=now)n++; } return {due:n,started:seen>0}; }catch(_){ return null; } }
+function srsDue(){ try{ var s=JSON.parse(localStorage.getItem("cw_srs_v1")); if(!s||!s.cards) return null; var now=Date.now(),n=0,seen=0; for(var k in s.cards){ if(k.indexOf("deck#")!==0&&k.indexOf("TOPIC#")!==0) continue; seen++; if(s.cards[k].due<=now)n++; } return {due:n,started:seen>0}; }catch(_){ return null; } }
 function srsLabel(){ var d=srsDue(); if(!d||!d.started) return "🎯 Spaced repetition — start"; return d.due>0? ("🎯 Spaced repetition — "+d.due+" due") : "🎯 Spaced repetition — caught up ✓"; }
 function goLibrary(){ if(framed){try{window.parent.postMessage({type:"openLibrary"},"*");return;}catch(_){}} window.open("../index.html","_blank","noopener"); }
 function doSearch(q){ q=(q||"").trim(); if(!q) return; if(framed){try{window.parent.postMessage({type:"search",q:q},"*");return;}catch(_){}} window.open("../index.html","_blank","noopener"); }

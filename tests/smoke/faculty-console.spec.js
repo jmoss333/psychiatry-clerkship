@@ -1716,6 +1716,10 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Choose one curriculum item' })).toBeVisible();
     await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
+    // The preview must settle before entering Edit: a still-pending preview can
+    // time out or fail later, and that lifecycle handler resets the workspace to
+    // the Live view mid-edit (observed on slow CI runners under Playwright 1.62).
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
     await page.locator('#view-edit').focus();
     await page.keyboard.press('Enter');
     await expect(page.locator('#question-stem')).toHaveValue(keyboardStem);
