@@ -9,6 +9,8 @@
  *   node check-static-site.mjs _build/ms3       # after build_deploy.py
  *   node check-static-site.mjs _build/res       # after resident_section.py
  *   STRICT=1 node check-static-site.mjs <dir>   # metadata/review coverage gaps also fail
+ *   UPDATE_BASELINE=1 node check-static-site.mjs <dir>   # rewrite qa-baseline.json from
+ *                                                          this run's soft-finding counts
  *
  * CI: invoked by build_and_check.sh (both Netlify site build commands) after the build;
  * a non-zero exit fails the Netlify build, so HARD findings block the deploy.
@@ -28,6 +30,12 @@
  *   - a shipped file that is a Git-LFS pointer stub instead of real bytes
  *   - a duplicate (or missing) item id in question_bank.json
  *   - a relative/root-local <script src> whose shipped target is absent
+ *   - a shell (index.html) literal map (LAB/ICON/PRACTICE_LABELS/PAGE_TOOLS/
+ *     PRACTICE_PAGE_TOOLS/DASH_CONFIG) referencing a tool file the build doesn't ship
+ *   - a shell CASE_TITLES/FAMILY_SCENARIO_TITLES id missing from communication_cases.json
+ *     / family_systems_scenarios.json
+ *   - a `?page=`/`?tool=` reference in shipped content/*.md that doesn't resolve
+ *   - a soft-finding class (see qa-baseline.json) whose count exceeds its baseline
  * SOFT findings (warn; fail only under STRICT=1):
  *   - a tool HTML missing both recognized metadata markers ([CLERKSHIP-META v1] / [RC-META])
  *   - near-duplicate question stems in question_bank.json (≥85% token overlap)
@@ -36,7 +44,7 @@
  *   - orphan tools/content not referenced by nav
  *   - LOCAL_POLICY tokens still unfilled (value:null)  [reported, never fails]
  */
-import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -54,6 +62,25 @@ const readJSON = (f) => JSON.parse(readFileSync(f, 'utf8'));
 const listHtml = (dir) => existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith('.html')) : [];
 const DOSE = /\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg\/kg)\b/i;
 const CDN_HOST = /\b(?:cdnjs\.cloudflare\.com|unpkg\.com|jsdelivr\.net)\b/i;
+
+/* classify(msg): map a soft-finding message to a stable class for the ratchet (section 9).
+ * Regexes are ordered most-specific first and matched against the literal S() message
+ * text — keep this in sync with the file's S() call sites (grep `S(\``). A soft message
+ * that matches nothing here still counts, just under "other", which has its own baseline
+ * key rather than silently going unratcheted. */
+function classify(msg) {
+  if (/^computed localStorage key\(s\) in /.test(msg)) return 'computed-key';
+  if (/^dose literal in /.test(msg)) return 'dose-soft';
+  if (/^near-duplicate question stems: /.test(msg)) return 'near-dup';
+  if (/^blueprint gap: /.test(msg)) return 'blueprint-gap';
+  if (/^pretest pool /.test(msg)) return 'pretest-gap';
+  if (/^metadata missing \(topic_meta\): /.test(msg)) return 'metadata';
+  if (/^tool missing recognized metadata marker: /.test(msg)) return 'metadata';
+  if (/^legacy metadata warning: /.test(msg)) return 'legacy-metadata';
+  if (/^review status missing \(reviewed\.json\): /.test(msg)) return 'review-coverage';
+  if (/^Git-LFS pointer stub shipped /.test(msg)) return 'lfs-stub-soft';
+  return 'other';
+}
 
 if (!existsSync(SITE)) { console.error(`Site dir not found: ${SITE}`); process.exit(1); }
 
@@ -426,6 +453,108 @@ if (!existsSync(srcMapPath)) {
     H(`orphaned source page (not wired into build): ${o} — register it in build_deploy.py or rename it out of the content convention`);
 }
 
+/* ---------- 7b. shell-reference integrity scan (HARD) ----------
+ * index.html (the SPA shell) carries several hand-maintained literal maps that point at
+ * shipped tool files, communication-case ids, and family-scenario ids. Earlier tasks in
+ * this branch (sp-interview.html, one-patient-six-weeks.html) added entries to these maps
+ * by hand — nothing upstream verifies the entries still resolve once shipped. This section
+ * closes that gap: a tool filename, case id, scenario id, or `?page=`/`?tool=` reference
+ * the build ships but doesn't back with a real file is a dead end a student can click into.
+ *
+ * Extraction approach (fragile by construction — flagged here on purpose): the shell
+ * literals are ordinary JS object literals baked into index.html, not JSON, so a real
+ * parser isn't available without adding a dependency this dependency-free gate deliberately
+ * avoids. `extractVarBlock` isolates each `var NAME={...};` block with a quote-aware brace
+ * counter (needed because DASH_CONFIG nests a per-mode object inside the outer one);
+ * regexes then pull `'*.html'` string literals or bare-identifier object keys out of that
+ * block. This breaks if the build ever reformats these vars — e.g. switches `var` to
+ * `const`/`let`, quotes the CASE_TITLES/FAMILY_SCENARIO_TITLES keys, or a label string
+ * picks up an unescaped matching quote. The `shell literal map "X" not found` HARD failure
+ * below is the tripwire for that regression class: it means the scan went blind, not that
+ * the shell is fine — treat it as a bug in this section, not a pass.
+ *
+ * Escape hatch: a specific reference that's a genuine, reviewed exception (not a bug) can
+ * be listed here instead of fixed, with a comment explaining why. Empty as of this task —
+ * the (a)/(b)/(c) checks below found zero pre-existing violations against the current
+ * build, so nothing needed it.
+ */
+const SHELL_REF_ALLOWLIST = new Set([
+  // 'tool-name.html',   // example shape — reason it's allowlisted instead of fixed
+]);
+{
+  const extractVarBlock = (src, varName) => {
+    const marker = `var ${varName}=`;
+    const start = src.indexOf(marker);
+    if (start === -1) return null;
+    let i = src.indexOf('{', start);
+    if (i === -1) return null;
+    let depth = 0, inStr = null;
+    for (; i < src.length; i++) {
+      const c = src[i];
+      if (inStr) { if (c === '\\') { i++; continue; } if (c === inStr) inStr = null; continue; }
+      if (c === "'" || c === '"') { inStr = c; continue; }
+      if (c === '{') depth++;
+      else if (c === '}') { depth--; if (depth === 0) return src.slice(start, i + 1); }
+    }
+    return null; // ran off the end without closing — extraction failed
+  };
+  const htmlNamesIn = (block) => new Set([...block.matchAll(/(['"])([^'"]+\.html)\1/g)].map(m => m[2]));
+  const bareKeysIn = (block) => new Set([...block.matchAll(/([A-Za-z_$][\w$]*)\s*:\s*'/g)].map(m => m[1]));
+
+  const shellHtml = existsSync(shellPath) ? readFileSync(shellPath, 'utf8') : null;
+  if (shellHtml === null) {
+    H('index.html missing from built site (shell-reference scan cannot run)');
+  } else {
+    // (a) tool filenames referenced across the six shell maps must exist in tools/.
+    const TOOL_MAP_VARS = ['LAB', 'ICON', 'PRACTICE_LABELS', 'PAGE_TOOLS', 'PRACTICE_PAGE_TOOLS', 'DASH_CONFIG'];
+    const toolRefs = new Map(); // toolName -> Set(varName it was found in)
+    for (const varName of TOOL_MAP_VARS) {
+      const block = extractVarBlock(shellHtml, varName);
+      if (block === null) { H(`shell literal map "${varName}" not found in index.html (extraction failed — see comment above)`); continue; }
+      for (const name of htmlNamesIn(block)) {
+        if (!toolRefs.has(name)) toolRefs.set(name, new Set());
+        toolRefs.get(name).add(varName);
+      }
+    }
+    for (const [name, vars] of [...toolRefs].sort((a, b) => a[0].localeCompare(b[0]))) {
+      if (SHELL_REF_ALLOWLIST.has(name)) continue;
+      if (!existsSync(p('tools', name)))
+        H(`shell references missing tool "${name}" (in ${[...vars].sort().join(', ')}) — index.html`);
+    }
+
+    // (b) CASE_TITLES / FAMILY_SCENARIO_TITLES ids must exist in the shipped case/scenario data.
+    const idBlockCheck = (varName, dataFile, dataKey) => {
+      const block = extractVarBlock(shellHtml, varName);
+      if (block === null) { H(`shell literal map "${varName}" not found in index.html (extraction failed — see comment above)`); return; }
+      const target = p(dataFile);
+      if (!existsSync(target) || !parsed[target]) { H(`${dataFile} not found or unparsable in built site (cannot verify ${varName} ids)`); return; }
+      const knownIds = new Set((parsed[target][dataKey] || []).map(x => x && x.id).filter(Boolean));
+      for (const id of bareKeysIn(block)) {
+        if (knownIds.has(id) || SHELL_REF_ALLOWLIST.has(id)) continue;
+        H(`shell ${varName} references missing id "${id}" — not in ${dataFile}`);
+      }
+    };
+    idBlockCheck('CASE_TITLES', 'communication_cases.json', 'cases');
+    idBlockCheck('FAMILY_SCENARIO_TITLES', 'family_systems_scenarios.json', 'scenarios');
+  }
+
+  // (c) `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped
+  // content slug / tool file. Target is read up to the next &, quote, close-paren, or
+  // whitespace, so both markdown `(...)` links and raw `href="..."` attributes match.
+  const contentSetC = new Set(contentFiles);
+  const toolSetC = new Set(toolFiles);
+  const ROUTE_REF = /\?(page|tool)=([^&"')\s]+)/g;
+  for (const f of contentFiles) {
+    const text = readFileSync(p('content', f), 'utf8');
+    for (const m of text.matchAll(ROUTE_REF)) {
+      const kind = m[1], target = decodeURIComponent(m[2]);
+      if (SHELL_REF_ALLOWLIST.has(target)) continue;
+      const ok = kind === 'page' ? contentSetC.has(target) : toolSetC.has(target);
+      if (!ok) H(`content/${f} → ?${kind}= references missing ${kind === 'page' ? 'content page' : 'tool'}: ${target}`);
+    }
+  }
+}
+
 /* ---------- 8. Git-LFS pointer stubs ---------- */
 // A pointer stub means the deploy fetched the LFS *pointer* (~130 bytes of
 // "version https://git-lfs…") instead of the real media bytes — the orientation-video
@@ -442,6 +571,61 @@ for (const { fp, size } of allFiles) {
   if (readFileSync(fp, 'latin1').startsWith('version https://git-lfs')) {
     const msg = `Git-LFS pointer stub shipped (not real bytes): ${fp.replace(SITE, '.')} — re-fetch LFS objects (deploy without cache) before building`;
     if (lfsIsExpectedStub) S(msg); else H(msg);
+  }
+}
+
+/* ---------- 9. soft-finding ratchet ----------
+ * SOFT findings warn but never fail build_and_check.sh (STRICT is off there — see the
+ * usage header). Left alone, a soft class can grow silently forever. This gives soft
+ * findings a one-way floor: qa-baseline.json records the max count ever accepted per
+ * class per site (classify(), defined near the top of the file, buckets each soft
+ * message). A run whose class count exceeds its baseline is promoted to a HARD failure
+ * naming the class/count/baseline — the class grew and nobody looked at it. A run that
+ * comes in under baseline gets an I() nudge to lower the baseline — the class shrank,
+ * lock the improvement in so it can't silently regress back up.
+ *
+ * Keyed per-site (`{"ms3":{...},"res":{...}}`), not a single shared baseline: generating
+ * it (2026-08-04) showed computed-key alone differs by 3 between builds — res ships 3 more
+ * rp-*.html tools using the LS.flags/FLAGS_KEY indirection than ms3 does, a structural
+ * difference, not drift. A shared ceiling would just mask ms3 regressions inside res's
+ * slack. Site key = basename(SITE) when it's "ms3" or "res"; any other build dir (a local
+ * experiment, a future third site) falls back to "default" so the ratchet still runs, just
+ * without inherited history for it.
+ *
+ * Missing qa-baseline.json = skip the ratchet with an I() note, not a HARD failure — an
+ * older checkout or a fresh clone before the file is generated must not suddenly hard-fail
+ * every build. UPDATE_BASELINE=1 rewrites the current site's counts into the file (merging
+ * into, not clobbering, the other site's key) — for deliberate adoption after a real,
+ * reviewed change to a soft-finding count, not something to run reflexively on failure.
+ */
+{
+  const baselinePath = join(dirname(fileURLToPath(import.meta.url)), 'qa-baseline.json');
+  const siteBase = basename(resolve(SITE));
+  const siteKey = (siteBase === 'ms3' || siteBase === 'res') ? siteBase : 'default';
+  const counts = Object.create(null);
+  for (const m of soft) { const c = classify(m); counts[c] = (counts[c] || 0) + 1; }
+
+  if (process.env.UPDATE_BASELINE === '1') {
+    let all = {};
+    if (existsSync(baselinePath)) { try { all = JSON.parse(readFileSync(baselinePath, 'utf8')); } catch { all = {}; } }
+    all[siteKey] = counts;
+    writeFileSync(baselinePath, JSON.stringify(all, null, 2) + '\n');
+    I(`qa-baseline.json updated for "${siteKey}" → ${JSON.stringify(counts)}`);
+  } else if (!existsSync(baselinePath)) {
+    I('qa-baseline.json not found — soft-finding ratchet skipped (run UPDATE_BASELINE=1 to create it)');
+  } else {
+    let all = null;
+    try { all = JSON.parse(readFileSync(baselinePath, 'utf8')); }
+    catch (e) { I(`qa-baseline.json unparsable (${e.message}) — soft-finding ratchet skipped`); }
+    if (all) {
+      const baseline = all[siteKey] || {};
+      const classes = new Set([...Object.keys(counts), ...Object.keys(baseline)]);
+      for (const c of [...classes].sort()) {
+        const n = counts[c] || 0, max = baseline[c] || 0;
+        if (n > max) H(`soft-finding ratchet: class "${c}" grew to ${n} (baseline ${max}) — review the new soft findings, then rerun with UPDATE_BASELINE=1 once accepted`);
+        else if (n < max) I(`soft-finding ratchet: class "${c}" is ${n}, below baseline ${max} — consider UPDATE_BASELINE=1 to lock in the improvement`);
+      }
+    }
   }
 }
 
