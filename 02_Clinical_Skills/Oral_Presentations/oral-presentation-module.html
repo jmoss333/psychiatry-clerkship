@@ -134,6 +134,10 @@ var RUBRIC_ITEMS=[
   {k:'siHi',label:'State SI/HI explicitly.'},
   {k:'synthesis',label:'Give a real assessment — who/what/why-now, not a recap.'},
   {k:'planByProblem',label:'Plan by problem with concrete next steps.'},
+  // Adapted from the Don't card's "End without a plan or disposition thought." — NOT
+  // byte-verbatim (the "without" was dropped to flip it into a positive self-check item; the
+  // Do card's 5th line, "Know your numbers", doesn't cover this concept). If that Don't-card
+  // line ever changes, re-check this label stays in sync.
   {k:'endedWithAsk',label:'End with a plan or disposition thought.'}
 ];
 var FORMAT_LABEL={full:'Full presentation (7-step)',collateral:'30-sec collateral',rounds:'60-sec rounds'};
@@ -181,6 +185,8 @@ function App(){
   var reps=useState(loadOralReps); var setReps=reps[1]; reps=reps[0];
   var pending=useState(null); var setPending=pending[1]; pending=pending[0];
   var rubricDraft=useState({}); var setRubricDraft=rubricDraft[1]; rubricDraft=rubricDraft[0];
+  var fullRepAt=useState(null); var setFullRepAt=fullRepAt[1]; fullRepAt=fullRepAt[0];
+  var microRepAt=useState(null); var setMicroRepAt=microRepAt[1]; microRepAt=microRepAt[0];
   var ref=useRef(null);
   var microRef=useRef(null);
   useEffect(function(){ if(run){ ref.current=setInterval(function(){ setSec(function(s){return s+1}); },1000);} return function(){ if(ref.current) clearInterval(ref.current);} },[run]);
@@ -207,24 +213,38 @@ function App(){
     }
     return out;
   }
-  function addRep(format,total,perStep){
+  // One record per continuous timeline (the span between Reset/mode-switches that zero a
+  // timer). `existingAt` is the current timeline's already-logged rep, if any: pass it to
+  // update that record's total/perStep in place instead of appending a duplicate. Returns the
+  // record's `at`, unchanged on update, so callers can track "this timeline already has a rep."
+  function commitRep(existingAt,format,total,perStep){
+    if(existingAt){
+      var updated=reps.map(function(r){
+        if(r.at!==existingAt) return r;
+        return Object.assign({},r,{total:total,perStep:perStep});
+      });
+      setReps(updated); saveOralReps(updated);
+      return existingAt;
+    }
     var rec={at:new Date().toISOString(),format:format,total:total,perStep:perStep,rubric:null};
     var list=reps.concat([rec]);
     if(list.length>ORALS_CAP) list=list.slice(list.length-ORALS_CAP);
     setReps(list); saveOralReps(list);
-    setPending(rec.at); setRubricDraft({});
+    return rec.at;
   }
   function stopFullRep(){
     if(sec<30) return;
-    addRep('full',sec,computeFullPerStep());
+    var at=commitRep(fullRepAt,'full',sec,computeFullPerStep());
+    if(!fullRepAt){ setFullRepAt(at); setPending(at); setRubricDraft({}); }
   }
   function stopMicroRep(){
     if(microSec<30) return;
-    addRep(microKey,microSec,null);
+    var at=commitRep(microRepAt,microKey,microSec,null);
+    if(!microRepAt){ setMicroRepAt(at); setPending(at); setRubricDraft({}); }
   }
   function pickMicro(k){
     if(microRun) stopMicroRep();
-    setMicroRun(false); setMicroSec(0); setMicroDone({}); setMicroKey(k);
+    setMicroRun(false); setMicroSec(0); setMicroDone({}); setMicroKey(k); setMicroRepAt(null);
   }
   function findPendingRep(){
     if(!pending) return null;
@@ -371,7 +391,7 @@ function App(){
       e('div',{className:'cue'+(over?' over':'')}, cue),
       e('div',{className:'row'},
         e('button',{className:'btn btn-primary',onClick:function(){ if(run) stopFullRep(); setRun(!run); }}, run?'Pause':(sec?'Resume':'Start')),
-        e('button',{className:'btn btn-ghost',onClick:function(){ if(run) stopFullRep(); setRun(false);setSec(0);setDone({});setStepMark({}); }},'Reset'))
+        e('button',{className:'btn btn-ghost',onClick:function(){ if(run) stopFullRep(); setRun(false);setSec(0);setDone({});setStepMark({});setFullRepAt(null); }},'Reset'))
     ),
     e('div',{className:'card'},
       e('p',{className:'sub',style:{marginTop:0}},'Tick each section as you say it. The highlighted step is where a well-paced presentation should be right now.'),
@@ -411,7 +431,7 @@ function App(){
       e('div',{className:'cue'+(microOver?' over':'')}, microCue),
       e('div',{className:'row'},
         e('button',{className:'btn btn-primary',onClick:function(){ if(microRun) stopMicroRep(); setMicroRun(!microRun); }}, microRun?'Pause':(microSec?'Resume':'Start')),
-        e('button',{className:'btn btn-ghost',onClick:function(){ if(microRun) stopMicroRep(); setMicroRun(false);setMicroSec(0);setMicroDone({}); }},'Reset'))
+        e('button',{className:'btn btn-ghost',onClick:function(){ if(microRun) stopMicroRep(); setMicroRun(false);setMicroSec(0);setMicroDone({});setMicroRepAt(null); }},'Reset'))
     ),
     e('div',{className:'card'},
       e('p',{className:'sub',style:{marginTop:0}},'Tick each section as you say it. The highlighted line is where this update should be right now.'),
