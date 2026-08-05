@@ -258,7 +258,7 @@ function srsUpdate(item, confidence, correct, twoTierResult){
   var cardId = 'QB#'+item.id;
   var card = s.cards[cardId]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0};
   var grade = srsGrade(item, confidence, correct, twoTierResult);
-  s.cards[cardId] = applyGrade(card, grade);
+  s.cards[cardId] = applyGrade(card, grade, {fuzzKey:cardId});
   /* update aggregate stats */
   s.stats.totalReviews = (s.stats.totalReviews||0)+1;
   if(correct) s.stats.correct=(s.stats.correct||0)+1;

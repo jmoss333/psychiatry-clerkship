@@ -147,7 +147,7 @@ function famCardId(scenarioId,promptId){return 'FAM#'+scenarioId+'#'+promptId;}
 function srsGradeFamily(scenarioId,promptId,grade){
   var s=srsLoadStore(), id=famCardId(scenarioId,promptId);
   var card=s.cards[id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0};
-  s.cards[id]=applyGrade(card,grade);
+  s.cards[id]=applyGrade(card,grade,{fuzzKey:id});
   /* cards only — never stats: review.html renders Retention as correct/seen,
      and a self-rating has no ground-truth "correct" to contribute */
   srsSaveStore(s);
