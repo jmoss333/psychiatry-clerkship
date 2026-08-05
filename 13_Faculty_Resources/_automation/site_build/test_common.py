@@ -382,7 +382,7 @@ class TestSharedSnippets(unittest.TestCase):
         p = self._page("<script>var DAY=86400000;\n" + self.MARKER + "\n</script>")
         self.assertTrue(common.inject_shared_snippets(p))
         t = open(p, encoding="utf-8").read()
-        self.assertIn("function applyGrade(card, grade)", t)
+        self.assertIn("function applyGrade(card, grade, opts)", t)
         self.assertNotIn(self.MARKER, t)
 
     def test_injection_is_idempotent(self):
