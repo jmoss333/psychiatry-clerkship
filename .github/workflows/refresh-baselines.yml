@@ -38,6 +38,12 @@ jobs:
         with:
           node-version: "20"
 
+      # build_and_check.sh runs the Python validators first; jsonschema became a
+      # validator dependency in #253, after this workflow was written (same
+      # install line as ci.yml's schema-validation step).
+      - name: Install — validator dependencies
+        run: python3 -m pip install --requirement requirements.txt PyYAML==6.0.2
+
       - name: Build sites (ms3 + res)
         run: |
           bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
