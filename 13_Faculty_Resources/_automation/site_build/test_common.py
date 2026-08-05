@@ -399,6 +399,13 @@ class TestSharedSnippets(unittest.TestCase):
         self.assertIn("function looksLikePhi(t){", t)
         self.assertNotIn("/*__PHI_HEURISTIC__*/", t)
 
+    def test_sw_register_snippet_expands_with_short_signature(self):
+        p = self._page("<script>\n/*__SW_REGISTER__*/\n</script>")
+        self.assertTrue(common.inject_shared_snippets(p))
+        t = open(p, encoding="utf-8").read()
+        self.assertIn("function registerClerkshipSW(){", t)
+        self.assertNotIn("/*__SW_REGISTER__*/", t)
+
     def test_all_snippet_signatures_are_short_and_unique(self):
         # Whole-line signatures are exact-substring dup-probes (common.py _snippet_signature);
         # long ones silently degrade to no-ops when the file is rewrapped. Cap them.
