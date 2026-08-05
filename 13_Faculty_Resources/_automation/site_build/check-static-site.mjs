@@ -471,7 +471,11 @@ if (!existsSync(srcMapPath)) {
  * `const`/`let`, quotes the CASE_TITLES/FAMILY_SCENARIO_TITLES keys, or a label string
  * picks up an unescaped matching quote. The `shell literal map "X" not found` HARD failure
  * below is the tripwire for that regression class: it means the scan went blind, not that
- * the shell is fine — treat it as a bug in this section, not a pass.
+ * the shell is fine — treat it as a bug in this section, not a pass. Also note: the
+ * `'*.html'`/bare-key regexes read raw characters, not tokens — a quoted `'*.html'`-looking
+ * string or a `word:'...'`-looking fragment sitting inside a "//" or block-comment inside
+ * one of these var blocks would be picked up as a phantom reference. No such comment
+ * exists in these blocks today (verified) — flagged here as a known blind spot, not a bug.
  *
  * Escape hatch: a specific reference that's a genuine, reviewed exception (not a bug) can
  * be listed here instead of fixed, with a comment explaining why. Empty as of this task —
@@ -589,14 +593,20 @@ for (const { fp, size } of allFiles) {
  * rp-*.html tools using the LS.flags/FLAGS_KEY indirection than ms3 does, a structural
  * difference, not drift. A shared ceiling would just mask ms3 regressions inside res's
  * slack. Site key = basename(SITE) when it's "ms3" or "res"; any other build dir (a local
- * experiment, a future third site) falls back to "default" so the ratchet still runs, just
- * without inherited history for it.
+ * experiment, a future third site, a renamed/copied checkout of one of the two) has no
+ * committed history under that name, so it gets treated exactly like a missing baseline
+ * file below — ratchet skipped with an I() note, never a spurious HARD failure.
  *
- * Missing qa-baseline.json = skip the ratchet with an I() note, not a HARD failure — an
- * older checkout or a fresh clone before the file is generated must not suddenly hard-fail
- * every build. UPDATE_BASELINE=1 rewrites the current site's counts into the file (merging
- * into, not clobbering, the other site's key) — for deliberate adoption after a real,
- * reviewed change to a soft-finding count, not something to run reflexively on failure.
+ * Missing qa-baseline.json, OR a baseline file with no entry for this run's site key =
+ * skip the ratchet with an I() note, not a HARD failure. A run against an unrecognized or
+ * not-yet-seeded site key must not manufacture "grew past baseline 0" failures for every
+ * soft finding — that would both violate the standalone-runnable contract (a copied/
+ * renamed build dir must still just report, not fabricate failures) and misrepresent what
+ * happened (nothing grew; there's simply no history yet). UPDATE_BASELINE=1 rewrites the
+ * current site's counts into the file (merging into, not clobbering, any other site's
+ * key) — for deliberate adoption after a real, reviewed change to a soft-finding count,
+ * not something to run reflexively on failure; it's also how a new site key gets seeded
+ * the first time.
  */
 {
   const baselinePath = join(dirname(fileURLToPath(import.meta.url)), 'qa-baseline.json');
@@ -617,8 +627,10 @@ for (const { fp, size } of allFiles) {
     let all = null;
     try { all = JSON.parse(readFileSync(baselinePath, 'utf8')); }
     catch (e) { I(`qa-baseline.json unparsable (${e.message}) — soft-finding ratchet skipped`); }
-    if (all) {
-      const baseline = all[siteKey] || {};
+    if (all && !(siteKey in all)) {
+      I(`soft-finding ratchet: no baseline entry for site "${siteKey}" — ratchet skipped (run UPDATE_BASELINE=1 against this build to seed one)`);
+    } else if (all) {
+      const baseline = all[siteKey];
       const classes = new Set([...Object.keys(counts), ...Object.keys(baseline)]);
       for (const c of [...classes].sort()) {
         const n = counts[c] || 0, max = baseline[c] || 0;
