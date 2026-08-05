@@ -135,6 +135,8 @@ function App(){
               : ('Assessment incomplete.');
     lines.push('Clinical impression: '+concl);
     lines.push('Note: "Capacity" is a clinical determination for a specific decision at this time; "competence" is a legal status determined by a court.');
+    lines.push('—');
+    lines.push('Drafted with a teaching tool — findings verified and note reviewed with the supervising clinician.');
     return lines.join('\n');
   }
   function copyNote(){ if(navigator.clipboard){navigator.clipboard.writeText(note()).then(function(){setCopied(true);});} }

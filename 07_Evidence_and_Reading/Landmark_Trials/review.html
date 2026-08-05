@@ -160,7 +160,14 @@ function App(){
   function start(ahead){
     var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[];
     cards.forEach(function(c){var st=s.cards[c.id]; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);});
-    shuffle(due); shuffle(neu);
+    /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so
+       long-interval cards that are only slightly late don't out-rank short-
+       interval cards that are badly late. Shuffle only within bands of 5 to
+       keep light variety without undoing the ordering. */
+    function ratio(c){var st=s.cards[c.id]; return (now-st.due)/((st.ivl||1)*DAY);}
+    due.sort(function(a,b){ return ratio(b)-ratio(a); });
+    for(var i=0;i<due.length;i+=5){ var band=due.slice(i,i+5); shuffle(band); for(var j=0;j<band.length;j++) due[i+j]=band[j]; }
+    shuffle(neu);
     var newRemain=Math.max(0,(s.settings.newPerDay||12)-(s.day.newToday||0));
     var q=due.concat(neu.slice(0,newRemain));
     if(ahead){ fut.sort(function(a,b){return a[1]-b[1];}); q=q.concat(fut.map(function(x){return x[0];})); }
@@ -175,7 +182,7 @@ function App(){
     var st=loadS(); st=rollDay(st);
     var card=s.card; var existed=!!st.cards[card.id];
     var was=st.cards[card.id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0};
-    st.cards[card.id]=applyGrade(was,GRADE_NAMES[g]);
+    st.cards[card.id]=applyGrade(was,GRADE_NAMES[g],{fuzzKey:card.id});
     if(!existed){ st.day.newToday=(st.day.newToday||0)+1; }
     bumpStreak(st);
     st.stats.totalReviews=(st.stats.totalReviews||0)+1;
