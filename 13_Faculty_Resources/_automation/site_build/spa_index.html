@@ -134,8 +134,10 @@
   .toolnote a.btn{display:inline-block;background:var(--primary-dark);color:#fff;text-decoration:none;border-radius:6px;padding:10px 18px;font-weight:600;margin-top:10px}
   .srn{color:var(--text-light);font-size:.92rem;margin:.2em 0 0}
   .results{display:flex;flex-direction:column;gap:10px;margin-top:14px}
-  .result{display:block;text-align:left;border:1px solid var(--border);background:#fff;border-radius:10px;padding:12px 14px;cursor:pointer;font-family:inherit}
+  .result{display:block;border:1px solid var(--border);background:#fff;border-radius:10px;font-family:inherit}
   .result:hover{border-color:var(--accent);background:var(--accent-light)}
+  .result-hit{display:block;width:100%;text-align:left;background:none;border:0;margin:0;padding:12px 14px;font:inherit;color:inherit;cursor:pointer}
+  .result-chip{margin:0 14px 12px}
   .r-title{display:block;font-family:var(--font-head);font-size:1.06rem;color:var(--primary-dark);font-weight:600}
   .r-sec{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);margin:2px 0 4px}
   .r-snip{display:block;font-size:.86rem;color:var(--text-mid);line-height:1.45}
@@ -1019,6 +1021,27 @@
     return h;
   }
   function restore(){ if(currentItem) show(currentItem,null); else { var f=navEl.querySelector('.navitem'); if(f) f.click(); } }
+  /* Practice-action chip: at most one per result row, priority quiz > communicationCases > relatedTools.
+     Reuses TOPIC_META (already in memory for topic-page "Test yourself" widgets) — no new data loads.
+     communicationHref lives in a different <script> IIFE (~line 1231), so fall back to the plain
+     communication-practice.html link when it isn't in scope, same guard idiom as practiceToolLabel. */
+  function resultActionChip(d){
+    var m=TOPIC_META&&TOPIC_META[d.f];
+    if(!m)return '';
+    if(m.quiz){
+      var qh=(d.k==='tool'?'?tool=':'?page=')+encodeURIComponent(d.f);
+      return '<a class="practice-action result-chip" href="'+esc(qh)+'"'+ctaAttrs(qh)+'>Test yourself →</a>';
+    }
+    if(Array.isArray(m.communicationCases)&&m.communicationCases.length){
+      var ch=(typeof communicationHref==='function')?communicationHref(m.communicationCases[0]):'?tool=communication-practice.html';
+      return '<a class="practice-action result-chip" href="'+esc(ch)+'"'+ctaAttrs(ch)+'>Spoken drill →</a>';
+    }
+    if(Array.isArray(m.relatedTools)&&m.relatedTools.length){
+      var th='?tool='+encodeURIComponent(m.relatedTools[0]);
+      return '<a class="practice-action result-chip" href="'+esc(th)+'"'+ctaAttrs(th)+'>'+esc(practiceToolLabel(m.relatedTools[0]))+' →</a>';
+    }
+    return '';
+  }
   function renderResults(q){
     if(facultyPreviewRequest){if(q)showFacultyPreviewLockNotice();return;}
     sxEl.style.display = q ? 'block' : 'none';
@@ -1028,12 +1051,12 @@
     else{
       html+='<p class="srn">'+res.length+' result'+(res.length>1?'s':'')+' for <strong>'+esc(q)+'</strong></p><div class="results">';
       res.forEach(function(r){
-        html+='<button class="result" data-i="'+r.id+'"><span class="r-title">'+hl(r.d.t,q)+(r.d.k==='tool'?' <span class="tool-tag">tool</span>':'')+'</span><span class="r-sec">'+esc(r.d.sec)+'</span><span class="r-snip">'+hl(r.d.snip,q)+'&hellip;</span></button>';
+        html+='<div class="result"><button type="button" class="result-hit" data-i="'+r.id+'"><span class="r-title">'+hl(r.d.t,q)+(r.d.k==='tool'?' <span class="tool-tag">tool</span>':'')+'</span><span class="r-sec">'+esc(r.d.sec)+'</span><span class="r-snip">'+hl(r.d.snip,q)+'&hellip;</span></button>'+resultActionChip(r.d)+'</div>';
       });
       html+='</div>';
     }
     contentEl.innerHTML=html;
-    var bs=contentEl.querySelectorAll('.result');
+    var bs=contentEl.querySelectorAll('.result-hit');
     for(var i=0;i<bs.length;i++){ bs[i].onclick=function(){ var d=SI.docs[this.getAttribute('data-i')]; searchEl.value=''; sxEl.style.display='none'; var _nb=document.querySelector('.navitem[data-f="'+d.f+'"]'); if(_nb){_nb.click();}else{show(d,null);} }; }
   }
   var dt;
