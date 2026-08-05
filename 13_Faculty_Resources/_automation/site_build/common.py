@@ -508,6 +508,7 @@ def apply_dark_mode(path, is_index=False, cache_bust=None):
 # into a hard build failure.
 SNIPPET_MARKERS = {
     "/*__SM2_APPLY_GRADE__*/": "sm2_apply_grade.js",
+    "/*__PHI_HEURISTIC__*/": "phi_heuristic.js",
 }
 
 

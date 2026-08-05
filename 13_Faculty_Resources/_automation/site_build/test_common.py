@@ -392,6 +392,25 @@ class TestSharedSnippets(unittest.TestCase):
         self.assertFalse(common.inject_shared_snippets(p))
         self.assertEqual(open(p, encoding="utf-8").read(), first)
 
+    def test_phi_snippet_expands_with_short_signature(self):
+        p = self._page("<script>\n/*__PHI_HEURISTIC__*/\n</script>")
+        self.assertTrue(common.inject_shared_snippets(p))
+        t = open(p, encoding="utf-8").read()
+        self.assertIn("function looksLikePhi(t){", t)
+        self.assertNotIn("/*__PHI_HEURISTIC__*/", t)
+
+    def test_all_snippet_signatures_are_short_and_unique(self):
+        # Whole-line signatures are exact-substring dup-probes (common.py _snippet_signature);
+        # long ones silently degrade to no-ops when the file is rewrapped. Cap them.
+        sigs = []
+        for fname in common.SNIPPET_MARKERS.values():
+            body = open(os.path.join(os.path.dirname(common.__file__), fname), encoding="utf-8").read()
+            sig = common._snippet_signature(body)
+            self.assertIsNotNone(sig, fname)
+            self.assertLess(len(sig), 60, "%s signature too long: %r" % (fname, sig))
+            sigs.append(sig)
+        self.assertEqual(len(sigs), len(set(sigs)), "duplicate snippet signatures")
+
     def test_unexpanded_marker_fails_the_page_contract(self):
         d = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, d, True)
