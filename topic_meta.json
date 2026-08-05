@@ -5350,6 +5350,28 @@
    "status": "pending",
    "reviewer": "Joshua Moss, MD",
    "lastReviewed": "2026-07-27"
+  },
+  "workflowStages": [
+   "diagnosis",
+   "safety",
+   "treatment",
+   "team",
+   "exam"
+  ],
+  "clinicalWorkflow": {
+   "ask": "Pick the week you want from the sidebar and work its stem cold - your own history, your own differential, your own next step - before reading any teaching point.",
+   "mse": "Each case asks you to say what its exam findings rule in and rule out; that discrimination between look-alike syndromes is the recurring skill across the series.",
+   "safety": "Safety content across every case is oriented to recognition, escalation, and safety planning, never to method detail. Escalate to your supervising resident or attending rather than managing acuity alone.",
+   "say": "Every case includes at least one moment to rehearse out loud what you would actually say to the patient or family.",
+   "collateral": "A recurring question in the series: what collateral would change this differential, and who would you have to call to get it?",
+   "rounds": "Cases are built for a ~20-30 minute small-group discussion; the facilitator notes in each one are written for whoever is running the session.",
+   "exam": "Matched MS3 and resident versions of every case: MS3 at Step 2 CK level, resident level assuming DSM-5-TR fluency and going deeper on mechanism, guidelines, and evidence quality.",
+   "actions": [
+    {
+     "label": "Medication monitoring reference",
+     "href": "?page=med_monitoring.md"
+    }
+   ]
   }
  }
 }
