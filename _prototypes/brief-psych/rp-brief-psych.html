@@ -147,7 +147,7 @@
   function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=a[i];a[i]=a[j];a[j]=tmp;}return a;}
   function LocalChip(props){var tok=props.token;if(!tok)return null;var set=tok.value!==null&&tok.value!==undefined;
     return e('span',{className:'localchip'+(set?' set':''),title:tok.label},set?('Local · '+tok.value):('⚠ '+(tok.placeholder||'Confirm locally')));}
-  function FlagButton(props){function onFlag(){var r=window.prompt('Flag this content — reason + note:');if(r===null)return;
+  function FlagButton(props){function onFlag(){var r=window.prompt('Flag this content — reason + note (goes to faculty; no patient information):');if(r===null)return;
     var entry={tool:'rp-brief-psych',v:'0.1.0',ctx:props.ctx||'',reason:r,at:new Date().toISOString()};
     try{var a=JSON.parse(localStorage.getItem(FLAGS_KEY)||'[]');a.push(entry);localStorage.setItem(FLAGS_KEY,JSON.stringify(a));}catch(e){}
     flagSend(entry,function(ok){if(ok)markFlagSent(entry.at);}); // fire-and-forget; local save above already happened regardless of network

@@ -168,7 +168,7 @@
   function LocalChip(props){var tok=props.token;if(!tok)return null;var set=tok.value!==null&&tok.value!==undefined;
     return e('span',{className:'localchip'+(set?' set':''),title:tok.label},set?('Local · '+tok.value):('⚠ '+(tok.placeholder||'Confirm locally')));}
   function FlagButton(props){
-    function onFlag(){var reason=window.prompt('Flag this content — reason + note:');if(reason===null)return;
+    function onFlag(){var reason=window.prompt('Flag this content — reason + note (goes to faculty; no patient information):');if(reason===null)return;
       var entry={tool:'rp-agitation',v:'0.2.0',ctx:props.ctx||'',reason:reason,at:new Date().toISOString()};
       try{var a=JSON.parse(localStorage.getItem(LS.flags)||'[]');a.push(entry);localStorage.setItem(LS.flags,JSON.stringify(a));}catch(e){}
       flagSend(entry,function(ok){if(ok)markFlagSent(entry.at);}); // fire-and-forget; local save above already happened regardless of network
