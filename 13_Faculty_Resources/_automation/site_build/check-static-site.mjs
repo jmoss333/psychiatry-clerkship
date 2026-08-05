@@ -544,14 +544,22 @@ const SHELL_REF_ALLOWLIST = new Set([
 
   // (c) `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped
   // content slug / tool file. Target is read up to the next &, quote, close-paren, or
-  // whitespace, so both markdown `(...)` links and raw `href="..."` attributes match.
+  // whitespace, so both markdown `(...)` links and raw `href="..."` attributes match. A
+  // trailing `#fragment` (e.g. `?page=shelf.md#section`) is stripped after decoding —
+  // without it, a future in-page anchor link would false-positive as a missing file.
+  // decodeURIComponent throws on a malformed `%` escape; caught below and reported as a
+  // finding, not an uncaught crash of the whole gate.
   const contentSetC = new Set(contentFiles);
   const toolSetC = new Set(toolFiles);
   const ROUTE_REF = /\?(page|tool)=([^&"')\s]+)/g;
   for (const f of contentFiles) {
     const text = readFileSync(p('content', f), 'utf8');
     for (const m of text.matchAll(ROUTE_REF)) {
-      const kind = m[1], target = decodeURIComponent(m[2]);
+      const kind = m[1];
+      let target;
+      try { target = decodeURIComponent(m[2]); }
+      catch (e) { H(`content/${f} → ?${kind}= reference has an undecodable target "${m[2]}" (${e.message})`); continue; }
+      target = target.replace(/#.*$/, '');
       if (SHELL_REF_ALLOWLIST.has(target)) continue;
       const ok = kind === 'page' ? contentSetC.has(target) : toolSetC.has(target);
       if (!ok) H(`content/${f} → ?${kind}= references missing ${kind === 'page' ? 'content page' : 'tool'}: ${target}`);
@@ -607,13 +615,33 @@ for (const { fp, size } of allFiles) {
  * key) — for deliberate adoption after a real, reviewed change to a soft-finding count,
  * not something to run reflexively on failure; it's also how a new site key gets seeded
  * the first time.
+ *
+ * RATCHET_EXEMPT_CLASSES: "lfs-stub-soft" is excluded from ratchet counting entirely.
+ * Section 8 already deliberately downgrades LFS pointer stubs from HARD to SOFT only in
+ * environments that never fetch real LFS bytes on purpose (GITHUB_ACTIONS==='true' —
+ * ci.yml checks out with lfs:false for bandwidth — and Netlify deploy previews). That
+ * SOFT count is a function of how many media files the site ships in those environments
+ * (105 today), not a quality signal to ratchet: it would swing with every media file
+ * added regardless of whether anything is broken, and — critically — CI's first run of
+ * any PR that ships more media than the committed baseline would hard-fail on a
+ * downgrade that section 8 intentionally made non-blocking, defeating that contract (see
+ * PR #122). The real "is this actually a broken deploy" check already has its own direct
+ * HARD path in section 8 (`lfsIsExpectedStub` false — real Netlify production). Seeding
+ * the baseline with the current stub count instead of exempting the class was considered
+ * and rejected: it would mute the signal in the one place it's environment-driven noise
+ * and still break the moment a media file is added.
  */
+const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
 {
   const baselinePath = join(dirname(fileURLToPath(import.meta.url)), 'qa-baseline.json');
   const siteBase = basename(resolve(SITE));
   const siteKey = (siteBase === 'ms3' || siteBase === 'res') ? siteBase : 'default';
   const counts = Object.create(null);
-  for (const m of soft) { const c = classify(m); counts[c] = (counts[c] || 0) + 1; }
+  for (const m of soft) {
+    const c = classify(m);
+    if (RATCHET_EXEMPT_CLASSES.has(c)) continue;
+    counts[c] = (counts[c] || 0) + 1;
+  }
 
   if (process.env.UPDATE_BASELINE === '1') {
     let all = {};
@@ -631,7 +659,8 @@ for (const { fp, size } of allFiles) {
       I(`soft-finding ratchet: no baseline entry for site "${siteKey}" — ratchet skipped (run UPDATE_BASELINE=1 against this build to seed one)`);
     } else if (all) {
       const baseline = all[siteKey];
-      const classes = new Set([...Object.keys(counts), ...Object.keys(baseline)]);
+      const classes = new Set([...Object.keys(counts), ...Object.keys(baseline)]
+        .filter(c => !RATCHET_EXEMPT_CLASSES.has(c)));
       for (const c of [...classes].sort()) {
         const n = counts[c] || 0, max = baseline[c] || 0;
         if (n > max) H(`soft-finding ratchet: class "${c}" grew to ${n} (baseline ${max}) — review the new soft findings, then rerun with UPDATE_BASELINE=1 once accepted`);
