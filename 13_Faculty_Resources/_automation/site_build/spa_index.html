@@ -1023,8 +1023,8 @@
   function restore(){ if(currentItem) show(currentItem,null); else { var f=navEl.querySelector('.navitem'); if(f) f.click(); } }
   /* Practice-action chip: at most one per result row, priority quiz > communicationCases > relatedTools.
      Reuses TOPIC_META (already in memory for topic-page "Test yourself" widgets) — no new data loads.
-     communicationHref lives in a different <script> IIFE (~line 1231), so fall back to the plain
-     communication-practice.html link when it isn't in scope, same guard idiom as practiceToolLabel. */
+     The communicationCases href is built inline (case-specific deep link), mirroring the same
+     '?tool=communication-practice.html&case='+id pattern buildPracticeTools already uses at ~line 740. */
   function resultActionChip(d){
     var m=TOPIC_META&&TOPIC_META[d.f];
     if(!m)return '';
@@ -1033,7 +1033,7 @@
       return '<a class="practice-action result-chip" href="'+esc(qh)+'"'+ctaAttrs(qh)+'>Test yourself →</a>';
     }
     if(Array.isArray(m.communicationCases)&&m.communicationCases.length){
-      var ch=(typeof communicationHref==='function')?communicationHref(m.communicationCases[0]):'?tool=communication-practice.html';
+      var ch='?tool=communication-practice.html&case='+encodeURIComponent(m.communicationCases[0]);
       return '<a class="practice-action result-chip" href="'+esc(ch)+'"'+ctaAttrs(ch)+'>Spoken drill →</a>';
     }
     if(Array.isArray(m.relatedTools)&&m.relatedTools.length){
