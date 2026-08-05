@@ -45,6 +45,10 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body
 .field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
 .setup-foot{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .item-count{font-size:.82rem;color:var(--text-light)}
+.focus-modes{border-top:1px solid var(--border);margin:4px 0 20px;padding-top:16px}
+.focus-modes-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);margin-bottom:4px}
+.focus-modes-sub{color:var(--text-mid);font-size:.82rem;margin:0 0 10px}
+.focus-btns{display:flex;gap:10px;flex-wrap:wrap}
 /* Question card */
 .qcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
 .qcard-meta{display:flex;align-items:center;gap:7px;padding:14px 18px 0;flex-wrap:wrap}
@@ -289,6 +293,25 @@ function activeItems(){
   return (BANK && BANK.items ? BANK.items : []).filter(function(it){ return !it.retired; });
 }
 
+/* Focus-mode presets, built from the learner's own cw_qb_v1 history. Both start from
+   activeItems(), so a leftover record for a since-retired item (or one dropped from the
+   bank entirely) can never surface here — the item has to still be servable today. Drafts
+   are unaffected, since activeItems() already serves those (see comment above). */
+function missedItems(){
+  var records = qbLoad();
+  return activeItems().filter(function(it){
+    var rec = records[it.id];
+    return !!rec && rec.correct === false;
+  });
+}
+function certWrongItems(){
+  var records = qbLoad();
+  return activeItems().filter(function(it){
+    var rec = records[it.id];
+    return !!rec && rec.certWrong === true;
+  });
+}
+
 /* ---- rendering helpers -------------------------------------------------------- */
 function diffDots(n){
   var h='<div class="diff-dots" title="Difficulty '+n+'/3" aria-label="Difficulty '+n+' of 3">';
@@ -306,6 +329,8 @@ function renderSetup(){
   });
   var total = items.length;
   var draftCount = items.filter(function(it){ return it.status!=='attested'; }).length;
+  var missedCount = missedItems().length;
+  var certWrongCount = certWrongItems().length;
   return '<div class="setup">'
     +'<h2>Practice bank</h2>'
     +'<p class="sub">'+total+' items across 12 categories. Select filters, then start. '
@@ -318,6 +343,14 @@ function renderSetup(){
         +'against a primary source before relying on them clinically. Every draft is labelled again '
         +'on the question itself.</p>'
       : '')
+    +'<div class="focus-modes">'
+    +'<div class="focus-modes-lbl">Focus modes</div>'
+    +'<p class="focus-modes-sub">Jump straight into a targeted set, skipping the filters below.</p>'
+    +'<div class="focus-btns">'
+    +'<button class="btn btn-ghost" id="redoMissesBtn"'+(missedCount?'':' disabled')+'>Redo my misses ('+missedCount+')</button>'
+    +'<button class="btn btn-ghost" id="certWrongBtn"'+(certWrongCount?'':' disabled')+'>Confidently wrong ('+certWrongCount+')</button>'
+    +'</div>'
+    +'</div>'
     +'<div class="filters">'
     +'<div class="field"><label for="f-cat">Category</label><select id="f-cat">'+catOpts+'</select></div>'
     +'<div class="field"><label for="f-diff">Difficulty</label><select id="f-diff"><option value="all">All levels</option><option value="1">1 — Recognition</option><option value="2">2 — Shelf-standard</option><option value="3">3 — Stretch</option></select></div>'
@@ -576,6 +609,8 @@ function bindSetup(){
   var sizeSel=document.getElementById('f-size');
   var countEl=document.getElementById('itemCount');
   var startBtn=document.getElementById('startBtn');
+  var redoMissesBtn=document.getElementById('redoMissesBtn');
+  var certWrongBtn=document.getElementById('certWrongBtn');
   function updateCount(){
     var cat=catSel?catSel.value:'all', diff=diffSel?diffSel.value:'all';
     var n = activeItems().filter(function(it){
@@ -598,10 +633,26 @@ function bindSetup(){
     var size=sizeSel?sizeSel.value:'20';
     startSession(cat,diff,size);
   });
+  if(redoMissesBtn) redoMissesBtn.addEventListener('click',function(){
+    startSessionWithQueue(missedItems());
+  });
+  if(certWrongBtn) certWrongBtn.addEventListener('click',function(){
+    startSessionWithQueue(certWrongItems());
+  });
 }
 
 function startSession(catFilter, diffFilter, sizeLimit){
   var queue = buildQueue(activeItems(), catFilter, diffFilter, sizeLimit);
+  beginSession(queue);
+}
+
+/* Focus-mode entry point: starts the exact queue passed in (shuffled), bypassing the
+   category/difficulty/size filters entirely. */
+function startSessionWithQueue(queue){
+  beginSession(shuffle(queue));
+}
+
+function beginSession(queue){
   if(!queue.length){
     setRoot('<div class="err-box">No questions match the selected filters.</div>');
     return;
