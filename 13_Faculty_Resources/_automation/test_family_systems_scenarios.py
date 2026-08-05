@@ -12,7 +12,7 @@ REGISTRY_PATH = ROOT / "tool_registry.json"
 
 ID_RE = re.compile(r"^[a-z0-9_]+$")
 REVEAL_FIELDS = {"opening", "prepare", "ask", "say", "avoid", "handoff", "safety"}
-DEFAULT_SOURCES = ("opening", "ask", "avoid")
+DEFAULT_SOURCES = ("opening", "ask", "avoid", "handoff", "safety")
 
 
 def validate_retrieval(sid, retrieval):
@@ -69,7 +69,7 @@ def main():
         # auto-derive sources must exist so every scenario yields retrieval cards
         assert isinstance(sc.get("opening"), str) and sc["opening"].strip(), f"{sid}: opening required"
         sections = sc.get("sections", {})
-        for field in ("ask", "avoid"):
+        for field in ("ask", "avoid", "handoff", "safety"):
             assert isinstance(sections.get(field), list) and sections[field], f"{sid}: sections.{field} required"
 
         # validate any explicit retrieval blocks (none required in v1)
