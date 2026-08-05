@@ -92,7 +92,53 @@
   "use strict";
   var e=React.createElement, useState=React.useState, useEffect=React.useEffect;
   var PKEY='rp_bp_v1';
+  var FLAGS_KEY='rp_flags';
   function announce(m){try{document.getElementById('live').textContent=m;}catch(e){}}
+  // Transmits one rp_flags entry through the shared Netlify "library-feedback" form (see
+  // 13_Faculty_Resources/Feedback/feedback.html) so a content flag reaches faculty instead of
+  // sitting silently in localStorage. Fire-and-forget: never throws, never blocks the UI.
+  // Offline contract — if fetch is unavailable/blocked or the response isn't a Netlify
+  // success, cb(false) fires and the entry stays unsent in rp_flags; flushFlags() retries
+  // unsent entries sequentially on the next tool load and stops at the first failure, so the
+  // queue drains in order once connectivity returns rather than reordering or dropping flags.
+  function flagSend(entry,cb){
+    if(typeof fetch!=='function'){if(cb)cb(false);return;}
+    try{
+      var body='form-name=library-feedback&site='+encodeURIComponent((typeof location!=='undefined'&&location.hostname)||'')+
+        '&page='+encodeURIComponent((entry.tool||'rp-brief-psych')+' ['+(entry.ctx||'')+'] v'+(entry.v||''))+
+        '&type='+encodeURIComponent('content-flag')+
+        '&message='+encodeURIComponent(entry.reason||'');
+      fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body})
+        .then(function(r){if(cb)cb(!!r&&(r.status===200||r.ok||r.status===303));})
+        .catch(function(){if(cb)cb(false);});
+    }catch(err){if(cb)cb(false);}
+  }
+  function markFlagSent(at){
+    try{
+      var arr=JSON.parse(localStorage.getItem(FLAGS_KEY)||'[]');
+      var changed=false;
+      for(var i=0;i<arr.length;i++){if(arr[i]&&arr[i].at===at&&!arr[i].sent){arr[i].sent=true;changed=true;break;}}
+      if(changed)localStorage.setItem(FLAGS_KEY,JSON.stringify(arr));
+    }catch(err){}
+  }
+  // Flushes unsent rp_flags entries (this tool's and rp-agitation's — they share one key)
+  // sequentially, stopping at the first failure so later entries stay queued for next load.
+  function flushFlags(){
+    try{
+      var arr=JSON.parse(localStorage.getItem(FLAGS_KEY)||'[]');
+      if(!Array.isArray(arr))return;
+      var pending=arr.filter(function(x){return x&&!x.sent;});
+      var i=0;
+      (function step(){
+        if(i>=pending.length)return;
+        flagSend(pending[i],function(ok){
+          if(!ok)return;
+          markFlagSent(pending[i].at);
+          i++;step();
+        });
+      })();
+    }catch(err){}
+  }
   function today(){return new Date().toISOString().slice(0,10);}
   function loadPlans(){try{return JSON.parse(localStorage.getItem(PKEY)||'{"plans":[]}');}catch(e){return {plans:[]};}}
   function savePlans(p){try{localStorage.setItem(PKEY,JSON.stringify(p));}catch(e){}}
@@ -102,7 +148,9 @@
   function LocalChip(props){var tok=props.token;if(!tok)return null;var set=tok.value!==null&&tok.value!==undefined;
     return e('span',{className:'localchip'+(set?' set':''),title:tok.label},set?('Local · '+tok.value):('⚠ '+(tok.placeholder||'Confirm locally')));}
   function FlagButton(props){function onFlag(){var r=window.prompt('Flag this content — reason + note:');if(r===null)return;
-    try{var a=JSON.parse(localStorage.getItem('rp_flags')||'[]');a.push({tool:'rp-brief-psych',v:'0.1.0',ctx:props.ctx||'',reason:r,at:new Date().toISOString()});localStorage.setItem('rp_flags',JSON.stringify(a));}catch(e){}
+    var entry={tool:'rp-brief-psych',v:'0.1.0',ctx:props.ctx||'',reason:r,at:new Date().toISOString()};
+    try{var a=JSON.parse(localStorage.getItem(FLAGS_KEY)||'[]');a.push(entry);localStorage.setItem(FLAGS_KEY,JSON.stringify(a));}catch(e){}
+    flagSend(entry,function(ok){if(ok)markFlagSent(entry.at);}); // fire-and-forget; local save above already happened regardless of network
     announce('Flag saved locally.');alert('Flag saved locally.');}
     return e('button',{className:'flag',onClick:onFlag},'⚑ Flag');}
 
@@ -122,6 +170,7 @@
 
     useEffect(function(){fetch('./rp-brief-psych.pack.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json();})
       .then(function(d){setPack(d);setPhase('cues');}).catch(function(){setPhase('error');});},[]);
+    useEffect(function(){flushFlags();},[]); // drain any rp_flags entries left unsent from a previous offline session
     useEffect(function(){document.getElementById('themebtn').onclick=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('cw_theme',c);}catch(e){}};},[]);
 
     function openCue(cue){if(cue.safety){setShowSafety(true);setPhase('safety');announce('Safety routing.');return;}
