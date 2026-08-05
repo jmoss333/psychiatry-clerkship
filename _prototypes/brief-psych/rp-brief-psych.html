@@ -97,6 +97,8 @@
   function loadPlans(){try{return JSON.parse(localStorage.getItem(PKEY)||'{"plans":[]}');}catch(e){return {plans:[]};}}
   function savePlans(p){try{localStorage.setItem(PKEY,JSON.stringify(p));}catch(e){}}
   function tokenById(pack,id){var a=(pack.localPolicies||[]).filter(function(t){return t.id===id;});return a[0]||null;}
+  function distinctMechanisms(pack){var seen={},out=[];(pack.content.techniques||[]).forEach(function(t){if(!seen[t.mechanism]){seen[t.mechanism]=true;out.push(t.mechanism);}});return out;}
+  function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=a[i];a[i]=a[j];a[j]=tmp;}return a;}
   function LocalChip(props){var tok=props.token;if(!tok)return null;var set=tok.value!==null&&tok.value!==undefined;
     return e('span',{className:'localchip'+(set?' set':''),title:tok.label},set?('Local · '+tok.value):('⚠ '+(tok.placeholder||'Confirm locally')));}
   function FlagButton(props){function onFlag(){var r=window.prompt('Flag this content — reason + note:');if(r===null)return;
@@ -107,19 +109,35 @@
   function App(){
     var s0=useState('loading'),phase=s0[0],setPhase=s0[1];
     var sp=useState(null),pack=sp[0],setPack=sp[1];
-    var sv=useState('coach'),view=sv[0],setView=sv[1]; // coach | plan
+    var sv=useState('coach'),view=sv[0],setView=sv[1]; // coach | plan | history
     var st=useState(null),tech=st[0],setTech=st[1];
     var ssf=useState(false),showSafety=ssf[0],setShowSafety=ssf[1];
     var sl=useState(''),label=sl[0],setLabel=sl[1];
     var spl=useState(loadPlans()),plans=spl[0],setPlans=spl[1];
+    var smd=useState('practice'),mode=smd[0],setMode=smd[1]; // practice | reference
+    var spm=useState(null),predMechChoice=spm[0],setPredMechChoice=spm[1];
+    var spt=useState(null),predTechChoice=spt[0],setPredTechChoice=spt[1];
+    var smo=useState([]),mechOptions=smo[0],setMechOptions=smo[1];
+    var sto=useState([]),techOptions=sto[0],setTechOptions=sto[1];
 
     useEffect(function(){fetch('./rp-brief-psych.pack.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json();})
       .then(function(d){setPack(d);setPhase('cues');}).catch(function(){setPhase('error');});},[]);
     useEffect(function(){document.getElementById('themebtn').onclick=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('cw_theme',c);}catch(e){}};},[]);
 
     function openCue(cue){if(cue.safety){setShowSafety(true);setPhase('safety');announce('Safety routing.');return;}
-      var t=pack.content.techniques.filter(function(x){return x.id===cue.techId;})[0];setTech(t);setLabel('');setPhase('tech');announce(t.name);}
-    function addPlan(){var p=loadPlans();p.plans.push({id:'p'+Date.now(),date:today(),techId:tech.id,techName:tech.name,label:(label||'').slice(0,30),status:'planned'});savePlans(p);setPlans(p);setLabel('');announce('Added to today’s plan.');setView('plan');setPhase('cues');}
+      var t=pack.content.techniques.filter(function(x){return x.id===cue.techId;})[0];setTech(t);setLabel('');
+      setPredMechChoice(null);setPredTechChoice(null);
+      if(mode==='practice'){
+        setMechOptions(shuffle(distinctMechanisms(pack)));
+        setTechOptions(shuffle(pack.content.techniques.map(function(x){return {id:x.id,name:x.name};})));
+        setPhase('predict-mech');announce('Predict the mechanism, then the technique.');
+      } else {
+        setPhase('tech');announce(t.name);
+      }}
+    function addPlan(){var p=loadPlans();var entry={id:'p'+Date.now(),date:today(),techId:tech.id,techName:tech.name,label:(label||'').slice(0,30),status:'planned'};
+      if(mode==='practice'&&predMechChoice!==null)entry.predMech=(predMechChoice===tech.mechanism);
+      if(mode==='practice'&&predTechChoice!==null)entry.predTech=(predTechChoice===tech.id);
+      p.plans.push(entry);savePlans(p);setPlans(p);setLabel('');announce('Added to today’s plan.');setView('plan');setPhase('cues');}
     function setStatus(id,st){var p=loadPlans();p.plans.forEach(function(x){if(x.id===id)x.status=st;});savePlans(p);setPlans(p);}
 
     if(phase==='loading')return e('div',{className:'shell'},e('p',null,'Loading coach…'));
@@ -133,7 +151,10 @@
       e('div',{className:'disc',role:'note'},'Match the ',e('b',null,'mechanism'),' driving today’s crisis to one brief technique — then hand the thread to outpatient. A coaching aid, not a chart entry; no names, no PHI.'),
       e('div',{className:'tabs',role:'tablist'},
         e('button',{role:'tab','aria-selected':view==='coach',className:view==='coach'?'on':'',onClick:function(){setView('coach');setPhase('cues');}},'Coach'),
-        e('button',{role:'tab','aria-selected':view==='plan',className:view==='plan'?'on':'',onClick:function(){setView('plan');setPhase('cues');}},'Today’s plan ('+plans.plans.filter(function(p){return p.date===today();}).length+')')));
+        e('button',{role:'tab','aria-selected':view==='plan',className:view==='plan'?'on':'',onClick:function(){setView('plan');setPhase('cues');}},'Today’s plan ('+plans.plans.filter(function(p){return p.date===today();}).length+')'),
+        e('button',{role:'tab','aria-selected':view==='history',className:view==='history'?'on':'',onClick:function(){setView('history');}},'History ('+plans.plans.length+')')),
+      view==='coach'?e('div',{className:'seg',style:{marginTop:'2px',marginBottom:'6px'}},
+        ['practice','reference'].map(function(mx){return e('button',{key:mx,className:mode===mx?'on':'',onClick:function(){setMode(mx);setPhase('cues');setPredMechChoice(null);setPredTechChoice(null);}}, mx==='practice'?'Practice':'Reference');})):null);
 
     // PLAN view
     if(view==='plan'){
@@ -150,6 +171,45 @@
         e(FlagButton,{ctx:'plan'}));
     }
 
+    // HISTORY & coverage view — aggregates ALL entries, every date
+    if(view==='history'){
+      var all=plans.plans;
+      var byTech={};
+      all.forEach(function(p){
+        var techId=p.techId||'unknown', techName=p.techName||'Unknown technique';
+        if(!byTech[techId])byTech[techId]={name:techName,count:0,did:0,tried:0,didnt:0,planned:0};
+        byTech[techId].count++;
+        var s=p.status;
+        if(s==='did'||s==='tried'||s==='didnt'||s==='planned'){byTech[techId][s]++;}else{byTech[techId].planned++;}
+      });
+      var techIds=Object.keys(byTech);
+      var totalStatus={did:0,tried:0,didnt:0,planned:0};
+      techIds.forEach(function(id){totalStatus.did+=byTech[id].did;totalStatus.tried+=byTech[id].tried;totalStatus.didnt+=byTech[id].didnt;totalStatus.planned+=byTech[id].planned;});
+      var mechToTech={};
+      (pack.content.techniques||[]).forEach(function(t){mechToTech[t.mechanism]=t;});
+      var practicedTechIds={};
+      all.forEach(function(p){if(p.techId)practicedTechIds[p.techId]=true;});
+      var neverPracticed=distinctMechanisms(pack).filter(function(m){var t=mechToTech[m];return t&&!practicedTechIds[t.id];});
+      var predMechTotal=all.filter(function(p){return typeof p.predMech==='boolean';}).length;
+      var predMechCorrect=all.filter(function(p){return p.predMech===true;}).length;
+      var predTechTotal=all.filter(function(p){return typeof p.predTech==='boolean';}).length;
+      var predTechCorrect=all.filter(function(p){return p.predTech===true;}).length;
+      return e('div',null,header,
+        e('div',{className:'card'},
+          e('div',{className:'lbl'},'All-time history · '+all.length+' entr'+(all.length===1?'y':'ies')),
+          all.length===0?e('p',{className:'cite'},'No history yet — plans you add on any tab, any day, accumulate here.'):null,
+          techIds.length?e('div',null,techIds.map(function(id){var b=byTech[id];return e('div',{className:'planrow',key:id},
+            e('div',{className:'pt'},e('div',null,e('b',null,b.name)),
+              e('small',null,b.count+' attempt'+(b.count===1?'':'s')+' · did '+b.did+' · tried '+b.tried+' · didn’t '+b.didnt+(b.planned?(' · unmarked '+b.planned):''))));
+          })):null,
+          all.length?e('div',{className:'kv ho'},'Distribution — did '+totalStatus.did+' · tried '+totalStatus.tried+' · didn’t '+totalStatus.didnt+' · unmarked '+totalStatus.planned):null,
+          (predMechTotal||predTechTotal)?e('div',{className:'kv ho'},'Predictions — mechanism '+predMechCorrect+'/'+predMechTotal+' correct · technique '+predTechCorrect+'/'+predTechTotal+' correct'):null,
+          e('div',{className:'lbl'},'Not yet practiced'),
+          neverPracticed.length?e('ul',null,neverPracticed.map(function(m,i){return e('li',{key:i,className:'cite'},m);})):e('p',{className:'cite'},'Every mechanism has at least one entry.'),
+          e('div',{className:'private'},'Private — all-time history stays on this device and is not visible to supervisors.')),
+        e(FlagButton,{ctx:'history'}));
+    }
+
     // SAFETY routing
     if(phase==='safety'){
       var sf=pack.safety;
@@ -164,12 +224,37 @@
         e(FlagButton,{ctx:'safety'}));
     }
 
+    // PREDICT step 1 — mechanism
+    if(phase==='predict-mech'){
+      return e('div',null,header,
+        e('div',{className:'card'},
+          e('div',{className:'lbl'},'Predict — which mechanism is driving this?'),
+          e('div',{className:'cuegrid'},
+            mechOptions.map(function(m,i){return e('button',{key:i,className:'cue',onClick:function(){setPredMechChoice(m);setPhase('predict-tech');announce('Now predict the technique.');}},m);})),
+          e('div',{className:'btnrow'},e('button',{className:'btn',onClick:function(){setPhase('cues');}},'← Back to cues'))),
+        e(FlagButton,{ctx:'predict-mech'}));
+    }
+
+    // PREDICT step 2 — technique
+    if(phase==='predict-tech'){
+      return e('div',null,header,
+        e('div',{className:'card'},
+          e('div',{className:'lbl'},'Predict — which technique fits?'),
+          e('div',{className:'cuegrid'},
+            techOptions.map(function(o,i){return e('button',{key:i,className:'cue',onClick:function(){setPredTechChoice(o.id);setPhase('tech');announce(tech.name);}},o.name);})),
+          e('div',{className:'btnrow'},e('button',{className:'btn',onClick:function(){setPhase('cues');}},'← Back to cues'))),
+        e(FlagButton,{ctx:'predict-tech'}));
+    }
+
     // TECHNIQUE view
     if(phase==='tech'){
       var t=tech;var cites=(t.citationIds||[]).map(function(id){return (pack.citations.filter(function(c){return c.id===id;})[0]||{}).ref;}).filter(Boolean);
       var tok=t.localHookId?tokenById(pack,t.localHookId):null;
+      var predTechName=predTechChoice!==null?((pack.content.techniques.filter(function(x){return x.id===predTechChoice;})[0]||{}).name||predTechChoice):null;
       return e('div',null,header,
         e('div',{className:'card'},
+          mode==='practice'&&predMechChoice!==null?e('div',{className:'kv '+(predMechChoice===t.mechanism?'ev':'ca')},(predMechChoice===t.mechanism?'✓ Correct — ':'✗ You said “'+predMechChoice+'” — ')+'mechanism is '+t.mechanism):null,
+          mode==='practice'&&predTechChoice!==null?e('div',{className:'kv '+(predTechChoice===t.id?'ev':'ca')},(predTechChoice===t.id?'✓ Correct — ':'✗ You said “'+predTechName+'” — ')+'technique is '+t.name):null,
           e('div',{className:'mechbadge'},'Mechanism · '+t.mechanism),
           e('div',{className:'tname'},t.name),
           e('div',{className:'lbl'},'Do this'),
@@ -198,8 +283,8 @@
       e('div',{className:'card'},
         e('div',{className:'lbl'},'What are you seeing?'),
         e('div',{className:'cuegrid'},
-          pack.content.cues.map(function(c){return e('button',{key:c.id,className:'cue'+(c.safety?' safety':''),onClick:function(){openCue(c);}},
-            c.label, e('span',{className:'mech'}, c.safety?'⚑ Route to your team':c.mechanism));}))),
+          pack.content.cues.map(function(c){var showMech=c.safety||mode==='reference';return e('button',{key:c.id,className:'cue'+(c.safety?' safety':''),onClick:function(){openCue(c);}},
+            c.label, showMech?e('span',{className:'mech'}, c.safety?'⚑ Route to your team':c.mechanism):null);}))),
       e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
         e('span',{className:'cite'},'Daily scaffold: '+f.scaffold.join(' · ')),
         e(FlagButton,{ctx:'cues'})));
