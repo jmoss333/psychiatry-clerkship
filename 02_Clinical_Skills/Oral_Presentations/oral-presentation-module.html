@@ -128,6 +128,49 @@ var MICRO=[
 ];
 function fmt(s){var m=Math.floor(s/60),x=s%60;return m+':'+(x<10?'0':'')+x;}
 
+var ORALS_CAP=50;
+var RUBRIC_ITEMS=[
+  {k:'oneLiner',label:'Lead with the one-liner.'},
+  {k:'siHi',label:'State SI/HI explicitly.'},
+  {k:'synthesis',label:'Give a real assessment — who/what/why-now, not a recap.'},
+  {k:'planByProblem',label:'Plan by problem with concrete next steps.'},
+  // Adapted from the Don't card's "End without a plan or disposition thought." — NOT
+  // byte-verbatim (the "without" was dropped to flip it into a positive self-check item; the
+  // Do card's 5th line, "Know your numbers", doesn't cover this concept). If that Don't-card
+  // line ever changes, re-check this label stays in sync.
+  {k:'endedWithAsk',label:'End with a plan or disposition thought.'}
+];
+var FORMAT_LABEL={full:'Full presentation (7-step)',collateral:'30-sec collateral',rounds:'60-sec rounds'};
+function loadOralReps(){
+  try{
+    var raw=localStorage.getItem('cw_orals_v1');
+    if(!raw) return [];
+    var parsed=JSON.parse(raw);
+    if(!parsed||!Array.isArray(parsed.reps)) return [];
+    return parsed.reps;
+  }catch(err){ return []; }
+}
+function saveOralReps(list){
+  try{ localStorage.setItem('cw_orals_v1', JSON.stringify({v:1,reps:list})); }catch(err){}
+}
+function targetForFormat(format){
+  if(format==='full') return TARGET;
+  var m=MICRO.filter(function(x){return x.key===format;})[0];
+  return m?m.target:null;
+}
+function fmtRepDate(iso){
+  var d=new Date(iso);
+  if(isNaN(d.getTime())) return iso;
+  return (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();
+}
+function rubricScore(rubric){
+  if(!rubric) return null;
+  var keys=['oneLiner','siHi','synthesis','planByProblem','endedWithAsk'];
+  var n=0;
+  for(var i=0;i<keys.length;i++){ if(rubric[keys[i]]) n++; }
+  return n;
+}
+
 function App(){
   var tab=useState('gather'); var setTab=tab[1]; tab=tab[0];
   var sec=useState(0); var setSec=sec[1]; sec=sec[0];
@@ -138,6 +181,12 @@ function App(){
   var done=useState({}); var setDone=done[1]; done=done[0];
   var microDone=useState({}); var setMicroDone=microDone[1]; microDone=microDone[0];
   var prep=useState({}); var setPrep=prep[1]; prep=prep[0];
+  var stepMark=useState({}); var setStepMark=stepMark[1]; stepMark=stepMark[0];
+  var reps=useState(loadOralReps); var setReps=reps[1]; reps=reps[0];
+  var pending=useState(null); var setPending=pending[1]; pending=pending[0];
+  var rubricDraft=useState({}); var setRubricDraft=rubricDraft[1]; rubricDraft=rubricDraft[0];
+  var fullRepAt=useState(null); var setFullRepAt=fullRepAt[1]; fullRepAt=fullRepAt[0];
+  var microRepAt=useState(null); var setMicroRepAt=microRepAt[1]; microRepAt=microRepAt[0];
   var ref=useRef(null);
   var microRef=useRef(null);
   useEffect(function(){ if(run){ ref.current=setInterval(function(){ setSec(function(s){return s+1}); },1000);} return function(){ if(ref.current) clearInterval(ref.current);} },[run]);
@@ -145,9 +194,128 @@ function App(){
   function activeStep(){ var acc=0; for(var i=0;i<STEPS.length;i++){ acc+=STEPS[i].sec; if(sec<acc) return i;} return STEPS.length-1; }
   function activeMicroStep(steps){ var acc=0; for(var i=0;i<steps.length;i++){ acc+=steps[i].sec; if(microSec<acc) return i;} return steps.length-1; }
   function togglePrep(k){ var x=Object.assign({},prep); x[k]=!x[k]; setPrep(x); }
-  function toggleDone(n){ var x=Object.assign({},done); x[n]=!x[n]; setDone(x); }
+  function toggleDone(n){
+    var x=Object.assign({},done); var turningOn=!x[n]; x[n]=turningOn; setDone(x);
+    var m=Object.assign({},stepMark);
+    if(turningOn){ m[n]=sec; } else { delete m[n]; }
+    setStepMark(m);
+  }
   function toggleMicroDone(k){ var x=Object.assign({},microDone); x[k]=!x[k]; setMicroDone(x); }
-  function pickMicro(k){ setMicroRun(false); setMicroSec(0); setMicroDone({}); setMicroKey(k); }
+  function computeFullPerStep(){
+    var out=[]; var prevT=0;
+    for(var i=0;i<STEPS.length;i++){
+      var s=STEPS[i];
+      if(stepMark[s.n]===undefined) return null;
+      var actual=stepMark[s.n]-prevT;
+      if(actual<0) return null;
+      out.push({k:s.t,target:s.sec,actual:actual});
+      prevT=stepMark[s.n];
+    }
+    return out;
+  }
+  // One record per continuous timeline (the span between Reset/mode-switches that zero a
+  // timer). `existingAt` is the current timeline's already-logged rep, if any: pass it to
+  // update that record's total/perStep in place instead of appending a duplicate. Returns the
+  // record's `at`, unchanged on update, so callers can track "this timeline already has a rep."
+  function commitRep(existingAt,format,total,perStep){
+    if(existingAt){
+      var updated=reps.map(function(r){
+        if(r.at!==existingAt) return r;
+        return Object.assign({},r,{total:total,perStep:perStep});
+      });
+      setReps(updated); saveOralReps(updated);
+      return existingAt;
+    }
+    var rec={at:new Date().toISOString(),format:format,total:total,perStep:perStep,rubric:null};
+    var list=reps.concat([rec]);
+    if(list.length>ORALS_CAP) list=list.slice(list.length-ORALS_CAP);
+    setReps(list); saveOralReps(list);
+    return rec.at;
+  }
+  function stopFullRep(){
+    if(sec<30) return;
+    var at=commitRep(fullRepAt,'full',sec,computeFullPerStep());
+    if(!fullRepAt){ setFullRepAt(at); setPending(at); setRubricDraft({}); }
+  }
+  function stopMicroRep(){
+    if(microSec<30) return;
+    var at=commitRep(microRepAt,microKey,microSec,null);
+    if(!microRepAt){ setMicroRepAt(at); setPending(at); setRubricDraft({}); }
+  }
+  function pickMicro(k){
+    if(microRun) stopMicroRep();
+    setMicroRun(false); setMicroSec(0); setMicroDone({}); setMicroKey(k); setMicroRepAt(null);
+  }
+  function findPendingRep(){
+    if(!pending) return null;
+    for(var i=0;i<reps.length;i++){ if(reps[i].at===pending) return reps[i]; }
+    return null;
+  }
+  function toggleRubricDraft(k){ var x=Object.assign({},rubricDraft); x[k]=!x[k]; setRubricDraft(x); }
+  function saveRubric(){
+    var list=reps.map(function(r){
+      if(r.at!==pending) return r;
+      return Object.assign({},r,{rubric:{
+        oneLiner:!!rubricDraft.oneLiner,
+        siHi:!!rubricDraft.siHi,
+        synthesis:!!rubricDraft.synthesis,
+        planByProblem:!!rubricDraft.planByProblem,
+        endedWithAsk:!!rubricDraft.endedWithAsk
+      }});
+    });
+    setReps(list); saveOralReps(list); setPending(null); setRubricDraft({});
+  }
+  function skipRubric(){ setPending(null); setRubricDraft({}); }
+  function calibrationLine(list){
+    var full=list.filter(function(r){return r.format==='full' && r.perStep;});
+    if(full.length<2) return null;
+    var n=STEPS.length, sums=[], counts=[];
+    for(var i=0;i<n;i++){ sums.push(0); counts.push(0); }
+    for(var j=0;j<full.length;j++){
+      var ps=full[j].perStep;
+      for(var i2=0;i2<ps.length && i2<n;i2++){ sums[i2]+=(ps[i2].actual-ps[i2].target); counts[i2]+=1; }
+    }
+    var worstIdx=-1, worstMean=-Infinity;
+    for(var k=0;k<n;k++){
+      if(counts[k]===0) continue;
+      var mean=sums[k]/counts[k];
+      if(mean>worstMean){ worstMean=mean; worstIdx=k; }
+    }
+    if(worstIdx===-1) return null;
+    var rounded=Math.round(worstMean);
+    if(rounded<1) return null;
+    return 'You are consistently ~'+rounded+'s over — usually the '+STEPS[worstIdx].t+' step.';
+  }
+  function rubricPanel(allowed){
+    var pr=findPendingRep();
+    if(!pr || allowed.indexOf(pr.format)===-1) return null;
+    return e('div',{className:'card',key:'rubric'},
+      e('h3',{style:{marginTop:0}},'Rate that rep'),
+      e('p',{className:'sub',style:{marginTop:0}},'Optional self-check — tap what you did, or skip.'),
+      RUBRIC_ITEMS.map(function(item){
+        return e('div',{className:'check',key:item.k,onClick:function(){toggleRubricDraft(item.k)}},
+          e('span',{className:'box'+(rubricDraft[item.k]?' on':'')}, rubricDraft[item.k]?'✓':''),
+          e('div',null,item.label));
+      }),
+      e('div',{className:'row',style:{marginTop:'var(--sp2)'}},
+        e('button',{className:'btn btn-primary',onClick:saveRubric},'Save rating'),
+        e('button',{className:'btn btn-ghost',onClick:skipRubric},'Skip')));
+  }
+  function lastFivePanel(){
+    if(reps.length===0) return null;
+    var list=reps.slice(-5).slice().reverse();
+    var calib=calibrationLine(list);
+    return e('div',{className:'card',key:'last5'},
+      e('h3',{style:{marginTop:0}},'Last 5 reps'),
+      list.map(function(r,idx){
+        var tgt=targetForFormat(r.format), score=rubricScore(r.rubric);
+        return e('div',{className:'check',key:r.at+'-'+idx,style:{cursor:'default'}},
+          e('div',null,
+            e('div',null, fmtRepDate(r.at)+' · '+(FORMAT_LABEL[r.format]||r.format)),
+            e('div',{className:'d'}, fmt(r.total)+(tgt?(' / '+fmt(tgt)+' target'):'')+(score!==null?(' · rubric '+score+'/5'):' · not rated'))));
+      }),
+      calib?e('div',{className:'pearl',key:'calib'},calib):null);
+  }
   var over=sec>TARGET; var pct=Math.min(100,(sec/TARGET)*100); var cur=activeStep();
   var deg=Math.min(360,(sec/TARGET)*360); var remain=Math.max(0,TARGET-sec);
   var cue=over?'Over time — wrap up and stop.':('Now: '+STEPS[cur].t+'  ·  target '+fmt(TARGET-sec)+' left');
@@ -222,8 +390,8 @@ function App(){
       e('div',{className:'bar'+(over?' over':'')}, e('div',{style:{width:pct+'%'}})),
       e('div',{className:'cue'+(over?' over':'')}, cue),
       e('div',{className:'row'},
-        e('button',{className:'btn btn-primary',onClick:function(){setRun(!run)}}, run?'Pause':(sec?'Resume':'Start')),
-        e('button',{className:'btn btn-ghost',onClick:function(){setRun(false);setSec(0)}},'Reset'))
+        e('button',{className:'btn btn-primary',onClick:function(){ if(run) stopFullRep(); setRun(!run); }}, run?'Pause':(sec?'Resume':'Start')),
+        e('button',{className:'btn btn-ghost',onClick:function(){ if(run) stopFullRep(); setRun(false);setSec(0);setDone({});setStepMark({});setFullRepAt(null); }},'Reset'))
     ),
     e('div',{className:'card'},
       e('p',{className:'sub',style:{marginTop:0}},'Tick each section as you say it. The highlighted step is where a well-paced presentation should be right now.'),
@@ -236,7 +404,9 @@ function App(){
           e('div',null, e('h3',null,s.t), e('div',{className:'d'},s.d)),
           e('span',{className:'t'},'~'+s.sec+'s'));
       })
-    )
+    ),
+    rubricPanel(['full']),
+    lastFivePanel()
   );
 
   var microView=e('div',{key:'m'},
@@ -260,8 +430,8 @@ function App(){
       e('div',{className:'bar'+(microOver?' over':'')}, e('div',{style:{width:microPct+'%'}})),
       e('div',{className:'cue'+(microOver?' over':'')}, microCue),
       e('div',{className:'row'},
-        e('button',{className:'btn btn-primary',onClick:function(){setMicroRun(!microRun)}}, microRun?'Pause':(microSec?'Resume':'Start')),
-        e('button',{className:'btn btn-ghost',onClick:function(){setMicroRun(false);setMicroSec(0);setMicroDone({});}},'Reset'))
+        e('button',{className:'btn btn-primary',onClick:function(){ if(microRun) stopMicroRep(); setMicroRun(!microRun); }}, microRun?'Pause':(microSec?'Resume':'Start')),
+        e('button',{className:'btn btn-ghost',onClick:function(){ if(microRun) stopMicroRep(); setMicroRun(false);setMicroSec(0);setMicroDone({});setMicroRepAt(null); }},'Reset'))
     ),
     e('div',{className:'card'},
       e('p',{className:'sub',style:{marginTop:0}},'Tick each section as you say it. The highlighted line is where this update should be right now.'),
@@ -274,7 +444,8 @@ function App(){
           e('div',null, e('h3',null,s.t), e('div',{className:'d'},s.d), e('span',{className:'ex'},s.ex)),
           e('span',{className:'t'},'~'+s.sec+'s'));
       })
-    )
+    ),
+    rubricPanel(['collateral','rounds'])
   );
 
   return e('div',{className:'shell'},

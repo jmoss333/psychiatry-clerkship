@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Reflection & Professional Identity Set" version="1.0" built="2026-06-26" category="clinical-skills" subcategory="Reflection/PIF" audience="trainee,ms3" settings="inpatient" time="10min/week" summary="Six weekly reflection prompts mapped to the curriculum plus an ethics/professional-identity set, each with a private journaling field and copy/print. In-memory only; nothing is stored or transmitted." -->
+<!-- [CLERKSHIP-META v1] tool="Reflection & Professional Identity Set" version="1.1" built="2026-06-26" category="clinical-skills" subcategory="Reflection/PIF" audience="trainee,ms3" settings="inpatient" time="10min/week" summary="Six weekly reflection prompts mapped to the curriculum plus an ethics/professional-identity set, each with a private journaling field and copy/print. In-memory by default; an explicit opt-in toggle can save drafts under cw_reflect_v1 on this device only — never transmitted." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reflection &amp; Professional Identity — Prompt Set</title>
-<meta name="description" content="Six weekly reflection prompts mapped to the inpatient psychiatry curriculum, plus an ethics and professional-identity formation set. Private journaling with copy and print; nothing is saved or sent.">
+<meta name="description" content="Six weekly reflection prompts mapped to the inpatient psychiatry curriculum, plus an ethics and professional-identity formation set. Private journaling with copy and print; saving to this device is opt-in and off by default, and nothing is ever sent.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <style>
@@ -40,17 +40,46 @@
   .btn{border:none;border-radius:var(--radius-sm);padding:9px 16px;font-weight:600;cursor:pointer;font-family:inherit}
   .btn-primary{background:var(--primary-dark);color:#fff} .btn-primary:hover{background:var(--primary)}
   .btn-ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .btn-erase{background:transparent;color:var(--warning);border:1px solid var(--warning-light)}
+  .btn-erase:hover{background:var(--warning-light)}
+  .savebox{background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-md);padding:var(--sp3);margin-bottom:var(--sp3);display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp3);justify-content:space-between}
+  .savetoggle{display:flex;align-items:flex-start;gap:8px;cursor:pointer;flex:1 1 260px}
+  .savetoggle input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent-dark);cursor:pointer;flex:0 0 auto}
+  .savelabel{font-weight:700;color:var(--accent-dark)}
+  .savehint{font-size:.82rem;color:var(--text-mid);margin-top:2px}
+  .confront{background:var(--bg-alt);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);margin-bottom:var(--sp2)}
+  .confront-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--accent-dark);margin-bottom:4px}
+  .confront-text{font-size:.92rem;color:var(--text);white-space:pre-wrap}
   .wellbeing{background:var(--info-light);border-left:3px solid var(--info);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);font-size:.88rem;margin-top:var(--sp3)}
   .wellbeing b{color:var(--info)}
   .disclaimer{background:var(--bg-alt);border:1px dashed var(--border);border-radius:var(--radius-md);padding:var(--sp3);font-size:.82rem;color:var(--text-mid);margin-top:var(--sp4)}
   footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light);text-align:center}
-  @media print{.bar,.btn,.disclaimer{display:none}}
+  @media print{.bar,.btn,.disclaimer,.savebox{display:none}}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script>
-var e=React.createElement; var useState=React.useState;
+var e=React.createElement; var useState=React.useState; var useEffect=React.useEffect;
+var SAVE_DEBOUNCE_MS=500;
+// Storage key is 'cw_reflect_v1' — passed as a literal at every localStorage
+// call (not via a variable) so the QA gate's namespace-prefix check can
+// verify it statically.
+function loadStore(){
+  try{
+    var raw=localStorage.getItem('cw_reflect_v1');
+    if(!raw) return null;
+    var s=JSON.parse(raw);
+    if(s && s.v===1 && s.entries) return s;
+  }catch(_){}
+  return null;
+}
+function saveStore(entries){
+  try{ localStorage.setItem('cw_reflect_v1', JSON.stringify({v:1,on:true,entries:entries,savedAt:new Date().toISOString()})); }catch(_){}
+}
+function eraseStore(){
+  try{ localStorage.removeItem('cw_reflect_v1'); }catch(_){}
+}
 var WK=[
   {id:'w1',tag:'Week 1 · Foundations',q:'What did the label do?',hint:'Channeling Rosenhan: describe a moment you noticed the diagnosis arriving before the person did — yours or the team’s. What changed once the label was attached?'},
   {id:'w2',tag:'Week 2 · Mood, Psychosis & Pharmacology',q:'A medication decision you watched.',hint:'What drove it beyond efficacy — side effects, cost, the patient’s prior experience, adherence, family input? How was the choice explained to the patient?'},
@@ -67,10 +96,51 @@ var PIF=[
   {id:'p5',tag:'Wellbeing',q:'What affected you this week.',hint:'A story or moment that stayed with you emotionally. What did you do with it? What do you need?'},
   {id:'p6',tag:'Identity',q:'"I am becoming the kind of clinician who…"',hint:'Finish the sentence. Then name one concrete thing you did this week that moved you toward it.'}
 ];
+// Week-1 vs week-6 confrontation is wired by prompt id (read from the WK data
+// above), never by array position — so reordering WK can't silently break it.
+function findByTagPrefix(prefix){
+  for(var i=0;i<WK.length;i++){ if(WK[i].tag.indexOf(prefix)===0) return WK[i]; }
+  return null;
+}
+var WEEK1_PROMPT=findByTagPrefix('Week 1');
+var WEEK6_PROMPT=findByTagPrefix('Week 6');
+var WEEK1_ID=WEEK1_PROMPT?WEEK1_PROMPT.id:null;
+var WEEK6_ID=WEEK6_PROMPT?WEEK6_PROMPT.id:null;
 function App(){
-  var txt=useState({}); var setTxt=txt[1]; txt=txt[0];
+  // Only a store with on:true restores checked+entries on mount — this is
+  // what makes saved drafts "survive reload." A first-ever visit (no store)
+  // or one where saving was left off both start blank/unchecked, per the
+  // opt-in-and-off-by-default rule. Reading here is a plain getItem — it
+  // never writes, so the off-by-default privacy guarantee still holds.
+  var initStore=loadStore();
+  var txt=useState(initStore&&initStore.on&&initStore.entries?initStore.entries:{}); var setTxt=txt[1]; txt=txt[0];
   var copied=useState(false); var setCopied=copied[1]; copied=copied[0];
+  var save=useState(!!(initStore&&initStore.on)); var setSaveOn=save[1]; var saveOn=save[0];
   function set(id,v){var n=Object.assign({},txt);n[id]=v;setTxt(n);setCopied(false);}
+  // Debounced write-through: only while saving is on. Cleanup clears any
+  // pending write, so turning saving off (or erasing) never lets a stale
+  // timer resurrect the key.
+  useEffect(function(){
+    if(!saveOn) return;
+    var timer=setTimeout(function(){ saveStore(txt); }, SAVE_DEBOUNCE_MS);
+    return function(){ clearTimeout(timer); };
+  },[txt,saveOn]);
+  function toggleSave(checked){
+    if(checked){
+      var existing=loadStore();
+      if(existing && existing.entries){
+        // Stored drafts fill in first; anything already typed this session
+        // (before opting in) wins for that prompt.
+        setTxt(function(prev){ return Object.assign({}, existing.entries, prev); });
+      }
+    }
+    setSaveOn(checked);
+  }
+  function eraseSaved(){
+    if(!window.confirm('Erase all reflections saved on this device? This cannot be undone.')) return;
+    eraseStore();
+    setSaveOn(false);
+  }
   function assemble(){
     var out=['MY PSYCHIATRY CLERKSHIP REFLECTIONS','=============================','','WEEKLY'];
     WK.forEach(function(p){ out.push('\n['+p.tag+'] '+p.q); out.push((txt[p.id]||'(not yet written)')); });
@@ -80,26 +150,39 @@ function App(){
   }
   function copyAll(){ if(navigator.clipboard){navigator.clipboard.writeText(assemble()).then(function(){setCopied(true);});} }
   function card(p,cls){
+    var placeholder=saveOn?'Write freely — saved only on this device.':'Write freely — this stays on your screen only.';
+    var week1Text=WEEK1_ID?(txt[WEEK1_ID]||''):'';
+    var showConfront=saveOn && p.id===WEEK6_ID && week1Text.trim().length>0;
     return e('div',{className:'prompt '+cls,key:p.id},
       e('div',{className:'ptag'},p.tag),
       e('div',{className:'q'},p.q),
       e('div',{className:'hint'},p.hint),
-      e('textarea',{value:txt[p.id]||'',placeholder:'Write freely — this stays on your screen only.',onChange:function(ev){set(p.id,ev.target.value)}}));
+      showConfront?e('div',{className:'confront'},
+        e('div',{className:'confront-label'},'Here is what you wrote in week 1 — what changed?'),
+        e('div',{className:'confront-text'},week1Text)):null,
+      e('textarea',{value:txt[p.id]||'',placeholder:placeholder,onChange:function(ev){set(p.id,ev.target.value)}}));
   }
   return e('div',{className:'shell'},
     e('div',{className:'kicker'},'Clinical Skills · 02 · Reflection & PIF'),
     e('h1',null,'Reflection & Professional Identity'),
     e('p',{className:'sub'},'Ten minutes of honest reflection each week builds the clinician you’re becoming as much as any reading does. Six prompts track the curriculum; the second set turns toward ethics and identity. Write for yourself.'),
+    e('div',{className:'savebox'},
+      e('label',{className:'savetoggle'},
+        e('input',{type:'checkbox',checked:saveOn,onChange:function(ev){toggleSave(ev.target.checked)}}),
+        e('div',null,
+          e('div',{className:'savelabel'},'Save privately on this device'),
+          e('div',{className:'savehint'},'Off by default. If you turn this on, your drafts are written to this browser’s storage on this device only — nothing ever leaves it.'))),
+      e('button',{type:'button',className:'btn btn-erase',onClick:eraseSaved},'Erase all saved reflections')),
     e('div',{className:'bar'},
       e('button',{className:'btn btn-primary',onClick:copyAll}, copied?'Copied ✓':'Copy all'),
       e('button',{className:'btn btn-ghost',onClick:function(){window.print()}},'Print / Save PDF'),
-      e('span',{style:{fontSize:'.82rem',color:'var(--text-light)'}},'Private — nothing is saved or sent.')),
+      e('span',{style:{fontSize:'.82rem',color:'var(--text-light)'}},saveOn?'Saved privately on this device — nothing is sent.':'Private — nothing is saved or sent.')),
     e('h2',null,'Weekly reflections'),
     WK.map(function(p){return card(p,'wk');}),
     e('h2',null,'Professional identity & ethics'),
     PIF.map(function(p){return card(p,'pif');}),
     e('div',{className:'wellbeing'}, e('b',null,'A note on the hard weeks: '),'inpatient psychiatry can stir up a lot. If something you write about is weighing on you, talk it through with your preceptor, a trusted person, or your school’s support resources. Reflection is for growth, not for carrying it alone.'),
-    e('div',{className:'disclaimer'},'Educational reflection tool. Entries live only in this browser tab and are not saved, stored, or transmitted — use Copy or Print to keep your work before closing. Do not include protected health information or patient identifiers; write about your experience, not identifiable patient details.'),
+    e('div',{className:'disclaimer'},saveOn?'Educational reflection tool. Saving is on: entries are written to this browser’s local storage on this device only and are never sent anywhere. Use “Erase all saved reflections” to remove them, or Copy/Print to keep your work elsewhere. Do not include protected health information or patient identifiers; write about your experience, not identifiable patient details.':'Educational reflection tool. Entries live only in this browser tab and are not saved, stored, or transmitted — use Copy or Print to keep your work before closing. Do not include protected health information or patient identifiers; write about your experience, not identifiable patient details.'),
     e('footer',null,'Reflection & Professional Identity — Prompt Set · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
   );
 }

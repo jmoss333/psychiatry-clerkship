@@ -23,8 +23,24 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
 .logo{width:34px;height:34px;border-radius:9px;background:var(--primary);color:#fff;display:grid;place-items:center;font-family:Georgia,serif;font-size:20px;flex:none}
 .ttl{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:1.18rem;line-height:1.15}
 .by{color:var(--text-light);font-size:.78rem}
-.thmbtn{margin-left:auto;border:1px solid var(--border);background:var(--surface);color:var(--text);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:1rem;flex:none}
+.thmbtn{border:1px solid var(--border);background:var(--surface);color:var(--text);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:1rem;flex:none}
 .thmbtn:hover{background:var(--hover)}
+.topctrls{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none}
+.testbtn{border:1px solid var(--border);background:var(--surface);color:var(--text);height:36px;padding:0 14px;border-radius:9px;cursor:pointer;font-size:.82rem;font-weight:700;font-family:inherit;flex:none;white-space:nowrap}
+.testbtn:hover{background:var(--hover)}
+.testbtn[aria-pressed="true"]{background:var(--accent-light);border-color:var(--accent);color:var(--accent-dark)}
+.testbtn-hint{color:var(--text-mid);font-weight:500;font-style:italic;margin-left:2px}
+.testbtn-hint[hidden]{display:none}
+.testbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 16px;padding:10px 14px;background:var(--accent-light);border:1px solid var(--border2);border-radius:10px;font-size:.85rem;color:var(--text-mid)}
+.testbar[hidden]{display:none}
+.testbar-label{flex:1 1 auto;min-width:180px}
+.revealbtn{border:1px solid var(--accent);background:var(--surface);color:var(--accent-dark);height:32px;padding:0 12px;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:700;font-family:inherit;flex:none}
+.revealbtn:hover{background:var(--hover)}
+.testbar-note{font-weight:700;color:var(--accent-dark);flex:none}
+.node.masked{cursor:pointer}
+.node.masked .sb{display:none}
+.node.masked:hover{box-shadow:0 6px 20px rgba(59,51,44,.18)}
+.node.masked:focus-visible,.testbtn:focus-visible,.revealbtn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .row{display:flex;gap:40px;align-items:center;flex-wrap:wrap;justify-content:center}
 /* diagram */
 .diagram{width:100%;max-width:620px;flex:0 0 auto;position:relative;aspect-ratio:1/1}
@@ -84,7 +100,15 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
   <div class="topline">
     <div class="logo">&psi;</div>
     <div><div class="ttl">The Interview Circle</div><div class="by">Clinical skills · Joshua Moss, MD</div></div>
-    <button class="thmbtn" id="thm" title="Toggle dark mode" aria-label="Toggle dark mode">&#9790;</button>
+    <div class="topctrls">
+      <button class="testbtn" id="testToggle" type="button" aria-pressed="false" title="Test yourself: hide domain labels and recall each one from memory">Test yourself<span class="testbtn-hint" id="testHint" hidden> — it&#8217;s been a while</span></button>
+      <button class="thmbtn" id="thm" title="Toggle dark mode" aria-label="Toggle dark mode">&#9790;</button>
+    </div>
+  </div>
+  <div class="testbar" id="testbar" hidden>
+    <span class="testbar-label">Click (or Enter/Space) a masked node to recall it from memory.</span>
+    <button class="revealbtn" id="revealAll" type="button">Reveal all</button>
+    <span class="testbar-note" id="testNote" aria-live="polite"></span>
   </div>
   <div class="row">
     <div class="diagram"><div class="stage" id="stage">
@@ -157,7 +181,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
  // nodes
  var nh='';
  for(var j=0;j<8;j++){ var d=DOMAINS[j], q=pos(j), tn=TONE[d.tone];
-   nh+='<div class="node" style="left:'+q.x.toFixed(1)+'px;top:'+q.y.toFixed(1)+'px;border-left-color:'+tn.bar+'">'
+   nh+='<div class="node" data-idx="'+j+'" style="left:'+q.x.toFixed(1)+'px;top:'+q.y.toFixed(1)+'px;border-left-color:'+tn.bar+'">'
      +'<span class="chip" style="background:'+tn.bg+';color:'+tn.ink+'"><svg viewBox="0 0 24 24" stroke="currentColor">'+ICON[d.ic]+'</svg></span>'
      +'<span class="tx"><span class="tt">'+d.t+'</span><span class="sb">'+d.s+'</span></span></div>';
  }
@@ -185,6 +209,97 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
  setIcon();
  thm.addEventListener('click',function(){ var nx=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',nx); try{localStorage.setItem('cw_theme',nx);}catch(_){ } setIcon(); if(framed){try{window.parent.postMessage({type:'theme',mode:nx},'*');}catch(_){ }} });
  window.addEventListener('message',function(ev){ var d=ev.data||{}; if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){ document.documentElement.setAttribute('data-theme',d.mode); setIcon(); } });
+
+ // test-yourself: blank-circle recall mode
+ var nodesEl=document.getElementById('nodes');
+ var testToggle=document.getElementById('testToggle');
+ var testHint=document.getElementById('testHint');
+ var testbar=document.getElementById('testbar');
+ var revealAllBtn=document.getElementById('revealAll');
+ var testNote=document.getElementById('testNote');
+ var testActive=false, individualCount=0, totalRevealed=0, roundComplete=false;
+
+ function maskNode(node){
+   var tt=node.querySelector('.tt'), sb=node.querySelector('.sb');
+   if(tt) tt.textContent='?';
+   if(sb) sb.textContent='';
+   node.classList.add('masked');
+   node.setAttribute('role','button');
+   node.tabIndex=0;
+   node.setAttribute('aria-label','Hidden domain — reveal');
+ }
+ function revealNode(node){
+   var idx=parseInt(node.getAttribute('data-idx'),10), d=DOMAINS[idx];
+   var tt=node.querySelector('.tt'), sb=node.querySelector('.sb');
+   if(d){ if(tt) tt.textContent=d.t; if(sb) sb.textContent=d.s; }
+   node.classList.remove('masked');
+   node.removeAttribute('role');
+   node.removeAttribute('tabindex');
+   node.removeAttribute('aria-label');
+ }
+ function maskAll(){ var ns=nodesEl.querySelectorAll('.node'); for(var i=0;i<ns.length;i++) maskNode(ns[i]); }
+ function restoreAll(){ var ns=nodesEl.querySelectorAll('.node'); for(var i=0;i<ns.length;i++) revealNode(ns[i]); }
+
+ function persistLastTested(){ try{ localStorage.setItem('cw_circle_v1', JSON.stringify({v:1,lastTested:new Date().toISOString().slice(0,10)})); }catch(_){ } }
+ function readLastTested(){
+   try{
+     var raw=localStorage.getItem('cw_circle_v1');
+     if(!raw) return null;
+     var obj=JSON.parse(raw);
+     if(obj&&obj.v===1&&obj.lastTested) return obj.lastTested;
+   }catch(_){ }
+   return null;
+ }
+ function refreshNudge(){
+   var last=readLastTested(), stale=true;
+   if(last){ var then=new Date(last+'T00:00:00'); if(!isNaN(then.getTime())){ stale=((Date.now()-then.getTime())/86400000)>7; } }
+   if(testHint) testHint.hidden=!stale;
+   testToggle.title=stale?'Test yourself — it’s been a while since your last review.':'Test yourself: hide domain labels and recall each one from memory';
+ }
+
+ function checkRoundComplete(){
+   if(roundComplete||totalRevealed<8) return;
+   roundComplete=true;
+   if(testNote) testNote.textContent='Recalled from memory: '+individualCount+' of 8';
+   persistLastTested();
+   refreshNudge();
+ }
+ function activateNode(node){
+   if(!testActive||!node.classList.contains('masked')) return;
+   revealNode(node);
+   individualCount++; totalRevealed++;
+   checkRoundComplete();
+ }
+
+ nodesEl.addEventListener('click',function(e){ var node=e.target&&e.target.closest?e.target.closest('.node'):null; if(node) activateNode(node); });
+ nodesEl.addEventListener('keydown',function(e){
+   var node=e.target&&e.target.closest?e.target.closest('.node'):null;
+   if(!node) return;
+   var k=e.key;
+   if(k==='Enter'||k===' '||k==='Spacebar'||e.keyCode===13||e.keyCode===32){ e.preventDefault(); activateNode(node); }
+ });
+
+ testToggle.addEventListener('click',function(){
+   testActive=!testActive;
+   testToggle.setAttribute('aria-pressed',String(testActive));
+   if(testActive){
+     individualCount=0; totalRevealed=0; roundComplete=false;
+     if(testNote) testNote.textContent='';
+     maskAll();
+     if(testbar) testbar.hidden=false;
+   } else {
+     restoreAll();
+     if(testbar) testbar.hidden=true;
+   }
+ });
+ revealAllBtn.addEventListener('click',function(){
+   if(!testActive) return;
+   var masked=nodesEl.querySelectorAll('.node.masked');
+   for(var i=0;i<masked.length;i++){ revealNode(masked[i]); totalRevealed++; }
+   checkRoundComplete();
+ });
+
+ refreshNudge();
 })();
 </script>
 </body>

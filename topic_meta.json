@@ -399,7 +399,8 @@
    "decision-aids.html",
    "communication-practice.html",
    "diagnostic-reasoning.html",
-   "family-systems.html"
+   "family-systems.html",
+   "sp-interview.html"
   ],
   "workflowModes": [
    "ward",
@@ -2157,7 +2158,8 @@
    "violence.html",
    "decision-aids.html",
    "communication-practice.html",
-   "family-systems.html"
+   "family-systems.html",
+   "sp-interview.html"
   ],
   "workflowModes": [
    "ward",
@@ -2868,7 +2870,8 @@
   "relatedTools": [
    "mse.html",
    "interview-circle.html",
-   "communication-practice.html"
+   "communication-practice.html",
+   "sp-interview.html"
   ],
   "workflowModes": [
    "ward",
@@ -5099,7 +5102,8 @@
   "relatedTools": [
    "family-systems.html",
    "communication-practice.html",
-   "oral.html"
+   "oral.html",
+   "one-patient-six-weeks.html"
   ],
   "workflowModes": [
    "ward",

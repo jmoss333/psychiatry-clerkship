@@ -65,6 +65,17 @@
   .chip{font-size:.82rem;border-radius:999px;padding:4px 10px;border:1px solid var(--border);background:var(--surface)}
   .chip.d{background:var(--danger-l);border-color:var(--danger);color:var(--danger)}
   .fm .fmtext{font-size:.95rem;color:var(--text)}
+  /* cover-and-recall quiz mode */
+  .treehead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .quizbtn{flex:0 0 auto;border:1px solid var(--border);background:var(--surface);color:var(--mid);border-radius:999px;padding:5px 12px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;-webkit-appearance:none;appearance:none;margin:2px 0 0}
+  .quizbtn:hover{border-color:var(--accent)}
+  .quizbtn.on{background:var(--accent);color:var(--on-brand);border-color:var(--accent)}
+  .quizbtn:focus-visible{outline:2px solid var(--accent-d);outline-offset:2px}
+  .chip.masked{cursor:pointer;font-family:inherit;font-size:inherit;line-height:inherit;border-style:dashed;-webkit-appearance:none;appearance:none;margin:0}
+  .chip.masked:focus-visible{outline:2px solid var(--danger);outline-offset:2px}
+  .masked-btn{display:block;width:100%;text-align:left;background:transparent;border:1px dashed var(--accent);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:.95rem;line-height:1.4;color:var(--accent-d);cursor:pointer;-webkit-appearance:none;appearance:none;margin:0}
+  .masked-btn:hover{background:var(--accent-l)}
+  .masked-btn:focus-visible{outline:2px solid var(--accent-d);outline-offset:2px}
   .branch{display:flex;align-items:center;gap:8px;margin:8px 2px;font-size:.84rem;color:var(--warning)}
   .branch .arr{color:var(--light)}
   .escape{background:var(--warning-l);border:1px dashed var(--warning);border-radius:9px;padding:7px 11px;font-size:.84rem;color:var(--warning)}
@@ -195,12 +206,55 @@ var TIMELINE=[
 
 var VIEWS=[["trees","Decision trees"],["ladder","Agitation ladder"],["nmsss","NMS vs SS"],["withdrawal","Withdrawal timeline"],["ciwa","CIWA-Ar bands"]];
 
-function Tree(t){
+function Tree(props){
+  var t=props.t;
+  // cover-and-recall quiz mode: per-tree, in-memory only (no persistence)
+  var qz=useState(false), quiz=qz[0], setQuiz=qz[1];
+  var rv=useState({}), revealed=rv[0], setRevealed=rv[1];
+
+  function toggleQuiz(){
+    setQuiz(function(q){ return !q; });
+    setRevealed({}); // fresh cover on every quiz start
+  }
+  function reveal(key){
+    setRevealed(function(prev){
+      var next={};
+      for(var k in prev) if(prev.hasOwnProperty(k)) next[k]=prev[k];
+      next[key]=true;
+      return next;
+    });
+  }
+
+  function ruleOutChip(x,i){
+    var key="ro"+i;
+    if(quiz && !revealed[key]){
+      // Masked: placeholder content only — the real text never enters the DOM
+      // until revealed, so it is not exposed to assistive tech or print.
+      return e("button",{type:"button",className:"chip d masked",key:i,
+        "aria-label":"Covered — reveal",onClick:function(){reveal(key);}}, "Covered");
+    }
+    return e("span",{className:"chip d",key:i},x);
+  }
+
+  function firstMoveNode(){
+    var key="fm";
+    if(quiz && !revealed[key]){
+      return e("button",{type:"button",className:"masked-btn",
+        "aria-label":"Covered — reveal",onClick:function(){reveal(key);}},
+        "Covered — tap to reveal the first move");
+    }
+    return e("div",{className:"fmtext"}, t.firstMove);
+  }
+
   return e("div",{className:"card"},
-    e("h2",null,t.title),
+    e("div",{className:"treehead"},
+      e("h2",null,t.title),
+      e("button",{type:"button",className:"quizbtn"+(quiz?" on":""),
+        "aria-pressed":quiz,onClick:toggleQuiz}, quiz?"Quiz me: on":"Quiz me")
+    ),
     e("div",{className:"node ro"},
       e("div",{className:"nlabel"},e("span",{className:"num"},"1"),"Rule out first — can’t-miss mimics"),
-      e("div",{className:"chips"}, t.ruleOut.map(function(x,i){return e("span",{className:"chip d",key:i},x);}))
+      e("div",{className:"chips"}, t.ruleOut.map(ruleOutChip))
     ),
     e("div",{className:"connector"}),
     e("div",{className:"escape"}, t.medical),
@@ -212,7 +266,7 @@ function Tree(t){
     t.psych.length? e("div",{className:"connector"}):null,
     e("div",{className:"node fm"},
       e("div",{className:"nlabel"},e("span",{className:"num"},t.psych.length?"3":"2"),"First move"),
-      e("div",{className:"fmtext"}, t.firstMove)
+      firstMoveNode()
     ),
     e("div",{className:"rounds"}, e("b",null,"On rounds · "), t.rounds)
   );
@@ -224,7 +278,7 @@ function App(){
   useEffect(function(){ try{document.documentElement.setAttribute("data-theme",theme);localStorage.setItem("cw_theme",theme);}catch(_){} },[theme]);
 
   function body(){
-    if(view==="trees") return e("div",null, TREES.map(function(t){return e(React.Fragment,{key:t.id}, Tree(t));}));
+    if(view==="trees") return e("div",null, TREES.map(function(t){return e(Tree,{key:t.id,t:t});}));
     if(view==="ladder") return e("div",{className:"card"},
       e("h2",null,"Agitation escalation ladder"),
       e("div",{className:"cap"},"Least restrictive first. Climb only as far as the risk requires — and document why."),

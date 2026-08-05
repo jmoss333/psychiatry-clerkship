@@ -26,6 +26,16 @@ function slice(startMarker, endMarker) {
   return source.slice(a, b);
 }
 
+// Matches tests/srs-home-counters.test.mjs's memStorage() convention.
+function memStorage() {
+  const m = new Map();
+  return {
+    getItem: (k) => (m.has(k) ? m.get(k) : null),
+    setItem: (k, v) => m.set(k, String(v)),
+    removeItem: (k) => m.delete(k),
+  };
+}
+
 // eslint-disable-next-line no-new-func
 const activeItems = new Function('BANK', `${slice('function activeItems(', '/* ---- rendering helpers')}
   return activeItems();`);
@@ -40,11 +50,21 @@ const renderMeta = new Function('item', 'CAT_LABELS', 'esc', 'diffDots',
 const metaOf = (item) => renderMeta(item, {}, (s) => s, () => '');
 
 // renderSetup is the pool preview a learner sees before starting; it needs activeItems
-// (hence BANK) and CAT_LABELS in scope.
-const renderSetup = new Function('BANK', 'CAT_LABELS',
-  `${slice('function activeItems(', '/* ---- rendering helpers')}
+// (hence BANK) and CAT_LABELS in scope, plus qbLoad (via lsGet) for the focus-mode
+// preset counts (missedItems/certWrongItems, sliced in with activeItems below).
+// localStorage is an explicit parameter (not the global) so tests can seed cw_qb_v1
+// without touching global state.
+const renderSetup = new Function('BANK', 'CAT_LABELS', 'localStorage',
+  `${slice('function lsGet(', 'function qbRecord(')}
+   ${slice('function activeItems(', '/* ---- rendering helpers')}
    ${slice('function renderSetup(', 'function renderMeta(')}
    return renderSetup();`);
+
+// Focus-mode preset queues, same slicing approach.
+const focusPresets = new Function('BANK', 'localStorage',
+  `${slice('function lsGet(', 'function qbRecord(')}
+   ${slice('function activeItems(', '/* ---- rendering helpers')}
+   return { missedItems: missedItems, certWrongItems: certWrongItems };`);
 
 const BANK = {
   items: [
@@ -123,4 +143,58 @@ test('the draft label does not depend on colour or on the icon being announced',
   }
   // The callout is exposed as its own region rather than reading as part of the stem.
   assert.match(notice, /role="note"/);
+});
+
+// ---- focus-mode presets ("Redo my misses" / "Confidently wrong") ------------------
+
+test('missedItems/certWrongItems are empty with no cw_qb_v1 history', () => {
+  const { missedItems, certWrongItems } = focusPresets(BANK, memStorage());
+  assert.deepEqual(missedItems(), []);
+  assert.deepEqual(certWrongItems(), []);
+});
+
+test('missedItems returns active items with a correct:false record; certWrongItems needs certWrong:true', () => {
+  const ls = memStorage();
+  ls.setItem('cw_qb_v1', JSON.stringify({
+    a_attested: { correct: false, confidence: 'guess' },              // missed, not certain
+    b_draft: { correct: false, confidence: 'certain', certWrong: true }, // missed AND certWrong
+  }));
+  const { missedItems, certWrongItems } = focusPresets(BANK, ls);
+  assert.deepEqual(missedItems().map((it) => it.id), ['a_attested', 'b_draft']);
+  assert.deepEqual(certWrongItems().map((it) => it.id), ['b_draft']);
+});
+
+test('a correct record never appears in either preset', () => {
+  const ls = memStorage();
+  ls.setItem('cw_qb_v1', JSON.stringify({
+    a_attested: { correct: true, confidence: 'certain' },
+  }));
+  const { missedItems, certWrongItems } = focusPresets(BANK, ls);
+  assert.deepEqual(missedItems(), []);
+  assert.deepEqual(certWrongItems(), []);
+});
+
+test('a record for a retired item is never surfaced, even though it matches the preset criteria', () => {
+  const ls = memStorage();
+  ls.setItem('cw_qb_v1', JSON.stringify({
+    c_retired_attested: { correct: false, confidence: 'certain', certWrong: true },
+    d_retired_draft: { correct: false, confidence: 'certain', certWrong: true },
+  }));
+  const { missedItems, certWrongItems } = focusPresets(BANK, ls);
+  assert.deepEqual(missedItems(), [], 'retired items must not reach either preset queue');
+  assert.deepEqual(certWrongItems(), [], 'retired items must not reach either preset queue');
+});
+
+test('the setup screen renders live counts and disables a preset button at zero', () => {
+  const zero = renderSetup(BANK, { mood: 'Mood' }, memStorage());
+  assert.match(zero, /id="redoMissesBtn" disabled>Redo my misses \(0\)/);
+  assert.match(zero, /id="certWrongBtn" disabled>Confidently wrong \(0\)/);
+
+  const ls = memStorage();
+  ls.setItem('cw_qb_v1', JSON.stringify({
+    a_attested: { correct: false, confidence: 'certain', certWrong: true },
+  }));
+  const withHistory = renderSetup(BANK, { mood: 'Mood' }, ls);
+  assert.match(withHistory, /id="redoMissesBtn">Redo my misses \(1\)/);
+  assert.match(withHistory, /id="certWrongBtn">Confidently wrong \(1\)/);
 });
