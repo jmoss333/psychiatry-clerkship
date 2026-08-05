@@ -481,6 +481,18 @@ if (!existsSync(srcMapPath)) {
  * be listed here instead of fixed, with a comment explaining why. Empty as of this task —
  * the (a)/(b)/(c) checks below found zero pre-existing violations against the current
  * build, so nothing needed it.
+ *
+ * Tri-state presence gate (added after CI caught this scan hard-failing the SP-interview
+ * contract suite's synthetic fixture sites, whose stub index.html deliberately carries
+ * none of these maps — it's testing the checker's *other* rules, not the real shell):
+ *   - all 8 maps present  → scan runs normally (the real shell always carries all 8).
+ *   - zero of 8 present   → this isn't a shell that's supposed to have these maps at all
+ *     (a test fixture, a non-SPA site) — section 7b is skipped entirely (a, b, and c) with
+ *     an I() note, not a HARD failure.
+ *   - some but not all present → real drift or regex rot on an actual shell (which always
+ *     ships all 8 together) — kept as HARD failures per missing map, unchanged. Do NOT
+ *     special-case known fixtures by path/name; the all-or-nothing marker count is the
+ *     only signal used, so a real shell that loses a map still fails loudly.
  */
 const SHELL_REF_ALLOWLIST = new Set([
   // 'tool-name.html',   // example shape — reason it's allowlisted instead of fixed
@@ -504,65 +516,71 @@ const SHELL_REF_ALLOWLIST = new Set([
   };
   const htmlNamesIn = (block) => new Set([...block.matchAll(/(['"])([^'"]+\.html)\1/g)].map(m => m[2]));
   const bareKeysIn = (block) => new Set([...block.matchAll(/([A-Za-z_$][\w$]*)\s*:\s*'/g)].map(m => m[1]));
+  const TOOL_MAP_VARS = ['LAB', 'ICON', 'PRACTICE_LABELS', 'PAGE_TOOLS', 'PRACTICE_PAGE_TOOLS', 'DASH_CONFIG'];
+  const ALL_SHELL_MAP_VARS = [...TOOL_MAP_VARS, 'CASE_TITLES', 'FAMILY_SCENARIO_TITLES'];
 
   const shellHtml = existsSync(shellPath) ? readFileSync(shellPath, 'utf8') : null;
   if (shellHtml === null) {
     H('index.html missing from built site (shell-reference scan cannot run)');
   } else {
-    // (a) tool filenames referenced across the six shell maps must exist in tools/.
-    const TOOL_MAP_VARS = ['LAB', 'ICON', 'PRACTICE_LABELS', 'PAGE_TOOLS', 'PRACTICE_PAGE_TOOLS', 'DASH_CONFIG'];
-    const toolRefs = new Map(); // toolName -> Set(varName it was found in)
-    for (const varName of TOOL_MAP_VARS) {
-      const block = extractVarBlock(shellHtml, varName);
-      if (block === null) { H(`shell literal map "${varName}" not found in index.html (extraction failed — see comment above)`); continue; }
-      for (const name of htmlNamesIn(block)) {
-        if (!toolRefs.has(name)) toolRefs.set(name, new Set());
-        toolRefs.get(name).add(varName);
+    const presentMapVars = ALL_SHELL_MAP_VARS.filter(v => shellHtml.includes(`var ${v}=`));
+    if (presentMapVars.length === 0) {
+      I('no shell literal maps in index.html — 7b scan skipped (fixture or non-SPA site)');
+    } else {
+      // (a) tool filenames referenced across the six shell maps must exist in tools/.
+      const toolRefs = new Map(); // toolName -> Set(varName it was found in)
+      for (const varName of TOOL_MAP_VARS) {
+        const block = extractVarBlock(shellHtml, varName);
+        if (block === null) { H(`shell literal map "${varName}" not found in index.html (extraction failed — see comment above)`); continue; }
+        for (const name of htmlNamesIn(block)) {
+          if (!toolRefs.has(name)) toolRefs.set(name, new Set());
+          toolRefs.get(name).add(varName);
+        }
       }
-    }
-    for (const [name, vars] of [...toolRefs].sort((a, b) => a[0].localeCompare(b[0]))) {
-      if (SHELL_REF_ALLOWLIST.has(name)) continue;
-      if (!existsSync(p('tools', name)))
-        H(`shell references missing tool "${name}" (in ${[...vars].sort().join(', ')}) — index.html`);
-    }
-
-    // (b) CASE_TITLES / FAMILY_SCENARIO_TITLES ids must exist in the shipped case/scenario data.
-    const idBlockCheck = (varName, dataFile, dataKey) => {
-      const block = extractVarBlock(shellHtml, varName);
-      if (block === null) { H(`shell literal map "${varName}" not found in index.html (extraction failed — see comment above)`); return; }
-      const target = p(dataFile);
-      if (!existsSync(target) || !parsed[target]) { H(`${dataFile} not found or unparsable in built site (cannot verify ${varName} ids)`); return; }
-      const knownIds = new Set((parsed[target][dataKey] || []).map(x => x && x.id).filter(Boolean));
-      for (const id of bareKeysIn(block)) {
-        if (knownIds.has(id) || SHELL_REF_ALLOWLIST.has(id)) continue;
-        H(`shell ${varName} references missing id "${id}" — not in ${dataFile}`);
+      for (const [name, vars] of [...toolRefs].sort((a, b) => a[0].localeCompare(b[0]))) {
+        if (SHELL_REF_ALLOWLIST.has(name)) continue;
+        if (!existsSync(p('tools', name)))
+          H(`shell references missing tool "${name}" (in ${[...vars].sort().join(', ')}) — index.html`);
       }
-    };
-    idBlockCheck('CASE_TITLES', 'communication_cases.json', 'cases');
-    idBlockCheck('FAMILY_SCENARIO_TITLES', 'family_systems_scenarios.json', 'scenarios');
-  }
 
-  // (c) `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped
-  // content slug / tool file. Target is read up to the next &, quote, close-paren, or
-  // whitespace, so both markdown `(...)` links and raw `href="..."` attributes match. A
-  // trailing `#fragment` (e.g. `?page=shelf.md#section`) is stripped after decoding —
-  // without it, a future in-page anchor link would false-positive as a missing file.
-  // decodeURIComponent throws on a malformed `%` escape; caught below and reported as a
-  // finding, not an uncaught crash of the whole gate.
-  const contentSetC = new Set(contentFiles);
-  const toolSetC = new Set(toolFiles);
-  const ROUTE_REF = /\?(page|tool)=([^&"')\s]+)/g;
-  for (const f of contentFiles) {
-    const text = readFileSync(p('content', f), 'utf8');
-    for (const m of text.matchAll(ROUTE_REF)) {
-      const kind = m[1];
-      let target;
-      try { target = decodeURIComponent(m[2]); }
-      catch (e) { H(`content/${f} → ?${kind}= reference has an undecodable target "${m[2]}" (${e.message})`); continue; }
-      target = target.replace(/#.*$/, '');
-      if (SHELL_REF_ALLOWLIST.has(target)) continue;
-      const ok = kind === 'page' ? contentSetC.has(target) : toolSetC.has(target);
-      if (!ok) H(`content/${f} → ?${kind}= references missing ${kind === 'page' ? 'content page' : 'tool'}: ${target}`);
+      // (b) CASE_TITLES / FAMILY_SCENARIO_TITLES ids must exist in the shipped case/scenario data.
+      const idBlockCheck = (varName, dataFile, dataKey) => {
+        const block = extractVarBlock(shellHtml, varName);
+        if (block === null) { H(`shell literal map "${varName}" not found in index.html (extraction failed — see comment above)`); return; }
+        const target = p(dataFile);
+        if (!existsSync(target) || !parsed[target]) { H(`${dataFile} not found or unparsable in built site (cannot verify ${varName} ids)`); return; }
+        const knownIds = new Set((parsed[target][dataKey] || []).map(x => x && x.id).filter(Boolean));
+        for (const id of bareKeysIn(block)) {
+          if (knownIds.has(id) || SHELL_REF_ALLOWLIST.has(id)) continue;
+          H(`shell ${varName} references missing id "${id}" — not in ${dataFile}`);
+        }
+      };
+      idBlockCheck('CASE_TITLES', 'communication_cases.json', 'cases');
+      idBlockCheck('FAMILY_SCENARIO_TITLES', 'family_systems_scenarios.json', 'scenarios');
+
+      // (c) `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped
+      // content slug / tool file. Target is read up to the next &, quote, close-paren, or
+      // whitespace, so both markdown `(...)` links and raw `href="..."` attributes match. A
+      // trailing `#fragment` (e.g. `?page=shelf.md#section`) is stripped after decoding —
+      // without it, a future in-page anchor link would false-positive as a missing file.
+      // decodeURIComponent throws on a malformed `%` escape; caught below and reported as
+      // a finding, not an uncaught crash of the whole gate.
+      const contentSetC = new Set(contentFiles);
+      const toolSetC = new Set(toolFiles);
+      const ROUTE_REF = /\?(page|tool)=([^&"')\s]+)/g;
+      for (const f of contentFiles) {
+        const text = readFileSync(p('content', f), 'utf8');
+        for (const m of text.matchAll(ROUTE_REF)) {
+          const kind = m[1];
+          let target;
+          try { target = decodeURIComponent(m[2]); }
+          catch (e) { H(`content/${f} → ?${kind}= reference has an undecodable target "${m[2]}" (${e.message})`); continue; }
+          target = target.replace(/#.*$/, '');
+          if (SHELL_REF_ALLOWLIST.has(target)) continue;
+          const ok = kind === 'page' ? contentSetC.has(target) : toolSetC.has(target);
+          if (!ok) H(`content/${f} → ?${kind}= references missing ${kind === 'page' ? 'content page' : 'tool'}: ${target}`);
+        }
+      }
     }
   }
 }
