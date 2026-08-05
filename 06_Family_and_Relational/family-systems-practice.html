@@ -223,7 +223,9 @@ function linksHtml(it){var out=[];(it.linkedPages||[]).forEach(function(f){out.p
 var DEFAULT_RETRIEVAL=[
   {id:'opening',prompt:'Say your opening line for this family out loud.',revealFrom:'opening'},
   {id:'ask',prompt:'Name the collateral questions you would ask — out loud or on scratch.',revealFrom:'ask'},
-  {id:'avoid',prompt:'Name the trap here: what would you deliberately NOT do?',revealFrom:'avoid'}
+  {id:'avoid',prompt:'Name the trap here: what would you deliberately NOT do?',revealFrom:'avoid'},
+  {id:'handoff',prompt:'Say the rounds handoff for this family — what must it separate?',revealFrom:'handoff'},
+  {id:'safety',prompt:'When do you stop ordinary information-gathering and escalate — and to whom?',revealFrom:'safety'}
 ];
 function revealContent(it,rp){
   if(rp.revealText)return rp.revealText;
