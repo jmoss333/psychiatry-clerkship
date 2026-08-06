@@ -213,6 +213,8 @@ function qbLoad(){ return lsGet('cw_qb_v1')||{}; }
 function qbSave(data){ lsSet('cw_qb_v1',data); }
 function qbRecord(item, key, tier2Key, confidence, correct, twoTierResult){
   var data = qbLoad();
+  var prev = data[item.id];
+  var re = (prev && prev.ts && (new Date(prev.ts)).toDateString() === (new Date()).toDateString()) ? 1 : 0;
   var rec = {
     id: item.id,
     key: key,
@@ -225,6 +227,7 @@ function qbRecord(item, key, tier2Key, confidence, correct, twoTierResult){
   if(confidence==='certain' && !correct) rec.certWrong = true;
   data[item.id] = rec;
   qbSave(data);
+  calibLog({s:'qb',id:item.id,pages:item.pages||[],p:confidence,a:correct?1:0,t2:twoTierResult||null,re:re,ts:Date.now()});
   return rec;
 }
 
@@ -252,6 +255,8 @@ function srsGrade(item, confidence, correct, twoTierResult){
 
 var DAY = 86400000;
 /*__SM2_APPLY_GRADE__*/
+
+/*__CALIB_LOG__*/
 
 function srsUpdate(item, confidence, correct, twoTierResult){
   var s = srsLoad();
