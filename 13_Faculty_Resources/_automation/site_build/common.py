@@ -511,6 +511,7 @@ SNIPPET_MARKERS = {
     "/*__SM2_APPLY_GRADE__*/": "sm2_apply_grade.js",
     "/*__PHI_HEURISTIC__*/": "phi_heuristic.js",
     "/*__SW_REGISTER__*/": "sw_register.js",
+    "/*__CALIB_LOG__*/": "calib_log.js",
 }
 
 
