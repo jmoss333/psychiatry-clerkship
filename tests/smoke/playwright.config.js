@@ -33,6 +33,12 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'off',
+    // The learner shell registers a service worker on any non-preview load. Playwright's
+    // page.route CANNOT intercept requests once a SW controls the page, which silently breaks
+    // every spec that simulates failures via route fulfillment (first casualty: the faculty
+    // console's preview-failure spec — its clean-fallback tab registers the SW mid-test).
+    // Block SWs everywhere; the dedicated 'offline' project opts back in below.
+    serviceWorkers: 'block',
   },
 
   projects: [
@@ -69,7 +75,8 @@ export default defineConfig({
     {
       name: 'offline',
       testMatch: 'offline.spec.js',
-      use: { ...devices['Desktop Chrome'], baseURL: MS3_URL },
+      // The one project whose subject IS the service worker.
+      use: { ...devices['Desktop Chrome'], baseURL: MS3_URL, serviceWorkers: 'allow' },
     },
   ],
 
