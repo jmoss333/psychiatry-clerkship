@@ -471,6 +471,9 @@ class TestServiceWorkerEmission(unittest.TestCase):
         open(os.path.join(d, "nav.json"), "w").write("[]")
         open(os.path.join(d, "tools", "t.html"), "w").write("<!doctype html>t")
         open(os.path.join(d, "audio", "a.m4a"), "w").write("fake-lfs-bytes")
+        open(os.path.join(d, "tool-governance.json"), "w").write(
+            '{"revision": "aaaaaaa"}'
+        )
         return d
 
     def test_emits_precache_excluding_media_with_root_mapping(self):
@@ -506,6 +509,46 @@ class TestServiceWorkerEmission(unittest.TestCase):
         os.remove(os.path.join(d, "big.json"))
         common.emit_service_worker(d, kill=True)
         self.assertIn("var KILL=true;", open(os.path.join(d, "sw.js")).read())
+
+    def test_tool_governance_excluded_and_version_stable_across_revision_changes(self):
+        """tool-governance.json embeds current_revision() = git rev-parse HEAD, so
+        every commit (docs-only included) would otherwise change its bytes and
+        churn VERSION for every learner. It must be excluded from PRECACHE and
+        from the VERSION hash — same treatment as sw.js/robots.txt/404.html. It
+        is already served max-age=0,must-revalidate via _headers, so precaching
+        it buys no offline value anyway."""
+        d = self._site()
+        common.emit_service_worker(d)
+        sw1 = open(os.path.join(d, "sw.js"), encoding="utf-8").read()
+        v1 = sw1.split("VERSION='")[1].split("'")[0]
+        pre1 = json.loads(sw1.split("/*__PRECACHE_START__*/")[1].split("/*__PRECACHE_END__*/")[0])
+        self.assertNotIn("/tool-governance.json", pre1)
+
+        open(os.path.join(d, "tool-governance.json"), "w").write(
+            '{"revision": "bbbbbbb"}'
+        )
+        common.emit_service_worker(d)
+        sw2 = open(os.path.join(d, "sw.js"), encoding="utf-8").read()
+        v2 = sw2.split("VERSION='")[1].split("'")[0]
+        pre2 = json.loads(sw2.split("/*__PRECACHE_START__*/")[1].split("/*__PRECACHE_END__*/")[0])
+        self.assertEqual(v1, v2)
+        self.assertNotIn("/tool-governance.json", pre2)
+
+    def test_template_anchor_repeated_fails_loudly(self):
+        """A future template edit that repeats a substitution anchor (e.g. two
+        `VERSION='__VERSION__';` lines) must fail loudly rather than silently
+        substituting only the first occurrence and shipping a broken sw.js."""
+        d = self._site()
+        template_path = os.path.join(
+            os.path.dirname(os.path.abspath(common.__file__)), common.SW_TEMPLATE_NAME
+        )
+        original = open(template_path, encoding="utf-8").read()
+        self.addCleanup(lambda: open(template_path, "w", encoding="utf-8").write(original))
+        open(template_path, "w", encoding="utf-8").write(
+            original + "\nvar VERSION='__VERSION__';\n"
+        )
+        with self.assertRaises(AssertionError):
+            common.emit_service_worker(d)
 
 
 if __name__ == "__main__":

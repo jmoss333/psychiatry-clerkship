@@ -661,14 +661,42 @@ def assert_page_contract(out_dir, label=""):
 # changes are Range-request/streamed by the browser, never precached (see
 # `isMedia()` in sw_template.js), and must not move VERSION or every media
 # re-encode would force-bust every learner's cache for no reason.
+#
+# tool-governance.json is excluded for the same reason as sw.js/robots.txt/
+# 404.html, but the failure mode is subtler: it embeds `current_revision()` =
+# `git rev-parse HEAD` (validate_tool_governance.py), so its bytes change on
+# EVERY commit — including docs-only ones with zero content/tool changes.
+# Left in the manifest it would churn VERSION (and force-bust the whole
+# precache for every learner) on every single deploy. It is already served
+# `Cache-Control: public, max-age=0, must-revalidate` via `_headers`, so
+# precaching it buys no offline value anyway — the browser always revalidates
+# it before use.
 # ---------------------------------------------------------------------------
 
 SW_EXCLUDE_PREFIXES = ("audio/", "audio_oe/", "media/", "anki/")
 SW_EXCLUDE_EXTS = (".mp4", ".vtt", ".m4a", ".mp3", ".wav")
-SW_EXCLUDE_NAMES = {"sw.js", "robots.txt", "404.html"}
+SW_EXCLUDE_NAMES = {"sw.js", "robots.txt", "404.html", "tool-governance.json"}
 SW_PRECACHE_BUDGET_BYTES = 10 * 1024 * 1024
 SW_TEMPLATE_NAME = "sw_template.js"
+_SW_VERSION_ANCHOR = "VERSION='__VERSION__';"
+_SW_KILL_ANCHOR = "KILL=__KILL__;"
 _SW_PRECACHE_PLACEHOLDER = "/*__PRECACHE_START__*/[]/*__PRECACHE_END__*/"
+
+
+def _sw_assert_anchor_once(template, anchor, template_path):
+    """Fail loudly if a template edit duplicates (or drops) a substitution anchor.
+
+    A silent `.replace()` on a repeated anchor only patches the first
+    occurrence, shipping an sw.js with a literal unsubstituted `__VERSION__`/
+    `__KILL__`/precache-marker token baked in — worse than a build failure,
+    since nothing about it looks broken until a learner's browser chokes on it.
+    """
+    count = template.count(anchor)
+    if count != 1:
+        raise AssertionError(
+            "sw_template.js anchor %r must appear exactly once in %s (found %d)"
+            % (anchor, template_path, count)
+        )
 
 
 def _sw_precache_url(rel_posix):
@@ -690,8 +718,9 @@ def emit_service_worker(out_dir, kill=None):
     """Walk `out_dir` and write a per-site `sw.js` with an embedded precache list.
 
     - Precached set = every shipped file EXCEPT media (by prefix + extension,
-      never precached — Range semantics belong to the network) and sw.js /
-      robots.txt / 404.html.
+      never precached — Range semantics belong to the network), sw.js /
+      robots.txt / 404.html, and tool-governance.json (embeds the git
+      revision, so it churns every commit — see module docstring).
     - `index.html` maps to `"/"` — sw.js must never precache-key `/index.html`,
       or a navigation request for `/` won't hit the cached entry offline.
     - VERSION = sha256(one `path:sha256(bytes)` line per precached file, sorted,
@@ -739,9 +768,13 @@ def emit_service_worker(out_dir, kill=None):
     # Targeted, not blind global replace: sw_template.js's own header comment
     # mentions "__VERSION__" and "__KILL__" as plain text to document the
     # template mechanism, and a bare .replace("__VERSION__", ...) would mangle
-    # that comment into nonsense in the shipped artifact.
-    out = template.replace("VERSION='__VERSION__';", "VERSION='%s';" % version)
-    out = out.replace("KILL=__KILL__;", "KILL=%s;" % kill_flag)
+    # that comment into nonsense in the shipped artifact. Each anchor is also
+    # asserted unique before substitution — see _sw_assert_anchor_once.
+    for anchor in (_SW_VERSION_ANCHOR, _SW_KILL_ANCHOR, _SW_PRECACHE_PLACEHOLDER):
+        _sw_assert_anchor_once(template, anchor, template_path)
+
+    out = template.replace(_SW_VERSION_ANCHOR, "VERSION='%s';" % version)
+    out = out.replace(_SW_KILL_ANCHOR, "KILL=%s;" % kill_flag)
     out = out.replace(
         _SW_PRECACHE_PLACEHOLDER,
         "/*__PRECACHE_START__*/" + precache_json + "/*__PRECACHE_END__*/",
