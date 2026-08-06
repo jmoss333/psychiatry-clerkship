@@ -585,6 +585,112 @@ const SHELL_REF_ALLOWLIST = new Set([
   }
 }
 
+/* ---------- 7c. service-worker integrity scan (tri-state) ----------
+ * Tasks 5-7 (this branch) added a per-site sw.js (common.py emit_service_worker(),
+ * embedding a PRECACHE manifest between /*__PRECACHE_START__*\/ ... /*__PRECACHE_END__*\/
+ * markers) and a shell-injected registration call — `function registerClerkshipSW(){`,
+ * expanded into index.html from sw_register.js via the /*__SW_REGISTER__*\/ marker. The
+ * two halves are only useful together: a shell that calls registerClerkshipSW() with no
+ * sw.js on disk registers nothing (silent no-op — .catch(function(){}) swallows the 404);
+ * an sw.js shipped with nothing calling navigator.serviceWorker.register() is dead code
+ * that never installs. This section HARD-fails a half-shipped pair, then — only once both
+ * halves are confirmed present — validates the precache manifest and sw.js's own contents.
+ *
+ * Tri-state presence gate (same shape as 7b's all-or-nothing marker check, for the same
+ * reason: the SP-interview contract suite's synthetic fixture sites
+ * (_prototypes/sp-interview/tests/ci-build-contract.test.mjs, FIXTURE_INDEX_HTML) ship a
+ * bare stub index.html with neither sw.js nor a registration call — a valid pre-SW/fixture
+ * site, not a broken one):
+ *   - neither sw.js NOR `registerClerkshipSW(` in index.html → I() skip, no HARD.
+ *   - exactly one of the two present → HARD (partial wiring).
+ *   - both present → validate below.
+ *
+ * This section produces HARD findings only (I() for the skip case) — no new S() class,
+ * so it never touches the section-9 soft-finding ratchet or qa-baseline.json.
+ */
+{
+  const swPath = p('sw.js');
+  const swExists = existsSync(swPath);
+  // Re-read index.html independently (mirrors 7b's own shellHtml read) rather than
+  // reaching into section 5c's block-scoped `shell` const, keeping this section
+  // standalone-runnable if 5c is ever reordered or removed.
+  const shellHtmlForSw = existsSync(shellPath) ? readFileSync(shellPath, 'utf8') : null;
+  const shellRegistersSw = shellHtmlForSw !== null && shellHtmlForSw.includes('registerClerkshipSW(');
+
+  if (!swExists && !shellRegistersSw) {
+    I('sw: not present — section skipped (fixture or pre-SW site)');
+  } else if (swExists !== shellRegistersSw) {
+    H('sw: partial wiring — sw.js and shell registration must ship together' +
+      (swExists ? ' (sw.js shipped, but index.html never calls registerClerkshipSW())'
+                : ' (index.html calls registerClerkshipSW(), but sw.js was not shipped)'));
+  } else {
+    const sw = readFileSync(swPath, 'utf8');
+
+    // PRECACHE manifest: a JSON array embedded between build-time markers. Unparsable
+    // means the template substitution in emit_service_worker() failed or the shipped
+    // file was hand-edited into invalid JSON — either way, the browser can't consume it.
+    const START = '/*__PRECACHE_START__*/', END = '/*__PRECACHE_END__*/';
+    const startAt = sw.indexOf(START), endAt = sw.indexOf(END);
+    let precache = null;
+    if (startAt === -1 || endAt === -1 || endAt < startAt) {
+      H(`sw: PRECACHE markers not found in sw.js (expected ${START}[...]${END})`);
+    } else {
+      try { precache = JSON.parse(sw.slice(startAt + START.length, endAt)); }
+      catch (e) { H(`sw: PRECACHE array between markers is not valid JSON — ${e.message}`); }
+    }
+
+    if (Array.isArray(precache)) {
+      // Mirrors sw_template.js's isMedia(): media is deliberately excluded from the
+      // precache list (Range-request/streamed by the browser, never precached — see
+      // common.py emit_service_worker()'s module docstring). Keep these two constants
+      // in sync with MEDIA_PREFIX / MEDIA_EXT in sw_template.js — a manifest entry that
+      // slipped past that exclusion means the generator regressed, not that a browser
+      // can safely precache it.
+      const MEDIA_PREFIX = ['/audio/', '/audio_oe/', '/media/'];
+      const MEDIA_EXT = /\.(mp4|vtt|m4a|mp3|wav)$/i;
+      let totalBytes = 0;
+      for (const entry of precache) {
+        if (typeof entry !== 'string' || !entry.startsWith('/')) {
+          H(`sw: PRECACHE entry is not a root-relative path: ${JSON.stringify(entry)}`);
+          continue;
+        }
+        if (MEDIA_PREFIX.some(prefix => entry.startsWith(prefix)) || MEDIA_EXT.test(entry)) {
+          H(`sw: PRECACHE entry is media (must never be precached — Range semantics belong to the network): ${entry}`);
+          continue;
+        }
+        // "/" is the precache key for the shell (_sw_precache_url() in common.py never
+        // keys "/index.html" — a navigate request for "/" must hit this entry offline).
+        const target = entry === '/' ? p('index.html') : p(entry.slice(1));
+        if (!existsSync(target)) {
+          H(`sw: PRECACHE entry does not exist on disk: ${entry}`);
+          continue;
+        }
+        totalBytes += statSync(target).size;
+      }
+      const SW_PRECACHE_BUDGET_BYTES = 10 * 1024 * 1024;
+      if (totalBytes > SW_PRECACHE_BUDGET_BYTES) {
+        H(`sw: precache budget exceeded — ${totalBytes} bytes precached > ${SW_PRECACHE_BUDGET_BYTES} byte (10 MB) budget`);
+      }
+    }
+
+    // sw.js's own contents: no importScripts() (pulls in code this dependency-free audit
+    // never sees) and no bare http(s):// URL outside the leading generated-by comment
+    // block. sw.js lives at the site root, not under tools/, so neither the 5a toolAssets
+    // CDN scan nor the 5c shell CDN scan ever reads it — this closes that blind spot for
+    // this one file. The leading comment (sw_template.js's own
+    // "/* Generated per-site by common.py ... */" header, which documents the __VERSION__/
+    // __KILL__ token mechanism in prose) is exempted so the scan doesn't flag its own docs.
+    if (/importScripts\s*\(/.test(sw)) {
+      H('sw: importScripts() call in sw.js — the shipped service worker must be self-contained');
+    }
+    const leadingComment = sw.match(/^\s*\/\*[\s\S]*?\*\//);
+    const swAfterLeadingComment = leadingComment ? sw.slice(leadingComment[0].length) : sw;
+    if (/https?:\/\//.test(swAfterLeadingComment)) {
+      H('sw: bare http(s):// URL in sw.js outside the leading comment block — vendor/precache the target locally so offline/ward use never silently fetches cross-origin');
+    }
+  }
+}
+
 /* ---------- 8. Git-LFS pointer stubs ---------- */
 // A pointer stub means the deploy fetched the LFS *pointer* (~130 bytes of
 // "version https://git-lfs…") instead of the real media bytes — the orientation-video
