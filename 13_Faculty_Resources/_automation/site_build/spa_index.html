@@ -1457,9 +1457,11 @@
      informative than the current-state summary above it. Below threshold, renderHome falls
      back to calibrationSummary() unchanged — see the caller. Counts here read the FULL
      history ledger (calibRead()), not the single-record-per-item cw_qb_v1 snapshot, EXCEPT
-     for the confidently-wrong count, which intentionally reads cw_qb_v1 (same population as
-     question-bank-practice.html's certWrongItems() preset) so the number on this panel always
-     matches the count on the practice-bank "Confidently wrong" button. */
+     for the confidently-wrong count, which intentionally reads cw_qb_v1 — same predicate as
+     question-bank-practice.html's certWrongItems() (certWrong===true). Counts can differ
+     slightly when an item is later retired: certWrongItems() additionally filters through
+     activeItems(), which this shell has no bank metadata to replicate — parity plumbing is a
+     follow-up. */
   function renderCalibPanel(){
     var ledger=(typeof calibRead==='function')?calibRead():{qb:[],rev:[]};
     var qbEvents=ledger.qb||[];
