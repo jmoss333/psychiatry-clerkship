@@ -19,7 +19,12 @@
    - review.html grade(): YES (ground-truth correctness).
    - family-systems-practice.html srsGradeFamily(): NO — cards only. A self-rating
      has no ground truth, and review.html renders Retention as correct/seen.
-   - Practice sims write cw_practice_events_v1 instead — never cw_srs_v1.stats. */
+   - Practice sims write cw_practice_events_v1 instead — never cw_srs_v1.stats.
+
+   Per-event history (chosen grade vs. suggested grade, requeue flag) is a
+   separate concern logged to cw_calib_v1 via calibLog() (build-injected from
+   calib_log.js, the CALIB_LOG marker) — this file's cw_srs_v1 writes stay
+   aggregate/current-state only and are unaffected by that logging. */
 
 /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded
    cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz.

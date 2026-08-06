@@ -1,15 +1,20 @@
-// Wiring contract for the calibration-ledger snippet (cw_calib_v1) at its qbank consumer.
-// The BEHAVIOUR of calibLog/calibRead itself (routing, ring trim, enum rejection, v-reset)
-// is pinned separately in tests/calib-ledger.test.mjs by evaluating the snippet body via
-// `new Function`. This file only pins the WIRING — mirrors the behaviour/wiring split
-// tests/sm2-behavior.test.mjs (behaviour) vs tests/family-srs-parity.test.mjs (wiring)
-// already use for the SM-2 grader snippet:
-//   (a) the /*__CALIB_LOG__*/ marker appears exactly once in the qbank tool source;
+// Wiring contract for the calibration-ledger snippet (cw_calib_v1) at its qbank and
+// review (Daily Review / SRS) consumers. The BEHAVIOUR of calibLog/calibRead itself
+// (routing, ring trim, enum rejection, v-reset) is pinned separately in
+// tests/calib-ledger.test.mjs by evaluating the snippet body via `new Function`. This
+// file only pins the WIRING — mirrors the behaviour/wiring split tests/sm2-behavior.test.mjs
+// (behaviour) vs tests/family-srs-parity.test.mjs (wiring) already use for the SM-2
+// grader snippet:
+//   (a) the /*__CALIB_LOG__*/ marker appears exactly once in each consumer's tool source;
 //   (b) no consumer reimplements `function calibLog(` locally (the canonical body lives
 //       in calib_log.js only — a hand-synced copy is exactly the drift the marker system
 //       replaced for SM-2, per common.py's SNIPPET_MARKERS comment);
 //   (c) no consumer hardcodes the literal 'cw_calib_v1' key (only calib_log.js may);
-//   (d) the qbank call site actually forwards t2: and re: (not just calls calibLog at all).
+//   (d) the qbank call site actually forwards t2: and re: (not just calls calibLog at all);
+//   (e) the review.html call site forwards sug: and rq:, and the 'sug' suggested-grade
+//       variable is computed exactly once and shared — via closure, not duplicated
+//       logic — between the grade-button className and the calibLog event (single
+//       source of truth: task-12 brief).
 //
 // (b)/(c) scan every file `git ls-files` tracks as source — not a hand-walked directory
 // tree — because this repo checkout carries a 19GB `.claude/worktrees/` sibling-worktree
@@ -24,9 +29,11 @@ import { fileURLToPath } from 'node:url';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MARKER = '/*__CALIB_LOG__*/';
 const QBANK = '13_Faculty_Resources/_automation/site_build/question-bank-practice.html';
+const REVIEW = '07_Evidence_and_Reading/Landmark_Trials/review.html';
 const SNIPPET_SOURCE = '13_Faculty_Resources/_automation/site_build/calib_log.js';
 
 const qbankSrc = fs.readFileSync(path.join(repo, QBANK), 'utf8');
+const reviewSrc = fs.readFileSync(path.join(repo, REVIEW), 'utf8');
 
 test('question-bank-practice.html carries the CALIB_LOG marker exactly once', () => {
   const count = qbankSrc.split(MARKER).length - 1;
@@ -71,6 +78,91 @@ test('qbRecord computes the re-attempt flag from the prior same-day record', () 
 
   assert.match(body, /toDateString\(\)\s*===\s*\(new Date\(\)\)\.toDateString\(\)/,
     'qbRecord() re flag must compare prev.ts and now via toDateString()');
+});
+
+test('review.html carries the CALIB_LOG marker exactly once', () => {
+  const count = reviewSrc.split(MARKER).length - 1;
+  assert.equal(count, 1, `expected exactly one ${MARKER} in ${REVIEW}, found ${count}`);
+});
+
+test('review.html grade() call site forwards sug: and rq: to calibLog', () => {
+  const callMatch = reviewSrc.match(/calibLog\(\{[^}]*\}\)/);
+  assert.ok(callMatch, `calibLog({...}) call site not found in ${REVIEW}`);
+  const call = callMatch[0];
+
+  // Nonzero-extraction guard, same rationale as the qbank pin above: a regex that
+  // matched some degenerate near-empty call (e.g. `calibLog({})`) must not pass.
+  assert.ok(
+    call.length > 80,
+    `calibLog call-site match is suspiciously short (${call.length} chars): ${JSON.stringify(call)}`,
+  );
+
+  assert.match(call, /\bs\s*:\s*'rev'/, "calibLog call site missing s:'rev'");
+  assert.match(call, /\bid\s*:\s*card\.id\b/, 'calibLog call site missing id: card.id');
+  assert.match(call, /\bp\s*:\s*GRADE_NAMES\[g\]/, 'calibLog call site missing p: GRADE_NAMES[g]');
+  assert.match(call, /\bsug\s*:\s*sug\b/, 'calibLog call site missing sug: sug');
+  assert.match(call, /\ba\s*:\s*gotIt\s*\?\s*1\s*:\s*0\b/, 'calibLog call site missing a: gotIt?1:0');
+  assert.match(call, /\brq\s*:\s*rq\b/, 'calibLog call site missing rq: rq');
+});
+
+test("review.html computes 'sug' exactly once and shares it between the className and the calibLog event", () => {
+  // (1) Exactly one `var sug=` declaration in the whole file — the brief's "compute
+  // ONCE" requirement. If a second declaration crept in (e.g. grade() re-deriving its
+  // own local sug instead of closing over the render's), this test methodology
+  // (regex over source, not an AST) would otherwise be blind to the duplication.
+  const sugDeclarations = reviewSrc.match(/\bvar\s+sug\s*=/g) || [];
+  assert.equal(
+    sugDeclarations.length, 1,
+    `expected exactly one 'var sug=' declaration, found ${sugDeclarations.length}`,
+  );
+  assert.match(reviewSrc, /var\s+sug\s*=\s*gotIt\s*\?\s*'Good'\s*:\s*'Again'/,
+    "the single 'sug' declaration must be gotIt?'Good':'Again'");
+
+  // (2) The grade-button className region (captured independently of the calibLog
+  // call site below) must reference 'sug', not a re-derived gotIt/!gotIt ternary —
+  // nonzero-extraction guard on the captured block itself.
+  const gradesBlockMatch = reviewSrc.match(/className:"grades"\}[\s\S]*?"Easy"/);
+  assert.ok(gradesBlockMatch, 'grade-button "grades" block not found');
+  const gradesBlock = gradesBlockMatch[0];
+  assert.ok(
+    gradesBlock.length > 200,
+    `grades-block match is suspiciously short (${gradesBlock.length} chars): ${JSON.stringify(gradesBlock)}`,
+  );
+  assert.match(gradesBlock, /className:"gr again"\+\(sug===['"]Again['"]/,
+    "Again button className must branch on sug==='Again'");
+  assert.match(gradesBlock, /className:"gr good"\+\(sug===['"]Good['"]/,
+    "Good button className must branch on sug==='Good'");
+
+  // (3) grade()'s own function body must NOT redeclare 'sug' — it has to reach the
+  // render-scope variable via closure. A local `var sug=` inside grade() would still
+  // pass test (1)'s file-wide count of 1 only if the render-scope declaration were
+  // deleted, so this guards the "shared, not duplicated" half of the contract directly.
+  const gradeFnMatch = reviewSrc.match(/function grade\(g\)\{[\s\S]*?\n  \}/);
+  assert.ok(gradeFnMatch, 'grade(g) function body not found');
+  const gradeFn = gradeFnMatch[0];
+  assert.ok(gradeFn.length > 200, `grade() match is suspiciously short: ${gradeFn.length} chars`);
+  assert.doesNotMatch(gradeFn, /\bvar\s+sug\s*=/,
+    'grade() must not redeclare sug locally — it must close over the render-scope sug');
+  assert.match(gradeFn, /\bsug\s*:\s*sug\b/, 'grade() must forward the closed-over sug to calibLog');
+});
+
+test('review.html grade() tracks session-local requeues via gradedThisSession', () => {
+  const gradeFnMatch = reviewSrc.match(/function grade\(g\)\{[\s\S]*?\n  \}/);
+  assert.ok(gradeFnMatch, 'grade(g) function body not found');
+  const gradeFn = gradeFnMatch[0];
+
+  const rqIdx = gradeFn.indexOf('var rq=gradedThisSession[card.id]');
+  const markIdx = gradeFn.indexOf('gradedThisSession[card.id]=1');
+  const calibIdx = gradeFn.indexOf('calibLog(');
+  assert.ok(rqIdx >= 0, 'grade() does not read gradedThisSession[card.id] into rq');
+  assert.ok(markIdx >= 0, 'grade() does not set gradedThisSession[card.id]=1');
+  assert.ok(rqIdx < markIdx, 'rq must be read BEFORE gradedThisSession[card.id] is marked graded');
+  assert.ok(markIdx < calibIdx, 'gradedThisSession must be marked before the calibLog call reads rq');
+
+  assert.match(reviewSrc, /\bvar gradedThisSession=\{\}/,
+    'gradedThisSession must be declared once, outside App(), so it survives re-renders');
+  assert.match(reviewSrc, /function start\(ahead\)\{[\s\S]*?gradedThisSession=\{\};[\s\S]*?setSess\(\{queue:q,pos:0/,
+    'start() must reset gradedThisSession={} before beginning a new session');
 });
 
 // Every file this repo's build treats as shipped source (git-tracked .html/.js). Untracked
