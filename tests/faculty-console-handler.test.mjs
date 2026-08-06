@@ -516,6 +516,8 @@ test('learner deployment allows framing only by the exact faculty console origin
   Cache-Control: public, max-age=0, must-revalidate
 /favicon.svg
   Cache-Control: public, max-age=604800
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
 `;
   assert.equal(learnerHeaders, expectedLearnerHeaders);
 

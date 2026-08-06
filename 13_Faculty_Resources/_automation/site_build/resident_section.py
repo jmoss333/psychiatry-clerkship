@@ -258,3 +258,10 @@ except GovernanceError as error:
 for _warning in _governance_warnings:
     print(_warning)
 print("tool governance: emitted", len(_governance["items"]), "items")
+
+# ---------- SERVICE WORKER ----------
+# Very end of the artifact steps: the resident build starts as a copytree of
+# the finished MS3 build (which already has its own sw.js precaching MS3
+# paths/tools), so this call MUST run last to overwrite the inherited ms3
+# sw.js with a resident-specific manifest (rp-* tools, resident content tree).
+common.emit_service_worker(OUT)
