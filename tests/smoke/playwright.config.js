@@ -66,6 +66,11 @@ export default defineConfig({
       testMatch: 'faculty-console.spec.js',
       use: { ...devices['Desktop Chrome'], baseURL: FACULTY_URL },
     },
+    {
+      name: 'offline',
+      testMatch: 'offline.spec.js',
+      use: { ...devices['Desktop Chrome'], baseURL: MS3_URL },
+    },
   ],
 
   outputDir: 'test-results/artifacts',
