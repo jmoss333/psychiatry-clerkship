@@ -24,3 +24,4 @@ function calibRead(){
   }catch(_){ }
   return {v:1,qb:[],rev:[]};
 }
+function calibClear(){ try{ localStorage.removeItem('cw_calib_v1'); }catch(_){ } }

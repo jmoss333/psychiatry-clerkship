@@ -205,7 +205,7 @@ function App(){
   }
   function endSession(){ setSess(null); setTick(function(x){return x+1;}); }
   function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; persist(s); }
-  function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); }
+  function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); }
 
   var head=e("div",{className:"topline"},
     e("div",{className:"logo"},"ψ"),

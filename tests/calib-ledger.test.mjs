@@ -24,7 +24,7 @@ function memStorage() {
 // eslint-disable-next-line no-new-func
 const make = new Function('localStorage', `
   ${snippet}
-  return { calibLog: calibLog, calibRead: calibRead };
+  return { calibLog: calibLog, calibRead: calibRead, calibClear: calibClear };
 `);
 
 const EMPTY = { v: 1, qb: [], rev: [] };
@@ -121,4 +121,24 @@ test('calibLog silently no-ops on a falsy evt — no throw, no write', () => {
   assert.doesNotThrow(() => calibLog(null));
   assert.doesNotThrow(() => calibLog(undefined));
   assert.equal(ls.getItem('cw_calib_v1'), null);
+});
+
+test('calibClear removes the store entirely (not just resets its shape)', () => {
+  const ls = memStorage();
+  const { calibLog, calibClear, calibRead } = make(ls);
+  calibLog({ s: 'qb', p: 'guess', id: 'qb_1' });
+  assert.notEqual(ls.getItem('cw_calib_v1'), null, 'sanity: store exists before clear');
+  calibClear();
+  assert.equal(ls.getItem('cw_calib_v1'), null, 'calibClear must remove the underlying key');
+  assert.deepEqual(calibRead(), EMPTY, 'calibRead falls back to the empty shape after clear');
+});
+
+test('calibClear silently no-ops if localStorage throws — no throw escapes', () => {
+  const throwing = {
+    getItem: () => { throw new Error('blocked'); },
+    setItem: () => { throw new Error('blocked'); },
+    removeItem: () => { throw new Error('blocked'); },
+  };
+  const { calibClear } = make(throwing);
+  assert.doesNotThrow(() => calibClear());
 });

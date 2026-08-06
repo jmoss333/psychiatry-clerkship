@@ -30,10 +30,12 @@ const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MARKER = '/*__CALIB_LOG__*/';
 const QBANK = '13_Faculty_Resources/_automation/site_build/question-bank-practice.html';
 const REVIEW = '07_Evidence_and_Reading/Landmark_Trials/review.html';
+const SPA = '13_Faculty_Resources/_automation/site_build/spa_index.html';
 const SNIPPET_SOURCE = '13_Faculty_Resources/_automation/site_build/calib_log.js';
 
 const qbankSrc = fs.readFileSync(path.join(repo, QBANK), 'utf8');
 const reviewSrc = fs.readFileSync(path.join(repo, REVIEW), 'utf8');
+const spaSrc = fs.readFileSync(path.join(repo, SPA), 'utf8');
 
 test('question-bank-practice.html carries the CALIB_LOG marker exactly once', () => {
   const count = qbankSrc.split(MARKER).length - 1;
@@ -163,6 +165,49 @@ test('review.html grade() tracks session-local requeues via gradedThisSession', 
     'gradedThisSession must be declared once, outside App(), so it survives re-renders');
   assert.match(reviewSrc, /function start\(ahead\)\{[\s\S]*?gradedThisSession=\{\};[\s\S]*?setSess\(\{queue:q,pos:0/,
     'start() must reset gradedThisSession={} before beginning a new session');
+});
+
+test('review.html resetAll clears the calibration ledger via calibClear(), not a literal key', () => {
+  const fnMatch = reviewSrc.match(/function resetAll\(\)\{[\s\S]*?\n  \}/);
+  assert.ok(fnMatch, 'resetAll() function not found');
+  const body = fnMatch[0];
+  assert.match(body, /This also clears your calibration history\./,
+    'resetAll confirm text must disclose that calibration history is also cleared');
+  assert.match(body, /\bcalibClear\(\)/, 'resetAll must call calibClear()');
+  assert.doesNotMatch(body, /removeItem\(\s*(['"])cw_calib_v1\1/,
+    'resetAll must not remove cw_calib_v1 by a literal key — that belongs to calibClear() in calib_log.js only');
+});
+
+test('spa_index.html carries the CALIB_LOG marker exactly once', () => {
+  const count = spaSrc.split(MARKER).length - 1;
+  assert.equal(count, 1, `expected exactly one ${MARKER} in ${SPA}, found ${count}`);
+});
+
+test('spa_index.html exportStudy forwards the calibration ledger via calibRead(), not a literal key', () => {
+  const fnMatch = spaSrc.match(/window\.exportStudy=function\(\)\{[\s\S]*?\n  \};/);
+  assert.ok(fnMatch, 'window.exportStudy function not found');
+  const body = fnMatch[0];
+  assert.match(body, /schema:\s*'clerkship-study-v2'/, 'exportStudy schema must be bumped to clerkship-study-v2');
+  assert.match(body, /\bcalib\s*:\s*\(function\(\)\{try\{return calibRead\(\);/,
+    'exportStudy must source the calib field from calibRead(), not localStorage/safeLS by literal key');
+  assert.doesNotMatch(body, /(['"])cw_calib_v1\1/,
+    'exportStudy must not reference the cw_calib_v1 literal directly — only calibRead() may');
+});
+
+test('spa_index.html renderHome swaps in renderCalibPanel() and falls back to calibrationSummary() only when it is empty', () => {
+  const startMarker = '/* ---- calib panel ---- */';
+  const endMarker = '/* ---- end calib panel ---- */';
+  assert.ok(spaSrc.includes(startMarker) && spaSrc.includes(endMarker),
+    'calib-panel slice markers must both be present');
+  const renderHomeMatch = spaSrc.match(/window\.renderHome=function\(\)\{[\s\S]*?\n  \};/);
+  assert.ok(renderHomeMatch, 'window.renderHome function not found');
+  const body = renderHomeMatch[0];
+  assert.match(body, /var calPanel=\(typeof renderCalibPanel==='function'\)\?renderCalibPanel\(\):''/,
+    'renderHome must call renderCalibPanel() defensively (typeof guard)');
+  assert.match(body, /if\(calPanel\)\{ h\+=calPanel; \}/,
+    'renderHome must use the panel output when non-empty');
+  assert.match(body, /else\{ var cal=calibrationSummary\(\);/,
+    'renderHome must fall back to the legacy calibrationSummary() card when the panel is empty');
 });
 
 // Every file this repo's build treats as shipped source (git-tracked .html/.js). Untracked
