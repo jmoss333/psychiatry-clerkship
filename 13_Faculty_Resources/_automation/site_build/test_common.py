@@ -13,6 +13,7 @@ to eliminate:
      differently (the rp-* bypass).
 """
 
+import json
 import os
 import shutil
 import sys
@@ -458,6 +459,53 @@ class TestSharedSnippets(unittest.TestCase):
             any("injected more than once" in m for _, ms in failures for m in ms),
             failures,
         )
+
+
+class TestServiceWorkerEmission(unittest.TestCase):
+    def _site(self):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d, True)
+        os.makedirs(os.path.join(d, "tools"))
+        os.makedirs(os.path.join(d, "audio"))
+        open(os.path.join(d, "index.html"), "w").write("<!doctype html>x")
+        open(os.path.join(d, "nav.json"), "w").write("[]")
+        open(os.path.join(d, "tools", "t.html"), "w").write("<!doctype html>t")
+        open(os.path.join(d, "audio", "a.m4a"), "w").write("fake-lfs-bytes")
+        return d
+
+    def test_emits_precache_excluding_media_with_root_mapping(self):
+        d = self._site()
+        common.emit_service_worker(d)
+        sw = open(os.path.join(d, "sw.js"), encoding="utf-8").read()
+        pre = json.loads(sw.split("/*__PRECACHE_START__*/")[1].split("/*__PRECACHE_END__*/")[0])
+        self.assertIn("/", pre)
+        self.assertNotIn("/index.html", pre)
+        self.assertIn("/nav.json", pre)
+        self.assertIn("/tools/t.html", pre)
+        self.assertTrue(all("/audio/" not in p for p in pre))
+        self.assertNotIn("/sw.js", pre)
+
+    def test_version_is_deterministic_and_media_independent(self):
+        d = self._site()
+        common.emit_service_worker(d)
+        v1 = open(os.path.join(d, "sw.js")).read().split("VERSION='")[1].split("'")[0]
+        open(os.path.join(d, "audio", "a.m4a"), "w").write("different-bytes")
+        common.emit_service_worker(d)
+        v2 = open(os.path.join(d, "sw.js")).read().split("VERSION='")[1].split("'")[0]
+        self.assertEqual(v1, v2)
+        open(os.path.join(d, "nav.json"), "w").write("[1]")
+        common.emit_service_worker(d)
+        v3 = open(os.path.join(d, "sw.js")).read().split("VERSION='")[1].split("'")[0]
+        self.assertNotEqual(v1, v3)
+
+    def test_budget_failure_and_kill_mode(self):
+        d = self._site()
+        open(os.path.join(d, "big.json"), "wb").write(b"0" * (11 * 1024 * 1024))
+        with self.assertRaises(SystemExit):
+            common.emit_service_worker(d)
+        os.remove(os.path.join(d, "big.json"))
+        common.emit_service_worker(d, kill=True)
+        self.assertIn("var KILL=true;", open(os.path.join(d, "sw.js")).read())
 
 
 if __name__ == "__main__":

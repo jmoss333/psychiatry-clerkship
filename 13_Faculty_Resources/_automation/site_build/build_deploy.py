@@ -388,3 +388,8 @@ except GovernanceError as error:
 for _warning in _governance_warnings:
     print(_warning)
 print("tool governance: emitted", len(_governance["items"]), "items")
+
+# ---------- SERVICE WORKER ----------
+# Last artifact step: the precache manifest must reflect the completed,
+# published-artifact file tree, not an intermediate one.
+common.emit_service_worker(OUT)

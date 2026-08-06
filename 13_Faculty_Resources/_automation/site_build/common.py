@@ -31,6 +31,7 @@ import json
 import os
 import re
 import shutil
+import sys
 
 # ---------------------------------------------------------------------------
 # Tokenizer (was duplicated: build_deploy.py + resident_section.py)
@@ -645,3 +646,110 @@ def assert_page_contract(out_dir, label=""):
         1 if os.path.exists(os.path.join(out_dir, "index.html")) else 0
     )
     print("page contract%s: %d page(s) verified" % (" (" + label + ")" if label else "", n))
+
+
+# ---------------------------------------------------------------------------
+# Service worker emission — per-site precache manifest, embedded in sw_template.js.
+#
+# Emitted LAST in each build (build_deploy.py / resident_section.py), after tool
+# governance, so the manifest reflects the completed, published-artifact file
+# tree exactly — an sw.js built from an intermediate tree would precache stale
+# or now-deleted paths.
+#
+# Media (audio/audio_oe/media/anki dirs, and .mp4/.vtt/.m4a/.mp3/.wav anywhere)
+# is deliberately excluded from BOTH the manifest and the VERSION hash: media
+# changes are Range-request/streamed by the browser, never precached (see
+# `isMedia()` in sw_template.js), and must not move VERSION or every media
+# re-encode would force-bust every learner's cache for no reason.
+# ---------------------------------------------------------------------------
+
+SW_EXCLUDE_PREFIXES = ("audio/", "audio_oe/", "media/", "anki/")
+SW_EXCLUDE_EXTS = (".mp4", ".vtt", ".m4a", ".mp3", ".wav")
+SW_EXCLUDE_NAMES = {"sw.js", "robots.txt", "404.html"}
+SW_PRECACHE_BUDGET_BYTES = 10 * 1024 * 1024
+SW_TEMPLATE_NAME = "sw_template.js"
+_SW_PRECACHE_PLACEHOLDER = "/*__PRECACHE_START__*/[]/*__PRECACHE_END__*/"
+
+
+def _sw_precache_url(rel_posix):
+    """out_dir-relative posix path -> the URL sw.js should key its cache entry by."""
+    return "/" if rel_posix == "index.html" else "/" + rel_posix
+
+
+def _sw_is_excluded(rel_posix):
+    if rel_posix in SW_EXCLUDE_NAMES:
+        return True
+    if any(rel_posix.startswith(prefix) for prefix in SW_EXCLUDE_PREFIXES):
+        return True
+    if rel_posix.lower().endswith(SW_EXCLUDE_EXTS):
+        return True
+    return False
+
+
+def emit_service_worker(out_dir, kill=None):
+    """Walk `out_dir` and write a per-site `sw.js` with an embedded precache list.
+
+    - Precached set = every shipped file EXCEPT media (by prefix + extension,
+      never precached — Range semantics belong to the network) and sw.js /
+      robots.txt / 404.html.
+    - `index.html` maps to `"/"` — sw.js must never precache-key `/index.html`,
+      or a navigation request for `/` won't hit the cached entry offline.
+    - VERSION = sha256(one `path:sha256(bytes)` line per precached file, sorted,
+      newline-joined)[:12] — deterministic and media-independent, so unrelated
+      media re-encodes never bump the cache version (see module docstring).
+    - Budget: sum of precached byte sizes must stay <= 10 MB, else the build
+      aborts via `sys.exit` with the offending size — a runaway precache list
+      would make first-load worse for the offline win it's meant to buy.
+    - `kill` (or env `SW_KILL=="1"`) emits `var KILL=true;`, which makes the
+      installed worker skip precache/fetch interception and unregister itself
+      (see sw_template.js) — the rollback switch if the offline shell misbehaves
+      in production.
+    """
+    entries = []
+    for root, _dirs, files in os.walk(out_dir):
+        for fname in files:
+            abs_path = os.path.join(root, fname)
+            rel_posix = os.path.relpath(abs_path, out_dir).replace(os.sep, "/")
+            if _sw_is_excluded(rel_posix):
+                continue
+            entries.append((_sw_precache_url(rel_posix), abs_path))
+    entries.sort(key=lambda e: e[0])
+
+    total_bytes = 0
+    hash_lines = []
+    for url, abs_path in entries:
+        data = open(abs_path, "rb").read()
+        total_bytes += len(data)
+        hash_lines.append("%s:%s" % (url, hashlib.sha256(data).hexdigest()))
+
+    if total_bytes > SW_PRECACHE_BUDGET_BYTES:
+        sys.exit(
+            "sw precache budget exceeded: %d bytes precached > %d byte budget "
+            "(trim the precache list or exclude the new asset as media)"
+            % (total_bytes, SW_PRECACHE_BUDGET_BYTES)
+        )
+
+    version = hashlib.sha256("\n".join(hash_lines).encode("utf-8")).hexdigest()[:12]
+    kill_flag = "true" if (kill or os.environ.get("SW_KILL") == "1") else "false"
+
+    template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), SW_TEMPLATE_NAME)
+    template = open(template_path, encoding="utf-8").read()
+
+    precache_json = json.dumps([url for url, _ in entries], ensure_ascii=False)
+    # Targeted, not blind global replace: sw_template.js's own header comment
+    # mentions "__VERSION__" and "__KILL__" as plain text to document the
+    # template mechanism, and a bare .replace("__VERSION__", ...) would mangle
+    # that comment into nonsense in the shipped artifact.
+    out = template.replace("VERSION='__VERSION__';", "VERSION='%s';" % version)
+    out = out.replace("KILL=__KILL__;", "KILL=%s;" % kill_flag)
+    out = out.replace(
+        _SW_PRECACHE_PLACEHOLDER,
+        "/*__PRECACHE_START__*/" + precache_json + "/*__PRECACHE_END__*/",
+    )
+
+    with open(os.path.join(out_dir, "sw.js"), "w", encoding="utf-8") as fh:
+        fh.write(out)
+    print("service worker: emitted sw.js — VERSION %s, %d precached file(s), %d bytes" % (
+        version, len(entries), total_bytes
+    ))
+    return version
