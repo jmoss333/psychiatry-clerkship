@@ -987,7 +987,7 @@
       else if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){ document.documentElement.setAttribute('data-theme',d.mode); try{localStorage.setItem('cw_theme',d.mode);}catch(_){ } applyThemeIcon(); }
       else if(d.type==='ic-size'&&d.h){ var _fr=document.querySelector('#content iframe[src*="interview-circle.html"]'); if(_fr) _fr.style.height=(d.h+6)+'px'; }
     });
-  });
+  }).catch(function(){navEl.innerHTML='<div class="error" role="alert"><h1>Navigation unavailable</h1><p>Could not load the navigation — check your connection and refresh.</p></div>';});
 
   /* Shared PHI heuristic (looksLikePhi) — consumed by the ward question-capture feature. */
   /*__PHI_HEURISTIC__*/
@@ -1546,6 +1546,7 @@
     h+='</div>';
     h+='<div class="st-sec-h">Quick tools</div><div class="st-tools">'+qk.map(function(k){ var s=SAFE[k]?' is-safety':''; return '<a class="tl-chip'+s+'" href="?tool='+k+'" data-tool="'+k+'" aria-label="Open the '+(LAB[k]||'tool')+' tool">'+(LAB[k]||k)+'</a>'; }).join('')+'</div>';
     h+='<div class="st-actions"><button class="hm-btn" data-act="home">Go to my progress home</button><button class="hm-btn ghost" data-act="lib">Just start browsing</button></div>';
+    h+='<p class="sub st-a2hs">On iPhone: Share ⬆ → Add to Home Screen keeps this site working offline.</p>';
     h+='</div>'; return h;
   };
 
