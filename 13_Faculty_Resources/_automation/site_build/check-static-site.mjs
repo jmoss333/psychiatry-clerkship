@@ -640,13 +640,17 @@ const SHELL_REF_ALLOWLIST = new Set([
     }
 
     if (Array.isArray(precache)) {
-      // Mirrors sw_template.js's isMedia(): media is deliberately excluded from the
-      // precache list (Range-request/streamed by the browser, never precached — see
-      // common.py emit_service_worker()'s module docstring). Keep these two constants
-      // in sync with MEDIA_PREFIX / MEDIA_EXT in sw_template.js — a manifest entry that
-      // slipped past that exclusion means the generator regressed, not that a browser
-      // can safely precache it.
-      const MEDIA_PREFIX = ['/audio/', '/audio_oe/', '/media/'];
+      // Mirrors common.py's own build-time exclusion contract (SW_EXCLUDE_PREFIXES /
+      // SW_EXCLUDE_EXTS in emit_service_worker()) — the FOUR prefixes the build deliberately
+      // never precaches (Range-request/streamed by the browser, or too large/inert to be
+      // worth it — see that function's module docstring), not sw_template.js's runtime
+      // isMedia() (which only special-cases three of the four at fetch time; anki/ decks
+      // are excluded from PRECACHE at build time but not given special fetch handling,
+      // since nothing in the shell ever issues a range-style request for them). Keep these
+      // two constants in sync with SW_EXCLUDE_PREFIXES / SW_EXCLUDE_EXTS in common.py — a
+      // manifest entry that slipped past that exclusion means the generator regressed, not
+      // that a browser can safely precache it.
+      const MEDIA_PREFIX = ['/audio/', '/audio_oe/', '/media/', '/anki/'];
       const MEDIA_EXT = /\.(mp4|vtt|m4a|mp3|wav)$/i;
       let totalBytes = 0;
       for (const entry of precache) {
@@ -676,9 +680,11 @@ const SHELL_REF_ALLOWLIST = new Set([
     // sw.js's own contents: no importScripts() (pulls in code this dependency-free audit
     // never sees) and no bare http(s):// URL outside the leading generated-by comment
     // block. sw.js lives at the site root, not under tools/, so neither the 5a toolAssets
-    // CDN scan nor the 5c shell CDN scan ever reads it — this closes that blind spot for
-    // this one file. The leading comment (sw_template.js's own
-    // "/* Generated per-site by common.py ... */" header, which documents the __VERSION__/
+    // CDN scan nor the 5c shell CDN scan ever reads it. This check is also stricter than
+    // those two: 5a/5c only flag a narrow CDN_HOST allowlist (cdnjs/unpkg/jsdelivr), while
+    // this bans any absolute http(s):// URL in sw.js, full stop — a service worker has no
+    // legitimate reason to reference any external origin. The leading comment (sw_template.js's
+    // own "/* Generated per-site by common.py ... */" header, which documents the __VERSION__/
     // __KILL__ token mechanism in prose) is exempted so the scan doesn't flag its own docs.
     if (/importScripts\s*\(/.test(sw)) {
       H('sw: importScripts() call in sw.js — the shipped service worker must be self-contained');
