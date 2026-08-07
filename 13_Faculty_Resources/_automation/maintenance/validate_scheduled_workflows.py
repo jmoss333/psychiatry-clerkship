@@ -171,6 +171,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Check 1b: Unified faculty attestation workspace"),
             ("name", "Check 2: LFS integrity — Netlify deploy preview"),
             ("name", "Check 3: visual regression — resident site"),
+            ("name", "Check 4: offline shell — service worker"),
             ("uses", "actions/upload-artifact"),
         ),
     },
