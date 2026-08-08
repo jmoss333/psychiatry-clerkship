@@ -459,7 +459,19 @@
    "EPA1",
    "EPA2",
    "EPA4"
-  ]
+  ],
+  "safetyLevel": "high",
+  "evidenceIds": [
+   "boyer-shannon-2005-serotonin-syndrome",
+   "strawn-2007-neuroleptic-malignant-syndrome",
+   "clozapine-rems",
+   "lieberman-2005-catie"
+  ],
+  "facultyReview": {
+   "status": "reviewed",
+   "reviewer": "Joshua Moss, MD",
+   "lastReviewed": "2026-08-08"
+  }
  },
  "t_mood.md": {
   "read": 5,
@@ -571,7 +583,17 @@
    "EPA1",
    "EPA2",
    "EPA4"
-  ]
+  ],
+  "safetyLevel": "high",
+  "evidenceIds": [
+   "cipriani-2013-lithium-suicide",
+   "canmat-isbd-bipolar-2018"
+  ],
+  "facultyReview": {
+   "status": "reviewed",
+   "reviewer": "Joshua Moss, MD",
+   "lastReviewed": "2026-08-08"
+  }
  },
  "t_anxiety.md": {
   "read": 4,
@@ -650,7 +672,17 @@
   "epa": [
    "EPA1",
    "EPA2"
-  ]
+  ],
+  "safetyLevel": "high",
+  "evidenceIds": [
+   "lima-2004-betablockers-akathisia",
+   "project-beta-psychopharm-agitation-2012"
+  ],
+  "facultyReview": {
+   "status": "reviewed",
+   "reviewer": "Joshua Moss, MD",
+   "lastReviewed": "2026-08-08"
+  }
  },
  "t_sud.md": {
   "read": 4,
@@ -1065,7 +1097,16 @@
    "EPA1",
    "EPA2",
    "EPA10"
-  ]
+  ],
+  "safetyLevel": "high",
+  "evidenceIds": [
+   "apa-eating-disorders-2023"
+  ],
+  "facultyReview": {
+   "status": "reviewed",
+   "reviewer": "Joshua Moss, MD",
+   "lastReviewed": "2026-08-08"
+  }
  },
  "t_adjustment.md": {
   "read": 4,
@@ -4773,6 +4814,17 @@
      "href": "?tool=communication-practice.html&case=medication_ambivalence_001"
     }
    ]
+  },
+  "safetyLevel": "high",
+  "evidenceIds": [
+   "clozapine-rems",
+   "fda-drug-safety",
+   "canmat-isbd-bipolar-2018"
+  ],
+  "facultyReview": {
+   "status": "reviewed",
+   "reviewer": "Joshua Moss, MD",
+   "lastReviewed": "2026-08-08"
   }
  },
  "cl_reference.md": {
@@ -5175,7 +5227,7 @@
    "Malignant hyperthermia"
   ],
   "firstMove": "Stop the likely offending agent, support and cool aggressively, send a CK, and rule out infection/heat stroke — then discriminate by reflexes and skin.",
-  "safetyLevel": "moderate",
+  "safetyLevel": "high",
   "workflowStages": [
    "diagnosis",
    "safety",
@@ -5183,8 +5235,8 @@
   ],
   "facultyReview": {
    "status": "reviewed",
-   "lastReviewed": "2026-07-10",
-   "reviewer": "Joshua Moss, MD"
+   "reviewer": "Joshua Moss, MD",
+   "lastReviewed": "2026-08-08"
   },
   "shelfBlueprint": [
    "neurocog",
@@ -5194,6 +5246,11 @@
    "EPA2",
    "EPA3",
    "EPA10"
+  ],
+  "evidenceIds": [
+   "boyer-shannon-2005-serotonin-syndrome",
+   "strawn-2007-neuroleptic-malignant-syndrome",
+   "bap-catatonia-2023"
   ]
  },
  "med_monitoring.md": {
@@ -5206,15 +5263,15 @@
    "Valproate and lithium are teratogens — β-hCG before starting; carbamazepine needs CBC/LFTs/sodium, HLA-B*1502 in at-risk ancestry, and watch for SIADH."
   ],
   "cant": "Do not treat monitoring as optional or after-the-fact — baseline and ongoing metabolic labs, β-hCG, and a QTc before QT-prolonging agents are part of the prescription.",
-  "safetyLevel": "moderate",
+  "safetyLevel": "high",
   "workflowStages": [
    "treatment",
    "safety"
   ],
   "facultyReview": {
    "status": "reviewed",
-   "lastReviewed": "2026-07-10",
-   "reviewer": "Joshua Moss, MD"
+   "reviewer": "Joshua Moss, MD",
+   "lastReviewed": "2026-08-08"
   },
   "shelfBlueprint": [
    "pharm"
@@ -5222,6 +5279,11 @@
   "epa": [
    "EPA3",
    "EPA4"
+  ],
+  "evidenceIds": [
+   "clozapine-rems",
+   "fda-drug-safety",
+   "canmat-isbd-bipolar-2018"
   ]
  },
  "psychotherapy.md": {
