@@ -716,16 +716,20 @@ function checkpointSession(){
   });
 }
 
-function itemById(id){
-  var items = (BANK && BANK.items) ? BANK.items : [];
-  for(var i=0;i<items.length;i++){ if(items[i].id===id) return items[i]; }
-  return null;
-}
-
 /* Resume path for ?resume=1. Rebuilds the queue from the capsule's queueIds filtered
    through activeItems() — an id removed or retired by a deploy between checkpoint and
    resume is silently dropped rather than crashing the restore (queueIds order is
-   preserved). Absent/expired capsule (sessLoad owns load-validate-expire) or an empty
+   preserved). idx is RE-DERIVED by counting how many of the front (pre-checkpoint)
+   queueIds survive that same filter, rather than trusted verbatim: trusting the stored
+   idx directly would silently skip a still-unanswered question whenever a deploy
+   retires/removes an item positioned BEFORE the checkpointed idx (the raw idx
+   overshoots once the queue is filtered shorter). This exploits the invariant that
+   responses.length === idx at every checkpoint — advance() checkpoints immediately
+   after commitResponse() pushes a response, and this app has no
+   skip-without-answering path, so counting surviving front ids gives the correct new
+   position. Reconstructed responses are built from that identical surviving-front-id
+   set, so the resumed summary population can never disagree with the resumed queue
+   position. Absent/expired capsule (sessLoad owns load-validate-expire) or an empty
    resulting queue falls through to a normal setup start. Returns true iff a session
    was actually resumed. */
 function tryResumeSession(){
@@ -735,13 +739,16 @@ function tryResumeSession(){
   activeItems().forEach(function(it){ idMap[it.id]=it; });
   var queue = cap.queueIds.map(function(id){ return idMap[id]; }).filter(Boolean);
   if(!queue.length) return false;
-  var idx = (typeof cap.idx==='number' && cap.idx>=0) ? cap.idx : 0;
-  if(idx > queue.length) idx = queue.length;
-  var responses = (cap.responses||[]).map(function(r){
-    var item = itemById(r.id);
-    if(!item) return null;
+  var capIdx = (typeof cap.idx==='number' && cap.idx>=0) ? cap.idx : 0;
+  var survivingFrontIds = cap.queueIds.slice(0, capIdx).filter(function(id){ return !!idMap[id]; });
+  var idx = survivingFrontIds.length;
+  var respById = {};
+  (cap.responses||[]).forEach(function(r){ respById[r.id]=r; });
+  var responses = survivingFrontIds.map(function(id){
+    var r = respById[id];
+    if(!r) return null;
     return {
-      item: item, key: null, tier2Key: null,
+      item: idMap[id], key: null, tier2Key: null,
       confidence: r.confidence, correct: r.correct, twoTierResult: null, ts: cap.at
     };
   }).filter(Boolean);

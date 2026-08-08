@@ -433,3 +433,95 @@ test('resume boot path is gated on RESUME_REQUESTED and only consulted after the
     'the resume check must come after the review-context branch — a faculty-preview request '
     + 'must never be diverted into a resumed practice session');
 });
+
+// ---- (h) idx must be RE-DERIVED from the filtered front slice, not trusted verbatim ------
+// Review-round-1 fix: the original tryResumeSession() clamped the stored idx to
+// [0, queue.length] but otherwise trusted it verbatim. That silently skips a still-unanswered
+// question whenever a deploy retires/removes an item positioned BEFORE the checkpointed idx —
+// the raw idx overshoots once the filtered queue is shorter than the original. The fix
+// re-derives idx by counting how many of the front (pre-checkpoint) queueIds survive the same
+// activeItems() filter used to build the queue, exploiting the invariant that
+// responses.length === idx at every checkpoint (advance() checkpoints immediately after
+// commitResponse() pushes a response; this app has no skip-without-answering path). The
+// reconstructed responses are built from that identical surviving-front-id set, so the
+// resumed summary population can never disagree with the resumed queue position.
+
+test('tryResumeSession() pins: idx is re-derived by counting surviving front ids, not the stored idx verbatim', () => {
+  const body = extractFn(qbankSrc, 'tryResumeSession\\(\\)', 'tryResumeSession()');
+  assert.match(body, /var survivingFrontIds\s*=\s*cap\.queueIds\.slice\(0,\s*capIdx\)\.filter\(function\(id\)\{\s*return\s*!!idMap\[id\];\s*\}\);/,
+    'idx must be derived from the front capIdx slice of queueIds filtered through the same '
+    + 'activeItems()-sourced idMap used to build the queue — trusting the stored idx verbatim '
+    + 'after filtering can silently skip an unanswered question');
+  assert.match(body, /var idx\s*=\s*survivingFrontIds\.length;/,
+    'idx must equal the count of surviving front ids, not a clamp of the raw stored cap.idx');
+  assert.doesNotMatch(body, /var idx\s*=\s*\(typeof cap\.idx/,
+    'the old direct-clamp-of-cap.idx computation must be gone — idx is derived, not trusted');
+});
+
+test('tryResumeSession() pins: reconstructed responses are built from the same surviving-front-id set as idx', () => {
+  const body = extractFn(qbankSrc, 'tryResumeSession\\(\\)', 'tryResumeSession()');
+  assert.match(body, /var responses\s*=\s*survivingFrontIds\.map\(function\(id\)\{/,
+    'responses must be mapped from survivingFrontIds (the exact set idx is derived from) so the '
+    + "resumed session's responses count always matches idx — a response for an id dropped by "
+    + 'the activeItems() filter must never linger past what the re-derived idx implies');
+});
+
+function extractTryResumeSessionRunner(src) {
+  const body = extractFn(src, 'tryResumeSession\\(\\)', 'tryResumeSession()');
+  // eslint-disable-next-line no-new-func
+  return new Function('sessLoad', 'activeItems', 'showQuestion', `
+    var SESSION = null;
+    ${body}
+    var resumed = tryResumeSession();
+    return { resumed: resumed, session: SESSION };
+  `);
+}
+
+test('tryResumeSession() edge case: retiring the item at queueIds[0] (before the checkpointed idx) must not skip the still-unanswered next question', () => {
+  // In-memory fixtures only — no localStorage, no DOM. sessLoad/activeItems/showQuestion are
+  // stubbed; tryResumeSession() itself is the REAL function sliced out of the shipped source
+  // (same new-Function-over-real-source technique as tests/phase-wiring.test.mjs's
+  // extractEffectiveNewPerDay/extractLoadS), so this exercises the actual shipped logic, not a
+  // reimplementation.
+  const runner = extractTryResumeSessionRunner(qbankSrc);
+
+  const itemA = { id: 'qb_a', category: 'mood' }; // answered pre-checkpoint, then retired
+  const itemB = { id: 'qb_b', category: 'mood' }; // answered pre-checkpoint, survives
+  const itemC = { id: 'qb_c', category: 'mood' }; // NOT yet answered — must not be skipped
+
+  const cap = {
+    at: AT,
+    expiresAt: AT + DAY_MS,
+    queueIds: ['qb_a', 'qb_b', 'qb_c'],
+    idx: 2, // qb_a and qb_b were answered; qb_c was next
+    responses: [
+      { id: 'qb_a', correct: true, confidence: 'guess' },
+      { id: 'qb_b', correct: false, confidence: 'certain' },
+    ],
+  };
+
+  // A deploy between checkpoint and resume retired qb_a — the queueIds[0] item, positioned
+  // BEFORE the checkpointed idx (2). qb_b and qb_c both still exist.
+  const { resumed, session } = runner(
+    () => cap,
+    () => [itemB, itemC],
+    () => {},
+  );
+
+  assert.equal(resumed, true);
+  assert.ok(session, 'SESSION must be populated on a successful resume');
+  assert.deepEqual(session.queue, [itemB, itemC],
+    'the filtered queue must preserve order and drop only the retired item (qb_a)');
+  assert.equal(session.idx, 1,
+    'idx must re-derive to 1 (exactly one surviving answered item, qb_b) — NOT the raw stored '
+    + 'idx (2), which equals the filtered queue length and would silently jump straight to the '
+    + 'summary, skipping qb_c, the still-unanswered question');
+  assert.equal(session.queue[session.idx], itemC,
+    'the question shown at the resumed idx must be qb_c, the correct surviving unanswered item');
+  assert.equal(session.responses.length, 1,
+    'only the surviving answered response (qb_b) may be reconstructed — qb_a\'s response must '
+    + 'be dropped along with the retired item, keeping responses.length === idx');
+  assert.equal(session.responses[0].item, itemB);
+  assert.equal(session.responses[0].correct, false);
+  assert.equal(session.responses[0].confidence, 'certain');
+});
