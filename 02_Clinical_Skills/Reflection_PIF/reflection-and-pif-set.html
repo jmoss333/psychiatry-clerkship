@@ -148,7 +148,14 @@ function App(){
     PIF.forEach(function(p){ out.push('\n['+p.tag+'] '+p.q); out.push((txt[p.id]||'(not yet written)')); });
     return out.join('\n');
   }
-  function copyAll(){ if(navigator.clipboard){navigator.clipboard.writeText(assemble()).then(function(){setCopied(true);});} }
+  function copyAll(){
+    if(navigator.clipboard){
+      var text=assemble()+'\n\n'+
+        '———————————————————————————————————————————————————————————\n'+
+        'Written with a private reflection tool — personal draft, shared by choice.';
+      navigator.clipboard.writeText(text).then(function(){setCopied(true);});
+    }
+  }
   function card(p,cls){
     var placeholder=saveOn?'Write freely — saved only on this device.':'Write freely — this stays on your screen only.';
     var week1Text=WEEK1_ID?(txt[WEEK1_ID]||''):'';
