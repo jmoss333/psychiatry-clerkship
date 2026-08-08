@@ -1795,9 +1795,19 @@
        toolExtraFromParams() carries `resume=1` through as extra, and show()'s tool
        branch appends it to the iframe src — zero new click-delegation branches. */
     var sess=null; try{ sess=(typeof sessLoad==='function')?sessLoad('qbank'):null; }catch(_){ }
+    /* sessLoad() only validates expiresAt (pruning an expired/malformed-expiry entry) — it
+       does not validate queueIds/idx shape. Today's only writer (checkpointSession() in
+       question-bank-practice.html) always produces a well-formed record, so this is latent,
+       not active, but renderHome's call sites are not try/catch-wrapped: an unguarded
+       sess.queueIds.length here would throw and blank the WHOLE home page, not just this
+       row. Mirrors tryResumeSession()'s own guard on the same shape (question-bank-
+       practice.html) — treat a malformed session as absent. */
+    if(sess&&(!Array.isArray(sess.queueIds)||typeof sess.idx!=='number')) sess=null;
     if(sess||(last&&LAB[last]===undefined)){
       h+='<div class="hm-sec"><h2>Continue where you left off</h2>';
       if(sess){
+        /* N/M from the raw capsule — the shell has no bank metadata to filter retired items
+           (same parity gap renderCalibPanel() documents); the tool re-derives exactly on resume. */
         var sessLeft=sess.queueIds.length-sess.idx;
         var sessMin=Math.max(1,Math.round(sessLeft*45/60));
         h+='<a class="hm-li" href="?tool=question-bank-practice.html&resume=1"><span class="t">Resume question bank — '+sessLeft+' left, ~'+sessMin+' min</span><span class="sec">Resume →</span></a>';

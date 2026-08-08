@@ -165,3 +165,41 @@ test('the page row keeps its original button/data-f mechanism (navClick), untouc
   const html = buildRow(() => null, 'welcome.md', {});
   assert.match(html, /<button class="hm-li" data-f="welcome\.md">/);
 });
+
+// ---- malformed-capsule guard --------------------------------------------------------
+//
+// sessLoad() only validates expiresAt (pruning an expired/malformed-expiry entry) — it does
+// not validate queueIds/idx shape. Today's only writer (checkpointSession() in
+// question-bank-practice.html) always produces a well-formed {queueIds:[...], idx:number}
+// pair, so this is latent, not active. But renderHome's four call sites are not
+// try/catch-wrapped, so an unguarded `sess.queueIds.length` on a malformed record (a manually
+// edited localStorage value, a future writer bug, etc.) would throw and blank the WHOLE home
+// page, not just this row. tryResumeSession() (question-bank-practice.html) already guards
+// exactly this shape (`!cap.queueIds` / non-numeric idx defaults) — the row must mirror it:
+// treat a malformed session as if sessLoad had returned null.
+
+test('malformed capsule (queueIds missing/not-an-array) does not throw and the row falls back to absent', () => {
+  const bad = { at: 0, expiresAt: 0, idx: 0, responses: [] }; // no queueIds at all
+  assert.doesNotThrow(() => buildRow(() => bad, null, {}));
+  const html = buildRow(() => bad, null, {});
+  assert.equal(html, '', 'a malformed session must be treated as absent, not crash renderHome');
+});
+
+test('malformed capsule (non-numeric idx) does not throw and the row falls back to absent', () => {
+  const bad = { at: 0, expiresAt: 0, queueIds: ['a', 'b', 'c'], idx: 'oops', responses: [] };
+  assert.doesNotThrow(() => buildRow(() => bad, null, {}));
+  const html = buildRow(() => bad, null, {});
+  assert.equal(html, '', 'a non-numeric idx must be treated as absent, not crash renderHome');
+});
+
+test('a malformed session still lets the page row render on its own (both||one-bad guard composes correctly)', () => {
+  const bad = { at: 0, expiresAt: 0, queueIds: 'not-an-array', idx: 0, responses: [] };
+  const html = buildRow(() => bad, 'welcome.md', {});
+  assert.equal(
+    html,
+    '<div class="hm-sec"><h2>Continue where you left off</h2>'
+    + '<button class="hm-li" data-f="welcome.md"><span class="t">Resume your last page</span>'
+    + '<span class="sec">Resume →</span></button></div>',
+    'malformed session must not suppress a legitimate page row, and must not leak session markup',
+  );
+});
