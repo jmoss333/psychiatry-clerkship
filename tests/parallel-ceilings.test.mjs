@@ -12,7 +12,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // because it went red: you (or a concurrent PR) changed a shared ceiling — bump the pins below
 // IN THE SAME DIFF as the change, after confirming the other agent's PRs in flight.
 
-const EXPECTED_MARKER_COUNT = 4; // SM2_APPLY_GRADE, PHI_HEURISTIC, SW_REGISTER, CALIB_LOG — bump when adding a marker
+const EXPECTED_MARKER_COUNT = 5; // SM2_APPLY_GRADE, PHI_HEURISTIC, SW_REGISTER, CALIB_LOG, PHASE_POLICY — bump when adding a marker
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(
