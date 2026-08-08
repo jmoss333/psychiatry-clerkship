@@ -425,6 +425,7 @@
   .pt-opt:hover{border-color:var(--accent)}
   .pt-opt.sel{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark)}
   .hm-inl{background:none;border:none;color:var(--accent-dark);cursor:pointer;font:inherit;text-decoration:underline;padding:0}
+  .hm-phase{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:999px;padding:3px 11px;font-size:.76rem;font-weight:700;margin:0 0 14px}
   .wd{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:0 0 18px}
   .wd-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
   .wd-head h2{font-family:var(--font-head);font-size:1.12rem;margin:0;border:none;padding:0;color:var(--text)}
@@ -1711,6 +1712,8 @@
 
   /*__CALIB_LOG__*/
 
+  /*__PHASE_POLICY__*/
+
   /* ---- calib panel ---- */
   /* Metacognition panel (phase 1): swaps in for the legacy calibrationSummary() card on
      renderHome once there's enough ledger history (>=20 cw_calib_v1 qb events) to be more
@@ -1755,8 +1758,7 @@
     var rev=0, tot=0; for(var _ck in scan.cov){ rev+=scan.cov[_ck].done; tot+=scan.cov[_ck].tot; }
     var pct=tot?Math.round(rev/tot*100):0; var bd=dueBreakdown(); var dc=dueCount(); var s=srsState();
     var streak=(s&&s.stats&&s.stats.streak)||0;
-    var last=LS('cw_last'); var shelf=LS('cw_shelf_date'); var shelfDays=null;
-    if(shelf){ var t=new Date(shelf+'T00:00:00').getTime(); if(!isNaN(t)) shelfDays=Math.ceil((t-Date.now())/86400000); }
+    var last=LS('cw_last'); var shelf=LS('cw_shelf_date'); var shelfDays=shelfDaysUntil(shelf);
     var fresh=(rev===0 && bd.daily.due+bd.qb.due+bd.fam.due+bd.other.due===0 && !last);
     var h='<div class="hm" id="hmRoot"><h1>Your progress</h1>';
     if(fresh){ h+='<p class="sub">Welcome — nothing tracked yet. Open any content page and tap <strong>Mark as read</strong>, or start a review session, and this page fills in.</p>'; }
@@ -1769,6 +1771,14 @@
     h+='<div class="hm-card"><div class="k">Study streak</div><div class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></div></div>';
     h+='<div class="hm-card"><div class="k">Shelf countdown</div><div class="v">'+(shelfDays!=null?(shelfDays>=0?shelfDays+'<small> days</small>':'<small>past</small>'):'<small>set a date on Start here</small>')+'</div></div>';
     h+='</div>';
+    /* ---- phase chip ---- */
+    var p=null; try{ p=phasePolicy(); }catch(_){ }
+    if(p){
+      h+=(p.phase==='unset')
+        ? '<span class="hm-phase">Set an exam date on <button class="hm-inl" data-pt="start">Start-here</button> to guide pacing.</span>'
+        : '<span class="hm-phase">'+esc(p.label)+'</span>';
+    }
+    /* ---- end phase chip ---- */
     h+=capTriageHtml();
     if(last&&LAB[last]===undefined){ h+='<div class="hm-sec"><h2>Continue where you left off</h2><button class="hm-li" data-f="'+last+'"><span class="t">Resume your last page</span><span class="sec">Resume →</span></button></div>'; }
     var weak=weakTopics();
@@ -1823,7 +1833,7 @@
   function ptLabels(cats){ return cats.map(function(c){return SHELF_LABEL[c]||c;}).join(', '); }
   function masteryBarsHtml(mb){ var h='<div class="hm-bars">'; mb.forEach(function(x){ var pc=(x.score==null)?0:x.score; var lab=(x.score==null)?'not started':(x.score+'%'+(x.conf==='low'?' · few':'')); h+='<div class="brow"><span class="lab">'+esc(x.label)+'</span><span class="track"><span class="fill" style="width:'+pc+'%"></span></span><span class="pc">'+lab+'</span></div>'; }); return h+'</div>'; }
   function buildPlan(){ var mb=masteryByBlueprint(), weak={}; mb.forEach(function(x){ if(x.score==null||x.score<70) weak[x.c]=1; }); var weeks=WEEK_MAP.map(function(wm){ return {week:wm.w,title:wm.title,page:wm.page,allCats:wm.cats,focus:wm.cats.filter(function(c){return weak[c];})}; }); return {generatedAt:new Date().toISOString(),shelfDate:(LS('cw_shelf_date')||''),weeks:weeks}; }
-  function shelfIntensityHtml(shelf){ if(!shelf) return '<div class="sub" style="margin:0 0 10px">Set a shelf/exam date on <button class="hm-inl" data-pt="start">Start-here</button> to tune intensity.</div>'; var t=new Date(shelf+'T00:00:00').getTime(); if(isNaN(t))return ''; var days=Math.ceil((t-Date.now())/86400000); if(days<0) return '<div class="sub" style="margin:0 0 10px">Shelf date passed — use this plan for review.</div>'; var msg=days<=14?('Shelf in '+days+' day'+(days===1?'':'s')+' — compress: hit each week’s focus areas and practice daily.'):('Shelf in '+days+' days — steady pace through the weeks.'); return '<div class="sub" style="margin:0 0 10px">'+msg+'</div>'; }
+  function shelfIntensityHtml(shelf){ if(!shelf) return '<div class="sub" style="margin:0 0 10px">Set a shelf/exam date on <button class="hm-inl" data-pt="start">Start-here</button> to tune intensity.</div>'; var days=shelfDaysUntil(shelf); if(days==null)return ''; if(days<0) return '<div class="sub" style="margin:0 0 10px">Shelf date passed — use this plan for review.</div>'; var msg=days<=14?('Shelf in '+days+' day'+(days===1?'':'s')+' — compress: hit each week’s focus areas and practice daily.'):('Shelf in '+days+' days — steady pace through the weeks.'); return '<div class="sub" style="margin:0 0 10px">'+msg+'</div>'; }
   function renderPlanCards(plan){ var h=shelfIntensityHtml(plan.shelfDate); plan.weeks.forEach(function(wk){ h+='<div class="wd-card" style="margin:0 0 12px"><h3 style="text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--text);margin:0 0 6px">'+esc(wk.title)+'</h3>'; if(wk.focus&&wk.focus.length){ h+='<div class="sub" style="margin:0 0 8px">Focus first: <strong>'+esc(ptLabels(wk.focus))+'</strong></div>'; wk.focus.forEach(function(c){ h+='<button class="hm-li" data-practice="'+c+'" style="border-bottom:none"><span class="t">Practice '+esc(SHELF_LABEL[c]||c)+'</span><span class="sec">→</span></button>'; }); } else { h+='<div class="sub" style="margin:0 0 4px">On track — maintain.</div>'; } h+='<button class="hm-li" data-f="'+wk.page+'" style="border-bottom:none"><span class="t">Open '+esc(wk.title.split(' — ')[0])+'</span><span class="sec">read →</span></button></div>'; }); return h; }
   function startPretest(){ setDrawer(false); if(contentEl){ contentEl.className='content'; } contentEl.innerHTML='<div class="hm" id="ptRoot"><h1>2-minute placement</h1><p class="sub">Loading…</p></div>'; bindPretestUI(); var go=function(pool){ PRETEST_POOL=pool; ptAnswers={}; renderPretestForm(); }; if(PRETEST_POOL){ go(PRETEST_POOL); return; } fetch('pretest_pool.json').then(function(r){return r.ok?r.json():{items:[]};}).then(function(d){ go((d&&d.items)||[]); }).catch(function(){ go([]); }); }
   function renderPretestForm(){ var root=document.getElementById('ptRoot'); if(!root)return; var items=PRETEST_POOL||[]; if(!items.length){ root.innerHTML='<h1>Placement unavailable</h1><p class="sub">The question pool didn’t load — browse the library or follow the path instead.</p>'; return; } var h='<h1>2-minute placement</h1><p class="sub">One question per topic area — pick the best answer. This points you at weak spots; it’s a starting estimate, not a grade.</p>'; items.forEach(function(it,qi){ h+='<div class="pt-q" data-qi="'+qi+'"><div class="pt-stem">'+(qi+1)+'. '+esc(it.stem)+'</div>'; (it.options||[]).forEach(function(o){ h+='<button class="pt-opt" data-qi="'+qi+'" data-key="'+esc(o.key)+'"><b>'+esc(o.key)+'.</b> '+esc(o.t)+'</button>'; }); h+='</div>'; }); h+='<div style="margin-top:6px"><button class="hm-btn" data-pt="submit">See my results</button> <span id="ptCount" class="hm-empty"></span></div>'; root.innerHTML=h; updatePtCount(); }
@@ -1865,6 +1875,7 @@
       root.addEventListener('click',function(e){
         var cap=e.target.closest?e.target.closest('[data-cap-open],[data-cap-review],[data-cap-drop],[data-cap-copy]'):null;
         if(cap){ capTriageClick(cap); return; }
+        var ps=e.target.closest?e.target.closest('[data-pt="start"]'):null; if(ps){ navClick('__start__'); return; }
         var li=e.target.closest?e.target.closest('.hm-li'):null; if(li){ var act=li.getAttribute('data-act'); if(act==='review'){ navClick('review.html'); return; } if(act==='start'){ navClick('__start__'); return; } if(act==='studyexport'){ if(window.exportStudy)window.exportStudy(); return; } var pr=li.getAttribute('data-practice'); if(pr){ try{localStorage.setItem('cw_qb_focus',pr);}catch(_){ } navClick('question-bank-practice.html'); return; } var pt=li.getAttribute('data-pt'); if(pt){ if(pt==='plan')renderStoredPlan(); else if(pt==='pretest')startPretest(); return; } var ff=li.getAttribute('data-f'); if(ff)navClick(ff); return; }
         var dm=e.target.closest?e.target.closest('[data-dash-mode]'):null; if(dm){ setDashboardMode(dm.getAttribute('data-dash-mode')); root.outerHTML=window.renderHome(); window.__afterSpecial('__home__'); return; }
         var b=e.target.closest?e.target.closest('[data-act]'):null; if(b){ var a=b.getAttribute('data-act'); if(a==='review')navClick('review.html'); }
