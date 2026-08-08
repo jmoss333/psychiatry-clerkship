@@ -31,6 +31,34 @@ function extractShellCopy() {
   assert.ok(a2hs, 'A2HS sentence not found in spa_index.html renderStart output');
   strings['A2HS sentence'] = a2hs[1];
 
+  // Ward question-capture copy (P1 warning, P2 interstitial, P3 disclosure, P4 clipboard stamp).
+  // These are the whole PHI enforcement surface — there is no automated PHI check in build or CI —
+  // and they ship verbatim to both sites, so they must be audience-neutral and must not collide
+  // with a RESIDENT_REBRAND needle. Extracted by role, like the sw_register literals below.
+  const capWarn = shell.match(/<p class="cap-warn">([\s\S]*?)<\/p>/);
+  assert.ok(capWarn, 'capture P1 warning not found in spa_index.html');
+  strings['capture P1 warning'] = capWarn[1].replace(/<[^>]*>/g, '');
+
+  const capDisclose = shell.match(/<p class="cap-disclose">([^<]*)<\/p>/);
+  assert.ok(capDisclose, 'capture P3 disclosure not found in spa_index.html');
+  strings['capture P3 disclosure'] = capDisclose[1];
+
+  const capPhi = shell.match(/<div class="cap-phi"[^>]*>'\s*\+\s*'([\s\S]*?)'\s*\+\s*'/);
+  assert.ok(capPhi, 'capture P2 interstitial not found in spa_index.html');
+  strings['capture P2 interstitial'] = capPhi[1].replace(/<[^>]*>/g, '');
+
+  const capStamp = shell.match(/lines=\['([^']*)'/);
+  assert.ok(capStamp, 'capture P4 clipboard stamp not found in spa_index.html');
+  strings['capture P4 clipboard stamp'] = capStamp[1];
+
+  const capAria = shell.match(/aria-label="(Your question[^"]*)"/);
+  assert.ok(capAria, 'capture textarea aria-label not found in spa_index.html');
+  strings['capture textarea aria-label'] = capAria[1];
+
+  const capBtn = shell.match(/id="captureBtnDesk"[^>]*>([^<]*)</);
+  assert.ok(capBtn, 'desktop capture button label not found in spa_index.html');
+  strings['capture desktop button'] = capBtn[1];
+
   // sw_register.js update-toast copy: innerHTML/textContent literals + the dismiss aria-label.
   // Extracted by role rather than a blanket string dump, so code identifiers (function names,
   // message types, CSS classes) never get swept in as if they were learner-facing copy.
@@ -66,7 +94,7 @@ function extractResidentRebrandNeedles() {
   return needles;
 }
 
-test('shared shell copy (A2HS sentence + SW toast) is audience-neutral', () => {
+test('shared shell copy (A2HS sentence + SW toast + capture) is audience-neutral', () => {
   const strings = extractShellCopy();
   for (const [label, value] of Object.entries(strings)) {
     assert.doesNotMatch(
