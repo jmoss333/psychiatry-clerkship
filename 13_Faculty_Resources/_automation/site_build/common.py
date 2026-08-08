@@ -512,6 +512,7 @@ SNIPPET_MARKERS = {
     "/*__PHI_HEURISTIC__*/": "phi_heuristic.js",
     "/*__SW_REGISTER__*/": "sw_register.js",
     "/*__CALIB_LOG__*/": "calib_log.js",
+    "/*__PHASE_POLICY__*/": "phase_policy.js",
 }
 
 
