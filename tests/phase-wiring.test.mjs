@@ -143,3 +143,71 @@ test('effectiveNewPerDay falls back to an uncapped default (12) if phasePolicy()
 // effectiveNewPerDay, not a raw settings.newPerDay read" (8 pass / 1 fail) — with every other
 // test, including metrics()'s equivalent pin, staying green. The source was then restored and
 // the suite re-verified fully green (9/9). See task-2-report.md.
+
+// ---- #324 post-merge follow-up: loadS() backfills userSet for pre-#324 sliders --------
+// Learners who moved the slider before #324 shipped have no `userSet` key, so the phase
+// cap would silently override their explicit choice once. All four cw_srs_v1 writers
+// (family-systems-practice.html, review.html's freshStore/loadS fallback, spa_index.html's
+// seedSRS, question-bank-practice.html) default newPerDay to 12 — a stored value that is
+// both present and not-12 proves an explicit pre-#324 choice. Pattern follows
+// tests/srs-home-counters.test.mjs: slice the real function out of the shipped source, run
+// it against a stubbed in-memory localStorage (no disk I/O).
+
+function memStorage() {
+  const m = new Map();
+  return {
+    getItem: (k) => (m.has(k) ? m.get(k) : null),
+    setItem: (k, v) => m.set(k, String(v)),
+    removeItem: (k) => m.delete(k),
+  };
+}
+
+function extractLoadS(src) {
+  const start = src.indexOf('var DAY=86400000');
+  const end = src.indexOf('function saveS(', start);
+  assert.ok(start !== -1 && end !== -1, 'could not locate the DAY/KEY/freshStore/loadS slice in review.html');
+  const code = src.slice(start, end);
+  assert.ok(code.length > 150, `loadS() slice is suspiciously short (${code.length} chars): ${JSON.stringify(code)}`);
+  // eslint-disable-next-line no-new-func
+  return new Function('localStorage', `var window = {};\n${code}\nreturn loadS;`);
+}
+
+function storeWithSettings(settings) {
+  return JSON.stringify({
+    v: 1,
+    cards: {},
+    day: { lastDay: '', newToday: 0 },
+    stats: { streak: 0, lastStudy: '', totalReviews: 0, correct: 0, seen: 0 },
+    settings,
+  });
+}
+
+test('loadS() backfills userSet=true for a pre-#324 store with a non-default newPerDay and no userSet key', () => {
+  const ls = memStorage();
+  ls.setItem('cw_srs_v1', storeWithSettings({ newPerDay: 20 }));
+  const loadS = extractLoadS(reviewSrc)(ls);
+  const s = loadS();
+  assert.equal(s.settings.userSet, true,
+    'a stored newPerDay of 20 with no userSet key proves an explicit pre-#324 choice');
+});
+
+test('loadS() does NOT backfill userSet for a store still at the irreducible default (newPerDay:12) with no userSet key', () => {
+  const ls = memStorage();
+  ls.setItem('cw_srs_v1', storeWithSettings({ newPerDay: 12 }));
+  const loadS = extractLoadS(reviewSrc)(ls);
+  const s = loadS();
+  assert.equal('userSet' in s.settings, false,
+    'newPerDay:12 is irreducibly indistinguishable from every writer\'s untouched default and must stay cappable');
+});
+
+test('loadS() treats an existing userSet key as authoritative and never overwrites it, even the impossible userSet:false state', () => {
+  const ls = memStorage();
+  // userSet:false is not writable by any code path today (setNewPerDay only ever writes
+  // true) — this stub exists purely to pin that the backfill guard checks key presence
+  // (`!('userSet' in s.settings)`), not truthiness, so it can never clobber a stored value.
+  ls.setItem('cw_srs_v1', storeWithSettings({ newPerDay: 20, userSet: false }));
+  const loadS = extractLoadS(reviewSrc)(ls);
+  const s = loadS();
+  assert.equal(s.settings.userSet, false,
+    'an existing userSet key of any value is authoritative — backfill must never overwrite it');
+});

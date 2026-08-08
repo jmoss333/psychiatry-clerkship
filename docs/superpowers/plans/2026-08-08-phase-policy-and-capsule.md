@@ -213,7 +213,46 @@ function effectiveNewPerDay(s){
 
 # PR-3 — Qbank session capsule (branch `claude/qbank-capsule`, after PR-B merges)
 
-### Task 6: `sess_capsule.js` snippet + behavior tests + pins
+### Task 6: #324 post-merge follow-ups — userSet backfill + phase-label copy guard
+
+**Files:**
+- Modify: `07_Evidence_and_Reading/Landmark_Trials/review.html` (`loadS()` :106),
+  `tests/phase-wiring.test.mjs`, `tests/shell-copy.test.mjs`
+
+**Context (Josh's post-merge review of #324):** learners who set their slider BEFORE #324 have no
+`userSet` flag, so the phase cap silently overrides their explicit choice once — time-sensitive
+(shipped mid-rotation). Verified premise: ALL four `cw_srs_v1` writers default `newPerDay:12`
+(family-systems :142, review freshStore :105 / loadS fallback :106, spa seedSRS :616, qbank
+:240), so `newPerDay !== 12` proves an explicit pre-#324 choice. Separately: the six
+`phase_policy.js` labels ship verbatim to the resident site but no test reads them —
+"Exam, never Shelf" is enforced by a comment only.
+
+- [ ] **Step 1: failing test** in `tests/phase-wiring.test.mjs`: evaluate `loadS()` (extraction
+  per the existing wiring-test pattern) against three stubbed stores: `{newPerDay:20}` no
+  userSet → backfilled `userSet===true`; `{newPerDay:12}` no userSet → NOT backfilled;
+  `{newPerDay:20, userSet:false}`? — impossible state today (only setNewPerDay writes it, as
+  true); treat any existing `userSet` key as authoritative: backfill ONLY when the key is
+  absent (`!('userSet' in s.settings)`).
+- [ ] **Step 2: implement** in `loadS()`'s `v===1` branch, after the settings fallback:
+
+```js
+/* #324 backfill: sliders set before userSet existed. Every cw_srs_v1 writer defaults
+   newPerDay to 12, so a non-12 value proves an explicit choice. Learners who explicitly
+   chose exactly 12 are irreducibly indistinguishable from the default and stay cappable. */
+if(!('userSet' in s.settings) && s.settings.newPerDay && s.settings.newPerDay!==12){ s.settings.userSet=true; }
+```
+
+- [ ] **Step 3: label guard** — `tests/shell-copy.test.mjs` `extractShellCopy()` gains
+  `phase_policy.js`: extract every `label:'…'` literal (regex over the snippet source, by
+  role, same as the `sw_register.js` pattern), assert ≥6 extracted (nonzero guard), run each
+  through the audience-token ban AND the `RESIDENT_REBRAND` needle check. RED-teeth: feed a
+  mutated in-memory label containing "Shelf", observe FAIL (in-memory only — no disk writes,
+  per the Task 4 lesson).
+- [ ] **Step 4:** `node --test tests/phase-wiring.test.mjs tests/shell-copy.test.mjs
+  tests/*.test.mjs` green; res build; **Commit**
+  `fix(review): backfill userSet for pre-#324 sliders + guard phase-label copy`
+
+### Task 7: `sess_capsule.js` snippet + behavior tests + pins
 
 **Files:**
 - Create: `13_Faculty_Resources/_automation/site_build/sess_capsule.js`
@@ -234,7 +273,7 @@ function effectiveNewPerDay(s){
 - [ ] **Step 3:** pins + ceilings; suites green; builds unaffected (marker unconsumed yet).
 - [ ] **Step 4: Commit** `feat(build): session-capsule snippet (SESS_CAPSULE marker)`
 
-### Task 7: Qbank checkpoint + resume wiring
+### Task 8: Qbank checkpoint + resume wiring
 
 **Files:**
 - Modify: `13_Faculty_Resources/_automation/site_build/question-bank-practice.html` (marker;
@@ -259,27 +298,35 @@ function effectiveNewPerDay(s){
 - [ ] **Step 4:** suites + ms3 build; manual browser check of interrupt→resume via the built
   site (document). **Commit** `feat(qbank): question-boundary session capsule + resume`
 
-### Task 8: Home Resume card
+### Task 9: Home Resume row (merged into "Continue where you left off")
 
 **Files:**
 - Modify: `spa_index.html` — the shell needs the `SESS_CAPSULE` marker too (for `sessLoad`);
-  add it beside the PHASE_POLICY one; Resume card in renderHome beside the capture-triage
-  card region ~:1772, slice-markered
+  add it beside the PHASE_POLICY one; the row lands INSIDE the existing
+  "Continue where you left off" section, slice-markered
 - Create: `tests/resume-card.test.mjs`
 
-- [ ] **Step 1:** Card renders only when `sessLoad('qbank')` returns a session:
-  "Resume question bank — N left, ~M min" (M = remaining × 45s, static estimate per spec),
-  deep-linking `?tool=question-bank-practice.html&resume=1` via the existing `data-f`-style
-  tool-open pattern used by the dock (verify the exact attribute the home cards use for tool
-  links — `data-practice`/`hm-li` patterns at :1770s — and reuse; no new delegation branch).
+**Decision (stated per Josh's request):** the qbank Resume row MERGES into the existing
+"Continue where you left off" section rather than sitting apart. Why: identical learner intent
+(pick up where you stopped), and renderHome crowding is a binding constraint — a separate
+Resume section would be the 15th. Mechanics: the section's gate widens from `if(last…)` to
+`if(last… || sess)`; when both exist the SESSION row renders FIRST (24 h expiry + progress
+state make it more perishable and more actionable than a page bookmark), page-resume second;
+heading unchanged.
+
+- [ ] **Step 1:** Row renders only when `sessLoad('qbank')` returns a session:
+  "Resume question bank — N left, ~M min" (M = remaining × 45s static estimate per spec;
+  N = `queueIds.length - idx`), deep-linking
+  `?tool=question-bank-practice.html&resume=1` via the existing `.hm-li` + `data-f` pattern
+  the section's page row already uses (its delegation branch exists; no new branches).
   Re-render via existing paths only (constraint 1).
-- [ ] **Step 2:** Slice-marker extraction test: card present with a stubbed live session,
-  absent when null; existing slice suites green (`srs-home-counters`, `calib-panel`,
-  `phase-chip`, `spa-shell-a11y`).
+- [ ] **Step 2:** Slice-marker extraction test: session row present with a stubbed live
+  session (and ordered before the page row when both exist), absent when null; existing slice
+  suites green (`srs-home-counters`, `calib-panel`, `phase-chip`, `spa-shell-a11y`).
 - [ ] **Step 3:** Builds + shell canaries (`nav-ms3`, `offline`). **Commit**
   `feat(home): resume-session card for the question bank`
 
-### Task 9: PR-3 verification + PR
+### Task 10: PR-3 verification + PR
 
 - [ ] **Step 1:** Full fail-fast suite.
 - [ ] **Step 2:** Push + `gh pr create` — body: question-boundary-only rationale (attack

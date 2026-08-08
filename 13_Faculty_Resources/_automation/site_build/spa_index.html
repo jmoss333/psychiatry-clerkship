@@ -1714,6 +1714,8 @@
 
   /*__PHASE_POLICY__*/
 
+  /*__SESS_CAPSULE__*/
+
   /* ---- calib panel ---- */
   /* Metacognition panel (phase 1): swaps in for the legacy calibrationSummary() card on
      renderHome once there's enough ledger history (>=20 cw_calib_v1 qb events) to be more
@@ -1780,7 +1782,40 @@
     }
     /* ---- end phase chip ---- */
     h+=capTriageHtml();
-    if(last&&LAB[last]===undefined){ h+='<div class="hm-sec"><h2>Continue where you left off</h2><button class="hm-li" data-f="'+last+'"><span class="t">Resume your last page</span><span class="sec">Resume →</span></button></div>'; }
+    /* ---- resume row ---- */
+    /* qbank session merges into the existing "Continue where you left off" section
+       rather than a 15th hm-sec (Task 9 binding decision — see plan). Session row
+       renders FIRST when both exist: a 24h-expiry, in-progress capsule is more
+       perishable and more actionable than a page bookmark. Deep link is the
+       `<a class="hm-li" href="?tool=...&resume=1">` pattern actionRow()/communicationHref()
+       already use elsewhere on this page (not the data-f/navClick path — navClick()
+       matches a .navitem by EXACT data-f value against nav.json filenames, so a
+       query-suffixed data-f could never resolve). That href already flows through the
+       existing contentEl a[href] delegate (line ~907): the regex matches `?tool=`,
+       toolExtraFromParams() carries `resume=1` through as extra, and show()'s tool
+       branch appends it to the iframe src — zero new click-delegation branches. */
+    var sess=null; try{ sess=(typeof sessLoad==='function')?sessLoad('qbank'):null; }catch(_){ }
+    /* sessLoad() only validates expiresAt (pruning an expired/malformed-expiry entry) — it
+       does not validate queueIds/idx shape. Today's only writer (checkpointSession() in
+       question-bank-practice.html) always produces a well-formed record, so this is latent,
+       not active, but renderHome's call sites are not try/catch-wrapped: an unguarded
+       sess.queueIds.length here would throw and blank the WHOLE home page, not just this
+       row. Mirrors tryResumeSession()'s own guard on the same shape (question-bank-
+       practice.html) — treat a malformed session as absent. */
+    if(sess&&(!Array.isArray(sess.queueIds)||typeof sess.idx!=='number')) sess=null;
+    if(sess||(last&&LAB[last]===undefined)){
+      h+='<div class="hm-sec"><h2>Continue where you left off</h2>';
+      if(sess){
+        /* N/M from the raw capsule — the shell has no bank metadata to filter retired items
+           (same parity gap renderCalibPanel() documents); the tool re-derives exactly on resume. */
+        var sessLeft=sess.queueIds.length-sess.idx;
+        var sessMin=Math.max(1,Math.round(sessLeft*45/60));
+        h+='<a class="hm-li" href="?tool=question-bank-practice.html&resume=1"><span class="t">Resume question bank — '+sessLeft+' left, ~'+sessMin+' min</span><span class="sec">Resume →</span></a>';
+      }
+      if(last&&LAB[last]===undefined){ h+='<button class="hm-li" data-f="'+last+'"><span class="t">Resume your last page</span><span class="sec">Resume →</span></button>'; }
+      h+='</div>';
+    }
+    /* ---- end resume row ---- */
     var weak=weakTopics();
     if(weak.length){ h+='<div class="hm-sec"><h2>Focus next · your weak spots</h2>'; weak.slice(0,5).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+esc(x.t)+'</span><span class="sec">'+esc(x.reason)+'</span></button>'; }); h+='</div>'; }
     if(scan.hy.length){ h+='<div class="hm-sec"><h2>High-yield · not yet read</h2>'; scan.hy.slice(0,8).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+x.t+'</span><span class="sec">'+x.sec+'</span></button>'; }); h+='</div>'; }
