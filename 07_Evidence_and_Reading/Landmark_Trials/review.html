@@ -103,7 +103,10 @@ var framed=(window.self!==window.top);
 function todayStr(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function yestStr(){var d=new Date(Date.now()-DAY);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function freshStore(){return {v:1,cards:{},day:{lastDay:"",newToday:0},stats:{streak:0,lastStudy:"",totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}};}
-function loadS(){try{var s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1){s.cards=s.cards||{};s.day=s.day||{lastDay:"",newToday:0};s.stats=s.stats||freshStore().stats;s.settings=s.settings||{newPerDay:12};return s;}}catch(_){ } return freshStore();}
+/* #324 backfill: sliders set before userSet existed. Every cw_srs_v1 writer defaults
+   newPerDay to 12, so a non-12 value proves an explicit choice. Learners who explicitly
+   chose exactly 12 are irreducibly indistinguishable from the default and stay cappable. */
+function loadS(){try{var s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1){s.cards=s.cards||{};s.day=s.day||{lastDay:"",newToday:0};s.stats=s.stats||freshStore().stats;s.settings=s.settings||{newPerDay:12};if(!('userSet' in s.settings) && s.settings.newPerDay && s.settings.newPerDay!==12){ s.settings.userSet=true; }return s;}}catch(_){ } return freshStore();}
 function saveS(s){try{localStorage.setItem(KEY,JSON.stringify(s));}catch(_){ }}
 function rollDay(s){var t=todayStr();if(s.day.lastDay!==t){s.day.lastDay=t;s.day.newToday=0;}return s;}
 function bumpStreak(s){var t=todayStr();if(s.stats.lastStudy===t)return;s.stats.streak=(s.stats.lastStudy===yestStr()?(s.stats.streak||0)+1:1);s.stats.lastStudy=t;}
