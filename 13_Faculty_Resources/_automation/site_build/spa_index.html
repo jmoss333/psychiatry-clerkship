@@ -1875,6 +1875,10 @@
       root.addEventListener('click',function(e){
         var cap=e.target.closest?e.target.closest('[data-cap-open],[data-cap-review],[data-cap-drop],[data-cap-copy]'):null;
         if(cap){ capTriageClick(cap); return; }
+        /* Exact-value match only: the pretest delegation never covers #hmRoot (scoped to
+           #ptRoot/#planRoot and bound lazily), so the phase chip's unset-state button is handled
+           here. Must stay narrower than [data-pt] — plan/pretest buttons below use the same
+           attribute and are handled by the .hm-li branch. */
         var ps=e.target.closest?e.target.closest('[data-pt="start"]'):null; if(ps){ navClick('__start__'); return; }
         var li=e.target.closest?e.target.closest('.hm-li'):null; if(li){ var act=li.getAttribute('data-act'); if(act==='review'){ navClick('review.html'); return; } if(act==='start'){ navClick('__start__'); return; } if(act==='studyexport'){ if(window.exportStudy)window.exportStudy(); return; } var pr=li.getAttribute('data-practice'); if(pr){ try{localStorage.setItem('cw_qb_focus',pr);}catch(_){ } navClick('question-bank-practice.html'); return; } var pt=li.getAttribute('data-pt'); if(pt){ if(pt==='plan')renderStoredPlan(); else if(pt==='pretest')startPretest(); return; } var ff=li.getAttribute('data-f'); if(ff)navClick(ff); return; }
         var dm=e.target.closest?e.target.closest('[data-dash-mode]'):null; if(dm){ setDashboardMode(dm.getAttribute('data-dash-mode')); root.outerHTML=window.renderHome(); window.__afterSpecial('__home__'); return; }
