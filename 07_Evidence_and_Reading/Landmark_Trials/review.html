@@ -29,6 +29,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
 .thmbtn{margin-left:auto;border:1px solid var(--border);background:var(--surface);color:var(--text);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:1rem;flex:none}
 .thmbtn:hover{background:var(--hover)}
 .lead{color:var(--text-mid);font-size:.95rem;margin:2px 0 16px}
+.sub{color:var(--text-mid);font-size:.85rem;margin:-6px 0 14px}
 .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:16px}
 @media(max-width:540px){.statgrid{grid-template-columns:repeat(2,1fr)}}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 12px;box-shadow:var(--shadow-sm)}
@@ -118,6 +119,18 @@ var GRADE_NAMES=["Again","Hard","Good","Easy"]; // grade buttons stay 0-3; mappe
 /*__SM2_APPLY_GRADE__*/
 
 /*__CALIB_LOG__*/
+/*__PHASE_POLICY__*/
+/* effectiveNewPerDay: the single helper BOTH the metrics() display and start()'s
+   queue-build call — patching only one leaves the other unthrottled. An explicit
+   learner choice (setNewPerDay, which sets settings.userSet) always wins over the
+   rotation-phase cap; phasePolicy() itself never throws, but the try/catch keeps
+   this helper safe even if that contract ever changes. */
+function effectiveNewPerDay(s){
+  var set=(s.settings&&s.settings.newPerDay)||12;
+  if(s.settings&&s.settings.userSet) return set;             /* explicit choice always wins */
+  var cap=12; try{ cap=phasePolicy().newPerDayCap; }catch(_){ }
+  return Math.min(set, cap);
+}
 var gradedThisSession={}; // session-local: has card.id already been graded once this session? (a requeued Again-card's 2nd grade sets calibLog's rq flag). Reset in start().
 function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl<=1)return "learning";return "young";}
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
@@ -156,7 +169,7 @@ function App(){
   function metrics(){
     var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0;
     if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); }
-    var newRemain=cards?Math.max(0,(store.settings.newPerDay||12)-(rollDay(loadS()).day.newToday||0)):0;
+    var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0;
     return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen};
   }
 
@@ -171,7 +184,7 @@ function App(){
     due.sort(function(a,b){ return ratio(b)-ratio(a); });
     for(var i=0;i<due.length;i+=5){ var band=due.slice(i,i+5); shuffle(band); for(var j=0;j<band.length;j++) due[i+j]=band[j]; }
     shuffle(neu);
-    var newRemain=Math.max(0,(s.settings.newPerDay||12)-(s.day.newToday||0));
+    var newRemain=Math.max(0,effectiveNewPerDay(s)-(s.day.newToday||0));
     var q=due.concat(neu.slice(0,newRemain));
     if(ahead){ fut.sort(function(a,b){return a[1]-b[1];}); q=q.concat(fut.map(function(x){return x[0];})); }
     if(!q.length){ setSess({empty:true}); return; }
@@ -204,7 +217,7 @@ function App(){
     setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,total:s.total});
   }
   function endSession(){ setSess(null); setTick(function(x){return x+1;}); }
-  function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; persist(s); }
+  function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); }
   function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); }
 
   var head=e("div",{className:"topline"},
@@ -276,6 +289,7 @@ function App(){
 
   /* ---- dashboard ---- */
   var m=metrics();
+  var pp=phasePolicy();
   var canStart=(m.due+m.newRemain)>0;
   return e("div",{className:"wrap"},head,
     e("div",{className:"lead"},"Spaced repetition schedules each board-style question to return just before you’d forget it. A few minutes a day beats cramming. Grade yourself honestly."),
@@ -284,6 +298,7 @@ function App(){
       e("div",{className:"stat streak"},e("div",{className:"num"},store.stats.streak||0),e("div",{className:"lab"},"Day streak")),
       e("div",{className:"stat"},e("div",{className:"num"},m.mature+m.young),e("div",{className:"lab"},"Learned")),
       e("div",{className:"stat"},e("div",{className:"num"},(store.stats.seen?Math.round(100*(store.stats.correct||0)/store.stats.seen):0)+"%"),e("div",{className:"lab"},"Retention"))),
+    pp.phase!=="unset"? e("div",{className:"sub"}, pp.label) : null,
     e("div",{className:"cta"},
       e("button",{className:"btn primary",disabled:!canStart,onClick:function(){start(false);}}, canStart?("Start review — "+(m.due+m.newRemain)+" card"+((m.due+m.newRemain)===1?"":"s")):"All caught up ✓"),
       e("button",{className:"btn ghost",onClick:function(){start(true);}},"Study ahead")),

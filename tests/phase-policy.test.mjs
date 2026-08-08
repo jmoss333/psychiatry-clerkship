@@ -101,6 +101,29 @@ for (const n of BOUNDARY_DAYS) {
   });
 }
 
+// Guards the Math.ceil time-of-day invariance against future refactors: "now" evaluated at
+// noon must land on the same calendar day-count as "now" evaluated at local midnight of that
+// same day, for any shelf date. A refactor to e.g. Math.round or raw division would break this
+// silently (rounding differently depending on what time of day a learner happens to load the
+// page), even though every midnight-anchored BOUNDARY_DAYS pin above would still pass.
+for (const n of [-3, 0, 7]) {
+  test(`shelfDaysUntil is time-of-day invariant at the ${n}-day offset (midday === local midnight)`, () => {
+    const { shelfDaysUntil } = make(memStorage());
+    const shelfStr = dateNDaysOut(NOW_MS, n);
+    const middayNowMs = NOW_MS + 12 * 3600000; // noon of the same reference day as NOW_MS
+    // At offset 0, Math.ceil(-0.5) legitimately returns -0 (the shelf date is "today," and
+    // querying from midday puts the raw ms diff just past zero going negative). -0 is
+    // behaviorally identical to +0 everywhere phasePolicy/effectiveNewPerDay consume this
+    // value (days<0, days<=N, arithmetic, string interpolation all treat them alike) — only
+    // assert/strict's Object.is-based equal distinguishes them, so normalize before comparing.
+    assert.equal(
+      shelfDaysUntil(shelfStr, middayNowMs) + 0,
+      shelfDaysUntil(shelfStr, NOW_MS) + 0,
+      `midday-now result must equal midnight-now result at offset ${n}`,
+    );
+  });
+}
+
 // ---- phasePolicy ------------------------------------------------------------------
 
 function policyFor(days) {
