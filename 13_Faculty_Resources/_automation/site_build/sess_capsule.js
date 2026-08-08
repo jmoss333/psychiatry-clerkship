@@ -1,11 +1,11 @@
 /* Qbank session capsule cw_sess_v1 — per-tool checkpoint store for an interrupted session.
    Checkpointed at question boundaries only (advance/skip), never mid-question — the caller's
    job, not this snippet's (design spec §PR-3). sessLoad owns load-validate-expire so two
-   hand-rolled expiry copies can't drift between the future home-card reader and the qbank
-   itself; an expired or malformed per-tool entry is pruned from the store on load, not just
-   hidden, so a stale slot never lingers past its own read. No consumer wires this yet — the
-   marker exists so a future resume UI has one seam to write to (sessSave/sessClear included
-   for that reader, unused by any build today). */
+   hand-rolled expiry copies can't drift between the two consumers; an expired or malformed
+   per-tool entry is pruned from the store on load, not just hidden, so a stale slot never
+   lingers past its own read. Consumers: question-bank-practice.html (checkpointSession/
+   tryResumeSession — writer + authoritative resume) and the shell's home Resume row
+   (read-only; guards queueIds/idx shape itself since sessLoad only validates expiry). */
 function sessLoad(tool, nowMs){
   try{
     var d=JSON.parse(localStorage.getItem('cw_sess_v1')||'null');
