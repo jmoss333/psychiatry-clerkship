@@ -252,3 +252,184 @@ test('sessClear against an absent store is a safe no-op (no throw, no store crea
   assert.doesNotThrow(() => sessClear('qbank'));
   assert.equal(ls.getItem('cw_sess_v1'), null);
 });
+
+// =====================================================================================
+// Wiring pins — question-bank-practice.html consumer (Task 8). The snippet's own
+// behaviour is pinned above by evaluating sess_capsule.js directly; this section pins
+// the WIRING at the one consumer that exists today, mirroring the behaviour/wiring
+// split tests/phase-policy.test.mjs (behaviour) vs. tests/phase-wiring.test.mjs
+// (wiring) already use for the PHASE_POLICY snippet:
+//   (a) the /*__SESS_CAPSULE__*/ marker appears exactly once in the tool source;
+//   (b) the tool does not reimplement sessLoad/sessSave/sessClear locally — the
+//       canonical bodies live in sess_capsule.js only, arriving via marker expansion;
+//   (c) the literal 'cw_sess_v1' key never appears hand-typed in the tool's pre-build
+//       source (only inside the injected snippet body, verified separately against
+//       the BUILT output in build_and_check.sh);
+//   (d) THE LOAD-BEARING CHECK: sessSave (the checkpoint write) is called from exactly
+//       one place in the whole file — inside advance(), guarded so it never fires on
+//       the final question (session completion clears instead of checkpointing);
+//   (e) sessClear is called from exactly one place — inside showSummary(), guarded
+//       behind the reviewOnly check so a faculty-preview session never writes/clears
+//       a capsule slot;
+//   (f) expiresAt is computed at the write site as `now + DAY` (the file's existing
+//       86400000 constant), not a bare literal that could drift from the snippet's
+//       own 24h contract;
+//   (g) the resume path (tryResumeSession) rebuilds the queue through activeItems(),
+//       so an id dropped by a deploy between checkpoint and resume is filtered out
+//       rather than crashing the restore.
+const QBANK = '13_Faculty_Resources/_automation/site_build/question-bank-practice.html';
+const SESS_MARKER = '/*__SESS_CAPSULE__*/';
+const qbankSrc = readFileSync(new URL(`../${QBANK}`, import.meta.url), 'utf8');
+
+// ---- (a) marker present exactly once -----------------------------------------------
+
+test('question-bank-practice.html carries the SESS_CAPSULE marker exactly once', () => {
+  const count = qbankSrc.split(SESS_MARKER).length - 1;
+  assert.equal(count, 1, `expected exactly one ${SESS_MARKER} in ${QBANK}, found ${count}`);
+});
+
+// ---- (b) no local reimplementation of the canonical functions ----------------------
+
+test('question-bank-practice.html does not reimplement sessLoad/sessSave/sessClear locally', () => {
+  assert.doesNotMatch(qbankSrc, /function\s+sessLoad\s*\(/,
+    'sessLoad must arrive only via the injected /*__SESS_CAPSULE__*/ marker');
+  assert.doesNotMatch(qbankSrc, /function\s+sessSave\s*\(/,
+    'sessSave must arrive only via the injected /*__SESS_CAPSULE__*/ marker');
+  assert.doesNotMatch(qbankSrc, /function\s+sessClear\s*\(/,
+    'sessClear must arrive only via the injected /*__SESS_CAPSULE__*/ marker');
+});
+
+// ---- (c) literal cw_sess_v1 absent from the pre-build source -----------------------
+
+test("literal 'cw_sess_v1' is absent from question-bank-practice.html's source (present only after marker expansion)", () => {
+  assert.doesNotMatch(qbankSrc, /(['"])cw_sess_v1\1/,
+    'the cw_sess_v1 key must reach question-bank-practice.html solely through the injected '
+    + 'snippet body, never hand-typed in the consumer source');
+});
+
+// ---- (d) THE LOAD-BEARING CHECK: checkpoint write is reachable only from advance() --
+
+function extractFn(src, signature, label) {
+  const re = new RegExp(`function ${signature}\\{[\\s\\S]*?\\n\\}`);
+  const m = src.match(re);
+  assert.ok(m, `${label} function body not found`);
+  // Nonzero-extraction guard: everything below is pinned against THIS captured
+  // substring, not the whole file — a length floor also catches a regex that matched
+  // some degenerate near-empty function body instead of the real one.
+  assert.ok(m[0].length > 40, `${label} match is suspiciously short (${m[0].length} chars): ${JSON.stringify(m[0])}`);
+  return m[0];
+}
+
+test('checkpointSession() is called from exactly one call site in the whole file, inside advance()', () => {
+  // Call-site form `checkpointSession();` (trailing semicolon) is distinct from the
+  // `function checkpointSession(){` declaration line, which is followed by `{` — both
+  // share the substring `checkpointSession()`, so the semicolon anchor is load-bearing
+  // for telling a call site apart from the declaration itself.
+  const advanceBody = extractFn(qbankSrc, 'advance\\(\\)', 'advance()');
+  const callsInAdvance = advanceBody.match(/checkpointSession\(\);/g) || [];
+  assert.equal(callsInAdvance.length, 1,
+    `expected exactly one checkpointSession() call inside advance(), found ${callsInAdvance.length}`);
+
+  const allCalls = qbankSrc.match(/checkpointSession\(\);/g) || [];
+  assert.equal(allCalls.length, 1,
+    `checkpointSession() must be called from exactly one site (advance()); found ${allCalls.length} total call sites`);
+});
+
+test('checkpointSession() is guarded so it is a no-op for a reviewOnly session', () => {
+  const body = extractFn(qbankSrc, 'checkpointSession\\(\\)', 'checkpointSession()');
+  assert.match(body, /if\s*\(\s*!SESSION\s*\|\|\s*SESSION\.reviewOnly\s*\)\s*return;/,
+    'checkpointSession() must return early for a reviewOnly (faculty-preview) session');
+});
+
+test('advance() only checkpoints when there is a next question — never on the final increment', () => {
+  const advanceBody = extractFn(qbankSrc, 'advance\\(\\)', 'advance()');
+  assert.match(advanceBody, /if\s*\(\s*SESSION\.idx\s*<\s*SESSION\.queue\.length\s*\)\s*checkpointSession\(\);/,
+    'the checkpoint write must be conditioned on there being a next question to resume into');
+});
+
+// ---- (e) sessClear is called from exactly one place, guarded by reviewOnly ---------
+
+test('sessClear is called from exactly one call site in the whole file, inside showSummary()', () => {
+  const summaryBody = extractFn(qbankSrc, 'showSummary\\(\\)', 'showSummary()');
+  const callsInSummary = summaryBody.match(/sessClear\('qbank'\)/g) || [];
+  assert.equal(callsInSummary.length, 1,
+    `expected exactly one sessClear('qbank') call inside showSummary(), found ${callsInSummary.length}`);
+
+  const allCalls = qbankSrc.match(/sessClear\(/g) || [];
+  assert.equal(allCalls.length, 1,
+    `sessClear must be called from exactly one site (showSummary()); found ${allCalls.length} total call sites`);
+});
+
+test('showSummary() guards sessClear behind the reviewOnly check', () => {
+  const summaryBody = extractFn(qbankSrc, 'showSummary\\(\\)', 'showSummary()');
+  assert.match(summaryBody, /if\s*\(\s*!\s*\(\s*SESSION\s*&&\s*SESSION\.reviewOnly\s*\)\s*\)\s*sessClear\('qbank'\);/,
+    "showSummary() must gate sessClear('qbank') behind a check that the session is not reviewOnly");
+});
+
+// ---- (f) expiresAt computed at the write site as now + DAY -------------------------
+
+test('checkpointSession() computes expiresAt as now + DAY at the write site (not a bare literal)', () => {
+  const body = extractFn(qbankSrc, 'checkpointSession\\(\\)', 'checkpointSession()');
+  assert.match(body, /expiresAt:\s*now\s*\+\s*DAY/,
+    'expiresAt must be computed as now + DAY at the write site — the snippet itself does not '
+    + 'stamp it (sessLoad/sessSave take the caller-provided session as-is)');
+  // DAY must be the file's existing 86400000 constant, not a second one that could drift.
+  assert.match(qbankSrc, /var DAY\s*=\s*86400000;/,
+    'checkpointSession() must reuse the file\'s single existing DAY constant');
+});
+
+test('checkpointSession() writes exactly one sessSave call in the whole file', () => {
+  const allCalls = qbankSrc.match(/sessSave\(/g) || [];
+  assert.equal(allCalls.length, 1,
+    `sessSave must be called from exactly one site (checkpointSession()); found ${allCalls.length} total call sites`);
+});
+
+test('checkpointSession() never persists item/key/twoTierResult grading fields — only id/correct/confidence per response', () => {
+  const body = extractFn(qbankSrc, 'checkpointSession\\(\\)', 'checkpointSession()');
+  const respMap = body.match(/responses:\s*SESSION\.responses\.map\(function\(r\)\{[\s\S]*?\}\)/);
+  assert.ok(respMap, 'responses mapping not found inside checkpointSession()');
+  assert.match(respMap[0], /\{\s*id:\s*r\.item\.id,\s*correct:\s*r\.correct,\s*confidence:\s*r\.confidence\s*\}/,
+    'each checkpointed response must carry only {id, correct, confidence} — grading state '
+    + '(key, tier2Key, twoTierResult, the full item) already persists per-interaction via '
+    + 'qbRecord()/srsUpdate() and must never be duplicated into the capsule');
+});
+
+// ---- (g) resume path filters the rebuilt queue through activeItems() ---------------
+
+test('tryResumeSession() calls sessLoad exactly once and is the only sessLoad call site', () => {
+  const allCalls = qbankSrc.match(/sessLoad\(/g) || [];
+  assert.equal(allCalls.length, 1,
+    `sessLoad must be called from exactly one site (tryResumeSession()); found ${allCalls.length} total call sites`);
+  const body = extractFn(qbankSrc, 'tryResumeSession\\(\\)', 'tryResumeSession()');
+  const callsInBody = body.match(/sessLoad\(/g) || [];
+  assert.equal(callsInBody.length, 1, "sessLoad must be called inside tryResumeSession()'s own body");
+});
+
+test('tryResumeSession() rebuilds the queue by mapping queueIds through an activeItems()-sourced lookup, dropping unmapped ids', () => {
+  const body = extractFn(qbankSrc, 'tryResumeSession\\(\\)', 'tryResumeSession()');
+  assert.match(body, /activeItems\(\)\.forEach\(/,
+    'the id lookup table must be built from activeItems(), not the raw unfiltered BANK.items — '
+    + 'a retired item must not be resumable into the queue');
+  assert.match(body, /cap\.queueIds\.map\(function\(id\)\{\s*return idMap\[id\];\s*\}\)\.filter\(Boolean\)/,
+    'queueIds must be mapped through the activeItems()-sourced idMap and filtered for missing '
+    + 'entries — an id removed or retired by a deploy between checkpoint and resume must be '
+    + 'dropped, not crash the restore');
+});
+
+test('tryResumeSession() bails out (returns false) before mutating SESSION when the capsule is absent/expired or the queue is empty', () => {
+  const body = extractFn(qbankSrc, 'tryResumeSession\\(\\)', 'tryResumeSession()');
+  assert.match(body, /if\s*\(\s*!cap\s*\|\|\s*!cap\.queueIds\s*\|\|\s*!cap\.queueIds\.length\s*\)\s*return false;/,
+    'an absent/expired capsule (sessLoad returns null) must fall through to a normal start, not throw');
+  assert.match(body, /if\s*\(\s*!queue\.length\s*\)\s*return false;/,
+    'a queue that filters down to empty (every id dropped) must also fall through to a normal start');
+});
+
+test('resume boot path is gated on RESUME_REQUESTED and only consulted after the faculty-preview review-context branch', () => {
+  const reviewIdx = qbankSrc.indexOf('showReviewItem(reviewItem);');
+  const resumeIdx = qbankSrc.indexOf('if(RESUME_REQUESTED && tryResumeSession()) return;');
+  assert.ok(reviewIdx >= 0, 'review-context branch not found in init()');
+  assert.ok(resumeIdx >= 0, 'RESUME_REQUESTED boot check not found in init()');
+  assert.ok(resumeIdx > reviewIdx,
+    'the resume check must come after the review-context branch — a faculty-preview request '
+    + 'must never be diverted into a resumed practice session');
+});

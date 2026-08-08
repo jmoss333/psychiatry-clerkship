@@ -160,6 +160,11 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body
 var BANK = null;
 var SESSION = null;
 var REVIEW_CONTEXT = readReviewContext();
+/* ?resume=1 rides the shell's toolExtraFromParams passthrough (spa_index.html) — no
+   shell change needed to reach this tool's iframe query string. */
+var RESUME_REQUESTED = (function(){
+  try{ return new URLSearchParams(location.search).get('resume')==='1'; }catch(_){ return false; }
+})();
 var CAT_LABELS = {
   mood:'Mood',psychosis:'Psychosis',anxiety:'Anxiety/Trauma',
   substance:'Substance Use',neurocog:'Neurocognitive',pharm:'Pharmacology',
@@ -257,6 +262,8 @@ var DAY = 86400000;
 /*__SM2_APPLY_GRADE__*/
 
 /*__CALIB_LOG__*/
+
+/*__SESS_CAPSULE__*/
 
 function srsUpdate(item, confidence, correct, twoTierResult){
   var s = srsLoad();
@@ -684,6 +691,68 @@ function showReviewItem(item){
   postReviewItemStatus('ready');
 }
 
+/* ---- session capsule (cw_sess_v1) — question-boundary checkpoint + resume --------
+   Written ONLY from advance(), and only when there is a next question to show —
+   never mid-question. showQuestion() resets confidence/tier1Key/state/displayOrder/
+   tier2DisplayOrder on every entry (the option shuffles aren't reconstructable), so a
+   mid-question restore would be structurally broken and is not attempted; the
+   checkpoint is deleted instead, in showSummary(), on session completion. Never
+   written for a reviewOnly (faculty-preview) session. Grading state is never
+   duplicated here — qbRecord()/srsUpdate() already persist each answer
+   per-interaction (commitResponse); the capsule stores position + session
+   bookkeeping only, so a resumed showSummary() covers the WHOLE session without a
+   second write against the SM-2 stats contract. */
+function checkpointSession(){
+  if(!SESSION || SESSION.reviewOnly) return;
+  var now = Date.now();
+  sessSave('qbank', {
+    at: now,
+    expiresAt: now + DAY,
+    queueIds: SESSION.queue.map(function(it){ return it.id; }),
+    idx: SESSION.idx,
+    responses: SESSION.responses.map(function(r){
+      return { id: r.item.id, correct: r.correct, confidence: r.confidence };
+    })
+  });
+}
+
+function itemById(id){
+  var items = (BANK && BANK.items) ? BANK.items : [];
+  for(var i=0;i<items.length;i++){ if(items[i].id===id) return items[i]; }
+  return null;
+}
+
+/* Resume path for ?resume=1. Rebuilds the queue from the capsule's queueIds filtered
+   through activeItems() — an id removed or retired by a deploy between checkpoint and
+   resume is silently dropped rather than crashing the restore (queueIds order is
+   preserved). Absent/expired capsule (sessLoad owns load-validate-expire) or an empty
+   resulting queue falls through to a normal setup start. Returns true iff a session
+   was actually resumed. */
+function tryResumeSession(){
+  var cap = sessLoad('qbank', Date.now());
+  if(!cap || !cap.queueIds || !cap.queueIds.length) return false;
+  var idMap = {};
+  activeItems().forEach(function(it){ idMap[it.id]=it; });
+  var queue = cap.queueIds.map(function(id){ return idMap[id]; }).filter(Boolean);
+  if(!queue.length) return false;
+  var idx = (typeof cap.idx==='number' && cap.idx>=0) ? cap.idx : 0;
+  if(idx > queue.length) idx = queue.length;
+  var responses = (cap.responses||[]).map(function(r){
+    var item = itemById(r.id);
+    if(!item) return null;
+    return {
+      item: item, key: null, tier2Key: null,
+      confidence: r.confidence, correct: r.correct, twoTierResult: null, ts: cap.at
+    };
+  }).filter(Boolean);
+  SESSION = {
+    queue: queue, idx: idx, responses: responses, confidence: null, tier1Key: null,
+    displayOrder: [], tier2DisplayOrder: [], state: 'conf'
+  };
+  showQuestion();
+  return true;
+}
+
 function showQuestion(){
   if(!SESSION || SESSION.idx >= SESSION.queue.length){
     showSummary(); return;
@@ -866,11 +935,18 @@ function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){
 function advance(){
   if(!SESSION) return;
   SESSION.idx++;
-  if(SESSION.idx >= SESSION.queue.length) showSummary();
-  else showQuestion();
+  /* Checkpoint at this question boundary only when there is a next question to
+     resume into — completion is handled by showSummary()'s sessClear instead. */
+  if(SESSION.idx < SESSION.queue.length) checkpointSession();
+  showQuestion();
 }
 
 function showSummary(){
+  /* Session complete (or a resume landed exactly at the end) — clear the capsule so
+     a stale slot never lingers past its own session. Never touched for reviewOnly,
+     which never reaches this function via advance() (no Next button is rendered
+     for a faculty-preview session — see getFeedbackHtml/showFeedback). */
+  if(!(SESSION && SESSION.reviewOnly)) sessClear('qbank');
   progLabel.textContent='Session complete';
   qprog.hidden=false;
   qprogFill.style.width='100%';
@@ -904,6 +980,7 @@ function showSummary(){
         showReviewItem(reviewItem);
         return;
       }
+      if(RESUME_REQUESTED && tryResumeSession()) return;
       showSetup();
       /* adaptive engine handoff: home may set cw_qb_focus to a blueprint category
          so the learner lands in their weakest area with the filter preselected. */
