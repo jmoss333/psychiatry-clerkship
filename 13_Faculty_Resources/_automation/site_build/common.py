@@ -513,6 +513,7 @@ SNIPPET_MARKERS = {
     "/*__SW_REGISTER__*/": "sw_register.js",
     "/*__CALIB_LOG__*/": "calib_log.js",
     "/*__PHASE_POLICY__*/": "phase_policy.js",
+    "/*__SESS_CAPSULE__*/": "sess_capsule.js",
 }
 
 
