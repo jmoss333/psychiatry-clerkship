@@ -2768,6 +2768,35 @@
         "supersededBy": [],
         "correctionStatus": "none-known"
       }
+    },
+    {
+      "id": "fda-prozac-label-maoi-switching",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "PROZAC (fluoxetine) FDA-approved prescribing information, section 2.9: Switching a Patient To or From a Monoamine Oxidase Inhibitor (MAOI) Intended to Treat Psychiatric Disorders",
+        "authors": [],
+        "organization": "U.S. Food and Drug Administration",
+        "year": 2026,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.brand_name:%22PROZAC%22&limit=1"
+      },
+      "identity": {
+        "status": "exception",
+        "source": "fda-labeling",
+        "verifiedAt": "2026-08-09",
+        "note": "Retrieved 2026-08-09 from the openFDA drug-label endpoint for brand_name PROZAC. Section 2.9 states verbatim: \"At least 14 days should elapse between discontinuation of an MAOI intended to treat psychiatric disorders and initiation of therapy with PROZAC. Conversely, at least 5 weeks should be allowed after stopping PROZAC before starting an MAOI intended to treat psychiatric disorders.\" identity.status is 'exception' rather than 'verified' because this is a REGULATORY LABELING statement, not a literature finding - no PubMed-indexed study reports these intervals as a result, so there is no bibliographic record to resolve. Scope note: this entry backs the >=5 week interval after fluoxetine and the >=14 day interval after an MAOI. It does NOT back the page's '>=2 weeks after stopping most SSRIs' generalization, which is a class statement drawn from other products' labeling - do not attach this source to it. The url is a live endpoint returning CURRENT labeling; the quotation above is the review record of what it said on the verification date."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "lastReviewed": "2026-08-09",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
     }
   ]
 }

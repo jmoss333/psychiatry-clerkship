@@ -105,7 +105,16 @@ legal standards.
 | D-7 | `t_eating.md` | unset | Medical-admission thresholds, refeeding, fluoxetine 60 mg, bupropion contraindication | AN patient with HR 42 kept on a psych bed → arrest; bupropion in a purger → seizure |
 | D-8 | `t_perinatal.md` | unset → **high** ✅ | Pregnancy/lactation drug guidance; postpartum psychosis as emergency | Missed postpartum psychosis → maternal suicide or infanticide; teratogenic exposure |
 | D-9 | `t_neurocog.md` | unset → **high** ✅ | Black-box mortality; **avoid antipsychotics in Lewy body dementia** | Typical antipsychotic in unrecognized LBD → neuroleptic sensitivity reaction, death |
-| D-10 | `psychopharm_primer.md` | unset | MAOI washout intervals (≥2 wk; ≥5 wk fluoxetine) | Wrong washout acted on → serotonin syndrome or hypertensive crisis |
+| D-10 | `psychopharm_primer.md` | unset → **high** ✅ | MAOI washout intervals (≥2 wk; ≥5 wk fluoxetine) | Wrong washout acted on → serotonin syndrome or hypertensive crisis |
+
+> **D-10 surfaced a limit of the evidence model.** The washout intervals are a *regulatory
+> labeling* statement, not a literature finding — no PubMed-indexed study reports them as a
+> result. `fda-drug-safety` is a generic monitoring endpoint and citing it for a specific number
+> would be the same loose attribution the gate exists to catch. The interval is instead sourced to
+> the FDA-approved PROZAC labeling §2.9, quoted verbatim in the registry entry's `identity.note`,
+> with `identity.status: exception` because there is no bibliographic record to resolve. This is
+> the second strain on the literature assumption after `ethics_legal`'s statutes (D-11) — a
+> first-class `labeling` / `regulatory` source type is worth considering if a third appears.
 
 ### Promote to `high` — judgment calls, your call (3)
 
