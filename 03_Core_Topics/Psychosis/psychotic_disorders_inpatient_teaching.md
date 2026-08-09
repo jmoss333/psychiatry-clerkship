@@ -38,4 +38,4 @@ and [responding to guardedness without escalating it](?tool=communication-practi
 
 **Pair with** — the [Family Meeting Playbook (90-min)](?page=family_playbook.md), the protocol library (benzo taper, clozapine), the Decisional Capacity tool, the Differential Diagnosis scaffolds, and the [What Do You Say Next? communication cases](?tool=communication-practice.html&case=psychosis_validation_001).
 
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. The NMS and serotonin-syndrome material here is for recognition, not for ordering — antidote selection and dosing go through your attending, pharmacy, and toxicology.*
