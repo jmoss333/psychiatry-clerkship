@@ -2813,7 +2813,17 @@
   "epa": [
    "EPA2",
    "EPA4"
-  ]
+  ],
+  "safetyLevel": "high",
+  "evidenceIds": [
+   "fda-prozac-label-maoi-switching",
+   "boyer-shannon-2005-serotonin-syndrome"
+  ],
+  "facultyReview": {
+   "status": "reviewed",
+   "reviewer": "Joshua Moss, MD",
+   "lastReviewed": "2026-08-09"
+  }
  },
  "ddx.md": {
   "read": 4,

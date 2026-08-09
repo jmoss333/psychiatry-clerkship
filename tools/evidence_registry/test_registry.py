@@ -109,6 +109,7 @@ SAFETY_GATE_IDS = {
     "apa-eating-disorders-2023",
     "boyer-shannon-2005-serotonin-syndrome",
     "cipriani-2013-lithium-suicide",
+    "fda-prozac-label-maoi-switching",
     "lima-2004-betablockers-akathisia",
     "mckeith-2017-dlb-consensus",
     "nasreddine-2005-moca",

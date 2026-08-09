@@ -57,4 +57,4 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 19. **Furukawa et al.** — Optimal SSRI Dosing (SSRIs)
 20. **Lichtenstein et al.** — ADHD Medication Reduces Criminality (Stimulants)
 
-*Source: a ranked psychopharmacology curriculum (OpenEvidence); Reviewed and attested by Joshua Moss, MD (2026-07-09); verify citations before clinical use.*
+*Source: a ranked psychopharmacology curriculum (OpenEvidence); Reviewed and attested by Joshua Moss, MD (2026-07-09); verify citations before clinical use. Washout intervals and monitoring schedules here are teaching illustrations — confirm each one against current FDA labeling for the specific agent, and escalate rather than titrate.*
