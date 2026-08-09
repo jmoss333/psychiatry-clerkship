@@ -38,4 +38,4 @@ without arguing, shaming, or making promises about discharge.
 
 **Pair with** — the <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam tool</a> for documenting mood, affect, and psychotic features; the [Differential Diagnosis scaffolds](?page=ddx.md) for the medical-mimic differential; the [suicide-risk & safety pocket card](?page=pg_suicide.md) for structured risk assessment and safety planning; and the [What Do You Say Next? mania case](?tool=communication-practice.html&case=mania_limit_sleep_001).
 
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Lithium targets and interaction lists here are teaching illustrations, not prescribing guidance — verify levels, interactions, and any pregnancy-related decision against current labeling and your attending.*
