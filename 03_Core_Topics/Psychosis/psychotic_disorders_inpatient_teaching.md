@@ -27,12 +27,12 @@ and [responding to guardedness without escalating it](?tool=communication-practi
 **High-yield pearls**
 - Psychosis is a syndrome — exclude delirium, substances, and autoimmune/seizure causes before calling it primary.
 - First-episode psychosis earns a medical workup ± neuroimaging; the organic yield is highest here.
-- Per CATIE, pick the antipsychotic by side-effect fit; "newer" is not automatically better.
+- Per CATIE, pick the antipsychotic by side-effect fit; "newer" is not automatically better.[^lieberman-2005-catie]
 - Anosognosia is not denial — use LEAP, not debate, to build the alliance.
-- Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).
+- Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).[^clozapine-rems]
 - Beyond the ANC: clozapine can cause **myocarditis** (especially in the first weeks), **severe constipation/ileus**, seizures, and orthostasis — monitor for these, not just the count.
-- **Neuroleptic malignant syndrome** (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.
-- **NMS vs. serotonin syndrome**: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS. Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.
+- **Neuroleptic malignant syndrome** (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.[^strawn-2007-neuroleptic-malignant-syndrome]
+- **NMS vs. serotonin syndrome**: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.
 
 <!-- crisis-block -->
 

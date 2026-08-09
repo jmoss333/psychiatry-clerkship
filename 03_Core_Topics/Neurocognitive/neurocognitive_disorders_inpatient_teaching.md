@@ -20,7 +20,7 @@
 
 **Initial workup** — Establish the cognitive baseline and trajectory from family and records. Cognitive screen — the **MoCA is more sensitive than the MMSE** for mild impairment and executive/visuospatial domains. Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Neuroimaging (CT or MRI) for atypical, rapid, focal, or early-onset presentations. Medication reconciliation to strip anticholinergic and sedative burden. Formally assess **decisional capacity** and safety (driving, wandering, finances, firearms).
 
-**Acute inpatient management** — For **behavioral and psychological symptoms of dementia (BPSD)**, nonpharmacologic measures are first-line: identify the trigger (pain, constipation, infection, fear, overstimulation), reorient, keep routines, involve family. Reserve medication for danger or severe distress. **Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis** — use the lowest dose for the shortest time, document informed consent, and reassess. **In Lewy body dementia, avoid antipsychotics** (especially typicals) because of life-threatening neuroleptic sensitivity — if one is unavoidable, quetiapine or pimavanserin are lower-risk choices. Cognitive symptoms: **cholinesterase inhibitors** (donepezil, rivastigmine, galantamine) for mild–moderate Alzheimer/Lewy body disease; add **memantine** (NMDA antagonist) for moderate–severe disease. Newer **anti-amyloid antibodies (lecanemab, donanemab)** modestly slow *early* Alzheimer decline but require amyloid confirmation and ARIA (edema/hemorrhage) MRI monitoring — specialist-initiated, not started on a psych unit.
+**Acute inpatient management** — For **behavioral and psychological symptoms of dementia (BPSD)**, nonpharmacologic measures are first-line: identify the trigger (pain, constipation, infection, fear, overstimulation), reorient, keep routines, involve family. Reserve medication for danger or severe distress. **Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis**[^fda-drug-safety] — use the lowest dose for the shortest time, document informed consent, and reassess. **In Lewy body dementia, avoid antipsychotics** (especially typicals) because of life-threatening neuroleptic sensitivity — if one is unavoidable, quetiapine or pimavanserin are lower-risk choices. Cognitive symptoms: **cholinesterase inhibitors** (donepezil, rivastigmine, galantamine) for mild–moderate Alzheimer/Lewy body disease; add **memantine** (NMDA antagonist) for moderate–severe disease. Newer **anti-amyloid antibodies (lecanemab, donanemab)** modestly slow *early* Alzheimer decline but require amyloid confirmation and ARIA (edema/hemorrhage) MRI monitoring — specialist-initiated, not started on a psych unit.
 
 **What the student does** —
 - Sort delirium vs dementia vs depression explicitly — lead with onset, course, and attention.
@@ -33,11 +33,11 @@
 
 **High-yield pearls**
 - New, fluctuating confusion with inattention = delirium, not "worse dementia" — work it up.
-- Antipsychotics in dementia carry a black-box mortality warning; nonpharmacologic first, and **avoid neuroleptics in Lewy body disease**.
-- Lewy body **core four** = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a *supportive* feature — it doesn't make the diagnosis, but it decides what you must not prescribe.
+- Antipsychotics in dementia carry a black-box mortality warning[^schneider-2005-antipsychotic-dementia-mortality]; nonpharmacologic first, and **avoid neuroleptics in Lewy body disease**.
+- Lewy body **core four** = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a *supportive* feature — it doesn't make the diagnosis, but it decides what you must not prescribe.[^mckeith-2017-dlb-consensus]
 - Frontotemporal dementia: young(er), behavior/personality or language first, memory later.
 - NPH triad = wet, wacky, wobbly (incontinence, cognition, gait) — potentially reversible with shunting.
-- MoCA beats MMSE for mild and executive impairment.
+- MoCA beats MMSE for mild and executive impairment.[^nasreddine-2005-moca]
 - Cholinesterase inhibitors for mild–moderate; add memantine for moderate–severe.
 
 **Pair with** — [Delirium](?page=delirium.md), the [Geriatric Psychiatry topic](?page=t_geri.md), the [Differential Diagnosis scaffolds](?page=ddx.md), and the <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity tool</a>.
