@@ -64,6 +64,9 @@ common.copy_required_sources(RES_EXTRA, LIB, OUT+"/content", label="resident con
 # Resident-only markdown is written fresh above (not inherited via the copytree), so it
 # needs the same banner-strip + contrast fix every MS3 content page already received.
 common.strip_review_banners(OUT)
+# RES_EXTRA pages are copied from source AFTER the MS3 strip, so they need their own.
+_evidence_ids=[s.get("id") for s in json.load(open(OUT+"/evidence_registry.json",encoding="utf-8")).get("sources",[])]
+common.strip_claim_anchors(OUT, _evidence_ids)
 common.apply_contrast_fix(glob.glob(OUT+"/content/*.md"))
 
 # ---- resident-only prototype tools (reconciled into source build 2026-07-02) ----

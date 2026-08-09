@@ -75,6 +75,12 @@ jobs:
       - name: Validate — topic_meta.json contract
         run: python3 13_Faculty_Resources/_automation/validate_topic_meta.py
 
+      - name: Test — claim-anchor validator
+        run: python3 13_Faculty_Resources/_automation/test_validate_claim_anchors.py
+
+      - name: Validate — claim anchors resolve to declared evidence
+        run: python3 13_Faculty_Resources/_automation/validate_claim_anchors.py
+
       - name: Validate — longitudinal case contract
         run: python3 13_Faculty_Resources/_automation/test_longitudinal_case.py
 
