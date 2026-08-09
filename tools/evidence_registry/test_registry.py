@@ -101,6 +101,20 @@ SURVEILLANCE_IDS = {
     "spravato-rems",
     "uspstf-mental-health",
 }
+# Evidence added by the 2026-08-08 safety-level audit to hard-gate high-risk
+# topics (see docs/SAFETY_LEVEL_AUDIT_2026-08-08.md).
+SAFETY_GATE_IDS = {
+    "apa-eating-disorders-2023",
+    "boyer-shannon-2005-serotonin-syndrome",
+    "cipriani-2013-lithium-suicide",
+    "lima-2004-betablockers-akathisia",
+    "strawn-2007-neuroleptic-malignant-syndrome",
+}
+# The registry inventory is locked to this union: a source added without being
+# registered here fails the canary below, which is the point. Deriving the
+# expected count from the union keeps the count assertion honest (it still
+# catches duplicate ids) without making every batch a three-site magic-number edit.
+ALL_SOURCE_IDS = EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS
 REFERENCE_FILES = (
     "topic_meta.json",
     "tool_registry.json",
@@ -330,8 +344,8 @@ def test_canonical_registry_preserves_all_prior_ids_when_surveillance_is_added()
     registry = load_evidence_registry(REGISTRY_PATH)
     source_ids = set(index_sources(registry))
 
-    assert len(registry["sources"]) == 36
-    assert EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS == source_ids
+    assert len(registry["sources"]) == len(ALL_SOURCE_IDS)
+    assert ALL_SOURCE_IDS == source_ids
 
 
 def test_published_schema_governance_is_required_for_every_canonical_source():
@@ -340,7 +354,7 @@ def test_published_schema_governance_is_required_for_every_canonical_source():
     assert {"supersededBy", "correctionStatus"} <= required
 
     registry = load_evidence_registry(REGISTRY_PATH)
-    assert len(registry["sources"]) == 36
+    assert len(registry["sources"]) == len(ALL_SOURCE_IDS)
     for position, source in enumerate(registry["sources"]):
         assert source["governance"]["supersededBy"] == [], position
         assert source["governance"]["correctionStatus"] == "none-known", position
@@ -1312,7 +1326,7 @@ def test_site_build_writes_deterministic_safe_public_registry():
     public = json.loads(first_bytes)
     canonical = load_evidence_registry(REGISTRY_PATH)
     assert set(public) == {"schemaVersion", "sources"}
-    assert len(public["sources"]) == 36
+    assert len(public["sources"]) == len(ALL_SOURCE_IDS)
     assert {source["id"] for source in public["sources"]} == set(
         index_sources(canonical)
     )

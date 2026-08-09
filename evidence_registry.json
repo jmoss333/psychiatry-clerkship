@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-07-18",
+  "updated": "2026-08-08",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -2303,6 +2303,220 @@
         "clerkshipRelevance": "Supports recognition of mania and mixed features, treatment-emergent (antidepressant-induced) switch risk, and suicide-risk awareness in mixed states under supervision.",
         "shelfComatRelevance": "High",
         "clinicalWorkflowRelevance": "High"
+      }
+    },
+    {
+      "id": "boyer-shannon-2005-serotonin-syndrome",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "The serotonin syndrome.",
+        "authors": [
+          {
+            "family": "Boyer",
+            "given": "Edward W"
+          },
+          {
+            "family": "Shannon",
+            "given": "Michael"
+          }
+        ],
+        "organization": "",
+        "year": 2005,
+        "journal": "The New England Journal of Medicine",
+        "volume": "352",
+        "pages": "1112-1120",
+        "doi": "10.1056/NEJMra041867",
+        "pmid": "15784664",
+        "url": "https://doi.org/10.1056/NEJMra041867"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 15784664 resolved: title, both authors, 2005, NEJM 352:1112-20 and DOI all match the inline citation on t_psychosis.md:15."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "strawn-2007-neuroleptic-malignant-syndrome",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "Neuroleptic malignant syndrome.",
+        "authors": [
+          {
+            "family": "Strawn",
+            "given": "Jeffrey R"
+          },
+          {
+            "family": "Keck",
+            "given": "Paul E"
+          },
+          {
+            "family": "Caroff",
+            "given": "Stanley N"
+          }
+        ],
+        "organization": "",
+        "year": 2007,
+        "journal": "The American Journal of Psychiatry",
+        "volume": "164",
+        "pages": "870-876",
+        "doi": "10.1176/ajp.2007.164.6.870",
+        "pmid": "17541044",
+        "url": "https://doi.org/10.1176/ajp.2007.164.6.870"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 17541044 resolved: title, all three authors, 2007, Am J Psychiatry 164(6):870-6 and DOI all match the inline citation on t_psychosis.md:15."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "lima-2004-betablockers-akathisia",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Central action beta-blockers versus placebo for neuroleptic-induced acute akathisia.",
+        "authors": [
+          {
+            "family": "Lima",
+            "given": "A R"
+          },
+          {
+            "family": "Bacalcthuk",
+            "given": "J"
+          },
+          {
+            "family": "Barnes",
+            "given": "T R E"
+          },
+          {
+            "family": "Soares-Weiser",
+            "given": "K"
+          }
+        ],
+        "organization": "",
+        "year": 2004,
+        "journal": "Cochrane Database of Systematic Reviews",
+        "volume": "2004",
+        "pages": "CD001946",
+        "doi": "10.1002/14651858.CD001946.pub2",
+        "pmid": "15495022",
+        "url": "https://doi.org/10.1002/14651858.CD001946.pub2"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 15495022 resolved and matches. IMPORTANT - this review does NOT support a strong-evidence claim: 3 RCTs, total n=51, maximum 72 hours, concluding verbatim 'There are insufficient data to recommend beta-blocking drugs for akathisia. These drugs are experimental for this problem.' Its scope is central-action beta-blockers, not propranolol specifically. t_anxiety.md previously cited it as 'the strongest evidence'; that wording was corrected in the same commit that registered this source. Cite it for the thinness of the evidence base, not for endorsement."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "cipriani-2013-lithium-suicide",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Lithium in the prevention of suicide in mood disorders: updated systematic review and meta-analysis.",
+        "authors": [
+          {
+            "family": "Cipriani",
+            "given": "Andrea"
+          },
+          {
+            "family": "Hawton",
+            "given": "Keith"
+          },
+          {
+            "family": "Stockton",
+            "given": "Sarah"
+          },
+          {
+            "family": "Geddes",
+            "given": "John R"
+          }
+        ],
+        "organization": "",
+        "year": 2013,
+        "journal": "BMJ",
+        "volume": "346",
+        "pages": "f3646",
+        "doi": "10.1136/bmj.f3646",
+        "pmid": "23814104",
+        "url": "https://doi.org/10.1136/bmj.f3646"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 23814104 resolved and matches. 48 RCTs, 6674 participants; lithium vs placebo for suicide OR 0.13 (95% CI 0.03-0.66) and all-cause death OR 0.38 (0.15-0.95). Directly supports the anti-suicidal claim on t_mood.md:13."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "apa-eating-disorders-2023",
+      "type": "guideline",
+      "citation": {
+        "title": "The American Psychiatric Association Practice Guideline for the Treatment of Patients With Eating Disorders.",
+        "authors": [
+          {
+            "family": "Crone",
+            "given": "Catherine"
+          },
+          {
+            "family": "Fochtmann",
+            "given": "Laura J"
+          },
+          {
+            "family": "Attia",
+            "given": "Evelyn"
+          }
+        ],
+        "organization": "American Psychiatric Association",
+        "year": 2023,
+        "journal": "The American Journal of Psychiatry",
+        "volume": "180",
+        "pages": "167-171",
+        "doi": "10.1176/appi.ajp.23180001",
+        "pmid": "36722117",
+        "url": "https://doi.org/10.1176/appi.ajp.23180001"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 36722117 resolved: title, 2023, Am J Psychiatry 180(2):167-171 and DOI match. Author list truncated to the first three of twenty."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
       }
     }
   ]
