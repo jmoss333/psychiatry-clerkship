@@ -140,6 +140,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Validate — topic_meta.json contract"),
             ("name", "Test — claim-anchor validator"),
             ("name", "Validate — claim anchors resolve to declared evidence"),
+            ("name", "Test — evidence drill generator"),
+            ("name", "Validate — evidence drill is regenerated from current anchors"),
             ("name", "Validate — longitudinal case contract"),
             ("name", "Unit — shelf/COMAT question bank data-quality gate"),
             ("name", "Validate — family systems scenarios contract"),
@@ -299,7 +301,7 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "ci.yml": "63d9c0da5670ef39362f475798f129ff0ad9b5a6ba27ad90ceaf4d2eba7a8096",
+    "ci.yml": "faf7199ce4f1be97757fba6d15aad13406395dd3a0953394936feb9c5331c609",
     "maintenance-governance-digest.yml": (
         "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
     ),
