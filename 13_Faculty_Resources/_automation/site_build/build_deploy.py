@@ -341,6 +341,9 @@ print("tools:",len(tools)," md copied:",len(md)-len(missing)," missing:",missing
 # hard-fails any shipped page a transform silently missed.
 import glob as _glob
 common.strip_review_banners(OUT)
+# [^source-id] is reviewer bookkeeping, not learner text. Pass the real ids so a
+# regex sample or array index that looks like an anchor is left alone.
+common.strip_claim_anchors(OUT, [s.get("id") for s in _canonical_evidence.get("sources", [])])
 common.apply_contrast_fix(
     _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]
 )

@@ -361,6 +361,33 @@ def strip_review_banners(out_dir):
     return n
 
 
+def strip_claim_anchors(out_dir, known_ids):
+    """Remove `[^source-id]` claim anchors from built markdown.
+
+    Anchors bind an individual claim to the registry source that backs it, so a
+    number can't sit unsourced beside sourced ones (see
+    validate_claim_anchors.py). They are author- and reviewer-facing metadata and
+    never ship — a learner should read the sentence, not the bookkeeping.
+
+    Only anchors naming a REAL registry id are stripped. The validator uses a
+    permissive pattern because it has to catch typos, but a build-time rewrite
+    must never damage prose: `arr[^2]` and a regex sample like `[^a-z]` both
+    match the permissive pattern, and both survive here untouched.
+    """
+    ids = sorted({i for i in (known_ids or []) if i}, key=len, reverse=True)
+    if not ids:
+        return 0
+    pattern = re.compile(r"\[\^(?:%s)\]" % "|".join(re.escape(i) for i in ids))
+    n = 0
+    for f in glob.glob(os.path.join(out_dir, "content", "*.md")):
+        t = open(f, encoding="utf-8").read()
+        t2 = pattern.sub("", t)
+        if t2 != t:
+            open(f, "w", encoding="utf-8").write(t2)
+            n += 1
+    return n
+
+
 def apply_contrast_fix(paths):
     """Darken the legacy mid-tone so it clears WCAG AA."""
     old, new = CONTRAST_FIX

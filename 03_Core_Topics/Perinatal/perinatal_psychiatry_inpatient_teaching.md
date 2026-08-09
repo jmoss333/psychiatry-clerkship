@@ -24,7 +24,7 @@
 <!-- crisis-block -->
 
 **High-yield pearls** —
-- Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is **~0.9–2.6 per 1,000 women**, usually within the first 1–4 weeks. In women with a prior postpartum psychosis, **~29%** have a severe episode after a subsequent delivery; for women with *both* bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all — so future pregnancies warrant advance planning either way.
+- Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is **~0.9–2.6 per 1,000 women**[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, **~29%** have a severe episode after a subsequent delivery; for women with *both* bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.
 - A clear hour does not rule out psychosis; the waxing/waning course is the illness.
 - The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.
 - Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.
