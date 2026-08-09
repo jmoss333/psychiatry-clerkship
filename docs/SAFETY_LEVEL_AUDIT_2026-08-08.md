@@ -1,7 +1,8 @@
 # `safetyLevel` audit — all 71 topics
 
 **Date:** 2026-08-08 · **Against:** `origin/main` @ `88bd411` · **Author:** Joshua Moss, MD (with Claude)
-**Status:** D-1 through D-7 **approved by faculty and implemented** (this PR). D-8 through D-17 still open.
+**Status:** D-1 through D-7 **approved by faculty and implemented** (PR #326). **D-17 implemented**
+— caution lines added to the four unguarded pages. D-8 through D-16 still open.
 
 > **Faculty attestation, 2026-08-08:** Joshua Moss, MD reviewed the content of all seven pages and
 > confirmed them clinically accurate and safe. `facultyReview` on those topics records that review.
@@ -70,16 +71,17 @@ and cheaper to fix:
 
 | Page | Safety-bearing content | Caution / deferral present |
 |---|---|---|
-| `t_anxiety.md` | propranolol 20–40 mg BID, clonazepam 0.5–1 mg, mirtazapine 15 mg, β-blocker contraindications | **none** |
-| `adv_psychopharm.md` | MAOI contraindications, clozapine ileus/myocarditis, lithium interactions | **none** |
-| `t_psychosis.md` | NMS vs SS discriminator, dantrolene/bromocriptine/cyproheptadine | **none** |
-| `t_mood.md` | lithium 0.6–1.2 mEq/L, NSAID/ACE/thiazide interaction, valproate teratogenicity | **none** |
+| `t_anxiety.md` | propranolol 20–40 mg BID, clonazepam 0.5–1 mg, mirtazapine 15 mg, β-blocker contraindications | ~~none~~ → footer deferral (D-17) |
+| `adv_psychopharm.md` | MAOI contraindications, clozapine ileus/myocarditis, lithium interactions | ~~none~~ → footer deferral (D-17) |
+| `t_psychosis.md` | NMS vs SS discriminator, dantrolene/bromocriptine/cyproheptadine | ~~none~~ → footer deferral (D-17) |
+| `t_mood.md` | lithium 0.6–1.2 mEq/L, NSAID/ACE/thiazide interaction, valproate teratogenicity | ~~none~~ → footer deferral (D-17) |
 | `t_eating.md` | admission thresholds (HR <40–50), refeeding, fluoxetine 60 mg | 2 in-body deferrals |
 | `nutrition_metabolic.md` | timed metabolic schedule, tyramine restriction | 3 layers |
 | `systems_medlegal.md` | commitment procedure, restraints, medication over objection | strongest in repo, in-body |
 
-`t_anxiety.md` is the sharpest single item in this audit: **four explicit mg doses, a
-contraindication list, and not one word of caution or deferral.**
+`t_anxiety.md` was the sharpest single item in this audit: **four explicit mg doses, a
+contraindication list, and not one word of caution or deferral.** D-17 closed that gap on all
+four pages; the deferral names each page's own hazard rather than repeating a generic disclaimer.
 
 ---
 
@@ -136,7 +138,7 @@ into a positive statement, at the cost of 40 mechanical edits.
 |---|---|
 | D-15 | Should `moderate` require `facultyReview` (but not `evidenceIds`)? Today it enforces nothing. This would add 6–15 review obligations but make the middle tier mean something. |
 | D-16 | Should `adv_psychopharm.md` and `systems_medlegal.md` be added to `site_manifest.json` so `validate_attestation_consistency.py` covers them? They are resident-only today and invisible to it. |
-| D-17 | Separate from tagging: add a caution/deferral line to the 4 unguarded high-risk pages (D-3, D-4, D-5, D-6). This needs no evidence and no attestation — it is one line each and could ship this week. |
+| ~~D-17~~ | ~~Separate from tagging: add a caution/deferral line to the 4 unguarded high-risk pages (D-3, D-4, D-5, D-6).~~ **Done.** Each footer now carries a deferral naming that page's specific hazard — β-blocker contraindications (`t_anxiety`), NMS/SS antidote selection (`t_psychosis`), lithium levels and interactions (`t_mood`), washouts and clozapine REMS (`adv_psychopharm`). |
 
 ---
 

@@ -36,4 +36,4 @@
 
 **Pair with** — the Mental Status Exam tool (Language & Interview tab) for eliciting anxiety and trauma history without retraumatizing; the **Reflection & PIF** set (the Reflection & Identity tool) to process your own response to distressing presentations; and the **Differential Diagnosis** scaffolds for working the anxiety-mimic list systematically.
 
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Doses here are teaching illustrations, not prescribing guidance — verify every dose and contraindication (β-blockers in asthma, bradycardia, or heart block) against current labeling and your attending.*
