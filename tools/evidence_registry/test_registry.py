@@ -102,13 +102,20 @@ SURVEILLANCE_IDS = {
     "uspstf-mental-health",
 }
 # Evidence added by the 2026-08-08 safety-level audit to hard-gate high-risk
-# topics (see docs/SAFETY_LEVEL_AUDIT_2026-08-08.md).
+# topics (see docs/SAFETY_LEVEL_AUDIT_2026-08-08.md). One set across all batches,
+# kept alphabetical — per-batch constants would multiply without earning anything,
+# since the union below is what actually locks the inventory.
 SAFETY_GATE_IDS = {
     "apa-eating-disorders-2023",
     "boyer-shannon-2005-serotonin-syndrome",
     "cipriani-2013-lithium-suicide",
     "lima-2004-betablockers-akathisia",
+    "mckeith-2017-dlb-consensus",
+    "nasreddine-2005-moca",
+    "schneider-2005-antipsychotic-dementia-mortality",
     "strawn-2007-neuroleptic-malignant-syndrome",
+    "vanderkruik-2017-postpartum-psychosis-prevalence",
+    "wesseloo-2016-postpartum-relapse",
 }
 # The registry inventory is locked to this union: a source added without being
 # registered here fails the canary below, which is the point. Deriving the

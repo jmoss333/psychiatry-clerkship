@@ -1460,7 +1460,19 @@
    "EPA1",
    "EPA2",
    "EPA3"
-  ]
+  ],
+  "safetyLevel": "high",
+  "evidenceIds": [
+   "schneider-2005-antipsychotic-dementia-mortality",
+   "mckeith-2017-dlb-consensus",
+   "nasreddine-2005-moca",
+   "fda-drug-safety"
+  ],
+  "facultyReview": {
+   "status": "reviewed",
+   "reviewer": "Joshua Moss, MD",
+   "lastReviewed": "2026-08-08"
+  }
  },
  "t_sexual.md": {
   "read": 5,
@@ -2532,7 +2544,17 @@
    "EPA1",
    "EPA2",
    "EPA10"
-  ]
+  ],
+  "safetyLevel": "high",
+  "evidenceIds": [
+   "wesseloo-2016-postpartum-relapse",
+   "vanderkruik-2017-postpartum-psychosis-prevalence"
+  ],
+  "facultyReview": {
+   "status": "reviewed",
+   "reviewer": "Joshua Moss, MD",
+   "lastReviewed": "2026-08-08"
+  }
  },
  "nutrition_metabolic.md": {
   "read": 5,

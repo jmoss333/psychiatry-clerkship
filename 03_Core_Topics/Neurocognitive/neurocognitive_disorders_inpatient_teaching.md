@@ -14,7 +14,7 @@
 - **Subtypes that change management:**
   - *Alzheimer disease* — insidious, amnestic-predominant, gradual.
   - *Vascular* — stepwise decline, focal signs, vascular risk factors.
-  - *Lewy body dementia* — **fluctuating cognition, recurrent visual hallucinations, spontaneous parkinsonism, REM sleep behavior disorder, and severe neuroleptic sensitivity.**
+  - *Lewy body dementia* — four **core** clinical features: **fluctuating cognition, recurrent visual hallucinations, REM sleep behavior disorder, and spontaneous parkinsonism.** **Severe neuroleptic sensitivity is a *supportive* feature, not a core one** (DLB Consortium, fourth consensus report) — it does not make the diagnosis, but it is the feature with the most immediate consequence, so let it govern what you prescribe rather than what you conclude.
   - *Frontotemporal* — younger onset with early personality/behavior change or progressive aphasia; memory relatively spared early.
   - *Creutzfeldt-Jakob* — rapidly progressive dementia with myoclonus.
 
@@ -34,7 +34,7 @@
 **High-yield pearls**
 - New, fluctuating confusion with inattention = delirium, not "worse dementia" — work it up.
 - Antipsychotics in dementia carry a black-box mortality warning; nonpharmacologic first, and **avoid neuroleptics in Lewy body disease**.
-- Lewy body = fluctuating cognition + visual hallucinations + parkinsonism + REM sleep behavior disorder + neuroleptic sensitivity.
+- Lewy body **core four** = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a *supportive* feature — it doesn't make the diagnosis, but it decides what you must not prescribe.
 - Frontotemporal dementia: young(er), behavior/personality or language first, memory later.
 - NPH triad = wet, wacky, wobbly (incontinence, cognition, gait) — potentially reversible with shunting.
 - MoCA beats MMSE for mild and executive impairment.
@@ -42,4 +42,4 @@
 
 **Pair with** — [Delirium](?page=delirium.md), the [Geriatric Psychiatry topic](?page=t_geri.md), the [Differential Diagnosis scaffolds](?page=ddx.md), and the <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity tool</a>.
 
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Antipsychotic use in dementia carries a black-box mortality warning and, in Lewy body disease, a risk of life-threatening neuroleptic sensitivity — any agent, dose, or duration here is a teaching illustration, and the decision goes through your attending.*
