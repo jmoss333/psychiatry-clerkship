@@ -16,8 +16,8 @@
 | **Malignant catatonia** | Underlying catatonia (may have *no* recent antipsychotic) | Days | **Rigidity, waxy flexibility, posturing, mutism** | Diaphoretic | Variable | Stop antipsychotics; benzodiazepine (lorazepam challenge); **ECT is definitive** |
 
 **The discriminators that actually decide it.**
-- **Lead-pipe rigidity + hyporeflexia → NMS.**
-- **Clonus + hyperreflexia, worse in the legs → serotonin syndrome.**
+- **Lead-pipe rigidity + hyporeflexia → NMS.**[^strawn-2007-neuroleptic-malignant-syndrome]
+- **Clonus + hyperreflexia, worse in the legs → serotonin syndrome.**[^boyer-shannon-2005-serotonin-syndrome]
 - **Dry, flushed skin + mydriasis + urinary retention → anticholinergic toxicity** (serotonin syndrome is *wet*; anticholinergic is *dry* — "dry as a bone").
 - **Waxy flexibility/posturing, especially without a clear drug trigger → malignant catatonia** (NMS and malignant catatonia overlap so much that many regard NMS as a drug-induced malignant catatonia; the shared imperative is to stop antipsychotics).
 
@@ -30,7 +30,7 @@
 - The medication change in the last 72 hours names the syndrome — always reconstruct it.
 - Hyporeflexia points to NMS; hyperreflexia and clonus point to serotonin syndrome.
 - Never give an antipsychotic in NMS or malignant catatonia — antipsychotics are the problem, not the treatment.
-- ECT is the definitive treatment for malignant catatonia (and for NMS-catatonia overlap).
+- ECT is the definitive treatment for malignant catatonia (and for NMS-catatonia overlap).[^bap-catatonia-2023]
 - Cyproheptadine is the antidote-of-choice for serotonin syndrome; dantrolene/bromocriptine for NMS; benzodiazepines help NMS, serotonin syndrome, and catatonia alike.
 
 **Pair with** Catatonia (and the Bush-Francis scale), Agitation & Restraint, the Psychopharmacology Primer, and Delirium.
