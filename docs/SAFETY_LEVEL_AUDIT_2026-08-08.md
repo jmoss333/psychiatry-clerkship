@@ -103,8 +103,8 @@ legal standards.
 | D-5 | `t_psychosis.md` | unset | NMS vs SS discriminator with antidote-level management | Wrong syndrome identified → wrong antidote, continued dopamine blockade, death |
 | D-6 | `t_mood.md` | unset | Lithium 0.6–1.2 mEq/L + interaction list; valproate teratogenicity | Level misread or NSAID interaction missed → lithium toxicity, permanent neuro sequelae |
 | D-7 | `t_eating.md` | unset | Medical-admission thresholds, refeeding, fluoxetine 60 mg, bupropion contraindication | AN patient with HR 42 kept on a psych bed → arrest; bupropion in a purger → seizure |
-| D-8 | `t_perinatal.md` | unset | Pregnancy/lactation drug guidance; postpartum psychosis as emergency | Missed postpartum psychosis → maternal suicide or infanticide; teratogenic exposure |
-| D-9 | `t_neurocog.md` | unset | Black-box mortality; **avoid antipsychotics in Lewy body dementia** | Typical antipsychotic in unrecognized LBD → neuroleptic sensitivity reaction, death |
+| D-8 | `t_perinatal.md` | unset → **high** ✅ | Pregnancy/lactation drug guidance; postpartum psychosis as emergency | Missed postpartum psychosis → maternal suicide or infanticide; teratogenic exposure |
+| D-9 | `t_neurocog.md` | unset → **high** ✅ | Black-box mortality; **avoid antipsychotics in Lewy body dementia** | Typical antipsychotic in unrecognized LBD → neuroleptic sensitivity reaction, death |
 | D-10 | `psychopharm_primer.md` | unset | MAOI washout intervals (≥2 wk; ≥5 wk fluoxetine) | Wrong washout acted on → serotonin syndrome or hypertensive crisis |
 
 ### Promote to `high` — judgment calls, your call (3)

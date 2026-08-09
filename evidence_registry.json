@@ -2518,6 +2518,256 @@
         "supersededBy": [],
         "correctionStatus": "none-known"
       }
+    },
+    {
+      "id": "schneider-2005-antipsychotic-dementia-mortality",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Risk of death with atypical antipsychotic drug treatment for dementia: meta-analysis of randomized placebo-controlled trials.",
+        "authors": [
+          {
+            "family": "Schneider",
+            "given": "Lon S"
+          },
+          {
+            "family": "Dagerman",
+            "given": "Karen S"
+          },
+          {
+            "family": "Insel",
+            "given": "Philip"
+          }
+        ],
+        "organization": "",
+        "year": 2005,
+        "journal": "JAMA",
+        "volume": "294",
+        "pages": "1934-1943",
+        "doi": "10.1001/jama.294.15.1934",
+        "pmid": "16234500",
+        "url": "https://doi.org/10.1001/jama.294.15.1934"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 16234500 resolved: title, all three authors, 2005, JAMA 294(15):1934-43 and DOI all match. 15 trials, 3353 drug vs 1757 placebo; death 3.5% vs 2.3%, OR 1.54 (95% CI 1.06-2.23). This is the evidence base behind the FDA class warning cited on t_neurocog.md. Scope note: the meta-analysis covers ATYPICAL antipsychotics only and the authors characterise the effect as a SMALL increased risk - do not cite it as evidence about typical agents, and do not attach it to a claim stronger than the odds ratio supports."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "mckeith-2017-dlb-consensus",
+      "type": "consensus",
+      "citation": {
+        "title": "Diagnosis and management of dementia with Lewy bodies: Fourth consensus report of the DLB Consortium.",
+        "authors": [
+          {
+            "family": "McKeith",
+            "given": "Ian G"
+          },
+          {
+            "family": "Boeve",
+            "given": "Bradley F"
+          },
+          {
+            "family": "Dickson",
+            "given": "Dennis W"
+          },
+          {
+            "family": "Halliday",
+            "given": "Glenda"
+          },
+          {
+            "family": "Taylor",
+            "given": "John-Paul"
+          }
+        ],
+        "organization": "DLB Consortium",
+        "year": 2017,
+        "journal": "Neurology",
+        "volume": "89",
+        "pages": "88-100",
+        "doi": "10.1212/WNL.0000000000004058",
+        "pmid": "28592453",
+        "url": "https://doi.org/10.1212/WNL.0000000000004058"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 28592453 resolved: title, first author, 2017, Neurology 89(1):88-100 and DOI all match. Author list truncated to the first five of 64. CAUTION - a near-identical record exists at PMID 29438029, 'Author response: Diagnosis and management of dementia with Lewy bodies...', Neurology 90(6):300-301, which is a one-page comment and NOT the consensus criteria; do not substitute it. Scope note: this report names four CORE clinical features (fluctuating cognition, recurrent visual hallucinations, REM sleep behaviour disorder, spontaneous parkinsonism) and lists severe antipsychotic sensitivity as a SUPPORTIVE feature, downgraded from 'suggestive' in this revision - do not cite it to support calling neuroleptic sensitivity a core feature."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "nasreddine-2005-moca",
+      "type": "instrument",
+      "citation": {
+        "title": "The Montreal Cognitive Assessment, MoCA: a brief screening tool for mild cognitive impairment.",
+        "authors": [
+          {
+            "family": "Nasreddine",
+            "given": "Ziad S"
+          },
+          {
+            "family": "Phillips",
+            "given": "Natalie A"
+          },
+          {
+            "family": "B\u00e9dirian",
+            "given": "Val\u00e9rie"
+          },
+          {
+            "family": "Charbonneau",
+            "given": "Simon"
+          },
+          {
+            "family": "Whitehead",
+            "given": "Victor"
+          }
+        ],
+        "organization": "",
+        "year": 2005,
+        "journal": "Journal of the American Geriatrics Society",
+        "volume": "53",
+        "pages": "695-699",
+        "doi": "10.1111/j.1532-5415.2005.53221.x",
+        "pmid": "15817019",
+        "url": "https://doi.org/10.1111/j.1532-5415.2005.53221.x"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 15817019 resolved: title, first author, 2005, J Am Geriatr Soc 53(4):695-9 and DOI all match. Author list truncated to the first five of eight. At a cutoff of 26 the MMSE detected 18% of MCI cases vs 90% for the MoCA; specificity 100% vs 87%. Scope note: these are the ORIGINAL validation figures in a sample selected to perform in the normal range on the MMSE, which inflates the contrast - it supports 'MoCA is more sensitive than MMSE for mild impairment' but not a specific sensitivity number quoted at the bedside."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "wesseloo-2016-postpartum-relapse",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Risk of Postpartum Relapse in Bipolar Disorder and Postpartum Psychosis: A Systematic Review and Meta-Analysis.",
+        "authors": [
+          {
+            "family": "Wesseloo",
+            "given": "Richard"
+          },
+          {
+            "family": "Kamperman",
+            "given": "Astrid M"
+          },
+          {
+            "family": "Munk-Olsen",
+            "given": "Trine"
+          },
+          {
+            "family": "Pop",
+            "given": "Victor J M"
+          },
+          {
+            "family": "Kushner",
+            "given": "Steven A"
+          },
+          {
+            "family": "Bergink",
+            "given": "Veerle"
+          }
+        ],
+        "organization": "",
+        "year": 2016,
+        "journal": "The American Journal of Psychiatry",
+        "volume": "173",
+        "pages": "117-127",
+        "doi": "10.1176/appi.ajp.2015.15010124",
+        "pmid": "26514657",
+        "url": "https://doi.org/10.1176/appi.ajp.2015.15010124"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 26514657 resolved: title, all six authors, journal and DOI match. Issue year is 2016 (Am J Psychiatry 173(2):117-27); PubMed records an electronic publication date of 2015-10-30, so both years appear in the wild - the issue year is used here. 37 articles, 5700 deliveries, 4023 patients. Overall postpartum relapse 35% (95% CI 29-41); bipolar patients medication-free in pregnancy 66% (57-75) vs prophylaxis 23% (14-37); history of postpartum psychosis, severe episode 29% (20-41). Scope note: the authors state explicitly that information was INSUFFICIENT to determine relapse rates for patients with both bipolar disorder and a history of postpartum episodes - do not cite this source for a recurrence figure in that combined group."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
+    },
+    {
+      "id": "vanderkruik-2017-postpartum-psychosis-prevalence",
+      "type": "systematic-review",
+      "citation": {
+        "title": "The global prevalence of postpartum psychosis: a systematic review.",
+        "authors": [
+          {
+            "family": "VanderKruik",
+            "given": "Rachel"
+          },
+          {
+            "family": "Barreix",
+            "given": "Maria"
+          },
+          {
+            "family": "Chou",
+            "given": "Doris"
+          },
+          {
+            "family": "Allen",
+            "given": "Tomas"
+          },
+          {
+            "family": "Say",
+            "given": "Lale"
+          },
+          {
+            "family": "Cohen",
+            "given": "Lee S"
+          }
+        ],
+        "organization": "",
+        "year": 2017,
+        "journal": "BMC Psychiatry",
+        "volume": "17",
+        "pages": "272",
+        "doi": "10.1186/s12888-017-1427-7",
+        "pmid": "28754094",
+        "url": "https://doi.org/10.1186/s12888-017-1427-7"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 28754094 resolved: title, first author, 2017, BMC Psychiatry 17(1):272 and DOI all match. Five population-based studies reported incidence of 0.89 to 2.6 per 1000 women. Scope note: the authors declined to POOL the estimates because of heterogeneity in case definition and ascertainment, so this supports a range, not a single pooled rate."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known"
+      }
     }
   ]
 }
