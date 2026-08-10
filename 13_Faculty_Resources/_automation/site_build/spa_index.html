@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}try{if(localStorage.getItem('cw_side_collapsed')==='1'){document.documentElement.setAttribute('data-side','rail');}}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inpatient Psychiatry — MS3 Clerkship</title>
@@ -22,10 +22,27 @@
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
   .layout{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
   aside{background:var(--bg-alt);border-right:1px solid var(--border);padding:18px 14px;overflow-y:auto;position:sticky;top:0;height:100vh}
-  aside h1{font-family:var(--font-head);font-size:1.15rem;color:var(--primary-dark);margin:0 0 2px}
+  aside h1{font-family:var(--font-head);font-size:1.05rem;color:var(--primary-dark);margin:0 0 2px;padding-right:74px;white-space:nowrap}
   aside .by{font-size:.78rem;color:var(--text-light);margin-bottom:14px}
   .themebtn{position:absolute;top:16px;right:14px;width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;line-height:1;display:flex;align-items:center;justify-content:center}
   .themebtn:hover{border-color:var(--accent);color:var(--accent-dark)}
+  /* Collapsible sidebar (desktop only — the ≤820px drawer keeps the full sidebar).
+     html[data-side=rail] is set pre-paint from cw_side_collapsed so there is no flash. */
+  .side-collapse{position:absolute;top:16px;right:54px;width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:.92rem;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
+  .side-collapse:hover{border-color:var(--accent);color:var(--accent-dark)}
+  .side-rail{display:none}
+  @media(min-width:821px){
+    .layout{transition:grid-template-columns .25s ease}
+    html[data-side=rail] .layout{grid-template-columns:56px 1fr}
+    html[data-side=rail] aside{padding:14px 10px}
+    html[data-side=rail] aside>*:not(.side-rail){display:none}
+    html[data-side=rail] .side-rail{display:flex;flex-direction:column;align-items:center;gap:10px}
+  }
+  .rail-expand{width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--accent-dark);cursor:pointer;font-size:.92rem;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
+  .railbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
+  .railbtn.rail-capture{border:1.5px dashed var(--border);background:transparent}
+  .rail-expand:hover,.railbtn:hover{border-color:var(--accent);color:var(--accent-dark)}
+  .rail-sep{width:24px;border-top:1px solid var(--border);margin:2px 0}
   .modetoggle{position:relative;display:flex;background:var(--primary-light);border:1px solid var(--border);border-radius:999px;padding:3px;margin:2px 0 14px}
   .modetoggle .knob{position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);background:var(--accent);border-radius:999px;transition:transform .22s ease;z-index:0}
   .modetoggle.lib .knob{transform:translateX(100%)}
@@ -293,6 +310,7 @@
     .mobile-chrome-capture{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:none;border-radius:9px;padding:8px 12px;background:var(--primary-light);color:var(--primary-dark);font:inherit;font-weight:700;line-height:1;cursor:pointer}
     .mobile-chrome-capture:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
     .capture-desk{display:none}
+    .side-collapse{display:none}
     aside{position:fixed;left:0;top:0;width:84%;max-width:300px;z-index:20;height:100vh;height:100dvh;padding-bottom:18px;overflow-y:auto;overscroll-behavior:contain;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 30px rgba(0,0,0,.2)}
     body.has-tlbar aside{padding-bottom:calc(var(--mobile-bottom-clearance) + 18px)}
     aside.open{transform:translateX(0)}
@@ -400,14 +418,27 @@
   .hm{max-width:900px;margin:0 auto;padding:26px 28px 60px}
   .hm h1{font-family:var(--font-head);color:var(--primary);font-size:1.9rem;margin:.1em 0}
   .hm .sub{color:var(--text-mid);margin:0 0 20px}
-  .hm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:0 0 20px}
-  .hm-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
-  .hm-card .k{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
-  .hm-card .v{font-family:var(--font-head);font-size:1.8rem;color:var(--text);line-height:1}
-  .hm-card .v small{font-size:.85rem;color:var(--text-light);font-family:var(--font-body)}
-  .hm-row{display:flex;align-items:center;gap:14px}
-  .hm-ring{width:74px;height:74px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p,0)*1%),var(--border) 0);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-  .hm-ring i{width:56px;height:56px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:600;font-style:normal;color:var(--accent-dark);font-size:1.05rem}
+  .hm-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 16px}
+  .hm-stamp{font-size:.76rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);white-space:nowrap}
+  .hm-ribbon{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px;margin:0 0 14px;flex-wrap:wrap}
+  .hm-ribbon .t{flex:1;min-width:220px}
+  .hm-ribbon .hm-btn{align-self:auto}
+  .hm-ribbon-x{border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:1.05rem;line-height:1;padding:2px 6px;font-family:var(--font-body)}
+  .hm-ribbon-x:hover{color:var(--text)}
+  .hm-hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:var(--accent-light);border:1px solid #bfd8d3;border-left:4px solid var(--accent);border-radius:14px;padding:18px 20px;margin:0 0 18px}
+  .hm-hero .k{font-size:.66rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-dark);margin:0 0 4px}
+  .hm-hero .t{font-family:var(--font-head);font-size:1.3rem;font-weight:600;color:var(--text);line-height:1.3}
+  .hm-hero .a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:var(--accent);border-radius:999px;color:var(--on-brand,#fff);font-size:.88rem;font-weight:800;padding:10px 18px;white-space:nowrap}
+  .hm-hero .a:hover{background:var(--accent-dark)}
+  @media(max-width:560px){.hm-hero{grid-template-columns:1fr}.hm-hero .a{justify-self:start}}
+  .hm-mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 20px}
+  .hm-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;text-align:left}
+  button.hm-tile{cursor:pointer;font:inherit;color:var(--text)}
+  button.hm-tile:hover{border-color:var(--accent)}
+  .hm-tile .k{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
+  .hm-tile .v{font-family:var(--font-head);font-size:1.4rem;color:var(--text);line-height:1.1}
+  .hm-tile .v small{font-size:.78rem;color:var(--text-light);font-family:var(--font-body)}
+  .hm-tile .l{font-weight:700;color:var(--accent-dark);font-size:.9rem}
   .hm-btn{display:inline-block;border:none;background:var(--primary-dark);color:#fff;border-radius:8px;padding:8px 14px;font:inherit;font-weight:600;font-size:.85rem;cursor:pointer;text-decoration:none;align-self:flex-start}
   .hm-btn.ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
   .hm-sec{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:0 0 14px}
@@ -418,7 +449,7 @@
   .hm-li .t{flex:1}
   .hm-li .sec{font-size:.68rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em}
   .hm-empty{color:var(--text-mid);font-size:.94rem}
-  .hm-substat{font-size:.72rem;color:var(--text-mid);margin-top:6px}
+  .hm-substat{display:block;font-size:.72rem;color:var(--text-mid);margin-top:6px}
   .pt-q{margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid var(--border)}
   .pt-stem{font-weight:600;margin:0 0 8px}
   .pt-opt{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--bg-alt);border-radius:8px;padding:8px 10px;margin:4px 0;font:inherit;color:var(--text);cursor:pointer}
@@ -434,17 +465,11 @@
   .wd-modes{display:flex;flex-wrap:wrap;gap:6px}
   .wd-mode{border:1px solid var(--border);background:var(--bg-alt);color:var(--text-mid);border-radius:999px;padding:5px 10px;font:inherit;font-size:.78rem;font-weight:800;cursor:pointer}
   .wd-mode.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .wd-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 13px;padding:10px 12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:12px}
-  .wd-tools .k{font-size:.68rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-right:2px}
-  .wd-tool{display:inline-flex;align-items:center;text-decoration:none;font-size:.8rem;font-weight:800;color:var(--accent-dark);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:5px 10px}
+  .wd-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+  .wd-tool{display:inline-flex;align-items:center;text-decoration:none;font-size:.8rem;font-weight:800;color:var(--accent-dark);background:var(--bg-alt);border:1px solid var(--border);border-radius:999px;padding:5px 10px}
   .wd-tool:hover{border-color:var(--accent);background:var(--accent-light)}
   .wd-tool.is-safety{color:var(--primary-dark);background:var(--primary-light)}
-  .wd-challenge{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin:0 0 13px;padding:12px 13px;background:var(--accent-light);border:1px solid #bfd8d3;border-left:4px solid var(--accent);border-radius:12px}
-  .wd-challenge .k{font-size:.66rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-dark);margin:0 0 2px}
-  .wd-challenge .t{font-weight:800;color:var(--text);line-height:1.25}
-  .wd-challenge .d{font-size:.84rem;color:var(--text-mid);line-height:1.35;margin-top:2px}
-  .wd-challenge .a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--accent);border-radius:999px;background:var(--surface);color:var(--accent-dark);font-size:.8rem;font-weight:900;padding:7px 10px;white-space:nowrap}
-  .wd-challenge .a:hover{background:var(--accent);color:#fff}
+  .wd-intro .wd-count{margin-left:2px}
   @media(max-width:620px){.wd-challenge{grid-template-columns:1fr}.wd-challenge .a{justify-self:start}}
   .wd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
   .wd-card{background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;padding:12px}
@@ -492,8 +517,16 @@
 <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
 <div class="layout">
   <aside id="side">
+    <div class="side-rail" role="group" aria-label="Collapsed sidebar">
+      <button id="sideExpandBtn" class="rail-expand" type="button" aria-label="Show sidebar" title="Show sidebar">&#10217;</button>
+      <div class="rail-sep" aria-hidden="true"></div>
+      <button id="railSearchBtn" class="railbtn" type="button" aria-label="Search the hub" title="Search">&#8981;</button>
+      <button id="railLibBtn" class="railbtn" type="button" aria-label="Browse the library" title="Library">&#9636;</button>
+      <button class="railbtn rail-capture capture-open" type="button" aria-label="Capture a question" title="Capture a question" aria-haspopup="dialog" aria-expanded="false">+</button>
+    </div>
     <h1>Inpatient Psychiatry</h1>
     <div class="by">MS3 Clerkship · Joshua Moss, MD</div>
+    <button id="sideCollapseBtn" class="side-collapse" type="button" aria-label="Hide sidebar" title="Hide sidebar">&#10216;</button>
     <button id="themeBtn" class="themebtn" type="button" aria-label="Toggle dark mode" title="Switch to dark mode">&#9790;</button>
     <div class="modetoggle" id="modetoggle" role="group" aria-label="Content mode"><span class="knob"></span><button id="mPath" aria-pressed="false">&#9678; Path</button><button id="mLib" aria-pressed="true">Library</button></div>
     <div class="search-wrap">
@@ -526,6 +559,24 @@
   function applyThemeIcon(){ var dk=document.documentElement.getAttribute('data-theme')==='dark'; if(themeBtn){ themeBtn.innerHTML=dk?'☀':'☾'; themeBtn.setAttribute('aria-pressed',String(dk)); themeBtn.setAttribute('title',dk?'Switch to light mode':'Switch to dark mode'); } }
   if(themeBtn){ themeBtn.addEventListener('click',function(){ var dk=document.documentElement.getAttribute('data-theme')==='dark'; var nx=dk?'light':'dark'; document.documentElement.setAttribute('data-theme',nx); try{localStorage.setItem('cw_theme',nx);}catch(_){ } var _if=document.querySelector('#content iframe'); if(_if&&_if.contentWindow){try{_if.contentWindow.postMessage({type:'theme',mode:nx},'*');}catch(_){ }} applyThemeIcon(); }); }
   applyThemeIcon();
+  /* Collapsible sidebar: html[data-side=rail] drives the CSS; state persists in
+     cw_side_collapsed and is re-applied pre-paint by the head script. Focus moves to
+     the counterpart control so keyboard users are never left on a display:none button. */
+  (function(){
+    var collapseBtn=document.getElementById('sideCollapseBtn'), expandBtn=document.getElementById('sideExpandBtn');
+    var railSearch=document.getElementById('railSearchBtn'), railLib=document.getElementById('railLibBtn');
+    function setSideRail(on,focusEl){
+      if(on)document.documentElement.setAttribute('data-side','rail');
+      else document.documentElement.removeAttribute('data-side');
+      try{localStorage.setItem('cw_side_collapsed',on?'1':'0');}catch(_){ }
+      var f=focusEl||(on?expandBtn:collapseBtn);
+      if(f&&f.focus)try{f.focus();}catch(_){ }
+    }
+    if(collapseBtn)collapseBtn.addEventListener('click',function(){ setSideRail(true); });
+    if(expandBtn)expandBtn.addEventListener('click',function(){ setSideRail(false); });
+    if(railSearch)railSearch.addEventListener('click',function(){ setSideRail(false,searchEl); });
+    if(railLib)railLib.addEventListener('click',function(){ setSideRail(false,(navEl&&navEl.querySelector('.navitem'))||collapseBtn); });
+  })();
   fetch('reviewed.json').then(function(r){return r.ok?r.json():{}}).then(function(d){REVIEWED=(d&&d.items)?d.items:(d||{});try{if(currentItem&&REVIEWED[currentItem.f]){ if(currentItem.k==='tool'&&!contentEl.querySelector('.toolrev'))show(currentItem); else if(currentItem.k!=='tool'&&!contentEl.querySelector('.reviewed'))show(currentItem); }}catch(_){ }}).catch(function(){});
   var TOPIC_META={};
   fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ if(window.__renderModeCompanion) window.__renderModeCompanion(); }catch(_){ } if(currentItem&&TOPIC_META[currentItem.f]&&contentEl&&!contentEl.querySelector('.topic-tpl')) show(currentItem); }).catch(function(){});
@@ -1454,18 +1505,18 @@
   function dueBreakdown(){ var s=srsState(),b={daily:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ var k=srsBucket(id); b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } return b; }
   function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due,overdue:b.daily.overdue}; }
   /* ---- end due breakdown ---- */
-  function dueSubstatHtml(bd){ var parts=[]; if(bd.qb.due)parts.push(bd.qb.due+' in the question bank'); if(bd.fam.due)parts.push(bd.fam.due+' in family practice'); if(bd.other.due)parts.push(bd.other.due+' in other practice tools'); return parts.length?'<div class="hm-substat">Also scheduled: '+parts.join(' · ')+'</div>':''; }
+  function dueSubstatHtml(bd){ var parts=[]; if(bd.qb.due)parts.push(bd.qb.due+' in the question bank'); if(bd.fam.due)parts.push(bd.fam.due+' in family practice'); if(bd.other.due)parts.push(bd.other.due+' in other practice tools'); return parts.length?'<span class="hm-substat">Also scheduled: '+parts.join(' · ')+'</span>':''; }
   function navScan(){ var p=(typeof progLoad==='function')?progLoad():{}, meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}; var hy=[],cov={}; var wraps=document.querySelectorAll('#nav .navsec-wrap'); [].forEach.call(wraps,function(w){ var sec=((w.querySelector('.navsec-t')||{}).textContent)||''; if(sec==='Overview')return; [].forEach.call(w.querySelectorAll('.navitem'),function(b){ var it=b._item; if(!it)return; if(it.k==='md'){ if(!cov[sec])cov[sec]={done:0,tot:0}; cov[sec].tot++; if(p[it.f]&&p[it.f].done)cov[sec].done++; } if(meta[it.f]&&meta[it.f].hy&&!(p[it.f]&&p[it.f].done))hy.push({f:it.f,t:it.t,sec:sec}); }); }); return {hy:hy,cov:cov}; }
   function allNavItems(){ var out=[]; [].forEach.call(document.querySelectorAll('#nav .navitem'),function(b){ var it=b._item; if(it&&it.k!=='special')out.push({f:it.f,t:it.t,k:it.k}); }); return out; }
   function dashboardState(){ try{return JSON.parse(localStorage.getItem('cw_dashboard_v1')||'{}')||{};}catch(_){return {};} }
   function dashboardMode(){ var st=dashboardState(); return st.mode||'ward'; }
   function setDashboardMode(mode){ try{localStorage.setItem('cw_dashboard_v1',JSON.stringify({mode:mode,at:new Date().toISOString().slice(0,10)}));}catch(_){ } try{renderModeCompanion();}catch(_){ } }
   var DASH_CONFIG={
-    ward:{label:'Ward',intent:'Use this when you are about to see patients, present on rounds, or convert a patient problem into a next clinical step.',stages:['team','encounter','diagnosis','treatment','communication','safety'],tools:['oral.html','mse.html','diagnostic-reasoning.html','communication-practice.html','decision-aids.html','sp-interview.html','one-patient-six-weeks.html'],pages:['doc_oral.md','pg_interview.md','ddx.md','pg_formulation.md','rounds_questions.md'],notes:{'doc_oral.md':'rounds','pg_interview.md':'encounter','ddx.md':'diagnosis','pg_formulation.md':'formulation','rounds_questions.md':'rounds'}},
-    shelf:{label:'Shelf',intent:'Use this when you want board-style practice connected back to the patients and topics you are seeing on the unit.',stages:['exam','diagnosis','treatment','safety'],tools:['question-bank-practice.html','review.html','shelf-mode.html','oral.html','one-patient-six-weeks.html'],pages:['shelf.md','rounds_questions.md','landmark_trials.md','reading_map.md','core_readings.md'],notes:{'shelf.md':'exam','rounds_questions.md':'oral recall','landmark_trials.md':'evidence','reading_map.md':'reading map','core_readings.md':'core'}},
-    family:{label:'Family',intent:'Use this when collateral, caregiver communication, family meetings, boundaries, or discharge reality are driving the case.',stages:['family','communication','safety','team'],tools:['family-systems.html','communication-practice.html','oral.html','reflection.html','decision-aids.html','sp-interview.html'],pages:['collateral_workflow.md','family_playbook.md','exp_family.md','family_modalities.md','brief_psychotherapy.md'],notes:{'collateral_workflow.md':'collateral','family_playbook.md':'meeting','exp_family.md':'discharge','family_modalities.md':'psychoed','brief_psychotherapy.md':'bedside'}},
-    safety:{label:'Safety',intent:'Use this when risk, capacity, withdrawal, delirium, catatonia, agitation, or legal status could change today’s plan.',stages:['safety','team','encounter','family','treatment'],tools:['cssrs.html','violence.html','bfcrs.html','withdrawal.html','capacity.html','decision-aids.html','sp-interview.html'],pages:['pg_suicide.md','agitation.md','delirium.md','catatonia.md','systems_medlegal.md'],notes:{'pg_suicide.md':'suicide','agitation.md':'agitation','delirium.md':'delirium','catatonia.md':'catatonia','systems_medlegal.md':'med-legal'}},
-    '5min':{label:'5 minutes',intent:'Use this when you need one quick, useful action before rounds, between patients, or before leaving the unit.',stages:['communication','safety','team','encounter','exam'],tools:['communication-practice.html','review.html','oral.html','family-systems.html'],pages:['pg_suicide.md','collateral_workflow.md','doc_oral.md','brief_psychotherapy.md','rounds_questions.md'],notes:{'pg_suicide.md':'4 min','collateral_workflow.md':'4 min','doc_oral.md':'quick prep','brief_psychotherapy.md':'bedside','rounds_questions.md':'oral recall'}}
+    ward:{label:'Ward',intent:'For seeing patients and presenting on rounds.',stages:['team','encounter','diagnosis','treatment','communication','safety'],tools:['oral.html','mse.html','diagnostic-reasoning.html','communication-practice.html','decision-aids.html','sp-interview.html','one-patient-six-weeks.html'],pages:['doc_oral.md','pg_interview.md','ddx.md','pg_formulation.md','rounds_questions.md'],notes:{'doc_oral.md':'rounds','pg_interview.md':'encounter','ddx.md':'diagnosis','pg_formulation.md':'formulation','rounds_questions.md':'rounds'}},
+    shelf:{label:'Shelf',intent:'For board-style practice tied to the patients you are seeing.',stages:['exam','diagnosis','treatment','safety'],tools:['question-bank-practice.html','review.html','shelf-mode.html','oral.html','one-patient-six-weeks.html'],pages:['shelf.md','rounds_questions.md','landmark_trials.md','reading_map.md','core_readings.md'],notes:{'shelf.md':'exam','rounds_questions.md':'oral recall','landmark_trials.md':'evidence','reading_map.md':'reading map','core_readings.md':'core'}},
+    family:{label:'Family',intent:'For collateral, family meetings, and discharge reality.',stages:['family','communication','safety','team'],tools:['family-systems.html','communication-practice.html','oral.html','reflection.html','decision-aids.html','sp-interview.html'],pages:['collateral_workflow.md','family_playbook.md','exp_family.md','family_modalities.md','brief_psychotherapy.md'],notes:{'collateral_workflow.md':'collateral','family_playbook.md':'meeting','exp_family.md':'discharge','family_modalities.md':'psychoed','brief_psychotherapy.md':'bedside'}},
+    safety:{label:'Safety',intent:'For risk, capacity, withdrawal, agitation, and legal status.',stages:['safety','team','encounter','family','treatment'],tools:['cssrs.html','violence.html','bfcrs.html','withdrawal.html','capacity.html','decision-aids.html','sp-interview.html'],pages:['pg_suicide.md','agitation.md','delirium.md','catatonia.md','systems_medlegal.md'],notes:{'pg_suicide.md':'suicide','agitation.md':'agitation','delirium.md':'delirium','catatonia.md':'catatonia','systems_medlegal.md':'med-legal'}},
+    '5min':{label:'5 minutes',intent:'For one quick action before rounds or between patients.',stages:['communication','safety','team','encounter','exam'],tools:['communication-practice.html','review.html','oral.html','family-systems.html'],pages:['pg_suicide.md','collateral_workflow.md','doc_oral.md','brief_psychotherapy.md','rounds_questions.md'],notes:{'pg_suicide.md':'4 min','collateral_workflow.md':'4 min','doc_oral.md':'quick prep','brief_psychotherapy.md':'bedside','rounds_questions.md':'oral recall'}}
   };
   function dashCfg(mode){ return DASH_CONFIG[mode]||DASH_CONFIG.ward; }
   function arrHas(a,v){ return Array.isArray(a)&&a.indexOf(v)>=0; }
@@ -1480,7 +1531,7 @@
     if(mode==='shelf'&&arrHas(m.workflowStages,'exam'))return 'exam';
     var cfg=dashCfg(mode), st=m.workflowStages||[];
     for(var i=0;i<cfg.stages.length;i++){ if(arrHas(st,cfg.stages[i]))return stageLabel(cfg.stages[i]).toLowerCase(); }
-    if(Array.isArray(m.communicationCases)&&m.communicationCases.length)return 'spoken drill';
+    if(Array.isArray(m.communicationCases)&&m.communicationCases.length)return 'drill';
     if(m.hy)return 'high-yield';
     return 'recommended';
   }
@@ -1518,13 +1569,15 @@
   var FAMILY_SCENARIO_TITLES={collateral_baseline_safety_001:'Practice Collateral Call',family_meeting_opening_001:'Prepare Family Meeting',discharge_barrier_map_001:'Map Family Safety Roles',high_expressed_emotion_001:'Reset High-Emotion Family Talk',psychosis_family_psychoeducation_001:'Explain Psychosis To Family',family_involvement_boundaries_001:'Set Family Boundaries',caregiver_baseline_adaptations_001:'Caregiver Baseline And Adaptations',culture_interpreter_family_001:'Culture, Interpreter, And Family Contact'};
   var CASE_PRIORITY={ward:['guardedness_privacy_001','psychosis_validation_001','medication_ambivalence_001','mania_limit_sleep_001'],family:['family_meeting_opening_001','collateral_questions_001','family_conflict_discharge_001'],safety:['suicide_direct_question_001','family_conflict_discharge_001','rupture_limit_setting_001'],shelf:['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001'],'5min':['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001','family_meeting_opening_001']};
   var CASE_FILTER={suicide_direct_question_001:'safety',psychosis_validation_001:'psychosis',guardedness_privacy_001:'guarded',rupture_limit_setting_001:'rupture',bpd_rupture_repair_001:'rupture',medication_ambivalence_001:'medication',mania_limit_sleep_001:'medication',family_meeting_opening_001:'family',collateral_questions_001:'family',family_conflict_discharge_001:'family'};
+  /* hero: the short imperative headline for the home "Your next step" card (design 2a);
+     challenge/cue remain the fuller phrasing used wherever more room exists. */
   var COMM_DOMAINS={
-    safety:{label:'Safety',caseId:'suicide_direct_question_001',challenge:'Practice one direct, plain-language safety question before you see patients.',cue:'Use direct safety words, then pause.'},
-    psychosis:{label:'Psychosis',caseId:'psychosis_validation_001',challenge:'Practice validating fear without agreeing with the delusional belief.',cue:'Validate emotion, state your observation, invite safety-focused exploration.'},
-    family:{label:'Family',caseId:'family_meeting_opening_001',challenge:'Practice opening a family meeting with structure and consent boundaries.',cue:'Join emotionally, name consent, set a shared goal.'},
-    medication:{label:'Medication',caseId:'medication_ambivalence_001',challenge:'Practice exploring medication ambivalence before offering education.',cue:'Reflect both sides and ask what would make trying feel safer.'},
-    rupture:{label:'Rupture',caseId:'rupture_limit_setting_001',challenge:'Practice repairing a rupture without abandoning the clinical limit.',cue:'Validate impact, keep the limit clear, offer one repair step.'},
-    guarded:{label:'Guardedness',caseId:'guardedness_privacy_001',challenge:'Practice lowering pressure with a guarded patient while naming safety limits.',cue:'Name choice, explain limits, ask what would make talking safer.'}
+    safety:{label:'Safety',caseId:'suicide_direct_question_001',hero:'Ask one direct safety question before you see patients.',challenge:'Practice one direct, plain-language safety question before you see patients.',cue:'Use direct safety words, then pause.'},
+    psychosis:{label:'Psychosis',caseId:'psychosis_validation_001',hero:'Validate fear without agreeing with the delusional belief.',challenge:'Practice validating fear without agreeing with the delusional belief.',cue:'Validate emotion, state your observation, invite safety-focused exploration.'},
+    family:{label:'Family',caseId:'family_meeting_opening_001',hero:'Open a family meeting with structure and consent boundaries.',challenge:'Practice opening a family meeting with structure and consent boundaries.',cue:'Join emotionally, name consent, set a shared goal.'},
+    medication:{label:'Medication',caseId:'medication_ambivalence_001',hero:'Explore medication ambivalence before offering education.',challenge:'Practice exploring medication ambivalence before offering education.',cue:'Reflect both sides and ask what would make trying feel safer.'},
+    rupture:{label:'Rupture',caseId:'rupture_limit_setting_001',hero:'Repair the rupture without abandoning the clinical limit.',challenge:'Practice repairing a rupture without abandoning the clinical limit.',cue:'Validate impact, keep the limit clear, offer one repair step.'},
+    guarded:{label:'Guardedness',caseId:'guardedness_privacy_001',hero:'Lower the pressure with a guarded patient while naming safety limits.',challenge:'Practice lowering pressure with a guarded patient while naming safety limits.',cue:'Name choice, explain limits, ask what would make talking safer.'}
   };
   var COMM_DOMAIN_ORDER=['safety','psychosis','family','medication','rupture','guarded'];
   var MODE_COMM_FILTER={ward:'psychosis',family:'family',safety:'safety',shelf:'psychosis','5min':'safety'};
@@ -1550,12 +1603,14 @@
     });
     return best||{id:preferred,done:0,total:0};
   }
+  /* Design 2a "next step first": the daily relational challenge leads the home page as a
+     hero card (rendered by renderHome above the unit dashboard, no longer inside it). */
   function relationalChallengeHtml(mode){
     var least=leastPracticedDomain(mode), cfg=COMM_DOMAINS[least.id]||COMM_DOMAINS.safety;
     var href=communicationHref(cfg.caseId,mode);
-    return '<div class="wd-challenge" aria-label="Daily relational challenge"><div><div class="k">Daily relational challenge · '+esc(cfg.label)+' '+least.done+'/'+least.total+'</div><div class="t">'+esc(cfg.challenge)+'</div><div class="d">'+esc(cfg.cue)+' Uses only anonymous local practice history.</div></div><a class="a" href="'+esc(href)+'">Practice now</a></div>';
+    return '<div class="hm-hero" aria-label="Your next step — daily relational challenge"><div><div class="k">Your next step · Daily challenge · '+esc(cfg.label)+' '+least.done+'/'+least.total+' · 2 min</div><div class="t">'+esc(cfg.hero||cfg.challenge)+'</div></div><a class="a" href="'+esc(href)+'">Practice now</a></div>';
   }
-  function caseAction(id,note,mode){ return {f:'communication-practice.html',t:CASE_TITLES[id]||'What Do You Say Next?',k:'tool',caseId:id,href:communicationHref(id,mode),note:note||'spoken drill'}; }
+  function caseAction(id,note,mode){ return {f:'communication-practice.html',t:CASE_TITLES[id]||'What Do You Say Next?',k:'tool',caseId:id,href:communicationHref(id,mode),note:note||'drill'}; }
   function familyAction(id,title,note){ return {f:'family-systems.html',t:title||FAMILY_SCENARIO_TITLES[id]||'Family Systems Practice',k:'tool',scenarioId:id,href:'?tool=family-systems.html&scenario='+encodeURIComponent(id),note:note||'family tool'}; }
   function toolAction(k,note,mode){ return {f:k,t:(LAB[k]||PRACTICE_LABELS[k]||String(k||'tool').replace(/\.html$/,'').replace(/[-_]+/g,' ')),k:'tool',href:k==='communication-practice.html'?communicationHref('',mode):'?tool='+encodeURIComponent(k),note:note||'tool'}; }
   function casesForMode(mode){
@@ -1567,7 +1622,7 @@
       }
     });
     ranked.sort(function(a,b){ var ai=pri.indexOf(a.id),bi=pri.indexOf(b.id); if(ai<0)ai=99;if(bi<0)bi=99; return (ai-bi)||(b.score-a.score); });
-    return ranked.map(function(x){ return caseAction(x.id,'spoken drill',mode); });
+    return ranked.map(function(x){ return caseAction(x.id,'drill',mode); });
   }
   function toolsForMode(mode,matches){
     var cfg=dashCfg(mode), counts={}, order={}, out=[];
@@ -1591,10 +1646,13 @@
     if(it.href){ return '<a class="hm-li wd-li" href="'+esc(it.href)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></a>'; }
     return '<button class="hm-li wd-li" data-f="'+esc(it.f)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></button>';
   }
+  /* Shorter display labels for dashboard chips only (design 2a copy trim); nav and
+     everything else keep the full LAB names. */
+  var CHIP_LABEL={'diagnostic-reasoning.html':'Diagnostic Reasoning','decision-aids.html':'Decision Aids'};
   function toolRow(tools,mode){
     if(!tools||!tools.length)return '';
-    var h='<div class="wd-tools"><span class="k">Tools for '+esc(dashCfg(mode).label)+'</span>';
-    tools.forEach(function(x){ var safe=practiceIsSafe(x.f)?' is-safety':''; h+='<a class="wd-tool'+safe+'" href="'+esc(x.href)+'">'+esc(x.t)+'</a>'; });
+    var h='<div class="wd-tools" role="group" aria-label="Tools for '+esc(dashCfg(mode).label)+'">';
+    tools.forEach(function(x){ var safe=practiceIsSafe(x.f)?' is-safety':''; h+='<a class="wd-tool'+safe+'" href="'+esc(x.href)+'">'+esc(CHIP_LABEL[x.f]||x.t)+'</a>'; });
     h+='</div>'; return h;
   }
   function companionButton(x,kind){
@@ -1656,8 +1714,8 @@
     if(!pack.after.length)pack.after=compactActions(casePicks.slice(0,1).concat(matches.slice(2,3),tools.slice(0,1))).slice(0,2);
     if(!pack.leave.length)pack.leave=[toolAction('review.html','review')];
     var cfg=dashCfg(mode);
-    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit <span class="wd-count">'+matches.length+' matched</span></h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div></div>';
-    h+='<p class="wd-intro">'+esc(cfg.intent)+'</p>'+relationalChallengeHtml(mode)+toolRow(tools,mode);
+    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit</h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div></div>';
+    h+='<p class="wd-intro">'+esc(cfg.intent)+' <span class="wd-count">· '+matches.length+' matched</span></p>'+toolRow(tools,mode);
     h+='<div class="wd-grid"><div class="wd-card"><h3>Before rounds</h3>'+pack.before.map(function(x){return actionRow(x,'open');}).join('')+'</div><div class="wd-card"><h3>After rounds</h3>'+pack.after.map(function(x){return actionRow(x,'practice');}).join('')+'</div><div class="wd-card"><h3>Before leaving</h3>'+pack.leave.map(function(x){return actionRow(x,'review');}).join('')+'</div></div></div>';
     return h;
   }
@@ -1755,23 +1813,36 @@
   }
   /* ---- end calib panel ---- */
 
+  /* "Mon Aug 10 · Week 1 · Ward" — the Today header context stamp (design 2a). Week comes
+     from cw_start_week (set on Start-here) and is omitted until the learner sets it. */
+  function homeStamp(mode){
+    var d=new Date();
+    var wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+    var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+    var parts=[wd+' '+mo+' '+d.getDate()];
+    var wk=parseInt(LS('cw_start_week')||'',10);
+    if(wk>=1&&wk<=6)parts.push('Week '+wk);
+    parts.push(dashCfg(mode).label);
+    return parts.join(' · ');
+  }
   window.renderHome=function(){
     var scan=navScan();
     var rev=0, tot=0; for(var _ck in scan.cov){ rev+=scan.cov[_ck].done; tot+=scan.cov[_ck].tot; }
-    var pct=tot?Math.round(rev/tot*100):0; var bd=dueBreakdown(); var dc=dueCount(); var s=srsState();
+    var pct=tot?Math.round(rev/tot*100):0; var bd=dueBreakdown(); var s=srsState();
     var streak=(s&&s.stats&&s.stats.streak)||0;
-    var last=LS('cw_last'); var shelf=LS('cw_shelf_date'); var shelfDays=shelfDaysUntil(shelf);
-    var fresh=(rev===0 && bd.daily.due+bd.qb.due+bd.fam.due+bd.other.due===0 && !last);
-    var h='<div class="hm" id="hmRoot"><h1>Your progress</h1>';
-    if(fresh){ h+='<p class="sub">Welcome — nothing tracked yet. Open any content page and tap <strong>Mark as read</strong>, or start a review session, and this page fills in.</p>'; }
-    else{ h+='<p class="sub">Where you are, and the next best thing to do.</p>'; }
+    var last=LS('cw_last'); var mode=dashboardMode();
+    var h='<div class="hm" id="hmRoot"><div class="hm-top"><h1>Today</h1><span class="hm-stamp">'+esc(homeStamp(mode))+'</span></div>';
+    if(LS('cw_orient_ribbon_dismissed')!=='1'){
+      h+='<div class="hm-ribbon" id="orientRibbon"><span class="t">New here? Ten minutes of orientation sets up your whole rotation.</span><button class="hm-btn" type="button" data-ribbon="start">Start orientation</button><button class="hm-btn ghost" type="button" data-ribbon="pretest">2-minute placement</button><button class="hm-ribbon-x" type="button" data-ribbon="dismiss" aria-label="Dismiss the orientation reminder">&times;</button></div>';
+    }
+    h+=relationalChallengeHtml(mode);
     h+=renderWardDashboard();
-    h+='<div class="hm-sec" style="border:1px solid var(--accent);background:var(--accent-light);border-radius:14px;padding:14px 16px;margin:0 0 16px"><h2 style="margin-top:0">Study on the go · Anki decks</h2><div class="sub" style="margin:0 0 8px">Take the question bank and high-yield concepts with you as spaced-repetition flashcards for your phone.</div><button class="hm-li" data-f="anki.md" style="border-bottom:none"><span class="t"><strong>Get the Anki decks</strong></span><span class="sec">Open →</span></button></div>';
-    h+='<div class="hm-grid">';
-    h+='<div class="hm-card"><div class="k">Study progress</div><div class="hm-row"><div class="hm-ring" style="--p:'+pct+'"><i>'+pct+'%</i></div><div class="v">'+rev+'<small> / '+tot+' pages read</small></div></div></div>';
-    h+='<div class="hm-card"><div class="k">Due today</div><div class="v">'+bd.daily.due+(bd.daily.overdue?'<small> · '+bd.daily.overdue+' overdue</small>':'')+'</div>'+(bd.daily.due?'<button class="hm-btn" data-act="review">Start review</button>':'<span class="hm-empty">Nothing due — nice.</span>')+dueSubstatHtml(bd)+'</div>';
-    h+='<div class="hm-card"><div class="k">Study streak</div><div class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></div></div>';
-    h+='<div class="hm-card"><div class="k">Shelf countdown</div><div class="v">'+(shelfDays!=null?(shelfDays>=0?shelfDays+'<small> days</small>':'<small>past</small>'):'<small>set a date on Start here</small>')+'</div></div>';
+    h+='<div class="hm-mini">';
+    h+='<div class="hm-tile"><span class="k">Reviewed</span><span class="v">'+pct+'%</span></div>';
+    if(bd.daily.due){ h+='<button class="hm-tile" type="button" data-act="review"><span class="k">Due today</span><span class="v">'+bd.daily.due+(bd.daily.overdue?'<small> · '+bd.daily.overdue+' overdue</small>':'')+'</span><span class="l">Start review →</span>'+dueSubstatHtml(bd)+'</button>'; }
+    else{ h+='<div class="hm-tile"><span class="k">Due today</span><span class="v">0</span>'+dueSubstatHtml(bd)+'</div>'; }
+    h+='<div class="hm-tile"><span class="k">Streak</span><span class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></span></div>';
+    h+='<button class="hm-tile" type="button" data-f="anki.md"><span class="k">On your phone</span><span class="l">Anki decks →</span></button>';
     h+='</div>';
     /* ---- phase chip ---- */
     var p=null; try{ p=phasePolicy(); }catch(_){ }
@@ -1849,7 +1920,6 @@
       }
     }
     h+='<div class="hm-sec"><h2>Help evaluate this site <span style="font-weight:400;color:var(--text-light)">· optional</span></h2><div class="sub" style="margin:0 0 8px">Export your anonymous learning activity for the clerkship study — no name and no patient information, only what you reviewed and answered on this site.</div><button class="hm-li" data-act="studyexport"><span class="t">Export my anonymous progress</span><span class="sec">Export ↓</span></button><div id="studyMsg" class="hm-empty" style="margin-top:6px"></div></div>';
-    h+='<div class="hm-sec"><h2>New here?</h2><button class="hm-li" data-act="start"><span class="t">Open the Start-here orientation</span><span class="sec">Start →</span></button></div>';
     h+='</div>'; return h;
   };
 
@@ -1910,6 +1980,14 @@
       root.addEventListener('click',function(e){
         var cap=e.target.closest?e.target.closest('[data-cap-open],[data-cap-review],[data-cap-drop],[data-cap-copy]'):null;
         if(cap){ capTriageClick(cap); return; }
+        var rb=e.target.closest?e.target.closest('[data-ribbon]'):null;
+        if(rb){ var ra=rb.getAttribute('data-ribbon');
+          if(ra==='dismiss'){ try{localStorage.setItem('cw_orient_ribbon_dismissed','1');}catch(_){ } var rEl=document.getElementById('orientRibbon'); if(rEl)rEl.remove(); }
+          else if(ra==='start'){ navClick('__start__'); }
+          else if(ra==='pretest'){ startPretest(); }
+          return; }
+        var tile=e.target.closest?e.target.closest('button.hm-tile'):null;
+        if(tile){ if(tile.getAttribute('data-act')==='review'){ navClick('review.html'); return; } var tf=tile.getAttribute('data-f'); if(tf)navClick(tf); return; }
         /* Exact-value match only: the pretest delegation never covers #hmRoot (scoped to
            #ptRoot/#planRoot and bound lazily), so the phase chip's unset-state button is handled
            here. Must stay narrower than [data-pt] — plan/pretest buttons below use the same
