@@ -191,6 +191,58 @@ def build(repo_root):
     return {"_note": USAGE_NOTICE, "version": 1, "items": items}
 
 
+def _by_page(item_ids, items):
+    """'toxidromes ×3, med_monitoring ×1' — grouped, most-changed first."""
+    lookup = {i["id"]: i for i in items}
+    counts = {}
+    for item_id in item_ids:
+        page = lookup[item_id]["page"].replace(".md", "")
+        counts[page] = counts.get(page, 0) + 1
+    ordered = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+    return ", ".join("%s ×%d" % (page, n) for page, n in ordered)
+
+
+def changelog(old_items, new_items):
+    """One line describing what moved, so a stale drill doesn't mean a 234-line diff.
+
+    Four kinds of change, and they mean different things:
+      added / removed   an anchor appeared or went away
+      reworded          the anchored sentence on the page changed
+      re-noted          the source's identity.note changed — an evidence-record
+                        edit, which matters more than a wording tweak
+    """
+    old = {i["id"]: i for i in old_items}
+    new = {i["id"]: i for i in new_items}
+    added = sorted(set(new) - set(old))
+    removed = sorted(set(old) - set(new))
+    shared = sorted(set(old) & set(new))
+    reworded = [i for i in shared if old[i]["claim"] != new[i]["claim"]]
+    renoted = [i for i in shared if old[i]["why"] != new[i]["why"]]
+
+    if not (added or removed or reworded or renoted):
+        return "no change"
+
+    parts = []
+    if added:
+        parts.append("+%d item(s) (%s)" % (len(added), _by_page(added, new_items)))
+    if removed:
+        parts.append("-%d item(s) (%s)" % (len(removed), _by_page(removed, old_items)))
+    if reworded:
+        parts.append("%d reworded (%s)" % (len(reworded), _by_page(reworded, new_items)))
+    if renoted:
+        parts.append("%d re-noted (%s)" % (len(renoted), _by_page(renoted, new_items)))
+    return " · ".join(parts)
+
+
+def _committed_items(out):
+    if not out.exists():
+        return None
+    try:
+        return json.loads(out.read_text(encoding="utf-8")).get("items", [])
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
 def main():
     argv = [a for a in sys.argv[1:] if a != "--check"]
     check = "--check" in sys.argv
@@ -198,16 +250,18 @@ def main():
     payload = build(root)
     text = json.dumps(payload, indent=1, ensure_ascii=False) + "\n"
     out = root / OUT_REL
+    previous = _committed_items(out)
 
     if check:
-        if not out.exists():
-            print("evidence drill STALE — %s does not exist; run the generator." % OUT_REL)
+        if previous is None:
+            print("evidence drill STALE — %s is missing or unreadable; run the generator." % OUT_REL)
             return 1
         if out.read_text(encoding="utf-8") != text:
             print(
                 "evidence drill STALE — %s does not match the current anchors.\n"
+                "  Changed: %s\n"
                 "  Run: python3 13_Faculty_Resources/_automation/generate_evidence_drill.py"
-                % OUT_REL
+                % (OUT_REL, changelog(previous, payload["items"]))
             )
             return 1
         print("evidence drill OK — %d draft item(s), regenerates identically." % len(payload["items"]))
@@ -215,7 +269,11 @@ def main():
 
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(text, encoding="utf-8")
-    print("evidence drill written — %d draft item(s) → %s" % (len(payload["items"]), OUT_REL))
+    delta = changelog(previous, payload["items"]) if previous is not None else "initial generation"
+    print(
+        "evidence drill written — %d draft item(s) → %s\n  %s"
+        % (len(payload["items"]), OUT_REL, delta)
+    )
     return 0
 
 

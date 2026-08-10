@@ -76,6 +76,83 @@ class GeneratedFileContract(unittest.TestCase):
             self.assertTrue(claim.strip(), item["id"])
 
 
+class Changelog(unittest.TestCase):
+    """A stale drill should say what moved, not hand you a 234-line JSON diff."""
+
+    def item(self, item_id, page, claim="c", why="w"):
+        return {"id": item_id, "page": page, "claim": claim, "why": why}
+
+    def test_no_change_is_reported_as_such(self):
+        items = [self.item("a", "t_mood.md")]
+        self.assertEqual(gen.changelog(items, items), "no change")
+
+    def test_additions_are_grouped_by_page_and_counted(self):
+        old = []
+        new = [
+            self.item("a", "toxidromes.md"),
+            self.item("b", "toxidromes.md"),
+            self.item("c", "med_monitoring.md"),
+        ]
+        line = gen.changelog(old, new)
+        self.assertIn("+3 item(s)", line)
+        self.assertIn("toxidromes ×2", line)
+        self.assertIn("med_monitoring ×1", line)
+
+    def test_most_changed_page_is_listed_first(self):
+        new = [
+            self.item("a", "med_monitoring.md"),
+            self.item("b", "toxidromes.md"),
+            self.item("c", "toxidromes.md"),
+        ]
+        line = gen.changelog([], new)
+        self.assertLess(line.index("toxidromes"), line.index("med_monitoring"))
+
+    def test_removals_are_reported(self):
+        old = [self.item("a", "t_mood.md")]
+        self.assertIn("-1 item(s)", gen.changelog(old, []))
+
+    def test_reworded_and_re_noted_are_distinguished(self):
+        """An edited claim and an edited evidence record are different events."""
+        old = [self.item("a", "t_mood.md", claim="old", why="note")]
+        reworded = [self.item("a", "t_mood.md", claim="new", why="note")]
+        renoted = [self.item("a", "t_mood.md", claim="old", why="revised note")]
+
+        self.assertIn("1 reworded", gen.changelog(old, reworded))
+        self.assertNotIn("re-noted", gen.changelog(old, reworded))
+
+        self.assertIn("1 re-noted", gen.changelog(old, renoted))
+        self.assertNotIn("reworded", gen.changelog(old, renoted))
+
+    def test_stale_check_names_the_delta(self):
+        """The failure that started this: --check said 'stale', not what changed.
+
+        Temporarily trims two items from the committed file, asserts --check
+        fails AND names them, then restores byte-for-byte.
+        """
+        original = OUT.read_bytes()
+        try:
+            payload = json.loads(original.decode("utf-8"))
+            dropped = payload["items"][-2:]
+            trimmed = dict(payload, items=payload["items"][:-2])
+            OUT.write_text(
+                json.dumps(trimmed, indent=1, ensure_ascii=False) + "\n", encoding="utf-8"
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(GENERATOR), str(ROOT), "--check"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 1, result.stdout)
+            self.assertIn("STALE", result.stdout)
+            self.assertIn("Changed:", result.stdout)
+            self.assertIn("+2 item(s)", result.stdout)
+            for item in dropped:
+                self.assertIn(item["page"].replace(".md", ""), result.stdout)
+        finally:
+            OUT.write_bytes(original)
+
+
 class ScopeExtraction(unittest.TestCase):
     def test_pulls_the_does_not_support_sentence(self):
         note = (
