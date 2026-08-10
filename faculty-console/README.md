@@ -137,12 +137,34 @@ If the console uses a different origin, update the learner site's exact `frame-a
 | `GITHUB_TOKEN` | the fine-grained PAT from step 1 |
 | `FACULTY_ATTEST_PASSWORD` | a strong shared faculty key |
 | `GITHUB_REPO` | `jmoss333/psychiatry-clerkship` *(optional; this is the default)* |
-| `GIT_BRANCH` | `main` *(optional; default)* |
+| `GIT_BRANCH` | `attest/pending` *(optional; default)* — the branch attestations commit to |
+| `GIT_BASE_BRANCH` | `main` *(optional; default)* — where the rolling pull request lands |
 | `STUDENT_SITE_URL` | learner site to embed *(optional; defaults to `https://une-ms3-psychiatry.netlify.app`)* |
 | `ALLOWED_ORIGIN` | the exact faculty site origin, e.g. `https://clerkship-faculty-attest.netlify.app` *(optional; tightens API CORS)* |
 | `ATTESTER_NAME` | reviewer attribution recorded in `by:` fields and commit messages *(optional; defaults to `Joshua Moss, MD`)* |
 
 Deploy. Open the site, enter the key, and you're attesting.
+
+### Why attestations do not commit to `main`
+
+`main` is a protected branch (`required_pull_request_reviews`, `enforce_admins: true`), so GitHub
+refuses a direct write from anyone — including the repository owner. Between 2026-07-09 and
+2026-08-10 the console did exactly that and reported the refusal as *"The repository changed during
+this request. Reload and try again."* A 409 reads as a race whether or not it is one, so the failure
+looked transient and went undiagnosed for a month.
+
+Attestations therefore commit to `GIT_BRANCH` and reach `GIT_BASE_BRANCH` through **one rolling pull
+request**, which the console opens on the first write and reuses thereafter. CI still gates every
+attestation, and protection on `main` is untouched.
+
+Before each write the console **fast-forwards the attestation branch from the base branch, but only
+when the branch carries nothing of its own** (`compare(base...branch).ahead_by === 0`). This is the
+step with a data-loss failure mode: a branch that has fallen behind holds a stale `reviewed.json`,
+and merging it would revert whatever landed on the base since. A branch that is *ahead* holds
+unmerged attestations and is left alone — merging the rolling PR is what reconciles the two.
+
+Setting `GIT_BRANCH` equal to `GIT_BASE_BRANCH` restores direct writes and skips both the sync and
+the pull request. That only works if the target branch is unprotected.
 
 > **Do not** put the token or password in the repo, in `netlify.toml`, or in the HTML. Keep both required secrets only in Netlify environment variables.
 
