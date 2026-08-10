@@ -25,11 +25,11 @@
 - Watch the interaction traps: an NSAID or thiazide added to a lithium patient, a QT-prolonging combination, a serotonergic stack.
 
 **High-yield pearls.**
-- Lithium level is a 12-hour trough, drawn ~5 days after any dose change.
-- The clozapine ANC schedule (weekly → biweekly → monthly) is worth memorizing; myocarditis is the early killer beyond the count.
+- Lithium level is a 12-hour trough, drawn ~5 days after any dose change.[^canmat-isbd-bipolar-2018]
+- The clozapine ANC schedule (weekly → biweekly → monthly) is worth memorizing; myocarditis is the early killer beyond the count.[^clozapine-rems]
 - Valproate and lithium are teratogenic — β-hCG before starting, and avoid valproate in anyone who may become pregnant.
 - Baseline and ongoing metabolic monitoring is part of prescribing an antipsychotic, not optional.
-- Get a baseline QTc before QT-prolonging agents and keep potassium and magnesium repleted.
+- Get a baseline QTc before QT-prolonging agents and keep potassium and magnesium repleted.[^fda-drug-safety]
 
 **Pair with** the Psychopharmacology Primer, the Protocol Library, and ECT & Neuromodulation.
 
