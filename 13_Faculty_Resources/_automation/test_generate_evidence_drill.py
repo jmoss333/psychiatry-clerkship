@@ -29,12 +29,20 @@ class GeneratedFileContract(unittest.TestCase):
         """Same inputs, byte-identical output — so a diff means anchors moved."""
         self.assertEqual(gen.build(ROOT), gen.build(ROOT))
 
-    def test_every_item_is_a_draft(self):
-        """Generated clinical content must never reach a learner unreviewed."""
+    def test_no_item_is_attested_without_a_recorded_decision(self):
+        """Generated clinical content reaches a learner only by faculty decision.
+
+        `attested` is not something the generator can grant itself — it has to
+        trace to an entry in evidence_drill_review.json.
+        """
         payload = json.loads(OUT.read_text(encoding="utf-8"))
         self.assertTrue(payload["items"])
+        decisions = gen.load_decisions(ROOT)
         for item in payload["items"]:
-            self.assertEqual(item["status"], "draft", item["id"])
+            if item["status"] == "attested":
+                self.assertEqual(decisions.get(item["id"], {}).get("decision"), "keep", item["id"])
+            else:
+                self.assertEqual(item["status"], "draft", item["id"])
 
     def test_each_item_has_exactly_one_correct_option(self):
         payload = json.loads(OUT.read_text(encoding="utf-8"))
@@ -74,6 +82,69 @@ class GeneratedFileContract(unittest.TestCase):
             self.assertNotIn("[^", claim, item["id"])
             self.assertNotIn("**", claim, item["id"])
             self.assertTrue(claim.strip(), item["id"])
+
+
+class ReviewDecisions(unittest.TestCase):
+    """Faculty decisions are durable; generated content is disposable."""
+
+    def write_decisions(self, mapping):
+        path = ROOT / gen.REVIEW_REL
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(mapping, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+
+    def setUp(self):
+        self.path = ROOT / gen.REVIEW_REL
+        self.existed = self.path.exists()
+        self.original = self.path.read_bytes() if self.existed else None
+
+    def tearDown(self):
+        if self.existed:
+            self.path.write_bytes(self.original)
+        elif self.path.exists():
+            self.path.unlink()
+
+    def first_two_ids(self):
+        return [i["id"] for i in gen.build(ROOT)["items"]][:2]
+
+    def test_keep_promotes_and_records_who_decided(self):
+        keep, _ = self.first_two_ids()
+        self.write_decisions(
+            {keep: {"decision": "keep", "reviewer": "Joshua Moss, MD", "date": "2026-08-10", "note": ""}}
+        )
+        item = next(i for i in gen.build(ROOT)["items"] if i["id"] == keep)
+        self.assertEqual(item["status"], "attested")
+        self.assertEqual(item["review"]["reviewer"], "Joshua Moss, MD")
+
+    def test_cut_removes_the_item_entirely(self):
+        _, cut = self.first_two_ids()
+        self.write_decisions(
+            {cut: {"decision": "cut", "reviewer": "Joshua Moss, MD", "date": "2026-08-10", "note": "n/a"}}
+        )
+        self.assertNotIn(cut, [i["id"] for i in gen.build(ROOT)["items"]])
+
+    def test_undecided_items_stay_draft(self):
+        keep, _ = self.first_two_ids()
+        self.write_decisions(
+            {keep: {"decision": "keep", "reviewer": "Joshua Moss, MD", "date": "2026-08-10", "note": ""}}
+        )
+        others = [i for i in gen.build(ROOT)["items"] if i["id"] != keep]
+        self.assertTrue(others)
+        for item in others:
+            self.assertEqual(item["status"], "draft", item["id"])
+
+    def test_a_malformed_decisions_file_promotes_nothing(self):
+        """Fail safe: an unparseable file must not attest anything by accident."""
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_text("{ not json", encoding="utf-8")
+        self.assertEqual(gen.load_decisions(ROOT), {})
+        for item in gen.build(ROOT)["items"]:
+            self.assertEqual(item["status"], "draft", item["id"])
+
+    def test_unknown_decision_values_are_ignored(self):
+        keep, _ = self.first_two_ids()
+        self.write_decisions({keep: {"decision": "maybe", "reviewer": "x", "date": "2026-08-10"}})
+        item = next(i for i in gen.build(ROOT)["items"] if i["id"] == keep)
+        self.assertEqual(item["status"], "draft")
 
 
 class Changelog(unittest.TestCase):

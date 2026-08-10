@@ -47,10 +47,14 @@ sys.path.insert(0, str(HERE))
 import validate_claim_anchors as anchors  # noqa: E402  (path set above)
 
 OUT_REL = "13_Faculty_Resources/_automation/generated/evidence_drill.json"
+# Hand-maintained by drill_review_serve.py. Generated content is disposable;
+# a faculty decision about it is not, so the decisions live in their own file
+# and survive every later regeneration.
+REVIEW_REL = "13_Faculty_Resources/_automation/generated/evidence_drill_review.json"
 
 USAGE_NOTICE = (
-    "Generated from claim anchors; every item is a draft and requires faculty "
-    "review before any learner sees it."
+    "Generated from claim anchors. An item is a draft until a faculty decision "
+    "in evidence_drill_review.json says otherwise; cut items are omitted."
 )
 
 # A claim is the sentence the anchor sits in. Markdown bullets and table cells
@@ -122,6 +126,29 @@ def pick_distractors(correct_id, page_ids, all_ids, want=3):
     return pool[:want]
 
 
+def load_decisions(repo_root):
+    """Faculty keep/cut decisions, if any have been recorded yet.
+
+    Absent or unreadable means "nothing reviewed" — the drill is then all
+    drafts, which is the safe state. A malformed file must not silently
+    promote items, so anything that does not parse is treated as empty.
+    """
+    path = Path(repo_root) / REVIEW_REL
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {
+        k: v
+        for k, v in data.items()
+        if isinstance(v, dict) and v.get("decision") in ("keep", "cut")
+    }
+
+
 def build(repo_root):
     repo_root = Path(repo_root).resolve()
     anchors.REPO_ROOT = repo_root
@@ -134,6 +161,7 @@ def build(repo_root):
     by_id = {s["id"]: s for s in registry.get("sources", [])}
     topics = json.loads((repo_root / "topic_meta.json").read_text(encoding="utf-8"))
     sources = anchors.shipped_name_to_source()
+    decisions = load_decisions(repo_root)
 
     items = []
     for page in sorted(topics):
@@ -162,10 +190,22 @@ def build(repo_root):
                 for key, opt in zip("ABCD", options):
                     opt["key"] = key
 
+                item_id = "ed_%s_%s" % (page.replace(".md", ""), aid)
+                decision = decisions.get(item_id) or {}
+                if decision.get("decision") == "cut":
+                    continue
+
                 items.append(
                     {
-                        "id": "ed_%s_%s" % (page.replace(".md", ""), aid),
-                        "status": "draft",
+                        "id": item_id,
+                        "status": "attested" if decision.get("decision") == "keep" else "draft",
+                        "review": {
+                            "reviewer": decision.get("reviewer", ""),
+                            "date": decision.get("date", ""),
+                            "note": decision.get("note", ""),
+                        }
+                        if decision.get("decision") == "keep"
+                        else None,
                         "page": page,
                         "sourceId": aid,
                         "claim": claim_for(line, aid),
