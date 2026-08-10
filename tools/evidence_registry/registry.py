@@ -124,6 +124,7 @@ _REFERENCE_FILES = (
     "family_systems_scenarios.json",
 )
 _STABLE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+_DATE_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 _ZOTERO_ITEM_KEY_RE = re.compile(r"^[A-Z0-9]{8}$")
 _TIER1_SELECTION_RE = re.compile(r"^(\d+)([a-z]*)$")
 _SCHEMA_PATH = Path(__file__).resolve().parents[2] / "evidence_registry.schema.json"
@@ -1220,6 +1221,69 @@ def validate_surveillance_contract(registry: dict) -> list[ValidationIssue]:
     return issues
 
 
+def _validate_note_history(source: dict, source_path: str) -> list[ValidationIssue]:
+    """`governance.noteHistory` is the account of how a source came to be understood.
+
+    `governance.lastReviewed` records that somebody looked. It cannot record what
+    they concluded differently, so a revised `identity.note` used to overwrite its
+    predecessor silently — and those revisions are the most interesting thing the
+    registry knows. Lima 2004 went from "the strongest evidence" to a source that
+    concludes the opposite; nothing in the file said so.
+
+    The load-bearing rule is the last one: the tail of the history must equal the
+    current note. Editing `identity.note` without appending is therefore a build
+    failure, which is what makes the history complete rather than aspirational.
+    """
+    issues: list[ValidationIssue] = []
+    governance = source.get("governance")
+    if not isinstance(governance, dict):
+        return issues
+
+    path = f"{source_path}.governance.noteHistory"
+    history = governance.get("noteHistory")
+    if not isinstance(history, list) or not history:
+        issues.append(ValidationIssue(path, "noteHistory must be a non-empty list"))
+        return issues
+
+    previous_date = ""
+    for index, entry in enumerate(history):
+        entry_path = f"{path}[{index}]"
+        if not isinstance(entry, dict):
+            issues.append(ValidationIssue(entry_path, "history entry must be an object"))
+            continue
+        for field in ("date", "note", "reason"):
+            if not _nonempty_text(entry.get(field)):
+                issues.append(
+                    ValidationIssue(entry_path, f"history entry needs a non-empty {field}")
+                )
+        date = entry.get("date")
+        if isinstance(date, str) and _DATE_RE.fullmatch(date):
+            if previous_date and date < previous_date:
+                issues.append(
+                    ValidationIssue(
+                        entry_path,
+                        f"history is out of order: {date} precedes {previous_date}",
+                    )
+                )
+            previous_date = date
+        elif "date" in entry:
+            issues.append(ValidationIssue(entry_path, "history date must be YYYY-MM-DD"))
+
+    identity = source.get("identity")
+    current = identity.get("note") if isinstance(identity, dict) else None
+    last = history[-1].get("note") if isinstance(history[-1], dict) else None
+    if _nonempty_text(current) and last != current:
+        issues.append(
+            ValidationIssue(
+                path,
+                "identity.note does not match the last noteHistory entry — append an "
+                "entry recording what changed and why, rather than overwriting the "
+                "record of what was previously understood",
+            )
+        )
+    return issues
+
+
 def validate_registry(
     registry: dict, schema_path: Path | None = None
 ) -> list[ValidationIssue]:
@@ -1309,6 +1373,8 @@ def validate_registry(
                     f"invalid required access: {required_access!r}",
                 )
             )
+
+        issues.extend(_validate_note_history(source, source_path))
 
         citation = source.get("citation")
         if not isinstance(citation, dict):

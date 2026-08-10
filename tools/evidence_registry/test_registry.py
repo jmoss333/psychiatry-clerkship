@@ -356,10 +356,66 @@ def test_canonical_registry_preserves_all_prior_ids_when_surveillance_is_added()
     assert ALL_SOURCE_IDS == source_ids
 
 
+def test_note_history_tail_must_equal_the_current_note():
+    """The load-bearing rule: editing identity.note without appending is a failure.
+
+    lastReviewed records that somebody looked; it cannot record what they
+    concluded differently. Without this, a revised note overwrites its
+    predecessor silently — and those revisions are the most interesting thing
+    the registry knows (see the Lima entry).
+    """
+    registry = load_evidence_registry(REGISTRY_PATH)
+    registry["sources"][0]["identity"]["note"] = "rewritten without appending history"
+    errors = [
+        issue
+        for issue in validate_registry(registry)
+        if issue.severity == "error" and issue.path.endswith(".governance.noteHistory")
+    ]
+    assert errors, "a silently rewritten note must fail the build"
+
+
+def test_note_history_must_run_forward_in_time():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    history = registry["sources"][0]["governance"]["noteHistory"]
+    history.append(
+        {
+            "date": "1999-01-01",
+            "note": registry["sources"][0]["identity"]["note"],
+            "reason": "backdated entry",
+        }
+    )
+    errors = [
+        issue
+        for issue in validate_registry(registry)
+        if issue.severity == "error" and "out of order" in issue.message
+    ]
+    assert errors
+
+
+def test_every_canonical_source_carries_a_note_history():
+    registry = load_evidence_registry(REGISTRY_PATH)
+    for position, source in enumerate(registry["sources"]):
+        history = source["governance"]["noteHistory"]
+        assert isinstance(history, list) and history, position
+        for entry in history:
+            assert set(entry) == {"date", "note", "reason"}, position
+            assert all(str(entry[field]).strip() for field in entry), position
+        assert history[-1]["note"] == source["identity"]["note"], position
+
+
+def test_lima_history_records_what_verification_found():
+    """The entry this field exists for: a citation that meant the opposite."""
+    registry = load_evidence_registry(REGISTRY_PATH)
+    source = index_sources(registry)["lima-2004-betablockers-akathisia"]
+    reason = source["governance"]["noteHistory"][-1]["reason"]
+    assert "opposite" in reason
+    assert "insufficient data" in reason
+
+
 def test_published_schema_governance_is_required_for_every_canonical_source():
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     required = set(schema["definitions"]["governance"]["required"])
-    assert {"supersededBy", "correctionStatus"} <= required
+    assert {"supersededBy", "correctionStatus", "noteHistory"} <= required
 
     registry = load_evidence_registry(REGISTRY_PATH)
     assert len(registry["sources"]) == len(ALL_SOURCE_IDS)
@@ -388,6 +444,7 @@ def test_surveillance_projection_excludes_governance_without_changing_p0_shape()
 
     assert "supersededBy" not in encoded
     assert "correctionStatus" not in encoded
+    assert "noteHistory" not in encoded
     assert {source["id"] for source in projection["sources"]} == SURVEILLANCE_IDS
     assert projection["link_monitor"]["high_traffic_paths_P0"] == [
         "00_START_HERE/**",
