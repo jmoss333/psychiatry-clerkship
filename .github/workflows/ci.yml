@@ -81,6 +81,12 @@ jobs:
       - name: Validate — claim anchors resolve to declared evidence
         run: python3 13_Faculty_Resources/_automation/validate_claim_anchors.py
 
+      - name: Test — evidence drill generator
+        run: python3 13_Faculty_Resources/_automation/test_generate_evidence_drill.py
+
+      - name: Validate — evidence drill is regenerated from current anchors
+        run: python3 13_Faculty_Resources/_automation/generate_evidence_drill.py --check
+
       - name: Validate — longitudinal case contract
         run: python3 13_Faculty_Resources/_automation/test_longitudinal_case.py
 
