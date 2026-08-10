@@ -3,6 +3,123 @@
  "version": 1,
  "items": [
   {
+   "id": "ed_med_monitoring_canmat-isbd-bipolar-2018",
+   "status": "draft",
+   "page": "med_monitoring.md",
+   "sourceId": "canmat-isbd-bipolar-2018",
+   "claim": "Lithium level is a 12-hour trough, drawn ~5 days after any dose change.",
+   "stem": "This claim on med_monitoring.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "c": true,
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "sourceId": "clozapine-rems",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-drug-safety",
+     "key": "C"
+    },
+    {
+     "t": "Stanley et al. · 2012 · Cognitive and Behavioral Practice",
+     "sourceId": "stanley-brown-2012-safety-planning",
+     "key": "D"
+    }
+   ],
+   "why": "Added to main after source branch diverged; bibliographic identity populated from known metadata; Zotero verification pending.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Canadian Network for Mood and Anxiety Treatments (CANMAT) and International Society for Bipolar Disorders (ISBD) 2018 guidelines for the management of patients with bipolar disorder",
+    "doi": "10.1111/bdi.12609",
+    "pmid": "29536616",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/29536616/"
+   }
+  },
+  {
+   "id": "ed_med_monitoring_clozapine-rems",
+   "status": "draft",
+   "page": "med_monitoring.md",
+   "sourceId": "clozapine-rems",
+   "claim": "The clozapine ANC schedule (weekly → biweekly → monthly) is worth memorizing; myocarditis is the early killer beyond the count.",
+   "stem": "This claim on med_monitoring.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "c": true,
+     "sourceId": "clozapine-rems",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-drug-safety",
+     "key": "C"
+    },
+    {
+     "t": "American Association for Emergency Psychiatry Project BETA · 2012",
+     "sourceId": "project-beta-deescalation-2012",
+     "key": "D"
+    }
+   ],
+   "why": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "FDA Clozapine Safety / REMS Removed",
+    "doi": "",
+    "pmid": "",
+    "url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine"
+   }
+  },
+  {
+   "id": "ed_med_monitoring_fda-drug-safety",
+   "status": "draft",
+   "page": "med_monitoring.md",
+   "sourceId": "fda-drug-safety",
+   "claim": "Get a baseline QTc before QT-prolonging agents and keep potassium and magnesium repleted.",
+   "stem": "This claim on med_monitoring.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "Caspi et al. · 2003 · Science",
+     "sourceId": "caspi-2003-5htt-stress",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "sourceId": "clozapine-rems",
+     "key": "C"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "c": true,
+     "sourceId": "fda-drug-safety",
+     "key": "D"
+    }
+   ],
+   "why": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "FDA Drug Safety Communications",
+    "doi": "",
+    "pmid": "",
+    "url": "https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications"
+   }
+  },
+  {
    "id": "ed_psychopharm_primer_boyer-shannon-2005-serotonin-syndrome",
    "status": "draft",
    "page": "psychopharm_primer.md",
@@ -530,6 +647,123 @@
     {
      "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
      "sourceId": "lieberman-2005-catie",
+     "key": "C"
+    },
+    {
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "c": true,
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 17541044 resolved: title, all three authors, 2007, Am J Psychiatry 164(6):870-6 and DOI all match the inline citation on t_psychosis.md:15.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Neuroleptic malignant syndrome.",
+    "doi": "10.1176/ajp.2007.164.6.870",
+    "pmid": "17541044",
+    "url": "https://doi.org/10.1176/ajp.2007.164.6.870"
+   }
+  },
+  {
+   "id": "ed_toxidromes_bap-catatonia-2023",
+   "status": "draft",
+   "page": "toxidromes.md",
+   "sourceId": "bap-catatonia-2023",
+   "claim": "ECT is the definitive treatment for malignant catatonia (and for NMS-catatonia overlap).",
+   "stem": "This claim on toxidromes.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "British Association for Psychopharmacology · 2023",
+     "c": true,
+     "sourceId": "bap-catatonia-2023",
+     "key": "A"
+    },
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "B"
+    },
+    {
+     "t": "Pharoah et al. · 2010 · Cochrane Database of Systematic Reviews",
+     "sourceId": "pharoah-2010-family-intervention",
+     "key": "C"
+    },
+    {
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "key": "D"
+    }
+   ],
+   "why": "Faculty review status was preserved; bibliographic identity was not inferred.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Evidence-based consensus guidelines for the management of catatonia",
+    "doi": "10.1177/02698811231158232",
+    "pmid": "",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10101189/"
+   }
+  },
+  {
+   "id": "ed_toxidromes_boyer-shannon-2005-serotonin-syndrome",
+   "status": "draft",
+   "page": "toxidromes.md",
+   "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+   "claim": "Clonus + hyperreflexia, worse in the legs → serotonin syndrome.",
+   "stem": "This claim on toxidromes.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
+     "sourceId": "aacap-parameters",
+     "key": "A"
+    },
+    {
+     "t": "British Association for Psychopharmacology · 2023",
+     "sourceId": "bap-catatonia-2023",
+     "key": "B"
+    },
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "C"
+    },
+    {
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 15784664 resolved: title, both authors, 2005, NEJM 352:1112-20 and DOI all match the inline citation on t_psychosis.md:15.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "The serotonin syndrome.",
+    "doi": "10.1056/NEJMra041867",
+    "pmid": "15784664",
+    "url": "https://doi.org/10.1056/NEJMra041867"
+   }
+  },
+  {
+   "id": "ed_toxidromes_strawn-2007-neuroleptic-malignant-syndrome",
+   "status": "draft",
+   "page": "toxidromes.md",
+   "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+   "claim": "Lead-pipe rigidity + hyporeflexia → NMS.",
+   "stem": "This claim on toxidromes.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "British Association for Psychopharmacology · 2023",
+     "sourceId": "bap-catatonia-2023",
+     "key": "A"
+    },
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "B"
+    },
+    {
+     "t": "SPRAVATO REMS · 2026",
+     "sourceId": "spravato-rems",
      "key": "C"
     },
     {
