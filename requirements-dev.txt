@@ -1,4 +1,4 @@
 # Dev/CI-only dependencies for the faculty export tool suites (tools/*).
 # Not needed by the Netlify build or the runtime site — keep out of requirements.txt.
-pypdf==6.14.2
+pypdf==6.15.0
 reportlab==5.0.0
