@@ -572,10 +572,9 @@
   "by": "Joshua Moss, MD"
  },
  "one-patient-six-weeks.html": {
-  "status": "pending",
-  "at": "2026-07-11",
-  "by": "Pending faculty review",
-  "note": "Fictional composite longitudinal simulation; attest before learner release."
+  "status": "reviewed",
+  "at": "2026-08-11",
+  "by": "Joshua Moss, MD"
  },
  "anki.md": {
   "status": "reviewed",
