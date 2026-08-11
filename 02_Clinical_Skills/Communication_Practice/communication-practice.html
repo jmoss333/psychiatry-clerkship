@@ -27,9 +27,9 @@
 var REP_SECONDS=20;
 var PHASE={ORIENT:'orient',SPEAKING:'speaking',COMPARE:'compare',FEEDBACK:'feedback'};
 var QUALITY={best:true,partial:true,missed:true,harmful:true};
-var FILTERS=[['all','All'],['safety','Safety'],['psychosis','Psychosis'],['family','Family'],['medication','Medication'],['rupture','Rupture'],['guarded','Guarded']];
-var DOMAIN_ORDER=[['safety','Safety'],['psychosis','Psychosis'],['family','Family'],['medication','Medication'],['rupture','Rupture'],['guarded','Guarded']];
-var CASE_FILTERS={suicide_direct_question_001:['safety'],psychosis_validation_001:['psychosis'],guardedness_privacy_001:['guarded','psychosis'],rupture_limit_setting_001:['rupture','safety'],bpd_rupture_repair_001:['rupture'],medication_ambivalence_001:['medication'],mania_limit_sleep_001:['medication','safety'],family_meeting_opening_001:['family'],collateral_questions_001:['family'],family_conflict_discharge_001:['family','rupture','safety']};
+var FILTERS=[['all','All'],['safety','Safety'],['psychosis','Psychosis'],['family','Family'],['medication','Medication'],['rupture','Rupture'],['guarded','Guarded'],['rounds','Rounds']];
+var DOMAIN_ORDER=[['safety','Safety'],['psychosis','Psychosis'],['family','Family'],['medication','Medication'],['rupture','Rupture'],['guarded','Guarded'],['rounds','Rounds']];
+var CASE_FILTERS={suicide_direct_question_001:['safety'],psychosis_validation_001:['psychosis'],guardedness_privacy_001:['guarded','psychosis'],rupture_limit_setting_001:['rupture','safety'],bpd_rupture_repair_001:['rupture'],medication_ambivalence_001:['medication'],mania_limit_sleep_001:['medication','safety'],family_meeting_opening_001:['family'],collateral_questions_001:['family'],family_conflict_discharge_001:['family','rupture','safety'],interview_motive_suspicion_001:['guarded','psychosis'],rounds_naming_uncertainty_001:['rounds']};
 var app=document.getElementById('app');
 var state={cases:[],current:0,choice:null,filter:requestedFilter(),attempts:loadAttempts(),requestedCase:requestedCaseId(),matchedRequest:false,routeNotice:'',tryToday:{},phase:PHASE.ORIENT,endsAt:0,timerId:null,timerCaseId:'',announcedFive:false,nudgeOpen:false,coachingOpen:false,mobileOpen:false};
 function esc(s){return String(s==null?'':s).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
