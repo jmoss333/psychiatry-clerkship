@@ -8,6 +8,7 @@
 
 **This term's line-up (most recent first):**
 
+- **Panic Disorder — Recognition, Differential & First-Line Treatment** (Aug 10) — panic attack vs. panic disorder, the must-not-miss mimics, why repeating a negative workup backfires, and SSRI + CBT.
 - **Lithium — Monitoring, Toxicity & Interactions** (Aug 3) — why the level rises when the dose doesn't, level-vs-exam dissociation, and the dialysis criteria.
 - **Opioid Use Disorder — Intoxication, Withdrawal & MOUD** (Jul 27) — the two toxidromes, naloxone, COWS, and starting medication treatment in the building.
 - **Alcohol Withdrawal & Delirium Tremens** (Jul 26) — the withdrawal timeline, predicting severe withdrawal, and first-line management.
