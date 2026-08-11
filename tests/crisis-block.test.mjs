@@ -38,6 +38,8 @@ const markedSources = new Map([
   ['06_Family_and_Relational/collateral_micro_workflow.md', MD],
   // tools where the learner is actively assessing or rehearsing risk
   ['04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html', HTML],
+  // PHQ-9 item 9 is itself a suicide-risk screen; the tool escalates its band on it
+  ['02_Clinical_Skills/Screeners/screeners.html', HTML],
   ['_prototypes/sp-interview/sp-interview.html', HTML],
   ['02_Clinical_Skills/Communication_Practice/communication-practice.html', HTML],
   ['06_Family_and_Relational/family-systems-practice.html', HTML],

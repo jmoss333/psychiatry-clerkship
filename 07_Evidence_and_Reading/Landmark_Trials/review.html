@@ -77,6 +77,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
 .fb b{color:var(--text)}
 .grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
 .gr{border:1.5px solid var(--border);background:var(--surface);border-radius:11px;padding:10px 6px;cursor:pointer;font-family:inherit;font-weight:600;font-size:.9rem;color:var(--text);text-align:center}
+.gr:disabled{opacity:.38;cursor:default}
 .gr .gk{display:block;font-size:.68rem;font-weight:500;color:var(--text-light);margin-top:2px}
 .gr.again:hover,.gr.again.sug{border-color:var(--danger);background:var(--danger-light);color:var(--danger)}
 .gr.hard:hover,.gr.hard.sug{border-color:var(--warning);background:var(--warning-light);color:var(--warning)}
@@ -210,6 +211,10 @@ function App(){
   function correctIdx(card){ for(var i=0;i<card.o.length;i++){if(card.o[i].c)return i;} return -1; }
   function grade(g){
     var s=sessRef.current; if(!s||!s.revealed)return;
+    /* Objectively missed answers cannot self-grade Good/Easy — tapping Easy on a miss
+       inflated SM-2 intervals. Wrong => Again or Hard only; the buttons disable to match,
+       and this guard also covers the keyboard shortcuts (keys 3/4). */
+    if(g>1 && s.chosen!==correctIdx(s.card)) return;
     var st=loadS(); st=rollDay(st);
     var card=s.card; var existed=!!st.cards[card.id];
     var was=st.cards[card.id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0};
@@ -274,8 +279,8 @@ function App(){
           sess.revealed? e("div",{className:"grades"},
             e("button",{className:"gr again"+(sug==='Again'?" sug":""),onClick:function(){grade(0);}},"Again",e("span",{className:"gk"},"<10m")),
             e("button",{className:"gr hard",onClick:function(){grade(1);}},"Hard",e("span",{className:"gk"},"1")),
-            e("button",{className:"gr good"+(sug==='Good'?" sug":""),onClick:function(){grade(2);}},"Good",e("span",{className:"gk"},"↑")),
-            e("button",{className:"gr easy",onClick:function(){grade(3);}},"Easy",e("span",{className:"gk"},"↑↑"))
+            e("button",{className:"gr good"+(sug==='Good'?" sug":""),onClick:function(){grade(2);},disabled:!gotIt,title:gotIt?null:"Missed items can only be graded Again or Hard"},"Good",e("span",{className:"gk"},"↑")),
+            e("button",{className:"gr easy",onClick:function(){grade(3);},disabled:!gotIt,title:gotIt?null:"Missed items can only be graded Again or Hard"},"Easy",e("span",{className:"gk"},"↑↑"))
           ) : e("div",{className:"muted",style:{marginTop:"10px"}},"Pick the best answer (or press 1–"+c.o.length+")."),
           e("div",{className:"sfoot"},
             e("span",null,"✓ "+sess.correct+" correct"),

@@ -84,23 +84,33 @@ function App(){
   var Q=[
     {k:'q1',n:'1',cat:'Ideation',t:'Wish to be dead',q:'"Have you wished you were dead or wished you could go to sleep and not wake up?"'},
     {k:'q2',n:'2',cat:'Ideation',t:'Suicidal thoughts',q:'"Have you actually had any thoughts of killing yourself?"'},
-    {k:'q3',n:'3',cat:'Intensity',t:'Thoughts with method (no plan/intent)',q:'"Have you been thinking about how you might do this?"',sub:true},
-    {k:'q4',n:'4',cat:'Intensity',t:'Some intent to act (no specific plan)',q:'"Have you had these thoughts and had some intention of acting on them?"',sub:true},
-    {k:'q5',n:'5',cat:'Intensity',t:'Specific plan and intent',q:'"Have you started to work out the details of how to kill yourself, and do you intend to carry out this plan?"',sub:true},
+    /* On the real C-SSRS, items 1–5 are ALL the Severity-of-Ideation subscale (3–5 are its
+       escalation steps); "Intensity of Ideation" is a separate subscale (frequency, duration,
+       controllability, deterrents, reasons) that this screener deliberately does not include.
+       Labeling 3–5 "Intensity" mistaught the instrument. */
+    {k:'q3',n:'3',cat:'Ideation',t:'Thoughts with method (no plan/intent)',q:'"Have you been thinking about how you might do this?"',sub:true},
+    {k:'q4',n:'4',cat:'Ideation',t:'Some intent to act (no specific plan)',q:'"Have you had these thoughts and had some intention of acting on them?"',sub:true},
+    {k:'q5',n:'5',cat:'Ideation',t:'Specific plan and intent',q:'"Have you started to work out the details of how to kill yourself, and do you intend to carry out this plan?"',sub:true},
   ];
   function band(){
     var lvl='none';
     if(a.q1==='yes'||a.q2==='yes') lvl='low';
     if(a.q3==='yes') lvl='moderate';
     if(a.q4==='yes'||a.q5==='yes') lvl='high';
-    if(a.q6==='yes'){ lvl = (a.q6b==='yes') ? 'high' : (lvl==='high'?'high':'moderate'); }
+    /* Fail-SAFE on recency: behavior reported (6=yes) with 6a unanswered used to read as
+       not-recent and quietly settle at moderate. Unknown recency now stays HIGH until 6a is
+       actually answered "No" — a screen must never downgrade on missing information. */
+    var recencyPending=(a.q6==='yes'&&a.q6b!=='yes'&&a.q6b!=='no');
+    if(a.q6==='yes'){ lvl = (a.q6b==='no') ? (lvl==='high'?'high':'moderate') : 'high'; }
     var txt={
       none:'No positive responses on this screen. Continue clinical judgment and re-screen as the picture changes.',
       low:'LOW risk on this screen — passive death wish or non-specific suicidal thoughts. Complete a full clinical assessment and a safety conversation.',
       moderate:'MODERATE risk — suicidal thoughts with a method considered, or past suicidal behavior. Further evaluation + collaborative safety planning; discuss with your team.',
       high:'HIGH risk — intent (with or without a plan), or suicidal behavior in the past 3 months. Ensure immediate safety and escalate to your supervising clinician now, per protocol.'
     };
-    return {lvl:lvl,txt:txt[lvl]};
+    var t=txt[lvl];
+    if(recencyPending){ t='HIGH risk (provisional) — suicidal behavior reported and 6a (recency) is unanswered. Unknown recency is treated as recent: answer 6a, ensure immediate safety, and escalate per protocol.'; }
+    return {lvl:lvl,txt:t};
   }
   var b=band();
   var showSub = a.q2==='yes';
@@ -109,7 +119,7 @@ function App(){
     e('h1',null,'Columbia C-SSRS — Screener'),
     e('p',{className:'sub'},'A teaching version of the Columbia Suicide Severity Rating Scale (C-SSRS) screener. Ask in order; questions 3–5 open only if the patient answers Yes to question 2. This builds the habit and the language — use your institution’s official validated C-SSRS at the bedside.'),
     (function(){
-      var catColor={Ideation:'var(--primary-dark)',Intensity:'var(--warning)',Behavior:'var(--info)'};
+      var catColor={Ideation:'var(--primary-dark)',Behavior:'var(--info)'};
       var tierBg={none:'var(--success-light)',low:'var(--info-light)',moderate:'var(--warning-light)',high:'var(--danger-light)'};
       var tierC={none:'var(--success)',low:'var(--info)',moderate:'var(--warning)',high:'var(--danger)'};
       var tierLbl={none:'No positive screen',low:'Low risk',moderate:'Moderate risk',high:'High risk'};
