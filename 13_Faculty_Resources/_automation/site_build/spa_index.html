@@ -12,7 +12,7 @@
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
     --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
-    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2; --accent-border:#bfd8d3;
     --text:#2f2924; --focus:#155eef; --text-mid:#51473d; --text-light:#665a4f; --warning:#7a6234; --warning-light:#f5efe2;
     --success:#357160; --success-light:#e7f1ed; --danger:#a34132; --danger-light:#fbece9; --info:#41618a; --info-light:#eaf0f6;
     --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
@@ -56,6 +56,9 @@
   input.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
   .search-wrap .sx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:1rem;display:none}
   .mode-companion{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:0;margin:0 0 12px;box-shadow:0 1px 3px rgba(59,51,44,.08);overflow:hidden}
+  /* On Today the unit-card header carries the same five mode chips — hide the sidebar
+     companion there so the mode control exists once. Every other view keeps it. */
+  body.mc-suppress .mode-companion{display:none}
   .mc-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;background:transparent;color:var(--text);font:inherit;font-weight:900;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:10px;cursor:pointer}
   .mc-toggle:hover{background:var(--accent-light);color:var(--accent-dark)}
   .mc-chev{display:inline-block;color:var(--text-light);transition:transform .15s}
@@ -184,7 +187,7 @@
   .practice-section-title{font-size:.7rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--primary-dark);margin:0 0 8px}
   .practice-muted{font-size:.9rem;color:var(--text-mid);margin:0}
   .practice-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-  .practice-action{display:inline-flex;align-items:center;text-decoration:none;font-size:.84rem;font-weight:700;line-height:1.2;color:var(--accent-dark);background:var(--accent-light);border:1px solid #bfd8d3;border-radius:999px;padding:8px 12px}
+  .practice-action{display:inline-flex;align-items:center;text-decoration:none;font-size:.84rem;font-weight:700;line-height:1.2;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent-border);border-radius:999px;padding:8px 12px}
   .practice-action:hover{background:var(--surface);border-color:var(--accent)}
   .practice-action.is-safety{color:var(--primary-dark);background:var(--primary-light);border-color:#bdd5d1}
   .practice-action.is-case{color:var(--primary-dark);background:#fff;border-color:#d5c9bc}
@@ -425,7 +428,7 @@
   .hm-ribbon .hm-btn{align-self:auto}
   .hm-ribbon-x{border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:1.05rem;line-height:1;padding:2px 6px;font-family:var(--font-body)}
   .hm-ribbon-x:hover{color:var(--text)}
-  .hm-hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:var(--accent-light);border:1px solid #bfd8d3;border-left:4px solid var(--accent);border-radius:14px;padding:18px 20px;margin:0 0 18px}
+  .hm-hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:var(--accent-light);border:1px solid var(--accent-border);border-left:4px solid var(--accent);border-radius:14px;padding:18px 20px;margin:0 0 18px}
   .hm-hero .k{font-size:.66rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-dark);margin:0 0 4px}
   .hm-hero .t{font-family:var(--font-head);font-size:1.3rem;font-weight:600;color:var(--text);line-height:1.3}
   .hm-hero .a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:var(--accent);border-radius:999px;color:var(--on-brand,#fff);font-size:.88rem;font-weight:800;padding:10px 18px;white-space:nowrap}
@@ -968,6 +971,7 @@
     if(!facultyPreviewMatchesItem(item,opts)){showFacultyPreviewLockNotice();return false;}
     if(facultyPreviewRequest&&currentItem&&currentItem.k==='tool'&&item.k==='tool'&&currentItem.f===item.f)return true;
     setMobileTitle(item);
+    try{ document.body.classList.toggle('mc-suppress', item.f==='__home__'); }catch(_){ }
     try{ if(currentItem) SCROLL[currentItem.f]=window.scrollY||window.pageYOffset||0; }catch(_){ }
     document.querySelectorAll('.navitem.on').forEach(function(b){b.classList.remove('on');b.removeAttribute('aria-current');});
     if(btn){ btn.classList.add('on'); btn.setAttribute('aria-current','page'); }
@@ -1825,14 +1829,29 @@
   }
   /* ---- end calib panel ---- */
 
-  /* "Mon Aug 10 · Week 1 · Ward" — the Today header context stamp (design 2a). Week comes
-     from cw_start_week (set on Start-here) and is omitted until the learner sets it. */
+  /* "Mon Aug 10 · Week 2 · Ward" — the Today header context stamp (design 2a). Week is
+     COMPUTED from cw_rotation_start (a date, set on Start-here) so it advances on its own;
+     the legacy static cw_start_week pick is honored as a fallback for learners who set it
+     before the date field existed (that key no longer has a writer). Sentinels: 0 = date set
+     but rotation not started yet, 7 = past week 6 — both suppress the Week part rather than
+     falling back to a stale static pick. */
+  function rotationWeek(){
+    /* Date parsing goes through the injected shelfDaysUntil() — the one legal local-midnight
+       parse site (the phase-chip contract bans inline midnight-suffix date parses here).
+       For a past start date, -shelfDaysUntil(start) is exactly the full days elapsed. */
+    if(typeof shelfDaysUntil!=='function')return null;
+    var du=shelfDaysUntil(LS('cw_rotation_start')||'');
+    if(du==null)return null;
+    if(du>0)return 0;
+    var wk=Math.floor(-du/7)+1; return wk<=6?wk:7;
+  }
   function homeStamp(mode){
     var d=new Date();
     var wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
     var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
     var parts=[wd+' '+mo+' '+d.getDate()];
-    var wk=parseInt(LS('cw_start_week')||'',10);
+    var rw=rotationWeek();
+    var wk=(rw===null)?parseInt(LS('cw_start_week')||'',10):rw;
     if(wk>=1&&wk<=6)parts.push('Week '+wk);
     parts.push(dashCfg(mode).label);
     return parts.join(' · ');
@@ -1844,7 +1863,10 @@
     var streak=(s&&s.stats&&s.stats.streak)||0;
     var last=LS('cw_last'); var mode=dashboardMode();
     var h='<div class="hm" id="hmRoot"><div class="hm-top"><h1>Today</h1><span class="hm-stamp">'+esc(homeStamp(mode))+'</span></div>';
-    if(LS('cw_orient_ribbon_dismissed')!=='1'){
+    /* "New here?" is only true for a fresh device: any review, any scheduled card, or any
+       visited page auto-suppresses the ribbon — manual dismissal shouldn't be the only exit. */
+    var freshUser=(rev===0 && bd.daily.due+bd.qb.due+bd.fam.due+bd.other.due===0 && !last);
+    if(freshUser && LS('cw_orient_ribbon_dismissed')!=='1'){
       h+='<div class="hm-ribbon" id="orientRibbon"><span class="t">New here? Ten minutes of orientation sets up your whole rotation.</span><button class="hm-btn" type="button" data-ribbon="start">Start orientation</button><button class="hm-btn ghost" type="button" data-ribbon="pretest">2-minute placement</button><button class="hm-ribbon-x" type="button" data-ribbon="dismiss" aria-label="Dismiss the orientation reminder">&times;</button></div>';
     }
     h+=relationalChallengeHtml(mode);
@@ -1853,7 +1875,8 @@
     h+='<button class="hm-tile" type="button" data-f="__progress__"><span class="k">Reviewed</span><span class="v">'+pct+'%</span><span class="l">See progress →</span></button>';
     if(bd.daily.due){ h+='<button class="hm-tile" type="button" data-act="review"><span class="k">Due today</span><span class="v">'+bd.daily.due+(bd.daily.overdue?'<small> · '+bd.daily.overdue+' overdue</small>':'')+'</span><span class="l">Start review →</span>'+dueSubstatHtml(bd)+'</button>'; }
     else{ h+='<div class="hm-tile"><span class="k">Due today</span><span class="v">0</span>'+dueSubstatHtml(bd)+'</div>'; }
-    h+='<div class="hm-tile"><span class="k">Streak</span><span class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></span></div>';
+    if(streak){ h+='<div class="hm-tile"><span class="k">Streak</span><span class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></span></div>'; }
+    else{ h+='<button class="hm-tile" type="button" data-act="review"><span class="k">Streak</span><span class="l">Start your streak →</span></button>'; }
     h+='<button class="hm-tile" type="button" data-f="anki.md"><span class="k">On your phone</span><span class="l">Anki decks →</span></button>';
     h+='</div>';
     /* ---- phase chip ---- */
@@ -1975,10 +1998,9 @@
   function renderStoredPlan(){ var plan=null; try{plan=JSON.parse(localStorage.getItem('cw_plan_v1')||'null');}catch(_){ } if(!plan){ startPretest(); return; } setDrawer(false); if(contentEl){ contentEl.className='content'; } contentEl.innerHTML='<div class="hm" id="planRoot"><h1>Your 6-week plan</h1><p class="sub">Personalized from your placement — the week order is fixed; your weak areas are flagged to hit first.</p><div class="hm-sec">'+renderPlanCards(plan)+'</div><div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div></div>'; bindPretestUI(); }
   function bindPretestUI(){ if(window.__ptBound)return; window.__ptBound=1; contentEl.addEventListener('click',function(ev){ var scope=ev.target.closest?ev.target.closest('#ptRoot,#planRoot'):null; if(!scope)return; var opt=ev.target.closest?ev.target.closest('.pt-opt'):null; if(opt){ var qi=opt.getAttribute('data-qi'); ptAnswers[qi]=opt.getAttribute('data-key'); var sibs=scope.querySelectorAll('.pt-opt[data-qi="'+qi+'"]'); for(var i=0;i<sibs.length;i++)sibs[i].classList.remove('sel'); opt.classList.add('sel'); updatePtCount(); return; } var b=ev.target.closest?ev.target.closest('[data-pt]'):null; if(b){ var a=b.getAttribute('data-pt'); if(a==='submit')submitPretest(); else if(a==='pretest')startPretest(); else if(a==='plan')renderStoredPlan(); else if(a==='home')navClick('__home__'); else if(a==='start')navClick('__start__'); return; } var pr=ev.target.closest?ev.target.closest('.hm-li[data-practice]'):null; if(pr){ try{localStorage.setItem('cw_qb_focus',pr.getAttribute('data-practice'));}catch(_){ } navClick('question-bank-practice.html'); return; } var pg=ev.target.closest?ev.target.closest('.hm-li[data-f]'):null; if(pg){ navClick(pg.getAttribute('data-f')); return; } }); }
   window.renderStart=function(){
-    var track=LS('cw_track')||'MS3'; var wk=parseInt(LS('cw_start_week')||'1',10)||1; var shelf=LS('cw_shelf_date')||'';
+    var track=LS('cw_track')||'MS3'; var startDate=LS('cw_rotation_start')||''; var shelf=LS('cw_shelf_date')||'';
     var fd={}; try{ fd=JSON.parse(LS('cw_firstday')||'{}')||{}; }catch(_){ fd={}; }
     var checks=[ {k:'orient',t:'Read the orientation packet',pg:'orientation.md'}, {k:'interview',t:'Skim the Interview & MSE pocket guide',pg:'pg_interview.md'}, {k:'mse',t:'Try the Mental Status Exam tool',tool:'mse.html'}, {k:'suicide',t:'Review the Suicide Risk & Safety card',pg:'pg_suicide.md'}, {k:'week',t:'Look at this week on the reading map',pg:'reading_map.md'} ];
-    var wkOpts=''; for(var i=1;i<=6;i++){ wkOpts+='<option value="'+i+'"'+(i===wk?' selected':'')+'>Week '+i+'</option>'; }
     var qk=['mse.html','cssrs.html','withdrawal.html','screeners.html','decision-aids.html'];
     var h='<div class="st" id="stRoot"><h1>Welcome to the rotation</h1>';
     h+='<p class="sub">Two ways to use this hub. <strong>Follow the Path</strong> gives you a guided week-by-week route; <strong>Browse the Library</strong> lets you jump straight to any topic or tool. You can switch anytime from the sidebar.</p>';
@@ -1987,9 +2009,13 @@
     h+='<button class="st-mode" data-act="pretest"><h3>◎ Take the 2-minute placement</h3><p>One question per topic area — get a personalized 6-week plan aimed at your weak spots.</p></button></div>';
     h+='<div class="st-sec-h">Set your rotation</div><div class="st-row">';
     h+='<div class="st-field"><label for="stTrack">Track</label><select id="stTrack"><option value="MS3"'+(track==='MS3'?' selected':'')+'>MS3 student</option><option value="Resident"'+(track==='Resident'?' selected':'')+'>Resident</option></select></div>';
-    h+='<div class="st-field"><label for="stWeek">Starting week</label><select id="stWeek">'+wkOpts+'</select></div>';
+    h+='<div class="st-field"><label for="stStart">Rotation start date</label><input id="stStart" type="date" value="'+esc(startDate)+'"></div>';
     h+='<div class="st-field"><label for="stShelf">Shelf / exam date (optional)</label><input id="stShelf" type="date" value="'+shelf+'"></div>';
     h+='</div>';
+    var rw=rotationWeek();
+    if(rw===0){ h+='<p class="sub" id="stWeekHint">Rotation starts soon — the Today page will track your week automatically.</p>'; }
+    else if(rw>=1&&rw<=6){ h+='<p class="sub" id="stWeekHint">You’re in <strong>Week '+rw+'</strong> — the Today page tracks this automatically.</p>'; }
+    else{ h+='<p class="sub" id="stWeekHint">Set the start date and the Today page will show your current rotation week automatically.</p>'; }
     h+='<div class="st-sec-h">Your first day</div><div class="st-check">';
     checks.forEach(function(c){ var on=fd[c.k]?' on':''; var lk=c.pg?('<a class="lk" href="?page='+c.pg+'">Open →</a>'):(c.tool?('<a class="lk tl-chip" data-tool="'+c.tool+'" href="?tool='+c.tool+'" style="min-height:0;padding:4px 10px">Open →</a>'):''); h+='<div class="it'+on+'" data-check="'+c.k+'"><span class="bx">'+(fd[c.k]?'✓':'')+'</span><span class="t">'+c.t+'</span>'+lk+'</div>'; });
     h+='</div>';
@@ -2034,7 +2060,7 @@
         var m=e.target.closest?e.target.closest('[data-act]'):null; if(m){ var act=m.getAttribute('data-act'); if(act==='path'){ if(typeof showPath==='function')showPath(); } else if(act==='lib'){ navClick('__home__'); } else if(act==='home'){ navClick('__home__'); } else if(act==='pretest'){ startPretest(); } }
       });
       var tk=root.querySelector('#stTrack'); if(tk)tk.addEventListener('change',function(){ try{localStorage.setItem('cw_track',tk.value);}catch(_){ } });
-      var wkk=root.querySelector('#stWeek'); if(wkk)wkk.addEventListener('change',function(){ try{localStorage.setItem('cw_start_week',wkk.value);}catch(_){ } });
+      var sd=root.querySelector('#stStart'); if(sd)sd.addEventListener('change',function(){ try{localStorage.setItem('cw_rotation_start',sd.value);}catch(_){ } var hint=root.querySelector('#stWeekHint'); if(hint){ var rw=rotationWeek(); hint.innerHTML=(rw===0)?'Rotation starts soon — the Today page will track your week automatically.':((rw>=1&&rw<=6)?'You’re in <strong>Week '+rw+'</strong> — the Today page tracks this automatically.':'Set the start date and the Today page will show your current rotation week automatically.'); } });
       var sh=root.querySelector('#stShelf'); if(sh)sh.addEventListener('change',function(){ try{localStorage.setItem('cw_shelf_date',sh.value);}catch(_){ } });
     }
   };
