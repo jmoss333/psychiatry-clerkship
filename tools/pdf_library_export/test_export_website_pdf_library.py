@@ -270,7 +270,7 @@ def test_default_site_manifest_sources_exist_in_repo():
     md_entries, tool_entries = load_manifest(repo_root, manifest)
 
     assert len(md_entries) == 67
-    assert len(tool_entries) == 20
+    assert len(tool_entries) == 21  # +interaction-cards.html (2026-08-11, PR #315)
 
 
 def test_resolve_cli_paths_expands_relative_paths():
