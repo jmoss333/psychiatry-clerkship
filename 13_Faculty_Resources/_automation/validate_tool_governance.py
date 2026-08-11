@@ -43,7 +43,7 @@ SITE_EXTRAS = {
         ("_prototypes/canon-quiz/rp-canon-quiz.html", "rp-canon-quiz.html"),
     ),
 }
-EXPECTED_TOOL_COUNTS = {"ms3": 22, "resident": 24}
+EXPECTED_TOOL_COUNTS = {"ms3": 23, "resident": 25}
 ALLOWED_AUDIENCES = frozenset({"trainee", "ms3", "resident", "faculty"})
 
 

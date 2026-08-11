@@ -72,6 +72,11 @@
    "Algorithms & Decision Aids"
   ],
   [
+   "05_Psychopharmacology/Monitoring_and_Labs/interaction-cards.html",
+   "interaction-cards.html",
+   "Interaction Cards — One Action"
+  ],
+  [
    "04_Acute_and_Safety/Catatonia/bfcrs.html",
    "bfcrs.html",
    "Bush-Francis Catatonia Scale (BFCRS)"
@@ -113,7 +118,11 @@
   ]
  ],
  "md": [
-  [ "08_Cases_and_Simulation/case-of-the-week/index_ms3.md", "cotw_index.md", "Case of the Week — Index" ],
+  [
+   "08_Cases_and_Simulation/case-of-the-week/index_ms3.md",
+   "cotw_index.md",
+   "Case of the Week — Index"
+  ],
   [
    "13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md",
    "welcome.md",

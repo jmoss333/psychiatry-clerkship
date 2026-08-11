@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [CLERKSHIP-META v1] tool="Interaction Cards — One Action" version="1.0" built="2026-08-04" category="psychopharmacology" subcategory="Monitoring_and_Labs" audience="trainee,ms3,resident" settings="outpatient,primary-care,inpatient" time="1min" authorship="ai-drafted" status="draft-pending-attestation" summary="One-action interaction cards for lithium, clozapine and lamotrigine, written for the non-psychiatric prescriber who is about to add a medicine. Each card resolves to a single instruction plus the illnesses and co-prescriptions that trigger it. Stateless - no storage, no patient fields, no dosing. Educational teaching reference, not a dosing calculator or a substitute for the prescribing clinician." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Interaction Cards — One Action</title>
+<meta name="description" content="One-action interaction cards for lithium, clozapine and lamotrigine, aimed at the prescriber adding a new medicine to a patient already on a psychiatric drug. One instruction per card, not a list.">
+<style>
+:root{
+  --bg:#f6f3ee; --surface:#ffffff; --surface-2:#faf6f0; --border:#ddd3c6;
+  --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+  --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+  --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+  --warning-dark:#7a6234; --warning-light:#f5efe2;
+  --danger-dark:#a34132; --danger-light:#fbece9;
+  --radius:12px; --radius-lg:18px;
+  --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  --shadow:0 1px 3px rgba(59,51,44,.07);
+}
+[data-theme="dark"]{
+  --bg:#1c1917; --surface:#26221f; --surface-2:#2e2a26; --border:#443c35;
+  --primary:#e08265; --primary-dark:#f0a184; --primary-light:#3a2a24;
+  --accent:#6bbfae; --accent-dark:#8fd6c6; --accent-light:#1e332e;
+  --text:#ece5dd; --text-mid:#c3b6a8; --text-light:#9c8d7e;
+  --warning-dark:#d8bd7e; --warning-light:#332c1d;
+  --danger-dark:#e79483; --danger-light:#3a2320;
+  --shadow:0 1px 3px rgba(0,0,0,.4);
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+.shell{width:min(760px,100%);margin:0 auto;padding:28px 18px 56px}
+h1{font-family:var(--font-head);font-size:1.9rem;line-height:1.2;margin:0 0 6px;color:var(--primary-dark,#a84830)}
+.kicker{text-transform:uppercase;letter-spacing:.13em;font-size:.7rem;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+.lede{color:var(--text-mid);margin:0 0 24px;max-width:60ch}
+
+/* step 1 — pick the drug the patient is already on */
+.pick-label{font-weight:700;font-size:.95rem;margin:0 0 10px}
+.picker{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px}
+.pick{flex:1 1 180px;border:2px solid var(--border);background:var(--surface);color:var(--text);
+  border-radius:var(--radius);padding:14px 16px;font:inherit;font-weight:700;cursor:pointer;text-align:left;
+  transition:border-color .12s,background .12s}
+.pick small{display:block;font-weight:400;font-size:.8rem;color:var(--text-light);margin-top:3px}
+.pick:hover{border-color:var(--accent)}
+.pick[aria-pressed="true"]{border-color:var(--accent-dark);background:var(--accent-light)}
+.pick:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
+
+/* the one action — the whole point of the card */
+.action-card{background:var(--surface);border:1px solid var(--border);border-left:6px solid var(--accent-dark);
+  border-radius:var(--radius-lg);padding:26px 26px 22px;box-shadow:var(--shadow);margin-bottom:18px}
+.action-eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:.68rem;font-weight:700;
+  color:var(--accent-dark);margin-bottom:10px}
+.action{font-family:var(--font-head);font-size:1.62rem;line-height:1.28;font-weight:600;margin:0 0 14px}
+.action em{font-style:normal;color:var(--primary-dark,#a84830)}
+.why{color:var(--text-mid);font-size:.95rem;margin:0 0 18px;max-width:62ch}
+.copy{border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:999px;
+  padding:7px 15px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer}
+.copy:hover{border-color:var(--accent)}
+.copy:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
+
+/* context — deliberately subordinate to the action */
+.block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px;margin-bottom:14px}
+.block h2{font-family:var(--font-head);font-size:1.02rem;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 10px;padding:0;list-style:none}
+.chip{background:var(--surface-2);border:1px solid var(--border);border-radius:999px;
+  padding:4px 12px;font-size:.85rem;color:var(--text-mid)}
+.plus{font-size:.9rem;color:var(--text-mid);margin:0}
+.escalate{background:var(--danger-light);border:1px solid var(--border);border-left:5px solid var(--danger-dark);
+  border-radius:var(--radius);padding:16px 20px;margin-bottom:14px}
+.escalate h2{font-family:var(--font-head);font-size:1rem;margin:0 0 7px;color:var(--danger-dark)}
+.escalate p{margin:0;font-size:.93rem}
+.note{background:var(--warning-light);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 18px;font-size:.9rem;color:var(--text-mid);margin-bottom:14px}
+footer{margin-top:26px;padding-top:18px;border-top:1px solid var(--border);font-size:.82rem;color:var(--text-light)}
+footer h2{font-size:.82rem;font-family:var(--font-body);text-transform:uppercase;letter-spacing:.1em;
+  color:var(--text-mid);margin:0 0 8px}
+footer ol{margin:0 0 14px;padding-left:20px}
+footer li{margin-bottom:5px}
+a{color:var(--accent-dark)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media print{
+  body{background:#fff;font-size:12pt}
+  .picker,.copy{display:none}
+  .shell{padding:0;width:100%}
+  .action-card{break-inside:avoid;border-left-width:4px}
+}
+</style>
+</head>
+<body>
+<main class="shell">
+  <p class="kicker">Psychopharmacology · Monitoring &amp; Labs</p>
+  <h1>Interaction Cards — one action</h1>
+  <p class="lede">For the clinician about to add, stop, or change a medicine in a patient who is already
+  on a psychiatric drug. Each card gives you <strong>one instruction</strong>, not a list to work through.</p>
+
+  <p class="pick-label" id="picklabel">Your patient is already taking:</p>
+  <div class="picker" role="group" aria-labelledby="picklabel" id="picker"></div>
+
+  <div id="card" aria-live="polite"></div>
+
+  <div class="note">
+    <strong>What this is.</strong> A teaching reference for a single high-frequency failure mode: a new
+    medicine is started by one clinician while another manages the psychiatric drug, and nobody checks
+    afterwards. It is not a dosing calculator, not a complete interaction list, and not a substitute for
+    the prescribing clinician or your pharmacist. Educational use only; no patient data is entered or stored.
+  </div>
+
+  <footer>
+    <h2>Sources</h2>
+    <ol id="refs"></ol>
+    <p>Citations retrieved from PubMed. AI-drafted teaching content, pending faculty attestation.
+    Joshua Moss, MD | Psychiatrist</p>
+  </footer>
+</main>
+
+<script>
+/* ---------------------------------------------------------------------------
+ * One object per drug. Adding a fourth card = adding one object here; the
+ * markup, styling, print layout and copy-to-chart string all follow from it.
+ * Deliberately no dosing: every action is "check / call", never "give".
+ * ------------------------------------------------------------------------- */
+var CARDS = {
+  lithium: {
+    name: "Lithium",
+    hint: "mood stabilizer",
+    action: "Check a lithium level <em>5–7 days</em> after the change — with a creatinine.",
+    why: "Lithium is not metabolized; the kidney clears it, reabsorbing most of the filtered load in the " +
+         "proximal tubule alongside sodium. Anything that lowers effective circulating volume or GFR, or " +
+         "makes the tubule sodium-avid, raises the level — with no change in dose and no missed pills.",
+    triggersLabel: "Do this whenever you start, stop, or change the dose of:",
+    triggers: ["NSAIDs — including over-the-counter ibuprofen and naproxen", "ACE inhibitors", "ARBs",
+               "Thiazide diuretics", "GLP-1 receptor agonists", "Metronidazole"],
+    plus: "…and during any acute illness with vomiting, diarrhea, fever, or poor oral intake — that is the " +
+          "same physiology arriving without a prescription.",
+    escalate: "Coarse tremor, unsteadiness, slurred speech, vomiting, or new confusion in a patient on lithium " +
+              "is toxicity until proven otherwise. Send them in the same day and say “on lithium” when you call — " +
+              "in chronic toxicity the serum level understates how unwell the patient is.",
+    chart: "Patient on lithium; new interacting medication started today. Lithium level and creatinine ordered " +
+           "for 5-7 days' time. Patient advised to hold lithium and call if vomiting, diarrhea or fever.",
+    refs: [1, 2, 3]
+  },
+  clozapine: {
+    name: "Clozapine",
+    hint: "antipsychotic",
+    action: "Check a clozapine level about <em>a week</em> after the change — and tell the prescriber it happened.",
+    why: "Clozapine is cleared largely by CYP1A2. Tobacco smoke induces that enzyme, so stopping smoking — " +
+         "including an unplanned stop on admission — removes the induction and the level climbs. Inflammation " +
+         "and CYP1A2 inhibitors do the same. Levels run higher in non-smokers, with heavy caffeine intake, in " +
+         "women, with obesity, in inflammatory illness, and in older patients.",
+    triggersLabel: "Do this whenever the patient starts or stops:",
+    triggers: ["Smoking — including quitting, or any admission where they cannot smoke", "Fluvoxamine",
+               "Ciprofloxacin", "Oral contraceptives", "A large change in caffeine intake"],
+    plus: "…and during any acute infection or inflammatory illness, which raises clozapine levels on its own. " +
+          "A level does not replace ANC monitoring per the prescribing information — that continues on its own schedule.",
+    escalate: "Fever or a flu-like illness in a patient on clozapine needs same-day contact with the prescriber — " +
+              "neutropenia and myocarditis both present this way, and both are time-critical. New sedation, " +
+              "confusion, drooling, or a seizure after any of the changes above suggests the level has risen.",
+    chart: "Patient on clozapine; CYP1A2-relevant change today (see med list). Clozapine level ordered for ~1 week. " +
+           "Prescribing team notified. ANC monitoring schedule unchanged.",
+    refs: [4]
+  },
+  lamotrigine: {
+    name: "Lamotrigine",
+    hint: "mood stabilizer / antiseizure",
+    action: "Call the prescriber <em>before you write it</em> — the lamotrigine dose and its titration have to change first.",
+    why: "Lamotrigine is cleared by glucuronidation. Valproate inhibits that pathway and markedly raises " +
+         "lamotrigine exposure; enzyme inducers and estrogens accelerate it and drop the level. The " +
+         "dose-limiting risk while titrating up is serious rash, so it is the escalation schedule — not just " +
+         "the target dose — that has to be adjusted. This is the one card where the answer is a phone call " +
+         "rather than a level.",
+    triggersLabel: "Call first whenever you are about to start or stop:",
+    triggers: ["Valproate / divalproex — markedly raises lamotrigine", "Carbamazepine", "Phenytoin", "Phenobarbital",
+               "Rifampin", "Estrogen-containing contraceptives — lower lamotrigine"],
+    plus: "…and at both ends of pregnancy. Clearance rises through pregnancy and falls again after delivery, so " +
+          "the dose that was right in the third trimester can be too much postpartum.",
+    escalate: "Any new rash on lamotrigine — especially with fever, mucosal involvement, or within the first " +
+              "weeks of starting or of a dose increase — means stop and contact the prescriber the same day.",
+    chart: "Patient on lamotrigine; interacting medication under consideration. Prescriber contacted before " +
+           "initiation to agree dose and titration change. Patient counselled to report any rash immediately.",
+    refs: [5]
+  }
+};
+
+var REFS = [
+  { n: 1, text: "Gitlin M. Lithium side effects and toxicity: prevalence and management strategies. Int J Bipolar Disord. 2016.",
+    doi: "10.1186/s40345-016-0068-y" },
+  { n: 2, text: "Prasad S, Sharma V, Sosal W, et al. Lithium: a review of its adverse effects, toxicity and discontinuation. Dis Mon. 2026.",
+    doi: "10.1016/j.disamonth.2026.102064" },
+  { n: 3, text: "Al-Soleiti M, Leung JG, Mubaydeen T, et al. Lithium toxicity and altered clearance following initiation of semaglutide in patients with bipolar disorder: a case series and literature review. J Clin Psychopharmacol. 2025.",
+    doi: "10.1097/JCP.0000000000002090" },
+  { n: 4, text: "Hiemke C, Bergemann N, Clement HW, et al. Consensus guidelines for therapeutic drug monitoring in neuropsychopharmacology: update 2017. Pharmacopsychiatry. 2018.",
+    doi: "10.1055/s-0043-116492" },
+  { n: 5, text: "Patsalos PN, Spencer EP, Berry DJ. Therapeutic drug monitoring of antiepileptic drugs in epilepsy: a 2018 update. Ther Drug Monit. 2018.",
+    doi: "10.1097/FTD.0000000000000546" }
+];
+
+var ORDER = ["lithium", "clozapine", "lamotrigine"];
+
+function el(tag, cls, html) {
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html != null) n.innerHTML = html;
+  return n;
+}
+
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+function renderRefs() {
+  var ol = document.getElementById("refs");
+  REFS.forEach(function (r) {
+    var li = el("li", null, esc(r.text) + ' <a href="https://doi.org/' + encodeURI(r.doi) +
+      '" target="_blank" rel="noopener noreferrer">DOI</a>');
+    ol.appendChild(li);
+  });
+}
+
+function renderCard(key) {
+  var c = CARDS[key];
+  var host = document.getElementById("card");
+  host.textContent = "";
+
+  var card = el("div", "action-card");
+  card.appendChild(el("p", "action-eyebrow", "The one thing to do"));
+  card.appendChild(el("p", "action", c.action));
+  card.appendChild(el("p", "why", esc(c.why)));
+
+  var btn = el("button", "copy", "Copy a line for the chart");
+  btn.type = "button";
+  btn.addEventListener("click", function () {
+    var done = function () { btn.textContent = "Copied"; setTimeout(function () {
+      btn.textContent = "Copy a line for the chart"; }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(c.chart).then(done, function () { btn.textContent = "Copy failed"; });
+    } else { btn.textContent = "Copy unavailable"; }
+  });
+  card.appendChild(btn);
+  host.appendChild(card);
+
+  var when = el("div", "block");
+  when.appendChild(el("h2", null, esc(c.triggersLabel)));
+  var ul = el("ul", "chips");
+  c.triggers.forEach(function (t) { ul.appendChild(el("li", "chip", esc(t))); });
+  when.appendChild(ul);
+  when.appendChild(el("p", "plus", esc(c.plus)));
+  host.appendChild(when);
+
+  var esc_ = el("div", "escalate");
+  esc_.appendChild(el("h2", null, "Escalate the same day if…"));
+  esc_.appendChild(el("p", null, esc(c.escalate)));
+  host.appendChild(esc_);
+
+  var cited = el("p", "plus", "Card sources: " + c.refs.map(function (n) { return "[" + n + "]"; }).join(" ") +
+    " — see below.");
+  host.appendChild(cited);
+
+  ORDER.forEach(function (k) {
+    document.getElementById("pick-" + k).setAttribute("aria-pressed", String(k === key));
+  });
+}
+
+function init() {
+  var picker = document.getElementById("picker");
+  ORDER.forEach(function (k) {
+    var b = el("button", "pick", "<span>" + esc(CARDS[k].name) + "</span><small>" + esc(CARDS[k].hint) + "</small>");
+    b.type = "button";
+    b.id = "pick-" + k;
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function () { renderCard(k); });
+    picker.appendChild(b);
+  });
+  renderRefs();
+
+  var want = null;
+  try {
+    var q = new URLSearchParams(window.location.search).get("drug");
+    if (q && Object.prototype.hasOwnProperty.call(CARDS, q)) want = q;
+  } catch (e) { /* no-op: default below */ }
+  renderCard(want || "lithium");
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else { init(); }
+</script>
+</body>
+</html>
