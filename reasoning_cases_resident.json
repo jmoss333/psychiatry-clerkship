@@ -464,6 +464,147 @@
       "linkedPages": ["t_personality.md", "pg_suicide.md", "brief_psychotherapy.md", "pg_formulation.md"],
       "evidenceIds": [],
       "facultyReview": {"status": "draft", "reviewer": "", "lastReviewed": ""}
+    },
+    {
+      "id": "trd_augmentation_choice_001",
+      "title": "Choosing Between Augmentation Strategies",
+      "setting": "Resident-level treatment planning",
+      "learnerGoal": "Confirm true treatment resistance, then choose between comparably-supported augmentation strategies using this specific patient's risk factors rather than defaulting to the option with the strongest general evidence.",
+      "patientBrief": "A 34-year-old woman with recurrent major depressive disorder is admitted after an intentional, since-medically-cleared overdose. She has completed an 8-week trial of sertraline 200mg with confirmed adherence and dose, and her depression has not meaningfully improved.",
+      "facts": [
+        {
+          "label": "Trial adequacy",
+          "text": "Sertraline 200mg daily for 8 weeks, adherence confirmed by pharmacy fill records and collateral; PHQ-9 22 at the start of this episode, 19 now."
+        },
+        {
+          "label": "Safety context",
+          "text": "Admitted after an intentional overdose on an over-the-counter medication, medically cleared. Ongoing passive and intermittent active suicidal ideation."
+        },
+        {
+          "label": "Medical",
+          "text": "Normal renal function on admission labs. No cardiac history."
+        },
+        {
+          "label": "Social",
+          "text": "Lives alone; family is involved but works full-time and cannot provide daily supervision."
+        }
+      ],
+      "steps": [
+        {
+          "id": "confirm_resistance",
+          "title": "Confirming Treatment Resistance",
+          "prompt": "Before calling this treatment-resistant depression, what's the resident-level move?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Confirm the sertraline trial was adequate in dose and duration, verify adherence beyond self-report, and confirm the lack of response with a repeated standardized scale rather than clinical impression alone.",
+              "quality": "best",
+              "feedback": "Best. \"Treatment-resistant\" is a measurement claim before it is a diagnosis — dose, duration, adherence, and a repeated scale are what make it one."
+            },
+            {
+              "id": "b",
+              "text": "Move straight to discussing augmentation options with the attending, since eight weeks at a full dose is clearly enough.",
+              "quality": "partial",
+              "feedback": "Eight weeks at 200mg is a reasonable adequate trial, but skipping the explicit adherence and repeated-scale check means the team is acting on impression, not confirmed data."
+            },
+            {
+              "id": "c",
+              "text": "Assume the lack of response reflects poor adherence outside the hospital and focus the plan on adherence counseling.",
+              "quality": "missed",
+              "feedback": "Pharmacy-confirmed adherence in the fact pattern already argues against this. Defaulting to an adherence story without checking the data can delay a patient who genuinely needs a treatment change."
+            },
+            {
+              "id": "d",
+              "text": "Switch to a different SSRI at the same dose and reassess in another eight weeks.",
+              "quality": "harmful",
+              "feedback": "This restarts the clock on a patient with active suicidal ideation and a recent overdose without addressing whether escalation, not lateral switching, is what the acuity calls for."
+            }
+          ]
+        },
+        {
+          "id": "augmentation_choice",
+          "title": "Choosing an Augmentation Strategy",
+          "prompt": "The attending asks the team to recommend an augmentation strategy. Lithium, a second-generation antipsychotic, T3, and ketamine/esketamine are all reasonable per the evidence in general. What's the best resident-level recommendation for this specific patient?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Name that no single option is clearly superior in general, but weigh this patient's recent overdose against lithium's narrow therapeutic index and lethality in overdose, and favor an option with a wider safety margin given she will eventually be unsupervised at home.",
+              "quality": "best",
+              "feedback": "Best. Holding two comparably-supported options and still reasoning to a patient-specific answer is exactly the resident-level move — the recent overdose is data that should change the recommendation, not a detail to set aside."
+            },
+            {
+              "id": "b",
+              "text": "Recommend lithium first because it has the strongest anti-suicidal evidence of the options available.",
+              "quality": "partial",
+              "feedback": "The anti-suicidal evidence for lithium is real, but reciting the strongest population-level evidence without weighing this patient's overdose history and eventual unsupervised access is incomplete reasoning, not a full recommendation."
+            },
+            {
+              "id": "c",
+              "text": "Recommend esketamine because it is the newest option and works the fastest.",
+              "quality": "missed",
+              "feedback": "Speed of onset is relevant to a rapid-acting-agent discussion, but \"newest\" is not a reason on its own, and this skips the actual safety and access reasoning the case is asking for."
+            },
+            {
+              "id": "d",
+              "text": "Defer the augmentation decision entirely to the outpatient team after discharge.",
+              "quality": "harmful",
+              "feedback": "A patient admitted after an overdose with confirmed treatment resistance is exactly who should not leave the hospital without a next step already started or clearly planned — deferring the whole decision abandons the acute opportunity to act."
+            }
+          ]
+        },
+        {
+          "id": "integrate_ect",
+          "title": "Integrating ECT Into The Plan",
+          "prompt": "Given her acute suicide risk, how should ECT be positioned in the team's recommendation?",
+          "choices": [
+            {
+              "id": "a",
+              "text": "Raise ECT as a reasonable first-line option given the acute high suicide risk — not a last resort — and discuss it with the patient and family alongside a pharmacologic augmentation plan.",
+              "quality": "best",
+              "feedback": "Best. High acute suicide risk is one of the settings where ECT is reasonably first-line, and naming that clearly gives the patient a real choice instead of letting her default into it only after other options are exhausted."
+            },
+            {
+              "id": "b",
+              "text": "Mention ECT only as a distant backup if every medication option fails.",
+              "quality": "partial",
+              "feedback": "This treats ECT as a last resort, which undersells how directly her acuity today — not a future failure — argues for raising it now."
+            },
+            {
+              "id": "c",
+              "text": "Leave ECT out of the discussion since the patient hasn't asked about it.",
+              "quality": "missed",
+              "feedback": "A patient can only choose an option she's told about. Not raising a reasonably first-line option because she didn't ask isn't neutral — it's withholding it."
+            },
+            {
+              "id": "d",
+              "text": "Present ECT to the family as what happens when a patient hasn't tried hard enough with medication.",
+              "quality": "harmful",
+              "feedback": "This is both clinically inaccurate and stigmatizing. ECT's appropriateness here comes from her acuity, not from any failure on her part."
+            }
+          ]
+        }
+      ],
+      "biasChecks": [
+        "Do not let \"strongest general evidence\" substitute for patient-specific risk-benefit reasoning.",
+        "A recent overdose changes the calculus for any option with a narrow therapeutic index or overdose lethality — say so explicitly, don't just note it.",
+        "ECT is a first-line option in specific high-acuity contexts, not a failure state to mention only once other options run out."
+      ],
+      "linkedPages": [
+        "adv_psychopharm.md",
+        "pg_formulation.md",
+        "pg_suicide.md",
+        "systems_medlegal.md"
+      ],
+      "evidenceIds": [],
+      "epa": [
+        "EPA4",
+        "EPA10"
+      ],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
     }
   ]
 }
