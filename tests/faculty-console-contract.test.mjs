@@ -2637,7 +2637,14 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
   await setChecked(document, 'review-content-accuracy');
   await setChecked(document, 'review-content-interactions');
   assert.match(document.getElementById('rail-step-confirm').className, /current/);
-  assert.equal(document.find('button', 'Attest this page')?.disabled, false);
+  const attestButton = document.getElementById('attest-current-item');
+  assert.equal(attestButton?.disabled, false);
+  // With the learner surface ready the action is one click, and its label has to
+  // carry every assertion the three checkboxes make — one press must not mean less.
+  assert.match(attestButton.textContent, /^Attest this page — /);
+  assert.match(attestButton.textContent, /reviewed/);
+  assert.match(attestButton.textContent, /accurate for MS3/);
+  assert.match(attestButton.textContent, /links tested/);
   assert.equal(document.getElementById('current-reviewer-label').textContent, 'Joshua Moss, MD');
 
   // The reviewer label is server-derived and display-only — no editable control exists.
@@ -3577,4 +3584,72 @@ test('Ctrl or Command S in the unsaved-navigation modal saves and continues its 
   assert.equal(controller.state.navigationAfterSave, null);
   assert.equal(document.getElementById('unsaved-guard'), null);
   assert.equal(document.activeElement?.getAttribute('id'), 'review-item-selector');
+});
+
+test('one click attests a page: no checkboxes, all three assertions recorded, auto-advance', async () => {
+  // 51 items × 4 clicks was the complaint. The rule this pins is that fewer
+  // clicks may not mean asserting less: pressing the button must set the same
+  // three flags the checkboxes set, and its label must say so.
+  let items = [
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+    { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+  ];
+  let posted;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      posted = JSON.parse(options.body);
+      const [[slug, reviewed]] = Object.entries(posted.changes);
+      items = items.map(item => (item.slug === slug
+        ? { ...item, status: reviewed ? 'reviewed' : 'unreviewed' }
+        : item));
+      return jsonResponse({ ok: true, updated: 1, commit: 'https://github.example/commit/one-click' });
+    }
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  const harness = await startHarness({ fetchImpl });
+  const { controller, document } = harness;
+
+  await makeCurrentContentPreviewReady(harness);
+
+  // Nothing ticked, yet the action is already available.
+  assert.deepEqual(controller.state.reviewChecks, {
+    completeItemReviewed: false,
+    liveReviewed: false,
+    separateTabReviewed: false,
+    liveUnavailableAcknowledged: false,
+    accuracy: false,
+    interactions: false,
+  });
+  const button = document.getElementById('attest-current-item');
+  assert.equal(button.disabled, false, 'a ready learner surface is the only precondition');
+  assert.match(button.textContent, /reviewed · accurate for MS3 · links tested/);
+  assert.equal(button.getAttribute('aria-keyshortcuts'), 'a');
+
+  await button.dispatch('click');
+  await flushAsyncWork();
+
+  assert.deepEqual(posted, { target: 'content', changes: { 't_mood.md': true } });
+  assert.equal(controller.state.contentMessage, 'Attested t_mood.md.');
+  // The item is held, not skipped: the confirmation and commit link stay on
+  // screen. Next is focused, so advancing is one Enter.
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+  assert.equal(controller.state.completedHoldKey, 'page:t_mood.md');
+});
+
+test('one click is withheld when the learner surface never rendered', async () => {
+  // "I reviewed this item in the separate tab" is not a claim a button press can
+  // make for the reviewer, so a failed preview keeps the granular path.
+  const harness = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [{ slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' }],
+      questions: [],
+    })),
+  });
+  const { controller, document, window } = harness;
+
+  await reportPreviewStatus(window, controller, 'error');
+  const button = document.getElementById('attest-current-item');
+  assert.equal(button.textContent, 'Attest this page', 'no one-click label');
+  assert.equal(button.getAttribute('aria-keyshortcuts'), null, 'no keyboard shortcut either');
+  assert.equal(button.disabled, true);
 });
