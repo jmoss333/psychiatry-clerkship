@@ -608,6 +608,139 @@
         "reviewer": "",
         "lastReviewed": ""
       }
+    },
+    {
+      "id": "interview_motive_suspicion_001",
+      "title": "Respond When The Patient Questions Why You're Asking",
+      "topic": "Guardedness directed at the interview itself",
+      "setting": "First encounter, guarded or paranoid inpatient",
+      "learnerGoal": "Meet suspicion about the interview itself with a smaller, lower-stakes opening rather than repeating or justifying the original question.",
+      "prompt": "You introduce yourself and ask what brought them to the hospital. Without looking up, the patient says, \"Why do you want to know that?\" What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 20,
+        "stance": "Meet suspicion with validation and a smaller question, not a bigger explanation.",
+        "mustInclude": [
+          "Name that the suspicion is reasonable — don't argue with it",
+          "State your role in one short sentence",
+          "Trade the original broad question for a smaller, lower-stakes one"
+        ],
+        "avoid": [
+          "A long justification or promise about your intentions as the opener",
+          "Repeating the original question unchanged"
+        ],
+        "starter": "Answer their question in one sentence, then ask something smaller than your first question."
+      },
+      "choices": [
+        {
+          "id": "a",
+          "text": "I'm just doing my job — I ask everyone this, it's nothing personal, I promise I'm not trying to catch you out or anything.",
+          "quality": "harmful",
+          "feedback": "Over-explaining and promising reassurance reads as anxious, not trustworthy, and can confirm there's something to defend against. The long justification also costs you the small question that would actually move things forward."
+        },
+        {
+          "id": "b",
+          "text": "That's a fair question. I'm a medical student on the team here to understand how you're doing, at whatever pace works for you. We don't have to start with the whole story — is it okay if I just ask how last night went for you?",
+          "quality": "best",
+          "feedback": "Best choice. It treats the suspicion as reasonable, states your role plainly, hands back control over pace, and swaps the broad question for a small, low-stakes one a guarded patient can answer."
+        },
+        {
+          "id": "c",
+          "text": "What brought you to the hospital?",
+          "quality": "missed",
+          "feedback": "Repeating the question ignores what the patient just told you: the question itself felt threatening. Without a smaller opening, most guarded patients stay silent or answer in one word."
+        },
+        {
+          "id": "d",
+          "text": "I understand you might not want to talk, but I do need to know what's going on with you so we can help.",
+          "quality": "partial",
+          "feedback": "Better than arguing, but \"I need to know\" still centers your need over the patient's control, and the ask stays broad. Name the choice explicitly and narrow the question."
+        }
+      ],
+      "skillTags": [
+        "guardedness",
+        "psychosis",
+        "paranoia",
+        "alliance",
+        "de-escalation"
+      ],
+      "linkedPages": [
+        "pg_interview.md",
+        "t_psychosis.md",
+        "violence.md"
+      ],
+      "evidenceIds": [
+        "project-beta-deescalation-2012"
+      ],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
+    },
+    {
+      "id": "rounds_naming_uncertainty_001",
+      "title": "Name Uncertainty On Rounds",
+      "topic": "Oral presentation — naming what is not yet known",
+      "setting": "Morning rounds, hospital day 1, diagnosis not yet settled",
+      "learnerGoal": "State a leading formulation while explicitly naming what remains unknown and what would resolve it, instead of overclaiming certainty or trailing off.",
+      "prompt": "You're presenting a patient on rounds. Your attending asks, \"So what do you think is going on?\" — but you're genuinely torn between two possibilities. What do you say?",
+      "rapidDrill": {
+        "targetSeconds": 20,
+        "stance": "Give a leading hypothesis, name the real competing one, and say what would resolve it.",
+        "mustInclude": [
+          "State a specific leading formulation, not a vague impression",
+          "Name the one competing possibility that's still genuinely live",
+          "Say what finding or result would resolve it, and when"
+        ],
+        "avoid": [
+          "Stating either possibility as settled fact",
+          "Stopping at \"I don't know\" with nothing further"
+        ],
+        "starter": "In one breath: my leading thought is X, but I haven't ruled out Y, and Z will tell us which."
+      },
+      "choices": [
+        {
+          "id": "a",
+          "text": "I think it's bipolar disorder — she's manic.",
+          "quality": "harmful",
+          "feedback": "Overclaiming certainty can send the team down the wrong path, and trust erodes when the real picture emerges. If the differential is genuinely open, say so; the team would rather know."
+        },
+        {
+          "id": "b",
+          "text": "My leading formulation is bipolar mania, given the decreased sleep and grandiosity — but I haven't ruled out a substance-induced picture, and the toxicology is still pending. I'm watching the trajectory over the next 24 hours and I'll flag it as soon as the tox screen is back.",
+          "quality": "best",
+          "feedback": "Best choice. It gives the team a working answer, names the real competing possibility, and says what specific information would resolve it and when. That's what naming uncertainty sounds like."
+        },
+        {
+          "id": "c",
+          "text": "Um, I'm not really sure yet.",
+          "quality": "missed",
+          "feedback": "Honest, but it gives the team nothing to act on. Naming uncertainty well means saying what you think, what's still open, and what would settle it, not stopping at \"I don't know.\""
+        },
+        {
+          "id": "d",
+          "text": "It could be bipolar mania or it could be substance-induced — I'm not sure which.",
+          "quality": "partial",
+          "feedback": "Better than overclaiming or going blank, but it stops short of a working answer. Push one step further: name your leading hypothesis and what would change your mind."
+        }
+      ],
+      "skillTags": [
+        "oral-presentation",
+        "uncertainty",
+        "rounds",
+        "differential-reasoning"
+      ],
+      "linkedPages": [
+        "doc_oral.md",
+        "ddx.md",
+        "pg_formulation.md"
+      ],
+      "evidenceIds": [],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
     }
   ]
 }

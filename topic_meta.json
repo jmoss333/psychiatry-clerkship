@@ -411,7 +411,8 @@
   "familyOverlay": "first_episode_psychosis_family_psychoeducation",
   "communicationCases": [
    "psychosis_validation_001",
-   "guardedness_privacy_001"
+   "guardedness_privacy_001",
+   "interview_motive_suspicion_001"
   ],
   "workflowStages": [
    "diagnosis",
@@ -593,7 +594,15 @@
    "status": "reviewed",
    "reviewer": "Joshua Moss, MD",
    "lastReviewed": "2026-08-08"
-  }
+  },
+  "ruleOut": [
+   "Thyroid dysfunction",
+   "Medication/steroid-induced",
+   "Intoxication or withdrawal",
+   "Delirium",
+   "Proportionate grief/adjustment reaction"
+  ],
+  "firstMove": "Screen for past mania before any antidepressant; rule out medical, substance, and proportionate-grief causes first."
  },
  "t_anxiety.md": {
   "read": 4,
@@ -2952,7 +2961,8 @@
    "family"
   ],
   "communicationCases": [
-   "guardedness_privacy_001"
+   "guardedness_privacy_001",
+   "interview_motive_suspicion_001"
   ],
   "workflowStages": [
    "encounter",
@@ -3110,7 +3120,8 @@
    "family"
   ],
   "relatedTools": [
-   "oral.html"
+   "oral.html",
+   "communication-practice.html"
   ],
   "clinicalWorkflow": {
    "ask": "Before rounds, ask what changed overnight, what data are missing, what risk changed, and what decision the team needs today.",
@@ -3141,6 +3152,9 @@
   "epa": [
    "EPA5",
    "EPA6"
+  ],
+  "communicationCases": [
+   "rounds_naming_uncertainty_001"
   ]
  },
  "exp_tx.md": {

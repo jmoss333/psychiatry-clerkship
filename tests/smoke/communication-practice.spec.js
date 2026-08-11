@@ -636,9 +636,9 @@ test('desktop navigator keeps browsing useful but secondary', async ({ page }) =
   const navigator = page.locator('[data-desktop-navigator]');
   await expect(navigator).toBeVisible();
   await expect(page.locator('[data-mobile-summary]')).toBeHidden();
-  await expect(navigator).toContainText('0 of 10 practiced');
-  await expect(navigator.locator('[data-case-select]')).toHaveCount(10);
-  await expect(navigator.locator('.case-status')).toHaveText(Array(10).fill('Not practiced'));
+  await expect(navigator).toContainText('0 of 12 practiced');
+  await expect(navigator.locator('[data-case-select]')).toHaveCount(12);
+  await expect(navigator.locator('.case-status')).toHaveText(Array(12).fill('Not practiced'));
   await expect(navigator.locator('[data-case-select="guardedness_privacy_001"]')).toHaveAttribute('aria-current', 'true');
 
   const familyFilter = navigator.getByRole('button', { name: 'Family', exact: true });
@@ -683,20 +683,21 @@ test('overall filter and domain progress stay truthful in both navigators', asyn
   await openTool(page);
 
   const desktop = page.locator('[data-desktop-navigator]');
-  await expect(desktop.locator('.sidehead')).toHaveText('4 of 10 practiced');
+  await expect(desktop.locator('.sidehead')).toHaveText('4 of 12 practiced');
   await desktop.getByRole('button', { name: 'Family', exact: true }).click();
-  await expect(desktop.locator('.sidehead')).toHaveText('4 of 10 practiced');
+  await expect(desktop.locator('.sidehead')).toHaveText('4 of 12 practiced');
   let desktopDetails = desktop.locator('[data-practice-details]');
   await desktopDetails.getByText('Practice details', { exact: true }).click();
   await expect(desktopDetails).toContainText('Local practice history: 1 of 3 visible cases practiced.');
 
   const expectedDomains = [
     ['Safety', '1/4'],
-    ['Psychosis', '1/2'],
+    ['Psychosis', '1/3'],
     ['Family', '1/3'],
     ['Medication', '1/2'],
     ['Rupture', '0/3'],
-    ['Guarded', '0/1'],
+    ['Guarded', '0/2'],
+    ['Rounds', '0/1'],
   ];
   const desktopDomains = desktopDetails.getByRole('group', { name: 'Communication skill domain progress' });
   for (const [label, count] of expectedDomains) {
@@ -704,7 +705,7 @@ test('overall filter and domain progress stay truthful in both navigators', asyn
   }
 
   await desktop.getByRole('button', { name: 'Medication', exact: true }).click();
-  await expect(desktop.locator('.sidehead')).toHaveText('4 of 10 practiced');
+  await expect(desktop.locator('.sidehead')).toHaveText('4 of 12 practiced');
   desktopDetails = desktop.locator('[data-practice-details]');
   await desktopDetails.getByText('Practice details', { exact: true }).click();
   await expect(desktopDetails).toContainText('Local practice history: 1 of 2 visible cases practiced.');
@@ -715,7 +716,7 @@ test('overall filter and domain progress stay truthful in both navigators', asyn
   );
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.locator('[data-mobile-summary]')).toContainText('4 of 10 practiced');
+  await expect(page.locator('[data-mobile-summary]')).toContainText('4 of 12 practiced');
   await page.getByRole('button', { name: 'Browse cases' }).click();
   await mobileDetails.getByText('Practice details', { exact: true }).click();
   await expect(mobileDetails).toBeVisible();
