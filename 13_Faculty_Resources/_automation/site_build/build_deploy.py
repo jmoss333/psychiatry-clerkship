@@ -240,6 +240,8 @@ _crisis_data=_crisis.load(LIB)
 _CRISIS_REQUIRED_TOOLS={
     "cssrs.html","sp-interview.html","communication-practice.html",
     "family-systems.html","one-patient-six-weeks.html",
+    # PHQ-9 item 9 is itself a suicide-risk screen (the tool escalates on it) — risk work.
+    "screeners.html",
 }
 _CRISIS_REQUIRED_MD={
     # direct risk assessment & acute safety
