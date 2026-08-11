@@ -271,9 +271,24 @@
         "lastReviewed",
         "reviewCadence",
         "supersededBy",
-        "correctionStatus"
+        "correctionStatus",
+        "noteHistory"
       ],
       "properties": {
+        "noteHistory": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["date", "note", "reason"],
+            "properties": {
+              "date": { "$ref": "#/definitions/date" },
+              "note": { "type": "string", "minLength": 1 },
+              "reason": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        },
         "evidenceLevel": {
           "type": "string"
         },

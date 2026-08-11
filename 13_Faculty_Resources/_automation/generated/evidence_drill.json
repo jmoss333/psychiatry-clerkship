@@ -1,10 +1,11 @@
 {
- "_note": "Generated from claim anchors; every item is a draft and requires faculty review before any learner sees it.",
+ "_note": "Generated from claim anchors. An item is a draft until a faculty decision in evidence_drill_review.json says otherwise; cut items are omitted.",
  "version": 1,
  "items": [
   {
    "id": "ed_med_monitoring_canmat-isbd-bipolar-2018",
    "status": "draft",
+   "review": null,
    "page": "med_monitoring.md",
    "sourceId": "canmat-isbd-bipolar-2018",
    "claim": "Lithium level is a 12-hour trough, drawn ~5 days after any dose change.",
@@ -44,6 +45,7 @@
   {
    "id": "ed_med_monitoring_clozapine-rems",
    "status": "draft",
+   "review": null,
    "page": "med_monitoring.md",
    "sourceId": "clozapine-rems",
    "claim": "The clozapine ANC schedule (weekly → biweekly → monthly) is worth memorizing; myocarditis is the early killer beyond the count.",
@@ -83,6 +85,7 @@
   {
    "id": "ed_med_monitoring_fda-drug-safety",
    "status": "draft",
+   "review": null,
    "page": "med_monitoring.md",
    "sourceId": "fda-drug-safety",
    "claim": "Get a baseline QTc before QT-prolonging agents and keep potassium and magnesium repleted.",
@@ -122,6 +125,7 @@
   {
    "id": "ed_psychopharm_primer_boyer-shannon-2005-serotonin-syndrome",
    "status": "draft",
+   "review": null,
    "page": "psychopharm_primer.md",
    "sourceId": "boyer-shannon-2005-serotonin-syndrome",
    "claim": "Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased.",
@@ -161,6 +165,7 @@
   {
    "id": "ed_psychopharm_primer_fda-prozac-label-maoi-switching",
    "status": "draft",
+   "review": null,
    "page": "psychopharm_primer.md",
    "sourceId": "fda-prozac-label-maoi-switching",
    "claim": "The classic avoidable trigger is switching too soon around an MAOI: allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent — to avoid serotonin syndrome / hypertensive crisis.",
@@ -200,6 +205,7 @@
   {
    "id": "ed_t_mood_canmat-isbd-bipolar-2018",
    "status": "draft",
+   "review": null,
    "page": "t_mood.md",
    "sourceId": "canmat-isbd-bipolar-2018",
    "claim": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic — but avoid valproate in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered.",
@@ -239,6 +245,7 @@
   {
    "id": "ed_t_mood_cipriani-2013-lithium-suicide",
    "status": "draft",
+   "review": null,
    "page": "t_mood.md",
    "sourceId": "cipriani-2013-lithium-suicide",
    "claim": "Lithium is the mood stabilizer with anti-suicidal and best maintenance evidence — use it, and monitor it.",
@@ -278,6 +285,7 @@
   {
    "id": "ed_t_neurocog_fda-drug-safety",
    "status": "draft",
+   "review": null,
    "page": "t_neurocog.md",
    "sourceId": "fda-drug-safety",
    "claim": "Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis — use the lowest dose for the shortest time, document informed consent, and reassess.",
@@ -317,6 +325,7 @@
   {
    "id": "ed_t_neurocog_mckeith-2017-dlb-consensus",
    "status": "draft",
+   "review": null,
    "page": "t_neurocog.md",
    "sourceId": "mckeith-2017-dlb-consensus",
    "claim": "Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.",
@@ -356,6 +365,7 @@
   {
    "id": "ed_t_neurocog_nasreddine-2005-moca",
    "status": "draft",
+   "review": null,
    "page": "t_neurocog.md",
    "sourceId": "nasreddine-2005-moca",
    "claim": "MoCA beats MMSE for mild and executive impairment.",
@@ -395,6 +405,7 @@
   {
    "id": "ed_t_neurocog_schneider-2005-antipsychotic-dementia-mortality",
    "status": "draft",
+   "review": null,
    "page": "t_neurocog.md",
    "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
    "claim": "Antipsychotics in dementia carry a black-box mortality warning; nonpharmacologic first, and avoid neuroleptics in Lewy body disease.",
@@ -434,6 +445,7 @@
   {
    "id": "ed_t_perinatal_vanderkruik-2017-postpartum-psychosis-prevalence",
    "status": "draft",
+   "review": null,
    "page": "t_perinatal.md",
    "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
    "claim": "Reported incidence across population studies is ~0.9–2.6 per 1,000 women, usually within the first 1–4 weeks.",
@@ -473,6 +485,7 @@
   {
    "id": "ed_t_perinatal_wesseloo-2016-postpartum-relapse",
    "status": "draft",
+   "review": null,
    "page": "t_perinatal.md",
    "sourceId": "wesseloo-2016-postpartum-relapse",
    "claim": "In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all — so future pregnancies warrant advance planning either way.",
@@ -512,6 +525,7 @@
   {
    "id": "ed_t_psychosis_boyer-shannon-2005-serotonin-syndrome",
    "status": "draft",
+   "review": null,
    "page": "t_psychosis.md",
    "sourceId": "boyer-shannon-2005-serotonin-syndrome",
    "claim": "serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS. Onset timeline and offending agent (dopamine blocker vs.",
@@ -551,6 +565,7 @@
   {
    "id": "ed_t_psychosis_clozapine-rems",
    "status": "draft",
+   "review": null,
    "page": "t_psychosis.md",
    "sourceId": "clozapine-rems",
    "claim": "Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).",
@@ -590,6 +605,7 @@
   {
    "id": "ed_t_psychosis_lieberman-2005-catie",
    "status": "draft",
+   "review": null,
    "page": "t_psychosis.md",
    "sourceId": "lieberman-2005-catie",
    "claim": "Per CATIE, pick the antipsychotic by side-effect fit; \"newer\" is not automatically better.",
@@ -629,6 +645,7 @@
   {
    "id": "ed_t_psychosis_strawn-2007-neuroleptic-malignant-syndrome",
    "status": "draft",
+   "review": null,
    "page": "t_psychosis.md",
    "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
    "claim": "Neuroleptic malignant syndrome (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.",
@@ -668,6 +685,7 @@
   {
    "id": "ed_toxidromes_bap-catatonia-2023",
    "status": "draft",
+   "review": null,
    "page": "toxidromes.md",
    "sourceId": "bap-catatonia-2023",
    "claim": "ECT is the definitive treatment for malignant catatonia (and for NMS-catatonia overlap).",
@@ -707,6 +725,7 @@
   {
    "id": "ed_toxidromes_boyer-shannon-2005-serotonin-syndrome",
    "status": "draft",
+   "review": null,
    "page": "toxidromes.md",
    "sourceId": "boyer-shannon-2005-serotonin-syndrome",
    "claim": "Clonus + hyperreflexia, worse in the legs → serotonin syndrome.",
@@ -746,6 +765,7 @@
   {
    "id": "ed_toxidromes_strawn-2007-neuroleptic-malignant-syndrome",
    "status": "draft",
+   "review": null,
    "page": "toxidromes.md",
    "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
    "claim": "Lead-pipe rigidity + hyporeflexia → NMS.",

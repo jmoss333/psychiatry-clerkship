@@ -570,7 +570,12 @@ test('creates one semantic queue, workspace, and persistent field labels', () =>
   assert.doesNotMatch(appSource, /role:\s*'tablist'/);
   assert.doesNotMatch(appSource, /function renderTabNavigation|function renderBatchSummary|function renderBatchConfirmation/);
   assert.doesNotMatch(appSource, /Attest selected green drafts|Mark reviewed & next|queue checkbox|green batch/i);
-  assert.doesNotMatch(appSource, /\bassessBatch\b|\blegacyBatchEligible\b|\breviewedInSession\b|\bbatchConfirmation\b/);
+  // assessBatch left this ban 2026-08-11: the accepted batch design (2026-08-04 spec,
+  // section B) has the client surface the server's own batch verdict in the tray. The
+  // remaining identifiers still pin OUT the rejected "attest all green" design.
+  assert.doesNotMatch(appSource, /\blegacyBatchEligible\b|\breviewedInSession\b|\bbatchConfirmation\b/);
+  assert.match(appSource, /\bderiveBatchEligibility\b/);
+  assert.match(appSource, /\bassessBatch\b/);
   assert.doesNotMatch(appSource, /function attestWarning\b|function attestBatch\b|function sameAttestationEntries\b/);
   assert.doesNotMatch(appSource, /\bstate\.batch\b|function selectedBatchQuestions\b|function safeBatchAssessment\b|function openBatchConfirmation\b/);
 });
@@ -1057,11 +1062,13 @@ test('the exact saved-revision receipt is explicit, Draft-only, and revoked by e
   assert.equal(document.getElementById('review-saved-revision').disabled, false);
   await setChecked(document, 'review-saved-revision');
   assert.equal(controller.state.reviewedRevisions.get(id), revision);
+  // Batch design (2026-08-04, section A): navigating to ANOTHER item no longer revokes
+  // the receipt — it is anchored to the exact saved revision and self-invalidates the
+  // moment that revision moves. Edit revocation is pinned above; save/reload revocation
+  // below. Navigation persistence is what lets a reviewer accumulate a batch.
   await setValue(document, 'review-item-selector', 'question:qb_moo_903', 'change');
-  assert.equal(controller.state.reviewedRevisions.has(id), false);
+  assert.equal(controller.state.reviewedRevisions.get(id), revision);
   await setValue(document, 'review-item-selector', 'question:qb_moo_902', 'change');
-  await document.getElementById('view-draft').dispatch('click');
-  await setChecked(document, 'review-saved-revision');
   assert.equal(controller.state.reviewedRevisions.get(id), revision);
   current = { ...current, revision: testRevision('different-reloaded-revision') };
   assert.equal(await controller.load({ silent: true }), true);
@@ -1258,6 +1265,14 @@ test('preview iframe load, timeout, and error become honest focusable fallback s
     /did not load reliably, or it changed or reloaded after verification/);
   assert.equal(document.getElementById('preview-status').getAttribute('tabindex'), '-1');
   assert.equal(document.activeElement?.getAttribute('id'), 'preview-status');
+  // Step D (2026-08-04 batch design, carried from #310): the timeout fired while Edit
+  // was active, so the failure is recorded and announced but the reviewer's view is
+  // LEFT ALONE — no forced flip back to Live, no acknowledgement wipe mid-work. The
+  // protocol_unavailable stage below runs from the Live view and keeps proving that the
+  // reset still happens when nobody is mid-edit.
+  assert.equal(document.getElementById('question-view-live').getAttribute('hidden'), '');
+  assert.equal(document.getElementById('question-view-edit').getAttribute('hidden'), null);
+  await document.getElementById('view-live').dispatch('click');
   assert.equal(document.getElementById('question-view-live').getAttribute('hidden'), null);
   assert.equal(document.getElementById('ack-live-unavailable').disabled, true);
 
@@ -2637,7 +2652,14 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
   await setChecked(document, 'review-content-accuracy');
   await setChecked(document, 'review-content-interactions');
   assert.match(document.getElementById('rail-step-confirm').className, /current/);
-  assert.equal(document.find('button', 'Attest this page')?.disabled, false);
+  const attestButton = document.getElementById('attest-current-item');
+  assert.equal(attestButton?.disabled, false);
+  // With the learner surface ready the action is one click, and its label has to
+  // carry every assertion the three checkboxes make — one press must not mean less.
+  assert.match(attestButton.textContent, /^Attest this page — /);
+  assert.match(attestButton.textContent, /reviewed/);
+  assert.match(attestButton.textContent, /accurate for MS3/);
+  assert.match(attestButton.textContent, /links tested/);
   assert.equal(document.getElementById('current-reviewer-label').textContent, 'Joshua Moss, MD');
 
   // The reviewer label is server-derived and display-only — no editable control exists.
@@ -3577,4 +3599,72 @@ test('Ctrl or Command S in the unsaved-navigation modal saves and continues its 
   assert.equal(controller.state.navigationAfterSave, null);
   assert.equal(document.getElementById('unsaved-guard'), null);
   assert.equal(document.activeElement?.getAttribute('id'), 'review-item-selector');
+});
+
+test('one click attests a page: no checkboxes, all three assertions recorded, auto-advance', async () => {
+  // 51 items × 4 clicks was the complaint. The rule this pins is that fewer
+  // clicks may not mean asserting less: pressing the button must set the same
+  // three flags the checkboxes set, and its label must say so.
+  let items = [
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+    { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+  ];
+  let posted;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      posted = JSON.parse(options.body);
+      const [[slug, reviewed]] = Object.entries(posted.changes);
+      items = items.map(item => (item.slug === slug
+        ? { ...item, status: reviewed ? 'reviewed' : 'unreviewed' }
+        : item));
+      return jsonResponse({ ok: true, updated: 1, commit: 'https://github.example/commit/one-click' });
+    }
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  const harness = await startHarness({ fetchImpl });
+  const { controller, document } = harness;
+
+  await makeCurrentContentPreviewReady(harness);
+
+  // Nothing ticked, yet the action is already available.
+  assert.deepEqual(controller.state.reviewChecks, {
+    completeItemReviewed: false,
+    liveReviewed: false,
+    separateTabReviewed: false,
+    liveUnavailableAcknowledged: false,
+    accuracy: false,
+    interactions: false,
+  });
+  const button = document.getElementById('attest-current-item');
+  assert.equal(button.disabled, false, 'a ready learner surface is the only precondition');
+  assert.match(button.textContent, /reviewed · accurate for MS3 · links tested/);
+  assert.equal(button.getAttribute('aria-keyshortcuts'), 'a');
+
+  await button.dispatch('click');
+  await flushAsyncWork();
+
+  assert.deepEqual(posted, { target: 'content', changes: { 't_mood.md': true } });
+  assert.equal(controller.state.contentMessage, 'Attested t_mood.md.');
+  // The item is held, not skipped: the confirmation and commit link stay on
+  // screen. Next is focused, so advancing is one Enter.
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+  assert.equal(controller.state.completedHoldKey, 'page:t_mood.md');
+});
+
+test('one click is withheld when the learner surface never rendered', async () => {
+  // "I reviewed this item in the separate tab" is not a claim a button press can
+  // make for the reviewer, so a failed preview keeps the granular path.
+  const harness = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [{ slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' }],
+      questions: [],
+    })),
+  });
+  const { controller, document, window } = harness;
+
+  await reportPreviewStatus(window, controller, 'error');
+  const button = document.getElementById('attest-current-item');
+  assert.equal(button.textContent, 'Attest this page', 'no one-click label');
+  assert.equal(button.getAttribute('aria-keyshortcuts'), null, 'no keyboard shortcut either');
+  assert.equal(button.disabled, true);
 });

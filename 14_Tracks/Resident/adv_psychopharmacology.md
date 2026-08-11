@@ -32,4 +32,4 @@
 
 **Pair with** — [Psychopharmacology Primer](?page=psychopharm_primer.md), [Protocol Library](?page=protocol_library.md), [Mood Disorders](?page=t_mood.md), [Psychotic Disorders](?page=t_psychosis.md), [Evidence-Based Inpatient Psychiatry](?page=evidence_inpatient.md).
 
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Doses, washout intervals, and monitoring schedules here are teaching illustrations, not prescribing guidance — verify against current labeling, the clozapine REMS, and your attending.*
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Doses, washout intervals, and monitoring schedules here are teaching illustrations, not prescribing guidance — verify against current labeling, your institution's monitoring protocols, and your attending.*

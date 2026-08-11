@@ -42,7 +42,7 @@
   .frst{background:var(--info-light);border:1px solid var(--info);border-radius:var(--radius-md);padding:var(--sp3)}
   .frst h3{color:var(--info);margin-top:0}
   .frst .cite{font-size:.82rem;color:var(--text-mid);margin-top:var(--sp2)}
-  .check{display:flex;gap:var(--sp2);align-items:center;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer}
+  .check{display:flex;gap:var(--sp2);align-items:center;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;width:100%;background:none;border-top:none;border-left:none;border-right:none;font:inherit;color:inherit;text-align:left}
   .check:last-child{border-bottom:none}
   .box{width:22px;height:22px;border:2px solid var(--accent);border-radius:5px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
   .box.on{background:var(--accent)}
@@ -120,7 +120,7 @@ function App(){
       e('h2',{style:{marginTop:0}},'The screening tool used at MaineHealth: FRST'),
       e('div',{className:'frst'},
         e('h3',null,'Fordham Risk Screening Tool (FRST)'),
-        e('div',null,'At Maine Medical Center, patients admitted to inpatient psychiatry are screened for violence risk with the **Fordham Risk Screening Tool (FRST)**, completed in the **Emergency Department at intake**. It is a brief structured screen that returns a positive/negative result and flags who needs heightened observation and proactive de-escalation on arrival to the unit. Complete and read the FRST in the EHR/admission workflow — use the official version for the exact items.'),
+        e('div',null,'At Maine Medical Center, patients admitted to inpatient psychiatry are screened for violence risk with the ',e('strong',null,'Fordham Risk Screening Tool (FRST)'),', completed in the ',e('strong',null,'Emergency Department at intake'),'. It is a brief structured screen that returns a positive/negative result and flags who needs heightened observation and proactive de-escalation on arrival to the unit. Complete and read the FRST in the EHR/admission workflow — use the official version for the exact items.'),
         e('div',{className:'cite'},'MMC validation: Racine, Strout, Johnston, Quigley, Wolfrum & Guido (2025), Community Mental Health Journal — an FRST-positive screen was associated with markedly more inpatient violent incidents (≈33% vs 8% for negative screens) in a consecutive ED-to-inpatient cohort. The authors caution against standalone use, however — sensitivity was limited (~33%), so a negative screen does not rule out risk; the FRST supports structured clinical judgment, it does not predict violence.')
       ),
       e('div',{className:'pearl'}, e('b',null,'How to use it as a student: '),'note the FRST result on admission, and let a positive screen raise your index of suspicion and your monitoring — then keep reassessing the dynamic factors and warning signs below, because risk changes hour to hour.')
@@ -130,8 +130,9 @@ function App(){
       e('h2',{style:{marginTop:0}},'Imminent warning signs — check what you see now'),
       e('p',{className:'sub'},'Not a scored instrument — a teaching prompt. Tap each sign you observe. Rising signs over a shift matter as much as any single one.'),
       SIGNS.map(function(i){
-        return e('div',{className:'check',key:i.k,onClick:function(){toggle(i.k)}},
-          e('span',{className:'box'+(sel[i.k]?' on':'')}, sel[i.k]?'✓':''),
+        /* Real buttons, not click-only divs: keyboard-reachable, toggle semantics announced. */
+        return e('button',{type:'button',className:'check',key:i.k,'aria-pressed':sel[i.k]?'true':'false',onClick:function(){toggle(i.k)}},
+          e('span',{className:'box'+(sel[i.k]?' on':''),'aria-hidden':'true'}, sel[i.k]?'✓':''),
           e('span',null,i.b));
       }),
       e('div',{className:'alertbox '+(count>=1?'act':'calm')},

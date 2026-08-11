@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Shelf Mode — Exam Simulation" version="1.0" built="2026-06-29" category="evidence-reading" audience="trainee,ms3" settings="inpatient,exam-prep" time="self-paced" summary="Optional timed, blueprint-weighted COMAT/shelf vignette simulation built on the SHELF-* question bank. Tutor or exam mode; per-option feedback, teaching point, and Learn-more links. Fictional composites only; no PHI." -->
+<!-- [CLERKSHIP-META v1] tool="Shelf Mode — Exam Simulation" version="1.1" built="2026-08-10" category="evidence-reading" audience="trainee,ms3" settings="inpatient,exam-prep" time="self-paced" summary="Optional timed, blueprint-weighted COMAT/shelf vignette simulation drawing on the attested faculty-reviewed question bank. Tutor or exam mode; per-option feedback, teaching point, and Learn-more links. Fictional composites only; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -151,14 +151,29 @@ function buildExam(pool, topics, N, diff){
   return shuffle(out);
 }
 
-function shelfPool(data){
+/* The sim draws from the attested question bank (question_bank.json — the faculty-governed
+   192-item bank), not quizzes.json: the original design waited for SHELF-* decks that were
+   never authored, so the tool served the same 5 sample items from 2026-06-29 until this fix.
+   Attested-only on purpose: drafts serve labeled on study surfaces (PR #284 policy), but an
+   exam SIM can't label a draft mid-block without breaking the simulation, so the conservative
+   subset is the attested 142. Categories map onto the existing BLUEPRINT topic regexes. */
+var CAT_TOPIC={mood:"Mood",psychosis:"Psychosis",anxiety:"Anxiety, OCD & Trauma",substance:"Substance Use",pharm:"Psychopharm & Med Emergencies",neurocog:"Delirium, Dementia & MCI",personality:"Personality",childdev:"Child & Adolescent",otherdx:"Somatic & Related",safety:"Psychiatric Emergencies",ethics:"Interview, Ethics & Law",relational:"Relational & Family"};
+function bankPool(data){
   var out=[];
-  ((data&&data.decks)||[]).forEach(function(d){
-    if(String(d.id||"").toUpperCase().indexOf("SHELF-")!==0) return;
-    var topic=d.topic || (d.title||"").replace(/^.*?—\s*/,"").trim() || d.id;
-    (d.questions||[]).forEach(function(q){
-      out.push({q:q.q,o:q.o,tp:q.tp,obj:q.obj,diff:q.diff,ref:q.ref,topic:q.topic||topic,deck:d.id});
+  (((data&&data.items)||[])).forEach(function(it){
+    if(it.status!=="attested") return;
+    if(!it.stem||!Array.isArray(it.options)||it.options.length<2) return;
+    var hasCorrect=false; it.options.forEach(function(op){ if(op&&op.c)hasCorrect=true; });
+    if(!hasCorrect) return;
+    /* Options are shuffled ONCE here (bank storage order is authoring order — the draft pool
+       is known to lean on first-position answers) and letters relabel automatically because
+       every render site derives them from array index (KEYS[i]). Correct option explains via
+       the item's `why`; wrong options explain via their own trap note when present. */
+    var o=shuffle(it.options).map(function(op){
+      var fb=op.c?(it.why||it.pearl||""):((op.trap&&op.trap.note)?((op.trap.name?op.trap.name+" — ":"")+op.trap.note):(it.why||""));
+      return {t:op.t,c:!!op.c,fb:fb};
     });
+    out.push({q:it.stem,o:o,tp:it.pearl||"",diff:(it.difficulty===1?"easy":(it.difficulty===3?"hard":"med")),ref:(it.pages&&it.pages[0])||null,topic:CAT_TOPIC[it.category]||"Other",deck:"QB "+(it.category||"")});
   });
   return out;
 }
@@ -220,13 +235,13 @@ function App(){
   function set(p){setS(function(prev){return Object.assign({},prev,p);});}
 
   useEffect(function(){
-    fetch("quizzes.json").then(function(r){return r.json()}).then(setData).catch(function(){setErr("Could not load the question bank (quizzes.json).");});
+    fetch("../question_bank.json").then(function(r){return r.json()}).then(setData).catch(function(){setErr("Could not load the question bank (question_bank.json).");});
   },[]);
 
   // derive pool + topics once data lands
   var pool=[], preview=false, topicsAll=[];
   if(data){
-    pool=shelfPool(data);
+    pool=bankPool(data);
     if(pool.length===0){ pool=SAMPLE.slice(); preview=true; }
     var seen={}; pool.forEach(function(it){seen[it.topic]=(seen[it.topic]||0)+1;});
     topicsAll=Object.keys(seen).sort(function(a,b){return orderRank(a)-orderRank(b);}).map(function(t){return {t:t,n:seen[t]};});
@@ -332,7 +347,7 @@ function App(){
       e("h1",null,"Shelf Mode"),
       e("span",{className:"opt-pill"},"Optional practice · exam simulation"),
       e("div",{className:"sub"},"A timed, blueprint-weighted vignette set that mirrors the psychiatry COMAT / shelf. Choose your length, topics, and pacing. Single best answer, with feedback and a teaching point on every item."),
-      preview? e("div",{className:"banner"},e("strong",null,"Preview mode. "),"The shelf question bank isn't loaded yet, so this is running on a small set of sample items so you can see how it works. Once the faculty-reviewed ",e("code",null,"SHELF-*")," bank is added, the full blueprint-weighted exam turns on automatically.") : null,
+      preview? e("div",{className:"banner"},e("strong",null,"Preview mode. "),"The attested question bank didn't load, so this is running on a small set of sample items so you can see how it works. Reload when you're back online for the full blueprint-weighted exam.") : null,
       e("div",{className:"card"},
         e("div",{className:"field"},
           e("label",{className:"h"},"Length"),

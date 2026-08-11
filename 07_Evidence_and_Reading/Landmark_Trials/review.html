@@ -77,6 +77,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
 .fb b{color:var(--text)}
 .grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
 .gr{border:1.5px solid var(--border);background:var(--surface);border-radius:11px;padding:10px 6px;cursor:pointer;font-family:inherit;font-weight:600;font-size:.9rem;color:var(--text);text-align:center}
+.gr:disabled{opacity:.38;cursor:default}
 .gr .gk{display:block;font-size:.68rem;font-weight:500;color:var(--text-light);margin-top:2px}
 .gr.again:hover,.gr.again.sug{border-color:var(--danger);background:var(--danger-light);color:var(--danger)}
 .gr.hard:hover,.gr.hard.sug{border-color:var(--warning);background:var(--warning-light);color:var(--warning)}
@@ -101,6 +102,17 @@ var framed=(window.self!==window.top);
 
 /* ---------- store ---------- */
 function todayStr(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+/* Deterministic per-(card, local day) display order for answer options. quizzes.json stores
+   50.3% of correct answers in first position and options rendered unshuffled since launch,
+   inflating the retention stat and SM-2 intervals. Seeding by id+day keeps the order stable
+   across React re-renders and same-day resumes (no mid-question reshuffle when revealing),
+   while re-scrambling tomorrow so repeat exposures can't lean on position memory. Letters
+   are display-position-derived (String.fromCharCode(65+pos)), so relabeling is automatic. */
+/* FNV-1a seed + xorshift32 steps — NOT a bare LCG: an LCG's low-order bits cycle with tiny
+   periods, and `% (j+1)` reads exactly those bits (first attempt produced only 5 of the 24
+   possible orders and NEVER left the stored-first option in first place — a new bias in
+   place of the old one). Verified across 200 ids: 24/24 permutations, first-position ≈ 1/4. */
+function optOrder(card){var s=String(card.id)+"|"+todayStr(),seed=2166136261,i;for(i=0;i<s.length;i++){seed^=s.charCodeAt(i);seed=Math.imul(seed,16777619)>>>0;}var idx=card.o.map(function(_,j){return j;});for(var j=idx.length-1;j>0;j--){seed^=seed<<13;seed>>>=0;seed^=seed>>>17;seed^=seed<<5;seed>>>=0;var k=seed%(j+1);var t=idx[j];idx[j]=idx[k];idx[k]=t;}return idx;}
 function yestStr(){var d=new Date(Date.now()-DAY);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function freshStore(){return {v:1,cards:{},day:{lastDay:"",newToday:0},stats:{streak:0,lastStudy:"",totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}};}
 /* #324 backfill: sliders set before userSet existed. Every cw_srs_v1 writer defaults
@@ -164,7 +176,7 @@ function App(){
     }).catch(function(){setErr(true);});
   },[]);
   useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]);
-  useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s)return; var k=ev.key; if(!s.revealed){ var n=parseInt(k,10); if(n>=1&&n<=s.card.o.length){choose(n-1);} } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]);
+  useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s)return; var k=ev.key; if(!s.revealed){ var n=parseInt(k,10); if(n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]);
 
   function persist(s){saveS(s);setStore(Object.assign({},s));}
 
@@ -199,6 +211,10 @@ function App(){
   function correctIdx(card){ for(var i=0;i<card.o.length;i++){if(card.o[i].c)return i;} return -1; }
   function grade(g){
     var s=sessRef.current; if(!s||!s.revealed)return;
+    /* Objectively missed answers cannot self-grade Good/Easy — tapping Easy on a miss
+       inflated SM-2 intervals. Wrong => Again or Hard only; the buttons disable to match,
+       and this guard also covers the keyboard shortcuts (keys 3/4). */
+    if(g>1 && s.chosen!==correctIdx(s.card)) return;
     var st=loadS(); st=rollDay(st);
     var card=s.card; var existed=!!st.cards[card.id];
     var was=st.cards[card.id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0};
@@ -248,10 +264,11 @@ function App(){
             e("span",{className:"scount"}, (sess.pos+1)+" / "+sess.total)),
           e("div",{className:"qtext"}, c.q),
           c.audio? e("details",{className:"oeaudio"}, e("summary",null,"🎧 Listen — paper overview"+(c.audioDur?(" · "+c.audioDur):"")), e("audio",{controls:true,preload:"none",src:"../audio_oe/"+c.audio,"aria-label":"Paper overview audio"})) : null,
-          e("div",{className:"opts"}, c.o.map(function(o,i){
-            var cls="opt"; if(sess.revealed){ if(i===ci)cls+=" correct"; else if(i===sess.chosen)cls+=" wrong"; else cls+=" dim"; }
-            return e("button",{key:i,className:cls,disabled:sess.revealed,onClick:function(){choose(i);}},
-              e("span",{className:"kx"}, String.fromCharCode(65+i)),
+          e("div",{className:"opts"}, optOrder(c).map(function(oi,pos){
+            var o=c.o[oi];
+            var cls="opt"; if(sess.revealed){ if(oi===ci)cls+=" correct"; else if(oi===sess.chosen)cls+=" wrong"; else cls+=" dim"; }
+            return e("button",{key:oi,className:cls,disabled:sess.revealed,onClick:function(){choose(oi);}},
+              e("span",{className:"kx"}, String.fromCharCode(65+pos)),
               e("span",null,o.t));
           })),
           sess.revealed? e("div",{className:"fb"},
@@ -262,8 +279,8 @@ function App(){
           sess.revealed? e("div",{className:"grades"},
             e("button",{className:"gr again"+(sug==='Again'?" sug":""),onClick:function(){grade(0);}},"Again",e("span",{className:"gk"},"<10m")),
             e("button",{className:"gr hard",onClick:function(){grade(1);}},"Hard",e("span",{className:"gk"},"1")),
-            e("button",{className:"gr good"+(sug==='Good'?" sug":""),onClick:function(){grade(2);}},"Good",e("span",{className:"gk"},"↑")),
-            e("button",{className:"gr easy",onClick:function(){grade(3);}},"Easy",e("span",{className:"gk"},"↑↑"))
+            e("button",{className:"gr good"+(sug==='Good'?" sug":""),onClick:function(){grade(2);},disabled:!gotIt,title:gotIt?null:"Missed items can only be graded Again or Hard"},"Good",e("span",{className:"gk"},"↑")),
+            e("button",{className:"gr easy",onClick:function(){grade(3);},disabled:!gotIt,title:gotIt?null:"Missed items can only be graded Again or Hard"},"Easy",e("span",{className:"gk"},"↑↑"))
           ) : e("div",{className:"muted",style:{marginTop:"10px"}},"Pick the best answer (or press 1–"+c.o.length+")."),
           e("div",{className:"sfoot"},
             e("span",null,"✓ "+sess.correct+" correct"),

@@ -10,7 +10,12 @@ import {
 } from './qbank-actions.mjs';
 
 const DEFAULT_REPO = 'jmoss333/psychiatry-clerkship';
-const DEFAULT_BRANCH = 'main';
+// Attestations land on their own branch and reach the base branch through one
+// rolling pull request. Writing straight to a protected base branch is refused
+// by GitHub — that failure was invisible for a month because a 409 reads as a
+// race. Set GIT_BRANCH equal to GIT_BASE_BRANCH to restore direct writes.
+const DEFAULT_BRANCH = 'attest/pending';
+const DEFAULT_BASE_BRANCH = 'main';
 const DEFAULT_STUDENT_SITE = 'https://une-ms3-psychiatry.netlify.app';
 const DEFAULT_ATTESTER = 'Joshua Moss, MD';
 const DEFAULT_ATTESTER_EMAIL = 'faculty@clerkship.local';
@@ -27,7 +32,9 @@ const GIT_OBJECT_ID_PATTERN = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/i;
 
 const ERROR_MESSAGES = Object.freeze({
   github_forbidden: 'The repository refused this request.',
-  github_conflict: 'The repository changed during this request. Reload and try again.',
+  github_conflict: 'The repository refused this write. Either it changed during this request '
+    + '— reload and try again — or the target branch is protected and cannot be written to '
+    + 'directly, which reloading will never fix. Check GIT_BRANCH.',
   github_validation_failed: 'The repository rejected the proposed update.',
   github_rate_limited: 'The repository is temporarily rate limited. Try again later.',
   github_request_failed: 'The repository request failed. Try again later.',
@@ -181,6 +188,7 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
   const key = readEnv(env, 'FACULTY_ATTEST_PASSWORD');
   const repo = readEnv(env, 'GITHUB_REPO').trim() || DEFAULT_REPO;
   const branch = readEnv(env, 'GIT_BRANCH').trim() || DEFAULT_BRANCH;
+  const baseBranch = readEnv(env, 'GIT_BASE_BRANCH').trim() || DEFAULT_BASE_BRANCH;
   const studentValue = readEnv(env, 'STUDENT_SITE_URL').trim() || DEFAULT_STUDENT_SITE;
   const attesterEmail = readEnv(env, 'ATTESTER_EMAIL').trim() || DEFAULT_ATTESTER_EMAIL;
   const attester = attesterLabel(readEnv(env, 'ATTESTER_NAME'));
@@ -190,7 +198,8 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
       || !key
       || typeof fetchImpl !== 'function'
       || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)
-      || !branch) {
+      || !branch
+      || !baseBranch) {
     throw new HttpError('server_configuration', 500, 'The faculty service is not configured.');
   }
 
@@ -203,7 +212,10 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
     throw new HttpError('server_configuration', 500, 'The faculty service is not configured.');
   }
 
-  return { token, key, repo, branch, student, attesterEmail, attester };
+  // Equal branches mean "write straight to the base" — nothing to sync, no PR to
+  // keep. That is the pre-2026-08 behaviour, and how the handler tests run.
+  const isolated = branch !== baseBranch;
+  return { token, key, repo, branch, baseBranch, isolated, student, attesterEmail, attester };
 }
 
 function githubStatusError(status) {
@@ -397,10 +409,10 @@ function createRepositoryGateway({ settings, fetchImpl }) {
     return { commit, revision };
   }
 
-  async function head() {
+  async function headOf(branch) {
     const response = await githubRequest(
       fetchImpl,
-      gitRepositoryUrl(settings, `ref/heads/${settings.branch}`),
+      gitRepositoryUrl(settings, `ref/heads/${branch}`),
       { headers: githubHeaders(settings.token) },
     );
     const payload = await githubJson(response);
@@ -408,6 +420,119 @@ function createRepositoryGateway({ settings, fetchImpl }) {
       throw new GithubError('github_response_invalid', 502);
     }
     return normalizeGitObjectId(payload.object.sha);
+  }
+
+  async function head() {
+    return headOf(settings.branch);
+  }
+
+  /**
+   * Keep the attestation branch from drifting behind the base branch.
+   *
+   * A stale branch is the one failure mode that loses data: its reviewed.json
+   * predates whatever landed on the base since, so merging the rolling PR would
+   * revert those entries. Fast-forwarding is only safe when the branch carries
+   * nothing of its own, so this moves the ref exactly when `ahead_by === 0`.
+   * With unmerged attestations present it leaves the branch alone — merging the
+   * PR is then the operation that reconciles the two.
+   *
+   * No-op when the branch IS the base branch.
+   */
+  async function ensureBranchFresh() {
+    if (!settings.isolated) return { action: 'skipped' };
+    const baseHead = await headOf(settings.baseBranch);
+
+    let branchHead;
+    try {
+      branchHead = await headOf(settings.branch);
+    } catch (error) {
+      if (!(error instanceof GithubError && error.notFound)) throw error;
+      await githubRequest(fetchImpl, gitRepositoryUrl(settings, 'refs'), {
+        method: 'POST',
+        headers: githubHeaders(settings.token),
+        body: JSON.stringify({ ref: `refs/heads/${settings.branch}`, sha: baseHead }),
+      });
+      return { action: 'created', head: baseHead };
+    }
+
+    if (branchHead === baseHead) return { action: 'current', head: branchHead };
+
+    const compareResponse = await githubRequest(
+      fetchImpl,
+      `${GITHUB_API}/repos/${settings.repo}/compare/`
+        + `${encodeURIComponent(settings.baseBranch)}...${encodeURIComponent(settings.branch)}`,
+      { headers: githubHeaders(settings.token) },
+    );
+    const comparison = await githubJson(compareResponse);
+    if (typeof comparison.ahead_by !== 'number' || typeof comparison.behind_by !== 'number') {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    if (comparison.ahead_by > 0) {
+      // Unmerged attestations are waiting in the rolling PR. Do not touch them.
+      return { action: 'pending', head: branchHead, ahead: comparison.ahead_by };
+    }
+    if (comparison.behind_by === 0) return { action: 'current', head: branchHead };
+
+    await githubRequest(
+      fetchImpl,
+      gitRepositoryUrl(settings, `refs/heads/${settings.branch}`),
+      {
+        method: 'PATCH',
+        headers: githubHeaders(settings.token),
+        body: JSON.stringify({ sha: baseHead, force: false }),
+      },
+    );
+    return { action: 'fast-forwarded', head: baseHead, behind: comparison.behind_by };
+  }
+
+  /**
+   * One rolling pull request, not one per attestation.
+   *
+   * Housekeeping: a failure here must never lose an attestation that already
+   * committed, so callers treat a thrown error as non-fatal.
+   */
+  async function ensureRollingPullRequest() {
+    if (!settings.isolated) return null;
+    const owner = settings.repo.split('/')[0];
+    const query = `head=${encodeURIComponent(`${owner}:${settings.branch}`)}`
+      + `&base=${encodeURIComponent(settings.baseBranch)}&state=open`;
+    const listResponse = await githubRequest(
+      fetchImpl,
+      `${GITHUB_API}/repos/${settings.repo}/pulls?${query}`,
+      { headers: githubHeaders(settings.token) },
+    );
+    // githubJson() requires an object; the pulls list is an array, so read it directly.
+    let open;
+    try {
+      open = await listResponse.json();
+    } catch {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    if (Array.isArray(open) && open.length) {
+      const existing = open[0];
+      return typeof existing?.html_url === 'string' ? existing.html_url : null;
+    }
+
+    const createResponse = await githubRequest(
+      fetchImpl,
+      `${GITHUB_API}/repos/${settings.repo}/pulls`,
+      {
+        method: 'POST',
+        headers: githubHeaders(settings.token),
+        body: JSON.stringify({
+          title: 'attest: faculty review from the attestation console',
+          head: settings.branch,
+          base: settings.baseBranch,
+          body: 'Rolling pull request for faculty attestations.\n\n'
+            + 'Each sign-off in the console appends a commit here. Merge when the '
+            + 'review session is done; the console fast-forwards this branch from '
+            + `\`${settings.baseBranch}\` once it has been merged.`,
+          maintainer_can_modify: true,
+        }),
+      },
+    );
+    const created = await githubJson(createResponse);
+    return typeof created?.html_url === 'string' ? created.html_url : null;
   }
 
   async function writeAtHead(path, value, {
@@ -537,7 +662,7 @@ function createRepositoryGateway({ settings, fetchImpl }) {
     return { commit, revision };
   }
 
-  return { read, write, head, writeAtHead };
+  return { read, write, head, headOf, writeAtHead, ensureBranchFresh, ensureRollingPullRequest };
 }
 
 function invalidRepositoryFile() {
@@ -907,18 +1032,34 @@ async function handlePost({ repository, body, attester }) {
       'Use an explicit question-bank save or attestation action.',
     );
   }
+
+  let mutate;
   if (body.target === 'content') {
-    return commitContentMutation({ repository, body, attester });
+    mutate = () => commitContentMutation({ repository, body, attester });
+  } else if (body.action === 'qbank.save-draft' || body.action === 'qbank.attest') {
+    mutate = () => commitQbankMutation({ repository, action: body.action, body, attester });
+  } else {
+    throw new HttpError('unknown_action', 400, 'Choose a supported faculty action.');
   }
-  if (body.action === 'qbank.save-draft' || body.action === 'qbank.attest') {
-    return commitQbankMutation({
-      repository,
-      action: body.action,
-      body,
-      attester,
-    });
+
+  // Freshen BEFORE the write: the mutation reads the file it is about to change,
+  // and reading a stale branch is how a merge silently reverts newer entries.
+  // This is allowed to fail the request — losing that guarantee is worse than
+  // losing the attempt.
+  await repository.ensureBranchFresh();
+  const result = await mutate();
+
+  // Housekeeping AFTER the write, and never fatal: the attestation is already
+  // committed, so a PR hiccup must not report it as failed.
+  if (result?.ok && result.commit) {
+    try {
+      const pullRequest = await repository.ensureRollingPullRequest();
+      if (pullRequest) return { ...result, pullRequest };
+    } catch {
+      return { ...result, pullRequest: null, pullRequestError: true };
+    }
   }
-  throw new HttpError('unknown_action', 400, 'Choose a supported faculty action.');
+  return result;
 }
 
 export function createHandler({ env = process.env, fetchImpl = globalThis.fetch } = {}) {

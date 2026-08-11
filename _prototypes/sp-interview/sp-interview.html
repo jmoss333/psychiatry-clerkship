@@ -403,13 +403,15 @@ function buildNarrative(s,cov,rub){
   var who=s.caseDef.persona.displayName;
   function hasIntent(id){return s.caseDef.intents.some(function(it){return it.id===id;});}
   if(s.reflections>=2)strengths.push('You reflected and validated more than once — '+who+'’s guardedness dropped when you did. That is the mechanism, not a nicety.');
-  if(s.covered['si_direct'])strengths.push('You asked about suicide in plain language. That is exactly why she told you the truth.');
+  /* Coaching text must work for every persona (Dana/Marcus/Ray) — displayName + they/them,
+     never a hardcoded she/her: Marcus and Ray got wrong-pronoun debriefs. */
+  if(s.covered['si_direct'])strengths.push('You asked about suicide in plain language. That is exactly why '+who+' told you the truth.');
   if(s.covered['work_stressor'])strengths.push('You found the job loss — the organizing stressor most interviewers miss.');
-  if(s.covered['greeting_agenda'])strengths.push('You set a collaborative frame at the start, and she noticed.');
+  if(s.covered['greeting_agenda'])strengths.push('You set a collaborative frame at the start, and '+who+' noticed.');
   if(s.covered['summary_close'])strengths.push('You closed with a summary rather than letting the encounter just stop.');
-  if(!s.covered['si_direct']&&s.covered['si_euphemism'])growth.push({t:'You approached suicide with a euphemism and she tested you instead of answering. Next time, try her own words plus the plain question: “When you say you’re a burden — have you had thoughts of killing yourself?”',link:'pg_suicide.md'});
+  if(!s.covered['si_direct']&&s.covered['si_euphemism'])growth.push({t:'You approached suicide with a euphemism and '+who+' tested you instead of answering. Next time, try the patient’s own words plus the plain question: “When you say you’re a burden — have you had thoughts of killing yourself?”',link:'pg_suicide.md'});
   if(!s.covered['si_direct']&&!s.covered['si_euphemism'])growth.push({t:'Suicide never came up. With this presentation it must — directly and plainly. Next time, try asking early, once any rapport exists: “Have you had thoughts of killing yourself?”',link:'pg_suicide.md'});
-  if(s.unlocked['si_active']&&!(s.covered['si_plan']&&s.covered['si_means']&&s.covered['si_intent_protective']))growth.push({t:'After her disclosure, the follow-through was incomplete. Next time, walk the chain: plan, means and access, intent, and what keeps her going.',link:'pg_suicide.md'});
+  if(s.unlocked['si_active']&&!(s.covered['si_plan']&&s.covered['si_means']&&s.covered['si_intent_protective']))growth.push({t:'After the disclosure, the follow-through was incomplete. Next time, walk the chain: plan, means and access, intent, and what keeps them going.',link:'pg_suicide.md'});
   if(s.reflections<2)growth.push({t:'Long question runs made this feel like an intake form. Next time, try one reflection for every two or three questions — watch what it buys you.',link:'pg_interview.md'});
   if(hasIntent('work_stressor')&&!s.covered['work_stressor'])growth.push({t:'You collected symptoms but not the story — something happened two months ago and it never surfaced. Next time, try “What changed around the time this started?”',link:'pg_interview.md'});
   if(!s.covered['summary_close'])growth.push({t:'The encounter ended without a summary. Next time, try playing back what you heard and naming the hard part calmly before you leave the room.',link:'pg_interview.md'});
