@@ -579,7 +579,11 @@
   })();
   fetch('reviewed.json').then(function(r){return r.ok?r.json():{}}).then(function(d){REVIEWED=(d&&d.items)?d.items:(d||{});try{if(currentItem&&REVIEWED[currentItem.f]){ if(currentItem.k==='tool'&&!contentEl.querySelector('.toolrev'))show(currentItem); else if(currentItem.k!=='tool'&&!contentEl.querySelector('.reviewed'))show(currentItem); }}catch(_){ }}).catch(function(){});
   var TOPIC_META={};
-  fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ if(window.__renderModeCompanion) window.__renderModeCompanion(); }catch(_){ } if(currentItem&&TOPIC_META[currentItem.f]&&contentEl&&!contentEl.querySelector('.topic-tpl')) show(currentItem); }).catch(function(){});
+  /* On a cold cache the home/progress views render BEFORE this fetch resolves, so the unit
+     dashboard shows "0 matched" until something else re-renders. specialRefresh() (dual-root:
+     hmRoot or pgRoot, whichever is live) closes that race the moment metadata lands — topic
+     pages already got the same treatment via the show(currentItem) branch below. */
+  fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ if(window.__renderModeCompanion) window.__renderModeCompanion(); }catch(_){ } try{ specialRefresh(); }catch(_){ } if(currentItem&&TOPIC_META[currentItem.f]&&contentEl&&!contentEl.querySelector('.topic-tpl')) show(currentItem); }).catch(function(){});
   function makeCollapsible(body){
     if(!body) return;
     var kids=[].slice.call(body.children);
@@ -669,7 +673,11 @@
      servable quiz — they were seeded by the unguarded seedSRS, can never be graded in
      Daily Review, and inflate "Due today" forever. Runs whenever topic_meta loads;
      idempotent; deliberately refuses to run on an empty TOPIC_META (failed fetch). */
-  function srsDropPhantomTopics(){ try{ if(typeof TOPIC_META==='undefined'||!TOPIC_META||!Object.keys(TOPIC_META).length)return; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1||!s.cards)return; var changed=false; for(var id in s.cards){ if(id.indexOf('TOPIC#')!==0)continue; var c=s.cards[id]; if(c&&!c.reps&&!topicHasQuiz(id.slice(6))){ delete s.cards[id]; changed=true; } } if(changed){ localStorage.setItem('cw_srs_v1',JSON.stringify(s)); if(document.getElementById('hmRoot')&&window.renderHome)renderHome(); } }catch(_){ } }
+  function srsDropPhantomTopics(){ try{ if(typeof TOPIC_META==='undefined'||!TOPIC_META||!Object.keys(TOPIC_META).length)return; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1||!s.cards)return; var changed=false; for(var id in s.cards){ if(id.indexOf('TOPIC#')!==0)continue; var c=s.cards[id]; if(c&&!c.reps&&!topicHasQuiz(id.slice(6))){ delete s.cards[id]; changed=true; } } if(changed){ localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } }catch(_){ } }
+  /* No view refresh here: the old `renderHome()` call at this spot DISCARDED its return value
+     (renderHome returns an HTML string; it does not touch the DOM) — a silent no-op since the
+     tile row landed. The sole caller (the topic_meta fetch above) now runs specialRefresh()
+     unconditionally, which is also what actually fixes the cold-load "0 matched" dashboard. */
   /* ---- end srs seed + phantom migration ---- */
   function ctaHref(h){ h=h||''; var mt=h.match(/^tools\/([^\/?#]+\.html)$/); return mt?('?tool='+mt[1]):h; }
   function ctaAttrs(h){ return /^\?(page|tool)=/.test(h)?'':' target="_blank" rel="noopener"'; }
@@ -903,12 +911,12 @@
     var title=document.getElementById('mobileTitle');
     if(!title)return;
     if(!item){title.textContent='Inpatient Psychiatry';return;}
-    title.textContent=item.f==='__home__'?'Today / Progress':(item.f==='__start__'?'Start here':item.t);
+    title.textContent=item.f==='__home__'?'Today':(item.f==='__progress__'?'Progress':(item.f==='__start__'?'Start here':item.t));
   }
   var routeAnnounced=false;
   function announceRoute(item){
     var rs=document.getElementById('routeStatus');
-    if(rs){ rs.textContent=!item?'':((item.f==='__home__'?'Today / Progress':(item.f==='__start__'?'Start here':(item.f==='__path__'?'Learning Path':item.t)))+' loaded'); }
+    if(rs){ rs.textContent=!item?'':((item.f==='__home__'?'Today':(item.f==='__progress__'?'Progress':(item.f==='__start__'?'Start here':(item.f==='__path__'?'Learning Path':item.t))))+' loaded'); }
     // Skip the focus move on the very first render so initial keyboard position
     // (nav/search) is not stolen; announce-only is correct for page load.
     if(routeAnnounced){ try{ contentEl.focus({preventScroll:true}); }catch(_){ try{ contentEl.focus(); }catch(__){ } } }
@@ -970,7 +978,7 @@
       currentToolFrame=null;
       currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)&&!(opts&&opts.noRoute)) setRoute(item, opts&&opts.replace, opts);
       contentEl.classList.remove('toolmode'); contentEl.classList.remove('pathmode');
-      contentEl.innerHTML = (item.f==='__start__') ? (window.renderStart?window.renderStart():'') : (window.renderHome?window.renderHome():'');
+      contentEl.innerHTML = (item.f==='__start__') ? (window.renderStart?window.renderStart():'') : (item.f==='__progress__') ? (window.renderProgress?window.renderProgress():'') : (window.renderHome?window.renderHome():'');
       try{ if(window.__afterSpecial) window.__afterSpecial(item.f); }catch(_){ }
       announceRoute(item); window.scrollTo(0,0); return;
     }
@@ -1022,7 +1030,7 @@
       gw.appendChild(gh); gw.appendChild(gb); navEl.appendChild(gw);
       groupWraps[name]=gb; return gb;
     }
-    data.unshift({section:'Welcome and Today',pinned:true,items:[{t:'Today / Progress',f:'__home__',k:'special'},{t:'Start-here Checklist',f:'__start__',k:'special'}]});
+    data.unshift({section:'Welcome and Today',pinned:true,items:[{t:'Today',f:'__home__',k:'special'},{t:'Progress',f:'__progress__',k:'special'},{t:'Start-here Checklist',f:'__start__',k:'special'}]});
     data.forEach(function(sec){
       var wrap=document.createElement('div'); wrap.className='navsec-wrap';
       var h=document.createElement('button'); h.className='navsec'; h.type='button';
@@ -1180,9 +1188,9 @@
       else { el.textContent='Copy unavailable'; }
       return;
     }
-    if(el.hasAttribute('data-cap-review')&&f){ if(typeof seedSRS==='function')seedSRS(f); capMarkTriaged(id); capHomeRefresh(); return; }
-    if(el.hasAttribute('data-cap-drop')&&id){ capRemove(id); capHomeRefresh(); return; }
-    if(el.hasAttribute('data-cap-open')&&f){ capMarkTriaged(id); if(!navClick(f)){ capHomeRefresh(); } return; }
+    if(el.hasAttribute('data-cap-review')&&f){ if(typeof seedSRS==='function')seedSRS(f); capMarkTriaged(id); specialRefresh(); return; }
+    if(el.hasAttribute('data-cap-drop')&&id){ capRemove(id); specialRefresh(); return; }
+    if(el.hasAttribute('data-cap-open')&&f){ capMarkTriaged(id); if(!navClick(f)){ specialRefresh(); } return; }
   }
 
   /* ---- capture sheet: own dialog, own focus trap ----
@@ -1260,9 +1268,9 @@
       if(t.id==='capSave'){ capSave(false); return; }
       if(t.id==='capHoldEdit'){ var hold=capSheet.querySelector('#capHold'); if(hold)hold.innerHTML=''; var tx=capSheet.querySelector('#capText'); if(tx)tx.focus(); return; }
       if(t.id==='capHoldSave'){ capSave(true); return; }
-      if(t.id==='capEraseAll'){ if(window.confirm('Erase all saved questions on this device?')){ capEraseAll(); capRenderBody(); capHomeRefresh(); } return; }
+      if(t.id==='capEraseAll'){ if(window.confirm('Erase all saved questions on this device?')){ capEraseAll(); capRenderBody(); specialRefresh(); } return; }
       var del=t.getAttribute&&t.getAttribute('data-cap-del');
-      if(del){ capRemove(del); capRenderBody(); capHomeRefresh(); return; }
+      if(del){ capRemove(del); capRenderBody(); specialRefresh(); return; }
     });
   }
   function capSave(force){
@@ -1278,12 +1286,15 @@
       return;
     }
     if(hold)hold.innerHTML='';
-    if(capAdd(text)){ ta.value=''; capRenderBody(); capHomeRefresh(); try{ ta.focus(); }catch(_){ } }
+    if(capAdd(text)){ ta.value=''; capRenderBody(); specialRefresh(); try{ ta.focus(); }catch(_){ } }
     else { var err=document.createElement('p'); err.className='cap-err';
       err.textContent="Couldn't save on this device. Use “Ask my attending” on the home screen to copy your questions out before you close this tab.";
       if(hold)hold.appendChild(err); }
   }
-  function capHomeRefresh(){ var r=document.getElementById('hmRoot'); if(r&&window.renderHome){ r.outerHTML=window.renderHome(); if(window.__afterSpecial)window.__afterSpecial('__home__'); } }
+  /* Re-render whichever special view is live (Today's hmRoot or Progress's pgRoot) and re-run
+     its wiring. THE one legal refresh idiom for these views — renderHome/renderProgress return
+     HTML strings and never touch the DOM themselves, so a bare call is a silent no-op. */
+  function specialRefresh(){ var r=document.getElementById('hmRoot'); if(r&&window.renderHome){ r.outerHTML=window.renderHome(); if(window.__afterSpecial)window.__afterSpecial('__home__'); return; } var p=document.getElementById('pgRoot'); if(p&&window.renderProgress){ p.outerHTML=window.renderProgress(); if(window.__afterSpecial)window.__afterSpecial('__progress__'); } }
   (function capWire(){
     var opens=document.querySelectorAll('.capture-open');
     /* Faculty preview is a content-review surface embedded in the console's iframe, not a learner
@@ -1310,8 +1321,9 @@
   /* The re-render hook matters: SI===null means "failed" OR "not yet resolved", and renderHome()
      runs from the nav bootstrap in the same tick that starts this ~475 KB fetch. Without it the
      capture triage card paints its degraded "matching unavailable" state on nearly every cold load
-     and never corrects. Same idiom the topic_meta fetch uses via srsDropPhantomTopics. */
-  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); if(document.getElementById('hmRoot')&&window.renderHome)capHomeRefresh(); })
+     and never corrects. Same specialRefresh() idiom the topic_meta fetch uses for its own race.
+     Gated on hmRoot (not dual-root) deliberately: the triage card is a Today-only surface. */
+  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); if(document.getElementById('hmRoot')&&window.renderHome)specialRefresh(); })
     .catch(function(){ searchEl.placeholder='Search unavailable'; searchEl.disabled=true; });
 
   function idf(t){ return Math.log(1 + SI.n/((SI.df[t]||1))); }
@@ -1669,7 +1681,7 @@
     var matches=itemsForMode(mode), tools=toolsForMode(mode,matches), pages=matches.slice(0,3);
     var h='<button type="button" class="mc-toggle" aria-expanded="'+(mcOpen?'true':'false')+'" aria-controls="mcBody"><span class="mc-toggle-t">'+esc(cfg.label)+' mode</span><span class="mc-chev" aria-hidden="true">▸</span></button>';
     h+='<div id="mcBody" class="mc-body"'+(mcOpen?'':' hidden')+'>';
-    h+='<div class="mc-head"><button type="button" class="mc-home" data-mc-home="1">Progress</button></div>';
+    h+='<div class="mc-head"><button type="button" class="mc-home" data-mc-home="1">Today</button></div>';
     h+='<div class="mc-modes">'+modes.map(function(m){return '<button type="button" class="mc-mode'+(mode===m[0]?' on':'')+'" data-mc-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div>';
     h+='<div class="mc-section"><div class="mc-label">Pages</div><div class="mc-list">'+(pages.length?pages.map(function(x){return companionButton(x,'page');}).join(''):'<div class="mc-empty">Recommendations load after navigation data is ready.</div>')+'</div></div>';
     h+='<div class="mc-section"><div class="mc-label">Tools</div><div class="mc-list">'+(tools.length?tools.slice(0,3).map(function(x){return companionButton(x,'tool');}).join(''):'<div class="mc-empty">No mode tools yet.</div>')+'</div></div>';
@@ -1679,7 +1691,7 @@
   window.__renderModeCompanion=renderModeCompanion;
   (function(){ var root=document.getElementById('modeCompanion'); if(!root)return; root.addEventListener('click',function(e){
     var tg=e.target.closest?e.target.closest('.mc-toggle'):null; if(tg){ mcOpen=!mcOpen; var bd=document.getElementById('mcBody'); if(bd){ if(mcOpen){bd.removeAttribute('hidden');}else{bd.setAttribute('hidden','');} } tg.setAttribute('aria-expanded',mcOpen?'true':'false'); return; }
-    var mb=e.target.closest?e.target.closest('[data-mc-mode]'):null; if(mb){ setDashboardMode(mb.getAttribute('data-mc-mode')); if(currentItem&&currentItem.f==='__home__'&&window.renderHome){ contentEl.innerHTML=window.renderHome(); try{window.__afterSpecial('__home__');}catch(_){ } } else if(currentItem&&currentItem.k==='md'){ var nb=null, all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===currentItem.f){ nb=all[i]; break; } } show(currentItem,nb,{replace:true}); } return; }
+    var mb=e.target.closest?e.target.closest('[data-mc-mode]'):null; if(mb){ setDashboardMode(mb.getAttribute('data-mc-mode')); if(currentItem&&(currentItem.f==='__home__'||currentItem.f==='__progress__')){ try{specialRefresh();}catch(_){ } } else if(currentItem&&currentItem.k==='md'){ var nb=null, all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===currentItem.f){ nb=all[i]; break; } } show(currentItem,nb,{replace:true}); } return; }
     var home=e.target.closest?e.target.closest('[data-mc-home]'):null; if(home){ navClick('__home__'); return; }
     var item=e.target.closest?e.target.closest('[data-mc-f]'):null; if(item){ navClick(item.getAttribute('data-mc-f')); }
   }); })();
@@ -1776,8 +1788,8 @@
 
   /* ---- calib panel ---- */
   /* Metacognition panel (phase 1): swaps in for the legacy calibrationSummary() card on
-     renderHome once there's enough ledger history (>=20 cw_calib_v1 qb events) to be more
-     informative than the current-state summary above it. Below threshold, renderHome falls
+     renderProgress once there's enough ledger history (>=20 cw_calib_v1 qb events) to be more
+     informative than the current-state summary above it. Below threshold, renderProgress falls
      back to calibrationSummary() unchanged — see the caller. Counts here read the FULL
      history ledger (calibRead()), not the single-record-per-item cw_qb_v1 snapshot, EXCEPT
      for the confidently-wrong count, which intentionally reads cw_qb_v1 — same predicate as
@@ -1838,7 +1850,7 @@
     h+=relationalChallengeHtml(mode);
     h+=renderWardDashboard();
     h+='<div class="hm-mini">';
-    h+='<div class="hm-tile"><span class="k">Reviewed</span><span class="v">'+pct+'%</span></div>';
+    h+='<button class="hm-tile" type="button" data-f="__progress__"><span class="k">Reviewed</span><span class="v">'+pct+'%</span><span class="l">See progress →</span></button>';
     if(bd.daily.due){ h+='<button class="hm-tile" type="button" data-act="review"><span class="k">Due today</span><span class="v">'+bd.daily.due+(bd.daily.overdue?'<small> · '+bd.daily.overdue+' overdue</small>':'')+'</span><span class="l">Start review →</span>'+dueSubstatHtml(bd)+'</button>'; }
     else{ h+='<div class="hm-tile"><span class="k">Due today</span><span class="v">0</span>'+dueSubstatHtml(bd)+'</div>'; }
     h+='<div class="hm-tile"><span class="k">Streak</span><span class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></span></div>';
@@ -1887,10 +1899,21 @@
       h+='</div>';
     }
     /* ---- end resume row ---- */
-    var weak=weakTopics();
-    if(weak.length){ h+='<div class="hm-sec"><h2>Focus next · your weak spots</h2>'; weak.slice(0,5).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+esc(x.t)+'</span><span class="sec">'+esc(x.reason)+'</span></button>'; }); h+='</div>'; }
-    if(scan.hy.length){ h+='<div class="hm-sec"><h2>High-yield · not yet read</h2>'; scan.hy.slice(0,8).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+x.t+'</span><span class="sec">'+x.sec+'</span></button>'; }); h+='</div>'; }
-    var covk=Object.keys(scan.cov); if(covk.length){ h+='<div class="hm-sec"><h2>Coverage by section</h2><div class="hm-bars">'; covk.forEach(function(k){ var c=scan.cov[k]; var p=c.tot?Math.round(c.done/c.tot*100):0; h+='<div class="brow"><span class="lab">'+k+'</span><span class="track"><span class="fill" style="width:'+p+'%"></span></span><span class="pc">'+c.done+'/'+c.tot+'</span></div>'; }); h+='</div></div>'; }
+    h+='<button class="hm-li" data-f="__progress__" style="border-bottom:none"><span class="t">Progress &amp; mastery</span><span class="sec">Coverage · blueprint · calibration →</span></button>';
+    h+='</div>'; return h;
+  };
+
+  /* Progress — the analytics half of the old combined home page (Today keeps the action half:
+     ribbon, hero, unit dashboard, tiles, triage, resume). Everything here derives from
+     device-local activity; the export section is the only way any of it leaves the browser.
+     Rendered by show() for the __progress__ nav special and refreshed through the same
+     specialRefresh()/__afterSpecial('__progress__') path Today uses. */
+  window.renderProgress=function(){
+    var scan=navScan();
+    var rev=0, tot=0; for(var _ck in scan.cov){ rev+=scan.cov[_ck].done; tot+=scan.cov[_ck].tot; }
+    var pct=tot?Math.round(rev/tot*100):0;
+    var h='<div class="hm" id="pgRoot"><div class="hm-top"><h1>Progress</h1><span class="hm-stamp">'+esc(homeStamp(dashboardMode()))+'</span></div>';
+    h+='<p class="sub">From your activity on this device — pages reviewed, practice answers, and confidence. Nothing leaves the browser unless you export it below.</p>';
     var mb=masteryByBlueprint(); var mbStarted=mb.filter(function(x){return x.score!=null;});
     h+='<div class="hm-sec"><h2>Mastery by blueprint <span style="font-weight:400;color:var(--text-light)">· from your practice</span></h2>';
     if(!mbStarted.length){ h+='<div class="sub" style="margin:0 0 8px">Answer practice questions (or topic quizzes) and this fills in — one bar per shelf-blueprint area.</div>'; }
@@ -1905,6 +1928,10 @@
       weakCats.forEach(function(x){ h+='<button class="hm-li" data-practice="'+x.c+'"><span class="t">'+esc(x.label)+'</span><span class="sec">'+x.score+'% · practice →</span></button>'; });
       if(notStarted.length){ var ns=notStarted[0]; h+='<button class="hm-li" data-practice="'+ns.c+'"><span class="t">'+esc(ns.label)+'</span><span class="sec">not started · try it →</span></button>'; }
       h+='</div>'; }
+    var weak=weakTopics();
+    if(weak.length){ h+='<div class="hm-sec"><h2>Focus next · your weak spots</h2>'; weak.slice(0,5).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+esc(x.t)+'</span><span class="sec">'+esc(x.reason)+'</span></button>'; }); h+='</div>'; }
+    var covk=Object.keys(scan.cov); if(covk.length){ h+='<div class="hm-sec"><h2>Coverage by section <span style="font-weight:400;color:var(--text-light)">· '+pct+'% overall</span></h2><div class="hm-bars">'; covk.forEach(function(k){ var c=scan.cov[k]; var p=c.tot?Math.round(c.done/c.tot*100):0; h+='<div class="brow"><span class="lab">'+k+'</span><span class="track"><span class="fill" style="width:'+p+'%"></span></span><span class="pc">'+c.done+'/'+c.tot+'</span></div>'; }); h+='</div></div>'; }
+    if(scan.hy.length){ h+='<div class="hm-sec"><h2>High-yield · not yet read</h2>'; scan.hy.slice(0,8).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+x.t+'</span><span class="sec">'+x.sec+'</span></button>'; }); h+='</div>'; }
     var calPanel=(typeof renderCalibPanel==='function')?renderCalibPanel():'';
     if(calPanel){ h+=calPanel; }
     else{ var cal=calibrationSummary();
@@ -1974,9 +2001,12 @@
 
   window.__afterSpecial=function(f){
     try{ localStorage.setItem('cw_seen_start','1'); }catch(_){ }
-    var root=document.getElementById(f==='__start__'?'stRoot':'hmRoot'); if(!root)return;
+    var root=document.getElementById(f==='__start__'?'stRoot':(f==='__progress__'?'pgRoot':'hmRoot')); if(!root)return;
     hydrate(root);
-    if(f==='__home__'){
+    if(f==='__home__'||f==='__progress__'){
+      /* One delegate serves both views: each branch keys off elements only one of them renders
+         (ribbon/tiles/capture/dash-mode are Today-only; Progress uses just the .hm-li branch),
+         so absent surfaces simply never match. */
       root.addEventListener('click',function(e){
         var cap=e.target.closest?e.target.closest('[data-cap-open],[data-cap-review],[data-cap-drop],[data-cap-copy]'):null;
         if(cap){ capTriageClick(cap); return; }
@@ -1994,7 +2024,7 @@
            attribute and are handled by the .hm-li branch. */
         var ps=e.target.closest?e.target.closest('[data-pt="start"]'):null; if(ps){ navClick('__start__'); return; }
         var li=e.target.closest?e.target.closest('.hm-li'):null; if(li){ var act=li.getAttribute('data-act'); if(act==='review'){ navClick('review.html'); return; } if(act==='start'){ navClick('__start__'); return; } if(act==='studyexport'){ if(window.exportStudy)window.exportStudy(); return; } var pr=li.getAttribute('data-practice'); if(pr){ try{localStorage.setItem('cw_qb_focus',pr);}catch(_){ } navClick('question-bank-practice.html'); return; } var pt=li.getAttribute('data-pt'); if(pt){ if(pt==='plan')renderStoredPlan(); else if(pt==='pretest')startPretest(); return; } var ff=li.getAttribute('data-f'); if(ff)navClick(ff); return; }
-        var dm=e.target.closest?e.target.closest('[data-dash-mode]'):null; if(dm){ setDashboardMode(dm.getAttribute('data-dash-mode')); root.outerHTML=window.renderHome(); window.__afterSpecial('__home__'); return; }
+        var dm=e.target.closest?e.target.closest('[data-dash-mode]'):null; if(dm){ setDashboardMode(dm.getAttribute('data-dash-mode')); root.outerHTML=(f==='__progress__'&&window.renderProgress)?window.renderProgress():window.renderHome(); window.__afterSpecial(f); return; }
         var b=e.target.closest?e.target.closest('[data-act]'):null; if(b){ var a=b.getAttribute('data-act'); if(a==='review')navClick('review.html'); }
       });
     } else {

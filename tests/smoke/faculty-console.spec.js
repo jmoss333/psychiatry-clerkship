@@ -1835,7 +1835,8 @@ test.describe.serial('faculty unified attestation workspace', () => {
     const externalTool = await externalPromise;
     await expect(externalTool).toHaveURL(`${MS3_URL}/tools/mse.html`);
     await externalTool.close();
-    await fullPage.locator('.navitem[data-f="__home__"]').click();
+    // The study-export surface lives on the Progress view since the Today/Progress split.
+    await fullPage.locator('.navitem[data-f="__progress__"]').click();
     await expect(fullPage.locator('[data-act="studyexport"]')).toBeVisible();
     const [download] = await Promise.all([
       fullPage.waitForEvent('download', { timeout: 5_000 }),
