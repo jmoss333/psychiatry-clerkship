@@ -365,8 +365,8 @@ class RepositoryProducerTests(unittest.TestCase):
     def test_current_ms3_and_resident_source_inventories_validate_offline(self) -> None:
         diagnostics, documents = governance.validate_repository(ROOT)
 
-        self.assertEqual(len(documents["ms3"]["items"]), 22)
-        self.assertEqual(len(documents["resident"]["items"]), 24)
+        self.assertEqual(len(documents["ms3"]["items"]), 23)
+        self.assertEqual(len(documents["resident"]["items"]), 25)
         self.assertEqual(len(diagnostics), 1)
         self.assertTrue(diagnostics[0].startswith("legacy metadata warning: "))
 
@@ -406,7 +406,7 @@ class RepositoryProducerTests(unittest.TestCase):
         with patch.object(governance, "_tool_entries", return_value=entries[:-1]):
             with self.assertRaisesRegex(
                 governance.GovernanceError,
-                r"tool-governance.json: ms3 item count must equal 22",
+                r"tool-governance.json: ms3 item count must equal 23",
             ):
                 governance.build_governance_document(
                     ROOT, "ms3", enforce_expected_count=True

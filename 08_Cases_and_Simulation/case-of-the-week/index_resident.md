@@ -8,6 +8,7 @@
 
 **This term's line-up (most recent first):**
 
+- **Panic Disorder — Differential Precision & Pharmacologic Optimization** (Aug 10) — the pseudopheochromocytoma phenotype, benzodiazepine interdose rebound as an iatrogenic driver, and reconciling the Cochrane and BMJ network meta-analyses.
 - **Lithium — Monitoring, Toxicity & Interactions** (Aug 3) — two-compartment kinetics and post-dialysis rebound, SILENT, nephrogenic DI vs. lithium nephropathy, and preconception counselling with effect sizes.
 - **Opioid Use Disorder — Intoxication, Withdrawal & MOUD** (Jul 27) — buprenorphine-precipitated withdrawal in the fentanyl era, low-dose initiation, acute pain on MOUD, and reading X:BOT.
 - **Alcohol Withdrawal & Delirium Tremens** (Jul 26) — GABA-A remodeling and kindling, benzodiazepine-resistant withdrawal, and the phenobarbital evidence.

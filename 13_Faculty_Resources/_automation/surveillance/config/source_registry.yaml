@@ -38,20 +38,33 @@ sources:
     watch_for: ["boxed warning", "contraindication", "REMS", "withdrawal", "recall"]
     affects_hint: ["05_Psychopharmacology/**"]
     verified: true
-    notes: Highest patient-safety yield. Pair with drug-label checks for teaching meds. Live HEAD/GET recheck returned 200 on 2026-07-08; July 6 404 treated as transient/stale.
+    notes: >-
+      Highest patient-safety yield. Pair with drug-label checks for teaching meds.
+      2026-08-11 (#266/#267): fda.gov now returns 404 to non-browser user agents (plain
+      curl/lychee/urllib get 404; a browser UA gets 200 — verified both ways). The July 6
+      "transient" 404 was this block starting. URL itself is correct and live in browsers.
+      Treat FDA 404s as suspected UA-blocks: re-verify with a browser UA (or Apify) before
+      filing broken-link or content-removed findings. Same family as the SAMHSA 403 note.
 
   - id: clozapine-rems
-    name: FDA Clozapine Safety / REMS Removed
+    name: FDA Clozapine Safety / REMS Removed (DSC PDF)
     job: guideline-surveillance
-    url: https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine
-    type: html
+    url: https://www.fda.gov/media/188418/download
+    type: pdf
     modality: full_text
     severity_default: P1
     cadence: monthly
     watch_for: ["REMS", "ANC", "neutropenia", "Medication Guide", "prescribing information", "monitor"]
     affects_hint: ["05_Psychopharmacology/Protocol_Library/**", "03_Core_Topics/Psychosis/**"]
     verified: true
-    notes: FDA removed the clozapine REMS effective 2025-06-13. Prescribers/pharmacies/patients no longer participate in the REMS or report ANC results to REMS before dispensing; ANC monitoring remains recommended per prescribing information.
+    notes: >-
+      FDA removed the clozapine REMS effective 2025-06-13; ANC monitoring remains recommended
+      per prescribing information. 2026-08-11 investigation (#282): the HTML communication page
+      was restructured into a stub whose full text now lives in the DSC PDF (updated 08-27-2025)
+      — the all-lines-removed diff was that restructure, not a guidance change; content
+      re-verified unchanged against the PDF and the curriculum confirmed current. Monitor the
+      PDF for durable text-diff surveillance (same pattern as spravato-rems). The old HTML URL
+      also 404s to non-browser user agents (see fda-drug-safety note).
 
   - id: spravato-rems
     name: Spravato (esketamine) REMS

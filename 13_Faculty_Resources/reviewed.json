@@ -1,4 +1,9 @@
 {
+  "interaction-cards.html": {
+    "status": "pending",
+    "at": "2026-08-04",
+    "by": "Joshua Moss, MD"
+  },
   "cotw_20260803_lithium_ms3.md": {
     "status": "pending",
     "at": "2026-08-03",
@@ -171,7 +176,7 @@
   },
   "t_psychosis.md": {
     "status": "reviewed",
-    "at": "2026-07-04",
+    "at": "2026-08-11",
     "by": "Joshua Moss, MD"
   },
   "t_anxiety.md": {
@@ -306,7 +311,7 @@
   },
   "psychopharm_primer.md": {
     "status": "reviewed",
-    "at": "2026-07-04",
+    "at": "2026-08-11",
     "by": "Joshua Moss, MD"
   },
   "pg_interview.md": {
@@ -426,7 +431,7 @@
   },
   "rounds_questions.md": {
     "status": "reviewed",
-    "at": "2026-07-03",
+    "at": "2026-08-11",
     "by": "Joshua Moss, MD"
   },
   "omm_resources.md": {
@@ -582,5 +587,15 @@
     "at": "2026-07-12",
     "by": "Joshua Moss, MD",
     "note": "Awaiting faculty attestation. Navigation/download page for the Anki decks; the cards themselves are extracted only from already-attested content (no AI-generated cards). Ships watermarked until attested via the faculty console."
+  },
+  "cotw_20260810_panic_ms3.md": {
+    "status": "pending",
+    "at": "2026-08-10",
+    "by": "Joshua Moss, MD"
+  },
+  "cotw_20260810_panic_res.md": {
+    "status": "pending",
+    "at": "2026-08-10",
+    "by": "Joshua Moss, MD"
   }
 }

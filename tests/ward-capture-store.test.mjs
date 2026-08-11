@@ -180,7 +180,9 @@ test('T12b: the triage card degrades explicitly when the search index is unavail
 test('the search-index fetch re-renders home, so the degraded state cannot stick', () => {
   const fetchLine = shell.split('\n').find((l) => l.includes("fetch('search-index.json')"));
   assert.ok(fetchLine, 'search-index fetch still present');
-  assert.match(fetchLine, /capHomeRefresh\(\)/,
+  // specialRefresh() is the dual-root successor of capHomeRefresh() (Today/Progress split) —
+  // same contract: re-render the live special view so the degraded triage state corrects.
+  assert.match(fetchLine, /specialRefresh\(\)/,
     'SI===null also means "not yet resolved" — without this the triage card paints its degraded '
     + 'state on every cold load and never corrects');
 });
