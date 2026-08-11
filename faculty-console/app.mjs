@@ -1330,14 +1330,19 @@ export function startFacultyConsole({
     ]);
   }
 
-  function currentAttestationEligibility(item, assessment, dirty) {
+  function currentAttestationEligibility(item, assessment, dirty, { assumeHumanChecks = false } = {}) {
+    // assumeHumanChecks answers "would this be eligible if the reviewer ticked
+    // the boxes?" — the gate for the one-click action. Every other precondition
+    // still applies (preview ready, revision reviewed, warnings acknowledged);
+    // only the three human assertions are presumed, and the button states them.
+    const assume = value => (assumeHumanChecks ? true : value);
     return deriveAttestationEligibility({
       item,
       assessment,
       dirty,
       previewStatus: state.preview?.status,
       retryAttempted: (state.preview?.attempt || 0) > 1,
-      completeItemReviewed: state.reviewChecks.completeItemReviewed,
+      completeItemReviewed: assume(state.reviewChecks.completeItemReviewed),
       liveReviewed: state.reviewChecks.liveReviewed,
       separateTabReviewed: state.externalReviewOpenedKey === item.key
         && state.reviewChecks.separateTabReviewed,
@@ -1346,10 +1351,33 @@ export function startFacultyConsole({
       warningAcks: state.warningAcks,
       confirmations: state.confirmations,
       contentChecks: {
-        accuracy: state.reviewChecks.accuracy,
-        interactions: state.reviewChecks.interactions,
+        accuracy: assume(state.reviewChecks.accuracy),
+        interactions: assume(state.reviewChecks.interactions),
       },
     });
+  }
+
+  /**
+   * One click instead of four, for pages and tools.
+   *
+   * The three checkboxes ARE the attestation record, so collapsing them must not
+   * mean asserting less: the button names all three, and the same three flags
+   * are what commits. Offered only when the learner surface actually rendered
+   * (`preview.status === 'ready'`) — if the preview failed, the granular path
+   * stands, because "I reviewed this item in the separate tab" is not something
+   * a button press can honestly claim on the reviewer's behalf.
+   */
+  async function attestContentInOneClick(item) {
+    state.reviewChecks.completeItemReviewed = true;
+    state.reviewChecks.accuracy = true;
+    state.reviewChecks.interactions = true;
+    await attestContentItem(item);
+  }
+
+  function oneClickAvailable(item) {
+    return item.type !== 'question'
+      && item.completion !== 'complete'
+      && state.preview?.status === 'ready';
   }
 
   function renderQuestionResolution(assessment, disabled) {
@@ -1422,6 +1450,10 @@ export function startFacultyConsole({
     const blocked = question && (dirty || assessment?.gate === 'blocked' || item.savedStatus !== 'draft');
     const reviewComplete = reviewPathComplete(item);
     const eligibility = currentAttestationEligibility(item, assessment, dirty);
+    const oneClick = oneClickAvailable(item);
+    const oneClickEligibility = oneClick
+      ? currentAttestationEligibility(item, assessment, dirty, { assumeHumanChecks: true })
+      : eligibility;
     const currentStep = dirty
       ? 'review'
       : item.completion === 'complete'
@@ -1472,6 +1504,9 @@ export function startFacultyConsole({
         question ? renderConfirmations(blocked || state.pending || !reviewComplete) : el('p', { class: 'muted' }, [
           item.completion === 'complete'
             ? 'This item is recorded as reviewed. Reopen it only when another review is needed.'
+            : oneClick
+            ? 'One click records all three confirmations above and moves to the next item. '
+              + 'Tick them individually instead if you want to record them one at a time.'
             : reviewComplete
             ? 'The learner surface review is recorded. Complete both content checks to continue.'
             : 'Record the learner surface review before confirming this item.',
@@ -1488,9 +1523,13 @@ export function startFacultyConsole({
           id: 'attest-current-item',
           class: 'primary rail-action',
           type: 'button',
-          disabled: state.pending || !eligibility.eligible,
-          onClick: () => void attestContentItem(item),
-        }, [`Attest this ${item.type}`]),
+          // The label carries the assertions, so one press still means all three.
+          'aria-keyshortcuts': oneClick ? 'a' : null,
+          disabled: state.pending || !(oneClick ? oneClickEligibility.eligible : eligibility.eligible),
+          onClick: () => void (oneClick ? attestContentInOneClick(item) : attestContentItem(item)),
+        }, [oneClick
+          ? `Attest this ${item.type} — reviewed · accurate for MS3 · links tested`
+          : `Attest this ${item.type}`]),
       ]),
     ]);
   }
@@ -2793,6 +2832,14 @@ export function startFacultyConsole({
       resetApprovalInputs();
       refreshPreviewChromeAndRail('content-action-result');
       const next = document.getElementById('next-review-item');
+      // Auto-advance keeps a long queue flowing: one click attests and lands on
+      // the next item. Reuses the Next button rather than re-deriving the queue
+      // order, so the two can never disagree.
+      // Deliberately NOT auto-advancing. The attested item is held so its
+      // confirmation and commit link stay on screen — that receipt is the only
+      // proof the write landed, and skipping past it to save one keystroke
+      // trades away the thing that made a month-long silent failure possible.
+      // Next is focused, so advancing is one Enter.
       if (snapshot.reviewed && next && !next.disabled) next.focus();
       else document.getElementById('content-action-result')?.focus();
       announce(state.contentMessage);
@@ -3100,7 +3147,21 @@ export function startFacultyConsole({
       if (shortcutCanSaveQuestion()) saveCurrentDraft();
       else if (hasUnsavedChanges()) announce('Open Edit question to save this draft.');
       else announce('No unsaved question changes to save.');
+      return;
     }
+
+    // `A` attests the current page or tool. Only fires for the one-click
+    // variant, which is the only button whose label states what is being
+    // asserted — a bare keypress must never stand in for an unstated claim.
+    if (event.key.toLowerCase() !== 'a'
+      || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+    const target = event.target;
+    const tag = typeof target?.tagName === 'string' ? target.tagName.toLowerCase() : '';
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) return;
+    const button = document.getElementById('attest-current-item');
+    if (!button || button.disabled || button.getAttribute('aria-keyshortcuts') !== 'a') return;
+    event.preventDefault();
+    button.click();
   });
 
   if (getKey()) void load();
