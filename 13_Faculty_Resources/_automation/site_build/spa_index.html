@@ -1767,10 +1767,17 @@
        score of a perfect record clears 70 anyway, so the clause only rescues tiny-n perfection. */
     return SHELF_ORDER.map(function(c){ var a=acc[c]; var n=a.total; var score=null; if(n){ score=Math.round(100*((a.correct+1.5)/(n+3))); score=Math.max(0,score-Math.min(15,a.lapses*3)); } return {c:c,label:SHELF_LABEL[c],score:score,n:n,miss:Math.max(0,a.total-a.correct),conf:(n===0?'none':(n<5?'low':'solid'))}; });
   }
+  /* Retired bank items, BUILD-INJECTED from question_bank.json (this source literal stays
+     an empty list; build_deploy.py hard-fails if the needle is missing). Lets the shell's
+     calibration counts skip records for since-retired items — closing the parity gap with
+     question-bank-practice.html's certWrongItems(), which filters through activeItems().
+     The resident shell inherits the injected list (it rebrands the MS3-built index.html). */
+  var RETIRED_QB_IDS=[];
+  function isRetiredQb(id){ return RETIRED_QB_IDS.indexOf(id)>=0; }
   /* confidence calibration (derived): how accurate are answers at each stated confidence? */
   function calibrationSummary(){
     var lv={guess:{n:0,correct:0},likely:{n:0,correct:0},certain:{n:0,correct:0}}, certWrong=0, total=0;
-    try{ var qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}'); Object.keys(qb).forEach(function(id){ var r=qb[id]; if(!r||!r.confidence||!lv[r.confidence])return; total++; lv[r.confidence].n++; if(r.correct)lv[r.confidence].correct++; if(r.confidence==='certain'&&!r.correct)certWrong++; }); }catch(_){ }
+    try{ var qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}'); Object.keys(qb).forEach(function(id){ var r=qb[id]; if(isRetiredQb(id))return; if(!r||!r.confidence||!lv[r.confidence])return; total++; lv[r.confidence].n++; if(r.correct)lv[r.confidence].correct++; if(r.confidence==='certain'&&!r.correct)certWrong++; }); }catch(_){ }
     return {lv:lv,certWrong:certWrong,total:total};
   }
   function safeLS(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(_){ return null; } }
@@ -1802,10 +1809,9 @@
      back to calibrationSummary() unchanged — see the caller. Counts here read the FULL
      history ledger (calibRead()), not the single-record-per-item cw_qb_v1 snapshot, EXCEPT
      for the confidently-wrong count, which intentionally reads cw_qb_v1 — same predicate as
-     question-bank-practice.html's certWrongItems() (certWrong===true). Counts can differ
-     slightly when an item is later retired: certWrongItems() additionally filters through
-     activeItems(), which this shell has no bank metadata to replicate — parity plumbing is a
-     follow-up. */
+     question-bank-practice.html's certWrongItems() (certWrong===true). Retired-item parity
+     with certWrongItems() (which filters through activeItems()) is closed via the
+     build-injected RETIRED_QB_IDS — both counters skip since-retired records. */
   function renderCalibPanel(){
     var ledger=(typeof calibRead==='function')?calibRead():{qb:[],rev:[]};
     var qbEvents=ledger.qb||[];
@@ -1820,7 +1826,7 @@
     if(barsHtml){ h+='<div class="hm-bars">'+barsHtml+'</div>'; }
     else{ h+='<div class="sub" style="margin:0 0 8px">Not enough attempts yet at any one confidence level to show bars — keep practicing.</div>'; }
     var qbv1={}; try{ qbv1=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}')||{}; }catch(_){ qbv1={}; }
-    var certWrong=0; Object.keys(qbv1).forEach(function(id){ var r=qbv1[id]; if(r&&r.certWrong===true)certWrong++; });
+    var certWrong=0; Object.keys(qbv1).forEach(function(id){ var r=qbv1[id]; if(isRetiredQb(id))return; if(r&&r.certWrong===true)certWrong++; });
     if(certWrong>0){
       h+='<div class="sub" style="margin:8px 0 0">You were <strong>confidently wrong</strong> on '+certWrong+' item'+(certWrong===1?'':'s')+' — those are the highest-yield to revisit.</div>';
       h+='<button class="hm-li" data-f="question-bank-practice.html" style="border-bottom:none"><span class="t">Practice your confidently-wrong items</span><span class="sec">Practice →</span></button>';

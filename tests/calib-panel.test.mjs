@@ -45,6 +45,10 @@ function memStorage(initial) {
 
 // eslint-disable-next-line no-new-func
 const build = new Function('localStorage', 'calibRead', `
+  /* Retired-parity stub: in the shell, RETIRED_QB_IDS is build-injected and
+     isRetiredQb() filters both calibration counters. This suite's fixtures use no
+     retired ids, so the stub is a constant false. */
+  function isRetiredQb(){ return false; }
   ${panelCode}
   return renderCalibPanel;
 `);

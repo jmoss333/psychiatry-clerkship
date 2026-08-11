@@ -324,6 +324,26 @@ function certWrongItems(){
   });
 }
 
+/* Due-first serving. This tool has WRITTEN QB# cards to cw_srs_v1 since SRS seeding
+   landed, but nothing ever read the schedule — Daily Review serves TOPIC# cards only
+   (the false "resurfaces in Daily Review" copy was corrected in #344). This makes the
+   schedule real: cards that have come due return at the FRONT of the next practice
+   session here, most-overdue first. Routed through activeItems(), so a since-retired
+   item can never resurface no matter what its card says. */
+function dueQbItems(){
+  var s = srsLoad();
+  if(!s || !s.cards) return [];
+  var now = Date.now(), due = {};
+  Object.keys(s.cards).forEach(function(id){
+    if(id.indexOf('QB#') !== 0) return;
+    var c = s.cards[id];
+    if(c && typeof c.due === 'number' && c.due <= now) due[id.slice(3)] = c.due;
+  });
+  return activeItems()
+    .filter(function(it){ return Object.prototype.hasOwnProperty.call(due, it.id); })
+    .sort(function(a, b){ return due[a.id] - due[b.id]; });
+}
+
 /* ---- rendering helpers -------------------------------------------------------- */
 function diffDots(n){
   var h='<div class="diff-dots" title="Difficulty '+n+'/3" aria-label="Difficulty '+n+' of 3">';
@@ -343,6 +363,7 @@ function renderSetup(){
   var draftCount = items.filter(function(it){ return it.status!=='attested'; }).length;
   var missedCount = missedItems().length;
   var certWrongCount = certWrongItems().length;
+  var dueCount = dueQbItems().length;
   return '<div class="setup">'
     +'<h2>Practice bank</h2>'
     +'<p class="sub">'+total+' items across 12 categories. Select filters, then start. '
@@ -359,6 +380,7 @@ function renderSetup(){
     +'<div class="focus-modes-lbl">Focus modes</div>'
     +'<p class="focus-modes-sub">Jump straight into a targeted set, skipping the filters below.</p>'
     +'<div class="focus-btns">'
+    +'<button class="btn btn-ghost" id="dueBtn"'+(dueCount?'':' disabled')+'>Due for review ('+dueCount+')</button>'
     +'<button class="btn btn-ghost" id="redoMissesBtn"'+(missedCount?'':' disabled')+'>Redo my misses ('+missedCount+')</button>'
     +'<button class="btn btn-ghost" id="certWrongBtn"'+(certWrongCount?'':' disabled')+'>Confidently wrong ('+certWrongCount+')</button>'
     +'</div>'
@@ -482,7 +504,7 @@ function getFeedbackHtml(item, selectedKey, tier2Key, confidence, correct, twoTi
   /* shaky reason feedback */
   if(twoTierResult==='shaky'){
     var correctT2 = item.tier2.options.filter(function(o){return o.c;})[0];
-    h += '<div class="fb-shaky">Right answer, wrong reason — your SRS interval is capped at <em>Hard</em> and this item is flagged for another pass here. The correct rationale: <strong>'+esc(correctT2?correctT2.t:'—')+'</strong></div>';
+    h += '<div class="fb-shaky">Right answer, wrong reason — your SRS interval is capped at <em>Hard</em>, so this item comes due again soon and will serve at the front of a future session here. The correct rationale: <strong>'+esc(correctT2?correctT2.t:'—')+'</strong></div>';
     h += '<div class="fb-block"><span class="fb-lbl">Why that rationale</span>'+esc(item.tier2.why)+'</div>';
   }
   /* standard why / pearl / evidence */
@@ -633,6 +655,7 @@ function bindSetup(){
   var startBtn=document.getElementById('startBtn');
   var redoMissesBtn=document.getElementById('redoMissesBtn');
   var certWrongBtn=document.getElementById('certWrongBtn');
+  var dueBtn=document.getElementById('dueBtn');
   function updateCount(){
     var cat=catSel?catSel.value:'all', diff=diffSel?diffSel.value:'all';
     var n = activeItems().filter(function(it){
@@ -661,11 +684,30 @@ function bindSetup(){
   if(certWrongBtn) certWrongBtn.addEventListener('click',function(){
     startSessionWithQueue(certWrongItems());
   });
+  /* Deliberately NOT startSessionWithQueue: due cards keep most-overdue-first order
+     rather than being shuffled — the schedule is the point of this focus mode. */
+  if(dueBtn) dueBtn.addEventListener('click',function(){
+    beginSession(dueQbItems());
+  });
 }
 
 function startSession(catFilter, diffFilter, sizeLimit){
-  var queue = buildQueue(activeItems(), catFilter, diffFilter, sizeLimit);
-  beginSession(queue);
+  /* Due cards matching the same filters serve FIRST (most-overdue first, unshuffled —
+     priority order is the point); the shuffled fresh selection fills the remainder of
+     the size limit. A due card never appears twice in one queue. */
+  var due = dueQbItems().filter(function(it){
+    if(catFilter!=='all' && it.category!==catFilter) return false;
+    if(diffFilter!=='all' && String(it.difficulty)!==diffFilter) return false;
+    return true;
+  });
+  var cap = (sizeLimit==='all') ? Infinity : (parseInt(sizeLimit,10)||20);
+  due = due.slice(0, cap===Infinity ? due.length : cap);
+  var dueIds = {};
+  due.forEach(function(it){ dueIds[it.id]=1; });
+  var rest = buildQueue(activeItems().filter(function(it){ return !dueIds[it.id]; }),
+                        catFilter, diffFilter, 'all');
+  if(cap!==Infinity) rest = rest.slice(0, Math.max(0, cap-due.length));
+  beginSession(due.concat(rest));
 }
 
 /* Focus-mode entry point: starts the exact queue passed in (shuffled), bypassing the
