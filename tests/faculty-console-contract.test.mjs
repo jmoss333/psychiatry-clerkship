@@ -570,7 +570,12 @@ test('creates one semantic queue, workspace, and persistent field labels', () =>
   assert.doesNotMatch(appSource, /role:\s*'tablist'/);
   assert.doesNotMatch(appSource, /function renderTabNavigation|function renderBatchSummary|function renderBatchConfirmation/);
   assert.doesNotMatch(appSource, /Attest selected green drafts|Mark reviewed & next|queue checkbox|green batch/i);
-  assert.doesNotMatch(appSource, /\bassessBatch\b|\blegacyBatchEligible\b|\breviewedInSession\b|\bbatchConfirmation\b/);
+  // assessBatch left this ban 2026-08-11: the accepted batch design (2026-08-04 spec,
+  // section B) has the client surface the server's own batch verdict in the tray. The
+  // remaining identifiers still pin OUT the rejected "attest all green" design.
+  assert.doesNotMatch(appSource, /\blegacyBatchEligible\b|\breviewedInSession\b|\bbatchConfirmation\b/);
+  assert.match(appSource, /\bderiveBatchEligibility\b/);
+  assert.match(appSource, /\bassessBatch\b/);
   assert.doesNotMatch(appSource, /function attestWarning\b|function attestBatch\b|function sameAttestationEntries\b/);
   assert.doesNotMatch(appSource, /\bstate\.batch\b|function selectedBatchQuestions\b|function safeBatchAssessment\b|function openBatchConfirmation\b/);
 });
@@ -1057,11 +1062,13 @@ test('the exact saved-revision receipt is explicit, Draft-only, and revoked by e
   assert.equal(document.getElementById('review-saved-revision').disabled, false);
   await setChecked(document, 'review-saved-revision');
   assert.equal(controller.state.reviewedRevisions.get(id), revision);
+  // Batch design (2026-08-04, section A): navigating to ANOTHER item no longer revokes
+  // the receipt — it is anchored to the exact saved revision and self-invalidates the
+  // moment that revision moves. Edit revocation is pinned above; save/reload revocation
+  // below. Navigation persistence is what lets a reviewer accumulate a batch.
   await setValue(document, 'review-item-selector', 'question:qb_moo_903', 'change');
-  assert.equal(controller.state.reviewedRevisions.has(id), false);
+  assert.equal(controller.state.reviewedRevisions.get(id), revision);
   await setValue(document, 'review-item-selector', 'question:qb_moo_902', 'change');
-  await document.getElementById('view-draft').dispatch('click');
-  await setChecked(document, 'review-saved-revision');
   assert.equal(controller.state.reviewedRevisions.get(id), revision);
   current = { ...current, revision: testRevision('different-reloaded-revision') };
   assert.equal(await controller.load({ silent: true }), true);
@@ -1258,6 +1265,14 @@ test('preview iframe load, timeout, and error become honest focusable fallback s
     /did not load reliably, or it changed or reloaded after verification/);
   assert.equal(document.getElementById('preview-status').getAttribute('tabindex'), '-1');
   assert.equal(document.activeElement?.getAttribute('id'), 'preview-status');
+  // Step D (2026-08-04 batch design, carried from #310): the timeout fired while Edit
+  // was active, so the failure is recorded and announced but the reviewer's view is
+  // LEFT ALONE — no forced flip back to Live, no acknowledgement wipe mid-work. The
+  // protocol_unavailable stage below runs from the Live view and keeps proving that the
+  // reset still happens when nobody is mid-edit.
+  assert.equal(document.getElementById('question-view-live').getAttribute('hidden'), '');
+  assert.equal(document.getElementById('question-view-edit').getAttribute('hidden'), null);
+  await document.getElementById('view-live').dispatch('click');
   assert.equal(document.getElementById('question-view-live').getAttribute('hidden'), null);
   assert.equal(document.getElementById('ack-live-unavailable').disabled, true);
 
