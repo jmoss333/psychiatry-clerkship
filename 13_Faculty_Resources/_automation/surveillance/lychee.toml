@@ -4,6 +4,12 @@
 # trees are excluded — they are not student-facing curriculum.
 scheme = ["https", "http"]
 accept = [200, 201, 202, 203, 204, 206, 401, 403, 429, 503]
+# fda.gov (and friends) return 404 — not 403 — to obvious bot user agents, which files
+# false broken-link findings against real, browser-reachable pages (#265/#266/#267,
+# 2026-07-27). A mainstream browser UA gets 200 from the same URLs (verified 2026-08-11
+# with curl both ways). Keep this in sync with reality if lychee runs start 404ing on
+# pages that load fine in a browser.
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 exclude_path = [
   "00_START_HERE",
   "OPENEVIDENCE RAW FILES TO REVIEW",

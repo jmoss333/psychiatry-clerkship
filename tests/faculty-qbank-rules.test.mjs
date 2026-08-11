@@ -584,23 +584,24 @@ test('malformed members cannot shrink a four-item batch below the balance thresh
   assert.deepEqual(codes(result.issues), ['batch.answer_key_balance']);
 });
 
-test('current repository bank has 189 blocker-free active items, mostly-A draft cohort plus one demoted attested item', () => {
+test('current repository bank has 189 blocker-free active items with a balanced draft answer-key spread', () => {
   const bank = JSON.parse(fs.readFileSync(path.join(repo, 'question_bank.json'), 'utf8'));
   const manifest = JSON.parse(fs.readFileSync(path.join(repo, '13_Faculty_Resources/_automation/site_build/site_manifest.json'), 'utf8'));
   const manifestPages = (manifest.md || []).map(([, slug]) => slug);
   const result = assessBank(bank.items, { manifestPages, activeItems: bank.items });
 
-  // qb_pha_011 was demoted from attested to draft (clozapine ANC-monitoring
-  // wording correction, post-2025 REMS elimination -- see PR #280) -- its
-  // correct answer is B, not A, so it's a legitimate exception to the
-  // "all-A draft cohort" pattern rather than a fresh AI-drafted item with
-  // an unretouched key.
+  // The AI-drafted cohort originally carried its correct answer at key A on 46 of 47
+  // active drafts, which tripped batch.answer_key_balance for every cohort of 4+ and
+  // biased position-learners. The 2026-08-11 re-key pass (salvaged from the July 10
+  // .codex/36da working tree, reconciled against retirements that landed since) spreads
+  // the drafts' correct keys near-evenly; qb_pha_011 (demoted attested->draft in
+  // PR #280, keyed B) accounts for the +1 on B relative to the transplanted 46.
   assert.equal(result.counts.total, 189);
   assert.equal(result.counts.draft, 47);
   assert.equal(result.counts.attested, 142);
   assert.equal(Object.keys(result.byId).length, 189);
   assert.equal(Object.values(result.byId).flatMap(entry => entry.blockers).length, 0);
-  assert.deepEqual(result.answerKeys, { A: 46, B: 1, C: 0, D: 0 });
+  assert.deepEqual(result.answerKeys, { A: 12, B: 12, C: 11, D: 12 });
   for (const item of bank.items.filter(entry => entry.retired)) {
     assert.equal(Object.hasOwn(result.byId, item.id), false);
   }

@@ -403,17 +403,23 @@ function renderConfidence(disabled){
 }
 
 function renderOptions(item, state){
-  /* state: 'active'|'locked' — locked after answer */
-  var displayOrder = shuffle(item.options.slice());
-  /* store display order on session for tier-reveal */
+  /* state: 'active'|'locked' — locked after answer.
+     Letters come from DISPLAY position, not the authored key: 46 of 47 draft items are
+     keyed A, so rendering opt.key after the shuffle both scrambled the letter sequence
+     and let "A." follow the correct answer around the screen. data-key still carries the
+     authored key for answer logic. A locked re-render reuses the session's stored order —
+     reshuffling at lock would visibly jump the options mid-question. */
+  var displayOrder = (state==='locked' && SESSION.displayOrder && SESSION.displayOrder.length)
+    ? SESSION.displayOrder : shuffle(item.options.slice());
   SESSION.displayOrder = displayOrder;
   var h = '<div class="opts" id="optsList">';
-  displayOrder.forEach(function(opt){
+  displayOrder.forEach(function(opt, i){
+    var letter = String.fromCharCode(65+i);
     var cls = 'opt';
     if(state==='locked') cls += ' locked';
     h += '<button class="'+cls+'" data-key="'+esc(opt.key)+'" '
-       + (state==='locked'?'disabled ':'')+' aria-label="Option '+esc(opt.key)+': '+esc(opt.t)+'">'
-       + '<span class="opt-key">'+esc(opt.key)+'.</span>'+esc(opt.t)
+       + (state==='locked'?'disabled ':'')+' aria-label="Option '+letter+': '+esc(opt.t)+'">'
+       + '<span class="opt-key">'+letter+'.</span>'+esc(opt.t)
        + '</button>';
   });
   h += '</div>';
@@ -429,9 +435,10 @@ function renderTier2(item){
     +'<p class="tier2-q">'+esc(t2.q)+'</p>'
     +'<p class="tier2-note">Select the best rationale — then see your full feedback.</p>'
     +'<div class="opts" id="tier2Opts">';
-  displayOrder.forEach(function(opt){
-    h += '<button class="opt" data-tier2key="'+esc(opt.key)+'" aria-label="Rationale '+esc(opt.key)+': '+esc(opt.t)+'">'
-       + '<span class="opt-key">'+esc(opt.key)+'.</span>'+esc(opt.t)+'</button>';
+  displayOrder.forEach(function(opt, i){
+    var letter = String.fromCharCode(65+i);
+    h += '<button class="opt" data-tier2key="'+esc(opt.key)+'" aria-label="Rationale '+letter+': '+esc(opt.t)+'">'
+       + '<span class="opt-key">'+letter+'.</span>'+esc(opt.t)+'</button>';
   });
   h += '</div></div>';
   return h;
@@ -462,17 +469,20 @@ function getFeedbackHtml(item, selectedKey, tier2Key, confidence, correct, twoTi
          +'<div class="note">'+esc(wrongOpt.trap.note)+'</div>'
          +'</div>';
     }
-    /* reveal correct option */
+    /* reveal correct option — letter must match what the learner SAW (display position),
+       not the authored key */
     var correctOpt = item.options.filter(function(o){return o.c;})[0];
     if(correctOpt){
+      var cIdx = (SESSION.displayOrder||[]).indexOf(correctOpt);
+      var cLetter = cIdx>=0 ? String.fromCharCode(65+cIdx) : correctOpt.key;
       h += '<div class="fb-block"><span class="fb-lbl">Correct answer</span>'
-         + '<strong>'+esc(correctOpt.key)+'. </strong>'+esc(correctOpt.t)+'</div>';
+         + '<strong>'+esc(cLetter)+'. </strong>'+esc(correctOpt.t)+'</div>';
     }
   }
   /* shaky reason feedback */
   if(twoTierResult==='shaky'){
     var correctT2 = item.tier2.options.filter(function(o){return o.c;})[0];
-    h += '<div class="fb-shaky">Right answer, wrong reason — your SRS interval is capped at <em>Hard</em> and this item resurfaces soon. The correct rationale: <strong>'+esc(correctT2?correctT2.t:'—')+'</strong></div>';
+    h += '<div class="fb-shaky">Right answer, wrong reason — your SRS interval is capped at <em>Hard</em> and this item is flagged for another pass here. The correct rationale: <strong>'+esc(correctT2?correctT2.t:'—')+'</strong></div>';
     h += '<div class="fb-block"><span class="fb-lbl">Why that rationale</span>'+esc(item.tier2.why)+'</div>';
   }
   /* standard why / pearl / evidence */
@@ -567,7 +577,7 @@ function renderSummary(){
        + '<strong>Calibration gap:</strong> You were certain '+certTotal+' time'+(certTotal!==1?'s':'')
        + ' but only '+certPct+'% accurate when certain. '
        + 'Miscalibration on the wards is more dangerous than ignorance — '
-       + 'those items resurface soon in Daily Review.</div>';
+       + 'replay your confidently-wrong items from this summary.</div>';
   }
   /* per-category calibration bars */
   var catKeys = Object.keys(byCat).filter(function(k){ return byCat[k].cert>=2; });

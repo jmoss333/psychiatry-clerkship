@@ -194,20 +194,28 @@ test('spa_index.html exportStudy forwards the calibration ledger via calibRead()
     'exportStudy must not reference the cw_calib_v1 literal directly — only calibRead() may');
 });
 
-test('spa_index.html renderHome swaps in renderCalibPanel() and falls back to calibrationSummary() only when it is empty', () => {
+test('spa_index.html renderProgress swaps in renderCalibPanel() and falls back to calibrationSummary() only when it is empty', () => {
   const startMarker = '/* ---- calib panel ---- */';
   const endMarker = '/* ---- end calib panel ---- */';
   assert.ok(spaSrc.includes(startMarker) && spaSrc.includes(endMarker),
     'calib-panel slice markers must both be present');
+  // The calibration card lives on the Progress view since the Today/Progress split —
+  // renderHome must NOT carry it (Today is the action half; analytics render on Progress).
+  const renderProgressMatch = spaSrc.match(/window\.renderProgress=function\(\)\{[\s\S]*?\n  \};/);
+  assert.ok(renderProgressMatch, 'window.renderProgress function not found');
+  const body = renderProgressMatch[0];
+  assert.match(body, /var calPanel=\(typeof renderCalibPanel==='function'\)\?renderCalibPanel\(\):''/,
+    'renderProgress must call renderCalibPanel() defensively (typeof guard)');
+  assert.match(body, /if\(calPanel\)\{ h\+=calPanel; \}/,
+    'renderProgress must use the panel output when non-empty');
+  assert.match(body, /else\{ var cal=calibrationSummary\(\);/,
+    'renderProgress must fall back to the legacy calibrationSummary() card when the panel is empty');
   const renderHomeMatch = spaSrc.match(/window\.renderHome=function\(\)\{[\s\S]*?\n  \};/);
   assert.ok(renderHomeMatch, 'window.renderHome function not found');
-  const body = renderHomeMatch[0];
-  assert.match(body, /var calPanel=\(typeof renderCalibPanel==='function'\)\?renderCalibPanel\(\):''/,
-    'renderHome must call renderCalibPanel() defensively (typeof guard)');
-  assert.match(body, /if\(calPanel\)\{ h\+=calPanel; \}/,
-    'renderHome must use the panel output when non-empty');
-  assert.match(body, /else\{ var cal=calibrationSummary\(\);/,
-    'renderHome must fall back to the legacy calibrationSummary() card when the panel is empty');
+  // Pin the swap-in CALL (var calPanel=...), not the bare identifier — a renderHome comment
+  // legitimately cites renderCalibPanel()'s docs and must not trip this.
+  assert.doesNotMatch(renderHomeMatch[0], /var calPanel=/,
+    'renderHome must not render the calibration panel — it moved to renderProgress');
 });
 
 // Every file this repo's build treats as shipped source (git-tracked .html/.js). Untracked

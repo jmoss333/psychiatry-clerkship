@@ -1,4 +1,5 @@
 import {
+  assessBatch,
   assessItem,
   CATEGORIES,
   COMPETENCIES,
@@ -12,6 +13,7 @@ import {
   buildPreviewRequest,
   createReviewToken,
   deriveAttestationEligibility,
+  deriveBatchEligibility,
   deriveReviewCounts,
   filterReviewItems,
   matchesPreviewStatus,
@@ -136,6 +138,7 @@ export function startFacultyConsole({
     pending: false,
     reviewerLabel: DEFAULT_REVIEWER,
     reviewedRevisions: new Map(),
+    batchSelection: new Set(),
     externalReviewOpenedKey: null,
     contentMessage: '',
     contentCommitUrl: null,
@@ -322,9 +325,18 @@ export function startFacultyConsole({
   function clearReviewAcknowledgements({
     clearApprovals = false,
     clearAllQuestions = false,
+    preserveQuestionReceipts = false,
   } = {}) {
     state.reviewChecks = emptyReviewChecks();
     state.externalReviewOpenedKey = null;
+    /* preserveQuestionReceipts: navigating BETWEEN items must not destroy saved-revision
+       review receipts — they are the per-item control the batch tray accumulates, each
+       one self-invalidating the moment its question's revision moves (2026-08-04 batch
+       design, section A). Reload and manifest-change paths keep their conservative wipes. */
+    if (preserveQuestionReceipts) {
+      if (clearApprovals) resetApprovalInputs();
+      return;
+    }
     if (clearAllQuestions) {
       state.reviewedRevisions.clear();
     } else {
@@ -411,8 +423,16 @@ export function startFacultyConsole({
     preview.timerId = scheduleTimeout(() => {
       if (state.preview !== preview || preview.status !== 'loading') return;
       preview.status = preview.frameLoaded ? 'protocol_unavailable' : 'frame_failure';
-      clearReviewAcknowledgements();
-      applyQuestionView('live');
+      /* Batch-design step D (carried from #310): a background preview failure must never
+         discard the reviewer's in-flight work. While the editor is dirty or the Edit view
+         is active, record and announce the failure but leave the view, the editor text,
+         and every recorded acknowledgement exactly where they are — eligibility already
+         blocks attestation behind retry/ack for a failed preview, so nothing is weakened. */
+      const midWork = state.dirtyFields.length > 0 || state.viewMode === 'edit';
+      if (!midWork) {
+        clearReviewAcknowledgements();
+        applyQuestionView('live');
+      }
       announce(preview.frameLoaded
         ? 'Preview protocol unavailable. Use Retry or the documented fallback.'
         : 'Network or embedded-preview failure. Use Retry or the documented fallback.');
@@ -426,7 +446,7 @@ export function startFacultyConsole({
     cancelPreviewTimer();
     clearReviewAcknowledgements({
       clearApprovals: true,
-      clearAllQuestions: true,
+      preserveQuestionReceipts: true,
     });
     state.selectedKey = null;
     state.completedHoldKey = null;
@@ -449,7 +469,7 @@ export function startFacultyConsole({
     cancelPreviewTimer();
     clearReviewAcknowledgements({
       clearApprovals: true,
-      clearAllQuestions: true,
+      preserveQuestionReceipts: true,
     });
     state.selectedKey = key;
     state.viewMode = 'live';
@@ -1330,14 +1350,19 @@ export function startFacultyConsole({
     ]);
   }
 
-  function currentAttestationEligibility(item, assessment, dirty) {
+  function currentAttestationEligibility(item, assessment, dirty, { assumeHumanChecks = false } = {}) {
+    // assumeHumanChecks answers "would this be eligible if the reviewer ticked
+    // the boxes?" — the gate for the one-click action. Every other precondition
+    // still applies (preview ready, revision reviewed, warnings acknowledged);
+    // only the three human assertions are presumed, and the button states them.
+    const assume = value => (assumeHumanChecks ? true : value);
     return deriveAttestationEligibility({
       item,
       assessment,
       dirty,
       previewStatus: state.preview?.status,
       retryAttempted: (state.preview?.attempt || 0) > 1,
-      completeItemReviewed: state.reviewChecks.completeItemReviewed,
+      completeItemReviewed: assume(state.reviewChecks.completeItemReviewed),
       liveReviewed: state.reviewChecks.liveReviewed,
       separateTabReviewed: state.externalReviewOpenedKey === item.key
         && state.reviewChecks.separateTabReviewed,
@@ -1346,10 +1371,33 @@ export function startFacultyConsole({
       warningAcks: state.warningAcks,
       confirmations: state.confirmations,
       contentChecks: {
-        accuracy: state.reviewChecks.accuracy,
-        interactions: state.reviewChecks.interactions,
+        accuracy: assume(state.reviewChecks.accuracy),
+        interactions: assume(state.reviewChecks.interactions),
       },
     });
+  }
+
+  /**
+   * One click instead of four, for pages and tools.
+   *
+   * The three checkboxes ARE the attestation record, so collapsing them must not
+   * mean asserting less: the button names all three, and the same three flags
+   * are what commits. Offered only when the learner surface actually rendered
+   * (`preview.status === 'ready'`) — if the preview failed, the granular path
+   * stands, because "I reviewed this item in the separate tab" is not something
+   * a button press can honestly claim on the reviewer's behalf.
+   */
+  async function attestContentInOneClick(item) {
+    state.reviewChecks.completeItemReviewed = true;
+    state.reviewChecks.accuracy = true;
+    state.reviewChecks.interactions = true;
+    await attestContentItem(item);
+  }
+
+  function oneClickAvailable(item) {
+    return item.type !== 'question'
+      && item.completion !== 'complete'
+      && state.preview?.status === 'ready';
   }
 
   function renderQuestionResolution(assessment, disabled) {
@@ -1422,6 +1470,10 @@ export function startFacultyConsole({
     const blocked = question && (dirty || assessment?.gate === 'blocked' || item.savedStatus !== 'draft');
     const reviewComplete = reviewPathComplete(item);
     const eligibility = currentAttestationEligibility(item, assessment, dirty);
+    const oneClick = oneClickAvailable(item);
+    const oneClickEligibility = oneClick
+      ? currentAttestationEligibility(item, assessment, dirty, { assumeHumanChecks: true })
+      : eligibility;
     const currentStep = dirty
       ? 'review'
       : item.completion === 'complete'
@@ -1472,6 +1524,9 @@ export function startFacultyConsole({
         question ? renderConfirmations(blocked || state.pending || !reviewComplete) : el('p', { class: 'muted' }, [
           item.completion === 'complete'
             ? 'This item is recorded as reviewed. Reopen it only when another review is needed.'
+            : oneClick
+            ? 'One click records all three confirmations above and moves to the next item. '
+              + 'Tick them individually instead if you want to record them one at a time.'
             : reviewComplete
             ? 'The learner surface review is recorded. Complete both content checks to continue.'
             : 'Record the learner surface review before confirming this item.',
@@ -1488,10 +1543,15 @@ export function startFacultyConsole({
           id: 'attest-current-item',
           class: 'primary rail-action',
           type: 'button',
-          disabled: state.pending || !eligibility.eligible,
-          onClick: () => void attestContentItem(item),
-        }, [`Attest this ${item.type}`]),
+          // The label carries the assertions, so one press still means all three.
+          'aria-keyshortcuts': oneClick ? 'a' : null,
+          disabled: state.pending || !(oneClick ? oneClickEligibility.eligible : eligibility.eligible),
+          onClick: () => void (oneClick ? attestContentInOneClick(item) : attestContentItem(item)),
+        }, [oneClick
+          ? `Attest this ${item.type} — reviewed · accurate for MS3 · links tested`
+          : `Attest this ${item.type}`]),
       ]),
+      question ? renderBatchTray() : null,
     ]);
   }
 
@@ -2793,6 +2853,14 @@ export function startFacultyConsole({
       resetApprovalInputs();
       refreshPreviewChromeAndRail('content-action-result');
       const next = document.getElementById('next-review-item');
+      // Auto-advance keeps a long queue flowing: one click attests and lands on
+      // the next item. Reuses the Next button rather than re-deriving the queue
+      // order, so the two can never disagree.
+      // Deliberately NOT auto-advancing. The attested item is held so its
+      // confirmation and commit link stay on screen — that receipt is the only
+      // proof the write landed, and skipping past it to save one keystroke
+      // trades away the thing that made a month-long silent failure possible.
+      // Next is focused, so advancing is one Enter.
       if (snapshot.reviewed && next && !next.disabled) next.focus();
       else document.getElementById('content-action-result')?.focus();
       announce(state.contentMessage);
@@ -3067,6 +3135,142 @@ export function startFacultyConsole({
     return attestEntries([entry], [current.id]);
   }
 
+  /* ---- Batch attestation (2026-08-04 design, sections A + B) ------------------------
+     The queue is a selector, not a row list, so multi-select takes the form of a TRAY:
+     a draft joins it only after the reviewer has opened it and recorded a review receipt
+     at its exact current revision (state.reviewedRevisions), and only while its gate is
+     'ready' — warnings force individual attestation (the server's
+     attest.warning_individual_only), blocked never attests. Eligibility is re-derived
+     from live state on every render, so any event that invalidates a receipt (save,
+     reload, revision change) silently drops the item from the tray — a stale receipt can
+     never sit quietly in a batch. */
+  function batchCandidateSurvey() {
+    const rows = [];
+    let awaitingReceipt = 0;
+    let warningHeld = 0;
+    for (const question of list(state.server?.qbank)) {
+      if (question?.status !== 'draft') continue;
+      let gate;
+      try {
+        gate = currentAssessment(question)?.gate;
+      } catch {
+        gate = undefined;
+      }
+      const verdict = deriveBatchEligibility(question, {
+        assessmentGate: gate,
+        reviewedRevision: state.reviewedRevisions.get(question.id),
+      });
+      if (verdict.eligible) rows.push(question);
+      else if (verdict.reasons.includes('batch.warning_individual_only')) warningHeld += 1;
+      else if (verdict.reasons.includes('batch.review_receipt_required')) awaitingReceipt += 1;
+    }
+    return { rows, awaitingReceipt, warningHeld };
+  }
+
+  async function attestSelection() {
+    const { rows } = batchCandidateSurvey();
+    const eligible = new Set(rows.map(question => question.id));
+    const ids = [...state.batchSelection].filter(id => eligible.has(id));
+    if (!ids.length) {
+      showQbankError('attest.batch_empty: Select at least one reviewed draft.');
+      return false;
+    }
+    const entries = ids.map(id => {
+      const question = findQuestion(id);
+      return {
+        id,
+        revision: question.revision,
+        reviewedRevision: state.reviewedRevisions.get(id),
+      };
+    });
+    const ok = await attestEntries(entries, ids);
+    // On conflict/failure the selection is retained on purpose (retry after reload);
+    // on success the attested ids leave the tray immediately.
+    if (ok) ids.forEach(id => state.batchSelection.delete(id));
+    return ok;
+  }
+
+  function toggleBatchMember(id, checked, focusId) {
+    if (checked) state.batchSelection.add(id);
+    else state.batchSelection.delete(id);
+    refreshPreviewChromeAndRail(focusId);
+  }
+
+  function renderBatchTray() {
+    const { rows, awaitingReceipt, warningHeld } = batchCandidateSurvey();
+    const eligibleIds = new Set(rows.map(question => question.id));
+    for (const id of [...state.batchSelection]) {
+      if (!eligibleIds.has(id)) state.batchSelection.delete(id);
+    }
+    if (!rows.length && !awaitingReceipt && !warningHeld) return null;
+    const selected = rows.filter(question => state.batchSelection.has(question.id));
+    const batchCheck = selected.length > 0 ? assessBatch(selected) : null;
+    const keySummary = batchCheck
+      ? Object.entries(batchCheck.answerKeys || {})
+        .filter(([, count]) => count > 0)
+        .map(([key, count]) => `${key}:${count}`)
+        .join(' ')
+      : '';
+    const categories = {};
+    for (const question of selected) {
+      const category = text(question.category) || 'uncategorized';
+      categories[category] = (categories[category] || 0) + 1;
+    }
+    const categorySummary = Object.entries(categories)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([category, count]) => `${category} ×${count}`)
+      .join(' · ');
+    const ready = confirmationsComplete();
+    return el('section', {
+      id: 'rail-step-batch',
+      class: 'rail-step batch-tray',
+      'aria-labelledby': 'batch-tray-title',
+    }, [
+      el('h3', { id: 'batch-tray-title' }, ['Attest together']),
+      el('p', { class: 'muted' }, [
+        'Reviewed drafts can be attested in one commit. Each item still required its own '
+        + 'saved-revision review receipt; the three confirmations above cover the whole selection.',
+      ]),
+      rows.length ? el('ul', { class: 'batch-candidates' }, rows.map(question => {
+        const checkboxId = `batch-select-${question.id}`;
+        return el('li', {}, [
+          el('label', { for: checkboxId, class: 'batch-candidate' }, [
+            el('input', {
+              id: checkboxId,
+              type: 'checkbox',
+              checked: state.batchSelection.has(question.id) ? true : null,
+              disabled: state.pending ? true : null,
+              onChange: event => toggleBatchMember(question.id, event.target.checked, checkboxId),
+            }),
+            ` ${question.id} · ${text(question.category) || 'uncategorized'}`,
+          ]),
+        ]);
+      })) : el('p', { class: 'muted' }, ['No drafts hold a current review receipt yet.']),
+      awaitingReceipt > 0 ? el('p', { class: 'muted batch-awaiting' }, [
+        `${awaitingReceipt} other draft${awaitingReceipt === 1 ? '' : 's'} need${awaitingReceipt === 1 ? 's' : ''} `
+        + 'a review receipt at the current revision before joining a batch.',
+      ]) : null,
+      warningHeld > 0 ? el('p', { class: 'muted batch-warning-held' }, [
+        `${warningHeld} draft${warningHeld === 1 ? '' : 's'} carr${warningHeld === 1 ? 'ies' : 'y'} warnings and must be attested individually.`,
+      ]) : null,
+      selected.length ? el('p', { id: 'batch-readout', class: 'batch-readout' }, [
+        `Selected ${selected.length}: ${categorySummary}. Answer keys ${keySummary}. `
+        + (batchCheck.ok ? 'Batch checks pass.' : `Blocked: ${(batchCheck.issues || []).map(issue => issue.code).join(', ')}.`),
+      ]) : null,
+      el('button', {
+        id: 'attest-selected-drafts',
+        class: 'primary rail-action',
+        type: 'button',
+        disabled: state.pending || !selected.length || !ready
+          || (batchCheck ? batchCheck.ok === false : false),
+        onClick: () => void attestSelection(),
+      }, [`Attest selection (${selected.length})`]),
+      !ready && selected.length ? el('p', { class: 'muted' }, [
+        'Complete the three confirmations above to enable the batch.',
+      ]) : null,
+    ]);
+  }
+
   function handlePreviewStatus(event) {
     const preview = state.preview;
     if (!preview || !['loading', 'ready'].includes(preview.status)) return;
@@ -3100,7 +3304,21 @@ export function startFacultyConsole({
       if (shortcutCanSaveQuestion()) saveCurrentDraft();
       else if (hasUnsavedChanges()) announce('Open Edit question to save this draft.');
       else announce('No unsaved question changes to save.');
+      return;
     }
+
+    // `A` attests the current page or tool. Only fires for the one-click
+    // variant, which is the only button whose label states what is being
+    // asserted — a bare keypress must never stand in for an unstated claim.
+    if (event.key.toLowerCase() !== 'a'
+      || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+    const target = event.target;
+    const tag = typeof target?.tagName === 'string' ? target.tagName.toLowerCase() : '';
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) return;
+    const button = document.getElementById('attest-current-item');
+    if (!button || button.disabled || button.getAttribute('aria-keyshortcuts') !== 'a') return;
+    event.preventDefault();
+    button.click();
   });
 
   if (getKey()) void load();

@@ -100,7 +100,7 @@ test('both builders emit governance inventories matching their final tools', () 
       timeout: 60_000,
     });
     assert.equal(built.status, 0, built.stdout + built.stderr);
-    assertInventory(ms3, 22);
+    assertInventory(ms3, 23); // +interaction-cards.html (2026-08-11, PR #315)
     assert.match(
       fs.readFileSync(path.join(ms3, '_headers'), 'utf8'),
       /\/tool-governance\.json\n  Cache-Control: public, max-age=0, must-revalidate/,
@@ -111,7 +111,7 @@ test('both builders emit governance inventories matching their final tools', () 
       timeout: 60_000,
     });
     assert.equal(residentBuilt.status, 0, residentBuilt.stdout + residentBuilt.stderr);
-    assertInventory(resident, 24);
+    assertInventory(resident, 25); // +interaction-cards.html (2026-08-11, PR #315)
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
     fs.rmSync(`${ms3}.source-map.json`, { force: true });

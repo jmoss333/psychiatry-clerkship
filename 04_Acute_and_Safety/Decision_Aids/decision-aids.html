@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Algorithms & Decision Aids" version="1.0" built="2026-06-29" category="acute-safety" audience="trainee,ms3" settings="inpatient" time="scan" summary="Visual decision-support for the can't-miss inpatient syndromes: rule-out-first decision trees, the agitation escalation ladder, NMS-vs-serotonin-syndrome matrix, alcohol-withdrawal timeline, and CIWA-Ar score bands. One visual grammar: red = rule out first, teal = first move. Educational; fictional composites only; no PHI; AI-drafted, pending faculty attestation." -->
+<!-- [CLERKSHIP-META v1] tool="Algorithms & Decision Aids" version="1.0" built="2026-06-29" category="acute-safety" audience="trainee,ms3" settings="inpatient" time="scan" summary="Visual decision-support for the can't-miss inpatient syndromes: rule-out-first decision trees, the agitation escalation ladder, NMS-vs-serotonin-syndrome matrix, alcohol-withdrawal timeline, and CIWA-Ar score bands. One visual grammar: red = rule out first, teal = first move. Educational; fictional composites only; no PHI; AI-drafted, faculty-reviewed." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -345,7 +345,7 @@ function App(){
       return e("button",{key:v[0],className:view===v[0]?"on":"",onClick:function(){setView(v[0]);}}, v[1]);
     })),
     body(),
-    e("div",{className:"disc"},"Educational decision support — fictional composites only, no PHI. AI-drafted, pending faculty attestation; verify against current guidelines and your team before clinical use. ",e("br"),"Joshua Moss, MD | Psychiatrist")
+    e("div",{className:"disc"},"Educational decision support — fictional composites only, no PHI. AI-drafted and faculty-reviewed; verify against current guidelines and your team before clinical use. ",e("br"),"Joshua Moss, MD | Psychiatrist")
   );
 }
 ReactDOM.createRoot(document.getElementById("root")).render(e(App));
