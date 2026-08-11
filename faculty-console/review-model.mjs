@@ -152,6 +152,25 @@ export function reviewedRevisionMatches(item, reviewedRevision) {
     && reviewedRevision === item.revision;
 }
 
+/* Batch-tray membership (2026-08-04 batch design, section A). Mirrors what the server
+   will demand of every entry in a multi-item attestation rather than inventing a looser
+   client-side notion: draft status, a ready gate (warnings force individual attestation
+   when N > 1 — attest.warning_individual_only; blocked never attests), and a review
+   receipt recorded at the question's EXACT current revision. Receipts are the per-item
+   control that makes one batch affirmation defensible; anything that changes a revision
+   must drop the item out of the batch, which callers get for free by re-deriving. */
+export function deriveBatchEligibility(question, { assessmentGate, reviewedRevision } = {}) {
+  const reasons = [];
+  if (!question || question.status !== 'draft') reasons.push('batch.not_draft');
+  if (assessmentGate === 'warning') reasons.push('batch.warning_individual_only');
+  else if (assessmentGate === 'blocked') reasons.push('batch.blocked');
+  else if (assessmentGate !== 'ready') reasons.push('batch.gate_unknown');
+  if (!REVISION_PATTERN.test(question?.revision ?? '') || reviewedRevision !== question?.revision) {
+    reasons.push('batch.review_receipt_required');
+  }
+  return { eligible: reasons.length === 0, reasons };
+}
+
 function validAssessment(assessment) {
   if (!assessment || typeof assessment !== 'object' || Array.isArray(assessment)
       || !['ready', 'warning', 'blocked'].includes(assessment.gate)
