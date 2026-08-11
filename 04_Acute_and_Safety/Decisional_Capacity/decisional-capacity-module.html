@@ -108,10 +108,15 @@ function App(){
   function setN(k,v){ var n=Object.assign({},notes); n[k]=v; setNotes(n); setCopied(false); }
 
   function verdict(){
+    /* 'na' must never launder into INTACT: a determination requires all four abilities
+       ASSESSED (intact or impaired). Four "Not assessed" clicks previously satisfied the
+       every-rated check and, with no 'impaired' present, fell through to the INTACT arm. */
     var anyImp = ABIL.some(function(a){return rate[a.key]==='impaired';});
+    var anyNA  = ABIL.some(function(a){return rate[a.key]==='na';});
     var allRated = ABIL.every(function(a){return rate[a.key];});
     if(!allRated) return {cls:'part',txt:'Incomplete — rate all four abilities for a determination.'};
     if(anyImp) return {cls:'no',txt:'Pattern suggests the patient LACKS capacity for this specific decision.'};
+    if(anyNA) return {cls:'part',txt:'Not yet determinable — one or more abilities are marked Not assessed. Assess all four (or document why an ability could not be assessed) before drawing a conclusion.'};
     return {cls:'ok',txt:'Pattern consistent with INTACT capacity for this specific decision.'};
   }
 

@@ -13,6 +13,7 @@ to eliminate:
      differently (the rp-* bypass).
 """
 
+import json
 import os
 import shutil
 import sys
@@ -392,6 +393,53 @@ class TestSharedSnippets(unittest.TestCase):
         self.assertFalse(common.inject_shared_snippets(p))
         self.assertEqual(open(p, encoding="utf-8").read(), first)
 
+    def test_phi_snippet_expands_with_short_signature(self):
+        p = self._page("<script>\n/*__PHI_HEURISTIC__*/\n</script>")
+        self.assertTrue(common.inject_shared_snippets(p))
+        t = open(p, encoding="utf-8").read()
+        self.assertIn("function looksLikePhi(t){", t)
+        self.assertNotIn("/*__PHI_HEURISTIC__*/", t)
+
+    def test_sw_register_snippet_expands_with_short_signature(self):
+        p = self._page("<script>\n/*__SW_REGISTER__*/\n</script>")
+        self.assertTrue(common.inject_shared_snippets(p))
+        t = open(p, encoding="utf-8").read()
+        self.assertIn("function registerClerkshipSW(){", t)
+        self.assertNotIn("/*__SW_REGISTER__*/", t)
+
+    def test_calib_log_snippet_expands_with_short_signature(self):
+        p = self._page("<script>\n/*__CALIB_LOG__*/\n</script>")
+        self.assertTrue(common.inject_shared_snippets(p))
+        t = open(p, encoding="utf-8").read()
+        self.assertIn("function calibLog(evt){", t)
+        self.assertNotIn("/*__CALIB_LOG__*/", t)
+
+    def test_phase_policy_snippet_expands_with_short_signature(self):
+        p = self._page("<script>\n/*__PHASE_POLICY__*/\n</script>")
+        self.assertTrue(common.inject_shared_snippets(p))
+        t = open(p, encoding="utf-8").read()
+        self.assertIn("function shelfDaysUntil(shelfStr, nowMs){", t)
+        self.assertNotIn("/*__PHASE_POLICY__*/", t)
+
+    def test_sess_capsule_snippet_expands_with_short_signature(self):
+        p = self._page("<script>\n/*__SESS_CAPSULE__*/\n</script>")
+        self.assertTrue(common.inject_shared_snippets(p))
+        t = open(p, encoding="utf-8").read()
+        self.assertIn("function sessLoad(tool, nowMs){", t)
+        self.assertNotIn("/*__SESS_CAPSULE__*/", t)
+
+    def test_all_snippet_signatures_are_short_and_unique(self):
+        # Whole-line signatures are exact-substring dup-probes (common.py _snippet_signature);
+        # long ones silently degrade to no-ops when the file is rewrapped. Cap them.
+        sigs = []
+        for fname in common.SNIPPET_MARKERS.values():
+            body = open(os.path.join(os.path.dirname(common.__file__), fname), encoding="utf-8").read()
+            sig = common._snippet_signature(body)
+            self.assertIsNotNone(sig, fname)
+            self.assertLess(len(sig), 60, "%s signature too long: %r" % (fname, sig))
+            sigs.append(sig)
+        self.assertEqual(len(sigs), len(set(sigs)), "duplicate snippet signatures")
+
     def test_unexpanded_marker_fails_the_page_contract(self):
         d = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, d, True)
@@ -432,6 +480,96 @@ class TestSharedSnippets(unittest.TestCase):
             any("injected more than once" in m for _, ms in failures for m in ms),
             failures,
         )
+
+
+class TestServiceWorkerEmission(unittest.TestCase):
+    def _site(self):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d, True)
+        os.makedirs(os.path.join(d, "tools"))
+        os.makedirs(os.path.join(d, "audio"))
+        open(os.path.join(d, "index.html"), "w").write("<!doctype html>x")
+        open(os.path.join(d, "nav.json"), "w").write("[]")
+        open(os.path.join(d, "tools", "t.html"), "w").write("<!doctype html>t")
+        open(os.path.join(d, "audio", "a.m4a"), "w").write("fake-lfs-bytes")
+        open(os.path.join(d, "tool-governance.json"), "w").write(
+            '{"revision": "aaaaaaa"}'
+        )
+        return d
+
+    def test_emits_precache_excluding_media_with_root_mapping(self):
+        d = self._site()
+        common.emit_service_worker(d)
+        sw = open(os.path.join(d, "sw.js"), encoding="utf-8").read()
+        pre = json.loads(sw.split("/*__PRECACHE_START__*/")[1].split("/*__PRECACHE_END__*/")[0])
+        self.assertIn("/", pre)
+        self.assertNotIn("/index.html", pre)
+        self.assertIn("/nav.json", pre)
+        self.assertIn("/tools/t.html", pre)
+        self.assertTrue(all("/audio/" not in p for p in pre))
+        self.assertNotIn("/sw.js", pre)
+
+    def test_version_is_deterministic_and_media_independent(self):
+        d = self._site()
+        common.emit_service_worker(d)
+        v1 = open(os.path.join(d, "sw.js")).read().split("VERSION='")[1].split("'")[0]
+        open(os.path.join(d, "audio", "a.m4a"), "w").write("different-bytes")
+        common.emit_service_worker(d)
+        v2 = open(os.path.join(d, "sw.js")).read().split("VERSION='")[1].split("'")[0]
+        self.assertEqual(v1, v2)
+        open(os.path.join(d, "nav.json"), "w").write("[1]")
+        common.emit_service_worker(d)
+        v3 = open(os.path.join(d, "sw.js")).read().split("VERSION='")[1].split("'")[0]
+        self.assertNotEqual(v1, v3)
+
+    def test_budget_failure_and_kill_mode(self):
+        d = self._site()
+        open(os.path.join(d, "big.json"), "wb").write(b"0" * (11 * 1024 * 1024))
+        with self.assertRaises(SystemExit):
+            common.emit_service_worker(d)
+        os.remove(os.path.join(d, "big.json"))
+        common.emit_service_worker(d, kill=True)
+        self.assertIn("var KILL=true;", open(os.path.join(d, "sw.js")).read())
+
+    def test_tool_governance_excluded_and_version_stable_across_revision_changes(self):
+        """tool-governance.json embeds current_revision() = git rev-parse HEAD, so
+        every commit (docs-only included) would otherwise change its bytes and
+        churn VERSION for every learner. It must be excluded from PRECACHE and
+        from the VERSION hash — same treatment as sw.js/robots.txt/404.html. It
+        is already served max-age=0,must-revalidate via _headers, so precaching
+        it buys no offline value anyway."""
+        d = self._site()
+        common.emit_service_worker(d)
+        sw1 = open(os.path.join(d, "sw.js"), encoding="utf-8").read()
+        v1 = sw1.split("VERSION='")[1].split("'")[0]
+        pre1 = json.loads(sw1.split("/*__PRECACHE_START__*/")[1].split("/*__PRECACHE_END__*/")[0])
+        self.assertNotIn("/tool-governance.json", pre1)
+
+        open(os.path.join(d, "tool-governance.json"), "w").write(
+            '{"revision": "bbbbbbb"}'
+        )
+        common.emit_service_worker(d)
+        sw2 = open(os.path.join(d, "sw.js"), encoding="utf-8").read()
+        v2 = sw2.split("VERSION='")[1].split("'")[0]
+        pre2 = json.loads(sw2.split("/*__PRECACHE_START__*/")[1].split("/*__PRECACHE_END__*/")[0])
+        self.assertEqual(v1, v2)
+        self.assertNotIn("/tool-governance.json", pre2)
+
+    def test_template_anchor_repeated_fails_loudly(self):
+        """A future template edit that repeats a substitution anchor (e.g. two
+        `VERSION='__VERSION__';` lines) must fail loudly rather than silently
+        substituting only the first occurrence and shipping a broken sw.js."""
+        d = self._site()
+        template_path = os.path.join(
+            os.path.dirname(os.path.abspath(common.__file__)), common.SW_TEMPLATE_NAME
+        )
+        original = open(template_path, encoding="utf-8").read()
+        self.addCleanup(lambda: open(template_path, "w", encoding="utf-8").write(original))
+        open(template_path, "w", encoding="utf-8").write(
+            original + "\nvar VERSION='__VERSION__';\n"
+        )
+        with self.assertRaises(AssertionError):
+            common.emit_service_worker(d)
 
 
 if __name__ == "__main__":

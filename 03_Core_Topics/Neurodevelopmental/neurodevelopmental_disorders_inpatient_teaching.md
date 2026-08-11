@@ -15,6 +15,22 @@
 
 **Initial workup** — Establish the developmental and adaptive-functioning baseline from caregivers, records, and (for adolescents) school/IEP documentation before you interpret any behavior. Clarify communication preferences and sensory triggers. For any *change* in behavior, screen the body first: pain, dental problems, constipation/urinary retention, infection, GERD, sleep loss, and medication effects (including akathisia). Then screen for treatable psychiatric comorbidity — mood, anxiety, OCD, psychosis, catatonia, and substance use — which is usually the real reason for admission.
 
+**Child and adolescent exam anchors** — These are common Shelf/COMAT discriminators:
+
+| Anchor | What separates it |
+|---|---|
+| **ADHD** | Several inattentive and/or hyperactive-impulsive symptoms before age 12, lasting at least 6 months, with impairment in at least two settings; rating scales support but do not replace the clinical diagnosis |
+| **ADHD medication** | Stimulants are first-line for core ADHD symptoms when not contraindicated; consider atomoxetine, viloxazine, or alpha-2 agonists when substance-misuse, diversion, cardiovascular, mania, or psychosis concerns change the risk-benefit balance |
+| **Autism spectrum disorder** | Social-communication deficits plus restricted/repetitive behaviors, insistence on sameness, or restricted interests from early development |
+| **Intellectual disability** | Deficits in intellectual and adaptive functioning with developmental-period onset; severity is based on adaptive functioning across conceptual, social, and practical domains, not IQ score alone |
+| **Tourette disorder** | Multiple motor tics and at least one vocal tic, waxing and waning for more than 1 year, with onset before age 18 |
+| **Persistent tic disorder** | Motor tics or vocal tics, but not both, for more than 1 year |
+| **Provisional tic disorder** | Motor and/or vocal tics present for less than 1 year |
+| **Nocturnal enuresis** | For primary nocturnal enuresis with a normal exam, reassurance and behavioral measures are first-line; an enuresis alarm has the best long-term cure, while desmopressin is useful for short-term control |
+| **Encopresis** | Repeated stool passage at age 4 or older; retentive overflow from constipation is common and is treated with disimpaction, maintenance laxatives, toileting routine, and behavioral support |
+| **Separation anxiety disorder** | Developmentally inappropriate fear of separation from attachment figures, often with somatic complaints and school refusal; in children the duration threshold is at least 4 weeks |
+| **Selective mutism** | Consistent failure to speak in specific social settings despite speaking normally elsewhere, impairing school or social function; this is anxiety-spectrum, not defiance or a language deficit |
+
 **Acute inpatient management** — Lead with the environment and communication, not medication. Provide predictability (routine, visual schedules, consistent staff), reduce sensory load, allow extra processing time, use concrete language, and support augmentative/alternative communication where needed. Treat **behavior as communication** — run the functional and medical assessment before reaching for a PRN. Treat the diagnosed comorbidity on its own merits. Use psychotropics judiciously: risperidone and aripiprazole are FDA-approved for *irritability/aggression associated with autism* (they do **not** treat the core social-communication features), so target symptoms explicitly, monitor metabolically, and avoid reflexive standing antipsychotics. For ADHD, stimulants are first-line and effective, but do not start them during acute mania or psychosis, screen cardiovascular history and substance-misuse/diversion risk, and consider non-stimulants (atomoxetine, viloxazine, guanfacine/clonidine ER) when those are concerns. Capacity is decision-specific; use supported decision-making, involve guardians where they exist, and stay least-restrictive.
 
 **What the student does** —

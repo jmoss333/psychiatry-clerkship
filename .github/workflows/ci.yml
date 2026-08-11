@@ -75,6 +75,18 @@ jobs:
       - name: Validate — topic_meta.json contract
         run: python3 13_Faculty_Resources/_automation/validate_topic_meta.py
 
+      - name: Test — claim-anchor validator
+        run: python3 13_Faculty_Resources/_automation/test_validate_claim_anchors.py
+
+      - name: Validate — claim anchors resolve to declared evidence
+        run: python3 13_Faculty_Resources/_automation/validate_claim_anchors.py
+
+      - name: Test — evidence drill generator
+        run: python3 13_Faculty_Resources/_automation/test_generate_evidence_drill.py
+
+      - name: Validate — evidence drill is regenerated from current anchors
+        run: python3 13_Faculty_Resources/_automation/generate_evidence_drill.py --check
+
       - name: Validate — longitudinal case contract
         run: python3 13_Faculty_Resources/_automation/test_longitudinal_case.py
 
@@ -230,6 +242,11 @@ jobs:
         run: |
           cd tests/smoke
           npx playwright test --project=visual
+
+      - name: "Check 4: offline shell — service worker"
+        run: |
+          cd tests/smoke
+          npx playwright test --project=offline
 
       - name: Upload smoke test artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

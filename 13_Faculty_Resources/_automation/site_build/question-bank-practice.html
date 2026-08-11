@@ -160,6 +160,11 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body
 var BANK = null;
 var SESSION = null;
 var REVIEW_CONTEXT = readReviewContext();
+/* ?resume=1 rides the shell's toolExtraFromParams passthrough (spa_index.html) — no
+   shell change needed to reach this tool's iframe query string. */
+var RESUME_REQUESTED = (function(){
+  try{ return new URLSearchParams(location.search).get('resume')==='1'; }catch(_){ return false; }
+})();
 var CAT_LABELS = {
   mood:'Mood',psychosis:'Psychosis',anxiety:'Anxiety/Trauma',
   substance:'Substance Use',neurocog:'Neurocognitive',pharm:'Pharmacology',
@@ -213,6 +218,8 @@ function qbLoad(){ return lsGet('cw_qb_v1')||{}; }
 function qbSave(data){ lsSet('cw_qb_v1',data); }
 function qbRecord(item, key, tier2Key, confidence, correct, twoTierResult){
   var data = qbLoad();
+  var prev = data[item.id];
+  var re = (prev && prev.ts && (new Date(prev.ts)).toDateString() === (new Date()).toDateString()) ? 1 : 0;
   var rec = {
     id: item.id,
     key: key,
@@ -225,6 +232,7 @@ function qbRecord(item, key, tier2Key, confidence, correct, twoTierResult){
   if(confidence==='certain' && !correct) rec.certWrong = true;
   data[item.id] = rec;
   qbSave(data);
+  calibLog({s:'qb',id:item.id,pages:item.pages||[],p:confidence,a:correct?1:0,t2:twoTierResult||null,re:re,ts:Date.now()});
   return rec;
 }
 
@@ -252,6 +260,10 @@ function srsGrade(item, confidence, correct, twoTierResult){
 
 var DAY = 86400000;
 /*__SM2_APPLY_GRADE__*/
+
+/*__CALIB_LOG__*/
+
+/*__SESS_CAPSULE__*/
 
 function srsUpdate(item, confidence, correct, twoTierResult){
   var s = srsLoad();
@@ -391,17 +403,23 @@ function renderConfidence(disabled){
 }
 
 function renderOptions(item, state){
-  /* state: 'active'|'locked' — locked after answer */
-  var displayOrder = shuffle(item.options.slice());
-  /* store display order on session for tier-reveal */
+  /* state: 'active'|'locked' — locked after answer.
+     Letters come from DISPLAY position, not the authored key: 46 of 47 draft items are
+     keyed A, so rendering opt.key after the shuffle both scrambled the letter sequence
+     and let "A." follow the correct answer around the screen. data-key still carries the
+     authored key for answer logic. A locked re-render reuses the session's stored order —
+     reshuffling at lock would visibly jump the options mid-question. */
+  var displayOrder = (state==='locked' && SESSION.displayOrder && SESSION.displayOrder.length)
+    ? SESSION.displayOrder : shuffle(item.options.slice());
   SESSION.displayOrder = displayOrder;
   var h = '<div class="opts" id="optsList">';
-  displayOrder.forEach(function(opt){
+  displayOrder.forEach(function(opt, i){
+    var letter = String.fromCharCode(65+i);
     var cls = 'opt';
     if(state==='locked') cls += ' locked';
     h += '<button class="'+cls+'" data-key="'+esc(opt.key)+'" '
-       + (state==='locked'?'disabled ':'')+' aria-label="Option '+esc(opt.key)+': '+esc(opt.t)+'">'
-       + '<span class="opt-key">'+esc(opt.key)+'.</span>'+esc(opt.t)
+       + (state==='locked'?'disabled ':'')+' aria-label="Option '+letter+': '+esc(opt.t)+'">'
+       + '<span class="opt-key">'+letter+'.</span>'+esc(opt.t)
        + '</button>';
   });
   h += '</div>';
@@ -417,9 +435,10 @@ function renderTier2(item){
     +'<p class="tier2-q">'+esc(t2.q)+'</p>'
     +'<p class="tier2-note">Select the best rationale — then see your full feedback.</p>'
     +'<div class="opts" id="tier2Opts">';
-  displayOrder.forEach(function(opt){
-    h += '<button class="opt" data-tier2key="'+esc(opt.key)+'" aria-label="Rationale '+esc(opt.key)+': '+esc(opt.t)+'">'
-       + '<span class="opt-key">'+esc(opt.key)+'.</span>'+esc(opt.t)+'</button>';
+  displayOrder.forEach(function(opt, i){
+    var letter = String.fromCharCode(65+i);
+    h += '<button class="opt" data-tier2key="'+esc(opt.key)+'" aria-label="Rationale '+letter+': '+esc(opt.t)+'">'
+       + '<span class="opt-key">'+letter+'.</span>'+esc(opt.t)+'</button>';
   });
   h += '</div></div>';
   return h;
@@ -450,17 +469,20 @@ function getFeedbackHtml(item, selectedKey, tier2Key, confidence, correct, twoTi
          +'<div class="note">'+esc(wrongOpt.trap.note)+'</div>'
          +'</div>';
     }
-    /* reveal correct option */
+    /* reveal correct option — letter must match what the learner SAW (display position),
+       not the authored key */
     var correctOpt = item.options.filter(function(o){return o.c;})[0];
     if(correctOpt){
+      var cIdx = (SESSION.displayOrder||[]).indexOf(correctOpt);
+      var cLetter = cIdx>=0 ? String.fromCharCode(65+cIdx) : correctOpt.key;
       h += '<div class="fb-block"><span class="fb-lbl">Correct answer</span>'
-         + '<strong>'+esc(correctOpt.key)+'. </strong>'+esc(correctOpt.t)+'</div>';
+         + '<strong>'+esc(cLetter)+'. </strong>'+esc(correctOpt.t)+'</div>';
     }
   }
   /* shaky reason feedback */
   if(twoTierResult==='shaky'){
     var correctT2 = item.tier2.options.filter(function(o){return o.c;})[0];
-    h += '<div class="fb-shaky">Right answer, wrong reason — your SRS interval is capped at <em>Hard</em> and this item resurfaces soon. The correct rationale: <strong>'+esc(correctT2?correctT2.t:'—')+'</strong></div>';
+    h += '<div class="fb-shaky">Right answer, wrong reason — your SRS interval is capped at <em>Hard</em> and this item is flagged for another pass here. The correct rationale: <strong>'+esc(correctT2?correctT2.t:'—')+'</strong></div>';
     h += '<div class="fb-block"><span class="fb-lbl">Why that rationale</span>'+esc(item.tier2.why)+'</div>';
   }
   /* standard why / pearl / evidence */
@@ -555,7 +577,7 @@ function renderSummary(){
        + '<strong>Calibration gap:</strong> You were certain '+certTotal+' time'+(certTotal!==1?'s':'')
        + ' but only '+certPct+'% accurate when certain. '
        + 'Miscalibration on the wards is more dangerous than ignorance — '
-       + 'those items resurface soon in Daily Review.</div>';
+       + 'replay your confidently-wrong items from this summary.</div>';
   }
   /* per-category calibration bars */
   var catKeys = Object.keys(byCat).filter(function(k){ return byCat[k].cert>=2; });
@@ -677,6 +699,75 @@ function showReviewItem(item){
   };
   showQuestion();
   postReviewItemStatus('ready');
+}
+
+/* ---- session capsule (cw_sess_v1) — question-boundary checkpoint + resume --------
+   Written ONLY from advance(), and only when there is a next question to show —
+   never mid-question. showQuestion() resets confidence/tier1Key/state/displayOrder/
+   tier2DisplayOrder on every entry (the option shuffles aren't reconstructable), so a
+   mid-question restore would be structurally broken and is not attempted; the
+   checkpoint is deleted instead, in showSummary(), on session completion. Never
+   written for a reviewOnly (faculty-preview) session. Grading state is never
+   duplicated here — qbRecord()/srsUpdate() already persist each answer
+   per-interaction (commitResponse); the capsule stores position + session
+   bookkeeping only, so a resumed showSummary() covers the WHOLE session without a
+   second write against the SM-2 stats contract. */
+function checkpointSession(){
+  if(!SESSION || SESSION.reviewOnly) return;
+  var now = Date.now();
+  sessSave('qbank', {
+    at: now,
+    expiresAt: now + DAY,
+    queueIds: SESSION.queue.map(function(it){ return it.id; }),
+    idx: SESSION.idx,
+    responses: SESSION.responses.map(function(r){
+      return { id: r.item.id, correct: r.correct, confidence: r.confidence };
+    })
+  });
+}
+
+/* Resume path for ?resume=1. Rebuilds the queue from the capsule's queueIds filtered
+   through activeItems() — an id removed or retired by a deploy between checkpoint and
+   resume is silently dropped rather than crashing the restore (queueIds order is
+   preserved). idx is RE-DERIVED by counting how many of the front (pre-checkpoint)
+   queueIds survive that same filter, rather than trusted verbatim: trusting the stored
+   idx directly would silently skip a still-unanswered question whenever a deploy
+   retires/removes an item positioned BEFORE the checkpointed idx (the raw idx
+   overshoots once the queue is filtered shorter). This exploits the invariant that
+   responses.length === idx at every checkpoint — advance() checkpoints immediately
+   after commitResponse() pushes a response, and this app has no
+   skip-without-answering path, so counting surviving front ids gives the correct new
+   position. Reconstructed responses are built from that identical surviving-front-id
+   set, so the resumed summary population can never disagree with the resumed queue
+   position. Absent/expired capsule (sessLoad owns load-validate-expire) or an empty
+   resulting queue falls through to a normal setup start. Returns true iff a session
+   was actually resumed. */
+function tryResumeSession(){
+  var cap = sessLoad('qbank', Date.now());
+  if(!cap || !cap.queueIds || !cap.queueIds.length) return false;
+  var idMap = {};
+  activeItems().forEach(function(it){ idMap[it.id]=it; });
+  var queue = cap.queueIds.map(function(id){ return idMap[id]; }).filter(Boolean);
+  if(!queue.length) return false;
+  var capIdx = (typeof cap.idx==='number' && cap.idx>=0) ? cap.idx : 0;
+  var survivingFrontIds = cap.queueIds.slice(0, capIdx).filter(function(id){ return !!idMap[id]; });
+  var idx = survivingFrontIds.length;
+  var respById = {};
+  (cap.responses||[]).forEach(function(r){ respById[r.id]=r; });
+  var responses = survivingFrontIds.map(function(id){
+    var r = respById[id];
+    if(!r) return null;
+    return {
+      item: idMap[id], key: null, tier2Key: null,
+      confidence: r.confidence, correct: r.correct, twoTierResult: null, ts: cap.at
+    };
+  }).filter(Boolean);
+  SESSION = {
+    queue: queue, idx: idx, responses: responses, confidence: null, tier1Key: null,
+    displayOrder: [], tier2DisplayOrder: [], state: 'conf'
+  };
+  showQuestion();
+  return true;
 }
 
 function showQuestion(){
@@ -861,11 +952,18 @@ function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){
 function advance(){
   if(!SESSION) return;
   SESSION.idx++;
-  if(SESSION.idx >= SESSION.queue.length) showSummary();
-  else showQuestion();
+  /* Checkpoint at this question boundary only when there is a next question to
+     resume into — completion is handled by showSummary()'s sessClear instead. */
+  if(SESSION.idx < SESSION.queue.length) checkpointSession();
+  showQuestion();
 }
 
 function showSummary(){
+  /* Session complete (or a resume landed exactly at the end) — clear the capsule so
+     a stale slot never lingers past its own session. Never touched for reviewOnly,
+     which never reaches this function via advance() (no Next button is rendered
+     for a faculty-preview session — see getFeedbackHtml/showFeedback). */
+  if(!(SESSION && SESSION.reviewOnly)) sessClear('qbank');
   progLabel.textContent='Session complete';
   qprog.hidden=false;
   qprogFill.style.width='100%';
@@ -899,6 +997,7 @@ function showSummary(){
         showReviewItem(reviewItem);
         return;
       }
+      if(RESUME_REQUESTED && tryResumeSession()) return;
       showSetup();
       /* adaptive engine handoff: home may set cw_qb_focus to a blueprint category
          so the learner lands in their weakest area with the filter preselected. */

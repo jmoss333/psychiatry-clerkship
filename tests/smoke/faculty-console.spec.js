@@ -1835,7 +1835,8 @@ test.describe.serial('faculty unified attestation workspace', () => {
     const externalTool = await externalPromise;
     await expect(externalTool).toHaveURL(`${MS3_URL}/tools/mse.html`);
     await externalTool.close();
-    await fullPage.locator('.navitem[data-f="__home__"]').click();
+    // The study-export surface lives on the Progress view since the Today/Progress split.
+    await fullPage.locator('.navitem[data-f="__progress__"]').click();
     await expect(fullPage.locator('[data-act="studyexport"]')).toBeVisible();
     const [download] = await Promise.all([
       fullPage.waitForEvent('download', { timeout: 5_000 }),
@@ -1871,5 +1872,66 @@ test.describe.serial('faculty unified attestation workspace', () => {
     expect(layout.editorBottom).toBeLessThanOrEqual(layout.railTop);
     expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth);
     expect(layout.bodyWidth).toBeLessThanOrEqual(layout.viewportWidth);
+  });
+
+  test('batch tray: three reviewed drafts attest in one POST; warnings stay individual', async ({ page }) => {
+    const api = await installRepositoryApi(page, {
+      version: 1,
+      items: [
+        syntheticQuestion({ id: 'qb_moo_901' }),
+        syntheticQuestion({ id: 'qb_moo_902', correctKey: 'B', category: 'psychosis' }),
+        syntheticQuestion({ id: 'qb_moo_906', correctKey: 'C', category: 'neurocog' }),
+        syntheticQuestion({ id: 'qb_moo_905', correctKey: 'D', category: 'anxiety', stem: WARNING_STEM }),
+        retiredQuestion(),
+      ],
+    });
+    await unlock(page);
+
+    // Record a saved-revision review receipt on each ready draft, one at a time —
+    // batching reduces clicks at the commit, never scrutiny per item.
+    for (const id of ['qb_moo_901', 'qb_moo_902', 'qb_moo_906']) {
+      await page.locator('#review-item-selector').selectOption(`question:${id}`);
+      await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+      await page.locator('#review-live-preview').check();
+      await page.getByRole('button', { name: 'Draft preview' }).click();
+      await page.locator('#review-saved-revision').check();
+      await expect(page.locator(`#batch-select-${id}`)).toBeVisible();
+      await page.locator(`#batch-select-${id}`).check();
+    }
+
+    // The warning draft never grows a tray checkbox, and the tray says why.
+    await expect(page.locator('#batch-select-qb_moo_905')).toHaveCount(0);
+    await expect(page.locator('#rail-step-batch')).toContainText('must be attested individually');
+
+    await expect(page.locator('#batch-readout')).toContainText('Selected 3');
+    await expect(page.locator('#batch-readout')).toContainText('Batch checks pass');
+    await expect(page.locator('#attest-selected-drafts')).toBeDisabled();
+    await checkConfirmations(page);
+    await expect(page.locator('#attest-selected-drafts')).toBeEnabled();
+
+    const attestStart = api.calls.length;
+    await page.locator('#attest-selected-drafts').click();
+    await expect(page.locator('#qbank-action-result'))
+      .toContainText('Attested 3 questions: qb_moo_901, qb_moo_902, qb_moo_906.');
+    expect(api.calls.slice(attestStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
+      'POST:qbank.attest',
+      'GET:state',
+    ]);
+    const post = api.calls[attestStart];
+    expect(post.body.items.map(entry => entry.id)).toEqual(['qb_moo_901', 'qb_moo_902', 'qb_moo_906']);
+    for (const entry of post.body.items) {
+      expect(entry.revision).toMatch(/^[0-9a-f]{64}$/);
+      expect(entry.reviewedRevision).toBe(entry.revision);
+    }
+    expect(post.body.confirmations).toEqual({
+      clinical: true,
+      evidence: true,
+      originalityAndNoPhi: true,
+    });
+
+    // The attested trio has left the tray; nothing eligible remains selected.
+    await expect(page.locator('#batch-select-qb_moo_901')).toHaveCount(0);
+    await expect(page.locator('#batch-select-qb_moo_902')).toHaveCount(0);
+    await expect(page.locator('#batch-select-qb_moo_906')).toHaveCount(0);
   });
 });

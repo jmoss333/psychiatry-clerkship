@@ -1,0 +1,806 @@
+{
+ "_note": "Generated from claim anchors. An item is a draft until a faculty decision in evidence_drill_review.json says otherwise; cut items are omitted.",
+ "version": 1,
+ "items": [
+  {
+   "id": "ed_med_monitoring_canmat-isbd-bipolar-2018",
+   "status": "draft",
+   "review": null,
+   "page": "med_monitoring.md",
+   "sourceId": "canmat-isbd-bipolar-2018",
+   "claim": "Lithium level is a 12-hour trough, drawn ~5 days after any dose change.",
+   "stem": "This claim on med_monitoring.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "c": true,
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "sourceId": "clozapine-rems",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-drug-safety",
+     "key": "C"
+    },
+    {
+     "t": "Stanley et al. · 2012 · Cognitive and Behavioral Practice",
+     "sourceId": "stanley-brown-2012-safety-planning",
+     "key": "D"
+    }
+   ],
+   "why": "Added to main after source branch diverged; bibliographic identity populated from known metadata; Zotero verification pending.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Canadian Network for Mood and Anxiety Treatments (CANMAT) and International Society for Bipolar Disorders (ISBD) 2018 guidelines for the management of patients with bipolar disorder",
+    "doi": "10.1111/bdi.12609",
+    "pmid": "29536616",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/29536616/"
+   }
+  },
+  {
+   "id": "ed_med_monitoring_clozapine-rems",
+   "status": "draft",
+   "review": null,
+   "page": "med_monitoring.md",
+   "sourceId": "clozapine-rems",
+   "claim": "The clozapine ANC schedule (weekly → biweekly → monthly) is worth memorizing; myocarditis is the early killer beyond the count.",
+   "stem": "This claim on med_monitoring.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "c": true,
+     "sourceId": "clozapine-rems",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-drug-safety",
+     "key": "C"
+    },
+    {
+     "t": "American Association for Emergency Psychiatry Project BETA · 2012",
+     "sourceId": "project-beta-deescalation-2012",
+     "key": "D"
+    }
+   ],
+   "why": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "FDA Clozapine Safety / REMS Removed",
+    "doi": "",
+    "pmid": "",
+    "url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine"
+   }
+  },
+  {
+   "id": "ed_med_monitoring_fda-drug-safety",
+   "status": "draft",
+   "review": null,
+   "page": "med_monitoring.md",
+   "sourceId": "fda-drug-safety",
+   "claim": "Get a baseline QTc before QT-prolonging agents and keep potassium and magnesium repleted.",
+   "stem": "This claim on med_monitoring.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "Caspi et al. · 2003 · Science",
+     "sourceId": "caspi-2003-5htt-stress",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "sourceId": "clozapine-rems",
+     "key": "C"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "c": true,
+     "sourceId": "fda-drug-safety",
+     "key": "D"
+    }
+   ],
+   "why": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "FDA Drug Safety Communications",
+    "doi": "",
+    "pmid": "",
+    "url": "https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_boyer-shannon-2005-serotonin-syndrome",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+   "claim": "Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "B"
+    },
+    {
+     "t": "McKeith et al. · 2017 · Neurology",
+     "sourceId": "mckeith-2017-dlb-consensus",
+     "key": "C"
+    },
+    {
+     "t": "SPRAVATO REMS · 2026",
+     "sourceId": "spravato-rems",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 15784664 resolved: title, both authors, 2005, NEJM 352:1112-20 and DOI all match the inline citation on t_psychosis.md:15.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "The serotonin syndrome.",
+    "doi": "10.1056/NEJMra041867",
+    "pmid": "15784664",
+    "url": "https://doi.org/10.1056/NEJMra041867"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_fda-prozac-label-maoi-switching",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "fda-prozac-label-maoi-switching",
+   "claim": "The classic avoidable trigger is switching too soon around an MAOI: allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent — to avoid serotonin syndrome / hypertensive crisis.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Crone et al. · 2023 · The American Journal of Psychiatry",
+     "sourceId": "apa-eating-disorders-2023",
+     "key": "A"
+    },
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "c": true,
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "C"
+    },
+    {
+     "t": "Substance Abuse and Mental Health Services Administration · 2026",
+     "sourceId": "samhsa-guidelines",
+     "key": "D"
+    }
+   ],
+   "why": "Retrieved 2026-08-09 from the openFDA drug-label endpoint for brand_name PROZAC. Section 2.9 states verbatim: \"At least 14 days should elapse between discontinuation of an MAOI intended to treat psychiatric disorders and initiation of therapy with PROZAC. Conversely, at least 5 weeks should be allowed after stopping PROZAC before starting an MAOI intended to treat psychiatric disorders.\" identity.status is 'exception' rather than 'verified' because this is a REGULATORY LABELING statement, not a literature finding - no PubMed-indexed study reports these intervals as a result, so there is no bibliographic record to resolve. Scope note: this entry backs the >=5 week interval after fluoxetine and the >=14 day interval after an MAOI. It does NOT back the page's '>=2 weeks after stopping most SSRIs' generalization, which is a class statement drawn from other products' labeling - do not attach this source to it. The url is a live endpoint returning CURRENT labeling; the quotation above is the review record of what it said on the verification date.",
+   "pearl": "Scope note: this entry backs the >=5 week interval after fluoxetine and the >=14 day interval after an MAOI.",
+   "citation": {
+    "title": "PROZAC (fluoxetine) FDA-approved prescribing information, section 2.9: Switching a Patient To or From a Monoamine Oxidase Inhibitor (MAOI) Intended to Treat Psychiatric Disorders",
+    "doi": "",
+    "pmid": "",
+    "url": "https://api.fda.gov/drug/label.json?search=openfda.brand_name:%22PROZAC%22&limit=1"
+   }
+  },
+  {
+   "id": "ed_t_mood_canmat-isbd-bipolar-2018",
+   "status": "draft",
+   "review": null,
+   "page": "t_mood.md",
+   "sourceId": "canmat-isbd-bipolar-2018",
+   "claim": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic — but avoid valproate in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered.",
+   "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "c": true,
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "B"
+    },
+    {
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "C"
+    },
+    {
+     "t": "Felitti et al. · 1998 · American Journal of Preventive Medicine",
+     "sourceId": "felitti-1998-ace",
+     "key": "D"
+    }
+   ],
+   "why": "Added to main after source branch diverged; bibliographic identity populated from known metadata; Zotero verification pending.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Canadian Network for Mood and Anxiety Treatments (CANMAT) and International Society for Bipolar Disorders (ISBD) 2018 guidelines for the management of patients with bipolar disorder",
+    "doi": "10.1111/bdi.12609",
+    "pmid": "29536616",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/29536616/"
+   }
+  },
+  {
+   "id": "ed_t_mood_cipriani-2013-lithium-suicide",
+   "status": "draft",
+   "review": null,
+   "page": "t_mood.md",
+   "sourceId": "cipriani-2013-lithium-suicide",
+   "claim": "Lithium is the mood stabilizer with anti-suicidal and best maintenance evidence — use it, and monitor it.",
+   "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Psychiatric Association · 2026",
+     "sourceId": "apa-practice-guidelines",
+     "key": "A"
+    },
+    {
+     "t": "American Psychiatric Association · 2011",
+     "sourceId": "apa-violence-risk-assessment-2011",
+     "key": "B"
+    },
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "C"
+    },
+    {
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "c": true,
+     "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 23814104 resolved and matches. 48 RCTs, 6674 participants; lithium vs placebo for suicide OR 0.13 (95% CI 0.03-0.66) and all-cause death OR 0.38 (0.15-0.95). Directly supports the anti-suicidal claim on t_mood.md:13.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Lithium in the prevention of suicide in mood disorders: updated systematic review and meta-analysis.",
+    "doi": "10.1136/bmj.f3646",
+    "pmid": "23814104",
+    "url": "https://doi.org/10.1136/bmj.f3646"
+   }
+  },
+  {
+   "id": "ed_t_neurocog_fda-drug-safety",
+   "status": "draft",
+   "review": null,
+   "page": "t_neurocog.md",
+   "sourceId": "fda-drug-safety",
+   "claim": "Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis — use the lowest dose for the shortest time, document informed consent, and reassess.",
+   "stem": "This claim on t_neurocog.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "c": true,
+     "sourceId": "fda-drug-safety",
+     "key": "A"
+    },
+    {
+     "t": "McKeith et al. · 2017 · Neurology",
+     "sourceId": "mckeith-2017-dlb-consensus",
+     "key": "B"
+    },
+    {
+     "t": "Nasreddine et al. · 2005 · Journal of the American Geriatrics Society",
+     "sourceId": "nasreddine-2005-moca",
+     "key": "C"
+    },
+    {
+     "t": "Schneider et al. · 2005 · JAMA",
+     "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
+     "key": "D"
+    }
+   ],
+   "why": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "FDA Drug Safety Communications",
+    "doi": "",
+    "pmid": "",
+    "url": "https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications"
+   }
+  },
+  {
+   "id": "ed_t_neurocog_mckeith-2017-dlb-consensus",
+   "status": "draft",
+   "review": null,
+   "page": "t_neurocog.md",
+   "sourceId": "mckeith-2017-dlb-consensus",
+   "claim": "Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.",
+   "stem": "This claim on t_neurocog.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-drug-safety",
+     "key": "A"
+    },
+    {
+     "t": "McKeith et al. · 2017 · Neurology",
+     "c": true,
+     "sourceId": "mckeith-2017-dlb-consensus",
+     "key": "B"
+    },
+    {
+     "t": "Nasreddine et al. · 2005 · Journal of the American Geriatrics Society",
+     "sourceId": "nasreddine-2005-moca",
+     "key": "C"
+    },
+    {
+     "t": "Schneider et al. · 2005 · JAMA",
+     "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 28592453 resolved: title, first author, 2017, Neurology 89(1):88-100 and DOI all match. Author list truncated to the first five of 64. CAUTION - a near-identical record exists at PMID 29438029, 'Author response: Diagnosis and management of dementia with Lewy bodies...', Neurology 90(6):300-301, which is a one-page comment and NOT the consensus criteria; do not substitute it. Scope note: this report names four CORE clinical features (fluctuating cognition, recurrent visual hallucinations, REM sleep behaviour disorder, spontaneous parkinsonism) and lists severe antipsychotic sensitivity as a SUPPORTIVE feature, downgraded from 'suggestive' in this revision - do not cite it to support calling neuroleptic sensitivity a core feature.",
+   "pearl": "Scope note: this report names four CORE clinical features (fluctuating cognition, recurrent visual hallucinations, REM sleep behaviour disorder, spontaneous parkinsonism) and lists severe antipsychotic sensitivity as a SUPPORTIVE feature, downgraded from 'suggestive' in this revision - do not cite it to support calling neuroleptic sensitivity a core feature.",
+   "citation": {
+    "title": "Diagnosis and management of dementia with Lewy bodies: Fourth consensus report of the DLB Consortium.",
+    "doi": "10.1212/WNL.0000000000004058",
+    "pmid": "28592453",
+    "url": "https://doi.org/10.1212/WNL.0000000000004058"
+   }
+  },
+  {
+   "id": "ed_t_neurocog_nasreddine-2005-moca",
+   "status": "draft",
+   "review": null,
+   "page": "t_neurocog.md",
+   "sourceId": "nasreddine-2005-moca",
+   "claim": "MoCA beats MMSE for mild and executive impairment.",
+   "stem": "This claim on t_neurocog.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-drug-safety",
+     "key": "A"
+    },
+    {
+     "t": "McKeith et al. · 2017 · Neurology",
+     "sourceId": "mckeith-2017-dlb-consensus",
+     "key": "B"
+    },
+    {
+     "t": "Nasreddine et al. · 2005 · Journal of the American Geriatrics Society",
+     "c": true,
+     "sourceId": "nasreddine-2005-moca",
+     "key": "C"
+    },
+    {
+     "t": "Schneider et al. · 2005 · JAMA",
+     "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 15817019 resolved: title, first author, 2005, J Am Geriatr Soc 53(4):695-9 and DOI all match. Author list truncated to the first five of eight. At a cutoff of 26 the MMSE detected 18% of MCI cases vs 90% for the MoCA; specificity 100% vs 87%. Scope note: these are the ORIGINAL validation figures in a sample selected to perform in the normal range on the MMSE, which inflates the contrast - it supports 'MoCA is more sensitive than MMSE for mild impairment' but not a specific sensitivity number quoted at the bedside.",
+   "pearl": "Scope note: these are the ORIGINAL validation figures in a sample selected to perform in the normal range on the MMSE, which inflates the contrast - it supports 'MoCA is more sensitive than MMSE for mild impairment' but not a specific sensitivity number quoted at the bedside.",
+   "citation": {
+    "title": "The Montreal Cognitive Assessment, MoCA: a brief screening tool for mild cognitive impairment.",
+    "doi": "10.1111/j.1532-5415.2005.53221.x",
+    "pmid": "15817019",
+    "url": "https://doi.org/10.1111/j.1532-5415.2005.53221.x"
+   }
+  },
+  {
+   "id": "ed_t_neurocog_schneider-2005-antipsychotic-dementia-mortality",
+   "status": "draft",
+   "review": null,
+   "page": "t_neurocog.md",
+   "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
+   "claim": "Antipsychotics in dementia carry a black-box mortality warning; nonpharmacologic first, and avoid neuroleptics in Lewy body disease.",
+   "stem": "This claim on t_neurocog.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-drug-safety",
+     "key": "A"
+    },
+    {
+     "t": "McKeith et al. · 2017 · Neurology",
+     "sourceId": "mckeith-2017-dlb-consensus",
+     "key": "B"
+    },
+    {
+     "t": "Nasreddine et al. · 2005 · Journal of the American Geriatrics Society",
+     "sourceId": "nasreddine-2005-moca",
+     "key": "C"
+    },
+    {
+     "t": "Schneider et al. · 2005 · JAMA",
+     "c": true,
+     "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 16234500 resolved: title, all three authors, 2005, JAMA 294(15):1934-43 and DOI all match. 15 trials, 3353 drug vs 1757 placebo; death 3.5% vs 2.3%, OR 1.54 (95% CI 1.06-2.23). This is the evidence base behind the FDA class warning cited on t_neurocog.md. Scope note: the meta-analysis covers ATYPICAL antipsychotics only and the authors characterise the effect as a SMALL increased risk - do not cite it as evidence about typical agents, and do not attach it to a claim stronger than the odds ratio supports.",
+   "pearl": "Scope note: the meta-analysis covers ATYPICAL antipsychotics only and the authors characterise the effect as a SMALL increased risk - do not cite it as evidence about typical agents, and do not attach it to a claim stronger than the odds ratio supports.",
+   "citation": {
+    "title": "Risk of death with atypical antipsychotic drug treatment for dementia: meta-analysis of randomized placebo-controlled trials.",
+    "doi": "10.1001/jama.294.15.1934",
+    "pmid": "16234500",
+    "url": "https://doi.org/10.1001/jama.294.15.1934"
+   }
+  },
+  {
+   "id": "ed_t_perinatal_vanderkruik-2017-postpartum-psychosis-prevalence",
+   "status": "draft",
+   "review": null,
+   "page": "t_perinatal.md",
+   "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
+   "claim": "Reported incidence across population studies is ~0.9–2.6 per 1,000 women, usually within the first 1–4 weeks.",
+   "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "A"
+    },
+    {
+     "t": "SPRAVATO REMS · 2026",
+     "sourceId": "spravato-rems",
+     "key": "B"
+    },
+    {
+     "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
+     "c": true,
+     "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
+     "key": "C"
+    },
+    {
+     "t": "Wesseloo et al. · 2016 · The American Journal of Psychiatry",
+     "sourceId": "wesseloo-2016-postpartum-relapse",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 28754094 resolved: title, first author, 2017, BMC Psychiatry 17(1):272 and DOI all match. Five population-based studies reported incidence of 0.89 to 2.6 per 1000 women. Scope note: the authors declined to POOL the estimates because of heterogeneity in case definition and ascertainment, so this supports a range, not a single pooled rate.",
+   "pearl": "Scope note: the authors declined to POOL the estimates because of heterogeneity in case definition and ascertainment, so this supports a range, not a single pooled rate.",
+   "citation": {
+    "title": "The global prevalence of postpartum psychosis: a systematic review.",
+    "doi": "10.1186/s12888-017-1427-7",
+    "pmid": "28754094",
+    "url": "https://doi.org/10.1186/s12888-017-1427-7"
+   }
+  },
+  {
+   "id": "ed_t_perinatal_wesseloo-2016-postpartum-relapse",
+   "status": "draft",
+   "review": null,
+   "page": "t_perinatal.md",
+   "sourceId": "wesseloo-2016-postpartum-relapse",
+   "claim": "In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all — so future pregnancies warrant advance planning either way.",
+   "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "A"
+    },
+    {
+     "t": "McKeith et al. · 2017 · Neurology",
+     "sourceId": "mckeith-2017-dlb-consensus",
+     "key": "B"
+    },
+    {
+     "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
+     "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
+     "key": "C"
+    },
+    {
+     "t": "Wesseloo et al. · 2016 · The American Journal of Psychiatry",
+     "c": true,
+     "sourceId": "wesseloo-2016-postpartum-relapse",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 26514657 resolved: title, all six authors, journal and DOI match. Issue year is 2016 (Am J Psychiatry 173(2):117-27); PubMed records an electronic publication date of 2015-10-30, so both years appear in the wild - the issue year is used here. 37 articles, 5700 deliveries, 4023 patients. Overall postpartum relapse 35% (95% CI 29-41); bipolar patients medication-free in pregnancy 66% (57-75) vs prophylaxis 23% (14-37); history of postpartum psychosis, severe episode 29% (20-41). Scope note: the authors state explicitly that information was INSUFFICIENT to determine relapse rates for patients with both bipolar disorder and a history of postpartum episodes - do not cite this source for a recurrence figure in that combined group.",
+   "pearl": "Scope note: the authors state explicitly that information was INSUFFICIENT to determine relapse rates for patients with both bipolar disorder and a history of postpartum episodes - do not cite this source for a recurrence figure in that combined group.",
+   "citation": {
+    "title": "Risk of Postpartum Relapse in Bipolar Disorder and Postpartum Psychosis: A Systematic Review and Meta-Analysis.",
+    "doi": "10.1176/appi.ajp.2015.15010124",
+    "pmid": "26514657",
+    "url": "https://doi.org/10.1176/appi.ajp.2015.15010124"
+   }
+  },
+  {
+   "id": "ed_t_psychosis_boyer-shannon-2005-serotonin-syndrome",
+   "status": "draft",
+   "review": null,
+   "page": "t_psychosis.md",
+   "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+   "claim": "serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS. Onset timeline and offending agent (dopamine blocker vs.",
+   "stem": "This claim on t_psychosis.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "sourceId": "clozapine-rems",
+     "key": "B"
+    },
+    {
+     "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "lieberman-2005-catie",
+     "key": "C"
+    },
+    {
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 15784664 resolved: title, both authors, 2005, NEJM 352:1112-20 and DOI all match the inline citation on t_psychosis.md:15.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "The serotonin syndrome.",
+    "doi": "10.1056/NEJMra041867",
+    "pmid": "15784664",
+    "url": "https://doi.org/10.1056/NEJMra041867"
+   }
+  },
+  {
+   "id": "ed_t_psychosis_clozapine-rems",
+   "status": "draft",
+   "review": null,
+   "page": "t_psychosis.md",
+   "sourceId": "clozapine-rems",
+   "claim": "Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).",
+   "stem": "This claim on t_psychosis.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "c": true,
+     "sourceId": "clozapine-rems",
+     "key": "B"
+    },
+    {
+     "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "lieberman-2005-catie",
+     "key": "C"
+    },
+    {
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "key": "D"
+    }
+   ],
+   "why": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "FDA Clozapine Safety / REMS Removed",
+    "doi": "",
+    "pmid": "",
+    "url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine"
+   }
+  },
+  {
+   "id": "ed_t_psychosis_lieberman-2005-catie",
+   "status": "draft",
+   "review": null,
+   "page": "t_psychosis.md",
+   "sourceId": "lieberman-2005-catie",
+   "claim": "Per CATIE, pick the antipsychotic by side-effect fit; \"newer\" is not automatically better.",
+   "stem": "This claim on t_psychosis.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "sourceId": "clozapine-rems",
+     "key": "B"
+    },
+    {
+     "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "lieberman-2005-catie",
+     "key": "C"
+    },
+    {
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "key": "D"
+    }
+   ],
+   "why": "Zotero parent 2TPA9P9D matched the PubMed title, first author, year, DOI, PMID, and journal.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Effectiveness of antipsychotic drugs in patients with chronic schizophrenia.",
+    "doi": "10.1056/nejmoa051688",
+    "pmid": "16172203",
+    "url": "https://doi.org/10.1056/nejmoa051688"
+   }
+  },
+  {
+   "id": "ed_t_psychosis_strawn-2007-neuroleptic-malignant-syndrome",
+   "status": "draft",
+   "review": null,
+   "page": "t_psychosis.md",
+   "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+   "claim": "Neuroleptic malignant syndrome (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.",
+   "stem": "This claim on t_psychosis.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "sourceId": "clozapine-rems",
+     "key": "B"
+    },
+    {
+     "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "lieberman-2005-catie",
+     "key": "C"
+    },
+    {
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "c": true,
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 17541044 resolved: title, all three authors, 2007, Am J Psychiatry 164(6):870-6 and DOI all match the inline citation on t_psychosis.md:15.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Neuroleptic malignant syndrome.",
+    "doi": "10.1176/ajp.2007.164.6.870",
+    "pmid": "17541044",
+    "url": "https://doi.org/10.1176/ajp.2007.164.6.870"
+   }
+  },
+  {
+   "id": "ed_toxidromes_bap-catatonia-2023",
+   "status": "draft",
+   "review": null,
+   "page": "toxidromes.md",
+   "sourceId": "bap-catatonia-2023",
+   "claim": "ECT is the definitive treatment for malignant catatonia (and for NMS-catatonia overlap).",
+   "stem": "This claim on toxidromes.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "British Association for Psychopharmacology · 2023",
+     "c": true,
+     "sourceId": "bap-catatonia-2023",
+     "key": "A"
+    },
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "B"
+    },
+    {
+     "t": "Pharoah et al. · 2010 · Cochrane Database of Systematic Reviews",
+     "sourceId": "pharoah-2010-family-intervention",
+     "key": "C"
+    },
+    {
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "key": "D"
+    }
+   ],
+   "why": "Faculty review status was preserved; bibliographic identity was not inferred.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Evidence-based consensus guidelines for the management of catatonia",
+    "doi": "10.1177/02698811231158232",
+    "pmid": "",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10101189/"
+   }
+  },
+  {
+   "id": "ed_toxidromes_boyer-shannon-2005-serotonin-syndrome",
+   "status": "draft",
+   "review": null,
+   "page": "toxidromes.md",
+   "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+   "claim": "Clonus + hyperreflexia, worse in the legs → serotonin syndrome.",
+   "stem": "This claim on toxidromes.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
+     "sourceId": "aacap-parameters",
+     "key": "A"
+    },
+    {
+     "t": "British Association for Psychopharmacology · 2023",
+     "sourceId": "bap-catatonia-2023",
+     "key": "B"
+    },
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "C"
+    },
+    {
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 15784664 resolved: title, both authors, 2005, NEJM 352:1112-20 and DOI all match the inline citation on t_psychosis.md:15.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "The serotonin syndrome.",
+    "doi": "10.1056/NEJMra041867",
+    "pmid": "15784664",
+    "url": "https://doi.org/10.1056/NEJMra041867"
+   }
+  },
+  {
+   "id": "ed_toxidromes_strawn-2007-neuroleptic-malignant-syndrome",
+   "status": "draft",
+   "review": null,
+   "page": "toxidromes.md",
+   "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+   "claim": "Lead-pipe rigidity + hyporeflexia → NMS.",
+   "stem": "This claim on toxidromes.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "British Association for Psychopharmacology · 2023",
+     "sourceId": "bap-catatonia-2023",
+     "key": "A"
+    },
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "B"
+    },
+    {
+     "t": "SPRAVATO REMS · 2026",
+     "sourceId": "spravato-rems",
+     "key": "C"
+    },
+    {
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "c": true,
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 17541044 resolved: title, all three authors, 2007, Am J Psychiatry 164(6):870-6 and DOI all match the inline citation on t_psychosis.md:15.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Neuroleptic malignant syndrome.",
+    "doi": "10.1176/ajp.2007.164.6.870",
+    "pmid": "17541044",
+    "url": "https://doi.org/10.1176/ajp.2007.164.6.870"
+   }
+  }
+ ]
+}

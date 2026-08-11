@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-07-18",
+  "updated": "2026-08-08",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -89,7 +89,14 @@
         ],
         "clerkshipRelevance": "Direct questioning, suicidal ideation/behavior structure, and escalation language for supervised safety assessment.",
         "shelfComatRelevance": "High",
-        "clinicalWorkflowRelevance": "High"
+        "clinicalWorkflowRelevance": "High",
+        "noteHistory": [
+          {
+            "date": "2026-07-07",
+            "note": "Faculty review status was preserved; bibliographic identity was not inferred.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -129,7 +136,14 @@
         ],
         "clerkshipRelevance": "Supports risk formulation, safety planning, and the distinction between screening and disposition.",
         "shelfComatRelevance": "High",
-        "clinicalWorkflowRelevance": "High"
+        "clinicalWorkflowRelevance": "High",
+        "noteHistory": [
+          {
+            "date": "2026-07-07",
+            "note": "Faculty review status was preserved; bibliographic identity was not inferred.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -169,7 +183,14 @@
         ],
         "clerkshipRelevance": "Frames suicide prevention as a supervised hospital safety process, not a stand-alone student decision.",
         "shelfComatRelevance": "Medium",
-        "clinicalWorkflowRelevance": "High"
+        "clinicalWorkflowRelevance": "High",
+        "noteHistory": [
+          {
+            "date": "2026-07-07",
+            "note": "Faculty review status was preserved; bibliographic identity was not inferred.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -210,7 +231,14 @@
         ],
         "clerkshipRelevance": "Supports supervised prevention, de-escalation, least-restrictive intervention, and local-policy escalation for violence and aggression.",
         "shelfComatRelevance": "Medium",
-        "clinicalWorkflowRelevance": "High"
+        "clinicalWorkflowRelevance": "High",
+        "noteHistory": [
+          {
+            "date": "2026-07-09",
+            "note": "Faculty review status was preserved; bibliographic identity was not inferred.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -250,7 +278,14 @@
         ],
         "clerkshipRelevance": "Supports teaching violence risk as structured clinical judgment with limits, supervision, and dynamic risk formulation.",
         "shelfComatRelevance": "Medium",
-        "clinicalWorkflowRelevance": "High"
+        "clinicalWorkflowRelevance": "High",
+        "noteHistory": [
+          {
+            "date": "2026-07-09",
+            "note": "Faculty review status was preserved; bibliographic identity was not inferred.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -291,7 +326,14 @@
         ],
         "clerkshipRelevance": "Supports recognition, escalation, CIWA use, thiamine, and protocol-based treatment under supervision.",
         "shelfComatRelevance": "High",
-        "clinicalWorkflowRelevance": "High"
+        "clinicalWorkflowRelevance": "High",
+        "noteHistory": [
+          {
+            "date": "2026-07-07",
+            "note": "Faculty review status was preserved; bibliographic identity was not inferred.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -332,7 +374,14 @@
         ],
         "clerkshipRelevance": "Supports recognition, BFCRS use, antipsychotic caution, and escalation for lorazepam challenge/ECT.",
         "shelfComatRelevance": "High",
-        "clinicalWorkflowRelevance": "High"
+        "clinicalWorkflowRelevance": "High",
+        "noteHistory": [
+          {
+            "date": "2026-07-07",
+            "note": "Faculty review status was preserved; bibliographic identity was not inferred.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -373,7 +422,14 @@
         ],
         "clerkshipRelevance": "Supports delirium recognition, prevention, nonpharmacologic management, and avoidance of sedating past medical causes.",
         "shelfComatRelevance": "High",
-        "clinicalWorkflowRelevance": "High"
+        "clinicalWorkflowRelevance": "High",
+        "noteHistory": [
+          {
+            "date": "2026-07-07",
+            "note": "Faculty review status was preserved; bibliographic identity was not inferred.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -413,7 +469,14 @@
         ],
         "clerkshipRelevance": "Supports least-restrictive verbal de-escalation and relational communication under safety constraints.",
         "shelfComatRelevance": "Medium",
-        "clinicalWorkflowRelevance": "High"
+        "clinicalWorkflowRelevance": "High",
+        "noteHistory": [
+          {
+            "date": "2026-07-07",
+            "note": "Faculty review status was preserved; bibliographic identity was not inferred.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -453,7 +516,14 @@
         ],
         "clerkshipRelevance": "Supports treating the driver of agitation and using medication collaboratively when possible.",
         "shelfComatRelevance": "Medium",
-        "clinicalWorkflowRelevance": "High"
+        "clinicalWorkflowRelevance": "High",
+        "noteHistory": [
+          {
+            "date": "2026-07-07",
+            "note": "Faculty review status was preserved; bibliographic identity was not inferred.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -514,7 +584,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent KL5HP3MU matched the PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -575,7 +652,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent TSN2F24F matched the primary article and PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -640,7 +724,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent S6MZZGRA matched the PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -705,7 +796,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent IDSQYW4X matched the publisher title, first author, year, DOI, and journal; no PMID is assigned.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -810,7 +908,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent 2TPA9P9D matched the PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -931,7 +1036,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent LGJ9CSR3 matched the PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1000,7 +1112,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent E8BCCFSN matched the primary article and PubMed title, first author, year, DOI, PMID, and journal; the publisher supplies Birley's middle initial T.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1077,7 +1196,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent 5DH2GK2V matched the publisher and PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1158,7 +1284,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent PDWXBEMZ matched the primary article title, first author, year, DOI, and journal; no PMID is assigned.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1235,7 +1368,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent SHMA7MDE matched the publisher and PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1308,7 +1448,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Faculty-approved exception recorded 2026-07-12: retain Zotero parent P4M5H9VM, PubMed PMID 21154340, and the .pub2 DOI because Zotero and PubMed agree on that 2010 update identity; current Cochrane publisher metadata disagrees and lists .pub3. No Zotero record was changed.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1409,7 +1556,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent 6DTR4GC8 matched the publisher and PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1498,7 +1652,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent ZT9DMH79 matched the publisher and PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1599,7 +1760,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent ZTWERT6K matched the PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1684,7 +1852,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent XRADQ2TY matched the primary article and PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1781,7 +1956,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent FP88WVWT matched the PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1850,7 +2032,14 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-12",
+            "note": "Zotero parent 9FCMTHM2 matched the primary article and PubMed title, first author, year, DOI, PMID, and journal.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       }
     },
     {
@@ -1879,7 +2068,14 @@
         "lastReviewed": "2026-07-08",
         "reviewCadence": "monthly",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-08",
+            "note": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       },
       "surveillance": {
         "job": "guideline-surveillance",
@@ -1927,7 +2123,14 @@
         "lastReviewed": "2026-07-08",
         "reviewCadence": "monthly",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-08",
+            "note": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       },
       "surveillance": {
         "job": "guideline-surveillance",
@@ -1977,7 +2180,14 @@
         "lastReviewed": "2026-07-08",
         "reviewCadence": "monthly",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-08",
+            "note": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       },
       "surveillance": {
         "job": "guideline-surveillance",
@@ -2026,7 +2236,14 @@
         "lastReviewed": "2026-07-08",
         "reviewCadence": "monthly",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-08",
+            "note": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       },
       "surveillance": {
         "job": "guideline-surveillance",
@@ -2076,7 +2293,14 @@
         "lastReviewed": "2026-07-08",
         "reviewCadence": "monthly",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-08",
+            "note": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       },
       "surveillance": {
         "job": "guideline-surveillance",
@@ -2124,7 +2348,14 @@
         "lastReviewed": "2026-07-08",
         "reviewCadence": "monthly",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-08",
+            "note": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       },
       "surveillance": {
         "job": "guideline-surveillance",
@@ -2176,7 +2407,14 @@
         "lastReviewed": "2026-07-08",
         "reviewCadence": "monthly",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-08",
+            "note": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       },
       "surveillance": {
         "job": "guideline-surveillance",
@@ -2226,7 +2464,14 @@
         "lastReviewed": "2026-07-08",
         "reviewCadence": "monthly",
         "supersededBy": [],
-        "correctionStatus": "none-known"
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-07-08",
+            "note": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
       },
       "surveillance": {
         "job": "guideline-surveillance",
@@ -2302,7 +2547,584 @@
         ],
         "clerkshipRelevance": "Supports recognition of mania and mixed features, treatment-emergent (antidepressant-induced) switch risk, and suicide-risk awareness in mixed states under supervision.",
         "shelfComatRelevance": "High",
-        "clinicalWorkflowRelevance": "High"
+        "clinicalWorkflowRelevance": "High",
+        "noteHistory": [
+          {
+            "date": "2026-07-13",
+            "note": "Added to main after source branch diverged; bibliographic identity populated from known metadata; Zotero verification pending.",
+            "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
+      }
+    },
+    {
+      "id": "boyer-shannon-2005-serotonin-syndrome",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "The serotonin syndrome.",
+        "authors": [
+          {
+            "family": "Boyer",
+            "given": "Edward W"
+          },
+          {
+            "family": "Shannon",
+            "given": "Michael"
+          }
+        ],
+        "organization": "",
+        "year": 2005,
+        "journal": "The New England Journal of Medicine",
+        "volume": "352",
+        "pages": "1112-1120",
+        "doi": "10.1056/NEJMra041867",
+        "pmid": "15784664",
+        "url": "https://doi.org/10.1056/NEJMra041867"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 15784664 resolved: title, both authors, 2005, NEJM 352:1112-20 and DOI all match the inline citation on t_psychosis.md:15."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-08-08",
+            "note": "PMID 15784664 resolved: title, both authors, 2005, NEJM 352:1112-20 and DOI all match the inline citation on t_psychosis.md:15.",
+            "reason": "Entered during the first safety-level batch (PR #326). Already cited inline on t_psychosis.md; verification registered it and confirmed the citation."
+          }
+        ]
+      }
+    },
+    {
+      "id": "strawn-2007-neuroleptic-malignant-syndrome",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "Neuroleptic malignant syndrome.",
+        "authors": [
+          {
+            "family": "Strawn",
+            "given": "Jeffrey R"
+          },
+          {
+            "family": "Keck",
+            "given": "Paul E"
+          },
+          {
+            "family": "Caroff",
+            "given": "Stanley N"
+          }
+        ],
+        "organization": "",
+        "year": 2007,
+        "journal": "The American Journal of Psychiatry",
+        "volume": "164",
+        "pages": "870-876",
+        "doi": "10.1176/ajp.2007.164.6.870",
+        "pmid": "17541044",
+        "url": "https://doi.org/10.1176/ajp.2007.164.6.870"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 17541044 resolved: title, all three authors, 2007, Am J Psychiatry 164(6):870-6 and DOI all match the inline citation on t_psychosis.md:15."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-08-08",
+            "note": "PMID 17541044 resolved: title, all three authors, 2007, Am J Psychiatry 164(6):870-6 and DOI all match the inline citation on t_psychosis.md:15.",
+            "reason": "Entered during the first safety-level batch (PR #326). Already cited inline on t_psychosis.md; verification registered it and confirmed the citation."
+          }
+        ]
+      }
+    },
+    {
+      "id": "lima-2004-betablockers-akathisia",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Central action beta-blockers versus placebo for neuroleptic-induced acute akathisia.",
+        "authors": [
+          {
+            "family": "Lima",
+            "given": "A R"
+          },
+          {
+            "family": "Bacalcthuk",
+            "given": "J"
+          },
+          {
+            "family": "Barnes",
+            "given": "T R E"
+          },
+          {
+            "family": "Soares-Weiser",
+            "given": "K"
+          }
+        ],
+        "organization": "",
+        "year": 2004,
+        "journal": "Cochrane Database of Systematic Reviews",
+        "volume": "2004",
+        "pages": "CD001946",
+        "doi": "10.1002/14651858.CD001946.pub2",
+        "pmid": "15495022",
+        "url": "https://doi.org/10.1002/14651858.CD001946.pub2"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 15495022 resolved and matches. IMPORTANT - this review does NOT support a strong-evidence claim: 3 RCTs, total n=51, maximum 72 hours, concluding verbatim 'There are insufficient data to recommend beta-blocking drugs for akathisia. These drugs are experimental for this problem.' Its scope is central-action beta-blockers, not propranolol specifically. t_anxiety.md previously cited it as 'the strongest evidence'; that wording was corrected in the same commit that registered this source. Cite it for the thinness of the evidence base, not for endorsement."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-08-08",
+            "note": "PMID 15495022 resolved and matches. IMPORTANT - this review does NOT support a strong-evidence claim: 3 RCTs, total n=51, maximum 72 hours, concluding verbatim 'There are insufficient data to recommend beta-blocking drugs for akathisia. These drugs are experimental for this problem.' Its scope is central-action beta-blockers, not propranolol specifically. t_anxiety.md previously cited it as 'the strongest evidence'; that wording was corrected in the same commit that registered this source. Cite it for the thinness of the evidence base, not for endorsement.",
+            "reason": "Verification for the 2026-08-08 safety-level audit found the review concludes the opposite of what t_anxiety.md cited it for: three RCTs, n=51, insufficient data to recommend beta-blockers for akathisia. The page's evidence claim was corrected in PR #326 and the scope note added so the citation cannot be re-attached to a strong-evidence claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "cipriani-2013-lithium-suicide",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Lithium in the prevention of suicide in mood disorders: updated systematic review and meta-analysis.",
+        "authors": [
+          {
+            "family": "Cipriani",
+            "given": "Andrea"
+          },
+          {
+            "family": "Hawton",
+            "given": "Keith"
+          },
+          {
+            "family": "Stockton",
+            "given": "Sarah"
+          },
+          {
+            "family": "Geddes",
+            "given": "John R"
+          }
+        ],
+        "organization": "",
+        "year": 2013,
+        "journal": "BMJ",
+        "volume": "346",
+        "pages": "f3646",
+        "doi": "10.1136/bmj.f3646",
+        "pmid": "23814104",
+        "url": "https://doi.org/10.1136/bmj.f3646"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 23814104 resolved and matches. 48 RCTs, 6674 participants; lithium vs placebo for suicide OR 0.13 (95% CI 0.03-0.66) and all-cause death OR 0.38 (0.15-0.95). Directly supports the anti-suicidal claim on t_mood.md:13."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-08-08",
+            "note": "PMID 23814104 resolved and matches. 48 RCTs, 6674 participants; lithium vs placebo for suicide OR 0.13 (95% CI 0.03-0.66) and all-cause death OR 0.38 (0.15-0.95). Directly supports the anti-suicidal claim on t_mood.md:13.",
+            "reason": "Entered during the first safety-level batch (PR #326) to back the anti-suicidal claim on t_mood.md."
+          }
+        ]
+      }
+    },
+    {
+      "id": "apa-eating-disorders-2023",
+      "type": "guideline",
+      "citation": {
+        "title": "The American Psychiatric Association Practice Guideline for the Treatment of Patients With Eating Disorders.",
+        "authors": [
+          {
+            "family": "Crone",
+            "given": "Catherine"
+          },
+          {
+            "family": "Fochtmann",
+            "given": "Laura J"
+          },
+          {
+            "family": "Attia",
+            "given": "Evelyn"
+          }
+        ],
+        "organization": "American Psychiatric Association",
+        "year": 2023,
+        "journal": "The American Journal of Psychiatry",
+        "volume": "180",
+        "pages": "167-171",
+        "doi": "10.1176/appi.ajp.23180001",
+        "pmid": "36722117",
+        "url": "https://doi.org/10.1176/appi.ajp.23180001"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 36722117 resolved: title, 2023, Am J Psychiatry 180(2):167-171 and DOI match. Author list truncated to the first three of twenty."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-08-08",
+            "note": "PMID 36722117 resolved: title, 2023, Am J Psychiatry 180(2):167-171 and DOI match. Author list truncated to the first three of twenty.",
+            "reason": "Entered during the first safety-level batch (PR #326) to back the medical-admission and refeeding guidance on t_eating.md."
+          }
+        ]
+      }
+    },
+    {
+      "id": "schneider-2005-antipsychotic-dementia-mortality",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Risk of death with atypical antipsychotic drug treatment for dementia: meta-analysis of randomized placebo-controlled trials.",
+        "authors": [
+          {
+            "family": "Schneider",
+            "given": "Lon S"
+          },
+          {
+            "family": "Dagerman",
+            "given": "Karen S"
+          },
+          {
+            "family": "Insel",
+            "given": "Philip"
+          }
+        ],
+        "organization": "",
+        "year": 2005,
+        "journal": "JAMA",
+        "volume": "294",
+        "pages": "1934-1943",
+        "doi": "10.1001/jama.294.15.1934",
+        "pmid": "16234500",
+        "url": "https://doi.org/10.1001/jama.294.15.1934"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 16234500 resolved: title, all three authors, 2005, JAMA 294(15):1934-43 and DOI all match. 15 trials, 3353 drug vs 1757 placebo; death 3.5% vs 2.3%, OR 1.54 (95% CI 1.06-2.23). This is the evidence base behind the FDA class warning cited on t_neurocog.md. Scope note: the meta-analysis covers ATYPICAL antipsychotics only and the authors characterise the effect as a SMALL increased risk - do not cite it as evidence about typical agents, and do not attach it to a claim stronger than the odds ratio supports."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-08-08",
+            "note": "PMID 16234500 resolved: title, all three authors, 2005, JAMA 294(15):1934-43 and DOI all match. 15 trials, 3353 drug vs 1757 placebo; death 3.5% vs 2.3%, OR 1.54 (95% CI 1.06-2.23). This is the evidence base behind the FDA class warning cited on t_neurocog.md. Scope note: the meta-analysis covers ATYPICAL antipsychotics only and the authors characterise the effect as a SMALL increased risk - do not cite it as evidence about typical agents, and do not attach it to a claim stronger than the odds ratio supports.",
+            "reason": "Entered during the D-8/D-9 batch (PR #328), with a scope note limiting it to atypical agents and to the small effect the authors describe."
+          }
+        ]
+      }
+    },
+    {
+      "id": "mckeith-2017-dlb-consensus",
+      "type": "consensus",
+      "citation": {
+        "title": "Diagnosis and management of dementia with Lewy bodies: Fourth consensus report of the DLB Consortium.",
+        "authors": [
+          {
+            "family": "McKeith",
+            "given": "Ian G"
+          },
+          {
+            "family": "Boeve",
+            "given": "Bradley F"
+          },
+          {
+            "family": "Dickson",
+            "given": "Dennis W"
+          },
+          {
+            "family": "Halliday",
+            "given": "Glenda"
+          },
+          {
+            "family": "Taylor",
+            "given": "John-Paul"
+          }
+        ],
+        "organization": "DLB Consortium",
+        "year": 2017,
+        "journal": "Neurology",
+        "volume": "89",
+        "pages": "88-100",
+        "doi": "10.1212/WNL.0000000000004058",
+        "pmid": "28592453",
+        "url": "https://doi.org/10.1212/WNL.0000000000004058"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 28592453 resolved: title, first author, 2017, Neurology 89(1):88-100 and DOI all match. Author list truncated to the first five of 64. CAUTION - a near-identical record exists at PMID 29438029, 'Author response: Diagnosis and management of dementia with Lewy bodies...', Neurology 90(6):300-301, which is a one-page comment and NOT the consensus criteria; do not substitute it. Scope note: this report names four CORE clinical features (fluctuating cognition, recurrent visual hallucinations, REM sleep behaviour disorder, spontaneous parkinsonism) and lists severe antipsychotic sensitivity as a SUPPORTIVE feature, downgraded from 'suggestive' in this revision - do not cite it to support calling neuroleptic sensitivity a core feature."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-08-08",
+            "note": "PMID 28592453 resolved: title, first author, 2017, Neurology 89(1):88-100 and DOI all match. Author list truncated to the first five of 64. CAUTION - a near-identical record exists at PMID 29438029, 'Author response: Diagnosis and management of dementia with Lewy bodies...', Neurology 90(6):300-301, which is a one-page comment and NOT the consensus criteria; do not substitute it. Scope note: this report names four CORE clinical features (fluctuating cognition, recurrent visual hallucinations, REM sleep behaviour disorder, spontaneous parkinsonism) and lists severe antipsychotic sensitivity as a SUPPORTIVE feature, downgraded from 'suggestive' in this revision - do not cite it to support calling neuroleptic sensitivity a core feature.",
+            "reason": "Entered during the D-8/D-9 batch (PR #328). The note records the decoy at PMID 29438029 - a one-page Author response with a near-identical title that resolves cleanly - and the core-versus-supportive distinction that corrected t_neurocog.md."
+          }
+        ]
+      }
+    },
+    {
+      "id": "nasreddine-2005-moca",
+      "type": "instrument",
+      "citation": {
+        "title": "The Montreal Cognitive Assessment, MoCA: a brief screening tool for mild cognitive impairment.",
+        "authors": [
+          {
+            "family": "Nasreddine",
+            "given": "Ziad S"
+          },
+          {
+            "family": "Phillips",
+            "given": "Natalie A"
+          },
+          {
+            "family": "B\u00e9dirian",
+            "given": "Val\u00e9rie"
+          },
+          {
+            "family": "Charbonneau",
+            "given": "Simon"
+          },
+          {
+            "family": "Whitehead",
+            "given": "Victor"
+          }
+        ],
+        "organization": "",
+        "year": 2005,
+        "journal": "Journal of the American Geriatrics Society",
+        "volume": "53",
+        "pages": "695-699",
+        "doi": "10.1111/j.1532-5415.2005.53221.x",
+        "pmid": "15817019",
+        "url": "https://doi.org/10.1111/j.1532-5415.2005.53221.x"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 15817019 resolved: title, first author, 2005, J Am Geriatr Soc 53(4):695-9 and DOI all match. Author list truncated to the first five of eight. At a cutoff of 26 the MMSE detected 18% of MCI cases vs 90% for the MoCA; specificity 100% vs 87%. Scope note: these are the ORIGINAL validation figures in a sample selected to perform in the normal range on the MMSE, which inflates the contrast - it supports 'MoCA is more sensitive than MMSE for mild impairment' but not a specific sensitivity number quoted at the bedside."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-08-08",
+            "note": "PMID 15817019 resolved: title, first author, 2005, J Am Geriatr Soc 53(4):695-9 and DOI all match. Author list truncated to the first five of eight. At a cutoff of 26 the MMSE detected 18% of MCI cases vs 90% for the MoCA; specificity 100% vs 87%. Scope note: these are the ORIGINAL validation figures in a sample selected to perform in the normal range on the MMSE, which inflates the contrast - it supports 'MoCA is more sensitive than MMSE for mild impairment' but not a specific sensitivity number quoted at the bedside.",
+            "reason": "Entered during the D-8/D-9 batch (PR #328), with a scope note that the original validation sample was selected to score normally on the MMSE, which inflates the sensitivity contrast."
+          }
+        ]
+      }
+    },
+    {
+      "id": "wesseloo-2016-postpartum-relapse",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Risk of Postpartum Relapse in Bipolar Disorder and Postpartum Psychosis: A Systematic Review and Meta-Analysis.",
+        "authors": [
+          {
+            "family": "Wesseloo",
+            "given": "Richard"
+          },
+          {
+            "family": "Kamperman",
+            "given": "Astrid M"
+          },
+          {
+            "family": "Munk-Olsen",
+            "given": "Trine"
+          },
+          {
+            "family": "Pop",
+            "given": "Victor J M"
+          },
+          {
+            "family": "Kushner",
+            "given": "Steven A"
+          },
+          {
+            "family": "Bergink",
+            "given": "Veerle"
+          }
+        ],
+        "organization": "",
+        "year": 2016,
+        "journal": "The American Journal of Psychiatry",
+        "volume": "173",
+        "pages": "117-127",
+        "doi": "10.1176/appi.ajp.2015.15010124",
+        "pmid": "26514657",
+        "url": "https://doi.org/10.1176/appi.ajp.2015.15010124"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 26514657 resolved: title, all six authors, journal and DOI match. Issue year is 2016 (Am J Psychiatry 173(2):117-27); PubMed records an electronic publication date of 2015-10-30, so both years appear in the wild - the issue year is used here. 37 articles, 5700 deliveries, 4023 patients. Overall postpartum relapse 35% (95% CI 29-41); bipolar patients medication-free in pregnancy 66% (57-75) vs prophylaxis 23% (14-37); history of postpartum psychosis, severe episode 29% (20-41). Scope note: the authors state explicitly that information was INSUFFICIENT to determine relapse rates for patients with both bipolar disorder and a history of postpartum episodes - do not cite this source for a recurrence figure in that combined group."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-08-08",
+            "note": "PMID 26514657 resolved: title, all six authors, journal and DOI match. Issue year is 2016 (Am J Psychiatry 173(2):117-27); PubMed records an electronic publication date of 2015-10-30, so both years appear in the wild - the issue year is used here. 37 articles, 5700 deliveries, 4023 patients. Overall postpartum relapse 35% (95% CI 29-41); bipolar patients medication-free in pregnancy 66% (57-75) vs prophylaxis 23% (14-37); history of postpartum psychosis, severe episode 29% (20-41). Scope note: the authors state explicitly that information was INSUFFICIENT to determine relapse rates for patients with both bipolar disorder and a history of postpartum episodes - do not cite this source for a recurrence figure in that combined group.",
+            "reason": "Entered during the D-8/D-9 batch (PR #328). The note records that the meta-analysis reports insufficient data for the bipolar-plus-prior-postpartum-episode group, which is why t_perinatal.md's unsourced 30-50% recurrence figure was reworded."
+          }
+        ]
+      }
+    },
+    {
+      "id": "vanderkruik-2017-postpartum-psychosis-prevalence",
+      "type": "systematic-review",
+      "citation": {
+        "title": "The global prevalence of postpartum psychosis: a systematic review.",
+        "authors": [
+          {
+            "family": "VanderKruik",
+            "given": "Rachel"
+          },
+          {
+            "family": "Barreix",
+            "given": "Maria"
+          },
+          {
+            "family": "Chou",
+            "given": "Doris"
+          },
+          {
+            "family": "Allen",
+            "given": "Tomas"
+          },
+          {
+            "family": "Say",
+            "given": "Lale"
+          },
+          {
+            "family": "Cohen",
+            "given": "Lee S"
+          }
+        ],
+        "organization": "",
+        "year": 2017,
+        "journal": "BMC Psychiatry",
+        "volume": "17",
+        "pages": "272",
+        "doi": "10.1186/s12888-017-1427-7",
+        "pmid": "28754094",
+        "url": "https://doi.org/10.1186/s12888-017-1427-7"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-08-08",
+        "note": "PMID 28754094 resolved: title, first author, 2017, BMC Psychiatry 17(1):272 and DOI all match. Five population-based studies reported incidence of 0.89 to 2.6 per 1000 women. Scope note: the authors declined to POOL the estimates because of heterogeneity in case definition and ascertainment, so this supports a range, not a single pooled rate."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "lastReviewed": "2026-08-08",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-08-08",
+            "note": "PMID 28754094 resolved: title, first author, 2017, BMC Psychiatry 17(1):272 and DOI all match. Five population-based studies reported incidence of 0.89 to 2.6 per 1000 women. Scope note: the authors declined to POOL the estimates because of heterogeneity in case definition and ascertainment, so this supports a range, not a single pooled rate.",
+            "reason": "Entered during the D-8/D-9 batch (PR #328), with a scope note that the authors declined to pool the incidence estimates, so it supports a range and not a rate."
+          }
+        ]
+      }
+    },
+    {
+      "id": "fda-prozac-label-maoi-switching",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "PROZAC (fluoxetine) FDA-approved prescribing information, section 2.9: Switching a Patient To or From a Monoamine Oxidase Inhibitor (MAOI) Intended to Treat Psychiatric Disorders",
+        "authors": [],
+        "organization": "U.S. Food and Drug Administration",
+        "year": 2026,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://api.fda.gov/drug/label.json?search=openfda.brand_name:%22PROZAC%22&limit=1"
+      },
+      "identity": {
+        "status": "exception",
+        "source": "fda-labeling",
+        "verifiedAt": "2026-08-09",
+        "note": "Retrieved 2026-08-09 from the openFDA drug-label endpoint for brand_name PROZAC. Section 2.9 states verbatim: \"At least 14 days should elapse between discontinuation of an MAOI intended to treat psychiatric disorders and initiation of therapy with PROZAC. Conversely, at least 5 weeks should be allowed after stopping PROZAC before starting an MAOI intended to treat psychiatric disorders.\" identity.status is 'exception' rather than 'verified' because this is a REGULATORY LABELING statement, not a literature finding - no PubMed-indexed study reports these intervals as a result, so there is no bibliographic record to resolve. Scope note: this entry backs the >=5 week interval after fluoxetine and the >=14 day interval after an MAOI. It does NOT back the page's '>=2 weeks after stopping most SSRIs' generalization, which is a class statement drawn from other products' labeling - do not attach this source to it. The url is a live endpoint returning CURRENT labeling; the quotation above is the review record of what it said on the verification date."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "lastReviewed": "2026-08-09",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-08-09",
+            "note": "Retrieved 2026-08-09 from the openFDA drug-label endpoint for brand_name PROZAC. Section 2.9 states verbatim: \"At least 14 days should elapse between discontinuation of an MAOI intended to treat psychiatric disorders and initiation of therapy with PROZAC. Conversely, at least 5 weeks should be allowed after stopping PROZAC before starting an MAOI intended to treat psychiatric disorders.\" identity.status is 'exception' rather than 'verified' because this is a REGULATORY LABELING statement, not a literature finding - no PubMed-indexed study reports these intervals as a result, so there is no bibliographic record to resolve. Scope note: this entry backs the >=5 week interval after fluoxetine and the >=14 day interval after an MAOI. It does NOT back the page's '>=2 weeks after stopping most SSRIs' generalization, which is a class statement drawn from other products' labeling - do not attach this source to it. The url is a live endpoint returning CURRENT labeling; the quotation above is the review record of what it said on the verification date.",
+            "reason": "Entered during the D-10 batch (PR #330). The note quotes labeling section 2.9 verbatim because the url returns current labeling and will drift; identity.status is 'exception' since a regulatory statement has no bibliographic record to resolve."
+          }
+        ]
       }
     }
   ]

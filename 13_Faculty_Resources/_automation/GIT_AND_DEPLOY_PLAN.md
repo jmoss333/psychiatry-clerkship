@@ -166,6 +166,37 @@ rotation readiness, and pause/resume procedures. The
 - GitHub can compare the red-team receipt with the canonical SP pack in git. Only the external,
   authenticated Netlify deadman can separately compare it with the latest hosted SP deploy.
 
+## 9. Offline-shell service-worker kill switch (SW_KILL)
+
+Both sites ship a service worker (`sw.js`, emitted per-site by `common.py`'s
+`emit_service_worker()` from `sw_template.js`) that precaches the shell so it keeps working
+offline / after Add to Home Screen. If it ever misbehaves in production (stale content stuck
+in the precache, a bad fetch-interception edge case, anything that makes disabling it faster
+than debugging it), there is a build-time rollback switch — no code change required.
+
+**To disable (both sites, every client):**
+1. In **each** Netlify site's UI — `une-ms3-psychiatry` **and**
+   `mmc-psychiatry-residents-sanford` — go to Site config → Environment variables and set
+   `SW_KILL=1`.
+2. Trigger a new deploy on **both** sites (push a commit, or "Trigger deploy" in the UI). The
+   build re-emits `sw.js` with `KILL=true` baked in (see `_SW_KILL_ANCHOR` /
+   `emit_service_worker(..., kill=...)` in `common.py`).
+3. On every client's next visit, the installed worker's `activate` handler sees `KILL=true`,
+   deletes all `cw-precache-*` caches, and calls `self.registration.unregister()` (see
+   `sw_template.js`) — no manual per-device action needed, and no forced reload is required
+   (the kill takes effect on the worker's normal activate lifecycle).
+4. Confirm: open either site, DevTools → Application → Service Workers should show no
+   registration (or a controller-less one mid-transition), and Application → Cache Storage
+   should show zero `cw-precache-*` entries after one navigation.
+
+**To re-enable:** unset `SW_KILL` (or set it to anything other than `1`) in both sites' env
+vars and redeploy both. The next build emits `KILL=false` and registration resumes normally
+via the `SW_REGISTER` snippet (`sw_register.js`) on the client's next page load.
+
+Both sites must be flipped together — `SW_KILL` is a per-site Netlify build env var, not a
+runtime flag, so leaving one site set and the other unset ships inconsistent offline behavior
+between the MS3 and resident learner populations.
+
 ---
 *Prepared 2026-07-01; deployment migration completed 2026-07-02; scheduled-operations handoff linked
 2026-07-29. Baseline commit `a7793cc`. Manual deploys can remain retired; follow the maintenance

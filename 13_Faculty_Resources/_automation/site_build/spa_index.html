@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}try{if(localStorage.getItem('cw_side_collapsed')==='1'){document.documentElement.setAttribute('data-side','rail');}}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inpatient Psychiatry — MS3 Clerkship</title>
@@ -12,7 +12,7 @@
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
     --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
-    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2; --accent-border:#bfd8d3;
     --text:#2f2924; --focus:#155eef; --text-mid:#51473d; --text-light:#665a4f; --warning:#7a6234; --warning-light:#f5efe2;
     --success:#357160; --success-light:#e7f1ed; --danger:#a34132; --danger-light:#fbece9; --info:#41618a; --info-light:#eaf0f6;
     --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
@@ -22,10 +22,27 @@
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
   .layout{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
   aside{background:var(--bg-alt);border-right:1px solid var(--border);padding:18px 14px;overflow-y:auto;position:sticky;top:0;height:100vh}
-  aside h1{font-family:var(--font-head);font-size:1.15rem;color:var(--primary-dark);margin:0 0 2px}
+  aside h1{font-family:var(--font-head);font-size:1.05rem;color:var(--primary-dark);margin:0 0 2px;padding-right:74px;white-space:nowrap}
   aside .by{font-size:.78rem;color:var(--text-light);margin-bottom:14px}
   .themebtn{position:absolute;top:16px;right:14px;width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;line-height:1;display:flex;align-items:center;justify-content:center}
   .themebtn:hover{border-color:var(--accent);color:var(--accent-dark)}
+  /* Collapsible sidebar (desktop only — the ≤820px drawer keeps the full sidebar).
+     html[data-side=rail] is set pre-paint from cw_side_collapsed so there is no flash. */
+  .side-collapse{position:absolute;top:16px;right:54px;width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:.92rem;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
+  .side-collapse:hover{border-color:var(--accent);color:var(--accent-dark)}
+  .side-rail{display:none}
+  @media(min-width:821px){
+    .layout{transition:grid-template-columns .25s ease}
+    html[data-side=rail] .layout{grid-template-columns:56px 1fr}
+    html[data-side=rail] aside{padding:14px 10px}
+    html[data-side=rail] aside>*:not(.side-rail){display:none}
+    html[data-side=rail] .side-rail{display:flex;flex-direction:column;align-items:center;gap:10px}
+  }
+  .rail-expand{width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--accent-dark);cursor:pointer;font-size:.92rem;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
+  .railbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
+  .railbtn.rail-capture{border:1.5px dashed var(--border);background:transparent}
+  .rail-expand:hover,.railbtn:hover{border-color:var(--accent);color:var(--accent-dark)}
+  .rail-sep{width:24px;border-top:1px solid var(--border);margin:2px 0}
   .modetoggle{position:relative;display:flex;background:var(--primary-light);border:1px solid var(--border);border-radius:999px;padding:3px;margin:2px 0 14px}
   .modetoggle .knob{position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);background:var(--accent);border-radius:999px;transition:transform .22s ease;z-index:0}
   .modetoggle.lib .knob{transform:translateX(100%)}
@@ -39,6 +56,9 @@
   input.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
   .search-wrap .sx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:1rem;display:none}
   .mode-companion{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:0;margin:0 0 12px;box-shadow:0 1px 3px rgba(59,51,44,.08);overflow:hidden}
+  /* On Today the unit-card header carries the same five mode chips — hide the sidebar
+     companion there so the mode control exists once. Every other view keeps it. */
+  body.mc-suppress .mode-companion{display:none}
   .mc-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;background:transparent;color:var(--text);font:inherit;font-weight:900;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:10px;cursor:pointer}
   .mc-toggle:hover{background:var(--accent-light);color:var(--accent-dark)}
   .mc-chev{display:inline-block;color:var(--text-light);transition:transform .15s}
@@ -167,7 +187,7 @@
   .practice-section-title{font-size:.7rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--primary-dark);margin:0 0 8px}
   .practice-muted{font-size:.9rem;color:var(--text-mid);margin:0}
   .practice-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-  .practice-action{display:inline-flex;align-items:center;text-decoration:none;font-size:.84rem;font-weight:700;line-height:1.2;color:var(--accent-dark);background:var(--accent-light);border:1px solid #bfd8d3;border-radius:999px;padding:8px 12px}
+  .practice-action{display:inline-flex;align-items:center;text-decoration:none;font-size:.84rem;font-weight:700;line-height:1.2;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent-border);border-radius:999px;padding:8px 12px}
   .practice-action:hover{background:var(--surface);border-color:var(--accent)}
   .practice-action.is-safety{color:var(--primary-dark);background:var(--primary-light);border-color:#bdd5d1}
   .practice-action.is-case{color:var(--primary-dark);background:#fff;border-color:#d5c9bc}
@@ -285,7 +305,15 @@
     .menubtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;border:none;border-radius:9px;padding:8px 12px;background:var(--primary-dark);color:#fff;font:inherit;font-weight:700;cursor:pointer}
     .menubtn span{display:none}
     .mobile-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;color:var(--text);font-family:var(--font-head);font-size:1rem;font-weight:600}
-    .mobile-chrome-spacer{display:block;min-width:44px;min-height:44px}
+    /* Replaces the old .mobile-chrome-spacer (an empty 44x44 span that existed only to balance
+       #menuBtn in the 3-column grid). Same footprint, so the resolved track stays 44px and the
+       320px no-overflow assertion in visual-regression.spec.js is unaffected. font:inherit is
+       required — buttons do not inherit font, and the UA default would render this in Arial on a
+       ButtonFace block, visibly wrong in dark mode. Mirrors .menubtn above. */
+    .mobile-chrome-capture{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:none;border-radius:9px;padding:8px 12px;background:var(--primary-light);color:var(--primary-dark);font:inherit;font-weight:700;line-height:1;cursor:pointer}
+    .mobile-chrome-capture:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+    .capture-desk{display:none}
+    .side-collapse{display:none}
     aside{position:fixed;left:0;top:0;width:84%;max-width:300px;z-index:20;height:100vh;height:100dvh;padding-bottom:18px;overflow-y:auto;overscroll-behavior:contain;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 30px rgba(0,0,0,.2)}
     body.has-tlbar aside{padding-bottom:calc(var(--mobile-bottom-clearance) + 18px)}
     aside.open{transform:translateX(0)}
@@ -323,6 +351,48 @@
   .tl-fab__label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   @media(max-width:820px){.tl-dock{display:none}}
   @media(prefers-reduced-motion:reduce){.tl-chip,.tl-dock__item,.tl-fab svg{transition:none}.tl-dock__item{transform:none}}
+  /* SW update toast: sits just above the desktop tool dock (z-index:30). Both button
+     styles use --surface as their background with text tokens already proven AA (4.5:1+)
+     against it in both themes (contrast-check.mjs; --primary-dark/--text-mid are TEXT
+     tokens, calibrated for that pairing) — deliberately not filled buttons, since the
+     dark-mode "*-dark" tokens are light colors meant for text-on-dark-surface, not a
+     button fill white text could sit on. */
+  .sw-toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:31;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.86rem;box-shadow:0 8px 28px rgba(59,51,44,.18)}
+  .sw-toast button{font-family:inherit;font-size:.84rem;font-weight:700;border-radius:999px;padding:7px 12px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-mid)}
+  .sw-toast button:first-of-type{color:var(--primary-dark);border-color:var(--primary-dark)}
+  .sw-toast button:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+  @media(max-width:820px){body.has-tlbar .sw-toast{bottom:calc(var(--mobile-bottom-clearance) + 12px)}}
+
+  /* ===== Ward question capture =====
+     z-index 50: above .tl-sheet (40) and .tl-sheet-backdrop (39) so the capture dialog is never
+     occluded by the tool sheet, and below .skip-link (100, the stylesheet maximum). The SW update
+     toast sits at 31 and appends two focusable buttons as the last children of <body> with no
+     focus management of its own — the trap below must not assume it owns the end of tab order. */
+  .capture-desk{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:38px;margin:0 0 12px;border:1px dashed var(--border);border-radius:9px;background:transparent;color:var(--text-mid);font-family:var(--font-body);font-size:.8rem;font-weight:600;cursor:pointer}
+  .capture-desk:hover{border-style:solid;color:var(--primary-dark);border-color:var(--primary-dark)}
+  .capture-desk:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+  .cap-backdrop{position:fixed;inset:0;z-index:49;background:rgba(47,41,36,.4)}
+  .cap-sheet{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:50;width:min(520px,calc(100vw - 24px));max-height:min(80vh,720px);overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 12px 40px rgba(59,51,44,.26);font-family:var(--font-body)}
+  .cap-sheet h2{font-family:var(--font-head);font-size:1.02rem;color:var(--primary-dark);margin:0 0 4px}
+  .cap-warn{font-size:.82rem;color:var(--text-mid);margin:0 0 10px;line-height:1.45}
+  .cap-warn strong{color:var(--text)}
+  .cap-sheet textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;border:1px solid var(--border);border-radius:9px;padding:10px;font:inherit;font-size:.9rem;color:var(--text);background:var(--bg)}
+  .cap-sheet textarea:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+  .cap-disclose{font-size:.76rem;color:var(--text-light);margin:8px 0 0}
+  .cap-acts{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 0}
+  .cap-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 14px;font:inherit;font-size:.84rem;font-weight:600;cursor:pointer}
+  .cap-btn.primary{background:var(--primary-dark);border-color:var(--primary-dark);color:#fff}
+  .cap-btn.danger{color:var(--warning);border-color:var(--warning)}
+  .cap-btn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+  .cap-phi{margin:12px 0 0;padding:12px;background:var(--warning-light);border:1px solid var(--warning);border-radius:9px;font-size:.84rem;color:var(--warning)}
+  .cap-phi b{display:block;margin:0 0 4px}
+  .cap-list{list-style:none;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--border)}
+  .cap-list li{display:flex;align-items:flex-start;gap:8px;margin:0 0 8px;font-size:.84rem;color:var(--text)}
+  .cap-list .x{flex:0 0 auto;border:none;background:transparent;color:var(--text-light);font:inherit;font-size:1rem;line-height:1;cursor:pointer;padding:2px 6px;min-width:28px;min-height:28px}
+  .cap-err{margin:10px 0 0;font-size:.82rem;color:var(--warning)}
+  .cap-tri{margin:0 0 14px;padding:0 0 4px;border-bottom:1px solid var(--border)}
+  .cap-tri:last-of-type{border-bottom:none}
+  .cap-tri-q{margin:0 0 6px;font-size:.9rem;font-weight:600;color:var(--text)}
   /* ===== Bedside mobile tool bar (Concept C) — phone gets a bar, wider screens keep the dock ===== */
   .tl-bar{display:none}
   @media(max-width:820px){
@@ -351,14 +421,27 @@
   .hm{max-width:900px;margin:0 auto;padding:26px 28px 60px}
   .hm h1{font-family:var(--font-head);color:var(--primary);font-size:1.9rem;margin:.1em 0}
   .hm .sub{color:var(--text-mid);margin:0 0 20px}
-  .hm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:0 0 20px}
-  .hm-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
-  .hm-card .k{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
-  .hm-card .v{font-family:var(--font-head);font-size:1.8rem;color:var(--text);line-height:1}
-  .hm-card .v small{font-size:.85rem;color:var(--text-light);font-family:var(--font-body)}
-  .hm-row{display:flex;align-items:center;gap:14px}
-  .hm-ring{width:74px;height:74px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p,0)*1%),var(--border) 0);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-  .hm-ring i{width:56px;height:56px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:600;font-style:normal;color:var(--accent-dark);font-size:1.05rem}
+  .hm-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 16px}
+  .hm-stamp{font-size:.76rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);white-space:nowrap}
+  .hm-ribbon{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px;margin:0 0 14px;flex-wrap:wrap}
+  .hm-ribbon .t{flex:1;min-width:220px}
+  .hm-ribbon .hm-btn{align-self:auto}
+  .hm-ribbon-x{border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:1.05rem;line-height:1;padding:2px 6px;font-family:var(--font-body)}
+  .hm-ribbon-x:hover{color:var(--text)}
+  .hm-hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:var(--accent-light);border:1px solid var(--accent-border);border-left:4px solid var(--accent);border-radius:14px;padding:18px 20px;margin:0 0 18px}
+  .hm-hero .k{font-size:.66rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-dark);margin:0 0 4px}
+  .hm-hero .t{font-family:var(--font-head);font-size:1.3rem;font-weight:600;color:var(--text);line-height:1.3}
+  .hm-hero .a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:var(--accent);border-radius:999px;color:var(--on-brand,#fff);font-size:.88rem;font-weight:800;padding:10px 18px;white-space:nowrap}
+  .hm-hero .a:hover{background:var(--accent-dark)}
+  @media(max-width:560px){.hm-hero{grid-template-columns:1fr}.hm-hero .a{justify-self:start}}
+  .hm-mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 20px}
+  .hm-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;text-align:left}
+  button.hm-tile{cursor:pointer;font:inherit;color:var(--text)}
+  button.hm-tile:hover{border-color:var(--accent)}
+  .hm-tile .k{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
+  .hm-tile .v{font-family:var(--font-head);font-size:1.4rem;color:var(--text);line-height:1.1}
+  .hm-tile .v small{font-size:.78rem;color:var(--text-light);font-family:var(--font-body)}
+  .hm-tile .l{font-weight:700;color:var(--accent-dark);font-size:.9rem}
   .hm-btn{display:inline-block;border:none;background:var(--primary-dark);color:#fff;border-radius:8px;padding:8px 14px;font:inherit;font-weight:600;font-size:.85rem;cursor:pointer;text-decoration:none;align-self:flex-start}
   .hm-btn.ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
   .hm-sec{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:0 0 14px}
@@ -369,13 +452,14 @@
   .hm-li .t{flex:1}
   .hm-li .sec{font-size:.68rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em}
   .hm-empty{color:var(--text-mid);font-size:.94rem}
-  .hm-substat{font-size:.72rem;color:var(--text-mid);margin-top:6px}
+  .hm-substat{display:block;font-size:.72rem;color:var(--text-mid);margin-top:6px}
   .pt-q{margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid var(--border)}
   .pt-stem{font-weight:600;margin:0 0 8px}
   .pt-opt{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--bg-alt);border-radius:8px;padding:8px 10px;margin:4px 0;font:inherit;color:var(--text);cursor:pointer}
   .pt-opt:hover{border-color:var(--accent)}
   .pt-opt.sel{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark)}
   .hm-inl{background:none;border:none;color:var(--accent-dark);cursor:pointer;font:inherit;text-decoration:underline;padding:0}
+  .hm-phase{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:999px;padding:3px 11px;font-size:.76rem;font-weight:700;margin:0 0 14px}
   .wd{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:0 0 18px}
   .wd-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
   .wd-head h2{font-family:var(--font-head);font-size:1.12rem;margin:0;border:none;padding:0;color:var(--text)}
@@ -384,17 +468,11 @@
   .wd-modes{display:flex;flex-wrap:wrap;gap:6px}
   .wd-mode{border:1px solid var(--border);background:var(--bg-alt);color:var(--text-mid);border-radius:999px;padding:5px 10px;font:inherit;font-size:.78rem;font-weight:800;cursor:pointer}
   .wd-mode.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .wd-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 13px;padding:10px 12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:12px}
-  .wd-tools .k{font-size:.68rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-right:2px}
-  .wd-tool{display:inline-flex;align-items:center;text-decoration:none;font-size:.8rem;font-weight:800;color:var(--accent-dark);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:5px 10px}
+  .wd-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+  .wd-tool{display:inline-flex;align-items:center;text-decoration:none;font-size:.8rem;font-weight:800;color:var(--accent-dark);background:var(--bg-alt);border:1px solid var(--border);border-radius:999px;padding:5px 10px}
   .wd-tool:hover{border-color:var(--accent);background:var(--accent-light)}
   .wd-tool.is-safety{color:var(--primary-dark);background:var(--primary-light)}
-  .wd-challenge{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin:0 0 13px;padding:12px 13px;background:var(--accent-light);border:1px solid #bfd8d3;border-left:4px solid var(--accent);border-radius:12px}
-  .wd-challenge .k{font-size:.66rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-dark);margin:0 0 2px}
-  .wd-challenge .t{font-weight:800;color:var(--text);line-height:1.25}
-  .wd-challenge .d{font-size:.84rem;color:var(--text-mid);line-height:1.35;margin-top:2px}
-  .wd-challenge .a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--accent);border-radius:999px;background:var(--surface);color:var(--accent-dark);font-size:.8rem;font-weight:900;padding:7px 10px;white-space:nowrap}
-  .wd-challenge .a:hover{background:var(--accent);color:#fff}
+  .wd-intro .wd-count{margin-left:2px}
   @media(max-width:620px){.wd-challenge{grid-template-columns:1fr}.wd-challenge .a{justify-self:start}}
   .wd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
   .wd-card{background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;padding:12px}
@@ -442,8 +520,16 @@
 <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
 <div class="layout">
   <aside id="side">
+    <div class="side-rail" role="group" aria-label="Collapsed sidebar">
+      <button id="sideExpandBtn" class="rail-expand" type="button" aria-label="Show sidebar" title="Show sidebar">&#10217;</button>
+      <div class="rail-sep" aria-hidden="true"></div>
+      <button id="railSearchBtn" class="railbtn" type="button" aria-label="Search the hub" title="Search">&#8981;</button>
+      <button id="railLibBtn" class="railbtn" type="button" aria-label="Browse the library" title="Library">&#9636;</button>
+      <button class="railbtn rail-capture capture-open" type="button" aria-label="Capture a question" title="Capture a question" aria-haspopup="dialog" aria-expanded="false">+</button>
+    </div>
     <h1>Inpatient Psychiatry</h1>
     <div class="by">MS3 Clerkship · Joshua Moss, MD</div>
+    <button id="sideCollapseBtn" class="side-collapse" type="button" aria-label="Hide sidebar" title="Hide sidebar">&#10216;</button>
     <button id="themeBtn" class="themebtn" type="button" aria-label="Toggle dark mode" title="Switch to dark mode">&#9790;</button>
     <div class="modetoggle" id="modetoggle" role="group" aria-label="Content mode"><span class="knob"></span><button id="mPath" aria-pressed="false">&#9678; Path</button><button id="mLib" aria-pressed="true">Library</button></div>
     <div class="search-wrap">
@@ -451,6 +537,7 @@
       <input id="search" class="search" type="search" placeholder="Search the hub&hellip;" autocomplete="off" spellcheck="false" aria-label="Search the psychiatry clerkship hub">
       <button id="sx" class="sx" title="Clear" aria-label="Clear search">&times;</button>
     </div>
+    <button class="capture-desk capture-open" id="captureBtnDesk" type="button" aria-haspopup="dialog" aria-expanded="false">+ Capture a question</button>
     <section id="modeCompanion" class="mode-companion" aria-label="Workflow mode recommendations"></section>
     <nav id="nav"></nav>
   </aside>
@@ -458,7 +545,7 @@
     <div class="mobile-chrome" id="mobileChrome">
       <button class="menubtn" id="menuBtn" type="button" aria-label="Menu" aria-controls="side" aria-expanded="false">&#9776;<span>Menu</span></button>
       <span class="mobile-title" id="mobileTitle" aria-live="polite">Inpatient Psychiatry</span>
-      <span class="mobile-chrome-spacer" aria-hidden="true"></span>
+      <button class="mobile-chrome-capture capture-open" id="captureBtnMobile" type="button" aria-label="Capture a question" aria-haspopup="dialog" aria-expanded="false">+</button>
     </div>
     <div class="banner" id="banner"><span id="bannerText">Private teaching site for the MS3 inpatient psychiatry rotation. Educational use; fictional composites only, no PHI. Some pages are pending faculty review.</span><button class="bannerx" id="bannerX" type="button" aria-label="Dismiss notice">&times;</button></div>
     <span id="routeStatus" class="vh-live" aria-live="polite"></span>
@@ -475,9 +562,31 @@
   function applyThemeIcon(){ var dk=document.documentElement.getAttribute('data-theme')==='dark'; if(themeBtn){ themeBtn.innerHTML=dk?'☀':'☾'; themeBtn.setAttribute('aria-pressed',String(dk)); themeBtn.setAttribute('title',dk?'Switch to light mode':'Switch to dark mode'); } }
   if(themeBtn){ themeBtn.addEventListener('click',function(){ var dk=document.documentElement.getAttribute('data-theme')==='dark'; var nx=dk?'light':'dark'; document.documentElement.setAttribute('data-theme',nx); try{localStorage.setItem('cw_theme',nx);}catch(_){ } var _if=document.querySelector('#content iframe'); if(_if&&_if.contentWindow){try{_if.contentWindow.postMessage({type:'theme',mode:nx},'*');}catch(_){ }} applyThemeIcon(); }); }
   applyThemeIcon();
+  /* Collapsible sidebar: html[data-side=rail] drives the CSS; state persists in
+     cw_side_collapsed and is re-applied pre-paint by the head script. Focus moves to
+     the counterpart control so keyboard users are never left on a display:none button. */
+  (function(){
+    var collapseBtn=document.getElementById('sideCollapseBtn'), expandBtn=document.getElementById('sideExpandBtn');
+    var railSearch=document.getElementById('railSearchBtn'), railLib=document.getElementById('railLibBtn');
+    function setSideRail(on,focusEl){
+      if(on)document.documentElement.setAttribute('data-side','rail');
+      else document.documentElement.removeAttribute('data-side');
+      try{localStorage.setItem('cw_side_collapsed',on?'1':'0');}catch(_){ }
+      var f=focusEl||(on?expandBtn:collapseBtn);
+      if(f&&f.focus)try{f.focus();}catch(_){ }
+    }
+    if(collapseBtn)collapseBtn.addEventListener('click',function(){ setSideRail(true); });
+    if(expandBtn)expandBtn.addEventListener('click',function(){ setSideRail(false); });
+    if(railSearch)railSearch.addEventListener('click',function(){ setSideRail(false,searchEl); });
+    if(railLib)railLib.addEventListener('click',function(){ setSideRail(false,(navEl&&navEl.querySelector('.navitem'))||collapseBtn); });
+  })();
   fetch('reviewed.json').then(function(r){return r.ok?r.json():{}}).then(function(d){REVIEWED=(d&&d.items)?d.items:(d||{});try{if(currentItem&&REVIEWED[currentItem.f]){ if(currentItem.k==='tool'&&!contentEl.querySelector('.toolrev'))show(currentItem); else if(currentItem.k!=='tool'&&!contentEl.querySelector('.reviewed'))show(currentItem); }}catch(_){ }}).catch(function(){});
   var TOPIC_META={};
-  fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ if(window.__renderModeCompanion) window.__renderModeCompanion(); }catch(_){ } if(currentItem&&TOPIC_META[currentItem.f]&&contentEl&&!contentEl.querySelector('.topic-tpl')) show(currentItem); }).catch(function(){});
+  /* On a cold cache the home/progress views render BEFORE this fetch resolves, so the unit
+     dashboard shows "0 matched" until something else re-renders. specialRefresh() (dual-root:
+     hmRoot or pgRoot, whichever is live) closes that race the moment metadata lands — topic
+     pages already got the same treatment via the show(currentItem) branch below. */
+  fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ if(window.__renderModeCompanion) window.__renderModeCompanion(); }catch(_){ } try{ specialRefresh(); }catch(_){ } if(currentItem&&TOPIC_META[currentItem.f]&&contentEl&&!contentEl.querySelector('.topic-tpl')) show(currentItem); }).catch(function(){});
   function makeCollapsible(body){
     if(!body) return;
     var kids=[].slice.call(body.children);
@@ -567,7 +676,11 @@
      servable quiz — they were seeded by the unguarded seedSRS, can never be graded in
      Daily Review, and inflate "Due today" forever. Runs whenever topic_meta loads;
      idempotent; deliberately refuses to run on an empty TOPIC_META (failed fetch). */
-  function srsDropPhantomTopics(){ try{ if(typeof TOPIC_META==='undefined'||!TOPIC_META||!Object.keys(TOPIC_META).length)return; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1||!s.cards)return; var changed=false; for(var id in s.cards){ if(id.indexOf('TOPIC#')!==0)continue; var c=s.cards[id]; if(c&&!c.reps&&!topicHasQuiz(id.slice(6))){ delete s.cards[id]; changed=true; } } if(changed){ localStorage.setItem('cw_srs_v1',JSON.stringify(s)); if(document.getElementById('hmRoot')&&window.renderHome)renderHome(); } }catch(_){ } }
+  function srsDropPhantomTopics(){ try{ if(typeof TOPIC_META==='undefined'||!TOPIC_META||!Object.keys(TOPIC_META).length)return; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1||!s.cards)return; var changed=false; for(var id in s.cards){ if(id.indexOf('TOPIC#')!==0)continue; var c=s.cards[id]; if(c&&!c.reps&&!topicHasQuiz(id.slice(6))){ delete s.cards[id]; changed=true; } } if(changed){ localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } }catch(_){ } }
+  /* No view refresh here: the old `renderHome()` call at this spot DISCARDED its return value
+     (renderHome returns an HTML string; it does not touch the DOM) — a silent no-op since the
+     tile row landed. The sole caller (the topic_meta fetch above) now runs specialRefresh()
+     unconditionally, which is also what actually fixes the cold-load "0 matched" dashboard. */
   /* ---- end srs seed + phantom migration ---- */
   function ctaHref(h){ h=h||''; var mt=h.match(/^tools\/([^\/?#]+\.html)$/); return mt?('?tool='+mt[1]):h; }
   function ctaAttrs(h){ return /^\?(page|tool)=/.test(h)?'':' target="_blank" rel="noopener"'; }
@@ -617,6 +730,12 @@
     return null;
   }
   var facultyPreviewRequest=readFacultyPreviewRequest();
+  /* Service-worker registration (SW_REGISTER) goes here, not up by the theme/banner boot
+     code: this script has no wrapping IIFE, so facultyPreviewRequest — declared with `var`
+     right above — reads as `undefined` (not a ReferenceError, but not the real value either)
+     at any earlier point in this same script. This is the first point after its assignment,
+     which keeps registration as early in the boot sequence as the guard allows. */
+  /*__SW_REGISTER__*/
   var facultyPreviewRouteBase=location.pathname+location.search;
   var facultyPreviewRoute=facultyPreviewRouteBase+location.hash;
   var facultyPreviewLastStatus='';
@@ -795,12 +914,12 @@
     var title=document.getElementById('mobileTitle');
     if(!title)return;
     if(!item){title.textContent='Inpatient Psychiatry';return;}
-    title.textContent=item.f==='__home__'?'Today / Progress':(item.f==='__start__'?'Start here':item.t);
+    title.textContent=item.f==='__home__'?'Today':(item.f==='__progress__'?'Progress':(item.f==='__start__'?'Start here':item.t));
   }
   var routeAnnounced=false;
   function announceRoute(item){
     var rs=document.getElementById('routeStatus');
-    if(rs){ rs.textContent=!item?'':((item.f==='__home__'?'Today / Progress':(item.f==='__start__'?'Start here':(item.f==='__path__'?'Learning Path':item.t)))+' loaded'); }
+    if(rs){ rs.textContent=!item?'':((item.f==='__home__'?'Today':(item.f==='__progress__'?'Progress':(item.f==='__start__'?'Start here':(item.f==='__path__'?'Learning Path':item.t))))+' loaded'); }
     // Skip the focus move on the very first render so initial keyboard position
     // (nav/search) is not stolen; announce-only is correct for page load.
     if(routeAnnounced){ try{ contentEl.focus({preventScroll:true}); }catch(_){ try{ contentEl.focus(); }catch(__){ } } }
@@ -852,6 +971,7 @@
     if(!facultyPreviewMatchesItem(item,opts)){showFacultyPreviewLockNotice();return false;}
     if(facultyPreviewRequest&&currentItem&&currentItem.k==='tool'&&item.k==='tool'&&currentItem.f===item.f)return true;
     setMobileTitle(item);
+    try{ document.body.classList.toggle('mc-suppress', item.f==='__home__'); }catch(_){ }
     try{ if(currentItem) SCROLL[currentItem.f]=window.scrollY||window.pageYOffset||0; }catch(_){ }
     document.querySelectorAll('.navitem.on').forEach(function(b){b.classList.remove('on');b.removeAttribute('aria-current');});
     if(btn){ btn.classList.add('on'); btn.setAttribute('aria-current','page'); }
@@ -862,7 +982,7 @@
       currentToolFrame=null;
       currentItem=item; reflectLibrary(); if(!(opts&&opts.fromHistory)&&!(opts&&opts.noRoute)) setRoute(item, opts&&opts.replace, opts);
       contentEl.classList.remove('toolmode'); contentEl.classList.remove('pathmode');
-      contentEl.innerHTML = (item.f==='__start__') ? (window.renderStart?window.renderStart():'') : (window.renderHome?window.renderHome():'');
+      contentEl.innerHTML = (item.f==='__start__') ? (window.renderStart?window.renderStart():'') : (item.f==='__progress__') ? (window.renderProgress?window.renderProgress():'') : (window.renderHome?window.renderHome():'');
       try{ if(window.__afterSpecial) window.__afterSpecial(item.f); }catch(_){ }
       announceRoute(item); window.scrollTo(0,0); return;
     }
@@ -914,7 +1034,7 @@
       gw.appendChild(gh); gw.appendChild(gb); navEl.appendChild(gw);
       groupWraps[name]=gb; return gb;
     }
-    data.unshift({section:'Welcome and Today',pinned:true,items:[{t:'Today / Progress',f:'__home__',k:'special'},{t:'Start-here Checklist',f:'__start__',k:'special'}]});
+    data.unshift({section:'Welcome and Today',pinned:true,items:[{t:'Today',f:'__home__',k:'special'},{t:'Progress',f:'__progress__',k:'special'},{t:'Start-here Checklist',f:'__start__',k:'special'}]});
     data.forEach(function(sec){
       var wrap=document.createElement('div'); wrap.className='navsec-wrap';
       var h=document.createElement('button'); h.className='navsec'; h.type='button';
@@ -970,7 +1090,230 @@
       else if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){ document.documentElement.setAttribute('data-theme',d.mode); try{localStorage.setItem('cw_theme',d.mode);}catch(_){ } applyThemeIcon(); }
       else if(d.type==='ic-size'&&d.h){ var _fr=document.querySelector('#content iframe[src*="interview-circle.html"]'); if(_fr) _fr.style.height=(d.h+6)+'px'; }
     });
-  });
+  }).catch(function(){navEl.innerHTML='<div class="error" role="alert"><h1>Navigation unavailable</h1><p>Could not load the navigation — check your connection and refresh.</p></div>';});
+
+  /* Shared PHI heuristic (looksLikePhi) — consumed by the ward question-capture feature. */
+  /*__PHI_HEURISTIC__*/
+
+  /* ---- ward question capture (cw_capture_v1) ----
+     Every learner-facing string below is audience-neutral by contract: the shared shell ships
+     verbatim to both sites, and resident_section.py rebrands index.html by literal replacement, so
+     copy containing MS3/clerkship/resident/institution tokens either mis-brands silently or
+     collides with a RESIDENT_REBRAND needle. tests/shell-copy.test.mjs pins that.
+     The key is written as a string literal at all three call sites so the QA gate's storage scan
+     (check-static-site.mjs section 5c) can verify the cw_ namespace statically. */
+  var CAP_MAX=280, CAP_LIMIT=50;
+  /* Capture-local by design, deliberately NOT appended to the shared PHI_PATTERNS: "room 302" is a
+     PHI signal in a ward capture and a legitimate utterance in a simulated interview, and the
+     shared array is byte-pinned across phi_heuristic.js and sp-interview.html by
+     tests/ward-capture.test.mjs T3b. Scoping it here keeps the shared file untouched. */
+  var CAP_WARD_LOC=/\b(?:bed|room|rm)\s*#?\s*\d+/i;
+  function capRisky(t){ return looksLikePhi(t) || CAP_WARD_LOC.test(t); }
+  function capRead(){
+    var d=null; try{ d=JSON.parse(localStorage.getItem('cw_capture_v1')||'null'); }catch(_){ d=null; }
+    if(!d||typeof d!=='object'||Object.prototype.toString.call(d.items)!=='[object Array]') return {v:1,items:[]};
+    var out=[]; for(var i=0;i<d.items.length;i++){ var it=d.items[i];
+      if(!it||typeof it.text!=='string')continue;
+      /* clamp on read as well as write — a hand-edited store must not widen the cap */
+      out.push({id:String(it.id||''),text:it.text.slice(0,CAP_MAX),at:+it.at||0,ctx:it.ctx||null,triaged:!!it.triaged}); }
+    return {v:1,items:out};
+  }
+  function capWrite(d){ try{ localStorage.setItem('cw_capture_v1',JSON.stringify(d)); return true; }catch(_){ return false; } }
+  function capEraseAll(){ try{ localStorage.removeItem('cw_capture_v1'); }catch(_){ } }
+  function capCtx(){
+    /* null on special routes. __afterContent (which writes cw_last) never fires on the special
+       branch, so on __home__ cw_last still holds the PREVIOUS page — a stale slug is worse than
+       none, because triage would route the learner somewhere they never asked about. */
+    try{ if(!currentItem||currentItem.k==='special')return null; return currentItem.f||null; }catch(_){ return null; }
+  }
+  function capEvict(items){
+    while(items.length>CAP_LIMIT){ var idx=0;
+      for(var i=0;i<items.length;i++){ if(items[i].triaged){ idx=i; break; } }
+      items.splice(idx,1); }
+    return items;
+  }
+  function capAdd(text){
+    var d=capRead();
+    d.items.push({id:'c_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3),
+      text:String(text).slice(0,CAP_MAX),at:Date.now(),ctx:capCtx(),triaged:false});
+    capEvict(d.items);
+    return capWrite(d);
+  }
+  function capRemove(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items.splice(i,1); break; } } capWrite(d); }
+  function capMarkTriaged(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items[i].triaged=true; break; } } capWrite(d); }
+  /* P4 — the one sanctioned egress. The stamp lives inside the payload builder so every copy path
+     carries it, matching the supervised-draft pattern in decisional-capacity-module.html. */
+  function capClipboardText(){
+    var d=capRead(), lines=['Questions from the unit, brought to supervision. Written by a trainee for teaching discussion — contains no patient information.',''];
+    for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) lines.push('- '+d.items[i].text); }
+    return lines.join('\n');
+  }
+  /* ---- end ward capture store ---- */
+  /* ^ load-bearing test anchor: tests/ward-capture.test.mjs slices from "var CAP_MAX=" to this
+     comment and executes the real functions. Keep it. Text-only assertions are exactly how
+     "Due today counts cards nothing can serve" survived (PR #291). */
+
+  /* ---- triage card, rendered into renderHome ----
+     Routes each capture through the existing runSearch. runSearch is NOT extracted: it closes over
+     module-scope SI/VOCAB and calls tok()/idf() in this same top-level script, and the card renders
+     from here, so the bindings are already in scope. All controls use data-cap-* attributes only —
+     deliberately not data-f — so nothing collides with the generic .hm-li branches in
+     __afterSpecial, which would navigate without marking the capture triaged. */
+  function capTriageHtml(){
+    var d=capRead(), open=[];
+    for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) open.push(d.items[i]); }
+    if(!open.length)return '';
+    var h='<div class="hm-sec"><h2>Questions from the unit <span style="font-weight:400;color:var(--text-light)">· '+open.length+' waiting</span></h2>';
+    if(!SI){ h+='<div class="sub" style="margin:0 0 8px">Matching is unavailable right now — your questions are safe on this device.</div>'; }
+    for(var j=0;j<open.length;j++){
+      var it=open[j], hit=null;
+      if(SI){ var res=runSearch(it.text); if(res.length)hit=res[0].d; }
+      h+='<div class="cap-tri"><p class="cap-tri-q">'+esc(it.text)+'</p>';
+      if(hit){
+        h+='<button class="hm-li" data-cap-open="'+esc(it.id)+'" data-cap-f="'+esc(hit.f)+'"><span class="t">'+esc(hit.t)+'</span><span class="sec">Open →</span></button>';
+        /* Offer the review route only when it would actually do something. The topicHasQuiz guard
+           already lives inside seedSRS (that placement was the phantom-card fix), so calling it
+           here is about display honesty, not safety — a quizless page would silently no-op. */
+        if(typeof topicHasQuiz==='function' && topicHasQuiz(hit.f)){
+          h+='<button class="hm-li" data-cap-review="'+esc(it.id)+'" data-cap-f="'+esc(hit.f)+'"><span class="t">Review this topic</span><span class="sec">Schedule →</span></button>';
+        }
+      }
+      h+='<button class="hm-li" data-cap-drop="'+esc(it.id)+'"><span class="t">Done with this one</span><span class="sec">Dismiss</span></button></div>';
+    }
+    h+='<div class="cap-acts"><button type="button" class="cap-btn" data-cap-copy="1">Ask my attending</button></div>';
+    return h+'</div>';
+  }
+  function capTriageClick(el){
+    var id=el.getAttribute('data-cap-open')||el.getAttribute('data-cap-review')||el.getAttribute('data-cap-drop');
+    var f=el.getAttribute('data-cap-f');
+    if(el.hasAttribute('data-cap-copy')){
+      var payload=capClipboardText();
+      if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(payload).then(function(){ el.textContent='Copied ✓'; },function(){ el.textContent='Copy failed'; }); }
+      else { el.textContent='Copy unavailable'; }
+      return;
+    }
+    if(el.hasAttribute('data-cap-review')&&f){ if(typeof seedSRS==='function')seedSRS(f); capMarkTriaged(id); specialRefresh(); return; }
+    if(el.hasAttribute('data-cap-drop')&&id){ capRemove(id); specialRefresh(); return; }
+    if(el.hasAttribute('data-cap-open')&&f){ capMarkTriaged(id); if(!navClick(f)){ specialRefresh(); } return; }
+  }
+
+  /* ---- capture sheet: own dialog, own focus trap ----
+     Deliberately NOT reusing .tl-sheet — visual-regression.spec.js Shift+Tab-cycles that sheet and
+     asserts its last .tl-sheet__item is focused, so joining its tab order breaks it. */
+  var capSheet=null, capBackdrop=null, capInvoker=null;
+  function capFocusables(){
+    if(!capSheet)return [];
+    var all=capSheet.querySelectorAll('button,textarea,[href],input,select,[tabindex]:not([tabindex="-1"])'), out=[];
+    for(var i=0;i<all.length;i++){ if(!all[i].disabled && all[i].offsetParent!==null) out.push(all[i]); }
+    return out;
+  }
+  function capKeydown(e){
+    if(!capSheet)return;
+    if(e.key==='Escape'){ e.preventDefault(); capClose(); return; }
+    if(e.key!=='Tab')return;
+    var f=capFocusables(); if(!f.length)return;
+    var first=f[0], last=f[f.length-1];
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  }
+  function capClose(){
+    if(capBackdrop&&capBackdrop.parentNode)capBackdrop.parentNode.removeChild(capBackdrop);
+    if(capSheet&&capSheet.parentNode)capSheet.parentNode.removeChild(capSheet);
+    capSheet=null; capBackdrop=null;
+    document.removeEventListener('keydown',capKeydown,true);
+    var opens=document.querySelectorAll('.capture-open');
+    for(var i=0;i<opens.length;i++)opens[i].setAttribute('aria-expanded','false');
+    /* Two-invoker focus return. There are two mount points and the viewport can cross 820px while
+       the dialog is open, so the recorded invoker may be display:none by the time we close. Same
+       guard shape as closeSheet's, which spa-shell-a11y.test.mjs pins. */
+    var inv=capInvoker; capInvoker=null;
+    if(inv && inv.isConnected && inv.offsetParent!==null){ try{ inv.focus(); return; }catch(_){ } }
+    if(contentEl){ try{ contentEl.focus({preventScroll:true}); }catch(_){ } }
+  }
+  function capListHtml(){
+    var d=capRead(), open=[];
+    for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) open.push(d.items[i]); }
+    if(!open.length)return '';
+    var h='<ul class="cap-list">';
+    for(var j=0;j<open.length;j++){ h+='<li><span>'+esc(open[j].text)+'</span><button type="button" class="x" data-cap-del="'+esc(open[j].id)+'" aria-label="Delete this question">&times;</button></li>'; }
+    return h+'</ul><div class="cap-acts"><button type="button" class="cap-btn danger" id="capEraseAll">Erase all captures</button></div>';
+  }
+  function capRenderBody(){
+    if(!capSheet)return;
+    var body=capSheet.querySelector('#capListWrap'); if(body)body.innerHTML=capListHtml();
+  }
+  function capOpen(invoker){
+    if(capSheet)return;
+    capInvoker=invoker||null;
+    capBackdrop=document.createElement('div'); capBackdrop.className='cap-backdrop';
+    capBackdrop.addEventListener('click',function(){ capClose(); });
+    capSheet=document.createElement('div');
+    capSheet.className='cap-sheet'; capSheet.setAttribute('role','dialog');
+    capSheet.setAttribute('aria-modal','true'); capSheet.setAttribute('aria-labelledby','capHead');
+    capSheet.innerHTML=
+      '<h2 id="capHead">Capture a question</h2>'
+      /* P1 — point-of-entry warning, approved copy, verbatim */
+      + '<p class="cap-warn"><strong>The question, not the patient.</strong> No names, initials, room or bed numbers, dates, or MRNs — write what you want to understand, not who you saw. Stays on this device.</p>'
+      + '<textarea id="capText" maxlength="280" rows="4" aria-label="Your question, no patient identifiers" placeholder="What did you want to look up later?"></textarea>'
+      /* P3 — always-visible disclosure, not dismissible, because storage is on by default */
+      + '<p class="cap-disclose">Saved on this device only, never sent anywhere. Erase all captures below.</p>'
+      + '<div id="capHold"></div>'
+      + '<div class="cap-acts"><button type="button" class="cap-btn primary" id="capSave">Save</button>'
+      + '<button type="button" class="cap-btn" id="capCancel">Cancel</button></div>'
+      + '<div id="capListWrap"></div>';
+    document.body.appendChild(capBackdrop); document.body.appendChild(capSheet);
+    capRenderBody();
+    if(invoker)invoker.setAttribute('aria-expanded','true');
+    document.addEventListener('keydown',capKeydown,true);
+    var ta=capSheet.querySelector('#capText'); if(ta){ try{ ta.focus(); }catch(_){ } }
+    capSheet.addEventListener('click',function(e){
+      var t=e.target;
+      if(t.id==='capCancel'){ capClose(); return; }
+      if(t.id==='capSave'){ capSave(false); return; }
+      if(t.id==='capHoldEdit'){ var hold=capSheet.querySelector('#capHold'); if(hold)hold.innerHTML=''; var tx=capSheet.querySelector('#capText'); if(tx)tx.focus(); return; }
+      if(t.id==='capHoldSave'){ capSave(true); return; }
+      if(t.id==='capEraseAll'){ if(window.confirm('Erase all saved questions on this device?')){ capEraseAll(); capRenderBody(); specialRefresh(); } return; }
+      var del=t.getAttribute&&t.getAttribute('data-cap-del');
+      if(del){ capRemove(del); capRenderBody(); specialRefresh(); return; }
+    });
+  }
+  function capSave(force){
+    var ta=capSheet&&capSheet.querySelector('#capText'); if(!ta)return;
+    var text=String(ta.value||'').trim(); if(!text)return;
+    var hold=capSheet.querySelector('#capHold');
+    /* P2 — interstitial. Fail-closed: the write is held until the learner confirms. */
+    if(!force && capRisky(text)){
+      if(hold)hold.innerHTML='<div class="cap-phi" role="alertdialog" aria-label="Possible patient details">'
+        + '<b>This may contain patient details.</b>'
+        + '<div class="cap-acts"><button type="button" class="cap-btn" id="capHoldEdit">Edit</button>'
+        + '<button type="button" class="cap-btn" id="capHoldSave">No patient details — save</button></div></div>';
+      return;
+    }
+    if(hold)hold.innerHTML='';
+    if(capAdd(text)){ ta.value=''; capRenderBody(); specialRefresh(); try{ ta.focus(); }catch(_){ } }
+    else { var err=document.createElement('p'); err.className='cap-err';
+      err.textContent="Couldn't save on this device. Use “Ask my attending” on the home screen to copy your questions out before you close this tab.";
+      if(hold)hold.appendChild(err); }
+  }
+  /* Re-render whichever special view is live (Today's hmRoot or Progress's pgRoot) and re-run
+     its wiring. THE one legal refresh idiom for these views — renderHome/renderProgress return
+     HTML strings and never touch the DOM themselves, so a bare call is a silent no-op. */
+  function specialRefresh(){ var r=document.getElementById('hmRoot'); if(r&&window.renderHome){ r.outerHTML=window.renderHome(); if(window.__afterSpecial)window.__afterSpecial('__home__'); return; } var p=document.getElementById('pgRoot'); if(p&&window.renderProgress){ p.outerHTML=window.renderProgress(); if(window.__afterSpecial)window.__afterSpecial('__progress__'); } }
+  (function capWire(){
+    var opens=document.querySelectorAll('.capture-open');
+    /* Faculty preview is a content-review surface embedded in the console's iframe, not a learner
+       session — a capture affordance there would offer to write learner state from a reviewer's
+       seat. Remove the mounts entirely rather than merely disabling them, so nothing focusable is
+       left in the preview's tab order. Same rule sw_register.js applies when it skips SW
+       registration on a preview route. */
+    if(typeof facultyPreviewRequest!=='undefined' && facultyPreviewRequest){
+      for(var k=0;k<opens.length;k++){ if(opens[k].parentNode)opens[k].parentNode.removeChild(opens[k]); }
+      return;
+    }
+    for(var i=0;i<opens.length;i++){
+      (function(btn){ btn.addEventListener('click',function(){ if(capSheet)capClose(); else capOpen(btn); }); })(opens[i]);
+    }
+  })();
 
   /* ---------- Search (mirrors rc-search: tokenize -> synonym expand -> TF-IDF + prefix/substring bonus) ---------- */
   var SI=null, VOCAB=[];
@@ -979,7 +1322,12 @@
     var out=[], a=String(t||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').split(/\s+/);
     for(var i=0;i<a.length;i++){var w=a[i]; if(w.length>=2 && !STOP[w]) out.push(w);} return out;
   }
-  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); })
+  /* The re-render hook matters: SI===null means "failed" OR "not yet resolved", and renderHome()
+     runs from the nav bootstrap in the same tick that starts this ~475 KB fetch. Without it the
+     capture triage card paints its degraded "matching unavailable" state on nearly every cold load
+     and never corrects. Same specialRefresh() idiom the topic_meta fetch uses for its own race.
+     Gated on hmRoot (not dual-root) deliberately: the triage card is a Today-only surface. */
+  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); if(document.getElementById('hmRoot')&&window.renderHome)specialRefresh(); })
     .catch(function(){ searchEl.placeholder='Search unavailable'; searchEl.disabled=true; });
 
   function idf(t){ return Math.log(1 + SI.n/((SI.df[t]||1))); }
@@ -1173,18 +1521,18 @@
   function dueBreakdown(){ var s=srsState(),b={daily:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ var k=srsBucket(id); b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } return b; }
   function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due,overdue:b.daily.overdue}; }
   /* ---- end due breakdown ---- */
-  function dueSubstatHtml(bd){ var parts=[]; if(bd.qb.due)parts.push(bd.qb.due+' in the question bank'); if(bd.fam.due)parts.push(bd.fam.due+' in family practice'); if(bd.other.due)parts.push(bd.other.due+' in other practice tools'); return parts.length?'<div class="hm-substat">Also scheduled: '+parts.join(' · ')+'</div>':''; }
+  function dueSubstatHtml(bd){ var parts=[]; if(bd.qb.due)parts.push(bd.qb.due+' in the question bank'); if(bd.fam.due)parts.push(bd.fam.due+' in family practice'); if(bd.other.due)parts.push(bd.other.due+' in other practice tools'); return parts.length?'<span class="hm-substat">Also scheduled: '+parts.join(' · ')+'</span>':''; }
   function navScan(){ var p=(typeof progLoad==='function')?progLoad():{}, meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}; var hy=[],cov={}; var wraps=document.querySelectorAll('#nav .navsec-wrap'); [].forEach.call(wraps,function(w){ var sec=((w.querySelector('.navsec-t')||{}).textContent)||''; if(sec==='Overview')return; [].forEach.call(w.querySelectorAll('.navitem'),function(b){ var it=b._item; if(!it)return; if(it.k==='md'){ if(!cov[sec])cov[sec]={done:0,tot:0}; cov[sec].tot++; if(p[it.f]&&p[it.f].done)cov[sec].done++; } if(meta[it.f]&&meta[it.f].hy&&!(p[it.f]&&p[it.f].done))hy.push({f:it.f,t:it.t,sec:sec}); }); }); return {hy:hy,cov:cov}; }
   function allNavItems(){ var out=[]; [].forEach.call(document.querySelectorAll('#nav .navitem'),function(b){ var it=b._item; if(it&&it.k!=='special')out.push({f:it.f,t:it.t,k:it.k}); }); return out; }
   function dashboardState(){ try{return JSON.parse(localStorage.getItem('cw_dashboard_v1')||'{}')||{};}catch(_){return {};} }
   function dashboardMode(){ var st=dashboardState(); return st.mode||'ward'; }
   function setDashboardMode(mode){ try{localStorage.setItem('cw_dashboard_v1',JSON.stringify({mode:mode,at:new Date().toISOString().slice(0,10)}));}catch(_){ } try{renderModeCompanion();}catch(_){ } }
   var DASH_CONFIG={
-    ward:{label:'Ward',intent:'Use this when you are about to see patients, present on rounds, or convert a patient problem into a next clinical step.',stages:['team','encounter','diagnosis','treatment','communication','safety'],tools:['oral.html','mse.html','diagnostic-reasoning.html','communication-practice.html','decision-aids.html','sp-interview.html','one-patient-six-weeks.html'],pages:['doc_oral.md','pg_interview.md','ddx.md','pg_formulation.md','rounds_questions.md'],notes:{'doc_oral.md':'rounds','pg_interview.md':'encounter','ddx.md':'diagnosis','pg_formulation.md':'formulation','rounds_questions.md':'rounds'}},
-    shelf:{label:'Shelf',intent:'Use this when you want board-style practice connected back to the patients and topics you are seeing on the unit.',stages:['exam','diagnosis','treatment','safety'],tools:['question-bank-practice.html','review.html','shelf-mode.html','oral.html','one-patient-six-weeks.html'],pages:['shelf.md','rounds_questions.md','landmark_trials.md','reading_map.md','core_readings.md'],notes:{'shelf.md':'exam','rounds_questions.md':'oral recall','landmark_trials.md':'evidence','reading_map.md':'reading map','core_readings.md':'core'}},
-    family:{label:'Family',intent:'Use this when collateral, caregiver communication, family meetings, boundaries, or discharge reality are driving the case.',stages:['family','communication','safety','team'],tools:['family-systems.html','communication-practice.html','oral.html','reflection.html','decision-aids.html','sp-interview.html'],pages:['collateral_workflow.md','family_playbook.md','exp_family.md','family_modalities.md','brief_psychotherapy.md'],notes:{'collateral_workflow.md':'collateral','family_playbook.md':'meeting','exp_family.md':'discharge','family_modalities.md':'psychoed','brief_psychotherapy.md':'bedside'}},
-    safety:{label:'Safety',intent:'Use this when risk, capacity, withdrawal, delirium, catatonia, agitation, or legal status could change today’s plan.',stages:['safety','team','encounter','family','treatment'],tools:['cssrs.html','violence.html','bfcrs.html','withdrawal.html','capacity.html','decision-aids.html','sp-interview.html'],pages:['pg_suicide.md','agitation.md','delirium.md','catatonia.md','systems_medlegal.md'],notes:{'pg_suicide.md':'suicide','agitation.md':'agitation','delirium.md':'delirium','catatonia.md':'catatonia','systems_medlegal.md':'med-legal'}},
-    '5min':{label:'5 minutes',intent:'Use this when you need one quick, useful action before rounds, between patients, or before leaving the unit.',stages:['communication','safety','team','encounter','exam'],tools:['communication-practice.html','review.html','oral.html','family-systems.html'],pages:['pg_suicide.md','collateral_workflow.md','doc_oral.md','brief_psychotherapy.md','rounds_questions.md'],notes:{'pg_suicide.md':'4 min','collateral_workflow.md':'4 min','doc_oral.md':'quick prep','brief_psychotherapy.md':'bedside','rounds_questions.md':'oral recall'}}
+    ward:{label:'Ward',intent:'For seeing patients and presenting on rounds.',stages:['team','encounter','diagnosis','treatment','communication','safety'],tools:['oral.html','mse.html','diagnostic-reasoning.html','communication-practice.html','decision-aids.html','sp-interview.html','one-patient-six-weeks.html'],pages:['doc_oral.md','pg_interview.md','ddx.md','pg_formulation.md','rounds_questions.md'],notes:{'doc_oral.md':'rounds','pg_interview.md':'encounter','ddx.md':'diagnosis','pg_formulation.md':'formulation','rounds_questions.md':'rounds'}},
+    shelf:{label:'Shelf',intent:'For board-style practice tied to the patients you are seeing.',stages:['exam','diagnosis','treatment','safety'],tools:['question-bank-practice.html','review.html','shelf-mode.html','oral.html','one-patient-six-weeks.html'],pages:['shelf.md','rounds_questions.md','landmark_trials.md','reading_map.md','core_readings.md'],notes:{'shelf.md':'exam','rounds_questions.md':'oral recall','landmark_trials.md':'evidence','reading_map.md':'reading map','core_readings.md':'core'}},
+    family:{label:'Family',intent:'For collateral, family meetings, and discharge reality.',stages:['family','communication','safety','team'],tools:['family-systems.html','communication-practice.html','oral.html','reflection.html','decision-aids.html','sp-interview.html'],pages:['collateral_workflow.md','family_playbook.md','exp_family.md','family_modalities.md','brief_psychotherapy.md'],notes:{'collateral_workflow.md':'collateral','family_playbook.md':'meeting','exp_family.md':'discharge','family_modalities.md':'psychoed','brief_psychotherapy.md':'bedside'}},
+    safety:{label:'Safety',intent:'For risk, capacity, withdrawal, agitation, and legal status.',stages:['safety','team','encounter','family','treatment'],tools:['cssrs.html','violence.html','bfcrs.html','withdrawal.html','capacity.html','decision-aids.html','sp-interview.html'],pages:['pg_suicide.md','agitation.md','delirium.md','catatonia.md','systems_medlegal.md'],notes:{'pg_suicide.md':'suicide','agitation.md':'agitation','delirium.md':'delirium','catatonia.md':'catatonia','systems_medlegal.md':'med-legal'}},
+    '5min':{label:'5 minutes',intent:'For one quick action before rounds or between patients.',stages:['communication','safety','team','encounter','exam'],tools:['communication-practice.html','review.html','oral.html','family-systems.html'],pages:['pg_suicide.md','collateral_workflow.md','doc_oral.md','brief_psychotherapy.md','rounds_questions.md'],notes:{'pg_suicide.md':'4 min','collateral_workflow.md':'4 min','doc_oral.md':'quick prep','brief_psychotherapy.md':'bedside','rounds_questions.md':'oral recall'}}
   };
   function dashCfg(mode){ return DASH_CONFIG[mode]||DASH_CONFIG.ward; }
   function arrHas(a,v){ return Array.isArray(a)&&a.indexOf(v)>=0; }
@@ -1199,7 +1547,7 @@
     if(mode==='shelf'&&arrHas(m.workflowStages,'exam'))return 'exam';
     var cfg=dashCfg(mode), st=m.workflowStages||[];
     for(var i=0;i<cfg.stages.length;i++){ if(arrHas(st,cfg.stages[i]))return stageLabel(cfg.stages[i]).toLowerCase(); }
-    if(Array.isArray(m.communicationCases)&&m.communicationCases.length)return 'spoken drill';
+    if(Array.isArray(m.communicationCases)&&m.communicationCases.length)return 'drill';
     if(m.hy)return 'high-yield';
     return 'recommended';
   }
@@ -1237,13 +1585,15 @@
   var FAMILY_SCENARIO_TITLES={collateral_baseline_safety_001:'Practice Collateral Call',family_meeting_opening_001:'Prepare Family Meeting',discharge_barrier_map_001:'Map Family Safety Roles',high_expressed_emotion_001:'Reset High-Emotion Family Talk',psychosis_family_psychoeducation_001:'Explain Psychosis To Family',family_involvement_boundaries_001:'Set Family Boundaries',caregiver_baseline_adaptations_001:'Caregiver Baseline And Adaptations',culture_interpreter_family_001:'Culture, Interpreter, And Family Contact'};
   var CASE_PRIORITY={ward:['guardedness_privacy_001','psychosis_validation_001','medication_ambivalence_001','mania_limit_sleep_001'],family:['family_meeting_opening_001','collateral_questions_001','family_conflict_discharge_001'],safety:['suicide_direct_question_001','family_conflict_discharge_001','rupture_limit_setting_001'],shelf:['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001'],'5min':['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001','family_meeting_opening_001']};
   var CASE_FILTER={suicide_direct_question_001:'safety',psychosis_validation_001:'psychosis',guardedness_privacy_001:'guarded',rupture_limit_setting_001:'rupture',bpd_rupture_repair_001:'rupture',medication_ambivalence_001:'medication',mania_limit_sleep_001:'medication',family_meeting_opening_001:'family',collateral_questions_001:'family',family_conflict_discharge_001:'family'};
+  /* hero: the short imperative headline for the home "Your next step" card (design 2a);
+     challenge/cue remain the fuller phrasing used wherever more room exists. */
   var COMM_DOMAINS={
-    safety:{label:'Safety',caseId:'suicide_direct_question_001',challenge:'Practice one direct, plain-language safety question before you see patients.',cue:'Use direct safety words, then pause.'},
-    psychosis:{label:'Psychosis',caseId:'psychosis_validation_001',challenge:'Practice validating fear without agreeing with the delusional belief.',cue:'Validate emotion, state your observation, invite safety-focused exploration.'},
-    family:{label:'Family',caseId:'family_meeting_opening_001',challenge:'Practice opening a family meeting with structure and consent boundaries.',cue:'Join emotionally, name consent, set a shared goal.'},
-    medication:{label:'Medication',caseId:'medication_ambivalence_001',challenge:'Practice exploring medication ambivalence before offering education.',cue:'Reflect both sides and ask what would make trying feel safer.'},
-    rupture:{label:'Rupture',caseId:'rupture_limit_setting_001',challenge:'Practice repairing a rupture without abandoning the clinical limit.',cue:'Validate impact, keep the limit clear, offer one repair step.'},
-    guarded:{label:'Guardedness',caseId:'guardedness_privacy_001',challenge:'Practice lowering pressure with a guarded patient while naming safety limits.',cue:'Name choice, explain limits, ask what would make talking safer.'}
+    safety:{label:'Safety',caseId:'suicide_direct_question_001',hero:'Ask one direct safety question before you see patients.',challenge:'Practice one direct, plain-language safety question before you see patients.',cue:'Use direct safety words, then pause.'},
+    psychosis:{label:'Psychosis',caseId:'psychosis_validation_001',hero:'Validate fear without agreeing with the delusional belief.',challenge:'Practice validating fear without agreeing with the delusional belief.',cue:'Validate emotion, state your observation, invite safety-focused exploration.'},
+    family:{label:'Family',caseId:'family_meeting_opening_001',hero:'Open a family meeting with structure and consent boundaries.',challenge:'Practice opening a family meeting with structure and consent boundaries.',cue:'Join emotionally, name consent, set a shared goal.'},
+    medication:{label:'Medication',caseId:'medication_ambivalence_001',hero:'Explore medication ambivalence before offering education.',challenge:'Practice exploring medication ambivalence before offering education.',cue:'Reflect both sides and ask what would make trying feel safer.'},
+    rupture:{label:'Rupture',caseId:'rupture_limit_setting_001',hero:'Repair the rupture without abandoning the clinical limit.',challenge:'Practice repairing a rupture without abandoning the clinical limit.',cue:'Validate impact, keep the limit clear, offer one repair step.'},
+    guarded:{label:'Guardedness',caseId:'guardedness_privacy_001',hero:'Lower the pressure with a guarded patient while naming safety limits.',challenge:'Practice lowering pressure with a guarded patient while naming safety limits.',cue:'Name choice, explain limits, ask what would make talking safer.'}
   };
   var COMM_DOMAIN_ORDER=['safety','psychosis','family','medication','rupture','guarded'];
   var MODE_COMM_FILTER={ward:'psychosis',family:'family',safety:'safety',shelf:'psychosis','5min':'safety'};
@@ -1269,12 +1619,14 @@
     });
     return best||{id:preferred,done:0,total:0};
   }
+  /* Design 2a "next step first": the daily relational challenge leads the home page as a
+     hero card (rendered by renderHome above the unit dashboard, no longer inside it). */
   function relationalChallengeHtml(mode){
     var least=leastPracticedDomain(mode), cfg=COMM_DOMAINS[least.id]||COMM_DOMAINS.safety;
     var href=communicationHref(cfg.caseId,mode);
-    return '<div class="wd-challenge" aria-label="Daily relational challenge"><div><div class="k">Daily relational challenge · '+esc(cfg.label)+' '+least.done+'/'+least.total+'</div><div class="t">'+esc(cfg.challenge)+'</div><div class="d">'+esc(cfg.cue)+' Uses only anonymous local practice history.</div></div><a class="a" href="'+esc(href)+'">Practice now</a></div>';
+    return '<div class="hm-hero" aria-label="Your next step — daily relational challenge"><div><div class="k">Your next step · Daily challenge · '+esc(cfg.label)+' '+least.done+'/'+least.total+' · 2 min</div><div class="t">'+esc(cfg.hero||cfg.challenge)+'</div></div><a class="a" href="'+esc(href)+'">Practice now</a></div>';
   }
-  function caseAction(id,note,mode){ return {f:'communication-practice.html',t:CASE_TITLES[id]||'What Do You Say Next?',k:'tool',caseId:id,href:communicationHref(id,mode),note:note||'spoken drill'}; }
+  function caseAction(id,note,mode){ return {f:'communication-practice.html',t:CASE_TITLES[id]||'What Do You Say Next?',k:'tool',caseId:id,href:communicationHref(id,mode),note:note||'drill'}; }
   function familyAction(id,title,note){ return {f:'family-systems.html',t:title||FAMILY_SCENARIO_TITLES[id]||'Family Systems Practice',k:'tool',scenarioId:id,href:'?tool=family-systems.html&scenario='+encodeURIComponent(id),note:note||'family tool'}; }
   function toolAction(k,note,mode){ return {f:k,t:(LAB[k]||PRACTICE_LABELS[k]||String(k||'tool').replace(/\.html$/,'').replace(/[-_]+/g,' ')),k:'tool',href:k==='communication-practice.html'?communicationHref('',mode):'?tool='+encodeURIComponent(k),note:note||'tool'}; }
   function casesForMode(mode){
@@ -1286,7 +1638,7 @@
       }
     });
     ranked.sort(function(a,b){ var ai=pri.indexOf(a.id),bi=pri.indexOf(b.id); if(ai<0)ai=99;if(bi<0)bi=99; return (ai-bi)||(b.score-a.score); });
-    return ranked.map(function(x){ return caseAction(x.id,'spoken drill',mode); });
+    return ranked.map(function(x){ return caseAction(x.id,'drill',mode); });
   }
   function toolsForMode(mode,matches){
     var cfg=dashCfg(mode), counts={}, order={}, out=[];
@@ -1310,10 +1662,13 @@
     if(it.href){ return '<a class="hm-li wd-li" href="'+esc(it.href)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></a>'; }
     return '<button class="hm-li wd-li" data-f="'+esc(it.f)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></button>';
   }
+  /* Shorter display labels for dashboard chips only (design 2a copy trim); nav and
+     everything else keep the full LAB names. */
+  var CHIP_LABEL={'diagnostic-reasoning.html':'Diagnostic Reasoning','decision-aids.html':'Decision Aids'};
   function toolRow(tools,mode){
     if(!tools||!tools.length)return '';
-    var h='<div class="wd-tools"><span class="k">Tools for '+esc(dashCfg(mode).label)+'</span>';
-    tools.forEach(function(x){ var safe=practiceIsSafe(x.f)?' is-safety':''; h+='<a class="wd-tool'+safe+'" href="'+esc(x.href)+'">'+esc(x.t)+'</a>'; });
+    var h='<div class="wd-tools" role="group" aria-label="Tools for '+esc(dashCfg(mode).label)+'">';
+    tools.forEach(function(x){ var safe=practiceIsSafe(x.f)?' is-safety':''; h+='<a class="wd-tool'+safe+'" href="'+esc(x.href)+'">'+esc(CHIP_LABEL[x.f]||x.t)+'</a>'; });
     h+='</div>'; return h;
   }
   function companionButton(x,kind){
@@ -1330,7 +1685,7 @@
     var matches=itemsForMode(mode), tools=toolsForMode(mode,matches), pages=matches.slice(0,3);
     var h='<button type="button" class="mc-toggle" aria-expanded="'+(mcOpen?'true':'false')+'" aria-controls="mcBody"><span class="mc-toggle-t">'+esc(cfg.label)+' mode</span><span class="mc-chev" aria-hidden="true">▸</span></button>';
     h+='<div id="mcBody" class="mc-body"'+(mcOpen?'':' hidden')+'>';
-    h+='<div class="mc-head"><button type="button" class="mc-home" data-mc-home="1">Progress</button></div>';
+    h+='<div class="mc-head"><button type="button" class="mc-home" data-mc-home="1">Today</button></div>';
     h+='<div class="mc-modes">'+modes.map(function(m){return '<button type="button" class="mc-mode'+(mode===m[0]?' on':'')+'" data-mc-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div>';
     h+='<div class="mc-section"><div class="mc-label">Pages</div><div class="mc-list">'+(pages.length?pages.map(function(x){return companionButton(x,'page');}).join(''):'<div class="mc-empty">Recommendations load after navigation data is ready.</div>')+'</div></div>';
     h+='<div class="mc-section"><div class="mc-label">Tools</div><div class="mc-list">'+(tools.length?tools.slice(0,3).map(function(x){return companionButton(x,'tool');}).join(''):'<div class="mc-empty">No mode tools yet.</div>')+'</div></div>';
@@ -1340,7 +1695,7 @@
   window.__renderModeCompanion=renderModeCompanion;
   (function(){ var root=document.getElementById('modeCompanion'); if(!root)return; root.addEventListener('click',function(e){
     var tg=e.target.closest?e.target.closest('.mc-toggle'):null; if(tg){ mcOpen=!mcOpen; var bd=document.getElementById('mcBody'); if(bd){ if(mcOpen){bd.removeAttribute('hidden');}else{bd.setAttribute('hidden','');} } tg.setAttribute('aria-expanded',mcOpen?'true':'false'); return; }
-    var mb=e.target.closest?e.target.closest('[data-mc-mode]'):null; if(mb){ setDashboardMode(mb.getAttribute('data-mc-mode')); if(currentItem&&currentItem.f==='__home__'&&window.renderHome){ contentEl.innerHTML=window.renderHome(); try{window.__afterSpecial('__home__');}catch(_){ } } else if(currentItem&&currentItem.k==='md'){ var nb=null, all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===currentItem.f){ nb=all[i]; break; } } show(currentItem,nb,{replace:true}); } return; }
+    var mb=e.target.closest?e.target.closest('[data-mc-mode]'):null; if(mb){ setDashboardMode(mb.getAttribute('data-mc-mode')); if(currentItem&&(currentItem.f==='__home__'||currentItem.f==='__progress__')){ try{specialRefresh();}catch(_){ } } else if(currentItem&&currentItem.k==='md'){ var nb=null, all=navEl.querySelectorAll('.navitem'); for(var i=0;i<all.length;i++){ if(all[i].getAttribute('data-f')===currentItem.f){ nb=all[i]; break; } } show(currentItem,nb,{replace:true}); } return; }
     var home=e.target.closest?e.target.closest('[data-mc-home]'):null; if(home){ navClick('__home__'); return; }
     var item=e.target.closest?e.target.closest('[data-mc-f]'):null; if(item){ navClick(item.getAttribute('data-mc-f')); }
   }); })();
@@ -1375,8 +1730,8 @@
     if(!pack.after.length)pack.after=compactActions(casePicks.slice(0,1).concat(matches.slice(2,3),tools.slice(0,1))).slice(0,2);
     if(!pack.leave.length)pack.leave=[toolAction('review.html','review')];
     var cfg=dashCfg(mode);
-    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit <span class="wd-count">'+matches.length+' matched</span></h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div></div>';
-    h+='<p class="wd-intro">'+esc(cfg.intent)+'</p>'+relationalChallengeHtml(mode)+toolRow(tools,mode);
+    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit</h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div></div>';
+    h+='<p class="wd-intro">'+esc(cfg.intent)+' <span class="wd-count">· '+matches.length+' matched</span></p>'+toolRow(tools,mode);
     h+='<div class="wd-grid"><div class="wd-card"><h3>Before rounds</h3>'+pack.before.map(function(x){return actionRow(x,'open');}).join('')+'</div><div class="wd-card"><h3>After rounds</h3>'+pack.after.map(function(x){return actionRow(x,'practice');}).join('')+'</div><div class="wd-card"><h3>Before leaving</h3>'+pack.leave.map(function(x){return actionRow(x,'review');}).join('')+'</div></div></div>';
     return h;
   }
@@ -1405,7 +1760,12 @@
     try{ var qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}'); Object.keys(qb).forEach(function(id){ var r=qb[id]; if(!r||!r.pages||!r.pages.length)return; var seen={}; r.pages.forEach(function(f){ blueprintOf(f).forEach(function(c){ seen[c]=1; }); }); addObs(Object.keys(seen), !!r.correct); }); }catch(_){ }
     try{ var q=JSON.parse(localStorage.getItem('cw_quiz_v1')||'{}'); Object.keys(q).forEach(function(f){ var e=q[f]; if(!e||!e.seen)return; var cats={}; blueprintOf(f).forEach(function(c){ cats[c]=1; }); var right=Math.max(0,(e.seen||0)-(e.wrong||0)); Object.keys(cats).forEach(function(c){ if(acc[c]){ acc[c].total+=e.seen; acc[c].correct+=right; } }); }); }catch(_){ }
     var s=srsState(); if(s&&s.cards){ Object.keys(s.cards).forEach(function(id){ if(id.indexOf('TOPIC#')!==0)return; var lp=(s.cards[id]&&s.cards[id].lapses)||0; if(!lp)return; blueprintOf(id.slice(6)).forEach(function(c){ if(acc[c])acc[c].lapses+=lp; }); }); }
-    return SHELF_ORDER.map(function(c){ var a=acc[c]; var n=a.total; var score=null; if(n){ score=Math.round(100*((a.correct+1.5)/(n+3))); score=Math.max(0,score-Math.min(15,a.lapses*3)); } return {c:c,label:SHELF_LABEL[c],score:score,n:n,conf:(n===0?'none':(n<5?'low':'solid'))}; });
+    /* miss (raw wrong count) travels with the shrunk score so weak-flag consumers can tell
+       "shrunk low because n is tiny" from "actually missed something": a perfect 1/1 shrinks
+       to 63 (<70), which used to flag ALL twelve categories weak after a perfect one-item-
+       per-category pretest. miss>0 is required to call a category weak; at n>=3 the shrunk
+       score of a perfect record clears 70 anyway, so the clause only rescues tiny-n perfection. */
+    return SHELF_ORDER.map(function(c){ var a=acc[c]; var n=a.total; var score=null; if(n){ score=Math.round(100*((a.correct+1.5)/(n+3))); score=Math.max(0,score-Math.min(15,a.lapses*3)); } return {c:c,label:SHELF_LABEL[c],score:score,n:n,miss:Math.max(0,a.total-a.correct),conf:(n===0?'none':(n<5?'low':'solid'))}; });
   }
   /* confidence calibration (derived): how accurate are answers at each stated confidence? */
   function calibrationSummary(){
@@ -1416,10 +1776,11 @@
   function safeLS(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(_){ return null; } }
   function studyId(){ try{ var k=localStorage.getItem('cw_study_id'); if(!k){ k='S-'+Math.random().toString(36).slice(2,8).toUpperCase()+'-'+Date.now().toString(36).slice(-4).toUpperCase(); localStorage.setItem('cw_study_id',k); } return k; }catch(_){ return 'S-ANON'; } }
   window.exportStudy=function(){
-    var payload={ study_id:studyId(), exported_at:new Date().toISOString(), schema:'clerkship-study-v1',
+    var payload={ study_id:studyId(), exported_at:new Date().toISOString(), schema:'clerkship-study-v2',
       progress:safeLS('cw_progress_v1'), srs:safeLS('cw_srs_v1'), quiz:safeLS('cw_quiz_v1'),
       qb:safeLS('cw_qb_v1'), mastery:(function(){try{return masteryByBlueprint();}catch(_){return null;}})(),
       calibration:(function(){try{return calibrationSummary();}catch(_){return null;}})(),
+      calib:(function(){try{return calibRead();}catch(_){return null;}})(),
       pretest:safeLS('cw_pretest_v1'), plan:safeLS('cw_plan_v1') };
     var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
@@ -1427,30 +1788,160 @@
     document.body.appendChild(a); a.click(); a.remove();
     var s=document.getElementById('studyMsg'); if(s) s.textContent='Exported ✓  anonymous — study ID '+payload.study_id+'. Thank you!';
   };
+
+  /*__CALIB_LOG__*/
+
+  /*__PHASE_POLICY__*/
+
+  /*__SESS_CAPSULE__*/
+
+  /* ---- calib panel ---- */
+  /* Metacognition panel (phase 1): swaps in for the legacy calibrationSummary() card on
+     renderProgress once there's enough ledger history (>=20 cw_calib_v1 qb events) to be more
+     informative than the current-state summary above it. Below threshold, renderProgress falls
+     back to calibrationSummary() unchanged — see the caller. Counts here read the FULL
+     history ledger (calibRead()), not the single-record-per-item cw_qb_v1 snapshot, EXCEPT
+     for the confidently-wrong count, which intentionally reads cw_qb_v1 — same predicate as
+     question-bank-practice.html's certWrongItems() (certWrong===true). Counts can differ
+     slightly when an item is later retired: certWrongItems() additionally filters through
+     activeItems(), which this shell has no bank metadata to replicate — parity plumbing is a
+     follow-up. */
+  function renderCalibPanel(){
+    var ledger=(typeof calibRead==='function')?calibRead():{qb:[],rev:[]};
+    var qbEvents=ledger.qb||[];
+    if(qbEvents.length<20) return '';
+    var LVL=[['certain','Certain'],['likely','Likely'],['guess','Guess']];
+    var bins={guess:{n:0,correct:0},likely:{n:0,correct:0},certain:{n:0,correct:0}};
+    qbEvents.forEach(function(ev){ if(!ev||ev.re!==0||!bins[ev.p])return; bins[ev.p].n++; if(ev.a===1)bins[ev.p].correct++; });
+    var barsHtml='';
+    LVL.forEach(function(pair){ var b=bins[pair[0]]; if(b.n<5)return; var acc=Math.round(100*b.correct/b.n); barsHtml+='<div class="brow"><span class="lab">'+pair[1]+'</span><span class="track"><span class="fill" style="width:'+acc+'%"></span></span><span class="pc">'+acc+'% · '+b.n+'</span></div>'; });
+    var h='<div class="hm-sec"><h2>Confidence calibration <span style="font-weight:400;color:var(--text-light)">· are you right when you feel sure?</span></h2>';
+    h+='<div class="sub" style="margin:0 0 8px">Counts every attempt, not just your latest — numbers may differ from the earlier summary.</div>';
+    if(barsHtml){ h+='<div class="hm-bars">'+barsHtml+'</div>'; }
+    else{ h+='<div class="sub" style="margin:0 0 8px">Not enough attempts yet at any one confidence level to show bars — keep practicing.</div>'; }
+    var qbv1={}; try{ qbv1=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}')||{}; }catch(_){ qbv1={}; }
+    var certWrong=0; Object.keys(qbv1).forEach(function(id){ var r=qbv1[id]; if(r&&r.certWrong===true)certWrong++; });
+    if(certWrong>0){
+      h+='<div class="sub" style="margin:8px 0 0">You were <strong>confidently wrong</strong> on '+certWrong+' item'+(certWrong===1?'':'s')+' — those are the highest-yield to revisit.</div>';
+      h+='<button class="hm-li" data-f="question-bank-practice.html" style="border-bottom:none"><span class="t">Practice your confidently-wrong items</span><span class="sec">Practice →</span></button>';
+    }
+    var revEvents=ledger.rev||[], seenIdDay={};
+    revEvents.forEach(function(ev){ if(ev&&ev.sug==='Again'&&ev.p!=='Again'){ var day=new Date(ev.ts).toDateString(); seenIdDay[ev.id+'|'+day]=1; } });
+    var divergeCount=Object.keys(seenIdDay).length;
+    if(divergeCount>0){ h+='<div class="sub" style="margin:8px 0 0">You graded yourself higher than the app suggested on '+divergeCount+' card'+(divergeCount===1?'':'s')+' flagged <strong>Again</strong> — worth a second look.</div>'; }
+    h+='</div>';
+    return h;
+  }
+  /* ---- end calib panel ---- */
+
+  /* "Mon Aug 10 · Week 2 · Ward" — the Today header context stamp (design 2a). Week is
+     COMPUTED from cw_rotation_start (a date, set on Start-here) so it advances on its own;
+     the legacy static cw_start_week pick is honored as a fallback for learners who set it
+     before the date field existed (that key no longer has a writer). Sentinels: 0 = date set
+     but rotation not started yet, 7 = past week 6 — both suppress the Week part rather than
+     falling back to a stale static pick. */
+  function rotationWeek(){
+    /* Date parsing goes through the injected shelfDaysUntil() — the one legal local-midnight
+       parse site (the phase-chip contract bans inline midnight-suffix date parses here).
+       For a past start date, -shelfDaysUntil(start) is exactly the full days elapsed. */
+    if(typeof shelfDaysUntil!=='function')return null;
+    var du=shelfDaysUntil(LS('cw_rotation_start')||'');
+    if(du==null)return null;
+    if(du>0)return 0;
+    var wk=Math.floor(-du/7)+1; return wk<=6?wk:7;
+  }
+  function homeStamp(mode){
+    var d=new Date();
+    var wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+    var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+    var parts=[wd+' '+mo+' '+d.getDate()];
+    var rw=rotationWeek();
+    var wk=(rw===null)?parseInt(LS('cw_start_week')||'',10):rw;
+    if(wk>=1&&wk<=6)parts.push('Week '+wk);
+    parts.push(dashCfg(mode).label);
+    return parts.join(' · ');
+  }
   window.renderHome=function(){
     var scan=navScan();
     var rev=0, tot=0; for(var _ck in scan.cov){ rev+=scan.cov[_ck].done; tot+=scan.cov[_ck].tot; }
-    var pct=tot?Math.round(rev/tot*100):0; var bd=dueBreakdown(); var dc=dueCount(); var s=srsState();
+    var pct=tot?Math.round(rev/tot*100):0; var bd=dueBreakdown(); var s=srsState();
     var streak=(s&&s.stats&&s.stats.streak)||0;
-    var last=LS('cw_last'); var shelf=LS('cw_shelf_date'); var shelfDays=null;
-    if(shelf){ var t=new Date(shelf+'T00:00:00').getTime(); if(!isNaN(t)) shelfDays=Math.ceil((t-Date.now())/86400000); }
-    var fresh=(rev===0 && bd.daily.due+bd.qb.due+bd.fam.due+bd.other.due===0 && !last);
-    var h='<div class="hm" id="hmRoot"><h1>Your progress</h1>';
-    if(fresh){ h+='<p class="sub">Welcome — nothing tracked yet. Open any content page and tap <strong>Mark as read</strong>, or start a review session, and this page fills in.</p>'; }
-    else{ h+='<p class="sub">Where you are, and the next best thing to do.</p>'; }
+    var last=LS('cw_last'); var mode=dashboardMode();
+    var h='<div class="hm" id="hmRoot"><div class="hm-top"><h1>Today</h1><span class="hm-stamp">'+esc(homeStamp(mode))+'</span></div>';
+    /* "New here?" is only true for a fresh device: any review, any scheduled card, or any
+       visited page auto-suppresses the ribbon — manual dismissal shouldn't be the only exit. */
+    var freshUser=(rev===0 && bd.daily.due+bd.qb.due+bd.fam.due+bd.other.due===0 && !last);
+    if(freshUser && LS('cw_orient_ribbon_dismissed')!=='1'){
+      h+='<div class="hm-ribbon" id="orientRibbon"><span class="t">New here? Ten minutes of orientation sets up your whole rotation.</span><button class="hm-btn" type="button" data-ribbon="start">Start orientation</button><button class="hm-btn ghost" type="button" data-ribbon="pretest">2-minute placement</button><button class="hm-ribbon-x" type="button" data-ribbon="dismiss" aria-label="Dismiss the orientation reminder">&times;</button></div>';
+    }
+    h+=relationalChallengeHtml(mode);
     h+=renderWardDashboard();
-    h+='<div class="hm-sec" style="border:1px solid var(--accent);background:var(--accent-light);border-radius:14px;padding:14px 16px;margin:0 0 16px"><h2 style="margin-top:0">Study on the go · Anki decks</h2><div class="sub" style="margin:0 0 8px">Take the question bank and high-yield concepts with you as spaced-repetition flashcards for your phone.</div><button class="hm-li" data-f="anki.md" style="border-bottom:none"><span class="t"><strong>Get the Anki decks</strong></span><span class="sec">Open →</span></button></div>';
-    h+='<div class="hm-grid">';
-    h+='<div class="hm-card"><div class="k">Study progress</div><div class="hm-row"><div class="hm-ring" style="--p:'+pct+'"><i>'+pct+'%</i></div><div class="v">'+rev+'<small> / '+tot+' pages read</small></div></div></div>';
-    h+='<div class="hm-card"><div class="k">Due today</div><div class="v">'+bd.daily.due+(bd.daily.overdue?'<small> · '+bd.daily.overdue+' overdue</small>':'')+'</div>'+(bd.daily.due?'<button class="hm-btn" data-act="review">Start review</button>':'<span class="hm-empty">Nothing due — nice.</span>')+dueSubstatHtml(bd)+'</div>';
-    h+='<div class="hm-card"><div class="k">Study streak</div><div class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></div></div>';
-    h+='<div class="hm-card"><div class="k">Shelf countdown</div><div class="v">'+(shelfDays!=null?(shelfDays>=0?shelfDays+'<small> days</small>':'<small>past</small>'):'<small>set a date on Start here</small>')+'</div></div>';
+    h+='<div class="hm-mini">';
+    h+='<button class="hm-tile" type="button" data-f="__progress__"><span class="k">Reviewed</span><span class="v">'+pct+'%</span><span class="l">See progress →</span></button>';
+    if(bd.daily.due){ h+='<button class="hm-tile" type="button" data-act="review"><span class="k">Due today</span><span class="v">'+bd.daily.due+(bd.daily.overdue?'<small> · '+bd.daily.overdue+' overdue</small>':'')+'</span><span class="l">Start review →</span>'+dueSubstatHtml(bd)+'</button>'; }
+    else{ h+='<div class="hm-tile"><span class="k">Due today</span><span class="v">0</span>'+dueSubstatHtml(bd)+'</div>'; }
+    if(streak){ h+='<div class="hm-tile"><span class="k">Streak</span><span class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></span></div>'; }
+    else{ h+='<button class="hm-tile" type="button" data-act="review"><span class="k">Streak</span><span class="l">Start your streak →</span></button>'; }
+    h+='<button class="hm-tile" type="button" data-f="anki.md"><span class="k">On your phone</span><span class="l">Anki decks →</span></button>';
     h+='</div>';
-    if(last&&LAB[last]===undefined){ h+='<div class="hm-sec"><h2>Continue where you left off</h2><button class="hm-li" data-f="'+last+'"><span class="t">Resume your last page</span><span class="sec">Resume →</span></button></div>'; }
-    var weak=weakTopics();
-    if(weak.length){ h+='<div class="hm-sec"><h2>Focus next · your weak spots</h2>'; weak.slice(0,5).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+esc(x.t)+'</span><span class="sec">'+esc(x.reason)+'</span></button>'; }); h+='</div>'; }
-    if(scan.hy.length){ h+='<div class="hm-sec"><h2>High-yield · not yet read</h2>'; scan.hy.slice(0,8).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+x.t+'</span><span class="sec">'+x.sec+'</span></button>'; }); h+='</div>'; }
-    var covk=Object.keys(scan.cov); if(covk.length){ h+='<div class="hm-sec"><h2>Coverage by section</h2><div class="hm-bars">'; covk.forEach(function(k){ var c=scan.cov[k]; var p=c.tot?Math.round(c.done/c.tot*100):0; h+='<div class="brow"><span class="lab">'+k+'</span><span class="track"><span class="fill" style="width:'+p+'%"></span></span><span class="pc">'+c.done+'/'+c.tot+'</span></div>'; }); h+='</div></div>'; }
+    /* ---- phase chip ---- */
+    var p=null; try{ p=phasePolicy(); }catch(_){ }
+    if(p){
+      h+=(p.phase==='unset')
+        ? '<span class="hm-phase">Set an exam date on <button class="hm-inl" data-pt="start">Start-here</button> to guide pacing.</span>'
+        : '<span class="hm-phase">'+esc(p.label)+'</span>';
+    }
+    /* ---- end phase chip ---- */
+    h+=capTriageHtml();
+    /* ---- resume row ---- */
+    /* qbank session merges into the existing "Continue where you left off" section
+       rather than a 15th hm-sec (Task 9 binding decision — see plan). Session row
+       renders FIRST when both exist: a 24h-expiry, in-progress capsule is more
+       perishable and more actionable than a page bookmark. Deep link is the
+       `<a class="hm-li" href="?tool=...&resume=1">` pattern actionRow()/communicationHref()
+       already use elsewhere on this page (not the data-f/navClick path — navClick()
+       matches a .navitem by EXACT data-f value against nav.json filenames, so a
+       query-suffixed data-f could never resolve). That href already flows through the
+       existing contentEl a[href] delegate (line ~907): the regex matches `?tool=`,
+       toolExtraFromParams() carries `resume=1` through as extra, and show()'s tool
+       branch appends it to the iframe src — zero new click-delegation branches. */
+    var sess=null; try{ sess=(typeof sessLoad==='function')?sessLoad('qbank'):null; }catch(_){ }
+    /* sessLoad() only validates expiresAt (pruning an expired/malformed-expiry entry) — it
+       does not validate queueIds/idx shape. Today's only writer (checkpointSession() in
+       question-bank-practice.html) always produces a well-formed record, so this is latent,
+       not active, but renderHome's call sites are not try/catch-wrapped: an unguarded
+       sess.queueIds.length here would throw and blank the WHOLE home page, not just this
+       row. Mirrors tryResumeSession()'s own guard on the same shape (question-bank-
+       practice.html) — treat a malformed session as absent. */
+    if(sess&&(!Array.isArray(sess.queueIds)||typeof sess.idx!=='number')) sess=null;
+    if(sess||(last&&LAB[last]===undefined)){
+      h+='<div class="hm-sec"><h2>Continue where you left off</h2>';
+      if(sess){
+        /* N/M from the raw capsule — the shell has no bank metadata to filter retired items
+           (same parity gap renderCalibPanel() documents); the tool re-derives exactly on resume. */
+        var sessLeft=sess.queueIds.length-sess.idx;
+        var sessMin=Math.max(1,Math.round(sessLeft*45/60));
+        h+='<a class="hm-li" href="?tool=question-bank-practice.html&resume=1"><span class="t">Resume question bank — '+sessLeft+' left, ~'+sessMin+' min</span><span class="sec">Resume →</span></a>';
+      }
+      if(last&&LAB[last]===undefined){ h+='<button class="hm-li" data-f="'+last+'"><span class="t">Resume your last page</span><span class="sec">Resume →</span></button>'; }
+      h+='</div>';
+    }
+    /* ---- end resume row ---- */
+    h+='<button class="hm-li" data-f="__progress__" style="border-bottom:none"><span class="t">Progress &amp; mastery</span><span class="sec">Coverage · blueprint · calibration →</span></button>';
+    h+='</div>'; return h;
+  };
+
+  /* Progress — the analytics half of the old combined home page (Today keeps the action half:
+     ribbon, hero, unit dashboard, tiles, triage, resume). Everything here derives from
+     device-local activity; the export section is the only way any of it leaves the browser.
+     Rendered by show() for the __progress__ nav special and refreshed through the same
+     specialRefresh()/__afterSpecial('__progress__') path Today uses. */
+  window.renderProgress=function(){
+    var scan=navScan();
+    var rev=0, tot=0; for(var _ck in scan.cov){ rev+=scan.cov[_ck].done; tot+=scan.cov[_ck].tot; }
+    var pct=tot?Math.round(rev/tot*100):0;
+    var h='<div class="hm" id="pgRoot"><div class="hm-top"><h1>Progress</h1><span class="hm-stamp">'+esc(homeStamp(dashboardMode()))+'</span></div>';
+    h+='<p class="sub">From your activity on this device — pages reviewed, practice answers, and confidence. Nothing leaves the browser unless you export it below.</p>';
     var mb=masteryByBlueprint(); var mbStarted=mb.filter(function(x){return x.score!=null;});
     h+='<div class="hm-sec"><h2>Mastery by blueprint <span style="font-weight:400;color:var(--text-light)">· from your practice</span></h2>';
     if(!mbStarted.length){ h+='<div class="sub" style="margin:0 0 8px">Answer practice questions (or topic quizzes) and this fills in — one bar per shelf-blueprint area.</div>'; }
@@ -1459,25 +1950,31 @@
     h+='</div></div>';
     if(safeLS('cw_plan_v1')){ h+='<button class="hm-li" data-pt="plan"><span class="t">View your personalized 6-week plan</span><span class="sec">Plan →</span></button>'; }
     else if(!safeLS('cw_pretest_v1')){ h+='<button class="hm-li" data-pt="pretest"><span class="t">Take the 2-minute placement</span><span class="sec">Start →</span></button>'; }
-    var weakCats=mbStarted.filter(function(x){return x.score<70;}).sort(function(a,b){return a.score-b.score;}).slice(0,3);
+    var weakCats=mbStarted.filter(function(x){return x.score<70&&x.miss>0;}).sort(function(a,b){return a.score-b.score;}).slice(0,3);
     var notStarted=mb.filter(function(x){return x.score==null;});
     if(weakCats.length||notStarted.length){ h+='<div class="hm-sec"><h2>Practice your weakest areas</h2>';
       weakCats.forEach(function(x){ h+='<button class="hm-li" data-practice="'+x.c+'"><span class="t">'+esc(x.label)+'</span><span class="sec">'+x.score+'% · practice →</span></button>'; });
       if(notStarted.length){ var ns=notStarted[0]; h+='<button class="hm-li" data-practice="'+ns.c+'"><span class="t">'+esc(ns.label)+'</span><span class="sec">not started · try it →</span></button>'; }
       h+='</div>'; }
-    var cal=calibrationSummary();
-    if(cal.total>=1){ var lvl=[['certain','Certain'],['likely','Likely'],['guess','Guess']];
-      h+='<div class="hm-sec"><h2>Confidence calibration <span style="font-weight:400;color:var(--text-light)">· are you right when you feel sure?</span></h2><div class="hm-bars">';
-      lvl.forEach(function(pair){ var e=cal.lv[pair[0]]; var acc=e.n?Math.round(100*e.correct/e.n):0; var lab=e.n?(acc+'% · '+e.n):'—'; h+='<div class="brow"><span class="lab">'+pair[1]+'</span><span class="track"><span class="fill" style="width:'+(e.n?acc:0)+'%"></span></span><span class="pc">'+lab+'</span></div>'; });
-      h+='</div>';
-      var cert=cal.lv.certain, g=cal.lv.guess;
-      if(cal.certWrong>0){ h+='<div class="sub" style="margin:8px 0 0">You were <strong>confidently wrong</strong> on '+cal.certWrong+' item'+(cal.certWrong===1?'':'s')+' — those are the highest-yield to revisit.</div>'; }
-      else if(cert.n>=3 && Math.round(100*cert.correct/cert.n)>=90){ h+='<div class="sub" style="margin:8px 0 0">Well calibrated — when you’re certain, you’re right.</div>'; }
-      if(g.n>=3 && Math.round(100*g.correct/g.n)>=70){ h+='<div class="sub" style="margin:6px 0 0">You know more than you think — right '+Math.round(100*g.correct/g.n)+'% of the time even when guessing.</div>'; }
-      h+='</div>';
+    var weak=weakTopics();
+    if(weak.length){ h+='<div class="hm-sec"><h2>Focus next · your weak spots</h2>'; weak.slice(0,5).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+esc(x.t)+'</span><span class="sec">'+esc(x.reason)+'</span></button>'; }); h+='</div>'; }
+    var covk=Object.keys(scan.cov); if(covk.length){ h+='<div class="hm-sec"><h2>Coverage by section <span style="font-weight:400;color:var(--text-light)">· '+pct+'% overall</span></h2><div class="hm-bars">'; covk.forEach(function(k){ var c=scan.cov[k]; var p=c.tot?Math.round(c.done/c.tot*100):0; h+='<div class="brow"><span class="lab">'+k+'</span><span class="track"><span class="fill" style="width:'+p+'%"></span></span><span class="pc">'+c.done+'/'+c.tot+'</span></div>'; }); h+='</div></div>'; }
+    if(scan.hy.length){ h+='<div class="hm-sec"><h2>High-yield · not yet read</h2>'; scan.hy.slice(0,8).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+x.t+'</span><span class="sec">'+x.sec+'</span></button>'; }); h+='</div>'; }
+    var calPanel=(typeof renderCalibPanel==='function')?renderCalibPanel():'';
+    if(calPanel){ h+=calPanel; }
+    else{ var cal=calibrationSummary();
+      if(cal.total>=1){ var lvl=[['certain','Certain'],['likely','Likely'],['guess','Guess']];
+        h+='<div class="hm-sec"><h2>Confidence calibration <span style="font-weight:400;color:var(--text-light)">· are you right when you feel sure?</span></h2><div class="hm-bars">';
+        lvl.forEach(function(pair){ var e=cal.lv[pair[0]]; var acc=e.n?Math.round(100*e.correct/e.n):0; var lab=e.n?(acc+'% · '+e.n):'—'; h+='<div class="brow"><span class="lab">'+pair[1]+'</span><span class="track"><span class="fill" style="width:'+(e.n?acc:0)+'%"></span></span><span class="pc">'+lab+'</span></div>'; });
+        h+='</div>';
+        var cert=cal.lv.certain, g=cal.lv.guess;
+        if(cal.certWrong>0){ h+='<div class="sub" style="margin:8px 0 0">You were <strong>confidently wrong</strong> on '+cal.certWrong+' item'+(cal.certWrong===1?'':'s')+' — those are the highest-yield to revisit.</div>'; }
+        else if(cert.n>=3 && Math.round(100*cert.correct/cert.n)>=90){ h+='<div class="sub" style="margin:8px 0 0">Well calibrated — when you’re certain, you’re right.</div>'; }
+        if(g.n>=3 && Math.round(100*g.correct/g.n)>=70){ h+='<div class="sub" style="margin:6px 0 0">You know more than you think — right '+Math.round(100*g.correct/g.n)+'% of the time even when guessing.</div>'; }
+        h+='</div>';
+      }
     }
     h+='<div class="hm-sec"><h2>Help evaluate this site <span style="font-weight:400;color:var(--text-light)">· optional</span></h2><div class="sub" style="margin:0 0 8px">Export your anonymous learning activity for the clerkship study — no name and no patient information, only what you reviewed and answered on this site.</div><button class="hm-li" data-act="studyexport"><span class="t">Export my anonymous progress</span><span class="sec">Export ↓</span></button><div id="studyMsg" class="hm-empty" style="margin-top:6px"></div></div>';
-    h+='<div class="hm-sec"><h2>New here?</h2><button class="hm-li" data-act="start"><span class="t">Open the Start-here orientation</span><span class="sec">Start →</span></button></div>';
     h+='</div>'; return h;
   };
 
@@ -1495,21 +1992,25 @@
   var PRETEST_POOL=null, ptAnswers={};
   function ptLabels(cats){ return cats.map(function(c){return SHELF_LABEL[c]||c;}).join(', '); }
   function masteryBarsHtml(mb){ var h='<div class="hm-bars">'; mb.forEach(function(x){ var pc=(x.score==null)?0:x.score; var lab=(x.score==null)?'not started':(x.score+'%'+(x.conf==='low'?' · few':'')); h+='<div class="brow"><span class="lab">'+esc(x.label)+'</span><span class="track"><span class="fill" style="width:'+pc+'%"></span></span><span class="pc">'+lab+'</span></div>'; }); return h+'</div>'; }
-  function buildPlan(){ var mb=masteryByBlueprint(), weak={}; mb.forEach(function(x){ if(x.score==null||x.score<70) weak[x.c]=1; }); var weeks=WEEK_MAP.map(function(wm){ return {week:wm.w,title:wm.title,page:wm.page,allCats:wm.cats,focus:wm.cats.filter(function(c){return weak[c];})}; }); return {generatedAt:new Date().toISOString(),shelfDate:(LS('cw_shelf_date')||''),weeks:weeks}; }
-  function shelfIntensityHtml(shelf){ if(!shelf) return '<div class="sub" style="margin:0 0 10px">Set a shelf/exam date on <button class="hm-inl" data-pt="start">Start-here</button> to tune intensity.</div>'; var t=new Date(shelf+'T00:00:00').getTime(); if(isNaN(t))return ''; var days=Math.ceil((t-Date.now())/86400000); if(days<0) return '<div class="sub" style="margin:0 0 10px">Shelf date passed — use this plan for review.</div>'; var msg=days<=14?('Shelf in '+days+' day'+(days===1?'':'s')+' — compress: hit each week’s focus areas and practice daily.'):('Shelf in '+days+' days — steady pace through the weeks.'); return '<div class="sub" style="margin:0 0 10px">'+msg+'</div>'; }
+  function buildPlan(){ var mb=masteryByBlueprint(), weak={}; mb.forEach(function(x){ if(x.score==null||(x.score<70&&x.miss>0)) weak[x.c]=1; }); var weeks=WEEK_MAP.map(function(wm){ return {week:wm.w,title:wm.title,page:wm.page,allCats:wm.cats,focus:wm.cats.filter(function(c){return weak[c];})}; }); return {generatedAt:new Date().toISOString(),shelfDate:(LS('cw_shelf_date')||''),weeks:weeks}; }
+  function shelfIntensityHtml(shelf){ if(!shelf) return '<div class="sub" style="margin:0 0 10px">Set a shelf/exam date on <button class="hm-inl" data-pt="start">Start-here</button> to tune intensity.</div>'; var days=shelfDaysUntil(shelf); if(days==null)return ''; if(days<0) return '<div class="sub" style="margin:0 0 10px">Shelf date passed — use this plan for review.</div>'; var msg=days<=14?('Shelf in '+days+' day'+(days===1?'':'s')+' — compress: hit each week’s focus areas and practice daily.'):('Shelf in '+days+' days — steady pace through the weeks.'); return '<div class="sub" style="margin:0 0 10px">'+msg+'</div>'; }
   function renderPlanCards(plan){ var h=shelfIntensityHtml(plan.shelfDate); plan.weeks.forEach(function(wk){ h+='<div class="wd-card" style="margin:0 0 12px"><h3 style="text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--text);margin:0 0 6px">'+esc(wk.title)+'</h3>'; if(wk.focus&&wk.focus.length){ h+='<div class="sub" style="margin:0 0 8px">Focus first: <strong>'+esc(ptLabels(wk.focus))+'</strong></div>'; wk.focus.forEach(function(c){ h+='<button class="hm-li" data-practice="'+c+'" style="border-bottom:none"><span class="t">Practice '+esc(SHELF_LABEL[c]||c)+'</span><span class="sec">→</span></button>'; }); } else { h+='<div class="sub" style="margin:0 0 4px">On track — maintain.</div>'; } h+='<button class="hm-li" data-f="'+wk.page+'" style="border-bottom:none"><span class="t">Open '+esc(wk.title.split(' — ')[0])+'</span><span class="sec">read →</span></button></div>'; }); return h; }
   function startPretest(){ setDrawer(false); if(contentEl){ contentEl.className='content'; } contentEl.innerHTML='<div class="hm" id="ptRoot"><h1>2-minute placement</h1><p class="sub">Loading…</p></div>'; bindPretestUI(); var go=function(pool){ PRETEST_POOL=pool; ptAnswers={}; renderPretestForm(); }; if(PRETEST_POOL){ go(PRETEST_POOL); return; } fetch('pretest_pool.json').then(function(r){return r.ok?r.json():{items:[]};}).then(function(d){ go((d&&d.items)||[]); }).catch(function(){ go([]); }); }
   function renderPretestForm(){ var root=document.getElementById('ptRoot'); if(!root)return; var items=PRETEST_POOL||[]; if(!items.length){ root.innerHTML='<h1>Placement unavailable</h1><p class="sub">The question pool didn’t load — browse the library or follow the path instead.</p>'; return; } var h='<h1>2-minute placement</h1><p class="sub">One question per topic area — pick the best answer. This points you at weak spots; it’s a starting estimate, not a grade.</p>'; items.forEach(function(it,qi){ h+='<div class="pt-q" data-qi="'+qi+'"><div class="pt-stem">'+(qi+1)+'. '+esc(it.stem)+'</div>'; (it.options||[]).forEach(function(o){ h+='<button class="pt-opt" data-qi="'+qi+'" data-key="'+esc(o.key)+'"><b>'+esc(o.key)+'.</b> '+esc(o.t)+'</button>'; }); h+='</div>'; }); h+='<div style="margin-top:6px"><button class="hm-btn" data-pt="submit">See my results</button> <span id="ptCount" class="hm-empty"></span></div>'; root.innerHTML=h; updatePtCount(); }
   function updatePtCount(){ var el=document.getElementById('ptCount'); if(!el)return; var n=0,t=(PRETEST_POOL||[]).length,k; for(k in ptAnswers){ if(ptAnswers.hasOwnProperty(k))n++; } el.textContent=n+' of '+t+' answered'; }
-  function submitPretest(){ var items=PRETEST_POOL||[], answers=[], byCat={}, qb={}; try{qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}');}catch(_){qb={};} items.forEach(function(it,qi){ var k=ptAnswers[qi]; if(!k)return; var opt=null; (it.options||[]).forEach(function(o){if(o.key===k)opt=o;}); var correct=!!(opt&&opt.c); answers.push({id:it.id,cat:it.cat,correct:correct}); if(!byCat[it.cat])byCat[it.cat]={n:0,correct:0}; byCat[it.cat].n++; if(correct)byCat[it.cat].correct++; qb[it.id]={correct:correct,pages:it.pages||[],cat:it.cat,confidence:null,source:'pretest',at:new Date().toISOString().slice(0,10)}; }); try{localStorage.setItem('cw_qb_v1',JSON.stringify(qb));}catch(_){ } try{localStorage.setItem('cw_pretest_v1',JSON.stringify({takenAt:new Date().toISOString(),answers:answers,byCat:byCat}));}catch(_){ } var plan=buildPlan(); try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ } renderPretestResults(plan); }
+  function submitPretest(){ var items=PRETEST_POOL||[], answers=[], byCat={}, qb={}; try{qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}');}catch(_){qb={};} items.forEach(function(it,qi){ var k=ptAnswers[qi]; if(!k)return; var opt=null; (it.options||[]).forEach(function(o){if(o.key===k)opt=o;}); var correct=!!(opt&&opt.c); answers.push({id:it.id,cat:it.cat,correct:correct}); if(!byCat[it.cat])byCat[it.cat]={n:0,correct:0}; byCat[it.cat].n++; if(correct)byCat[it.cat].correct++; var prior=qb[it.id]; if(!prior||prior.source==='pretest'){ qb[it.id]={correct:correct,pages:it.pages||[],cat:it.cat,confidence:null,source:'pretest',at:new Date().toISOString().slice(0,10)}; } });
+    /* Pretest items ARE bank items (the pool is built from question_bank.json), so a blind
+       write here used to overwrite real practice records — confidence, two-tier results —
+       with a cold pretest snapshot on every retake. A pretest answer may replace nothing,
+       or an older pretest record; genuine practice history always wins. The attempt itself
+       is still fully recorded in cw_pretest_v1 for the plan. */ try{localStorage.setItem('cw_qb_v1',JSON.stringify(qb));}catch(_){ } try{localStorage.setItem('cw_pretest_v1',JSON.stringify({takenAt:new Date().toISOString(),answers:answers,byCat:byCat}));}catch(_){ } var plan=buildPlan(); try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ } renderPretestResults(plan); }
   function renderPretestResults(plan){ var root=document.getElementById('ptRoot'); if(!root)return; var mb=masteryByBlueprint(); var h='<h1>Your placement</h1><p class="sub">A starting estimate from your answers — it refines as you practice. Weak areas are flagged in your plan below.</p>'; h+='<div class="hm-sec"><h2>Mastery by blueprint</h2>'+masteryBarsHtml(mb)+'</div>'; h+='<div class="hm-sec"><h2>Your personalized 6-week plan</h2>'+renderPlanCards(plan)+'</div>'; h+='<div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div>'; root.innerHTML=h; }
   function renderStoredPlan(){ var plan=null; try{plan=JSON.parse(localStorage.getItem('cw_plan_v1')||'null');}catch(_){ } if(!plan){ startPretest(); return; } setDrawer(false); if(contentEl){ contentEl.className='content'; } contentEl.innerHTML='<div class="hm" id="planRoot"><h1>Your 6-week plan</h1><p class="sub">Personalized from your placement — the week order is fixed; your weak areas are flagged to hit first.</p><div class="hm-sec">'+renderPlanCards(plan)+'</div><div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div></div>'; bindPretestUI(); }
   function bindPretestUI(){ if(window.__ptBound)return; window.__ptBound=1; contentEl.addEventListener('click',function(ev){ var scope=ev.target.closest?ev.target.closest('#ptRoot,#planRoot'):null; if(!scope)return; var opt=ev.target.closest?ev.target.closest('.pt-opt'):null; if(opt){ var qi=opt.getAttribute('data-qi'); ptAnswers[qi]=opt.getAttribute('data-key'); var sibs=scope.querySelectorAll('.pt-opt[data-qi="'+qi+'"]'); for(var i=0;i<sibs.length;i++)sibs[i].classList.remove('sel'); opt.classList.add('sel'); updatePtCount(); return; } var b=ev.target.closest?ev.target.closest('[data-pt]'):null; if(b){ var a=b.getAttribute('data-pt'); if(a==='submit')submitPretest(); else if(a==='pretest')startPretest(); else if(a==='plan')renderStoredPlan(); else if(a==='home')navClick('__home__'); else if(a==='start')navClick('__start__'); return; } var pr=ev.target.closest?ev.target.closest('.hm-li[data-practice]'):null; if(pr){ try{localStorage.setItem('cw_qb_focus',pr.getAttribute('data-practice'));}catch(_){ } navClick('question-bank-practice.html'); return; } var pg=ev.target.closest?ev.target.closest('.hm-li[data-f]'):null; if(pg){ navClick(pg.getAttribute('data-f')); return; } }); }
   window.renderStart=function(){
-    var track=LS('cw_track')||'MS3'; var wk=parseInt(LS('cw_start_week')||'1',10)||1; var shelf=LS('cw_shelf_date')||'';
+    var track=LS('cw_track')||'MS3'; var startDate=LS('cw_rotation_start')||''; var shelf=LS('cw_shelf_date')||'';
     var fd={}; try{ fd=JSON.parse(LS('cw_firstday')||'{}')||{}; }catch(_){ fd={}; }
     var checks=[ {k:'orient',t:'Read the orientation packet',pg:'orientation.md'}, {k:'interview',t:'Skim the Interview & MSE pocket guide',pg:'pg_interview.md'}, {k:'mse',t:'Try the Mental Status Exam tool',tool:'mse.html'}, {k:'suicide',t:'Review the Suicide Risk & Safety card',pg:'pg_suicide.md'}, {k:'week',t:'Look at this week on the reading map',pg:'reading_map.md'} ];
-    var wkOpts=''; for(var i=1;i<=6;i++){ wkOpts+='<option value="'+i+'"'+(i===wk?' selected':'')+'>Week '+i+'</option>'; }
     var qk=['mse.html','cssrs.html','withdrawal.html','screeners.html','decision-aids.html'];
     var h='<div class="st" id="stRoot"><h1>Welcome to the rotation</h1>';
     h+='<p class="sub">Two ways to use this hub. <strong>Follow the Path</strong> gives you a guided week-by-week route; <strong>Browse the Library</strong> lets you jump straight to any topic or tool. You can switch anytime from the sidebar.</p>';
@@ -1518,25 +2019,48 @@
     h+='<button class="st-mode" data-act="pretest"><h3>◎ Take the 2-minute placement</h3><p>One question per topic area — get a personalized 6-week plan aimed at your weak spots.</p></button></div>';
     h+='<div class="st-sec-h">Set your rotation</div><div class="st-row">';
     h+='<div class="st-field"><label for="stTrack">Track</label><select id="stTrack"><option value="MS3"'+(track==='MS3'?' selected':'')+'>MS3 student</option><option value="Resident"'+(track==='Resident'?' selected':'')+'>Resident</option></select></div>';
-    h+='<div class="st-field"><label for="stWeek">Starting week</label><select id="stWeek">'+wkOpts+'</select></div>';
+    h+='<div class="st-field"><label for="stStart">Rotation start date</label><input id="stStart" type="date" value="'+esc(startDate)+'"></div>';
     h+='<div class="st-field"><label for="stShelf">Shelf / exam date (optional)</label><input id="stShelf" type="date" value="'+shelf+'"></div>';
     h+='</div>';
+    var rw=rotationWeek();
+    if(rw===0){ h+='<p class="sub" id="stWeekHint">Rotation starts soon — the Today page will track your week automatically.</p>'; }
+    else if(rw>=1&&rw<=6){ h+='<p class="sub" id="stWeekHint">You’re in <strong>Week '+rw+'</strong> — the Today page tracks this automatically.</p>'; }
+    else{ h+='<p class="sub" id="stWeekHint">Set the start date and the Today page will show your current rotation week automatically.</p>'; }
     h+='<div class="st-sec-h">Your first day</div><div class="st-check">';
     checks.forEach(function(c){ var on=fd[c.k]?' on':''; var lk=c.pg?('<a class="lk" href="?page='+c.pg+'">Open →</a>'):(c.tool?('<a class="lk tl-chip" data-tool="'+c.tool+'" href="?tool='+c.tool+'" style="min-height:0;padding:4px 10px">Open →</a>'):''); h+='<div class="it'+on+'" data-check="'+c.k+'"><span class="bx">'+(fd[c.k]?'✓':'')+'</span><span class="t">'+c.t+'</span>'+lk+'</div>'; });
     h+='</div>';
     h+='<div class="st-sec-h">Quick tools</div><div class="st-tools">'+qk.map(function(k){ var s=SAFE[k]?' is-safety':''; return '<a class="tl-chip'+s+'" href="?tool='+k+'" data-tool="'+k+'" aria-label="Open the '+(LAB[k]||'tool')+' tool">'+(LAB[k]||k)+'</a>'; }).join('')+'</div>';
     h+='<div class="st-actions"><button class="hm-btn" data-act="home">Go to my progress home</button><button class="hm-btn ghost" data-act="lib">Just start browsing</button></div>';
+    h+='<p class="sub st-a2hs">On iPhone: Share ⬆ → Add to Home Screen keeps this site working offline.</p>';
     h+='</div>'; return h;
   };
 
   window.__afterSpecial=function(f){
     try{ localStorage.setItem('cw_seen_start','1'); }catch(_){ }
-    var root=document.getElementById(f==='__start__'?'stRoot':'hmRoot'); if(!root)return;
+    var root=document.getElementById(f==='__start__'?'stRoot':(f==='__progress__'?'pgRoot':'hmRoot')); if(!root)return;
     hydrate(root);
-    if(f==='__home__'){
+    if(f==='__home__'||f==='__progress__'){
+      /* One delegate serves both views: each branch keys off elements only one of them renders
+         (ribbon/tiles/capture/dash-mode are Today-only; Progress uses just the .hm-li branch),
+         so absent surfaces simply never match. */
       root.addEventListener('click',function(e){
+        var cap=e.target.closest?e.target.closest('[data-cap-open],[data-cap-review],[data-cap-drop],[data-cap-copy]'):null;
+        if(cap){ capTriageClick(cap); return; }
+        var rb=e.target.closest?e.target.closest('[data-ribbon]'):null;
+        if(rb){ var ra=rb.getAttribute('data-ribbon');
+          if(ra==='dismiss'){ try{localStorage.setItem('cw_orient_ribbon_dismissed','1');}catch(_){ } var rEl=document.getElementById('orientRibbon'); if(rEl)rEl.remove(); }
+          else if(ra==='start'){ navClick('__start__'); }
+          else if(ra==='pretest'){ startPretest(); }
+          return; }
+        var tile=e.target.closest?e.target.closest('button.hm-tile'):null;
+        if(tile){ if(tile.getAttribute('data-act')==='review'){ navClick('review.html'); return; } var tf=tile.getAttribute('data-f'); if(tf)navClick(tf); return; }
+        /* Exact-value match only: the pretest delegation never covers #hmRoot (scoped to
+           #ptRoot/#planRoot and bound lazily), so the phase chip's unset-state button is handled
+           here. Must stay narrower than [data-pt] — plan/pretest buttons below use the same
+           attribute and are handled by the .hm-li branch. */
+        var ps=e.target.closest?e.target.closest('[data-pt="start"]'):null; if(ps){ navClick('__start__'); return; }
         var li=e.target.closest?e.target.closest('.hm-li'):null; if(li){ var act=li.getAttribute('data-act'); if(act==='review'){ navClick('review.html'); return; } if(act==='start'){ navClick('__start__'); return; } if(act==='studyexport'){ if(window.exportStudy)window.exportStudy(); return; } var pr=li.getAttribute('data-practice'); if(pr){ try{localStorage.setItem('cw_qb_focus',pr);}catch(_){ } navClick('question-bank-practice.html'); return; } var pt=li.getAttribute('data-pt'); if(pt){ if(pt==='plan')renderStoredPlan(); else if(pt==='pretest')startPretest(); return; } var ff=li.getAttribute('data-f'); if(ff)navClick(ff); return; }
-        var dm=e.target.closest?e.target.closest('[data-dash-mode]'):null; if(dm){ setDashboardMode(dm.getAttribute('data-dash-mode')); root.outerHTML=window.renderHome(); window.__afterSpecial('__home__'); return; }
+        var dm=e.target.closest?e.target.closest('[data-dash-mode]'):null; if(dm){ setDashboardMode(dm.getAttribute('data-dash-mode')); root.outerHTML=(f==='__progress__'&&window.renderProgress)?window.renderProgress():window.renderHome(); window.__afterSpecial(f); return; }
         var b=e.target.closest?e.target.closest('[data-act]'):null; if(b){ var a=b.getAttribute('data-act'); if(a==='review')navClick('review.html'); }
       });
     } else {
@@ -1546,7 +2070,7 @@
         var m=e.target.closest?e.target.closest('[data-act]'):null; if(m){ var act=m.getAttribute('data-act'); if(act==='path'){ if(typeof showPath==='function')showPath(); } else if(act==='lib'){ navClick('__home__'); } else if(act==='home'){ navClick('__home__'); } else if(act==='pretest'){ startPretest(); } }
       });
       var tk=root.querySelector('#stTrack'); if(tk)tk.addEventListener('change',function(){ try{localStorage.setItem('cw_track',tk.value);}catch(_){ } });
-      var wkk=root.querySelector('#stWeek'); if(wkk)wkk.addEventListener('change',function(){ try{localStorage.setItem('cw_start_week',wkk.value);}catch(_){ } });
+      var sd=root.querySelector('#stStart'); if(sd)sd.addEventListener('change',function(){ try{localStorage.setItem('cw_rotation_start',sd.value);}catch(_){ } var hint=root.querySelector('#stWeekHint'); if(hint){ var rw=rotationWeek(); hint.innerHTML=(rw===0)?'Rotation starts soon — the Today page will track your week automatically.':((rw>=1&&rw<=6)?'You’re in <strong>Week '+rw+'</strong> — the Today page tracks this automatically.':'Set the start date and the Today page will show your current rotation week automatically.'); } });
       var sh=root.querySelector('#stShelf'); if(sh)sh.addEventListener('change',function(){ try{localStorage.setItem('cw_shelf_date',sh.value);}catch(_){ } });
     }
   };
