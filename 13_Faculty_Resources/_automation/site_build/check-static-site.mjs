@@ -415,6 +415,31 @@ if (existsSync(qbPath) && parsed[qbPath]) {
   }
 }
 
+/* ---------- 6c. shell retired-ids parity injection (HARD) ---------- */
+// The shell's confidently-wrong calibration counters skip since-retired bank items via a
+// build-injected RETIRED_QB_IDS list (build_deploy.py replaces the empty source literal).
+// Drift silently re-opens the parity gap with question-bank-practice.html's
+// certWrongItems(), so the two BUILT artifacts are cross-checked here: whatever
+// question_bank.json ships, index.html must carry exactly its retired ids. Fixture sites
+// without a bank skip the rule (scoped to real builds, like the pretest/blueprint checks).
+if (existsSync(qbPath) && parsed[qbPath] && existsSync(p('index.html'))) {
+  const retiredIds = (parsed[qbPath].items || [])
+    .filter((it) => it && it.retired)
+    .map((it) => it.id)
+    .sort();
+  const shellSrc = readFileSync(p('index.html'), 'utf8');
+  const injected = shellSrc.match(/var RETIRED_QB_IDS=(\[[^\]]*\]);/);
+  if (!injected) {
+    H('index.html is missing the build-injected RETIRED_QB_IDS list (shell calibration parity)');
+  } else {
+    let ids = null;
+    try { ids = JSON.parse(injected[1]); } catch { /* falls through to the mismatch report */ }
+    if (!Array.isArray(ids) || JSON.stringify([...ids].sort()) !== JSON.stringify(retiredIds)) {
+      H(`RETIRED_QB_IDS drift: index.html carries ${injected[1]} but question_bank.json retires ${JSON.stringify(retiredIds)}`);
+    }
+  }
+}
+
 /* ---------- 7. orphaned source pages (HARD) ---------- */
 // The build emits its wired source list to <siteDir>.source-map.json (a SIBLING of the
 // publish dir — never shipped). Any source-tree markdown that follows the learner-content

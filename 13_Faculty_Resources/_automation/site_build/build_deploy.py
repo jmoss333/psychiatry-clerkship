@@ -334,6 +334,24 @@ _copy_required(SPA, OUT+"/index.html", _missing_req)
 _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
 _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
 _abort_missing(_missing_req)
+
+# ---- retired-bank-ids injection (shell calibration parity) ----
+# The shell counts confidently-wrong items straight from cw_qb_v1; the practice tool
+# filters retired items via activeItems(). Inject the CURRENT retired ids so both
+# surfaces count identically. Verified replacement: a missing/duplicated needle means
+# the shell's parity plumbing was edited away — fail the build, don't ship the drift.
+# The resident build inherits this (it rebrands the MS3-built index.html).
+_retired_ids=sorted(i["id"] for i in json.load(open(LIB+"/question_bank.json",encoding="utf-8")).get("items",[]) if i.get("retired"))
+_spa_out=OUT+"/index.html"
+_spa_t=open(_spa_out,encoding="utf-8").read()
+_RETIRED_NEEDLE="var RETIRED_QB_IDS=[];"
+if _spa_t.count(_RETIRED_NEEDLE)!=1:
+    print("BUILD ABORTED — RETIRED_QB_IDS needle missing or duplicated in spa_index.html")
+    raise SystemExit(1)
+open(_spa_out,"w",encoding="utf-8").write(
+    _spa_t.replace(_RETIRED_NEEDLE,"var RETIRED_QB_IDS="+json.dumps(_retired_ids)+";")
+)
+print("retired-qb injection:",len(_retired_ids),"id(s)")
 print("tools:",len(tools)," md copied:",len(md)-len(missing)," missing:",missing)
 
 # ---------- POLISH + A11Y + DARK-MODE PASS (shared with the resident build) ----------

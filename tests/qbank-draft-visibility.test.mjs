@@ -56,6 +56,7 @@ const metaOf = (item) => renderMeta(item, {}, (s) => s, () => '');
 // without touching global state.
 const renderSetup = new Function('BANK', 'CAT_LABELS', 'localStorage',
   `${slice('function lsGet(', 'function qbRecord(')}
+   ${slice('function srsLoad(', 'function srsSave(')}
    ${slice('function activeItems(', '/* ---- rendering helpers')}
    ${slice('function renderSetup(', 'function renderMeta(')}
    return renderSetup();`);
