@@ -15,7 +15,9 @@ import sys
 import tempfile
 import unittest
 from copy import deepcopy
+from datetime import date, datetime, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 try:
     import surface_governance as governance
@@ -336,6 +338,74 @@ class LedgerValidationTests(unittest.TestCase):
                 self.assertEqual(
                     loaded["synthetic.md"]["risk"], {"kind": "general", "level": level}
                 )
+
+    def test_future_date_gate_compares_utc_not_local_clock(self) -> None:
+        # Regression pin for the clock-skew fix: the faculty console writes
+        # "at" via toISOString() (UTC), so the future-date gate must measure
+        # "today" against a UTC clock -- never the validating machine's
+        # local one. Never sleeps and never depends on real wall time: both
+        # clocks below are frozen to fixed, hardcoded instants.
+        #
+        # Freeze a UTC "now" of 2026-08-13 01:30Z alongside a LOCAL "today"
+        # a full calendar day behind it (2026-08-12) -- exactly what an
+        # evening US-Eastern attest (~9 PM EDT the prior day) looks like
+        # once serialized through toISOString(). A record dated "2026-08-13"
+        # is "tomorrow" by the (deliberately stale) local mock but exactly
+        # "today" in UTC, and must still validate -- proving the comparison
+        # follows the UTC mock, not the local one.
+        frozen_utc_now = datetime(2026, 8, 13, 1, 30, tzinfo=timezone.utc)
+        stale_local_today = date(2026, 8, 12)
+
+        class _FrozenClock:
+            """Stand-in for the `datetime` name surface_governance imports
+            -- freezes .now(tz) to a fixed UTC instant."""
+
+            @staticmethod
+            def now(tz=None):
+                return frozen_utc_now
+
+        class _FrozenLocalDate:
+            """Stand-in for the `date` name surface_governance imports --
+            freezes .today() to a fixed, UTC-behind local calendar day,
+            while delegating fromisoformat() to the real implementation so
+            ledger date *parsing* is completely unaffected."""
+
+            @staticmethod
+            def today():
+                return stale_local_today
+
+            fromisoformat = staticmethod(date.fromisoformat)
+
+        with patch.object(governance, "datetime", _FrozenClock), patch.object(
+            governance, "date", _FrozenLocalDate
+        ):
+            same_utc_day = reviewed_entry()
+            same_utc_day["at"] = "2026-08-13"
+            with tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                write_ledger(root, {"synthetic.md": same_utc_day})
+
+                loaded = governance.load_validated_ledger(root)
+
+            self.assertEqual(loaded["synthetic.md"]["at"], "2026-08-13")
+
+            # A date genuinely past the frozen UTC "now" -- not just past
+            # the stale local mock -- must still fail closed, at the same
+            # field, with no value echoed (existing error-message contract).
+            genuinely_future = reviewed_entry()
+            genuinely_future["at"] = "2026-08-14"
+            with tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                write_ledger(root, {"synthetic.md": genuinely_future})
+
+                with self.assertRaises(governance.SurfaceGovernanceError) as raised:
+                    governance.load_validated_ledger(root)
+
+            message = str(raised.exception)
+            self.assertEqual(
+                message, "reviewed.json: synthetic.md invalid at /synthetic.md/at"
+            )
+            self.assertNotIn("2026-08-14", message)
 
 
 class SiteDocumentTests(unittest.TestCase):

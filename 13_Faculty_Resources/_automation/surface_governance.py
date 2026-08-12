@@ -35,7 +35,7 @@ import re
 import sys
 import tempfile
 from copy import deepcopy
-from datetime import date
+from datetime import date, datetime, timezone
 from html import escape
 from pathlib import Path
 
@@ -181,10 +181,11 @@ def load_validated_ledger(root: Path) -> dict[str, dict]:
 
     Validates against reviewed.schema.json (Draft-07) and then, in an
     explicit second pass, that every date field is a real calendar date not
-    in the future. Raises SurfaceGovernanceError (never a bare jsonschema
-    exception) whose message identifies the slug and JSON-pointer field but
-    never echoes the rejected value. Returns a fresh dict; the ledger itself
-    is never mutated by this module.
+    in the future (compared in UTC, matching the faculty console's
+    toISOString() writer -- not the local clock). Raises SurfaceGovernanceError
+    (never a bare jsonschema exception) whose message identifies the slug and
+    JSON-pointer field but never echoes the rejected value. Returns a fresh
+    dict; the ledger itself is never mutated by this module.
     """
     root = Path(root)
     ledger = _load_json(root / REVIEWED_RELATIVE, "reviewed.json")
@@ -203,7 +204,11 @@ def load_validated_ledger(root: Path) -> dict[str, dict]:
     if errors:
         _raise_invalid(_error_path(errors[0]))
 
-    today = date.today()
+    # UTC, not the local clock: the faculty console writes "at" via
+    # toISOString() (UTC). Comparing against a local date.today() means an
+    # evening attest west of Greenwich can already be "tomorrow" in UTC,
+    # failing this check closed until local midnight catches up.
+    today = datetime.now(timezone.utc).date()
     for slug in sorted(ledger):
         entry = ledger[slug]
         for field in _LEDGER_DATE_FIELDS:

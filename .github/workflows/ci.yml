@@ -108,6 +108,9 @@ jobs:
       - name: Validate — ReConnect snapshot provenance
         run: python3 13_Faculty_Resources/_automation/validate_reconnect_snapshot_provenance.py
 
+      - name: Unit — surface governance
+        run: python3 13_Faculty_Resources/_automation/test_surface_governance.py
+
       - name: Unit — tool governance
         run: python3 13_Faculty_Resources/_automation/test_validate_tool_governance.py
 
