@@ -1241,7 +1241,7 @@
         "va-dod-suicide-cpg-2024",
         "nice-violence-aggression-ng10"
       ],
-      "facultyReview": { "status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-22" },
+      "facultyReview": { "status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-12" },
       "speechProfile": {
         "id": "ray-guarded-v1",
         "status": "draft-pending-attestation",
@@ -2002,7 +2002,10 @@
       },
       "criticalMiss": {
         "partial": "You asked about the voices, but the encounter stayed too adversarial for Ray to tell you what they say. Command content only surfaces from a non-threatening stance — validate the fear first, then ask plainly what the voice tells him to do.",
-        "missed": "The command-hallucination screen never happened. Ray has a voice that recently told him to 'make them stop' — he's frightened by it and hasn't acted, but this is the safety core of a paranoid presentation. Always ask, non-threateningly, whether the voices tell him to do anything, including harming himself or others."
+        "missed": "The command-hallucination screen never happened. Ray has a voice that recently told him to 'make them stop' — he's frightened by it and hasn't acted, but this is the safety core of a paranoid presentation. Always ask, non-threateningly, whether the voices tell him to do anything, including harming himself or others.",
+        "rehearse": "“Do the voices ever tell you to do anything — including hurting yourself or someone else?”",
+        "ref": "→ t_psychosis.md · command hallucinations — ask plainly, without threat",
+        "reframe": "Asking about the voices doesn’t make them stronger. Not asking leaves him alone with what they say."
       },
       "debriefTeachingPoints": [
         "The alliance move in paranoia is validating the affect, not the content: 'That sounds terrifying' treats the fear as real without endorsing the belief that the neighbors are poisoning him. It is the narrow path between the two errors below.",
