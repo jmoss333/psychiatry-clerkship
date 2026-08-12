@@ -146,8 +146,11 @@ if os.path.isdir(_oedir) and os.path.exists(_oedir+"/MANIFEST.csv"):
     print("OE audio: copied",len(_oemap),"files | deck-aligned",_na,"quiz decks")
 else:
     _abort_missing([_oedir+"/MANIFEST.csv"])
-_rv=LIB+"/13_Faculty_Resources/reviewed.json"
-shutil.copy2(_rv, OUT+"/reviewed.json") if os.path.exists(_rv) else open(OUT+"/reviewed.json","w").write("{}")
+# NOTE: reviewed.json (the raw internal review ledger) is deliberately NOT copied
+# here. Surface governance (risk-aware-publishing-warnings) publishes only the
+# sanitized projection — governance.json, built further down from this same
+# ledger via surface_governance.build_site_document()/write_site_document() — and
+# check-static-site.mjs hard-fails any build that still ships the raw file.
 _tm=LIB+"/topic_meta.json"
 shutil.copy2(_tm, OUT+"/topic_meta.json") if os.path.exists(_tm) else open(OUT+"/topic_meta.json","w").write("{}")
 _evidence_tools=os.path.join(LIB,"tools","evidence_registry")
@@ -328,7 +331,30 @@ nav=[
 ]
 _navorder=["Welcome and Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
-open(OUT+"/nav.json","w").write(json.dumps(nav))
+
+# ---------- SURFACE GOVERNANCE: nav annotation ----------
+# Canonical review/risk state (13_Faculty_Resources/reviewed.json) flattened into
+# one sanitized, site-scoped document and copied onto every nav item as a compact
+# {status,riskKind,riskLevel} triplet. Fails closed (SurfaceGovernanceError, an
+# uncaught exception here) on a malformed ledger or a shipped slug with no ledger
+# record — see surface_governance.py. Before Task 6 migrates the checked-in
+# reviewed.json to the risk schema, this is EXPECTED to abort the real build; see
+# .superpowers/sdd/2026-07-26-risk-aware-publishing-warnings/task-3-brief.md.
+sys.path.insert(0, os.path.dirname(HERE))
+from surface_governance import (
+    load_validated_ledger,
+    build_site_document,
+    annotate_navigation,
+    apply_tool_status,
+    write_site_document,
+)
+
+_ledger = load_validated_ledger(Path(LIB))
+_surface_governance = build_site_document(_ledger, nav, "ms3")
+nav = annotate_navigation(nav, _surface_governance)
+open(OUT + "/nav.json", "w", encoding="utf-8").write(
+    json.dumps(nav, ensure_ascii=False)
+)
 _missing_req=[]
 _copy_required(SPA, OUT+"/index.html", _missing_req)
 _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
@@ -374,7 +400,7 @@ common.apply_full_page_pass(OUT, cache_bust=_QV)
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(OUT+"/404.html","w",encoding="utf-8").write('<!doctype html><meta charset="utf-8"><title>Not found</title><meta name="robots" content="noindex,nofollow"><style>body{font-family:system-ui,sans-serif;background:#f6f3ee;color:#2f2924;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#174d43}</style><div><h1 style="color:#9f3f2a">Page not found</h1><p><a href="/">Return to the clerkship hub</a></p></div>')
-open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reviewed.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n/sw.js\n  Cache-Control: public, max-age=0, must-revalidate\n")
+open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n/sw.js\n  Cache-Control: public, max-age=0, must-revalidate\n")
 print("polish pass: banners stripped, contrast darkened, <main>+favicon on tools, robots/404/_headers written")
 
 
@@ -388,6 +414,16 @@ common.build_search_index(nav, OUT, label="ms3")
 # Postcondition gate (architecture review rec 1.3): prove every shipped page actually
 # received the chrome/dark transforms rather than silently missing them.
 common.assert_page_contract(OUT, label="ms3")
+
+# ---------- SURFACE GOVERNANCE: direct-tool status + public artifact ----------
+# After every tool-HTML-mutating pass (polish, crisis block, media guard) so the
+# injected status block is the last thing written into each tool's markup.
+# apply_tool_status() fails closed on any "tool"-kind entry: it's called with the
+# document built from THIS site's OWN nav (above), so it only ever expects tool
+# files this same build actually ships.
+apply_tool_status(Path(OUT) / "tools", _surface_governance)
+write_site_document(Path(OUT) / "governance.json", _surface_governance)
+print("surface governance: emitted", len(_surface_governance["items"]), "items (ms3)")
 
 # ---------- TOOL GOVERNANCE ----------
 # Source hashes remain over canonical source files; this final comparison proves the emitted

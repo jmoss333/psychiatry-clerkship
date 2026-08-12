@@ -276,7 +276,17 @@ def build_search_index(nav, out_dir, tool_keywords=None, label=""):
             docid = len(docs)
             clean = re.sub(r"[#>*_`|\[\]()/-]+", " ", body)
             clean = re.sub(r"\s+", " ", clean).strip()
-            docs.append({"t": title, "f": f, "k": k, "sec": section, "snip": clean[:170]})
+            doc = {"t": title, "f": f, "k": k, "sec": section, "snip": clean[:170]}
+            # Surface governance (risk-aware-publishing-warnings, Task 3): once nav
+            # items carry a `.governance` triplet (annotate_navigation()), copy it
+            # onto the matching search doc so the learner search UI can show the
+            # same status without a second round-trip. Absent for nav that hasn't
+            # been annotated (pre-governance builds, or tests exercising this
+            # function directly) — nothing downstream requires the key to exist.
+            governance = it.get("governance")
+            if governance is not None:
+                doc["governance"] = governance
+            docs.append(doc)
             addtok(docid, title, 4)
             addtok(docid, section, 2)
             addtok(docid, heads, 2)

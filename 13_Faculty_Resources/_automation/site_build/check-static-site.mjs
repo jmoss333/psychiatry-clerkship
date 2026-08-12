@@ -36,11 +36,18 @@
  *     / family_systems_scenarios.json
  *   - a `?page=`/`?tool=` reference in shipped content/*.md that doesn't resolve
  *   - a soft-finding class (see qa-baseline.json) whose count exceeds its baseline
+ *   - reviewed.json (the raw internal review ledger) shipped to the learner output
+ *     — only governance.json (the sanitized public projection) may ship
+ *   - for a build that claims surface governance (governance.json present, or any
+ *     nav item carries a `.governance` triplet): governance.json absent/invalid, an
+ *     invalid `site` value, a nav or search-index item missing/disagreeing with its
+ *     governance.json record, a direct tool without exactly one injected
+ *     SURFACE-GOVERNANCE status block, or a "reviewed" tool whose block still
+ *     carries pending-review copy — see §10
  * SOFT findings (warn; fail only under STRICT=1):
  *   - a tool HTML missing both recognized metadata markers ([CLERKSHIP-META v1] / [RC-META])
  *   - near-duplicate question stems in question_bank.json (≥85% token overlap)
  *   - nav markdown files missing from topic_meta.json
- *   - nav items missing from reviewed.json
  *   - orphan tools/content not referenced by nav
  *   - LOCAL_POLICY tokens still unfilled (value:null)  [reported, never fails]
  */
@@ -77,7 +84,6 @@ function classify(msg) {
   if (/^metadata missing \(topic_meta\): /.test(msg)) return 'metadata';
   if (/^tool missing recognized metadata marker: /.test(msg)) return 'metadata';
   if (/^legacy metadata warning: /.test(msg)) return 'legacy-metadata';
-  if (/^review status missing \(reviewed\.json\): /.test(msg)) return 'review-coverage';
   if (/^Git-LFS pointer stub shipped /.test(msg)) return 'lfs-stub-soft';
   return 'other';
 }
@@ -153,25 +159,27 @@ if (existsSync(tmPath) && parsed[tmPath]) {
       (missingWorkflow.length ? ` (missing: ${missingWorkflow.join(', ')})` : ''));
   }
 }
-const rvPath = p('reviewed.json');
-if (existsSync(rvPath) && parsed[rvPath]) {
-  const rev = parsed[rvPath];
-  for (const f of [...navMd, ...navTools]) if (f && !(f in rev)) S(`review status missing (reviewed.json): ${f}`);
-}
-
 /* ---------- 4a2. curriculum crosswalk coverage gaps (SOFT) ----------
  * For each shelfBlueprint code, warn if no ATTESTED nav page is tagged with it, or no
  * ATTESTED question-bank item is in that category. Soft on purpose: the epa/shelf mapping
  * ships as a proposed teaching default (CROSSWALK_TAXONOMY.md); promote to hard once faculty
- * attests the crosswalk. Blueprint codes == question_bank categories, so the two join directly. */
+ * attests the crosswalk. Blueprint codes == question_bank categories, so the two join directly.
+ *
+ * "Attested" is read from governance.json (the public projection of reviewed.json — see
+ * §10). reviewed.json itself never ships (§10 hard-fails if it does), so there is no raw
+ * ledger left to read here; a build with no governance.json at all (predates the feature,
+ * or governance genuinely absent) just leaves every page uncounted, same as the old
+ * reviewed.json fallback did when that file was absent. */
 {
   const SHELF_VOCAB = ['mood','psychosis','anxiety','substance','neurocog','pharm',
     'safety','personality','childdev','otherdx','ethics','relational'];
   const meta = (existsSync(tmPath) && parsed[tmPath]) ? parsed[tmPath] : null;
-  const rev = (existsSync(rvPath) && parsed[rvPath]) ? parsed[rvPath] : {};
+  const govPath4a2 = p('governance.json');
+  const gov4a2 = (existsSync(govPath4a2) && parsed[govPath4a2]) ? parsed[govPath4a2] : null;
+  const govItems4a2 = (gov4a2 && gov4a2.items && typeof gov4a2.items === 'object') ? gov4a2.items : {};
   const qbP = p('question_bank.json');
   const qb = (existsSync(qbP) && parsed[qbP]) ? (parsed[qbP].items || []) : null;
-  const isAttestedPage = (slug) => rev[slug] && rev[slug].status === 'reviewed';
+  const isAttestedPage = (slug) => !!(govItems4a2[slug] && govItems4a2[slug].status === 'reviewed');
   if (meta && navMd.size) {
     const pageCov = Object.create(null), itemCov = Object.create(null);
     for (const c of SHELF_VOCAB) { pageCov[c] = 0; itemCov[c] = 0; }
@@ -820,6 +828,110 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
         const n = counts[c] || 0, max = baseline[c] || 0;
         if (n > max) H(`soft-finding ratchet: class "${c}" grew to ${n} (baseline ${max}) — review the new soft findings, then rerun with UPDATE_BASELINE=1 once accepted`);
         else if (n < max) I(`soft-finding ratchet: class "${c}" is ${n}, below baseline ${max} — consider UPDATE_BASELINE=1 to lock in the improvement`);
+      }
+    }
+  }
+}
+
+/* ---------- 10. surface governance parity (HARD) ----------
+ * Tasks 1-3 (risk-aware-publishing-warnings) replace the raw reviewed.json ledger
+ * with a sanitized public projection: governance.json (site-scoped, emitted by
+ * surface_governance.build_site_document()/write_site_document()), a compact
+ * {status,riskKind,riskLevel} triplet copied onto every nav.json item
+ * (annotate_navigation()) and every search-index.json doc
+ * (common.build_search_index()), and a standardized
+ * <!-- SURFACE-GOVERNANCE:START/END --> status block injected into every shipped
+ * direct tool (apply_tool_status()). This section enforces that the four
+ * artifacts agree, and that the raw ledger never ships.
+ *
+ * "reviewed.json must not ship" is checked UNCONDITIONALLY — no legitimate build,
+ * governed or not, has a reason to publish the internal ledger. Everything else
+ * here is gated on the build actually CLAIMING governance (governance.json
+ * exists, or some nav item already carries a `.governance` key): a fixture site
+ * written by an unrelated test (no governance.json, plain nav items) predates
+ * this feature and must not be dragged into it — same tri-state-gate idiom as
+ * §6c/§7b/§7c.
+ */
+{
+  const rvPath = p('reviewed.json');
+  if (existsSync(rvPath)) {
+    H('reviewed.json must not be published to the learner output (only governance.json is public)');
+  }
+
+  const govPath = p('governance.json');
+  const navHasGovernance = existsSync(navPath) && parsed[navPath]
+    ? parsed[navPath].some((sec) => (sec.items || []).some((it) => it && it.governance))
+    : false;
+  const claimsGovernance = existsSync(govPath) || navHasGovernance;
+
+  if (!claimsGovernance) {
+    I('surface governance: no governance.json and no governed nav items — §10 skipped (fixture or pre-governance site)');
+  } else if (!existsSync(govPath)) {
+    H('governance.json missing from built site');
+  } else if (parsed[govPath] === undefined) {
+    // Unparsable JSON is already a HARD failure from §1 — avoid a duplicate,
+    // less-specific finding for the same root cause.
+  } else {
+    const gov = parsed[govPath];
+    const items = (gov && typeof gov === 'object' && gov.items && typeof gov.items === 'object')
+      ? gov.items : null;
+    if (!items) {
+      H('governance.json invalid: missing "items" object');
+    } else {
+      if (gov.site !== 'ms3' && gov.site !== 'resident') {
+        H(`governance.json has an invalid site value: ${JSON.stringify(gov.site)}`);
+      }
+
+      const triplet = (entry) => ({ status: entry.status, riskKind: entry.riskKind, riskLevel: entry.riskLevel });
+      const sameTriplet = (a, b) => !!a && !!b
+        && a.status === b.status && a.riskKind === b.riskKind && a.riskLevel === b.riskLevel;
+
+      if (existsSync(navPath) && parsed[navPath]) {
+        for (const sec of parsed[navPath]) {
+          for (const it of (sec.items || [])) {
+            if (!it) continue;
+            if (!it.governance) { H(`nav governance missing: ${it.f}`); continue; }
+            const entry = items[it.f];
+            if (!entry) { H(`nav governance mismatch: ${it.f} (no governance.json record)`); continue; }
+            if (!sameTriplet(it.governance, triplet(entry))) H(`nav governance mismatch: ${it.f}`);
+          }
+        }
+      }
+
+      if (existsSync(siPath) && parsed[siPath]) {
+        const docs = Array.isArray(parsed[siPath]) ? parsed[siPath] : (parsed[siPath].docs || []);
+        for (const d of docs) {
+          const f = d.f || d.file || d.path;
+          if (!f) continue;
+          if (!d.governance) { H(`search governance missing: ${f}`); continue; }
+          const entry = items[f];
+          if (!entry) { H(`search governance mismatch: ${f} (no governance.json record)`); continue; }
+          if (!sameTriplet(d.governance, triplet(entry))) H(`search governance mismatch: ${f}`);
+        }
+      }
+
+      // Direct-tool marker parity: every "tool" kind item's built HTML must carry
+      // exactly one injected block (never zero, never duplicated — apply_tool_status()
+      // always strips a prior block before injecting), and a "reviewed" tool's block
+      // must never still show the pending-review copy. Scoped to the block itself
+      // (not the whole page) — a tool's OWN content is free to mention "Pending
+      // faculty review" in an unrelated context (e.g. describing draft question-bank
+      // items) without tripping this check.
+      const MARKER_BLOCK = /<!-- SURFACE-GOVERNANCE:START -->[\s\S]*?<!-- SURFACE-GOVERNANCE:END -->/g;
+      for (const slug of Object.keys(items).sort()) {
+        const entry = items[slug];
+        if (!entry || entry.kind !== 'tool') continue;
+        const toolPath = p('tools', slug);
+        if (!existsSync(toolPath)) { H(`governance tool missing from built output: ${slug}`); continue; }
+        const html = readFileSync(toolPath, 'utf8');
+        const blocks = html.match(MARKER_BLOCK) || [];
+        if (blocks.length !== 1) {
+          H(`direct status marker count: ${slug} (found ${blocks.length}, expected 1)`);
+          continue;
+        }
+        if (entry.status === 'reviewed' && blocks[0].includes('Pending faculty review')) {
+          H(`reviewed tool carries pending-review copy: ${slug}`);
+        }
       }
     }
   }

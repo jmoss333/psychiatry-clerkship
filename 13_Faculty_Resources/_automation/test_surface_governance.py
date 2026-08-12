@@ -4,11 +4,13 @@
 Everything here runs against synthetic fixtures written to a fresh temp
 directory per test — never against the repo's real reviewed.json (which has
 no risk fields yet; that migration is a later task). See
-.superpowers/sdd/2026-07-26-risk-aware-publishing-warnings/task-1-brief.md.
+.superpowers/sdd/2026-07-26-risk-aware-publishing-warnings/task-1-brief.md
+and task-3-brief.md (the BuildContractTests class below).
 """
 
 import json
 import shutil
+import sys
 import tempfile
 import unittest
 from copy import deepcopy
@@ -22,6 +24,17 @@ except ModuleNotFoundError:
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_SOURCE = ROOT / "13_Faculty_Resources" / "reviewed.schema.json"
+
+# site_build/ is a sibling directory (not a package), so it needs its own
+# sys.path entry — same convention test_validate_claim_anchors.py already
+# uses to import from this same directory.
+SITE_BUILD_DIRECTORY = ROOT / "13_Faculty_Resources" / "_automation" / "site_build"
+if str(SITE_BUILD_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(SITE_BUILD_DIRECTORY))
+try:
+    import common as site_common
+except ModuleNotFoundError:
+    site_common = None
 
 
 def reviewed_entry() -> dict:
@@ -696,6 +709,260 @@ class DirectToolInjectionTests(unittest.TestCase):
         self.assertLess(rendered.index('"a.md"'), rendered.index('"z.html"'))
         self.assertTrue(rendered.endswith("\n"))
         self.assertEqual(list(output.parent.glob(".governance.json.*.tmp")), [])
+
+
+class BuildContractTests(unittest.TestCase):
+    """End-to-end build-contract assertions (task-3-brief.md, Step 1).
+
+    Unlike the unit-level tests above, these exercise the full sequence a
+    site build actually runs — load_validated_ledger -> build_site_document
+    -> annotate_navigation -> common.build_search_index -> apply_tool_status
+    -> write_site_document — against a synthetic nav/tools/ledger tree, and
+    read every assertion back off the artifacts written to disk (never off
+    the in-memory objects only), so a wiring mistake in the disk-facing
+    functions can't hide behind an in-memory-only check.
+    """
+
+    def setUp(self) -> None:
+        self.assertIsNotNone(site_common, "common.py (site_build/) must import cleanly")
+
+    @staticmethod
+    def _write_tool(tools_dir: Path, slug: str) -> None:
+        (tools_dir / slug).write_text(
+            "<!doctype html><html><head><title>Synthetic</title></head>"
+            "<body><main>Tool body</main></body></html>",
+            encoding="utf-8",
+        )
+
+    def test_governance_artifact_contains_every_nav_slug_exactly_once(self) -> None:
+        ledger = {
+            "page.md": reviewed_entry(),
+            "pending-high.html": pending_entry(),
+            "pending-moderate.html": {
+                **pending_entry(),
+                "risk": {"kind": "general", "level": "moderate"},
+                "reason": "Synthetic moderate review is pending",
+            },
+            "reviewed-tool.html": reviewed_entry(),
+            # In the ledger but never referenced by nav — must NOT appear in
+            # the artifact (build_site_document's own documented contract),
+            # so "exactly once" also means "never a phantom extra entry".
+            "unshipped.md": reviewed_entry(),
+        }
+        nav = [
+            {
+                "section": "First",
+                "items": [
+                    {"t": "Page", "f": "page.md", "k": "md"},
+                    {"t": "Pending high", "f": "pending-high.html", "k": "tool"},
+                ],
+            },
+            {
+                "section": "Second",
+                # "page.md" is linked again from a second section — a real
+                # nav does this (e.g. a page reachable from two menus); the
+                # artifact must still carry exactly one record for it.
+                "items": [
+                    {"t": "Page again", "f": "page.md", "k": "md"},
+                    {"t": "Pending moderate", "f": "pending-moderate.html", "k": "tool"},
+                    {"t": "Reviewed tool", "f": "reviewed-tool.html", "k": "tool"},
+                ],
+            },
+        ]
+
+        document = governance.build_site_document(ledger, nav, "ms3")
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "governance.json"
+            governance.write_site_document(output, document)
+            artifact = json.loads(output.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            set(artifact["items"]),
+            {"page.md", "pending-high.html", "pending-moderate.html", "reviewed-tool.html"},
+        )
+        self.assertNotIn("unshipped.md", artifact["items"])
+        self.assertEqual(len(artifact["items"]), 4)
+
+    def test_internal_ledger_fields_are_absent_from_the_written_artifact(self) -> None:
+        reviewed = reviewed_entry()
+        reviewed.update(
+            {
+                "note": "Internal faculty note — never shipped",
+                "contentHash": "a" * 64,
+                "claimsHash": "b" * 64,
+                "evidenceHash": "c" * 64,
+                "evidenceThrough": "2026-07-01",
+            }
+        )
+        ledger = {"synthetic.md": reviewed}
+        nav = [{"section": "S", "items": [{"t": "T", "f": "synthetic.md", "k": "md"}]}]
+
+        document = governance.build_site_document(ledger, nav, "ms3")
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "governance.json"
+            governance.write_site_document(output, document)
+            # Read the RAW file text, not the in-memory document — this is
+            # the artifact a learner's browser would actually receive.
+            raw = output.read_text(encoding="utf-8")
+
+        self.assertNotIn("Internal faculty note", raw)
+        self.assertNotIn("a" * 64, raw)
+        self.assertNotIn("contentHash", raw)
+        self.assertNotIn("claimsHash", raw)
+        self.assertNotIn("evidenceHash", raw)
+        self.assertNotIn("evidenceThrough", raw)
+
+    def test_nav_and_search_governance_triplets_match_the_written_artifact(self) -> None:
+        ledger = {
+            "page.md": reviewed_entry(),
+            "hidden-tool.html": pending_entry(),
+        }
+        nav = [
+            {
+                "section": "S",
+                "items": [
+                    {"t": "Page", "f": "page.md", "k": "md"},
+                    # Hidden items still ship and still carry governance, but
+                    # common.build_search_index() deliberately excludes them
+                    # from the search index (they stay reachable by direct
+                    # link only) — the artifact/nav/search triplet contract
+                    # must hold for the two that are indexed AND account for
+                    # the one that (correctly) is not.
+                    {"t": "Hidden", "f": "hidden-tool.html", "k": "tool", "hidden": True},
+                ],
+            }
+        ]
+
+        document = governance.build_site_document(ledger, nav, "ms3")
+        annotated = governance.annotate_navigation(nav, document)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            out_dir = Path(temporary)
+            governance_path = out_dir / "governance.json"
+            governance.write_site_document(governance_path, document)
+            site_common.build_search_index(annotated, str(out_dir), label="test")
+
+            artifact = json.loads(governance_path.read_text(encoding="utf-8"))
+            search_index = json.loads((out_dir / "search-index.json").read_text(encoding="utf-8"))
+
+        def triplet_from_artifact(slug: str) -> dict:
+            entry = artifact["items"][slug]
+            return {
+                "status": entry["status"],
+                "riskKind": entry["riskKind"],
+                "riskLevel": entry["riskLevel"],
+            }
+
+        for section in annotated:
+            for item in section["items"]:
+                self.assertEqual(item["governance"], triplet_from_artifact(item["f"]), item["f"])
+
+        search_docs_by_slug = {doc["f"]: doc for doc in search_index["docs"]}
+        self.assertIn("page.md", search_docs_by_slug)
+        self.assertEqual(
+            search_docs_by_slug["page.md"]["governance"], triplet_from_artifact("page.md")
+        )
+        # The hidden tool is governed (present in the artifact and on its nav
+        # item) but must not leak into the search index at all.
+        self.assertIn("hidden-tool.html", artifact["items"])
+        self.assertNotIn("hidden-tool.html", search_docs_by_slug)
+
+    def test_pending_tool_gets_the_marker_and_reviewed_tool_gets_a_receipt_not_pending_copy(
+        self,
+    ) -> None:
+        ledger = {
+            "pending-high.html": pending_entry(),
+            "reviewed-tool.html": reviewed_entry(),
+        }
+        nav = [
+            {
+                "section": "S",
+                "items": [
+                    {"t": "Pending", "f": "pending-high.html", "k": "tool"},
+                    {"t": "Reviewed", "f": "reviewed-tool.html", "k": "tool"},
+                ],
+            }
+        ]
+        document = governance.build_site_document(ledger, nav, "ms3")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            out_dir = Path(temporary)
+            tools_dir = out_dir / "tools"
+            tools_dir.mkdir()
+            self._write_tool(tools_dir, "pending-high.html")
+            self._write_tool(tools_dir, "reviewed-tool.html")
+
+            governance.apply_tool_status(tools_dir, document)
+            governance.write_site_document(out_dir / "governance.json", document)
+
+            pending_rendered = (tools_dir / "pending-high.html").read_text(encoding="utf-8")
+            reviewed_rendered = (tools_dir / "reviewed-tool.html").read_text(encoding="utf-8")
+
+        self.assertEqual(pending_rendered.count(governance.STATUS_START), 1)
+        self.assertIn("Pending faculty review", pending_rendered)
+        self.assertIn('role="alert"', pending_rendered)
+
+        self.assertEqual(reviewed_rendered.count(governance.STATUS_START), 1)
+        self.assertIn("Reviewed by Synthetic Reviewer, MD on 2026-07-26", reviewed_rendered)
+        self.assertNotIn("Pending faculty review", reviewed_rendered)
+
+    def test_rerunning_resident_injection_replaces_inherited_ms3_blocks(self) -> None:
+        # Mirrors the real pipeline: build_deploy.py (site="ms3") injects
+        # into a shared tool; resident_section.py copytrees the MS3 build
+        # (inheriting that already-injected file byte-for-byte), then
+        # applies its OWN, differently-scoped document for the SAME slug.
+        # The rerun must fully replace the inherited block, not stack a
+        # second one and not leave any MS3-specific text behind.
+        ms3_ledger = {
+            "mse.html": {
+                "status": "pending",
+                "risk": {"kind": "clinical", "level": "high"},
+                "reason": "MS3-ONLY synthetic reason — must not survive the resident rerun",
+                "at": "2026-07-20",
+                "by": "Pending faculty review",
+            }
+        }
+        ms3_nav = [{"section": "S", "items": [{"t": "MSE", "f": "mse.html", "k": "tool"}]}]
+        ms3_document = governance.build_site_document(ms3_ledger, ms3_nav, "ms3")
+
+        resident_ledger = {
+            "mse.html": {
+                "status": "reviewed",
+                "risk": {"kind": "clinical", "level": "high"},
+                "at": "2026-07-28",
+                "by": "Resident Synthetic Reviewer, MD",
+            }
+        }
+        resident_nav = [{"section": "S", "items": [{"t": "MSE", "f": "mse.html", "k": "tool"}]}]
+        resident_document = governance.build_site_document(
+            resident_ledger, resident_nav, "resident"
+        )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            tools_dir = Path(temporary)
+            self._write_tool(tools_dir, "mse.html")
+
+            governance.apply_tool_status(tools_dir, ms3_document)
+            after_ms3 = (tools_dir / "mse.html").read_text(encoding="utf-8")
+
+            governance.apply_tool_status(tools_dir, resident_document)
+            after_resident = (tools_dir / "mse.html").read_text(encoding="utf-8")
+
+        # Sanity: the MS3 pass actually injected its own reason first.
+        self.assertIn("MS3-ONLY synthetic reason", after_ms3)
+
+        # A rerun replaces, never stacks, the injected block.
+        self.assertEqual(after_resident.count(governance.STATUS_START), 1)
+        self.assertEqual(after_resident.count(governance.STATUS_END), 1)
+        self.assertEqual(after_resident.count('id="surface-governance-style"'), 1)
+        self.assertEqual(after_resident.count('id="surface-governance-script"'), 1)
+
+        # No trace of the inherited MS3 block's content survives.
+        self.assertNotIn("MS3-ONLY synthetic reason", after_resident)
+        self.assertNotIn("Pending faculty review", after_resident)
+
+        # The final block reflects only the resident document.
+        self.assertIn("Reviewed by Resident Synthetic Reviewer, MD on 2026-07-28", after_resident)
 
 
 if __name__ == "__main__":
