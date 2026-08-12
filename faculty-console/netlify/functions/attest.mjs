@@ -868,9 +868,19 @@ function requireReopenReason(value) {
 
 // Fails closed, and deliberately returns nothing: risk classification belongs to a
 // later queue, so this function's only job is to refuse to act on a record that does
-// not already carry a valid one — never to invent or repair one.
+// not already carry a valid one — never to invent or repair one. A missing or invalid
+// classification is an actionable request problem (classify first), not repository
+// corruption, so it gets its own code instead of the generic 502.
 function requireCurrentRisk(current) {
-  if (!isRecord(current) || !validRisk(current.risk)) invalidRepositoryFile();
+  // No record at all = ledger/manifest drift — genuine repository corruption.
+  if (!isRecord(current)) invalidRepositoryFile();
+  if (!validRisk(current.risk)) {
+    throw new HttpError(
+      'content.missing_risk',
+      400,
+      'This item has no valid risk classification yet. Classify it before changing its review status.',
+    );
+  }
 }
 
 async function commitContentMutation({ repository, body, attester }) {

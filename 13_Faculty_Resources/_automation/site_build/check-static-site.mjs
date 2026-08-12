@@ -932,6 +932,13 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
         if (entry.status === 'reviewed' && blocks[0].includes('Pending faculty review')) {
           H(`reviewed tool carries pending-review copy: ${slug}`);
         }
+        // Converse: a pending tool's block must actually present as pending — a
+        // receipt block inside a pending tool would render unreviewed content as
+        // attested at the direct address.
+        if (entry.status === 'pending'
+          && !blocks[0].includes('surface-governance-pending')) {
+          H(`pending tool's status block does not present as pending: ${slug}`);
+        }
       }
     }
   }

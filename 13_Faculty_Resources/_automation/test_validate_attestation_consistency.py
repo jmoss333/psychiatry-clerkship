@@ -975,5 +975,32 @@ class AttestationConsistencyTests(unittest.TestCase):
                 self.assertTrue(self.validate_pack(pack), label)
 
 
+class UtcClockTests(unittest.TestCase):
+    """The validator's future-date and expiry checks must use the UTC date —
+    attestation tooling writes UTC dates, so a local evening clock must not
+    reject a record stamped with "tomorrow's" UTC date."""
+
+    def test_future_date_checks_compare_against_utc_not_local(self):
+        from datetime import date as real_date
+        from unittest import mock
+
+        utc_today = real_date(2026, 8, 13)   # UTC has rolled over
+        stale_local = real_date(2026, 8, 12)  # local clock still behind
+
+        with mock.patch.object(validator, "_utc_today", return_value=utc_today):
+            self.assertFalse(utc_today > validator._utc_today())
+        # A date equal to UTC-today must validate even when the local date lags.
+        self.assertEqual(validator._utc_today.__name__, "_utc_today")
+        with mock.patch.object(validator, "_utc_today", return_value=stale_local):
+            self.assertTrue(utc_today > validator._utc_today())
+
+    def test_validator_module_has_no_local_clock_reads(self):
+        import inspect
+
+        source = inspect.getsource(validator)
+        self.assertNotIn("date.today()", source,
+                         "all clock reads must route through _utc_today()")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
