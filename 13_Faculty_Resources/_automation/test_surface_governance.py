@@ -649,6 +649,10 @@ class DirectToolInjectionTests(unittest.TestCase):
         self.assertIn("Pending faculty review", rendered)
         self.assertIn("Synthetic &lt;unsafe&gt; &amp; pending", rendered)
         self.assertNotIn("<unsafe>", rendered)
+        # Kept live (build-time-static but still worth surfacing), but scoped so it never
+        # competes with a tool's own live-announcer machinery -- see _direct_status_markup's
+        # docstring and the sp-interview.html collision this guards against.
+        self.assertIn('aria-live="off"', rendered)
 
     def test_reviewed_tool_gets_a_reviewer_and_date_receipt(self) -> None:
         document = self._document({"reviewed.html": self.reviewed_tool_entry})
@@ -662,7 +666,15 @@ class DirectToolInjectionTests(unittest.TestCase):
 
         self.assertIn("Reviewed by Synthetic Reviewer, MD on 2026-07-26", rendered)
         self.assertNotIn("Pending faculty review", rendered)
-        self.assertIn('role="status"', rendered)
+        # The receipt carries no live-region role (it renders on nearly every one of the
+        # ~48 shipped tools) -- mirrors the shell's identical decision in spa_index.html's
+        # renderGovernanceNotice(), regression-tested in tests/surface-governance-ui.test.mjs.
+        self.assertNotIn('role="status"', rendered)
+        self.assertIn(
+            '<div class="surface-governance-direct surface-governance-receipt">'
+            "Reviewed by Synthetic Reviewer, MD on 2026-07-26</div>",
+            rendered,
+        )
 
     def test_reinjection_replaces_the_prior_block_instead_of_duplicating(self) -> None:
         document = self._document(
@@ -1027,6 +1039,10 @@ class BuildContractTests(unittest.TestCase):
         self.assertEqual(reviewed_rendered.count(governance.STATUS_START), 1)
         self.assertIn("Reviewed by Synthetic Reviewer, MD on 2026-07-26", reviewed_rendered)
         self.assertNotIn("Pending faculty review", reviewed_rendered)
+        # No live-region role on the receipt through the real build_site_document() ->
+        # apply_tool_status() path either -- same contract as
+        # test_reviewed_tool_gets_a_reviewer_and_date_receipt, exercised end to end here.
+        self.assertNotIn('role="status"', reviewed_rendered)
 
     def test_rerunning_resident_injection_replaces_inherited_ms3_blocks(self) -> None:
         # Mirrors the real pipeline: build_deploy.py (site="ms3") injects
@@ -1085,6 +1101,7 @@ class BuildContractTests(unittest.TestCase):
 
         # The final block reflects only the resident document.
         self.assertIn("Reviewed by Resident Synthetic Reviewer, MD on 2026-07-28", after_resident)
+        self.assertNotIn('role="status"', after_resident)
 
 
 class RiskProposalTests(unittest.TestCase):

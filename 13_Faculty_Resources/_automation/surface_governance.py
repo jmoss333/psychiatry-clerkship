@@ -370,6 +370,29 @@ def annotate_navigation(nav: list, document: dict) -> list:
 # ---------------------------------------------------------------------------
 
 def _direct_status_markup(entry: dict) -> str:
+    """Render the injected status block for one direct (non-embedded) tool open.
+
+    Mirrors spa_index.html's renderGovernanceNotice() decision (regression-
+    tested in tests/surface-governance-ui.test.mjs): only the two PENDING
+    states carry live-region semantics. A reviewed receipt renders on
+    nearly every one of the ~48 shipped tools, so giving it a role would
+    make it a second, systemic announcer on almost every direct-tool
+    open -- never justified for a routine low-emphasis receipt, and it
+    collided in practice with tools (sp-interview.html) that own real
+    live-announcer machinery of their own.
+
+    The pending/low/moderate status div keeps role="status" (still the
+    correct semantic marker for a screen-reader user browsing by role)
+    but adds aria-live="off": this block is injected at BUILD time, so it
+    is part of the tool's static initial markup, never a later DOM
+    mutation -- there is no runtime "change" for a live region to
+    announce, so leaving it live buys nothing and only risks competing
+    with a tool's own dynamic announcer, exactly as it did here. This is
+    the same role-stays/aria-live="off" pattern sp-interview.html itself
+    already uses on its own transcript region (role="log"). Pending/high
+    stays a fully live role="alert": it is the one case meant to actually
+    interrupt on open, and nothing here found a reason to weaken that.
+    """
     risk_label = (
         f"{entry['riskKind'].replace('-', ' ').title()} · "
         f"{entry['riskLevel'].title()} risk"
@@ -387,7 +410,7 @@ def _direct_status_markup(entry: dict) -> str:
     if entry["status"] == "pending":
         return (
             '<div class="surface-governance-direct surface-governance-pending" '
-            'role="status">'
+            'role="status" aria-live="off">'
             "<strong>Pending faculty review</strong>"
             f"<span>{escape(risk_label)}</span>"
             f"<span>{escape(entry['reason'])}</span>"
@@ -395,8 +418,7 @@ def _direct_status_markup(entry: dict) -> str:
         )
     receipt = f"Reviewed by {entry['reviewer']} on {entry['reviewedAt']}"
     return (
-        '<div class="surface-governance-direct surface-governance-receipt" '
-        'role="status">'
+        '<div class="surface-governance-direct surface-governance-receipt">'
         f"{escape(receipt)}"
         "</div>"
     )
