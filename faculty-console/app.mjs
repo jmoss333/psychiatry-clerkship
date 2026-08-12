@@ -738,8 +738,13 @@ export function startFacultyConsole({
       // attested. Scoped to contentHoldKey specifically — a question attestation's own
       // completedHoldKey param (attestEntries) never produces a contentHoldKey, so that
       // hold path is untouched. When nothing else is pending, advanceKey is null and
-      // today's hold falls through unchanged.
-      const advanceKey = contentHoldKey ? advanceToNextPendingContent(contentHoldKey) : null;
+      // today's hold falls through unchanged. A live navigationGuard also suppresses
+      // the advance (mirrors advanceToNextUnreceipted's own check) — unreachable today,
+      // since a content attest never leaves unsaved question-editor state behind for a
+      // guard to hold open, but kept symmetric so the invariant still holds if that
+      // ever changes.
+      const advanceKey = contentHoldKey && !state.navigationGuard
+        ? advanceToNextPendingContent(contentHoldKey) : null;
       const holdKey = advanceKey ? null : (completedHoldKey || contentHoldKey || state.completedHoldKey);
       const heldItem = holdKey ? findReviewItem(holdKey) : null;
       state.completedHoldKey = heldItem?.completion === 'complete' ? heldItem.key : null;
@@ -1252,6 +1257,18 @@ export function startFacultyConsole({
   // elsewhere; the receipt above this call still recorded, but the jump itself is
   // silently skipped rather than stacking a second guard prompt on top of whatever is
   // already pending.
+  //
+  // Ruling (b) (2026-08-12 efficiency pass, Task 4): `forward` (index > start) is a
+  // deliberately narrow scan — it can only ever see drafts AFTER the just-receipted
+  // item's position, so it alone decides whether — and where — to move (no wrap: a
+  // reviewer who jumped ahead via the item selector chose that position on purpose,
+  // and this function only ever reports what is left, it never redirects them). But
+  // that same narrowness means it must never drive the terminal "all drafts hold
+  // receipts" announcement — a jumped-ahead receipt with unreceipted drafts sitting
+  // EARLIER would otherwise announce completion while work remains. `elsewhere`
+  // re-scans the whole visible list (excluding the item index just receipted) to
+  // decide that terminal case correctly; when forward is empty but elsewhere is not,
+  // the count is reported without moving.
   function advanceToNextUnreceipted(fromKey) {
     if (state.navigationGuard) return false;
     const visible = visibleReviewItems();
@@ -1259,19 +1276,24 @@ export function startFacultyConsole({
     const isUnreceiptedDraft = item => item.type === 'question' && item.savedStatus === 'draft'
       && !reviewedRevisionMatches(item, state.reviewedRevisions.get(item.identity));
     const totalDrafts = visible.filter(item => item.type === 'question' && item.savedStatus === 'draft').length;
-    const remaining = visible.filter((item, index) => index > start && isUnreceiptedDraft(item));
-    if (!remaining.length) {
+    const forward = visible.filter((item, index) => index > start && isUnreceiptedDraft(item));
+    if (forward.length) {
+      const advanced = setSelectedReviewKey(forward[0].key);
+      if (!advanced) return false;
+      renderShell('review-item-selector');
+      const identity = findReviewItem(fromKey)?.identity;
+      const excluded = identity != null && state.batchExclusions.has(identity);
+      announce(`Receipt recorded — ${forward.length} of ${totalDrafts} drafts remaining; ${
+        excluded ? 'excluded from' : 'added to'} batch.`);
+      return true;
+    }
+    const elsewhere = visible.filter((item, index) => index !== start && isUnreceiptedDraft(item));
+    if (!elsewhere.length) {
       announce('All drafts in this filter hold receipts.');
       return false;
     }
-    const advanced = setSelectedReviewKey(remaining[0].key);
-    if (!advanced) return false;
-    renderShell('review-item-selector');
-    const identity = findReviewItem(fromKey)?.identity;
-    const excluded = identity != null && state.batchExclusions.has(identity);
-    announce(`Receipt recorded — ${remaining.length} of ${totalDrafts} drafts remaining; ${
-      excluded ? 'excluded from' : 'added to'} batch.`);
-    return true;
+    announce(`Receipt recorded — ${elsewhere.length} of ${totalDrafts} drafts remaining earlier in the list.`);
+    return false;
   }
 
   function confirmDraftReview(question, checked) {
@@ -3522,6 +3544,42 @@ export function startFacultyConsole({
       if (shortcutCanSaveQuestion()) saveCurrentDraft();
       else if (hasUnsavedChanges()) announce('Open Edit question to save this draft.');
       else announce('No unsaved question changes to save.');
+      return;
+    }
+
+    // `R` toggles the compound review receipt (Task 1's #review-compound), copying
+    // the `A` shortcut's own guard structure below verbatim — target tag checks,
+    // modifier checks, an aria-keyshortcuts gate. Placed ahead of `A`'s guard: that
+    // guard returns early for any non-`a` key, which would make this unreachable if
+    // it came after. Self-contained (matches on `r`, falls through untouched for
+    // every other key including `a` itself), so the A-shortcut below is unaffected.
+    if (event.key.toLowerCase() === 'r'
+      && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+      const target = event.target;
+      const tag = typeof target?.tagName === 'string' ? target.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) return;
+      const box = document.getElementById('review-compound');
+      if (!box || box.disabled || box.getAttribute('aria-keyshortcuts') !== 'r') return;
+      event.preventDefault();
+      box.click();
+      return;
+    }
+
+    // `ArrowUp`/`ArrowDown` move the review-list selection through the same order
+    // the item selector renders (visibleReviewItems()). Same guard structure and
+    // placement rationale as `R` above.
+    if ((event.key === 'ArrowDown' || event.key === 'ArrowUp')
+      && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+      const target = event.target;
+      const tag = typeof target?.tagName === 'string' ? target.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) return;
+      const visible = visibleReviewItems();
+      const index = visible.findIndex(item => item.key === state.selectedKey);
+      const next = visible[index + (event.key === 'ArrowDown' ? 1 : -1)];
+      if (!next) return;
+      event.preventDefault();
+      if (!setSelectedReviewKey(next.key)) return;
+      renderShell('review-item-selector');
       return;
     }
 

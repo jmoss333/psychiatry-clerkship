@@ -175,6 +175,27 @@ class FakeElement {
     if (!this.disabled && !this.isInert()) this.ownerDocument.activeElement = this;
   }
 
+  // Task 4 (2026-08-12 efficiency pass): the R keyboard shortcut calls the real
+  // DOM's box.click() on #review-compound, mirroring the pre-existing A shortcut's
+  // button.click() on #attest-current-item — neither had a fake-DOM polyfill before
+  // (the A path was previously only ever exercised through direct `.dispatch('click')`
+  // calls, never through the keydown handler in this harness). Mirrors real
+  // HTMLElement.click() semantics closely enough for both call sites: a checkbox
+  // toggles `checked` then fires 'change' (no default action is registered on
+  // 'click' for either box in this codebase); anything else just fires 'click'.
+  // Synchronous and fire-and-forget, like the real method — callers here never
+  // await it, and the listeners it invokes (app.mjs's onChange/onClick handlers)
+  // are themselves synchronous, so state settles before this call returns.
+  click() {
+    if (this.disabled || this.isInert()) return;
+    if (this.tagName === 'INPUT' && ['checkbox', 'radio'].includes(this.getAttribute('type'))) {
+      this.checked = !this.checked;
+      void this.dispatch('change');
+    } else {
+      void this.dispatch('click');
+    }
+  }
+
   setSelectionRange(start, end, direction = 'none') {
     this.selectionStart = start;
     this.selectionEnd = end;
@@ -413,6 +434,25 @@ async function setChecked(document, id, checked = true) {
   return control;
 }
 
+// Task 4 (2026-08-12 efficiency pass): dispatches a keydown on window the same way
+// the app's own listener is registered (window.addEventListener('keydown', ...)).
+// `target` defaults to whatever the harness's document currently reports as
+// activeElement — matching the real DOM, where a window-level keydown's event.target
+// is whatever element has focus (or null/undefined if nothing does, which every
+// guard in the handler treats as "not a form field"). Pass an explicit `target`
+// override to simulate focus without first calling .focus() on a real element.
+async function pressKey(harness, key, overrides = {}) {
+  return harness.window.dispatch('keydown', {
+    key,
+    target: harness.document.activeElement,
+    metaKey: false,
+    ctrlKey: false,
+    altKey: false,
+    shiftKey: false,
+    ...overrides,
+  });
+}
+
 function attributeTokens(element, name) {
   return (element.getAttribute(name) || '').trim().split(/\s+/).filter(Boolean);
 }
@@ -643,9 +683,16 @@ test('guards unsaved work and reserves the global shortcut for Ctrl or Command S
   assert.match(appSource, /event\.returnValue\s*=\s*''/);
   assert.match(appSource, /\(event\.metaKey\s*\|\|\s*event\.ctrlKey\)/);
   assert.match(appSource, /event\.key\.toLowerCase\(\)\s*===\s*'s'/);
+  // 'r' (2026-08-12 efficiency pass, Task 4) is the second deliberate letter
+  // shortcut: it toggles #review-compound, copying this same guard structure
+  // (target tag checks, modifier checks, an aria-keyshortcuts gate). The existing
+  // 'a' shortcut (#attest-current-item) does not appear here because it is written
+  // as `!== 'a'` rather than `=== 'a'` — this assertion is a sprawl guard against a
+  // THIRD, undeliberate bare-letter global shortcut, not a claim that only one
+  // letter shortcut exists in the file.
   const letterShortcuts = [...appSource.matchAll(/key\.toLowerCase\(\)\s*===\s*'([a-z])'/g)]
     .map(match => match[1]);
-  assert.deepEqual(letterShortcuts, ['s']);
+  assert.deepEqual(letterShortcuts, ['s', 'r']);
   assert.match(appSource, /Save draft/);
   assert.match(appSource, /Discard/);
   assert.match(appSource, /Cancel/);
@@ -4227,4 +4274,126 @@ test('the last content attest keeps the completed-hold receipt view', async () =
   assert.equal(controller.state.selectedKey, 'page:t_mood.md');
   assert.equal(controller.state.completedHoldKey, 'page:t_mood.md',
     'no further pending items: existing hold-to-show-receipt behavior kept');
+});
+
+// Ruling (a) (2026-08-12 efficiency pass, Task 4): the content-advance wiring in
+// load() gets the same navigationGuard check advanceToNextUnreceipted already has —
+// defensive symmetry, not a reachable path today (a content attest never leaves
+// unsaved question-editor state behind for a guard to hold open).
+test('a navigation guard suppresses the content advance and keeps the existing hold', async () => {
+  const harness = await startHarnessWithTwoPendingContentItems();
+  const { controller, document } = harness;
+  // Direct state path (matches the qbank guard test above): a real guard would also
+  // make the console background inert, which would block the click too, but this
+  // pins load()'s own defensive check around the advance-key computation.
+  controller.state.navigationGuard = { target: { kind: 'lock' }, returnFocus: 'lock-console' };
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md', 'guard suppressed the advance');
+  assert.equal(controller.state.completedHoldKey, 'page:t_mood.md',
+    'existing hold behavior kept instead of advancing to mse.html');
+});
+
+// Ruling (b) (2026-08-12 efficiency pass, Task 4): advanceToNextUnreceipted's forward-
+// only scan (index > start) cannot see unreceipted drafts that sit BEFORE the
+// just-receipted item — a reviewer who jumps ahead via the item selector must never
+// hear the terminal "all drafts hold receipts" announcement while those earlier
+// drafts are still open. The fix re-scans the whole visible list (minus the item
+// just receipted) to decide the terminal case; the forward-only scan still decides
+// whether — and where — to advance. No wrap: a deliberate jump is never overridden.
+test('a receipt on a later draft reports what remains earlier in the list without moving', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts(); // q1 selected & ready; q2 untouched
+  const { controller, document, window } = harness;
+  await setValue(document, 'review-item-selector', 'question:qb_moo_903', 'change');
+  // q2 needs its own ready-preview, Draft-view setup before its compound box renders —
+  // the same sequence startHarnessWithTwoReadyDrafts ran for q1.
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  await document.getElementById('view-draft').dispatch('click');
+  await setChecked(document, 'review-compound'); // receipts q2 — the LAST item positionally
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903',
+    'no movement: q1 lies earlier, not after, so the sitting does not wrap back to it');
+  assert.equal(lastAnnouncement(harness),
+    'Receipt recorded — 1 of 2 drafts remaining earlier in the list.');
+  assert.notEqual(lastAnnouncement(harness), 'All drafts in this filter hold receipts.',
+    'q1 is still unreceipted: no false terminal announcement');
+});
+
+// Task 4: the R keyboard shortcut. Copies the pre-existing A shortcut's guard
+// structure verbatim (target tag checks, modifier checks, an aria-keyshortcuts gate)
+// against #review-compound instead of #attest-current-item.
+test('R toggles the compound receipt and advances; ignored in form fields', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller, document } = harness;
+  await pressKey(harness, 'r');
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), true,
+    'the receipt recorded');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903', 'advanced');
+
+  // question-stem is a <textarea>, always present in the DOM regardless of the
+  // current view (renderQuestionEditor renders alongside Live/Draft, only hidden) —
+  // focusing it and pressing R must not touch state.
+  document.getElementById('question-stem').focus();
+  const before = controller.state.reviewedRevisions.size;
+  await pressKey(harness, 'r');
+  assert.equal(controller.state.reviewedRevisions.size, before, 'ignored while a textarea is focused');
+});
+
+test('R with a modifier held is ignored', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller } = harness;
+  await pressKey(harness, 'r', { metaKey: true });
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), false);
+});
+
+test('R does nothing when no compound receipt control is rendered', async () => {
+  // Content-only fixture (no questions): the currently selected item is a page, so
+  // #review-compound never renders. Must not throw (box is null) and must not change
+  // anything — pressKey rejecting here would already fail the test.
+  const harness = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({ questions: [] })),
+  });
+  const { controller, document } = harness;
+  assert.equal(document.getElementById('review-compound'), null);
+  const before = controller.state.selectedKey;
+  await pressKey(harness, 'r');
+  assert.equal(controller.state.selectedKey, before);
+});
+
+// Task 4: ArrowUp/ArrowDown move the review-list selection through the same order
+// the item selector renders (visibleReviewItems()).
+test('ArrowDown/ArrowUp move the review selection through the visible list', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller, document } = harness;
+  await pressKey(harness, 'ArrowDown');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903');
+  // A successful move focuses the item selector (the file's existing "landed on a
+  // new item" convention) — a real <select> then owns further arrow keys natively,
+  // the same as any other focused form control. Clearing focus here isolates this
+  // assertion to the handler's own logic rather than depending on native <select>
+  // keyboard behavior, which this fake DOM does not model.
+  document.activeElement = null;
+  await pressKey(harness, 'ArrowUp');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902');
+});
+
+test('ArrowDown/ArrowUp are ignored in a form field and stop at the ends of the list', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller, document } = harness;
+
+  document.getElementById('question-stem').focus();
+  await pressKey(harness, 'ArrowDown');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902', 'ignored while a textarea is focused');
+
+  document.activeElement = null;
+  await pressKey(harness, 'ArrowUp'); // already first: nothing earlier, no-op
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902');
+
+  document.activeElement = null;
+  await pressKey(harness, 'ArrowDown');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903');
+
+  document.activeElement = null; // clear the selector focus the successful move above set
+  await pressKey(harness, 'ArrowDown'); // already last: nothing further, no-op
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903');
 });
