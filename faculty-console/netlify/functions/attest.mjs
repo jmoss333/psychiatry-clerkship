@@ -728,6 +728,23 @@ function buildQbankPayload(bankFile, manifest) {
   };
 }
 
+// Mirrors 13_Faculty_Resources/reviewed.schema.json (Task 1). This handler never loads
+// that schema file directly (it is Python/ajv tooling's job to fully validate the
+// ledger) — these two Sets are the minimal, exact enums it needs to recognize a risk
+// record as safe to surface to the browser or to preserve during a mutation.
+const RISK_KINDS = new Set(['general', 'clinical', 'legal', 'formulary', 'local-policy']);
+const RISK_LEVELS = new Set(['low', 'moderate', 'high']);
+const MAX_REOPEN_REASON_LENGTH = 240;
+
+// Fails soft to null: GET already renders a ledger entry defensively (a missing
+// manifest slug becomes `{}`), so a malformed risk on one record must not take down
+// the whole response. Content mutation below applies its own, fail-closed gate.
+function validRisk(value) {
+  if (!isRecord(value)) return null;
+  const { kind, level } = value;
+  return RISK_KINDS.has(kind) && RISK_LEVELS.has(level) ? { kind, level } : null;
+}
+
 function contentApiStatus(entry) {
   if (typeof entry.status !== 'string') return 'unreviewed';
   return entry.status === 'pending' ? 'unreviewed' : entry.status;
@@ -746,6 +763,10 @@ function buildContentItems(reviewed, manifest) {
       status: contentApiStatus(entry),
       at: typeof entry.at === 'string' ? entry.at : '',
       by: typeof entry.by === 'string' ? entry.by : '',
+      risk: validRisk(entry.risk),
+      // "Pending reason" only: note/contentHash/claimsHash/evidenceHash/evidenceThrough
+      // are internal ledger fields and must never reach the browser.
+      reason: entry.status === 'pending' && typeof entry.reason === 'string' ? entry.reason : '',
     });
   }
   for (const [, slug, title] of tools) {
@@ -757,6 +778,8 @@ function buildContentItems(reviewed, manifest) {
       status: contentApiStatus(entry),
       at: typeof entry.at === 'string' ? entry.at : '',
       by: typeof entry.by === 'string' ? entry.by : '',
+      risk: validRisk(entry.risk),
+      reason: entry.status === 'pending' && typeof entry.reason === 'string' ? entry.reason : '',
     });
   }
   return items;
@@ -810,6 +833,46 @@ function requireContentChanges(value) {
   return entries;
 }
 
+// Reopening is the one content mutation that carries free-text input, so — unlike
+// `requireContentChanges`, whose slugs/booleans are either well-shaped or not — a
+// missing reason and a malformed one are distinguishable, actionable failures for the
+// console to show. Same `content.*` naming and HttpError shape as `content.invalid_changes`.
+function requireReopenReason(value) {
+  if (value === undefined) {
+    throw new HttpError(
+      'content.reason_required',
+      400,
+      'A reason is required to reopen this item for review.',
+    );
+  }
+  if (typeof value !== 'string') {
+    throw new HttpError('content.invalid_reason', 400, 'The reopen reason must be text.');
+  }
+  const reason = value.trim();
+  if (!reason) {
+    throw new HttpError(
+      'content.reason_required',
+      400,
+      'A reason is required to reopen this item for review.',
+    );
+  }
+  if (reason.length > MAX_REOPEN_REASON_LENGTH) {
+    throw new HttpError(
+      'content.invalid_reason',
+      400,
+      `The reopen reason must be ${MAX_REOPEN_REASON_LENGTH} characters or fewer.`,
+    );
+  }
+  return reason;
+}
+
+// Fails closed, and deliberately returns nothing: risk classification belongs to a
+// later queue, so this function's only job is to refuse to act on a record that does
+// not already carry a valid one — never to invent or repair one.
+function requireCurrentRisk(current) {
+  if (!isRecord(current) || !validRisk(current.risk)) invalidRepositoryFile();
+}
+
 async function commitContentMutation({ repository, body, attester }) {
   const changes = requireContentChanges(body.changes);
   if (!changes.length) {
@@ -830,14 +893,28 @@ async function commitContentMutation({ repository, body, attester }) {
     if (!effectiveChanges.length) {
       return { ok: true, target: 'content', updated: 0, commit: null };
     }
+    // Per-record preserve pattern (Task 1 ledger contract), applied per batch entry:
+    // spread the CURRENT record forward rather than replacing it, so risk/note/hashes
+    // — everything this handler does not itself own — survive attest and reopen alike.
     for (const [slug, selected] of effectiveChanges) {
+      const current = reviewed[slug];
+      requireCurrentRisk(current);
+      const next = { ...current, status: selected ? 'reviewed' : 'pending', at };
+      if (selected) {
+        next.by = attester;
+        delete next.reason;
+      } else {
+        next.by = 'Pending faculty review';
+        next.reason = requireReopenReason(body.reasons?.[slug]);
+      }
+      // Not a plain `reviewed[slug] = next`: a slug of literally "__proto__" would
+      // otherwise reassign the object's prototype instead of setting an own property.
+      // requireContentChanges()'s slug pattern does not exclude that string.
       Object.defineProperty(reviewed, slug, {
         configurable: true,
         enumerable: true,
         writable: true,
-        value: selected
-          ? { status: 'reviewed', at, by: attester }
-          : { status: 'pending', at, by: 'Pending faculty review' },
+        value: next,
       });
     }
 

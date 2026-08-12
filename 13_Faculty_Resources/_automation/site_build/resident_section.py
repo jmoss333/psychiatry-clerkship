@@ -17,6 +17,14 @@ if os.path.exists(OUT): shutil.rmtree(OUT)
 shutil.copytree(MS3, OUT)   # start as a full copy of the polished/dark/motion MS3 build
 _copied_governance=os.path.join(OUT,"tool-governance.json")
 if os.path.exists(_copied_governance): os.remove(_copied_governance)
+# Surface governance (risk-aware-publishing-warnings): same reasoning as the
+# tool-governance.json removal above — the copytree inherits MS3's ALREADY-WRITTEN
+# governance.json. If resident's own build_site_document()/write_site_document()
+# call below raises partway through, an inherited-but-stale MS3 governance.json
+# must not be left behind wearing the resident site's name; remove it now so any
+# partial failure ships with none rather than a wrong one.
+_copied_surface_governance=os.path.join(OUT,"governance.json")
+if os.path.exists(_copied_surface_governance): os.remove(_copied_surface_governance)
 
 # ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the 4 files
 # that rode along via the MS3 copytree above; resident gets its own prototypes only (below).
@@ -201,7 +209,27 @@ nav=[
 ]
 _navorder=["Welcome and Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
-open(OUT+"/nav.json","w").write(json.dumps(nav))
+
+# ---------- SURFACE GOVERNANCE: nav annotation (resident) ----------
+# Built from the SAME canonical ledger as MS3, but scoped to THIS site's own nav
+# (site="resident") — resident's tool set differs from MS3's (drops the
+# orientation video, adds the rp-* prototypes), so the document below only ever
+# requires ledger records / built tool files for what resident actually ships.
+sys.path.insert(0, os.path.dirname(HERE))
+from surface_governance import (
+    load_validated_ledger,
+    build_site_document,
+    annotate_navigation,
+    apply_tool_status,
+    write_site_document,
+)
+
+_ledger = load_validated_ledger(Path(LIB))
+_surface_governance = build_site_document(_ledger, nav, "resident")
+nav = annotate_navigation(nav, _surface_governance)
+open(OUT + "/nav.json", "w", encoding="utf-8").write(
+    json.dumps(nav, ensure_ascii=False)
+)
 
 # ---------- resident-only inline tool CTAs (topic_meta is shared, so patch OUT's copy) ----------
 # agitation.md keeps its Decision Aids link and gains the Agitation Ladder trainer;
@@ -236,6 +264,18 @@ common.build_search_index(nav, OUT, label="resident")
 # Postcondition gate (architecture review rec 1.3): the rp-* tools used to bypass the
 # page pass entirely and ship degraded. This makes that impossible to reintroduce.
 common.assert_page_contract(OUT, label="resident")
+
+# ---------- SURFACE GOVERNANCE: direct-tool status + public artifact (resident) ----------
+# apply_tool_status() strips any prior injected block before writing its own — the
+# copytree above inherited MS3's ALREADY-injected shared tools (e.g. mse.html)
+# byte-for-byte, so this call replaces those inherited blocks with resident's own
+# rather than stacking a second one alongside them. rp-* tools (never touched by
+# the MS3 build) simply receive a fresh injection. Scoped to resident's OWN
+# document (built from resident's OWN nav, above), so it only expects tool files
+# this build actually ships.
+apply_tool_status(Path(OUT) / "tools", _surface_governance)
+write_site_document(Path(OUT) / "governance.json", _surface_governance)
+print("surface governance: emitted", len(_surface_governance["items"]), "items (resident)")
 
 print("RESIDENT build: out",OUT)
 print(" sections:",[s["section"] for s in nav])

@@ -32,7 +32,18 @@ const BRANCH_HEAD = 'b'.repeat(40);
 const REVIEWED_SHA = 'c'.repeat(40);
 const WRITTEN_SHA = 'd'.repeat(40);
 
-const REVIEWED = { 'anki.md': { status: 'pending', at: '', by: 'Pending faculty review' } };
+// Task 5 (risk-aware publishing warnings): the content-mutation handler now refuses
+// to act on a slug whose current ledger record lacks a valid `risk` — this fixture
+// must carry one or every attestRequest() in this file 502s instead of committing.
+const REVIEWED = {
+  'anki.md': {
+    status: 'pending',
+    at: '',
+    by: 'Pending faculty review',
+    risk: { kind: 'general', level: 'low' },
+    reason: 'Synthetic review is pending',
+  },
+};
 
 function jsonResponse(status, body) {
   return new Response(JSON.stringify(body), {

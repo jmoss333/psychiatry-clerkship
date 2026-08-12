@@ -16,6 +16,7 @@ import {
   deriveBatchEligibility,
   deriveReviewCounts,
   filterReviewItems,
+  isValidReopenReason,
   matchesPreviewStatus,
   normalizeReviewItems,
   normalizeStudentBase,
@@ -143,6 +144,8 @@ export function startFacultyConsole({
     contentMessage: '',
     contentCommitUrl: null,
     reopenConfirmation: null,
+    reopenReason: '',
+    reopenReasonKey: null,
     dirtyFields: [],
     localAssessment: null,
     confirmations: emptyConfirmations(),
@@ -834,6 +837,16 @@ export function startFacultyConsole({
     return item?.savedStatus === 'reviewed' ? 'Reviewed' : 'Not reviewed';
   }
 
+  // "Clinical · High risk" — same title-casing convention as riskLabel() in the
+  // shared shell (13_Faculty_Resources/_automation/site_build/spa_index.html), so a
+  // reviewer sees identical wording here and on the learner-facing warning.
+  function riskLabel(risk) {
+    const titleCase = value => text(value)
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, char => char.toUpperCase());
+    return `${titleCase(risk?.kind)} · ${titleCase(risk?.level)} risk`;
+  }
+
   function viewModeLabel(item = currentReviewItem()) {
     if (item?.type !== 'question' || state.viewMode === 'live') return 'Live deploy';
     return state.viewMode === 'draft' ? 'Draft preview' : 'Edit question';
@@ -1457,6 +1470,18 @@ export function startFacultyConsole({
     ]);
   }
 
+  // Read-only in this increment (2026-07-26 risk-aware-publishing-warnings plan): a
+  // later classification queue owns risk edits, so there is no affordance here to
+  // change it — only to see it before attesting or reopening. Omitted entirely (not
+  // a placeholder) for a question, or for content the ledger has no risk for yet.
+  function renderRiskContext(item) {
+    if (!item || item.type === 'question' || !item.risk) return null;
+    return el('p', { id: 'attestation-risk-context', class: 'hint' }, [
+      'Publishing risk: ',
+      riskLabel(item.risk),
+    ]);
+  }
+
   function renderAttestationRail(item) {
     if (!item) {
       return el('aside', { id: 'attestation-rail', class: 'signoff-rail' }, [
@@ -1492,6 +1517,7 @@ export function startFacultyConsole({
         el('p', { class: 'eyebrow' }, ['Single-item sign-off']),
         el('h2', { id: 'attestation-rail-title' }, ['Review → Resolve → Confirm']),
       ]),
+      renderRiskContext(item),
       renderActionFeedback(),
       el('section', {
         id: 'rail-step-review',
@@ -2503,6 +2529,13 @@ export function startFacultyConsole({
     const current = findReviewItem(item?.key);
     if (state.pending || !current || !['page', 'tool'].includes(current.type)
         || current.completion !== 'complete') return false;
+    // A reason left over from a DIFFERENT item must never pre-fill and silently
+    // attach to this one — that would write the wrong reason into exactly the
+    // governance audit trail this feature exists to keep honest. Keyed rather than
+    // an unconditional reset so a reason survives re-opening the SAME item after an
+    // authentication retry or network failure, per this task's own requirement.
+    if (state.reopenReasonKey !== current.key) state.reopenReason = '';
+    state.reopenReasonKey = current.key;
     state.reopenConfirmation = freezeSnapshot({ key: current.key, reviewed: false });
     const background = document.getElementById('console-background');
     const modal = renderReopenConfirmation();
@@ -2520,13 +2553,23 @@ export function startFacultyConsole({
   function confirmReopenReview() {
     const snapshot = state.reopenConfirmation;
     const item = findReviewItem(snapshot?.key);
-    if (!snapshot || snapshot.reviewed !== false || !item) {
+    if (!snapshot || snapshot.reviewed !== false || !item
+        || !isValidReopenReason(state.reopenReason)) {
       dismissReopenConfirmation();
       return false;
     }
     dismissReopenConfirmation(null);
     void commitCurrentContent(item, snapshot.reviewed);
     return true;
+  }
+
+  function refreshReopenConfirmation(focusTarget = null) {
+    const current = document.getElementById('reopen-confirmation');
+    if (!current) return;
+    const replacement = renderReopenConfirmation();
+    if (!replacement) return;
+    current.replaceChildren(...replacement.children);
+    focusRequested(focusTarget);
   }
 
   function renderReopenConfirmation() {
@@ -2543,7 +2586,7 @@ export function startFacultyConsole({
       'aria-labelledby': 'reopen-confirmation-title',
       onKeydown: event => modalKeydown(
         event,
-        ['confirm-reopen-review', 'cancel-reopen-review'],
+        ['reopen-reason', 'confirm-reopen-review', 'cancel-reopen-review'],
         cancel,
       ),
     }, [
@@ -2551,12 +2594,29 @@ export function startFacultyConsole({
       el('p', {}, [
         `${item.title} will return to Needs review. This changes only ${item.identity}.`,
       ]),
+      el('div', { class: 'field' }, [
+        el('label', { for: 'reopen-reason' }, ['Reason for reopening']),
+        el('textarea', {
+          id: 'reopen-reason',
+          rows: '3',
+          required: true,
+          maxlength: '240',
+          disabled: state.pending,
+          value: state.reopenReason,
+          'aria-describedby': 'reopen-reason-hint',
+          onInput: event => {
+            state.reopenReason = event.target.value;
+            refreshReopenConfirmation(editorFocusState(event.target));
+          },
+        }),
+        el('p', { id: 'reopen-reason-hint', class: 'hint' }, ['1–240 characters.']),
+      ]),
       el('div', { class: 'guard-actions' }, [
         el('button', {
           id: 'confirm-reopen-review',
           class: 'primary',
           type: 'button',
-          disabled: state.pending,
+          disabled: state.pending || !isValidReopenReason(state.reopenReason),
           onClick: confirmReopenReview,
         }, ['Confirm reopen']),
         el('button', {
@@ -2789,6 +2849,7 @@ export function startFacultyConsole({
       body: {
         target: 'content',
         changes: { [item.identity]: reviewed },
+        reasons: reviewed ? {} : { [item.identity]: state.reopenReason.trim() },
       },
     });
   }
@@ -2849,7 +2910,14 @@ export function startFacultyConsole({
         ? `Attested ${slug}.`
         : `Reopened ${slug} for review.`;
       state.contentCommitUrl = commitUrl;
-      if (snapshot.reviewed) state.completedHoldKey = snapshot.key;
+      if (snapshot.reviewed) {
+        state.completedHoldKey = snapshot.key;
+      } else {
+        // Only on a CONFIRMED save: an authentication retry or network failure must
+        // still have the reason available to resubmit, so nothing clears it there.
+        state.reopenReason = '';
+        state.reopenReasonKey = null;
+      }
       resetApprovalInputs();
       refreshPreviewChromeAndRail('content-action-result');
       const next = document.getElementById('next-review-item');

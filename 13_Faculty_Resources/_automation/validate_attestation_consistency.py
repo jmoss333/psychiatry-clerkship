@@ -12,8 +12,10 @@ import os
 import re
 import sys
 from datetime import date
+from pathlib import Path
 from urllib.parse import urlparse
 
+from surface_governance import SurfaceGovernanceError, load_validated_ledger
 from validate_tool_governance import GovernanceError, parse_metadata_marker
 
 
@@ -754,7 +756,10 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
 def validate(root):
     """Return every attestation inconsistency found below ``root``."""
     root = os.path.abspath(os.fspath(root))
-    reviewed = load(os.path.join(root, REVIEWED_PATH))
+    try:
+        reviewed = load_validated_ledger(Path(root))
+    except SurfaceGovernanceError as error:
+        return [str(error)]
     topic_meta = load(os.path.join(root, TOPIC_META_PATH))
     manifest = load(os.path.join(root, MANIFEST_PATH))
     manifest_md_entries = manifest.get("md", [])
