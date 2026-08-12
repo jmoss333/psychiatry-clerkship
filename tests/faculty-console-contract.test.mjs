@@ -4002,3 +4002,58 @@ test('a dirty draft renders no compound control and the hint remains', async () 
   assert.equal(document.getElementById('review-compound'), null);
   assert.ok(document.getElementById('review-saved-revision'));
 });
+
+// Batch auto-enroll with sticky exclusion (2026-08-12 efficiency pass, Task 2): earning a
+// review receipt is the signal that adds a draft to the batch tray by default, so a reviewer
+// who already ticked the review box does not have to separately hunt down the tray checkbox.
+// An explicit tray uncheck is a sticky exclusion that survives unrelated re-renders; losing
+// the receipt (the reviewer un-checks the review control, or a revision moves underneath it)
+// forgets that exclusion — there is nothing left to exclude from once the tray drops the item.
+test('earning a receipt auto-enrolls the item in the batch selection', async () => {
+  const harness = await startHarnessWithReadyPreviewDraft();
+  const { controller, document } = harness;
+  const item = controller.state.reviewItems.find(candidate => candidate.type === 'question');
+  await setChecked(document, 'review-compound');
+  assert.equal(controller.state.batchSelection.has(item.identity), true);
+  assert.equal(
+    document.getElementById(`batch-select-${item.identity}`).checked, true,
+    'tray checkbox itself renders checked',
+  );
+});
+
+test('an explicit uncheck is a sticky exclusion that survives an unrelated re-render', async () => {
+  const harness = await startHarnessWithReadyPreviewDraft();
+  const { controller, document } = harness;
+  const item = controller.state.reviewItems.find(candidate => candidate.type === 'question');
+  await setChecked(document, 'review-compound');
+  await setChecked(document, `batch-select-${item.identity}`, false);
+  assert.equal(controller.state.batchSelection.has(item.identity), false);
+  assert.equal(controller.state.batchExclusions.has(item.identity), true);
+  assert.equal(document.getElementById(`batch-select-${item.identity}`).checked, false);
+  // Toggling an unrelated confirmation forces another full rail re-render; the exclusion
+  // must not be pruned or forgotten just because renderBatchTray ran again.
+  await setChecked(document, 'confirm-clinical');
+  assert.equal(controller.state.batchSelection.has(item.identity), false);
+  assert.equal(controller.state.batchExclusions.has(item.identity), true);
+});
+
+test('losing and re-earning a receipt clears the exclusion and re-enrolls', async () => {
+  const harness = await startHarnessWithReadyPreviewDraft();
+  const { controller, document } = harness;
+  const item = controller.state.reviewItems.find(candidate => candidate.type === 'question');
+  await setChecked(document, 'review-compound');
+  await setChecked(document, `batch-select-${item.identity}`, false);
+  await setChecked(document, 'review-compound', false); // receipt lost
+  assert.equal(
+    controller.state.batchExclusions.has(item.identity), false,
+    'receipt loss clears the exclusion',
+  );
+  assert.equal(controller.state.batchSelection.has(item.identity), false);
+  assert.equal(
+    document.getElementById(`batch-select-${item.identity}`), null,
+    'the item leaves the tray entirely without a receipt',
+  );
+  await setChecked(document, 'review-compound'); // re-earn
+  assert.equal(controller.state.batchSelection.has(item.identity), true);
+  assert.equal(controller.state.batchExclusions.has(item.identity), false);
+});

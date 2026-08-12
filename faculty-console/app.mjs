@@ -140,6 +140,7 @@ export function startFacultyConsole({
     reviewerLabel: DEFAULT_REVIEWER,
     reviewedRevisions: new Map(),
     batchSelection: new Set(),
+    batchExclusions: new Set(),
     externalReviewOpenedKey: null,
     contentMessage: '',
     contentCommitUrl: null,
@@ -1217,6 +1218,21 @@ export function startFacultyConsole({
     } else if (state.viewMode === 'draft' && saved
         && !state.dirtyFields.length && saved.revision === question?.revision) {
       state.reviewedRevisions.set(question.id, question.revision);
+    }
+    // Batch auto-enroll (2026-08-12 efficiency pass): holding a receipt is what earns a
+    // spot in the tray by default, so a reviewer who already ticked this box does not
+    // also have to find and check the tray box. An explicit exclusion (toggleBatchMember)
+    // stays sticky across re-earning the same receipt; losing the receipt drops the item
+    // from the selection and forgets the exclusion — nothing is left to exclude from once
+    // the tray has no receipt to hold a spot open.
+    const id = question?.id;
+    if (id) {
+      if (state.reviewedRevisions.has(id)) {
+        if (!state.batchExclusions.has(id)) state.batchSelection.add(id);
+      } else {
+        state.batchSelection.delete(id);
+        state.batchExclusions.delete(id); // receipt loss clears the exclusion
+      }
     }
     refreshPreviewChromeAndRail('review-saved-revision');
   }
@@ -3313,8 +3329,8 @@ export function startFacultyConsole({
   }
 
   function toggleBatchMember(id, checked, focusId) {
-    if (checked) state.batchSelection.add(id);
-    else state.batchSelection.delete(id);
+    if (checked) { state.batchExclusions.delete(id); state.batchSelection.add(id); }
+    else { state.batchSelection.delete(id); state.batchExclusions.add(id); }
     refreshPreviewChromeAndRail(focusId);
   }
 
@@ -3323,6 +3339,13 @@ export function startFacultyConsole({
     const eligibleIds = new Set(rows.map(question => question.id));
     for (const id of [...state.batchSelection]) {
       if (!eligibleIds.has(id)) state.batchSelection.delete(id);
+    }
+    // A sticky exclusion only needs to survive as long as there is something to exclude
+    // from — an eligible row, or a receipt that could make one ready again (e.g. a gate
+    // gone temporarily 'warning'). Once neither holds, the exclusion is stale; drop it so
+    // batchExclusions cannot grow without bound across a long review session.
+    for (const id of [...state.batchExclusions]) {
+      if (!eligibleIds.has(id) && !state.reviewedRevisions.has(id)) state.batchExclusions.delete(id);
     }
     if (!rows.length && !awaitingReceipt && !warningHeld) return null;
     const selected = rows.filter(question => state.batchSelection.has(question.id));
