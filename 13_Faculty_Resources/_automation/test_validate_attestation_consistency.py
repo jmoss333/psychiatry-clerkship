@@ -5,6 +5,7 @@ import copy
 import contextlib
 import io
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,8 +15,10 @@ import validate_attestation_consistency as validator
 
 TOOL_SOURCE = "_prototypes/sp-interview/sp-interview.html"
 TOOL_SLUG = "sp-interview.html"
+TOPIC_SLUG = "orphan-topic.md"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CANONICAL_PACK = REPO_ROOT / "_prototypes" / "sp-interview" / "sp-interview.pack.json"
+SCHEMA_SOURCE = REPO_ROOT / "13_Faculty_Resources" / "reviewed.schema.json"
 
 
 def draft_speech_profile(profile_id="dana-measured-v1"):
@@ -274,6 +277,9 @@ def write_fixture(
     pack,
     marker="RC-META",
     extra_markers="",
+    risk_kind="clinical",
+    risk_level="high",
+    extra_manifest_md=None,
 ):
     root = Path(root)
     reviewed_path = root / "13_Faculty_Resources" / "reviewed.json"
@@ -289,23 +295,30 @@ def write_fixture(
     for path in (reviewed_path, manifest_path, source_path, pack_path):
         path.parent.mkdir(parents=True, exist_ok=True)
 
-    reviewed_path.write_text(
-        json.dumps(
-            {
-                TOOL_SLUG: {
-                    "status": ledger_status,
-                    "at": "2026-07-13",
-                    "by": "Historical Reviewer, MD",
-                }
-            }
+    # load_validated_ledger() reads reviewed.schema.json alongside reviewed.json,
+    # so every fixture root needs its own copy of the real (Task 1) schema.
+    shutil.copyfile(SCHEMA_SOURCE, reviewed_path.with_name("reviewed.schema.json"))
+    ledger_entry = {
+        "status": ledger_status,
+        "risk": {"kind": risk_kind, "level": risk_level},
+        "at": "2026-07-13",
+        "by": (
+            "Historical Reviewer, MD"
+            if ledger_status == "reviewed"
+            else "Pending faculty review"
         ),
+    }
+    if ledger_status != "reviewed":
+        ledger_entry["reason"] = "Synthetic review is pending"
+    reviewed_path.write_text(
+        json.dumps({TOOL_SLUG: ledger_entry}),
         encoding="utf-8",
     )
     (root / "topic_meta.json").write_text("{}", encoding="utf-8")
     manifest_path.write_text(
         json.dumps(
             {
-                "md": [],
+                "md": list(extra_manifest_md or []),
                 "tools": [[TOOL_SOURCE, TOOL_SLUG, "The Interview Room"]],
             }
         ),
@@ -317,6 +330,63 @@ def write_fixture(
         encoding="utf-8",
     )
     pack_path.write_text(json.dumps(pack), encoding="utf-8")
+
+
+def write_pending_topic_meta_fixture(root, *, faculty_status):
+    """A minimal md-only fixture isolating the topic_meta <-> ledger cross-check.
+
+    The ledger stays pending, so the md-source-reading loop in validate()
+    never opens the source file — it is intentionally never created here.
+    """
+    root = Path(root)
+    reviewed_path = root / "13_Faculty_Resources" / "reviewed.json"
+    manifest_path = (
+        root
+        / "13_Faculty_Resources"
+        / "_automation"
+        / "site_build"
+        / "site_manifest.json"
+    )
+    for path in (reviewed_path, manifest_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(SCHEMA_SOURCE, reviewed_path.with_name("reviewed.schema.json"))
+    reviewed_path.write_text(
+        json.dumps(
+            {
+                TOPIC_SLUG: {
+                    "status": "pending",
+                    "risk": {"kind": "general", "level": "low"},
+                    "reason": "Synthetic review is pending",
+                    "at": "2026-07-13",
+                    "by": "Pending faculty review",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "md": [["docs/" + TOPIC_SLUG, TOPIC_SLUG, "Orphan Topic"]],
+                "tools": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (root / "topic_meta.json").write_text(
+        json.dumps(
+            {
+                TOPIC_SLUG: {
+                    "facultyReview": {
+                        "status": faculty_status,
+                        "lastReviewed": "2026-07-01",
+                        "reviewer": "Topic Reviewer, MD",
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
 
 
 class AttestationConsistencyTests(unittest.TestCase):
@@ -337,6 +407,96 @@ class AttestationConsistencyTests(unittest.TestCase):
                 pack=pack,
             )
             return self.validate(root)
+
+    def test_malformed_ledger_risk_returns_one_stable_non_echoing_error(self):
+        sentinel = "sensitive-invalid-risk-kind"
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(
+                root,
+                ledger_status="pending",
+                tool_status="draft-pending-attestation",
+                pack=pending_pack(),
+            )
+            reviewed_path = Path(root) / "13_Faculty_Resources" / "reviewed.json"
+            reviewed = json.loads(reviewed_path.read_text(encoding="utf-8"))
+            reviewed[TOOL_SLUG]["risk"]["kind"] = sentinel
+            reviewed_path.write_text(json.dumps(reviewed), encoding="utf-8")
+
+            errors = self.validate(root)
+
+        self.assertEqual(
+            errors,
+            [
+                "reviewed.json: sp-interview.html invalid at "
+                "/sp-interview.html/risk/kind"
+            ],
+        )
+        self.assertNotIn(sentinel, "\n".join(errors))
+
+    def test_missing_manifest_item_still_fails(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(
+                root,
+                ledger_status="pending",
+                tool_status="draft-pending-attestation",
+                pack=pending_pack(),
+                extra_manifest_md=[["docs/orphan.md", "orphan.md", "Orphan Page"]],
+            )
+            errors = self.validate(root)
+        self.assertEqual(errors, ["orphan.md: missing reviewed.json entry"])
+
+    def test_metadata_claiming_reviewed_while_ledger_pending_fails(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(
+                root,
+                ledger_status="pending",
+                tool_status="reviewed",
+                pack=pending_pack(),
+            )
+            errors = self.validate(root)
+        self.assertIn(
+            "sp-interview.html: metadata-reviewed-ledger-status-mismatch", errors
+        )
+
+    def test_pack_claiming_reviewed_while_ledger_pending_fails(self):
+        pack = pending_pack()
+        pack["status"] = "reviewed"
+        errors = self.validate_pack(pack)
+        self.assertIn("sp-interview.html: pack-reviewed-ledger-status-mismatch", errors)
+
+    def test_topic_meta_claiming_reviewed_while_ledger_pending_fails(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_pending_topic_meta_fixture(root, faculty_status="reviewed")
+            errors = self.validate(root)
+        self.assertEqual(
+            errors, ["orphan-topic.md: topic-meta-reviewed-ledger-status-mismatch"]
+        )
+
+    def test_valid_pending_high_risk_record_is_not_an_error(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(
+                root,
+                ledger_status="pending",
+                tool_status="draft-pending-attestation",
+                pack=pending_pack(),
+                risk_kind="clinical",
+                risk_level="high",
+            )
+            errors = self.validate(root)
+        self.assertEqual(errors, [])
+
+    def test_valid_reviewed_record_is_not_an_error(self):
+        pack = pending_pack()
+        pack["status"] = "reviewed"
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(
+                root,
+                ledger_status="reviewed",
+                tool_status="reviewed",
+                pack=pack,
+            )
+            errors = self.validate(root)
+        self.assertEqual(errors, [])
 
     def test_reviewed_ledger_with_pending_tool_header_uses_fixed_mismatch_category(self):
         with tempfile.TemporaryDirectory() as root:
