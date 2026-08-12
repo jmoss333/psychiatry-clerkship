@@ -10,7 +10,18 @@ Usage:
     python3 13_Faculty_Resources/_automation/attest_serve.py --no-build # serve, skip the gate
 Then open the printed URL, attest, click "Save & rebuild". Ctrl-C to stop.
 """
-import http.server, json, os, subprocess, argparse
+import http.server, json, os, subprocess, argparse, sys
+
+# DEPRECATED (2026-08-12, PR #351 follow-up): reviewed.json is now a validated
+# governance ledger — every record carries a faculty-confirmed risk classification,
+# and this server's /save wrote the WHOLE file from the posted payload, which would
+# strip risk from all 119 records and fail every validator/build. The faculty
+# console (clerkship-faculty-attest.netlify.app) is the only contract-preserving
+# write path. This file is kept for reference only.
+sys.exit(
+    "attest_serve.py is DEPRECATED: its /save would strip the ledger's risk "
+    "classifications (schema-invalid since PR #351). Use the faculty console instead."
+)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LIB  = os.path.abspath(os.path.join(HERE, "..", ".."))

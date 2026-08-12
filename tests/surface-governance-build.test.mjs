@@ -279,6 +279,28 @@ test('hard-fails when a tool carries zero or more than one status marker block',
   }
 });
 
+test('hard-fails when a pending tool\'s governance block presents as a receipt', () => {
+  const site = createGovernedSite();
+  try {
+    // The converse of the reviewed-tool rule: a receipt block inside a pending
+    // tool would render unreviewed content as attested at the direct address.
+    fs.writeFileSync(
+      path.join(site, 'tools', 'pending.html'),
+      toolHtml(
+        '<!-- SURFACE-GOVERNANCE:START -->'
+          + '<div class="surface-governance-receipt" role="status">Reviewed by Synthetic Reviewer, MD</div>'
+          + '<!-- SURFACE-GOVERNANCE:END -->',
+      ),
+    );
+    const result = run(site);
+    const output = result.stdout + result.stderr;
+    assert.notEqual(result.status, 0, output);
+    assert.match(output, /pending tool's status block does not present as pending: pending\.html/);
+  } finally {
+    cleanup(site);
+  }
+});
+
 test('hard-fails when a reviewed tool\'s OWN governance block still carries pending-review copy', () => {
   const site = createGovernedSite();
   try {

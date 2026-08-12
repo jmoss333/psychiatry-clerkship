@@ -1642,6 +1642,18 @@ export function startFacultyConsole({
     ]);
   }
 
+  // The ledger's stored reason for a pending item, read-only. The reopen dialog
+  // owns writing reasons; this only surfaces what the learner-facing badge says.
+  function renderPendingReason(item) {
+    if (!item || item.type === 'question' || item.savedStatus === 'reviewed') return null;
+    const reason = typeof item.record?.reason === 'string' ? item.record.reason.trim() : '';
+    if (!reason) return null;
+    return el('p', { id: 'attestation-pending-reason', class: 'hint' }, [
+      'Pending because: ',
+      reason,
+    ]);
+  }
+
   function renderAttestationRail(item) {
     if (!item) {
       return el('aside', { id: 'attestation-rail', class: 'signoff-rail' }, [
@@ -1678,6 +1690,7 @@ export function startFacultyConsole({
         el('h2', { id: 'attestation-rail-title' }, ['Review → Resolve → Confirm']),
       ]),
       renderRiskContext(item),
+      renderPendingReason(item),
       renderActionFeedback(),
       el('section', {
         id: 'rail-step-review',
