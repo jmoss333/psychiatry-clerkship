@@ -12,13 +12,27 @@ artifacts derived from it for each learner site:
   - apply_tool_status()      -- inject a status block into shipped tool HTML
   - write_site_document()    -- deterministic, atomic JSON artifact writes
 
-Nothing here mutates the source ledger. A faculty-confirmed migration path
-for changing reviewed.json itself lives elsewhere (out of scope here).
+Also owns a non-mutating risk-classification review worksheet, generated
+from the CURRENT (pre-migration) ledger for a human faculty reviewer to
+confirm or override (see .superpowers/sdd/2026-07-26-risk-aware-publishing-
+warnings/task-6-brief.md, Steps 1-2):
+
+  - build_risk_proposal()    -- propose a risk{kind,level} for every ledger
+                                 slug, plus every nav slug with no record
+  - write_risk_proposal()    -- deterministic, atomic JSON artifact writes
+  - CLI: --write-proposal PATH (never writes reviewed.json)
+
+Nothing here mutates the source ledger. Applying a faculty-confirmed risk
+classification to reviewed.json itself is a separate, human-gated step
+(Steps 3-4 of the brief above) -- out of scope for this module's own code.
 """
 
+import argparse
+import ast
 import json
 import os
 import re
+import sys
 import tempfile
 from copy import deepcopy
 from datetime import date
@@ -445,7 +459,401 @@ def apply_tool_status(tools_directory: Path, document: dict) -> None:
 # Deterministic writes
 # ---------------------------------------------------------------------------
 
-def write_site_document(output_path: Path, document: dict) -> None:
-    """Write a deterministic (sorted-key) JSON artifact atomically."""
+def _write_json_document(output_path: Path, document: dict) -> None:
+    """Serialize any JSON-able dict deterministically (sorted keys) and
+    write it atomically. Shared by write_site_document() and
+    write_risk_proposal() so both artifact types get the identical
+    byte-for-byte guarantee from one implementation.
+    """
     rendered = json.dumps(document, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     _write_atomic_text(Path(output_path), rendered)
+
+
+def write_site_document(output_path: Path, document: dict) -> None:
+    """Write a deterministic (sorted-key) JSON artifact atomically."""
+    _write_json_document(output_path, document)
+
+
+# ---------------------------------------------------------------------------
+# Risk-classification review worksheet (--write-proposal)
+# ---------------------------------------------------------------------------
+# Non-mutating: proposes a risk{kind,level} for every CURRENT reviewed.json
+# slug so a faculty reviewer has something concrete to confirm or override
+# (.superpowers/sdd/2026-07-26-risk-aware-publishing-warnings/task-6-brief.md,
+# Steps 1-2). Deliberately reads reviewed.json with _load_json() rather than
+# load_validated_ledger(): the live ledger has no "risk" field on any record
+# yet, so the strict schema check that function runs would reject every
+# single row -- that gap is exactly the problem this worksheet exists to
+# help close, not a bug to route around.
+
+TOPIC_META_RELATIVE = Path("topic_meta.json")
+SITE_MANIFEST_RELATIVE = Path("13_Faculty_Resources/_automation/site_build/site_manifest.json")
+BUILD_DEPLOY_RELATIVE = Path("13_Faculty_Resources/_automation/site_build/build_deploy.py")
+RESIDENT_SECTION_RELATIVE = Path("13_Faculty_Resources/_automation/site_build/resident_section.py")
+COTW_REGISTRY_RELATIVE = Path("08_Cases_and_Simulation/case-of-the-week/cotw_registry.json")
+
+# Tool sources shipped outside site_manifest.json's shared "tools" list --
+# mirrors validate_tool_governance.py's SITE_EXTRAS. Duplicated here in
+# miniature rather than imported: that module already imports FROM this one
+# (SurfaceGovernanceError, load_validated_ledger), so importing back would
+# be a circular import. Keep the two lists in sync by hand if either changes.
+_ADDITIONAL_TOOL_SOURCES = {
+    "learning-path.html": "01_Six_Week_Curriculum/learning-path.html",
+    "orientation-video.html": "_prototypes/orientation-video/orientation-video.html",
+    "rp-agitation.html": "_prototypes/agitation-trainer/rp-agitation.html",
+    "rp-brief-psych.html": "_prototypes/brief-psych/rp-brief-psych.html",
+    "rp-canon-quiz.html": "_prototypes/canon-quiz/rp-canon-quiz.html",
+}
+
+# The conservative fallback the brief specifies for anything without an
+# explicit signal. "general" at "high" is schema-legal but semantically odd
+# per design ruling: "general" denotes non-clinical material while "high"
+# implies safety/legal/medication/local-policy consequence, and
+# warning_copy() falls back to raw reason copy for exactly this
+# combination. Every row that lands here is therefore always routed to
+# individual faculty attention below, never silently bulk-approvable.
+CONSERVATIVE_RISK = {"kind": "general", "level": "high"}
+GENERAL_HIGH_RULING_NOTE = (
+    "risk kind 'general' at level 'high' is schema-legal but semantically "
+    "odd (general denotes non-clinical material, high implies safety/"
+    "legal/medication/local-policy consequence, and the learner-facing "
+    "warning falls back to raw reason copy for this combination) -- needs "
+    "an explicit faculty ruling on the correct risk kind, not just a level"
+)
+
+
+def _load_text(path: Path, label: str) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise SurfaceGovernanceError(f"{label}: unreadable") from error
+
+
+def _tool_source_paths(root: Path) -> dict:
+    """Return every known built tool slug -> tracked source path.
+
+    Combines site_manifest.json's shared "tools" list with the small
+    per-site extras above -- together, every tool slug that can possibly
+    appear in reviewed.json or a site nav.
+    """
+    manifest = _load_json(root / SITE_MANIFEST_RELATIVE, "site_manifest.json")
+    sources: dict = {}
+    tools = manifest.get("tools") if isinstance(manifest, dict) else None
+    if isinstance(tools, list):
+        for entry in tools:
+            if isinstance(entry, list) and len(entry) == 3:
+                source_relative, built_slug, _title = entry
+                if isinstance(source_relative, str) and isinstance(built_slug, str):
+                    sources[built_slug] = root / source_relative
+    for slug, source_relative in _ADDITIONAL_TOOL_SOURCES.items():
+        sources.setdefault(slug, root / source_relative)
+    return sources
+
+
+def _local_policy_basis(tool_sources: dict, slug: str) -> str | None:
+    """A basis string if slug's built tool has a sibling *.pack.json
+    declaring one or more LOCAL_POLICY tokens (pack["localPolicies"]) --
+    the same field check-static-site.mjs already reads to report unfilled
+    tokens. Presence of the token TYPE is the signal, independent of
+    whether any individual token's value has been filled in: a
+    LOCAL_POLICY token marks institution-specific content regardless of
+    fill state (see rp-agitation.pack.json, whose 8 tokens already carry
+    teaching-safe placeholder values but are still institution-specific by
+    kind -- fill status is an attestation-readiness concern, not a risk-
+    classification one). Returns None when there is no signal.
+    """
+    source_path = tool_sources.get(slug)
+    if source_path is None or source_path.suffix != ".html":
+        return None
+    pack_path = source_path.with_name(source_path.name[: -len(".html")] + ".pack.json")
+    if not pack_path.exists():
+        return None
+    try:
+        pack = json.loads(pack_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    tokens = pack.get("localPolicies") if isinstance(pack, dict) else None
+    if not isinstance(tokens, list) or not tokens:
+        return None
+    return "tool pack declares %d LOCAL_POLICY token(s) (%s)" % (len(tokens), pack_path.name)
+
+
+def _topic_meta_high_basis(topic_meta: dict, slug: str) -> str | None:
+    """A basis string if topic_meta.json marks slug safetyLevel=high,
+    else None."""
+    entry = topic_meta.get(slug) if isinstance(topic_meta, dict) else None
+    if isinstance(entry, dict) and entry.get("safetyLevel") == "high":
+        return "topic_meta.json safetyLevel=high"
+    return None
+
+
+def _propose_risk(
+    tool_sources: dict, topic_meta: dict, slug: str
+) -> tuple[dict, str, bool, "str | None"]:
+    """Return (risk, basis, faculty_confirmation_required, note) for slug.
+
+    Explicit signals are "mechanically obvious" (design doc, Risk
+    semantics): a whole GROUP of rows sharing one is safe for faculty to
+    bulk-approve, so those rows do not individually force
+    facultyConfirmationRequired. The conservative fallback has no
+    mechanical basis, so it always does -- every such row needs a human's
+    individual attention (Step 3 of the brief), never a rubber stamp.
+    """
+    basis = _local_policy_basis(tool_sources, slug)
+    if basis is not None:
+        risk = {"kind": "local-policy", "level": "high"}
+        confirmation_required = False
+    else:
+        basis = _topic_meta_high_basis(topic_meta, slug)
+        if basis is not None:
+            risk = {"kind": "clinical", "level": "high"}
+            confirmation_required = False
+        else:
+            risk = dict(CONSERVATIVE_RISK)
+            basis = (
+                "no explicit signal found (no tool-pack LOCAL_POLICY token, "
+                "no topic_meta.json safetyLevel=high) -- conservative default"
+            )
+            confirmation_required = True
+
+    note = None
+    if risk == CONSERVATIVE_RISK:
+        # Defensive, not just reachable from the conservative branch above:
+        # ANY proposal landing on this exact combination -- present or
+        # future signal source -- gets forced to individual attention with
+        # an explanatory note, per the design ruling in the docstring above.
+        confirmation_required = True
+        note = GENERAL_HIGH_RULING_NOTE
+    return risk, basis, confirmation_required, note
+
+
+def _extract_literal_nav_slugs(source_text: str, label: str) -> dict:
+    """Statically extract {slug: nav-kind} pairs from a nav-building
+    module's source, WITHOUT executing it.
+
+    build_deploy.py and resident_section.py both have heavy import-time
+    side effects (file copies, directory deletion, hard requires on OE
+    audio/media assets) and, more fundamentally, both end by calling
+    load_validated_ledger() against reviewed.json -- exactly what does not
+    validate yet against the live, unmigrated ledger. That gap is the
+    whole reason this worksheet exists, so executing either module here
+    would always raise before nav was even built.
+
+    Recognizes the two literal shapes both files actually use for nav
+    items: {"f": "<slug>", "k": "<kind>", ...} dict literals (resident_
+    section.py's inline nav, and the "_HIDDEN_INHERITED" list it folds in)
+    and _md("title", "<slug>", ...) / _tool("<slug>", ...) calls with
+    literal string arguments (build_deploy.py's nav). Items built from a
+    computed slug -- the Case of the Week comprehension's
+    _cotw_slug(w, level) call in both files, and build_deploy.py's
+    week1..week6 comprehension -- are not literal, so they are
+    deliberately invisible here and are supplied separately by
+    _cotw_nav_slugs() and _MS3_WEEK_SLUGS below.
+    """
+    try:
+        tree = ast.parse(source_text)
+    except (SyntaxError, ValueError) as error:
+        raise SurfaceGovernanceError(f"{label}: unparseable") from error
+    found: dict = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Dict):
+            keys = {
+                key.value: value
+                for key, value in zip(node.keys, node.values)
+                if isinstance(key, ast.Constant) and isinstance(key.value, str)
+            }
+            slug_node, kind_node = keys.get("f"), keys.get("k")
+            if (
+                isinstance(slug_node, ast.Constant)
+                and isinstance(slug_node.value, str)
+                and isinstance(kind_node, ast.Constant)
+                and isinstance(kind_node.value, str)
+            ):
+                found[slug_node.value] = kind_node.value
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            if node.func.id == "_md" and len(node.args) >= 2:
+                slug_arg = node.args[1]
+                if isinstance(slug_arg, ast.Constant) and isinstance(slug_arg.value, str):
+                    found[slug_arg.value] = "md"
+            elif node.func.id == "_tool" and len(node.args) >= 1:
+                slug_arg = node.args[0]
+                if isinstance(slug_arg, ast.Constant) and isinstance(slug_arg.value, str):
+                    found[slug_arg.value] = "tool"
+    return found
+
+
+def _cotw_nav_slugs(root: Path) -> dict:
+    """Return {"ms3": {slug: "md"}, "resident": {slug: "md"}} for every
+    Case of the Week page, using the identical formula build_deploy.py's
+    and resident_section.py's own _cotw_slug() helpers use:
+    f"cotw_{date-without-dashes}_{topic}_{level}.md".
+    """
+    registry = _load_json(root / COTW_REGISTRY_RELATIVE, "cotw_registry.json")
+    weeks = registry.get("weeks") if isinstance(registry, dict) else None
+    slugs = {"ms3": {}, "resident": {}}
+    if not isinstance(weeks, list):
+        return slugs
+    for week in weeks:
+        if not isinstance(week, dict):
+            continue
+        date_value, topic = week.get("date"), week.get("topic")
+        if not isinstance(date_value, str) or not isinstance(topic, str):
+            continue
+        stem = "cotw_%s_%s" % (date_value.replace("-", ""), topic)
+        slugs["ms3"]["%s_ms3.md" % stem] = "md"
+        slugs["resident"]["%s_res.md" % stem] = "md"
+    return slugs
+
+
+# build_deploy.py's Welcome section prepends six hidden week pages built
+# from "week%d.md" % i inside a list comprehension -- a computed slug, so
+# _extract_literal_nav_slugs() cannot see it (see that function's
+# docstring). resident_section.py does not need this: its own
+# _HIDDEN_INHERITED list spells week1.md..week6.md out as literal dicts,
+# which the extractor already recognizes on its own.
+_MS3_WEEK_SLUGS = {"week%d.md" % i: "md" for i in range(1, 7)}
+
+
+def _nav_slugs_by_site(root: Path) -> dict:
+    """Return {"ms3": {slug: kind}, "resident": {slug: kind}} for every
+    slug the real nav-building source ships, using only static analysis
+    (see _extract_literal_nav_slugs()'s docstring for why).
+    """
+    build_deploy_source = _load_text(root / BUILD_DEPLOY_RELATIVE, "build_deploy.py")
+    resident_source = _load_text(root / RESIDENT_SECTION_RELATIVE, "resident_section.py")
+    cotw = _cotw_nav_slugs(root)
+    ms3 = {
+        **_extract_literal_nav_slugs(build_deploy_source, "build_deploy.py"),
+        **cotw["ms3"],
+        **_MS3_WEEK_SLUGS,
+    }
+    resident = {
+        **_extract_literal_nav_slugs(resident_source, "resident_section.py"),
+        **cotw["resident"],
+    }
+    return {"ms3": ms3, "resident": resident}
+
+
+def build_risk_proposal(root: Path) -> dict:
+    """Build the non-mutating risk-classification review worksheet.
+
+    Covers every slug currently in reviewed.json (the required "proposals"
+    list) plus every nav slug shipped by either site with no ledger record
+    at all (the "navMissing" list -- add-with-pending candidates per the
+    brief's Step 4 intent). Never writes reviewed.json. Deterministic: rows
+    sorted by slug, no wall-clock timestamp, so an unchanged repository
+    always reproduces identical bytes.
+    """
+    root = Path(root)
+    ledger = _load_json(root / REVIEWED_RELATIVE, "reviewed.json")
+    if not isinstance(ledger, dict):
+        raise SurfaceGovernanceError("reviewed.json: must be an object")
+    topic_meta = _load_json(root / TOPIC_META_RELATIVE, "topic_meta.json")
+    tool_sources = _tool_source_paths(root)
+
+    counts: dict = {}
+    for entry in ledger.values():
+        status = entry.get("status") if isinstance(entry, dict) else None
+        counts[status] = counts.get(status, 0) + 1
+
+    proposals = []
+    for slug in sorted(ledger):
+        entry = ledger[slug]
+        status = entry.get("status") if isinstance(entry, dict) else None
+        risk, basis, confirmation_required, note = _propose_risk(tool_sources, topic_meta, slug)
+        row = {
+            "slug": slug,
+            "status": status,
+            "risk": risk,
+            "basis": basis,
+            "facultyConfirmationRequired": confirmation_required,
+        }
+        if note:
+            row["note"] = note
+        proposals.append(row)
+
+    nav_slugs = _nav_slugs_by_site(root)
+    all_nav_slugs = set(nav_slugs["ms3"]) | set(nav_slugs["resident"])
+    nav_missing = []
+    for slug in sorted(all_nav_slugs - set(ledger)):
+        sites = [site for site in ("ms3", "resident") if slug in nav_slugs[site]]
+        kind = _surface_kind(nav_slugs[sites[0]][slug])
+        risk, basis, _confirmation_required, note = _propose_risk(tool_sources, topic_meta, slug)
+        row = {
+            "slug": slug,
+            "status": "missing",
+            "sites": sites,
+            "kind": kind,
+            "proposedStatus": "pending",
+            "risk": risk,
+            "basis": basis
+            + " -- shipped in %s nav (%s) with no reviewed.json entry" % (", ".join(sites), kind),
+            # Always individual attention, regardless of the row's own
+            # signal: a brand-new surface with zero governance history
+            # always needs a human to create its first record.
+            "facultyConfirmationRequired": True,
+        }
+        if note:
+            row["note"] = note
+        nav_missing.append(row)
+
+    return {
+        "schemaVersion": 1,
+        "source": REVIEWED_RELATIVE.as_posix(),
+        "measuredInventory": {"entries": len(ledger), "statuses": counts},
+        "proposals": proposals,
+        "navMissing": nav_missing,
+    }
+
+
+def write_risk_proposal(output_path: Path, proposal: dict) -> None:
+    """Write the risk-classification review worksheet deterministically.
+
+    Same atomic/sorted-key guarantee as write_site_document() -- a
+    distinct name because a risk proposal is not a per-site governance
+    document; no learner site build ever consumes it.
+    """
+    _write_json_document(output_path, proposal)
+
+
+def _parse_proposal_args(argv=None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Generate the risk-classification review worksheet proposing a "
+            "risk{kind,level} for every 13_Faculty_Resources/reviewed.json "
+            "record. Never writes reviewed.json."
+        )
+    )
+    parser.add_argument(
+        "--write-proposal",
+        required=True,
+        type=Path,
+        metavar="PATH",
+        help="write the review worksheet (JSON) to PATH",
+    )
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path(__file__).resolve().parents[2],
+        help="repository root (default: derived from this file's location)",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv=None) -> int:
+    args = _parse_proposal_args(argv)
+    try:
+        proposal = build_risk_proposal(args.root)
+        write_risk_proposal(args.write_proposal, proposal)
+    except SurfaceGovernanceError as error:
+        print(f"surface governance INVALID — {error}")
+        return 1
+    print(
+        "risk proposal written to %s — %d ledger row(s), %d nav-missing row(s)"
+        % (args.write_proposal, len(proposal["proposals"]), len(proposal["navMissing"]))
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

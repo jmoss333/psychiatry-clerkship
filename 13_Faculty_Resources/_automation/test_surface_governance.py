@@ -10,6 +10,7 @@ and task-3-brief.md (the BuildContractTests class below).
 
 import json
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -24,6 +25,7 @@ except ModuleNotFoundError:
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_SOURCE = ROOT / "13_Faculty_Resources" / "reviewed.schema.json"
+SURFACE_GOVERNANCE_MODULE = Path(__file__).with_name("surface_governance.py")
 
 # site_build/ is a sibling directory (not a package), so it needs its own
 # sys.path entry — same convention test_validate_claim_anchors.py already
@@ -62,6 +64,79 @@ def write_ledger(root: Path, ledger: dict) -> None:
     faculty.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(SCHEMA_SOURCE, faculty / "reviewed.schema.json")
     (faculty / "reviewed.json").write_text(json.dumps(ledger), encoding="utf-8")
+
+
+def legacy_reviewed_entry(at: str = "2026-07-01") -> dict:
+    """A record in the CURRENT production reviewed.json shape -- no "risk"
+    field at all. Distinct from reviewed_entry() above (which is already
+    migrated to the Task 1 schema) because build_risk_proposal() reads the
+    ledger exactly as it stands today, pre-migration."""
+    return {"status": "reviewed", "at": at, "by": "Joshua Moss, MD"}
+
+
+def legacy_pending_entry(at: str = "2026-07-01") -> dict:
+    return {"status": "pending", "at": at, "by": "Joshua Moss, MD"}
+
+
+# Minimal-but-parseable stand-ins for the real nav-building modules, each
+# exercising ONE of the two literal shapes _extract_literal_nav_slugs()
+# recognizes -- see that function's docstring. Neither needs to be
+# runnable (surface_governance never executes them), only valid Python
+# containing the exact literal patterns.
+DEFAULT_MS3_NAV_SOURCE = (
+    "def _md(t, f, hidden=False):\n"
+    "    return {'t': t, 'f': f, 'k': 'md'}\n"
+    "def _tool(f, t=None, hidden=None):\n"
+    "    return {'t': t, 'f': f, 'k': 'tool'}\n"
+    "nav = [{'section': 'S', 'items': ["
+    "_md('Welcome', 'welcome.md'), _tool('mse.html', 'MSE')]}]\n"
+)
+DEFAULT_RESIDENT_NAV_SOURCE = (
+    "nav = [{'section': 'S', 'items': ["
+    "{'t': 'Welcome', 'f': 'welcome.md', 'k': 'md'}, "
+    "{'t': 'MSE', 'f': 'mse.html', 'k': 'tool'}]}]\n"
+)
+DEFAULT_COTW_REGISTRY: dict = {"weeks": []}
+
+
+def write_proposal_root(
+    root: Path,
+    ledger: dict,
+    *,
+    topic_meta: dict | None = None,
+    tool_manifest_entries: list | None = None,
+    ms3_nav_source: str = DEFAULT_MS3_NAV_SOURCE,
+    resident_nav_source: str = DEFAULT_RESIDENT_NAV_SOURCE,
+    cotw_registry: dict | None = None,
+) -> None:
+    """Write a full synthetic repository root for build_risk_proposal()/
+    the --write-proposal CLI: reviewed.json (legacy shape, no schema
+    needed since this path never validates against it), topic_meta.json,
+    site_manifest.json, stand-in nav-building sources, and a Case of the
+    Week registry. Every parameter defaults to a minimal-but-valid stand-in
+    so a test only has to override the one piece it is exercising.
+    """
+    faculty = root / "13_Faculty_Resources"
+    faculty.mkdir(parents=True, exist_ok=True)
+    (faculty / "reviewed.json").write_text(json.dumps(ledger), encoding="utf-8")
+    (root / "topic_meta.json").write_text(
+        json.dumps(topic_meta if topic_meta is not None else {}), encoding="utf-8"
+    )
+    site_build = faculty / "_automation" / "site_build"
+    site_build.mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "tools": tool_manifest_entries if tool_manifest_entries is not None else [],
+        "md": [],
+    }
+    (site_build / "site_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (site_build / "build_deploy.py").write_text(ms3_nav_source, encoding="utf-8")
+    (site_build / "resident_section.py").write_text(resident_nav_source, encoding="utf-8")
+    cotw_dir = root / "08_Cases_and_Simulation" / "case-of-the-week"
+    cotw_dir.mkdir(parents=True, exist_ok=True)
+    (cotw_dir / "cotw_registry.json").write_text(
+        json.dumps(cotw_registry if cotw_registry is not None else DEFAULT_COTW_REGISTRY),
+        encoding="utf-8",
+    )
 
 
 class LedgerValidationTests(unittest.TestCase):
@@ -963,6 +1038,344 @@ class BuildContractTests(unittest.TestCase):
 
         # The final block reflects only the resident document.
         self.assertIn("Reviewed by Resident Synthetic Reviewer, MD on 2026-07-28", after_resident)
+
+
+class RiskProposalTests(unittest.TestCase):
+    """--write-proposal (task-6-brief.md, Steps 1-2): a non-mutating CLI
+    mode that proposes a risk{kind,level} for every CURRENT (pre-migration)
+    reviewed.json record. Every fixture here is synthetic, written fresh
+    per test via write_proposal_root() -- consistent with this file's own
+    module docstring, this class also never reads or writes the repo's
+    real reviewed.json.
+    """
+
+    def setUp(self) -> None:
+        self.assertTrue(
+            hasattr(governance, "build_risk_proposal"),
+            "surface_governance.py must build the risk-proposal worksheet",
+        )
+        self.assertTrue(
+            hasattr(governance, "write_risk_proposal"),
+            "surface_governance.py must write the risk-proposal worksheet",
+        )
+
+    # ---- byte-preservation fixture (the brief's explicit Step 2 test) ----
+
+    def test_write_proposal_never_mutates_reviewed_json_bytes(self) -> None:
+        ledger = {
+            "welcome.md": legacy_reviewed_entry(),
+            "mse.html": legacy_pending_entry(),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(root, ledger)
+            reviewed_path = root / "13_Faculty_Resources" / "reviewed.json"
+            before = reviewed_path.read_bytes()
+
+            # Exercise both the pure builder AND the real CLI entry point --
+            # a mutation introduced in either path must be caught here.
+            governance.build_risk_proposal(root)
+            output_path = root / "proposal.json"
+            exit_code = governance.main(
+                ["--root", str(root), "--write-proposal", str(output_path)]
+            )
+
+            after = reviewed_path.read_bytes()
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(before, after, "reviewed.json bytes must be unchanged")
+
+    def test_cli_subprocess_never_mutates_reviewed_json_bytes(self) -> None:
+        # The in-process test above proves the Python-level contract; this
+        # proves the literal command shape the brief documents actually
+        # behaves the same way as a real, separate process.
+        ledger = {"welcome.md": legacy_reviewed_entry()}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(root, ledger)
+            reviewed_path = root / "13_Faculty_Resources" / "reviewed.json"
+            before = reviewed_path.read_bytes()
+            output_path = root / "proposal.json"
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(SURFACE_GOVERNANCE_MODULE),
+                    "--root",
+                    str(root),
+                    "--write-proposal",
+                    str(output_path),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            after = reviewed_path.read_bytes()
+            output_exists = output_path.exists()
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(before, after)
+        self.assertTrue(output_exists)
+
+    # ---- explicit-signal classification ----
+
+    def test_local_policy_pack_signal_proposes_local_policy_high_without_confirmation(
+        self,
+    ) -> None:
+        ledger = {"rp-synthetic.html": legacy_pending_entry()}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(
+                root,
+                ledger,
+                tool_manifest_entries=[
+                    ["_prototypes/synthetic/rp-synthetic.html", "rp-synthetic.html", "Synthetic"]
+                ],
+            )
+            tool_dir = root / "_prototypes" / "synthetic"
+            tool_dir.mkdir(parents=True)
+            (tool_dir / "rp-synthetic.html").write_text("<html></html>", encoding="utf-8")
+            (tool_dir / "rp-synthetic.pack.json").write_text(
+                json.dumps(
+                    {
+                        "localPolicies": [
+                            {"type": "LOCAL_POLICY", "id": "x.y", "value": "Confirm locally"}
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            proposal = governance.build_risk_proposal(root)
+
+        row = next(r for r in proposal["proposals"] if r["slug"] == "rp-synthetic.html")
+        self.assertEqual(row["risk"], {"kind": "local-policy", "level": "high"})
+        self.assertFalse(row["facultyConfirmationRequired"])
+        self.assertNotIn("note", row)
+        self.assertIn("LOCAL_POLICY", row["basis"])
+
+    def test_tool_with_no_local_policies_key_is_not_flagged(self) -> None:
+        # A pack.json that simply has no "localPolicies" key at all (like
+        # the real sp-interview.pack.json) must not be mistaken for a
+        # signal -- only a non-empty declared list counts.
+        ledger = {"rp-synthetic.html": legacy_pending_entry()}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(
+                root,
+                ledger,
+                tool_manifest_entries=[
+                    ["_prototypes/synthetic/rp-synthetic.html", "rp-synthetic.html", "Synthetic"]
+                ],
+            )
+            tool_dir = root / "_prototypes" / "synthetic"
+            tool_dir.mkdir(parents=True)
+            (tool_dir / "rp-synthetic.html").write_text("<html></html>", encoding="utf-8")
+            (tool_dir / "rp-synthetic.pack.json").write_text(
+                json.dumps({"schemaVersion": 1}), encoding="utf-8"
+            )
+
+            proposal = governance.build_risk_proposal(root)
+
+        row = next(r for r in proposal["proposals"] if r["slug"] == "rp-synthetic.html")
+        self.assertEqual(row["risk"], governance.CONSERVATIVE_RISK)
+        self.assertTrue(row["facultyConfirmationRequired"])
+
+    def test_topic_meta_safety_level_high_proposes_clinical_high_without_confirmation(
+        self,
+    ) -> None:
+        ledger = {"t_synthetic.md": legacy_reviewed_entry()}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(
+                root, ledger, topic_meta={"t_synthetic.md": {"safetyLevel": "high"}}
+            )
+
+            proposal = governance.build_risk_proposal(root)
+
+        row = next(r for r in proposal["proposals"] if r["slug"] == "t_synthetic.md")
+        self.assertEqual(row["risk"], {"kind": "clinical", "level": "high"})
+        self.assertFalse(row["facultyConfirmationRequired"])
+        self.assertNotIn("note", row)
+        self.assertIn("safetyLevel", row["basis"])
+
+    def test_topic_meta_safety_level_moderate_is_not_an_explicit_signal(self) -> None:
+        ledger = {"t_synthetic.md": legacy_reviewed_entry()}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(
+                root, ledger, topic_meta={"t_synthetic.md": {"safetyLevel": "moderate"}}
+            )
+
+            proposal = governance.build_risk_proposal(root)
+
+        row = next(r for r in proposal["proposals"] if r["slug"] == "t_synthetic.md")
+        self.assertEqual(row["risk"], governance.CONSERVATIVE_RISK)
+        self.assertTrue(row["facultyConfirmationRequired"])
+
+    # ---- conservative fallback + the general/high design ruling ----
+
+    def test_unclassified_slug_proposes_conservative_general_high_and_forces_confirmation(
+        self,
+    ) -> None:
+        ledger = {"unclassified.md": legacy_reviewed_entry()}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(root, ledger)
+
+            proposal = governance.build_risk_proposal(root)
+
+        row = next(r for r in proposal["proposals"] if r["slug"] == "unclassified.md")
+        self.assertEqual(row["risk"], {"kind": "general", "level": "high"})
+        self.assertTrue(row["facultyConfirmationRequired"])
+        self.assertIn("note", row)
+        self.assertIn("general", row["note"])
+        self.assertIn("high", row["note"])
+
+    # ---- ledger coverage + determinism ----
+
+    def test_write_proposal_covers_every_ledger_slug_exactly_once_and_sorted(self) -> None:
+        ledger = {
+            "z-page.md": legacy_reviewed_entry(),
+            "a-tool.html": legacy_pending_entry(),
+            "m-page.md": legacy_reviewed_entry(),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(root, ledger)
+
+            proposal = governance.build_risk_proposal(root)
+
+        slugs = [row["slug"] for row in proposal["proposals"]]
+        self.assertEqual(slugs, sorted(slugs))
+        self.assertEqual(set(slugs), set(ledger))
+        self.assertEqual(len(slugs), len(ledger))
+
+    def test_proposal_header_records_measured_inventory(self) -> None:
+        ledger = {
+            "a.md": legacy_reviewed_entry(),
+            "b.md": legacy_reviewed_entry(),
+            "c.html": legacy_pending_entry(),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(root, ledger)
+
+            proposal = governance.build_risk_proposal(root)
+
+        self.assertEqual(proposal["schemaVersion"], 1)
+        self.assertEqual(
+            proposal["measuredInventory"],
+            {"entries": 3, "statuses": {"reviewed": 2, "pending": 1}},
+        )
+
+    def test_cli_write_proposal_output_is_deterministic_across_reruns(self) -> None:
+        ledger = {"z.md": legacy_reviewed_entry(), "a.html": legacy_pending_entry()}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(root, ledger)
+            output = root / "proposal.json"
+
+            governance.main(["--root", str(root), "--write-proposal", str(output)])
+            first = output.read_bytes()
+            governance.main(["--root", str(root), "--write-proposal", str(output)])
+            second = output.read_bytes()
+
+        self.assertEqual(first, second)
+        self.assertTrue(first.endswith(b"\n"))
+        parsed = json.loads(first)
+        self.assertEqual(list(parsed), sorted(parsed))
+
+    # ---- nav-missing flagging (add-with-pending candidates) ----
+
+    def test_nav_slugs_missing_from_ledger_are_flagged_as_add_with_pending(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(root, {})  # empty ledger: every nav slug is missing
+
+            proposal = governance.build_risk_proposal(root)
+
+        missing_by_slug = {row["slug"]: row for row in proposal["navMissing"]}
+        # The default ms3 fixture ships welcome.md + mse.html; ms3's own
+        # always-on week1..week6.md special case (see _MS3_WEEK_SLUGS) adds
+        # six more regardless of nav source content -- both are legitimate
+        # "missing from an empty ledger" rows, not test noise.
+        expected_slugs = {"welcome.md", "mse.html"} | {"week%d.md" % i for i in range(1, 7)}
+        self.assertEqual(set(missing_by_slug), expected_slugs)
+        for row in missing_by_slug.values():
+            self.assertEqual(row["status"], "missing")
+            self.assertEqual(row["proposedStatus"], "pending")
+            self.assertTrue(row["facultyConfirmationRequired"])
+        self.assertEqual(sorted(missing_by_slug["welcome.md"]["sites"]), ["ms3", "resident"])
+        self.assertEqual(sorted(missing_by_slug["mse.html"]["sites"]), ["ms3", "resident"])
+        self.assertEqual(missing_by_slug["welcome.md"]["kind"], "page")
+        self.assertEqual(missing_by_slug["mse.html"]["kind"], "tool")
+        self.assertEqual(missing_by_slug["week1.md"]["sites"], ["ms3"])
+
+    def test_nav_slug_present_in_ledger_is_not_flagged_as_missing(self) -> None:
+        ledger = {
+            "welcome.md": legacy_reviewed_entry(),
+            "mse.html": legacy_pending_entry(),
+            **{"week%d.md" % i: legacy_reviewed_entry() for i in range(1, 7)},
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(root, ledger)
+
+            proposal = governance.build_risk_proposal(root)
+
+        self.assertEqual(proposal["navMissing"], [])
+
+    def test_cotw_and_call_style_nav_items_are_recognized_by_the_static_extractor(
+        self,
+    ) -> None:
+        cotw_registry = {"weeks": [{"date": "2026-01-05", "topic": "demo", "label": "Demo"}]}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(root, {}, cotw_registry=cotw_registry)
+
+            proposal = governance.build_risk_proposal(root)
+
+        missing_slugs = {row["slug"] for row in proposal["navMissing"]}
+        # The Case of the Week comprehension's computed slug (not a literal
+        # the AST walk can see) is supplied by _cotw_nav_slugs() instead.
+        self.assertIn("cotw_20260105_demo_ms3.md", missing_slugs)
+        self.assertIn("cotw_20260105_demo_res.md", missing_slugs)
+        # ms3's week1..week6 special case (build_deploy.py's OWN computed
+        # slug, invisible to the static extractor for the same reason).
+        self.assertIn("week1.md", missing_slugs)
+        week_row = next(r for r in proposal["navMissing"] if r["slug"] == "week1.md")
+        self.assertEqual(week_row["sites"], ["ms3"])
+
+    def test_write_proposal_cli_requires_the_write_proposal_flag(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(root, {"welcome.md": legacy_reviewed_entry()})
+
+            completed = subprocess.run(
+                [sys.executable, str(SURFACE_GOVERNANCE_MODULE), "--root", str(root)],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertNotEqual(completed.returncode, 0)
+
+    def test_unparseable_nav_source_fails_closed_with_a_clean_error(self) -> None:
+        # A syntax error in build_deploy.py/resident_section.py must raise
+        # SurfaceGovernanceError (caught and cleanly reported by main()),
+        # never an uncaught SyntaxError traceback.
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(
+                root, {"welcome.md": legacy_reviewed_entry()}, ms3_nav_source="nav = [\n"
+            )
+
+            with self.assertRaisesRegex(
+                governance.SurfaceGovernanceError, r"^build_deploy[.]py: unparseable$"
+            ):
+                governance.build_risk_proposal(root)
 
 
 if __name__ == "__main__":
