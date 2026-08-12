@@ -1221,6 +1221,41 @@ export function startFacultyConsole({
     refreshPreviewChromeAndRail('review-saved-revision');
   }
 
+  // A clean ready-preview draft — Draft view, no local edits, the item's revision still
+  // matching the saved question — lets one receipt stand in for both of today's separate
+  // acknowledgements. Anything else (wrong view, dirty fields, a moved revision, a failed
+  // preview, or a non-question item) keeps the two-checkbox path unchanged.
+  function compoundReviewEligible(item) {
+    if (item?.type !== 'question') return false;
+    if ((state.preview?.status || 'frame_failure') !== 'ready') return false;
+    const question = state.editor || item.record;
+    const saved = findQuestion(item.identity);
+    return state.viewMode === 'draft'
+      && state.dirtyFields.length === 0
+      && saved?.revision === question?.revision
+      && item.revision === saved?.revision;
+  }
+
+  // Sets both state.reviewedRevisions and state.reviewChecks.liveReviewed atomically:
+  // confirmDraftReview records (or revokes) the revision-anchored receipt, then
+  // liveReviewed is derived from whether that receipt actually stuck — so a receipt
+  // that fails to record (e.g. the revision moved underneath it) never leaves the
+  // live check on by itself. reviewedRevisionMatches expects a review-item shape
+  // ({type: 'question', revision}) — findQuestion(id) returns the raw qbank record,
+  // whose `type` is the question FORMAT ('sba'/'relational'/'two-tier'), never the
+  // literal string 'question', so it can never satisfy that check. A minimal shim
+  // carrying just the two fields the matcher reads is what confirmDraftReview itself
+  // just used to decide whether to record the receipt.
+  function confirmCompoundReview(question, checked) {
+    confirmDraftReview(question, checked);
+    const receipted = reviewedRevisionMatches(
+      { type: 'question', revision: question?.revision },
+      state.reviewedRevisions.get(question?.id),
+    );
+    state.reviewChecks.liveReviewed = checked === true && receipted;
+    refreshPreviewChromeAndRail('review-compound');
+  }
+
   function reviewPathComplete(item) {
     const status = state.preview?.status;
     const draftReviewed = item.type !== 'question'
@@ -1238,6 +1273,24 @@ export function startFacultyConsole({
   }
 
   function renderDraftReviewControl(item) {
+    if (compoundReviewEligible(item)) {
+      const question = state.editor || item.record;
+      const checked = reviewedRevisionMatches(item, state.reviewedRevisions.get(item.identity))
+        && state.reviewChecks.liveReviewed === true;
+      return el('div', { class: 'draft-review-control' }, [
+        el('label', { class: 'checkbox-line', for: 'review-compound' }, [
+          el('input', {
+            id: 'review-compound',
+            type: 'checkbox',
+            checked,
+            disabled: state.pending,
+            'aria-keyshortcuts': 'r',
+            onChange: event => confirmCompoundReview(question, event.target.checked),
+          }),
+          'I reviewed this draft at its saved revision and its live rendering',
+        ]),
+      ]);
+    }
     const question = state.editor || item.record;
     const saved = findQuestion(item.identity);
     const canReview = state.viewMode === 'draft'
@@ -1268,6 +1321,7 @@ export function startFacultyConsole({
   }
 
   function renderDeploymentReviewPath(item) {
+    if (compoundReviewEligible(item)) return null;
     const status = state.preview?.status || 'frame_failure';
     if (status === 'loading') {
       return el('p', { class: 'muted' }, [

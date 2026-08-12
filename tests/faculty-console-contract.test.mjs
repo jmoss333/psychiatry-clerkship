@@ -487,8 +487,45 @@ async function completeCurrentContentReview(harness) {
 
 async function confirmCurrentSavedDraft(document) {
   await document.getElementById('view-draft').dispatch('click');
-  await setChecked(document, 'review-saved-revision');
+  // A clean ready-preview draft now renders the compound control (#review-compound)
+  // instead of the standalone #review-saved-revision box; drive whichever is present
+  // so every caller of this shared helper keeps working across both render paths.
+  const compound = document.getElementById('review-compound');
+  await setChecked(document, compound ? 'review-compound' : 'review-saved-revision');
   await document.getElementById('view-live').dispatch('click');
+}
+
+// Compound-eligible fixture: preview Ready, Draft view active, zero dirty fields, and
+// the item's revision matching the saved question — the exact gate compoundReviewEligible
+// checks. `dirty: true` walks through Edit to dirty a field and back to Draft, which is
+// the one thing that must knock a question back onto the separate-boxes path.
+async function startHarnessWithReadyPreviewDraft({ dirty = false } = {}) {
+  const harness = await startHarness({
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { controller, document, window } = harness;
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  await document.getElementById('view-draft').dispatch('click');
+  if (dirty) {
+    await document.getElementById('view-edit').dispatch('click');
+    await setValue(document, 'question-stem', 'A dirtied stem must disqualify the compound control.');
+    await document.getElementById('view-draft').dispatch('click');
+  }
+  return harness;
+}
+
+// Degraded-preview fixture: status lands in PREVIEW_FAILURES, so compoundReviewEligible
+// is false regardless of view mode or dirty state — the separate acknowledgements must
+// keep rendering.
+async function startHarnessWithFailedPreviewDraft() {
+  const harness = await startHarness({
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { controller, document, window } = harness;
+  await reportPreviewStatus(window, controller, 'error');
+  await document.getElementById('view-draft').dispatch('click');
+  return harness;
 }
 
 test('exports the injectable faculty-console browser entry', () => {
@@ -1077,9 +1114,12 @@ test('the exact saved-revision receipt is explicit, Draft-only, and revoked by e
     'Live review must remain separate from exact saved-revision review.');
   assert.equal(document.getElementById('review-saved-revision').disabled, true);
 
+  // Clean, ready-preview, Draft view, zero dirty fields, revision matching the saved
+  // question: this is exactly compoundReviewEligible's gate, so the receipt is now
+  // recorded through #review-compound rather than the standalone box.
   await document.getElementById('view-draft').dispatch('click');
-  assert.equal(document.getElementById('review-saved-revision').disabled, false);
-  await setChecked(document, 'review-saved-revision');
+  assert.equal(document.getElementById('review-compound').disabled, false);
+  await setChecked(document, 'review-compound');
   assert.equal(controller.state.reviewedRevisions.get(id), revision);
   assert.match(controller.state.reviewedRevisions.get(id), /^[0-9a-f]{64}$/);
 
@@ -1094,10 +1134,12 @@ test('the exact saved-revision receipt is explicit, Draft-only, and revoked by e
     /An unsaved local stem must revoke the receipt/);
   assert.equal(document.getElementById('review-saved-revision').disabled, true);
 
+  // Revert restores a clean editor without leaving Draft view, so the item is
+  // compound-eligible again the same way it was before the edit dirtied it.
   await document.getElementById('revert-question').dispatch('click');
   assert.equal(controller.state.reviewedRevisions.has(id), false);
-  assert.equal(document.getElementById('review-saved-revision').disabled, false);
-  await setChecked(document, 'review-saved-revision');
+  assert.equal(document.getElementById('review-compound').disabled, false);
+  await setChecked(document, 'review-compound');
   assert.equal(controller.state.reviewedRevisions.get(id), revision);
   // Batch design (2026-08-04, section A): navigating to ANOTHER item no longer revokes
   // the receipt — it is anchored to the exact saved revision and self-invalidates the
@@ -3916,4 +3958,47 @@ test('one click is withheld when the learner surface never rendered', async () =
   assert.equal(button.textContent, 'Attest this page', 'no one-click label');
   assert.equal(button.getAttribute('aria-keyshortcuts'), null, 'no keyboard shortcut either');
   assert.equal(button.disabled, true);
+});
+
+test('a clean ready-preview draft renders ONE compound receipt control', async () => {
+  const harness = await startHarnessWithReadyPreviewDraft();
+  const { document } = harness;
+  const compound = document.getElementById('review-compound');
+  assert.ok(compound, 'compound checkbox renders');
+  assert.equal(compound.getAttribute('aria-keyshortcuts'), 'r');
+  assert.match(
+    compound.parentNode.textContent,
+    /I reviewed this draft at its saved revision and its live rendering/,
+  );
+  assert.equal(document.getElementById('review-saved-revision'), null, 'separate draft box gone');
+  assert.equal(document.getElementById('review-live-preview'), null, 'separate live box gone');
+});
+
+test('checking the compound receipt records both state slices atomically; unchecking clears both', async () => {
+  const harness = await startHarnessWithReadyPreviewDraft();
+  const { controller, document } = harness;
+  await setChecked(document, 'review-compound');
+  const item = controller.state.reviewItems.find(candidate => candidate.type === 'question');
+  assert.equal(
+    controller.state.reviewedRevisions.get(item.identity), item.revision,
+    'revision-anchored receipt recorded',
+  );
+  assert.equal(controller.state.reviewChecks.liveReviewed, true);
+  await setChecked(document, 'review-compound', false);
+  assert.equal(controller.state.reviewedRevisions.has(item.identity), false);
+  assert.equal(controller.state.reviewChecks.liveReviewed, false);
+});
+
+test('a degraded preview keeps the separate explicit acknowledgments', async () => {
+  const harness = await startHarnessWithFailedPreviewDraft();
+  const { document } = harness;
+  assert.equal(document.getElementById('review-compound'), null, 'no compound on degraded path');
+  assert.ok(document.getElementById('review-saved-revision'), 'separate draft box present');
+});
+
+test('a dirty draft renders no compound control and the hint remains', async () => {
+  const harness = await startHarnessWithReadyPreviewDraft({ dirty: true });
+  const { document } = harness;
+  assert.equal(document.getElementById('review-compound'), null);
+  assert.ok(document.getElementById('review-saved-revision'));
 });
