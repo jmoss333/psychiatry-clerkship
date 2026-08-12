@@ -148,9 +148,22 @@ def _error_path(error) -> list:
         if unexpected:
             path.append(unexpected[0])
     elif error.validator == "not" and isinstance(error.instance, dict):
-        # The only "not" rule in the schema is "a reviewed record can't carry
-        # the pending-reviewer label" — it is always about "by".
-        path.append("by")
+        # Two distinct "not" rules live in the schema now; tell them apart by
+        # which property the failed sub-schema constrains, never by
+        # inspecting the record's own values (so nothing gets echoed).
+        not_properties = (
+            error.validator_value.get("properties", {})
+            if isinstance(error.validator_value, dict)
+            else {}
+        )
+        if "risk" in not_properties:
+            # 2026-08-12 faculty ruling: risk kind "general" at level "high"
+            # is forbidden outright.
+            path.append("risk")
+        else:
+            # "a reviewed record can't carry the pending-reviewer label" —
+            # it is always about "by".
+            path.append("by")
     return path
 
 
@@ -214,15 +227,24 @@ def warning_copy(kind: str, risk_kind: str, risk_level: str, reason: str) -> str
     """The learner-facing warning for a pending item.
 
     High-risk clinical/legal/formulary and local-policy items get the fixed
-    application copy (never paraphrased); everything else — including a
-    "general" kind that is somehow marked high — falls back to the ledger's
-    own reason, which is always faculty-authored free text.
+    application copy (never paraphrased); everything else falls back to the
+    ledger's own reason, which is always faculty-authored free text.
     """
     if risk_level == "high":
         if risk_kind == "local-policy":
             return HIGH_LOCAL.format(kind=kind)
         if risk_kind in _HIGH_CLINICAL_KINDS:
             return HIGH_CLINICAL.format(kind=kind, risk=risk_kind)
+    # A "general" kind at "high" level would fall through to here (raw
+    # reason copy, no fixed safety copy) -- but as of the 2026-08-12 faculty
+    # ruling, reviewed.schema.json's cross-field "not" clause makes that
+    # combination invalid, so load_validated_ledger() rejects any record
+    # carrying it before this function ever sees it. This branch is
+    # therefore unreachable for schema-validated records. Left in place
+    # (not deleted) as defense in depth: it still fires correctly for
+    # every OTHER non-high-risk combination (general/low, clinical/moderate,
+    # etc.), and a caller that ever passes an unvalidated entry gets a safe
+    # fallback (the raw reason) rather than a crash.
     return reason
 
 
@@ -506,19 +528,26 @@ _ADDITIONAL_TOOL_SOURCES = {
 }
 
 # The conservative fallback the brief specifies for anything without an
-# explicit signal. "general" at "high" is schema-legal but semantically odd
-# per design ruling: "general" denotes non-clinical material while "high"
-# implies safety/legal/medication/local-policy consequence, and
-# warning_copy() falls back to raw reason copy for exactly this
-# combination. Every row that lands here is therefore always routed to
-# individual faculty attention below, never silently bulk-approvable.
-CONSERVATIVE_RISK = {"kind": "general", "level": "high"}
-GENERAL_HIGH_RULING_NOTE = (
-    "risk kind 'general' at level 'high' is schema-legal but semantically "
-    "odd (general denotes non-clinical material, high implies safety/"
-    "legal/medication/local-policy consequence, and the learner-facing "
-    "warning falls back to raw reason copy for this combination) -- needs "
-    "an explicit faculty ruling on the correct risk kind, not just a level"
+# explicit signal. 2026-08-12 faculty ruling: risk kind "general" at level
+# "high" is forbidden outright (reviewed.schema.json now carries a
+# cross-field "not" clause rejecting it) -- "general" denotes non-clinical
+# material while "high" implies safety/legal/medication/local-policy
+# consequence, which is inherently contradictory. The conservative default
+# therefore assumes the worst under a kind that DOES carry fixed,
+# non-paraphrased supervision copy (warning_copy()'s HIGH_CLINICAL branch)
+# instead of falling back to raw reason text. Every row that lands here is
+# still always routed to individual faculty attention below, never silently
+# bulk-approvable -- unlike a *signaled* clinical/high row (e.g.
+# topic_meta.json safetyLevel=high), which shares this exact {kind, level}
+# pair but must never be routed the same way. See _propose_risk()'s
+# docstring for why that means the routing decision can no longer be made
+# by comparing risk dicts for equality.
+CONSERVATIVE_RISK = {"kind": "clinical", "level": "high"}
+CONSERVATIVE_RISK_NOTE = (
+    "no explicit signal found for this slug -- proposed clinical/high as an "
+    "assume-the-worst conservative default (a kind that carries fixed, "
+    "non-paraphrased supervision copy), not a real classification; needs "
+    "individual faculty review of the correct risk kind and level"
 )
 
 
@@ -598,16 +627,28 @@ def _propose_risk(
     facultyConfirmationRequired. The conservative fallback has no
     mechanical basis, so it always does -- every such row needs a human's
     individual attention (Step 3 of the brief), never a rubber stamp.
+
+    confirmation_required/note are decided PER BRANCH below, not by
+    comparing the resulting risk dict against CONSERVATIVE_RISK for
+    equality: since the 2026-08-12 ruling, the conservative default
+    (clinical/high) and the topic_meta.json safetyLevel=high explicit
+    signal can produce the identical {kind, level} pair, so only the
+    origin -- which branch actually ran -- can tell a real signal apart
+    from a guess. (Pre-ruling, the conservative default was general/high,
+    a combination no signal branch could ever also produce, so a single
+    post-hoc equality check used to be sufficient; it no longer is.)
     """
     basis = _local_policy_basis(tool_sources, slug)
     if basis is not None:
         risk = {"kind": "local-policy", "level": "high"}
         confirmation_required = False
+        note = None
     else:
         basis = _topic_meta_high_basis(topic_meta, slug)
         if basis is not None:
             risk = {"kind": "clinical", "level": "high"}
             confirmation_required = False
+            note = None
         else:
             risk = dict(CONSERVATIVE_RISK)
             basis = (
@@ -615,15 +656,7 @@ def _propose_risk(
                 "no topic_meta.json safetyLevel=high) -- conservative default"
             )
             confirmation_required = True
-
-    note = None
-    if risk == CONSERVATIVE_RISK:
-        # Defensive, not just reachable from the conservative branch above:
-        # ANY proposal landing on this exact combination -- present or
-        # future signal source -- gets forced to individual attention with
-        # an explanatory note, per the design ruling in the docstring above.
-        confirmation_required = True
-        note = GENERAL_HIGH_RULING_NOTE
+            note = CONSERVATIVE_RISK_NOTE
     return risk, basis, confirmation_required, note
 
 

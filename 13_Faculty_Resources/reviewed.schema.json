@@ -35,6 +35,18 @@
       {
         "if": {"properties": {"status": {"const": "reviewed"}}},
         "then": {"not": {"properties": {"by": {"const": "Pending faculty review"}}}}
+      },
+      {
+        "not": {
+          "properties": {
+            "risk": {
+              "properties": {
+                "kind": {"const": "general"},
+                "level": {"const": "high"}
+              }
+            }
+          }
+        }
       }
     ],
     "additionalProperties": false

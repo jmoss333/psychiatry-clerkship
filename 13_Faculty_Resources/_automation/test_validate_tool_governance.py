@@ -584,22 +584,23 @@ class RepositoryProducerTests(unittest.TestCase):
                 ):
                     governance.validate_built_tool_inventory(document, tools, site="ms3")
 
-    def test_cli_default_root_reports_invalid_until_the_ledger_is_migrated(self) -> None:
-        # The production reviewed.json has not been migrated to the Task 1
-        # risk schema yet (a separate, faculty-gated step — see
-        # .superpowers/sdd/2026-07-26-risk-aware-publishing-warnings/). This
-        # subprocess run cannot patch the loader like the in-process tests
-        # above do, so — per that plan's explicit design — it must fail
-        # closed against the real, unmigrated ledger rather than silently
-        # accept it. Once the ledger is migrated this should flip back to
-        # asserting a returncode of 0 and "tool governance OK".
+    def test_cli_default_root_reports_ok_now_that_the_ledger_is_migrated(self) -> None:
+        # 2026-08-12: the production reviewed.json was migrated to the
+        # Task 1 risk schema (faculty-confirmed migration — see
+        # .superpowers/sdd/2026-07-26-risk-aware-publishing-warnings/,
+        # Task 6). This subprocess run cannot patch the loader like the
+        # in-process tests above do, so it exercises the real repo root
+        # end-to-end; it must now succeed against the real, migrated
+        # ledger. (Formerly asserted the mirror-image fail-closed outcome
+        # while the migration was pending faculty confirmation.)
         result = subprocess.run(
             [sys.executable, str(VALIDATOR)], check=False, capture_output=True, text=True
         )
 
-        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("tool governance INVALID", result.stdout)
-        self.assertIn("reviewed.json", result.stdout)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("tool governance OK", result.stdout)
+        self.assertIn("ms3: 23 item(s)", result.stdout)
+        self.assertIn("resident: 25 item(s)", result.stdout)
 
     def test_atomic_output_rejects_an_unpinned_contract_descriptor(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

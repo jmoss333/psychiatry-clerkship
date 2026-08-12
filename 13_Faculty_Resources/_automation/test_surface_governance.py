@@ -275,6 +275,12 @@ class LedgerValidationTests(unittest.TestCase):
             )
         )
 
+        general_high_risk = reviewed_entry()
+        general_high_risk["risk"] = {"kind": "general", "level": "high"}
+        cases.append(
+            ("general-high-risk-forbidden", general_high_risk, "/synthetic.md/risk", None)
+        )
+
         for label, entry, expected_path, secret in cases:
             with self.subTest(label=label), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary)
@@ -289,6 +295,47 @@ class LedgerValidationTests(unittest.TestCase):
                 )
                 if secret:
                     self.assertNotIn(secret, str(raised.exception))
+
+    def test_general_high_risk_is_rejected_without_echoing_the_forbidden_values(
+        self,
+    ) -> None:
+        # 2026-08-12 faculty ruling: risk kind "general" at level "high" is
+        # forbidden outright (see CONSERVATIVE_RISK's docstring in
+        # surface_governance.py). Already covered by one row of the
+        # table-driven test above; this is a dedicated, explicit proof that
+        # neither "general" nor "high" -- the two forbidden values
+        # themselves -- ever appear in the raised error, only the field
+        # name ("risk").
+        entry = reviewed_entry()
+        entry["risk"] = {"kind": "general", "level": "high"}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_ledger(root, {"synthetic.md": entry})
+
+            with self.assertRaises(governance.SurfaceGovernanceError) as raised:
+                governance.load_validated_ledger(root)
+
+        message = str(raised.exception)
+        self.assertEqual(message, "reviewed.json: synthetic.md invalid at /synthetic.md/risk")
+        self.assertNotIn("general", message)
+        self.assertNotIn("high", message)
+
+    def test_general_low_and_general_moderate_remain_valid(self) -> None:
+        # The ruling forbids exactly the general+high combination -- prove
+        # it does not over-fire on "general" at any other level.
+        for level in ("low", "moderate"):
+            with self.subTest(level=level):
+                with tempfile.TemporaryDirectory() as temporary:
+                    root = Path(temporary)
+                    entry = reviewed_entry()
+                    entry["risk"] = {"kind": "general", "level": level}
+                    write_ledger(root, {"synthetic.md": entry})
+
+                    loaded = governance.load_validated_ledger(root)
+
+                self.assertEqual(
+                    loaded["synthetic.md"]["risk"], {"kind": "general", "level": level}
+                )
 
 
 class SiteDocumentTests(unittest.TestCase):
@@ -1214,11 +1261,15 @@ class RiskProposalTests(unittest.TestCase):
         self.assertEqual(row["risk"], governance.CONSERVATIVE_RISK)
         self.assertTrue(row["facultyConfirmationRequired"])
 
-    # ---- conservative fallback + the general/high design ruling ----
+    # ---- conservative fallback + the 2026-08-12 general/high design ruling ----
 
-    def test_unclassified_slug_proposes_conservative_general_high_and_forces_confirmation(
+    def test_unclassified_slug_proposes_conservative_clinical_high_and_forces_confirmation(
         self,
     ) -> None:
+        # Post-ruling, the conservative default is clinical/high (a
+        # schema-legal, assume-the-worst combination that carries fixed
+        # supervision copy) rather than general/high (now schema-forbidden
+        # outright -- see reviewed.schema.json).
         ledger = {"unclassified.md": legacy_reviewed_entry()}
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -1227,11 +1278,39 @@ class RiskProposalTests(unittest.TestCase):
             proposal = governance.build_risk_proposal(root)
 
         row = next(r for r in proposal["proposals"] if r["slug"] == "unclassified.md")
-        self.assertEqual(row["risk"], {"kind": "general", "level": "high"})
+        self.assertEqual(row["risk"], {"kind": "clinical", "level": "high"})
         self.assertTrue(row["facultyConfirmationRequired"])
         self.assertIn("note", row)
-        self.assertIn("general", row["note"])
-        self.assertIn("high", row["note"])
+        self.assertIn("conservative default", row["note"])
+        self.assertIn("clinical/high", row["note"])
+
+    def test_topic_meta_signaled_clinical_high_is_never_confused_with_the_conservative_default(
+        self,
+    ) -> None:
+        # The explicit topic_meta.json signal and the conservative fallback
+        # can now propose the identical {kind, level} pair (clinical/high).
+        # Only the ORIGIN may distinguish them: a real signal must still
+        # skip confirmation and carry no note, even though its risk dict is
+        # == CONSERVATIVE_RISK by value.
+        ledger = {
+            "signaled.md": legacy_reviewed_entry(),
+            "unsignaled.md": legacy_reviewed_entry(),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_proposal_root(
+                root, ledger, topic_meta={"signaled.md": {"safetyLevel": "high"}}
+            )
+
+            proposal = governance.build_risk_proposal(root)
+
+        rows = {row["slug"]: row for row in proposal["proposals"]}
+        self.assertEqual(rows["signaled.md"]["risk"], {"kind": "clinical", "level": "high"})
+        self.assertEqual(rows["unsignaled.md"]["risk"], {"kind": "clinical", "level": "high"})
+        self.assertFalse(rows["signaled.md"]["facultyConfirmationRequired"])
+        self.assertTrue(rows["unsignaled.md"]["facultyConfirmationRequired"])
+        self.assertNotIn("note", rows["signaled.md"])
+        self.assertIn("note", rows["unsignaled.md"])
 
     # ---- ledger coverage + determinism ----
 
