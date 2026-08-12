@@ -9846,7 +9846,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Social anxiety disorder, performance-only type — a PRN beta-blocker (or benzodiazepine) can be used for discrete performances",
+          "t": "Social anxiety disorder, Performance type  requiring PRN medication",
           "c": true
         },
         {
@@ -9859,7 +9859,7 @@
         },
         {
           "key": "C",
-          "t": "Panic disorder",
+          "t": "Panic disorder requiring prn medication",
           "trap": {
             "name": "Wrong-dx trap",
             "note": "There are no recurrent unexpected panic attacks with persistent worry about attacks; this is performance-limited social anxiety."
