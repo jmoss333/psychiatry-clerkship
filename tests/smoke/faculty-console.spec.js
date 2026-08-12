@@ -578,6 +578,44 @@ function qbankPosts(api) {
   return api.calls.filter(call => call.method === 'POST' && call.action.startsWith('qbank.'));
 }
 
+// Auto-advance (2026-08-12 efficiency pass, Task 4). Recording a compound receipt on
+// a clean, ready draft (#review-compound) auto-advances the selection to the next
+// unreceipted draft in the filter — a long queue no longer needs one click per item.
+// Two tests below attest one SPECIFIC question at a time via #attest-current-item
+// (not the batch tray), so each deliberately keeps the sitting on exactly the
+// question it is currently verifying: scoping the visible list to that one question
+// via search first means the advance has nowhere to go (the terminal "all drafts
+// hold receipts" case), and the selection stays put with nothing further to click.
+//
+// The search-scoping is for test isolation, not to dodge a receipt-wiping bug: as of
+// the final-review fix wave (2026-08-12), handlePreviewStatus preserves the selected
+// question's revision-anchored receipt when its preview re-reports ready
+// (clearReviewAcknowledgements({ preserveQuestionReceipts: event.data.status ===
+// 'ready' })) — navigating away and back no longer revokes it. Each test still scopes
+// to one question so its assertions do not depend on where auto-advance would
+// otherwise land, which the auto-advance tests elsewhere already cover on their own.
+async function recordReceiptScopedToOneQuestion(page, id) {
+  await page.locator('#review-search').fill(id);
+  await page.locator('#review-compound').click();
+  await expect(page.locator('#review-compound')).toBeChecked();
+  await expect(page.locator('#selected-item-identity')).toHaveText(id);
+  await page.locator('#review-search').fill('');
+}
+
+// Keyboard-driven counterpart of recordReceiptScopedToOneQuestion — same test-isolation
+// rationale (see above), driven via the R shortcut instead of a click. Explicitly
+// refocuses #view-draft (a button, not a form field) before pressing R — .fill() leaves
+// focus on #review-search itself, which the R shortcut's own form-field guard would
+// ignore.
+async function recordReceiptScopedToOneQuestionByKeyboard(page, id) {
+  await page.locator('#review-search').fill(id);
+  await page.locator('#view-draft').focus();
+  await page.keyboard.press('r');
+  await expect(page.locator('#review-compound')).toBeChecked();
+  await expect(page.locator('#selected-item-identity')).toHaveText(id);
+  await page.locator('#review-search').fill('');
+}
+
 test.describe('learner exact-question review route', () => {
   test('renders and answers only the requested question without changing learner progress', async ({ page }) => {
     await installExactReviewHarness(page);
@@ -1248,13 +1286,17 @@ test.describe.serial('faculty unified attestation workspace', () => {
 
     const pageStart = api.calls.length;
     await page.locator('#attest-current-item').click();
+    // Auto-advance (2026-08-12 efficiency pass): mse.html is still pending, so a
+    // successful content attest lands there directly instead of holding on
+    // t_mood.md — #content-action-result is a console-wide banner (state.contentMessage
+    // is not scoped to the selected item), so t_mood.md's own receipt is still
+    // verified through it, the commit link, and the server-side content state below,
+    // even though the selection has already moved on.
     await expect(page.locator('#content-action-result')).toContainText('Attested t_mood.md.');
     await expect(page.locator('#content-action-result').getByRole('link', {
       name: 'View commit',
     })).toHaveAttribute('href', /^https:\/\/github\.example\/commit\/faculty-/);
-    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mood disorders page');
-    await expect(page.locator('#selected-item-status')).toHaveText('Reviewed');
-    await expect(page.locator('#next-review-item')).toBeEnabled();
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mental status exam tool');
     expect(api.calls.slice(pageStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
       'POST:content',
       'GET:state',
@@ -1266,8 +1308,6 @@ test.describe.serial('faculty unified attestation workspace', () => {
     });
     expect(api.currentContent().find(item => item.slug === 't_mood.md').status).toBe('reviewed');
 
-    await page.locator('#next-review-item').click();
-    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mental status exam tool');
     await expect(page.locator('#selected-item-type')).toHaveText('Tool');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
     await expect(page.locator('#learner-preview-frame')).toHaveAttribute('src', new RegExp(
@@ -1279,6 +1319,13 @@ test.describe.serial('faculty unified attestation workspace', () => {
     const toolStart = api.calls.length;
     await page.locator('#attest-current-item').click();
     await expect(page.locator('#content-action-result')).toContainText('Attested mse.html.');
+    // No other content item is pending: the none-remain case holds on mse.html (the
+    // pre-existing completed-hold behavior) rather than advancing anywhere. This bank
+    // still has draft questions needing review, so "Next" stays enabled — but its
+    // "Next item" label (vs plain "Next") is the hold's own signature either way.
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mental status exam tool');
+    await expect(page.locator('#selected-item-status')).toHaveText('Reviewed');
+    await expect(page.locator('#next-review-item')).toHaveText('Next item');
     expect(api.calls.slice(toolStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
       'POST:content',
       'GET:state',
@@ -1331,10 +1378,14 @@ test.describe.serial('faculty unified attestation workspace', () => {
 
     await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
-    await page.locator('#review-live-preview').check();
     await page.getByRole('button', { name: 'Draft preview' }).click();
     await expect(page.locator('#draft-preview-title')).toHaveText('Saved Draft preview · Not deployed');
-    await page.locator('#review-saved-revision').check();
+    // A clean ready draft is compound-eligible (#review-compound, not the separate
+    // #review-saved-revision), and recording that receipt auto-advances the selection
+    // (2026-08-12 efficiency pass) — but the edit below invalidates any receipt
+    // immediately anyway, and edit-invalidates-receipt is already covered precisely
+    // by the contract suite, so this pass goes straight to editing rather than
+    // recording (and then discarding) a receipt first.
     await page.getByRole('button', { name: 'Edit question' }).first().click();
     const readySavedStem = 'A fictional adult reports five weeks of low mood, anhedonia, early waking, and impaired function without activation. Which syndrome best fits?';
     await page.locator('#question-stem').fill(readySavedStem);
@@ -1355,7 +1406,10 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
     await page.locator('#review-live-preview').check();
     await page.getByRole('button', { name: 'Draft preview' }).click();
-    await page.locator('#review-saved-revision').check();
+    // Scoped to this one question (see recordReceiptScopedToOneQuestion): this test
+    // attests each gate state individually via #attest-current-item, so recording the
+    // receipt here must not auto-advance the sitting elsewhere.
+    await recordReceiptScopedToOneQuestion(page, 'qb_moo_901');
     await checkConfirmations(page);
     const readyAttestStart = api.calls.length;
     await page.locator('#attest-current-item').click();
@@ -1380,7 +1434,9 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(page.locator('#attestation-rail')).toContainText('Warning');
     await page.locator('#review-live-preview').check();
     await page.getByRole('button', { name: 'Draft preview' }).click();
-    await page.locator('#review-saved-revision').check();
+    // A Warning gate does not block the compound receipt itself (only the final
+    // attest, below, once the warning is acknowledged) — scoped for the same reason.
+    await recordReceiptScopedToOneQuestion(page, 'qb_moo_905');
     await checkConfirmations(page);
     await expect(page.locator('#attest-current-item')).toBeDisabled();
     await page.locator('#ack-stem-negative_lead_in').check();
@@ -1409,7 +1465,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
     await page.locator('#review-live-preview').check();
     await page.getByRole('button', { name: 'Draft preview' }).click();
-    await page.locator('#review-saved-revision').check();
+    await recordReceiptScopedToOneQuestion(page, 'qb_moo_902');
     await checkConfirmations(page);
     await page.locator('#attest-current-item').click();
     await expect(page.locator('#qbank-action-result')).toContainText('Attested 1 question: qb_moo_902.');
@@ -1422,6 +1478,8 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.getByRole('button', { name: 'Draft preview' }).click();
     await expect(page.locator('#draft-preview-title')).toHaveText('Saved Draft preview · Not deployed');
     await expect(page.locator('.draft-stem').first()).toContainText('fluctuating attention');
+    // Preview never reaches ready (missing deploy): compoundReviewEligible requires
+    // preview.status === 'ready', so this keeps the separate-checkbox path unchanged.
     await page.locator('#review-saved-revision').check();
     await page.locator('#ack-live-unavailable').check();
     await checkConfirmations(page);
@@ -1755,9 +1813,15 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.keyboard.press('Space');
     await page.locator('#view-draft').focus();
     await page.keyboard.press('Enter');
-    await page.locator('#review-saved-revision').focus();
-    await page.keyboard.press('Space');
-    await expect(page.locator('#review-saved-revision')).toBeChecked();
+    // R toggles the compound receipt (Task 1's #review-compound) directly — a clean
+    // ready draft in Draft view is compound-eligible, so this is the same control
+    // Space would check, just the global keyboard shortcut Task 4 adds for it.
+    // Draft preview just focused #view-draft (a button, not a form field), so R fires.
+    // Scoped to this one question (see recordReceiptScopedToOneQuestionByKeyboard):
+    // recording the receipt would otherwise auto-advance the sitting elsewhere, and
+    // this test continues qb_moo_901's own edit/revert narrative right after.
+    await recordReceiptScopedToOneQuestionByKeyboard(page, 'qb_moo_901');
+
     await page.locator('#view-edit').focus();
     await page.keyboard.press('Enter');
     await page.locator('#question-stem').focus();
@@ -1766,6 +1830,10 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.locator('#view-draft').focus();
     await page.keyboard.press('Enter');
     await expect(page.locator('#draft-preview-title')).toHaveText('Unsaved local preview · Not deployed');
+    // Dirty again: compoundReviewEligible requires zero dirty fields, so this reverts
+    // to the separate-checkbox path — #review-compound is gone, #review-saved-revision
+    // is back, unchecked and disabled.
+    await expect(page.locator('#review-compound')).toHaveCount(0);
     await expect(page.locator('#review-saved-revision')).not.toBeChecked();
     await expect(page.locator('#review-saved-revision')).toBeDisabled();
 
@@ -1780,8 +1848,9 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.keyboard.press('Space');
     await page.locator('#view-draft').focus();
     await page.keyboard.press('Enter');
-    await page.locator('#review-saved-revision').focus();
-    await page.keyboard.press('Space');
+    // Scoped again (search) for the same reason as above: recording this receipt
+    // would otherwise auto-advance the sitting away before the attest right below.
+    await recordReceiptScopedToOneQuestionByKeyboard(page, 'qb_moo_901');
     for (const id of CONFIRMATION_IDS) {
       await page.locator(`#${id}`).focus();
       await page.keyboard.press('Space');
@@ -1893,17 +1962,65 @@ test.describe.serial('faculty unified attestation workspace', () => {
     });
     await unlock(page);
 
-    // Record a saved-revision review receipt on each ready draft, one at a time —
-    // batching reduces clicks at the commit, never scrutiny per item.
+    // Content-flow keyboard assertion (2026-08-12 efficiency pass, Task 4): the same
+    // sitting's A shortcut attests the default-selected pending page and auto-advances
+    // straight to the next pending content item — this fixture's two default content
+    // items (t_mood.md, mse.html) are otherwise untouched by the rest of this test.
+    // No explicit focus target: unlock() just replaced the whole DOM (destroying
+    // whatever was focused in the login form), so a real browser has already reverted
+    // focus to <body> — exactly the "no form field focused" case the shortcut expects.
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mood disorders page');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.keyboard.press('a');
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mental status exam tool');
+
+    // Recording a compound receipt on a clean ready draft auto-advances straight to
+    // the next unreceipted draft in list order (2026-08-12 efficiency pass) —
+    // qb_moo_901, then qb_moo_902, then qb_moo_905 (sorted by id; the Warning draft
+    // sits between 902 and 906). 905 is deliberately skipped — it never grows a tray
+    // checkbox and must be attested individually — so the sitting jumps past it to
+    // qb_moo_906 explicitly instead of checking a box there.
+    await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-live-preview').check();
+    await page.getByRole('button', { name: 'Draft preview' }).click();
+    await page.locator('#review-compound').click();
+    await expect(page.locator('#selected-item-identity')).toHaveText('qb_moo_902');
+
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-live-preview').check();
+    await page.getByRole('button', { name: 'Draft preview' }).click();
+    await page.locator('#review-compound').click();
+    await expect(page.locator('#selected-item-identity')).toHaveText('qb_moo_905');
+
+    await page.locator('#review-item-selector').selectOption('question:qb_moo_906');
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-live-preview').check();
+    await page.getByRole('button', { name: 'Draft preview' }).click();
+    await page.locator('#review-compound').click();
+    // Nothing lies after qb_moo_906 in the list; qb_moo_905 lies earlier and is still
+    // unreceipted, so the sitting reports that instead of moving (no wrap).
+    await expect(page.locator('#selected-item-identity')).toHaveText('qb_moo_906');
+
+    // Auto-enroll (2026-08-12 efficiency pass): each receipt above already checked
+    // itself into the batch tray — nothing left to tick by hand.
     for (const id of ['qb_moo_901', 'qb_moo_902', 'qb_moo_906']) {
-      await page.locator('#review-item-selector').selectOption(`question:${id}`);
-      await expect(page.locator('#preview-status-label')).toHaveText('Ready');
-      await page.locator('#review-live-preview').check();
-      await page.getByRole('button', { name: 'Draft preview' }).click();
-      await page.locator('#review-saved-revision').check();
       await expect(page.locator(`#batch-select-${id}`)).toBeVisible();
-      await page.locator(`#batch-select-${id}`).check();
+      await expect(page.locator(`#batch-select-${id}`)).toBeChecked();
     }
+
+    // Sticky exclusion (2026-08-12 efficiency pass): an explicit uncheck drops an
+    // item from the batch without touching its receipt, and survives an unrelated
+    // re-render (a confirmation checkbox). Demonstrated on the last-enrolled item so
+    // re-checking it restores the same batch order the final POST assertion below
+    // expects (Set insertion order — re-adding a removed entry appends it).
+    await page.locator('#batch-select-qb_moo_906').uncheck();
+    await expect(page.locator('#batch-readout')).toContainText('Selected 2');
+    await page.locator('#confirm-clinical').check();
+    await expect(page.locator('#batch-select-qb_moo_906')).not.toBeChecked();
+    await page.locator('#confirm-clinical').uncheck();
+    await page.locator('#batch-select-qb_moo_906').check();
+    await expect(page.locator('#batch-readout')).toContainText('Selected 3');
 
     // The warning draft never grows a tray checkbox, and the tray says why.
     await expect(page.locator('#batch-select-qb_moo_905')).toHaveCount(0);

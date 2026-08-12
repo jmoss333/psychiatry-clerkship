@@ -140,6 +140,7 @@ export function startFacultyConsole({
     reviewerLabel: DEFAULT_REVIEWER,
     reviewedRevisions: new Map(),
     batchSelection: new Set(),
+    batchExclusions: new Set(),
     externalReviewOpenedKey: null,
     contentMessage: '',
     contentCommitUrl: null,
@@ -550,6 +551,26 @@ export function startFacultyConsole({
     else clearReviewSelection();
   }
 
+  // Auto-advance (2026-08-12 efficiency pass, content half): a lookup only, not a
+  // selector — load() is mid-reload when it calls this and already owns the
+  // hold-vs-select decision at the end of a successful content attest, so this just
+  // reports where "next" is and lets that caller apply it. savedStatus 'unreviewed' is
+  // the actual not-yet-reviewed value a page or tool carries (normalizeReviewItems in
+  // review-model.mjs mirrors record.status verbatim; completion() there treats anything
+  // other than 'reviewed' as needing review, but the literal value itself is
+  // 'unreviewed', never 'pending').
+  function advanceToNextPendingContent(fromKey) {
+    const visible = visibleReviewItems();
+    const start = visible.findIndex(item => item.key === fromKey);
+    for (let i = start + 1; i < visible.length; i += 1) {
+      const item = visible[i];
+      if (item.type === 'question') continue;
+      if (item.savedStatus !== 'unreviewed') continue;
+      return item.key;
+    }
+    return null;
+  }
+
   function renderLogin(message = '') {
     document.title = 'Faculty attestation workspace';
     const keyInput = el('input', {
@@ -712,12 +733,28 @@ export function startFacultyConsole({
       const contentHoldKey = expectedContentStatus?.status === 'reviewed'
         ? confirmedContentItem?.key || null
         : null;
-      const holdKey = completedHoldKey || contentHoldKey || state.completedHoldKey;
+      // Auto-advance (2026-08-12 efficiency pass, content half): a successful content
+      // attest prefers the next pending page or tool over holding on the one just
+      // attested. Scoped to contentHoldKey specifically — a question attestation's own
+      // completedHoldKey param (attestEntries) never produces a contentHoldKey, so that
+      // hold path is untouched. When nothing else is pending, advanceKey is null and
+      // today's hold falls through unchanged. A live navigationGuard also suppresses
+      // the advance (mirrors advanceToNextUnreceipted's own check) — unreachable today,
+      // since a content attest never leaves unsaved question-editor state behind for a
+      // guard to hold open, but kept symmetric so the invariant still holds if that
+      // ever changes.
+      const advanceKey = contentHoldKey && !state.navigationGuard
+        ? advanceToNextPendingContent(contentHoldKey) : null;
+      const holdKey = advanceKey ? null : (completedHoldKey || contentHoldKey || state.completedHoldKey);
       const heldItem = holdKey ? findReviewItem(holdKey) : null;
       state.completedHoldKey = heldItem?.completion === 'complete' ? heldItem.key : null;
       state.pending = false;
       pruneReviewedRevisions();
-      chooseSelection();
+      // Respect setSelectedReviewKey's own return: on the (unreachable in practice,
+      // since advanceKey always names a key already present in state.reviewItems)
+      // false case, fall back to the pre-existing chooseSelection() rather than
+      // leaving the selection wherever it happened to be.
+      if (!advanceKey || !setSelectedReviewKey(advanceKey, { force: true })) chooseSelection();
       renderShell(focusId);
       return true;
     } catch (error) {
@@ -1209,6 +1246,56 @@ export function startFacultyConsole({
     refreshPreviewChromeAndRail(focusId);
   }
 
+  // Auto-advance (2026-08-12 efficiency pass, receipt half): a receipt that just
+  // recorded moves the reviewer straight to the next unreceipted draft in the current
+  // filter, so a long queue does not need one click per item. "Unreceipted draft" is
+  // deliberately narrow — type 'question', savedStatus 'draft', and no matching
+  // reviewedRevisions entry — so a broader status filter can never offer up an
+  // already-attested question as something left to receipt. The same predicate feeds
+  // both the announced count and the advance target, so the two can never disagree. A
+  // live navigationGuard means unsaved local work is already blocking navigation
+  // elsewhere; the receipt above this call still recorded, but the jump itself is
+  // silently skipped rather than stacking a second guard prompt on top of whatever is
+  // already pending.
+  //
+  // Ruling (b) (2026-08-12 efficiency pass, Task 4): `forward` (index > start) is a
+  // deliberately narrow scan — it can only ever see drafts AFTER the just-receipted
+  // item's position, so it alone decides whether — and where — to move (no wrap: a
+  // reviewer who jumped ahead via the item selector chose that position on purpose,
+  // and this function only ever reports what is left, it never redirects them). But
+  // that same narrowness means it must never drive the terminal "all drafts hold
+  // receipts" announcement — a jumped-ahead receipt with unreceipted drafts sitting
+  // EARLIER would otherwise announce completion while work remains. `elsewhere`
+  // re-scans the whole visible list (excluding the item index just receipted) to
+  // decide that terminal case correctly; when forward is empty but elsewhere is not,
+  // the count is reported without moving.
+  function advanceToNextUnreceipted(fromKey) {
+    if (state.navigationGuard) return false;
+    const visible = visibleReviewItems();
+    const start = visible.findIndex(item => item.key === fromKey);
+    const isUnreceiptedDraft = item => item.type === 'question' && item.savedStatus === 'draft'
+      && !reviewedRevisionMatches(item, state.reviewedRevisions.get(item.identity));
+    const totalDrafts = visible.filter(item => item.type === 'question' && item.savedStatus === 'draft').length;
+    const forward = visible.filter((item, index) => index > start && isUnreceiptedDraft(item));
+    const elsewhere = visible.filter((item, index) => index !== start && isUnreceiptedDraft(item));
+    if (forward.length) {
+      const advanced = setSelectedReviewKey(forward[0].key);
+      if (!advanced) return false;
+      renderShell('review-item-selector');
+      const identity = findReviewItem(fromKey)?.identity;
+      const excluded = identity != null && state.batchExclusions.has(identity);
+      announce(`Receipt recorded — ${elsewhere.length} of ${totalDrafts} drafts remaining; ${
+        excluded ? 'excluded from' : 'added to'} batch.`);
+      return true;
+    }
+    if (!elsewhere.length) {
+      announce('All drafts in this filter hold receipts.');
+      return false;
+    }
+    announce(`Receipt recorded — ${elsewhere.length} of ${totalDrafts} drafts remaining earlier in the list.`);
+    return false;
+  }
+
   function confirmDraftReview(question, checked) {
     refreshEditorState();
     const saved = findQuestion(question?.id);
@@ -1218,7 +1305,61 @@ export function startFacultyConsole({
         && !state.dirtyFields.length && saved.revision === question?.revision) {
       state.reviewedRevisions.set(question.id, question.revision);
     }
+    // Batch auto-enroll (2026-08-12 efficiency pass): holding a receipt is what earns a
+    // spot in the tray by default, so a reviewer who already ticked this box does not
+    // also have to find and check the tray box. An exclusion (toggleBatchMember) stays
+    // sticky for as long as the same receipt is held uninterrupted; losing the receipt
+    // drops the item from the selection and forgets the exclusion.
+    const id = question?.id;
+    if (id) {
+      if (state.reviewedRevisions.has(id)) {
+        if (!state.batchExclusions.has(id)) state.batchSelection.add(id);
+      } else {
+        state.batchSelection.delete(id);
+        state.batchExclusions.delete(id); // receipt loss clears the exclusion
+      }
+    }
     refreshPreviewChromeAndRail('review-saved-revision');
+  }
+
+  // A clean ready-preview draft — Draft view, no local edits, the item's revision still
+  // matching the saved question — lets one receipt stand in for both of today's separate
+  // acknowledgements. Anything else (wrong view, dirty fields, a moved revision, a failed
+  // preview, or a non-question item) keeps the two-checkbox path unchanged.
+  function compoundReviewEligible(item) {
+    if (item?.type !== 'question') return false;
+    if ((state.preview?.status || 'frame_failure') !== 'ready') return false;
+    const question = state.editor || item.record;
+    const saved = findQuestion(item.identity);
+    return state.viewMode === 'draft'
+      && state.dirtyFields.length === 0
+      && saved?.revision === question?.revision
+      && item.revision === saved?.revision;
+  }
+
+  // Sets both state.reviewedRevisions and state.reviewChecks.liveReviewed atomically:
+  // confirmDraftReview records (or revokes) the revision-anchored receipt, then
+  // liveReviewed is derived from whether that receipt actually stuck — so a receipt
+  // that fails to record (e.g. the revision moved underneath it) never leaves the
+  // live check on by itself. reviewedRevisionMatches expects a review-item shape
+  // ({type: 'question', revision}) — findQuestion(id) returns the raw qbank record,
+  // whose `type` is the question FORMAT ('sba'/'relational'/'two-tier'), never the
+  // literal string 'question', so it can never satisfy that check. A minimal shim
+  // carrying just the two fields the matcher reads is what confirmDraftReview itself
+  // just used to decide whether to record the receipt.
+  function confirmCompoundReview(question, checked) {
+    const fromKey = state.selectedKey;
+    confirmDraftReview(question, checked);
+    const receipted = reviewedRevisionMatches(
+      { type: 'question', revision: question?.revision },
+      state.reviewedRevisions.get(question?.id),
+    );
+    state.reviewChecks.liveReviewed = checked === true && receipted;
+    refreshPreviewChromeAndRail('review-compound');
+    // Auto-advance only after a receipt actually recorded — never on an uncheck, and
+    // never when the compound conditions failed to stick — so unchecking the box or a
+    // revision race can never silently skip a draft.
+    if (checked === true && receipted) advanceToNextUnreceipted(fromKey);
   }
 
   function reviewPathComplete(item) {
@@ -1238,6 +1379,24 @@ export function startFacultyConsole({
   }
 
   function renderDraftReviewControl(item) {
+    if (compoundReviewEligible(item)) {
+      const question = state.editor || item.record;
+      const checked = reviewedRevisionMatches(item, state.reviewedRevisions.get(item.identity))
+        && state.reviewChecks.liveReviewed === true;
+      return el('div', { class: 'draft-review-control' }, [
+        el('label', { class: 'checkbox-line', for: 'review-compound' }, [
+          el('input', {
+            id: 'review-compound',
+            type: 'checkbox',
+            checked,
+            disabled: state.pending,
+            'aria-keyshortcuts': 'r',
+            onChange: event => confirmCompoundReview(question, event.target.checked),
+          }),
+          'I reviewed this draft at its saved revision and its live rendering',
+        ]),
+      ]);
+    }
     const question = state.editor || item.record;
     const saved = findQuestion(item.identity);
     const canReview = state.viewMode === 'draft'
@@ -1268,6 +1427,7 @@ export function startFacultyConsole({
   }
 
   function renderDeploymentReviewPath(item) {
+    if (compoundReviewEligible(item)) return null;
     const status = state.preview?.status || 'frame_failure';
     if (status === 'loading') {
       return el('p', { class: 'muted' }, [
@@ -2924,7 +3084,12 @@ export function startFacultyConsole({
         : `Reopened ${slug} for review.`;
       state.contentCommitUrl = commitUrl;
       if (snapshot.reviewed) {
-        state.completedHoldKey = snapshot.key;
+        // load() above already auto-advanced past snapshot.key and cleared the hold
+        // when another pending content item existed in this filter, so only reassert
+        // the hold here when the selection is still sitting on the just-attested item
+        // — otherwise a completed advance would be re-pinned back to a key that is no
+        // longer selected.
+        if (state.selectedKey === snapshot.key) state.completedHoldKey = snapshot.key;
       } else {
         // Only on a CONFIRMED save: an authentication retry or network failure must
         // still have the reason available to resubmit, so nothing clears it there.
@@ -2934,14 +3099,14 @@ export function startFacultyConsole({
       resetApprovalInputs();
       refreshPreviewChromeAndRail('content-action-result');
       const next = document.getElementById('next-review-item');
-      // Auto-advance keeps a long queue flowing: one click attests and lands on
-      // the next item. Reuses the Next button rather than re-deriving the queue
-      // order, so the two can never disagree.
-      // Deliberately NOT auto-advancing. The attested item is held so its
-      // confirmation and commit link stay on screen — that receipt is the only
-      // proof the write landed, and skipping past it to save one keystroke
-      // trades away the thing that made a month-long silent failure possible.
-      // Next is focused, so advancing is one Enter.
+      // Auto-advance (2026-08-12 efficiency pass): load() above already moved on to
+      // the next pending content item when one existed in this filter, clearing the
+      // hold as it went. When none remain, the attested item is held instead so its
+      // confirmation and commit link stay on screen — that receipt is the only proof
+      // the write landed, and skipping past it would recreate the silent-failure risk
+      // this hold exists to prevent. Next is focused whenever it is live, so any
+      // further move — onto the item just advanced to, or past a held one — is one
+      // Enter either way.
       if (snapshot.reviewed && next && !next.disabled) next.focus();
       else document.getElementById('content-action-result')?.focus();
       announce(state.contentMessage);
@@ -3272,8 +3437,8 @@ export function startFacultyConsole({
   }
 
   function toggleBatchMember(id, checked, focusId) {
-    if (checked) state.batchSelection.add(id);
-    else state.batchSelection.delete(id);
+    if (checked) { state.batchExclusions.delete(id); state.batchSelection.add(id); }
+    else { state.batchSelection.delete(id); state.batchExclusions.add(id); }
     refreshPreviewChromeAndRail(focusId);
   }
 
@@ -3282,6 +3447,13 @@ export function startFacultyConsole({
     const eligibleIds = new Set(rows.map(question => question.id));
     for (const id of [...state.batchSelection]) {
       if (!eligibleIds.has(id)) state.batchSelection.delete(id);
+    }
+    // A sticky exclusion only needs to survive as long as there is something to exclude
+    // from — an eligible row, or a receipt that could make one ready again (e.g. a gate
+    // gone temporarily 'warning'). Once neither holds, the exclusion is stale; drop it so
+    // batchExclusions cannot grow without bound across a long review session.
+    for (const id of [...state.batchExclusions]) {
+      if (!eligibleIds.has(id) && !state.reviewedRevisions.has(id)) state.batchExclusions.delete(id);
     }
     if (!rows.length && !awaitingReceipt && !warningHeld) return null;
     const selected = rows.filter(question => state.batchSelection.has(question.id));
@@ -3359,7 +3531,7 @@ export function startFacultyConsole({
     if (preview.status === 'ready' && event.data.status === 'ready') return;
     cancelPreviewTimer(preview);
     preview.status = event.data.status;
-    clearReviewAcknowledgements();
+    clearReviewAcknowledgements({ preserveQuestionReceipts: event.data.status === 'ready' });
     if (event.data.status !== 'ready') applyQuestionView('live');
     announce(`Deployed ${event.data.surface} preview: ${event.data.status.replace('_', ' ')}.`);
     refreshPreviewChromeAndRail('preview-status');
@@ -3385,6 +3557,42 @@ export function startFacultyConsole({
       if (shortcutCanSaveQuestion()) saveCurrentDraft();
       else if (hasUnsavedChanges()) announce('Open Edit question to save this draft.');
       else announce('No unsaved question changes to save.');
+      return;
+    }
+
+    // `R` toggles the compound review receipt (Task 1's #review-compound), copying
+    // the `A` shortcut's own guard structure below verbatim — target tag checks,
+    // modifier checks, an aria-keyshortcuts gate. Placed ahead of `A`'s guard: that
+    // guard returns early for any non-`a` key, which would make this unreachable if
+    // it came after. Self-contained (matches on `r`, falls through untouched for
+    // every other key including `a` itself), so the A-shortcut below is unaffected.
+    if (event.key.toLowerCase() === 'r'
+      && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+      const target = event.target;
+      const tag = typeof target?.tagName === 'string' ? target.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) return;
+      const box = document.getElementById('review-compound');
+      if (!box || box.disabled || box.getAttribute('aria-keyshortcuts') !== 'r') return;
+      event.preventDefault();
+      box.click();
+      return;
+    }
+
+    // `ArrowUp`/`ArrowDown` move the review-list selection through the same order
+    // the item selector renders (visibleReviewItems()). Same guard structure and
+    // placement rationale as `R` above.
+    if ((event.key === 'ArrowDown' || event.key === 'ArrowUp')
+      && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+      if (state.pending || state.navigationGuard || state.reopenConfirmation) return;
+      const target = event.target;
+      const tag = typeof target?.tagName === 'string' ? target.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) return;
+      const visible = visibleReviewItems();
+      const index = visible.findIndex(item => item.key === state.selectedKey);
+      const next = visible[index + (event.key === 'ArrowDown' ? 1 : -1)];
+      if (!next) return;
+      event.preventDefault();
+      requestNavigation({ kind: 'review', key: next.key, focusId: 'review-item-selector' }, 'review-item-selector');
       return;
     }
 
