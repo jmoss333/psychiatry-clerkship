@@ -587,13 +587,13 @@ function qbankPosts(api) {
 // via search first means the advance has nowhere to go (the terminal "all drafts
 // hold receipts" case), and the selection stays put with nothing further to click.
 //
-// Navigating away and back is NOT a safe alternative here, despite looking simpler:
-// re-selecting a question reloads its learner preview, and the resulting 'ready'
-// postMessage runs handlePreviewStatus's unconditional clearReviewAcknowledgements()
-// (no preserveQuestionReceipts flag — that guard is specific to setSelectedReviewKey's
-// own internal call) — which revokes the exact-revision receipt for whatever question
-// is selected when the message arrives. A receipted question that is merely
-// re-selected loses its receipt the moment its preview reports ready again.
+// The search-scoping is for test isolation, not to dodge a receipt-wiping bug: as of
+// the final-review fix wave (2026-08-12), handlePreviewStatus preserves the selected
+// question's revision-anchored receipt when its preview re-reports ready
+// (clearReviewAcknowledgements({ preserveQuestionReceipts: event.data.status ===
+// 'ready' })) — navigating away and back no longer revokes it. Each test still scopes
+// to one question so its assertions do not depend on where auto-advance would
+// otherwise land, which the auto-advance tests elsewhere already cover on their own.
 async function recordReceiptScopedToOneQuestion(page, id) {
   await page.locator('#review-search').fill(id);
   await page.locator('#review-compound').click();
@@ -602,10 +602,11 @@ async function recordReceiptScopedToOneQuestion(page, id) {
   await page.locator('#review-search').fill('');
 }
 
-// Keyboard-driven counterpart of recordReceiptScopedToOneQuestion, for the test that
-// demonstrates the review controls are fully keyboard-operable. Explicitly refocuses
-// #view-draft (a button, not a form field) before pressing R — .fill() leaves focus
-// on #review-search itself, which the R shortcut's own form-field guard would ignore.
+// Keyboard-driven counterpart of recordReceiptScopedToOneQuestion — same test-isolation
+// rationale (see above), driven via the R shortcut instead of a click. Explicitly
+// refocuses #view-draft (a button, not a form field) before pressing R — .fill() leaves
+// focus on #review-search itself, which the R shortcut's own form-field guard would
+// ignore.
 async function recordReceiptScopedToOneQuestionByKeyboard(page, id) {
   await page.locator('#review-search').fill(id);
   await page.locator('#view-draft').focus();

@@ -1277,17 +1277,17 @@ export function startFacultyConsole({
       && !reviewedRevisionMatches(item, state.reviewedRevisions.get(item.identity));
     const totalDrafts = visible.filter(item => item.type === 'question' && item.savedStatus === 'draft').length;
     const forward = visible.filter((item, index) => index > start && isUnreceiptedDraft(item));
+    const elsewhere = visible.filter((item, index) => index !== start && isUnreceiptedDraft(item));
     if (forward.length) {
       const advanced = setSelectedReviewKey(forward[0].key);
       if (!advanced) return false;
       renderShell('review-item-selector');
       const identity = findReviewItem(fromKey)?.identity;
       const excluded = identity != null && state.batchExclusions.has(identity);
-      announce(`Receipt recorded — ${forward.length} of ${totalDrafts} drafts remaining; ${
+      announce(`Receipt recorded — ${elsewhere.length} of ${totalDrafts} drafts remaining; ${
         excluded ? 'excluded from' : 'added to'} batch.`);
       return true;
     }
-    const elsewhere = visible.filter((item, index) => index !== start && isUnreceiptedDraft(item));
     if (!elsewhere.length) {
       announce('All drafts in this filter hold receipts.');
       return false;
@@ -3518,7 +3518,7 @@ export function startFacultyConsole({
     if (preview.status === 'ready' && event.data.status === 'ready') return;
     cancelPreviewTimer(preview);
     preview.status = event.data.status;
-    clearReviewAcknowledgements();
+    clearReviewAcknowledgements({ preserveQuestionReceipts: event.data.status === 'ready' });
     if (event.data.status !== 'ready') applyQuestionView('live');
     announce(`Deployed ${event.data.surface} preview: ${event.data.status.replace('_', ' ')}.`);
     refreshPreviewChromeAndRail('preview-status');
@@ -3570,6 +3570,7 @@ export function startFacultyConsole({
     // placement rationale as `R` above.
     if ((event.key === 'ArrowDown' || event.key === 'ArrowUp')
       && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+      if (state.pending || state.navigationGuard || state.reopenConfirmation) return;
       const target = event.target;
       const tag = typeof target?.tagName === 'string' ? target.tagName.toLowerCase() : '';
       if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) return;
@@ -3578,8 +3579,7 @@ export function startFacultyConsole({
       const next = visible[index + (event.key === 'ArrowDown' ? 1 : -1)];
       if (!next) return;
       event.preventDefault();
-      if (!setSelectedReviewKey(next.key)) return;
-      renderShell('review-item-selector');
+      requestNavigation({ kind: 'review', key: next.key, focusId: 'review-item-selector' }, 'review-item-selector');
       return;
     }
 

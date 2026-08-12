@@ -1542,6 +1542,39 @@ test('preview Ready preserves its browsing context and later status or navigatio
   assert.equal(document.getElementById('attest-current-item').disabled, true);
 });
 
+// Final-review fix wave (2026-08-12), Fix 2 (the ledgered OPEN QUESTION, ruled
+// fix-in-PR): a reviewer who receipts a draft, auto-advances, then navigates BACK to
+// the receipted item must not lose that receipt (and thereby its batch enrollment)
+// merely because the re-selected item's preview reports ready again.
+// handlePreviewStatus's receipt clear is narrowed to preserve a question receipt
+// specifically on a 'ready' re-report, not on every preview-status message — the
+// governance test above pins that failure transitions still revoke.
+test('navigating back to a receipted draft and its preview reporting ready again preserves the receipt and batch enrollment', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts(); // q1 selected & ready; q2 untouched
+  const { controller, document, window } = harness;
+  await setChecked(document, 'review-compound'); // receipts q1, auto-enrolls it, advances to q2
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903', 'advanced past q1');
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), true);
+  assert.equal(controller.state.batchSelection.has('qb_moo_902'), true);
+
+  // Navigate back to q1 — a clean, un-dirtied item switch, so no guard raises.
+  await setValue(document, 'review-item-selector', 'question:qb_moo_902', 'change');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902');
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), true,
+    'the plain item switch already preserves the receipt (pre-existing behavior)');
+
+  // Its preview reloads and reports ready again, same as it would the first time.
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), true,
+    'the receipt survives a ready re-report on navigating back');
+  assert.equal(controller.state.batchSelection.has('qb_moo_902'), true,
+    'batch enrollment survives along with the receipt');
+  assert.equal(controller.state.reviewChecks.liveReviewed, false,
+    'the live-preview acknowledgement itself still resets — only the receipt is preserved');
+});
+
 test('preview fallback gates question Retry and opens only clean page or tool routes externally', async () => {
   const questionTokens = ['b', 'c'].map(value => value.repeat(32));
   let questionTokenIndex = 0;
@@ -4319,6 +4352,44 @@ test('a receipt on a later draft reports what remains earlier in the list withou
     'q1 is still unreceipted: no false terminal announcement');
 });
 
+// Final-review fix wave (2026-08-12), Fix 3 (PROBE6): the same forward-only-scan gap
+// ruling (b) fixed for the terminal announcement above also applies to the ADVANCING
+// announcement — it must report the whole-visible-list unreceipted count (like the
+// terminal and earlier-only branches already do), not just what the forward scan
+// happens to see. forward[0] still decides where the sitting moves; only the
+// announced count changes.
+test('a receipt on a middle draft announces the whole-list remaining count, not just what lies ahead', async () => {
+  const first = validDomQuestion();
+  const second = validDomQuestion({
+    id: 'qb_moo_903',
+    revision: testRevision('probe6-middle-draft'),
+    stem: 'A middle draft, jumped to directly and receipted first.',
+  });
+  const third = validDomQuestion({
+    id: 'qb_moo_904',
+    revision: testRevision('probe6-last-draft'),
+    stem: 'A third draft sorting after the middle one, left untouched for auto-advance to land on.',
+  });
+  const harness = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({ questions: [first, second, third] })),
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { controller, document, window } = harness;
+  // Jump straight to the MIDDLE draft, leaving q1 (earlier in the list) unreceipted —
+  // the forward-only scan can never see it, but the announcement must still count it.
+  await setValue(document, 'review-item-selector', 'question:qb_moo_903', 'change');
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  await document.getElementById('view-draft').dispatch('click');
+  await setChecked(document, 'review-compound'); // receipts the middle draft
+
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_904',
+    'forward[0] still drives the move — advances to the next later draft');
+  assert.equal(lastAnnouncement(harness),
+    'Receipt recorded — 2 of 3 drafts remaining; added to batch.',
+    'whole-list count (q1 earlier + q3 later), not the 1 forward-only match');
+});
+
 // Task 4: the R keyboard shortcut. Copies the pre-existing A shortcut's guard
 // structure verbatim (target tag checks, modifier checks, an aria-keyshortcuts gate)
 // against #review-compound instead of #attest-current-item.
@@ -4396,4 +4467,49 @@ test('ArrowDown/ArrowUp are ignored in a form field and stop at the ends of the 
   document.activeElement = null; // clear the selector focus the successful move above set
   await pressKey(harness, 'ArrowDown'); // already last: nothing further, no-op
   assert.equal(controller.state.selectedKey, 'question:qb_moo_903');
+});
+
+// Final-review fix wave (2026-08-12), Fix 1 (CRITICAL): every mouse path to a new
+// review item (the item selector, Previous, Next) routes through requestNavigation(),
+// which raises the unsaved-work guard when the editor is dirty. The arrow handler
+// must do the same instead of calling setSelectedReviewKey directly — otherwise a
+// reviewer with unsaved edits loses them to a stray arrow keypress.
+test('ArrowDown raises the unsaved-work guard instead of silently navigating a dirty draft', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts(); // q1 selected & ready; q2 untouched
+  const { controller, document } = harness;
+  await document.getElementById('view-edit').dispatch('click');
+  const localStem = 'A dirtied stem must raise the guard, not lose the edit to an arrow key.';
+  await setValue(document, 'question-stem', localStem);
+  await document.getElementById('view-draft').dispatch('click');
+
+  // Focus something that is neither a form field nor otherwise exempt from the arrow
+  // handler, so this pins the new guard check rather than the pre-existing tag check.
+  document.getElementById('selected-item-title').focus();
+  await pressKey(harness, 'ArrowDown');
+
+  assert.ok(document.getElementById('unsaved-guard'), 'guard modal raised instead of navigating');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902', 'selection unchanged');
+  assert.equal(controller.state.editor.stem, localStem, 'dirtied editor text retained');
+});
+
+test('arrows do nothing while pending, while the navigation guard is open, or while the reopen confirmation is open', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller, document } = harness;
+
+  // Direct state path (matches the auto-advance guard tests above): pins the
+  // handler's own defensive check independent of everything else a real
+  // pending/guard/modal state would also disable.
+  controller.state.pending = true;
+  await pressKey(harness, 'ArrowDown');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902', 'inert while pending');
+  controller.state.pending = false;
+
+  controller.state.navigationGuard = { target: { kind: 'lock' }, returnFocus: 'lock-console' };
+  await pressKey(harness, 'ArrowDown');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902', 'inert while the navigation guard is open');
+  controller.state.navigationGuard = null;
+
+  controller.state.reopenConfirmation = { key: controller.state.selectedKey, reviewed: false };
+  await pressKey(harness, 'ArrowDown');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_902', 'inert while the reopen confirmation is open');
 });
