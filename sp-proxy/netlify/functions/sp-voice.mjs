@@ -825,6 +825,17 @@ export function createVoiceHandler({
         const mimeType = request.headers.get('content-type');
         if (!ACCEPTED_MEDIA_TYPES.includes(mimeType)) throw unsupportedAudio();
         rejectOversizedContentLength(request);
+        // #232 item 4: readBoundedAudio deliberately stays ahead of
+        // loadFrozenSnapshot/requireApprovedPack below, even though that means an
+        // unapproved-pack request still pays for the (bounded, unbilled) audio read.
+        // Checking the pack first inserts an await before the body stream is ever
+        // touched; Node's own stream plumbing uses that gap to prefetch/drain the
+        // request independently of this handler, which defeats the exact-4-MiB
+        // overflow-cancel contract asserted below in 'actual streaming bytes enforce
+        // the exact 4 MiB boundary and cancel overflow'. Rejected in #233 for this
+        // reason and reconfirmed by reproducing the same test regression before
+        // declining to reorder again — do not "fix" this without re-deriving that
+        // the platform-prefetch race is gone.
         const audio = await readBoundedAudio(request);
         inspectAudio({ audio, mimeType });
         const snapshot = await loadFrozenSnapshot(packLoader);

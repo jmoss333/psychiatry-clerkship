@@ -11,7 +11,7 @@ import math
 import os
 import re
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -141,6 +141,12 @@ def parse_rc_meta(source, relative_path):
     return parse_metadata_marker(source, relative_path).fields
 
 
+def _utc_today():
+    """Attestation tooling stamps UTC dates; compare against the UTC calendar,
+    not the build machine's local one (an evening attest is 'tomorrow' in UTC)."""
+    return datetime.now(timezone.utc).date()
+
+
 def parse_iso_date(value):
     if not isinstance(value, str):
         return None
@@ -203,7 +209,7 @@ def _validate_reviewed_voice_contract(slug, case_id, profile):
             errors.append(prefix + ".voiceProvenance.catalogUrl must be HTTPS")
         if not isinstance(provenance.get("verifiedBy"), str) or not provenance.get("verifiedBy", "").strip():
             errors.append(prefix + ".voiceProvenance.verifiedBy is required")
-        if verified_at is None or verified_at > date.today():
+        if verified_at is None or verified_at > _utc_today():
             errors.append(prefix + ".voiceProvenance.verifiedAt is invalid or future")
         if not is_sha256(provenance.get("evidenceHash")):
             errors.append(prefix + ".voiceProvenance.evidenceHash must be SHA-256")
@@ -632,10 +638,10 @@ def _validate_speech_engine(slug, pack, cases):
         if not isinstance(privacy.get("reviewer"), str) or not privacy.get("reviewer", "").strip():
             errors.append("%s: approved privacy review is missing reviewer" % slug)
         reviewed_at = parse_iso_date(privacy.get("reviewedAt"))
-        if reviewed_at is None or reviewed_at > date.today():
+        if reviewed_at is None or reviewed_at > _utc_today():
             errors.append("%s: approved privacy review has invalid reviewedAt" % slug)
         next_review_at = parse_iso_date(privacy.get("nextReviewAt"))
-        if next_review_at is None or next_review_at <= date.today():
+        if next_review_at is None or next_review_at <= _utc_today():
             errors.append(
                 "%s: approved privacy review requires a future nextReviewAt" % slug
             )
