@@ -2953,6 +2953,61 @@ test('content 401 retry freezes the exact slug and boolean status', async () => 
   });
 });
 
+test('reopen 401 retry preserves the exact requested reason across reauthentication', async () => {
+  let items = [
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'reviewed' },
+    { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed' },
+  ];
+  const posts = [];
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      const body = JSON.parse(options.body);
+      const key = options.headers['x-faculty-key'];
+      posts.push({ body, key });
+      if (key !== 'correct-key') {
+        return jsonResponse({ error: { code: 'unauthorized', message: 'Wrong key.' } }, {
+          ok: false,
+          status: 401,
+        });
+      }
+      const [[slug, reviewed]] = Object.entries(body.changes);
+      items = items.map(item => item.slug === slug
+        ? { ...item, status: reviewed ? 'reviewed' : 'unreviewed' }
+        : item);
+      return jsonResponse({ ok: true, updated: 1, commit: null });
+    }
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  const { controller, document } = await startHarness({ fetchImpl });
+  await setValue(document, 'review-status-filter', 'all', 'change');
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+
+  await document.find('button', 'Reopen review').dispatch('click');
+  await setValue(document, 'reopen-reason', 'Local policy updated; re-verify current guidance.');
+  await document.getElementById('confirm-reopen-review').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(posts.length, 1);
+  assert.ok(document.getElementById('faculty-key'));
+  // The reason survives the reauth prompt untouched — the retry replays the exact
+  // frozen snapshot, and nothing on the 401 path clears client state.
+  assert.equal(controller.state.reopenReason, 'Local policy updated; re-verify current guidance.');
+  const keyInput = document.getElementById('faculty-key');
+  keyInput.value = 'correct-key';
+  await keyInput.parentNode.parentNode.dispatch('submit');
+  await flushAsyncWork();
+
+  assert.equal(posts.length, 2);
+  assert.deepEqual(posts[1].body, posts[0].body);
+  assert.deepEqual(posts[1].body, {
+    target: 'content',
+    changes: { 't_mood.md': false },
+    reasons: { 't_mood.md': 'Local policy updated; re-verify current guidance.' },
+  });
+  assert.equal(controller.state.contentMessage, 'Reopened t_mood.md for review.');
+  assert.equal(controller.state.reopenReason, '', 'cleared only once the retry actually succeeds');
+});
+
 test('Reopen review is a confirmed More action, requires a 1-240 character reason, and submits exactly that content slug as false', async () => {
   assert.match(html, /summary:focus-visible/);
   let items = [
@@ -3032,6 +3087,95 @@ test('Reopen review is a confirmed More action, requires a 1-240 character reaso
   assert.equal(controller.state.reopenReason, '', 'a confirmed save clears the reason');
   assert.equal(Boolean(document.find('button', 'Reopen review')), false);
   assert.ok(document.find('button', 'Attest this page'));
+});
+
+test('cancelling a reopen for one item never lets its reason apply to a different item', async () => {
+  let items = [
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'reviewed' },
+    { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed' },
+  ];
+  let posted;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      posted = JSON.parse(options.body);
+      const [[slug, reviewed]] = Object.entries(posted.changes);
+      items = items.map(item => item.slug === slug
+        ? { ...item, status: reviewed ? 'reviewed' : 'unreviewed' }
+        : item);
+      return jsonResponse({ ok: true, updated: 1, commit: null });
+    }
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  const { controller, document } = await startHarness({ fetchImpl });
+  await setValue(document, 'review-status-filter', 'all', 'change');
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+
+  // Open item A's (t_mood.md) reopen dialog, type a reason meant only for A, cancel.
+  await document.find('button', 'Reopen review').dispatch('click');
+  await setValue(document, 'reopen-reason', 'Guideline changed for t_mood.md specifically.');
+  assert.equal(controller.state.reopenReason, 'Guideline changed for t_mood.md specifically.');
+  await document.getElementById('cancel-reopen-review').dispatch('click');
+  assert.equal(document.getElementById('reopen-confirmation'), null);
+
+  // Select item B (mse.html) and open ITS reopen dialog.
+  await setValue(document, 'review-item-selector', 'tool:mse.html', 'change');
+  assert.equal(controller.state.selectedKey, 'tool:mse.html');
+  await document.find('button', 'Reopen review').dispatch('click');
+
+  // A's leftover text must not pre-fill B's dialog, and confirming with nothing
+  // freshly typed for B must be impossible — a disabled control is a no-op, not a
+  // silent submission of A's reason onto B's ledger record.
+  assert.equal(controller.state.reopenReason, '');
+  assert.equal(document.getElementById('reopen-reason').value, '');
+  assert.equal(document.getElementById('confirm-reopen-review').disabled, true);
+  await document.getElementById('confirm-reopen-review').dispatch('click');
+  assert.equal(posted, undefined, "a disabled confirm must not submit A's reason onto B");
+
+  // Typing B's own reason and confirming submits exactly B's reason, never A's.
+  await setValue(document, 'reopen-reason', 'A separate, current reason for mse.html.');
+  assert.equal(document.getElementById('confirm-reopen-review').disabled, false);
+  await document.getElementById('confirm-reopen-review').dispatch('click');
+  await flushAsyncWork();
+
+  assert.deepEqual(posted, {
+    target: 'content',
+    changes: { 'mse.html': false },
+    reasons: { 'mse.html': 'A separate, current reason for mse.html.' },
+  });
+});
+
+test('reopening the same item again after a network failure keeps the previously typed reason', async () => {
+  // The flip side of the cross-item test above: the fix must not overcorrect into
+  // wiping the reason on every open — a failed save retried against the SAME item
+  // must not force the reviewer to retype (2026-07-26 risk-aware-publishing-warnings
+  // plan, Step 6: "preserve it across authentication retry or network failure").
+  let attempts = 0;
+  const items = [
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'reviewed' },
+  ];
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      attempts += 1;
+      throw new Error('Synthetic network failure.');
+    }
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  const { controller, document } = await startHarness({ fetchImpl });
+  await setValue(document, 'review-status-filter', 'all', 'change');
+
+  await document.find('button', 'Reopen review').dispatch('click');
+  await setValue(document, 'reopen-reason', 'Retry after a dropped connection.');
+  await document.getElementById('confirm-reopen-review').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(attempts, 1);
+  assert.match(controller.state.contentMessage, /Synthetic network failure/);
+  assert.equal(controller.state.reopenReason, 'Retry after a dropped connection.');
+  // Still status 'reviewed' locally (the failed POST never refreshed state), so
+  // Reopen review is still the visible action for the SAME item.
+  await document.find('button', 'Reopen review').dispatch('click');
+  assert.equal(document.getElementById('reopen-reason').value, 'Retry after a dropped connection.');
+  assert.equal(document.getElementById('confirm-reopen-review').disabled, false);
 });
 
 test('content checks are not unsaved bulk state and the shortcut never submits them', async () => {

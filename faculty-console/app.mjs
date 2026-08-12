@@ -145,6 +145,7 @@ export function startFacultyConsole({
     contentCommitUrl: null,
     reopenConfirmation: null,
     reopenReason: '',
+    reopenReasonKey: null,
     dirtyFields: [],
     localAssessment: null,
     confirmations: emptyConfirmations(),
@@ -2528,6 +2529,13 @@ export function startFacultyConsole({
     const current = findReviewItem(item?.key);
     if (state.pending || !current || !['page', 'tool'].includes(current.type)
         || current.completion !== 'complete') return false;
+    // A reason left over from a DIFFERENT item must never pre-fill and silently
+    // attach to this one — that would write the wrong reason into exactly the
+    // governance audit trail this feature exists to keep honest. Keyed rather than
+    // an unconditional reset so a reason survives re-opening the SAME item after an
+    // authentication retry or network failure, per this task's own requirement.
+    if (state.reopenReasonKey !== current.key) state.reopenReason = '';
+    state.reopenReasonKey = current.key;
     state.reopenConfirmation = freezeSnapshot({ key: current.key, reviewed: false });
     const background = document.getElementById('console-background');
     const modal = renderReopenConfirmation();
@@ -2908,6 +2916,7 @@ export function startFacultyConsole({
         // Only on a CONFIRMED save: an authentication retry or network failure must
         // still have the reason available to resubmit, so nothing clears it there.
         state.reopenReason = '';
+        state.reopenReasonKey = null;
       }
       resetApprovalInputs();
       refreshPreviewChromeAndRail('content-action-result');
