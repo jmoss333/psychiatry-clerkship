@@ -149,6 +149,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Validate — registry schemas"),
             ("name", "Test — ReConnect snapshot provenance"),
             ("name", "Validate — ReConnect snapshot provenance"),
+            ("name", "Unit — surface governance"),
             ("name", "Unit — tool governance"),
             ("name", "Validate — tool governance"),
             ("name", "Install — faculty export tool dependencies"),
@@ -301,7 +302,7 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "ci.yml": "faf7199ce4f1be97757fba6d15aad13406395dd3a0953394936feb9c5331c609",
+    "ci.yml": "91a3e2cf4ffa20f1e3b34c2bbb3b4d18c2508a596956d47ff7341715a7d089ae",
     "maintenance-governance-digest.yml": (
         "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
     ),
