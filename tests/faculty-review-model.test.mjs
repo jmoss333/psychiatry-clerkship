@@ -7,6 +7,7 @@ import {
   deriveAttestationEligibility,
   deriveReviewCounts,
   filterReviewItems,
+  isValidReopenReason,
   matchesPreviewStatus,
   normalizeReviewItems,
   normalizeStudentBase,
@@ -107,7 +108,7 @@ test('normalizes all review surfaces with collision-proof keys', () => {
   ]);
   assert.deepEqual(Object.keys(items[0]), [
     'key', 'type', 'identity', 'title', 'savedStatus', 'completion',
-    'revision', 'gate', 'searchText', 'record',
+    'revision', 'gate', 'risk', 'searchText', 'record',
   ]);
   assert.deepEqual(deriveReviewCounts(items), {
     total: 3, needsReview: 2, complete: 1, page: 1, tool: 1, question: 1,
@@ -529,4 +530,57 @@ test('missing selection always fails closed', () => {
     eligible: false,
     blockers: ['selection.missing'],
   });
+});
+
+test('a valid risk normalizes to exactly {kind, level}; a malformed one normalizes to null', () => {
+  const withValidRisk = normalizeReviewItems({
+    items: [{
+      slug: 't_mood.md', kind: 'page', status: 'unreviewed',
+      risk: { kind: 'clinical', level: 'high' },
+    }],
+  })[0];
+  assert.deepEqual(withValidRisk.risk, { kind: 'clinical', level: 'high' });
+
+  for (const risk of [
+    undefined,
+    null,
+    { kind: 'not-a-real-kind', level: 'high' },
+    { kind: 'clinical', level: 'severe' },
+    { kind: 'clinical' },
+    'clinical',
+    ['clinical', 'high'],
+  ]) {
+    const item = normalizeReviewItems({
+      items: [{ slug: 't_mood.md', kind: 'page', status: 'unreviewed', risk }],
+    })[0];
+    assert.equal(item.risk, null, JSON.stringify(risk));
+  }
+
+  // A question item never carries ledger risk — normalization does not invent one.
+  const question = normalizeReviewItems(server)[2];
+  assert.equal(question.risk, null);
+});
+
+test('search matches a content item by its risk kind, in both the raw and space-separated form', () => {
+  const items = normalizeReviewItems({
+    items: [{
+      slug: 'rp-agitation.html', kind: 'tool', status: 'unreviewed',
+      risk: { kind: 'local-policy', level: 'moderate' },
+    }],
+  });
+  for (const search of ['local-policy', 'local policy', 'moderate']) {
+    assert.deepEqual(filterReviewItems(items, { search }).map(item => item.key),
+      ['tool:rp-agitation.html'], search);
+  }
+  assert.deepEqual(filterReviewItems(items, { search: 'clinical' }), []);
+});
+
+test('isValidReopenReason accepts 1-240 trimmed characters and rejects empty, whitespace-only, or oversized input', () => {
+  assert.equal(isValidReopenReason('Needs another look.'), true);
+  assert.equal(isValidReopenReason('a'), true);
+  assert.equal(isValidReopenReason('a'.repeat(240)), true);
+  assert.equal(isValidReopenReason(`  ${'a'.repeat(240)}  `), true);
+  for (const value of ['', '   ', '\n\t', 'a'.repeat(241), undefined, null, 42, {}, []]) {
+    assert.equal(isValidReopenReason(value), false, JSON.stringify(value));
+  }
 });

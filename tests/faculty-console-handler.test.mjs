@@ -105,6 +105,11 @@ function makeBank(items = [validItem()]) {
   };
 }
 
+// Task 1 (reviewed.schema.json) requires every ledger record to carry a valid `risk`,
+// and Task 5's content-mutation handler now refuses to act on a slug whose current
+// record lacks one — so every fixture record needs one, not only the ones exercised
+// by Task 5's own new assertions. Kind/level are deliberately varied across the two
+// slugs (clinical/high vs. general/low) so tests can tell them apart at a glance.
 function defaultFiles(bank = makeBank([
   validItem(),
   validItem({ id: 'qb_moo_901', status: 'attested', correctKey: 'B', stem: stems[1] }),
@@ -113,8 +118,19 @@ function defaultFiles(bank = makeBank([
   return {
     [REVIEWED_PATH]: {
       json: {
-        't_mood.md': { status: 'reviewed', at: '2026-07-01', by: 'Synthetic Reviewer' },
-        'mse-tool': { status: 'pending', at: '2026-07-02', by: 'Pending faculty review' },
+        't_mood.md': {
+          status: 'reviewed',
+          at: '2026-07-01',
+          by: 'Synthetic Reviewer',
+          risk: { kind: 'clinical', level: 'high' },
+        },
+        'mse-tool': {
+          status: 'pending',
+          at: '2026-07-02',
+          by: 'Pending faculty review',
+          risk: { kind: 'general', level: 'low' },
+          reason: 'Synthetic review is pending',
+        },
       },
       sha: REVIEWED_SHA,
     },
@@ -130,6 +146,31 @@ function defaultFiles(bank = makeBank([
       sha: QBANK_SHA,
     },
   };
+}
+
+// A richer variant of defaultFiles() for the assertions that specifically exercise
+// preservation of internal ledger fields the browser must never see: `note` and the
+// three reserved future content-hash fields (Task 1 schema; not consumed by any
+// behavior yet, but must round-trip through attest/reopen untouched all the same).
+function governedFiles() {
+  const files = defaultFiles();
+  files[REVIEWED_PATH].json['t_mood.md'] = {
+    ...files[REVIEWED_PATH].json['t_mood.md'],
+    note: 'Internal reviewer note — never exposed to the browser.',
+    contentHash: 'a'.repeat(64),
+    claimsHash: 'b'.repeat(64),
+    evidenceHash: 'c'.repeat(64),
+    evidenceThrough: '2026-06-01',
+  };
+  files[REVIEWED_PATH].json['mse-tool'] = {
+    ...files[REVIEWED_PATH].json['mse-tool'],
+    note: 'Internal reviewer note for the pending tool.',
+    contentHash: 'd'.repeat(64),
+    claimsHash: 'e'.repeat(64),
+    evidenceHash: 'f'.repeat(64),
+    evidenceThrough: '2026-06-02',
+  };
+  return files;
 }
 
 function clone(value) {
@@ -1770,6 +1811,7 @@ test('reopen preserves legacy pending storage and returns canonical unreviewed s
     body: {
       target: 'content',
       changes: { 't_mood.md': false, 'mse-tool': true },
+      reasons: { 't_mood.md': 'Routine periodic re-review.' },
       attester: 'Synthetic Reviewer',
     },
   }));
@@ -1786,8 +1828,12 @@ test('reopen preserves legacy pending storage and returns canonical unreviewed s
   assert.equal(mock.putBodies[0].path, REVIEWED_PATH);
   const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
   assert.equal(saved['t_mood.md'].status, 'pending');
+  assert.equal(saved['t_mood.md'].reason, 'Routine periodic re-review.');
+  assert.deepEqual(saved['t_mood.md'].risk, { kind: 'clinical', level: 'high' });
   assert.equal(saved['mse-tool'].status, 'reviewed');
   assert.equal(saved['mse-tool'].by, 'Synthetic Reviewer');
+  assert.deepEqual(saved['mse-tool'].risk, { kind: 'general', level: 'low' });
+  assert.equal(Object.hasOwn(saved['mse-tool'], 'reason'), false);
   assert.equal(mock.files[REVIEWED_PATH].json['t_mood.md'].status, 'pending');
 
   const refreshed = await handler(apiRequest('GET'));
@@ -1798,6 +1844,282 @@ test('reopen preserves legacy pending storage and returns canonical unreviewed s
     'unreviewed',
   );
   assert.equal(mock.files[REVIEWED_PATH].json['t_mood.md'].status, 'pending');
+});
+
+test('GET returns risk and pending reason but never internal note or hash fields', async () => {
+  const mock = createGithubMock({ files: governedFiles() });
+  const response = await handlerWith(mock)(apiRequest('GET'));
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  const page = payload.items.find(item => item.slug === 't_mood.md');
+  const tool = payload.items.find(item => item.slug === 'mse-tool');
+  assert.deepEqual(page.risk, { kind: 'clinical', level: 'high' });
+  assert.equal(page.reason, '', 'a reviewed record carries no pending reason');
+  assert.deepEqual(tool.risk, { kind: 'general', level: 'low' });
+  assert.equal(tool.reason, 'Synthetic review is pending');
+  for (const item of [page, tool]) {
+    assert.equal(Object.hasOwn(item, 'note'), false);
+    assert.equal(Object.hasOwn(item, 'contentHash'), false);
+    assert.equal(Object.hasOwn(item, 'claimsHash'), false);
+    assert.equal(Object.hasOwn(item, 'evidenceHash'), false);
+    assert.equal(Object.hasOwn(item, 'evidenceThrough'), false);
+    assert.equal(JSON.stringify(item).includes('Internal reviewer note'), false);
+  }
+});
+
+test('GET treats a malformed risk value as absent rather than failing the whole response', async () => {
+  const files = defaultFiles();
+  files[REVIEWED_PATH].json['mse-tool'].risk = { kind: 'not-a-real-kind', level: 'high' };
+  const mock = createGithubMock({ files });
+
+  const response = await handlerWith(mock)(apiRequest('GET'));
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.items.find(item => item.slug === 'mse-tool')?.risk, null);
+});
+
+test('attesting a pending item preserves risk, note, and hash fields exactly and removes its reason', async () => {
+  const mock = createGithubMock({ files: governedFiles() });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 'mse-tool': true } },
+  }));
+
+  assert.equal(response.status, 200);
+  assert.equal(mock.putBodies.length, 1);
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  const record = saved['mse-tool'];
+  assert.equal(record.status, 'reviewed');
+  assert.equal(record.by, 'Synthetic Reviewer');
+  assert.match(record.at, /^\d{4}-\d{2}-\d{2}$/);
+  assert.deepEqual(record.risk, { kind: 'general', level: 'low' });
+  assert.equal(record.note, 'Internal reviewer note for the pending tool.');
+  assert.equal(record.contentHash, 'd'.repeat(64));
+  assert.equal(record.claimsHash, 'e'.repeat(64));
+  assert.equal(record.evidenceHash, 'f'.repeat(64));
+  assert.equal(record.evidenceThrough, '2026-06-02');
+  assert.equal(Object.hasOwn(record, 'reason'), false, 'attesting removes the pending reason');
+  // {...current, status:'reviewed', at, by} exactly — nothing invented, nothing lost.
+  assert.deepEqual(
+    Object.keys(record).sort(),
+    ['at', 'by', 'claimsHash', 'contentHash', 'evidenceHash', 'evidenceThrough', 'note', 'risk', 'status'],
+  );
+});
+
+test('reopening a reviewed item preserves risk, note, and hash fields, sets the pending reviewer, and stores the supplied reason', async () => {
+  const mock = createGithubMock({ files: governedFiles() });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      target: 'content',
+      changes: { 't_mood.md': false },
+      reasons: { 't_mood.md': 'New evidence changes the recommendation.' },
+    },
+  }));
+
+  assert.equal(response.status, 200);
+  assert.equal(mock.putBodies.length, 1);
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  const record = saved['t_mood.md'];
+  assert.equal(record.status, 'pending');
+  assert.equal(record.by, 'Pending faculty review');
+  assert.match(record.at, /^\d{4}-\d{2}-\d{2}$/);
+  assert.deepEqual(record.risk, { kind: 'clinical', level: 'high' });
+  assert.equal(record.note, 'Internal reviewer note — never exposed to the browser.');
+  assert.equal(record.contentHash, 'a'.repeat(64));
+  assert.equal(record.claimsHash, 'b'.repeat(64));
+  assert.equal(record.evidenceHash, 'c'.repeat(64));
+  assert.equal(record.evidenceThrough, '2026-06-01');
+  assert.equal(record.reason, 'New evidence changes the recommendation.');
+  assert.deepEqual(
+    Object.keys(record).sort(),
+    ['at', 'by', 'claimsHash', 'contentHash', 'evidenceHash', 'evidenceThrough', 'note', 'reason', 'risk', 'status'],
+  );
+});
+
+test('reopening without a reason returns content.reason_required and writes nothing', async () => {
+  const mock = createGithubMock({ files: governedFiles() });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': false } },
+  }));
+  await expectError(response, { status: 400, code: 'content.reason_required' });
+  assert.equal(mock.putBodies.length, 0);
+});
+
+test('reopening with a blank or whitespace-only reason returns content.reason_required and writes nothing', async () => {
+  for (const reason of ['', '   ', '\n\t']) {
+    const mock = createGithubMock({ files: governedFiles() });
+    const response = await handlerWith(mock)(apiRequest('POST', {
+      body: {
+        target: 'content',
+        changes: { 't_mood.md': false },
+        reasons: { 't_mood.md': reason },
+      },
+    }));
+    await expectError(response, { status: 400, code: 'content.reason_required' });
+    assert.equal(mock.putBodies.length, 0, JSON.stringify(reason));
+  }
+});
+
+test('a malformed or oversized reopen reason returns content.invalid_reason and writes nothing', async () => {
+  const cases = [
+    ['a number', 42],
+    ['an array', ['not a string']],
+    ['an object', { text: 'not a string' }],
+    ['241 characters', 'x'.repeat(241)],
+  ];
+  for (const [label, reason] of cases) {
+    const mock = createGithubMock({ files: governedFiles() });
+    const response = await handlerWith(mock)(apiRequest('POST', {
+      body: {
+        target: 'content',
+        changes: { 't_mood.md': false },
+        reasons: { 't_mood.md': reason },
+      },
+    }));
+    await expectError(response, { status: 400, code: 'content.invalid_reason' });
+    assert.equal(mock.putBodies.length, 0, label);
+  }
+});
+
+test('a reopen reason at exactly the 240-character limit is accepted and stored verbatim', async () => {
+  const reason = `${'x'.repeat(239)}!`;
+  const mock = createGithubMock({ files: governedFiles() });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      target: 'content',
+      changes: { 't_mood.md': false },
+      reasons: { 't_mood.md': reason },
+    },
+  }));
+  assert.equal(response.status, 200);
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  assert.equal(saved['t_mood.md'].reason, reason);
+  assert.equal(reason.length, 240);
+});
+
+test('a reopen reason is trimmed before the 1-240 character reason is validated and stored', async () => {
+  const mock = createGithubMock({ files: governedFiles() });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      target: 'content',
+      changes: { 't_mood.md': false },
+      reasons: { 't_mood.md': '  Needs another look.  ' },
+    },
+  }));
+  assert.equal(response.status, 200);
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  assert.equal(saved['t_mood.md'].reason, 'Needs another look.');
+});
+
+test('a conflict retry re-reads the ledger and retains the exact requested reason and preserved fields', async () => {
+  let putAttempts = 0;
+  const mock = createGithubMock({
+    files: governedFiles(),
+    beforeRequest: call => {
+      if (call.method !== 'PUT' || call.path !== REVIEWED_PATH) return undefined;
+      putAttempts += 1;
+      return putAttempts === 1
+        ? jsonResponse(409, { message: 'Synthetic conflict for retry test.' })
+        : undefined;
+    },
+  });
+
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      target: 'content',
+      changes: { 't_mood.md': false },
+      reasons: { 't_mood.md': 'Retry must keep this exact reason.' },
+    },
+  }));
+
+  assert.equal(response.status, 200);
+  assert.equal(putAttempts, 2, 'the write must have been retried exactly once');
+  assert.equal(
+    mock.calls.filter(call => call.method === 'GET' && call.path === REVIEWED_PATH).length,
+    2,
+    'the retry must re-read the ledger rather than reuse the stale copy',
+  );
+  assert.equal(mock.putBodies.length, 1, 'only the successful attempt reaches the default handler');
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  const record = saved['t_mood.md'];
+  assert.equal(record.status, 'pending');
+  assert.equal(record.reason, 'Retry must keep this exact reason.');
+  assert.deepEqual(record.risk, { kind: 'clinical', level: 'high' });
+  assert.equal(record.note, 'Internal reviewer note — never exposed to the browser.');
+  assert.equal(record.contentHash, 'a'.repeat(64));
+});
+
+test('content mutation rejects a slug whose current ledger record lacks valid risk, without inventing one', async () => {
+  const files = defaultFiles();
+  delete files[REVIEWED_PATH].json['t_mood.md'].risk;
+  const mock = createGithubMock({ files });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      target: 'content',
+      changes: { 't_mood.md': false },
+      reasons: { 't_mood.md': 'Needs another look.' },
+    },
+  }));
+  await expectError(response, { status: 502, code: 'repository_file_invalid' });
+  assert.equal(mock.putBodies.length, 0);
+});
+
+for (const [label, badRisk] of [
+  ['an unknown kind', { kind: 'not-a-real-kind', level: 'high' }],
+  ['an unknown level', { kind: 'clinical', level: 'severe' }],
+  ['a missing level', { kind: 'clinical' }],
+  ['a non-object risk', 'clinical'],
+  ['a null risk', null],
+]) {
+  test(`content mutation rejects a slug with ${label} in its current risk`, async () => {
+    const files = defaultFiles();
+    files[REVIEWED_PATH].json['mse-tool'].risk = badRisk;
+    const mock = createGithubMock({ files });
+    const response = await handlerWith(mock)(apiRequest('POST', {
+      body: { target: 'content', changes: { 'mse-tool': true } },
+    }));
+    await expectError(response, { status: 502, code: 'repository_file_invalid' });
+    assert.equal(mock.putBodies.length, 0);
+  });
+}
+
+test('content mutation rejects a slug entirely absent from the ledger rather than inventing a default risk', async () => {
+  const files = defaultFiles();
+  files[MANIFEST_PATH].json.md.push(['01_Core/brand-new.md', 'brand-new.md', 'Brand New Page']);
+  const mock = createGithubMock({ files });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 'brand-new.md': true } },
+  }));
+  await expectError(response, { status: 502, code: 'repository_file_invalid' });
+  assert.equal(mock.putBodies.length, 0);
+});
+
+test('a slug with a __proto__-shaped key is stored as an own property, never as a prototype mutation', async () => {
+  const files = defaultFiles();
+  // Object.defineProperty (not `json.__proto__ = ...`) so this line creates a genuine
+  // own data property literally named "__proto__" instead of tripping the accessor
+  // Object.prototype already defines under that name.
+  Object.defineProperty(files[REVIEWED_PATH].json, '__proto__', {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    value: { status: 'pending', at: '2026-07-03', by: 'Pending faculty review', risk: { kind: 'general', level: 'low' }, reason: 'Synthetic' },
+  });
+  files[MANIFEST_PATH].json.md.push(['01_Core/__proto__', '__proto__', 'Synthetic proto-named page']);
+  const mock = createGithubMock({ files });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    // Computed key, not a `{ __proto__: true }` literal: the literal form is
+    // special-cased by the language to set an object's [[Prototype]] instead of
+    // creating an own property, which would silently make `changes` empty.
+    body: { target: 'content', changes: { ['__proto__']: true } },
+  }));
+
+  assert.equal(response.status, 200);
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  assert.equal(Object.hasOwn(saved, '__proto__'), true);
+  assert.equal(saved.__proto__.status, 'reviewed');
+  assert.equal(Object.getPrototypeOf(saved), Object.prototype);
 });
 
 test('malformed JSON and missing server configuration fail with stable non-secret responses', async () => {

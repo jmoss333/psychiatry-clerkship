@@ -1262,6 +1262,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     expect(api.calls[pageStart].body).toEqual({
       target: 'content',
       changes: { 't_mood.md': true },
+      reasons: {},
     });
     expect(api.currentContent().find(item => item.slug === 't_mood.md').status).toBe('reviewed');
 
@@ -1291,8 +1292,12 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.getByRole('button', { name: 'Reopen review' }).click();
     const reopenDialog = page.getByRole('alertdialog', { name: 'Reopen this review?' });
     await expect(reopenDialog).toContainText('This changes only t_mood.md.');
+    const confirmReopen = reopenDialog.getByRole('button', { name: 'Confirm reopen' });
+    await expect(confirmReopen).toBeDisabled();
+    await reopenDialog.getByLabel('Reason for reopening').fill('Guideline changed; re-verify the dosing table.');
+    await expect(confirmReopen).toBeEnabled();
     const reopenStart = api.calls.length;
-    await reopenDialog.getByRole('button', { name: 'Confirm reopen' }).click();
+    await confirmReopen.click();
     await expect(page.locator('#content-action-result')).toContainText('Reopened t_mood.md for review.');
     await expect(page.locator('#selected-item-status')).toHaveText('Not reviewed');
     expect(api.calls.slice(reopenStart).map(call => `${call.method}:${call.action || 'state'}`)).toEqual([
@@ -1302,6 +1307,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     expect(api.calls[reopenStart].body).toEqual({
       target: 'content',
       changes: { 't_mood.md': false },
+      reasons: { 't_mood.md': 'Guideline changed; re-verify the dosing table.' },
     });
     expect(api.currentContent().find(item => item.slug === 't_mood.md').status).toBe('pending');
     expect(api.gets.at(-1).items.find(item => item.slug === 't_mood.md').status).toBe('unreviewed');

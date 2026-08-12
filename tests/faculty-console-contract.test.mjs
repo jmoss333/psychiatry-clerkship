@@ -11,6 +11,7 @@ import {
 import {
   deriveReviewCounts,
   filterReviewItems,
+  isValidReopenReason,
   normalizeReviewItems,
 } from '../faculty-console/review-model.mjs';
 
@@ -651,8 +652,14 @@ test('uses the approved clinical workbench layout and accessible primary contras
 test('normalizes, filters, and counts the shared review queue', () => {
   const server = {
     items: [
-      { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
-      { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed' },
+      {
+        slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed',
+        risk: { kind: 'clinical', level: 'high' },
+      },
+      {
+        slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed',
+        risk: { kind: 'local-policy', level: 'moderate' },
+      },
     ],
     qbank: [
       validDomQuestion({ id: 'qb_moo_003', evidence: 'anchor-only phrase' }),
@@ -667,13 +674,43 @@ test('normalizes, filters, and counts the shared review queue', () => {
     'question:qb_moo_001',
     'question:qb_moo_003',
   ]);
+  assert.deepEqual(items.find(item => item.key === 'page:t_mood.md').risk,
+    { kind: 'clinical', level: 'high' });
+  assert.deepEqual(items.find(item => item.key === 'tool:mse.html').risk,
+    { kind: 'local-policy', level: 'moderate' });
+  // Questions carry no ledger risk; normalization never invents one.
+  assert.equal(items.find(item => item.key === 'question:qb_moo_001').risk, null);
   assert.deepEqual(filterReviewItems(items, {
     search: 'anchor-only', type: 'all', status: 'needs-review',
     category: 'all', gate: 'all', difficulty: 'all',
   }).map(item => item.key), ['question:qb_moo_003']);
+  // Free-text search finds a content item by its risk kind — in the raw ledger form
+  // and in the space-separated form a reviewer actually reads on screen.
+  assert.deepEqual(filterReviewItems(items, {
+    search: 'clinical', type: 'all', status: 'all',
+    category: 'all', gate: 'all', difficulty: 'all',
+  }).map(item => item.key), ['page:t_mood.md']);
+  assert.deepEqual(filterReviewItems(items, {
+    search: 'local policy', type: 'all', status: 'all',
+    category: 'all', gate: 'all', difficulty: 'all',
+  }).map(item => item.key), ['tool:mse.html']);
   assert.deepEqual(deriveReviewCounts(items), {
     total: 4, needsReview: 3, complete: 1, page: 1, tool: 1, question: 2,
   });
+});
+
+test('isValidReopenReason accepts 1-240 trimmed characters and rejects empty, whitespace-only, or oversized input', () => {
+  assert.equal(isValidReopenReason('Needs another look.'), true);
+  assert.equal(isValidReopenReason('a'), true);
+  assert.equal(isValidReopenReason('a'.repeat(240)), true);
+  assert.equal(isValidReopenReason(`  ${'a'.repeat(240)}  `), true,
+    'surrounding whitespace does not count toward the 240-character limit');
+  assert.equal(isValidReopenReason(''), false);
+  assert.equal(isValidReopenReason('   '), false);
+  assert.equal(isValidReopenReason('a'.repeat(241)), false);
+  assert.equal(isValidReopenReason(undefined), false);
+  assert.equal(isValidReopenReason(null), false);
+  assert.equal(isValidReopenReason(42), false);
 });
 
 test('renders one ordered queue for pages, tools, and questions', async () => {
@@ -2621,6 +2658,51 @@ test('Lock uses the dirty guard and save-time 401 reauthentication retries the c
   assert.equal(window.sessionStorage.getItem('fac_key'), null);
 });
 
+test('the attestation rail shows read-only publishing risk for a page or tool but never for a question', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        {
+          slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed',
+          risk: { kind: 'clinical', level: 'high' },
+        },
+        {
+          slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed',
+          risk: { kind: 'local-policy', level: 'moderate' },
+        },
+      ],
+      questions: [validDomQuestion()],
+    })),
+  });
+
+  assert.equal(
+    document.getElementById('attestation-risk-context')?.textContent,
+    'Publishing risk: Clinical · High risk',
+  );
+
+  await setValue(document, 'review-item-selector', 'tool:mse.html', 'change');
+  assert.equal(
+    document.getElementById('attestation-risk-context')?.textContent,
+    'Publishing risk: Local Policy · Moderate risk',
+  );
+
+  await setValue(document, 'review-item-selector', 'question:qb_moo_902', 'change');
+  assert.equal(document.getElementById('attestation-risk-context'), null,
+    'a question has no governed publishing risk to show');
+});
+
+test('the attestation rail omits the risk context entirely when the ledger has no risk for the item yet', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+      ],
+      questions: [],
+    })),
+  });
+  assert.equal(document.getElementById('attestation-risk-context'), null);
+});
+
 test('page and tool use the same Live Review Resolve Confirm rail and clear content checks on selection', async () => {
   const harness = await startHarness({
     fetchImpl: async () => jsonResponse(serverState({
@@ -2712,6 +2794,7 @@ test('content attestation submits exactly one page slug, confirms it, and holds 
   assert.deepEqual(posted, {
     target: 'content',
     changes: { 't_mood.md': true },
+    reasons: {},
   });
   assert.equal(Object.keys(posted.changes).length, 1);
   assert.equal(controller.state.selectedKey, 'page:t_mood.md');
@@ -2866,13 +2949,17 @@ test('content 401 retry freezes the exact slug and boolean status', async () => 
   assert.deepEqual(posts[1].body, {
     target: 'content',
     changes: { 't_mood.md': true },
+    reasons: {},
   });
 });
 
-test('Reopen review is a confirmed More action and submits exactly that content slug as false', async () => {
+test('Reopen review is a confirmed More action, requires a 1-240 character reason, and submits exactly that content slug as false', async () => {
   assert.match(html, /summary:focus-visible/);
   let items = [
-    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'reviewed' },
+    {
+      slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'reviewed',
+      risk: { kind: 'clinical', level: 'high' },
+    },
     { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed' },
   ];
   let posted;
@@ -2905,6 +2992,14 @@ test('Reopen review is a confirmed More action and submits exactly that content 
     reviewed: false,
   });
   assert.equal(Object.isFrozen(controller.state.reopenConfirmation), true);
+
+  // No reason yet: the control is disabled and a click on it is a no-op.
+  assert.equal(controller.state.reopenReason, '');
+  assert.equal(document.getElementById('confirm-reopen-review').disabled, true);
+  await document.getElementById('confirm-reopen-review').dispatch('click');
+  assert.equal(posted, undefined);
+  assert.ok(document.getElementById('reopen-confirmation'), 'a disabled control must not dismiss the modal');
+
   const frame = document.getElementById('learner-preview-frame');
   const frameWindow = frame.contentWindow;
   await reportPreviewStatus(window, controller, 'ready');
@@ -2912,12 +3007,21 @@ test('Reopen review is a confirmed More action and submits exactly that content 
   assert.ok(document.getElementById('reopen-confirmation'));
   assert.equal(document.getElementById('learner-preview-frame'), frame);
   assert.equal(document.getElementById('learner-preview-frame').contentWindow, frameWindow);
+
+  // Whitespace-only still counts as no reason.
+  await setValue(document, 'reopen-reason', '   ');
+  assert.equal(controller.state.reopenReason, '   ');
+  assert.equal(document.getElementById('confirm-reopen-review').disabled, true);
+
+  await setValue(document, 'reopen-reason', 'Guideline changed; re-verify the dosing table.');
+  assert.equal(document.getElementById('confirm-reopen-review').disabled, false);
   await document.getElementById('confirm-reopen-review').dispatch('click');
   await flushAsyncWork();
 
   assert.deepEqual(posted, {
     target: 'content',
     changes: { 't_mood.md': false },
+    reasons: { 't_mood.md': 'Guideline changed; re-verify the dosing table.' },
   });
   assert.equal(Object.keys(posted.changes).length, 1);
   assert.equal(controller.state.selectedKey, 'page:t_mood.md');
@@ -2925,6 +3029,7 @@ test('Reopen review is a confirmed More action and submits exactly that content 
   assert.equal(controller.state.reviewItems.find(item => item.key === 'page:t_mood.md').savedStatus,
     'unreviewed');
   assert.equal(controller.state.contentMessage, 'Reopened t_mood.md for review.');
+  assert.equal(controller.state.reopenReason, '', 'a confirmed save clears the reason');
   assert.equal(Boolean(document.find('button', 'Reopen review')), false);
   assert.ok(document.find('button', 'Attest this page'));
 });
@@ -3643,7 +3748,7 @@ test('one click attests a page: no checkboxes, all three assertions recorded, au
   await button.dispatch('click');
   await flushAsyncWork();
 
-  assert.deepEqual(posted, { target: 'content', changes: { 't_mood.md': true } });
+  assert.deepEqual(posted, { target: 'content', changes: { 't_mood.md': true }, reasons: {} });
   assert.equal(controller.state.contentMessage, 'Attested t_mood.md.');
   // The item is held, not skipped: the confirmation and commit link stay on
   // screen. Next is focused, so advancing is one Enter.

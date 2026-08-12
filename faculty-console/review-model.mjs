@@ -4,9 +4,28 @@ const REVISION_PATTERN = /^[0-9a-f]{64}$/;
 const PREVIEW_FAILURES = new Set([
   'not_found', 'error', 'protocol_unavailable', 'frame_failure',
 ]);
+// Mirrors 13_Faculty_Resources/reviewed.schema.json (Task 1) — risk is read-only here;
+// a later classification queue owns edits, so this module only ever normalizes it.
+const RISK_KINDS = new Set(['general', 'clinical', 'legal', 'formulary', 'local-policy']);
+const RISK_LEVELS = new Set(['low', 'moderate', 'high']);
+const REOPEN_REASON_MAX_LENGTH = 240;
 
 const clean = value => typeof value === 'string' ? value.trim() : '';
 const list = value => Array.isArray(value) ? value : [];
+
+function validRisk(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const kind = clean(value.kind);
+  const level = clean(value.level);
+  return RISK_KINDS.has(kind) && RISK_LEVELS.has(level) ? { kind, level } : null;
+}
+
+// Both the raw ledger kind ("local-policy") and its space-separated display form
+// ("local policy") are searchable, since riskLabel() in app.mjs is what a reviewer
+// actually reads on screen — a search for what they see should find it too.
+function riskSearchTerms(risk) {
+  return risk ? [risk.kind, risk.kind.replace(/-/g, ' '), risk.level] : [];
+}
 
 function completion(type, status) {
   return type === 'question'
@@ -26,12 +45,14 @@ export function normalizeReviewItems(server = {}) {
     const type = clean(record?.kind);
     const identity = clean(record?.slug);
     if (!Object.hasOwn(TYPE_ORDER, type) || !identity) throw new TypeError('Invalid content review item.');
+    const risk = validRisk(record?.risk);
     items.push({
       key: `${type}:${identity}`, type, identity,
       title: clean(record.title) || identity,
       savedStatus: clean(record.status), completion: completion(type, record.status),
       revision: '', gate: '',
-      searchText: [record.title, identity].map(clean).join(' ').toLowerCase(),
+      risk,
+      searchText: [record.title, identity, ...riskSearchTerms(risk)].map(clean).join(' ').toLowerCase(),
       record,
     });
   }
@@ -43,6 +64,7 @@ export function normalizeReviewItems(server = {}) {
       title: identity, savedStatus: clean(record.status),
       completion: completion('question', record.status),
       revision: clean(record.revision), gate: clean(record.assessment?.gate),
+      risk: null,
       searchText: [identity, record.stem, record.category, record.evidence, ...list(record.pages)]
         .map(clean).join(' ').toLowerCase(),
       record,
@@ -77,6 +99,14 @@ export function deriveReviewCounts(items) {
     counts[item.completion === 'complete' ? 'complete' : 'needsReview'] += 1;
   }
   return counts;
+}
+
+// Matches reviewed.schema.json's reason field exactly (minLength 1, maxLength 240,
+// counted after trimming). The console disables its reopen control on this; the
+// server (attest.mjs's requireReopenReason) re-enforces it independently.
+export function isValidReopenReason(value) {
+  const reason = clean(value);
+  return reason.length > 0 && reason.length <= REOPEN_REASON_MAX_LENGTH;
 }
 
 export function createReviewToken(cryptoImpl) {
