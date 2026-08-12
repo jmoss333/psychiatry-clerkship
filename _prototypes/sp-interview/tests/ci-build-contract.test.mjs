@@ -1101,3 +1101,42 @@ test('managed SP fail-closed gate ignores workflow labels', () => {
   }
   assert.doesNotThrow(() => assertCiGatesFailClosed(relabeled));
 });
+
+
+// Issue #225: the debrief crit-card's rehearse/ref/reframe lines are pack-driven with
+// SI defaults — Ray (command-hallucination critical gate) supplies his own copy; the
+// attested Dana pack stays byte-compatible by omitting the fields and falling back.
+test('crit-card rehearse/ref/reframe are pack-driven with SI fallbacks', () => {
+  const view = fs.readFileSync(path.join(ROOT, '_prototypes/sp-interview/sp-interview.html'), 'utf8');
+  for (const needle of [
+    'criticalMiss||{}).rehearse',
+    'criticalMiss||{}).ref',
+    'criticalMiss||{}).reframe',
+  ]) {
+    assert.equal(view.includes(needle), true, `view must read pack ${needle}`);
+  }
+  // The SI defaults survive as fallbacks, gated exactly as before.
+  assert.match(view, /Have you had thoughts of killing yourself\?/);
+  assert.match(view, /pg_suicide\.md · asking directly, in plain language/);
+  assert.match(view, /Asking doesn’t plant the thought\. Not asking leaves them alone with it\./);
+
+  const pack = JSON.parse(
+    fs.readFileSync(path.join(ROOT, '_prototypes/sp-interview/sp-interview.pack.json'), 'utf8'),
+  );
+  const byId = Object.fromEntries(pack.cases.map(c => [c.id, c]));
+  const ray = byId.sp_psychosis_paranoid_001.criticalMiss;
+  for (const field of ['rehearse', 'ref', 'reframe']) {
+    assert.equal(typeof ray[field], 'string', `Ray criticalMiss.${field} present`);
+    assert.equal(ray[field].trim().length > 0, true, `Ray criticalMiss.${field} non-empty`);
+  }
+  // Ray's copy must be psychosis-appropriate, never SI coaching.
+  assert.equal(/killing yourself\?/.test(ray.rehearse), false, 'no SI rehearse line for Ray');
+  assert.match(ray.ref, /t_psychosis\.md/);
+  // Dana (attested) and Marcus keep pack byte-compatibility: no extras, SI defaults apply.
+  for (const id of ['sp_depression_gated_si_001', 'sp_mania_redirect_001']) {
+    const cm = byId[id].criticalMiss;
+    for (const field of ['rehearse', 'ref', 'reframe']) {
+      assert.equal(field in cm, false, `${id} keeps no ${field} (falls back to SI defaults)`);
+    }
+  }
+});

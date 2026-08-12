@@ -1052,12 +1052,17 @@ function App(){
     // string only guards a future case that omits it — all shipped cases (Dana/Marcus/Ray) supply it.
     var critText=criticalMiss?(((E.caseDef.criticalMiss||{})[critKey])
       ||'The safety question at the center of this case was missed or only approached indirectly — return to it plainly.'):null;
-    // Is the missed critical gate the suicide screen? The re-run rehearse line, the pg_suicide ref,
-    // and the "asking doesn't plant the thought" reframe are SI-specific — render them only for
-    // SI-critical cases (Dana, Marcus). Ray's critical gate is command-hallucination screening, so it
-    // shows its own pack copy without SI coaching that would be clinically wrong for a psychosis case.
+    // The re-run rehearse line, the reference, and the reframe are pack-driven per case
+    // (criticalMiss.rehearse / .ref / .reframe) so a non-SI case like Ray carries its own
+    // command-hallucination coaching. Cases whose critical gate is the suicide screen fall
+    // back to the SI defaults when the pack omits the fields — which keeps Dana's attested
+    // pack byte-unchanged. A case with neither pack copy nor an SI gate renders none of the
+    // three, never SI coaching that would be clinically wrong for it (issue #225).
     var critChk=critItem?(E.caseDef.checklist.filter(function(c){return c.id===critItem.id;})[0]||null):null;
     var isSI=!!(critChk&&(critChk.intents||[]).indexOf('si_direct')>=0);
+    var rehearseLine=((E.caseDef.criticalMiss||{}).rehearse)||(isSI?'“Have you had thoughts of killing yourself?”':null);
+    var refLine=((E.caseDef.criticalMiss||{}).ref)||(isSI?'→ pg_suicide.md · asking directly, in plain language':null);
+    var reframeLine=((E.caseDef.criticalMiss||{}).reframe)||(isSI?'Asking doesn’t plant the thought. Not asking leaves them alone with it.':null);
     var labels={alliance:'Alliance & rapport',data:'Data gathering',technique:'Communication technique',organization:'Organization & closing'};
     var words={observed:'Observed',partial:'Partly there',missed:'Not this time'};
     var wcls={observed:'obs',partial:'part',missed:'miss'};
@@ -1069,13 +1074,13 @@ function App(){
           ?(critItem.status==='partial'?'Before anything else — the question that stopped at a euphemism.':'Before anything else — the question that wasn’t asked.')
           :(critItem.status==='partial'?'Before anything else — the safety screen that stopped short.':'Before anything else — the safety screen that didn’t happen.')),
         e('p',{className:'body'},critText),
-        isSI?e('div',{className:'rehearse'},
+        rehearseLine?e('div',{className:'rehearse'},
           e('p',{className:'lbl'},'For the re-run — the patient’s words first, then the plain question'),
-          e('p',{className:'line'},'“Have you had thoughts of killing yourself?”')):null,
+          e('p',{className:'line'},rehearseLine)):null,
         e('div',{className:'foot'},
           e('button',{className:'btn',onClick:function(){begin(E.caseDef,E.difficulty);}},'Re-run this encounter'),
-          isSI?e('span',{className:'ref'},'→ pg_suicide.md · asking directly, in plain language'):null,
-          isSI?e('span',{className:'myth'},'Asking doesn’t plant the thought. Not asking leaves them alone with it.'):null)):null,
+          refLine?e('span',{className:'ref'},refLine):null,
+          reframeLine?e('span',{className:'myth'},reframeLine):null)):null,
       e('div',{className:'card'},
         e('h2',null,'Your read, then the room’s'),
         e('p',{style:{margin:'0 0 14px',fontSize:'.78rem',color:'var(--text-light)'}},'What you committed to, before any feedback.'),
