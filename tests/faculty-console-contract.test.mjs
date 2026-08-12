@@ -2703,6 +2703,36 @@ test('the attestation rail omits the risk context entirely when the ledger has n
   assert.equal(document.getElementById('attestation-risk-context'), null);
 });
 
+test('the attestation rail shows the stored pending reason read-only, never for reviewed items', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        {
+          slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed',
+          risk: { kind: 'clinical', level: 'high' },
+          reason: 'New content awaiting faculty review.',
+        },
+        {
+          slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed',
+          risk: { kind: 'general', level: 'low' },
+        },
+      ],
+      questions: [],
+    })),
+  });
+
+  assert.equal(
+    document.getElementById('attestation-pending-reason')?.textContent,
+    'Pending because: New content awaiting faculty review.',
+  );
+  assert.equal(document.getElementById('attestation-pending-reason')?.tagName, 'P',
+    'the stored reason is read-only text, not a form control');
+
+  await setValue(document, 'review-item-selector', 'tool:mse.html', 'change');
+  assert.equal(document.getElementById('attestation-pending-reason'), null,
+    'reviewed items carry no pending reason');
+});
+
 test('page and tool use the same Live Review Resolve Confirm rail and clear content checks on selection', async () => {
   const harness = await startHarness({
     fetchImpl: async () => jsonResponse(serverState({

@@ -2061,7 +2061,7 @@ test('content mutation rejects a slug whose current ledger record lacks valid ri
       reasons: { 't_mood.md': 'Needs another look.' },
     },
   }));
-  await expectError(response, { status: 502, code: 'repository_file_invalid' });
+  await expectError(response, { status: 400, code: 'content.missing_risk' });
   assert.equal(mock.putBodies.length, 0);
 });
 
@@ -2079,7 +2079,7 @@ for (const [label, badRisk] of [
     const response = await handlerWith(mock)(apiRequest('POST', {
       body: { target: 'content', changes: { 'mse-tool': true } },
     }));
-    await expectError(response, { status: 502, code: 'repository_file_invalid' });
+    await expectError(response, { status: 400, code: 'content.missing_risk' });
     assert.equal(mock.putBodies.length, 0);
   });
 }
