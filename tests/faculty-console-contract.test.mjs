@@ -1102,6 +1102,10 @@ test('the exact saved-revision receipt is explicit, Draft-only, and revoked by e
     fetchImpl: async () => jsonResponse(serverState({ questions: [current, other] })),
     assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
   });
+  // This test pins per-item receipt revocation for `current`, not Task 3's auto-advance
+  // — seed `other` with its own already-matching receipt so it is never the next
+  // unreceipted draft that checking `current`'s box below would jump to.
+  controller.state.reviewedRevisions.set(other.id, other.revision);
   const id = current.id;
   const revision = current.revision;
   const frame = document.getElementById('learner-preview-frame');
@@ -2806,10 +2810,13 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
   });
 });
 
-test('content attestation submits exactly one page slug, confirms it, and holds the item for Next item', async () => {
+// Single-pending fixture (Task 3, 2026-08-12): with a second pending item present,
+// attesting t_mood.md would now auto-advance onto it instead of holding — that path is
+// covered by 'a successful content attest advances to the next pending content item'.
+// This test pins the no-further-pending case, where the hold behavior still applies.
+test('content attestation submits exactly one page slug, confirms it, and holds the completed item', async () => {
   let items = [
     { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
-    { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
   ];
   let posted;
   const fetchImpl = async (url, options = {}) => {
@@ -2849,9 +2856,10 @@ test('content attestation submits exactly one page slug, confirms it, and holds 
     document.links().find(link => link.textContent === 'View commit ↗')?.getAttribute('href'),
     'https://github.example/commit/content-page',
   );
+  // Nothing else is pending in this filter, so there is nothing for Next item to reach.
   assert.equal(document.getElementById('next-review-item').textContent, 'Next item');
-  assert.equal(document.getElementById('next-review-item').disabled, false);
-  assert.equal(document.activeElement?.getAttribute('id'), 'next-review-item');
+  assert.equal(document.getElementById('next-review-item').disabled, true);
+  assert.equal(document.activeElement?.getAttribute('id'), 'content-action-result');
   assert.equal(document.status.textContent, 'Attested t_mood.md.');
 });
 
@@ -3344,6 +3352,12 @@ test('Ready attestation posts one exact-revision entry and holds the completed q
     assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
   });
   const { controller, document } = harness;
+  // This test pins full-question attestation's own hold behavior, not Task 3's
+  // receipt auto-advance — makeCurrentQuestionPreviewReady below records qb_moo_902's
+  // compound receipt as part of its setup, which would otherwise auto-advance onto
+  // `second` before the attestation under test ever runs. Seed `second` with its own
+  // already-matching receipt so it is never that next unreceipted draft.
+  controller.state.reviewedRevisions.set(second.id, second.revision);
   await makeCurrentQuestionPreviewReady(harness);
   for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
     await setChecked(document, id);
@@ -3892,13 +3906,16 @@ test('Ctrl or Command S in the unsaved-navigation modal saves and continues its 
   assert.equal(document.activeElement?.getAttribute('id'), 'review-item-selector');
 });
 
-test('one click attests a page: no checkboxes, all three assertions recorded, auto-advance', async () => {
+// Single-pending fixture (Task 3, 2026-08-12): with a second pending item present,
+// this one-click attest would now auto-advance onto it instead of holding — that path
+// is covered by 'a successful content attest advances to the next pending content
+// item'. This test pins the no-further-pending case, where the hold still applies.
+test('one click attests a page: no checkboxes, all three assertions recorded', async () => {
   // 51 items × 4 clicks was the complaint. The rule this pins is that fewer
   // clicks may not mean asserting less: pressing the button must set the same
   // three flags the checkboxes set, and its label must say so.
   let items = [
     { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
-    { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
   ];
   let posted;
   const fetchImpl = async (url, options = {}) => {
@@ -3936,8 +3953,8 @@ test('one click attests a page: no checkboxes, all three assertions recorded, au
 
   assert.deepEqual(posted, { target: 'content', changes: { 't_mood.md': true }, reasons: {} });
   assert.equal(controller.state.contentMessage, 'Attested t_mood.md.');
-  // The item is held, not skipped: the confirmation and commit link stay on
-  // screen. Next is focused, so advancing is one Enter.
+  // Nothing else is pending in this filter, so the item is held rather than skipped:
+  // the confirmation and commit link stay on screen.
   assert.equal(controller.state.selectedKey, 'page:t_mood.md');
   assert.equal(controller.state.completedHoldKey, 'page:t_mood.md');
 });
@@ -4056,4 +4073,158 @@ test('losing and re-earning a receipt clears the exclusion and re-enrolls', asyn
   await setChecked(document, 'review-compound'); // re-earn
   assert.equal(controller.state.batchSelection.has(item.identity), true);
   assert.equal(controller.state.batchExclusions.has(item.identity), false);
+});
+
+// Auto-advance (2026-08-12 efficiency pass, Task 3). Two independent advance paths:
+// a recorded compound receipt moves to the next unreceipted draft in the visible
+// filter (advanceToNextUnreceipted), and a successful content attest moves to the
+// next pending page or tool (advanceToNextPendingContent, wired through load()'s
+// existing hold mechanism). Both stop at the end of the queue without wrapping, and
+// both leave a navigation-guarded or genuinely-last item exactly where it was.
+
+function lastAnnouncement(harness) {
+  return harness.document.status.textContent;
+}
+
+// Two compound-eligible drafts: qb_moo_902 sorts first and is selected, ready, and in
+// Draft view on return; qb_moo_903 sorts second and is left completely untouched so it
+// is exactly the next unreceipted draft in visibleReviewItems() order.
+async function startHarnessWithTwoReadyDrafts() {
+  const first = validDomQuestion();
+  const second = validDomQuestion({
+    id: 'qb_moo_903',
+    revision: testRevision('second-ready-draft'),
+    stem: 'A second ready draft should remain available for auto-advance to land on.',
+  });
+  const harness = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({ questions: [first, second] })),
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { controller, document, window } = harness;
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  await document.getElementById('view-draft').dispatch('click');
+  return harness;
+}
+
+// Two unreviewed content items: t_mood.md (page) sorts first and is selected with a
+// completed Review -> Resolve -> Confirm rail; mse.html (tool) sorts second and is left
+// untouched so it is exactly the next pending content item.
+async function startHarnessWithTwoPendingContentItems() {
+  let items = [
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+    { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+  ];
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      const posted = JSON.parse(options.body);
+      const [[slug, reviewed]] = Object.entries(posted.changes);
+      items = items.map(item => (item.slug === slug
+        ? { ...item, status: reviewed ? 'reviewed' : 'unreviewed' }
+        : item));
+      return jsonResponse({ ok: true, updated: 1, commit: 'https://github.example/commit/content-advance' });
+    }
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  const harness = await startHarness({ fetchImpl });
+  await completeCurrentContentReview(harness);
+  return harness;
+}
+
+// A single unreviewed content item: attesting it leaves nothing else pending, so the
+// pre-existing hold-to-show-the-receipt behavior is the only reachable outcome.
+async function startHarnessWithOnePendingContentItem() {
+  let items = [{ slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' }];
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      const posted = JSON.parse(options.body);
+      const [[slug, reviewed]] = Object.entries(posted.changes);
+      items = items.map(item => (item.slug === slug
+        ? { ...item, status: reviewed ? 'reviewed' : 'unreviewed' }
+        : item));
+      return jsonResponse({ ok: true, updated: 1, commit: 'https://github.example/commit/content-last' });
+    }
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  const harness = await startHarness({ fetchImpl });
+  await completeCurrentContentReview(harness);
+  return harness;
+}
+
+test('checking the compound receipt advances to the next unreceipted draft', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts(); // q1 selected, q2 unreceipted
+  const { controller, document } = harness;
+  await setChecked(document, 'review-compound');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903',
+    'selection moved to the next unreceipted draft');
+});
+
+test('the last receipt announces completion and stays put', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller, document, window } = harness;
+  await setChecked(document, 'review-compound'); // q1 -> advances to q2
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903');
+  // q2 needs its own ready-preview, Draft-view setup before its compound box renders —
+  // the same sequence startHarnessWithTwoReadyDrafts ran for q1.
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  await document.getElementById('view-draft').dispatch('click');
+  await setChecked(document, 'review-compound'); // q2 = last unreceipted draft
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903', 'stays on last');
+  assert.match(lastAnnouncement(harness), /all drafts .* hold receipts/i);
+});
+
+test('a recorded receipt that leaves other drafts pending announces the compact remaining count', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { document } = harness;
+  await setChecked(document, 'review-compound');
+  assert.equal(lastAnnouncement(harness), 'Receipt recorded — 1 of 2 drafts remaining; added to batch.');
+});
+
+test('a recorded receipt for an item already excluded from the batch announces the exclusion', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller, document } = harness;
+  // A sticky exclusion already in effect for q1 (independent of how it got there —
+  // toggleBatchMember, or surviving an earlier receipt cycle) must be read as-is when
+  // this receipt records, not treated as a fresh enrollment.
+  controller.state.batchExclusions.add('qb_moo_902');
+  await setChecked(document, 'review-compound');
+  assert.equal(controller.state.batchExclusions.has('qb_moo_902'), true, 'stays excluded');
+  assert.equal(controller.state.batchSelection.has('qb_moo_902'), false, 'never auto-enrolled while excluded');
+  assert.equal(lastAnnouncement(harness), 'Receipt recorded — 1 of 2 drafts remaining; excluded from batch.');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903', 'still advances past the excluded item');
+});
+
+test('auto-advance never fires while a navigation guard is active', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller, document } = harness;
+  // { target, returnFocus } is the actual shape requestNavigation assigns (~app.mjs:813);
+  // advanceToNextUnreceipted only checks truthiness, so the exact contents do not matter.
+  controller.state.navigationGuard = { target: { kind: 'lock' }, returnFocus: 'lock-console' };
+  const before = controller.state.selectedKey;
+  // Receipt via the state path: a real guard makes the console-background inert, which
+  // would block the click too, but this pins the function's own defensive check.
+  await setChecked(document, 'review-compound');
+  assert.equal(controller.state.selectedKey, before);
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), true,
+    'the receipt itself still records; only the jump is suppressed');
+});
+
+test('a successful content attest advances to the next pending content item', async () => {
+  const harness = await startHarnessWithTwoPendingContentItems();
+  const { controller, document } = harness;
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+  assert.equal(controller.state.selectedKey, 'tool:mse.html');
+  assert.equal(controller.state.completedHoldKey, null, 'nothing held once the advance lands');
+});
+
+test('the last content attest keeps the completed-hold receipt view', async () => {
+  const harness = await startHarnessWithOnePendingContentItem();
+  const { controller, document } = harness;
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+  assert.equal(controller.state.completedHoldKey, 'page:t_mood.md',
+    'no further pending items: existing hold-to-show-receipt behavior kept');
 });
