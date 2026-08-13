@@ -465,7 +465,11 @@ export function startFacultyConsole({
     state.reopenConfirmation = null;
   }
 
-  function setSelectedReviewKey(key, { force = false, preserveCompletedHold = false } = {}) {
+  function setSelectedReviewKey(key, {
+    force = false,
+    preserveCompletedHold = false,
+    carryDraftView = false,
+  } = {}) {
     const item = findReviewItem(key);
     if (!item) return false;
     if (!preserveCompletedHold) state.completedHoldKey = null;
@@ -476,7 +480,16 @@ export function startFacultyConsole({
       preserveQuestionReceipts: true,
     });
     state.selectedKey = key;
-    state.viewMode = 'live';
+    // `carryDraftView` is the receipt-driven advance's option ONLY (2026-08-12
+    // efficiency pass, follow-up). Landing every advanced-to draft on Live deploy made
+    // compoundReviewEligible false on arrival, so the one-action-per-draft sitting the
+    // design promised actually cost two: a "Draft preview" click before the compound
+    // receipt would even render. Carrying the view forward discards nothing the
+    // reviewer must see and asserts nothing on their behalf — the receipt still demands
+    // Draft view, clean fields, a matching revision, and a Ready preview at tick time.
+    // Manual navigation (the item selector, the arrow keys) keeps the Live landing.
+    // Only questions have a Draft pane, so every other item type still lands on Live.
+    state.viewMode = carryDraftView && item.type === 'question' ? 'draft' : 'live';
     state.preview = null;
     state.previewAttempt = 0;
     if (item.type === 'question') setSelected(item.identity, { force: true });
@@ -1279,9 +1292,18 @@ export function startFacultyConsole({
     const forward = visible.filter((item, index) => index > start && isUnreceiptedDraft(item));
     const elsewhere = visible.filter((item, index) => index !== start && isUnreceiptedDraft(item));
     if (forward.length) {
-      const advanced = setSelectedReviewKey(forward[0].key);
+      // Read the view BEFORE the selection change resets it. In practice this is always
+      // 'draft' (only compoundReviewEligible items can reach here, and that demands
+      // Draft view), but deriving it rather than hard-coding keeps the carry honest if
+      // the separate-checkbox path ever grows an advance of its own.
+      const carryDraftView = state.viewMode === 'draft';
+      const advanced = setSelectedReviewKey(forward[0].key, { carryDraftView });
       if (!advanced) return false;
-      renderShell('review-item-selector');
+      // Focus the Draft preview button, never the item-selector <select>: R's own
+      // form-field guard skips select/input/textarea targets, so parking focus there
+      // silently ended the keyboard sitting after a single item. #view-draft is a
+      // button (R stays live) and names where the advance just landed the reviewer.
+      renderShell(carryDraftView ? 'view-draft' : 'review-item-selector');
       const identity = findReviewItem(fromKey)?.identity;
       const excluded = identity != null && state.batchExclusions.has(identity);
       announce(`Receipt recorded — ${elsewhere.length} of ${totalDrafts} drafts remaining; ${

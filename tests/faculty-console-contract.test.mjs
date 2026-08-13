@@ -4461,6 +4461,61 @@ test('R does nothing when no compound receipt control is rendered', async () => 
   assert.equal(controller.state.selectedKey, before);
 });
 
+// The sitting is a LOOP, and the loop is what the shortcut exists for: `R` … `R` …
+// `R` down a filtered queue of clean drafts. Every other R test presses the key once,
+// so none of them can see that the advance's own focus target (#review-item-selector,
+// a <select>) becomes the next keypress's event.target and trips R's own form-field
+// guard. Two consecutive presses is the smallest case that exercises the composition.
+test('R receipts consecutive drafts — the advance never parks focus somewhere R is deaf', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller, document } = harness;
+
+  await pressKey(harness, 'r');
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), true, 'first receipt recorded');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903', 'advanced to the second draft');
+
+  assert.equal(controller.state.viewMode, 'draft',
+    'the advance carries Draft preview forward, so the compound receipt can render on arrival');
+  assert.equal(document.getElementById('question-view-draft').getAttribute('hidden'), null,
+    'the draft pane is the visible one');
+
+  // The advanced-to item reloads its preview; the reviewer WAITS for that (a load, not
+  // an action) and the ready report must not undo the carried view.
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(harness.window, controller, 'ready');
+  assert.equal(controller.state.viewMode, 'draft', 'a ready report leaves the carried view alone');
+  assert.ok(document.getElementById('review-compound'),
+    'the compound control renders on the item the advance landed on');
+
+  // R is deaf to select/input/textarea targets, so parking focus on the <select> item
+  // selector would silently end the keyboard sitting after a single item.
+  assert.notEqual(document.activeElement?.getAttribute('id'), 'review-item-selector',
+    'the advance must not park focus on the item-selector <select>');
+
+  await pressKey(harness, 'r');
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_903'), true,
+    'second receipt recorded — one keypress per draft, with no interleaved view click');
+  assert.equal(controller.state.reviewChecks.liveReviewed, true,
+    'and it carries the live-render half, exactly as the first receipt did');
+});
+
+// The carry is scoped to the receipt-driven advance. Deliberately jumping to an item
+// to inspect it still opens on the deployed learner surface.
+test('manual navigation still lands on Live deploy — the Draft carry is advance-only', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller, document } = harness;
+  assert.equal(controller.state.viewMode, 'draft', 'fixture starts in Draft preview');
+
+  await document.getElementById('review-item-selector').dispatch('change', {
+    target: { value: 'question:qb_moo_903' },
+  });
+  assert.equal(controller.state.viewMode, 'live',
+    'the item selector resets to Live deploy as before');
+
+  await pressKey(harness, 'ArrowUp');
+  assert.equal(controller.state.viewMode, 'live', 'arrow navigation resets too');
+});
+
 // Task 4: ArrowUp/ArrowDown move the review-list selection through the same order
 // the item selector renders (visibleReviewItems()).
 test('ArrowDown/ArrowUp move the review selection through the visible list', async () => {
