@@ -1980,22 +1980,29 @@ test.describe.serial('faculty unified attestation workspace', () => {
     // sits between 902 and 906). 905 is deliberately skipped — it never grows a tray
     // checkbox and must be attested individually — so the sitting jumps past it to
     // qb_moo_906 explicitly instead of checking a box there.
+    // Entering the sitting is manual navigation, so this first draft opens on Live
+    // deploy and takes a "Draft preview" click. The compound receipt records BOTH
+    // halves, so no separate #review-live-preview tick is needed on the way in.
     await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
-    await page.locator('#review-live-preview').check();
     await page.getByRole('button', { name: 'Draft preview' }).click();
     await page.locator('#review-compound').click();
     await expect(page.locator('#selected-item-identity')).toHaveText('qb_moo_902');
 
+    // ...and from here the sitting costs ONE action per draft: the advance carried
+    // Draft preview forward, so the compound control is already rendered on arrival.
+    // No view click, and #review-live-preview is deliberately absent (the compound
+    // control replaces the pair whenever the draft is clean and the preview Ready).
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
-    await page.locator('#review-live-preview').check();
-    await page.getByRole('button', { name: 'Draft preview' }).click();
+    await expect(page.getByRole('button', { name: 'Draft preview' }))
+      .toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#review-live-preview')).toHaveCount(0);
     await page.locator('#review-compound').click();
     await expect(page.locator('#selected-item-identity')).toHaveText('qb_moo_905');
 
+    // Jumping past 905 is manual navigation again, so Live deploy and a view click.
     await page.locator('#review-item-selector').selectOption('question:qb_moo_906');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
-    await page.locator('#review-live-preview').check();
     await page.getByRole('button', { name: 'Draft preview' }).click();
     await page.locator('#review-compound').click();
     // Nothing lies after qb_moo_906 in the list; qb_moo_905 lies earlier and is still

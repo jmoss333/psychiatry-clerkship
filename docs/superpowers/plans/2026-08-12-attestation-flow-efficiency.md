@@ -490,3 +490,45 @@ git commit -m "feat(faculty-console): R/arrow keyboard flow for review sittings"
 - Content sweep: `A` … `A` walks the pending queue.
 - Attest payloads byte-identical to before (verify: the handler suite passes unchanged).
 - Full battery green: root suite, all console suites, `faculty-console` smoke project, both builds.
+
+---
+
+## Post-merge correction (2026-08-12, audit follow-up)
+
+The completion checklist above was **not** actually met by #352, and no suite caught it.
+Two coupled defects meant the sitting cost ~28 actions for 12 drafts, not the claimed 16:
+
+1. **The compound receipt could never render on an advanced-to draft.**
+   `setSelectedReviewKey` unconditionally reset `state.viewMode = 'live'`, while
+   `compoundReviewEligible` requires `viewMode === 'draft'`. Every auto-advance therefore
+   landed on an item where the one-click control was impossible, forcing a "Draft preview"
+   click first — a second action per draft, reintroducing the navigation click the design
+   set out to remove. The merged Playwright sitting-flow test encoded this without naming
+   it: three actions per draft (`#review-live-preview` tick → Draft click → compound).
+
+2. **`R` could not chain.** The advance focused `#review-item-selector`, a `<select>`;
+   `R`'s own form-field guard skips `select`/`input`/`textarea` targets, so the keyboard
+   sitting went deaf after a single item. The `A`-shortcut integrity rule was never in
+   question — the guard was right, the focus target was wrong.
+
+Neither was visible to the merged tests because **every `R` test pressed the key exactly
+once**. The defect lived only in the composition of "advance moves focus" with "shortcut
+guards on focus" — a two-iteration test is the cheap catch for that whole class.
+
+**Fix (this branch):** `setSelectedReviewKey` gains a `carryDraftView` option used *only*
+by the receipt-driven advance, which also focuses `#view-draft` (a button, so `R` stays
+live). Manual navigation — item selector and arrow keys — keeps the Live-deploy landing,
+per Josh's call on 2026-08-12. Nothing about the assertion moves: the compound receipt
+still demands Draft view, clean fields, a matching revision, and a Ready preview at the
+moment it is ticked.
+
+**Real cost now:** 12 drafts = 1 Draft-view click on entry + 12 receipts + 3 confirmations
++ 1 attest = **17 actions**, and the `R … R … R` loop genuinely runs (the only pause is
+waiting for each advanced-to preview to report Ready — a load, not a click).
+
+**Still open (not attempted here):** the three faculty confirmations remain three separate
+checkbox clicks in the qbank path, while the content path has collapsed its three checks
+into one fully-labeled button since #341 (`attestContentInOneClick`). Applying that
+precedent to qbank would take a sitting to ~14 actions, but the qbank assertions are
+clinical and in the batch path one press would cover the whole selection — a governance
+call for Josh, deliberately left undone.
