@@ -2035,9 +2035,18 @@ test.describe.serial('faculty unified attestation workspace', () => {
 
     await expect(page.locator('#batch-readout')).toContainText('Selected 3');
     await expect(page.locator('#batch-readout')).toContainText('Batch checks pass');
-    await expect(page.locator('#attest-selected-drafts')).toBeDisabled();
-    await checkConfirmations(page);
+
+    // One-press confirmations (2026-08-13): the commit is enabled on the per-item
+    // receipts and the cohort check alone, and its label states the three assertions
+    // the press records. checkConfirmations() is deliberately NOT called here — the
+    // POST assertion below proves the same three flags still commit without a single
+    // confirmation checkbox being ticked.
     await expect(page.locator('#attest-selected-drafts')).toBeEnabled();
+    await expect(page.locator('#attest-selected-drafts'))
+      .toContainText('answer & rationale verified · evidence anchored · original, no PHI');
+    for (const id of CONFIRMATION_IDS) {
+      await expect(page.locator(`#${id}`)).not.toBeChecked();
+    }
 
     const attestStart = api.calls.length;
     await page.locator('#attest-selected-drafts').click();

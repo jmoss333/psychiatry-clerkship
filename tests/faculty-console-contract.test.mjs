@@ -3472,8 +3472,11 @@ test('Ready attestation posts one exact-revision entry and holds the completed q
   for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
     await setChecked(document, id);
   }
+  // The label now also states the three confirmations the press records (2026-08-13
+  // one-press pass), so match on its stable prefix — the uniqueness check this makes
+  // (exactly one attest control for the question) is what the assertion is really for.
   const attestButtons = document.findAll('button').filter(button => (
-    button.textContent === 'Attest this question'
+    button.textContent.startsWith('Attest this question')
   ));
   assert.equal(attestButtons.length, 1);
   assert.equal(attestButtons[0].disabled, false);
@@ -4597,4 +4600,119 @@ test('arrows do nothing while pending, while the navigation guard is open, or wh
   controller.state.reopenConfirmation = { key: controller.state.selectedKey, reviewed: false };
   await pressKey(harness, 'ArrowDown');
   assert.equal(controller.state.selectedKey, 'question:qb_moo_902', 'inert while the reopen confirmation is open');
+});
+
+/* ---- qbank one-press confirmations (2026-08-13) --------------------------------
+   The content path has collapsed its three checks into one fully-labeled button
+   since #341; these pin the symmetric qbank behaviour. The governing invariant is
+   the one currentAttestationEligibility already encodes: a button may presume the
+   reviewer's FACULTY JUDGMENT assertions (and must then state them in its label),
+   never their evidence-of-having-looked — the revision-anchored receipt and the
+   live-render check stay hard preconditions on both the single and batch paths. */
+
+const QBANK_CONFIRMATION_SUMMARY =
+  'answer & rationale verified · evidence anchored · original, no PHI';
+
+test('a review-complete draft offers a one-press attest whose label states all three confirmations', async () => {
+  const harness = await startHarnessWithReadyPreviewDraft();
+  const { controller, document } = harness;
+  document.getElementById('review-compound').click();
+
+  const button = document.getElementById('attest-current-item');
+  assert.ok(button.textContent.includes(QBANK_CONFIRMATION_SUMMARY),
+    'the label carries the assertions the press will record');
+  assert.equal(button.disabled, false,
+    'enabled without the three boxes ticked — the press is what records them');
+  assert.equal(controller.state.confirmations.clinical, false,
+    'and nothing is pre-ticked in state before the press');
+});
+
+test('the one-press attest never presumes the review receipt', async () => {
+  // No compound receipt recorded, so the review path is incomplete and the button
+  // must stay disabled. Only the three faculty confirmations are ever presumed.
+  const harness = await startHarnessWithReadyPreviewDraft();
+  assert.equal(harness.document.getElementById('attest-current-item').disabled, true,
+    'no receipt, no attest — evidence-of-having-looked is never assumed');
+});
+
+test('the three confirmation checkboxes remain available for one-at-a-time recording', async () => {
+  const harness = await startHarnessWithReadyPreviewDraft();
+  const { controller, document } = harness;
+  document.getElementById('review-compound').click();
+  for (const id of ['confirm-clinical', 'confirm-evidence', 'confirm-originality']) {
+    assert.ok(document.getElementById(id), `${id} still rendered`);
+  }
+  await setChecked(document, 'confirm-clinical');
+  assert.equal(controller.state.confirmations.clinical, true, 'the granular path still works');
+});
+
+test('the one-press attest commits the same payload the three checkboxes would have', async () => {
+  let posted = null;
+  const current = validDomQuestion();
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      posted = JSON.parse(options.body);
+      return jsonResponse({
+        ok: true,
+        action: 'qbank.attest',
+        updated: 1,
+        revision: { qb_moo_902: testRevision('revision-attested') },
+        assessment: { qb_moo_902: { gate: 'ready', blockers: [], warnings: [] } },
+        commit: 'https://github.example/commit/one-press',
+      });
+    }
+    return jsonResponse(serverState({ question: current }));
+  };
+  const harness = await startHarness({
+    fetchImpl,
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { controller, document } = harness;
+  await makeCurrentQuestionPreviewReady(harness);
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.deepEqual(Object.keys(posted).sort(), [
+    'action', 'confirmations', 'items', 'manifestRevision',
+  ], 'payload shape byte-identical to the granular path');
+  assert.deepEqual(posted.confirmations, {
+    clinical: true, evidence: true, originalityAndNoPhi: true,
+  }, 'the same three flags commit');
+  assert.deepEqual(posted.items, [{
+    id: 'qb_moo_902',
+    revision: testRevision('revision-one'),
+    reviewedRevision: testRevision('revision-one'),
+  }], 'the per-item receipt still rides along, unchanged and unassumed');
+  // The press records the three, commits them, and the post-attest reset clears them
+  // again — so a one-press attest can never leak its confirmations onto the next item.
+  assert.deepEqual(controller.state.confirmations, {
+    clinical: false, evidence: false, originalityAndNoPhi: false,
+  }, 'confirmations do not survive the attest that consumed them');
+});
+
+test('the batch commit is a one-press action that states all three confirmations', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller, document } = harness;
+  document.getElementById('review-compound').click();       // receipt q1, advance to q2
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(harness.window, controller, 'ready');
+  document.getElementById('review-compound').click();       // receipt q2
+
+  const batch = document.getElementById('attest-selected-drafts');
+  assert.ok(batch, 'the tray renders a commit button');
+  assert.ok(batch.textContent.includes(QBANK_CONFIRMATION_SUMMARY),
+    'the batch label states the three confirmations one press will record');
+  assert.equal(batch.disabled, false,
+    'enabled on receipts alone — the three boxes are no longer a separate gate');
+  assert.equal(controller.state.confirmations.clinical, false, 'nothing pre-ticked');
+});
+
+test('a batch with no receipts stays blocked however the confirmations are recorded', async () => {
+  // The tray's own gate is the per-item receipt, never the faculty confirmations —
+  // making the confirmations one-press must not let an unreceipted cohort through.
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { document } = harness;
+  const batch = document.getElementById('attest-selected-drafts');
+  assert.equal(batch ? batch.disabled : true, true,
+    'no receipts, no batch commit');
 });

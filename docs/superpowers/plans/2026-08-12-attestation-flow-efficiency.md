@@ -526,9 +526,41 @@ moment it is ticked.
 + 1 attest = **17 actions**, and the `R … R … R` loop genuinely runs (the only pause is
 waiting for each advanced-to preview to report Ready — a load, not a click).
 
-**Still open (not attempted here):** the three faculty confirmations remain three separate
-checkbox clicks in the qbank path, while the content path has collapsed its three checks
-into one fully-labeled button since #341 (`attestContentInOneClick`). Applying that
-precedent to qbank would take a sitting to ~14 actions, but the qbank assertions are
-clinical and in the batch path one press would cover the whole selection — a governance
-call for Josh, deliberately left undone.
+## qbank one-press confirmations (2026-08-13, Josh-directed)
+
+The remaining asymmetry above is now closed: the qbank path's three faculty confirmations
+are recorded by the attest press itself, on both the single-question and batch commits,
+exactly as the content path has done since #341.
+
+The reservation flagged when this was deferred turned out to be **milder than stated**:
+`requireConfirmations()` runs once per *request* server-side, so a batch had always carried
+**one** set of three confirmations for the whole selection. The one-press control removes
+three clicks; it does not widen what any one set of confirmations covers. What made that
+defensible in the first place — the per-item revision-anchored receipt, enforced
+independently as `reviewedRevision === revision` on every entry — is untouched.
+
+The invariant that governs both item types is the one `currentAttestationEligibility`
+already encoded, now stated explicitly in its comment:
+
+> A button may presume the reviewer's **faculty-judgment assertions** — and must then state
+> them in its label — but never their **evidence of having looked**. `liveReviewed` and
+> `reviewedRevision` are passed through unassumed, so no press can attest a draft the
+> reviewer never opened and receipted.
+
+Concretely: `assumeHumanChecks` now also presumes `confirmations`; both attest controls
+carry `CONFIRMATION_SUMMARY` ("answer & rationale verified · evidence anchored · original,
+no PHI"); the three checkboxes stay rendered and tickable for anyone who wants to record
+them one at a time; and the batch button's `!ready` gate is gone (its real gates — the
+per-item receipts and `assessBatch`'s cohort check — remain).
+
+**Deliberately NOT done: a keyboard shortcut for the qbank attest.** During a sitting both
+`#attest-current-item` (single) and `#attest-selected-drafts` (batch) are rendered, so
+binding `A` would silently attest one draft individually when the reviewer meant the batch
+— a governance footgun. The batch commit stays a deliberate mouse press, consistent with
+the original design's "no autosubmit" non-goal. (That non-goal also said the three
+confirmations "remain manual"; they still are — one manual press whose label states all
+three, rather than three.)
+
+**Sitting cost now:** 1 Draft-view click on entry + 12 receipts (`R`) + 1 batch press =
+**14 actions** for 12 drafts, down from ~52 before this arc and ~28 as #352 actually
+shipped.

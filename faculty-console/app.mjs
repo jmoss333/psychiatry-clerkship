@@ -39,6 +39,12 @@ const CONFIRMATION_COPY = {
   originalityAndNoPhi: 'I verified that the vignette is an original fictional composite with no PHI.',
 };
 
+// The compact form of CONFIRMATION_COPY, carried by any control that records all three
+// in one press (2026-08-13). Kept beside the full copy deliberately: the integrity rule
+// for a one-press control is that its label STATES what the press records, so these two
+// must never drift apart.
+const CONFIRMATION_SUMMARY = 'answer & rationale verified · evidence anchored · original, no PHI';
+
 const OPTION_TEXT_LABELS = {
   A: 'Option A text',
   B: 'Option B text',
@@ -1550,6 +1556,13 @@ export function startFacultyConsole({
     // the boxes?" — the gate for the one-click action. Every other precondition
     // still applies (preview ready, revision reviewed, warnings acknowledged);
     // only the three human assertions are presumed, and the button states them.
+    //
+    // The line this draws is the one that matters, and it holds for both item types:
+    // FACULTY JUDGMENT assertions may be presumed by a button that names them
+    // (content's accuracy/interactions/complete-item; a question's three
+    // confirmations), while EVIDENCE OF HAVING LOOKED never is — liveReviewed and
+    // reviewedRevision below are passed through unassumed on purpose, so no press can
+    // attest a draft the reviewer never opened and receipted.
     const assume = value => (assumeHumanChecks ? true : value);
     return deriveAttestationEligibility({
       item,
@@ -1564,7 +1577,9 @@ export function startFacultyConsole({
       liveUnavailableAcknowledged: state.reviewChecks.liveUnavailableAcknowledged,
       reviewedRevision: state.reviewedRevisions.get(item.identity),
       warningAcks: state.warningAcks,
-      confirmations: state.confirmations,
+      confirmations: assumeHumanChecks
+        ? { clinical: true, evidence: true, originalityAndNoPhi: true }
+        : state.confirmations,
       contentChecks: {
         accuracy: assume(state.reviewChecks.accuracy),
         interactions: assume(state.reviewChecks.interactions),
@@ -1593,6 +1608,38 @@ export function startFacultyConsole({
     return item.type !== 'question'
       && item.completion !== 'complete'
       && state.preview?.status === 'ready';
+  }
+
+  /**
+   * One press instead of four, for qbank drafts — the symmetric case of
+   * attestContentInOneClick above, and the same bargain: the button NAMES all three
+   * confirmations (CONFIRMATION_SUMMARY) and those same three flags are what commits.
+   *
+   * What is NOT presumed is the point. currentAttestationEligibility passes
+   * liveReviewed and reviewedRevision through unassumed, so the press stays disabled
+   * until the reviewer has actually opened the draft and recorded its revision-anchored
+   * receipt. The three confirmations are faculty judgment; the receipt is evidence of
+   * having looked, and no button asserts that on the reviewer's behalf.
+   *
+   * On the batch path this changes nothing about scope: requireConfirmations() runs
+   * once per REQUEST server-side, so a batch has always carried one set of three for
+   * the whole selection. What made that defensible — the per-item receipt, enforced
+   * independently as reviewedRevision === revision on every entry — is untouched.
+   */
+  function recordAllConfirmations() {
+    state.confirmations.clinical = true;
+    state.confirmations.evidence = true;
+    state.confirmations.originalityAndNoPhi = true;
+  }
+
+  async function attestQuestionInOneClick(question) {
+    recordAllConfirmations();
+    await attestCurrentQuestion(question);
+  }
+
+  async function attestSelectionInOneClick() {
+    recordAllConfirmations();
+    await attestSelection();
   }
 
   function renderQuestionResolution(assessment, disabled) {
@@ -1690,7 +1737,14 @@ export function startFacultyConsole({
     const reviewComplete = reviewPathComplete(item);
     const eligibility = currentAttestationEligibility(item, assessment, dirty);
     const oneClick = oneClickAvailable(item);
-    const oneClickEligibility = oneClick
+    // Questions take the same one-press treatment as pages and tools (2026-08-13):
+    // the three faculty confirmations are recorded by the press and stated in the
+    // label. Unlike content's oneClickAvailable there is no preview-ready condition
+    // here, because for a question the preview IS the review path — a failed preview
+    // already blocks eligibility through review.live_unavailable_ack_required and
+    // review.saved_revision_required, both of which stay unassumed.
+    const questionOneClick = item.type === 'question';
+    const oneClickEligibility = oneClick || questionOneClick
       ? currentAttestationEligibility(item, assessment, dirty, { assumeHumanChecks: true })
       : eligibility;
     const currentStep = dirty
@@ -1756,9 +1810,9 @@ export function startFacultyConsole({
           id: 'attest-current-item',
           class: 'primary rail-action',
           type: 'button',
-          disabled: state.pending || !eligibility.eligible,
-          onClick: () => void attestCurrentQuestion(findQuestion(item.identity)),
-        }, ['Attest this question']) : item.completion === 'complete'
+          disabled: state.pending || !oneClickEligibility.eligible,
+          onClick: () => void attestQuestionInOneClick(findQuestion(item.identity)),
+        }, [`Attest this question — ${CONFIRMATION_SUMMARY}`]) : item.completion === 'complete'
           ? renderContentMoreActions(item)
           : el('button', {
           id: 'attest-current-item',
@@ -2844,6 +2898,10 @@ export function startFacultyConsole({
           copy,
         ]);
       }),
+      el('p', { class: 'hint', id: 'confirmations-one-press-hint' }, [
+        'One press of Attest records all three. Tick them individually instead if you '
+        + 'want to record them one at a time.',
+      ]),
     ]);
   }
 
@@ -3495,7 +3553,6 @@ export function startFacultyConsole({
       .sort(([left], [right]) => left.localeCompare(right))
       .map(([category, count]) => `${category} ×${count}`)
       .join(' · ');
-    const ready = confirmationsComplete();
     return el('section', {
       id: 'rail-step-batch',
       class: 'rail-step batch-tray',
@@ -3532,17 +3589,17 @@ export function startFacultyConsole({
         `Selected ${selected.length}: ${categorySummary}. Answer keys ${keySummary}. `
         + (batchCheck.ok ? 'Batch checks pass.' : `Blocked: ${(batchCheck.issues || []).map(issue => issue.code).join(', ')}.`),
       ]) : null,
+      // One press records the three confirmations and commits (2026-08-13). The tray's
+      // gate was never the confirmations — it is the per-item receipt that put each row
+      // here, plus assessBatch's cohort check — and both still stand above.
       el('button', {
         id: 'attest-selected-drafts',
         class: 'primary rail-action',
         type: 'button',
-        disabled: state.pending || !selected.length || !ready
+        disabled: state.pending || !selected.length
           || (batchCheck ? batchCheck.ok === false : false),
-        onClick: () => void attestSelection(),
-      }, [`Attest selection (${selected.length})`]),
-      !ready && selected.length ? el('p', { class: 'muted' }, [
-        'Complete the three confirmations above to enable the batch.',
-      ]) : null,
+        onClick: () => void attestSelectionInOneClick(),
+      }, [`Attest selection (${selected.length}) — ${CONFIRMATION_SUMMARY}`]),
     ]);
   }
 
