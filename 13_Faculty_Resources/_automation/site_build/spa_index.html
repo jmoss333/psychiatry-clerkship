@@ -236,7 +236,14 @@
   .review-ledger .v{font-size:.78rem;color:var(--text-mid);line-height:1.35}
   .review-ledger .revcount{font-weight:800;color:var(--text)}
   .review-ledger .review-date{color:var(--text-light)}
-  @media(max-width:560px){.page-title-row{display:block}.page-title-row .markrev{margin:.25rem 0 .1rem}.mc-mode,.wd-mode{min-height:44px;padding-top:10px;padding-bottom:10px}}
+  /* .wd-tool was never in this list, so the tool chips shipped at 32px on a phone while the
+     mode chips beside them were correctly bumped to 44px — a ward tool is used one-handed at
+     the bedside, so these are exactly the wrong controls to leave under the touch target. */
+  /* .hm-li is every tappable row on Today (dashboard actions, capture triage, resume, Progress).
+     Two-line rows already cleared 44px on their own, but .wd-card .hm-li trims padding to 7px, so
+     single-line dashboard actions shipped at ~35px. min-height (not padding) so the two-line rows
+     are unchanged; .hm-li already sets align-items:center, so short rows just centre in the box. */
+  @media(max-width:560px){.page-title-row{display:block}.page-title-row .markrev{margin:.25rem 0 .1rem}.mc-mode,.wd-mode,.wd-tool{min-height:44px;padding-top:10px;padding-bottom:10px}.hm-li{min-height:44px}}
   .in30{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:13px 16px;margin:0 0 14px}
   .practice-panel .in30{background:transparent;border-left:none;border-radius:0;padding:0;margin:0}
   .in30 .lbl{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark);margin-bottom:6px}
