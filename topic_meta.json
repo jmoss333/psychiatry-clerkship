@@ -5274,6 +5274,12 @@
   ],
   "firstMove": "Stop the likely offending agent, support and cool aggressively, send a CK, and rule out infection/heat stroke — then discriminate by reflexes and skin.",
   "safetyLevel": "high",
+  "workflowModes": [
+   "ward",
+   "safety",
+   "5min",
+   "shelf"
+  ],
   "workflowStages": [
    "diagnosis",
    "safety",
@@ -5310,6 +5316,11 @@
   ],
   "cant": "Do not treat monitoring as optional or after-the-fact — baseline and ongoing metabolic labs, β-hCG, and a QTc before QT-prolonging agents are part of the prescription.",
   "safetyLevel": "high",
+  "workflowModes": [
+   "ward",
+   "5min",
+   "shelf"
+  ],
   "workflowStages": [
    "treatment",
    "safety"
@@ -5342,6 +5353,11 @@
    "Psychotherapy and medication are usually additive, not either/or."
   ],
   "cant": "Don't attempt uncovering/insight work with an acutely ill patient — it can destabilize; validate and support instead.",
+  "workflowModes": [
+   "ward",
+   "5min",
+   "shelf"
+  ],
   "workflowStages": [
    "treatment",
    "communication",
@@ -5366,6 +5382,11 @@
    "Every perpetuating factor is a treatment target; every protective factor is a lever."
   ],
   "cant": "Don't stop at a diagnosis or write an all-biology story — force a psychological and a social contributor into the formulation.",
+  "workflowModes": [
+   "ward",
+   "5min",
+   "shelf"
+  ],
   "workflowStages": [
    "diagnosis",
    "treatment",
@@ -5401,6 +5422,12 @@
   ],
   "firstMove": "Take the vitals and test attention yourself, order the core labs + β-hCG + QTc, and present the medical differential first when the story is 'new, old, and abnormal-vitals.'",
   "safetyLevel": "moderate",
+  "workflowModes": [
+   "ward",
+   "safety",
+   "5min",
+   "shelf"
+  ],
   "workflowStages": [
    "diagnosis",
    "safety",
