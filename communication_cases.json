@@ -116,7 +116,7 @@
     },
     {
       "id": "guardedness_privacy_001",
-      "title": "Respond To Guardedness",
+      "title": "Respond to Guardedness",
       "topic": "Alliance and guardedness",
       "setting": "Early inpatient interview",
       "learnerGoal": "Lower the threat level, name choice, and explain confidentiality limits without pressuring disclosure.",
@@ -182,7 +182,7 @@
     },
     {
       "id": "rupture_limit_setting_001",
-      "title": "Repair After A Limit",
+      "title": "Repair After a Limit",
       "topic": "Rupture and repair",
       "setting": "Inpatient unit hallway",
       "learnerGoal": "Set a clear limit while preserving dignity and alliance.",
@@ -240,7 +240,7 @@
     },
     {
       "id": "bpd_rupture_repair_001",
-      "title": "Repair A BPD Rupture",
+      "title": "Repair a BPD Rupture",
       "topic": "Borderline personality and rupture repair",
       "setting": "Post-rounds check-in",
       "learnerGoal": "Validate the feeling, own the interactional impact, and return to a consistent plan.",
@@ -366,7 +366,7 @@
     },
     {
       "id": "mania_limit_sleep_001",
-      "title": "Offer A Sleep-Restoring Plan In Mania",
+      "title": "Offer a Sleep-Restoring Plan in Mania",
       "topic": "Mania and collaborative limits",
       "setting": "Evening check-in on the unit",
       "learnerGoal": "Use calm structure, offer choices, and connect sleep to the patient's goal without debating grandiosity.",
@@ -432,7 +432,7 @@
     },
     {
       "id": "family_meeting_opening_001",
-      "title": "Open A Family Meeting",
+      "title": "Open a Family Meeting",
       "topic": "Family meeting",
       "setting": "Inpatient family meeting",
       "learnerGoal": "Create structure, consent boundaries, and a shared goal at the start.",
@@ -611,7 +611,7 @@
     },
     {
       "id": "interview_motive_suspicion_001",
-      "title": "Respond When The Patient Questions Why You're Asking",
+      "title": "Respond When the Patient Questions Why You're Asking",
       "topic": "Guardedness directed at the interview itself",
       "setting": "First encounter, guarded or paranoid inpatient",
       "learnerGoal": "Meet suspicion about the interview itself with a smaller, lower-stakes opening rather than repeating or justifying the original question.",
@@ -679,7 +679,7 @@
     },
     {
       "id": "rounds_naming_uncertainty_001",
-      "title": "Name Uncertainty On Rounds",
+      "title": "Name Uncertainty on Rounds",
       "topic": "Oral presentation — naming what is not yet known",
       "setting": "Morning rounds, hospital day 1, diagnosis not yet settled",
       "learnerGoal": "State a leading formulation while explicitly naming what remains unknown and what would resolve it, instead of overclaiming certainty or trailing off.",
