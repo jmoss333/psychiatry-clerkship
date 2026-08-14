@@ -3,7 +3,7 @@
   "scenarios": [
     {
       "id": "collateral_baseline_safety_001",
-      "title": "Collateral Call: Baseline And Safety",
+      "title": "Collateral Call: Baseline and Safety",
       "setting": "Before rounds or after admission",
       "time": "5-8 min",
       "learnerGoal": "Gather baseline, timeline, safety, adherence, and discharge-barrier data without turning the call into a cross-examination.",
@@ -56,7 +56,7 @@
     },
     {
       "id": "family_meeting_opening_001",
-      "title": "Open A Family Meeting",
+      "title": "Open a Family Meeting",
       "setting": "Early admission or discharge-planning meeting",
       "time": "10 min setup",
       "learnerGoal": "Set a clear shared goal, protect confidentiality, and make family perspective part of treatment rather than an afterthought.",
@@ -160,7 +160,7 @@
     },
     {
       "id": "high_expressed_emotion_001",
-      "title": "High Expressed Emotion In The Room",
+      "title": "High Expressed Emotion in the Room",
       "setting": "Family meeting with blame, criticism, or over-involvement",
       "time": "5 min reset",
       "learnerGoal": "Lower the emotional temperature while preserving the family's fear, grief, and need for information.",
@@ -211,7 +211,7 @@
     },
     {
       "id": "psychosis_family_psychoeducation_001",
-      "title": "Explain Psychosis To Family",
+      "title": "Explain Psychosis to Family",
       "setting": "First-episode or relapse psychoeducation",
       "time": "8 min",
       "learnerGoal": "Explain the syndrome without arguing about delusions, blaming family, or promising certainty too early.",
@@ -315,7 +315,7 @@
     },
     {
       "id": "caregiver_baseline_adaptations_001",
-      "title": "Caregiver Baseline And Adaptations",
+      "title": "Caregiver Baseline and Adaptations",
       "setting": "Delirium, dementia, autism, intellectual disability, or communication differences",
       "time": "6 min",
       "learnerGoal": "Use caregiver knowledge to separate baseline from acute change and translate it into safer unit adaptations.",
@@ -368,7 +368,7 @@
     },
     {
       "id": "culture_interpreter_family_001",
-      "title": "Culture, Interpreter, And Family Contact",
+      "title": "Culture, Interpreter, and Family Contact",
       "setting": "Interpreter-mediated or culturally complex family contact",
       "time": "6 min",
       "learnerGoal": "Elicit the patient's explanatory model and family role while protecting privacy, language access, and safety.",

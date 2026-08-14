@@ -77,7 +77,9 @@
   .mc-item{display:flex;align-items:center;gap:7px;width:100%;border:none;background:transparent;color:var(--text);text-align:left;border-radius:7px;padding:5px 6px;cursor:pointer;font:inherit;font-size:.82rem;line-height:1.2}
   .mc-item:hover{background:var(--accent-light);color:var(--accent-dark)}
   .mc-item .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mc-item .tag{flex:0 0 auto;color:var(--text-light);font-size:.6rem;font-weight:900;letter-spacing:.05em;text-transform:uppercase}
+  /* Companion tags are all descriptors (kind/provenance), never action verbs — so under the
+     .sec taxonomy above they are metadata, not affordances. Sentence case, matching .sec.meta. */
+  .mc-item .tag{flex:0 0 auto;color:var(--text-light);font-size:.68rem;font-weight:600;letter-spacing:0}
   .mc-item.is-tool .tag{color:var(--accent-dark)}
   .mc-item.is-safety .tag{color:var(--primary-dark)}
   .mc-empty{font-size:.78rem;color:var(--text-light);line-height:1.35}
@@ -234,7 +236,14 @@
   .review-ledger .v{font-size:.78rem;color:var(--text-mid);line-height:1.35}
   .review-ledger .revcount{font-weight:800;color:var(--text)}
   .review-ledger .review-date{color:var(--text-light)}
-  @media(max-width:560px){.page-title-row{display:block}.page-title-row .markrev{margin:.25rem 0 .1rem}.mc-mode,.wd-mode{min-height:44px;padding-top:10px;padding-bottom:10px}}
+  /* .wd-tool was never in this list, so the tool chips shipped at 32px on a phone while the
+     mode chips beside them were correctly bumped to 44px — a ward tool is used one-handed at
+     the bedside, so these are exactly the wrong controls to leave under the touch target. */
+  /* .hm-li is every tappable row on Today (dashboard actions, capture triage, resume, Progress).
+     Two-line rows already cleared 44px on their own, but .wd-card .hm-li trims padding to 7px, so
+     single-line dashboard actions shipped at ~35px. min-height (not padding) so the two-line rows
+     are unchanged; .hm-li already sets align-items:center, so short rows just centre in the box. */
+  @media(max-width:560px){.page-title-row{display:block}.page-title-row .markrev{margin:.25rem 0 .1rem}.mc-mode,.wd-mode,.wd-tool{min-height:44px;padding-top:10px;padding-bottom:10px}.hm-li{min-height:44px}}
   .in30{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:13px 16px;margin:0 0 14px}
   .practice-panel .in30{background:transparent;border-left:none;border-radius:0;padding:0;margin:0}
   .in30 .lbl{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark);margin-bottom:6px}
@@ -394,6 +403,9 @@
   .cap-btn.primary{background:var(--primary-dark);border-color:var(--primary-dark);color:#fff}
   .cap-btn.danger{color:var(--warning);border-color:var(--warning)}
   .cap-btn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+  /* Home triage card only — the sheet has its own framing (.cap-warn/.cap-disclose); this is
+     the equivalent for the section on Today, which previously opened straight into controls. */
+  .cap-purpose{margin:0 0 10px;font-size:.86rem;line-height:1.45;color:var(--text-mid);max-width:70ch}
   .cap-phi{margin:12px 0 0;padding:12px;background:var(--warning-light);border:1px solid var(--warning);border-radius:9px;font-size:.84rem;color:var(--warning)}
   .cap-phi b{display:block;margin:0 0 4px}
   .cap-list{list-style:none;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--border)}
@@ -444,6 +456,19 @@
   .hm-hero .a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:var(--accent);border-radius:999px;color:var(--on-brand,#fff);font-size:.88rem;font-weight:800;padding:10px 18px;white-space:nowrap}
   .hm-hero .a:hover{background:var(--accent-dark)}
   @media(max-width:560px){.hm-hero{grid-template-columns:1fr}.hm-hero .a{justify-self:start}}
+  /* Promoted due-strip — see dueStripHtml(). The scheduled-review count used to live only in
+     .hm-mini, which sits ~1.75 screens down on a 375px phone in steady state, so a returning
+     student scrolled past the entire ward dashboard to discover an overdue card. Laid out
+     horizontally so it costs one row rather than a card, and it renders ONLY when something is
+     actually due — a caught-up day and a fresh device never see a promoted zero. */
+  .hm-due{display:flex;align-items:center;flex-wrap:wrap;gap:10px;width:100%;text-align:left;cursor:pointer;font:inherit;color:var(--text);background:var(--accent-light);border:1px solid var(--accent-border);border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;margin:0 0 14px}
+  .hm-due .ds-k{font-size:.62rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark)}
+  .hm-due .ds-v{font-family:var(--font-head);font-size:1.35rem;font-weight:700;line-height:1}
+  .hm-due .ds-over{font-size:.75rem;font-weight:800;color:var(--primary-dark);background:var(--primary-light);border-radius:999px;padding:3px 9px}
+  .hm-due .ds-a{margin-left:auto;font-size:.85rem;font-weight:800;color:var(--accent-dark)}
+  .hm-due .hm-substat{flex:0 0 100%;margin-top:0}
+  .hm-due:hover{border-color:var(--accent)}
+  @media(max-width:560px){.hm-due{min-height:44px}.hm-due .ds-a{margin-left:0}}
   .hm-mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 20px}
   .hm-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;text-align:left}
   button.hm-tile{cursor:pointer;font:inherit;color:var(--text)}
@@ -460,7 +485,13 @@
   .hm-li:last-child{border-bottom:none}
   .hm-li:hover{color:var(--accent-dark)}
   .hm-li .t{flex:1}
+  /* The .sec slot carried four unrelated meanings in one identical uppercase treatment:
+     action verb (OPEN/PRACTICE/REVIEW), content stage (ENCOUNTER/DIAGNOSIS), object kind
+     (TOOL/SAFETY TOOL), and time cost (4 MIN/BEDSIDE) — so it taught the reader nothing.
+     Uppercase now means exactly one thing, "what pressing this does"; every descriptor gets
+     .meta and renders as sentence-case metadata. actionRow() picks the class off SEC_ACTIONS. */
   .hm-li .sec{font-size:.68rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em}
+  .hm-li .sec.meta{text-transform:none;letter-spacing:0;font-size:.72rem;font-weight:600}
   .hm-empty{color:var(--text-mid);font-size:.94rem}
   .hm-substat{display:block;font-size:.72rem;color:var(--text-mid);margin-top:6px}
   .pt-q{margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid var(--border)}
@@ -475,13 +506,23 @@
   .wd-head h2{font-family:var(--font-head);font-size:1.12rem;margin:0;border:none;padding:0;color:var(--text)}
   .wd-intro{margin:-4px 0 12px;color:var(--text-mid);font-size:.93rem;max-width:70ch}
   .wd-count{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-left:8px}
-  .wd-modes{display:flex;flex-wrap:wrap;gap:6px}
+  /* Mode chips and tool chips were near-identical pills sitting ~14px apart with OPPOSITE
+     semantics: .wd-mode is a stateful toggle that re-renders in place (and changes how md
+     pages render everywhere), .wd-tool is a link that navigates away. Two cues separate them
+     now — each row carries a visible .wd-rowlab, and the shapes diverge: a pill stays a
+     toggle, squared-with-a-trailing-arrow means "this goes somewhere". */
+  .wd-modes{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .wd-rowlab{flex:0 0 auto;font-size:.62rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
   .wd-mode{border:1px solid var(--border);background:var(--bg-alt);color:var(--text-mid);border-radius:999px;padding:5px 10px;font:inherit;font-size:.78rem;font-weight:800;cursor:pointer}
   .wd-mode.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .wd-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
-  .wd-tool{display:inline-flex;align-items:center;text-decoration:none;font-size:.8rem;font-weight:800;color:var(--accent-dark);background:var(--bg-alt);border:1px solid var(--border);border-radius:999px;padding:5px 10px}
+  .wd-tool{display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-size:.8rem;font-weight:800;color:var(--accent-dark);background:var(--surface);border:1px solid var(--accent-border);border-radius:8px;padding:5px 10px}
+  .wd-tool::after{content:"\2192";font-weight:700;opacity:.75}
+  /* .is-safety was emitted by toolRow() but never styled here, unlike every other chip family
+     (.tl-chip, .mc-item, .tl-bar__item). Same --primary convention as those. */
+  .wd-tool.is-safety{color:var(--primary-dark);background:var(--primary-light);border-color:var(--primary)}
   .wd-tool:hover{border-color:var(--accent);background:var(--accent-light)}
-  .wd-tool.is-safety{color:var(--primary-dark);background:var(--primary-light)}
+  .wd-tool.is-safety:hover{border-color:var(--primary-dark);background:var(--primary-light)}
   .wd-intro .wd-count{margin-left:2px}
   @media(max-width:620px){.wd-challenge{grid-template-columns:1fr}.wd-challenge .a{justify-self:start}}
   .wd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -903,7 +944,7 @@
   var PRACTICE_LABELS={'mse.html':'Mental Status Exam','interview-circle.html':'Interview Circle','communication-practice.html':'What Do You Say Next?','diagnostic-reasoning.html':'Diagnostic Reasoning Workbench','family-systems.html':'Family Systems Practice','cssrs.html':'C-SSRS Suicide Screen','withdrawal.html':'CIWA-Ar / COWS','bfcrs.html':'Bush-Francis Catatonia','violence.html':'Violence Risk (FRST)','capacity.html':'Decisional Capacity','screeners.html':'PHQ-9 / GAD-7','oral.html':'Rounding Prep + Timer','decision-aids.html':'Algorithms & Decision Aids','shelf-mode.html':'Shelf Mode Exam Sim','review.html':'Daily Review','reflection.html':'Reflection & Identity','question-bank-practice.html':'Practice Questions','sp-interview.html':'The Interview Room — AI Patient','one-patient-six-weeks.html':'One Patient, Six Weeks'};
   var PRACTICE_SAFE={'cssrs.html':1,'violence.html':1,'withdrawal.html':1,'bfcrs.html':1,'capacity.html':1,'decision-aids.html':1};
   var PRACTICE_PAGE_TOOLS={ 't_sud.md':['withdrawal.html','cssrs.html'], 'pg_interview.md':['sp-interview.html','mse.html'], 'pg_suicide.md':['cssrs.html','violence.html','decision-aids.html','sp-interview.html'], 'catatonia.md':['bfcrs.html'], 'agitation.md':['violence.html','decision-aids.html'], 'exp_consult.md':['capacity.html','decision-aids.html'], 'cl_reference.md':['decision-aids.html'], 't_mood.md':['screeners.html'], 't_anxiety.md':['screeners.html'], 't_psychosis.md':['decision-aids.html','sp-interview.html'], 't_perinatal.md':['cssrs.html'], 't_personality.md':['cssrs.html','reflection.html'], 'brief_psychotherapy.md':['mse.html','decision-aids.html'], 'doc_oral.md':['oral.html'], 'landmark_trials.md':['shelf-mode.html','review.html'], 'evidence_inpatient.md':['review.html'], 'shelf.md':['question-bank-practice.html','shelf-mode.html'], 'reading_map.md':['review.html'], 'collateral_workflow.md':['one-patient-six-weeks.html','family-systems.html'] };
-  var PRACTICE_CASE_LABELS={suicide_direct_question_001:'Ask About Suicide Directly',psychosis_validation_001:'Validate Psychosis Without Colluding',guardedness_privacy_001:'Respond To Guardedness',rupture_limit_setting_001:'Repair After A Limit',bpd_rupture_repair_001:'Repair A BPD Rupture',medication_ambivalence_001:'Medication Ambivalence',mania_limit_sleep_001:'Offer A Sleep-Restoring Plan In Mania',family_meeting_opening_001:'Open A Family Meeting',collateral_questions_001:'Ask Better Collateral Questions',family_conflict_discharge_001:'De-escalate Family Conflict Around Discharge'};
+  var PRACTICE_CASE_LABELS={suicide_direct_question_001:'Ask About Suicide Directly',psychosis_validation_001:'Validate Psychosis Without Colluding',guardedness_privacy_001:'Respond to Guardedness',rupture_limit_setting_001:'Repair After a Limit',bpd_rupture_repair_001:'Repair a BPD Rupture',medication_ambivalence_001:'Medication Ambivalence',mania_limit_sleep_001:'Offer a Sleep-Restoring Plan in Mania',family_meeting_opening_001:'Open a Family Meeting',collateral_questions_001:'Ask Better Collateral Questions',family_conflict_discharge_001:'De-escalate Family Conflict Around Discharge'};
   function practiceToolLabel(k){ return (typeof LAB!=='undefined'&&LAB[k])?LAB[k]:(PRACTICE_LABELS[k]||String(k||'').replace(/\.html$/,'').replace(/[-_]+/g,' ')); }
   function practiceIsSafe(k){ return !!((typeof SAFE!=='undefined'&&SAFE[k])||PRACTICE_SAFE[k]); }
   function practiceCaseLabel(id){ return (typeof CASE_TITLES!=='undefined'&&CASE_TITLES[id])?CASE_TITLES[id]:(PRACTICE_CASE_LABELS[id]||'What Do You Say Next?'); }
@@ -1131,7 +1172,7 @@
       gw.appendChild(gh); gw.appendChild(gb); navEl.appendChild(gw);
       groupWraps[name]=gb; return gb;
     }
-    data.unshift({section:'Welcome and Today',pinned:true,items:[{t:'Today',f:'__home__',k:'special'},{t:'Progress',f:'__progress__',k:'special'},{t:'Start-here Checklist',f:'__start__',k:'special'}]});
+    data.unshift({section:'Today',pinned:true,items:[{t:'Today',f:'__home__',k:'special'},{t:'Progress',f:'__progress__',k:'special'},{t:'Start-here Checklist',f:'__start__',k:'special'}]});
     data.forEach(function(sec){
       var wrap=document.createElement('div'); wrap.className='navsec-wrap';
       var h=document.createElement('button'); h.className='navsec'; h.type='button';
@@ -1238,10 +1279,18 @@
   }
   function capRemove(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items.splice(i,1); break; } } capWrite(d); }
   function capMarkTriaged(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items[i].triaged=true; break; } } capWrite(d); }
+  /* Two audiences, one norm, kept adjacent so they cannot drift apart in meaning:
+     CAP_STAMP travels with the copied list (the attending reads it); CAP_PURPOSE frames the
+     home triage card (the student reads it). The capture SHEET already carries point-of-entry
+     PHI copy and the .cap-phi hold — the home card inherited none of that framing, which is
+     the gap this closes. CAP_PURPOSE names the three controls the card actually renders
+     (open / schedule review / copy out) so the section explains itself without a tooltip. */
+  var CAP_STAMP='Questions from the unit, brought to supervision. Written by a trainee for teaching discussion — contains no patient information.';
+  var CAP_PURPOSE='Questions you captured on the unit. Open the matching page, schedule one for review, or copy the list to raise in supervision. Stays on this device — no patient details.';
   /* P4 — the one sanctioned egress. The stamp lives inside the payload builder so every copy path
      carries it, matching the supervised-draft pattern in decisional-capacity-module.html. */
   function capClipboardText(){
-    var d=capRead(), lines=['Questions from the unit, brought to supervision. Written by a trainee for teaching discussion — contains no patient information.',''];
+    var d=capRead(), lines=[CAP_STAMP,''];
     for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) lines.push('- '+d.items[i].text); }
     return lines.join('\n');
   }
@@ -1261,6 +1310,7 @@
     for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) open.push(d.items[i]); }
     if(!open.length)return '';
     var h='<div class="hm-sec"><h2>Questions from the unit <span style="font-weight:400;color:var(--text-light)">· '+open.length+' waiting</span></h2>';
+    h+='<p class="cap-purpose">'+esc(CAP_PURPOSE)+'</p>';
     if(!SI){ h+='<div class="sub" style="margin:0 0 8px">Matching is unavailable right now — your questions are safe on this device.</div>'; }
     for(var j=0;j<open.length;j++){
       var it=open[j], hit=null;
@@ -1619,6 +1669,22 @@
   function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due,overdue:b.daily.overdue}; }
   /* ---- end due breakdown ---- */
   function dueSubstatHtml(bd){ var parts=[]; if(bd.qb.due)parts.push(bd.qb.due+' in the question bank'); if(bd.fam.due)parts.push(bd.fam.due+' in family practice'); if(bd.other.due)parts.push(bd.other.due+' in other practice tools'); return parts.length?'<span class="hm-substat">Also scheduled: '+parts.join(' · ')+'</span>':''; }
+  /* Renders directly under the date stamp when — and only when — daily cards are actually due.
+     Returning '' on a caught-up day is the whole point: promoting a zero is worse than burying a
+     count, which is why the .hm-mini "Due today 0" tile stays put for that case. When this DOES
+     render, renderHome drops the .hm-mini due tile so the number is never stated twice.
+     data-act="review" rides the existing generic [data-act] delegate in __afterSpecial — no new
+     click branch, same destination as the tile it replaces. */
+  function dueStripHtml(bd){
+    if(!bd.daily.due)return '';
+    return '<button class="hm-due" type="button" data-act="review">'
+      +'<span class="ds-k">Due today</span>'
+      +'<span class="ds-v">'+bd.daily.due+'</span>'
+      +(bd.daily.overdue?'<span class="ds-over">'+bd.daily.overdue+' overdue</span>':'')
+      +'<span class="ds-a">Start review →</span>'
+      +dueSubstatHtml(bd)
+      +'</button>';
+  }
   function navScan(){ var p=(typeof progLoad==='function')?progLoad():{}, meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}; var hy=[],cov={}; var wraps=document.querySelectorAll('#nav .navsec-wrap'); [].forEach.call(wraps,function(w){ var sec=((w.querySelector('.navsec-t')||{}).textContent)||''; if(sec==='Overview')return; [].forEach.call(w.querySelectorAll('.navitem'),function(b){ var it=b._item; if(!it)return; if(it.k==='md'){ if(!cov[sec])cov[sec]={done:0,tot:0}; cov[sec].tot++; if(p[it.f]&&p[it.f].done)cov[sec].done++; } if(meta[it.f]&&meta[it.f].hy&&!(p[it.f]&&p[it.f].done))hy.push({f:it.f,t:it.t,sec:sec}); }); }); return {hy:hy,cov:cov}; }
   function allNavItems(){ var out=[]; [].forEach.call(document.querySelectorAll('#nav .navitem'),function(b){ var it=b._item; if(it&&it.k!=='special')out.push({f:it.f,t:it.t,k:it.k}); }); return out; }
   function dashboardState(){ try{return JSON.parse(localStorage.getItem('cw_dashboard_v1')||'{}')||{};}catch(_){return {};} }
@@ -1678,8 +1744,8 @@
     out.sort(function(a,b){ return b.score-a.score; });
     return out;
   }
-  var CASE_TITLES={suicide_direct_question_001:'Ask About Suicide Directly',psychosis_validation_001:'Validate Psychosis Without Colluding',guardedness_privacy_001:'Respond To Guardedness',rupture_limit_setting_001:'Repair After A Limit',bpd_rupture_repair_001:'Repair A BPD Rupture',medication_ambivalence_001:'Medication Ambivalence',mania_limit_sleep_001:'Offer A Sleep-Restoring Plan In Mania',family_meeting_opening_001:'Open A Family Meeting',collateral_questions_001:'Ask Better Collateral Questions',family_conflict_discharge_001:'De-escalate Family Conflict Around Discharge'};
-  var FAMILY_SCENARIO_TITLES={collateral_baseline_safety_001:'Practice Collateral Call',family_meeting_opening_001:'Prepare Family Meeting',discharge_barrier_map_001:'Map Family Safety Roles',high_expressed_emotion_001:'Reset High-Emotion Family Talk',psychosis_family_psychoeducation_001:'Explain Psychosis To Family',family_involvement_boundaries_001:'Set Family Boundaries',caregiver_baseline_adaptations_001:'Caregiver Baseline And Adaptations',culture_interpreter_family_001:'Culture, Interpreter, And Family Contact'};
+  var CASE_TITLES={suicide_direct_question_001:'Ask About Suicide Directly',psychosis_validation_001:'Validate Psychosis Without Colluding',guardedness_privacy_001:'Respond to Guardedness',rupture_limit_setting_001:'Repair After a Limit',bpd_rupture_repair_001:'Repair a BPD Rupture',medication_ambivalence_001:'Medication Ambivalence',mania_limit_sleep_001:'Offer a Sleep-Restoring Plan in Mania',family_meeting_opening_001:'Open a Family Meeting',collateral_questions_001:'Ask Better Collateral Questions',family_conflict_discharge_001:'De-escalate Family Conflict Around Discharge'};
+  var FAMILY_SCENARIO_TITLES={collateral_baseline_safety_001:'Practice Collateral Call',family_meeting_opening_001:'Prepare Family Meeting',discharge_barrier_map_001:'Map Family Safety Roles',high_expressed_emotion_001:'Reset High-Emotion Family Talk',psychosis_family_psychoeducation_001:'Explain Psychosis to Family',family_involvement_boundaries_001:'Set Family Boundaries',caregiver_baseline_adaptations_001:'Caregiver Baseline and Adaptations',culture_interpreter_family_001:'Culture, Interpreter, and Family Contact'};
   var CASE_PRIORITY={ward:['guardedness_privacy_001','psychosis_validation_001','medication_ambivalence_001','mania_limit_sleep_001'],family:['family_meeting_opening_001','collateral_questions_001','family_conflict_discharge_001'],safety:['suicide_direct_question_001','family_conflict_discharge_001','rupture_limit_setting_001'],shelf:['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001'],'5min':['suicide_direct_question_001','psychosis_validation_001','medication_ambivalence_001','family_meeting_opening_001']};
   var CASE_FILTER={suicide_direct_question_001:'safety',psychosis_validation_001:'psychosis',guardedness_privacy_001:'guarded',rupture_limit_setting_001:'rupture',bpd_rupture_repair_001:'rupture',medication_ambivalence_001:'medication',mania_limit_sleep_001:'medication',family_meeting_opening_001:'family',collateral_questions_001:'family',family_conflict_discharge_001:'family'};
   /* hero: the short imperative headline for the home "Your next step" card (design 2a);
@@ -1754,17 +1820,26 @@
     if(out.length<limit){ (matches||[]).forEach(function(it){ if(out.indexOf(it)<0)out.push(it); }); }
     return out.slice(0,limit);
   }
+  /* The only labels that earn the uppercase .sec treatment — an action verb answers "what does
+     pressing this do". Everything else the slot can receive (kinds like 'tool'/'safety tool',
+     stages like 'encounter'/'diagnosis', costs like '4 min'/'bedside') is a descriptor and
+     renders as .sec.meta. Keep this list closed: adding a noun here re-mixes the taxonomy. */
+  var SEC_ACTIONS={open:1,practice:1,review:1,drill:1,reflect:1,resume:1};
+  function secClass(label){ return SEC_ACTIONS[String(label||'').toLowerCase()]?'sec':'sec meta'; }
   function actionRow(it, note){
     var label=it.note||it.modeReason||note||(it.caseId?'drill':it.k);
-    if(it.href){ return '<a class="hm-li wd-li" href="'+esc(it.href)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></a>'; }
-    return '<button class="hm-li wd-li" data-f="'+esc(it.f)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></button>';
+    var sc=secClass(label);
+    if(it.href){ return '<a class="hm-li wd-li" href="'+esc(it.href)+'"><span class="t">'+esc(it.t)+'</span><span class="'+sc+'">'+esc(label)+'</span></a>'; }
+    return '<button class="hm-li wd-li" data-f="'+esc(it.f)+'"><span class="t">'+esc(it.t)+'</span><span class="'+sc+'">'+esc(label)+'</span></button>';
   }
   /* Shorter display labels for dashboard chips only (design 2a copy trim); nav and
      everything else keep the full LAB names. */
   var CHIP_LABEL={'diagnostic-reasoning.html':'Diagnostic Reasoning','decision-aids.html':'Decision Aids'};
   function toolRow(tools,mode){
     if(!tools||!tools.length)return '';
-    var h='<div class="wd-tools" role="group" aria-label="Tools for '+esc(dashCfg(mode).label)+'">';
+    /* The visible row label doubles as the group's accessible name via aria-labelledby rather
+       than a second, differently-worded aria-label — otherwise AT announces the row twice. */
+    var h='<div class="wd-tools" role="group" aria-labelledby="wdToolsLab"><span class="wd-rowlab" id="wdToolsLab">Open a tool</span>';
     tools.forEach(function(x){ var safe=practiceIsSafe(x.f)?' is-safety':''; h+='<a class="wd-tool'+safe+'" href="'+esc(x.href)+'">'+esc(CHIP_LABEL[x.f]||x.t)+'</a>'; });
     h+='</div>'; return h;
   }
@@ -1804,7 +1879,7 @@
     var pack;
     if(mode==='family'){
       pack={before:compactActions(pagesByStage(matches,['family','communication'],2).concat([familyAction('family_meeting_opening_001','Prepare Family Meeting','family tool')])).slice(0,2),
-        after:compactActions([familyAction('caregiver_baseline_adaptations_001','Caregiver Baseline And Adaptations','family tool'),casePicks[0]||caseAction('family_meeting_opening_001')]).slice(0,2),
+        after:compactActions([familyAction('caregiver_baseline_adaptations_001','Caregiver Baseline and Adaptations','family tool'),casePicks[0]||caseAction('family_meeting_opening_001')]).slice(0,2),
         leave:compactActions([familyAction('discharge_barrier_map_001','Map Family Safety Roles','family tool')].concat(pagesByStage(matches,['family','safety'],1))).slice(0,2)};
     } else if(mode==='safety'){
       pack={before:compactActions(pagesByStage(matches,['safety'],2).concat([casePicks[0]||caseAction('suicide_direct_question_001')])).slice(0,2),
@@ -1816,7 +1891,7 @@
         leave:compactActions(pagesByStage(matches,['exam','diagnosis'],1).concat([toolAction('shelf-mode.html','exam sim')])).slice(0,2)};
     } else if(mode==='5min'){
       pack={before:compactActions(pagesByStage(matches,['communication','safety','team'],1).concat([casePicks[0]||caseAction('suicide_direct_question_001')])).slice(0,2),
-        after:compactActions([casePicks[1],familyAction('culture_interpreter_family_001','Culture, Interpreter, And Family Contact','family tool')]).slice(0,2),
+        after:compactActions([casePicks[1],familyAction('culture_interpreter_family_001','Culture, Interpreter, and Family Contact','family tool')]).slice(0,2),
         leave:compactActions([toolAction('review.html','review')]).slice(0,2)};
     } else {
       pack={before:pagesByStage(matches,['team','encounter'],2),
@@ -1827,7 +1902,7 @@
     if(!pack.after.length)pack.after=compactActions(casePicks.slice(0,1).concat(matches.slice(2,3),tools.slice(0,1))).slice(0,2);
     if(!pack.leave.length)pack.leave=[toolAction('review.html','review')];
     var cfg=dashCfg(mode);
-    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit</h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div></div>';
+    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit</h2><div class="wd-modes" role="group" aria-labelledby="wdModeLab"><span class="wd-rowlab" id="wdModeLab">Viewing as</span>'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div></div>';
     h+='<p class="wd-intro">'+esc(cfg.intent)+' <span class="wd-count">· '+matches.length+' matched</span></p>'+toolRow(tools,mode);
     h+='<div class="wd-grid"><div class="wd-card"><h3>Before rounds</h3>'+pack.before.map(function(x){return actionRow(x,'open');}).join('')+'</div><div class="wd-card"><h3>After rounds</h3>'+pack.after.map(function(x){return actionRow(x,'practice');}).join('')+'</div><div class="wd-card"><h3>Before leaving</h3>'+pack.leave.map(function(x){return actionRow(x,'review');}).join('')+'</div></div></div>';
     return h;
@@ -1971,18 +2046,34 @@
     var streak=(s&&s.stats&&s.stats.streak)||0;
     var last=LS('cw_last'); var mode=dashboardMode();
     var h='<div class="hm" id="hmRoot"><div class="hm-top"><h1>Today</h1><span class="hm-stamp">'+esc(homeStamp(mode))+'</span></div>';
+    /* Most perishable fact first, above even the orientation ribbon. Empty string on a caught-up
+       day, and a fresh device has nothing due by definition, so this never competes with "New
+       here?" for a first-run student's attention. */
+    var dueStrip=dueStripHtml(bd);
+    h+=dueStrip;
     /* "New here?" is only true for a fresh device: any review, any scheduled card, or any
        visited page auto-suppresses the ribbon — manual dismissal shouldn't be the only exit. */
     var freshUser=(rev===0 && bd.daily.due+bd.qb.due+bd.fam.due+bd.other.due===0 && !last);
-    if(freshUser && LS('cw_orient_ribbon_dismissed')!=='1'){
+    var ribbonLive=(freshUser && LS('cw_orient_ribbon_dismissed')!=='1');
+    if(ribbonLive){
       h+='<div class="hm-ribbon" id="orientRibbon"><span class="t">New here? Ten minutes of orientation sets up your whole rotation.</span><button class="hm-btn" type="button" data-ribbon="start">Start orientation</button><button class="hm-btn ghost" type="button" data-ribbon="pretest">2-minute placement</button><button class="hm-ribbon-x" type="button" data-ribbon="dismiss" aria-label="Dismiss the orientation reminder">&times;</button></div>';
     }
-    h+=relationalChallengeHtml(mode);
+    /* Day 1 gets ONE primary action. The ribbon and the challenge hero are both "start here"
+       cards and together they filled the entire first screen of a 375px phone, asking a student
+       who has never opened the site to choose between "Start orientation" and "Practice now".
+       The suppression is self-clearing and needs no state of its own: dismissing the ribbon, or
+       any activity at all (a visited page sets cw_last), flips ribbonLive false and the hero is
+       back on the very next render. */
+    if(!ribbonLive){ h+=relationalChallengeHtml(mode); }
     h+=renderWardDashboard();
     h+='<div class="hm-mini">';
-    h+='<button class="hm-tile" type="button" data-f="__progress__"><span class="k">Reviewed</span><span class="v">'+pct+'%</span><span class="l">See progress →</span></button>';
-    if(bd.daily.due){ h+='<button class="hm-tile" type="button" data-act="review"><span class="k">Due today</span><span class="v">'+bd.daily.due+(bd.daily.overdue?'<small> · '+bd.daily.overdue+' overdue</small>':'')+'</span><span class="l">Start review →</span>'+dueSubstatHtml(bd)+'</button>'; }
-    else{ h+='<div class="hm-tile"><span class="k">Due today</span><span class="v">0</span>'+dueSubstatHtml(bd)+'</div>'; }
+    /* "Reviewed" read as a global progress claim, but this percentage counts only pages the
+       student pressed "Mark as read" on (cw_progress_v1) — a different axis from the SRS-backed
+       Due/Streak tiles beside it. A student with 31 card reviews and a 4-day streak still saw
+       "Reviewed 0%", which reads as failure. "Pages read" matches the control's own wording. */
+    h+='<button class="hm-tile" type="button" data-f="__progress__"><span class="k">Pages read</span><span class="v">'+pct+'%</span><span class="l">See progress →</span></button>';
+    /* Suppressed when the promoted strip above already carries the count — one number, one place. */
+    if(!bd.daily.due){ h+='<div class="hm-tile"><span class="k">Due today</span><span class="v">0</span>'+dueSubstatHtml(bd)+'</div>'; }
     if(streak){ h+='<div class="hm-tile"><span class="k">Streak</span><span class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></span></div>'; }
     else{ h+='<button class="hm-tile" type="button" data-act="review"><span class="k">Streak</span><span class="l">Start your streak →</span></button>'; }
     h+='<button class="hm-tile" type="button" data-f="anki.md"><span class="k">On your phone</span><span class="l">Anki decks →</span></button>';

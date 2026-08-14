@@ -189,7 +189,7 @@ _HIDDEN_INHERITED=[
   {"t":"Practice Cases","f":"cases.md","k":"md","hidden":True},
 ]
 nav=[
- {"section":"Welcome and Orientation","pinned":True,"items":[
+ {"section":"Orientation","pinned":True,"items":[
    {"t":"Welcome — Resident Rotation","f":"welcome.md","k":"md"},
    {"t":"4-Week Rotation Plan","f":"rotation.md","k":"md"},
    {"t":"Core Reading List","f":"core_readings.md","k":"md"},
@@ -207,7 +207,7 @@ nav=[
  {"section":"Evidence and Reference","items":[{"t":"Evidence-Based Inpatient Psychiatry","f":"evidence_inpatient.md","k":"md"},{"t":"The Psychiatry Canon (200)","f":"canon_200.md","k":"md"},{"t":"Book Library","f":"book_library.md","k":"md"},{"t":"Podcast Library (Psychiatry & Psychotherapy)","f":"podcast_library.md","k":"md"}]+_HIDDEN_INHERITED},
  {"section":"Feedback","items":[{"t":"Improve this library — send feedback","f":"feedback.html","k":"tool"}]},
 ]
-_navorder=["Welcome and Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
+_navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
 
 # ---------- SURFACE GOVERNANCE: nav annotation (resident) ----------
