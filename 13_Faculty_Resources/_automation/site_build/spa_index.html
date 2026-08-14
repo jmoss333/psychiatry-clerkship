@@ -77,7 +77,9 @@
   .mc-item{display:flex;align-items:center;gap:7px;width:100%;border:none;background:transparent;color:var(--text);text-align:left;border-radius:7px;padding:5px 6px;cursor:pointer;font:inherit;font-size:.82rem;line-height:1.2}
   .mc-item:hover{background:var(--accent-light);color:var(--accent-dark)}
   .mc-item .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mc-item .tag{flex:0 0 auto;color:var(--text-light);font-size:.6rem;font-weight:900;letter-spacing:.05em;text-transform:uppercase}
+  /* Companion tags are all descriptors (kind/provenance), never action verbs — so under the
+     .sec taxonomy above they are metadata, not affordances. Sentence case, matching .sec.meta. */
+  .mc-item .tag{flex:0 0 auto;color:var(--text-light);font-size:.68rem;font-weight:600;letter-spacing:0}
   .mc-item.is-tool .tag{color:var(--accent-dark)}
   .mc-item.is-safety .tag{color:var(--primary-dark)}
   .mc-empty{font-size:.78rem;color:var(--text-light);line-height:1.35}
@@ -460,7 +462,13 @@
   .hm-li:last-child{border-bottom:none}
   .hm-li:hover{color:var(--accent-dark)}
   .hm-li .t{flex:1}
+  /* The .sec slot carried four unrelated meanings in one identical uppercase treatment:
+     action verb (OPEN/PRACTICE/REVIEW), content stage (ENCOUNTER/DIAGNOSIS), object kind
+     (TOOL/SAFETY TOOL), and time cost (4 MIN/BEDSIDE) — so it taught the reader nothing.
+     Uppercase now means exactly one thing, "what pressing this does"; every descriptor gets
+     .meta and renders as sentence-case metadata. actionRow() picks the class off SEC_ACTIONS. */
   .hm-li .sec{font-size:.68rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em}
+  .hm-li .sec.meta{text-transform:none;letter-spacing:0;font-size:.72rem;font-weight:600}
   .hm-empty{color:var(--text-mid);font-size:.94rem}
   .hm-substat{display:block;font-size:.72rem;color:var(--text-mid);margin-top:6px}
   .pt-q{margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid var(--border)}
@@ -475,13 +483,23 @@
   .wd-head h2{font-family:var(--font-head);font-size:1.12rem;margin:0;border:none;padding:0;color:var(--text)}
   .wd-intro{margin:-4px 0 12px;color:var(--text-mid);font-size:.93rem;max-width:70ch}
   .wd-count{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-left:8px}
-  .wd-modes{display:flex;flex-wrap:wrap;gap:6px}
+  /* Mode chips and tool chips were near-identical pills sitting ~14px apart with OPPOSITE
+     semantics: .wd-mode is a stateful toggle that re-renders in place (and changes how md
+     pages render everywhere), .wd-tool is a link that navigates away. Two cues separate them
+     now — each row carries a visible .wd-rowlab, and the shapes diverge: a pill stays a
+     toggle, squared-with-a-trailing-arrow means "this goes somewhere". */
+  .wd-modes{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .wd-rowlab{flex:0 0 auto;font-size:.62rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
   .wd-mode{border:1px solid var(--border);background:var(--bg-alt);color:var(--text-mid);border-radius:999px;padding:5px 10px;font:inherit;font-size:.78rem;font-weight:800;cursor:pointer}
   .wd-mode.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .wd-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
-  .wd-tool{display:inline-flex;align-items:center;text-decoration:none;font-size:.8rem;font-weight:800;color:var(--accent-dark);background:var(--bg-alt);border:1px solid var(--border);border-radius:999px;padding:5px 10px}
+  .wd-tool{display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-size:.8rem;font-weight:800;color:var(--accent-dark);background:var(--surface);border:1px solid var(--accent-border);border-radius:8px;padding:5px 10px}
+  .wd-tool::after{content:"\2192";font-weight:700;opacity:.75}
+  /* .is-safety was emitted by toolRow() but never styled here, unlike every other chip family
+     (.tl-chip, .mc-item, .tl-bar__item). Same --primary convention as those. */
+  .wd-tool.is-safety{color:var(--primary-dark);background:var(--primary-light);border-color:var(--primary)}
   .wd-tool:hover{border-color:var(--accent);background:var(--accent-light)}
-  .wd-tool.is-safety{color:var(--primary-dark);background:var(--primary-light)}
+  .wd-tool.is-safety:hover{border-color:var(--primary-dark);background:var(--primary-light)}
   .wd-intro .wd-count{margin-left:2px}
   @media(max-width:620px){.wd-challenge{grid-template-columns:1fr}.wd-challenge .a{justify-self:start}}
   .wd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -1131,7 +1149,7 @@
       gw.appendChild(gh); gw.appendChild(gb); navEl.appendChild(gw);
       groupWraps[name]=gb; return gb;
     }
-    data.unshift({section:'Welcome and Today',pinned:true,items:[{t:'Today',f:'__home__',k:'special'},{t:'Progress',f:'__progress__',k:'special'},{t:'Start-here Checklist',f:'__start__',k:'special'}]});
+    data.unshift({section:'Today',pinned:true,items:[{t:'Today',f:'__home__',k:'special'},{t:'Progress',f:'__progress__',k:'special'},{t:'Start-here Checklist',f:'__start__',k:'special'}]});
     data.forEach(function(sec){
       var wrap=document.createElement('div'); wrap.className='navsec-wrap';
       var h=document.createElement('button'); h.className='navsec'; h.type='button';
@@ -1754,17 +1772,26 @@
     if(out.length<limit){ (matches||[]).forEach(function(it){ if(out.indexOf(it)<0)out.push(it); }); }
     return out.slice(0,limit);
   }
+  /* The only labels that earn the uppercase .sec treatment — an action verb answers "what does
+     pressing this do". Everything else the slot can receive (kinds like 'tool'/'safety tool',
+     stages like 'encounter'/'diagnosis', costs like '4 min'/'bedside') is a descriptor and
+     renders as .sec.meta. Keep this list closed: adding a noun here re-mixes the taxonomy. */
+  var SEC_ACTIONS={open:1,practice:1,review:1,drill:1,reflect:1,resume:1};
+  function secClass(label){ return SEC_ACTIONS[String(label||'').toLowerCase()]?'sec':'sec meta'; }
   function actionRow(it, note){
     var label=it.note||it.modeReason||note||(it.caseId?'drill':it.k);
-    if(it.href){ return '<a class="hm-li wd-li" href="'+esc(it.href)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></a>'; }
-    return '<button class="hm-li wd-li" data-f="'+esc(it.f)+'"><span class="t">'+esc(it.t)+'</span><span class="sec">'+esc(label)+'</span></button>';
+    var sc=secClass(label);
+    if(it.href){ return '<a class="hm-li wd-li" href="'+esc(it.href)+'"><span class="t">'+esc(it.t)+'</span><span class="'+sc+'">'+esc(label)+'</span></a>'; }
+    return '<button class="hm-li wd-li" data-f="'+esc(it.f)+'"><span class="t">'+esc(it.t)+'</span><span class="'+sc+'">'+esc(label)+'</span></button>';
   }
   /* Shorter display labels for dashboard chips only (design 2a copy trim); nav and
      everything else keep the full LAB names. */
   var CHIP_LABEL={'diagnostic-reasoning.html':'Diagnostic Reasoning','decision-aids.html':'Decision Aids'};
   function toolRow(tools,mode){
     if(!tools||!tools.length)return '';
-    var h='<div class="wd-tools" role="group" aria-label="Tools for '+esc(dashCfg(mode).label)+'">';
+    /* The visible row label doubles as the group's accessible name via aria-labelledby rather
+       than a second, differently-worded aria-label — otherwise AT announces the row twice. */
+    var h='<div class="wd-tools" role="group" aria-labelledby="wdToolsLab"><span class="wd-rowlab" id="wdToolsLab">Open a tool</span>';
     tools.forEach(function(x){ var safe=practiceIsSafe(x.f)?' is-safety':''; h+='<a class="wd-tool'+safe+'" href="'+esc(x.href)+'">'+esc(CHIP_LABEL[x.f]||x.t)+'</a>'; });
     h+='</div>'; return h;
   }
@@ -1827,7 +1854,7 @@
     if(!pack.after.length)pack.after=compactActions(casePicks.slice(0,1).concat(matches.slice(2,3),tools.slice(0,1))).slice(0,2);
     if(!pack.leave.length)pack.leave=[toolAction('review.html','review')];
     var cfg=dashCfg(mode);
-    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit</h2><div class="wd-modes">'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div></div>';
+    var h='<div class="wd"><div class="wd-head"><h2>Today on the unit</h2><div class="wd-modes" role="group" aria-labelledby="wdModeLab"><span class="wd-rowlab" id="wdModeLab">Viewing as</span>'+modes.map(function(m){return '<button type="button" class="wd-mode'+(mode===m[0]?' on':'')+'" data-dash-mode="'+m[0]+'" aria-pressed="'+(mode===m[0]?'true':'false')+'">'+m[1]+'</button>';}).join('')+'</div></div>';
     h+='<p class="wd-intro">'+esc(cfg.intent)+' <span class="wd-count">· '+matches.length+' matched</span></p>'+toolRow(tools,mode);
     h+='<div class="wd-grid"><div class="wd-card"><h3>Before rounds</h3>'+pack.before.map(function(x){return actionRow(x,'open');}).join('')+'</div><div class="wd-card"><h3>After rounds</h3>'+pack.after.map(function(x){return actionRow(x,'practice');}).join('')+'</div><div class="wd-card"><h3>Before leaving</h3>'+pack.leave.map(function(x){return actionRow(x,'review');}).join('')+'</div></div></div>';
     return h;
