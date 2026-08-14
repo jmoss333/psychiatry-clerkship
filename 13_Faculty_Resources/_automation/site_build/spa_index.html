@@ -396,6 +396,9 @@
   .cap-btn.primary{background:var(--primary-dark);border-color:var(--primary-dark);color:#fff}
   .cap-btn.danger{color:var(--warning);border-color:var(--warning)}
   .cap-btn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+  /* Home triage card only — the sheet has its own framing (.cap-warn/.cap-disclose); this is
+     the equivalent for the section on Today, which previously opened straight into controls. */
+  .cap-purpose{margin:0 0 10px;font-size:.86rem;line-height:1.45;color:var(--text-mid);max-width:70ch}
   .cap-phi{margin:12px 0 0;padding:12px;background:var(--warning-light);border:1px solid var(--warning);border-radius:9px;font-size:.84rem;color:var(--warning)}
   .cap-phi b{display:block;margin:0 0 4px}
   .cap-list{list-style:none;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--border)}
@@ -1256,10 +1259,18 @@
   }
   function capRemove(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items.splice(i,1); break; } } capWrite(d); }
   function capMarkTriaged(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items[i].triaged=true; break; } } capWrite(d); }
+  /* Two audiences, one norm, kept adjacent so they cannot drift apart in meaning:
+     CAP_STAMP travels with the copied list (the attending reads it); CAP_PURPOSE frames the
+     home triage card (the student reads it). The capture SHEET already carries point-of-entry
+     PHI copy and the .cap-phi hold — the home card inherited none of that framing, which is
+     the gap this closes. CAP_PURPOSE names the three controls the card actually renders
+     (open / schedule review / copy out) so the section explains itself without a tooltip. */
+  var CAP_STAMP='Questions from the unit, brought to supervision. Written by a trainee for teaching discussion — contains no patient information.';
+  var CAP_PURPOSE='Questions you captured on the unit. Open the matching page, schedule one for review, or copy the list to raise in supervision. Stays on this device — no patient details.';
   /* P4 — the one sanctioned egress. The stamp lives inside the payload builder so every copy path
      carries it, matching the supervised-draft pattern in decisional-capacity-module.html. */
   function capClipboardText(){
-    var d=capRead(), lines=['Questions from the unit, brought to supervision. Written by a trainee for teaching discussion — contains no patient information.',''];
+    var d=capRead(), lines=[CAP_STAMP,''];
     for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) lines.push('- '+d.items[i].text); }
     return lines.join('\n');
   }
@@ -1279,6 +1290,7 @@
     for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) open.push(d.items[i]); }
     if(!open.length)return '';
     var h='<div class="hm-sec"><h2>Questions from the unit <span style="font-weight:400;color:var(--text-light)">· '+open.length+' waiting</span></h2>';
+    h+='<p class="cap-purpose">'+esc(CAP_PURPOSE)+'</p>';
     if(!SI){ h+='<div class="sub" style="margin:0 0 8px">Matching is unavailable right now — your questions are safe on this device.</div>'; }
     for(var j=0;j<open.length;j++){
       var it=open[j], hit=null;

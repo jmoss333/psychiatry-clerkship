@@ -47,9 +47,18 @@ function extractShellCopy() {
   assert.ok(capPhi, 'capture P2 interstitial not found in spa_index.html');
   strings['capture P2 interstitial'] = capPhi[1].replace(/<[^>]*>/g, '');
 
-  const capStamp = shell.match(/lines=\['([^']*)'/);
+  // Anchored on the CAP_STAMP declaration rather than the `lines=[...]` literal it used to be
+  // inlined into: the stamp is now shared with the home triage card's framing, so the constant
+  // is the stable source. Both strings ship verbatim to both sites.
+  const capStamp = shell.match(/var CAP_STAMP='([^']*)'/);
   assert.ok(capStamp, 'capture P4 clipboard stamp not found in spa_index.html');
   strings['capture P4 clipboard stamp'] = capStamp[1];
+
+  // Home triage-card framing. Same contract as the sheet copy above — it restates the no-PHI
+  // norm on the one capture surface that previously carried none, so it belongs in this set.
+  const capPurpose = shell.match(/var CAP_PURPOSE='([^']*)'/);
+  assert.ok(capPurpose, 'capture home-card purpose line not found in spa_index.html');
+  strings['capture home-card purpose'] = capPurpose[1];
 
   const capAria = shell.match(/aria-label="(Your question[^"]*)"/);
   assert.ok(capAria, 'capture textarea aria-label not found in spa_index.html');
