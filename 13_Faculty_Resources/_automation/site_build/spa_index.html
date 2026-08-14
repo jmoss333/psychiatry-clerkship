@@ -449,6 +449,19 @@
   .hm-hero .a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:var(--accent);border-radius:999px;color:var(--on-brand,#fff);font-size:.88rem;font-weight:800;padding:10px 18px;white-space:nowrap}
   .hm-hero .a:hover{background:var(--accent-dark)}
   @media(max-width:560px){.hm-hero{grid-template-columns:1fr}.hm-hero .a{justify-self:start}}
+  /* Promoted due-strip — see dueStripHtml(). The scheduled-review count used to live only in
+     .hm-mini, which sits ~1.75 screens down on a 375px phone in steady state, so a returning
+     student scrolled past the entire ward dashboard to discover an overdue card. Laid out
+     horizontally so it costs one row rather than a card, and it renders ONLY when something is
+     actually due — a caught-up day and a fresh device never see a promoted zero. */
+  .hm-due{display:flex;align-items:center;flex-wrap:wrap;gap:10px;width:100%;text-align:left;cursor:pointer;font:inherit;color:var(--text);background:var(--accent-light);border:1px solid var(--accent-border);border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;margin:0 0 14px}
+  .hm-due .ds-k{font-size:.62rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark)}
+  .hm-due .ds-v{font-family:var(--font-head);font-size:1.35rem;font-weight:700;line-height:1}
+  .hm-due .ds-over{font-size:.75rem;font-weight:800;color:var(--primary-dark);background:var(--primary-light);border-radius:999px;padding:3px 9px}
+  .hm-due .ds-a{margin-left:auto;font-size:.85rem;font-weight:800;color:var(--accent-dark)}
+  .hm-due .hm-substat{flex:0 0 100%;margin-top:0}
+  .hm-due:hover{border-color:var(--accent)}
+  @media(max-width:560px){.hm-due{min-height:44px}.hm-due .ds-a{margin-left:0}}
   .hm-mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 20px}
   .hm-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;text-align:left}
   button.hm-tile{cursor:pointer;font:inherit;color:var(--text)}
@@ -1649,6 +1662,22 @@
   function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due,overdue:b.daily.overdue}; }
   /* ---- end due breakdown ---- */
   function dueSubstatHtml(bd){ var parts=[]; if(bd.qb.due)parts.push(bd.qb.due+' in the question bank'); if(bd.fam.due)parts.push(bd.fam.due+' in family practice'); if(bd.other.due)parts.push(bd.other.due+' in other practice tools'); return parts.length?'<span class="hm-substat">Also scheduled: '+parts.join(' · ')+'</span>':''; }
+  /* Renders directly under the date stamp when — and only when — daily cards are actually due.
+     Returning '' on a caught-up day is the whole point: promoting a zero is worse than burying a
+     count, which is why the .hm-mini "Due today 0" tile stays put for that case. When this DOES
+     render, renderHome drops the .hm-mini due tile so the number is never stated twice.
+     data-act="review" rides the existing generic [data-act] delegate in __afterSpecial — no new
+     click branch, same destination as the tile it replaces. */
+  function dueStripHtml(bd){
+    if(!bd.daily.due)return '';
+    return '<button class="hm-due" type="button" data-act="review">'
+      +'<span class="ds-k">Due today</span>'
+      +'<span class="ds-v">'+bd.daily.due+'</span>'
+      +(bd.daily.overdue?'<span class="ds-over">'+bd.daily.overdue+' overdue</span>':'')
+      +'<span class="ds-a">Start review →</span>'
+      +dueSubstatHtml(bd)
+      +'</button>';
+  }
   function navScan(){ var p=(typeof progLoad==='function')?progLoad():{}, meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}; var hy=[],cov={}; var wraps=document.querySelectorAll('#nav .navsec-wrap'); [].forEach.call(wraps,function(w){ var sec=((w.querySelector('.navsec-t')||{}).textContent)||''; if(sec==='Overview')return; [].forEach.call(w.querySelectorAll('.navitem'),function(b){ var it=b._item; if(!it)return; if(it.k==='md'){ if(!cov[sec])cov[sec]={done:0,tot:0}; cov[sec].tot++; if(p[it.f]&&p[it.f].done)cov[sec].done++; } if(meta[it.f]&&meta[it.f].hy&&!(p[it.f]&&p[it.f].done))hy.push({f:it.f,t:it.t,sec:sec}); }); }); return {hy:hy,cov:cov}; }
   function allNavItems(){ var out=[]; [].forEach.call(document.querySelectorAll('#nav .navitem'),function(b){ var it=b._item; if(it&&it.k!=='special')out.push({f:it.f,t:it.t,k:it.k}); }); return out; }
   function dashboardState(){ try{return JSON.parse(localStorage.getItem('cw_dashboard_v1')||'{}')||{};}catch(_){return {};} }
@@ -2010,18 +2039,34 @@
     var streak=(s&&s.stats&&s.stats.streak)||0;
     var last=LS('cw_last'); var mode=dashboardMode();
     var h='<div class="hm" id="hmRoot"><div class="hm-top"><h1>Today</h1><span class="hm-stamp">'+esc(homeStamp(mode))+'</span></div>';
+    /* Most perishable fact first, above even the orientation ribbon. Empty string on a caught-up
+       day, and a fresh device has nothing due by definition, so this never competes with "New
+       here?" for a first-run student's attention. */
+    var dueStrip=dueStripHtml(bd);
+    h+=dueStrip;
     /* "New here?" is only true for a fresh device: any review, any scheduled card, or any
        visited page auto-suppresses the ribbon — manual dismissal shouldn't be the only exit. */
     var freshUser=(rev===0 && bd.daily.due+bd.qb.due+bd.fam.due+bd.other.due===0 && !last);
-    if(freshUser && LS('cw_orient_ribbon_dismissed')!=='1'){
+    var ribbonLive=(freshUser && LS('cw_orient_ribbon_dismissed')!=='1');
+    if(ribbonLive){
       h+='<div class="hm-ribbon" id="orientRibbon"><span class="t">New here? Ten minutes of orientation sets up your whole rotation.</span><button class="hm-btn" type="button" data-ribbon="start">Start orientation</button><button class="hm-btn ghost" type="button" data-ribbon="pretest">2-minute placement</button><button class="hm-ribbon-x" type="button" data-ribbon="dismiss" aria-label="Dismiss the orientation reminder">&times;</button></div>';
     }
-    h+=relationalChallengeHtml(mode);
+    /* Day 1 gets ONE primary action. The ribbon and the challenge hero are both "start here"
+       cards and together they filled the entire first screen of a 375px phone, asking a student
+       who has never opened the site to choose between "Start orientation" and "Practice now".
+       The suppression is self-clearing and needs no state of its own: dismissing the ribbon, or
+       any activity at all (a visited page sets cw_last), flips ribbonLive false and the hero is
+       back on the very next render. */
+    if(!ribbonLive){ h+=relationalChallengeHtml(mode); }
     h+=renderWardDashboard();
     h+='<div class="hm-mini">';
-    h+='<button class="hm-tile" type="button" data-f="__progress__"><span class="k">Reviewed</span><span class="v">'+pct+'%</span><span class="l">See progress →</span></button>';
-    if(bd.daily.due){ h+='<button class="hm-tile" type="button" data-act="review"><span class="k">Due today</span><span class="v">'+bd.daily.due+(bd.daily.overdue?'<small> · '+bd.daily.overdue+' overdue</small>':'')+'</span><span class="l">Start review →</span>'+dueSubstatHtml(bd)+'</button>'; }
-    else{ h+='<div class="hm-tile"><span class="k">Due today</span><span class="v">0</span>'+dueSubstatHtml(bd)+'</div>'; }
+    /* "Reviewed" read as a global progress claim, but this percentage counts only pages the
+       student pressed "Mark as read" on (cw_progress_v1) — a different axis from the SRS-backed
+       Due/Streak tiles beside it. A student with 31 card reviews and a 4-day streak still saw
+       "Reviewed 0%", which reads as failure. "Pages read" matches the control's own wording. */
+    h+='<button class="hm-tile" type="button" data-f="__progress__"><span class="k">Pages read</span><span class="v">'+pct+'%</span><span class="l">See progress →</span></button>';
+    /* Suppressed when the promoted strip above already carries the count — one number, one place. */
+    if(!bd.daily.due){ h+='<div class="hm-tile"><span class="k">Due today</span><span class="v">0</span>'+dueSubstatHtml(bd)+'</div>'; }
     if(streak){ h+='<div class="hm-tile"><span class="k">Streak</span><span class="v">'+streak+'<small> day'+(streak===1?'':'s')+'</small></span></div>'; }
     else{ h+='<button class="hm-tile" type="button" data-act="review"><span class="k">Streak</span><span class="l">Start your streak →</span></button>'; }
     h+='<button class="hm-tile" type="button" data-f="anki.md"><span class="k">On your phone</span><span class="l">Anki decks →</span></button>';
