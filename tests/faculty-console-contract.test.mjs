@@ -6,6 +6,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  appendSessionAction,
   startFacultyConsole,
 } from '../faculty-console/app.mjs';
 import {
@@ -348,6 +349,7 @@ function serverState({
   items,
   manifestPages = ['t_mood.md'],
   manifestRevision = DEFAULT_MANIFEST_REVISION,
+  qbankRevision = 'a'.repeat(40),
 } = {}) {
   const contentItems = items || [{
     slug: 't_mood.md',
@@ -360,7 +362,7 @@ function serverState({
   return {
     student: 'https://students.example/',
     attester: 'Joshua Moss, MD',
-    qbankRevision: 'a'.repeat(40),
+    qbankRevision,
     manifestRevision,
     manifestPages,
     qbank: questions || [item],
@@ -574,6 +576,21 @@ test('exports the injectable faculty-console browser entry', () => {
     appSource,
     /export function startFacultyConsole\s*\(\{[\s\S]*?tokenFactory\s*=\s*\(\)\s*=>\s*createReviewToken\(window\.crypto\)[\s\S]*?scheduleTimeout[\s\S]*?cancelTimeout[\s\S]*?openExternal[\s\S]*?\}\)/,
   );
+});
+
+test('session action history retains more than eight confirmed actions until Lock', () => {
+  let actions = [];
+  for (let index = 1; index <= 9; index += 1) {
+    actions = appendSessionAction(actions, {
+      key: `content:${index}`,
+      message: `Confirmed repository action ${index}.`,
+    });
+  }
+  assert.equal(actions.length, 9);
+  assert.equal(actions[0].key, 'content:9');
+  assert.equal(actions[8].key, 'content:1');
+  assert.doesNotMatch(appSource, /sessionActions\s*=\s*\[[\s\S]{0,220}?\.slice\s*\(/,
+    'the current-sitting ledger must not silently truncate confirmed writes');
 });
 
 test('uses an inert document root and one dedicated status region', () => {
@@ -1668,6 +1685,50 @@ test('preview fallback gates question Retry and opens only clean page or tool ro
     '_blank',
     'noopener,noreferrer',
   ]);
+});
+
+test('Ready page and tool previews retain a clean full-page access control without counting it as review', async () => {
+  const externalCalls = [];
+  const harness = await startHarness({
+    openExternal: (...args) => { externalCalls.push(args); },
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+        { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+      ],
+      questions: [],
+    })),
+  });
+  const { controller, document } = harness;
+
+  for (const [key, expectedUrl] of [
+    ['page:t_mood.md', 'https://students.example/?page=t_mood.md'],
+    ['tool:mse.html', 'https://students.example/?tool=mse.html'],
+  ]) {
+    if (controller.state.selectedKey !== key) {
+      await setValue(document, 'review-item-selector', key, 'change');
+    }
+    await makeCurrentContentPreviewReady(harness);
+
+    assert.equal(document.getElementById('preview-status-label').textContent, 'Ready');
+    const openButton = document.getElementById('open-full-page');
+    assert.ok(openButton, `Ready ${key} keeps the learner-surface action visible`);
+    assert.equal(openButton.disabled, false);
+    await openButton.dispatch('click');
+
+    assert.deepEqual(externalCalls.at(-1), [expectedUrl, '_blank', 'noopener,noreferrer']);
+    assert.equal(controller.state.reviewChecks.completeItemReviewed, false,
+      'opening the learner surface is access, not proof that review was completed');
+    assert.equal(document.getElementById('attest-current-item').disabled, false,
+      'the existing one-press Ready path remains available');
+  }
+
+  for (const [url] of externalCalls) {
+    assert.equal(url.includes('reviewKey'), false);
+    assert.equal(url.includes('reviewToken'), false);
+    assert.equal(url.includes('faculty'), false);
+    assert.equal(url.includes('test-faculty-key'), false);
+  }
 });
 
 test('terminal preview fallback revokes question evidence after a current-frame reload', async () => {
@@ -2920,6 +2981,21 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
   });
 });
 
+test('a question keeps Review current until its saved-revision and learner-view receipt is complete', async () => {
+  const harness = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({ items: [], questions: [validDomQuestion()] })),
+    assessItemImpl: () => ({ gate: 'ready', blockers: [], warnings: [] }),
+  });
+  const { document } = harness;
+
+  assert.match(document.getElementById('rail-step-review').className, /current/);
+  assert.doesNotMatch(document.getElementById('rail-step-resolve').className, /current/);
+
+  await makeCurrentQuestionPreviewReady(harness);
+  assert.doesNotMatch(document.getElementById('rail-step-review').className, /current/);
+  assert.match(document.getElementById('rail-step-resolve').className, /current/);
+});
+
 // Single-pending fixture (Task 3, 2026-08-12): with a second pending item present,
 // attesting t_mood.md would now auto-advance onto it instead of holding — that path is
 // covered by 'a successful content attest advances to the next pending content item'.
@@ -3029,6 +3105,8 @@ test('content POST with a stale confirming GET remains unconfirmed and never ann
   assert.equal(document.activeElement?.getAttribute('id'), 'content-action-result');
   assert.doesNotMatch(document.app.textContent, /Attested t_mood\.md|Reopened t_mood\.md/);
   assert.doesNotMatch(document.status.textContent, /Attested|Reopened/);
+  assert.deepEqual(controller.state.sessionActions, [],
+    'an unconfirmed POST never enters the success ledger');
 });
 
 test('content commit URL must be safe HTTPS before any confirming GET', async () => {
@@ -3493,6 +3571,8 @@ test('Ready attestation posts one exact-revision entry and holds the completed q
   assert.equal(controller.state.original.status, 'attested');
   assert.match(document.getElementById('qbank-action-result').textContent,
     /Attested 1 question: qb_moo_902/);
+  assert.match(document.getElementById('session-action-ledger').textContent,
+    /Attested 1 question: qb_moo_902/);
   assert.equal(document.getElementById('next-review-item').textContent, 'Next item');
   assert.equal(document.getElementById('next-review-item').disabled, false);
   assert.equal(document.activeElement?.getAttribute('id'), 'next-review-item');
@@ -3540,6 +3620,8 @@ test('a successful attestation POST with a stale confirming GET stays unconfirme
   assert.match(document.getElementById('qbank-action-error').textContent, /refresh_failed/);
   assert.doesNotMatch(document.app.textContent, /Attested 1 question/);
   assert.equal(controller.state.qbankMessage, '');
+  assert.deepEqual(controller.state.sessionActions, [],
+    'an unconfirmed attestation never enters the success ledger');
 });
 
 test('an attestation GET with a matching revision but Draft status stays unconfirmed', async () => {
@@ -3578,6 +3660,8 @@ test('an attestation GET with a matching revision but Draft status stays unconfi
 
   assert.equal(controller.state.original.revision, original.revision);
   assert.equal(controller.state.original.status, 'draft');
+  assert.deepEqual(controller.state.sessionActions, [],
+    'a status-mismatched refresh never enters the success ledger');
   assert.equal(controller.state.completedHoldKey, null);
   assert.equal(controller.state.qbankMessage, '');
   assert.match(document.getElementById('qbank-action-error').textContent, /refresh_failed/);
@@ -3813,6 +3897,27 @@ for (const [name, manifestRevision] of [
     const payload = serverState();
     if (manifestRevision === undefined) delete payload.manifestRevision;
     else payload.manifestRevision = manifestRevision;
+    const { controller, document } = await startHarness({
+      fetchImpl: async () => jsonResponse(payload),
+    });
+
+    assert.equal(controller.state.server, null);
+    assert.match(document.app.textContent, /incomplete state/i);
+  });
+}
+
+for (const [name, qbankRevision] of [
+  ['missing', undefined],
+  ['blank', ' '.repeat(40)],
+  ['non-hex', 'g'.repeat(40)],
+  ['39-character', 'a'.repeat(39)],
+  ['65-character', 'a'.repeat(65)],
+  ['non-string', 7],
+]) {
+  test(`fails closed when authenticated state has a ${name} question-bank revision`, async () => {
+    const payload = serverState();
+    if (qbankRevision === undefined) delete payload.qbankRevision;
+    else payload.qbankRevision = qbankRevision;
     const { controller, document } = await startHarness({
       fetchImpl: async () => jsonResponse(payload),
     });
@@ -4151,6 +4256,61 @@ test('earning a receipt auto-enrolls the item in the batch selection', async () 
   );
 });
 
+test('auto-enrollment remains visibly undoable after receipt-driven advance', async () => {
+  const harness = await startHarnessWithTwoReadyDrafts();
+  const { controller, document } = harness;
+
+  await setChecked(document, 'review-compound');
+  assert.equal(controller.state.selectedKey, 'question:qb_moo_903', 'receipt advances to the next draft');
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), true);
+  assert.equal(controller.state.batchSelection.has('qb_moo_902'), true);
+
+  const feedback = document.getElementById('batch-enrollment-feedback');
+  assert.ok(feedback, 'the cross-item batch consequence remains visible after auto-advance');
+  assert.match(feedback.textContent, /qb_moo_902 .*added to (?:this )?batch/i);
+
+  const undo = document.getElementById('undo-batch-enrollment');
+  assert.ok(undo, 'the automatic batch choice has a direct Undo');
+  await undo.dispatch('click');
+
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), true,
+    'Undo changes batch membership, not the saved-review receipt');
+  assert.equal(controller.state.batchSelection.has('qb_moo_902'), false);
+  assert.equal(controller.state.batchExclusions.has('qb_moo_902'), true,
+    'Undo becomes the existing sticky batch exclusion');
+  assert.match(document.getElementById('batch-enrollment-feedback').textContent,
+    /qb_moo_902 .*removed from (?:this )?batch/i);
+
+  await setValue(document, 'review-item-selector', 'question:qb_moo_902', 'change');
+  assert.equal(document.getElementById('batch-select-qb_moo_902').checked, false,
+    'the tray reflects the undone membership when the reviewer returns');
+});
+
+test('a warning receipt stays individual-only and never claims automatic batch enrollment', async () => {
+  const warning = {
+    code: 'stem.synthetic_warning',
+    field: 'stem',
+    message: 'Confirm this synthetic warning individually.',
+  };
+  const harness = await startHarness({
+    assessItemImpl: () => ({ gate: 'warning', blockers: [], warnings: [warning] }),
+  });
+  const { controller, document, window } = harness;
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(window, controller, 'ready');
+  await document.getElementById('view-draft').dispatch('click');
+
+  await setChecked(document, 'review-compound');
+
+  assert.equal(controller.state.reviewedRevisions.has('qb_moo_902'), true,
+    'the exact-revision receipt still records');
+  assert.equal(controller.state.batchSelection.has('qb_moo_902'), false,
+    'warning questions remain individual-only');
+  assert.match(document.getElementById('batch-enrollment-feedback').textContent,
+    /qb_moo_902 .*individual/i);
+  assert.equal(document.getElementById('undo-batch-enrollment'), null);
+});
+
 test('an explicit uncheck is a sticky exclusion that survives an unrelated re-render', async () => {
   const harness = await startHarnessWithReadyPreviewDraft();
   const { controller, document } = harness;
@@ -4223,11 +4383,16 @@ async function startHarnessWithTwoReadyDrafts() {
 // Two unreviewed content items: t_mood.md (page) sorts first and is selected with a
 // completed Review -> Resolve -> Confirm rail; mse.html (tool) sorts second and is left
 // untouched so it is exactly the next pending content item.
-async function startHarnessWithTwoPendingContentItems() {
+async function startHarnessWithTwoPendingContentItems({
+  questions = [],
+  nextQbankRevision = null,
+  postReceipt = {},
+} = {}) {
   let items = [
     { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
     { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
   ];
+  let qbankRevision = 'a'.repeat(40);
   const fetchImpl = async (url, options = {}) => {
     if (options.method === 'POST') {
       const posted = JSON.parse(options.body);
@@ -4235,9 +4400,15 @@ async function startHarnessWithTwoPendingContentItems() {
       items = items.map(item => (item.slug === slug
         ? { ...item, status: reviewed ? 'reviewed' : 'unreviewed' }
         : item));
-      return jsonResponse({ ok: true, updated: 1, commit: 'https://github.example/commit/content-advance' });
+      if (nextQbankRevision) qbankRevision = nextQbankRevision;
+      return jsonResponse({
+        ok: true,
+        updated: 1,
+        commit: 'https://github.example/commit/content-advance',
+        ...postReceipt,
+      });
     }
-    return jsonResponse(serverState({ items, questions: [] }));
+    return jsonResponse(serverState({ items, questions, qbankRevision }));
   };
   const harness = await startHarness({ fetchImpl });
   await completeCurrentContentReview(harness);
@@ -4330,6 +4501,141 @@ test('a successful content attest advances to the next pending content item', as
   await flushAsyncWork();
   assert.equal(controller.state.selectedKey, 'tool:mse.html');
   assert.equal(controller.state.completedHoldKey, null, 'nothing held once the advance lands');
+});
+
+test('a confirmed content attest preserves unchanged question receipts and batch enrollment', async () => {
+  const question = validDomQuestion();
+  const harness = await startHarnessWithTwoPendingContentItems({ questions: [question] });
+  const { controller, document } = harness;
+  const beforeManifestRevision = controller.state.server.manifestRevision;
+  const beforeQbankRevision = controller.state.server.qbankRevision;
+  controller.state.reviewedRevisions.set(question.id, question.revision);
+  controller.state.batchSelection.add(question.id);
+
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(controller.state.server.manifestRevision, beforeManifestRevision);
+  assert.equal(controller.state.server.qbankRevision, beforeQbankRevision);
+  assert.equal(controller.state.reviewedRevisions.get(question.id), question.revision,
+    'an unrelated content confirmation keeps the exact-revision question receipt');
+  assert.equal(controller.state.batchSelection.has(question.id), true,
+    'the reviewer does not have to rebuild an unchanged batch');
+
+  await setValue(document, 'review-item-selector', `question:${question.id}`, 'change');
+  await document.getElementById('learner-preview-frame').dispatch('load');
+  await reportPreviewStatus(harness.window, controller, 'ready');
+  await document.getElementById('view-draft').dispatch('click');
+  assert.equal(controller.state.reviewedRevisions.get(question.id), question.revision,
+    'returning to the question still shows the exact-revision receipt in session state');
+  assert.equal(document.getElementById(`batch-select-${question.id}`).checked, true);
+});
+
+test('a changed question-bank revision conservatively resets question progress with an explicit notice', async () => {
+  const question = validDomQuestion();
+  const harness = await startHarnessWithTwoPendingContentItems({
+    questions: [question],
+    nextQbankRevision: 'c'.repeat(40),
+  });
+  const { controller, document } = harness;
+  controller.state.reviewedRevisions.set(question.id, question.revision);
+  controller.state.batchSelection.add(question.id);
+  controller.state.batchExclusions.add('qb_moo_999');
+
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(controller.state.reviewedRevisions.size, 0);
+  assert.equal(controller.state.batchSelection.size, 0);
+  assert.equal(controller.state.batchExclusions.size, 0);
+  const notice = document.getElementById('review-reset-notice');
+  assert.ok(notice, 'the reset is visible rather than silently discarding review work');
+  assert.match(notice.textContent, /question-bank revision changed/i);
+  assert.match(notice.textContent, /receipts? and batch selection .*reset/i);
+});
+
+test('current-item feedback is scoped while the session ledger retains an auto-advanced success', async () => {
+  const harness = await startHarnessWithTwoPendingContentItems();
+  const { controller, document } = harness;
+
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+  assert.equal(controller.state.selectedKey, 'tool:mse.html');
+
+  const currentFeedback = document.getElementById('content-action-result');
+  assert.ok(!currentFeedback || !currentFeedback.textContent.includes('Attested t_mood.md.'),
+    'the page receipt is not presented as the newly selected tool result');
+  const ledger = document.getElementById('session-action-ledger');
+  assert.ok(ledger, 'confirmed writes remain available in a compact session ledger');
+  assert.match(ledger.textContent, /Attested t_mood\.md\./);
+  assert.equal(document.links().some(link => (
+    ledger.contains(link)
+    && link.getAttribute('href') === 'https://github.example/commit/content-advance'
+  )), true, 'the ledger keeps the confirmed commit receipt');
+});
+
+test('the confirmed-action ledger links the rolling pull request returned by the server', async () => {
+  const harness = await startHarnessWithTwoPendingContentItems({
+    postReceipt: { pullRequest: 'https://github.example/pull/42' },
+  });
+  const { document } = harness;
+
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  const ledger = document.getElementById('session-action-ledger');
+  assert.ok(ledger);
+  assert.equal(document.links().some(link => (
+    ledger.contains(link)
+    && link.getAttribute('href') === 'https://github.example/pull/42'
+    && link.textContent.includes('View rolling PR')
+  )), true);
+});
+
+test('a pull-request housekeeping failure stays distinct from the confirmed commit', async () => {
+  const harness = await startHarnessWithTwoPendingContentItems({
+    postReceipt: { pullRequest: null, pullRequestError: true },
+  });
+  const { controller, document } = harness;
+
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  assert.equal(controller.state.sessionActions.length, 1, 'the confirmed write is retained');
+  assert.equal(controller.state.sessionActions[0].pullRequestError, true);
+  const ledger = document.getElementById('session-action-ledger');
+  assert.match(ledger.textContent, /1 review-request warning/i);
+  assert.match(ledger.textContent, /commit confirmed; rolling review request needs attention/i);
+  assert.match(ledger.textContent, /View commit ↗ Commit confirmed/i,
+    'the link and warning remain separate phrases for assistive technology');
+  assert.match(lastAnnouncement(harness), /Attested t_mood\.md\./);
+  assert.match(lastAnnouncement(harness), /rolling review request needs attention/i);
+});
+
+test('Lock clears the temporary review sitting, reset notice, and action ledger', async () => {
+  const question = validDomQuestion();
+  const harness = await startHarnessWithTwoPendingContentItems({ questions: [question] });
+  const { controller, document } = harness;
+  controller.state.reviewedRevisions.set(question.id, question.revision);
+  controller.state.batchSelection.add(question.id);
+  controller.state.batchEnrollmentFeedback = { id: question.id, status: 'added' };
+  controller.state.reviewResetNotice = 'Temporary reset explanation.';
+
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+  assert.equal(controller.state.sessionActions.length, 1);
+
+  await document.getElementById('lock-console').dispatch('click');
+
+  assert.equal(controller.state.server, null);
+  assert.equal(controller.state.reviewedRevisions.size, 0);
+  assert.equal(controller.state.batchSelection.size, 0);
+  assert.equal(controller.state.batchExclusions.size, 0);
+  assert.equal(controller.state.batchEnrollmentFeedback, null);
+  assert.equal(controller.state.reviewResetNotice, '');
+  assert.deepEqual(controller.state.sessionActions, []);
+  assert.ok(document.getElementById('faculty-key'), 'the locked login is shown');
+  assert.equal(document.getElementById('review-session-status'), null);
 });
 
 test('the last content attest keeps the completed-hold receipt view', async () => {

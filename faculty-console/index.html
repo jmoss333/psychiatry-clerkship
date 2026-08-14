@@ -306,6 +306,63 @@
     text-align: end;
   }
 
+  .session-status {
+    display: grid;
+    gap: 0.55rem;
+    border-block-start: 1px solid var(--line);
+    background: #f4f8f5;
+    padding: 0.7rem 1rem;
+  }
+
+  .session-counts { margin: 0; color: var(--muted); font-size: 0.82rem; }
+
+  .session-counts strong { color: var(--ink); }
+
+  .session-notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    margin: 0;
+    border-inline-start: 0.3rem solid var(--ready);
+    background: var(--ready-soft);
+    padding: 0.55rem 0.7rem;
+  }
+
+  .session-notice p { flex: 1 1 auto; margin: 0; }
+
+  .session-notice button { flex: 0 0 auto; min-height: 2.15rem; }
+
+  .session-notice.removed,
+  .session-notice.excluded { border-inline-start-color: var(--primary); background: var(--primary-soft); }
+
+  .session-notice.individual { border-inline-start-color: var(--warning); background: var(--warning-soft); }
+
+  .session-notice.blocked { border-inline-start-color: var(--blocked); background: var(--blocked-soft); }
+
+  .session-notice.reset {
+    border-inline-start-color: var(--warning);
+    background: var(--warning-soft);
+    color: var(--warning);
+  }
+
+  .session-action-ledger { color: var(--muted); font-size: 0.82rem; }
+
+  .session-action-ledger summary { cursor: pointer; color: var(--primary); font-weight: 700; }
+
+  .session-action-ledger ul {
+    max-height: 12rem;
+    margin: 0.45rem 0 0;
+    overflow: auto;
+    padding-inline-start: 1.2rem;
+  }
+
+  .session-delivery-warning {
+    display: block;
+    color: var(--warning);
+    font-weight: 700;
+  }
+
   .question-filter-disclosure { border-block-start: 1px solid var(--line); }
 
   .question-filter-disclosure summary {
@@ -866,6 +923,8 @@
     .queue-counts { grid-column: auto; }
     .item-header { flex-direction: column; }
     .item-facts { justify-content: flex-start; }
+    .session-notice { align-items: stretch; flex-direction: column; }
+    .session-notice button { width: 100%; }
     .preview-shell iframe { min-height: 32rem; height: 62vh; }
   }
 

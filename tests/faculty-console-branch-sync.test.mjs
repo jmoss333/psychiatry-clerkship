@@ -57,6 +57,8 @@ function jsonResponse(status, body) {
  *  - branchMissing: the attestation branch does not exist yet
  *  - ahead / behind: how the branch compares to the base
  *  - openPull: an existing open rolling PR, or null
+ *  - pullListResponse: an exact override for the open-PR list response
+ *  - createdPull: the GitHub response after opening a rolling PR
  *  - failPullRequest: the PR housekeeping call throws
  */
 function makeMock({
@@ -64,6 +66,8 @@ function makeMock({
   ahead = 0,
   behind = 0,
   openPull = null,
+  pullListResponse = undefined,
+  createdPull = { html_url: 'https://github.example/pull/1' },
   failPullRequest = false,
 } = {}) {
   const calls = [];
@@ -106,8 +110,12 @@ function makeMock({
     }
     if (url.includes('/pulls')) {
       if (failPullRequest) return jsonResponse(500, { message: 'boom' });
-      if (method === 'GET') return jsonResponse(200, openPull ? [openPull] : []);
-      return jsonResponse(201, { html_url: 'https://github.example/pull/1' });
+      if (method === 'GET') {
+        return jsonResponse(200, pullListResponse === undefined
+          ? (openPull ? [openPull] : [])
+          : pullListResponse);
+      }
+      return jsonResponse(201, createdPull);
     }
     throw new Error(`unexpected request: ${method} ${url}`);
   };
@@ -204,6 +212,32 @@ test('a pull-request failure does not fail an attestation that already committed
   const payload = JSON.parse(await response.text());
   assert.equal(payload.ok, true);
   assert.equal(payload.pullRequestError, true);
+});
+
+test('a malformed pull-request receipt warns without reclassifying the confirmed commit', async () => {
+  for (const { mock, expectedCreates } of [
+    { mock: makeMock({ behind: 1, openPull: { id: 7 } }), expectedCreates: 0 },
+    { mock: makeMock({ behind: 1, createdPull: { id: 1 } }), expectedCreates: 1 },
+    { mock: makeMock({ behind: 1, pullListResponse: {} }), expectedCreates: 0 },
+    {
+      mock: makeMock({ behind: 1, openPull: { html_url: 'http://github.example/pull/7' } }),
+      expectedCreates: 0,
+    },
+    {
+      mock: makeMock({ behind: 1, createdPull: { html_url: 'javascript:alert(1)' } }),
+      expectedCreates: 1,
+    },
+  ]) {
+    const response = await handlerWith(mock)(attestRequest());
+    assert.equal(response.status, 200, 'the content commit is already durable');
+    const payload = JSON.parse(await response.text());
+    assert.equal(payload.ok, true);
+    assert.equal(payload.pullRequest, null);
+    assert.equal(payload.pullRequestError, true,
+      'missing PR URL is a visible housekeeping warning');
+    assert.equal(called(mock.calls, 'POST', '/pulls').length, expectedCreates,
+      'a malformed list must never be mistaken for an empty list');
+  }
 });
 
 test('branch equal to base restores direct writes with no sync and no pull request', async () => {

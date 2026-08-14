@@ -59,6 +59,7 @@ const RETRY_REQUIRED_QUESTION_FAILURES = new Set([
   'error', 'protocol_unavailable', 'frame_failure',
 ]);
 const PREVIEW_SANDBOX = 'allow-scripts allow-same-origin allow-forms';
+const ROLLING_PR_WARNING = 'Commit confirmed; rolling review request needs attention.';
 
 const emptyConfirmations = () => ({
   clinical: false,
@@ -95,6 +96,10 @@ function freezeSnapshot(value) {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
   for (const nested of Object.values(value)) freezeSnapshot(nested);
   return Object.freeze(value);
+}
+
+export function appendSessionAction(actions, action) {
+  return [action, ...(Array.isArray(actions) ? actions : [])];
 }
 
 function parseDelimited(value) {
@@ -147,9 +152,14 @@ export function startFacultyConsole({
     reviewedRevisions: new Map(),
     batchSelection: new Set(),
     batchExclusions: new Set(),
+    batchEnrollmentFeedback: null,
+    reviewResetNotice: '',
+    reviewResetAnnouncement: '',
+    sessionActions: [],
     externalReviewOpenedKey: null,
     contentMessage: '',
     contentCommitUrl: null,
+    contentFeedbackKey: null,
     reopenConfirmation: null,
     reopenReason: '',
     reopenReasonKey: null,
@@ -160,6 +170,7 @@ export function startFacultyConsole({
     qbankMessage: '',
     qbankCommitUrl: null,
     qbankError: '',
+    qbankFeedbackIds: new Set(),
     conflict: null,
     navigationGuard: null,
     navigationAfterSave: null,
@@ -256,6 +267,7 @@ export function startFacultyConsole({
     if (!payload || typeof payload !== 'object'
         || !Array.isArray(payload.qbank)
         || !Array.isArray(payload.items)
+        || !/^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i.test(text(payload.qbankRevision))
         || !/^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i.test(text(payload.manifestRevision))
         || !Array.isArray(payload.manifestPages)
         || payload.manifestPages.length === 0
@@ -324,6 +336,62 @@ export function startFacultyConsole({
   function invalidateSessionReview(id) {
     if (!id) return;
     state.reviewedRevisions.delete(id);
+    state.batchSelection.delete(id);
+    state.batchExclusions.delete(id);
+    if (state.batchEnrollmentFeedback?.id === id) state.batchEnrollmentFeedback = null;
+  }
+
+  function clearQuestionProgress() {
+    state.reviewedRevisions.clear();
+    state.batchSelection.clear();
+    state.batchExclusions.clear();
+    state.batchEnrollmentFeedback = null;
+  }
+
+  function repositoryDelivery(payload) {
+    const rawPullRequestUrl = text(payload?.pullRequest);
+    const pullRequestUrl = safeExternalUrl(rawPullRequestUrl);
+    return {
+      pullRequestUrl,
+      pullRequestError: payload?.pullRequestError === true
+        || Boolean(rawPullRequestUrl && !pullRequestUrl),
+    };
+  }
+
+  function recordSessionAction({
+    key,
+    message,
+    commitUrl = null,
+    pullRequestUrl = null,
+    pullRequestError = false,
+  }) {
+    const actionKey = text(key);
+    const actionMessage = text(message);
+    if (!actionKey || !actionMessage) return;
+    state.sessionActions = appendSessionAction(state.sessionActions, {
+      key: actionKey,
+      message: actionMessage,
+      commitUrl: safeExternalUrl(commitUrl),
+      pullRequestUrl: safeExternalUrl(pullRequestUrl),
+      pullRequestError: pullRequestError === true,
+    });
+  }
+
+  function clearSessionSitting() {
+    clearQuestionProgress();
+    state.reviewResetNotice = '';
+    state.reviewResetAnnouncement = '';
+    state.sessionActions = [];
+    state.contentMessage = '';
+    state.contentCommitUrl = null;
+    state.contentFeedbackKey = null;
+    state.reopenReason = '';
+    state.reopenReasonKey = null;
+    state.qbankMessage = '';
+    state.qbankCommitUrl = null;
+    state.qbankError = '';
+    state.qbankFeedbackIds = new Set();
+    state.conflict = null;
   }
 
   function cancelPreviewTimer(preview = state.preview) {
@@ -348,7 +416,7 @@ export function startFacultyConsole({
       return;
     }
     if (clearAllQuestions) {
-      state.reviewedRevisions.clear();
+      clearQuestionProgress();
     } else {
       invalidateSessionReview(state.selectedId);
     }
@@ -359,11 +427,16 @@ export function startFacultyConsole({
     resetAttempt = false,
     clearApprovals = false,
     clearAllQuestions = false,
+    preserveQuestionReceipts = false,
   } = {}) {
     cancelPreviewTimer();
     state.preview = null;
     if (resetAttempt) state.previewAttempt = 0;
-    clearReviewAcknowledgements({ clearApprovals, clearAllQuestions });
+    clearReviewAcknowledgements({
+      clearApprovals,
+      clearAllQuestions,
+      preserveQuestionReceipts,
+    });
   }
 
   function refreshEditorState() {
@@ -546,13 +619,16 @@ export function startFacultyConsole({
   }
 
   function pruneReviewedRevisions() {
+    const removed = [];
     for (const [id, revision] of [...state.reviewedRevisions]) {
       const question = findQuestion(id);
       if (!question || question.revision !== revision
           || question.status !== 'draft') {
-        state.reviewedRevisions.delete(id);
+        removed.push(id);
+        invalidateSessionReview(id);
       }
     }
+    return removed;
   }
 
   function chooseSelection() {
@@ -732,18 +808,26 @@ export function startFacultyConsole({
           throw new Error(`The refreshed state did not confirm ${slug || 'this content item'} as ${status || 'requested'}. Local work was retained.`);
         }
       }
+      const hadServerState = state.server !== null;
+      const manifestChanged = hadServerState
+        && state.server.manifestRevision !== payload.manifestRevision;
+      const qbankChanged = hadServerState
+        && state.server.qbankRevision !== payload.qbankRevision;
       if (confirmingContent) {
+        const preserveQuestionProgress = hadServerState && !manifestChanged && !qbankChanged;
         invalidatePreview({
           resetAttempt: true,
           clearApprovals: true,
-          clearAllQuestions: true,
+          clearAllQuestions: !preserveQuestionProgress,
+          preserveQuestionReceipts: preserveQuestionProgress,
         });
-      }
-      const manifestChanged = state.server !== null
-        && state.server.manifestRevision !== payload.manifestRevision;
-      if (manifestChanged) {
-        state.reviewedRevisions.clear();
-        resetApprovalInputs();
+        if (!preserveQuestionProgress && hadServerState) {
+          const changedLabel = manifestChanged && qbankChanged
+            ? 'content manifest and question-bank revisions'
+            : qbankChanged ? 'question-bank revision' : 'content manifest revision';
+          state.reviewResetNotice = `The ${changedLabel} changed. Question review receipts and batch selection were reset.`;
+          state.reviewResetAnnouncement = state.reviewResetNotice;
+        }
       }
       state.server = { ...payload, student: studentBase.href };
       state.reviewItems = reviewItems;
@@ -768,7 +852,15 @@ export function startFacultyConsole({
       const heldItem = holdKey ? findReviewItem(holdKey) : null;
       state.completedHoldKey = heldItem?.completion === 'complete' ? heldItem.key : null;
       state.pending = false;
-      pruneReviewedRevisions();
+      const prunedReceiptIds = pruneReviewedRevisions();
+      if (confirmingContent && !manifestChanged && !qbankChanged && prunedReceiptIds.length) {
+        state.reviewResetNotice = `${prunedReceiptIds.length} question review receipt${
+          prunedReceiptIds.length === 1 ? '' : 's'
+        } no longer matched the exact saved revision and ${
+          prunedReceiptIds.length === 1 ? 'was' : 'were'
+        } removed from this review sitting.`;
+        state.reviewResetAnnouncement = state.reviewResetNotice;
+      }
       // Respect setSelectedReviewKey's own return: on the (unreachable in practice,
       // since advanceKey always names a key already present in state.reviewItems)
       // false case, fall back to the pre-existing chooseSelection() rather than
@@ -803,6 +895,7 @@ export function startFacultyConsole({
     if (!target || typeof target !== 'object') return;
     if (target.kind === 'lock') {
       clearKey();
+      clearSessionSitting();
       state.server = null;
       state.reviewItems = [];
       clearReviewSelection();
@@ -1075,6 +1168,7 @@ export function startFacultyConsole({
     };
     const meta = statuses[status] || statuses.frame_failure;
     const failed = PREVIEW_FAILURES.has(status) || !state.preview;
+    const learnerSurfaceAvailable = item && ['page', 'tool'].includes(item.type);
     return el('div', { id: 'preview-status-slot', class: 'preview-status' }, [
       el('section', {
         id: 'preview-status',
@@ -1087,19 +1181,19 @@ export function startFacultyConsole({
           el('strong', { id: 'preview-status-label' }, [meta.label]),
           meta.detail,
         ]),
-        failed ? el('div', { class: 'preview-actions' }, [
-          el('button', {
+        failed || learnerSurfaceAvailable ? el('div', { class: 'preview-actions' }, [
+          failed ? el('button', {
             id: 'retry-preview',
             type: 'button',
             disabled: state.pending,
             onClick: retryPreview,
-          }, ['Retry preview']),
-          item && ['page', 'tool'].includes(item.type) ? el('button', {
+          }, ['Retry preview']) : null,
+          learnerSurfaceAvailable ? el('button', {
             id: 'open-full-page',
             type: 'button',
             disabled: state.pending,
             onClick: () => openFullPage(item),
-          }, ['Open full page']) : null,
+          }, ['Open learner surface (new tab)']) : null,
         ]) : null,
       ]),
     ]);
@@ -1311,9 +1405,16 @@ export function startFacultyConsole({
       // button (R stays live) and names where the advance just landed the reviewer.
       renderShell(carryDraftView ? 'view-draft' : 'review-item-selector');
       const identity = findReviewItem(fromKey)?.identity;
-      const excluded = identity != null && state.batchExclusions.has(identity);
+      const batchStatus = state.batchEnrollmentFeedback?.id === identity
+        ? state.batchEnrollmentFeedback.status
+        : identity != null && state.batchExclusions.has(identity) ? 'excluded' : 'added';
+      const batchOutcome = batchStatus === 'individual'
+        ? 'individual attestation required'
+        : batchStatus === 'blocked'
+          ? 'not eligible for batch'
+          : `${batchStatus === 'excluded' ? 'excluded from' : 'added to'} batch`;
       announce(`Receipt recorded — ${elsewhere.length} of ${totalDrafts} drafts remaining; ${
-        excluded ? 'excluded from' : 'added to'} batch.`);
+        batchOutcome}.`);
       return true;
     }
     if (!elsewhere.length) {
@@ -1328,7 +1429,7 @@ export function startFacultyConsole({
     refreshEditorState();
     const saved = findQuestion(question?.id);
     if (!checked) {
-      state.reviewedRevisions.delete(question?.id);
+      invalidateSessionReview(question?.id);
     } else if (state.viewMode === 'draft' && saved
         && !state.dirtyFields.length && saved.revision === question?.revision) {
       state.reviewedRevisions.set(question.id, question.revision);
@@ -1341,10 +1442,30 @@ export function startFacultyConsole({
     const id = question?.id;
     if (id) {
       if (state.reviewedRevisions.has(id)) {
-        if (!state.batchExclusions.has(id)) state.batchSelection.add(id);
+        const assessmentGate = state.localAssessment?.gate
+          || (saved ? currentAssessment(saved).gate : 'blocked');
+        const batchVerdict = saved ? deriveBatchEligibility(saved, {
+          assessmentGate,
+          reviewedRevision: state.reviewedRevisions.get(id),
+        }) : { eligible: false, reasons: ['batch.blocked'] };
+        if (!batchVerdict.eligible) {
+          state.batchSelection.delete(id);
+          state.batchEnrollmentFeedback = {
+            id,
+            status: batchVerdict.reasons.includes('batch.warning_individual_only')
+              ? 'individual' : 'blocked',
+          };
+        } else if (state.batchExclusions.has(id)) {
+          if (checked) state.batchEnrollmentFeedback = { id, status: 'excluded' };
+        } else {
+          const newlySelected = !state.batchSelection.has(id);
+          state.batchSelection.add(id);
+          if (checked && newlySelected) state.batchEnrollmentFeedback = { id, status: 'added' };
+        }
       } else {
         state.batchSelection.delete(id);
         state.batchExclusions.delete(id); // receipt loss clears the exclusion
+        if (state.batchEnrollmentFeedback?.id === id) state.batchEnrollmentFeedback = null;
       }
     }
     refreshPreviewChromeAndRail('review-saved-revision');
@@ -1747,15 +1868,13 @@ export function startFacultyConsole({
     const oneClickEligibility = oneClick || questionOneClick
       ? currentAttestationEligibility(item, assessment, dirty, { assumeHumanChecks: true })
       : eligibility;
-    const currentStep = dirty
+    const currentStep = dirty || !reviewComplete
       ? 'review'
       : item.completion === 'complete'
         ? 'confirm'
-        : !question && !reviewComplete
-          ? 'review'
-          : !question && contentChecksComplete()
-            ? 'confirm'
-            : 'resolve';
+        : !question && contentChecksComplete()
+          ? 'confirm'
+          : 'resolve';
     return el('aside', {
       id: 'attestation-rail',
       class: 'signoff-rail',
@@ -1767,7 +1886,7 @@ export function startFacultyConsole({
       ]),
       renderRiskContext(item),
       renderPendingReason(item),
-      renderActionFeedback(),
+      renderActionFeedback(item),
       el('section', {
         id: 'rail-step-review',
         class: `rail-step${currentStep === 'review' ? ' current' : ''}`,
@@ -1930,6 +2049,89 @@ export function startFacultyConsole({
     );
   }
 
+  function renderSessionStatus() {
+    const enrollment = state.batchEnrollmentFeedback;
+    const reviewRequestWarnings = state.sessionActions.filter(action => action.pullRequestError).length;
+    const enrollmentCopy = enrollment ? {
+      added: `${enrollment.id} was added to this batch when its saved-revision receipt was recorded.`,
+      removed: `${enrollment.id} was removed from this batch. Its review receipt is still saved for this sitting.`,
+      excluded: `${enrollment.id} was reviewed and remains excluded from this batch.`,
+      individual: `${enrollment.id} holds a review receipt but requires individual attestation because it has warnings.`,
+      blocked: `${enrollment.id} holds a review receipt but is not eligible for a batch until its blockers are resolved.`,
+    }[enrollment.status] || '' : '';
+    return el('section', {
+      id: 'review-session-status',
+      class: 'session-status',
+      'aria-label': 'Current review sitting',
+    }, [
+      el('p', { class: 'session-counts' }, [
+        el('strong', {}, ['Review sitting']),
+        ` · ${state.reviewedRevisions.size} saved-draft receipt${state.reviewedRevisions.size === 1 ? '' : 's'}`,
+        ` · ${state.batchSelection.size} selected for batch`,
+      ]),
+      enrollmentCopy ? el('div', {
+        id: 'batch-enrollment-feedback',
+        class: `session-notice ${enrollment.status}`,
+        tabindex: '-1',
+      }, [
+        el('p', {}, [enrollmentCopy]),
+        enrollment.status === 'added' ? el('button', {
+          id: 'undo-batch-enrollment',
+          type: 'button',
+          class: 'quiet',
+          disabled: state.pending,
+          onClick: () => {
+            toggleBatchMember(enrollment.id, false, null);
+            refreshSessionStatus('batch-enrollment-feedback');
+            announce(`${enrollment.id} was removed from the batch. Its review receipt remains recorded.`);
+          },
+        }, ['Undo batch selection']) : null,
+      ]) : null,
+      state.reviewResetNotice ? el('p', {
+        id: 'review-reset-notice',
+        class: 'session-notice reset',
+      }, [state.reviewResetNotice]) : null,
+      state.sessionActions.length ? el('details', {
+        id: 'session-action-ledger',
+        class: 'session-action-ledger',
+      }, [
+        el('summary', {}, [
+          `This session · ${state.sessionActions.length} confirmed repository action${state.sessionActions.length === 1 ? '' : 's'}`,
+          reviewRequestWarnings
+            ? ` · ${reviewRequestWarnings} review-request warning${reviewRequestWarnings === 1 ? '' : 's'}`
+            : null,
+        ]),
+        el('ul', {}, state.sessionActions.map(action => el('li', {}, [
+          action.message,
+          action.commitUrl ? ' ' : null,
+          action.commitUrl ? el('a', {
+            href: action.commitUrl,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+          }, ['View commit ↗']) : null,
+          action.pullRequestUrl ? ' ' : null,
+          action.pullRequestUrl ? el('a', {
+            href: action.pullRequestUrl,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+          }, ['View rolling PR ↗']) : null,
+          action.pullRequestError ? ' ' : null,
+          action.pullRequestError ? el('span', {
+            class: 'session-delivery-warning',
+          }, [ROLLING_PR_WARNING]) : null,
+        ]))),
+      ]) : null,
+    ]);
+  }
+
+  function refreshSessionStatus(focusTarget = null) {
+    const current = document.getElementById('review-session-status');
+    if (!current) return;
+    const replacement = renderSessionStatus();
+    current.replaceChildren(...replacement.children);
+    focusRequested(focusTarget);
+  }
+
   function renderSharedQueueStrip(items, { questionFiltersOpen = false } = {}) {
     const questions = list(state.server?.qbank);
     const categories = [...new Set(questions.map(question => text(question.category)).filter(Boolean))]
@@ -2000,6 +2202,7 @@ export function startFacultyConsole({
         labeledControl('Search pages, tools, and questions', 'review-search', search, 'queue-search'),
         labeledControl('Review item', 'review-item-selector', selector, 'queue-selector'),
       ]),
+      renderSessionStatus(),
       el('div', { class: 'queue-filters' }, [
         filterSelect(
           'review-type-filter',
@@ -2107,6 +2310,7 @@ export function startFacultyConsole({
       const replacement = renderAttestationRail(item);
       rail.replaceChildren(...replacement.children);
     }
+    refreshSessionStatus();
     applyIssueAssociations(renderedIssueRecords);
     focusRequested(focusTarget);
   }
@@ -2124,6 +2328,7 @@ export function startFacultyConsole({
       const replacement = renderAttestationRail(item);
       rail.replaceChildren(...replacement.children);
     }
+    refreshSessionStatus();
     applyIssueAssociations(renderedIssueRecords);
     focusRequested(focusTarget);
   }
@@ -2613,11 +2818,14 @@ export function startFacultyConsole({
     ]);
   }
 
-  function renderActionFeedback() {
+  function renderActionFeedback(item) {
     const contentActionSucceeded = /^(?:Attested |Reopened )/.test(state.contentMessage);
     const contentActionPending = state.contentMessage === 'Saving this content review…';
+    const showContentFeedback = Boolean(item && state.contentFeedbackKey === item.key);
+    const showQbankFeedback = item?.type === 'question'
+      && state.qbankFeedbackIds.has(item.identity);
     return el('div', { class: 'action-feedback' }, [
-      state.contentMessage ? el('section', {
+      showContentFeedback && state.contentMessage ? el('section', {
         id: 'content-action-result',
         class: contentActionSucceeded || contentActionPending ? 'action-result' : 'action-error',
         role: contentActionSucceeded || contentActionPending ? null : 'alert',
@@ -2631,7 +2839,7 @@ export function startFacultyConsole({
           rel: 'noopener noreferrer',
         }, ['View commit ↗']) : null,
       ]) : null,
-      state.qbankMessage ? el('section', {
+      showQbankFeedback && state.qbankMessage ? el('section', {
         id: 'qbank-action-result',
         class: 'action-result',
         tabindex: '-1',
@@ -2644,13 +2852,13 @@ export function startFacultyConsole({
           rel: 'noopener noreferrer',
         }, ['View commit ↗']) : null,
       ]) : null,
-      state.qbankError ? el('section', {
+      showQbankFeedback && state.qbankError ? el('section', {
         id: 'qbank-action-error',
         class: 'action-error',
         role: 'alert',
         tabindex: '-1',
       }, [state.qbankError]) : null,
-      state.conflict ? el('section', {
+      showQbankFeedback && state.conflict ? el('section', {
         id: 'qbank-conflict',
         class: 'action-error conflict-alert',
         role: 'alert',
@@ -3123,6 +3331,7 @@ export function startFacultyConsole({
       if (state.pending) return false;
       snapshot = contentMutationSnapshot(item, reviewed);
     }
+    state.contentFeedbackKey = snapshot.key;
     state.pending = true;
     state.contentMessage = 'Saving this content review…';
     state.contentCommitUrl = null;
@@ -3163,6 +3372,13 @@ export function startFacultyConsole({
         ? `Attested ${slug}.`
         : `Reopened ${slug} for review.`;
       state.contentCommitUrl = commitUrl;
+      const delivery = repositoryDelivery(payload);
+      recordSessionAction({
+        key: snapshot.key,
+        message: state.contentMessage,
+        commitUrl,
+        ...delivery,
+      });
       if (snapshot.reviewed) {
         // load() above already auto-advanced past snapshot.key and cleared the hold
         // when another pending content item existed in this filter, so only reassert
@@ -3189,7 +3405,13 @@ export function startFacultyConsole({
       // Enter either way.
       if (snapshot.reviewed && next && !next.disabled) next.focus();
       else document.getElementById('content-action-result')?.focus();
-      announce(state.contentMessage);
+      const resetAnnouncement = state.reviewResetAnnouncement;
+      state.reviewResetAnnouncement = '';
+      announce([
+        state.contentMessage,
+        resetAnnouncement,
+        delivery.pullRequestError ? ROLLING_PR_WARNING : '',
+      ].filter(Boolean).join(' '));
       return true;
     } catch (error) {
       state.pending = false;
@@ -3205,6 +3427,7 @@ export function startFacultyConsole({
 
   function showQbankError(message) {
     state.pending = false;
+    state.qbankFeedbackIds = new Set(state.selectedId ? [state.selectedId] : []);
     state.qbankError = message;
     state.qbankMessage = '';
     state.qbankCommitUrl = null;
@@ -3215,6 +3438,7 @@ export function startFacultyConsole({
   function showConflict(payload) {
     invalidatePreview({ resetAttempt: true, clearApprovals: true });
     state.pending = false;
+    state.qbankFeedbackIds = new Set(state.selectedId ? [state.selectedId] : []);
     state.navigationAfterSave = null;
     state.qbankError = '';
     state.qbankMessage = '';
@@ -3255,6 +3479,7 @@ export function startFacultyConsole({
       });
     }
     const { id, body } = snapshot;
+    state.qbankFeedbackIds = new Set([id]);
     invalidatePreview({ resetAttempt: true, clearApprovals: true });
     state.pending = true;
     state.qbankError = '';
@@ -3310,11 +3535,20 @@ export function startFacultyConsole({
       }
       state.qbankMessage = successMessage;
       state.qbankCommitUrl = successCommitUrl;
+      const delivery = repositoryDelivery(payload);
+      recordSessionAction({
+        key: `question:${id}`,
+        message: successMessage,
+        commitUrl: successCommitUrl,
+        ...delivery,
+      });
       renderShell('qbank-action-result');
       const navigation = state.navigationAfterSave;
       state.navigationAfterSave = null;
       if (navigation) requestNavigation(navigation);
-      announce(state.qbankMessage);
+      announce(delivery.pullRequestError
+        ? `${state.qbankMessage} ${ROLLING_PR_WARNING}`
+        : state.qbankMessage);
       return true;
     } catch (error) {
       state.reauthAction = null;
@@ -3350,6 +3584,7 @@ export function startFacultyConsole({
     }
     invalidatePreview({ resetAttempt: true });
     const requestIds = list(snapshot.ids).map(id => text(id));
+    state.qbankFeedbackIds = new Set(requestIds);
     state.pending = true;
     state.qbankError = '';
     state.qbankMessage = 'Saving and confirming this attestation…';
@@ -3408,11 +3643,22 @@ export function startFacultyConsole({
       resetApprovalInputs();
       state.qbankMessage = successMessage;
       state.qbankCommitUrl = successCommitUrl;
+      const delivery = repositoryDelivery(payload);
+      recordSessionAction({
+        key: requestIds.length === 1
+          ? `question:${requestIds[0]}`
+          : `questions:${requestIds.join(',')}`,
+        message: successMessage,
+        commitUrl: successCommitUrl,
+        ...delivery,
+      });
       renderShell();
       const next = document.getElementById('next-review-item');
       if (next && !next.disabled) next.focus();
       else document.getElementById('qbank-action-result')?.focus();
-      announce(successMessage);
+      announce(delivery.pullRequestError
+        ? `${successMessage} ${ROLLING_PR_WARNING}`
+        : successMessage);
       return true;
     } catch (error) {
       state.reauthAction = null;
@@ -3517,8 +3763,15 @@ export function startFacultyConsole({
   }
 
   function toggleBatchMember(id, checked, focusId) {
-    if (checked) { state.batchExclusions.delete(id); state.batchSelection.add(id); }
-    else { state.batchSelection.delete(id); state.batchExclusions.add(id); }
+    if (checked) {
+      state.batchExclusions.delete(id);
+      state.batchSelection.add(id);
+      state.batchEnrollmentFeedback = { id, status: 'added' };
+    } else {
+      state.batchSelection.delete(id);
+      state.batchExclusions.add(id);
+      state.batchEnrollmentFeedback = { id, status: 'removed' };
+    }
     refreshPreviewChromeAndRail(focusId);
   }
 
@@ -3560,8 +3813,9 @@ export function startFacultyConsole({
     }, [
       el('h3', { id: 'batch-tray-title' }, ['Attest together']),
       el('p', { class: 'muted' }, [
-        'Reviewed drafts can be attested in one commit. Each item still required its own '
-        + 'saved-revision review receipt; the three confirmations above cover the whole selection.',
+        'Eligible Ready drafts are added when their review receipt is recorded. Use Undo in the '
+        + 'sitting strip or uncheck a draft here to remove it; warnings remain individual-only. '
+        + 'Each selected item still required its own exact saved-revision receipt.',
       ]),
       rows.length ? el('ul', { class: 'batch-candidates' }, rows.map(question => {
         const checkboxId = `batch-select-${question.id}`;
