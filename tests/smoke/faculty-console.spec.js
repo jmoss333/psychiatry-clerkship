@@ -1968,11 +1968,21 @@ test.describe.serial('faculty unified attestation workspace', () => {
     // sitting's A shortcut attests the default-selected pending page and auto-advances
     // straight to the next pending content item — this fixture's two default content
     // items (t_mood.md, mse.html) are otherwise untouched by the rest of this test.
-    // No explicit focus target: unlock() just replaced the whole DOM (destroying
-    // whatever was focused in the login form), so a real browser has already reverted
-    // focus to <body> — exactly the "no form field focused" case the shortcut expects.
+    // unlock() replaced the whole DOM, so focus starts at <body> — exactly the "no form
+    // field focused" case the shortcut expects. That state is not stable, though: once
+    // the learner preview finishes loading, focus can land on #learner-preview-frame, and
+    // a key pressed while an IFRAME holds focus is delivered to THAT frame's document.
+    // The console's window-level keydown listener never sees it, so A silently does
+    // nothing, the auto-advance never happens, and the assertion below burns its timeout
+    // pointing at the wrong cause (~10% of runs). Establish the documented precondition
+    // rather than assuming it survived the preview load.
     await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mood disorders page');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.evaluate(() => {
+      if (document.activeElement && document.activeElement !== document.body) {
+        document.activeElement.blur();
+      }
+    });
     await page.keyboard.press('a');
     await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mental status exam tool');
 
