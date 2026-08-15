@@ -1097,14 +1097,16 @@ Invoke the `topic-meta-author` skill and have it add `safetySteps` + `safetyDoc`
   "Wish to be dead — passive ideation?",
   "Active thoughts of killing themselves?",
   "Method? Plan? Intent?",
-  "Any preparatory behavior — ever, and past 3 months?"
+  "Any preparatory behavior — ever, and past 3 months?",
+  "Access to lethal means — firearms especially — and whether it is secured"
 ],
-"safetyDoc": "exact patient quotes, risk stratification with static/dynamic factors, and the safety plan disposition."
+"safetyDoc": "exact patient quotes, risk stratification with static/dynamic factors, lethal-means access and what was done to secure it, and the safety plan disposition."
 ```
 
 `agitation.md`:
 ```json
 "safetySteps": [
+  "Look for the driver first — delirium, akathisia, withdrawal, pain, hypoxia — it changes the treatment",
   "Verbal de-escalation first — respect space, one voice, offer choices",
   "Offer PO medication before any IM",
   "IM only for imminent danger to self or others",
@@ -1118,7 +1120,7 @@ Invoke the `topic-meta-author` skill and have it add `safetySteps` + `safetyDoc`
 "safetySteps": [
   "Vitals and fingerstick glucose first",
   "Review the med list — anticholinergics, benzos, opioids",
-  "CAM screen: acute onset + inattention + (disorganized thinking or altered consciousness)",
+  "CAM screen: acute onset or fluctuating course + inattention + (disorganized thinking or altered consciousness)",
   "Workup: infection, metabolic, withdrawal"
 ],
 "safetyDoc": "the CAM result, suspected precipitant, and workup ordered."
@@ -1132,7 +1134,7 @@ Invoke the `topic-meta-author` skill and have it add `safetySteps` + `safetyDoc`
   "Appreciate the situation and its consequences for them",
   "Reason about the options given their own values"
 ],
-"safetyDoc": "each ability with a patient quote as evidence — capacity is decision-specific and can change."
+"safetyDoc": "the exact decision at issue, then each ability with a patient quote as evidence — capacity is decision-specific and can change."
 ```
 
 **`exp_consult.md` additionally needs governance fields the other four kit pages already have.** It was the only kit page with no `safetyLevel` and no `facultyReview`, which would have made the capacity protocol the one unattested surface in a kit whose entire purpose is being right at 2am. Josh Moss, MD — the reviewer of record for this repo, and the `reviewer` string on all 22 currently-attested pages — reviewed the page in session on 2026-08-15 and attested it. Record that as:
@@ -1164,9 +1166,9 @@ no new attestation.
 ```json
 "safetySteps": [
   "Alcohol: CIWA-Ar q4h while symptomatic",
-  "Thiamine before any glucose",
+  "Thiamine before or with glucose — never delay dextrose for hypoglycemia",
   "CIWA ≥ 15 or seizure history → escalate protocol",
-  "Opioid: COWS to time buprenorphine induction"
+  "Opioid: COWS to time buprenorphine induction — typically COWS 8-12"
 ],
 "safetyDoc": "scores with times, protocol triggered, and cumulative benzodiazepine dose."
 ```
