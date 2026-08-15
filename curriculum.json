@@ -152,7 +152,13 @@
     { "ref": "week5.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
     { "ref": "week6.md", "reason": "surfaced by the Path tab, which is the week browse surface" }
   ],
-  "safetyKit": [],
+  "safetyKit": [
+    { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan" },
+    { "ref": "agitation.md", "sub": "Verbal first · PO before IM" },
+    { "ref": "exp_consult.md", "sub": "Choice · understand · appreciate · reason" },
+    { "ref": "toxidromes.md", "sub": "Score · thiamine · escalate" },
+    { "ref": "delirium.md", "sub": "Vitals · meds · CAM" }
+  ],
   "roles": { "ms3": [], "resident": [] },
   "synonyms": {
     "etoh": "alcohol withdrawal ciwa",

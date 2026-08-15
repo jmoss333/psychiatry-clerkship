@@ -69,6 +69,13 @@
       "familyOverlay": { "type": "string" },
       "communicationCases": { "type": "array", "items": { "type": "string" } },
       "safetyLevel": { "type": "string", "enum": ["low", "moderate", "high"] },
+      "safetySteps": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 5,
+        "items": { "type": "string", "minLength": 1 }
+      },
+      "safetyDoc": { "type": "string", "minLength": 1 },
       "facultyReview": {
         "type": "object",
         "properties": {

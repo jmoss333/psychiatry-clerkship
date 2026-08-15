@@ -148,6 +148,27 @@ for ref in sorted(shipped - placed - excluded):
     bad("library", "shipped slug '%s' appears in no column and no libraryExclude entry"
         % ref)
 
+# ---- safety kit refs resolve ----
+# Membership and order only. The steps themselves are attested content in
+# topic_meta.json (safetySteps/safetyDoc), so a kit entry naming an unshipped page
+# is the one failure mode this file can still have.
+kit = cur.get("safetyKit")
+if not isinstance(kit, list):
+    bad("safetyKit", "must be a list")
+    kit = []
+for ent in kit:
+    if not isinstance(ent, dict):
+        bad("safetyKit", "each entry must be an object")
+        continue
+    ref = ent.get("ref")
+    if not isinstance(ent.get("sub"), str) or not ent.get("sub").strip():
+        bad("safetyKit", "entry '%s' needs a non-empty 'sub'" % (ref,))
+    if not isinstance(ref, str):
+        bad("safetyKit", "entry ref must be a string (got %r)" % (ref,))
+        continue
+    if ref not in shipped:
+        bad("safetyKit", "ref '%s' is not a shipped slug" % ref)
+
 if errs:
     print("curriculum.json INVALID — %d issue(s):" % len(errs))
     for e in errs:

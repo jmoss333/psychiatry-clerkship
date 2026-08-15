@@ -230,5 +230,48 @@ class LibraryTotalityTest(unittest.TestCase):
             self.assertIn("must be a string", r.stdout)
 
 
+class SafetyKitTest(unittest.TestCase):
+    def _cur(self, kit):
+        c = _curriculum([])
+        c["libraryColumns"] = [
+            {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
+            {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+        ]
+        c["safetyKit"] = kit
+        return c
+
+    def test_accepts_kit_refs_that_are_shipped(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(
+                [{"ref": "welcome.md", "sub": "Screen · stratify · plan"}]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_rejects_a_kit_ref_that_is_not_shipped(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(
+                [{"ref": "ghost.md", "sub": "nope"}]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("ghost.md", r.stdout)
+
+    def test_rejects_a_kit_entry_with_an_empty_sub(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(
+                [{"ref": "welcome.md", "sub": "   "}]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("sub", r.stdout)
+
+    def test_rejects_a_non_string_kit_ref_without_crashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(
+                [{"ref": {"nested": "dict"}, "sub": "n/a"}]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
+            self.assertIn("must be a string", r.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
