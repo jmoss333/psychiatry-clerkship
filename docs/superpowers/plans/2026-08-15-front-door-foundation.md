@@ -1135,6 +1135,20 @@ Invoke the `topic-meta-author` skill and have it add `safetySteps` + `safetyDoc`
 "safetyDoc": "each ability with a patient quote as evidence — capacity is decision-specific and can change."
 ```
 
+**`exp_consult.md` additionally needs governance fields the other four kit pages already have.** It was the only kit page with no `safetyLevel` and no `facultyReview`, which would have made the capacity protocol the one unattested surface in a kit whose entire purpose is being right at 2am. Josh Moss, MD — the reviewer of record for this repo, and the `reviewer` string on all 22 currently-attested pages — reviewed the page in session on 2026-08-15 and attested it. Record that as:
+
+```json
+"safetyLevel": "high",
+"evidenceIds": ["appelbaum-grisso-1988-capacity"],
+"facultyReview": {
+  "status": "reviewed",
+  "reviewer": "Joshua Moss, MD",
+  "lastReviewed": "2026-08-15"
+}
+```
+
+`high` (rather than `moderate`) puts capacity at the same tier as the other four kit pages. `validate_topic_meta.py` requires a high-risk page to carry non-empty `evidenceIds` plus `facultyReview.status` and `lastReviewed`; `appelbaum-grisso-1988-capacity` is an existing entry in `evidence_registry.json` and is the canonical source for the four-abilities model this page's `points` already teach. Do not invent an evidence id — if that one is ever absent, stop and report rather than substituting another.
+
 `toxidromes.md`:
 ```json
 "safetySteps": [
