@@ -120,6 +120,23 @@ builds from this tree). Offering "Resident" on the MS3 build either dead-ends or
 off-site. Role lists are therefore build-injected per site from `curriculum.json`, and role only
 tunes the greeting and defaults.
 
+### 2.6 Shared shell copy is audience-neutral
+
+`tests/shell-copy.test.mjs` bans the tokens `MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford`
+from shell copy that ships identically to both sites without passing through
+`RESIDENT_REBRAND`. `phase_policy.js:5` states the house resolution: *"labels ship to both sites —
+audience-neutral, 'Exam', never 'Shelf'."*
+
+Two consequences for the handoff's copy:
+
+- The shelf countdown becomes **"· exam in ~N days"** and **"· exam day — good luck"**. The
+  behavior (days to Friday; week 5 adds 7) is unchanged.
+- Brand and role strings — the header wordmark and the step-1 role list — are **build-injected per
+  site** rather than literal, joining the existing per-site role lists from §2.5.
+
+Any other new shared string added during implementation must pass the same token scan, and
+`extractShellCopy()` in that test gains extractors for the front door's shared strings.
+
 ---
 
 ## 3 · Architecture
