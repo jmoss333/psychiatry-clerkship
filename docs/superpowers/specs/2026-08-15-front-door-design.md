@@ -130,7 +130,14 @@ audience-neutral, 'Exam', never 'Shelf'."*
 Two consequences for the handoff's copy:
 
 - The shelf countdown becomes **"· exam in ~N days"** and **"· exam day — good luck"**. The
-  behavior (days to Friday; week 5 adds 7) is unchanged.
+  *behavior* changes: the prototype's "days to the next Friday on the wall calendar; week 5 adds
+  7" is not carried over. It disagrees with the week number, which comes from `cw_rotation_start`
+  — on the Saturday of week 5 it yields 13 where the real answer is 6, so a day's passing makes
+  the countdown grow, and after the exam it counts toward a phantom second one. Instead the
+  stored `cw_shelf_date` governs whenever it is set, read through `shelfDaysUntil()` (§2.3) so
+  the countdown and the phase chip cannot disagree; with no stored date the fallback anchors to
+  a fixed point on the rotation grid — the Friday of week 6 — which falls by exactly one per day.
+  Past the exam the countdown is empty rather than negative or wrapped.
 - Brand and role strings — the header wordmark and the step-1 role list — are **build-injected per
   site** rather than literal, joining the existing per-site role lists from §2.5.
 
@@ -186,11 +193,21 @@ Holds:
 slug fails the **build**, not the browser.
 
 Every shipped page must appear in at least one `libraryColumns` entry **or** in an explicit
-`libraryExclude[]` list carrying a one-line reason. This is what keeps "all 88 reachable" true as
-content is added, and it is the front-door analogue of the existing orphaned-source check. The
-exclusion list exists so the rule stays a hard failure rather than being quietly weakened for the
-handful of pages that genuinely are not library content (e.g. `feedback.html`,
-`orientation-video.html`) — adding a page and forgetting to place it must break the build.
+`libraryExclude[]` list carrying a one-line reason. This is the front-door analogue of the
+existing orphaned-source check: adding a page and forgetting to place it must break the build.
+The exclusion list exists so the rule stays a hard failure rather than being quietly weakened for
+the handful of pages that genuinely are not library content (e.g. `feedback.html`,
+`orientation-video.html`).
+
+**Scope, stated precisely — the guard is only as good as the set it reasons over.** "Shipped" is
+the manifest's 88 pages *plus* the 11 the build copies outside it: `learning-path.html` and
+`orientation-video.html`, the three `rp-*.html` resident tools, and the six resident-only markdown
+pages. Those extras are read from `SITE_EXTRAS` (`validate_tool_governance.py`) and the literal
+`RES_EXTRA` entries (`resident_section.py`) rather than restated, so the lists cannot diverge.
+Deliberately **outside** the guard: the case-of-the-week pages, whose slugs are generated per
+published case from `cotw_registry.json` — requiring a curriculum entry for each would make
+publishing a case a curriculum edit. A new durable page in neither set is invisible to the guard;
+registering it in `site_manifest.json` is what brings it under the rule.
 
 ### 4.2 Joins — no duplicated facts
 
@@ -280,8 +297,10 @@ The current shell's own comments record the failure mode to design against: an u
 **`node --test` per module** — the reason for the module split. Directly unit-tested:
 
 - `fd_state.js` — streak rollover across a date gap and across a local midnight; daily-pick
-  determinism for a fixed local day; shelf countdown at week 5, week 6, and on shelf day; ring
-  interpolation endpoints; migration from pre-existing `cw_progress_v1` / `cw_srs_v1` state.
+  determinism for a fixed local day; the exam countdown pinned at **every weekday** of weeks 5
+  and 6, plus the monotonicity property (one day forward never increases it) that the
+  wall-calendar formula violated, plus the stored-date-wins branch; ring interpolation
+  endpoints; migration from pre-existing `cw_progress_v1` / `cw_srs_v1` state.
 - `fd_search.js` — synonym expansion, protocol-first merge order, cap-at-8, empty-query defaults.
 - `fd_library.js` — every shipped slug appears in exactly the expected column set; no orphans.
 

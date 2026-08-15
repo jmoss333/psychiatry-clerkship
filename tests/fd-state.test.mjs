@@ -95,6 +95,98 @@ test('week 5 adds the extra week', () => {
   assert.equal(fdExamCountdown(5, wed), '· exam in ~9 days');
 });
 
+// Monday 2026-08-10 … Sunday 2026-08-16 is one full rotation week. Pinning EVERY weekday is
+// the point: the prior loop walked seven days but asserted only that no audience token
+// appeared, so a formula that produced 13 on the Saturday of week 5 passed it unnoticed.
+const WEEK_MON = 10; // 2026-08-10 is a Monday
+const PER_WEEKDAY = {
+  5: [
+    '· exam in ~11 days', // Mon
+    '· exam in ~10 days', // Tue
+    '· exam in ~9 days',  // Wed
+    '· exam in ~8 days',  // Thu
+    '· exam in ~7 days',  // Fri
+    '· exam in ~6 days',  // Sat — the wall-calendar formula said 13 here
+    '· exam in ~5 days',  // Sun
+  ],
+  6: [
+    '· exam in ~4 days',      // Mon
+    '· exam in ~3 days',      // Tue
+    '· exam in ~2 days',      // Wed
+    '· exam in ~1 day',       // Thu
+    '· exam day — good luck', // Fri
+    '',                       // Sat — the exam is behind us, not a phantom next one
+    '',                       // Sun
+  ],
+};
+
+test('every weekday of weeks 5 and 6 has a pinned countdown', () => {
+  const { fdExamCountdown } = make(memStorage());
+  for (const week of [5, 6]) {
+    PER_WEEKDAY[week].forEach((expected, offset) => {
+      const now = new Date(2026, 7, WEEK_MON + offset, 9, 0, 0).getTime();
+      assert.equal(fdExamCountdown(week, now), expected,
+        `week ${week}, day offset ${offset} from Monday`);
+    });
+  }
+});
+
+// The property the bug violated: one day forward in time must never increase the countdown.
+function daysFrom(out) {
+  if (out === '') return null;
+  if (out === '· exam day — good luck') return 0;
+  return Number(/~(\d+) day/.exec(out)[1]);
+}
+
+test('the countdown never increases as time advances one day at a time', () => {
+  const { fdExamCountdown } = make(memStorage());
+  let prev = Infinity;
+  let ended = false;
+  for (let offset = 0; offset < 14; offset += 1) {
+    const week = offset < 7 ? 5 : 6;
+    const now = new Date(2026, 7, WEEK_MON + offset, 9, 0, 0).getTime();
+    const days = daysFrom(fdExamCountdown(week, now));
+    if (days === null) { ended = true; continue; }
+    assert.ok(!ended, `the countdown came back after the exam at offset ${offset}`);
+    assert.ok(days <= prev, `countdown rose from ${prev} to ${days} at offset ${offset}`);
+    prev = days;
+  }
+  assert.ok(ended, 'the fixture must run past the exam day');
+});
+
+test('a stored cw_shelf_date wins over the rotation-grid fallback', () => {
+  const ls = memStorage();
+  ls.setItem('cw_shelf_date', '2026-08-21'); // the Friday AFTER the week-6 Friday
+  const { fdExamCountdown } = make(ls);
+  const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  // Grid fallback would say 2 days; the stored date is the real one.
+  assert.equal(fdExamCountdown(6, wed), '· exam in ~9 days');
+});
+
+test('a stored cw_shelf_date reads as exam day on the day and empties after it', () => {
+  const ls = memStorage();
+  ls.setItem('cw_shelf_date', '2026-08-14');
+  const { fdExamCountdown } = make(ls);
+  assert.equal(fdExamCountdown(6, new Date(2026, 7, 14, 9, 0, 0).getTime()),
+    '· exam day — good luck');
+  assert.equal(fdExamCountdown(6, new Date(2026, 7, 15, 9, 0, 0).getTime()), '');
+});
+
+test('an unparseable cw_shelf_date falls back rather than emitting NaN', () => {
+  const ls = memStorage();
+  ls.setItem('cw_shelf_date', 'banana');
+  const { fdExamCountdown } = make(ls);
+  assert.equal(fdExamCountdown(6, new Date(2026, 7, 12, 9, 0, 0).getTime()),
+    '· exam in ~2 days');
+});
+
+// shelfDaysUntil() in phase_policy.js is the repo's ONE local-midnight parse site; the
+// phase-chip contract bans the suffix idiom everywhere else, comments included.
+test('fd_state.js contains no date-parse idiom of its own', () => {
+  assert.doesNotMatch(fdState, /T00:00:00/,
+    'fd_state.js must delegate string date parsing to shelfDaysUntil()');
+});
+
 test('the day itself reads as exam day, not "in ~0 days"', () => {
   const { fdExamCountdown } = make(memStorage());
   const fri = new Date(2026, 7, 14, 9, 0, 0).getTime(); // Friday

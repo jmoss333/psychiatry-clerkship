@@ -319,6 +319,8 @@ man = json.load(open(man_path, encoding="utf-8"))
 
 tool_slugs = {e[1] for e in man.get("tools", [])}
 md_slugs = {e[1] for e in man.get("md", [])}
+tool_slugs |= {s for s in EXTRA_SHIPPED if s.endswith(".html")}
+md_slugs |= {s for s in EXTRA_SHIPPED if s.endswith(".md")}
 shipped = tool_slugs | md_slugs
 
 errs = []
@@ -740,7 +742,20 @@ Expected: FAIL — `test_rejects_a_shipped_slug_that_is_neither_placed_nor_exclu
 
 - [ ] **Step 3: Add the totality check to the validator**
 
-Insert into `13_Faculty_Resources/_automation/validate_curriculum.py`, immediately before the `if errs:` block:
+**`shipped` is not the manifest alone.** site_manifest.json registers the 88 shared pages, but the
+build copies 11 more: `learning-path.html` and `orientation-video.html`, the three `rp-*.html`
+resident tools, and six resident-only markdown pages. Built from the manifest alone, the totality
+guard would be false-green — and `libraryExclude` would *reject* `orientation-video.html`, the very
+page the spec names as an exclusion example. `validate_curriculum.py` therefore derives
+`EXTRA_SHIPPED` by AST-parsing `SITE_EXTRAS` out of `validate_tool_governance.py` and the literal
+`RES_EXTRA` tuples out of `resident_section.py` — parsed, never imported, because this validator
+runs inside the Netlify build and `validate_tool_governance` pulls in `jsonschema`. A missing
+constant in either source raises rather than silently narrowing the guarded set. The
+case-of-the-week pages stay out of scope by design (their slugs are generated per published case),
+and the module docstring states that boundary explicitly.
+
+Then insert into `13_Faculty_Resources/_automation/validate_curriculum.py`, immediately before the
+`if errs:` block:
 
 ```python
 # ---- library totality: every shipped slug is placed or explicitly excluded ----
@@ -1097,7 +1112,7 @@ Invoke the `topic-meta-author` skill and have it add `safetySteps` + `safetyDoc`
   "Wish to be dead — passive ideation?",
   "Active thoughts of killing themselves?",
   "Method? Plan? Intent?",
-  "Any preparatory behavior — ever, and past 3 months?",
+  "Preparatory behavior, or a past attempt — ever, and in the past 3 months?",
   "Access to lethal means — firearms especially — and whether it is secured"
 ],
 "safetyDoc": "exact patient quotes, risk stratification with static/dynamic factors, lethal-means access and what was done to secure it, and the safety plan disposition."
@@ -1106,14 +1121,21 @@ Invoke the `topic-meta-author` skill and have it add `safetySteps` + `safetyDoc`
 `agitation.md`:
 ```json
 "safetySteps": [
-  "Look for the driver first — delirium, akathisia, withdrawal, pain, hypoxia — it changes the treatment",
+  "Vitals and fingerstick glucose first; then find the driver — hypoglycemia, hypoxia, delirium, withdrawal, akathisia, pain",
   "Verbal de-escalation first — respect space, one voice, offer choices",
-  "Offer PO medication before any IM",
-  "IM only for imminent danger to self or others",
+  "Offer PO before any IM — not a benzodiazepine in delirium or an older adult unless alcohol/benzo withdrawal; IM only for imminent danger",
   "Debrief the patient and the team afterward"
 ],
 "safetyDoc": "the behavior observed, least-restrictive steps tried, medication response, and patient debrief."
 ```
+
+The agitation kit lands on **four** steps, not the handoff's five. `safetySteps` caps at five, and
+the page's own source (`agitation_restraint_inpatient_teaching.md`) and its `cant` field require two
+things the handoff's list omitted: vitals + fingerstick glucose (the sibling delirium card already
+leads with glucose), and a benzodiazepine guardrail. Step 1 absorbs the vitals/glucose opener, and
+the separate PO and IM steps merge to make room for the guardrail. The **withdrawal carve-out is
+load-bearing** — benzodiazepines *are* the treatment for alcohol/benzo withdrawal, so a flat "no
+benzodiazepines" would itself be a clinical error.
 
 `delirium.md`:
 ```json
@@ -1165,7 +1187,7 @@ no new attestation.
 
 ```json
 "safetySteps": [
-  "Alcohol: CIWA-Ar q4h while symptomatic",
+  "Alcohol: CIWA-Ar q4h through the risk window; step down only after sustained low scores",
   "Thiamine before or with glucose — never delay dextrose for hypoglycemia",
   "CIWA ≥ 15 or seizure history → escalate protocol",
   "Opioid: COWS to time buprenorphine induction — typically COWS 8-12"
@@ -1253,7 +1275,7 @@ The engagement mechanics are the parts most likely to be subtly wrong and the mo
   - `FD_STORE` — the string `'cw_frontdoor_v1'`
   - `fdLoad() -> object` — persisted state, `{}` on absent or malformed
   - `fdSave(obj) -> void` — writes the whitelisted keys only
-  - `fdExamCountdown(week, nowMs) -> string` — `''`, `'· exam in ~N days'`, or `'· exam day — good luck'`
+  - `fdExamCountdown(week, nowMs) -> string` — `''` (outside weeks 5-6, or once the exam is past), `'· exam in ~N days'`, or `'· exam day — good luck'`. Prefers the stored `cw_shelf_date` via `shelfDaysUntil()`; falls back to the week-6-Friday grid anchor.
   - `fdDailyPick(candidates, doneMap, nowMs) -> object|null` — deterministic per local day
   - `fdRingStep(from, to, elapsed, duration) -> number` — eased integer percent
   Plan 2's `fd_today.js`, `fd_shell.js`, and `fd_reader.js` consume all of these.
@@ -1371,6 +1393,55 @@ test('one day out is singular', () => {
   const thu = new Date(2026, 7, 13, 9, 0, 0).getTime();
   assert.equal(fdExamCountdown(6, thu), '· exam in ~1 day');
 });
+
+// Monday 2026-08-10 … Sunday 2026-08-16 is one full rotation week. Pinning EVERY weekday is
+// the point: a loop that walks seven days but only asserts "no audience token appeared" lets
+// a formula that produces 13 on the Saturday of week 5 through unnoticed.
+const WEEK_MON = 10; // 2026-08-10 is a Monday
+const PER_WEEKDAY = {
+  5: ['· exam in ~11 days', '· exam in ~10 days', '· exam in ~9 days', '· exam in ~8 days',
+      '· exam in ~7 days', '· exam in ~6 days', '· exam in ~5 days'],
+  6: ['· exam in ~4 days', '· exam in ~3 days', '· exam in ~2 days', '· exam in ~1 day',
+      '· exam day — good luck', '', ''],
+};
+
+test('every weekday of weeks 5 and 6 has a pinned countdown', () => {
+  const { fdExamCountdown } = make(memStorage());
+  for (const week of [5, 6]) {
+    PER_WEEKDAY[week].forEach((expected, offset) => {
+      const now = new Date(2026, 7, WEEK_MON + offset, 9, 0, 0).getTime();
+      assert.equal(fdExamCountdown(week, now), expected,
+        `week ${week}, day offset ${offset} from Monday`);
+    });
+  }
+});
+
+// The property the bug violated: one day forward in time must never increase the countdown.
+function daysFrom(out) {
+  if (out === '') return null;
+  if (out === '· exam day — good luck') return 0;
+  return Number(/~(\d+) day/.exec(out)[1]);
+}
+
+test('the countdown never increases as time advances one day at a time', () => {
+  const { fdExamCountdown } = make(memStorage());
+  let prev = Infinity;
+  let ended = false;
+  for (let offset = 0; offset < 14; offset += 1) {
+    const week = offset < 7 ? 5 : 6;
+    const now = new Date(2026, 7, WEEK_MON + offset, 9, 0, 0).getTime();
+    const days = daysFrom(fdExamCountdown(week, now));
+    if (days === null) { ended = true; continue; }
+    assert.ok(!ended, `the countdown came back after the exam at offset ${offset}`);
+    assert.ok(days <= prev, `countdown rose from ${prev} to ${days} at offset ${offset}`);
+    prev = days;
+  }
+  assert.ok(ended, 'the fixture must run past the exam day');
+});
+
+// Plus: a stored cw_shelf_date wins over the grid fallback; it reads as exam day on the day
+// and empties after it; an unparseable value falls back instead of emitting NaN; and
+// fd_state.js itself contains no midnight-suffix date parse (shelfDaysUntil owns that).
 
 // Scoped to the RETURNED strings, not the file. AUDIENCE_TOKEN_RE bans tokens in
 // user-visible copy — tests/phase-policy.test.mjs:193,200 apply it to label values for
@@ -1510,12 +1581,32 @@ function fdSave(o){
   try{ localStorage.setItem(FD_STORE, JSON.stringify(out)); }catch(_){ }
 }
 
-/* Weeks 5-6 carry a countdown to the Friday of week 6. Week 5 is one week further out,
-   so it adds 7. Returns '' for every other week so callers can concatenate unconditionally. */
+/* Weeks 5-6 carry a countdown to the exam. Returns '' for every other week so callers can
+   concatenate unconditionally.
+
+   The stored cw_shelf_date wins whenever it is set: it is the actual date, and it is what the
+   phase chip already counts against (phasePolicy), so the two surfaces cannot disagree.
+
+   Without a stored date we fall back to the rotation grid, anchored to the FRIDAY OF WEEK 6 —
+   not to "the next Friday on the wall calendar". The wall-calendar form shipped in the
+   prototype and is wrong: on the Saturday of week 5 it counted to the *following* week's
+   Friday and then added another 7, yielding 13 where the real answer is 6 — so moving one day
+   forward in time made the countdown grow, and past the exam it counted toward a phantom
+   second one. Anchoring to a fixed point on the grid makes the value fall by exactly one per
+   day. idx is the day's offset from Monday (Mon=0 … Sun=6); the exam sits at idx 4 of week 6.
+
+   Once the exam is behind us there is nothing to count down to, so we return '' rather than a
+   negative day count or a wrapped-around next Friday. */
 function fdExamCountdown(week, nowMs){
   if(week!==5&&week!==6) return '';
-  var d=new Date(nowMs||Date.now());
-  var days=((5-d.getDay())+7)%7 + (week===5?7:0);
+  var stored=null;
+  try{ stored=localStorage.getItem('cw_shelf_date'); }catch(_){ }
+  var days=shelfDaysUntil(stored, nowMs);
+  if(days===null){
+    var idx=(new Date(nowMs||Date.now()).getDay()+6)%7;
+    days=(6-week)*7+(4-idx);
+  }
+  if(days<0) return '';
   if(days===0) return '· exam day — good luck';
   return '· exam in ~'+days+' day'+(days===1?'':'s');
 }

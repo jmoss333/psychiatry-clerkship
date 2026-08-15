@@ -207,10 +207,9 @@
    "guardedness_privacy_001"
   ],
   "safetySteps": [
-   "Look for the driver first — delirium, akathisia, withdrawal, pain, hypoxia — it changes the treatment",
+   "Vitals and fingerstick glucose first; then find the driver — hypoglycemia, hypoxia, delirium, withdrawal, akathisia, pain",
    "Verbal de-escalation first — respect space, one voice, offer choices",
-   "Offer PO medication before any IM",
-   "IM only for imminent danger to self or others",
+   "Offer PO before any IM — not a benzodiazepine in delirium or an older adult unless alcohol/benzo withdrawal; IM only for imminent danger",
    "Debrief the patient and the team afterward"
   ],
   "safetyDoc": "the behavior observed, least-restrictive steps tried, medication response, and patient debrief.",
@@ -778,7 +777,7 @@
    "medication_ambivalence_001"
   ],
   "safetySteps": [
-   "Alcohol: CIWA-Ar q4h while symptomatic",
+   "Alcohol: CIWA-Ar q4h through the risk window; step down only after sustained low scores",
    "Thiamine before or with glucose — never delay dextrose for hypoglycemia",
    "CIWA ≥ 15 or seizure history → escalate protocol",
    "Opioid: COWS to time buprenorphine induction — typically COWS 8-12"
@@ -2261,7 +2260,7 @@
    "Wish to be dead — passive ideation?",
    "Active thoughts of killing themselves?",
    "Method? Plan? Intent?",
-   "Any preparatory behavior — ever, and past 3 months?",
+   "Preparatory behavior, or a past attempt — ever, and in the past 3 months?",
    "Access to lethal means — firearms especially — and whether it is secured"
   ],
   "safetyDoc": "exact patient quotes, risk stratification with static/dynamic factors, lethal-means access and what was done to secure it, and the safety plan disposition.",

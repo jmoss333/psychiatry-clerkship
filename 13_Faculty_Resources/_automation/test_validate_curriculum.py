@@ -3,8 +3,14 @@
 
 Mirrors the harness convention of test_validate_registry_schemas.py: build a
 minimal in-memory curriculum + manifest in a tmp dir, run the validator as a
-subprocess, and assert on exit code and message. Nothing here touches the real
+subprocess, and assert on exit code and message. Nothing here reads the real
 curriculum.json, so a content edit never turns these red.
+
+The manifest IS synthetic, but the validator's shipped set is manifest + the
+extras it derives from validate_tool_governance.py and resident_section.py (see
+its docstring). Those extras are therefore present in every run, synthetic
+manifest or not, so each fixture excludes them — imported from the validator
+rather than restated, so the fixture cannot drift from the derivation.
 """
 import json
 import os
@@ -16,10 +22,22 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 VALIDATOR = os.path.join(HERE, "validate_curriculum.py")
 
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
+import validate_curriculum  # noqa: E402  (path set above)
+
 MANIFEST = {
     "tools": [["src/a.html", "mse.html", "Mental Status Exam"]],
     "md": [["src/b.md", "welcome.md", "Welcome to the Rotation"]],
 }
+MANIFEST_SLUGS = {"mse.html", "welcome.md"}
+
+# Keep the two manifest slugs out of this list: the totality tests below assert on
+# exactly those, and blanket-excluding them would hide what they are checking.
+EXTRA_EXCLUDES = [
+    {"ref": slug, "reason": "outside this fixture — a build extra, not a manifest page"}
+    for slug in sorted(validate_curriculum.EXTRA_SHIPPED - MANIFEST_SLUGS)
+]
 
 
 def _write(tmp, curriculum):
@@ -50,7 +68,7 @@ def _curriculum(items):
             {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
             {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
         ],
-        "libraryExclude": [],
+        "libraryExclude": list(EXTRA_EXCLUDES),
         "safetyKit": [],
         "roles": {"ms3": [], "resident": []},
         "synonyms": {},
@@ -157,7 +175,7 @@ class LibraryTotalityTest(unittest.TestCase):
     def _cur(self, columns, exclude):
         c = _curriculum([])
         c["libraryColumns"] = columns
-        c["libraryExclude"] = exclude
+        c["libraryExclude"] = list(exclude) + EXTRA_EXCLUDES
         return c
 
     def test_accepts_full_coverage(self):
@@ -228,6 +246,51 @@ class LibraryTotalityTest(unittest.TestCase):
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("must be a string", r.stdout)
+
+
+class ShippedSetTest(unittest.TestCase):
+    """The shipped set is manifest + build extras, not the manifest alone.
+
+    Before this, `shipped` came only from site_manifest.json, so the totality guard
+    was false-green: the ten-odd pages the build copies outside the manifest were
+    neither required to be placed nor even *allowed* in libraryExclude.
+    """
+
+    def test_extras_cover_the_per_site_tools_and_resident_only_pages(self):
+        extras = validate_curriculum.EXTRA_SHIPPED
+        for slug in ("learning-path.html", "orientation-video.html", "rp-agitation.html",
+                     "rp-brief-psych.html", "rp-canon-quiz.html", "rotation.md",
+                     "adv_psychopharm.md", "systems_medlegal.md", "supervision_teaching.md",
+                     "canon_200.md", "cl_reference.md"):
+            self.assertIn(slug, extras)
+
+    def test_library_exclude_accepts_a_page_outside_site_manifest(self):
+        # The spec names orientation-video.html as an exclusion example, and the guard
+        # used to reject it as "not a shipped slug" purely because it has no manifest row.
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["libraryColumns"] = [
+                {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
+                {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+            ]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertNotIn("orientation-video.html", r.stdout)
+
+    def test_a_build_extra_left_unplaced_and_unexcluded_still_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["libraryColumns"] = [
+                {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
+                {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+            ]
+            cur["libraryExclude"] = [e for e in EXTRA_EXCLUDES
+                                     if e["ref"] != "orientation-video.html"]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("orientation-video.html", r.stdout)
 
 
 class SafetyKitTest(unittest.TestCase):
