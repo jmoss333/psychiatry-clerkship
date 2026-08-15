@@ -21,6 +21,11 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
   the Netlify UI**, not in `netlify.toml` (kept intentionally minimal — one toml can't express two
   sites, and it's read *after* the LFS checkout). See `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`.
 - Deploy-on-push to `main`. Deploy previews: `https://deploy-preview-{PR}--{slug}.netlify.app`.
+- **`build-test-validate` runs on the self-hosted macOS runner** (`mac-jm-clerkship`, labels
+  `self-hosted,macOS,ARM64,clerkship`); GitHub does not bill self-hosted minutes. `smoke-tests` stays
+  on `ubuntu-latest` — the visual baselines are Ubuntu/Chromium renders and `playwright install
+  --with-deps` is Linux-only. If the runner is offline **both** jobs stall (`smoke-tests` `needs:` it)
+  and every PR is merge-blocked, so check runner health before debugging CI itself.
 - **Git LFS** tracks `*.mp3 *.m4a *.wav *.mp4`. Never commit LFS **pointer stubs** (~133 B) in place
   of real media — the build's LFS gate fails the deploy. In sandboxes without LFS installed, audio
   shows as false "modified"; don't commit those.

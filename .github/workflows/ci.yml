@@ -20,7 +20,9 @@ concurrency:
 
 jobs:
   build-test-validate:
-    runs-on: ubuntu-latest
+    # Self-hosted macOS runner — GitHub does not bill self-hosted minutes.
+    # smoke-tests deliberately stays on ubuntu-latest (see CLAUDE.md).
+    runs-on: [self-hosted, macOS, ARM64, clerkship]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
