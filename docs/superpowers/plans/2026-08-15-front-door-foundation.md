@@ -647,7 +647,33 @@ The spec commits to every shipped page staying one click away once the sidebar i
 
 - [ ] **Step 1: Write the failing tests**
 
-Append to `13_Faculty_Resources/_automation/test_validate_curriculum.py`:
+**First, update the shared `_curriculum()` fixture helper.** It currently hardcodes
+`"libraryColumns": []` and `"libraryExclude": []`, which was valid while nothing checked them.
+The totality check added in Step 3 makes that default an *invalid* curriculum: `MANIFEST`'s
+`mse.html` and `welcome.md` would be shipped-but-unplaced, so every test built on the helper
+would fail for a reason unrelated to what it is testing. Give the helper default coverage so it
+produces a valid curriculum, and let the tests that care about columns keep overriding it:
+
+```python
+def _curriculum(items):
+    return {
+        "weeks": [{"n": n, "title": "T%d" % n, "theme": "Th%d" % n,
+                   "items": items if n == 1 else []} for n in range(1, 7)],
+        # Default coverage keeps the fixture VALID under the totality check. Tests that
+        # exercise column behaviour overwrite both keys wholesale (see LibraryTotalityTest._cur),
+        # so this default never masks what they assert.
+        "libraryColumns": [
+            {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
+            {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+        ],
+        "libraryExclude": [],
+        "safetyKit": [],
+        "roles": {"ms3": [], "resident": []},
+        "synonyms": {},
+    }
+```
+
+Then append the new test classes:
 
 ```python
 class LibraryTotalityTest(unittest.TestCase):
@@ -862,7 +888,7 @@ Replace the empty `libraryColumns` and `libraryExclude` in `curriculum.json` wit
 - [ ] **Step 5: Run the tests and the validator**
 
 Run: `python3 13_Faculty_Resources/_automation/test_validate_curriculum.py`
-Expected: PASS — 10 tests.
+Expected: PASS — 13 tests (8 from Task 2 including its fix round, plus the 5 added here).
 
 Run: `python3 13_Faculty_Resources/_automation/validate_curriculum.py`
 Expected: PASS — `curriculum.json OK — 6 weeks, 40 week items, 81 pages placed, 7 excluded.`
