@@ -82,6 +82,9 @@ for w in weeks:
             bad(label, "each item must be an object")
             continue
         ref, kind = it.get("ref"), it.get("kind")
+        if not isinstance(ref, str):
+            bad(label, "item ref must be a string (got %r)" % (ref,))
+            continue
         if ref in seen_refs:
             bad(label, "duplicate ref '%s' within the week" % ref)
         seen_refs.add(ref)
@@ -113,6 +116,9 @@ for col in columns:
         bad("column %s" % name, "'refs' must be a list")
         continue
     for ref in refs:
+        if not isinstance(ref, str):
+            bad("column %s" % name, "ref must be a string (got %r)" % (ref,))
+            continue
         if ref not in shipped:
             bad("column %s" % name, "ref '%s' is not a shipped slug" % ref)
         else:
@@ -130,6 +136,9 @@ for ent in exclude:
     ref = ent.get("ref")
     if not isinstance(ent.get("reason"), str) or not ent.get("reason").strip():
         bad("libraryExclude", "entry '%s' needs a non-empty 'reason'" % ref)
+    if not isinstance(ref, str):
+        bad("libraryExclude", "entry ref must be a string (got %r)" % (ref,))
+        continue
     if ref not in shipped:
         bad("libraryExclude", "ref '%s' is not a shipped slug" % ref)
     else:

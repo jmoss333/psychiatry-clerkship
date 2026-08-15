@@ -136,6 +136,16 @@ class ValidateCurriculumTest(unittest.TestCase):
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("missing or non-integer", r.stdout)
 
+    def test_rejects_a_non_string_ref_in_a_week_item_without_crashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, _curriculum([
+                {"ref": {"nested": "dict"}, "kind": "read"},
+            ]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
+            self.assertIn("must be a string", r.stdout)
+
 
 class LibraryTotalityTest(unittest.TestCase):
     """Every shipped slug is placed in a column or explicitly excluded with a reason.
@@ -158,6 +168,7 @@ class LibraryTotalityTest(unittest.TestCase):
                 []))
             r = _run(c, m)
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
 
     def test_accepts_a_slug_placed_only_in_the_exclude_list(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -166,6 +177,7 @@ class LibraryTotalityTest(unittest.TestCase):
                 [{"ref": "welcome.md", "reason": "surfaced by the Path tab"}]))
             r = _run(c, m)
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
 
     def test_rejects_a_shipped_slug_that_is_neither_placed_nor_excluded(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -173,6 +185,7 @@ class LibraryTotalityTest(unittest.TestCase):
                 [{"name": "Tools", "accent": "tool", "refs": ["mse.html"]}], []))
             r = _run(c, m)
             self.assertEqual(r.returncode, 1)
+            self.assertNotIn("Traceback", r.stderr)
             self.assertIn("welcome.md", r.stdout)
 
     def test_rejects_a_column_ref_that_is_not_shipped(self):
@@ -182,6 +195,7 @@ class LibraryTotalityTest(unittest.TestCase):
                 [{"ref": "welcome.md", "reason": "n/a"}]))
             r = _run(c, m)
             self.assertEqual(r.returncode, 1)
+            self.assertNotIn("Traceback", r.stderr)
             self.assertIn("ghost.html", r.stdout)
 
     def test_rejects_an_exclude_entry_with_an_empty_reason(self):
@@ -191,7 +205,29 @@ class LibraryTotalityTest(unittest.TestCase):
                 [{"ref": "welcome.md", "reason": ""}]))
             r = _run(c, m)
             self.assertEqual(r.returncode, 1)
+            self.assertNotIn("Traceback", r.stderr)
             self.assertIn("reason", r.stdout)
+
+    def test_rejects_a_non_string_column_ref_without_crashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(
+                [{"name": "Tools", "accent": "tool",
+                  "refs": ["mse.html", ["nested", "list"]]}],
+                [{"ref": "welcome.md", "reason": "n/a"}]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
+            self.assertIn("must be a string", r.stdout)
+
+    def test_rejects_a_non_string_exclude_ref_without_crashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(
+                [{"name": "Tools", "accent": "tool", "refs": ["mse.html"]}],
+                [{"ref": {"nested": "dict"}, "reason": "n/a"}]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
+            self.assertIn("must be a string", r.stdout)
 
 
 if __name__ == "__main__":
