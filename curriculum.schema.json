@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "curriculum.json — front door structure",
+  "type": "object",
+  "required": ["weeks", "libraryColumns", "libraryExclude", "safetyKit", "roles", "synonyms"],
+  "properties": {
+    "_note": { "type": "string" },
+    "weeks": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["n", "title", "theme", "items"],
+        "additionalProperties": false,
+        "properties": {
+          "n": { "type": "integer", "minimum": 1, "maximum": 6 },
+          "title": { "type": "string", "minLength": 1 },
+          "theme": { "type": "string", "minLength": 1 },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["ref", "kind"],
+              "additionalProperties": false,
+              "properties": {
+                "ref": { "type": "string", "minLength": 1 },
+                "kind": { "type": "string", "enum": ["read", "tool"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "libraryColumns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "accent", "refs"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "accent": { "type": "string", "enum": ["tool", "safety", "topic"] },
+          "refs": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    },
+    "libraryExclude": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "ref": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "safetyKit": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref", "sub"],
+        "additionalProperties": false,
+        "properties": {
+          "ref": { "type": "string", "minLength": 1 },
+          "sub": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "roles": {
+      "type": "object",
+      "required": ["ms3", "resident"],
+      "additionalProperties": false,
+      "properties": {
+        "ms3": { "$ref": "#/definitions/roleList" },
+        "resident": { "$ref": "#/definitions/roleList" }
+      }
+    },
+    "synonyms": { "type": "object", "additionalProperties": { "type": "string" } }
+  },
+  "definitions": {
+    "roleList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "desc"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "desc": { "type": "string", "minLength": 1 },
+          "hint": { "type": "string" }
+        }
+      }
+    }
+  }
+}
