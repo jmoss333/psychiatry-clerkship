@@ -1,6 +1,6 @@
 # Faculty Attestation Console
 
-A standalone, shared-key faculty workbench for reviewing learner-facing pages, tools, and questions in one queue — **separate from the two student sites**. Each save or attestation commits `reviewed.json` (pages/tools) or `question_bank.json` (question drafts and status) **directly to the repository through a Netlify function and the GitHub API**, which triggers the normal student-site rebuild. No export → upload → merge step.
+A standalone, shared-key faculty workbench for reviewing learner-facing pages, tools, and questions in one queue — **separate from the two student sites**. Each save or attestation commits `reviewed.json` (pages/tools) or `question_bank.json` (question drafts and status) to the rolling attestation branch through a Netlify function and the GitHub API. After the commit lands, the server makes a best-effort attempt to open or reuse the rolling pull request that brings those commits to protected `main`, where the normal student-site rebuild runs. No export → upload step.
 
 ```
 faculty-console/
@@ -22,8 +22,8 @@ faculty-console/
 3. Pages, tools, and questions appear in one filterable queue. Selecting an item opens its learner-facing surface beside one common **Review → Resolve → Confirm** rail.
 4. The embedded learner site reports a typed readiness result for the exact selected item. Preview requests carry a short-lived random review token, never the faculty key, reviewer label, confirmations, edits, or commit data.
 5. A question edit is saved as a **draft** first. The browser sends the exact loaded question and manifest revisions. Before each write attempt, the server captures one branch-head revision, rereads and validates both files at that exact snapshot, applies only editable fields, reruns the structural checks, and advances the branch only if its head is still unchanged. The browser then reloads the committed question; the success message and commit receipt appear only after that reload confirms the exact new revision.
-6. Attestation is a separate, one-item action. The server rechecks the exact saved question revision, current warnings, human confirmations, and manifest revision before changing status. Page/tool attestations likewise write only the selected slug. Attestation remains in its saving-and-confirming state until a repository reload matches the requested status and, for a question, revision.
-7. Netlify sees the commit and rebuilds the student sites. Badges update on the next deploy.
+6. Attestation is separate from reviewing. A question may be attested individually or as part of an explicitly visible batch. The server rechecks every selected question's exact saved revision, current warnings, human confirmations, and manifest revision before changing status. Page/tool attestations always write only the selected slug. Attestation remains in its saving-and-confirming state until a repository reload matches the requested status and, for a question, revision.
+7. The confirmed commit appears in the current-session ledger. When GitHub returns the rolling pull request, the ledger links it too. Pull-request maintenance happens after the commit and is non-fatal: if it fails, the ledger explicitly says the commit is confirmed but the rolling review request needs attention. After that pull request reaches `main`, Netlify rebuilds the student sites and badges update on the next deploy.
 
 **The GitHub token never leaves the server.** The browser only ever holds the faculty key (in `sessionStorage`, cleared when the tab closes).
 
@@ -31,7 +31,9 @@ faculty-console/
 
 ### 1. Choose one item
 
-Use the shared queue's search, item type, review status, category, gate, and difficulty filters. **Previous** and **Next** move deliberately through the filtered queue; a successful attestation stays on the completed item so its repository receipt can be inspected before choosing **Next item**.
+Use the shared queue's search, item type, review status, category, gate, and difficulty filters. **Previous** and **Next** move deliberately through the filtered queue. A successful page/tool attestation moves to the next pending content item when one exists; otherwise it stays on the completed item. Recording a question review receipt moves to the next unreviewed draft later in the filtered queue without wrapping.
+
+The compact **Review sitting** strip keeps the automation visible: it shows saved-draft receipt and batch counts, any reset notice, the most recent automatic batch choice with **Undo batch selection**, and a collapsible ledger of every confirmed repository action in the current sitting. The ledger is scrollable for a long sitting, links the confirmed commit and rolling pull request when available, and flags a pull-request housekeeping failure without calling the confirmed write a failure. This is browser-session context, not a durable approval record; it clears when the console is locked or the tab closes.
 
 ### 2. Review the learner-facing surface
 
@@ -43,7 +45,7 @@ The preview reports one of these honest states:
 - **Preview protocol unavailable:** the outer learner page loaded, but the typed readiness message did not arrive in time.
 - **Network or embedded-preview failure:** the frame did not load reliably, changed, or reloaded after verification.
 
-Use **Retry preview** to create a fresh token and a new verification attempt. If a page or tool still cannot be verified in the frame, **Open full page** opens a clean learner URL in a separate tab; record the separate-tab review before continuing. A question never substitutes another item: review its exact saved Draft and acknowledge that the live question is unavailable. Error, protocol, and frame failures require one Retry before that acknowledgement becomes available.
+For every page or tool, **Open learner surface (new tab)** is available even when the embedded preview is Ready. It opens a clean public learner URL in a separate tab so popup-dependent links and full-page behavior can be tested. Opening it is access, not proof of review: the faculty review step still must be completed. Use **Retry preview** to create a fresh token and a new verification attempt after a failure. A question never substitutes another item: review its exact saved Draft and acknowledge that the live question is unavailable. Error, protocol, and frame failures require one Retry before that acknowledgement becomes available.
 
 ### 3. Resolve concerns
 
@@ -61,13 +63,13 @@ Treat the gate as a workflow aid, not a clinical verdict:
 - **Warning:** review the exact saved revision and acknowledge every current warning individually.
 - **Ready:** the saved structure passed automated checks.
 
-Ready and Warning questions both require an explicit **I reviewed this exact saved revision** receipt. Automated checks and a successful preview do **not** establish clinical correctness, evidence support, originality, or absence of PHI; those remain faculty judgments.
+Ready and Warning questions both require an explicit receipt for the exact saved revision and its learner rendering. On a clean Ready draft, one combined receipt records both facts. Recording it automatically adds an eligible Ready question to the batch and moves forward; the persistent sitting strip names the added item and offers **Undo batch selection**. Undo removes only batch membership and creates a sticky exclusion—it does not erase the review receipt. Warning questions remain individual-only. Automated checks and a successful preview do **not** establish clinical correctness, evidence support, originality, or absence of PHI; those remain faculty judgments.
 
 ### 4. Confirm one attestation
 
-The rail shows the server-configured reviewer attribution (`ATTESTER_NAME`). For questions, complete all three faculty confirmations covering the clinical answer, named evidence, and an original fictional vignette without PHI. Then choose **Attest this question**. For pages and tools, choose **Attest this page** or **Attest this tool** after the Review and Resolve steps are complete.
+The rail shows the server-configured reviewer attribution (`ATTESTER_NAME`). For a review-complete question, **Attest this question** records the three faculty judgments stated in its label: clinical answer and rationale, named evidence, and an original fictional vignette without PHI. The same confirmations remain available individually. Eligible reviewed drafts appear in **Attest together**; verify the visible selection, then use its one-press action. Warning questions never join that batch. For pages and tools, choose **Attest this page** or **Attest this tool** after Review and Resolve are complete. On the Ready one-press path, the button label states the accuracy and interaction judgments the press records.
 
-The interface submits only the selected item and waits for a confirming repository reload. A commit link is shown only after that confirmation. Completed page/tool reviews have no primary attestation button; use **More actions → Reopen review**, confirm the exact item, and complete a fresh review before re-attesting.
+The interface submits only the current page/tool, the current question, or the explicitly checked question batch, then waits for a confirming repository reload. A commit link and session-ledger entry appear only after that confirmation. Completed page/tool reviews have no primary attestation button; use **More actions → Reopen review**, confirm the exact item, and complete a fresh review before re-attesting.
 
 ### Embedded preview limits
 
@@ -79,7 +81,7 @@ This MVP deliberately makes no saved/deployed parity claim. **Live deploy** and 
 
 Every question action includes the question revision and source-manifest revision that were loaded. The server returns HTTP 409 without advancing the branch when the selected question or manifest changed, or when the current manifest disappeared. A GitHub branch-head conflict caused only by an unrelated repository edit may be retried once, but the retry captures a new head and rereads both files from that same snapshot. Choose **Reload** to replace the editor with the current repository version, or **Keep local copy** to retain the unsaved text for reference.
 
-Any valid `GET` response with a different manifest revision clears saved-revision receipts, learner-review checks, warning acknowledgements, and faculty confirmations. A failed post-save refresh keeps the current local item and marks it dirty, shows no save-success message or commit link, and adds an error explaining that the latest repository state has not been confirmed in the browser. A failed post-attestation refresh does not announce the item as attested.
+Question receipts and batch choices are temporary safeguards for the current sitting. A full repository reload clears them. The confirming refresh after a page/tool write is narrower: it preserves receipts, batch membership, and exclusions only when both the manifest and question-bank revisions are unchanged, then rechecks every receipt against its question's exact saved revision. If either repository revision changed, the console clears question progress and shows an explicit reset notice. A failed post-save refresh keeps the current local item and marks it dirty, shows no save-success message or commit link, and adds an error explaining that the latest repository state has not been confirmed in the browser. A failed post-attestation refresh does not announce the item as attested or add it to the session ledger.
 
 ## Runtime and request limits
 
@@ -154,8 +156,12 @@ this request. Reload and try again."* A 409 reads as a race whether or not it is
 looked transient and went undiagnosed for a month.
 
 Attestations therefore commit to `GIT_BRANCH` and reach `GIT_BASE_BRANCH` through **one rolling pull
-request**, which the console opens on the first write and reuses thereafter. CI still gates every
-attestation, and protection on `main` is untouched.
+request**, which the server attempts to open on the first write and reuse thereafter. This is
+best-effort housekeeping performed only after the attestation commit succeeds. If GitHub cannot
+open or find the pull request, the console keeps the confirmed commit receipt and shows a
+**rolling review request needs attention** warning in the session ledger. A repository maintainer
+should then open or reuse a pull request from `GIT_BRANCH` to `GIT_BASE_BRANCH`; the attestation
+must not be repeated. CI still gates every attestation, and protection on `main` is untouched.
 
 Before each write the console **fast-forwards the attestation branch from the base branch, but only
 when the branch carries nothing of its own** (`compare(base...branch).ahead_by === 0`). This is the
@@ -175,7 +181,7 @@ the pull request. That only works if the target branch is unprotected.
 - **Attribution is server-derived, not self-asserted.** The reviewer label comes from the `ATTESTER_NAME` environment variable; any `attester` field in a request body is ignored, so a browser cannot freely edit the recorded identity. This still does not prove *which person* used the shared key — if verified per-person attribution is required, replace the shared key with institutional SSO or OAuth (or per-person keys mapped to names) before treating the label as an identity record.
 - **Framing is exact-origin only.** The built learner site sets `frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app` and intentionally omits `X-Frame-Options`, because `SAMEORIGIN` would block that named cross-origin console. There is no wildcard. A different console origin requires an explicit learner-policy change and learner redeploy; `ALLOWED_ORIGIN` and `STUDENT_SITE_URL` do not expand the framing allowlist. The faculty console itself remains non-embeddable with `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
 - **Question-bank concurrency is branch-atomic.** Every question-bank write attempt captures one branch-head Git object ID, reads both the bank and manifest from that exact snapshot, compares the manifest's normalized 40- or 64-hex object ID with the loaded value, and checks exact per-item revisions. It builds the new commit from that parent and advances the branch with a non-forced reference update. If any commit changes the branch in between, the proposed question-bank commit does not reach the branch; the server either safely retries from the new snapshot once or returns a conflict. Missing or changed manifest state also becomes a safe conflict, while other upstream failures retain their generic error handling.
-- **Audit trail:** every successful mutation is a Git commit. The interface submits one selected item at a time; attestation messages retain the server's compatible count-and-reviewer format, while a question draft-save message names its item. The Git diff records the exact changed entry. Git history is durable, but the server-derived reviewer label retains the shared-key identity limitation above.
+- **Audit trail:** every successful mutation is a Git commit. Page/tool writes and individual question actions submit one selected item; a batch submits only its visibly checked, receipt-bearing questions, and the server revalidates each one. Attestation messages retain the server's compatible count-and-reviewer format, while a question draft-save message names its item. The Git diff records the exact changed entries. Git history is durable, but the server-derived reviewer label retains the shared-key identity limitation above.
 
 ## After it's live: remove the on-site attestation tools
 

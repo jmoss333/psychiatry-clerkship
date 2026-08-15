@@ -281,6 +281,19 @@ async function githubJson(response) {
   }
 }
 
+function githubHttpsUrl(value) {
+  if (typeof value !== 'string' || !value) {
+    throw new GithubError('github_response_invalid', 502);
+  }
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'https:') throw new Error('unsafe protocol');
+    return parsed.href;
+  } catch {
+    throw new GithubError('github_response_invalid', 502);
+  }
+}
+
 function qbankSizeError() {
   return new HttpError(
     'qbank_too_large',
@@ -508,9 +521,9 @@ function createRepositoryGateway({ settings, fetchImpl }) {
     } catch {
       throw new GithubError('github_response_invalid', 502);
     }
-    if (Array.isArray(open) && open.length) {
-      const existing = open[0];
-      return typeof existing?.html_url === 'string' ? existing.html_url : null;
+    if (!Array.isArray(open)) throw new GithubError('github_response_invalid', 502);
+    if (open.length) {
+      return githubHttpsUrl(open[0]?.html_url);
     }
 
     const createResponse = await githubRequest(
@@ -532,7 +545,7 @@ function createRepositoryGateway({ settings, fetchImpl }) {
       },
     );
     const created = await githubJson(createResponse);
-    return typeof created?.html_url === 'string' ? created.html_url : null;
+    return githubHttpsUrl(created.html_url);
   }
 
   async function writeAtHead(path, value, {

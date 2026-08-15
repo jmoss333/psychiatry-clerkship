@@ -1240,6 +1240,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(page.locator('#selected-item-view')).toHaveText('Live deploy');
     await expect(page.locator('#attestation-rail-title')).toHaveText('Review → Resolve → Confirm');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await expect(page.getByRole('button', { name: 'Open learner surface' })).toBeVisible();
 
     const frame = page.locator('#learner-preview-frame');
     await expect(frame).toHaveAttribute('title', 'Live learner preview for Synthetic mood disorders page');
@@ -1273,7 +1274,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     ]) expect(previewMessageJson).not.toContain(privateValue);
   });
 
-  test('attests one page and tool, stays on each receipt, and reopens one page for re-attestation', async ({ page }) => {
+  test('attests one page and tool, keeps session receipts, and reopens one page for re-attestation', async ({ page }) => {
     const api = await installRepositoryApi(page, workflowBank());
     await unlock(page);
     await expect(page.locator('#reviewer-label')).toHaveText(SERVER_ATTESTER);
@@ -1288,12 +1289,12 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.locator('#attest-current-item').click();
     // Auto-advance (2026-08-12 efficiency pass): mse.html is still pending, so a
     // successful content attest lands there directly instead of holding on
-    // t_mood.md — #content-action-result is a console-wide banner (state.contentMessage
-    // is not scoped to the selected item), so t_mood.md's own receipt is still
-    // verified through it, the commit link, and the server-side content state below,
-    // even though the selection has already moved on.
-    await expect(page.locator('#content-action-result')).toContainText('Attested t_mood.md.');
-    await expect(page.locator('#content-action-result').getByRole('link', {
+    // t_mood.md. Its item-level receipt must not appear under the newly selected tool;
+    // the persistent sitting ledger retains the confirmed action and commit instead.
+    await expect(page.locator('#content-action-result')).toHaveCount(0);
+    await expect(page.locator('#session-action-ledger')).toContainText('Attested t_mood.md.');
+    await page.locator('#session-action-ledger summary').click();
+    await expect(page.locator('#session-action-ledger').getByRole('link', {
       name: 'View commit',
     })).toHaveAttribute('href', /^https:\/\/github\.example\/commit\/faculty-/);
     await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mental status exam tool');
@@ -1923,6 +1924,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.unroute('**/content/t_mood.md');
     await page.locator('#retry-preview').click();
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await expect(page.getByRole('button', { name: 'Open learner surface' })).toBeVisible();
     await page.locator('#review-item-selector').selectOption('question:qb_moo_901');
     await page.locator('#view-edit').click();
     await expect(page.locator('#view-edit')).toHaveAttribute('aria-pressed', 'true');
@@ -1966,11 +1968,21 @@ test.describe.serial('faculty unified attestation workspace', () => {
     // sitting's A shortcut attests the default-selected pending page and auto-advances
     // straight to the next pending content item — this fixture's two default content
     // items (t_mood.md, mse.html) are otherwise untouched by the rest of this test.
-    // No explicit focus target: unlock() just replaced the whole DOM (destroying
-    // whatever was focused in the login form), so a real browser has already reverted
-    // focus to <body> — exactly the "no form field focused" case the shortcut expects.
+    // unlock() replaced the whole DOM, so focus starts at <body> — exactly the "no form
+    // field focused" case the shortcut expects. That state is not stable, though: once
+    // the learner preview finishes loading, focus can land on #learner-preview-frame, and
+    // a key pressed while an IFRAME holds focus is delivered to THAT frame's document.
+    // The console's window-level keydown listener never sees it, so A silently does
+    // nothing, the auto-advance never happens, and the assertion below burns its timeout
+    // pointing at the wrong cause (~10% of runs). Establish the documented precondition
+    // rather than assuming it survived the preview load.
     await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mood disorders page');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.evaluate(() => {
+      if (document.activeElement && document.activeElement !== document.body) {
+        document.activeElement.blur();
+      }
+    });
     await page.keyboard.press('a');
     await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mental status exam tool');
 
@@ -1988,6 +2000,13 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.getByRole('button', { name: 'Draft preview' }).click();
     await page.locator('#review-compound').click();
     await expect(page.locator('#selected-item-identity')).toHaveText('qb_moo_902');
+    await expect(page.locator('#batch-enrollment-feedback'))
+      .toContainText('qb_moo_901 was added to this batch');
+    await page.locator('#undo-batch-enrollment').click();
+    await expect(page.locator('#batch-enrollment-feedback'))
+      .toContainText('qb_moo_901 was removed from this batch');
+    await expect(page.locator('#batch-select-qb_moo_901')).not.toBeChecked();
+    await page.locator('#batch-select-qb_moo_901').check();
 
     // ...and from here the sitting costs ONE action per draft: the advance carried
     // Draft preview forward, so the compound control is already rendered on arrival.
