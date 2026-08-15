@@ -100,6 +100,36 @@ class ValidateCurriculumTest(unittest.TestCase):
             self.assertIn("nope-one.md", r.stdout)
             self.assertIn("nope-two.md", r.stdout)
 
+    def test_rejects_a_week_missing_its_n_field_without_crashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([{"ref": "welcome.md", "kind": "read"}])
+            del cur["weeks"][0]["n"]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
+            self.assertIn("missing or non-integer", r.stdout)
+
+    def test_rejects_a_week_with_a_null_n_without_crashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([{"ref": "welcome.md", "kind": "read"}])
+            cur["weeks"][0]["n"] = None
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
+            self.assertIn("missing or non-integer", r.stdout)
+
+    def test_rejects_a_boolean_n_instead_of_treating_true_as_week_1(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([{"ref": "welcome.md", "kind": "read"}])
+            cur["weeks"][0]["n"] = True
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
+            self.assertIn("missing or non-integer", r.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

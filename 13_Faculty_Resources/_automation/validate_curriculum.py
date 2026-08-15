@@ -48,7 +48,17 @@ weeks = cur.get("weeks")
 if not isinstance(weeks, list):
     bad("weeks", "must be a list")
     weeks = []
-seen_n = [w.get("n") for w in weeks if isinstance(w, dict)]
+seen_n = []
+for idx, w in enumerate(weeks):
+    if not isinstance(w, dict):
+        continue
+    n = w.get("n")
+    # bool is a subclass of int in Python, so isinstance(True, int) is True —
+    # exclude it explicitly or a week with "n": true would silently count as week 1.
+    if isinstance(n, bool) or not isinstance(n, int):
+        bad("weeks", "week at index %d has a missing or non-integer 'n' (got %r)" % (idx, n))
+        continue
+    seen_n.append(n)
 if sorted(seen_n) != [1, 2, 3, 4, 5, 6]:
     bad("weeks", "week numbers must be exactly 1..6 with no gaps or duplicates, got %s"
         % sorted(seen_n))
