@@ -83,8 +83,8 @@ namespace rule (`check-static-site.mjs:345` hard-fails any key in `index.html` n
 | `week` | `cw_rotation_start` → `rotationWeek()`; `cw_start_week` manual override | **Reuse** |
 | `role`, `tab`, `viewWeek`, `openId`, `fromTab`, `scrollPos` | none | **New** → `cw_frontdoor_v1` |
 
-`dailyPickDay` (local date string) is added to `cw_frontdoor_v1` so the pick is stable within a day
-without recomputation.
+The daily pick needs no persisted field: it derives from the local day index, so it is already
+stable within a day and caching it would only add a staleness bug.
 
 The design marks both reads *and* tools done, whereas `cw_progress_v1` today only records "Mark as
 read" on content pages. It is extended to hold tool slugs in the same map, keyed by shipped slug —
