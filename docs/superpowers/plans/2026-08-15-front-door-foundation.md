@@ -93,11 +93,13 @@ test('localDayIndex advances by exactly one per day across a month boundary', ()
   assert.equal(localDayIndex(sep1) - localDayIndex(aug31), 1);
 });
 
-test('the local-day helpers carry no audience token', () => {
-  assert.doesNotMatch(snippet, AUDIENCE_TOKEN_RE,
-    'phase_policy.js ships to both sites — no MS3/clerkship/shelf/resident wording');
-});
 ```
+
+Deliberately **no** audience-token test here. `AUDIENCE_TOKEN_RE` bans tokens in user-visible
+*copy*, which is why the existing tests at `tests/phase-policy.test.mjs:193,200` apply it to
+`p.label` values rather than to the file. A whole-file scan could never pass — `shelfDaysUntil`
+and `cw_shelf_date` are identifiers in this very snippet — and these two helpers return a date
+string and an integer, emitting no copy at all. There is nothing for a copy ban to check.
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
@@ -1297,12 +1299,19 @@ test('one day out is singular', () => {
   assert.equal(fdExamCountdown(6, thu), '· exam in ~1 day');
 });
 
-test('the countdown says "exam", never "shelf"', () => {
+// Scoped to the RETURNED strings, not the file. AUDIENCE_TOKEN_RE bans tokens in
+// user-visible copy — tests/phase-policy.test.mjs:193,200 apply it to label values for
+// the same reason. A whole-file scan would fail on identifiers and comments that never
+// reach a reader.
+test('every countdown string the module emits is audience-neutral', () => {
   const { fdExamCountdown } = make(memStorage());
-  const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
-  assert.doesNotMatch(fdExamCountdown(6, wed), /shelf/i);
-  assert.doesNotMatch(fdState, AUDIENCE_TOKEN_RE,
-    'fd_state.js ships to both sites — no audience tokens in its copy');
+  for (let d = 0; d < 7; d += 1) {
+    for (const w of [5, 6]) {
+      const out = fdExamCountdown(w, new Date(2026, 7, 10 + d, 9, 0, 0).getTime());
+      assert.doesNotMatch(out, AUDIENCE_TOKEN_RE,
+        `fdExamCountdown(${w}) emitted an audience token: "${out}"`);
+    }
+  }
 });
 
 // ---- daily pick ---------------------------------------------------------------------
