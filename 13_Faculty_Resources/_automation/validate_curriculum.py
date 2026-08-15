@@ -93,6 +93,52 @@ for w in weeks:
             bad(label, "ref '%s' has kind '%s' but the manifest ships it as '%s'"
                 % (ref, kind, expected))
 
+# ---- library totality: every shipped slug is placed or explicitly excluded ----
+# The front-door analogue of the build's orphaned-source check. Once the sidebar is
+# gone the Library is the only browse surface, so an unplaced page is an unreachable
+# page. The exclude list keeps this a HARD failure instead of a rule that gets quietly
+# weakened for the handful of pages that genuinely are not library content.
+placed = set()
+columns = cur.get("libraryColumns")
+if not isinstance(columns, list):
+    bad("libraryColumns", "must be a list")
+    columns = []
+for col in columns:
+    if not isinstance(col, dict):
+        bad("libraryColumns", "each column must be an object")
+        continue
+    name = col.get("name") or "?"
+    refs = col.get("refs")
+    if not isinstance(refs, list):
+        bad("column %s" % name, "'refs' must be a list")
+        continue
+    for ref in refs:
+        if ref not in shipped:
+            bad("column %s" % name, "ref '%s' is not a shipped slug" % ref)
+        else:
+            placed.add(ref)
+
+excluded = set()
+exclude = cur.get("libraryExclude")
+if not isinstance(exclude, list):
+    bad("libraryExclude", "must be a list")
+    exclude = []
+for ent in exclude:
+    if not isinstance(ent, dict):
+        bad("libraryExclude", "each entry must be an object")
+        continue
+    ref = ent.get("ref")
+    if not isinstance(ent.get("reason"), str) or not ent.get("reason").strip():
+        bad("libraryExclude", "entry '%s' needs a non-empty 'reason'" % ref)
+    if ref not in shipped:
+        bad("libraryExclude", "ref '%s' is not a shipped slug" % ref)
+    else:
+        excluded.add(ref)
+
+for ref in sorted(shipped - placed - excluded):
+    bad("library", "shipped slug '%s' appears in no column and no libraryExclude entry"
+        % ref)
+
 if errs:
     print("curriculum.json INVALID — %d issue(s):" % len(errs))
     for e in errs:
@@ -100,4 +146,5 @@ if errs:
     sys.exit(1)
 
 total = sum(len(w.get("items", [])) for w in weeks if isinstance(w, dict))
-print("curriculum.json OK — 6 weeks, %d week items, all refs shipped." % total)
+print("curriculum.json OK — 6 weeks, %d week items, %d pages placed, %d excluded."
+      % (total, len(placed), len(excluded)))

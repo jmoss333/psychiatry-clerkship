@@ -84,8 +84,74 @@
       ]
     }
   ],
-  "libraryColumns": [],
-  "libraryExclude": [],
+  "libraryColumns": [
+    {
+      "name": "Interactive tools",
+      "accent": "tool",
+      "refs": [
+        "mse.html", "interview-circle.html", "sp-interview.html",
+        "communication-practice.html", "diagnostic-reasoning.html",
+        "family-systems.html", "one-patient-six-weeks.html", "capacity.html",
+        "oral.html", "violence.html", "cssrs.html", "screeners.html",
+        "withdrawal.html", "decision-aids.html", "interaction-cards.html",
+        "bfcrs.html", "reflection.html", "shelf-mode.html", "review.html",
+        "question-bank-practice.html"
+      ]
+    },
+    {
+      "name": "Acute & safety",
+      "accent": "safety",
+      "refs": [
+        "pg_suicide.md", "suicide.md", "agitation.md", "delirium.md",
+        "catatonia.md", "violence.md", "exp_consult.md", "toxidromes.md",
+        "medical_workup.md", "protocol_library.md"
+      ]
+    },
+    {
+      "name": "Core topics",
+      "accent": "topic",
+      "refs": [
+        "ddx.md", "t_mood.md", "t_psychosis.md", "t_anxiety.md",
+        "t_personality.md", "t_sud.md", "t_geri.md", "t_perinatal.md",
+        "t_neurodev.md", "t_eating.md", "t_neurocog.md", "t_somatic.md",
+        "t_sleep.md", "t_dissociative.md", "t_sexual.md", "t_impulse.md",
+        "t_adjustment.md"
+      ]
+    },
+    {
+      "name": "Clinical skills",
+      "accent": "topic",
+      "refs": [
+        "welcome.md", "orientation.md", "pg_interview.md", "pg_formulation.md",
+        "case_formulation.md", "doc_oral.md", "collateral_workflow.md",
+        "exp_tx.md", "exp_family.md", "family_modalities.md",
+        "family_playbook.md", "psychotherapy.md", "brief_psychotherapy.md",
+        "motivational_interviewing.md", "cultural_psychiatry.md",
+        "ethics_legal.md"
+      ]
+    },
+    {
+      "name": "Evidence & exam",
+      "accent": "topic",
+      "refs": [
+        "core_readings.md", "shelf.md", "osce.md", "cases.md",
+        "rapid_review.md", "reading_map.md", "anki.md", "rounds_questions.md",
+        "landmark_trials.md", "evidence_inpatient.md", "psychopharm_primer.md",
+        "med_monitoring.md", "ect_neuromodulation.md", "nutrition_metabolic.md",
+        "omm_resources.md", "book_library.md", "podcast_library.md",
+        "cotw_index.md"
+      ]
+    }
+  ],
+  "libraryExclude": [
+    { "ref": "feedback.html", "reason": "a feedback form, not library content — reachable from the header" },
+    { "ref": "week1.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
+    { "ref": "week2.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
+    { "ref": "week3.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
+    { "ref": "week4.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
+    { "ref": "week5.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
+    { "ref": "week6.md", "reason": "surfaced by the Path tab, which is the week browse surface" }
+  ],
   "safetyKit": [],
   "roles": { "ms3": [], "resident": [] },
   "synonyms": {
