@@ -1149,7 +1149,18 @@ Invoke the `topic-meta-author` skill and have it add `safetySteps` + `safetyDoc`
 
 `high` (rather than `moderate`) puts capacity at the same tier as the other four kit pages. `validate_topic_meta.py` requires a high-risk page to carry non-empty `evidenceIds` plus `facultyReview.status` and `lastReviewed`; `appelbaum-grisso-1988-capacity` is an existing entry in `evidence_registry.json` and is the canonical source for the four-abilities model this page's `points` already teach. Do not invent an evidence id — if that one is ever absent, stop and report rather than substituting another.
 
-`toxidromes.md`:
+`t_sud.md` — **not `toxidromes.md`.** The source design labelled this protocol's page "Acute & Safety / Toxidromes", but that path was invented for the prototype. This repo's `toxidromes.md` is
+`04_Acute_and_Safety/Toxidromes/hyperthermia_toxidromes_inpatient_teaching.md` — NMS, serotonin
+syndrome, anticholinergic, and malignant catatonia — with **zero** mentions of CIWA, COWS,
+thiamine, or withdrawal. Routing the withdrawal protocol there would have opened a hyperthermia
+page from a kit row labelled "Withdrawal — CIWA-Ar / COWS".
+
+The correct page is `t_sud.md` (`03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md`),
+whose own `tldr` reads *"alcohol withdrawal is benzodiazepines (CIWA-guided) plus thiamine before
+glucose"* and whose source mentions CIWA/COWS/thiamine 16 times. It is already `safetyLevel: high`,
+`facultyReview: reviewed` (2026-07-01), with a non-empty `evidenceIds` — so this correction needs
+no new attestation.
+
 ```json
 "safetySteps": [
   "Alcohol: CIWA-Ar q4h while symptomatic",
@@ -1160,6 +1171,9 @@ Invoke the `topic-meta-author` skill and have it add `safetySteps` + `safetyDoc`
 "safetyDoc": "scores with times, protocol triggered, and cumulative benzodiazepine dose."
 ```
 
+`toxidromes.md` receives no `safetySteps` in this plan — the design's five-protocol kit has no
+hyperthermia entry.
+
 Then fill `safetyKit` in `curriculum.json`, in the handoff's kit order:
 
 ```json
@@ -1167,10 +1181,27 @@ Then fill `safetyKit` in `curriculum.json`, in the handoff's kit order:
     { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan" },
     { "ref": "agitation.md", "sub": "Verbal first · PO before IM" },
     { "ref": "exp_consult.md", "sub": "Choice · understand · appreciate · reason" },
-    { "ref": "toxidromes.md", "sub": "Score · thiamine · escalate" },
+    { "ref": "t_sud.md", "sub": "Score · thiamine · escalate" },
     { "ref": "delirium.md", "sub": "Vitals · meds · CAM" }
   ],
 ```
+
+- [ ] **Step 4b: Wire `validate_curriculum.py` into the build gate**
+
+The spec promises "a ref to an unshipped slug fails the **build**, not the browser." That is only
+true if the validator actually runs. Add it to the validator block in
+`13_Faculty_Resources/_automation/site_build/build_and_check.sh` (lines 33-39), alongside
+`validate_topic_meta.py` and the others:
+
+```bash
+python3 "$LIB/13_Faculty_Resources/_automation/validate_curriculum.py"
+```
+
+`build_and_check.sh` **is** each site's Netlify build command and is also what CI invokes, so this
+one line covers both. Deliberately do **not** edit `.github/workflows/*.yml` to achieve it: any
+workflow edit trips a CI-only double pin in
+`13_Faculty_Resources/_automation/maintenance/validate_scheduled_workflows.py`
+(`EXPECTED_STEP_INVENTORIES` plus a SHA-256 contract digest) that the local battery never runs.
 
 - [ ] **Step 5: Run every affected validator and test**
 
