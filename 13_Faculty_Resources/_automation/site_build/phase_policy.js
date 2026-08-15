@@ -21,3 +21,18 @@ function phasePolicy(nowMs){
   if(days<=28)return {phase:'interleave',daysToShelf:days,newPerDayCap:12,label:'Exam in '+days+' days — mix topics as you practice.'};
   return {phase:'encode',daysToShelf:days,newPerDayCap:12,label:'Exam in '+days+' days — steady building.'};
 }
+/* localDayStr()/localDayIndex() are the front door's day boundary, and they live here beside
+   shelfDaysUntil() for the same reason the countdown and the phase chip do: a second
+   day-boundary implementation is precisely the drift this file exists to prevent. The streak,
+   the daily pick, and the exam countdown must roll over at the same instant.
+   Both take nowMs explicitly so no test ever monkeypatches Date. Neither parses a string, so
+   neither needs the 'T00:00:00' idiom above. */
+function localDayStr(nowMs){
+  var d=new Date(nowMs||Date.now());
+  var m=d.getMonth()+1, day=d.getDate();
+  return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(day<10?'0':'')+day;
+}
+function localDayIndex(nowMs){
+  var d=new Date(nowMs||Date.now());
+  return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);
+}

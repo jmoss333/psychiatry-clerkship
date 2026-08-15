@@ -25,7 +25,12 @@ function memStorage() {
 // eslint-disable-next-line no-new-func
 const make = new Function('localStorage', `
   ${snippet}
-  return { shelfDaysUntil: shelfDaysUntil, phasePolicy: phasePolicy };
+  return {
+    shelfDaysUntil: shelfDaysUntil,
+    phasePolicy: phasePolicy,
+    localDayStr: localDayStr,
+    localDayIndex: localDayIndex,
+  };
 `);
 
 // Same audience-token ban tests/shell-copy.test.mjs applies to shared shell copy — this
@@ -205,4 +210,42 @@ test('phasePolicy silently falls back to "unset" if localStorage throws — no t
   let p;
   assert.doesNotThrow(() => { p = phasePolicy(NOW_MS); });
   assert.equal(p.phase, 'unset');
+});
+
+// ---- local-day helpers (front door day boundary) ------------------------------------
+// Constructed with new Date(y, m, d, h, mi) — LOCAL construction on both sides of every
+// assertion, the same timezone-robustness technique the shelfDaysUntil tests above use.
+
+test('localDayStr returns the local calendar date, zero-padded', () => {
+  const { localDayStr } = make(memStorage());
+  assert.equal(localDayStr(new Date(2026, 0, 5, 12, 0, 0).getTime()), '2026-01-05');
+  assert.equal(localDayStr(new Date(2026, 10, 30, 12, 0, 0).getTime()), '2026-11-30');
+});
+
+test('localDayStr does not roll over early in the evening (the UTC bug)', () => {
+  const { localDayStr } = make(memStorage());
+  // 23:30 local. new Date().toISOString().slice(0,10) reports the NEXT day here in every
+  // zone west of UTC — that is the prototype defect this helper replaces.
+  assert.equal(localDayStr(new Date(2026, 7, 15, 23, 30, 0).getTime()), '2026-08-15');
+});
+
+test('localDayIndex is constant across a single local day', () => {
+  const { localDayIndex } = make(memStorage());
+  const early = new Date(2026, 7, 15, 0, 5, 0).getTime();
+  const late = new Date(2026, 7, 15, 23, 55, 0).getTime();
+  assert.equal(localDayIndex(early), localDayIndex(late));
+});
+
+test('localDayIndex advances by exactly one across local midnight', () => {
+  const { localDayIndex } = make(memStorage());
+  const before = new Date(2026, 7, 15, 23, 59, 0).getTime();
+  const after = new Date(2026, 7, 16, 0, 1, 0).getTime();
+  assert.equal(localDayIndex(after) - localDayIndex(before), 1);
+});
+
+test('localDayIndex advances by exactly one per day across a month boundary', () => {
+  const { localDayIndex } = make(memStorage());
+  const aug31 = new Date(2026, 7, 31, 9, 0, 0).getTime();
+  const sep1 = new Date(2026, 8, 1, 9, 0, 0).getTime();
+  assert.equal(localDayIndex(sep1) - localDayIndex(aug31), 1);
 });
