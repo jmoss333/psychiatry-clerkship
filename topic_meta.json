@@ -207,9 +207,10 @@
    "guardedness_privacy_001"
   ],
   "safetySteps": [
-   "Vitals and fingerstick glucose first; then find the driver — hypoglycemia, hypoxia, delirium, withdrawal, akathisia, pain",
-   "Verbal de-escalation first — respect space, one voice, offer choices",
-   "Offer PO before any IM — not a benzodiazepine in delirium or an older adult unless alcohol/benzo withdrawal; IM only for imminent danger",
+   "Verbal de-escalation while someone checks vitals and a fingerstick glucose",
+   "Find the driver — hypoglycemia, hypoxia, delirium, withdrawal, akathisia, pain — it changes the treatment",
+   "Offer PO before any IM — not a benzodiazepine in delirium or an older adult unless alcohol/benzo withdrawal",
+   "IM only for imminent danger to self or others",
    "Debrief the patient and the team afterward"
   ],
   "safetyDoc": "the behavior observed, least-restrictive steps tried, medication response, and patient debrief.",

@@ -1121,21 +1121,32 @@ Invoke the `topic-meta-author` skill and have it add `safetySteps` + `safetyDoc`
 `agitation.md`:
 ```json
 "safetySteps": [
-  "Vitals and fingerstick glucose first; then find the driver — hypoglycemia, hypoxia, delirium, withdrawal, akathisia, pain",
-  "Verbal de-escalation first — respect space, one voice, offer choices",
-  "Offer PO before any IM — not a benzodiazepine in delirium or an older adult unless alcohol/benzo withdrawal; IM only for imminent danger",
+  "Verbal de-escalation while someone checks vitals and a fingerstick glucose",
+  "Find the driver — hypoglycemia, hypoxia, delirium, withdrawal, akathisia, pain — it changes the treatment",
+  "Offer PO before any IM — not a benzodiazepine in delirium or an older adult unless alcohol/benzo withdrawal",
+  "IM only for imminent danger to self or others",
   "Debrief the patient and the team afterward"
 ],
 "safetyDoc": "the behavior observed, least-restrictive steps tried, medication response, and patient debrief."
 ```
 
-The agitation kit lands on **four** steps, not the handoff's five. `safetySteps` caps at five, and
-the page's own source (`agitation_restraint_inpatient_teaching.md`) and its `cant` field require two
-things the handoff's list omitted: vitals + fingerstick glucose (the sibling delirium card already
-leads with glucose), and a benzodiazepine guardrail. Step 1 absorbs the vitals/glucose opener, and
-the separate PO and IM steps merge to make room for the guardrail. The **withdrawal carve-out is
-load-bearing** — benzodiazepines *are* the treatment for alcohol/benzo withdrawal, so a flat "no
-benzodiazepines" would itself be a clinical error.
+The agitation kit keeps the handoff's five steps but rewrites three of them. The page's own source
+(`agitation_restraint_inpatient_teaching.md`) and its `cant` field require two things the handoff's
+list omitted: vitals + fingerstick glucose (the sibling delirium card already leads with glucose),
+and a benzodiazepine guardrail. The **withdrawal carve-out is load-bearing** — benzodiazepines *are*
+the treatment for alcohol/benzo withdrawal, so a flat "no benzodiazepines" would itself be a
+clinical error, and `t_sud.md` in this same kit prescribes them.
+
+Two drafting rules came out of review and bind any future edit to this array:
+
+- **No step claims primacy over another when the two are concurrent.** An earlier draft opened
+  "Vitals and fingerstick glucose first" above "Verbal de-escalation first", which reads as *fetch a
+  glucometer before you speak* — wrong and unsafe. Reordering would have implied the opposite error
+  (de-escalation must finish before anyone checks a glucose). Step 1 therefore states the
+  concurrency outright and no step says "first".
+- **Density is itself a hazard on a card read at 2am.** An earlier draft merged PO route, the
+  delirium/older-adult guardrail, the withdrawal carve-out, and the IM threshold into one line —
+  four decisions in one step. Five clear steps beat four dense ones and stay inside the cap.
 
 `delirium.md`:
 ```json

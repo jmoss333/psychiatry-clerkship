@@ -27,14 +27,18 @@ build. The guard therefore reasons about the union of three enumerable sets:
      systems_medlegal.md, supervision_teaching.md, canon_200.md,
      cl_reference.md). Also read from source, not restated.
 
-WHAT IT DOES NOT COVER: the case-of-the-week pages. resident_section.py builds
-cotw_<date>_<topic>_{ms3,res}.md by comprehension over cotw_registry.json, so
-their slugs change every time a case is published. Requiring a curriculum.json
-entry per week's case would make publishing a case a curriculum edit, so they
-are deliberately outside the guard — as are non-page build outputs (media,
-.pack.json sidecars, index.html). A new *durable* page that is neither in the
-manifest nor in the two extras lists above is likewise invisible here; register
-it in site_manifest.json, which is the contract this guard leans on.
+WHAT IT DOES NOT COVER — this is a DECISION, not an oversight; do not "fix" it.
+The case-of-the-week pages are outside the guard on purpose. resident_section.py
+builds cotw_<date>_<topic>_{ms3,res}.md by comprehension over cotw_registry.json,
+so their slugs change every time a case is published. Folding them in would mean
+publishing a teaching case — a purely editorial act — also required an edit to
+curriculum.json, and would fail the build until someone made it. That tradeoff
+was weighed and declined. Also outside: non-page build outputs (media,
+.pack.json sidecars, index.html).
+
+A new *durable* page in none of the three sets above is likewise invisible here.
+Registering it in site_manifest.json is what brings it under the rule, and is
+the intended route.
 
 Exits non-zero and prints every violation.
 Usage:  python3 validate_curriculum.py [curriculum.json] [site_manifest.json]
