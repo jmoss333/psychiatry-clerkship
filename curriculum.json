@@ -156,7 +156,7 @@
     { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan" },
     { "ref": "agitation.md", "sub": "Verbal first · PO before IM" },
     { "ref": "exp_consult.md", "sub": "Choice · understand · appreciate · reason" },
-    { "ref": "toxidromes.md", "sub": "Score · thiamine · escalate" },
+    { "ref": "t_sud.md", "sub": "Score · thiamine · escalate" },
     { "ref": "delirium.md", "sub": "Vitals · meds · CAM" }
   ],
   "roles": { "ms3": [], "resident": [] },

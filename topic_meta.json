@@ -776,6 +776,13 @@
   "communicationCases": [
    "medication_ambivalence_001"
   ],
+  "safetySteps": [
+   "Alcohol: CIWA-Ar q4h while symptomatic",
+   "Thiamine before any glucose",
+   "CIWA ≥ 15 or seizure history → escalate protocol",
+   "Opioid: COWS to time buprenorphine induction"
+  ],
+  "safetyDoc": "scores with times, protocol triggered, and cumulative benzodiazepine dose.",
   "safetyLevel": "high",
   "facultyReview": {
    "status": "reviewed",
@@ -5310,13 +5317,6 @@
    "Malignant hyperthermia"
   ],
   "firstMove": "Stop the likely offending agent, support and cool aggressively, send a CK, and rule out infection/heat stroke — then discriminate by reflexes and skin.",
-  "safetySteps": [
-   "Alcohol: CIWA-Ar q4h while symptomatic",
-   "Thiamine before any glucose",
-   "CIWA ≥ 15 or seizure history → escalate protocol",
-   "Opioid: COWS to time buprenorphine induction"
-  ],
-  "safetyDoc": "scores with times, protocol triggered, and cumulative benzodiazepine dose.",
   "safetyLevel": "high",
   "workflowModes": [
    "ward",
