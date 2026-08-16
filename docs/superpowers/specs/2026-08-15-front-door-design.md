@@ -137,7 +137,12 @@ Two consequences for the handoff's copy:
   stored `cw_shelf_date` governs whenever it is set, read through `shelfDaysUntil()` (§2.3) so
   the countdown and the phase chip cannot disagree; with no stored date the fallback anchors to
   a fixed point on the rotation grid — the Friday of week 6 — which falls by exactly one per day.
-  Past the exam the countdown is empty rather than negative or wrapped.
+  Past the exam the countdown is empty rather than negative or wrapped. **This fallback assumes
+  `cw_rotation_start` is Monday-aligned** (rotations always begin on a Monday, confirmed by the
+  repo owner, 2026-08-15). Plan 2's first-run wizard is the only place that *writes*
+  `cw_rotation_start` for a new student, so it must write a Monday-aligned date; a non-Monday
+  value would reproduce the same drift the wall-calendar formula had — the countdown rising as
+  time advances instead of falling.
 - Brand and role strings — the header wordmark and the step-1 role list — are **build-injected per
   site** rather than literal, joining the existing per-site role lists from §2.5.
 

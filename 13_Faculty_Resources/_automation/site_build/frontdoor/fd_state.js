@@ -45,7 +45,13 @@ function fdSave(o){
    day. idx is the day's offset from Monday (Mon=0 … Sun=6); the exam sits at idx 4 of week 6.
 
    Once the exam is behind us there is nothing to count down to, so we return '' rather than a
-   negative day count or a wrapped-around next Friday. */
+   negative day count or a wrapped-around next Friday.
+
+   The no-stored-date fallback assumes cw_rotation_start is Monday-aligned — idx above is only a
+   true offset-from-Monday if the rotation actually started on one. This holds because rotations
+   always begin on a Monday (confirmed by the repo owner, 2026-08-15). If a non-Monday
+   cw_rotation_start were ever written, the fallback would drift: the countdown would rise as
+   time advances rather than fall, the same failure mode the wall-calendar formula above had. */
 function fdExamCountdown(week, nowMs){
   if(week!==5&&week!==6) return '';
   var stored=null;

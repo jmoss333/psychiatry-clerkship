@@ -138,6 +138,10 @@ function daysFrom(out) {
   return Number(/~(\d+) day/.exec(out)[1]);
 }
 
+// This is also the pin for the Monday-alignment assumption documented on fdExamCountdown:
+// WEEK_MON is a real Monday, so the sweep below only holds because rotations always start on
+// one. A non-Monday cw_rotation_start would desync week/idx and reopen the rising-countdown /
+// phantom-next-exam bug this test (and the '' entries in the weekday table above) pins shut.
 test('the countdown never increases as time advances one day at a time', () => {
   const { fdExamCountdown } = make(memStorage());
   let prev = Infinity;
