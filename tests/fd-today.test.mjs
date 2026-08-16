@@ -1,0 +1,193 @@
+// Contract for the Today renderer. Evaluates the real snippet body via new Function, following
+// tests/fd-data.test.mjs and tests/fd-shell.test.mjs. Concatenated in the same dependency order
+// inject_shared_snippets() uses on the built page: phase_policy.js (localDayIndex) -> fd_state.js
+// (fdDailyPick/fdExamCountdown/fdRingStep, which call it) -> fd_data.js (the join layer) ->
+// fd_today.js.
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import test from 'node:test';
+
+const BUILD = '../13_Faculty_Resources/_automation/site_build';
+const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
+const todaySrc = read('frontdoor/fd_today.js');
+
+// eslint-disable-next-line no-new-func
+const make = new Function(`
+  ${read('phase_policy.js')}
+  ${read('frontdoor/fd_state.js')}
+  ${read('frontdoor/fd_data.js')}
+  ${todaySrc}
+  return { fdTodayProgress: fdTodayProgress, fdToday: fdToday, fdBuildIndex: fdBuildIndex,
+           fdItemsForWeek: fdItemsForWeek, fdLibraryOnlyReads: fdLibraryOnlyReads };
+`);
+const F = make();
+
+const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
+
+// ---- pure progress arithmetic -----------------------------------------------------
+
+const ITEMS = [{ ref: 'a.md' }, { ref: 'b.md' }, { ref: 'c.md' }];
+
+test('progress is zero and safe on an empty week', () => {
+  const p = F.fdTodayProgress([], {});
+  assert.deepEqual(p, { done: 0, total: 0, pct: 0, next: null },
+    'an empty week must not divide by zero');
+});
+
+test('pct rounds rather than truncating', () => {
+  assert.equal(F.fdTodayProgress(ITEMS, { 'a.md': true }).pct, 33);
+  assert.equal(F.fdTodayProgress(ITEMS, { 'a.md': true, 'b.md': true }).pct, 67);
+});
+
+test('next is the first not-done item, skipping earlier done ones', () => {
+  assert.equal(F.fdTodayProgress(ITEMS, { 'a.md': true }).next.ref, 'b.md');
+  assert.equal(F.fdTodayProgress(ITEMS, { 'b.md': true }).next.ref, 'a.md',
+    'a done item mid-list must not become next');
+});
+
+test('next is null and pct 100 when the week is complete', () => {
+  const p = F.fdTodayProgress(ITEMS, { 'a.md': true, 'b.md': true, 'c.md': true });
+  assert.equal(p.next, null);
+  assert.equal(p.pct, 100);
+});
+
+test('a done map naming items outside the week does not inflate the count', () => {
+  assert.equal(F.fdTodayProgress(ITEMS, { 'z.md': true }).done, 0);
+});
+
+// ---- rendering ----------------------------------------------------------------------
+
+// Two week items (one read, one tool) so both the ring/list AND the quick-tools rail have
+// something real to draw on; b.md sits in a library column but no week, making it the daily
+// pick's only candidate.
+const FIX_CUR = {
+  weeks: [
+    { n: 1, title: 'Foundations', theme: 'Orientation', items: [{ ref: 'a.md', kind: 'read' }, { ref: 't.html', kind: 'tool' }] },
+    { n: 2, title: 'W2', theme: 'T2', items: [] },
+    { n: 3, title: 'W3', theme: 'T3', items: [] },
+    { n: 4, title: 'W4', theme: 'T4', items: [] },
+    { n: 5, title: 'W5', theme: 'T5', items: [] },
+    { n: 6, title: 'W6', theme: 'T6', items: [] },
+  ],
+  libraryColumns: [{ name: 'Col', accent: 'topic', refs: ['a.md', 'b.md', 't.html'] }],
+  libraryExclude: [],
+  safetyKit: [{ ref: 'a.md', sub: 'Sub line' }],
+  roles: { ms3: [], resident: [] },
+  synonyms: {},
+};
+const FIX_META = {
+  'a.md': { read: 6, tldr: 'Summary A', points: ['p1'], facultyReview: { status: 'reviewed' } },
+  'b.md': { read: 3, tldr: 'Summary B' },
+};
+const FIX_TOOLS = { tools: [{ file: 't.html', title: 'Tool T', category: 'acute-safety', riskLevel: 'high' }] };
+const FIX_MAN = {
+  tools: [['src/t.html', 't.html', 'Tool T']],
+  md: [['src/a.md', 'a.md', 'Page A'], ['src/b.md', 'b.md', 'Page B']],
+};
+const IDX = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
+
+const BASE_STATE = { week: 1, role: 'there', done: {}, streak: 0, desk: true, ringPct: 50,
+  nowMs: new Date(2026, 7, 10, 9, 0, 0).getTime() }; // Monday, morning
+const s = (over) => Object.assign({}, BASE_STATE, over);
+
+test('the greeting varies by time of day, derived from state.nowMs', () => {
+  const morning = new Date(2026, 7, 10, 9, 0, 0).getTime();
+  const afternoon = new Date(2026, 7, 10, 14, 0, 0).getTime();
+  const evening = new Date(2026, 7, 10, 20, 0, 0).getTime();
+  assert.match(F.fdToday(IDX, s({ nowMs: morning })), /Morning, there —/);
+  assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), /Afternoon, there —/);
+  assert.match(F.fdToday(IDX, s({ nowMs: evening })), /Evening, there —/);
+});
+
+test('the week-complete kicker appears only at 100%', () => {
+  const partial = F.fdToday(IDX, s({ done: { 'a.md': true } }));
+  assert.doesNotMatch(partial, /is-complete/);
+  assert.match(partial, /Continue · Week 1/);
+  const complete = F.fdToday(IDX, s({ done: { 'a.md': true, 't.html': true } }));
+  assert.match(complete, /fd-continue__kicker is-complete/);
+  assert.match(complete, /Week 1 complete/);
+});
+
+test('a done item carries .is-done on both the check and the title', () => {
+  const html = F.fdToday(IDX, s({ done: { 'a.md': true } }));
+  assert.match(html, /class="fd-check is-done" data-fd-toggle="a\.md"/);
+  assert.match(html, /class="fd-row__title is-done">Page A</);
+});
+
+test('an undone item carries neither', () => {
+  const html = F.fdToday(IDX, s({ done: {} }));
+  assert.match(html, /class="fd-check" data-fd-toggle="a\.md"/);
+  assert.match(html, /class="fd-row__title">Page A</);
+});
+
+test('the daily pick is omitted once every library-only read is done', () => {
+  const withPick = F.fdToday(IDX, s({ done: {} }));
+  assert.match(withPick, /fd-pick/);
+  assert.match(withPick, /Page B/);
+  const noPick = F.fdToday(IDX, s({ done: { 'b.md': true } }));
+  assert.doesNotMatch(noPick, /fd-pick/);
+});
+
+test('quick tools render as a sticky rail on desktop and pill chips on mobile', () => {
+  const desk = F.fdToday(IDX, s({ desk: true }));
+  assert.match(desk, /fd-rail/);
+  assert.match(desk, /fd-kitcard/, 'the safety kit only renders in the desktop rail');
+  assert.doesNotMatch(desk, /fd-quicktools--pills/);
+  const mobile = F.fdToday(IDX, s({ desk: false }));
+  assert.match(mobile, /fd-quicktools--pills/);
+  assert.doesNotMatch(mobile, /fd-rail/);
+  assert.doesNotMatch(mobile, /fd-kitcard/, 'the rail-only safety kit must not leak onto mobile');
+});
+
+test('no week set renders the setup CTA instead of the continue card', () => {
+  const html = F.fdToday(IDX, s({ week: null }));
+  assert.match(html, /fd-setupcta/);
+  assert.doesNotMatch(html, /fd-continue"/);
+  assert.match(html, /browsing — no week set/);
+});
+
+test('the streak suffix appears at 2+ days and is omitted below that', () => {
+  assert.doesNotMatch(F.fdToday(IDX, s({ streak: 1 })), /days in a row/);
+  assert.doesNotMatch(F.fdToday(IDX, s({ streak: 0 })), /days in a row/);
+  assert.match(F.fdToday(IDX, s({ streak: 2 })), /2 days in a row/);
+});
+
+test('every interpolated title is escaped', () => {
+  const evilCur = JSON.parse(JSON.stringify(FIX_CUR));
+  evilCur.weeks[0].items = [{ ref: 'evil.md', kind: 'read' }];
+  evilCur.libraryColumns[0].refs.push('evil.md');
+  const evilMeta = Object.assign({}, FIX_META, {
+    'evil.md': { read: 2, tldr: 'x' },
+  });
+  const evilMan = {
+    tools: FIX_MAN.tools,
+    md: FIX_MAN.md.concat([['src/evil.md', 'evil.md', '<img src=x onerror=1>']]),
+  };
+  const evilIdx = F.fdBuildIndex(evilCur, evilMeta, FIX_TOOLS, evilMan);
+  const html = F.fdToday(evilIdx, s({ done: {} }));
+  assert.doesNotMatch(html, /<img/);
+});
+
+test('no rendered string carries an audience-specific token', () => {
+  const html = F.fdToday(IDX, s({}))
+    + F.fdToday(IDX, s({ week: null }))
+    + F.fdToday(IDX, s({ desk: false }));
+  assert.doesNotMatch(html, AUDIENCE_TOKEN_RE);
+});
+
+// ---- scope pin: due row / capture triage are NOT this task's job --------------------
+//
+// The design doc's decision table marks both "Port, prominent", but frontdoor.css has no rules
+// for either and neither appears in the prototype's Today section -- they read from runtime
+// stores outside the index this renderer is pure over. Plan 3 ports them during wiring. Pinned
+// here (not just in a comment) so a later edit that reaches for storage to "finish" this
+// surface fails loudly instead of silently.
+test('fd_today.js touches no DOM, storage, or clock', () => {
+  assert.doesNotMatch(todaySrc, /localStorage\.|document\.|window\.|Date\.now\(\)/,
+    'fd_today.js must stay a pure function of (index, state)');
+});
+
+test('no rendered output carries a due-row or capture-triage surface', () => {
+  const html = F.fdToday(IDX, s({})) + F.fdToday(IDX, s({ week: null })) + F.fdToday(IDX, s({ desk: false }));
+  assert.doesNotMatch(html, /fd-due|fd-capture|data-fd-due|data-fd-capture/i);
+});

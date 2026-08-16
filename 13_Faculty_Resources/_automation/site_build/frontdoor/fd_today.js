@@ -1,0 +1,244 @@
+/* Today -- greeting, Continue card + ring, this-week list, daily pick, and the desktop
+   quick-tools/safety rails (mobile: quick tools as pill chips, rails dropped).
+
+   Pure: no DOM, no browser storage, no reading the system clock directly. "Now" arrives as
+   state.nowMs so the greeting and the exam countdown are testable without depending on when the
+   test happens to run -- see tests/fd-today.test.mjs. Injected via /*__FD_TODAY__*\/ once a
+   later plan registers the marker (see SNIPPET_MARKERS in common.py) -- this task does not
+   register it. ES5 only: var/function, no const/let/arrow functions/template literals --
+   matches the other frontdoor/ modules.
+
+   Scope note for whoever reads this next to the design doc: the due row (SRS due counts) and
+   capture triage (the ward-capture note list) are NOT rendered here even though the design
+   doc's decision table (Sec 1) marks both "Port, prominent". frontdoor.css has no styling rules
+   for either -- neither appears anywhere in Front-Door-Hi-Fi-v2.dc.html's Today section either,
+   so there was never a class contract or a prototype structure to build against. They also read
+   from runtime stores (the spaced-rotation review queue and the ward-note capture list) that sit
+   outside the curriculum/topic_meta item index every Plan 2 renderer (this one included) is a
+   pure function over. This is a scope correction made before this task was implemented, not an
+   omission: the existing shell markup for both moves across and gets restyled onto --fd-*
+   tokens during Plan 3's wiring, where those stores are actually readable.
+
+   Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
+   MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. The exam countdown comes verbatim from
+   fdExamCountdown() (fd_state.js) rather than being reworded here, so this file never spells
+   "Exam" itself. */
+
+var FD_TODAY_DAYNAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/* Pure progress arithmetic, split out because it is what the ring, the "X of Y done" label and the
+   week-complete state all read -- three surfaces that must never disagree. */
+function fdTodayProgress(items, doneMap){
+  var done=0, next=null, d=doneMap||{}, list=items||[];
+  for(var i=0;i<list.length;i++){
+    if(d[list[i].ref]) done++;
+    else if(!next) next=list[i];
+  }
+  return { done: done, total: list.length, pct: list.length?Math.round(done*100/list.length):0, next: next };
+}
+
+function fdFindWeek(index, n){
+  var weeks=(index&&index.weeks)||[];
+  for(var i=0;i<weeks.length;i++){ if(weeks[i].n===n) return weeks[i]; }
+  return null;
+}
+
+/* Shared week-item row -- CLASS-INVENTORY's Shared Components section (.fd-row, .fd-check,
+   .fd-chip, ...). The checkmark glyph is ALWAYS emitted; .fd-check's CSS toggles its colour
+   (transparent vs filled) rather than the markup toggling the glyph itself, so a screenshot at
+   any state still has the character to colour. is-just-done is never applied here -- it is a
+   transient "the user just clicked this" flag with no field in this renderer's state shape, and
+   belongs to the DOM-side click handler, not this pure render. idx staggers the fade-in the
+   design specifies (35ms per row); frontdoor.css's .fd-row animation has no built-in stagger, so
+   the delay is the one non-colour inline style this row carries, same precedent as fd_shell.js's
+   grouping spans. */
+function fdRow(it, idx, doneMap){
+  var on=!!(doneMap||{})[it.ref];
+  var titleCls=on?'fd-row__title is-done':'fd-row__title';
+  var checkCls=on?'fd-check is-done':'fd-check';
+  var typeCls=(it.kind==='tool')?'fd-chip is-tool':'fd-chip';
+  var typeLabel=(it.kind==='tool')?'tool':'read';
+  var minLabel=(it.kind!=='tool'&&typeof it.minutes==='number')?(it.minutes+' min'):'';
+  return '<div class="fd-row" style="animation-delay:'+(idx*35)+'ms">'+
+    '<button type="button" class="'+checkCls+'" data-fd-toggle="'+fdEsc(it.ref)+'" title="Mark done">'+
+      '✓</button>'+
+    '<button type="button" class="fd-row__open" data-fd-open="'+fdEsc(it.ref)+'">'+
+      '<span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+
+      '<span class="fd-row__meta">'+
+        '<span class="'+typeCls+'">'+typeLabel+'</span>'+
+        '<span class="fd-row__min">'+fdEsc(minLabel)+'</span>'+
+      '</span>'+
+    '</button>'+
+  '</div>';
+}
+
+/* The Continue card. When the week is finished (progress.next is null but the week had items)
+   the button re-targets to a preview of next week instead of an item, so it carries data-fd-tab
+   + data-fd-week together rather than data-fd-open -- both are Task 3's existing attributes,
+   reused in combination rather than inventing a new one; neither is used alone for this button so
+   there is no collision with the setup wizard's plain data-fd-week or the tab row's plain
+   data-fd-tab. Math.min(6, week+1) matches the prototype's own formula, quirk included: at week 6
+   it previews week 6 again (there is no week 7) -- not fixed here since it is not called out as a
+   deviation and the design's behaviour, absent such a note, is the spec. */
+function fdContinue(state, wk, progress){
+  var isComplete=progress.total>0&&progress.done===progress.total;
+  var kickerCls=isComplete?'fd-continue__kicker is-complete':'fd-continue__kicker';
+  var kickerText=isComplete?('Week '+fdEsc(state.week)+' complete'):('Continue · Week '+fdEsc(state.week));
+  var ringPct=(typeof state.ringPct==='number'&&!isNaN(state.ringPct))?state.ringPct:0;
+  var titleText, openAttrs;
+  if(progress.next){
+    titleText=progress.next.title;
+    openAttrs=' data-fd-open="'+fdEsc(progress.next.ref)+'"';
+  } else {
+    var previewN=Math.min(6, state.week+1);
+    titleText='Preview Week '+previewN;
+    openAttrs=' data-fd-tab="path" data-fd-week="'+fdEsc(previewN)+'"';
+  }
+  var done=state.done||{}, leftMin=0;
+  for(var i=0;i<wk.items.length;i++){
+    if(!done[wk.items[i].ref]&&typeof wk.items[i].minutes==='number') leftMin+=wk.items[i].minutes;
+  }
+  var leftLabel=leftMin>0?('~'+leftMin+' min left'):'';
+  return '<button type="button" class="fd-continue"'+openAttrs+'>'+
+    '<span class="fd-ring" style="--fd-ring-pct:'+ringPct+'%">'+
+      '<span class="fd-ring__inner">'+ringPct+'%</span>'+
+    '</span>'+
+    '<span>'+
+      '<span class="'+kickerCls+'">'+kickerText+'</span>'+
+      '<span class="fd-continue__title">'+fdEsc(titleText)+' →</span>'+
+    '</span>'+
+    '<span class="fd-continue__meta">'+
+      '<span class="fd-continue__count">'+progress.done+' of '+progress.total+' done</span>'+
+      '<span class="fd-continue__left">'+leftLabel+'</span>'+
+    '</span>'+
+  '</button>';
+}
+
+function fdSetupCta(){
+  return '<button type="button" class="fd-setupcta" data-fd-change-week>'+
+    '<span style="flex:1">'+
+      '<span class="fd-setupcta__kicker">30-second setup</span>'+
+      '<span class="fd-setupcta__title">Set your rotation week → get a real Today</span>'+
+    '</span>'+
+  '</button>';
+}
+
+function fdPick(item){
+  var min=(typeof item.minutes==='number')?item.minutes:0;
+  return '<button type="button" class="fd-pick" data-fd-open="'+fdEsc(item.ref)+'">'+
+    '<span class="fd-pick__dot"></span>'+
+    '<span style="flex:1;min-width:0">'+
+      '<span class="fd-pick__kicker">Daily pick · ~'+min+' min</span>'+
+      '<span class="fd-pick__title">'+fdEsc(item.title)+'</span>'+
+    '</span>'+
+  '</button>';
+}
+
+/* .fd-quicktool is the same element in the rail and in the pill row (CLASS-INVENTORY's ⚠) --
+   this is the one function that renders it, called from both branches in fdToday. */
+function fdQuickToolBtn(it){
+  return '<button type="button" class="fd-quicktool" data-fd-open="'+fdEsc(it.ref)+'">'+
+    '<span class="fd-quicktool__dot"></span>'+
+    '<span class="fd-quicktool__label">'+fdEsc(it.title)+'</span>'+
+  '</button>';
+}
+
+/* Kit cards open a protocol directly rather than the kit overview the header's Safety button
+   opens, so data-fd-safety carries the item's ref as a payload here instead of standing bare the
+   way it does on .fd-safetybtn -- same attribute, reused rather than inventing a second one. */
+function fdKitCard(k){
+  return '<button type="button" class="fd-kitcard" data-fd-safety="'+fdEsc(k.item.ref)+'">'+
+    '<span class="fd-kitcard__dot"></span>'+
+    '<span style="flex:1;min-width:0">'+
+      '<span class="fd-kitcard__title">'+fdEsc(k.item.title)+'</span>'+
+      '<span class="fd-kitcard__sub">'+fdEsc(k.sub)+'</span>'+
+    '</span>'+
+  '</button>';
+}
+
+/* Week-relevant tools first, then the rest of the library's tools (sorted by ref for
+   determinism, matching fdLibraryOnlyReads' own tie-break) fill out to 5. The prototype pins two
+   tools by an id this repo's data does not carry, so this is a re-derivation from the join index
+   rather than a port of that exact list -- CLASS-INVENTORY's ×5 cap is what is actually
+   contractual here, not the selection order past "this week's tools first". */
+function fdQuickTools(index, weekItems){
+  var out=[], seen={}, i, ref;
+  for(i=0;i<weekItems.length;i++){
+    if(weekItems[i].kind==='tool'&&!seen[weekItems[i].ref]){ out.push(weekItems[i]); seen[weekItems[i].ref]=true; }
+  }
+  if(out.length<5){
+    var all=[];
+    for(ref in index.byRef){
+      if(index.byRef[ref].kind==='tool') all.push(index.byRef[ref]);
+    }
+    all.sort(function(a,b){ return a.ref<b.ref?-1:(a.ref>b.ref?1:0); });
+    for(i=0;i<all.length&&out.length<5;i++){
+      if(!seen[all[i].ref]){ out.push(all[i]); seen[all[i].ref]=true; }
+    }
+  }
+  return out.slice(0,5);
+}
+
+function fdToday(index, state){
+  var st=state||{};
+  var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
+  var nowMs=st.nowMs;
+  var hour=new Date(nowMs).getHours();
+  var dayName=FD_TODAY_DAYNAMES[new Date(nowMs).getDay()];
+  var roleShort=st.role||'there';
+  var period=hour<12?'Morning':(hour<18?'Afternoon':'Evening');
+  var greeting=period+', '+fdEsc(roleShort)+' —';
+
+  var wk=(typeof st.week==='number'&&!isNaN(st.week))?fdFindWeek(idx, st.week):null;
+  var hasWeek=!!wk;
+  var wItems=hasWeek?fdItemsForWeek(idx, st.week):[];
+  var progress=fdTodayProgress(wItems, st.done);
+
+  var sub=hasWeek
+    ?('Week '+fdEsc(st.week)+' · '+fdEsc(wk.title)+' · '+dayName)
+    :(dayName+' · browsing — no week set');
+  if((st.streak||0)>=2) sub+=' · '+fdEsc(st.streak)+' days in a row';
+  sub+=fdExamCountdown(st.week, nowMs);
+
+  var out='<section class="fd-today">';
+  out+='<h1 class="fd-today__h1">'+greeting+'</h1>';
+  out+='<p class="fd-today__sub">'+sub+'</p>';
+  out+='<div class="fd-today__cols"><div class="fd-today__main">';
+
+  out+=hasWeek?fdContinue(st, wk, progress):fdSetupCta();
+
+  if(hasWeek){
+    out+='<div class="fd-listhead"><h2 class="fd-sectionhead">This week</h2>'+
+      '<span class="fd-listhead__theme">'+fdEsc(wk.theme)+'</span></div>';
+    out+='<div class="fd-list">';
+    for(var i=0;i<wItems.length;i++){ out+=fdRow(wItems[i], i, st.done); }
+    out+='</div>';
+  }
+
+  var daily=fdDailyPick(fdLibraryOnlyReads(idx), st.done, nowMs);
+  if(daily) out+=fdPick(daily);
+
+  var quickTools=fdQuickTools(idx, wItems);
+
+  if(!st.desk){
+    out+='<div class="fd-quicktools--pills">';
+    for(var q=0;q<quickTools.length;q++){ out+=fdQuickToolBtn(quickTools[q]); }
+    out+='</div>';
+  }
+
+  out+='</div>'; /* .fd-today__main */
+
+  if(st.desk){
+    out+='<aside class="fd-rail">';
+    out+='<div><h2 class="fd-sectionhead">Quick tools</h2>';
+    for(var q2=0;q2<quickTools.length;q2++){ out+=fdQuickToolBtn(quickTools[q2]); }
+    out+='</div>';
+    out+='<div><h2 class="fd-sectionhead">Safety kit</h2>';
+    for(var k=0;k<idx.kit.length;k++){ out+=fdKitCard(idx.kit[k]); }
+    out+='</div>';
+    out+='</aside>';
+  }
+
+  out+='</div></section>'; /* .fd-today__cols, .fd-today */
+  return out;
+}
