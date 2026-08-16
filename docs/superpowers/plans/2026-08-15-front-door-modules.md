@@ -66,6 +66,7 @@ Every other module needs an item's title, minutes, summary, and attestation. Tho
     and each `item` is `{ ref, kind, title, minutes, summary, points, attested, toolRef, risk, href }`.
     `kind` is `'read'` or `'tool'`; `minutes` is a number or `null`; `points` is an array (possibly empty); `attested` is a boolean; `toolRef` is a slug or `null`; `risk` is `'high'|'moderate'|'low'|null`; `href` is `'?page=<ref>'` or `'?tool=<ref>'`.
   - `fdItemsForWeek(index, n) -> [item]`
+  - `fdFindWeek(index, n) -> week|null` — the week object itself, or `null` for an unknown week or a malformed index. Lives here rather than in a renderer because Today and Path both need it; hoisted during Task 5's review after the two modules were found carrying byte-identical copies.
   - `fdLibraryOnlyReads(index) -> [item]` — reads belonging to no week, for the daily pick.
 
 - [ ] **Step 1: Write the failing test**
@@ -749,6 +750,7 @@ has to unwind search before the sheet."
 - Consumes: `fdEsc`, `fdItemsForWeek`, `fdLibraryOnlyReads` (Task 1); `fdDailyPick`, `fdExamCountdown`, `fdRingStep` (Plan 1's `fd_state.js`).
 - Produces:
   - `fdTodayProgress(items, doneMap) -> {done, total, pct, next}` — pure arithmetic; `next` is the first not-done item or `null`.
+  - `fdRow(item, idx, doneMap, compact) -> string` — one item row. `compact` is optional and falsy by default; Path passes `true` for its denser detail rows. Shared rather than duplicated so a future escaping change reaches both surfaces.
   - `fdToday(index, state) -> string` where `state` is `{week, role, done, streak, desk, ringPct, nowMs}`.
 
 > **The due row and capture triage are NOT part of this task.** Spec §1 ports both "prominent", and an earlier draft of this task listed them — but they render from `cw_srs_v1` and `cw_capture_v1`, runtime stores belonging to other subsystems, not from the item index every Plan 2 renderer is a pure function over. They also have no prototype markup and no `frontdoor.css` rules, because the design handoff never depicted them: they are repo features being carried forward, not design surfaces. Plan 3 ports them during wiring, where those stores are readable and the shell's existing `dueStripHtml()` / `capTriageHtml()` markup can be moved across and restyled onto `--fd-*` tokens. Do not accept `due` or `capture` in the state shape here — a parameter a renderer ignores is a trap for whoever passes it.
