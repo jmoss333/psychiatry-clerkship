@@ -1,0 +1,139 @@
+/* Path -- the six-week timeline (left column) and the selected week's detail card (right
+   column). See CLASS-INVENTORY.md section 4 and the prototype's Path section
+   (Front-Door-Hi-Fi-v2.dc.html, search "══", line 287) for the markup this ports.
+
+   Injected via /*__FD_PATH__*\/ once a later plan registers the marker (see SNIPPET_MARKERS
+   in common.py) -- this task does not register it or touch that file. ES5 only: var/function,
+   no const/let/arrow functions/template literals -- matches the other frontdoor/ modules.
+
+   Pure: no DOM, no browser storage, no clock access -- state arrives fully resolved.
+
+   state.week is the student's actual rotation week; state.viewWeek is whichever week the
+   detail card is currently showing. They differ whenever a student browses ahead or back
+   without changing their real week, so the two are read independently throughout: the
+   timeline's is-current dot state and the "you are here" flag/pill both key off state.week,
+   while the selected row (is-sel) and everything the detail card shows key off state.viewWeek.
+   With no week set (state.week is not a number) nothing in the timeline may claim to be
+   current -- the isNow guard below is false for every row in that case, though the detail
+   card still renders normally (Path is a browsing surface, reachable with no week set) and
+   "Set as my week" still offers to set one.
+
+   A row's done dot is derived from fdTodayProgress(fdItemsForWeek(index, n), state.done)
+   .pct===100 -- never from week ordering or a week-number comparison. A student can finish
+   week 4 before week 3, and the timeline has to say so truthfully (tests/fd-path.test.mjs).
+   Completion beats "current" when both would apply, matching the prototype's own
+   allDone-first branch order: a finished current week gets is-done, not is-current.
+
+   Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
+   MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. */
+
+/* Local week-metadata lookup (title/theme), distinct from fd_today.js's fdFindWeek so this
+   file stays self-contained rather than reaching into another snippet's internal helper that
+   is not part of this task's declared interface (fdEsc / fdItemsForWeek / fdTodayProgress). */
+function fdPathWeekMeta(index, n){
+  var weeks=(index&&index.weeks)||[];
+  for(var i=0;i<weeks.length;i++){ if(weeks[i].n===n) return weeks[i]; }
+  return null;
+}
+
+function fdPathDotCls(isDone, isNow){
+  if(isDone) return 'fd-dot is-done';
+  if(isNow) return 'fd-dot is-current';
+  return 'fd-dot';
+}
+
+/* One timeline row. .fd-timeline__line is emitted unconditionally on every row, including the
+   last -- frontdoor.css hides it there via :last-child, and skipping it in markup instead
+   would break the spine on any row the CSS selector does not happen to cover (CLASS-INVENTORY
+   ⚠). data-fd-week carries the row's week number, reusing the established convention rather
+   than inventing a Path-specific attribute. */
+function fdPathTimelineRow(index, w, state){
+  var items=fdItemsForWeek(index, w.n);
+  var progress=fdTodayProgress(items, state.done);
+  var isNow=(typeof state.week==='number'&&!isNaN(state.week))&&state.week===w.n;
+  var isSel=state.viewWeek===w.n;
+  var isDone=progress.total>0&&progress.pct===100;
+  var rowCls=isSel?'fd-timeline__row is-sel':'fd-timeline__row';
+  var nLabel='Week '+fdEsc(w.n)+(isNow?' · you are here':'');
+  return '<button type="button" class="'+rowCls+'" data-fd-week="'+fdEsc(w.n)+'">'+
+    '<span class="fd-timeline__gutter">'+
+      '<span class="'+fdPathDotCls(isDone, isNow)+'"></span>'+
+      '<span class="fd-timeline__line"></span>'+
+    '</span>'+
+    '<span class="fd-timeline__body">'+
+      '<span class="fd-timeline__n">'+nLabel+'</span>'+
+      '<span class="fd-timeline__title">'+fdEsc(w.title)+'</span>'+
+    '</span>'+
+    '<span class="fd-timeline__count">'+progress.done+'/'+progress.total+'</span>'+
+  '</button>';
+}
+
+/* Detail-card item row -- the compact variant of the Shared Components .fd-row (CLASS-
+   INVENTORY: ".fd-row.is-compact strips card bg/shadow/padding for the Path detail pane").
+   Same field set and same data-fd-toggle/data-fd-open attributes as fd_today.js's fdRow, kept
+   as a separate local function rather than a cross-file call: fd_today.js's fdRow has no
+   compact parameter, and this task's declared interface does not include it as a dependency. */
+function fdPathDetailRow(it, idx, doneMap){
+  var on=!!(doneMap||{})[it.ref];
+  var titleCls=on?'fd-row__title is-done':'fd-row__title';
+  var checkCls=on?'fd-check is-done':'fd-check';
+  var typeCls=(it.kind==='tool')?'fd-chip is-tool':'fd-chip';
+  var typeLabel=(it.kind==='tool')?'tool':'read';
+  var minLabel=(it.kind!=='tool'&&typeof it.minutes==='number')?(it.minutes+' min'):'';
+  return '<div class="fd-row is-compact" style="animation-delay:'+(idx*35)+'ms">'+
+    '<button type="button" class="'+checkCls+'" data-fd-toggle="'+fdEsc(it.ref)+'" title="Mark done">'+
+      '✓</button>'+
+    '<button type="button" class="fd-row__open" data-fd-open="'+fdEsc(it.ref)+'">'+
+      '<span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+
+      '<span class="fd-row__meta">'+
+        '<span class="'+typeCls+'">'+typeLabel+'</span>'+
+        '<span class="fd-row__min">'+fdEsc(minLabel)+'</span>'+
+      '</span>'+
+    '</button>'+
+  '</div>';
+}
+
+/* The detail card for whichever week state.viewWeek names. Falls back to the index's first
+   week when viewWeek is not a number (an unset/uninitialised caller) so the card always has
+   something to show -- Path is reachable with no rotation week set. */
+function fdPathDetail(index, state){
+  var idx=index||{weeks:[]};
+  var weeks=idx.weeks||[];
+  var fallbackN=weeks.length?weeks[0].n:1;
+  var viewN=(typeof state.viewWeek==='number'&&!isNaN(state.viewWeek))?state.viewWeek:fallbackN;
+  var wk=fdPathWeekMeta(idx, viewN);
+  var items=fdItemsForWeek(idx, viewN);
+  var isCurrent=(typeof state.week==='number'&&!isNaN(state.week))&&state.week===viewN;
+
+  var out='<div class="fd-detail">';
+  out+='<div class="fd-detail__head">';
+  out+='<span class="fd-eyebrow">Week '+fdEsc(viewN)+'</span>';
+  if(isCurrent) out+='<span class="fd-detail__here">you are here</span>';
+  out+='</div>';
+  out+='<h2 class="fd-detail__h2">'+fdEsc(wk?wk.title:'')+'</h2>';
+  out+='<div class="fd-detail__list">';
+  for(var i=0;i<items.length;i++){ out+=fdPathDetailRow(items[i], i, state.done); }
+  out+='</div>';
+  if(!isCurrent){
+    out+='<button type="button" class="fd-btn fd-btn--accent" data-fd-setweek="'+fdEsc(viewN)+'">'+
+      'Set as my week</button>';
+  }
+  out+='</div>';
+  return out;
+}
+
+function fdPath(index, state){
+  var st=state||{};
+  var idx=index||{weeks:[]};
+  var weeks=idx.weeks||[];
+  var out='<section class="fd-path">';
+  out+='<h1 class="fd-path__h1">The six weeks</h1>';
+  out+='<div class="fd-path__cols">';
+  out+='<div class="fd-timeline">';
+  for(var i=0;i<weeks.length;i++){ out+=fdPathTimelineRow(idx, weeks[i], st); }
+  out+='</div>';
+  out+=fdPathDetail(idx, st);
+  out+='</div>';
+  out+='</section>';
+  return out;
+}
