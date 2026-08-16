@@ -16,8 +16,14 @@
 //      design prototype. A NEW light failure fails the run; the known ones are pinned by name
 //      so they cannot quietly multiply.
 //
-// Run: node tests/fd-contrast.mjs
+// Named *.test.mjs deliberately: `node --test tests/*.test.mjs` is the glob CI already guards,
+// so this gate runs on every PR with no workflow edit. As a plain .mjs it executed nowhere and
+// recorded debt instead of blocking it.
+//
+// Run: node --test tests/fd-contrast.test.mjs
 
+import assert from 'node:assert/strict';
+import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -89,35 +95,42 @@ const LIGHT_DEBT = new Set([
   'fd-on-accent on fd-terracotta',
 ]);
 
-let failed = false;
-
 function run(label, P, debt) {
-  console.log(`\n--- ${label} (${Object.keys(P).length} tokens parsed from clinical-warm.css) ---`);
+  const problems = [];
   let accepted = 0;
   const stillFailing = new Set();
   for (const [fg, bg, min] of PAIRS) {
-    if (!P[fg]) { failed = true; console.error(`FAIL ${label}: --${fg} is not defined`); continue; }
-    if (!P[bg]) { failed = true; console.error(`FAIL ${label}: --${bg} is not defined`); continue; }
+    if (!P[fg]) { problems.push(`--${fg} is not defined`); continue; }
+    if (!P[bg]) { problems.push(`--${bg} is not defined`); continue; }
     const r = ratio(P[fg], P[bg]);
     const key = `${fg} on ${bg}`;
     if (r >= min) continue;
-    if (debt.has(key)) { accepted++; stillFailing.add(key); console.log(`debt ${key} = ${r.toFixed(2)} (min ${min}) -- inherited from the design`); continue; }
-    failed = true;
-    console.error(`FAIL ${label}: --${fg} (${P[fg]}) on --${bg} (${P[bg]}) = ${r.toFixed(2)} (min ${min})`);
+    if (debt.has(key)) {
+      accepted++; stillFailing.add(key);
+      console.log(`debt ${label}: ${key} = ${r.toFixed(2)} (min ${min}) -- inherited from the design`);
+      continue;
+    }
+    problems.push(`--${fg} (${P[fg]}) on --${bg} (${P[bg]}) = ${r.toFixed(2)} (min ${min})`);
   }
   // A pinned exception that starts passing means the palette improved -- say so, and require the
   // allowlist to be trimmed so it never drifts into covering a genuinely new regression.
   for (const key of debt) {
     if (!stillFailing.has(key)) {
-      failed = true;
-      console.error(`FAIL ${label}: "${key}" is listed as accepted debt but now PASSES -- remove it from LIGHT_DEBT`);
+      problems.push(`"${key}" is listed as accepted debt but now PASSES -- remove it from LIGHT_DEBT`);
     }
   }
   console.log(`${label}: ${PAIRS.length - accepted} enforced pairs, ${accepted} accepted as inherited debt`);
+  return problems;
 }
 
-run('LIGHT', LIGHT, LIGHT_DEBT);
-run('DARK', DARK, new Set());
+test('light front-door palette clears AA outside its pinned, design-inherited debt', () => {
+  assert.ok(Object.keys(LIGHT).length > 0, 'no --fd-* tokens parsed from the :root block');
+  const problems = run('LIGHT', LIGHT, LIGHT_DEBT);
+  assert.deepEqual(problems, [], `light palette contrast:\n  ${problems.join('\n  ')}`);
+});
 
-console.log(failed ? '\nfront-door contrast: FAILED' : '\nfront-door contrast: OK');
-process.exit(failed ? 1 : 0);
+test('dark front-door palette clears AA everywhere, with no exceptions', () => {
+  assert.ok(Object.keys(DARK).length > 0, 'no --fd-* tokens parsed from the dark block');
+  const problems = run('DARK', DARK, new Set());
+  assert.deepEqual(problems, [], `dark palette contrast:\n  ${problems.join('\n  ')}`);
+});

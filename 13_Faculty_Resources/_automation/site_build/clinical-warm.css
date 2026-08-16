@@ -51,8 +51,11 @@
   /* Derived — not in the design's 22, but required because frontdoor.css may carry no raw
    * colour of its own and because each of these has to invert for dark mode. */
   --fd-on-accent:#ffffff;         /* ink on a filled terracotta/teal/danger/success surface */
-  --fd-olive-wash:#f7f0e2;        /* "Document:" callout background */
-  --fd-olive-deep:#6f5930;        /* "Document:" callout text (--fd-olive is 4.12:1 here) */
+  --fd-olive-wash:#f7f0e2;        /* "Document:" callout background — prototype value */
+  --fd-olive-deep:#725b35;        /* "Document:" callout text — prototype value; 5.67:1 on the
+                                   * wash above. A separate token because the callout is the one
+                                   * place the design pairs an olive ground with olive text, and
+                                   * --fd-olive is a good deal lighter than the text it used. */
   --fd-ring-track:#dde8e4;        /* unfilled arc of the progress ring */
   --fd-focus:#2f6fd0;             /* :focus-visible ring */
   --fd-backdrop:rgba(51,41,35,.38);
