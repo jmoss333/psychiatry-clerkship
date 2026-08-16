@@ -36,7 +36,7 @@ All under `13_Faculty_Resources/_automation/site_build/frontdoor/`, joining `fd_
 | `fd_data.js` | Join `curriculum` + `topicMeta` + `toolRegistry` + `siteManifest` into one item index; `fdEsc` | 1 |
 | `frontdoor.css` | Layout + component CSS (tokens live in `clinical-warm.css`) | 2 |
 | `fd_shell.js` | Header, tab row, first-run wizard, keyboard map | 3 |
-| `fd_today.js` | Greeting, due row, Continue card + ring, week list, daily pick, rails | 4 |
+| `fd_today.js` | Greeting, Continue card + ring, week list, daily pick, rails | 4 |
 | `fd_path.js` | Six-week timeline + week detail card | 5 |
 | `fd_library.js` | Five-column index over every shipped page | 6 |
 | `fd_reader.js` | Article pane, week navigator rail, prev/next footer, mobile action bar | 7 |
@@ -749,7 +749,9 @@ has to unwind search before the sheet."
 - Consumes: `fdEsc`, `fdItemsForWeek`, `fdLibraryOnlyReads` (Task 1); `fdDailyPick`, `fdExamCountdown`, `fdRingStep` (Plan 1's `fd_state.js`).
 - Produces:
   - `fdTodayProgress(items, doneMap) -> {done, total, pct, next}` — pure arithmetic; `next` is the first not-done item or `null`.
-  - `fdToday(index, state) -> string` where `state` is `{week, role, done, due, streak, desk, ringPct, nowMs, capture}`.
+  - `fdToday(index, state) -> string` where `state` is `{week, role, done, streak, desk, ringPct, nowMs}`.
+
+> **The due row and capture triage are NOT part of this task.** Spec §1 ports both "prominent", and an earlier draft of this task listed them — but they render from `cw_srs_v1` and `cw_capture_v1`, runtime stores belonging to other subsystems, not from the item index every Plan 2 renderer is a pure function over. They also have no prototype markup and no `frontdoor.css` rules, because the design handoff never depicted them: they are repo features being carried forward, not design surfaces. Plan 3 ports them during wiring, where those stores are readable and the shell's existing `dueStripHtml()` / `capTriageHtml()` markup can be moved across and restyled onto `--fd-*` tokens. Do not accept `due` or `capture` in the state shape here — a parameter a renderer ignores is a trap for whoever passes it.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -788,7 +790,7 @@ test('a done map naming items outside the week does not inflate the count', () =
 });
 ```
 
-Then cover the rendering: the greeting varying by time of day derived from `state.nowMs` rather than a clock call; the week-complete kicker appearing only at 100%; the due row omitted at zero due; a done row carrying `.is-done`; the daily pick omitted when every library read is done; quick tools rendering as a rail when `desk: true` and as chips otherwise; and every title escaped.
+Then cover the rendering: the greeting varying by time of day derived from `state.nowMs` rather than a clock call; the week-complete kicker appearing only at 100%; a done row carrying `.is-done`; the daily pick omitted when every library read is done; quick tools rendering as a rail when `desk: true` and as chips otherwise; and every title escaped.
 
 - [ ] **Step 2: Run the test to verify it fails**
 
@@ -809,7 +811,7 @@ function fdTodayProgress(items, doneMap){
 }
 ```
 
-Then `fdToday(index, state)` assembling the surfaces in the design's order: greeting (`Morning|Afternoon|Evening` derived from `state.nowMs`, never a clock call) with `Week N · title · weekday` plus the streak suffix at >= 2 and `fdExamCountdown(state.week, state.nowMs)`; the due row; the Continue card with the ring at `state.ringPct`; the week list with staggered rows; the daily pick from `fdDailyPick(fdLibraryOnlyReads(index), state.done, state.nowMs)`; capture triage; and on `state.desk` the quick-tools and safety rails, or pill chips otherwise. Structure and values from the prototype's App-shell section.
+Then `fdToday(index, state)` assembling the surfaces in the design's order: greeting (`Morning|Afternoon|Evening` derived from `state.nowMs`, never a clock call) with `Week N · title · weekday` plus the streak suffix at >= 2 and `fdExamCountdown(state.week, state.nowMs)`; the Continue card with the ring at `state.ringPct`; the week list with staggered rows; the daily pick from `fdDailyPick(fdLibraryOnlyReads(index), state.done, state.nowMs)`; and on `state.desk` the quick-tools and safety rails, or pill chips otherwise. Structure and values from the prototype's App-shell section.
 
 - [ ] **Step 4: Run the tests** — `node --test tests/fd-today.test.mjs` — Expected: PASS.
 
@@ -1042,4 +1044,4 @@ Both builds must still pass and `index.html` must be byte-identical to its state
 
 **A note on test resolution.** Tasks 1-3 carry complete test code. Tasks 4-9 carry complete code for their **pure logic** — progress arithmetic, neighbour resolution, query expansion and ranking — and prose specifications for their **markup** assertions. That split is deliberate, not a shortcut: the exact HTML is derived from the prototype, so pinning literal strings in this plan would either duplicate the design source or contradict it. Pin structure, `data-fd-*` hooks, escaping, and conditional presence; do not pin exact class-attribute strings or copy that the prototype governs.
 
-**Deliberately not covered here — Plan 3 owns all of it:** registering the eight markers in `SNIPPET_MARKERS` and bumping `EXPECTED_MARKER_COUNT`; build-time injection of `curriculum.json`/`topic_meta.json` into the page; **the per-surface `try`/`catch` that spec §6 requires** — renderers here are pure and throw freely, and the caller that wraps each one arrives with the wiring; replacing `spa_index.html`'s body and render path; deleting the sidebar, `renderModeCompanion`, and `renderWardDashboard`; retiring `learning-path.html` and its four count pins; rewriting `RESIDENT_REBRAND`; rewriting the 12 root tests and 5 smoke specs that read `spa_index.html`; adding `frontdoor/` to `extractShellCopy()`; per-site column scoping for the 11 `libraryExclude` entries; resident nav reconciliation; and regenerating visual baselines on the Ubuntu runner.
+**Deliberately not covered here — Plan 3 owns all of it:** **the Today due row and capture triage**, which spec §1 ports "prominent" but which render from the `cw_srs_v1` and `cw_capture_v1` runtime stores rather than the item index, have no prototype markup and no `frontdoor.css` rules, and whose existing `dueStripHtml()` / `capTriageHtml()` implementations are moved across and restyled onto `--fd-*` tokens during wiring; **a copy rule for `frontdoor/` in `build_deploy.py`**, without which `frontdoor.css` 404s in production while every local test stays green; registering the eight markers in `SNIPPET_MARKERS` and bumping `EXPECTED_MARKER_COUNT`; build-time injection of `curriculum.json`/`topic_meta.json` into the page; **the per-surface `try`/`catch` that spec §6 requires** — renderers here are pure and throw freely, and the caller that wraps each one arrives with the wiring; replacing `spa_index.html`'s body and render path; deleting the sidebar, `renderModeCompanion`, and `renderWardDashboard`; retiring `learning-path.html` and its four count pins; rewriting `RESIDENT_REBRAND`; rewriting the 12 root tests and 5 smoke specs that read `spa_index.html`; adding `frontdoor/` to `extractShellCopy()`; per-site column scoping for the 11 `libraryExclude` entries; resident nav reconciliation; and regenerating visual baselines on the Ubuntu runner.
