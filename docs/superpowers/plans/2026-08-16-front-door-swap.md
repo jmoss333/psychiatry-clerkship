@@ -577,7 +577,13 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
 
 ---
 
-### Task 7: Safety governance on the new shell
+### Task 7: Governance, authored CTAs, and the reader path
+
+> **⚠ Two things were found after this plan was written, and both belong here because they are the same rewiring.**
+>
+> **1. `topic_meta.json`'s `cta` field is dead in the front door.** `fdMakeItem` never reads it, so faculty-authored calls-to-action across **72 topics** render nowhere — links like *"Open the Decision Aids"*, *"Practice caregiver baseline/adaptations"*, *"Open collateral workflow"*. These are authored navigation affordances, not decoration, and they are the second-largest content drop after the tool surface. Carry `cta` through `fdBuildIndex` into the item shape, render it in the reader, and give it a class in `frontdoor.css` and `CLASS-INVENTORY.md`. The hrefs already use the `?page=`/`?tool=` forms `fd_wire.js` dispatches, so no new routing is needed — but verify the `&case=`/`&scenario=` suffixes survive.
+>
+> **2. The governance notice is asymmetric.** Tools now show one; markdown pages still show none, because Task 5 rewired only the tool path. `focusGovernanceNotice` was deliberately not restored — its focus ordering now fights `fdAnnounce`, and resolving that belongs with this task's whole-shell governance wiring rather than with the tool mount.
 
 - [ ] **Step 1: Add the shell to the crisis-required set.** `build_deploy.py:296-300` gates only `_CRISIS_REQUIRED_MD` / `_CRISIS_REQUIRED_TOOLS`, and `spa_index.html` is in neither. It now renders protocol sheets, which is risk work under the scope rule in `CLAUDE.md` — the learner is assessing and planning disposition there. Add it, place the `<!-- crisis-block-html -->` marker in the sheet's mount region, and confirm `res` inherits it. `tests/crisis-block.test.mjs` covers the mechanism.
 
