@@ -278,6 +278,7 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex){
   var isTool=(kind==='tool')||fdIsTool(ref);
   return {
     ref: ref,
+    kind: isTool?'tool':'read',
     /* Title comes from site_manifest.json, the registry of shipped pages. topic_meta has no
        title field on any entry -- it describes a page's content, not its identity -- so reading
        one there would silently degrade every .md row to its raw slug. Falling back to the ref is
