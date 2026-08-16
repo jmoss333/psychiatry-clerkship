@@ -124,9 +124,28 @@ open(OUT.rstrip("/\\")+".source-map.json","w",encoding="utf-8").write(json.dumps
 # Data-driven, verified rebrand: every needle must match spa_index's current copy
 # or the build aborts (previously six bare replace() calls that silently no-oped
 # after any shell reword, reverting resident branding to MS3 text).
+#
+# Wordmark: the front door renders it at TWO sites where the old sidebar had one <h1> — the app
+# header (fd_shell.js's fdHeader) and the first-run wizard (fdSetupRole). Both are rebranded, each
+# through a needle carrying its own class attribute rather than a bare 'Inpatient Psychiatry'.
+# That is not belt-and-braces: apply_verified_replacements does a replace-ALL, and the bare string
+# also occurs in <title>, in pageTitle()'s no-item fallback, inside fd_shell.js's own doc comment,
+# and — the one that matters — inside shipped topic_meta content, where "Evidence-Based Inpatient
+# Psychiatry" is a real page title. A bare needle would rewrite that page's name to "Evidence-Based
+# MMC Psychiatry" on the resident site. Anchoring on the class also makes the two needles fail
+# INDEPENDENTLY, so a change to either surface is reported by name instead of one masking the other.
+#
+# *** THE RESIDENT ATTRIBUTION LINE HAS NO TARGET AND IS NOT REBRANDED HERE. ***
+# The needle used to be '<div class="by">MS3 Clerkship · Joshua Moss, MD</div>' → 'Resident
+# Rotation · Sanford BHU · Joshua Moss, MD'. That div lived in the sidebar the front-door swap
+# deleted, and the new design carries no attribution slot anywhere — so the line is now absent from
+# BOTH sites, not just this one. This is a design gap, not a rebrand gap: there is nothing to point
+# a needle at, and inventing a slot here would be inventing chrome the design does not have.
+# Removed rather than repointed, deliberately and on the record (Plan 3 Task 3, fix round 1), and
+# raised for a ruling. If an attribution line comes back, its needle belongs right here.
 RESIDENT_REBRAND=[
- ('<div class="by">MS3 Clerkship · Joshua Moss, MD</div>','<div class="by">Resident Rotation · Sanford BHU · Joshua Moss, MD</div>'),
- ('<h1>Inpatient Psychiatry</h1>','<h1>MMC Psychiatry</h1>'),
+ ('<span class="fd-brand__name">Inpatient Psychiatry</span>','<span class="fd-brand__name">MMC Psychiatry</span>'),
+ ('<span class="fd-setup__brand-name">Inpatient Psychiatry</span>','<span class="fd-setup__brand-name">MMC Psychiatry</span>'),
  ('MS3 Psychiatry Clerkship','MMC Psychiatry Residency'),
  ('MS3 Clerkship','Resident Rotation'),
  ('Private teaching site for the MS3 inpatient psychiatry rotation. Educational use; fictional composites only, no PHI. Some pages are pending faculty review.',
