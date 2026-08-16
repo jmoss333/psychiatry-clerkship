@@ -116,10 +116,19 @@ function fdReaderNextUnread(items, ref, done){
    spliced into HTML. Escaping nextAfter.title here AND again at the embed site would double-
    encode entities; escaping only here and never at the embed site would leave the surrounding
    literal words (" of ", "Mark done", the arrow) never escaped at all, which happens to be safe
-   for those specific literals but is the wrong general pattern to establish in this file. */
-function fdReaderDoneLabel(isDone, nextAfter){
+   for those specific literals but is the wrong general pattern to establish in this file.
+
+   Deliberate deviation from the prototype: the prototype's done-and-nothing-left branch is the
+   literal string 'Back to Today' (line 871), regardless of which tab the reader was opened from.
+   That is a prototype bug, not a convention worth porting -- its OWN markDone handler navigates
+   to st.fromTab, so a page opened from Library would show a primary button reading "Back to
+   Today" beside a ghost button reading "Library", visibly contradicting itself. The design spec
+   governs behaviour (the handoff README makes prototype *visuals* normative, not this), and it
+   says the back affordance names the originating tab -- so this uses the SAME backLabel the ghost
+   button and the top-of-page back link already show, not a second hardcoded tab name. */
+function fdReaderDoneLabel(isDone, nextAfter, backLabel){
   if(isDone){
-    return nextAfter ? ('Next: '+nextAfter.title+' →') : 'Back to Today';
+    return nextAfter ? ('Next: '+nextAfter.title+' →') : ('Back to '+backLabel);
   }
   return nextAfter ? ('Mark done · Next: '+nextAfter.title+' →') : 'Mark done';
 }
@@ -148,9 +157,13 @@ function fdReaderTryNow(item, index){
   var idx=index||{byRef:{}};
   var tool=(idx.byRef||{})[item.toolRef];
   var toolTitle=tool?tool.title:item.toolRef;
+  /* The grouping span carries flex:1;min-width:0 (prototype line 136) so a long unbreakable tool
+     title cannot overflow the button -- the same structural, non-colour inline style fd_shell.js
+     uses for the analogous .fd-role grouping span (fd_shell.js:84). No class in frontdoor.css
+     covers this bare grouping, same as that precedent. */
   return '<button type="button" class="fd-trynow" data-fd-open="'+fdEsc(item.toolRef)+'">'+
     '<span class="fd-trynow__icon">▶</span>'+
-    '<span>'+
+    '<span style="flex:1;min-width:0">'+
       '<span class="fd-trynow__title">Try it now · '+fdEsc(toolTitle)+'</span>'+
       '<span class="fd-trynow__sub">Opens as a side sheet — this page stays put.</span>'+
     '</span>'+
@@ -262,16 +275,19 @@ function fdReader(index, state, bodyHtml){
   var nextAfter=inWeek?fdReaderNextUnread(weekItems, item.ref, st.done):null;
   var isDone=!!(st.done||{})[item.ref];
   var backLabel=fdReaderBackLabel(st.fromTab);
-  var doneLabel=fdReaderDoneLabel(isDone, nextAfter);
+  var doneLabel=fdReaderDoneLabel(isDone, nextAfter, backLabel);
 
   var kindLabel=(item.kind==='tool')?'Interactive tool':'Reading';
   var eyebrowText=inWeek?('Week '+fdEsc(st.week)+' · '+kindLabel):kindLabel;
   var metaText=(item.kind==='tool')?'self-paced':((typeof item.minutes==='number')?(item.minutes+' min'):'');
 
+  /* The "·" dot only separates the eyebrow from the meta text, so it is emitted only when there
+     IS meta text -- a read with no topic_meta.read entry has metaText==='', and a dot with
+     nothing after it is a stranded separator, not a degraded-but-honest render. */
   var head='<div class="fd-article__head">'+
-    '<span class="fd-eyebrow">'+eyebrowText+'</span>'+
-    '<span class="fd-article__dot">·</span>'+
-    '<span class="fd-article__meta">'+fdEsc(metaText)+'</span>';
+    '<span class="fd-eyebrow">'+eyebrowText+'</span>';
+  if(metaText) head+='<span class="fd-article__dot">·</span>';
+  head+='<span class="fd-article__meta">'+fdEsc(metaText)+'</span>';
   if(item.attested) head+='<span class="fd-attested">✓ faculty-attested</span>';
   head+='</div>';
 

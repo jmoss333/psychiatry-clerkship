@@ -162,7 +162,9 @@ test('the mobile action bar\'s primary label is wrapped in a bare <span>', () =>
 
 // ---- prev/next footer -----------------------------------------------------------------------
 
-test('the prev/next footer carries no breakpoint class or style -- present for both viewports', () => {
+test('the prev/next footer carries no breakpoint class or style in the markup', () => {
+  // A single render is all there is to check: unlike .fd-article__actions/.fd-actionbar, there is
+  // no desk-like branch here to exercise twice -- CSS never hides .fd-prevnext at either width.
   assert.match(F.fdReader(IDX, s({ ref: 'a.md' }), ''), /fd-prevnext/);
 });
 
@@ -201,6 +203,10 @@ test('the mobile action bar is a sibling of the article element, never a descend
 
   const start = html.indexOf('<article class="fd-reader">');
   assert.notEqual(start, -1, 'no .fd-reader article found');
+  assert.equal(start, 0,
+    '.fd-reader must be the very first thing rendered -- a shared wrapping container around ' +
+    'both .fd-reader and .fd-actionbar would still satisfy every check below, and a shared ' +
+    'ANIMATED container is exactly the regression this test exists to catch');
   const end = html.indexOf('</article>', start);
   assert.notEqual(end, -1, 'no closing </article> found');
 
@@ -270,9 +276,22 @@ test('doneLabel: not done, nothing left unread -> "Mark done"', () => {
   assert.match(html, /data-fd-toggle="d\.md">Mark done</);
 });
 
-test('doneLabel: done, nothing left unread -> "Back to Today"', () => {
-  const html = F.fdReader(IDX, s({ ref: 'd.md', week: 2, done: { 'd.md': true } }), '');
-  assert.match(html, /data-fd-toggle="d\.md">Back to Today</);
+test('doneLabel: done, nothing left unread -> "Back to " + the ORIGINATING tab, not always Today', () => {
+  // Deliberate deviation from the prototype (controller ruling): the prototype hardcodes
+  // 'Back to Today' here even though its own markDone navigates to fromTab, so a page opened
+  // from Library would show a primary button reading "Back to Today" next to a ghost button
+  // reading "Library" -- visibly contradictory. This asserts the two can never drift apart:
+  // doneLabel's fallback text is the SAME backLabel the ghost button renders, for three origins.
+  const today = F.fdReader(IDX, s({ ref: 'd.md', week: 2, fromTab: 'today', done: { 'd.md': true } }), '');
+  assert.match(today, /data-fd-toggle="d\.md">Back to Today</);
+
+  const library = F.fdReader(IDX, s({ ref: 'd.md', week: 2, fromTab: 'library', done: { 'd.md': true } }), '');
+  assert.match(library, /data-fd-toggle="d\.md">Back to Library</);
+  assert.match(library, /fd-btn fd-btn--ghost" data-fd-back>Library</,
+    'the primary button\'s fallback label and the ghost button must name the SAME tab');
+
+  const path = F.fdReader(IDX, s({ ref: 'd.md', week: 2, fromTab: 'path', done: { 'd.md': true } }), '');
+  assert.match(path, /data-fd-toggle="d\.md">Back to Path</);
 });
 
 test('doneLabel: not done, something left unread -> "Mark done · Next: X ->"', () => {
@@ -312,6 +331,17 @@ test('a ref with no index entry degrades to a titled placeholder rather than thr
   assert.doesNotThrow(() => F.fdReader(IDX, s({ ref: 'nope.md', week: null }), ''));
   const html = F.fdReader(IDX, s({ ref: 'nope.md', week: null }), '');
   assert.match(html, /fd-article__h1">nope\.md</);
+  // The fallback item's minutes is null and its kind defaults to 'read', so metaText is '' --
+  // the dot separator must not render with nothing on its right (fix round 1, Minor 3).
+  assert.doesNotMatch(html, /fd-article__dot/,
+    'a stranded "." with no meta text after it must not render');
+  assert.match(html, /fd-article__meta"><\/span>/,
+    'the meta span itself still renders, just empty -- matching sibling spans elsewhere (e.g. fd-row__min)');
+});
+
+test('the dot separator is present exactly when there is meta text to separate from', () => {
+  assert.match(F.fdReader(IDX, s({ ref: 'a.md', week: 1 }), ''), /fd-article__dot">·<\/span><span class="fd-article__meta">6 min</);
+  assert.doesNotMatch(F.fdReader(IDX, s({ ref: 'nope.md', week: null }), ''), /fd-article__dot/);
 });
 
 // ---- purity / audience-neutral / ES5 --------------------------------------------------------
