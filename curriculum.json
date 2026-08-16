@@ -170,7 +170,18 @@
     { "ref": "t_sud.md", "sub": "Score · thiamine · escalate" },
     { "ref": "delirium.md", "sub": "Vitals · meds · CAM" }
   ],
-  "roles": { "ms3": [], "resident": [] },
+  "roles": {
+    "ms3": [
+      { "id": "student", "name": "Core rotation", "desc": "The six-week inpatient rotation", "hint": "most common" },
+      { "id": "subi", "name": "Sub-I / acting intern", "desc": "Acting intern on the unit", "hint": "" },
+      { "id": "staff", "name": "Nursing · SW · family", "desc": "Unit staff and families", "hint": "" }
+    ],
+    "resident": [
+      { "id": "pgy1", "name": "PGY-1", "desc": "First year on inpatient psychiatry", "hint": "most common" },
+      { "id": "pgy2", "name": "PGY-2 and above", "desc": "Senior on the unit", "hint": "" },
+      { "id": "staff", "name": "Nursing · SW · family", "desc": "Unit staff and families", "hint": "" }
+    ]
+  },
   "synonyms": {
     "etoh": "alcohol withdrawal ciwa",
     "si": "suicide risk ideation",

@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#f6f3ee;font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;color:#3b332c;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:#2c6356;text-decoration:none}
+  a:hover{color:#1f463f;text-decoration:underline}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes sheetIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+  @keyframes backdropIn{from{opacity:0}to{opacity:1}}
+  @keyframes popIn{from{opacity:0;transform:translateY(-6px) scale(.985)}to{opacity:1;transform:none}}
+  @keyframes checkPop{0%{transform:scale(.55)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+  @keyframes strikeDraw{from{background-size:0 1.5px}}
+  @keyframes ringPulse{0%{box-shadow:0 0 0 0 rgba(53,113,96,.4)}100%{box-shadow:0 0 0 16px rgba(53,113,96,0)}}
+  @keyframes slideRA{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+  @keyframes slideRB{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+  @keyframes slideLA{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+  @keyframes slideLB{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column">
+
+<!-- ══ First-run · step 1: role ══ -->
+<sc-if value="{{ showSetup1 }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Setup — role" style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px">
+    <div style="width:min(440px,100%);animation:fadeUp .28s cubic-bezier(.2,.8,.2,1)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
+        <div style="width:38px;height:38px;border-radius:10px;background:#b0674e;color:#fff;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:22px">ψ</div>
+        <div style="font-size:14px;font-weight:600;color:#64574b">Psychiatry Clerkship Library</div>
+      </div>
+      <h1 style="margin:0 0 6px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:30px;line-height:1.2;letter-spacing:.2px">Who's this for?</h1>
+      <p style="margin:0 0 24px;font-size:14.5px;color:#64574b">No account. Everything saves on this device.</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ roles }}" as="r" hint-placeholder-count="4">
+          <button onClick="{{ r.pick }}" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:15px 18px;background:#ffffff;border:1.5px solid #ddd3c6;border-radius:12px;cursor:pointer;box-shadow:0 1px 3px rgba(59,51,44,.06);transition:border-color .12s,box-shadow .12s" style-hover="border-color:#b0674e;box-shadow:0 2px 6px rgba(59,51,44,.07),0 14px 32px rgba(59,51,44,.06)">
+            <span style="flex:1;min-width:0">
+              <span style="display:block;font-size:15.5px;font-weight:600;color:#3b332c">{{ r.name }}</span>
+              <span style="display:block;font-size:12.5px;color:#87786a;margin-top:1px">{{ r.desc }}</span>
+            </span>
+            <span style="font-size:11px;font-weight:700;color:#b0674e;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap">{{ r.hint }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <p style="margin:22px 0 0;font-size:12.5px;color:#87786a">Tap once — the next question is the last one.</p>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ══ First-run · step 2: week ══ -->
+<sc-if value="{{ showSetup2 }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Setup — week" style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px">
+    <div style="width:min(480px,100%);animation:fadeUp .28s cubic-bezier(.2,.8,.2,1)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
+        <button onClick="{{ backFromWeek }}" style="width:38px;height:38px;border-radius:10px;background:#ffffff;border:1.5px solid #ddd3c6;color:#64574b;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="border-color:#c8baa7;background:#fbf8f3">‹</button>
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;background:#edf4f2;border:1px solid #3a7d6e;color:#2c6356;font-size:12.5px;font-weight:600">{{ roleLabel }} ✓</span>
+      </div>
+      <h1 style="margin:0 0 6px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:30px;line-height:1.2;letter-spacing:.2px">Where in the rotation?</h1>
+      <p style="margin:0 0 24px;font-size:14.5px;color:#64574b">This sets your Today. Change it anytime from the top bar.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+        <sc-for list="{{ weekChoices }}" as="w" hint-placeholder-count="6">
+          <button onClick="{{ w.pick }}" style="{{ w.tileStyle }}" style-hover="border-color:#b0674e">
+            <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#b0674e">Week {{ w.n }}</span>
+            <span style="display:block;font-size:13px;font-weight:600;color:#3b332c;margin-top:3px;line-height:1.3">{{ w.title }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <button onClick="{{ pickBrowse }}" style="margin-top:14px;width:100%;padding:12px;background:transparent;border:1.5px dashed #ddd3c6;border-radius:10px;color:#64574b;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="border-color:#c8baa7;background:#fbf8f3">Not on rotation — just browse</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ══ App shell ══ -->
+<sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
+
+  <header style="position:sticky;top:0;z-index:40;background:#fffdf9;border-bottom:1px solid #ebe5da;box-shadow:0 1px 3px rgba(59,51,44,.05)">
+    <div style="max-width:1200px;margin:0 auto;padding:10px 20px 0;display:flex;align-items:center;gap:12px">
+      <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:9px;background:none;border:none;cursor:pointer;padding:4px 0;min-width:0">
+        <span style="width:30px;height:30px;border-radius:8px;background:#b0674e;color:#fff;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:18px;flex:0 0 auto">ψ</span>
+        <span style="font-size:14px;font-weight:700;color:#3b332c;white-space:nowrap">Psychiatry Clerkship</span>
+      </button>
+      <button onClick="{{ openSearch }}" data-comment-anchor="shell-search" style="flex:1;max-width:340px;display:flex;align-items:center;gap:8px;padding:8px 13px;background:#ffffff;border:1.5px solid #ddd3c6;border-radius:999px;color:#87786a;font-size:13px;cursor:text;min-width:0" style-hover="border-color:#c8baa7">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:0 0 auto"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg>
+        <span style="flex:1;text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Search a symptom, drug, or task…</span>
+        <span style="font-size:10.5px;font-weight:600;border:1px solid #ddd3c6;border-radius:5px;padding:1px 6px;color:#87786a;flex:0 0 auto">⌘K</span>
+      </button>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex:0 0 auto">
+        <button onClick="{{ changeWeek }}" title="Change week" style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:#ffffff;border:1.5px solid #ddd3c6;color:#64574b;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="border-color:#3a7d6e;color:#2c6356;background:#edf4f2">{{ weekPill }} ▾</button>
+        <button onClick="{{ openSafety }}" data-comment-anchor="shell-safety" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:#a34132;border:1.5px solid #a34132;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 1px 2px rgba(143,55,42,.25)" style-hover="background:#8f372a;border-color:#8f372a">✚ Safety</button>
+      </div>
+    </div>
+    <nav style="max-width:1200px;margin:0 auto;padding:4px 20px 0;display:flex;gap:2px">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.go }}" style="{{ t.style }}" style-hover="color:#3b332c">{{ t.label }}</button>
+      </sc-for>
+    </nav>
+  </header>
+
+  <main style="flex:1;width:100%;max-width:1200px;margin:0 auto;padding:26px 20px 64px;box-sizing:border-box">
+
+    <!-- ── Reading / tool pane (in place) ── -->
+    <sc-if value="{{ showItem }}" hint-placeholder-val="{{ false }}">
+      <article data-screen-label="Reading pane" style="{{ paneAnim }}">
+        <button onClick="{{ closeItem }}" style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:#2c6356;font-size:13.5px;font-weight:600;cursor:pointer;padding:2px 0;margin-bottom:18px" style-hover="color:#1f463f">‹ {{ backLabel }}</button>
+        <div style="display:flex;gap:28px;align-items:flex-start">
+        <div style="background:#ffffff;border:1px solid #ebe5da;border-radius:14px;box-shadow:0 1px 2px rgba(59,51,44,.05),0 8px 24px rgba(59,51,44,.04);padding:34px 38px;max-width:760px;flex:0 1 auto;min-width:0">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+            <span style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#b0674e">{{ itemEyebrow }}</span>
+            <span style="font-size:11px;color:#87786a">·</span>
+            <span style="font-size:11.5px;font-weight:600;color:#87786a">{{ itemMeta }}</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;background:#ecf4f1;color:#2d5e50;font-size:10.5px;font-weight:700">✓ faculty-attested</span>
+          </div>
+          <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:29px;line-height:1.22;letter-spacing:.2px">{{ itemTitle }}</h1>
+          <p style="margin:0 0 18px;font-size:16.5px;line-height:1.72;color:#3b332c;max-width:62ch">{{ itemSum }}</p>
+          <sc-if value="{{ itemHasPoints }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid #ebe5da;border-left:3px solid #3a7d6e;background:#fbf8f3;border-radius:10px;padding:16px 20px;margin:0 0 18px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#2c6356;margin-bottom:8px">Key points</div>
+              <sc-for list="{{ itemPoints }}" as="p" hint-placeholder-count="3">
+                <div style="display:flex;gap:9px;padding:4px 0;font-size:14.5px;line-height:1.62;color:#64574b"><span style="color:#3a7d6e;font-weight:700">·</span><span>{{ p.text }}</span></div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ itemHasTool }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ itemToolOpen }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;background:#edf4f2;border:1.5px solid #3a7d6e;border-radius:12px;cursor:pointer;margin:0 0 18px" style-hover="background:#e2eeea">
+              <span style="width:34px;height:34px;border-radius:9px;background:#3a7d6e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto">▶</span>
+              <span style="flex:1;min-width:0">
+                <span style="display:block;font-size:13.5px;font-weight:700;color:#2c6356">Try it now · {{ itemToolTitle }}</span>
+                <span style="display:block;font-size:12px;color:#64574b">Opens as a side sheet — this page stays put.</span>
+              </span>
+            </button>
+          </sc-if>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#87786a;padding:10px 0;border-top:1px solid #ebe5da">
+            <span style="font-weight:600">Source:</span><span style="font-family:'SF Mono',Monaco,Consolas,monospace;font-size:11.5px;background:#f1ece6;border-radius:6px;padding:2px 8px">{{ itemSrc }}</span>
+          </div>
+          <sc-if value="{{ isDesk }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+              <button onClick="{{ markDone }}" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;background:#b0674e;border:1px solid #b0674e;border-radius:9px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(145,84,61,.18)" style-hover="background:#96523b;border-color:#96523b">{{ doneLabel }}</button>
+              <button onClick="{{ closeItem }}" style="padding:12px 18px;background:transparent;border:1px solid #ddd3c6;border-radius:9px;color:#3b332c;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#fbf8f3;border-color:#c8baa7">{{ backLabel }}</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ hasPrevNext }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid #ebe5da">
+              <sc-if value="{{ hasPrev }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ goPrev }}" style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 13px;background:none;border:1px solid #ebe5da;border-radius:10px;cursor:pointer" style-hover="border-color:#c8baa7;background:#fbf8f3">
+                  <span style="font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#87786a">‹ Prev</span>
+                  <span style="font-size:12.5px;font-weight:600;color:#64574b;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">{{ prevTitle }}</span>
+                </button>
+              </sc-if>
+              <sc-if value="{{ hasNext }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ goNext }}" style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right;padding:10px 13px;background:none;border:1px solid #ebe5da;border-radius:10px;cursor:pointer" style-hover="border-color:#c8baa7;background:#fbf8f3">
+                  <span style="font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#87786a">Next ›</span>
+                  <span style="font-size:12.5px;font-weight:600;color:#64574b;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">{{ nextTitle }}</span>
+                </button>
+              </sc-if>
+            </div>
+            <sc-if value="{{ isDesk }}" hint-placeholder-val="{{ false }}"><p style="margin:8px 0 0;font-size:11.5px;color:#87786a">Tip: ← → move between items · 1/2/3 switch tabs</p></sc-if>
+          </sc-if>
+        </div>
+        <sc-if value="{{ paneRailShow }}" hint-placeholder-val="{{ false }}">
+          <aside style="flex:1 1 230px;max-width:300px;min-width:0;position:sticky;top:106px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#87786a;margin:4px 0 10px">Week {{ paneWeekN }} · {{ paneDone }}</div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <sc-for list="{{ paneNav }}" as="n" hint-placeholder-count="6">
+                <button onClick="{{ n.go }}" style="{{ n.rowStyle }}" style-hover="background:#f3ede6">
+                  <span style="{{ n.dotStyle }}">✓</span>
+                  <span style="{{ n.tStyle }}">{{ n.title }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </aside>
+        </sc-if>
+        </div>
+        <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+          <div style="height:66px"></div>
+        </sc-if>
+      </article>
+      <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fffdf9;border-top:1px solid #ebe5da;box-shadow:0 -4px 16px rgba(59,51,44,.08);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:9px">
+          <button onClick="{{ closeItem }}" style="padding:12px 15px;background:transparent;border:1px solid #ddd3c6;border-radius:9px;color:#3b332c;font-size:13.5px;font-weight:600;cursor:pointer;flex:0 0 auto" style-hover="background:#fbf8f3">‹</button>
+          <button onClick="{{ markDone }}" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;background:#b0674e;border:1px solid #b0674e;border-radius:9px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(145,84,61,.18)" style-hover="background:#96523b"><span style="min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">{{ doneLabel }}</span></button>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <sc-if value="{{ showMain }}" hint-placeholder-val="{{ true }}">
+
+      <!-- ── Today ── -->
+      <sc-if value="{{ showToday }}" hint-placeholder-val="{{ true }}">
+        <section data-screen-label="Today" style="animation:fadeUp .24s cubic-bezier(.2,.8,.2,1)">
+          <h1 style="margin:0 0 2px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:31px;line-height:1.2;letter-spacing:.2px">{{ greeting }}</h1>
+          <p style="margin:0 0 22px;font-size:14px;color:#64574b">{{ todaySub }}</p>
+
+          <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+          <div style="flex:10 1 520px;min-width:0">
+          <sc-if value="{{ hasWeek }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ continueOpen }}" data-comment-anchor="today-continue" style="display:flex;align-items:center;gap:16px;width:100%;text-align:left;padding:18px 20px;background:linear-gradient(180deg,rgba(49,105,95,.05) 0,rgba(49,105,95,.015) 42%,#ffffff 100%);border:1px solid #ebe5da;border-top:3px solid #3a7d6e;border-radius:12px;box-shadow:0 1px 2px rgba(59,51,44,.05),0 8px 24px rgba(59,51,44,.04);cursor:pointer;margin-bottom:26px" style-hover="box-shadow:0 2px 6px rgba(59,51,44,.07),0 14px 32px rgba(59,51,44,.06)">
+              <span style="{{ ringStyle }}"><span style="width:40px;height:40px;border-radius:50%;background:#ffffff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#2c6356">{{ pct }}</span></span>
+              <span style="flex:1;min-width:0">
+                <span style="{{ continueKickerStyle }}">{{ continueKicker }}</span>
+                <span style="display:block;font-size:17px;font-weight:600;color:#3b332c;margin-top:2px">{{ continueTitle }} →</span>
+              </span>
+              <span style="text-align:right;flex:0 0 auto"><span style="display:block;font-size:12.5px;font-weight:600;color:#64574b;white-space:nowrap">{{ weekCount }}</span><span style="display:block;font-size:11.5px;color:#87786a;white-space:nowrap;margin-top:1px">{{ weekTimeLeft }}</span></span>
+            </button>
+
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 0 10px">
+              <h2 style="margin:0;font-size:12px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#87786a">This week</h2>
+              <span style="font-size:12px;color:#87786a">{{ weekTheme }}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:26px">
+              <sc-for list="{{ todayItems }}" as="it" hint-placeholder-count="5">
+                <div style="{{ it.rowStyle }}">
+                  <button onClick="{{ it.toggle }}" title="Mark done" style="{{ it.checkStyle }}">{{ it.checkMark }}</button>
+                  <button onClick="{{ it.open }}" style="flex:1;min-width:0;display:flex;align-items:center;gap:10px;background:none;border:none;cursor:pointer;text-align:left;padding:2px 0">
+                    <span style="{{ it.titleStyle }}">{{ it.title }}</span>
+                    <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex:0 0 auto">
+                      <span style="{{ it.typeStyle }}">{{ it.type }}</span>
+                      <span style="font-size:12px;color:#87786a;white-space:nowrap">{{ it.meta }}</span>
+                    </span>
+                  </button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ noWeek }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ changeWeek }}" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:16px 18px;background:#f3ebe5;border:1.5px solid #b0674e;border-radius:12px;cursor:pointer;margin-bottom:26px" style-hover="background:#efe3da">
+              <span style="flex:1"><span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#96523b">30-second setup</span><span style="display:block;font-size:15px;font-weight:600;color:#3b332c;margin-top:2px">Set your rotation week → get a real Today</span></span>
+              <span style="color:#b0674e;font-size:18px;font-weight:700">→</span>
+            </button>
+          </sc-if>
+
+          <sc-if value="{{ hasDaily }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ dailyOpen }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 16px;background:#ffffff;border:1px dashed #c8baa7;border-radius:11px;cursor:pointer;margin:0 0 26px" style-hover="border-color:#8b7040;background:#fbf8f3">
+              <span style="width:8px;height:8px;border-radius:50%;background:#8b7040;flex:0 0 auto"></span>
+              <span style="flex:1;min-width:0"><span style="display:block;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8b7040">Daily pick · {{ dailyMin }} min</span><span style="display:block;font-size:14px;font-weight:600;color:#3b332c;margin-top:1px">{{ dailyTitle }}</span></span>
+              <span style="color:#87786a">›</span>
+            </button>
+          </sc-if>
+
+          <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+            <h2 style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#87786a">Quick tools</h2>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ quickTools }}" as="q" hint-placeholder-count="5">
+                <button onClick="{{ q.open }}" style="display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:999px;border:1px solid #ddd3c6;background:#ffffff;color:#64574b;font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#3a7d6e;color:#2c6356;background:#edf4f2"><span style="width:7px;height:7px;border-radius:50%;background:#3a7d6e"></span>{{ q.title }}</button>
+              </sc-for>
+            </div>
+          </sc-if>
+          </div>
+          <sc-if value="{{ isDesk }}" hint-placeholder-val="{{ true }}">
+            <aside style="flex:1 1 250px;max-width:320px;min-width:0;position:sticky;top:106px;display:flex;flex-direction:column;gap:24px">
+              <div>
+                <h2 style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#87786a">Quick tools</h2>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <sc-for list="{{ quickTools }}" as="q" hint-placeholder-count="5">
+                    <button onClick="{{ q.open }}" style="display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:10px 13px;border-radius:10px;border:1px solid #ddd3c6;background:#ffffff;color:#64574b;font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#3a7d6e;color:#2c6356;background:#edf4f2"><span style="width:7px;height:7px;border-radius:50%;background:#3a7d6e;flex:0 0 auto"></span><span style="flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">{{ q.title }}</span><span style="color:#87786a">›</span></button>
+                  </sc-for>
+                </div>
+              </div>
+              <div>
+                <h2 style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#87786a">Safety kit</h2>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ railKit }}" as="k" hint-placeholder-count="5">
+                    <button onClick="{{ k.pick }}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 13px;background:#ffffff;border:1.5px solid #ebe5da;border-radius:11px;cursor:pointer" style-hover="border-color:#a34132;background:#fbefec">
+                      <span style="width:8px;height:8px;border-radius:50%;background:#a34132;flex:0 0 auto"></span>
+                      <span style="flex:1;min-width:0"><span style="display:block;font-size:13px;font-weight:600;color:#3b332c">{{ k.short }}</span><span style="display:block;font-size:11.5px;color:#87786a;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">{{ k.sub }}</span></span>
+                      <span style="color:#87786a">›</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+            </aside>
+          </sc-if>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ── Path ── -->
+      <sc-if value="{{ showPath }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Path" style="animation:fadeUp .24s cubic-bezier(.2,.8,.2,1)">
+          <h1 style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:26px;letter-spacing:.2px">The six weeks</h1>
+          <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+            <div style="display:flex;flex-direction:column;flex:1 1 230px;min-width:0">
+              <sc-for list="{{ pathWeeks }}" as="w" hint-placeholder-count="6">
+                <button onClick="{{ w.view }}" style="{{ w.rowStyle }}" style-hover="background:#f3ede6">
+                  <span style="display:flex;flex-direction:column;align-items:center;flex:0 0 auto;align-self:stretch">
+                    <span style="{{ w.dotStyle }}"></span>
+                    <span style="{{ w.lineStyle }}"></span>
+                  </span>
+                  <span style="flex:1;min-width:0;padding-bottom:14px">
+                    <span style="display:block;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#87786a">Week {{ w.n }} {{ w.flag }}</span>
+                    <span style="{{ w.titleStyle }}">{{ w.title }}</span>
+                  </span>
+                  <span style="font-size:11.5px;font-weight:600;color:#87786a;white-space:nowrap;padding-top:2px">{{ w.count }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="background:#ffffff;border:1px solid #ebe5da;border-radius:14px;box-shadow:0 1px 2px rgba(59,51,44,.05),0 8px 24px rgba(59,51,44,.04);padding:22px 24px;flex:100 1 340px;min-width:0">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#b0674e">Week {{ viewWeekN }}</span>
+                <sc-if value="{{ viewIsCurrent }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;padding:2px 9px;border-radius:999px;background:#f3ebe5;color:#96523b;font-size:10.5px;font-weight:700">you are here</span></sc-if>
+              </div>
+              <h2 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:21px">{{ viewWeekTitle }}</h2>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <sc-for list="{{ viewWeekItems }}" as="it" hint-placeholder-count="5">
+                  <div style="{{ it.rowStyle }}">
+                    <button onClick="{{ it.toggle }}" title="Mark done" style="{{ it.checkStyle }}">{{ it.checkMark }}</button>
+                    <button onClick="{{ it.open }}" style="flex:1;min-width:0;display:flex;align-items:center;gap:10px;background:none;border:none;cursor:pointer;text-align:left;padding:2px 0">
+                      <span style="{{ it.titleStyle }}">{{ it.title }}</span>
+                      <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex:0 0 auto"><span style="{{ it.typeStyle }}">{{ it.type }}</span><span style="font-size:12px;color:#87786a;white-space:nowrap">{{ it.meta }}</span></span>
+                    </button>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ viewNotCurrent }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ setAsMyWeek }}" style="margin-top:14px;padding:10px 16px;background:#edf4f2;border:1px solid rgba(49,105,95,.24);border-radius:9px;color:#2c6356;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#e2eeea;border-color:#3a7d6e">Set as my week</button>
+              </sc-if>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ── Library ── -->
+      <sc-if value="{{ showLibrary }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Library" style="animation:fadeUp .24s cubic-bezier(.2,.8,.2,1)">
+          <div style="display:flex;align-items:baseline;gap:12px;margin:0 0 18px;flex-wrap:wrap">
+            <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:26px;letter-spacing:.2px">Everything, one screen</h1>
+            <span style="font-size:12.5px;color:#87786a">{{ libCount }} pages · press <b style="border:1px solid #ddd3c6;border-radius:5px;padding:0 5px;font-size:11px">/</b> to filter</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:22px 26px;align-items:start">
+            <sc-for list="{{ libCols }}" as="col" hint-placeholder-count="5">
+              <div>
+                <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#b0674e;border-bottom:1.5px solid #ebe5da;padding-bottom:6px;margin-bottom:6px">{{ col.name }}</div>
+                <sc-for list="{{ col.items }}" as="it" hint-placeholder-count="6">
+                  <button onClick="{{ it.open }}" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:5px 4px;border-radius:6px;font-size:13.5px;color:#64574b;min-height:0" style-hover="background:#f3ede6;color:#3b332c">
+                    <span style="{{ it.dot }}"></span><span style="flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">{{ it.title }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+    </sc-if>
+  </main>
+</sc-if>
+
+<!-- ══ Search overlay ══ -->
+<sc-if value="{{ searchOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeOverlays }}" style="position:fixed;inset:0;z-index:100;background:rgba(51,41,35,.38);backdrop-filter:blur(5px);animation:backdropIn .16s ease-out;display:flex;align-items:flex-start;justify-content:center;padding:12vh 20px 20px">
+    <div onClick="{{ swallow }}" data-screen-label="Search overlay" style="width:min(560px,100%);background:#ffffff;border:1px solid #ebe5da;border-top:3px solid #3a7d6e;border-radius:16px;box-shadow:0 6px 18px rgba(59,51,44,.10),0 24px 56px rgba(59,51,44,.12);animation:popIn .18s cubic-bezier(.2,.8,.2,1);overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid #ebe5da">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#87786a" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg>
+        <input value="{{ query }}" onChange="{{ setQuery }}" onKeyDown="{{ searchKey }}" autoFocus="{{ true }}" placeholder="Symptom, drug, tool, or task…" style="flex:1;border:none;outline:none;font-size:15.5px;color:#3b332c;background:transparent;font-family:inherit"></input>
+        <button onClick="{{ closeOverlays }}" style="border:1px solid #ddd3c6;background:none;border-radius:6px;font-size:10.5px;font-weight:600;color:#87786a;padding:2px 7px;cursor:pointer">esc</button>
+      </div>
+      <div style="max-height:46vh;overflow-y:auto;padding:8px">
+        <sc-for list="{{ results }}" as="r" hint-placeholder-count="5">
+          <button onClick="{{ r.pick }}" style="display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:11px 12px;border-radius:9px" style-hover="background:#f3ede6">
+            <span style="{{ r.dot }}"></span>
+            <span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#3b332c;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">{{ r.title }}</span>
+            <span style="font-size:11.5px;color:#87786a;white-space:nowrap">{{ r.meta }}</span>
+          </button>
+        </sc-for>
+        <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:22px;text-align:center;font-size:13.5px;color:#87786a">Nothing for “{{ query }}” — try a symptom, scale, or drug class.</div>
+        </sc-if>
+      </div>
+      <div style="padding:9px 18px;border-top:1px solid #ebe5da;background:#fbf8f3;font-size:11.5px;color:#87786a">↵ opens as a side sheet — whatever you're doing stays put.</div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ══ Side sheet (safety kit / tool / interrupt) ══ -->
+<sc-if value="{{ sheetVisible }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeSheet }}" style="position:fixed;inset:0;z-index:90;background:rgba(51,41,35,.30);backdrop-filter:blur(3px);animation:backdropIn .16s ease-out"></div>
+  <aside onClick="{{ swallow }}" data-screen-label="Side sheet" style="position:fixed;top:0;right:0;bottom:0;z-index:95;width:min(430px,92vw);background:#fffdf9;border-left:1px solid #ebe5da;box-shadow:0 6px 18px rgba(59,51,44,.10),0 24px 56px rgba(59,51,44,.14);animation:sheetIn .2s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid #ebe5da">
+      <sc-if value="{{ sheetHasBack }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ sheetBack }}" style="background:none;border:none;color:#2c6356;font-size:14px;font-weight:600;cursor:pointer;padding:2px 4px" style-hover="color:#1f463f">‹ kit</button>
+      </sc-if>
+      <span style="flex:1;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:17.5px;color:#3b332c">{{ sheetTitle }}</span>
+      <button onClick="{{ closeSheet }}" title="Close — you'll land exactly where you were" style="width:32px;height:32px;border-radius:8px;border:1px solid #ddd3c6;background:none;color:#64574b;font-size:14px;cursor:pointer" style-hover="background:#f3ede6">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:18px 20px">
+
+      <sc-if value="{{ sheetIsKit }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0 0 14px;font-size:13px;color:#64574b">For the moment on the unit. Each opens right here — your page underneath doesn't move.</p>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ kitRows }}" as="k" hint-placeholder-count="5">
+            <button onClick="{{ k.pick }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 15px;background:#ffffff;border:1.5px solid #ebe5da;border-radius:11px;cursor:pointer" style-hover="border-color:#a34132;background:#fbefec">
+              <span style="width:9px;height:9px;border-radius:50%;background:#a34132;flex:0 0 auto"></span>
+              <span style="flex:1;min-width:0"><span style="display:block;font-size:14.5px;font-weight:600;color:#3b332c">{{ k.title }}</span><span style="display:block;font-size:12px;color:#87786a">{{ k.sub }}</span></span>
+              <span style="color:#87786a">›</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ sheetIsProto }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+          <sc-for list="{{ protoSteps }}" as="s" hint-placeholder-count="4">
+            <button onClick="{{ s.toggle }}" style="display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;padding:11px 13px;background:#ffffff;border:1px solid #ebe5da;border-radius:10px;cursor:pointer" style-hover="border-color:#c8baa7">
+              <span style="{{ s.checkStyle }}">{{ s.checkMark }}</span>
+              <span style="flex:1;font-size:14px;line-height:1.5;color:#3b332c;padding-top:1px">{{ s.text }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="border:1px solid #e4d5b7;background:#f7f0e2;border-radius:10px;padding:12px 15px;font-size:13px;line-height:1.55;color:#725b35;margin-bottom:14px"><b>Document:</b> {{ protoDoc }}</div>
+        <div style="font-size:12px;color:#2c6356;font-weight:600">✓ From: {{ protoSrc }} · faculty-attested</div>
+        <sc-if value="{{ protoHasPage }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ protoOpenPage }}" style="margin-top:16px;padding:10px 16px;background:transparent;border:1px solid #ddd3c6;border-radius:9px;color:#3b332c;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#f3ede6">Open the full page →</button>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ sheetIsItem }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <span style="{{ sheetItemTypeStyle }}">{{ sheetItemType }}</span>
+          <span style="font-size:12px;color:#87786a">{{ sheetItemMeta }}</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;background:#ecf4f1;color:#2d5e50;font-size:10.5px;font-weight:700">✓ faculty-attested</span>
+        </div>
+        <p style="margin:0 0 16px;font-size:14.5px;line-height:1.65;color:#3b332c">{{ sheetItemSum }}</p>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#87786a;margin-bottom:18px">
+          <span style="font-weight:600">Source:</span><span style="font-family:'SF Mono',Monaco,Consolas,monospace;font-size:11px;background:#f1ece6;border-radius:6px;padding:2px 8px">{{ sheetItemSrc }}</span>
+        </div>
+        <button onClick="{{ sheetItemGo }}" style="display:inline-flex;align-items:center;gap:8px;padding:11px 18px;background:#b0674e;border:1px solid #b0674e;border-radius:9px;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(145,84,61,.18)" style-hover="background:#96523b">Open the full page →</button>
+        <p style="margin:12px 0 0;font-size:12px;color:#87786a">Or ✕ to close — you'll land exactly where you were.</p>
+      </sc-if>
+
+    </div>
+  </aside>
+</sc-if>
+
+<sc-if value="{{ nudgeShow }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));z-index:120;display:flex;align-items:center;gap:12px;background:#3b332c;color:#f6f3ee;border-radius:12px;padding:11px 12px 11px 18px;box-shadow:0 8px 28px rgba(59,51,44,.3);animation:fadeUp .25s cubic-bezier(.2,.8,.2,1);max-width:min(92vw,480px)">
+    <span style="font-size:13px;min-width:0">{{ nudgeText }}</span>
+    <button onClick="{{ nudgeGo }}" style="flex:0 0 auto;padding:8px 14px;border-radius:8px;background:#b0674e;border:none;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer" style-hover="background:#96523b">Read it</button>
+    <button onClick="{{ nudgeDismiss }}" style="flex:0 0 auto;width:28px;height:28px;border-radius:7px;background:none;border:none;color:#c8baa7;font-size:13px;cursor:pointer" style-hover="color:#f6f3ee">✕</button>
+  </div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;autoAdvance&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Flow&quot;}}">
+const WEEKS = [
+  { n: 1, title: 'Foundations & the MSE', theme: 'Orientation · interviewing · MSE' },
+  { n: 2, title: 'Mood, Psychosis & Pharm', theme: 'Dx frameworks · the top-10 drugs' },
+  { n: 3, title: 'Psychotherapy & Personality', theme: 'Alliance · brief therapy · PDs' },
+  { n: 4, title: 'Family Systems & EE', theme: 'Family meetings · collateral' },
+  { n: 5, title: 'Acute & Emergency', theme: 'Safety · agitation · withdrawal' },
+  { n: 6, title: 'Integration & Exam', theme: 'Shelf · OSCE · putting it together' },
+];
+
+const ITEMS = [
+  // Week 1
+  { id: 'day-unit', w: 1, t: 'read', min: 6, title: 'A day on the unit', src: '00_START_HERE', sum: 'What actually happens between 7am and sign-out: pre-rounds, the interview, rounds, notes, and where a student adds real value on day one.' },
+  { id: 'mse-refresh', w: 1, t: 'read', min: 4, title: 'Mental Status Exam refresher', src: '02_Clinical_Skills/Mental_Status_Exam', sum: 'The MSE is observation, not interrogation — most of it is gathered while you talk about anything else.', points: ['Appearance, behavior, speech, mood/affect, thought process, thought content, perception, cognition, insight/judgment.', 'Describe, don\u2019t diagnose: \u201cguarded, minimal spontaneous speech\u201d beats \u201cparanoid.\u201d', 'Quote the patient verbatim for mood and for any SI/HI content.'], tool: 'mse-builder' },
+  { id: 'present-rounds', w: 1, t: 'read', min: 5, title: 'How to present on rounds', src: '02_Clinical_Skills/Oral_Presentations', sum: 'The psychiatric presentation is a story with a safety headline: one-liner, interval events, MSE changes, plan by problem.' },
+  { id: 'pocket-card', w: 1, t: 'read', min: 3, title: 'Top-20 pocket card', src: '00_START_HERE', sum: 'The twenty facts, doses, and thresholds you will actually reach for in week one — printable, pocket-sized.' },
+  { id: 'mse-builder', w: 1, t: 'tool', min: 0, title: 'MSE builder', src: '_prototypes', sum: 'Build a complete written MSE by tapping descriptors; it assembles AA-quality prose you can adapt into your note.' },
+  // Week 2
+  { id: 'mood-overview', w: 2, t: 'read', min: 8, title: 'Mood disorders on the ward', src: '03_Core_Topics/Mood', sum: 'MDD vs bipolar depression is the exam question and the ward question — the screen is always \u201cever had a week you barely slept and felt great?\u201d' },
+  { id: 'psychosis-workup', w: 2, t: 'read', min: 7, title: 'First-episode psychosis workup', src: '03_Core_Topics/Psychosis', sum: 'Rule out the mimics before naming schizophrenia: substances, delirium, autoimmune, and the labs that separate them.' },
+  { id: 'top10-drugs', w: 2, t: 'read', min: 6, title: 'The top-10 drug primer', src: '05_Psychopharmacology/Student_Primer_Top10', sum: 'Sertraline to clozapine: mechanism in one line, starting dose, the one side effect that matters, the one monitoring rule.' },
+  { id: 'labs-monitoring', w: 2, t: 'read', min: 4, title: 'Monitoring & labs cheat sheet', src: '05_Psychopharmacology/Monitoring_and_Labs', sum: 'Lithium levels, metabolic panels on antipsychotics, clozapine ANC — what to order, when, and what number should worry you.' },
+  { id: 'canon-quiz', w: 2, t: 'tool', min: 0, title: 'Pharm canon quiz', src: '_prototypes/canon-quiz', sum: 'Rapid-fire questions on the psychopharm canon; wrong answers link back to the primer section that covers them.' },
+  // Week 3
+  { id: 'alliance', w: 3, t: 'read', min: 4, title: 'Therapeutic alliance', src: '02_Clinical_Skills/Psychotherapy', sum: 'Alliance predicts outcome better than modality. On an inpatient unit you build it in minutes, not months.', points: ['Agree on the task: \u201cwhat would make this admission worth it to you?\u201d', 'Rupture is information — name it, don\u2019t smooth it over.', 'The chart follows the patient; write like they\u2019ll read it.'] },
+  { id: 'brief-psych', w: 3, t: 'read', min: 6, title: 'Brief psychotherapy on the unit', src: '02_Clinical_Skills/Brief_Psychotherapy', sum: 'You have 15 minutes and 5 days: behavioral activation, problem-solving therapy, and motivational interviewing all have inpatient-dose versions.', points: ['BA: one scheduled, values-linked activity before discharge beats insight.', 'PST: pick one solvable problem; solve it together on paper.', 'MI: roll with resistance — arguing for change hardens the status quo.'], tool: 'brief-trainer' },
+  { id: 'countertransference', w: 3, t: 'read', min: 6, title: 'Countertransference', src: '02_Clinical_Skills/Reflection_PIF', sum: 'The feeling the patient evokes in you is data. Dread, rescue fantasies, boredom — each maps to a dynamic worth naming in supervision.', points: ['Notice it, name it privately, never act on it clinically.', 'Strong pull to \u201csave\u201d or to punish → think personality pathology.', 'Bring one reaction per week to supervision — that\u2019s the PIF habit.'] },
+  { id: 'personality-ward', w: 3, t: 'read', min: 7, title: 'Personality pathology on the ward', src: '03_Core_Topics/Personality', sum: 'Borderline personality on an inpatient unit: splitting shows up in the team before it shows up in the chart. Consistency is the treatment.', points: ['One plan, every shift, in writing — inconsistency feeds the split.', 'Brief admissions with clear goals beat long stabilizations.', 'Validate the feeling, hold the limit.'] },
+  { id: 'brief-trainer', w: 3, t: 'tool', min: 0, title: 'Brief-psych trainer', src: '_prototypes/brief-psych', sum: 'Choose a modality and practice a 10-minute intervention against a simulated patient with branching responses.' },
+  { id: 'sp-interview', w: 3, t: 'tool', min: 0, title: 'SP interview practice', src: '_prototypes/sp-interview', sum: 'A standardized-patient interview you run line by line — it scores empathy moves, transitions, and risk questions you missed.' },
+  { id: 'reflect-pif', w: 3, t: 'read', min: 4, title: 'Reflective writing (PIF)', src: '02_Clinical_Skills/Reflection_PIF', sum: 'Professional identity formation in one page a week: a prompt, a patient moment, and what it changed in how you\u2019ll practice.' },
+  // Week 4
+  { id: 'family-playbook', w: 4, t: 'read', min: 8, title: 'The 90-minute family meeting', src: '06_Family_and_Relational', sum: 'A structured playbook: who sits where, the opening move, surfacing expressed emotion, and landing a discharge agreement everyone repeats back.' },
+  { id: 'ee-primer', w: 4, t: 'read', min: 5, title: 'Expressed emotion (EE)', src: '06_Family_and_Relational', sum: 'High-EE households double relapse risk in psychosis. Learn to hear criticism, hostility, and over-involvement in a five-minute collateral call.' },
+  { id: 'collateral', w: 4, t: 'read', min: 4, title: 'Collateral micro-workflow', src: '06_Family_and_Relational', sum: 'The five questions that make a collateral call worth charting, and the consent steps that must come first.' },
+  { id: 'family-sim', w: 4, t: 'tool', min: 0, title: 'Family systems practice', src: '06_Family_and_Relational/family-systems-practice.html', sum: 'Run a simulated family meeting; the tool tracks who you addressed and flags alliance ruptures as they happen.' },
+  // Week 5
+  { id: 'suicide-risk', w: 5, t: 'read', min: 7, title: 'Suicide risk & safety planning', src: '04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning', sum: 'Risk assessment is structured, not intuitive: C-SSRS screen, static vs dynamic factors, then a safety plan the patient writes with you.', tool: 'cssrs' },
+  { id: 'cssrs', w: 5, t: 'tool', min: 0, title: 'C-SSRS screener', src: '02_Clinical_Skills/Screeners', sum: 'The Columbia protocol as a tap-through screen with branching severity and documentation language at the end.' },
+  { id: 'agitation-read', w: 5, t: 'read', min: 6, title: 'Agitation & restraint', src: '04_Acute_and_Safety/Agitation_and_Restraint', sum: 'De-escalation is a procedure with steps, not a vibe. Meds come second; restraint is a last resort with its own documentation burden.', tool: 'agitation-trainer' },
+  { id: 'agitation-trainer', w: 5, t: 'tool', min: 0, title: 'Agitation trainer', src: '_prototypes/agitation-trainer', sum: 'A branching simulation of an escalating patient — practice verbal de-escalation choices before you need them at 2am.' },
+  { id: 'ciwa-cows', w: 5, t: 'tool', min: 0, title: 'CIWA-Ar / COWS calculator', src: '04_Acute_and_Safety/Toxidromes', sum: 'Score alcohol and opioid withdrawal at the bedside; thresholds link straight to the protocol library.' },
+  { id: 'delirium-read', w: 5, t: 'read', min: 5, title: 'Delirium vs. dementia vs. depression', src: '04_Acute_and_Safety/Delirium', sum: 'The 3 Ds table you\u2019ll use weekly: onset, course, attention, and the CAM screen that catches what psychiatry consults miss.' },
+  { id: 'capacity', w: 5, t: 'tool', min: 0, title: 'Decisional capacity assessment', src: '04_Acute_and_Safety/Decisional_Capacity', sum: 'Walk the four abilities with prompts and produce documentation-ready language for the chart.' },
+  // Week 6
+  { id: 'shelf-review', w: 6, t: 'read', min: 10, title: 'Shelf high-yield review', src: '09_Exam_Prep/Shelf_High_Yield', sum: 'The fifty facts the shelf actually tests, organized by how often they appear — with the classic question stems.' },
+  { id: 'osce', w: 6, t: 'tool', min: 0, title: 'OSCE stations', src: '09_Exam_Prep/OSCE_Stations', sum: 'Timed stations with checklists: risk assessment, capacity, breaking bad news, and the angry family member.' },
+  { id: 'one-patient', w: 6, t: 'tool', min: 0, title: 'One patient, six weeks', src: '08_Cases_and_Simulation/one-patient-six-weeks.html', sum: 'A single longitudinal case that touches every week\u2019s skills — the capstone walkthrough.' },
+  { id: 'landmark', w: 6, t: 'read', min: 6, title: 'Landmark trials for the ward', src: '07_Evidence_and_Reading/Landmark_Library', sum: 'CATIE, STAR*D, and friends: what each changed about practice, in two sentences each, for rounds questions.' },
+  // Library-only
+  { id: 'anxiety', w: 0, t: 'read', min: 6, title: 'Anxiety & OCD', src: '03_Core_Topics/Anxiety', sum: 'Panic, GAD, and OCD as they present on an inpatient unit — usually comorbid, often driving the admission.' },
+  { id: 'sud', w: 0, t: 'read', min: 6, title: 'SUD & withdrawal', src: '03_Core_Topics/SUD_Withdrawal', sum: 'Screening, withdrawal timelines, and starting maintenance treatment before discharge.' },
+  { id: 'neurocog', w: 0, t: 'read', min: 5, title: 'Neurocognitive disorders', src: '03_Core_Topics/Neurocognitive', sum: 'Major NCD workup and the behavioral symptoms that land patients on a psych unit.' },
+  { id: 'catatonia', w: 0, t: 'read', min: 5, title: 'Catatonia & BFCRS', src: '04_Acute_and_Safety/Catatonia', sum: 'Recognize it (it\u2019s missed constantly), score it with the BFCRS, and know the lorazepam challenge.' },
+  { id: 'violence-frst', w: 0, t: 'tool', min: 0, title: 'Violence risk · FRST', src: '04_Acute_and_Safety/Violence_Risk', sum: 'Structured violence-risk triage with documentation output.' },
+  { id: 'geriatric', w: 0, t: 'read', min: 5, title: 'Geriatric psychiatry', src: '03_Core_Topics/Geriatric', sum: 'Late-life depression, pseudodementia, and prescribing rules for the over-65 patient.' },
+  { id: 'guidelines', w: 0, t: 'read', min: 4, title: 'Guidelines shelf', src: '07_Evidence_and_Reading/Guidelines', sum: 'The APA and NICE guidelines that answer most \u201cwhat\u2019s the standard?\u201d rounds questions.' },
+  { id: 'journal-club', w: 0, t: 'read', min: 5, title: 'Journal club in a box', src: '07_Evidence_and_Reading/Journal_Club_in_a_Box', sum: 'A ready-to-run journal club: paper, appraisal sheet, and discussion questions.' },
+  { id: 'documentation', w: 0, t: 'read', min: 5, title: 'Documentation that holds up', src: '02_Clinical_Skills/Documentation', sum: 'Notes that survive utilization review and court: risk language, capacity language, restraint documentation.' },
+  { id: 'formulation', w: 0, t: 'read', min: 6, title: 'Case formulation (4 Ps)', src: '02_Clinical_Skills/Case_Formulation', sum: 'Predisposing, precipitating, perpetuating, protective — the two-minute formulation for rounds.' },
+];
+
+const PROTOCOLS = {
+  agitation: { title: 'Agitation — de-escalate first', sub: 'Verbal first · PO before IM', src: 'Acute & Safety / Agitation_and_Restraint', page: 'agitation-read',
+    steps: ['Verbal de-escalation first — respect space, one voice, offer choices', 'Offer PO medication before any IM', 'IM only for imminent danger to self or others', 'Debrief the patient and the team afterward'],
+    doc: 'the behavior observed, least-restrictive steps tried, medication response, and patient debrief.' },
+  suicide: { title: 'Suicide risk — C-SSRS quick screen', sub: 'Screen · stratify · safety plan', src: 'Acute & Safety / Suicide_Risk', page: 'suicide-risk',
+    steps: ['Wish to be dead — passive ideation?', 'Active thoughts of killing themselves?', 'Method? Plan? Intent?', 'Any preparatory behavior — ever, and past 3 months?'],
+    doc: 'exact patient quotes, risk stratification with static/dynamic factors, and the safety plan disposition.' },
+  capacity: { title: 'Decisional capacity — 4 abilities', sub: 'Choice · understand · appreciate · reason', src: 'Acute & Safety / Decisional_Capacity', page: null,
+    steps: ['Communicate a clear, stable choice', 'Understand the relevant information', 'Appreciate the situation and its consequences for them', 'Reason about the options given their own values'],
+    doc: 'each ability with a patient quote as evidence — capacity is decision-specific and can change.' },
+  withdrawal: { title: 'Withdrawal — CIWA-Ar / COWS', sub: 'Score · thiamine · escalate', src: 'Acute & Safety / Toxidromes', page: null,
+    steps: ['Alcohol: CIWA-Ar q4h while symptomatic', 'Thiamine before any glucose', 'CIWA \u2265 15 or seizure history → escalate protocol', 'Opioid: COWS to time buprenorphine induction'],
+    doc: 'scores with times, protocol triggered, and cumulative benzodiazepine dose.' },
+  delirium: { title: 'Confused patient — delirium first', sub: 'Vitals · meds · CAM', src: 'Acute & Safety / Delirium', page: 'delirium-read',
+    steps: ['Vitals and fingerstick glucose first', 'Review the med list — anticholinergics, benzos, opioids', 'CAM screen: acute onset + inattention + (disorganized thinking or altered consciousness)', 'Workup: infection, metabolic, withdrawal'],
+    doc: 'the CAM result, suspected precipitant, and workup ordered.' },
+};
+
+const KIT = ['suicide', 'agitation', 'capacity', 'withdrawal', 'delirium'];
+
+const LIB_COLS = [
+  { name: 'Interactive tools', accent: '#3a7d6e', ids: ['mse-builder', 'cssrs', 'ciwa-cows', 'capacity', 'agitation-trainer', 'brief-trainer', 'sp-interview', 'canon-quiz', 'family-sim', 'osce', 'one-patient', 'violence-frst'] },
+  { name: 'Acute & safety', accent: '#a34132', ids: ['suicide-risk', 'agitation-read', 'delirium-read', 'catatonia', 'sud', 'violence-frst', 'capacity'] },
+  { name: 'Core topics', accent: '#8b7040', ids: ['mood-overview', 'psychosis-workup', 'anxiety', 'personality-ward', 'sud', 'neurocog', 'geriatric'] },
+  { name: 'Clinical skills', accent: '#8b7040', ids: ['mse-refresh', 'present-rounds', 'documentation', 'formulation', 'brief-psych', 'alliance', 'reflect-pif'] },
+  { name: 'Evidence & exam', accent: '#8b7040', ids: ['landmark', 'guidelines', 'journal-club', 'shelf-review', 'osce', 'top10-drugs'] },
+];
+
+const ROLES = [
+  { id: 'ms3', name: 'MS3 · clerkship student', desc: 'The six-week core rotation', hint: 'most common' },
+  { id: 'subi', name: 'Sub-I / MS4', desc: 'Acting intern on the unit', hint: '' },
+  { id: 'resident', name: 'Resident', desc: 'PGY-1/2 on inpatient psychiatry', hint: '' },
+  { id: 'nursing', name: 'Nursing · SW · family', desc: 'Unit staff and families', hint: '' },
+];
+
+const STORE = 'pcl-frontdoor-v1';
+const byId = (id) => ITEMS.find((i) => i.id === id);
+const SYN = {
+  'etoh': 'alcohol withdrawal ciwa', 'si': 'suicide risk ideation', 'hi': 'violence risk homicidal',
+  'benzo': 'withdrawal lorazepam agitation', 'agitated': 'agitation restraint de-escalation',
+  'ams': 'delirium confused altered', 'sundowning': 'delirium', 'od': 'toxidromes withdrawal',
+  'bpad': 'bipolar mood', 'mdd': 'mood depression', 'szq': 'psychosis schizophrenia', 'sz': 'psychosis schizophrenia',
+  'bpd': 'personality borderline', 'cows': 'opioid withdrawal', 'ciwa': 'alcohol withdrawal',
+  'cap': 'capacity', 'mse': 'mental status exam', 'meds': 'drug primer pharmacology', 'pharm': 'drug primer pharmacology',
+};
+const expandQuery = (q) => q.split(/\s+/).map((w) => SYN[w] ? w + ' ' + SYN[w] : w).join(' ');
+
+class Component extends DCLogic {
+  state = (() => {
+    let s = {};
+    try { s = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch (e) { s = {}; }
+    return {
+      screen: s.role ? 'app' : 'setup1',
+      role: s.role || null, week: (typeof s.week === 'number') ? s.week : null,
+      tab: s.tab || 'today', viewWeek: s.viewWeek || s.week || 3,
+      openId: s.openId || null, fromTab: s.fromTab || 'today',
+      done: s.done || {}, stepsDone: {},
+      searchOpen: false, query: '', sheet: null, sheetFrom: null,
+      desk: typeof window !== 'undefined' ? window.innerWidth >= 1000 : true,
+      justDone: null, justCelebrate: false, navDir: 0, navTick: 0, nudge: null, ringPct: 0,
+      lastDay: s.lastDay || null, streak: s.streak || 0, scrollPos: s.scrollPos || {},
+    };
+  })();
+
+  persist(patch) {
+    this.setState(patch, () => {
+      const { role, week, tab, viewWeek, openId, fromTab, done, lastDay, streak, scrollPos } = this.state;
+      try { localStorage.setItem(STORE, JSON.stringify({ role, week, tab, viewWeek, openId, fromTab, done, lastDay, streak, scrollPos })); } catch (e) {}
+    });
+  }
+
+  componentDidMount() {
+    this.onKey = (e) => {
+      const typing = /INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '');
+      if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !typing)) {
+        if (this.state.screen === 'app') { e.preventDefault(); this.setState({ searchOpen: true, query: '' }); }
+      } else if (e.key === 'Escape') {
+        if (this.state.searchOpen) this.setState({ searchOpen: false });
+        else if (this.state.sheet) this.setState({ sheet: null });
+      } else if (!typing && this.state.screen === 'app' && !this.state.searchOpen && !this.state.sheet) {
+        const st = this.state;
+        if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && st.openId) {
+          const open = byId(st.openId);
+          if (open && open.w) {
+            const list = this.weekItems(open.w), i = list.indexOf(open);
+            const tgt = e.key === 'ArrowLeft' ? list[i - 1] : list[i + 1];
+            if (tgt) { e.preventDefault(); this.openItem(tgt.id, true, e.key === 'ArrowLeft' ? -1 : 1); }
+          }
+        } else if (e.key === '1' || e.key === '2' || e.key === '3') {
+          const t = ['today', 'path', 'library'][+e.key - 1];
+          this.persist({ tab: t, openId: null });
+        }
+      }
+    };
+    window.addEventListener('keydown', this.onKey);
+    this.onResize = () => { const d = window.innerWidth >= 1000; if (d !== this.state.desk) this.setState({ desk: d }); };
+    window.addEventListener('resize', this.onResize);
+    this.onScroll = () => { if (this.state.openId) this.state.scrollPos[this.state.openId] = window.scrollY; };
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    const today = new Date().toISOString().slice(0, 10);
+    if (this.state.lastDay !== today) {
+      const yest = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+      this.persist({ lastDay: today, streak: this.state.lastDay === yest ? this.state.streak + 1 : 1 });
+    }
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this.onKey); window.removeEventListener('resize', this.onResize); window.removeEventListener('scroll', this.onScroll); }
+
+  weekItems(n) { return ITEMS.filter((i) => i.w === n); }
+
+  openItem(id, keepFrom, dir) {
+    this.persist({ openId: id, fromTab: keepFrom ? this.state.fromTab : this.state.tab, sheet: null, searchOpen: false, navDir: dir || 0, navTick: this.state.navTick + 1 });
+    requestAnimationFrame(() => window.scrollTo(0, this.state.scrollPos[id] || 0));
+  }
+  celebrate(d) {
+    const w = this.state.week; if (!w) return;
+    const l = this.weekItems(w);
+    if (l.length && l.every((i) => d[i.id])) { clearTimeout(this._cel); this.setState({ justCelebrate: true }); this._cel = setTimeout(() => this.setState({ justCelebrate: false }), 1600); }
+  }
+  ringTo(target) {
+    if (this._ringTarget === target) return;
+    this._ringTarget = target;
+    cancelAnimationFrame(this._ringRaf);
+    const start = this.state.ringPct, t0 = performance.now();
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / 600), e = 1 - Math.pow(1 - k, 3);
+      this.setState({ ringPct: Math.round(start + (target - start) * e) });
+      if (k < 1) this._ringRaf = requestAnimationFrame(step);
+    };
+    this._ringRaf = requestAnimationFrame(step);
+  }
+
+  openSheet(key) { this.setState({ sheet: key, searchOpen: false, stepsDone: {} }); }
+
+  openItemSheet(id) { this.setState({ sheet: 'item:' + id, sheetFrom: null, searchOpen: false, stepsDone: {} }); }
+
+  typeChip(t) {
+    return t === 'tool'
+      ? 'display:inline-flex;padding:2px 9px;border-radius:999px;background:#edf4f2;color:#2c6356;font-size:10.5px;font-weight:700;letter-spacing:.03em'
+      : 'display:inline-flex;padding:2px 9px;border-radius:999px;background:#f1ece6;color:#64574b;font-size:10.5px;font-weight:700;letter-spacing:.03em';
+  }
+  checkStyle(on, size, jd) {
+    const s = size || 22;
+    return 'width:' + s + 'px;height:' + s + 'px;min-width:' + s + 'px;min-height:' + s + 'px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:' + (s - 11) + 'px;font-weight:700;cursor:pointer;padding:0;' +
+      (on ? 'background:#357160;border:1.5px solid #357160;color:#fff' : 'background:#ffffff;border:1.5px solid #ddd3c6;color:transparent') +
+      (jd && on ? ';animation:checkPop .3s cubic-bezier(.34,1.56,.64,1)' : '');
+  }
+  itemRow(it, idx, compact) {
+    const on = !!this.state.done[it.id];
+    const jd = this.state.justDone === it.id;
+    return {
+      title: it.title,
+      rowStyle: (compact
+        ? 'display:flex;align-items:center;gap:11px;border:1px solid #ebe5da;border-radius:10px;padding:10px 12px'
+        : 'display:flex;align-items:center;gap:12px;background:#ffffff;border:1px solid #ebe5da;border-radius:11px;padding:12px 14px;box-shadow:0 1px 3px rgba(59,51,44,.05)')
+        + ';animation:fadeUp .28s cubic-bezier(.2,.8,.2,1) both;animation-delay:' + ((idx || 0) * 35) + 'ms',
+      titleStyle: 'font-size:14.5px;font-weight:600;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;' + (on ? 'color:#87786a;background:linear-gradient(currentColor,currentColor) no-repeat 0 55%;background-size:100% 1.5px' + (jd ? ';animation:strikeDraw .35s ease' : '') : 'color:#3b332c'),
+      type: it.t === 'tool' ? 'tool' : 'read',
+      typeStyle: this.typeChip(it.t),
+      meta: it.t === 'tool' ? '' : it.min + ' min',
+      checkStyle: this.checkStyle(on, 22, jd),
+      checkMark: '✓',
+      toggle: (e) => { e.stopPropagation(); const d = { ...this.state.done }; d[it.id] = !d[it.id]; clearTimeout(this._jd); this.persist({ done: d, justDone: d[it.id] ? it.id : null }); this._jd = setTimeout(() => this.setState({ justDone: null }), 700); this.celebrate(d); },
+      open: () => this.openItem(it.id),
+    };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const week = WEEKS.find((w) => w.n === st.week) || null;
+    const wItems = st.week ? this.weekItems(st.week) : [];
+    const doneCount = wItems.filter((i) => st.done[i.id]).length;
+    const pctN = wItems.length ? Math.round((100 * doneCount) / wItems.length) : 0;
+    const nextItem = wItems.find((i) => !st.done[i.id]) || null;
+    const open = st.openId ? byId(st.openId) : null;
+    const hour = new Date().getHours();
+    const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const role = ROLES.find((r) => r.id === st.role) || null;
+    const roleShort = role ? role.name.split(' ')[0].replace('·', '') : 'there';
+
+    // next after open item
+    let nextAfter = null;
+    if (open && open.w) {
+      const list = this.weekItems(open.w);
+      const idx = list.indexOf(open);
+      nextAfter = list.slice(idx + 1).find((i) => !st.done[i.id]) || list.find((i) => !st.done[i.id] && i !== open) || null;
+    }
+
+    // search
+    const q = st.query.trim().toLowerCase();
+    const qWords = q ? expandQuery(q).split(/\s+/).filter(Boolean) : [];
+    const hits = (i) => { const hay = (i.title + ' ' + i.src + ' ' + i.sum).toLowerCase(); return hay.includes(q) || qWords.some((w) => w.length > 1 && hay.includes(w)); };
+    const pool = q
+      ? ITEMS.filter(hits)
+      : [...KIT.map((k) => ({ proto: k })), ...(nextItem ? [nextItem] : []), byId('mse-builder'), byId('ciwa-cows'), byId('pocket-card')].filter(Boolean);
+    const protoMatches = q ? KIT.filter((k) => { const hay = (PROTOCOLS[k].title + ' ' + PROTOCOLS[k].sub).toLowerCase(); return hay.includes(q) || qWords.some((w) => w.length > 1 && hay.includes(w)); }).map((k) => ({ proto: k })) : [];
+    const merged = [...protoMatches, ...pool].slice(0, 8);
+    const results = merged.map((r) => {
+      if (r.proto) {
+        const p = PROTOCOLS[r.proto];
+        return { title: p.title, meta: 'safety · protocol', dot: 'width:8px;height:8px;border-radius:50%;background:#a34132;flex:0 0 auto', pick: () => this.openSheet(r.proto) };
+      }
+      return {
+        title: r.title, meta: (r.t === 'tool' ? 'tool' : r.min + ' min read') + (r.w ? ' · wk ' + r.w : ''),
+        dot: 'width:8px;height:8px;border-radius:50%;background:' + (r.t === 'tool' ? '#3a7d6e' : '#8b7040') + ';flex:0 0 auto',
+        pick: () => this.openItemSheet(r.id),
+      };
+    });
+
+    // sheet
+    const sheetItem = st.sheet && st.sheet.indexOf('item:') === 0 ? byId(st.sheet.slice(5)) : null;
+    const sheetProto = st.sheet && st.sheet !== 'kit' && !sheetItem ? PROTOCOLS[st.sheet] : null;
+    const protoSteps = sheetProto ? sheetProto.steps.map((s, i) => ({
+      text: s,
+      checkStyle: this.checkStyle(!!st.stepsDone[i], 20),
+      checkMark: '✓',
+      toggle: () => { const sd = { ...st.stepsDone }; sd[i] = !sd[i]; this.setState({ stepsDone: sd }); },
+    })) : [];
+
+    const viewW = WEEKS.find((w) => w.n === st.viewWeek) || WEEKS[0];
+    const viewItems = this.weekItems(viewW.n);
+
+    const tabDefs = [ { id: 'today', label: 'Today' }, { id: 'path', label: 'Path' }, { id: 'library', label: 'Library' } ];
+
+    const libOnly = ITEMS.filter((i) => i.w === 0 && !st.done[i.id] && i.t === 'read');
+    const daily = libOnly.length ? libOnly[Math.floor(Date.now() / 864e5) % libOnly.length] : null;
+    if (st.screen === 'app' && st.tab === 'today' && !open && week) this.ringTo(pctN);
+
+    return {
+      // screens
+      showSetup1: st.screen === 'setup1',
+      showSetup2: st.screen === 'setup2',
+      showApp: st.screen === 'app',
+      showItem: st.screen === 'app' && !!open,
+      showMain: st.screen === 'app' && !open,
+      showToday: st.tab === 'today',
+      showPath: st.tab === 'path',
+      showLibrary: st.tab === 'library',
+      isDesk: st.desk, isMobile: !st.desk,
+
+      // setup
+      roles: ROLES.map((r) => ({ ...r, pick: () => this.persist({ role: r.id, screen: 'setup2' }) })),
+      roleLabel: role ? role.name.split(' · ')[0] : '',
+      weekChoices: WEEKS.map((w) => ({
+        n: w.n, title: w.title,
+        tileStyle: 'text-align:left;padding:13px 14px;background:#ffffff;border-radius:12px;cursor:pointer;box-shadow:0 1px 3px rgba(59,51,44,.06);border:1.5px solid ' + (st.week === w.n ? '#b0674e' : '#ddd3c6'),
+        pick: () => this.persist({ week: w.n, viewWeek: w.n, screen: 'app', tab: 'today', openId: null }),
+      })),
+      backFromWeek: () => this.persist({ screen: st.role && localStorage.getItem(STORE) && st.week ? 'app' : 'setup1' }),
+      pickBrowse: () => this.persist({ week: null, screen: 'app', tab: 'library', openId: null }),
+
+      // shell
+      tabs: tabDefs.map((t) => ({
+        label: t.label,
+        style: 'padding:10px 16px;background:none;border:none;cursor:pointer;font-size:13.5px;border-radius:0;font-weight:' + (st.tab === t.id ? '700' : '500') + ';color:' + (st.tab === t.id ? '#2c6356' : '#64574b') + ';border-bottom:3px solid ' + (st.tab === t.id ? '#3a7d6e' : 'transparent'),
+        go: () => { if (t.id === 'today' && st.tab !== 'today') { this._ringTarget = null; this.setState({ ringPct: 0 }); } this.persist({ tab: t.id, openId: null }); },
+      })),
+      goHome: () => { this._ringTarget = null; this.setState({ ringPct: 0 }); this.persist({ tab: 'today', openId: null }); },
+      weekPill: st.week ? 'Week ' + st.week : 'Set week',
+      changeWeek: () => this.persist({ screen: 'setup2' }),
+      openSearch: () => this.setState({ searchOpen: true, query: '' }),
+      openSafety: () => this.openSheet('kit'),
+
+      // today
+      greeting: (hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening') + ', ' + roleShort + ' —',
+      todaySub: (week ? 'Week ' + week.n + ' · ' + week.title + ' · ' + dayName : dayName + ' · browsing — no week set')
+        + (st.streak >= 2 ? ' · ' + st.streak + ' days in a row' : '')
+        + (week && week.n >= 5 ? (() => { const f = (5 - new Date().getDay() + 7) % 7, dd = f + (week.n === 5 ? 7 : 0); return dd === 0 ? ' · shelf day — good luck' : ' · shelf in ~' + dd + ' days'; })() : ''),
+      hasWeek: !!week, noWeek: !week,
+      ringStyle: 'width:52px;height:52px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:conic-gradient(#3a7d6e ' + st.ringPct + '%, #dde8e4 0)' + (st.justCelebrate ? ';animation:ringPulse .9s ease' : ''),
+      pct: st.ringPct + '%',
+      continueKickerStyle: 'display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:' + (wItems.length && doneCount === wItems.length ? '#96523b' : '#2c6356'),
+      continueKicker: doneCount === wItems.length && wItems.length ? 'Week ' + (week ? week.n : '') + ' complete' : 'Continue · Week ' + (week ? week.n : ''),
+      continueTitle: nextItem ? nextItem.title : (week ? 'Preview Week ' + Math.min(6, week.n + 1) : ''),
+      continueOpen: () => {
+        if (nextItem) this.openItem(nextItem.id);
+        else if (week && week.n < 6) this.persist({ tab: 'path', viewWeek: week.n + 1 });
+      },
+      weekCount: doneCount + ' of ' + wItems.length + ' done',
+      weekTimeLeft: (() => { const m = wItems.filter((i) => !st.done[i.id]).reduce((a, i) => a + (i.min || 0), 0); return m > 0 ? '~' + m + ' min left' : ''; })(),
+      weekTheme: week ? week.theme : '',
+      todayItems: wItems.map((it, i) => this.itemRow(it, i)),
+      hasDaily: !!daily, dailyTitle: daily ? daily.title : '', dailyMin: daily ? '~' + daily.min : '',
+      dailyOpen: () => { if (daily) this.openItem(daily.id); },
+      quickTools: (st.week ? wItems.filter((i) => i.t === 'tool') : ITEMS.filter((i) => i.t === 'tool').slice(0, 5))
+        .concat(st.week ? [byId('ciwa-cows'), byId('mse-builder')].filter((t) => t && t.w !== st.week) : [])
+        .slice(0, 5).map((t) => ({ title: t.title, open: () => this.openItem(t.id) })),
+
+      railKit: KIT.map((k) => { const p = PROTOCOLS[k]; return { short: p.title.split(' — ')[0], sub: p.sub, pick: () => this.setState({ sheet: k, sheetFrom: null, stepsDone: {} }) }; }),
+      paneRailShow: st.desk && !!open && !!open.w,
+      paneWeekN: open && open.w ? open.w : '',
+      paneDone: (() => { if (!open || !open.w) return ''; const l = this.weekItems(open.w); return l.filter((i) => st.done[i.id]).length + ' of ' + l.length + ' done'; })(),
+      paneNav: (open && open.w ? this.weekItems(open.w) : []).map((it) => {
+        const cur = it.id === st.openId, dn = !!st.done[it.id];
+        return {
+          title: it.title,
+          rowStyle: 'display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:none;cursor:pointer;padding:8px 10px;border-radius:8px;background:' + (cur ? '#f3ebe5' : 'none'),
+          dotStyle: 'width:16px;height:16px;min-width:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex:0 0 auto;' + (dn ? 'background:#357160;color:#fff;border:1.5px solid #357160' : 'color:transparent;background:#fffdf9;border:1.5px solid ' + (cur ? '#b0674e' : '#ddd3c6')),
+          tStyle: 'flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:12.5px;font-weight:600;color:' + (cur ? '#96523b' : dn ? '#87786a' : '#64574b'),
+          go: () => { const l = this.weekItems(open.w); this.openItem(it.id, true, l.indexOf(it) > l.indexOf(open) ? 1 : -1); },
+        };
+      }),
+
+      // path
+      pathWeeks: WEEKS.map((w) => {
+        const items = this.weekItems(w.n);
+        const dn = items.filter((i) => st.done[i.id]).length;
+        const isNow = st.week === w.n, isSel = st.viewWeek === w.n, allDone = dn === items.length && items.length > 0;
+        return {
+          n: w.n, title: w.title, flag: isNow ? '· you are here' : '', count: dn + '/' + items.length,
+          rowStyle: 'display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:' + (isSel ? '#f3ebe5' : 'none') + ';border:none;cursor:pointer;padding:8px 10px;border-radius:10px',
+          dotStyle: 'width:14px;height:14px;border-radius:50%;flex:0 0 auto;margin-top:3px;' + (allDone ? 'background:#357160;border:2px solid #357160' : isNow ? 'background:#b0674e;border:2px solid #b0674e;box-shadow:0 0 0 4px #f3ebe5' : 'background:#fffdf9;border:2px solid #ddd3c6'),
+          lineStyle: w.n < 6 ? 'width:2px;flex:1;background:#ebe5da;margin-top:4px;min-height:14px' : 'display:none',
+          titleStyle: 'display:block;font-size:14px;font-weight:600;line-height:1.3;margin-top:1px;color:' + (isSel ? '#96523b' : '#3b332c'),
+          view: () => this.persist({ viewWeek: w.n }),
+        };
+      }),
+      viewWeekN: viewW.n, viewWeekTitle: viewW.title,
+      viewIsCurrent: st.week === viewW.n, viewNotCurrent: st.week !== viewW.n,
+      viewWeekItems: viewItems.map((it, i) => this.itemRow(it, i, true)),
+      setAsMyWeek: () => this.persist({ week: viewW.n, tab: 'today' }),
+
+      // library
+      libCount: ITEMS.length,
+      libCols: LIB_COLS.map((c) => ({
+        name: c.name,
+        items: c.ids.map(byId).filter(Boolean).map((it) => ({
+          title: it.title,
+          dot: 'width:6px;height:6px;border-radius:50%;flex:0 0 auto;background:' + (it.t === 'tool' ? '#3a7d6e' : c.accent),
+          open: () => this.openItem(it.id),
+        })),
+      })),
+
+      // reading pane
+      backLabel: '‹'.length ? ({ today: 'Today', path: 'Path', library: 'Library' })[st.fromTab] || 'Today' : 'Today',
+      itemTitle: open ? open.title : '',
+      itemEyebrow: open ? (open.w ? 'Week ' + open.w + ' · ' + (open.t === 'tool' ? 'Interactive tool' : 'Reading') : (open.t === 'tool' ? 'Interactive tool' : 'Reading')) : '',
+      itemMeta: open ? (open.t === 'tool' ? 'self-paced' : open.min + ' min') : '',
+      itemSum: open ? open.sum : '',
+      itemHasPoints: !!(open && open.points), itemPoints: (open && open.points || []).map((p) => ({ text: p })),
+      itemHasTool: !!(open && open.tool), itemToolTitle: open && open.tool ? (byId(open.tool) || {}).title : '',
+      itemToolOpen: () => {
+        const t = open && open.tool ? byId(open.tool) : null;
+        if (!t) return;
+        if (t.id === 'cssrs') this.openSheet('suicide');
+        else if (t.id === 'agitation-trainer') this.openSheet('agitation');
+        else this.openItemSheet(t.id);
+      },
+      itemSrc: open ? open.src : '',
+      hasPrevNext: (() => { if (!open || !open.w) return false; const l = this.weekItems(open.w), i = l.indexOf(open); return !!(l[i - 1] || l[i + 1]); })(),
+      hasPrev: !!(open && open.w && this.weekItems(open.w).indexOf(open) > 0),
+      hasNext: !!(open && open.w && this.weekItems(open.w)[this.weekItems(open.w).indexOf(open) + 1]),
+      prevTitle: (() => { if (!open || !open.w) return ''; const l = this.weekItems(open.w), p = l[l.indexOf(open) - 1]; return p ? p.title : ''; })(),
+      nextTitle: (() => { if (!open || !open.w) return ''; const l = this.weekItems(open.w), n = l[l.indexOf(open) + 1]; return n ? n.title : ''; })(),
+      goPrev: () => { const l = this.weekItems(open.w), p = l[l.indexOf(open) - 1]; if (p) this.openItem(p.id, true, -1); },
+      goNext: () => { const l = this.weekItems(open.w), n = l[l.indexOf(open) + 1]; if (n) this.openItem(n.id, true, 1); },
+      doneLabel: st.done[st.openId] ? (nextAfter ? 'Next: ' + nextAfter.title + ' →' : 'Back to Today') : (nextAfter ? 'Mark done · Next: ' + nextAfter.title + ' →' : 'Mark done'),
+      markDone: () => {
+        const d = { ...st.done }; d[st.openId] = true;
+        const auto = this.props.autoAdvance ?? true;
+        this.celebrate(d);
+        if (auto && nextAfter) { this.persist({ done: d, openId: nextAfter.id, navDir: 1, navTick: st.navTick + 1 }); requestAnimationFrame(() => window.scrollTo(0, this.state.scrollPos[nextAfter.id] || 0)); }
+        else this.persist({ done: d, openId: null, tab: st.fromTab });
+      },
+      closeItem: () => this.persist({ openId: null }),
+      paneAnim: 'animation:' + (st.navDir ? (st.navDir > 0 ? (st.navTick % 2 ? 'slideRA' : 'slideRB') : (st.navTick % 2 ? 'slideLA' : 'slideLB')) : 'fadeUp') + ' .24s cubic-bezier(.2,.8,.2,1)',
+
+      // search
+      searchOpen: st.searchOpen, query: st.query,
+      setQuery: (e) => this.setState({ query: e.target.value }),
+      searchKey: (e) => { if (e.key === 'Enter' && results[0]) results[0].pick(); },
+      results, noResults: q.length > 0 && results.length === 0,
+      closeOverlays: () => this.setState({ searchOpen: false }),
+      swallow: (e) => e.stopPropagation(),
+
+      // sheet
+      sheetVisible: !!st.sheet,
+      sheetIsKit: st.sheet === 'kit', sheetIsProto: !!sheetProto, sheetIsItem: !!sheetItem,
+      sheetTitle: st.sheet === 'kit' ? 'Safety kit' : sheetProto ? sheetProto.title : sheetItem ? sheetItem.title : '',
+      sheetItemType: sheetItem ? (sheetItem.t === 'tool' ? 'tool' : 'read') : '',
+      sheetItemTypeStyle: sheetItem ? this.typeChip(sheetItem.t) : '',
+      sheetItemMeta: sheetItem ? ((sheetItem.t === 'tool' ? 'self-paced' : sheetItem.min + ' min') + (sheetItem.w ? ' · Week ' + sheetItem.w : '')) : '',
+      sheetItemSum: sheetItem ? sheetItem.sum : '',
+      sheetItemSrc: sheetItem ? sheetItem.src : '',
+      sheetItemGo: () => { if (sheetItem) this.openItem(sheetItem.id, true); },
+      sheetHasBack: !!sheetProto && st.sheetFrom === 'kit',
+      sheetBack: () => this.setState({ sheet: 'kit', sheetFrom: null }),
+      kitRows: KIT.map((k) => ({ title: PROTOCOLS[k].title, sub: PROTOCOLS[k].sub, pick: () => this.setState({ sheet: k, sheetFrom: 'kit', stepsDone: {} }) })),
+      protoSteps, protoDoc: sheetProto ? sheetProto.doc : '', protoSrc: sheetProto ? sheetProto.src : '',
+      protoHasPage: !!(sheetProto && sheetProto.page),
+      protoOpenPage: () => { if (sheetProto && sheetProto.page) this.openItem(sheetProto.page); },
+      closeSheet: () => {
+        this.setState({ sheet: null, sheetFrom: null });
+        if (sheetProto && sheetProto.page && !st.done[sheetProto.page]) {
+          const pg = byId(sheetProto.page);
+          clearTimeout(this._ng);
+          this.setState({ nudge: { id: pg.id, text: '“' + pg.title + '” is the full read — ' + pg.min + ' min.' } });
+          this._ng = setTimeout(() => this.setState({ nudge: null }), 8000);
+        }
+      },
+      nudgeShow: !!st.nudge,
+      nudgeText: st.nudge ? st.nudge.text : '',
+      nudgeGo: () => { const n = st.nudge; this.setState({ nudge: null }); if (n) this.openItem(n.id); },
+      nudgeDismiss: () => this.setState({ nudge: null }),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -95,6 +95,26 @@ test('week 5 adds the extra week', () => {
   assert.equal(fdExamCountdown(5, wed), '· exam in ~9 days');
 });
 
+// The split of responsibility, made explicit rather than left as an accident of these fixtures:
+// the fragment owns its separator DOT and the caller owns the SPACE that joins it to whatever
+// precedes it (fd_today.js's subhead does exactly that, as its own streak clause already did).
+// Every expectation in this file asserts the space-less form; without this test that reads as
+// "the leading space was forgotten", and fd_today.js originally concatenated it as though the
+// fragment were self-spacing, printing "Sunday· exam in ~5 days". Whichever half moves, one of
+// these two tests fails: tests/fd-today.test.mjs pins the joined string.
+test('the countdown is a bare fragment: separator dot included, leading space NOT', () => {
+  const { fdExamCountdown } = make(memStorage());
+  for (const week of [5, 6]) {
+    for (let d = 0; d < 7; d++) {
+      const out = fdExamCountdown(week, new Date(2026, 7, 10 + d, 9, 0, 0).getTime());
+      if (out === '') continue;
+      assert.equal(out[0], '·', `week ${week} day ${d}: the fragment carries its own separator`);
+      assert.doesNotMatch(out, /^\s/, `week ${week} day ${d}: the caller supplies the space`);
+      assert.doesNotMatch(out, /\s$/, `week ${week} day ${d}: and nothing trails`);
+    }
+  }
+});
+
 // Monday 2026-08-10 … Sunday 2026-08-16 is one full rotation week. Pinning EVERY weekday is
 // the point: the prior loop walked seven days but asserted only that no audience token
 // appeared, so a formula that produced 13 on the Saturday of week 5 passed it unnoticed.

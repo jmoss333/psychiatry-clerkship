@@ -46,6 +46,7 @@ Usage:  python3 validate_curriculum.py [curriculum.json] [site_manifest.json]
 import ast
 import json
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -113,6 +114,11 @@ def extra_shipped_slugs():
 
 
 EXTRA_SHIPPED = extra_shipped_slugs()
+
+# roles[].name / roles[].desc are DISPLAYED copy (unlike id, an identifier) and curriculum.json
+# ships to both site builds unrebranded, so the front-door analogue of tests/shell-copy.test.mjs's
+# audience-token scan applies here too — mirrors AUDIENCE_TOKEN_RE in that file.
+ROLE_AUDIENCE_TOKEN_RE = re.compile(r"MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford", re.IGNORECASE)
 
 
 def main(argv):
@@ -263,6 +269,33 @@ def main(argv):
             continue
         if ref not in shipped:
             bad("safetyKit", "ref '%s' is not a shipped slug" % ref)
+
+    # ---- roles: id/name/desc non-empty, and the displayed text is audience-neutral ----
+    # curriculum.json is one document read by both site builds, so a role's displayed name/desc
+    # (id is an identifier, not copy, and is exempt) must not carry an audience-specific token —
+    # the front-door analogue of tests/shell-copy.test.mjs's shared-copy scan.
+    roles = cur.get("roles")
+    if not isinstance(roles, dict):
+        bad("roles", "must be an object")
+        roles = {}
+    for site in ("ms3", "resident"):
+        site_roles = roles.get(site)
+        if not isinstance(site_roles, list):
+            bad("roles.%s" % site, "must be a list")
+            continue
+        for idx, r in enumerate(site_roles):
+            label = "roles.%s[%d]" % (site, idx)
+            if not isinstance(r, dict):
+                bad(label, "each role must be an object")
+                continue
+            for field in ("id", "name", "desc"):
+                val = r.get(field)
+                if not isinstance(val, str) or not val.strip():
+                    bad(label, "'%s' must be a non-empty string" % field)
+            for field in ("name", "desc"):
+                val = r.get(field)
+                if isinstance(val, str) and ROLE_AUDIENCE_TOKEN_RE.search(val):
+                    bad(label, "'%s' contains an audience-specific token: %r" % (field, val))
 
     if errs:
         print("curriculum.json INVALID — %d issue(s):" % len(errs))
