@@ -4,7 +4,7 @@
 
 **Goal:** Build and unit-test the seven remaining front-door modules plus its stylesheet, leaving the shipped shell untouched.
 
-**Architecture:** Every renderer is a **pure function of `(data, state) → HTML string`** with no DOM access — the shell's existing idiom, and what makes these modules testable before anything consumes them. A join layer (`fd_data.js`) turns `curriculum.json` + `topic_meta.json` + `tool_registry.json` into one item index the other six read. Event handling and browser APIs are confined to `fd_shell.js`. `index.html` is not modified by this plan.
+**Architecture:** Every renderer is a **pure function of `(data, state) → HTML string`** with no DOM access — the shell's existing idiom, and what makes these modules testable before anything consumes them. A join layer (`fd_data.js`) turns `curriculum.json` + `topic_meta.json` + `tool_registry.json` + `site_manifest.json` into one item index the other six read. Event handling and browser APIs are confined to `fd_shell.js`. `index.html` is not modified by this plan.
 
 **Tech Stack:** ES5-compatible vanilla JS snippet sources, `node:test`, CSS custom properties.
 
@@ -33,7 +33,7 @@ All under `13_Faculty_Resources/_automation/site_build/frontdoor/`, joining `fd_
 
 | File | Responsibility | Task |
 |---|---|---|
-| `fd_data.js` | Join `curriculum` + `topicMeta` + `toolRegistry` into one item index; `fdEsc` | 1 |
+| `fd_data.js` | Join `curriculum` + `topicMeta` + `toolRegistry` + `siteManifest` into one item index; `fdEsc` | 1 |
 | `frontdoor.css` | Layout + component CSS (tokens live in `clinical-warm.css`) | 2 |
 | `fd_shell.js` | Header, tab row, first-run wizard, keyboard map | 3 |
 | `fd_today.js` | Greeting, due row, Continue card + ring, week list, daily pick, rails | 4 |
@@ -49,7 +49,9 @@ Tests land as `tests/fd-<name>.test.mjs`, mirroring `tests/fd-state.test.mjs`.
 
 ### Task 1: `fd_data.js` — the join layer
 
-Every other module needs an item's title, minutes, summary, and attestation. Those facts live in `topic_meta.json`, not `curriculum.json` (spec §4.2 — structure and facts are deliberately separated so neither duplicates the other). This module performs that join once.
+Every other module needs an item's title, minutes, summary, and attestation. Those facts are spread across three files (spec §4.2 — structure and facts are deliberately separated so neither duplicates the other). This module performs the join once.
+
+**Titles come from `site_manifest.json`, not `topic_meta.json`.** `topic_meta` has no `title` field on any of its 73 entries — it describes a page's *content*, not its identity. `site_manifest.json` is the registry of shipped pages and carries `[sourcePath, slug, title]` for both `md` and `tools`; its tool titles match `tool_registry.json` exactly, so the manifest is the single title source for both kinds and `tool_registry` is consulted only for `riskLevel`.
 
 **Files:**
 - Create: `13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js`
@@ -59,7 +61,7 @@ Every other module needs an item's title, minutes, summary, and attestation. Tho
 - Consumes: nothing.
 - Produces, all global on the injected page:
   - `fdEsc(s) -> string` — HTML-escapes `& < > " '`. Every other task uses it.
-  - `fdBuildIndex(curriculum, topicMeta, toolRegistry) -> index` where `index` is
+  - `fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest) -> index` where `index` is
     `{ byRef: {<ref>: item}, weeks: [{n, title, theme, items: [item]}], columns: [{name, accent, items: [item]}], kit: [{item, sub}] }`
     and each `item` is `{ ref, kind, title, minutes, summary, points, attested, toolRef, risk, href }`.
     `kind` is `'read'` or `'tool'`; `minutes` is a number or `null`; `points` is an array (possibly empty); `attested` is a boolean; `toolRef` is a slug or `null`; `risk` is `'high'|'moderate'|'low'|null`; `href` is `'?page=<ref>'` or `'?tool=<ref>'`.
@@ -94,6 +96,7 @@ const readJson = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'ut
 const CUR = readJson('../curriculum.json');
 const META = readJson('../topic_meta.json');
 const TOOLS = readJson('../tool_registry.json');
+const MAN = readJson('../13_Faculty_Resources/_automation/site_build/site_manifest.json');
 
 const FIX_CUR = {
   weeks: [{ n: 1, title: 'W1', theme: 'T1', items: [{ ref: 'a.md', kind: 'read' }] },
@@ -112,6 +115,8 @@ const FIX_META = {
   'b.md': { read: 3, tldr: 'Summary B' },
 };
 const FIX_TOOLS = { tools: [{ file: 't.html', title: 'Tool T', category: 'acute-safety', riskLevel: 'high' }] };
+const FIX_MAN = { tools: [['src/t.html', 't.html', 'Tool T']],
+                  md: [['src/a.md', 'a.md', 'Page A'], ['src/b.md', 'b.md', 'Page B']] };
 
 test('fdEsc escapes every character that could break out of markup', () => {
   assert.equal(F.fdEsc('<b>&"\'</b>'), '&lt;b&gt;&amp;&quot;&#39;&lt;/b&gt;');
@@ -123,7 +128,7 @@ test('fdEsc coerces null and undefined to an empty string rather than printing t
 });
 
 test('an item joins minutes, summary, points and attestation from topic_meta', () => {
-  const i = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS).byRef['a.md'];
+  const i = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN).byRef['a.md'];
   assert.equal(i.minutes, 6);
   assert.equal(i.summary, 'Summary A');
   assert.deepEqual(i.points, ['p1', 'p2']);
@@ -134,7 +139,7 @@ test('an item joins minutes, summary, points and attestation from topic_meta', (
 test('a page with no topic_meta entry still yields a usable item', () => {
   const cur = JSON.parse(JSON.stringify(FIX_CUR));
   cur.libraryColumns[0].refs.push('orphan.md');
-  const i = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS).byRef['orphan.md'];
+  const i = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN).byRef['orphan.md'];
   assert.equal(i.minutes, null, 'missing metadata must degrade, not throw');
   assert.equal(i.summary, '');
   assert.deepEqual(i.points, []);
@@ -144,48 +149,48 @@ test('a page with no topic_meta entry still yields a usable item', () => {
 test('attested is true only for facultyReview.status "reviewed"', () => {
   for (const [status, expected] of [['reviewed', true], ['pending', false], ['draft', false], ['retired', false]]) {
     const meta = { 'a.md': { read: 1, tldr: 'x', facultyReview: { status } } };
-    assert.equal(F.fdBuildIndex(FIX_CUR, meta, FIX_TOOLS).byRef['a.md'].attested, expected, status);
+    assert.equal(F.fdBuildIndex(FIX_CUR, meta, FIX_TOOLS, FIX_MAN).byRef['a.md'].attested, expected, status);
   }
 });
 
 test('href routes by kind so deep links keep working', () => {
-  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS);
+  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
   assert.equal(idx.byRef['a.md'].href, '?page=a.md');
   const cur = JSON.parse(JSON.stringify(FIX_CUR));
   cur.libraryColumns[0].refs.push('t.html');
-  assert.equal(F.fdBuildIndex(cur, FIX_META, FIX_TOOLS).byRef['t.html'].href, '?tool=t.html');
+  assert.equal(F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN).byRef['t.html'].href, '?tool=t.html');
 });
 
 test('a tool item takes its title and risk from tool_registry', () => {
   const cur = JSON.parse(JSON.stringify(FIX_CUR));
   cur.libraryColumns[0].refs.push('t.html');
-  const i = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS).byRef['t.html'];
+  const i = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN).byRef['t.html'];
   assert.equal(i.title, 'Tool T');
   assert.equal(i.risk, 'high');
   assert.equal(i.kind, 'tool');
 });
 
 test('weeks carry resolved items in curriculum order', () => {
-  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS);
+  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
   assert.equal(idx.weeks.length, 6);
   assert.equal(idx.weeks[0].items[0].ref, 'a.md');
   assert.equal(idx.weeks[0].items[0].summary, 'Summary A', 'week items must be joined, not bare refs');
 });
 
 test('the kit carries its subtitle alongside the resolved item', () => {
-  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS);
+  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
   assert.equal(idx.kit[0].sub, 'Sub line');
   assert.equal(idx.kit[0].item.ref, 'a.md');
 });
 
 test('fdItemsForWeek returns that week only, and [] for an unknown week', () => {
-  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS);
+  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
   assert.equal(F.fdItemsForWeek(idx, 1).length, 1);
   assert.deepEqual(F.fdItemsForWeek(idx, 9), []);
 });
 
 test('fdLibraryOnlyReads excludes week items and excludes tools', () => {
-  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS);
+  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
   const refs = F.fdLibraryOnlyReads(idx).map((i) => i.ref);
   assert.ok(refs.indexOf('b.md') !== -1, 'b.md is in a column but no week');
   assert.ok(refs.indexOf('a.md') === -1, 'a.md is a week item');
@@ -193,13 +198,27 @@ test('fdLibraryOnlyReads excludes week items and excludes tools', () => {
 
 // ---- against the REAL repo data -----------------------------------------------------
 
-test('the real curriculum joins without throwing and resolves every week item', () => {
-  const idx = F.fdBuildIndex(CUR, META, TOOLS);
+test('titles resolve to the real page names, not to the slug', () => {
+  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
+  // Asserting against known titles rather than truthiness: `title` falls back to `ref`, which is
+  // always truthy, so assert.ok(it.title) passes even when every title is broken.
+  assert.equal(idx.byRef['pg_suicide.md'].title, 'Suicide Risk & Safety Card');
+  assert.equal(idx.byRef['mse.html'].title, 'Mental Status Exam');
+});
+
+test('no real item falls back to its slug as a title', () => {
+  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
+  const fellBack = Object.keys(idx.byRef).filter((r) => idx.byRef[r].title === r);
+  assert.deepEqual(fellBack, [],
+    `every placed page is in site_manifest.json, so none should degrade to its slug: ${fellBack}`);
+});
+
+test('the real curriculum joins without throwing and routes every week item', () => {
+  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
   assert.equal(idx.weeks.length, 6);
   let n = 0;
   for (const w of idx.weeks) {
     for (const it of w.items) {
-      assert.ok(it.title, `week ${w.n} item ${it.ref} has no title`);
       assert.ok(it.href.indexOf('?') === 0, `week ${w.n} item ${it.ref} has no route`);
       n += 1;
     }
@@ -207,20 +226,15 @@ test('the real curriculum joins without throwing and resolves every week item', 
   assert.equal(n, 40, 'expected the 40 week items curriculum.json ships');
 });
 
-test('every real library column item resolves to a titled item', () => {
-  const idx = F.fdBuildIndex(CUR, META, TOOLS);
+test('every real library column item resolves', () => {
+  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
   let placed = 0;
-  for (const c of idx.columns) {
-    for (const it of c.items) {
-      assert.ok(it.title, `${c.name}: ${it.ref} has no title`);
-      placed += 1;
-    }
-  }
+  for (const c of idx.columns) placed += c.items.length;
   assert.equal(placed, 81, 'expected the 81 pages curriculum.json places');
 });
 
 test('all five real kit items are attested and carry safety steps', () => {
-  const idx = F.fdBuildIndex(CUR, META, TOOLS);
+  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
   assert.equal(idx.kit.length, 5);
   for (const k of idx.kit) {
     assert.equal(k.item.attested, true, `${k.item.ref} must be attested to appear in the kit`);
@@ -257,15 +271,18 @@ function fdIsTool(ref){ return /\.html$/.test(ref); }
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */
-function fdMakeItem(ref, kind, topicMeta, toolIndex){
+function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex){
   var m=topicMeta[ref]||{};
   var t=toolIndex[ref]||null;
   var fr=m.facultyReview||{};
   var isTool=(kind==='tool')||fdIsTool(ref);
   return {
     ref: ref,
-    kind: isTool?'tool':'read',
-    title: (t&&t.title)||m.title||ref,
+    /* Title comes from site_manifest.json, the registry of shipped pages. topic_meta has no
+       title field on any entry -- it describes a page's content, not its identity -- so reading
+       one there would silently degrade every .md row to its raw slug. Falling back to the ref is
+       for a page the manifest does not list, which the curriculum validator already rejects. */
+    title: titleIndex[ref]||ref,
     minutes: (typeof m.read==='number')?m.read:null,
     summary: m.tldr||'',
     points: (m.points&&m.points.length)?m.points:[],
@@ -276,14 +293,21 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex){
   };
 }
 
-function fdBuildIndex(curriculum, topicMeta, toolRegistry){
+function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var meta=topicMeta||{}, cur=curriculum||{};
   var toolIndex={}, list=(toolRegistry&&toolRegistry.tools)||[];
   for(var i=0;i<list.length;i++){ toolIndex[list[i].file]=list[i]; }
 
+  /* site_manifest entries are [sourcePath, slug, title] triples for both md and tools. */
+  var titleIndex={}, man=siteManifest||{};
+  var groups=[man.tools||[], man.md||[]];
+  for(var g=0;g<groups.length;g++){
+    for(var e=0;e<groups[g].length;e++){ titleIndex[groups[g][e][1]]=groups[g][e][2]; }
+  }
+
   var byRef={};
   function ensure(ref, kind){
-    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex);
+    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, titleIndex);
     return byRef[ref];
   }
 

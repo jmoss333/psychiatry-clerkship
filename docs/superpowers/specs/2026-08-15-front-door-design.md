@@ -220,6 +220,7 @@ Everything *about* an item joins from where it already lives:
 
 | Design field | Source |
 |---|---|
+| title | `site_manifest.json` — the `[sourcePath, slug, title]` triple. **Not `topic_meta`**, which has no title field on any entry: it describes a page's content, not its identity |
 | minutes ("6 min") | `topic_meta[slug].read` |
 | summary | `topic_meta[slug].tldr` |
 | Key points callout | `topic_meta[slug].points` |
