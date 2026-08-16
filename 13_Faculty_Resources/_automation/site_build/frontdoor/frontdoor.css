@@ -72,6 +72,19 @@
 .fd-src{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:11.5px;background:var(--fd-chip);border-radius:6px;padding:2px 8px;color:var(--fd-text-mid)}
 .fd-tip{margin:8px 0 0;font-size:11.5px;color:var(--fd-text-dim)}
 
+/* Visually-hidden text that MUST still reach the accessible name — the clip-path form, because
+ * display:none and visibility:hidden remove a node from the accessibility tree as well as from
+ * the page, which would defeat the entire point.
+ *
+ * Distinct from the shell's own .vh-live (spa_index.html), which is the aria-live announcement
+ * channel: that one is a standalone region, this one is an INLINE state suffix inside a control's
+ * label. Kept separate so a future change to the live region's positioning cannot silently move
+ * text that is sitting inside a flex row. */
+.fd-vh{
+  position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;
+  overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;
+}
+
 /* ═══ First-run setup (steps 1 and 2) ════════════════════════════════════════ */
 
 .fd-setup{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
@@ -331,6 +344,115 @@
 .fd-kitcard__title{display:block;font-size:13px;font-weight:600;color:var(--fd-text)}
 .fd-kitcard__sub{display:block;font-size:11.5px;color:var(--fd-text-dim);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 
+/* Due row (fd_due.js). No prototype equivalent — the handoff's Today has no spaced-review queue.
+ * Laid out as a ROW rather than a card on purpose, carried over from the deleted `.hm-due`: the
+ * scheduled-review count used to live a screen and a half down a phone, so anyone returning
+ * scrolled past everything to discover an overdue card. One row is the smallest thing that can
+ * sit above Continue without displacing it.
+ *
+ * Teal wash + teal left edge, matching .fd-continue's family, because "you have reviews waiting"
+ * is a prompt, not a warning; --fd-danger stays reserved for clinical risk (same rule
+ * .fd-fallback states). The overdue pill is the one terracotta accent, since that is the part
+ * that is actually late. */
+.fd-due{
+  display:flex;align-items:center;flex-wrap:wrap;gap:10px;width:100%;text-align:left;
+  margin:0 0 14px;padding:12px 16px;border-radius:12px;cursor:pointer;font:inherit;
+  background:var(--fd-teal-wash);border:1px solid var(--fd-teal);border-left:4px solid var(--fd-teal);
+  color:var(--fd-text);
+}
+.fd-due:hover{background:color-mix(in srgb,var(--fd-teal-wash) 88%,var(--fd-teal))}
+.fd-due__k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--fd-teal-deep)}
+.fd-due__n{font-family:Georgia,'Times New Roman',serif;font-size:21px;font-weight:700;line-height:1;color:var(--fd-text)}
+.fd-due__label{font-size:13px;color:var(--fd-text-mid)}
+.fd-due__over{
+  padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:700;
+  background:var(--fd-selected);color:var(--fd-terracotta-dark);
+}
+.fd-due__go{margin-left:auto;font-size:13px;font-weight:700;color:var(--fd-teal-deep)}
+.fd-due__also{flex:0 0 100%;font-size:11.5px;color:var(--fd-text-mid)}
+
+/* Ward question capture (fd_due.js). The button is a dashed placeholder-shaped control, ported
+ * from the deleted `.capture-desk`: it invites input without competing with Continue or the due
+ * row for attention, which is right for something used a few times a day at most. */
+.fd-capturebtn{
+  display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:40px;
+  margin:14px 0 0;padding:9px 12px;border-radius:10px;cursor:pointer;
+  background:transparent;border:1.5px dashed var(--fd-line-strong);
+  color:var(--fd-text-mid);font:inherit;font-size:13px;font-weight:600;
+}
+.fd-capturebtn:hover{border-style:solid;border-color:var(--fd-terracotta);color:var(--fd-terracotta-dark)}
+.fd-capture{margin:18px 0 0}
+.fd-capture__purpose{margin:0 0 10px;font-size:13px;line-height:1.5;color:var(--fd-text-mid);max-width:70ch}
+/* The honest degraded branch: matching is unavailable, the questions are not lost. Callout wash
+ * rather than a danger tint, for the reason .fd-fallback gives — nothing here is a risk. */
+.fd-capture__degraded{
+  margin:0 0 10px;padding:9px 12px;border-radius:9px;
+  background:var(--fd-callout);border:1px solid var(--fd-line);
+  font-size:12.5px;color:var(--fd-text-mid);
+}
+.fd-capture__item{
+  padding:12px 14px;margin:0 0 8px;border-radius:12px;
+  background:var(--fd-surface);border:1px solid var(--fd-line);box-shadow:var(--fd-shadow-sm);
+}
+.fd-capture__q{margin:0 0 8px;font-size:14px;font-weight:600;line-height:1.45;color:var(--fd-text)}
+.fd-capture__acts{display:flex;flex-wrap:wrap;gap:8px}
+.fd-capture__act{
+  display:inline-flex;align-items:center;padding:7px 12px;border-radius:999px;cursor:pointer;
+  background:var(--fd-chip);border:1px solid var(--fd-line-strong);
+  color:var(--fd-text-mid);font:inherit;font-size:12.5px;font-weight:600;
+}
+.fd-capture__act:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
+.fd-capture__foot{margin:10px 0 0}
+
+/* Entry point for the demoted Progress page (spec §1). Quiet by construction: it is the last
+ * thing in Today's main column and it is the only row on the page with no action verb, because
+ * looking at your own analytics is never the next clinical thing to do. */
+.fd-progresslink{
+  display:block;width:100%;text-align:left;margin:18px 0 0;padding:12px 14px;
+  border-radius:12px;cursor:pointer;font:inherit;
+  background:transparent;border:1px solid var(--fd-line);color:var(--fd-text);
+}
+.fd-progresslink:hover{border-color:var(--fd-line-hover);background:var(--fd-callout)}
+.fd-progresslink__title{display:block;font-size:14px;font-weight:600;color:var(--fd-text)}
+.fd-progresslink__sub{display:block;margin-top:2px;font-size:12px;color:var(--fd-text-dim)}
+
+/* ═══ Progress & mastery ═════════════════════════════════════════════════════
+ * The demoted reading-pane page (spec §1). Rendered by fdProgress() in spa_index.html — see the
+ * comment there for why it is not a frontdoor/ module.
+ *
+ * NOTE: renderCalibPanel()'s metacognition card still emits the pre-swap `.hm-*` markup, which is
+ * styled by spa_index.html's own <style> block against the OLD palette tokens. It renders as a
+ * coherent card in both themes, just not in this page's idiom. Restyling it means re-pointing
+ * tests/calib-panel.test.mjs, which slices that function verbatim — Task 8's work, not a CSS
+ * change that can be made here alone.
+ */
+.fd-progress{max-width:760px;animation:fdFadeUp .24s cubic-bezier(.2,.8,.2,1)}
+.fd-progress__coverage{margin:0 0 22px;font-size:13.5px;color:var(--fd-text-mid)}
+.fd-progress__empty{margin:0 0 10px;font-size:13px;color:var(--fd-text-dim)}
+.fd-progress__note{margin:0 0 12px;font-size:13px;line-height:1.5;color:var(--fd-text-mid);max-width:70ch}
+.fd-progress__field{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 22px}
+.fd-progress__field label{font-size:12.5px;font-weight:600;color:var(--fd-text-mid)}
+.fd-progress__field input{
+  padding:9px 11px;border-radius:9px;font:inherit;font-size:13.5px;
+  background:var(--fd-surface);border:1px solid var(--fd-line-strong);color:var(--fd-text);
+}
+.fd-bars{margin:0 0 22px}
+.fd-bar{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:13px}
+.fd-bar__label{flex:0 0 40%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--fd-text-mid)}
+.fd-bar__track{flex:1;height:8px;border-radius:999px;overflow:hidden;background:var(--fd-ring-track)}
+.fd-bar__fill{display:block;height:100%;background:var(--fd-teal)}
+.fd-bar__value{flex:0 0 92px;text-align:right;font-size:11.5px;color:var(--fd-text-dim)}
+.fd-progressrow{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:11px 14px;border-radius:12px;cursor:pointer;font:inherit;
+  background:var(--fd-surface);border:1px solid var(--fd-line);color:var(--fd-text);
+}
+.fd-progressrow:hover{border-color:var(--fd-terracotta)}
+.fd-progressrow__title{flex:1;min-width:0;font-size:14px;font-weight:600}
+.fd-progressrow__meta{flex:0 0 auto;font-size:12px;font-weight:700;color:var(--fd-terracotta-dark)}
+/* The add-to-home-screen instruction. Its only home was the deleted Start-here screen. */
+.fd-a2hs{margin:26px 0 0;padding-top:16px;border-top:1px solid var(--fd-line);font-size:12.5px;color:var(--fd-text-dim)}
+
 /* ═══ Path ═══════════════════════════════════════════════════════════════════ */
 
 .fd-path{animation:fdFadeUp .24s cubic-bezier(.2,.8,.2,1)}
@@ -535,6 +657,32 @@
 .fd-actionbar .fd-btn--ghost{flex:0 0 auto;padding:12px 15px;font-size:13.5px}
 .fd-actionbar .fd-btn--primary{flex:1;min-width:0;justify-content:center}
 .fd-actionbar .fd-btn--primary span{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+/* Tool pane — the reading pane's other half (CLASS-INVENTORY §6 is "Reader (reading / tool
+ * pane)"). No prototype equivalent: the handoff's fixture data has no interactive tools, so
+ * these four rules replace the deleted shell's `#content.toolmode` / `.toolframe` pair rather
+ * than porting a design.
+ *
+ * .fd-toolmount is a FLEX CHILD OF .fd-shell, not a descendant of .fd-main, and that is the
+ * whole point — an <iframe> re-inserted into the DOM reloads, so the frame has to live outside
+ * the element fdMount rewrites. `flex:1` is what gives it the viewport's remaining height, which
+ * only works because .fd-shell is `display:flex;flex-direction:column;min-height:100vh`.
+ * `:empty` (fdMount writes exactly '' when no tool is open) keeps it out of the flex flow
+ * entirely on every other surface, so it can never steal space from Today.
+ *
+ * min-height is a floor, not the height, and it is an ABSOLUTE value rather than a vh one on
+ * purpose: flex:1 already does the "fill the viewport" job, so the floor's only job is the case
+ * where that fails. An iframe with no height of its own falls back to 150px — a tool squeezed to
+ * 150px is unusable, and the failure is silent. Exceeding the viewport and scrolling the shell is
+ * the better failure of the two. */
+.fd-toolmount{display:none}
+.fd-toolmount:not(:empty){display:flex;flex:1 1 auto;min-height:420px}
+.fd-toolframe{flex:1 1 auto;width:100%;min-height:0;display:block;border:0;background:var(--fd-bg)}
+/* Back link + review-status notice above the frame. The bottom padding of .fd-main is 64px of
+ * dead space when a full-height frame follows it, hence the modifier rather than a blanket
+ * change to .fd-main. */
+.fd-toolpane{display:block}
+.fd-main--tool{padding-bottom:12px}
 
 /* ═══ Search overlay ═════════════════════════════════════════════════════════ */
 

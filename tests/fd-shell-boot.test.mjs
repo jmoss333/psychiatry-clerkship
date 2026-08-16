@@ -151,8 +151,14 @@ test('SURVIVOR: SRS / question-bank helpers — consumer: Task 5 ports their sur
 test('SURVIVOR: ward-capture store — consumer: Task 5 ports its triage surface', () => {
   assert.match(source, /function capOpen\(invoker\)\{/, 'the capture dialog');
   assert.match(source, /function capSave\(force\)\{/, 'the PHI-interstitial write path');
-  assert.match(source, /function capTriageHtml\(\)\{/, 'the triage card Task 5 restyles');
   assert.match(source, /'cw_capture_v1'/, 'the store key, written as a literal for the QA gate scan');
+  // Task 5 DID port the triage surface, and porting it moved the markup: capTriageHtml() is gone
+  // and fd_due.js's fdCaptureTriage() renders it from data fd_wire.js's fdCaptureState() reads.
+  // The thing to pin here is therefore the marker — lose it and the store has a writer, a PHI
+  // interstitial, and nowhere to show what it holds.
+  assert.equal(source.split('/*__FD_DUE__*/').length - 1, 1,
+    'exactly one FD_DUE marker — the due row and the capture triage arrive through it');
+  assert.match(source, /function dueBreakdown\(\)\{/, 'the due row is built from it');
 });
 
 // ---- the standing disclaimer --------------------------------------------------------
@@ -209,6 +215,7 @@ function makeRender(sabotage) {
     ${read('phase_policy.js')}
     ${read('frontdoor/fd_state.js')}
     ${read('frontdoor/fd_data.js')}
+    ${read('frontdoor/fd_due.js')}
     ${read('frontdoor/fd_today.js')}
     ${read('frontdoor/fd_shell.js')}
     ${read('frontdoor/fd_path.js')}
@@ -216,6 +223,7 @@ function makeRender(sabotage) {
     ${read('frontdoor/fd_reader.js')}
     ${read('frontdoor/fd_search.js')}
     ${read('frontdoor/fd_sheet.js')}
+    ${read('frontdoor/fd_wire.js')}
     var FD_CURRICULUM=${JSON.stringify(INDEX_FIXTURE)};
     var FD_TOPIC_META=${JSON.stringify(META_FIXTURE)};
     var FD_TOOL_REGISTRY=${JSON.stringify(REGISTRY_FIXTURE)};
@@ -223,6 +231,11 @@ function makeRender(sabotage) {
     var FD_ROLES=${JSON.stringify(ROLES_FIXTURE)};
     var FD_BODY={};
     function fdFetchBody(){}
+    // The one first-script global fdRender reads directly. null = an ordinary learner session;
+    // the preview branch (which skips the wizard) is exercised in tests/fd-tool.test.mjs.
+    // fdToolSync IS inside renderBlock and runs for real here — with document.getElementById
+    // stubbed to null it is a no-op, which is the right shape for a render-only harness.
+    var facultyPreviewRequest=null;
     ${renderBlock}
     if(sabotage==='today') fdToday=function(){ throw new Error('boom'); };
     if(sabotage==='path') fdPath=function(){ throw new Error('boom'); };
@@ -351,6 +364,7 @@ test('a broken index degrades every surface rather than throwing out of fdRender
     ${read('phase_policy.js')}
     ${read('frontdoor/fd_state.js')}
     ${read('frontdoor/fd_data.js')}
+    ${read('frontdoor/fd_due.js')}
     ${read('frontdoor/fd_today.js')}
     ${read('frontdoor/fd_shell.js')}
     ${read('frontdoor/fd_path.js')}
@@ -358,10 +372,16 @@ test('a broken index degrades every surface rather than throwing out of fdRender
     ${read('frontdoor/fd_reader.js')}
     ${read('frontdoor/fd_search.js')}
     ${read('frontdoor/fd_sheet.js')}
+    ${read('frontdoor/fd_wire.js')}
     var FD_CURRICULUM=null, FD_TOPIC_META=null, FD_TOOL_REGISTRY=null,
         FD_SITE_MANIFEST=null, FD_ROLES=${JSON.stringify(ROLES_FIXTURE)};
     var FD_BODY={};
     function fdFetchBody(){}
+    // The one first-script global fdRender reads directly. null = an ordinary learner session;
+    // the preview branch (which skips the wizard) is exercised in tests/fd-tool.test.mjs.
+    // fdToolSync IS inside renderBlock and runs for real here — with document.getElementById
+    // stubbed to null it is a no-op, which is the right shape for a render-only harness.
+    var facultyPreviewRequest=null;
     fdBuildIndex=function(){ throw new Error('curriculum unusable'); };
     ${renderBlock}
     return fdRender;

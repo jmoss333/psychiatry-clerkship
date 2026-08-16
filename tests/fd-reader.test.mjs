@@ -303,6 +303,38 @@ test('the done toggles carry aria-pressed in both states, and the rail row carri
     'the rail row navigates; it is not a toggle');
 });
 
+// The residue that the (correct) refusal to use aria-pressed left behind, now closed. The ✓ glyph
+// is emitted in both states and aria-hidden, so before this a done rail row differed from an
+// unread one by DOT COLOUR ALONE — WCAG 1.4.1, on the reader's only orientation control. The
+// state reaches the accessible NAME instead, which is the honest option for a control that is
+// genuinely not a toggle.
+test('a done rail row carries its state in the accessible name, not in colour alone', () => {
+  const done = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: { 'b.md': true } }), '');
+  assert.match(done, /class="fd-railnav__title[^"]*">Page B<\/span><span class="fd-vh">, done<\/span>/,
+    'the suffix is a SIBLING of the title, which carries overflow:hidden/ellipsis');
+
+  const undone = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: {} }), '');
+  assert.doesNotMatch(undone, /fd-vh/, 'an unread row must claim nothing');
+});
+
+test('the hidden suffix is hidden visually but NOT from assistive tech', () => {
+  // display:none and visibility:hidden would remove it from the accessibility tree as well as
+  // from the page, which defeats the entire point — so the class is pinned by its declarations.
+  const css = readFileSync(new URL(`${BUILD}/frontdoor/frontdoor.css`, import.meta.url), 'utf8');
+  const rule = (css.match(/\.fd-vh\{([^}]*)\}/) || [])[1];
+  assert.ok(rule, '.fd-vh must exist in frontdoor.css');
+  assert.match(rule, /clip-path:inset\(50%\)/);
+  assert.match(rule, /position:absolute/);
+  assert.doesNotMatch(rule, /display:none|visibility:hidden/,
+    'either one removes the text from the accessibility tree, which is the whole point of it');
+});
+
+test('one rail row per week item carries the suffix, and only the done ones', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: { 'a.md': true, 'b.md': true } }), '');
+  const rail = html.slice(html.indexOf('fd-railnav__list'));
+  assert.equal((rail.match(/class="fd-vh">, done</g) || []).length, 2);
+});
+
 test('the currently-open row carries is-current, and only that row', () => {
   const html = F.fdReader(IDX, s({ ref: 'b.md', week: 1 }), '');
   assert.match(html, /fd-railnav__row is-current" data-fd-open="b\.md"/);

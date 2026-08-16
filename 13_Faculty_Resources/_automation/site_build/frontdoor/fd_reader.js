@@ -73,6 +73,15 @@ function fdReaderBackLabel(fromTab){
   return FD_READER_TAB_LABELS[fromTab]||'Today';
 }
 
+/* The top-of-pane back link, extracted so the TOOL pane (Plan 3 Task 5, rendered in
+   spa_index.html's fdRender because it composes the governance notice, which is not pure) uses
+   this exact element rather than a second copy that could drift. A tool fills the viewport with
+   an iframe; without this the only way back is the header, and the header does not name the tab
+   the student came from. */
+function fdReaderBackButton(backLabel){
+  return '<button type="button" class="fd-reader__back" data-fd-back>‹ '+fdEsc(backLabel)+'</button>';
+}
+
 /* Pins the prev/next arithmetic the design brief calls out by name: the same lookup drives both
    the footer buttons AND the (later, wiring-layer) left/right arrow-key handler, so they cannot
    disagree about what "next" means. A ref not present in the named week's item list -- a
@@ -224,12 +233,22 @@ function fdReaderPrevNext(neighbours){
    (the colour, not the character, is what conveys state visually).
 
    The other half of fd_sheet.js's treatment -- aria-pressed on the button -- deliberately does NOT
-   apply here: this row is a NAVIGATION control (data-fd-open, "go to that page"), not a toggle, and
-   aria-pressed would announce it as a toggle button the click does not toggle. That would trade one
-   false statement for another. Known residue, flagged rather than papered over: a done rail row is
-   now distinguishable from an unread one by dot colour ALONE (frontdoor.css:427), so its state is
-   still not in the a11y tree. Fixing that properly needs a text affordance in the accessible name
-   (or a visually-hidden class), and frontdoor.css is frozen for this plan -- see the fix report. */
+   apply here, and that has not changed: this row is a NAVIGATION control (data-fd-open, "go to
+   that page"), not a toggle, and aria-pressed would announce it as a toggle button the click does
+   not toggle. That would trade one false statement for another, and tests/fd-reader.test.mjs
+   still forbids it.
+
+   *** THE RESIDUE THAT ATTRIBUTE LEFT IS NOW CLOSED (Plan 3 Task 5). *** Until this change a done
+   rail row differed from an unread one by DOT COLOUR ALONE (WCAG 1.4.1), because the glyph is
+   emitted in both states and correctly aria-hidden. The state now reaches the accessible name
+   instead, as a visually-hidden suffix: "Page A, done". That is the third option the previous
+   note said was needed and could not be taken while frontdoor.css was frozen for Plan 2 --
+   .fd-vh now exists, and it is deliberately a name suffix rather than an ARIA state, because the
+   control genuinely is not a toggle.
+
+   The suffix is a SIBLING of .fd-railnav__title, not a child: the title carries
+   overflow:hidden/text-overflow:ellipsis, and a hidden node inside it is one CSS edit away from
+   being clipped out of existence for everyone. */
 function fdReaderRailRow(it, curRef, doneMap){
   var isCur=(it.ref===curRef);
   var isDone=!!(doneMap||{})[it.ref];
@@ -239,6 +258,7 @@ function fdReaderRailRow(it, curRef, doneMap){
   return '<button type="button" class="'+rowCls+'" data-fd-open="'+fdEsc(it.ref)+'">'+
     '<span class="'+dotCls+'" aria-hidden="true">✓</span>'+
     '<span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+
+    (isDone?'<span class="fd-vh">, done</span>':'')+
   '</button>';
 }
 
@@ -339,7 +359,7 @@ function fdReader(index, state, bodyHtml){
   article+='</div>'; /* .fd-article */
 
   var out='<article class="fd-reader">';
-  out+='<button type="button" class="fd-reader__back" data-fd-back>‹ '+fdEsc(backLabel)+'</button>';
+  out+=fdReaderBackButton(backLabel);
   out+='<div class="fd-reader__cols">';
   out+=article;
   if(inWeek) out+=fdReaderRailNav(weekItems, st, st.week);

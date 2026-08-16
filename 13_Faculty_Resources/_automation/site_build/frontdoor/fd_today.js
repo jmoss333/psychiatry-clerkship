@@ -22,16 +22,14 @@
    Plan 3 Task 1. ES5 only: var/function, no const/let/arrow functions/template
    literals -- matches the other frontdoor/ modules.
 
-   Scope note for whoever reads this next to the design doc: the due row (SRS due counts) and
-   capture triage (the ward-capture note list) are NOT rendered here even though the design
-   doc's decision table (Sec 1) marks both "Port, prominent". frontdoor.css has no styling rules
-   for either -- neither appears anywhere in Front-Door-Hi-Fi-v2.dc.html's Today section either,
-   so there was never a class contract or a prototype structure to build against. They also read
-   from runtime stores (the spaced-rotation review queue and the ward-note capture list) that sit
-   outside the curriculum/topic_meta item index every Plan 2 renderer (this one included) is a
-   pure function over. This is a scope correction made before this task was implemented, not an
-   omission: the existing shell markup for both moves across and gets restyled onto --fd-*
-   tokens during Plan 3's wiring, where those stores are actually readable.
+   Scope note, now CLOSED (Plan 3 Task 5). The due row (SRS due counts) and capture triage (the
+   ward-capture note list) were not rendered here through Plan 2, even though the design doc's
+   decision table (Sec 1) marks both "Port, prominent": frontdoor.css had no rules for either,
+   neither appears in Front-Door-Hi-Fi-v2.dc.html's Today section, and both read RUNTIME STORES
+   that sit outside the curriculum/topic_meta index every Plan 2 renderer is a pure function
+   over. They now render from fd_due.js, which is pure over already-read store data that
+   fd_wire.js supplies through state.due / state.capture / state.preview -- so this file stays a
+   pure function of state and gains no ambient read.
 
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. The exam countdown comes verbatim from
@@ -248,6 +246,12 @@ function fdToday(index, state){
   out+='<p class="fd-today__sub">'+sub+'</p>';
   out+='<div class="fd-today__cols"><div class="fd-today__main">';
 
+  /* Spec §5's Today order is "greeting; due row; Continue card; this-week list; daily pick;
+     capture triage" -- the due row sits ABOVE Continue because it is the only thing on this page
+     that is late. It renders only when something is actually due (fd_due.js returns '' at zero),
+     so on a caught-up day Continue is still the first thing under the subhead. */
+  out+=fdDueRow(st.due);
+
   out+=hasWeek?fdContinue(st, wk, progress):fdSetupCta();
 
   if(hasWeek){
@@ -260,6 +264,23 @@ function fdToday(index, state){
 
   var daily=fdDailyPick(fdLibraryOnlyReads(idx), st.done, nowMs);
   if(daily) out+=fdPick(daily);
+
+  /* The capture BUTTON is unconditional (outside a faculty preview) and the triage LIST is not:
+     with nothing captured there is nothing to triage, but there still has to be somewhere to
+     capture the first question. Emitting only the list would make the feature unreachable from a
+     clean device, which is exactly the state every new student starts in. */
+  out+=fdCaptureButton(st.preview);
+  out+=fdCaptureTriage(st.capture);
+
+  /* Progress & mastery is spec §1's "Port, demoted -- a reading-pane page, not a fourth tab", so
+     this is its entry point: a quiet row at the foot of Today rather than a tab competing with
+     the three that carry the rotation. It is in the MAIN column, not the desktop rail, because
+     the rail is hidden below 1000px and a phone would otherwise have no way in at all. */
+  out+='<button type="button" class="fd-progresslink" data-fd-open="__progress__">'+
+    '<span class="fd-progresslink__title">Progress &amp; mastery</span>'+
+    '<span class="fd-progresslink__sub">What you have covered, and where practice says you are '+
+    'weakest →</span>'+
+    '</button>';
 
   var quickTools=fdQuickTools(idx, wItems);
 

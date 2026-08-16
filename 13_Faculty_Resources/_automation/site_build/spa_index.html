@@ -475,6 +475,15 @@
        and <main class="fd-main">. Keeps id="content" because the skip link, announceRoute()'s
        focus move, capClose()'s focus return, and the faculty-preview surfaces all address it. -->
   <div id="content" tabindex="-1"></div>
+  <!-- Tool frame mount. Written separately from #content for the SAME reason the overlays below
+       are, and the reason is sharper here: fdMount replaces #content wholesale whenever the body
+       markup changes, and re-inserting an <iframe> reloads it. A tool opened from the front door
+       holds real in-progress state — a half-scored CIWA, a question mid-answer, a standardized-
+       patient conversation — so a theme toggle (which changes the header's aria-pressed and
+       nothing else the student can see) would silently throw all of it away. Keyed on the tool's
+       own markup, this mount is written only when the OPEN TOOL changes.
+       Placed before the overlays so an open sheet or search panel still paints above it. -->
+  <div id="fdTool" class="fd-toolmount"></div>
   <!-- Overlay mounts. The four portalled surfaces are position:fixed and are written separately
        from #content so an open sheet or search panel is not re-created (and its input focus lost)
        every time the page body behind it re-renders. -->
@@ -711,14 +720,30 @@
     routeAnnounced=true;
   }
   function setRoute(it, replace, opts){ if(facultyPreviewRequest){restoreFacultyPreviewRoute();document.title=pageTitle(it);return;} var extra=(it&&it.k==='tool'&&opts&&opts.toolExtra)?opts.toolExtra:''; var q = it ? ((it.k==='tool'?'?tool=':'?page=')+encodeURIComponent(it.f)+extra) : location.pathname; try{ if(replace) history.replaceState({f:it&&it.f},'',q); else if(location.search!==q) history.pushState({f:it&&it.f},'',q); }catch(_){ } document.title=pageTitle(it); }
+  /* ---- faculty-console preview: the tool surface ----
+     Both functions below are RETARGETED from contentEl to the #fdTool mount (Plan 3 Task 5).
+     #content now holds the front door's own header and tab row, so overwriting it would delete
+     the reviewer's only way out of the frame along with the tool. The sidebar-era `toolmode` /
+     `hasrev` classes went with the layout that needed them — the mount sizes itself
+     (frontdoor.css, .fd-toolmount).
+
+     The `bar` parameter is gone rather than passed empty: the governance notice is now rendered
+     ONCE, by fdRender, into #content — for the preview path and the plain path alike. The old
+     code rendered its own copy on each path, which is exactly how the two drifted apart.
+
+     `currentItem!==item` is still the stale-navigation guard, and it means something again:
+     fdRouteItem() memoises per ref (fd_wire.js), so the object identity is stable for one open
+     ref and changes when the student (or the reviewer) opens a different one. Before that, every
+     call built a fresh object and this guard could only ever be TRUE — a check that always fires
+     is worse than none. */
   function failFacultyPreviewTool(item,status){
     if(currentItem!==item)return;
     currentToolFrame=null;
-    contentEl.classList.remove('toolmode'); contentEl.classList.remove('hasrev');
-    contentEl.innerHTML='<div class="error" role="alert"><h1>Tool unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';
+    var errMount=document.getElementById('fdTool');
+    if(errMount) errMount.innerHTML='<div class="error" role="alert"><h1>Tool unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';
     postFacultyPreviewStatus(status,facultyPreviewRequest.surface);
   }
-  function loadFacultyPreviewTool(item,opts,bar){
+  function loadFacultyPreviewTool(item,opts){
     var toolPath='tools/'+encodeURIComponent(item.f);
     var toolUrl=new URL(toolPath,location.href);
     fetch(toolUrl.href,{credentials:'same-origin'}).then(function(r){
@@ -732,7 +757,7 @@
     }).then(function(){
       if(currentItem!==item)return;
       var frame=document.createElement('iframe'); var loadCount=0;
-      frame.className='toolframe'; frame.title=item.t;
+      frame.className='fd-toolframe'; frame.title=item.t;
       frame.addEventListener('load',function(){
         if(frame!==currentToolFrame)return;
         loadCount++;
@@ -744,8 +769,10 @@
       });
       currentToolFrame=frame;
       frame.src=toolPath+toolFrameSuffixWithGovernance(opts&&opts.toolExtra);
-      contentEl.innerHTML=bar;
-      contentEl.appendChild(frame);
+      var mount=document.getElementById('fdTool');
+      if(!mount)return;
+      mount.innerHTML='';
+      mount.appendChild(frame);
       window.scrollTo(0,0);
     }).catch(function(err){
       failFacultyPreviewTool(item,(err&&err.facultyPreviewStatus)||'error');
@@ -820,37 +847,11 @@
      comment and executes the real functions. Keep it. Text-only assertions are exactly how
      "Due today counts cards nothing can serve" survived (PR #291). */
 
-  /* ---- triage card, rendered into renderHome ----
-     Routes each capture through the existing runSearch. runSearch is NOT extracted: it closes over
-     module-scope SI/VOCAB and calls tok()/idf() in this same top-level script, and the card renders
-     from here, so the bindings are already in scope. All controls use data-cap-* attributes only —
-     deliberately not data-f — so nothing collides with the generic .hm-li branches in
-     __afterSpecial, which would navigate without marking the capture triaged. */
-  function capTriageHtml(){
-    var d=capRead(), open=[];
-    for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) open.push(d.items[i]); }
-    if(!open.length)return '';
-    var h='<div class="hm-sec"><h2>Questions from the unit <span style="font-weight:400;color:var(--text-light)">· '+open.length+' waiting</span></h2>';
-    h+='<p class="cap-purpose">'+esc(CAP_PURPOSE)+'</p>';
-    if(!SI){ h+='<div class="sub" style="margin:0 0 8px">Matching is unavailable right now — your questions are safe on this device.</div>'; }
-    for(var j=0;j<open.length;j++){
-      var it=open[j], hit=null;
-      if(SI){ var res=runSearch(it.text); if(res.length)hit=res[0].d; }
-      h+='<div class="cap-tri"><p class="cap-tri-q">'+esc(it.text)+'</p>';
-      if(hit){
-        h+='<button class="hm-li" data-cap-open="'+esc(it.id)+'" data-cap-f="'+esc(hit.f)+'"><span class="t">'+esc(hit.t)+'</span><span class="sec">Open →</span></button>';
-        /* Offer the review route only when it would actually do something. The topicHasQuiz guard
-           already lives inside seedSRS (that placement was the phantom-card fix), so calling it
-           here is about display honesty, not safety — a quizless page would silently no-op. */
-        if(typeof topicHasQuiz==='function' && topicHasQuiz(hit.f)){
-          h+='<button class="hm-li" data-cap-review="'+esc(it.id)+'" data-cap-f="'+esc(hit.f)+'"><span class="t">Review this topic</span><span class="sec">Schedule →</span></button>';
-        }
-      }
-      h+='<button class="hm-li" data-cap-drop="'+esc(it.id)+'"><span class="t">Done with this one</span><span class="sec">Dismiss</span></button></div>';
-    }
-    h+='<div class="cap-acts"><button type="button" class="cap-btn" data-cap-copy="1">Ask my attending</button></div>';
-    return h+'</div>';
-  }
+  /* The triage card moved to frontdoor/fd_due.js (fdCaptureTriage), which is a pure function of
+     already-read store data. The read and the page-matching live in fd_wire.js's fdCaptureState();
+     the controls keep their data-cap-* attributes verbatim, for the reason the deleted card gave:
+     each is TWO acts, and a data-fd-* attribute would navigate without marking the capture
+     triaged. tests/fd-due.test.mjs covers the render, tests/ward-capture-store.test.mjs the store. */
 
   /* ---- capture sheet: own dialog, own focus trap ----
      Deliberately NOT reusing .tl-sheet — visual-regression.spec.js Shift+Tab-cycles that sheet and
@@ -876,11 +877,16 @@
     if(capSheet&&capSheet.parentNode)capSheet.parentNode.removeChild(capSheet);
     capSheet=null; capBackdrop=null;
     document.removeEventListener('keydown',capKeydown,true);
-    var opens=document.querySelectorAll('.capture-open');
+    /* Selector re-pointed from `.capture-open` to `[data-fd-capture]` (Plan 3 Task 5): the front
+       door's single capture control is fd_due.js's .fd-capturebtn, which carries the attribute
+       rather than the deleted shell's marker class. Attribute, not class, so the reset finds the
+       control the wiring also dispatches on — one hook, not two that can drift. */
+    var opens=document.querySelectorAll('[data-fd-capture]');
     for(var i=0;i<opens.length;i++)opens[i].setAttribute('aria-expanded','false');
-    /* Two-invoker focus return. There are two mount points and the viewport can cross 820px while
-       the dialog is open, so the recorded invoker may be display:none by the time we close. Same
-       guard shape as closeSheet's, which spa-shell-a11y.test.mjs pins. */
+    /* Guarded focus return. The recorded invoker may be gone by the time we close: #content is
+       rebuilt wholesale on every front-door render, so a capture saved from the dialog (which
+       re-renders Today) detaches the very button that opened it. Same guard shape as closeSheet's,
+       which spa-shell-a11y.test.mjs pins. */
     var inv=capInvoker; capInvoker=null;
     if(inv && inv.isConnected && inv.offsetParent!==null){ try{ inv.focus(); return; }catch(_){ } }
     if(contentEl){ try{ contentEl.focus({preventScroll:true}); }catch(_){ } }
@@ -967,54 +973,15 @@
         tab order. Same rule sw_register.js applies when it skips SW registration on a preview.
      2. The invoker element is passed to capOpen(btn) so capClose() can return focus to it. */
 
-  /* ---------- Search (mirrors rc-search: tokenize -> synonym expand -> TF-IDF + prefix/substring bonus) ---------- */
-  var SI=null, VOCAB=[];
-  var STOP={a:1,an:1,and:1,are:1,as:1,at:1,be:1,by:1,"for":1,from:1,has:1,"in":1,is:1,it:1,of:1,on:1,or:1,that:1,the:1,to:1,was:1,"with":1,you:1,your:1};
-  function tok(t){
-    var out=[], a=String(t||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').split(/\s+/);
-    for(var i=0;i<a.length;i++){var w=a[i]; if(w.length>=2 && !STOP[w]) out.push(w);} return out;
-  }
-  /* *** SI IS NEVER POPULATED IN THIS BUILD. *** The ~475 KB search-index.json fetch that used
-     to fill it is deleted: the front door ships its own index inlined (FD_SITE_MANIFEST +
-     FD_TOPIC_META, joined by fdBuildIndex) and searches it through fdSearchResults(), so keeping
-     the legacy fetch would download a second, redundant index on every cold load — page weight
-     this task owns.
+  /* The legacy TF-IDF search index (SI/VOCAB/tok/idf/runSearch) is DELETED, closing the gap its
+     own comment left open for this task. It was already unreachable: the ~475 KB
+     search-index.json fetch that populated SI went with the sidebar, and the front door ships its
+     own index inlined (FD_SITE_MANIFEST + FD_TOPIC_META, joined by fdBuildIndex) and searches it
+     through fdSearchResults(). capTriageHtml() was its last caller and rendered a permanently
+     degraded "matching is unavailable" branch as a result; fd_wire.js's fdCaptureState() now
+     matches captures through fdSearchResults, so the capability came back rather than being
+     dropped along with the code. */
 
-     runSearch/tok/idf below are kept, unreached, because capTriageHtml() is their only surviving
-     caller and it is guarded by `if(SI)`: with SI null it renders its existing, honest degraded
-     branch ("Matching is unavailable right now — your questions are safe on this device"), which
-     is exactly true until Task 5 points triage at fdSearchResults. Deleting them instead would
-     leave capTriageHtml calling a function that does not exist — a latent throw rather than a
-     stated gap. Task 5 owns closing this: re-point, then delete. */
-
-  function idf(t){ return Math.log(1 + SI.n/((SI.df[t]||1))); }
-  function runSearch(q){
-    if(!SI) return [];
-    var qt=tok(q); if(!qt.length) return [];
-    var score={}, cover={};
-    qt.forEach(function(term){
-      var toks={};
-      if(SI.postings[term]) toks[term]=1.0;
-      var sy=SI.synonyms[term]||[];
-      for(var s=0;s<sy.length;s++){ if(SI.postings[sy[s]] && !toks[sy[s]]) toks[sy[s]]=0.6; }
-      var hasSynonyms=sy.length>0;
-      if(term.length>=3 && !hasSynonyms){ for(var i=0;i<VOCAB.length;i++){ var v=VOCAB[i]; if(v!==term && v.indexOf(term)===0 && !toks[v]) toks[v]=0.5; } }
-      var hit={};
-      Object.keys(toks).forEach(function(t){
-        var w=toks[t], inv=idf(t), post=SI.postings[t];
-        for(var j=0;j<post.length;j++){ var id=post[j][0], tf=post[j][1]; score[id]=(score[id]||0)+tf*inv*w; hit[id]=1; }
-      });
-      Object.keys(hit).forEach(function(id){ cover[id]=(cover[id]||0)+1; });
-    });
-    var ql=q.toLowerCase();
-    var res=Object.keys(score).map(function(id){
-      var d=SI.docs[id], s=score[id]*(1+0.6*((cover[id]||1)-1));
-      if(d.t.toLowerCase().indexOf(ql)>=0) s+=25;
-      return {id:id,s:s,d:d};
-    });
-    res.sort(function(a,b){return b.s-a.s;});
-    return res.slice(0,12);
-  }
   function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 <script>
@@ -1027,23 +994,10 @@
   function dueBreakdown(){ var s=srsState(),b={daily:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ var k=srsBucket(id); b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } return b; }
   function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due,overdue:b.daily.overdue}; }
   /* ---- end due breakdown ---- */
-  function dueSubstatHtml(bd){ var parts=[]; if(bd.qb.due)parts.push(bd.qb.due+' in the question bank'); if(bd.fam.due)parts.push(bd.fam.due+' in family practice'); if(bd.other.due)parts.push(bd.other.due+' in other practice tools'); return parts.length?'<span class="hm-substat">Also scheduled: '+parts.join(' · ')+'</span>':''; }
-  /* Renders directly under the date stamp when — and only when — daily cards are actually due.
-     Returning '' on a caught-up day is the whole point: promoting a zero is worse than burying a
-     count, which is why the .hm-mini "Due today 0" tile stays put for that case. When this DOES
-     render, renderHome drops the .hm-mini due tile so the number is never stated twice.
-     data-act="review" rides the existing generic [data-act] delegate in __afterSpecial — no new
-     click branch, same destination as the tile it replaces. */
-  function dueStripHtml(bd){
-    if(!bd.daily.due)return '';
-    return '<button class="hm-due" type="button" data-act="review">'
-      +'<span class="ds-k">Due today</span>'
-      +'<span class="ds-v">'+bd.daily.due+'</span>'
-      +(bd.daily.overdue?'<span class="ds-over">'+bd.daily.overdue+' overdue</span>':'')
-      +'<span class="ds-a">Start review →</span>'
-      +dueSubstatHtml(bd)
-      +'</button>';
-  }
+  /* dueSubstatHtml/dueStripHtml moved to frontdoor/fd_due.js (fdDueSubstat/fdDueRow), restyled
+     onto --fd-* tokens. dueBreakdown() above stays here: it is the STORE read, it is what
+     fd_wire.js's fdDueState() calls, and tests/srs-home-counters.test.mjs slices it. */
+
   /* ---- adaptive weak-topic engine v1: per-shelfBlueprint mastery (derived) ---- */
   var SHELF_ORDER=['mood','psychosis','anxiety','substance','neurocog','pharm','safety','personality','childdev','otherdx','ethics','relational'];
   var SHELF_LABEL={mood:'Mood',psychosis:'Psychosis',anxiety:'Anxiety / OCD / Trauma',substance:'Substance & Withdrawal',neurocog:'Neurocognitive',pharm:'Psychopharm',safety:'Acute & Safety',personality:'Personality',childdev:'Child & Development',otherdx:'Somatic / Sleep / Eating (other)',ethics:'Ethics & Law',relational:'Relational'};
@@ -1171,6 +1125,8 @@
 
   /*__FD_DATA__*/
 
+  /*__FD_DUE__*/
+
   /*__FD_TODAY__*/
 
   /*__FD_SHELL__*/
@@ -1246,6 +1202,226 @@
     if(el && el.innerHTML!==html) el.innerHTML=html;
   }
 
+  /* ---- tool surface ----
+     22 interactive tools reach the learner ONLY through this, plus every cta[] deep link in
+     topic_meta.json. The contract below is transcribed from the tool branch of the deleted
+     show() (spa_index.html @098ad50:1127-1136), not reinvented:
+
+       contentEl.innerHTML = <the governance notice>
+         + '<iframe class="toolframe" src="tools/'+item.f
+         + esc(<the GOVERNED suffix helper, over opts.toolExtra>)
+         + '" title="'+esc(item.t)+'"></iframe>';
+
+     (The two helper calls are named rather than quoted verbatim: tests/surface-governance-ui.test.mjs
+     counts occurrences of those exact expressions to prove BOTH iframe paths route through the
+     governed helper, and a comment reproducing one would inflate the count to three and make the
+     assertion unfalsifiable — the same cannot-fail shape this plan has now hit six times.)
+
+     Preserved verbatim: the governance notice ABOVE the frame; `tools/`+the raw slug (not
+     encodeURIComponent — the preflight path in loadFacultyPreviewTool encodes, the plain src
+     never did, and a slug is [a-z0-9._-] either way); the query suffix routed through the
+     GOVERNED helper so the tool's own status block defers to the shell's notice; esc() on both
+     the suffix and the title.
+
+     Changed, with reasons: the frame moved out of #content into its own mount (see the #fdTool
+     comment in the body — an iframe re-inserted by a re-render reloads, taking the tool's
+     in-progress state with it), and the class became .fd-toolframe so frontdoor.css owns the
+     sizing that #content.toolmode used to.
+
+     *** THE QUERY SUFFIX IS THE PART THAT LOOKS OPTIONAL AND IS NOT. *** &case=, &scenario= and
+     &resume=1 are what make communicationHref()/familyAction()'s "practice this exact case"
+     links land on that case rather than the tool's front page. Dropping them breaks those links
+     with no error: the tool opens, at the wrong place. FD_TOOL_EXTRA is captured once at boot
+     (it is the only point at which the original address is still known) and is replayed onto the
+     ref the link named and no other — carrying one tool's arguments into another tool would be
+     worse than dropping them. */
+  function fdToolOpts(ref){
+    return (FD_TOOL_EXTRA&&FD_TOOL_EXTRA_REF===ref)?{toolExtra:FD_TOOL_EXTRA}:undefined;
+  }
+  function fdToolFrameHtml(item, opts){
+    return '<iframe class="fd-toolframe" src="tools/'+item.f
+      +esc(toolFrameSuffixWithGovernance(opts&&opts.toolExtra))
+      +'" title="'+esc(item.t)+'"></iframe>';
+  }
+  /* Written only when the OPEN TOOL changes. Everything else that re-renders the page (the theme
+     toggle, a ward capture being saved, the nudge timing out) leaves the frame alone, which is
+     the whole reason it lives outside #content. '' when no tool is open, which also removes a
+     closed tool's frame rather than leaving it running behind the next surface. */
+  var FD_TOOL_MOUNTED='';
+  function fdToolSync(item){
+    var ref=item?item.f:'';
+    if(FD_TOOL_MOUNTED===ref) return;
+    FD_TOOL_MOUNTED=ref;
+    currentToolFrame=null;
+    if(!ref){ fdMount('fdTool',''); return; }
+    /* A faculty preview does NOT get the plain frame: the console waits on a
+       'faculty-preview-status' message that only the preflight path posts, so a plain iframe
+       here would leave the reviewer's console spinning on a tool that had in fact loaded.
+       currentItem is set here rather than left to fdRoute() because at BOOT the first render
+       runs before fdRoute does, and loadFacultyPreviewTool's async guard reads it. */
+    var opts=fdToolOpts(ref);
+    if(facultyPreviewRequest){
+      currentItem=item;
+      fdMount('fdTool', skel());
+      loadFacultyPreviewTool(item, opts);
+      return;
+    }
+    fdMount('fdTool', fdToolFrameHtml(item, opts));
+  }
+  /* ---- end tool surface ---- */
+
+  /* ---- Progress & mastery ----
+     Spec §1: "Port, demoted — a reading-pane page, not a fourth tab". Routed as an open item
+     (?page=__progress__, k:'special' — see FD_REF_PROGRESS in fd_wire.js) and reached from the
+     foot of Today.
+
+     *** DELIBERATELY NOT A frontdoor/ MODULE. *** Every other surface is a pure function of the
+     build-injected index; this one is a composition of DERIVATIONS over four learner stores
+     (cw_qb_v1, cw_quiz_v1, cw_srs_v1, cw_calib_v1) through masteryByBlueprint(),
+     calibrationSummary() and renderCalibPanel(), all of which already live in this script and
+     read storage themselves. Extracting a pure shell around them would mean either a second
+     snippet marker (the plan budgets one for fd_due.js) or hoisting three impure helpers into a
+     module that must not have them. It is guarded by fdSurface() like every other surface, so a
+     throw in here still leaves the header, the tabs and the tool frame usable.
+
+     What did NOT survive the swap, and is not resurrected here: the pretest/placement flow, the
+     stored 6-week plan, and the section/high-yield coverage scans. All of them read navScan() /
+     WEEK_MAP / buildPlan(), which Task 3 deleted with the sidebar-era shell; the curriculum index
+     is now the source of week structure and re-deriving a parallel one would be the second source
+     spec §2.2 exists to prevent. tests/mastery-weakflag.test.mjs still slices buildPlan() and is
+     on the plan's expected-failure list for Task 8.
+
+     Copy rule: this page ships to BOTH sites unrebranded, so the old "for the clerkship study"
+     wording is reworded rather than ported — "clerkship" is on shell-copy.test.mjs's banned
+     list. Same reason "shelf" is "exam" throughout. */
+  function fdProgressBars(rows){
+    var out='<div class="fd-bars">';
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i];
+      var pct=(r.score==null)?0:r.score;
+      var label=(r.score==null)?'not started':(r.score+'%'+(r.conf==='low'?' · few':''));
+      out+='<div class="fd-bar">'+
+        '<span class="fd-bar__label">'+fdEsc(r.label)+'</span>'+
+        '<span class="fd-bar__track"><span class="fd-bar__fill" style="width:'+pct+'%"></span></span>'+
+        '<span class="fd-bar__value">'+fdEsc(label)+'</span>'+
+        '</div>';
+    }
+    return out+'</div>';
+  }
+  /* Weakest first, and only where a wrong answer actually happened: masteryByBlueprint()'s own
+     comment explains why miss>0 is required — a perfect 1/1 shrinks to 63%, which would otherwise
+     flag every category weak after a single correct answer in each. */
+  function fdProgressWeak(rows){
+    var weak=[], i;
+    for(i=0;i<rows.length;i++){
+      if(rows[i].score!=null&&rows[i].score<70&&rows[i].miss>0) weak.push(rows[i]);
+    }
+    weak.sort(function(a,b){ return a.score-b.score; });
+    weak=weak.slice(0,3);
+    if(!weak.length) return '';
+    var out='<h2 class="fd-sectionhead">Practice your weakest areas</h2><div class="fd-list">';
+    for(i=0;i<weak.length;i++){
+      out+='<button type="button" class="fd-progressrow" data-fd-practice="'+fdEsc(weak[i].c)+'">'+
+        '<span class="fd-progressrow__title">'+fdEsc(weak[i].label)+'</span>'+
+        '<span class="fd-progressrow__meta">'+weak[i].score+'% · practice →</span>'+
+        '</button>';
+    }
+    return out+'</div>';
+  }
+  function fdProgressCoverage(idx, done){
+    var total=0, marked=0, ref;
+    for(ref in (idx.byRef||{})){ total++; if(done[ref]) marked++; }
+    if(!total) return '';
+    return '<p class="fd-progress__coverage">'+marked+' of '+total+
+      ' shipped pages and tools marked done.</p>';
+  }
+  function fdProgress(idx, state){
+    var st=state||{}, done=st.done||{};
+    var rows=masteryByBlueprint();
+    var started=false, i;
+    for(i=0;i<rows.length;i++){ if(rows[i].score!=null){ started=true; break; } }
+
+    var out='<div class="fd-progress">';
+    out+=fdReaderBackButton(fdReaderBackLabel(st.fromTab));
+    out+='<h1 class="fd-h1">Progress</h1>';
+    out+='<p class="fd-sub">From your activity on this device — pages marked done, practice '+
+      'answers, and confidence. Nothing leaves this browser unless you export it below.</p>';
+    out+=fdProgressCoverage(idx, done);
+
+    out+='<h2 class="fd-sectionhead">Mastery by exam-blueprint area</h2>';
+    if(!started){
+      out+='<p class="fd-progress__empty">Answer practice questions (or a topic quiz) and this '+
+        'fills in — one bar per blueprint area.</p>';
+    }
+    out+=fdProgressBars(rows);
+    out+=fdProgressWeak(rows);
+
+    /* The metacognition panel when the ledger is deep enough, the current-state summary when it
+       is not — the same threshold and the same defensive typeof guard the deleted renderProgress
+       used, because renderCalibPanel() returns '' below 20 recorded question-bank events. */
+    var calPanel=(typeof renderCalibPanel==='function')?renderCalibPanel():'';
+    if(calPanel){ out+=calPanel; }
+    else {
+      var cal=calibrationSummary();
+      if(cal.total>=1){
+        var levels=[['certain','Certain'],['likely','Likely'],['guess','Guess']];
+        var calRows=[];
+        for(i=0;i<levels.length;i++){
+          var e=cal.lv[levels[i][0]];
+          calRows.push({ label:levels[i][1], score:e.n?Math.round(100*e.correct/e.n):null,
+                         conf:e.n?'solid':'none', miss:0, c:levels[i][0] });
+        }
+        out+='<h2 class="fd-sectionhead">Confidence calibration</h2>';
+        out+=fdProgressBars(calRows);
+        if(cal.certWrong>0){
+          out+='<p class="fd-progress__note">You were <strong>confidently wrong</strong> on '+
+            cal.certWrong+' item'+(cal.certWrong===1?'':'s')+' — those are the highest-yield to '+
+            'revisit.</p>';
+        }
+      }
+    }
+
+    /* *** THE ONLY WRITER OF cw_shelf_date. *** fdExamCountdown() (fd_state.js) and phasePolicy()
+       (phase_policy.js) both prefer this date over their rotation-grid fallback, and its only
+       previous setter was the date field on the Start-here screen Task 3 deleted — so between
+       that deletion and this field the countdown ran on the fallback permanently, silently, with
+       no test failing. It is here rather than in the first-run wizard because the wizard is seen
+       once and an exam date is the thing most likely to be learned later or changed.
+
+       There is deliberately NO rotation-START field beside it, even though the deleted screen had
+       one. cw_rotation_start is written only by fdSetRotationWeek(), which snaps to the Monday of
+       the chosen week; fd_state.js:50-54 records that a non-Monday value makes the exam countdown
+       drift upward as time passes. A free date input would let exactly that be typed in. */
+    out+='<h2 class="fd-sectionhead">Your exam date</h2>';
+    out+='<p class="fd-progress__note">Optional. Set it and the countdown on Today counts to your '+
+      'date instead of the end of the rotation grid.</p>';
+    /* id and attribute are spelled "exam", not "shelf": tests/shell-copy.test.mjs bans "shelf"
+       from copy that ships to both sites unrebranded, and an id attribute is rendered text like
+       any other. The STORE key stays cw_shelf_date — phasePolicy() and fdExamCountdown() both
+       read it and a key is not copy. */
+    out+='<p class="fd-progress__field"><label for="fdExamDate">Exam date</label>'+
+      '<input id="fdExamDate" type="date" data-fd-examdate value="'+fdEsc(st.examDate||'')+'"></p>';
+
+    out+='<h2 class="fd-sectionhead">Help evaluate this site</h2>';
+    out+='<p class="fd-progress__note">Optional. Export your anonymous learning activity for the '+
+      'teaching-evaluation study — no name and no patient information, only what you reviewed and '+
+      'answered on this site.</p>';
+    out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-studyexport>'+
+      'Export my anonymous progress</button>';
+    out+='<p class="fd-progress__note" id="studyMsg"></p>';
+
+    /* The A2HS instruction. Its only home was the deleted Start-here screen; it lands here rather
+       than in the wizard for the same reason the exam date does — the wizard is a transition seen
+       once, and "how do I keep this working on the ward with no signal" is a question that occurs
+       later. Copy is byte-identical to the deleted line (tests/shell-copy.test.mjs extracts it as
+       shared shell copy; the ANCHOR moved from <p class="sub st-a2hs"> to .fd-a2hs and Task 8
+       repoints the extractor). */
+    out+='<p class="fd-a2hs">On iPhone: Share ⬆ → Add to Home Screen keeps this site working offline.</p>';
+    out+='</div>';
+    return out;
+  }
+  /* ---- end Progress & mastery ---- */
+
   function fdRender(state){
     var st=state||{};
     /* An unusable index means curriculum.json itself is broken, which the build is supposed to
@@ -1265,15 +1441,53 @@
        Role is the setup-complete marker, exactly as it is in the prototype: a student with a role
        and no week lands in the app, where fd_today.js's "30-second setup" card asks the same
        question in a place they can ignore. */
+    /* One vocabulary for "what kind of thing is open": fdRouteItem() (fd_wire.js) is what
+       setRoute/pageTitle/announceRoute/capCtx already read, and it is memoised, so asking it is
+       cheap and cannot disagree with the route it produced. */
+    var openRoute=st.openId?fdRouteItem(st.openId):null;
+
+    /* Which screen is up, decided ONCE, because two things downstream depend on the answer and
+       getting them out of step is invisible:
+
+       (1) *** THE WIZARD IS SKIPPED ON A FACULTY-PREVIEW ROUTE. *** A reviewer's frame carries no
+           cw_frontdoor_v1, so `!st.role` is true there for every preview — and the console would
+           be shown the first-run role picker instead of the page or tool under review, with a
+           'ready' status posted for it. A reviewer is not setting up a rotation; setup is a
+           learner transition and a preview is not a learner session. Found by driving the page.
+       (2) The tool frame must not mount BEHIND the wizard. It lives outside #content, so the
+           wizard's full-viewport screen does not cover it — it sits underneath, stealing flex
+           height from the screen the student is supposed to be reading, and loading a tool
+           nobody asked for. */
+    var wizard='';
+    if(!facultyPreviewRequest){
+      if(!st.role||st.setup==='role') wizard='role';
+      else if(st.setup==='week') wizard='week';
+    }
+    var openTool=(!wizard&&openRoute&&openRoute.k==='tool')?openRoute:null;
+
     var body;
-    if(!st.role||st.setup==='role'){
+    if(wizard==='role'){
       body=fdSurface('setup-role', function(){ return fdSetupRole(FD_ROLES); });
-    } else if(st.setup==='week'){
+    } else if(wizard==='week'){
       body=fdSurface('setup-week', function(){ return fdSetupWeek(idx.weeks, fdRoleName(st.role)); });
     } else {
       body=fdSurface('header', function(){ return fdHeader(st); });
-      body+='<main class="fd-main" id="fdMain">';
-      if(st.openId){
+      body+=openTool?'<main class="fd-main fd-main--tool" id="fdMain">':'<main class="fd-main" id="fdMain">';
+      if(openTool){
+        /* Deliberately spare: a back link out of the frame and the review-status notice, nothing
+           more. The tool renders its own title and its own controls inside the iframe, and the
+           deleted show() put nothing but the notice above it either — a second <h1> outside the
+           frame would duplicate the tool's own heading in the a11y tree. Marking a tool done is
+           still reachable: its row on Today and Path carries the same .fd-check every read has. */
+        body+=fdSurface('tool', function(){
+          return '<div class="fd-toolpane">'+
+            fdReaderBackButton(fdReaderBackLabel(st.fromTab))+
+            renderGovernanceNotice(openTool)+
+          '</div>';
+        });
+      } else if(openRoute&&openRoute.k==='special'){
+        body+=fdSurface('progress', function(){ return fdProgress(idx, st); });
+      } else if(st.openId){
         /* fdReader's state calls the open item `ref`; the persisted key is `openId` (FD_KEYS in
            fd_state.js). Mapped here, at one site, rather than letting two names for the same thing
            travel across the module boundary. */
@@ -1291,6 +1505,11 @@
       body+='</main>';
     }
     fdMount('content', body);
+
+    /* The tool frame, after #content so the back link and the notice above it already exist.
+       Guarded like every other surface: a throw here (a broken index entry, a mount that is not
+       in the document) must not take the header and tabs down with it. */
+    fdSurface('toolframe', function(){ fdToolSync(openTool); return ''; });
 
     /* The three portalled overlays go to their own mounts, never into #content: they are
        position:fixed, and rebuilding them whenever the page behind them re-renders would drop the
@@ -1325,7 +1544,18 @@
     if(!ref || FD_BODY[ref]!==undefined || FD_BODY_PENDING[ref]) return;
     FD_BODY_PENDING[ref]=1;
     fetch('content/'+ref)
-      .then(function(r){ if(!r.ok) throw new Error('page unavailable'); return r.text(); })
+      .then(function(r){
+        if(!r.ok){
+          /* The status the faculty console is waiting for. The deleted show() posted it from its
+             own md branch; this is the same fetch, so it is the same place. Without it a page
+             preview reported nothing at all — the console spun on a page that had in fact loaded,
+             and on one that did not exist alike. Found by driving a preview route. */
+          var pageError=new Error('page unavailable');
+          pageError.facultyPreviewStatus=(r.status===404)?'not_found':'error';
+          throw pageError;
+        }
+        return r.text();
+      })
       .then(function(txt){
         /* Same front-matter strip the old loader used: the Generated:/Audience: lines above the
            first H2 are build metadata, not prose the learner should read. */
@@ -1336,8 +1566,12 @@
           return _h.replace(/^[ \t]*(Generated|Audience):.*$/gim,'').replace(/\n{3,}/g,'\n\n')+_r;
         })(txt);
         FD_BODY[ref]=marked.parse(txt);
+        postFacultyPreviewStatus('ready','page');
       })
-      .catch(function(){ FD_BODY[ref]=''; })
+      .catch(function(err){
+        FD_BODY[ref]='';
+        postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');
+      })
       .then(function(){ delete FD_BODY_PENDING[ref]; if(done) done(); });
   }
 
@@ -1383,13 +1617,30 @@
     /* Path opens on the student's own week until they browse elsewhere. */
     if(st.viewWeek===undefined) st.viewWeek=st.week;
     st.ringPct=fdWeekPct(st);
+    /* The two runtime stores no pure renderer can reach (cw_srs_v1's due queue, cw_capture_v1's
+       waiting questions), plus the exam date the Progress field edits. Read through fd_wire.js —
+       see fdDueState/fdCaptureState/fdExamDate — so fd_due.js stays a pure function of what
+       arrives here. `preview` is not a store: it is the faculty-preview flag, carried in state so
+       fd_today.js can OMIT the capture control on a reviewer's route rather than render one the
+       wiring then has to defend against (rule 1 of the two the deleted capWire enforced). */
+    st.due=fdDueState();
+    st.preview=!!facultyPreviewRequest;
+    st.examDate=fdExamDate();
     for(var k in FD_TRANSIENT){ st[k]=FD_TRANSIENT[k]; }
+    /* Last, and after the transients: fdCaptureState runs each capture through fdSearchResults,
+       which reads state (its next-unread fallback). Composing it before the transients were
+       merged would hand it a state missing them. */
+    st.capture=fdCaptureState(st);
     return st;
   }
 
+  /* Only a MARKDOWN ref has a body to fetch. Without the kind gate this fetched
+     content/mse.html for every tool and content/__progress__ for the Progress page — a 404 per
+     open, caught and cached as '', so nothing broke visibly and nothing failed a test; it just
+     put a guaranteed-failing request on the critical path of half the site's content. */
   function fdRerender(){
     var st=fdCurrentState();
-    if(st.openId) fdFetchBody(st.openId, fdRerender);
+    if(st.openId&&fdRouteItem(st.openId).k==='md') fdFetchBody(st.openId, fdRerender);
     return fdRender(st);
   }
   /* specialRefresh() in the first script defers to this: the ward-capture store lives there and
@@ -1418,18 +1669,17 @@
      because that is where the surviving ward-capture store reads it (topicHasQuiz). */
   try{ TOPIC_META=FD_TOPIC_META; srsDropPhantomTopics(); }catch(_){ }
 
-  try{ fdRerender(); }
-  catch(e){
-    /* fdRender guards every surface itself, so reaching here means state ASSEMBLY failed — a
-       corrupt store, or no localStorage at all (private mode, spec §6). Paint the first-run
-       screen from literals rather than leaving the page blank. */
-    try{ fdRender({role:'', tab:'today', done:{}, nowMs:Date.now()}); }catch(_){ }
-  }
-
   /* A deep link's extra params — &case=, &scenario=, &resume=1, all three shipped by
      communicationHref()/familyAction() — are captured once, here, because toolExtraFromParams()
      is a first-script global and this is the only place the ORIGINAL address is still known.
-     fd_wire.js replays them onto the ref the link named and onto no other. */
+     fd_wire.js replays them onto the ref the link named and onto no other.
+
+     *** THIS MUST RUN BEFORE THE FIRST RENDER. *** It used to sit after it, which was harmless
+     while nothing consumed the extras. The tool surface consumes them at MOUNT time, and the
+     mount is written once per open tool and never rewritten — so a deep link arriving with
+     &case= painted the tool without its case and never got a second chance, because nothing
+     re-renders after the boot route. The block reads only the address bar; it has no dependency
+     on anything the render produces. */
   var bootRouted=false;
   try{
     var sp0=new URLSearchParams(location.search);
@@ -1437,6 +1687,14 @@
     bootRouted=!!(deep0||sp0.get('tab'));
     if(deep0){ FD_TOOL_EXTRA_REF=deep0; FD_TOOL_EXTRA=toolExtraFromParams(sp0); }
   }catch(_){ }
+
+  try{ fdRerender(); }
+  catch(e){
+    /* fdRender guards every surface itself, so reaching here means state ASSEMBLY failed — a
+       corrupt store, or no localStorage at all (private mode, spec §6). Paint the first-run
+       screen from literals rather than leaving the page blank. */
+    try{ fdRender({role:'', tab:'today', done:{}, nowMs:Date.now()}); }catch(_){ }
+  }
 
   /* Listeners first, so a click during the route normalisation below is not dropped. Guarded so
      a wiring failure leaves a READABLE page rather than a blank one — but named on the console,

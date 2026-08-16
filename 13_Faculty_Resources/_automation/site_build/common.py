@@ -329,7 +329,7 @@ SKIP_LINK_CSS = (
 FAVICON_LINK = '<link rel="icon" href="/favicon.svg">'
 CLINICAL_CSS_LINK = '<link rel="stylesheet" href="/clinical-warm.css">'
 # Front-door shell stylesheet (Plan 3 Task 1). Shell-only, unlike clinical-warm.css: the
-# nine frontdoor/ modules render only inside the SPA shell, never inside an individual tool
+# ten frontdoor/ modules render only inside the SPA shell, never inside an individual tool
 # page, so this is gated to is_index in apply_dark_mode() below rather than shipping into
 # every tools/*.html the way CLINICAL_CSS_LINK does.
 FRONTDOOR_CSS_LINK = '<link rel="stylesheet" href="/frontdoor.css">'
@@ -597,6 +597,7 @@ SNIPPET_MARKERS = {
     "/*__SESS_CAPSULE__*/": "sess_capsule.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
+    "/*__FD_DUE__*/": "frontdoor/fd_due.js",
     "/*__FD_SHELL__*/": "frontdoor/fd_shell.js",
     "/*__FD_TODAY__*/": "frontdoor/fd_today.js",
     "/*__FD_PATH__*/": "frontdoor/fd_path.js",

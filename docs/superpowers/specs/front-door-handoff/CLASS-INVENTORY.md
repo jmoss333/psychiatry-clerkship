@@ -107,6 +107,7 @@ instead — see their surfaces.)
 | `.fd-row__title.is-done.is-just-done` | same element | **All three** classes needed to animate the strike. |
 | `.fd-row__meta` | `<span>` | Right-aligned group holding `.fd-chip` + `.fd-row__min`. |
 | `.fd-row__min` | `<span>` | "12 min". Also borrowed, unmodified, by the sheet's item-preview meta line and "Source:" label — see §8. |
+| `.fd-vh` | `<span>` | Visually-hidden text that still reaches the accessible name (clip-path form). Used for state suffixes inside a control's label — the Reader rail row's ", done". **Not** the same thing as the shell's `.vh-live` aria-live region. |
 
 ⚠ `.fd-step .fd-check` — a `.fd-check` **inside a `.fd-step`** shrinks 22px → 20px. That is the only
 size variant, and it is keyed on the ancestor, not a modifier class.
@@ -224,6 +225,8 @@ ancestor; there is no modifier class for it.
   .fd-today__h1 / .fd-today__sub
   .fd-today__cols
     .fd-today__main
+      .fd-due         <button>         (omitted entirely when nothing is due)
+        .fd-due__k / .fd-due__n / .fd-due__label / .fd-due__over / .fd-due__go / .fd-due__also
       .fd-continue    <button>
         .fd-ring                       style="--fd-ring-pct: 62%"
           .fd-ring__inner  <span>62%</span>
@@ -240,6 +243,19 @@ ancestor; there is no modifier class for it.
         .fd-row ×N                     (see Shared)
       .fd-pick        <button>
         .fd-pick__dot / .fd-pick__kicker / .fd-pick__title
+      .fd-capturebtn  <button>         (omitted entirely on a faculty-preview route)
+      .fd-capture                      (omitted when nothing is waiting)
+        .fd-sectionhead
+        .fd-capture__purpose
+        .fd-capture__degraded          (only when page-matching is unavailable)
+        .fd-capture__item ×N
+          .fd-capture__q
+          .fd-capture__acts
+            .fd-capture__act ×1-3
+        .fd-capture__foot
+          .fd-btn.fd-btn--ghost
+      .fd-progresslink  <button>
+        .fd-progresslink__title / .fd-progresslink__sub
       .fd-quicktools--pills            (below 1000px only)
         .fd-quicktool ×5
     .fd-rail                           (≥1000px only)
@@ -256,6 +272,11 @@ ancestor; there is no modifier class for it.
 | `.fd-continue__kicker.is-complete` | Switches teal → terracotta when the week is finished. |
 | `.fd-ring.is-celebrating` | One-shot pulse on week completion. |
 | `.fd-list` | Supplies the 8px gap between `.fd-row`s — rows have no sibling margin. |
+| `.fd-due` | Reads `cw_srs_v1`. Renders **only** when Daily-Review cards are actually due — a promoted zero is worse than a buried count, so `fdDueRow()` returns `''` at zero and Continue stays the first thing under the subhead. |
+| `.fd-due__over` | The one terracotta accent in an otherwise teal row: overdue is the part that is actually late. |
+| `.fd-capturebtn` | Reads/writes `cw_capture_v1` through the capture dialog (`capOpen()`, outside the front door's render). **Omitted, not disabled, on a faculty-preview route** — see the ⚠ below. |
+| `.fd-capture__degraded` | Honest degraded state: the questions are still listed and dismissible, only the page-matching failed. |
+| `.fd-progresslink` | Entry point for the demoted Progress page (§9). In the **main column, not the rail** — the rail is hidden below 1000px and a phone would otherwise have no way in. |
 
 ⚠ **`.fd-ring` needs `--fd-ring-pct` set inline** (e.g. `style="--fd-ring-pct:62%"`). It defaults to
 `0%`, so a ring rendered without it silently shows an empty track. This is the one custom property
@@ -267,6 +288,16 @@ Emit the identical inner markup for both; only the container class differs.
 
 ⚠ `.fd-today__cols` is the flex wrapper that puts `.fd-today__main` and `.fd-rail` side by side.
 Omitting it collapses the rail underneath.
+
+⚠ **`.fd-capturebtn` must not render on a faculty-preview route.** Removed from the DOM entirely,
+never merely disabled: a capture control in a reviewer's frame offers to write *learner* state from
+a reviewer's seat, and a disabled-but-focusable control still sits in the preview's tab order.
+`fdCaptureButton(state.preview)` is where that gate lives. This was rule 1 of the two the deleted
+`capWire()` enforced.
+
+⚠ **The capture controls carry `data-cap-*`, never `data-fd-open`.** Each is two acts — navigate
+(or schedule) *and* mark the capture triaged — and a `data-fd-*` attribute would perform only the
+first, leaving the question in the triage list forever.
 
 ---
 
@@ -371,8 +402,9 @@ it; just don't expect it to paint anything.
       .fd-railnav__label
       .fd-railnav__list
         .fd-railnav__row <button> ×N      + .is-current
-          .fd-railnav__dot                + .is-done
+          .fd-railnav__dot                + .is-done      aria-hidden
           .fd-railnav__title              + .is-done
+          .fd-vh                          (done rows only — ", done")
   .fd-actionbar__spacer                   (below 1000px)
 .fd-actionbar                             (below 1000px, fixed)
   .fd-btn.fd-btn--ghost
@@ -411,6 +443,38 @@ can also emit `h4`–`h6`, `pre`, `img`, `strong`, and `em` — measured at **0/
 those unstyled is correct YAGNI, not a gap. If that ever changes (a page starts using fenced code
 or an image inside body markdown), the same measure-first approach applies: check real usage
 before adding a rule.
+
+### The tool pane
+
+The same surface, rendering an interactive tool instead of an article. The frame is **not** inside
+`.fd-main`, because an `<iframe>` re-inserted into the DOM reloads and takes the tool's in-progress
+state with it.
+
+```
+#content
+  .fd-header …
+  .fd-main.fd-main--tool
+    .fd-toolpane
+      .fd-reader__back  <button>        (same element as the Reader's)
+      .governance-notice                (legacy class, shell-owned — review status)
+.fd-toolmount                           (SIBLING of #content, flex child of .fd-shell)
+  .fd-toolframe        <iframe>
+```
+
+| Class | Notes |
+|---|---|
+| `.fd-toolmount` | `display:none` when `:empty`; `flex:1 1 auto` otherwise, so it takes the viewport's remaining height. Written **only when the open tool changes**. |
+| `.fd-toolframe` | `flex:1 1 auto` inside the mount. Replaces the deleted shell's `.toolframe` + `#content.toolmode` pair. |
+| `.fd-main--tool` | Trims `.fd-main`'s 64px bottom padding — dead space above a full-height frame. |
+
+⚠ **`.fd-toolmount` is a flex child of `.fd-shell`, not a descendant of `.fd-main`.** Moving it
+inside would (a) put it back under the element `fdMount` rewrites, reloading the tool on every
+re-render, and (b) break `flex:1`, since only a direct child of the column flex container can grow.
+
+⚠ **The iframe `src` must carry the query suffix** (`&case=`, `&scenario=`, `&resume=1`) through
+`toolFrameSuffixWithGovernance()`. `topic_meta.json` `cta[]`, `communicationHref()` and
+`familyAction()` all ship deep links that depend on it; dropping it opens the right tool at the
+wrong place, with no error.
 
 ---
 
@@ -497,6 +561,44 @@ text, so it stays a high-contrast slab in both themes. Do not override its colou
 
 ⚠ All three sheet variants share `.fd-sheet__head` / `.fd-sheet__body`; only the body contents
 differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
+
+---
+
+## 9. Progress & mastery (demoted reading-pane page)
+
+Reached from `.fd-progresslink` at the foot of Today, routed as `?page=__progress__`.
+
+```
+.fd-progress
+  .fd-reader__back    <button>
+  .fd-h1 / .fd-sub
+  .fd-progress__coverage
+  .fd-sectionhead
+  .fd-progress__empty                   (only before any practice exists)
+  .fd-bars
+    .fd-bar ×12
+      .fd-bar__label / .fd-bar__track > .fd-bar__fill / .fd-bar__value
+  .fd-sectionhead                       ("Practice your weakest areas", omitted when none)
+  .fd-list
+    .fd-progressrow  <button> ×0-3
+      .fd-progressrow__title / .fd-progressrow__meta
+  (renderCalibPanel() output — legacy .hm-* markup, see the CSS note)
+  .fd-sectionhead + .fd-progress__note + .fd-progress__field   (exam date)
+  .fd-sectionhead + .fd-progress__note + .fd-btn.fd-btn--ghost (study export)
+  .fd-a2hs
+```
+
+| Class | Notes |
+|---|---|
+| `.fd-bar__fill` | Width is the one inline style here (`style="width:NN%"`), same convention as `.fd-ring`'s `--fd-ring-pct`. |
+| `.fd-progressrow` | `data-fd-practice="<blueprint code>"` — writes the `cw_qb_focus` handoff key, then opens the question bank. |
+| `.fd-progress__field` | Holds the **only writer of `cw_shelf_date`** in the build. |
+| `.fd-a2hs` | The add-to-home-screen sentence. Shared shell copy: audience-neutral, extracted by `tests/shell-copy.test.mjs`. |
+
+⚠ **No rotation-START date field belongs here**, even though the deleted Start-here screen had one.
+`cw_rotation_start` is written only by `fdSetRotationWeek()`, which snaps to the Monday of the
+chosen week; a free date input would let a non-Monday value be typed, and `fd_state.js` records
+that this makes the exam countdown drift *upward* as time passes.
 
 ---
 

@@ -221,9 +221,23 @@ test('a week tile in the first-run wizard adopts the rotation week', () => {
 
 test('the wizard\'s browse tile sets no week and lands on Library', () => {
   const p = F.fdDispatch(t({ week: '0', inSetup: true }), { role: 'student', setup: 'week' });
-  assert.equal(p.setWeek, null, 'null clears the rotation date; a number would set one');
   assert.equal(p.tab, 'library');
   assert.equal(p.setup, '');
+  assert.equal(p.setWeek, undefined,
+    'browsing does not REQUIRE a week; it must not DESTROY one. An earlier version returned '
+    + 'setWeek:null, which deletes cw_rotation_start — and step 2 is reachable at any time from '
+    + 'the header week pill, so a student on day three who tapped in to look and then chose '
+    + '"just browse" lost their rotation week with no undo. Controller ruling, 2026-08-16.');
+});
+
+test('choosing "just browse" from the header pill leaves an EXISTING week untouched', () => {
+  // The regression the ruling is about, stated as its own case: the state here is a student who
+  // already HAS a week (week:3) and reached step 2 deliberately. fdApply only calls
+  // fdSetRotationWeek() when the patch carries setWeek, so the absence of the key IS the contract.
+  const p = F.fdDispatch(t({ week: '0', inSetup: true }),
+    { role: 'student', setup: 'week', week: 3, tab: 'today' });
+  assert.ok(!Object.prototype.hasOwnProperty.call(p, 'setWeek'),
+    'the patch must not carry setWeek at all — a present-but-null value is what deleted the date');
 });
 
 test('the SAME attribute on Path\'s timeline only changes which week is being VIEWED', () => {

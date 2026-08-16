@@ -16,9 +16,9 @@ const src = readFileSync(new URL(SHELL, import.meta.url), 'utf8');
 // work -- but a reader scanning this list should see the dependency direction, and an injection
 // that put the wiring above its renderers would be the first thing to suspect.
 const ORDER = [
-  '/*__PHASE_POLICY__*/', '/*__FD_STATE__*/', '/*__FD_DATA__*/', '/*__FD_TODAY__*/',
-  '/*__FD_SHELL__*/', '/*__FD_PATH__*/', '/*__FD_LIBRARY__*/', '/*__FD_READER__*/',
-  '/*__FD_SEARCH__*/', '/*__FD_SHEET__*/', '/*__FD_WIRE__*/',
+  '/*__PHASE_POLICY__*/', '/*__FD_STATE__*/', '/*__FD_DATA__*/', '/*__FD_DUE__*/',
+  '/*__FD_TODAY__*/', '/*__FD_SHELL__*/', '/*__FD_PATH__*/', '/*__FD_LIBRARY__*/',
+  '/*__FD_READER__*/', '/*__FD_SEARCH__*/', '/*__FD_SHEET__*/', '/*__FD_WIRE__*/',
 ];
 
 test('every front-door marker appears exactly once in the shell', () => {

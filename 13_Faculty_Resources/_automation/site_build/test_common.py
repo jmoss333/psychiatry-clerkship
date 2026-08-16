@@ -566,7 +566,7 @@ class TestSharedSnippets(unittest.TestCase):
         self.assertNotIn("/*__FD_STATE__*/", t)
 
     def test_every_frontdoor_snippet_expands(self):
-        """All nine frontdoor markers resolve through the frontdoor/ subdirectory.
+        """All ten frontdoor markers resolve through the frontdoor/ subdirectory.
 
         FD_STATE has its own test above (it predates the rest); this covers everything
         else under frontdoor/, so a new module added to SNIPPET_MARKERS without a row
@@ -574,6 +574,7 @@ class TestSharedSnippets(unittest.TestCase):
         """
         markers = [
             ("/*__FD_DATA__*/", "function fdEsc("),
+            ("/*__FD_DUE__*/", "function fdDueRow("),
             ("/*__FD_SHELL__*/", "function fdKeyAction("),
             ("/*__FD_TODAY__*/", "function fdTodayProgress("),
             ("/*__FD_PATH__*/", "function fdPath("),

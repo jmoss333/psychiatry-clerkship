@@ -16,6 +16,7 @@ const make = new Function(`
   ${read('phase_policy.js')}
   ${read('frontdoor/fd_state.js')}
   ${read('frontdoor/fd_data.js')}
+  ${read('frontdoor/fd_due.js')}
   ${todaySrc}
   return { fdTodayProgress: fdTodayProgress, fdToday: fdToday, fdBuildIndex: fdBuildIndex,
            fdItemsForWeek: fdItemsForWeek, fdLibraryOnlyReads: fdLibraryOnlyReads };
@@ -239,19 +240,51 @@ test('no rendered string carries an audience-specific token', () => {
   assert.doesNotMatch(html, AUDIENCE_TOKEN_RE);
 });
 
-// ---- scope pin: due row / capture triage are NOT this task's job --------------------
+// ---- purity pin --------------------------------------------------------------------
 //
-// The design doc's decision table marks both "Port, prominent", but frontdoor.css has no rules
-// for either and neither appears in the prototype's Today section -- they read from runtime
-// stores outside the index this renderer is pure over. Plan 3 ports them during wiring. Pinned
-// here (not just in a comment) so a later edit that reaches for storage to "finish" this
-// surface fails loudly instead of silently.
+// The due row and capture triage now DO render here (Plan 3 Task 5) -- but through fd_due.js,
+// over data the caller has already read. The pin that mattered is unchanged and is the one to
+// keep: this file must never reach for a store itself. An earlier version of this block also
+// asserted that no due/capture surface was rendered at all, which was a scope pin for Plan 2
+// and is now the opposite of the contract; the tests below replace it.
 test('fd_today.js touches no DOM, storage, or clock', () => {
   assert.doesNotMatch(todaySrc, /localStorage\.|document\.|window\.|Date\.now\(\)/,
     'fd_today.js must stay a pure function of (index, state)');
 });
 
-test('no rendered output carries a due-row or capture-triage surface', () => {
-  const html = F.fdToday(IDX, s({})) + F.fdToday(IDX, s({ week: null }));
-  assert.doesNotMatch(html, /fd-due|fd-capture|data-fd-due|data-fd-capture/i);
+test('the due row renders above the Continue card, and only when something is due', () => {
+  const none = F.fdToday(IDX, s({}));
+  assert.doesNotMatch(none, /fd-due/, 'no breakdown supplied = nothing due = no row');
+
+  const due = F.fdToday(IDX, s({ due: { daily: { due: 3, overdue: 1 },
+    qb: { due: 0 }, fam: { due: 0 }, other: { due: 0 } } }));
+  assert.match(due, /class="fd-due"/);
+  assert.ok(due.indexOf('class="fd-due"') < due.indexOf('class="fd-continue"'),
+    'spec §5 orders Today greeting -> due row -> Continue; the late thing comes first');
+});
+
+test('the capture button is always offered and the triage list only when something waits', () => {
+  const empty = F.fdToday(IDX, s({}));
+  assert.match(empty, /class="fd-capturebtn"/,
+    'a clean device has nothing to triage but must still be able to capture the first question');
+  assert.doesNotMatch(empty, /class="fd-capture"/);
+
+  const waiting = F.fdToday(IDX, s({ capture: { items: [{ id: 'c1', text: 'why lithium?', hit: null }],
+    matching: true, purpose: 'P' } }));
+  assert.match(waiting, /class="fd-capture"/);
+});
+
+test('a faculty preview renders no capture control at all', () => {
+  const html = F.fdToday(IDX, s({ preview: true,
+    capture: { items: [{ id: 'c1', text: 'q', hit: null }], matching: true, purpose: 'P' } }));
+  assert.doesNotMatch(html, /fd-capturebtn/,
+    'removed, not disabled -- a disabled-but-focusable control still sits in the tab order');
+  assert.match(html, /class="fd-capture"/, 'the triage LIST is not the write affordance');
+});
+
+test('Progress is reachable from the main column, not only the desktop rail', () => {
+  const html = F.fdToday(IDX, s({}));
+  const main = html.slice(html.indexOf('fd-today__main'), html.indexOf('<aside class="fd-rail"'));
+  assert.match(main, /data-fd-open="__progress__"/,
+    '.fd-rail is display:none below 1000px -- a phone would have no way into Progress');
 });

@@ -210,10 +210,18 @@ function fdDispatch(target, state){
     /* Path's timeline. The narrowest patch in this function, on purpose. */
     if(!t.inSetup) return {viewWeek:n};
     /* The wizard's "Not on rotation -- just browse" tile shares data-fd-week with the numbered
-       tiles and carries 0 (fd_shell.js's own note). setWeek:null clears the rotation date, which
-       is what "no week set" means when the state is a date rather than a number -- the prototype
-       and spec §5 both say the choice lands on Library with no week. */
-    if(!n) return {setWeek:null, setup:'', tab:'library', openId:''};
+       tiles and carries 0 (fd_shell.js's own note).
+
+       *** IT SETS NO WEEK AND CLEARS NONE. *** An earlier version returned setWeek:null, which
+       DELETES cw_rotation_start. Spec §5's "lands on Library with no week set" is about browsing
+       not REQUIRING a week, not about destroying one already stored -- and step 2 is reachable at
+       any time from the header week pill, so a student on day three who taps it to look at the
+       list and then chooses "just browse" would have lost their rotation week, their Today, their
+       Continue card and their exam countdown in one tap, with no undo and no warning. Controller
+       ruling, 2026-08-16. The consequence, stated rather than hidden: nothing in the front door
+       clears a rotation week now. That is the correct trade — a wrong week is one tap from being
+       corrected on this very screen, while a deleted one has to be remembered. */
+    if(!n) return {setup:'', tab:'library', openId:''};
     return {setWeek:n, viewWeek:n, setup:'', tab:'today', openId:''};
   }
 
@@ -301,6 +309,27 @@ var FD_CLICK_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd
   '[data-fd-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],'+
   '[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-close-sheet],'+
   '[data-fd-close-search],[data-fd-close-nudge]';
+
+/* The ward-capture controls and the two Progress actions. Kept OUT of FD_CLICK_SELECTOR and
+   matched first, because none of them is a state patch:
+     data-cap-*      each is TWO acts -- navigate AND mark the capture triaged, or schedule AND
+                     mark it triaged. fdDispatch's data-fd-open branch would do only the first,
+                     leaving the question sitting in the triage list forever. This is the same
+                     reason the deleted card refused to emit data-f at all
+                     (tests/ward-capture-store.test.mjs T12a).
+     data-fd-capture opens a dialog that lives outside the front door's render entirely
+                     (capOpen(), spa_index.html) and owns its own focus trap.
+     data-fd-practice writes the cw_qb_focus handoff key that question-bank-practice.html reads
+                     and clears on load, THEN navigates.
+     data-fd-studyexport
+                     calls window.exportStudy(), which builds a Blob and clicks an <a>.
+                     *** ONE COMPOUND WORD, ON PURPOSE. *** tests/fd-wire.test.mjs keeps this
+                     file ES5 by scanning it for a module-boundary keyword followed by a space,
+                     and a hyphen counts as a word boundary — so the hyphenated spelling would
+                     match that scan from inside a comment. Do not rename it apart. */
+var FD_CAPTURE_SELECTOR='[data-fd-capture],[data-cap-open],[data-cap-review],[data-cap-drop],'+
+  '[data-cap-copy]';
+var FD_ACTION_SELECTOR='[data-fd-practice],[data-fd-studyexport]';
 
 /* The three DOM contexts that disambiguate a reused attribute -- see the header. Each names the
    element the emitting module actually renders, so the ambiguity is resolved against the class
@@ -401,6 +430,84 @@ function fdSetRotationWeek(n, nowMs){
   try{ localStorage.setItem('cw_rotation_start', localDayStr(d.getTime())); }catch(_){ }
 }
 
+/* ---- runtime-store reads for the two Today surfaces fd_due.js renders --------------------
+   fd_due.js is pure over already-read data; these are the reads. They live here rather than in
+   fdCurrentState() (spa_index.html) because this file is the declared impure layer for stores,
+   and fdCurrentState composes what these return alongside the reads it already does. Each fails
+   to a safe shape rather than throwing: a corrupt store must degrade Today, not blank it. */
+function fdDueState(){
+  try{ return dueBreakdown(); }catch(_){ return null; }
+}
+
+/* A captured question is a SENTENCE, and fdSearchResults' matcher is a substring test tuned for a
+   TYPED QUERY of one or two terms: fd_search.js counts any expanded word longer than one
+   character appearing anywhere in title+ref+summary as a hit. Hand it "why do we give lorazepam
+   for catatonia?" and "for" matches half the library — and because the safety protocols are
+   merged FIRST by design (crisis-first search is right for the search box), the top hit for
+   almost any sentence became a safety protocol. Observed while driving the page: that exact
+   capture offered to open the suicide-risk card.
+
+   So the sentence is reduced to the words that could plausibly BE the topic: five characters or
+   more, or an all-caps acronym — psychiatry is full of short ones (CIWA, COWS, MSE, ECT, SSRI)
+   and a learner types those in caps. Deliberately NOT a stop-word list: a list is a thing to
+   maintain, to get wrong, and to disagree with the search box about. Returns '' when nothing
+   survives, which the caller reads as "do not attempt a match" — never as an empty query, which
+   fdSearchResults answers with the whole safety kit. */
+function fdCaptureQuery(text){
+  var words=String(text||'').split(/[^A-Za-z0-9]+/), out=[], i, w;
+  for(i=0;i<words.length;i++){
+    w=words[i];
+    if(!w) continue;
+    if(w.length>=5||(w.length>=2&&w===w.toUpperCase()&&/[A-Z]/.test(w))) out.push(w);
+  }
+  return out.join(' ');
+}
+
+/* The re-point the deleted capTriageHtml() asked for by name. It matched a capture to a page
+   through the legacy runSearch(), which needed the ~475 KB search-index.json fetch this build no
+   longer performs — so with SI permanently null it rendered its degraded branch forever. The
+   front door's own index is build-injected, so matching works again with no second download.
+
+   `matching:false` is reserved for the matcher actually THROWING. A capture with no topical word
+   in it, or one nothing matched, is not a broken matcher — it is a question worth taking to
+   supervision as it stands, and it still renders with its dismiss control. */
+function fdCaptureState(st){
+  var read, i, items=[], matching=true;
+  try{ read=capRead(); }catch(_){ read=null; }
+  if(!read||!read.items) return { items: [], matching: true, purpose: '' };
+  var idx=fdIndexSafe(), syn=(FD_CURRICULUM&&FD_CURRICULUM.synonyms)||{};
+  for(i=0;i<read.items.length;i++){
+    var it=read.items[i];
+    if(it.triaged) continue;
+    var hit=null, q=fdCaptureQuery(it.text);
+    if(q){
+      try{
+        var res=fdSearchResults(idx, q, syn, st);
+        if(res.length){
+          hit={ ref: res[0].item.ref, title: res[0].item.title, quiz: fdCaptureHasQuiz(res[0].item.ref) };
+        }
+      }catch(_){ matching=false; }
+    }
+    items.push({ id: it.id, text: it.text, hit: hit });
+  }
+  return { items: items, matching: matching, purpose: CAP_PURPOSE };
+}
+
+/* topicHasQuiz lives in the first script and is only defined once TOPIC_META is assigned. Wrapped
+   so a page whose quiz cannot be determined simply does not offer the review control, rather than
+   offering one that seedSRS() would silently ignore. */
+function fdCaptureHasQuiz(ref){
+  try{ return !!topicHasQuiz(ref); }catch(_){ return false; }
+}
+
+/* The exam date, read for the Progress page's field, which is its only writer. Named "exam"
+   rather than after its store key: the key is cw_shelf_date and cannot change (phasePolicy() and
+   fdExamCountdown() both read it), but "shelf" is a banned token in anything that reaches the
+   rendered page, and this name travels straight into state and onto an id attribute. */
+function fdExamDate(){
+  try{ return localStorage.getItem('cw_shelf_date')||''; }catch(_){ return ''; }
+}
+
 /* Auto-advance after Mark done (spec §5). The done map is copied with the just-marked item
    forced true, because the store write and this lookup would otherwise race on whichever
    fdCurrentState() snapshot was taken first. */
@@ -441,12 +548,55 @@ function fdNudgeSchedule(){
   }, FD_NUDGE_MS);
 }
 
+/* The one reserved, NOT-SHIPPED ref the front door routes to. Progress & mastery is spec §1's
+   "Port, demoted -- a reading-pane page, not a fourth tab", so it travels as an OPEN ITEM
+   (?page=__progress__) rather than as a fourth tab. The '__name__' vocabulary is the deleted
+   shell's own -- announceRoute() in spa_index.html still carries its __progress__ branch, which
+   is why the announcement reads "Progress loaded" with no further wiring -- so this reuses that
+   name rather than minting a second one for the same thing.
+
+   k:'special' is the load-bearing half. It is what stops capCtx() from filing a ward capture
+   against a slug that does not exist, stops refreshGovernanceNotice() from asking the review
+   ledger about a page that was never shipped, and stops fdFetchBody() from fetching
+   content/__progress__ and 404ing. All three read `k`, all three predate this task. */
+var FD_REF_PROGRESS='__progress__';
+function fdIsSpecialRef(ref){ return ref===FD_REF_PROGRESS; }
+/* The index is the first authority and the EXTENSION is the fallback, not the other way round.
+   A ref the index does not carry is still a shipped tool if it ends in .html — curriculum.json
+   drives the index, and a tool that no week and no library column happens to reference would
+   otherwise be classified 'md', rendered as an article shell, and have content/<slug>.html
+   fetched for it. That is exactly the shape of the defect this task exists to fix, one layer
+   down; found by driving a faculty preview at a ref the index does not list, which reported no
+   status at all and left the console waiting. fdIsTool (fd_data.js) is the same test the join
+   layer uses, so the two cannot disagree. */
+function fdRouteKind(ref, it){
+  if(fdIsSpecialRef(ref)) return 'special';
+  if(it) return (it.kind==='tool')?'tool':'md';
+  return fdIsTool(ref)?'tool':'md';
+}
+function fdRouteTitle(ref){ return fdIsSpecialRef(ref)?'Progress':ref; }
+
 /* The legacy {f,k,t} item shape setRoute()/pageTitle()/announceRoute()/capCtx() all read. Built
    here rather than carried in front-door state so the two vocabularies meet at exactly one
-   place. */
+   place.
+
+   *** MEMOISED PER REF, AND THE IDENTITY IS LOAD-BEARING. *** loadFacultyPreviewTool() and
+   failFacultyPreviewTool() (spa_index.html) both guard with `currentItem!==item` to drop a tool
+   load whose route was navigated away from while its preflight fetch was in flight. currentItem
+   is assigned from this function, so while it built a fresh object on every call that guard was
+   TRUE unconditionally and the faculty preview could never mount at all. Caching by ref makes
+   the comparison mean what it says: same open ref, same object; different ref, different object.
+
+   Keys are prefixed so no ref can address Object.prototype ('r:'+ref rather than ref). Memoising
+   unconditionally, including the not-in-index fallback, because "this ref is not a shipped item"
+   is itself a stable answer over build-injected data that cannot change at runtime. */
+var FD_ROUTE_ITEMS={};
 function fdRouteItem(ref){
+  var key='r:'+ref;
+  if(fdOwns(FD_ROUTE_ITEMS, key)) return FD_ROUTE_ITEMS[key];
   var it=(fdIndexSafe().byRef||{})[ref]||null;
-  return { f: ref, k: (it&&it.kind==='tool')?'tool':'md', t: (it&&it.title)||ref };
+  FD_ROUTE_ITEMS[key]={ f: ref, k: fdRouteKind(ref, it), t: (it&&it.title)||fdRouteTitle(ref) };
+  return FD_ROUTE_ITEMS[key];
 }
 
 /* setRoute() owns ?page=/?tool= -- including the faculty-preview guard that pins a reviewer's
@@ -768,7 +918,57 @@ function fdApply(patch){
   if(FD_TRANSIENT.nudgeRef) fdNudgeSchedule();
 }
 
-/* Three listeners for the whole front door, plus one scoped to the search panel.
+/* A ward-capture control. Ported from the deleted capTriageClick() (spa_index.html @098ad50),
+   with navClick() replaced by the front door's own dispatch and the two in-place re-render calls
+   replaced by fdRerender() -- specialRefresh() already defers to it, so this is the same path the
+   capture DIALOG takes when it saves.
+
+   Marking triaged happens BEFORE navigating on the open branch, not after: the old code did the
+   same, and the reason is that navigation re-renders, so a mark applied afterwards would be
+   written to a store the surface has already read. */
+function fdCaptureClick(el){
+  if(el.hasAttribute('data-fd-capture')){ try{ capOpen(el); }catch(_){ } return; }
+  if(el.hasAttribute('data-cap-copy')){
+    var payload='';
+    try{ payload=capClipboardText(); }catch(_){ }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(payload).then(
+        function(){ el.textContent='Copied ✓'; },
+        function(){ el.textContent='Copy failed'; });
+    } else { el.textContent='Copy unavailable'; }
+    return;
+  }
+  var f=el.getAttribute('data-cap-f');
+  var id=el.getAttribute('data-cap-open')||el.getAttribute('data-cap-review')
+    ||el.getAttribute('data-cap-drop');
+  if(!id) return;
+  if(el.hasAttribute('data-cap-review')&&f){
+    try{ seedSRS(f); }catch(_){ }
+    capMarkTriaged(id); fdRerender(); return;
+  }
+  if(el.hasAttribute('data-cap-drop')){ capRemove(id); fdRerender(); return; }
+  if(el.hasAttribute('data-cap-open')&&f){
+    capMarkTriaged(id);
+    fdApply(fdDispatch({open:f}, fdCurrentState()));
+  }
+}
+
+/* The two Progress actions. Neither is a state patch: one writes a handoff key and then routes,
+   the other downloads a file and writes its own status line into #studyMsg. */
+function fdActionClick(el){
+  var cat=el.getAttribute('data-fd-practice');
+  if(cat){
+    /* Read and REMOVED by question-bank-practice.html on load, so it is a one-shot handoff, not
+       a preference -- writing it without navigating would leave it to fire on some later visit. */
+    try{ localStorage.setItem('cw_qb_focus', cat); }catch(_){ }
+    fdApply(fdDispatch({open:'question-bank-practice.html'}, fdCurrentState()));
+    return;
+  }
+  try{ if(window.exportStudy) window.exportStudy(); }catch(_){ }
+}
+
+/* Four delegated listeners for the whole front door (click, keydown, change, popstate), plus one
+   scoped to the search panel and one for messages from an embedded tool.
 
    The click listener is on `document`, NOT on #content: the sheet, the search overlay and the
    nudge are portalled into their own mounts as SIBLINGS of #content (so an open overlay is not
@@ -783,10 +983,30 @@ function fdApply(patch){
    must not re-render anything. */
 function fdWire(){
   document.addEventListener('click', function(ev){
-    var el=(ev.target&&ev.target.closest)?ev.target.closest(FD_CLICK_SELECTOR):null;
+    var reach=(ev.target&&ev.target.closest)?ev.target:null;
+    if(!reach) return;
+    var cap=reach.closest(FD_CAPTURE_SELECTOR);
+    if(cap){ FD_LAST_INVOKER=null; fdCaptureClick(cap); return; }
+    var act=reach.closest(FD_ACTION_SELECTOR);
+    if(act){ FD_LAST_INVOKER=null; fdActionClick(act); return; }
+    var el=reach.closest(FD_CLICK_SELECTOR);
     if(!el) return;
     FD_LAST_INVOKER={ el: el, key: fdFocusKey(el) };
     fdApply(fdDispatch(fdWireTarget(el), fdCurrentState()));
+  });
+
+  /* The fourth listener, and the only `change` one. The exam-date field is the sole writer of
+     cw_shelf_date; delegated on document because #content is rebuilt on every render, which
+     would drop an element-bound handler on the first tab switch.
+
+     It deliberately does NOT re-render. A `change` on a date input fires when the value is
+     committed, and re-rendering rebuilds #content wholesale -- which would take focus out of the
+     field the student is still standing in. The countdown on Today reads the key on its next
+     render, which is the next thing they do. */
+  document.addEventListener('change', function(ev){
+    var el=ev.target;
+    if(!el||!el.hasAttribute||!el.hasAttribute('data-fd-examdate')) return;
+    try{ localStorage.setItem('cw_shelf_date', String(el.value||'')); }catch(_){ }
   });
 
   window.addEventListener('keydown', function(ev){
@@ -829,6 +1049,76 @@ function fdWire(){
       fdSearchRedrawBody();
     });
   }
+
+  /* ---- messages from an embedded tool -------------------------------------------------------
+     Restored with the tool surface (Plan 3 Task 5). This listener was deleted in Task 3 along
+     with the nav.json block that happened to host it, which took four shipped affordances with
+     it. Every type below has a real sender in this tree:
+
+       openPage    question-bank-practice.html (twice -- one of them f:'__home__'),
+                   learning-path.html, "Tool Launcher Badges.html"
+       openLibrary learning-path.html
+       search      learning-path.html
+       theme       question-bank-practice.html, review.html
+       faculty-preview-question-status
+                   question-bank-practice.html. The faculty console's QUESTION preview cannot
+                   resolve without this relay: only the tool itself knows whether the item under
+                   review rendered, and only the shell can answer the console.
+
+     NOT restored: 'ic-size' (interview-circle.html). It posts only when its OWN url carries
+     ?embed=1, which the tool frame has never passed, and .fd-toolframe now fills its pane by
+     layout -- an explicit pixel height would fight flex rather than help it.
+
+     The preview lock comes first for every NAVIGATING type, matching the deleted handler and
+     tests/smoke/faculty-console.spec.js, which posts all three at a locked preview and asserts
+     the frame stayed put. 'theme' is deliberately exempt: it changes no route, and a reviewer's
+     frame going dark is not an escape from the item under review.
+
+     An unknown openPage ref is ignored rather than opened. The deleted handler looked the slug
+     up among the nav buttons and silently did nothing when it was absent; opening it anyway
+     would render an article shell titled with the raw slug over a 404. */
+  window.addEventListener('message', function(ev){
+    var d=ev.data||{};
+    if(d.type==='faculty-preview-question-status'){
+      if(facultyPreviewRequest&&facultyPreviewRequest.surface==='question'
+          &&ev.origin===location.origin
+          &&currentToolFrame&&ev.source===currentToolFrame.contentWindow
+          &&currentItem&&currentItem.f==='question-bank-practice.html'
+          &&d.reviewItem===facultyPreviewRequest.reviewItem
+          &&d.reviewKey===facultyPreviewRequest.reviewKey
+          &&d.reviewToken===facultyPreviewRequest.reviewToken
+          &&d.surface==='question'
+          &&['ready','not_found','error'].indexOf(d.status)>=0
+          &&Object.keys(d).sort().join(',')==='reviewItem,reviewKey,reviewToken,status,surface,type'){
+        postFacultyPreviewStatus(d.status, 'question');
+      }
+      return;
+    }
+    if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){
+      document.documentElement.setAttribute('data-theme', d.mode);
+      try{ localStorage.setItem('cw_theme', d.mode); }catch(_){ }
+      fdRerender();
+      return;
+    }
+    if(d.type!=='openPage'&&d.type!=='openLibrary'&&d.type!=='search') return;
+    if(facultyPreviewRequest){ showFacultyPreviewLockNotice(); return; }
+    /* No invoking control: focus must not be restored to whatever was last clicked. */
+    FD_LAST_INVOKER=null;
+    if(d.type==='openLibrary'){
+      fdApply({tab:'library', openId:'', sheet:null, sheetFrom:null, searchOpen:false});
+      return;
+    }
+    if(d.type==='search'){ fdApply({searchOpen:true, query:String(d.q||'')}); return; }
+    if(!d.f) return;
+    /* '__home__' is the deleted shell's name for Today and question-bank-practice.html still
+       sends it. It is a TAB here, not an item -- there has never been a __home__ page to open. */
+    if(d.f==='__home__'){
+      fdApply({tab:'today', openId:'', sheet:null, sheetFrom:null, searchOpen:false});
+      return;
+    }
+    if(!(fdIndexSafe().byRef||{})[d.f]) return;
+    fdApply(fdDispatch({open:String(d.f)}, fdCurrentState()));
+  });
 
   window.addEventListener('popstate', function(){
     /* URL-first, with NO stored fallback for the route: a back press from ?page=x to the bare
