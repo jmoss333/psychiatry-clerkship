@@ -181,7 +181,12 @@
   background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);
   color:var(--fd-text-mid);font:inherit;font-size:14px;line-height:1;cursor:pointer;
 }
-.fd-themebtn:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
+/* Hover is a NEUTRAL border shift, borrowed from .fd-searchbtn:hover, so that teal is left free to
+ * mean one thing on this control: the pressed state below. The button's accessible name and its
+ * glyph are both stable (fd_shell.js), so this rule is the only thing that shows a sighted user
+ * which way the toggle currently sits — it is state, not decoration. */
+.fd-themebtn:hover{border-color:var(--fd-line-hover);color:var(--fd-text)}
+.fd-themebtn[aria-pressed="true"]{background:var(--fd-teal-wash);border-color:var(--fd-teal);color:var(--fd-teal-deep)}
 
 .fd-tabs{max-width:1200px;margin:0 auto;padding:4px 20px 0;display:flex;gap:2px}
 .fd-tab{

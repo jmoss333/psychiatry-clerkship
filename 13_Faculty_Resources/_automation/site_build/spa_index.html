@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}try{if(localStorage.getItem('cw_side_collapsed')==='1'){document.documentElement.setAttribute('data-side','rail');}}catch(e){}})();</script>
+<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inpatient Psychiatry — MS3 Clerkship</title>
@@ -1191,13 +1191,30 @@
      spec §6 makes that isolation a requirement rather than a nicety. A failed surface renders a
      minimal fallback and leaves the header and tabs usable.
 
-     `name` is unused today and kept anyway: it is the only thing distinguishing one guard from
-     another at the call site, so a future logger has somewhere to say WHICH surface failed
-     without every caller having to be rewritten to pass it. */
+     The fallback copy depends on WHERE the failure happened, because "use another tab" is only
+     true when there are tabs. The first-run wizard renders no header and no tab row, so a student
+     hitting a failure there has an otherwise empty page — pointing them at chrome that is not on
+     screen is worse than saying nothing. */
+  function fdFallbackHtml(name){
+    var text=(String(name).indexOf('setup')===0)
+      ? 'Setup could not load. Reload the page to try again.'
+      : 'This section could not load. Try reloading, or use another tab.';
+    return '<div class="fd-fallback">'+text+'</div>';
+  }
+  /* `name` is what makes a swallowed failure findable. Without the warn, a surface that throws is
+     invisible in development — the page just quietly shows a placeholder — which is exactly when
+     you want to see it. Costs nothing in production and is wrapped because a console-less host
+     (or a page that has shimmed it away) must not turn a degraded surface into a hard failure. */
   function fdSurface(name, fn){
     try{ return fn(); }
-    catch(e){ return '<div class="fd-fallback">This section could not load. '
-      + 'Try reloading, or use another tab.</div>'; }
+    catch(e){
+      try{
+        if(typeof console!=='undefined'&&console.warn){
+          console.warn('front door: the "'+name+'" surface failed to render', e);
+        }
+      }catch(_){ }
+      return fdFallbackHtml(name);
+    }
   }
 
   /* fdBuildIndex joins curriculum -> topic_meta -> tool_registry -> site_manifest. Memoised

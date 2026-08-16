@@ -142,7 +142,8 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-header` | `position:sticky; top:0; z-index:40`. |
 | `.fd-header__bar` | The 1200px-capped flex row. `.fd-header` alone has no max-width. |
 | `.fd-header__actions` | `margin-left:auto` — this is what pushes the right group over. |
-| `.fd-themebtn` | 32px circular icon button, borrowed from `.fd-weekpill`'s surface/border/hover. Gets `min-width` **and** `min-height` 44px under 999px — it is the one square control here, so a height-only rule would leave it short on its narrow axis. |
+| `.fd-themebtn` | 32px circular icon button. Gets `min-width` **and** `min-height` 44px under 999px — it is the one square control here, so a height-only rule would leave it short on its narrow axis. |
+| `.fd-themebtn[aria-pressed="true"]` | The teal state treatment. **This attribute selector is the only thing that shows a sighted user which way the toggle sits** — the button's name and glyph are both stable by design (see ⚠ below). Hover is deliberately a *neutral* border shift so teal means one thing here. |
 | `.fd-attrib` | 11px `--fd-text-dim` provenance line. Hidden below 1000px. **The only per-site string in `fd_shell.js`** — see the ⚠ below. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
 
@@ -154,8 +155,16 @@ carries no theme control anywhere. It is here because the shell's `cw_theme`/`da
 inherited by all 21 clinical tools through `clinical-warm.css`, and the pre-front-door toggle lived
 in the sidebar the swap deleted; without it, dark-mode users have no way back. It reads
 `state.theme` (fd_shell.js touches neither DOM nor storage) and renders `aria-pressed` plus a label
-naming the mode it switches **to**. Placed first in `.fd-header__actions` so the prototype's
-weekpill + safety pair stays adjacent and the filled Safety button keeps the rightmost slot.
+Placed first in `.fd-header__actions` so the prototype's weekpill + safety pair stays adjacent and
+the filled Safety button keeps the rightmost slot.
+
+⚠ **`.fd-themebtn` uses the ARIA toggle model: stable name, state in `aria-pressed`.** Its
+`aria-label` is always `"Dark mode"` and its glyph is always `☾`. Do not make either vary with the
+theme. It previously carried `aria-pressed` *and* a state-dependent label, which the WAI-ARIA APG
+treats as alternatives — a screen reader in dark mode announced *"Switch to light mode, toggle
+button, pressed"*, the label naming the action and the state naming the value, as opposites. A
+glyph that flipped ☾→☀ was the same contradiction in visual form. The state is carried by
+`[aria-pressed="true"]` in CSS, which is why that rule exists and why hover is neutral.
 
 ⚠ **`.fd-attrib` is the one string in `fd_shell.js` that is NOT audience-neutral, and that is
 correct.** It restores the attribution the deleted sidebar carried (`MS3 Clerkship · Joshua Moss,

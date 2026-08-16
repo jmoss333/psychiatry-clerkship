@@ -130,6 +130,46 @@ test('the header carries the attribution the deleted sidebar used to', () => {
     + 'or the resident build aborts');
 });
 
+// ---- the rebrand contract behind the attribution ------------------------------------
+// resident_section.py used to carry a BARE 'MS3 Clerkship' needle, which caught any shell literal
+// containing that phrase. Task 3 replaced it with three anchored needles (the attribution, the
+// <title>, and pageTitle()'s fallback) because the three now need different replacement text — but
+// that swap traded a catch-all for a fixed list, and tests/shell-copy.test.mjs only scans
+// extractShellCopy()'s curated set. So a NEW shell literal carrying 'MS3 Clerkship' would ship
+// unrebranded to the resident site with every gate green. These two tests are the compensating
+// check fd_shell.js's own comment asks for.
+const SHELL_JS = read('frontdoor/fd_shell.js');
+const RESIDENT_PY = read('resident_section.py');
+const SPA_HTML = read('spa_index.html');
+
+test('the attribution has a rebrand needle, anchored on its own class', () => {
+  const emitted = (SHELL_JS.match(/<span class="fd-attrib">[^<]*<\/span>/) || [])[0];
+  assert.ok(emitted, 'fd_shell.js must emit the attribution');
+  assert.ok(RESIDENT_PY.includes(`'${emitted}'`),
+    `resident_section.py must carry a RESIDENT_REBRAND needle for exactly ${emitted} — without it `
+    + 'the resident site silently ships this site\'s attribution. Reword one, reword both.');
+  assert.match(RESIDENT_PY, /Resident Rotation · Sanford BHU · Joshua Moss, MD/,
+    'and the resident replacement must still name the resident site');
+});
+
+test('every shell literal carrying "MS3 Clerkship" has a needle covering it', () => {
+  // The bare needle is gone, so this count IS the safety net: three sites in the shell sources,
+  // three needles. A fourth literal added without a needle moves one number and not the other.
+  const sites = (SPA_HTML.match(/MS3 Clerkship/g) || []).length
+    + (SHELL_JS.match(/MS3 Clerkship/g) || []).length;
+  // Scoped to the RESIDENT_REBRAND list itself. resident_section.py carries a SECOND, unrelated
+  // rebrand list for tools/learning-path.html which has its own 'MS3 Clerkship · Joshua Moss, MD'
+  // needle — counting the whole file would credit the shell with a needle that never touches it.
+  const listStart = RESIDENT_PY.indexOf('RESIDENT_REBRAND=[');
+  assert.ok(listStart !== -1, 'RESIDENT_REBRAND list not found');
+  const list = RESIDENT_PY.slice(listStart, RESIDENT_PY.indexOf('\n]', listStart));
+  const needles = (list.match(/^\s*\(r?['"][^\n]*MS3 Clerkship/gm) || []).length;
+  assert.equal(sites, 3, 'shell sources carry exactly three "MS3 Clerkship" literals');
+  assert.equal(needles, sites,
+    'each must have its own anchored RESIDENT_REBRAND needle — the bare catch-all needle was '
+    + 'removed in Task 3 because the three sites need different replacement text');
+});
+
 test('the attribution is a sibling of the brand button, not inside it', () => {
   // Two reasons, both load-bearing: text inside the <button> would be folded into the home
   // button's accessible name, and a two-line brand would grow .fd-header past the height
@@ -149,27 +189,45 @@ test('the header carries a theme toggle the delegated handler can reach', () => 
   assert.match(F.fdHeader({ week: 4 }), /class="fd-themebtn"[^>]*data-fd-theme/);
 });
 
-test('the theme toggle states the mode it switches TO, and stays in sync with state.theme', () => {
+// The toggle uses the ARIA toggle model: a STABLE accessible name for the thing, with the state in
+// aria-pressed. It previously carried both aria-pressed and a state-dependent label, which the
+// WAI-ARIA APG treats as alternatives — a screen reader read "Switch to light mode, toggle button,
+// pressed", the label naming the action and the state naming the value, as opposites. These tests
+// pin the model itself, not just the strings, so the pairing cannot come back.
+test('the theme toggle carries state in aria-pressed, and only there', () => {
   const light = F.fdHeader({ week: 4, theme: 'light' });
-  assert.match(light, /aria-pressed="false"/);
-  assert.match(light, /aria-label="Switch to dark mode"/,
-    'a toggle labelled with its current mode reads as a status, not a control');
   const dark = F.fdHeader({ week: 4, theme: 'dark' });
+  assert.match(light, /aria-pressed="false"/);
   assert.match(dark, /aria-pressed="true"/);
-  assert.match(dark, /aria-label="Switch to light mode"/);
-  assert.notEqual(
-    (light.match(/☾/g) || []).length,
-    (dark.match(/☾/g) || []).length,
-    'the icon must change with the theme, not just the label',
-  );
 });
 
-test('an unknown or absent theme renders the light-mode affordance rather than nothing', () => {
-  // fdHeader is called before any caller has resolved data-theme on a cold boot; the control must
-  // still be operable rather than rendering an empty or aria-pressed-less button.
+test('the theme toggle name is stable across themes — never an action label', () => {
+  const nameOf = (html) => (html.match(/class="fd-themebtn"[^>]*aria-label="([^"]*)"/) || [])[1];
+  const light = nameOf(F.fdHeader({ week: 4, theme: 'light' }));
+  const dark = nameOf(F.fdHeader({ week: 4, theme: 'dark' }));
+  assert.equal(light, dark,
+    'a name that changes with state contradicts aria-pressed — pick one model, not both');
+  assert.equal(light, 'Dark mode');
+  for (const html of [F.fdHeader({ week: 4, theme: 'light' }), F.fdHeader({ week: 4, theme: 'dark' })]) {
+    assert.doesNotMatch(html, /aria-label="Switch to/,
+      'an action-shaped label ("Switch to …") is the action model; this control uses the toggle model');
+  }
+});
+
+test('the theme toggle glyph is stable too — the state is not carried by the icon', () => {
+  // A moon flipping to a sun is the visual form of the same contradiction: a sun reads "go to
+  // light" while the button announces "Dark mode, pressed". frontdoor.css's
+  // [aria-pressed="true"] rule is what shows a sighted user which way the toggle sits.
+  const glyphOf = (html) => (html.match(/class="fd-themebtn"[^>]*>([^<]*)</) || [])[1];
+  assert.equal(glyphOf(F.fdHeader({ week: 4, theme: 'light' })),
+    glyphOf(F.fdHeader({ week: 4, theme: 'dark' })));
+});
+
+test('an absent theme renders an operable, not-pressed toggle rather than nothing', () => {
+  // fdHeader is called before any caller has resolved data-theme on a cold boot.
   const html = F.fdHeader({ week: 4 });
   assert.match(html, /aria-pressed="false"/);
-  assert.match(html, /aria-label="Switch to dark mode"/);
+  assert.match(html, /aria-label="Dark mode"/);
 });
 
 test('role and week choices are addressable by the delegated click handler', () => {

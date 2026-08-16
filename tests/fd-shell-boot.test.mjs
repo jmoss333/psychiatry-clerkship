@@ -228,6 +228,7 @@ function makeRender(sabotage) {
     if(sabotage==='path') fdPath=function(){ throw new Error('boom'); };
     if(sabotage==='library') fdLibrary=function(){ throw new Error('boom'); };
     if(sabotage==='reader') fdReader=function(){ throw new Error('boom'); };
+    if(sabotage==='setup-role') fdSetupRole=function(){ throw new Error('boom'); };
     return fdRender;
   `);
   return fn(memStorage(), { getElementById: () => null }, sabotage || null);
@@ -256,24 +257,54 @@ test('step 2 renders once a role is chosen but no week is set', () => {
   assert.match(html, /Core rotation ✓/, 'the chosen role name is resolved from FD_ROLES');
 });
 
-for (const [surface, state, otherMarker] of [
-  ['today', { ...BASE, tab: 'today' }, null],
-  ['path', { ...BASE, tab: 'path' }, null],
-  ['library', { ...BASE, tab: 'library' }, null],
-  ['reader', { ...BASE, openId: 'a.md', fromTab: 'today' }, null],
+// Each row names the class the HEALTHY surface emits. Asserting it is absent is what proves the
+// sabotage actually took effect: without it, a test that only looked for .fd-fallback would still
+// pass if the fallback were emitted alongside a surface that rendered fine.
+for (const [surface, state, healthyMarker] of [
+  ['today', { ...BASE, tab: 'today' }, /class="fd-today"/],
+  ['path', { ...BASE, tab: 'path' }, /class="fd-path"/],
+  ['library', { ...BASE, tab: 'library' }, /class="fd-library"/],
+  ['reader', { ...BASE, openId: 'a.md', fromTab: 'today' }, /class="fd-reader"/],
 ]) {
   test(`a throwing ${surface} degrades to .fd-fallback and leaves the header and tabs usable`, () => {
     const html = makeRender(surface)(state);
     assert.match(html, /class="fd-fallback"/,
       `${surface} threw, so its region must degrade rather than take the page down`);
+    assert.doesNotMatch(html, healthyMarker,
+      `${surface} was sabotaged, so its own markup must be absent — if it is still here the `
+      + 'sabotage did not take and this whole loop is testing nothing');
     assert.match(html, /class="fd-header"/,
       'spec §6: the header stays usable when a surface fails');
     assert.match(html, /class="fd-tabs"/,
       'spec §6: the tab row stays usable so the learner can leave the broken surface');
     assert.ok(!/undefined/.test(html), 'a degraded render must not print "undefined"');
-    if (otherMarker) assert.match(html, otherMarker);
   });
 }
+
+test('a failed surface is reported to the console, named', () => {
+  // The warn is the only thing that makes a swallowed failure findable in development. Capturing
+  // it here is also what stops fdSurface's `name` parameter from being decorative.
+  const seen = [];
+  const original = console.warn;
+  console.warn = (...args) => seen.push(args);
+  try { makeRender('path')({ ...BASE, tab: 'path' }); } finally { console.warn = original; }
+  assert.equal(seen.length, 1, 'exactly one warning for one failed surface');
+  assert.match(String(seen[0][0]), /path/, 'the message must name which surface failed');
+  assert.ok(seen[0][1] instanceof Error, 'the original error must be passed through, not discarded');
+});
+
+test('the wizard fallback does not point at chrome the wizard never renders', () => {
+  // The setup branch emits no header and no tab row, so "use another tab" would name a way out
+  // that is not on screen.
+  const render = makeRender('setup-role');
+  const html = render({ tab: 'today', done: {} });
+  assert.match(html, /class="fd-fallback"/);
+  assert.doesNotMatch(html, /class="fd-tabs"/, 'precondition: the wizard has no tab row');
+  const copy = html.match(/<div class="fd-fallback">([^<]*)</)[1];
+  assert.doesNotMatch(copy, /tab/i,
+    'the wizard fallback must not send a student to tabs that do not exist');
+  assert.match(copy, /reload/i, 'it still has to offer something actionable');
+});
 
 test('one surface failing does not take the others down with it', () => {
   // The assertion that kills a single shared try/catch around the whole body: with today

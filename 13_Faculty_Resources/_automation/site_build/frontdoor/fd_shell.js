@@ -81,14 +81,25 @@ function fdHeader(state){
     '<span class="fd-kbd">⌘K</span>'+
     '</button>';
   /* Theme first so the prototype's weekpill+safety pair stays adjacent and the emphasised
-     (filled) safety button keeps the rightmost slot it has in the handoff. aria-pressed rather
-     than a bare label because this is a toggle whose current state is otherwise only visible. */
+     (filled) safety button keeps the rightmost slot it has in the handoff.
+
+     *** THE NAME IS STABLE AND THE STATE LIVES IN aria-pressed. DO NOT MAKE THE LABEL VARY. ***
+     This button previously carried BOTH aria-pressed AND a state-dependent label, which WAI-ARIA
+     APG treats as alternatives rather than partners: in dark mode a screen reader announced
+     "Switch to light mode, toggle button, pressed" -- the label naming the action and the state
+     naming the value, read out together as opposites. The toggle model won over the action model
+     because aria-pressed is what assistive tech expects on a toggle, and a stable name is what
+     voice control needs in order to address it ("click Dark mode").
+
+     The ICON is stable for the same reason. A moon that flipped to a sun was the visual form of
+     the identical contradiction -- a sun reads "go to light" while the button announces "Dark
+     mode, pressed". So the glyph names the thing and the STATE is what changes: the
+     [aria-pressed="true"] rule in frontdoor.css carries the teal treatment, which is why that
+     file's hover is a neutral border shift instead of a teal one (teal is reserved for state). */
   out+='<div class="fd-header__actions">'+
     '<button type="button" class="fd-themebtn" data-fd-theme'+
     ' aria-pressed="'+(dark?'true':'false')+'"'+
-    ' aria-label="'+(dark?'Switch to light mode':'Switch to dark mode')+'"'+
-    ' title="'+(dark?'Switch to light mode':'Switch to dark mode')+'">'+
-    (dark?'☀':'☾')+'</button>'+
+    ' aria-label="Dark mode" title="Dark mode">☾</button>'+
     '<button type="button" class="fd-weekpill" data-fd-change-week title="Change week">'+
     weekLabel+' ▾</button>'+
     '<button type="button" class="fd-safetybtn" data-fd-safety>✚ Safety</button>'+
