@@ -328,6 +328,11 @@ SKIP_LINK_CSS = (
 )
 FAVICON_LINK = '<link rel="icon" href="/favicon.svg">'
 CLINICAL_CSS_LINK = '<link rel="stylesheet" href="/clinical-warm.css">'
+# Front-door shell stylesheet (Plan 3 Task 1). Shell-only, unlike clinical-warm.css: the
+# nine frontdoor/ modules render only inside the SPA shell, never inside an individual tool
+# page, so this is gated to is_index in apply_dark_mode() below rather than shipping into
+# every tools/*.html the way CLINICAL_CSS_LINK does.
+FRONTDOOR_CSS_LINK = '<link rel="stylesheet" href="/frontdoor.css">'
 
 # Pre-paint theme init: runs before first paint so dark mode never flashes.
 THEME_INIT = (
@@ -462,6 +467,20 @@ def apply_verified_replacements(text, substitutions, label=""):
     return text
 
 
+def fd_statement(var_name, value):
+    """`var <var_name>=<json>;` — the canonical single-line JS statement text for a
+    front-door data needle (FD_CURRICULUM, FD_TOPIC_META, FD_TOOL_REGISTRY,
+    FD_SITE_MANIFEST, FD_ROLES — see spa_index.html).
+
+    Both build_deploy.py (which fills the empty ms3 placeholder) and
+    resident_section.py (which swaps FD_ROLES's ms3 value for the resident one, post
+    copytree) call this — so the exact literal text either script needs to search for
+    is reconstructible from the same (name, value) pair, and neither script has to
+    read back what the other one wrote to build a matching needle.
+    """
+    return "var %s=%s;" % (var_name, json.dumps(value, ensure_ascii=False))
+
+
 def apply_page_chrome(path, is_index=False):
     """Skip-link, root anchor, favicon. Idempotent."""
     t = open(path, encoding="utf-8").read()
@@ -518,6 +537,15 @@ def apply_dark_mode(path, is_index=False, cache_bust=None):
     if '[data-theme="dark"]' not in t and "clinical-warm.css" not in t and "</head>" in t:
         t = t.replace("</head>", CLINICAL_CSS_LINK + "\n</head>", 1)
 
+    # Front-door shell stylesheet: index.html only (see FRONTDOOR_CSS_LINK above).
+    # Idempotency guard checks for the LINK tag, not the bare "frontdoor.css" filename:
+    # by the time apply_dark_mode runs, inject_shared_snippets() has already expanded the
+    # frontdoor/ module markers, and those modules' own comments mention "frontdoor.css"
+    # by name many times over — a bare-filename guard would see those comments and never
+    # inject the link at all (caught in Task 1 review: the file copied but never linked).
+    if is_index and FRONTDOOR_CSS_LINK not in t and "</head>" in t:
+        t = t.replace("</head>", FRONTDOOR_CSS_LINK + "\n</head>", 1)
+
     if "cc-rise" not in t and "</style>" in t:
         t = t.replace("</style>", MOTION_CSS + "\n</style>", 1)
 
@@ -552,6 +580,14 @@ SNIPPET_MARKERS = {
     "/*__PHASE_POLICY__*/": "phase_policy.js",
     "/*__SESS_CAPSULE__*/": "sess_capsule.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
+    "/*__FD_DATA__*/": "frontdoor/fd_data.js",
+    "/*__FD_SHELL__*/": "frontdoor/fd_shell.js",
+    "/*__FD_TODAY__*/": "frontdoor/fd_today.js",
+    "/*__FD_PATH__*/": "frontdoor/fd_path.js",
+    "/*__FD_LIBRARY__*/": "frontdoor/fd_library.js",
+    "/*__FD_READER__*/": "frontdoor/fd_reader.js",
+    "/*__FD_SEARCH__*/": "frontdoor/fd_search.js",
+    "/*__FD_SHEET__*/": "frontdoor/fd_sheet.js",
 }
 
 

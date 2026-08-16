@@ -173,6 +173,15 @@ class TestPagePasses(_SiteFixture):
         common.apply_dark_mode(self.tool, is_index=True)
         self.assertNotIn("<!--ifn-->", self.read())
 
+    def test_index_gets_the_frontdoor_stylesheet(self):
+        """frontdoor.css is shell-only — a tool page must never receive it."""
+        common.apply_dark_mode(self.tool, is_index=True)
+        self.assertIn('<link rel="stylesheet" href="/frontdoor.css">', self.read())
+
+    def test_non_index_does_not_get_the_frontdoor_stylesheet(self):
+        common.apply_dark_mode(self.tool, is_index=False)
+        self.assertNotIn("frontdoor.css", self.read())
+
     def test_passes_are_idempotent(self):
         common.apply_page_chrome(self.tool)
         common.apply_dark_mode(self.tool)
@@ -334,6 +343,23 @@ class TestApplyVerifiedReplacements(unittest.TestCase):
         self.assertEqual(ctx.exception.code, 1)
 
 
+class TestFdStatement(unittest.TestCase):
+    def test_round_trips_a_var_declaration(self):
+        self.assertEqual(
+            common.fd_statement("FD_ROLES", [{"id": "student"}]),
+            'var FD_ROLES=[{"id": "student"}];',
+        )
+
+    def test_same_inputs_from_two_call_sites_match_byte_for_byte(self):
+        """build_deploy.py bakes this text in; resident_section.py must be able to
+        reconstruct the identical string to find it again, without reading the file
+        build_deploy.py wrote."""
+        value = {"a": 1, "b": ["x", "y"]}
+        self.assertEqual(
+            common.fd_statement("FD_X", value), common.fd_statement("FD_X", value)
+        )
+
+
 class TestReproducibility(unittest.TestCase):
     def test_quiz_cache_bust_stable_for_identical_content(self):
         d = tempfile.mkdtemp()
@@ -434,6 +460,25 @@ class TestSharedSnippets(unittest.TestCase):
         t = open(p, encoding="utf-8").read()
         self.assertIn("var FD_STORE='cw_frontdoor_v1';", t)
         self.assertNotIn("/*__FD_STATE__*/", t)
+
+    def test_every_frontdoor_snippet_expands(self):
+        """All eight frontdoor markers resolve through the frontdoor/ subdirectory."""
+        markers = [
+            ("/*__FD_DATA__*/", "function fdEsc("),
+            ("/*__FD_SHELL__*/", "function fdKeyAction("),
+            ("/*__FD_TODAY__*/", "function fdTodayProgress("),
+            ("/*__FD_PATH__*/", "function fdPath("),
+            ("/*__FD_LIBRARY__*/", "function fdLibrary("),
+            ("/*__FD_READER__*/", "function fdReaderNeighbours("),
+            ("/*__FD_SEARCH__*/", "function fdExpandQuery("),
+            ("/*__FD_SHEET__*/", "function fdSheet("),
+        ]
+        for marker, needle in markers:
+            p = self._page("<script>\n%s\n</script>" % marker)
+            self.assertTrue(common.inject_shared_snippets(p), marker)
+            t = open(p, encoding="utf-8").read()
+            self.assertIn(needle, t, marker)
+            self.assertNotIn(marker, t, marker)
 
     def test_all_snippet_signatures_are_short_and_unique(self):
         # Whole-line signatures are exact-substring dup-probes (common.py _snippet_signature);

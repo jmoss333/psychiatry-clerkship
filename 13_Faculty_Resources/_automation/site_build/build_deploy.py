@@ -15,6 +15,8 @@ SPA=os.path.join(HERE,"spa_index.html")                   # SPA shell (co-locate
 MARKED=os.path.join(HERE,"marked.min.js")                 # vendored marked (co-located)
 MANIFEST=os.path.join(HERE,"site_manifest.json")          # content/tool build manifest
 CLINICAL_CSS=os.path.join(HERE,"clinical-warm.css")       # shared dark-mode tokens
+FRONTDOOR_CSS=os.path.join(HERE,"frontdoor","frontdoor.css")  # front-door shell stylesheet
+CURRICULUM=os.path.join(LIB,"curriculum.json")             # front-door structure (weeks/columns/roles)
 
 def _relpath(p):
     for base in (LIB,HERE):
@@ -37,7 +39,7 @@ def _copy_required(src,dst,missing):
     else:
         missing.append(src)
 
-_bootstrap_missing=[p for p in [MANIFEST,SPA,MARKED,CLINICAL_CSS] if not os.path.exists(p)]
+_bootstrap_missing=[p for p in [MANIFEST,SPA,MARKED,CLINICAL_CSS,FRONTDOOR_CSS,CURRICULUM] if not os.path.exists(p)]
 _abort_missing(_bootstrap_missing)
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(OUT+"/content"); os.makedirs(OUT+"/tools")
@@ -359,6 +361,7 @@ _missing_req=[]
 _copy_required(SPA, OUT+"/index.html", _missing_req)
 _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
 _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
+_copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)  # front-door shell stylesheet (linked via common.apply_dark_mode, index.html only)
 _abort_missing(_missing_req)
 
 # ---- retired-bank-ids injection (shell calibration parity) ----
@@ -378,6 +381,37 @@ open(_spa_out,"w",encoding="utf-8").write(
     _spa_t.replace(_RETIRED_NEEDLE,"var RETIRED_QB_IDS="+json.dumps(_retired_ids)+";")
 )
 print("retired-qb injection:",len(_retired_ids),"id(s)")
+
+# ---- front-door data injection (Plan 3 Task 1) ----
+# curriculum.json (structure), topic_meta.json (facts) and tool_registry.json (tool
+# identity/risk) are already written to OUT above; site_manifest.json is already loaded
+# as _manifest. FD_ROLES is the one needle that differs by audience (curriculum.json's
+# roles.ms3 vs roles.resident) — resident_section.py swaps it for roles.resident after
+# the copytree, same shape as the RESIDENT_REBRAND needles below it. The other four are
+# audience-neutral and ride along unchanged via that same copytree, exactly like
+# RETIRED_QB_IDS above. Verified replacement: a missing/duplicated needle means the
+# shell's front-door plumbing was edited away — fail the build, don't ship an empty page.
+_curriculum=json.load(open(CURRICULUM,encoding="utf-8"))
+_fd_topic_meta=json.load(open(OUT+"/topic_meta.json",encoding="utf-8"))
+_fd_tool_registry=json.load(open(OUT+"/tool_registry.json",encoding="utf-8"))
+_FD_NEEDLES=[
+    ("var FD_CURRICULUM={};","FD_CURRICULUM",_curriculum),
+    ("var FD_TOPIC_META={};","FD_TOPIC_META",_fd_topic_meta),
+    ("var FD_TOOL_REGISTRY={};","FD_TOOL_REGISTRY",_fd_tool_registry),
+    ("var FD_SITE_MANIFEST={};","FD_SITE_MANIFEST",_manifest),
+    ("var FD_ROLES=[];","FD_ROLES",_curriculum["roles"]["ms3"]),
+]
+_spa_t=open(_spa_out,encoding="utf-8").read()
+_fd_stale=[needle for needle,_,_ in _FD_NEEDLES if _spa_t.count(needle)!=1]
+if _fd_stale:
+    print("BUILD ABORTED — front-door data needle(s) missing or duplicated in spa_index.html:")
+    for needle in _fd_stale: print("   -",needle)
+    raise SystemExit(1)
+for needle,name,value in _FD_NEEDLES:
+    _spa_t=_spa_t.replace(needle,common.fd_statement(name,value))
+open(_spa_out,"w",encoding="utf-8").write(_spa_t)
+print("front-door data injection:",", ".join(name for _,name,_ in _FD_NEEDLES))
+
 print("tools:",len(tools)," md copied:",len(md)-len(missing)," missing:",missing)
 
 # ---------- POLISH + A11Y + DARK-MODE PASS (shared with the resident build) ----------

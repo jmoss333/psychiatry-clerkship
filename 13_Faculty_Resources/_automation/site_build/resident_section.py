@@ -136,6 +136,25 @@ RESIDENT_REBRAND=[
 ]
 ix=open(OUT+"/index.html",encoding="utf-8").read()
 ix=common.apply_verified_replacements(ix, RESIDENT_REBRAND, label="resident index rebrand")
+
+# ---- front-door roles: the one front-door data needle that differs by audience ----
+# FD_CURRICULUM/FD_TOPIC_META/FD_TOOL_REGISTRY/FD_SITE_MANIFEST are audience-neutral and
+# rode along unchanged via the copytree above (same reasoning as RETIRED_QB_IDS /
+# clinical-warm.css / frontdoor.css). FD_ROLES is per-site — curriculum.json's roles.ms3
+# vs roles.resident — so it gets its own verified swap here, same shape as
+# RESIDENT_REBRAND above: the needle is the exact statement build_deploy.py baked in for
+# ms3 (reconstructed via common.fd_statement so this script never has to read build_deploy.py's
+# output to know what it wrote), and a missing/duplicated needle aborts rather than silently
+# leaving the resident site showing ms3's role list ("Core rotation", "Sub-I", ...).
+_curriculum=json.load(open(LIB+"/curriculum.json",encoding="utf-8"))
+_fd_roles_ms3_needle=common.fd_statement("FD_ROLES", _curriculum["roles"]["ms3"])
+_fd_roles_resident=common.fd_statement("FD_ROLES", _curriculum["roles"]["resident"])
+if ix.count(_fd_roles_ms3_needle)!=1:
+    print("BUILD ABORTED — FD_ROLES needle missing or duplicated in ms3-built index.html")
+    raise SystemExit(1)
+ix=ix.replace(_fd_roles_ms3_needle, _fd_roles_resident)
+print("front-door roles: resident (%d role(s))"%len(_curriculum["roles"]["resident"]))
+
 open(OUT+"/index.html","w",encoding="utf-8").write(ix)
 
 # ---- rebrand learning-path (Path-mode home) ----

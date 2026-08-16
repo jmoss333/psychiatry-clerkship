@@ -2268,6 +2268,38 @@
       var sh=root.querySelector('#stShelf'); if(sh)sh.addEventListener('change',function(){ try{localStorage.setItem('cw_shelf_date',sh.value);}catch(_){ } });
     }
   };
+
+  /* ---- Front door: build-injected data + pure renderer modules (Plan 3 Task 1) ----
+     Nothing below calls into this yet -- Task 3 wires it into rendering. The five
+     literals are needles build_deploy.py replaces with real JSON (verified-replacement:
+     a missing/duplicated needle aborts the build rather than shipping an empty page).
+     Marker ORDER is load-bearing and pinned by tests/fd-inject.test.mjs: fd_state calls
+     localDayIndex from the PHASE_POLICY snippet above, and fd_path/fd_reader call
+     fdTodayProgress/fdRow from fd_today -- each module's own unit suite concatenates its
+     own dependencies, so no other test sees a wrong page order. */
+  var FD_CURRICULUM={};
+  var FD_TOPIC_META={};
+  var FD_TOOL_REGISTRY={};
+  var FD_SITE_MANIFEST={};
+  var FD_ROLES=[];
+
+  /*__FD_STATE__*/
+
+  /*__FD_DATA__*/
+
+  /*__FD_TODAY__*/
+
+  /*__FD_SHELL__*/
+
+  /*__FD_PATH__*/
+
+  /*__FD_LIBRARY__*/
+
+  /*__FD_READER__*/
+
+  /*__FD_SEARCH__*/
+
+  /*__FD_SHEET__*/
 })();
 </script>
 </body>
