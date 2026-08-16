@@ -501,9 +501,21 @@ between Today's kit cards and the sheet's own kit rows."
 
 ---
 
-### Task 5: Port the due row and capture triage
+### Task 5: Port the surfaces the swap dropped
 
-Spec §1 ports both "prominent". They render from `cw_srs_v1` and `cw_capture_v1` — runtime stores no pure renderer could reach, which is why Plan 2 could not build them.
+Five surfaces, all of which the sidebar-era shell carried and the swap removed. They are grouped because each renders from a **runtime store or a runtime frame** — things no pure renderer could reach, which is why Plan 2 could not build any of them.
+
+> **⚠ The tool surface is the largest item and was missing from this plan entirely** until Task 4 found it by driving the page. Task 3 correctly deleted `show()`, whose tool branch mounted the iframe — but nothing rebuilt it, so **`?tool=x.html` currently renders an article shell with no iframe and 404s `content/x.html`**. That is all 22 interactive tools (MSE builder, C-SSRS, CIWA/COWS, question bank, SP interview room, …) plus every `cta[]` deep link in `topic_meta.json`. `loadFacultyPreviewTool` has had no caller since Task 3. **Do this one first** — the others are additive, this one restores half the site's content.
+>
+> The iframe branch must also carry `toolExtraFromParams`' query suffix (`&case=`, `&scenario=`, `&resume=1`), which existing deep links depend on, and must keep working with the faculty-console preview route.
+
+**Also in scope, each dropped without an owner until now:**
+- **Due row and capture triage** — spec §1 ports both "prominent"; they read `cw_srs_v1` and `cw_capture_v1`.
+- **Progress & mastery** — spec §1 ports it "demoted", as a reading-pane page. `window.exportStudy` (anonymous, IRB-adjacent study export) was deliberately kept alive by Task 3 rather than deleted; it is currently unreachable dead code.
+- **The A2HS offline instruction** — lived only in the deleted `renderStart`.
+- **A writer for `cw_shelf_date`** — `renderStart` was its only one. Without it `fdExamCountdown` runs on its Monday-aligned fallback permanently, silently, with no test failing. Task 3 left a marked comment at the read site.
+
+**Ruling on "just browse":** it must **not** clear an existing `cw_rotation_start`. Spec §5 says browsing lands on Library *with no week set* — that is about not requiring one, not about destroying one already stored. A student who browses on day three should not lose their rotation week.
 
 **Files:**
 - Create: `13_Faculty_Resources/_automation/site_build/frontdoor/fd_due.js`
