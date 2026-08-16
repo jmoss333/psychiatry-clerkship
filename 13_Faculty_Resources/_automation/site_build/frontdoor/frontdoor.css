@@ -43,6 +43,18 @@
 .fd-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-terracotta)}
 .fd-sectionhead{margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--fd-text-dim)}
 
+/* Degraded-surface placeholder, emitted by fdRender's per-surface try/catch (spec §6). No
+ * prototype equivalent -- the prototype has no failure states at all. Deliberately NOT painted
+ * with --fd-danger: a section that did not load is not a safety condition and not something the
+ * learner did, and reserving the danger tokens for actual clinical risk is what keeps them
+ * meaningful. Borrows .fd-keypoints' "set this apart quietly" treatment (callout wash + hairline)
+ * so a failed region reads as a quiet gap rather than an alarm. */
+.fd-fallback{
+  margin:24px 0;padding:16px 18px;border-radius:10px;
+  background:var(--fd-callout);border:1px solid var(--fd-line);
+  color:var(--fd-text-mid);font-size:14px;line-height:1.55;
+}
+
 /* Shared buttons ---------------------------------------------------------- */
 .fd-btn{
   display:inline-flex;align-items:center;gap:8px;
@@ -149,6 +161,20 @@
   font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:var(--fd-shadow-sm);
 }
 .fd-safetybtn:hover{background:var(--fd-danger-dark);border-color:var(--fd-danger-dark)}
+/* Theme toggle. NOT transcribed from the prototype -- the handoff ships a light palette only and
+ * has no theme control anywhere in it. It exists because the shell's cw_theme/data-theme pair is
+ * inherited by all 21 clinical tools through clinical-warm.css, and the only toggle used to live
+ * in the sidebar Plan 3 deletes. Values are borrowed from .fd-weekpill beside it (same surface,
+ * same 1.5px hairline, same hover shift toward teal) so the actions row reads as one control
+ * group; the width/height pair makes it a circular icon button rather than a labelled pill,
+ * which is what keeps a low-frequency utility from competing with Week and Safety. */
+.fd-themebtn{
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+  width:32px;height:32px;border-radius:999px;
+  background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);
+  color:var(--fd-text-mid);font:inherit;font-size:14px;line-height:1;cursor:pointer;
+}
+.fd-themebtn:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
 
 .fd-tabs{max-width:1200px;margin:0 auto;padding:4px 20px 0;display:flex;gap:2px}
 .fd-tab{
@@ -611,6 +637,9 @@
 /* Mobile primary actions keep a 44px minimum hit target. */
 @media (max-width:999px){
   .fd-btn--primary,.fd-safetybtn,.fd-weekpill,.fd-searchbtn,.fd-weekgrid__browse{min-height:44px}
+  /* Both dimensions: .fd-themebtn is the one square control in the header, so a min-height alone
+     would leave it 32px wide and short of the target on its narrow axis. */
+  .fd-themebtn{min-width:44px;min-height:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
   .fd-article{padding:24px 20px}
   .fd-weekgrid{grid-template-columns:repeat(2,1fr)}

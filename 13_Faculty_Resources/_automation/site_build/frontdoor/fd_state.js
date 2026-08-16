@@ -55,6 +55,15 @@ function fdSave(o){
 function fdExamCountdown(week, nowMs){
   if(week!==5&&week!==6) return '';
   var stored=null;
+  /* *** cw_shelf_date CURRENTLY HAS NO WRITER. *** Its only setter was the date field on the old
+     Start-here screen (renderStart's #stShelf change handler), which Plan 3 Task 3 deleted along
+     with the rest of the sidebar-coupled shell. Until the front door grows a replacement, this
+     read always returns null and the countdown always runs on the Monday-aligned rotation-grid
+     fallback below -- correct for a rotation that ends on schedule, silently wrong for anyone
+     whose exam sits on a different date, and no test fails either way. phasePolicy() in
+     phase_policy.js reads the same key and is affected identically. Logged as a carry-in; do not
+     add a setter here -- the control needs a home in the design, not a hiding place in a
+     countdown helper. */
   try{ stored=localStorage.getItem('cw_shelf_date'); }catch(_){ }
   var days=shelfDaysUntil(stored, nowMs);
   if(days===null){

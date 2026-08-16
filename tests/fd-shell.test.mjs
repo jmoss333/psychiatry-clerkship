@@ -103,6 +103,36 @@ test('the header says exam, never the site-specific word', () => {
   assert.doesNotMatch(F.fdHeader({ week: 6 }), /MS3|clerkship|student|shelf|resident/i);
 });
 
+// The theme toggle is the one header control with no prototype counterpart. It is here because
+// cw_theme/data-theme is inherited by all 21 clinical tools through clinical-warm.css and the old
+// toggle lived in the deleted sidebar — a header that renders without it strands dark-mode users.
+test('the header carries a theme toggle the delegated handler can reach', () => {
+  assert.match(F.fdHeader({ week: 4 }), /class="fd-themebtn"[^>]*data-fd-theme/);
+});
+
+test('the theme toggle states the mode it switches TO, and stays in sync with state.theme', () => {
+  const light = F.fdHeader({ week: 4, theme: 'light' });
+  assert.match(light, /aria-pressed="false"/);
+  assert.match(light, /aria-label="Switch to dark mode"/,
+    'a toggle labelled with its current mode reads as a status, not a control');
+  const dark = F.fdHeader({ week: 4, theme: 'dark' });
+  assert.match(dark, /aria-pressed="true"/);
+  assert.match(dark, /aria-label="Switch to light mode"/);
+  assert.notEqual(
+    (light.match(/☾/g) || []).length,
+    (dark.match(/☾/g) || []).length,
+    'the icon must change with the theme, not just the label',
+  );
+});
+
+test('an unknown or absent theme renders the light-mode affordance rather than nothing', () => {
+  // fdHeader is called before any caller has resolved data-theme on a cold boot; the control must
+  // still be operable rather than rendering an empty or aria-pressed-less button.
+  const html = F.fdHeader({ week: 4 });
+  assert.match(html, /aria-pressed="false"/);
+  assert.match(html, /aria-label="Switch to dark mode"/);
+});
+
 test('role and week choices are addressable by the delegated click handler', () => {
   const roles = F.fdSetupRole([{ id: 'ms3', name: 'Student', desc: 'd', hint: 'most common' }]);
   assert.match(roles, /data-fd-role="ms3"/);

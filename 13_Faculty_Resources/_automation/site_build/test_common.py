@@ -197,6 +197,39 @@ class TestPagePasses(_SiteFixture):
         common.apply_dark_mode(self.tool, is_index=False)
         self.assertNotIn("frontdoor.css", self.read())
 
+    def test_page_naming_clinical_warm_in_prose_still_gets_the_link(self):
+        """The same bare-filename trap as frontdoor.css, on the OTHER stylesheet.
+
+        clinical-warm.css declares every --fd-* token the front door paints with, plus
+        the dark palette all 21 tools inherit. Its injection guard used to read
+        `"clinical-warm.css" not in t`, so a page that merely NAMED the file in a comment
+        satisfied it and never received the real <link> — the shell rendered with every
+        colour token unresolved while the build reported success. Found for real when the
+        front door's own boot comment mentioned the filename (Plan 3 Task 3).
+
+        The fixture plants exactly that: prose naming the file, no link. Only a guard keyed
+        on the <link> tag still injects.
+        """
+        with open(self.tool, "w", encoding="utf-8") as fh:
+            fh.write(
+                "<html><head></head><body>"
+                "<!-- all 21 tools inherit data-theme through clinical-warm.css -->"
+                "</body></html>"
+            )
+        common.apply_dark_mode(self.tool)
+        self.assertIn('<link rel="stylesheet" href="/clinical-warm.css">', self.read())
+
+    def test_page_with_its_own_dark_block_is_still_left_alone(self):
+        """The other half of the guard must survive the fix: a page that declares dark
+        tokens inline already has them, and must not also get the shared link."""
+        with open(self.tool, "w", encoding="utf-8") as fh:
+            fh.write(
+                '<html><head><style>[data-theme="dark"]{--bg:#111}</style></head>'
+                "<body></body></html>"
+            )
+        common.apply_dark_mode(self.tool)
+        self.assertNotIn('<link rel="stylesheet" href="/clinical-warm.css">', self.read())
+
     def test_passes_are_idempotent(self):
         common.apply_page_chrome(self.tool)
         common.apply_dark_mode(self.tool)

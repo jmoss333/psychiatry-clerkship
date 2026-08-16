@@ -543,7 +543,14 @@ def apply_dark_mode(path, is_index=False, cache_bust=None):
         t = t.replace("<head>", "<head>\n" + THEME_INIT, 1)
 
     # Dark tokens come from the linked stylesheet — one file, not N inline copies.
-    if '[data-theme="dark"]' not in t and "clinical-warm.css" not in t and "</head>" in t:
+    # The idempotency guard checks for the LINK TAG, not the bare "clinical-warm.css" filename,
+    # for the same reason the frontdoor.css guard below does — and this one was caught the hard
+    # way: a prose comment in spa_index.html that merely NAMED the file satisfied the bare check,
+    # so the link was never injected and every --fd-*/dark token on the front door silently
+    # resolved to nothing. The page still rendered, the build still passed, and the whole shell
+    # was simply colourless. A guard must test for the thing it is guarding, not for a string
+    # that happens to appear near it.
+    if '[data-theme="dark"]' not in t and CLINICAL_CSS_LINK not in t and "</head>" in t:
         t = t.replace("</head>", CLINICAL_CSS_LINK + "\n</head>", 1)
 
     # Front-door shell stylesheet: index.html only (see FRONTDOOR_CSS_LINK above).
@@ -691,7 +698,10 @@ def page_contract_failures(out_dir):
             missing.append('#root anchor for the skip link')
         if "cw_theme" not in t:
             missing.append("pre-paint theme init (cw_theme)")
-        if "clinical-warm.css" not in t and '[data-theme="dark"]' not in t:
+        # Link tag, not the bare filename — same reasoning as the frontdoor.css check below and
+        # as apply_dark_mode's own guard. A page whose only mention of the file is in a comment
+        # has no dark tokens, and this gate exists to say so.
+        if CLINICAL_CSS_LINK not in t and '[data-theme="dark"]' not in t:
             missing.append("dark-mode tokens (clinical-warm.css link or inline block)")
         # Shell-only (see FRONTDOOR_CSS_LINK above). Checked against the actual <link> tag,
         # not the bare "frontdoor.css" filename: the frontdoor/ modules injected below say

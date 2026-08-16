@@ -3,12 +3,12 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(174 `fd-*` classes, 13 `is-*` state classes — recounted 2026-08-16 against the file itself after
-Task 2 added `.fd-article__body`; see `tests/fd-tokens.test.mjs` for the enforcement this file
+(176 `fd-*` classes, 13 `is-*` state classes — recounted 2026-08-16 against the file itself after
+Task 3 added `.fd-themebtn` and `.fd-fallback`; see `tests/fd-tokens.test.mjs` for the enforcement this file
 doesn't). Every class below has a rule in that file unless marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-174. The remaining 135 are `__element` and `--modifier` names introduced while porting the
+176. The remaining 137 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -28,6 +28,24 @@ just looks wrong. Read the surface you are building before writing its markup.
 |---|---|---|
 | `.fd-shell` | outermost wrapper | **Required.** Paints `--fd-bg`/`--fd-text`, sets the font stack, and scopes three descendant rules: `a` / `a:hover` colours, `*{box-sizing:border-box}`, and the single `:focus-visible` outline. Anything rendered outside `.fd-shell` loses all four. |
 | `.fd-main` | `<main>` | `max-width:1200px`, page padding. Sibling of `.fd-header`, child of `.fd-shell`. |
+| `.fd-fallback` | `<div>` | The degraded-surface placeholder `fdRender`'s per-surface `try`/`catch` emits (spec §6). Callout wash + hairline, **not** `--fd-danger`: a section that failed to load is not a clinical risk and not something the learner did, and reserving the danger tokens for real risk is what keeps them meaningful. |
+
+⚠ **`--fd-*` tokens are declared in `clinical-warm.css`, not here.** `frontdoor.css` contains no raw
+colour at all, so a page that links `frontdoor.css` without `clinical-warm.css` renders the whole
+front door with every colour, border, and shadow resolving to nothing — laid out correctly and
+completely unpainted, with no error anywhere. Both links are injected by `common.py`'s
+`apply_dark_mode()`; each guard tests for its full `<link>` tag, because a guard keyed on the bare
+filename is satisfied by any comment that merely names the file (this has now bitten both
+stylesheets — see `test_common.py`'s two regression tests).
+
+⚠ **Not everything inside `.fd-shell` is front-door markup.** The standing disclaimer banner
+(`.banner` / `.bannerx`, `#banner`) is static markup carried over from the pre-front-door shell and
+still styled by `spa_index.html`'s own `<style>` block, not by `frontdoor.css`. It is deliberately
+*not* part of `fdRender`'s output: it is a compliance surface (the site's statement that the
+clinical content is synthetic and that some pages are unattested), and no failing surface or state
+transition may be able to take it down. Its wording is byte-identical to the old shell's because
+`resident_section.py` rebrands it by literal replacement. Do not rename it to an `.fd-*` class
+without also updating that rebrand needle.
 
 ⚠ **The four overlay surfaces are portalled outside `.fd-shell`** (`.fd-search`, `.fd-sheet`,
 `.fd-sheetbackdrop`, `.fd-nudge`) — they are `position:fixed` and listed *separately* in the
@@ -110,6 +128,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
       .fd-searchbtn__label <span>
       .fd-kbd              <span>⌘K</span>
     .fd-header__actions
+      .fd-themebtn         <button>          (theme toggle — NOT in the prototype, see below)
       .fd-weekpill         <button>
       .fd-safetybtn        <button>
   .fd-tabs                 <nav>
@@ -121,10 +140,19 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-header` | `position:sticky; top:0; z-index:40`. |
 | `.fd-header__bar` | The 1200px-capped flex row. `.fd-header` alone has no max-width. |
 | `.fd-header__actions` | `margin-left:auto` — this is what pushes the right group over. |
+| `.fd-themebtn` | 32px circular icon button, borrowed from `.fd-weekpill`'s surface/border/hover. Gets `min-width` **and** `min-height` 44px under 999px — it is the one square control here, so a height-only rule would leave it short on its narrow axis. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
 
 ⚠ `.fd-tabs` is a **sibling** of `.fd-header__bar` inside `.fd-header`, not a child of it.
 ⚠ Rails stick to `top:106px`, which assumes the full header (bar + tabs) is present and sticky.
+
+⚠ **`.fd-themebtn` has no prototype counterpart** — the handoff ships a light palette only and
+carries no theme control anywhere. It is here because the shell's `cw_theme`/`data-theme` pair is
+inherited by all 21 clinical tools through `clinical-warm.css`, and the pre-front-door toggle lived
+in the sidebar the swap deleted; without it, dark-mode users have no way back. It reads
+`state.theme` (fd_shell.js touches neither DOM nor storage) and renders `aria-pressed` plus a label
+naming the mode it switches **to**. Placed first in `.fd-header__actions` so the prototype's
+weekpill + safety pair stays adjacent and the filled Safety button keeps the rightmost slot.
 
 ---
 

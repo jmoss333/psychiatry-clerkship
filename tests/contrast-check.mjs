@@ -101,9 +101,14 @@ function getSelectorColor(cssText, selector) {
   return m ? m[1].trim() : null;
 }
 
+// `aside h1` was the sidebar's wordmark. The front-door swap deleted the sidebar, so the rule is
+// gone for good rather than renamed — this guard can never pass again and there is nothing in the
+// legacy palette that succeeds it (the front door's own header is painted from --fd-* tokens and
+// is covered by tests/fd-contrast.test.mjs). Dropped rather than repointed. The other three
+// selectors below still exist and still carry --primary-dark.
 const REGRESSION_GUARD = [
   { file: SPA_PATH, label: 'spa_index.html', text: spaText,
-    selectors: ['aside h1', '.practice-title', '.practice-action.is-case', '.tl-chip.is-safety:hover'] },
+    selectors: ['.practice-title', '.practice-action.is-case', '.tl-chip.is-safety:hover'] },
   { file: SP_PATH, label: 'sp-interview.html', text: readFileSync(SP_PATH, 'utf8'),
     selectors: ['.sa label .num', '.teach p .pin'] },
 ];

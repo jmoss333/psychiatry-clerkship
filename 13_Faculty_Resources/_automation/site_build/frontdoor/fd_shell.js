@@ -18,7 +18,15 @@
    .fd-header__bar INSIDE .fd-header (position:sticky lives on .fd-header alone, and the rail's
    top:106px assumes bar+tabs are both part of the sticky element) -- two independently top-level
    fragments naively concatenated would land .fd-tabs outside <header> and silently break that.
-   fdTabs stays separately exported/callable for anything that only needs to re-render the row. */
+   fdTabs stays separately exported/callable for anything that only needs to re-render the row.
+
+   The theme toggle is the one control here with no counterpart in the prototype -- the handoff
+   ships a light palette only. It is in the header anyway because the shell's cw_theme/data-theme
+   pair is inherited by all 21 clinical tools through clinical-warm.css, and the old shell's only
+   toggle lived inside the sidebar that Plan 3 deletes; shipping the front door with the control
+   unreachable would leave dark-mode users no way back. It reads state.theme rather than the DOM
+   (this file touches neither DOM nor storage), so the caller resolves the current theme and the
+   button's label/pressed state can never disagree with the document. */
 
 function fdTabs(tab){
   var cur=(tab==='path'||tab==='library')?tab:'today';
@@ -38,6 +46,7 @@ function fdTabs(tab){
 function fdHeader(state){
   var s=state||{};
   var weekLabel=(typeof s.week==='number'&&!isNaN(s.week))?('Week '+fdEsc(s.week)):'Set week';
+  var dark=(s.theme==='dark');
   var out='<header class="fd-header"><div class="fd-header__bar">';
   out+='<button type="button" class="fd-brand" data-fd-home>'+
     '<span class="fd-logo">ψ</span>'+
@@ -50,7 +59,15 @@ function fdHeader(state){
     '<span class="fd-searchbtn__label">Search a symptom, drug, or task…</span>'+
     '<span class="fd-kbd">⌘K</span>'+
     '</button>';
+  /* Theme first so the prototype's weekpill+safety pair stays adjacent and the emphasised
+     (filled) safety button keeps the rightmost slot it has in the handoff. aria-pressed rather
+     than a bare label because this is a toggle whose current state is otherwise only visible. */
   out+='<div class="fd-header__actions">'+
+    '<button type="button" class="fd-themebtn" data-fd-theme'+
+    ' aria-pressed="'+(dark?'true':'false')+'"'+
+    ' aria-label="'+(dark?'Switch to light mode':'Switch to dark mode')+'"'+
+    ' title="'+(dark?'Switch to light mode':'Switch to dark mode')+'">'+
+    (dark?'☀':'☾')+'</button>'+
     '<button type="button" class="fd-weekpill" data-fd-change-week title="Change week">'+
     weekLabel+' ▾</button>'+
     '<button type="button" class="fd-safetybtn" data-fd-safety>✚ Safety</button>'+
