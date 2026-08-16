@@ -558,6 +558,16 @@
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
   .fd-article{padding:24px 20px}
   .fd-weekgrid{grid-template-columns:repeat(2,1fr)}
+  /* The reader's desktop primary/ghost actions -- CLASS-INVENTORY.md's Reader section always
+   * emits these (no `desk` JS branch: the fixed .fd-actionbar above is mobile's equivalent),
+   * so the breakpoint has to hide them here or phones show both action rows at once. */
+  .fd-article__actions{display:none}
+  /* The reader's keyboard-shortcut hint only ("<- -> move between items ..." is meaningless
+   * without a keyboard). Scoped to .fd-article so the wizard's unrelated .fd-tip--setup line
+   * (Front-Door step 1's closing tip, which must stay visible on phones) is never matched --
+   * .fd-article is unique to the Reader surface (frontdoor.css has exactly one other rule for
+   * it, the padding line just above). Do not broaden this to a bare `.fd-tip` selector. */
+  .fd-article .fd-tip{display:none}
 }
 
 /* ═══ Keyframes ══════════════════════════════════════════════════════════════

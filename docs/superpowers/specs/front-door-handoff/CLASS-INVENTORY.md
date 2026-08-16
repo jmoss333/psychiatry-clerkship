@@ -40,6 +40,16 @@ them and let the breakpoint decide:
 |---|---|---|
 | `.fd-rail`, `.fd-railnav` | below 1000px | ≥ 1000px |
 | `.fd-actionbar`, `.fd-actionbar__spacer`, `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
+| `.fd-article__actions` | below 1000px | ≥ 1000px |
+| `.fd-article .fd-tip` (Reader's keyboard hint **only** — the wizard's `.fd-tip--setup` line is a different subtree and stays visible) | below 1000px | ≥ 1000px |
+
+Every row above has a matching rule in `frontdoor.css`'s `@media (min-width:1000px)` /
+`@media (max-width:999px)` blocks — checked 2026-08-16 after `.fd-article__actions` and the
+reader's `.fd-tip` were found listed only as parenthetical annotations on the surface outlines
+below, with no rule actually implementing them (issue caught during Task 7 implementation). No
+other outline annotation in this file had the same gap: `.fd-rail`/`.fd-quicktools--pills` (§3),
+`.fd-railnav`/`.fd-actionbar`/`.fd-actionbar__spacer` (§6), and `.fd-weekgrid`'s 3→2 column drop
+(§2) were all re-verified against the stylesheet directly, not just against each other.
 
 ⚠ **Adjacent-sibling spacing.** These get their vertical gap from `X + X {margin-top}`, so they
 must be **direct siblings with no wrapper between them**: `.fd-role`, `.fd-quicktool`,
@@ -300,7 +310,7 @@ it; just don't expect it to paint anything.
         .fd-prevnext__btn                 (prev)
         .fd-prevnext__btn.is-next         (next)
           .fd-prevnext__label / .fd-prevnext__title
-      .fd-tip
+      .fd-tip                             (≥1000px — this instance only, via `.fd-article .fd-tip`)
     .fd-railnav                           (≥1000px)
       .fd-railnav__label
       .fd-railnav__list
@@ -318,6 +328,8 @@ it; just don't expect it to paint anything.
 |---|---|
 | `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
+| `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch) — `.fd-actionbar` at the bottom of this tree is the mobile equivalent; the breakpoint hides this one and shows that one, never both. |
+| `.fd-tip` (Reader instance) | The `←`/`→`/`1`/`2`/`3` keyboard hint. Hidden below 1000px via the descendant selector `.fd-article .fd-tip` — **do not** hide the bare `.fd-tip` class, which would also blank the wizard's `.fd-tip--setup` line (§2). |
 
 ⚠ **`.fd-actionbar .fd-btn--primary` requires its label wrapped in a bare `<span>`**
 (`.fd-actionbar .fd-btn--primary span` supplies the ellipsis). A text-only child overflows on
