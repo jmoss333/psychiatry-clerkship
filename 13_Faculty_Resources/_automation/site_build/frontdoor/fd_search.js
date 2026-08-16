@@ -1,8 +1,8 @@
 /* Search -- synonym-expanded ranking and the ⌘K overlay. See CLASS-INVENTORY.md section 7 and
    the prototype's Search overlay section (Front-Door-Hi-Fi-v2.dc.html, search "══", line 358).
 
-   Injected via /*__FD_SEARCH__*\/ once a later plan registers the marker (see SNIPPET_MARKERS
-   in common.py) -- this task does not register it or touch that file. ES5 only: var/function,
+   Injected via /*__FD_SEARCH__*\/ -- registered in SNIPPET_MARKERS (common.py) and wired
+   into the shell by Plan 3 Task 1. ES5 only: var/function,
    no const/let/arrow functions/template literals -- matches the other frontdoor/ modules.
 
    Pure: fdSearchResults(index, query, synonyms, state) -> [result] and

@@ -18,8 +18,8 @@
    (this file never touches curriculum.json's role list to derive one from a full name, e.g.
    "Core rotation"), and ringPct is already the current animated percentage (this file never
    computes it from progress -- that is fdRingStep in fd_state.js). Injected via
-   /*__FD_TODAY__*\/ once a later plan registers the marker (see SNIPPET_MARKERS in common.py) --
-   this task does not register it. ES5 only: var/function, no const/let/arrow functions/template
+   /*__FD_TODAY__*\/ -- registered in SNIPPET_MARKERS (common.py) and wired into the shell by
+   Plan 3 Task 1. ES5 only: var/function, no const/let/arrow functions/template
    literals -- matches the other frontdoor/ modules.
 
    Scope note for whoever reads this next to the design doc: the due row (SRS due counts) and

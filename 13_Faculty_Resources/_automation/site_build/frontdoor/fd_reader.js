@@ -4,8 +4,8 @@
    onward -- the prototype has no top-level "══" marker of its own; it lives inside the App
    shell block).
 
-   Injected via /*__FD_READER__*\/ once a later plan registers the marker (see SNIPPET_MARKERS
-   in common.py) -- this task does not register it or touch that file. ES5 only: var/function,
+   Injected via /*__FD_READER__*\/ -- registered in SNIPPET_MARKERS (common.py) and wired
+   into the shell by Plan 3 Task 1. ES5 only: var/function,
    no const/let/arrow functions/template literals -- matches the other frontdoor/ modules.
 
    Pure: fdReader(index, state, bodyHtml) -> string. No DOM, no browser storage, no clock access

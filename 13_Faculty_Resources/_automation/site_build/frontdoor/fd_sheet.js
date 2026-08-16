@@ -2,8 +2,8 @@
    raised after a protocol closes. See CLASS-INVENTORY.md section 8 and the prototype's side-sheet
    section (Front-Door-Hi-Fi-v2.dc.html, search "══", line 384).
 
-   Injected via /*__FD_SHEET__*\/ once a later plan registers the marker (see SNIPPET_MARKERS in
-   common.py) -- this task does not register it or touch that file. ES5 only: var/function, no
+   Injected via /*__FD_SHEET__*\/ -- registered in SNIPPET_MARKERS (common.py) and wired into
+   the shell by Plan 3 Task 1. ES5 only: var/function, no
    arrow functions or template literals -- matches the other frontdoor/ modules.
 
    Pure: fdSheet(index, topicMeta, state) -> string and fdNudge(item) -> string. No DOM, no browser

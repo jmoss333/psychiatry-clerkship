@@ -38,3 +38,17 @@ test('the shell declares the data needles the build replaces', () => {
       `exactly one 'var ${n}=' declaration, for build_deploy.py to replace`);
   }
 });
+
+// ORDER above is hand-maintained, and EXPECTED_MARKER_COUNT (parallel-ceilings.test.mjs) only
+// pins SNIPPET_MARKERS' SIZE, not ORDER's coverage -- so a marker could be added to both
+// SNIPPET_MARKERS and the shell, bump that count correctly, and still land unpinned here if
+// nobody remembers to add it to ORDER too. Scan the shell for every FD_* marker actually present
+// and require each one to be in ORDER, so a 10th marker (Tasks 4/5 each add one) fails loudly
+// here instead of silently shipping with no ordering guarantee.
+test('every FD_* marker in the shell is covered by ORDER', () => {
+  const found = new Set(src.match(/\/\*__FD_[A-Z0-9_]+__\*\//g) || []);
+  assert.ok(found.size > 0, 'sanity: expected to find at least one FD_* marker in the shell');
+  for (const m of found) {
+    assert.ok(ORDER.includes(m), `${m} appears in spa_index.html but is missing from ORDER`);
+  }
+});

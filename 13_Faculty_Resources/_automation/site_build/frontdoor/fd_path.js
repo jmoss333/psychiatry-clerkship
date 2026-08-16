@@ -2,8 +2,8 @@
    column). See CLASS-INVENTORY.md section 4 and the prototype's Path section
    (Front-Door-Hi-Fi-v2.dc.html, search "══", line 287) for the markup this ports.
 
-   Injected via /*__FD_PATH__*\/ once a later plan registers the marker (see SNIPPET_MARKERS
-   in common.py) -- this task does not register it or touch that file. ES5 only: var/function,
+   Injected via /*__FD_PATH__*\/ -- registered in SNIPPET_MARKERS (common.py) and wired
+   into the shell by Plan 3 Task 1. ES5 only: var/function,
    no const/let/arrow functions/template literals -- matches the other frontdoor/ modules.
 
    Pure: no DOM, no browser storage, no clock access -- state arrives fully resolved.

@@ -1,8 +1,8 @@
 /* Front door shell: header, tab row, first-run wizard, and the keyboard map.
    Renderers here are pure (state in, string out). Only Plan 3's wiring touches the DOM.
 
-   Injected via /*__FD_SHELL__*\/ once a later plan registers the marker (see SNIPPET_MARKERS
-   in common.py) -- this task does not register it or touch that file. ES5 only: var/function,
+   Injected via /*__FD_SHELL__*\/ -- registered in SNIPPET_MARKERS (common.py) and wired
+   into the shell by Plan 3 Task 1. ES5 only: var/function,
    no const/let/arrow functions/template literals -- matches the other frontdoor/ modules.
 
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no

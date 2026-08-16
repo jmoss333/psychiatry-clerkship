@@ -477,8 +477,17 @@ def fd_statement(var_name, value):
     copytree) call this — so the exact literal text either script needs to search for
     is reconstructible from the same (name, value) pair, and neither script has to
     read back what the other one wrote to build a matching needle.
+
+    `</` is escaped to `<\\/` in the serialized payload: this JSON is embedded directly
+    inside an inline <script> block, and topic_meta.json's tldr/points fields are
+    faculty-authored free text with no upstream rule against writing "</script>" in a
+    summary — a literal occurrence would otherwise close the tag early and truncate (or
+    corrupt) everything after it on the page, silently, with no build-time signal.
+    `\\/` is a no-op escape inside a JS string literal, so this never changes the
+    decoded value.
     """
-    return "var %s=%s;" % (var_name, json.dumps(value, ensure_ascii=False))
+    payload = json.dumps(value, ensure_ascii=False).replace("</", "<\\/")
+    return "var %s=%s;" % (var_name, payload)
 
 
 def apply_page_chrome(path, is_index=False):
@@ -684,6 +693,13 @@ def page_contract_failures(out_dir):
             missing.append("pre-paint theme init (cw_theme)")
         if "clinical-warm.css" not in t and '[data-theme="dark"]' not in t:
             missing.append("dark-mode tokens (clinical-warm.css link or inline block)")
+        # Shell-only (see FRONTDOOR_CSS_LINK above). Checked against the actual <link> tag,
+        # not the bare "frontdoor.css" filename: the frontdoor/ modules injected below say
+        # that filename by name in their own doc comments, so a bare-filename check would
+        # pass on a page that never got the real link — exactly the bug this gate exists to
+        # catch (Task 1 review: apply_dark_mode's own guard had this same mistake).
+        if is_index and FRONTDOOR_CSS_LINK not in t:
+            missing.append("front-door shell stylesheet (frontdoor.css link)")
         if 'rel="icon"' not in t:
             missing.append("favicon link")
         if not is_index and "<!--ifn-->" not in t:

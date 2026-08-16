@@ -174,7 +174,22 @@ class TestPagePasses(_SiteFixture):
         self.assertNotIn("<!--ifn-->", self.read())
 
     def test_index_gets_the_frontdoor_stylesheet(self):
-        """frontdoor.css is shell-only — a tool page must never receive it."""
+        """frontdoor.css is shell-only — a tool page must never receive it.
+
+        The fixture plants a bare "frontdoor.css" mention in a comment, mirroring the
+        frontdoor/ modules' own doc-comments (which say the filename by name many
+        times over). This is what makes the test actually discriminate: the original
+        bug was an idempotency guard keyed on that bare filename — `"frontdoor.css"
+        not in t` — which this comment alone satisfies as False, so the guard skipped
+        injecting the real <link> and the test never saw it (Task 1 review). A guard
+        keyed on the actual <link> tag is unaffected by the comment and still injects.
+        """
+        with open(self.tool, "w", encoding="utf-8") as fh:
+            fh.write(
+                "<html><head></head><body>"
+                "<!-- frontdoor.css already ships the breakpoint that picks between them -->"
+                "</body></html>"
+            )
         common.apply_dark_mode(self.tool, is_index=True)
         self.assertIn('<link rel="stylesheet" href="/frontdoor.css">', self.read())
 
@@ -251,6 +266,38 @@ class TestPageContract(_SiteFixture):
     def test_assert_raises_systemexit_on_failure(self):
         with self.assertRaises(SystemExit):
             common.assert_page_contract(self.dir)
+
+    def test_fully_treated_index_passes_with_frontdoor_css(self):
+        index = os.path.join(self.dir, "index.html")
+        with open(index, "w", encoding="utf-8") as fh:
+            fh.write(self.TOOL)
+        common.apply_full_page_pass(self.dir)
+        self.assertEqual(common.page_contract_failures(self.dir), [])
+
+    def test_index_missing_frontdoor_css_link_fails_the_contract(self):
+        """The layer that would have caught the original bug directly, per Task 1
+        review: an index.html that received every other transform but never got the
+        real frontdoor.css <link> — e.g. because apply_dark_mode's idempotency guard
+        regressed to matching the bare filename, which the frontdoor/ modules' own
+        doc-comments always satisfy. A bare-filename check here would make the SAME
+        mistake and pass this page; the check must key on the actual <link> tag.
+        """
+        index = os.path.join(self.dir, "index.html")
+        with open(index, "w", encoding="utf-8") as fh:
+            fh.write(self.TOOL)
+        common.apply_full_page_pass(self.dir)
+        t = open(index, encoding="utf-8").read()
+        # Simulate the regression: strip the real link, but leave a bare-filename
+        # mention behind (as the frontdoor/ modules' own comments would).
+        t = t.replace(
+            common.FRONTDOOR_CSS_LINK,
+            "<!-- frontdoor.css already ships the breakpoint -->",
+        )
+        open(index, "w", encoding="utf-8").write(t)
+        failures = common.page_contract_failures(self.dir)
+        self.assertTrue(
+            any("frontdoor.css" in m for _, ms in failures for m in ms), failures
+        )
 
 
 class TestSearchIndex(_SiteFixture):
@@ -358,6 +405,30 @@ class TestFdStatement(unittest.TestCase):
         self.assertEqual(
             common.fd_statement("FD_X", value), common.fd_statement("FD_X", value)
         )
+
+    def test_escapes_closing_script_tags(self):
+        """topic_meta.json's tldr/points fields are faculty-authored free text with
+        no upstream rule against writing "</script>" in a summary — this is real
+        content risk, not an adversarial-input concern. An unescaped occurrence would
+        close the embedding <script> block early and silently corrupt the rest of the
+        page; there is no build-time JS-parse gate that would catch it (Task 1
+        review)."""
+        value = {"tldr": "Escalate before it reads like </script><script>alert(1)</script>"}
+        stmt = common.fd_statement("FD_TOPIC_META", value)
+        self.assertNotIn("</script", stmt)
+        # The escape must be reversible: unescaping "<\/" back to "</" recovers the
+        # exact original JSON, so the browser's own \/ handling round-trips the value
+        # (a NonEscapeCharacter in a JS string literal — \/ decodes to plain /).
+        recovered = json.loads(stmt[len("var FD_TOPIC_META="):-1].replace("<\\/", "</"))
+        self.assertEqual(recovered, value)
+
+    def test_does_not_escape_forward_slashes_that_are_not_preceded_by_a_less_than(self):
+        """Only the "</" pattern that could close a tag is touched -- an ordinary URL
+        or fraction in faculty prose must come through unchanged."""
+        value = {"tldr": "See tools/mse.html, or read 3/4 of the chapter first."}
+        stmt = common.fd_statement("FD_X", value)
+        self.assertIn("tools/mse.html", stmt)
+        self.assertIn("3/4", stmt)
 
 
 class TestReproducibility(unittest.TestCase):

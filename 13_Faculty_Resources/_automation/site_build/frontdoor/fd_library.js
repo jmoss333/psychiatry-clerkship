@@ -3,8 +3,8 @@
    page a student cannot reach except by search. See CLASS-INVENTORY.md section 5 and the
    prototype's Library section (Front-Door-Hi-Fi-v2.dc.html, search "Library", line 332).
 
-   Injected via /*__FD_LIBRARY__*\/ once a later plan registers the marker (see SNIPPET_MARKERS
-   in common.py) -- this task does not register it or touch that file. ES5 only: var/function,
+   Injected via /*__FD_LIBRARY__*\/ -- registered in SNIPPET_MARKERS (common.py) and wired
+   into the shell by Plan 3 Task 1. ES5 only: var/function,
    no const/let/arrow functions/template literals -- matches the other frontdoor/ modules.
 
    Pure: fdLibrary(index) -> string. No DOM, no browser storage, no clock -- index arrives fully
