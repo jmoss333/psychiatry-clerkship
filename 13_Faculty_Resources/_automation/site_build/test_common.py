@@ -428,6 +428,13 @@ class TestSharedSnippets(unittest.TestCase):
         self.assertIn("function sessLoad(tool, nowMs){", t)
         self.assertNotIn("/*__SESS_CAPSULE__*/", t)
 
+    def test_fd_state_snippet_expands_with_short_signature(self):
+        p = self._page("<script>\n/*__FD_STATE__*/\n</script>")
+        self.assertTrue(common.inject_shared_snippets(p))
+        t = open(p, encoding="utf-8").read()
+        self.assertIn("var FD_STORE='cw_frontdoor_v1';", t)
+        self.assertNotIn("/*__FD_STATE__*/", t)
+
     def test_all_snippet_signatures_are_short_and_unique(self):
         # Whole-line signatures are exact-substring dup-probes (common.py _snippet_signature);
         # long ones silently degrade to no-ops when the file is rewrapped. Cap them.

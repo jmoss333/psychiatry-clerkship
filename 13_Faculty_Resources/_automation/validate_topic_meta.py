@@ -300,6 +300,18 @@ for k, v in d.items():
         fr = v.get("facultyReview")
         if not isinstance(fr, dict) or not fr.get("status") or not fr.get("lastReviewed"):
             bad(k, "high-risk page requires facultyReview.status and facultyReview.lastReviewed")
+    # safetySteps: the ordered ACTIONS a protocol sheet walks (distinct from 'points',
+    # which are facts). Lives here rather than in curriculum.json so protocol content
+    # inherits faculty attestation and this contract — the safety kit is the one surface
+    # whose whole purpose is being correct at 2am.
+    if "safetySteps" in v:
+        ss = v["safetySteps"]
+        if not isinstance(ss, list) or not (3 <= len(ss) <= 5):
+            bad(k, "'safetySteps' must be a list of 3-5 steps")
+        elif any(not isinstance(s, str) or not s.strip() for s in ss):
+            bad(k, "'safetySteps' entries must be non-empty strings")
+        if not isinstance(v.get("safetyDoc"), str) or not v.get("safetyDoc", "").strip():
+            bad(k, "'safetySteps' requires a non-empty 'safetyDoc' documentation line")
 
 topics = [k for k in d if k != "_note"]
 if errs:

@@ -551,6 +551,7 @@ SNIPPET_MARKERS = {
     "/*__CALIB_LOG__*/": "calib_log.js",
     "/*__PHASE_POLICY__*/": "phase_policy.js",
     "/*__SESS_CAPSULE__*/": "sess_capsule.js",
+    "/*__FD_STATE__*/": "frontdoor/fd_state.js",
 }
 
 

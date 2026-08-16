@@ -1,0 +1,195 @@
+{
+  "_note": "Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.",
+  "weeks": [
+    {
+      "n": 1,
+      "title": "Foundations & the MSE",
+      "theme": "Orientation · interviewing · MSE",
+      "items": [
+        { "ref": "welcome.md", "kind": "read" },
+        { "ref": "pg_interview.md", "kind": "read" },
+        { "ref": "pg_suicide.md", "kind": "read" },
+        { "ref": "agitation.md", "kind": "read" },
+        { "ref": "delirium.md", "kind": "read" },
+        { "ref": "withdrawal.html", "kind": "tool" },
+        { "ref": "doc_oral.md", "kind": "read" },
+        { "ref": "mse.html", "kind": "tool" },
+        { "ref": "question-bank-practice.html", "kind": "tool" }
+      ]
+    },
+    {
+      "n": 2,
+      "title": "Mood, Psychosis & Pharm",
+      "theme": "Dx frameworks · the top-10 drugs",
+      "items": [
+        { "ref": "t_mood.md", "kind": "read" },
+        { "ref": "t_psychosis.md", "kind": "read" },
+        { "ref": "psychopharm_primer.md", "kind": "read" },
+        { "ref": "ddx.md", "kind": "read" },
+        { "ref": "question-bank-practice.html", "kind": "tool" }
+      ]
+    },
+    {
+      "n": 3,
+      "title": "Psychotherapy & Personality",
+      "theme": "Alliance · brief therapy · PDs",
+      "items": [
+        { "ref": "t_personality.md", "kind": "read" },
+        { "ref": "exp_tx.md", "kind": "read" },
+        { "ref": "brief_psychotherapy.md", "kind": "read" },
+        { "ref": "reflection.html", "kind": "tool" },
+        { "ref": "question-bank-practice.html", "kind": "tool" }
+      ]
+    },
+    {
+      "n": 4,
+      "title": "Family Systems & EE",
+      "theme": "Family meetings · collateral",
+      "items": [
+        { "ref": "exp_family.md", "kind": "read" },
+        { "ref": "family_modalities.md", "kind": "read" },
+        { "ref": "family_playbook.md", "kind": "read" },
+        { "ref": "collateral_workflow.md", "kind": "read" },
+        { "ref": "family-systems.html", "kind": "tool" },
+        { "ref": "question-bank-practice.html", "kind": "tool" }
+      ]
+    },
+    {
+      "n": 5,
+      "title": "Acute & Emergency",
+      "theme": "Safety · agitation · withdrawal",
+      "items": [
+        { "ref": "suicide.md", "kind": "read" },
+        { "ref": "agitation.md", "kind": "read" },
+        { "ref": "delirium.md", "kind": "read" },
+        { "ref": "catatonia.md", "kind": "read" },
+        { "ref": "cssrs.html", "kind": "tool" },
+        { "ref": "withdrawal.html", "kind": "tool" },
+        { "ref": "capacity.html", "kind": "tool" },
+        { "ref": "question-bank-practice.html", "kind": "tool" }
+      ]
+    },
+    {
+      "n": 6,
+      "title": "Integration & Exam",
+      "theme": "Exam · OSCE · putting it together",
+      "items": [
+        { "ref": "shelf.md", "kind": "read" },
+        { "ref": "osce.md", "kind": "read" },
+        { "ref": "cases.md", "kind": "read" },
+        { "ref": "landmark_trials.md", "kind": "read" },
+        { "ref": "oral.html", "kind": "tool" },
+        { "ref": "one-patient-six-weeks.html", "kind": "tool" },
+        { "ref": "question-bank-practice.html", "kind": "tool" }
+      ]
+    }
+  ],
+  "libraryColumns": [
+    {
+      "name": "Interactive tools",
+      "accent": "tool",
+      "refs": [
+        "mse.html", "interview-circle.html", "sp-interview.html",
+        "communication-practice.html", "diagnostic-reasoning.html",
+        "family-systems.html", "one-patient-six-weeks.html", "capacity.html",
+        "oral.html", "violence.html", "cssrs.html", "screeners.html",
+        "withdrawal.html", "decision-aids.html", "interaction-cards.html",
+        "bfcrs.html", "reflection.html", "shelf-mode.html", "review.html",
+        "question-bank-practice.html"
+      ]
+    },
+    {
+      "name": "Acute & safety",
+      "accent": "safety",
+      "refs": [
+        "pg_suicide.md", "suicide.md", "agitation.md", "delirium.md",
+        "catatonia.md", "violence.md", "exp_consult.md", "toxidromes.md",
+        "medical_workup.md", "protocol_library.md"
+      ]
+    },
+    {
+      "name": "Core topics",
+      "accent": "topic",
+      "refs": [
+        "ddx.md", "t_mood.md", "t_psychosis.md", "t_anxiety.md",
+        "t_personality.md", "t_sud.md", "t_geri.md", "t_perinatal.md",
+        "t_neurodev.md", "t_eating.md", "t_neurocog.md", "t_somatic.md",
+        "t_sleep.md", "t_dissociative.md", "t_sexual.md", "t_impulse.md",
+        "t_adjustment.md"
+      ]
+    },
+    {
+      "name": "Clinical skills",
+      "accent": "topic",
+      "refs": [
+        "welcome.md", "orientation.md", "pg_interview.md", "pg_formulation.md",
+        "case_formulation.md", "doc_oral.md", "collateral_workflow.md",
+        "exp_tx.md", "exp_family.md", "family_modalities.md",
+        "family_playbook.md", "psychotherapy.md", "brief_psychotherapy.md",
+        "motivational_interviewing.md", "cultural_psychiatry.md",
+        "ethics_legal.md"
+      ]
+    },
+    {
+      "name": "Evidence & exam",
+      "accent": "topic",
+      "refs": [
+        "core_readings.md", "shelf.md", "osce.md", "cases.md",
+        "rapid_review.md", "reading_map.md", "anki.md", "rounds_questions.md",
+        "landmark_trials.md", "evidence_inpatient.md", "psychopharm_primer.md",
+        "med_monitoring.md", "ect_neuromodulation.md", "nutrition_metabolic.md",
+        "omm_resources.md", "book_library.md", "podcast_library.md",
+        "cotw_index.md"
+      ]
+    }
+  ],
+  "libraryExclude": [
+    { "ref": "feedback.html", "reason": "a feedback form, not library content — reachable from the header" },
+    { "ref": "week1.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
+    { "ref": "week2.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
+    { "ref": "week3.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
+    { "ref": "week4.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
+    { "ref": "week5.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
+    { "ref": "week6.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
+    { "ref": "learning-path.html", "reason": "the Path tab is the week browse surface — this tool is the same view" },
+    { "ref": "orientation-video.html", "reason": "orientation media, surfaced from the Start-here flow rather than the Library" },
+    { "ref": "rp-agitation.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
+    { "ref": "rp-brief-psych.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
+    { "ref": "rp-canon-quiz.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
+    { "ref": "rotation.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
+    { "ref": "adv_psychopharm.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
+    { "ref": "systems_medlegal.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
+    { "ref": "supervision_teaching.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
+    { "ref": "canon_200.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
+    { "ref": "cl_reference.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" }
+  ],
+  "safetyKit": [
+    { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan" },
+    { "ref": "agitation.md", "sub": "Verbal first · PO before IM" },
+    { "ref": "exp_consult.md", "sub": "Choice · understand · appreciate · reason" },
+    { "ref": "t_sud.md", "sub": "Score · thiamine · escalate" },
+    { "ref": "delirium.md", "sub": "Vitals · meds · CAM" }
+  ],
+  "roles": { "ms3": [], "resident": [] },
+  "synonyms": {
+    "etoh": "alcohol withdrawal ciwa",
+    "si": "suicide risk ideation",
+    "hi": "violence risk homicidal",
+    "benzo": "withdrawal lorazepam agitation",
+    "agitated": "agitation restraint de-escalation",
+    "ams": "delirium confused altered",
+    "sundowning": "delirium",
+    "od": "toxidromes withdrawal",
+    "bpad": "bipolar mood",
+    "mdd": "mood depression",
+    "szq": "psychosis schizophrenia",
+    "sz": "psychosis schizophrenia",
+    "bpd": "personality borderline",
+    "cows": "opioid withdrawal",
+    "ciwa": "alcohol withdrawal",
+    "cap": "capacity",
+    "mse": "mental status exam",
+    "meds": "drug primer pharmacology",
+    "pharm": "drug primer pharmacology"
+  }
+}
