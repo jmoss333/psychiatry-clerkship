@@ -16,7 +16,7 @@ function fdIsTool(ref){ return /\.html$/.test(ref); }
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */
-function fdMakeItem(ref, kind, topicMeta, toolIndex){
+function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex){
   var m=topicMeta[ref]||{};
   var t=toolIndex[ref]||null;
   var fr=m.facultyReview||{};
@@ -24,7 +24,11 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex){
   return {
     ref: ref,
     kind: isTool?'tool':'read',
-    title: (t&&t.title)||m.title||ref,
+    /* Title comes from site_manifest.json, the registry of shipped pages. topic_meta has no
+       title field on any entry -- it describes a page's content, not its identity -- so reading
+       one there would silently degrade every .md row to its raw slug. Falling back to the ref is
+       for a page the manifest does not list, which the curriculum validator already rejects. */
+    title: titleIndex[ref]||ref,
     minutes: (typeof m.read==='number')?m.read:null,
     summary: m.tldr||'',
     points: (m.points&&m.points.length)?m.points:[],
@@ -35,14 +39,21 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex){
   };
 }
 
-function fdBuildIndex(curriculum, topicMeta, toolRegistry){
+function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var meta=topicMeta||{}, cur=curriculum||{};
   var toolIndex={}, list=(toolRegistry&&toolRegistry.tools)||[];
   for(var i=0;i<list.length;i++){ toolIndex[list[i].file]=list[i]; }
 
+  /* site_manifest entries are [sourcePath, slug, title] triples for both md and tools. */
+  var titleIndex={}, man=siteManifest||{};
+  var groups=[man.tools||[], man.md||[]];
+  for(var g=0;g<groups.length;g++){
+    for(var e=0;e<groups[g].length;e++){ titleIndex[groups[g][e][1]]=groups[g][e][2]; }
+  }
+
   var byRef={};
   function ensure(ref, kind){
-    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex);
+    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, titleIndex);
     return byRef[ref];
   }
 
