@@ -251,10 +251,29 @@ test('the first-run wizard renders instead of the app when no role is stored', (
   assert.doesNotMatch(html, /class="fd-tabs"/, 'setup owns the whole viewport — no tab row behind it');
 });
 
-test('step 2 renders once a role is chosen but no week is set', () => {
-  const html = makeRender()({ role: 'student', tab: 'today', done: {} });
+test('step 2 renders while the wizard is on that step', () => {
+  const html = makeRender()({ role: 'student', setup: 'week', tab: 'today', done: {} });
   assert.match(html, /data-fd-week="1"/);
   assert.match(html, /Core rotation ✓/, 'the chosen role name is resolved from FD_ROLES');
+});
+
+test('a role with no week lands in the APP, not back in the wizard', () => {
+  // Task 4 moved this gate from "no week is set" to an explicit wizard step, and the reason is
+  // this state. It is reachable two ways that both used to dead-end: the wizard's own "Not on
+  // rotation — just browse" tile deliberately sets no week, and a student who closed the tab
+  // mid-setup keeps their role. Gated on week, both re-entered step 2 with no way out —
+  // "just browse" in particular could never be honoured, because honouring it recreated its own
+  // precondition. fd_today.js already ships the app-side answer: the "30-second setup" card.
+  const html = makeRender()({ role: 'student', tab: 'today', done: {} });
+  assert.match(html, /class="fd-tabs"/, 'the app shell renders');
+  assert.match(html, /data-fd-change-week/, 'and offers the week question as a card, not a wall');
+  assert.doesNotMatch(html, /class="fd-weekgrid"/, 'the wizard must not be on screen');
+});
+
+test('the wizard can step back to the role question', () => {
+  const html = makeRender()({ role: 'student', setup: 'role', tab: 'today', done: {} });
+  assert.match(html, /data-fd-role="student"/,
+    'setup:"role" is what data-fd-back in step 2 sets; without this branch back is a dead button');
 });
 
 // Each row names the class the HEALTHY surface emits. Asserting it is absent is what proves the

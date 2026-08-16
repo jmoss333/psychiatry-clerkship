@@ -1185,6 +1185,8 @@
 
   /*__FD_SHEET__*/
 
+  /*__FD_WIRE__*/
+
   /* ---- front door render ---- */
   /* The whole page body from state, as one string. Each surface is independently guarded: an
      unguarded throw in the old renderHome() blanked the entire page rather than one region, and
@@ -1253,10 +1255,20 @@
     var idx;
     try{ idx=fdIndex(); }catch(e){ idx={byRef:{}, weeks:[], columns:[], kit:[]}; }
 
+    /* The wizard is a TRANSITION, not a place, so it is gated on an explicit step (st.setup,
+       session-only, owned by fd_wire.js) rather than on "no week is set".
+
+       Gating step 2 on `week==null` — which is what this branch did before the wiring existed —
+       made two shipped affordances unreachable. The wizard's own "Not on rotation — just browse"
+       tile deliberately sets NO week, so it re-entered step 2 forever; and the header week pill
+       (data-fd-change-week) could never show step 2 at all for a student who already had a week.
+       Role is the setup-complete marker, exactly as it is in the prototype: a student with a role
+       and no week lands in the app, where fd_today.js's "30-second setup" card asks the same
+       question in a place they can ignore. */
     var body;
-    if(!st.role){
+    if(!st.role||st.setup==='role'){
       body=fdSurface('setup-role', function(){ return fdSetupRole(FD_ROLES); });
-    } else if(st.week===null||st.week===undefined){
+    } else if(st.setup==='week'){
       body=fdSurface('setup-week', function(){ return fdSetupWeek(idx.weeks, fdRoleName(st.role)); });
     } else {
       body=fdSurface('header', function(){ return fdHeader(st); });
@@ -1338,30 +1350,40 @@
     return out;
   }
 
+  /* The Continue card's ring reads state.ringPct and nothing else supplies it — left unset it
+     draws a 0% ring beside "5 of 7 done", which is a lie on the most-read line of the front door.
+     This is the TRUE percentage, not the animated one: fdRingStep()'s 600ms sweep needs a partial
+     DOM update (a full fdRender thirty-odd times over 600ms would rebuild #content on every frame
+     and take focus with it), and no task in the plan owns that yet. */
+  function fdWeekPct(st){
+    if(typeof st.week!=='number'||isNaN(st.week)) return 0;
+    try{ return fdTodayProgress(fdItemsForWeek(fdIndex(), st.week), st.done).pct; }
+    catch(_){ return 0; }
+  }
+
+  /* State is composed from three sources on every render, never held in a fourth copy:
+     the address bar and cw_frontdoor_v1 (through fdResolveState — spec §2.1's precedence rule,
+     stated once, in fd_wire.js), the derived stores (cw_rotation_start, cw_progress_v1,
+     cw_srs_v1), and FD_TRANSIENT for the session-only fields that are deliberately persisted
+     nowhere. Recomposing rather than caching is what keeps a store written by another surface
+     (the ward-capture sheet, the theme toggle, a second tab) from rendering stale. */
   function fdCurrentState(){
     var stored=fdLoad();
-    /* URL-first (spec §2.1): a shared ?page=/?tool= link opens what it names, whatever this device
-       last had open. Task 4 owns the full precedence table (fdResolveState); this is the boot's
-       minimum, and it is what keeps topic_meta cta[] entries, every Week README, and
-       tests/smoke/nav-crawl.spec.js landing on the page they name. */
-    var sp0=new URLSearchParams(location.search);
-    var deep=sp0.get('page')||sp0.get('tool');
+    var st=fdResolveState(location.href, stored);
     var s=srsState();
-    return {
-      role: stored.role||'',
-      /* Derived, never persisted: cw_rotation_start is the single source (see FD_KEYS in
-         fd_state.js). null means no rotation date is stored, which is exactly what puts the
-         first-run wizard on screen. */
-      week: rotationWeek(),
-      tab: stored.tab||'today',
-      viewWeek: stored.viewWeek,
-      openId: deep||stored.openId||'',
-      fromTab: stored.fromTab||'today',
-      done: fdDoneMap(),
-      streak: (s&&s.stats&&s.stats.streak)||0,
-      theme: document.documentElement.getAttribute('data-theme')||'light',
-      nowMs: Date.now()
-    };
+    /* Derived, never persisted: cw_rotation_start is the single source (see FD_KEYS in
+       fd_state.js). null means no rotation date is stored, which every renderer already reads as
+       "browsing, no week set". */
+    st.week=rotationWeek();
+    st.done=fdDoneMap();
+    st.streak=(s&&s.stats&&s.stats.streak)||0;
+    st.theme=document.documentElement.getAttribute('data-theme')||'light';
+    st.nowMs=Date.now();
+    /* Path opens on the student's own week until they browse elsewhere. */
+    if(st.viewWeek===undefined) st.viewWeek=st.week;
+    st.ringPct=fdWeekPct(st);
+    for(var k in FD_TRANSIENT){ st[k]=FD_TRANSIENT[k]; }
+    return st;
   }
 
   function fdRerender(){
@@ -1402,6 +1424,51 @@
        screen from literals rather than leaving the page blank. */
     try{ fdRender({role:'', tab:'today', done:{}, nowMs:Date.now()}); }catch(_){ }
   }
+
+  /* A deep link's extra params — &case=, &scenario=, &resume=1, all three shipped by
+     communicationHref()/familyAction() — are captured once, here, because toolExtraFromParams()
+     is a first-script global and this is the only place the ORIGINAL address is still known.
+     fd_wire.js replays them onto the ref the link named and onto no other. */
+  var bootRouted=false;
+  try{
+    var sp0=new URLSearchParams(location.search);
+    var deep0=sp0.get('page')||sp0.get('tool');
+    bootRouted=!!(deep0||sp0.get('tab'));
+    if(deep0){ FD_TOOL_EXTRA_REF=deep0; FD_TOOL_EXTRA=toolExtraFromParams(sp0); }
+  }catch(_){ }
+
+  /* Listeners first, so a click during the route normalisation below is not dropped. Guarded so
+     a wiring failure leaves a READABLE page rather than a blank one — but named on the console,
+     because an inert front door is the one degradation nothing on screen can hint at: every
+     control still looks like a control. Same reasoning as fdSurface's warn. */
+  try{ fdWire(); }
+  catch(e){
+    try{
+      if(typeof console!=='undefined'&&console.warn){
+        console.warn('front door: event wiring failed — the page is read-only', e);
+      }
+    }catch(_){ }
+  }
+
+  /* Normalise the address to what is actually on screen, with replaceState so this tab's first
+     history entry is not a duplicate the back button lands on. Deliberately skipped for a bare
+     URL that resumed nothing: rewriting it there would strip unrelated query params from a link
+     the front door does not own. */
+  try{
+    var boot=fdCurrentState();
+    if(boot.openId||bootRouted) fdRoute(boot, true);
+    else document.title=pageTitle(null);
+    /* A followed deep link becomes "where I was" — the same re-sync popstate does, and for the
+       same reason: cw_frontdoor_v1's whole job is to resume, so leaving it pointing at whatever
+       preceded the link means a student who arrives by cta and closes the tab comes back to a
+       page they were not reading. */
+    if(bootRouted){
+      var bootBlob=fdLoad();
+      bootBlob.openId=boot.openId; bootBlob.tab=boot.tab;
+      fdSave(bootBlob);
+    }
+    fdAnnounce(boot);
+  }catch(_){ }
   /* ---- end front door boot ---- */
 })();
 </script>
