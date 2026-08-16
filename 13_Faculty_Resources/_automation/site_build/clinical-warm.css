@@ -5,8 +5,115 @@
  * lives here once and is linked (before </head>, so it wins the cascade) into each page
  * that doesn't already ship its own dark theme. Change a dark token in ONE place.
  *
- * Light-mode :root tokens still live inline per page (palette is consistent, but
- * centralizing them is the next increment of #100 — do it once cross-tool light values
- * are confirmed identical, to avoid shifting any tool's colors).
+ * Light-mode tokens for the ORIGINAL palette still live inline per page (values are
+ * consistent, but centralizing them is the next increment of #100 — do it once cross-tool
+ * light values are confirmed identical, to avoid shifting any tool's colors).
+ *
+ * The front-door tokens (--fd-*) below are the exception and are centralized from the start:
+ * they are new, no page carries an inline copy to conflict with, and the front door needs
+ * both halves of the palette in one place so the theme toggle survives.
+ *
+ * ORDER IS LOAD-BEARING: the light root block and the dark block have identical
+ * specificity (0,1,0) and both match <html>, so source order alone decides the winner.
+ * The light block must stay ABOVE the dark one or dark mode renders light-on-light.
  */
-[data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--bg2:#211d1a;--surface:#2a2520;--surface2:#332e28;--hover:#3d3630;--border:#3d3630;--border2:#2f2a25;--text:#e8e2da;--text-mid:#b3a596;--mid:#b3a596;--text-light:#8a7c6e;--light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-d:#dd9277;--primary-light:rgba(212,137,110,.16);--primary-l:rgba(212,137,110,.16);--primary-ink:#e6a98f;--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-d:#6cbcaa;--accent-light:rgba(90,173,154,.16);--accent-l:rgba(90,173,154,.16);--accent-border:rgba(90,173,154,.38);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--success-l:rgba(90,173,142,.16);--good:#5aad8e;--good-bg:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--warning-l:rgba(196,164,92,.16);--warn:#c4a45c;--warn-bg:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--danger-l:rgba(212,104,88,.16);--bad:#d46858;--bad-bg:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--info-l:rgba(122,158,196,.16);--on-brand:#211d1a;--focus:#7aa2ff;--shadow:0 1px 3px rgba(0,0,0,.35);--shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 2px 10px rgba(0,0,0,.4);--shadow-lg:0 8px 28px rgba(0,0,0,.45);}
+
+/* ── Front door: light palette ──────────────────────────────────────────────
+ * Values are verbatim from the design handoff prototype
+ * (docs/superpowers/specs/front-door-handoff/Front-Door-Hi-Fi-v2.dc.html), which is
+ * normative for every visual value. Do not "correct" these — see the KNOWN CONTRAST
+ * DEBT note under the dark block.
+ */
+:root{
+  --fd-bg:#f6f3ee;                /* page background */
+  --fd-surface:#ffffff;           /* cards */
+  --fd-surface-warm:#fffdf9;      /* header, sheet */
+  --fd-line:#ebe5da;              /* hairline border */
+  --fd-line-strong:#ddd3c6;       /* control border */
+  --fd-line-hover:#c8baa7;        /* hover border */
+  --fd-text:#3b332c;              /* body text */
+  --fd-text-mid:#64574b;          /* secondary */
+  --fd-text-dim:#87786a;          /* tertiary / done */
+  --fd-terracotta:#b0674e;        /* primary action */
+  --fd-terracotta-dark:#96523b;   /* primary hover */
+  --fd-teal:#3a7d6e;              /* accent */
+  --fd-teal-deep:#2c6356;         /* accent text */
+  --fd-teal-wash:#edf4f2;         /* accent background */
+  --fd-success:#357160;           /* done state */
+  --fd-danger:#a34132;            /* safety */
+  --fd-danger-dark:#8f372a;       /* safety hover */
+  --fd-danger-wash:#fbefec;       /* safety background */
+  --fd-olive:#8b7040;             /* daily pick */
+  --fd-selected:#f3ebe5;          /* selected row */
+  --fd-chip:#f1ece6;              /* chip background */
+  --fd-callout:#fbf8f3;           /* key-points callout */
+
+  /* Derived — not in the design's 22, but required because frontdoor.css may carry no raw
+   * colour of its own and because each of these has to invert for dark mode. */
+  --fd-on-accent:#ffffff;         /* ink on a filled terracotta/teal/danger/success surface */
+  --fd-olive-wash:#f7f0e2;        /* "Document:" callout background */
+  --fd-olive-deep:#6f5930;        /* "Document:" callout text (--fd-olive is 4.12:1 here) */
+  --fd-ring-track:#dde8e4;        /* unfilled arc of the progress ring */
+  --fd-focus:#2f6fd0;             /* :focus-visible ring */
+  --fd-backdrop:rgba(51,41,35,.38);
+  --fd-shadow-sm:0 1px 3px rgba(59,51,44,.06);
+  --fd-shadow-card:0 1px 2px rgba(59,51,44,.05),0 8px 24px rgba(59,51,44,.04);
+  --fd-shadow-lift:0 2px 6px rgba(59,51,44,.07),0 14px 32px rgba(59,51,44,.06);
+  --fd-shadow-over:0 6px 18px rgba(59,51,44,.10),0 24px 56px rgba(59,51,44,.12);
+  --fd-shadow-bar:0 -4px 16px rgba(59,51,44,.08);
+}
+
+/* ── Front door: dark palette ───────────────────────────────────────────────
+ * The source design ships light only. These are derived by ROLE, not by formula:
+ * backgrounds darken, text lightens, lines lift off the ground instead of sinking into it,
+ * washes become deep tints of their accent rather than pale pastels, and the accents
+ * themselves lighten enough to stay legible — which also flips the "-dark" hover variants
+ * to LIGHTER than their base, matching how --primary/--primary-dark already behave below.
+ *
+ * Verified with tests/fd-contrast.mjs: all 53 painted pairs clear 4.5:1 (text) / 3:1
+ * (non-text), which is a stricter result than the light palette achieves.
+ *
+ * KNOWN CONTRAST DEBT (light palette, inherited from the design, NOT introduced here):
+ *   --fd-text-dim on every surface   3.62–4.26:1  (needs #746758 to clear 4.5:1)
+ *   --fd-terracotta as text          3.88–4.29:1  (--fd-terracotta-dark is 5.89:1)
+ *   --fd-on-accent on --fd-terracotta     4.29:1
+ *   --fd-olive on --fd-bg                 4.23:1
+ *   --fd-line / --fd-line-strong never reach 3:1 in EITHER theme — a hairline aesthetic
+ *   cannot; :focus-visible carries the a11y weight instead.
+ * Changing these is a design decision for the palette owner, not an implementation one.
+ */
+[data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--bg2:#211d1a;--surface:#2a2520;--surface2:#332e28;--hover:#3d3630;--border:#3d3630;--border2:#2f2a25;--text:#e8e2da;--text-mid:#b3a596;--mid:#b3a596;--text-light:#8a7c6e;--light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-d:#dd9277;--primary-light:rgba(212,137,110,.16);--primary-l:rgba(212,137,110,.16);--primary-ink:#e6a98f;--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-d:#6cbcaa;--accent-light:rgba(90,173,154,.16);--accent-l:rgba(90,173,154,.16);--accent-border:rgba(90,173,154,.38);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--success-l:rgba(90,173,142,.16);--good:#5aad8e;--good-bg:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--warning-l:rgba(196,164,92,.16);--warn:#c4a45c;--warn-bg:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--danger-l:rgba(212,104,88,.16);--bad:#d46858;--bad-bg:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--info-l:rgba(122,158,196,.16);--on-brand:#211d1a;--focus:#7aa2ff;--shadow:0 1px 3px rgba(0,0,0,.35);--shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 2px 10px rgba(0,0,0,.4);--shadow-lg:0 8px 28px rgba(0,0,0,.45);
+  --fd-bg:#211d1a;
+  --fd-surface:#2a2521;
+  --fd-surface-warm:#2f2a25;
+  --fd-line:#3a332c;
+  --fd-line-strong:#4a4139;
+  --fd-line-hover:#5d5248;
+  --fd-text:#ece5db;
+  --fd-text-mid:#bcb0a2;
+  --fd-text-dim:#a2968a;
+  --fd-terracotta:#d08a6f;
+  --fd-terracotta-dark:#e0a184;
+  --fd-teal:#5fa392;
+  --fd-teal-deep:#7fc0ae;
+  --fd-teal-wash:#1d332e;
+  --fd-success:#5aa48f;
+  --fd-danger:#d97a68;
+  --fd-danger-dark:#e8917f;
+  --fd-danger-wash:#3a231f;
+  --fd-olive:#c0a06a;
+  --fd-selected:#3a2b24;
+  --fd-chip:#332c26;
+  --fd-callout:#2b2620;
+  --fd-on-accent:#211d1a;
+  --fd-olive-wash:#332a1c;
+  --fd-olive-deep:#d8bb87;
+  --fd-ring-track:#2f4a43;
+  --fd-focus:#7aa2ff;
+  --fd-backdrop:rgba(8,6,5,.62);
+  --fd-shadow-sm:0 1px 3px rgba(0,0,0,.35);
+  --fd-shadow-card:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3);
+  --fd-shadow-lift:0 2px 6px rgba(0,0,0,.42),0 14px 32px rgba(0,0,0,.38);
+  --fd-shadow-over:0 6px 18px rgba(0,0,0,.45),0 24px 56px rgba(0,0,0,.5);
+  --fd-shadow-bar:0 -4px 16px rgba(0,0,0,.4);
+}
