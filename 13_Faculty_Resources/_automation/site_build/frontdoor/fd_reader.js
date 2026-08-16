@@ -28,18 +28,18 @@
    entities and print literal tags instead of rendering them. Do not "fix" this by wrapping it in
    fdEsc.
 
-   *** .fd-article__body has NO rule in frontdoor.css / CLASS-INVENTORY.md. *** Neither the
-   prototype nor CLASS-INVENTORY's Reader section models a container for real long-form page
-   content -- the prototype only ever shows a one-paragraph summary (.fd-article__lead), because
-   its fixture data never included a full markdown body. bodyHtml needs *some* element to live
-   in, so this file names one following the file's own established `.fd-article__X` convention
-   (matching .fd-article__head/__h1/__lead/__source/__actions), placed in natural reading order
-   right after the lead paragraph. This is flagged to the controller rather than silently
-   invented as final: per the repo's "stop and tell me rather than invent a class" rule, adding
-   the matching frontdoor.css rule is left for whoever wires bodyHtml in for real (Plan 3, which
-   already owns the marked() integration and is not bound by Plan 2's CLASS-INVENTORY freeze) --
-   until then this container is real markup with no bespoke styling, which is a plain-text-looking
-   render, not a broken one.
+   *** .fd-article__body HAS a rule in frontdoor.css / CLASS-INVENTORY.md (Task 2, 2026-08-16;
+   fix round 1 added table/th/td/hr on measured evidence -- 17/67 and 5/67 shipped pages). ***
+   Neither the prototype nor CLASS-INVENTORY's Reader section models a container for real
+   long-form page content -- the prototype only ever shows a one-paragraph summary
+   (.fd-article__lead), because its fixture data never included a full markdown body. bodyHtml
+   needed *some* element to live in, so this file names one following the file's own established
+   `.fd-article__X` convention (matching .fd-article__head/__h1/__lead/__source/__actions), placed
+   in natural reading order right after the lead paragraph. This was flagged to the controller
+   rather than silently invented as final: per the repo's "stop and tell me rather than invent a
+   class" rule, the class name was invented here but the matching frontdoor.css rule was
+   deliberately left for Task 2 to add (comment corrected once it did; this file's own render
+   logic did not need to change).
 
    The mobile action bar (.fd-actionbar) is emitted as a SIBLING of the animated .fd-reader
    element, never a descendant -- CLASS-INVENTORY's ⚠ trap, design handoff §6. .fd-reader carries

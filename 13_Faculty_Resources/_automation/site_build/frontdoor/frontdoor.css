@@ -390,9 +390,10 @@
  *     the Key Points callout.
  *   - a's colour matches the global `.fd-shell a` rule; hover comes from that rule too (same
  *     specificity, already scoped to every link under .fd-shell), so no hover is redeclared here.
- * Flag for the reviewer: marked() can also emit h4-h6/pre/img/table/hr/strong/em. Only the eight
- * tags tests/fd-tokens.test.mjs pins are covered, plus `p` (load-bearing for the same defect --
- * an unstyled <p> keeps the browser's default paragraph margin instead of this system's rhythm).
+ * Flag for the reviewer: marked() can also emit h4-h6/pre/img/strong/em. Fenced code, images, and
+ * h4-h6 appear on 0 of the 67 shipped markdown pages (measured 2026-08-16) -- correctly left
+ * unstyled as YAGNI. table and hr are handled below, not flagged here, because they are NOT
+ * YAGNI: table appears on 17/67 pages (25%) and hr on 5/67.
  */
 .fd-article__body{margin:0 0 18px;font-size:16.5px;line-height:1.72;color:var(--fd-text);max-width:62ch}
 .fd-article__body>:first-child{margin-top:0}
@@ -407,6 +408,26 @@
 .fd-article__body code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:.88em;background:var(--fd-chip);border-radius:4px;padding:2px 6px;color:var(--fd-text)}
 .fd-article__body blockquote{margin:0 0 16px;padding:12px 18px;border-left:3px solid var(--fd-line-strong);background:var(--fd-callout);color:var(--fd-text-mid);font-style:italic}
 .fd-article__body blockquote:last-child{margin-bottom:0}
+
+/* table/th/td -- grounded the same way as the headings above: no prototype equivalent exists (see
+ * the comment on .fd-article__body), so borrowed from this stylesheet's own precedents rather than
+ * invented. Cell dividers reuse .fd-article__source's own hairline just below (border-top:1px
+ * solid var(--fd-line), same token, same section); th's bold text + thicker rule borrows
+ * .fd-col__name's "heading with a rule under it" treatment (Library section); the 14.5px cell size
+ * matches .fd-keypoints__item, this article's existing size for denser secondary text. One value
+ * has no in-file precedent and is flagged as such: display:block + overflow-x:auto, so a wide
+ * table scrolls inside itself instead of pushing the viewport -- nothing else in this file scrolls
+ * horizontally to borrow from; added because 17/67 shipped pages (25%) carry a table (measured
+ * 2026-08-16), so an unstyled one is not a hypothetical. */
+.fd-article__body table{display:block;overflow-x:auto;margin:0 0 18px;border-collapse:collapse;font-size:14.5px}
+.fd-article__body table:last-child{margin-bottom:0}
+.fd-article__body th,.fd-article__body td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--fd-line)}
+.fd-article__body th{font-weight:700;color:var(--fd-text);border-bottom:1.5px solid var(--fd-line)}
+.fd-article__body td{color:var(--fd-text-mid)}
+
+/* hr -- one line, the same hairline token as .fd-article__source's border-top just below. 5/67
+ * shipped pages carry one (measured 2026-08-16). */
+.fd-article__body hr{margin:24px 0;border:none;border-top:1px solid var(--fd-line)}
 
 .fd-article__source{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--fd-text-dim);padding:10px 0;border-top:1px solid var(--fd-line)}
 .fd-article__actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}

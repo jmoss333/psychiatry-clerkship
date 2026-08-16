@@ -349,11 +349,14 @@ independent states on the child. A current *and* done item carries both.
 ⚠ `.fd-railnav` is `display:none` below 1000px and `display:block` at/above it — do not set
 `display:flex` on it; `.fd-railnav__list` is the flex container.
 
-⚠ **`.fd-article__body` styles exactly eight tags plus `p`** (`h2 h3 ul ol li a code blockquote`,
-the set `tests/fd-tokens.test.mjs` pins, plus `p` for the same paragraph-margin defect). `marked()`
-can also emit `h4`–`h6`, `pre`, `img`, `table`, and `hr`; none of those have a rule yet. Real
-markdown content that reaches for any of them will render at inherited size inside this card —
-the same defect this task exists to fix, just not yet closed for those tags.
+⚠ **`.fd-article__body` styles twelve tags plus `p`** (`h2 h3 ul ol li a code blockquote table th
+td hr`, all pinned by `tests/fd-tokens.test.mjs`, plus `p` for the same paragraph-margin defect).
+`table`/`th`/`td`/`hr` were added in fix round 1 of the Task 2 review, on measured evidence: 17/67
+shipped markdown pages (25%) carry a table and 5/67 carry an `hr` (counted 2026-08-16). `marked()`
+can also emit `h4`–`h6`, `pre`, `img`, `strong`, and `em` — measured at **0/67** pages, so leaving
+those unstyled is correct YAGNI, not a gap. If that ever changes (a page starts using fenced code
+or an image inside body markdown), the same measure-first approach applies: check real usage
+before adding a rule.
 
 ---
 

@@ -115,3 +115,13 @@ test('article body descendants are styled, not left to the browser', () => {
       `.fd-article__body ${sel} needs a rule — marked() emits it`);
   }
 });
+
+// table (17/67 shipped pages, 25%) and hr (5/67) are measured, not hypothetical -- fix round 1
+// of the Task 2 review. th/td get their own assertions since a bare `table` rule alone would not
+// guarantee the cells inside it are styled.
+test('article body table and hr are styled, not left to the browser', () => {
+  for (const sel of ['table', 'th', 'td', 'hr']) {
+    assert.match(fd, new RegExp(`\\.fd-article__body\\s+${sel}\\b`),
+      `.fd-article__body ${sel} needs a rule — marked() emits it on ${sel === 'hr' ? '5' : '17'}/67 shipped pages`);
+  }
+});
