@@ -82,6 +82,16 @@ function fdItemsForWeek(index, n){
   return [];
 }
 
+/* Week-metadata lookup (title, theme, items) by week number. Shared by fd_today.js (the
+   student's current week) and fd_path.js (whichever week is being viewed) -- hoisted here,
+   the join layer both already depend on, rather than living in either renderer, so there is
+   one lookup instead of two copies that can drift (found in Task 5 review). */
+function fdFindWeek(index, n){
+  var weeks=(index&&index.weeks)||[];
+  for(var i=0;i<weeks.length;i++){ if(weeks[i].n===n) return weeks[i]; }
+  return null;
+}
+
 /* Candidates for the daily pick: reads that belong to no week, so the pick surfaces library
    breadth rather than re-suggesting this week's list. */
 function fdLibraryOnlyReads(index){

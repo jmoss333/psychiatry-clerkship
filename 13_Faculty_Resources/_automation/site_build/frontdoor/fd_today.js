@@ -51,12 +51,6 @@ function fdTodayProgress(items, doneMap){
   return { done: done, total: list.length, pct: list.length?Math.round(done*100/list.length):0, next: next };
 }
 
-function fdFindWeek(index, n){
-  var weeks=(index&&index.weeks)||[];
-  for(var i=0;i<weeks.length;i++){ if(weeks[i].n===n) return weeks[i]; }
-  return null;
-}
-
 /* Shared week-item row -- CLASS-INVENTORY's Shared Components section (.fd-row, .fd-check,
    .fd-chip, ...). The checkmark glyph is ALWAYS emitted; .fd-check's CSS toggles its colour
    (transparent vs filled) rather than the markup toggling the glyph itself, so a screenshot at
@@ -65,15 +59,22 @@ function fdFindWeek(index, n){
    belongs to the DOM-side click handler, not this pure render. idx staggers the fade-in the
    design specifies (35ms per row); frontdoor.css's .fd-row animation has no built-in stagger, so
    the delay is the one non-colour inline style this row carries, same precedent as fd_shell.js's
-   grouping spans. */
-function fdRow(it, idx, doneMap){
+   grouping spans.
+
+   compact is optional (falsy for every existing call site, so nothing else changes): fd_path.js's
+   detail card uses the same row with the card treatment stripped (CLASS-INVENTORY's
+   ".fd-row.is-compact"), and passes true rather than this file growing a second, drifting copy
+   of the row markup (found in Task 5 review -- fdRow and fd_path.js's old fdPathDetailRow were
+   identical but for this one class token). */
+function fdRow(it, idx, doneMap, compact){
   var on=!!(doneMap||{})[it.ref];
   var titleCls=on?'fd-row__title is-done':'fd-row__title';
   var checkCls=on?'fd-check is-done':'fd-check';
   var typeCls=(it.kind==='tool')?'fd-chip is-tool':'fd-chip';
   var typeLabel=(it.kind==='tool')?'tool':'read';
   var minLabel=(it.kind!=='tool'&&typeof it.minutes==='number')?(it.minutes+' min'):'';
-  return '<div class="fd-row" style="animation-delay:'+(idx*35)+'ms">'+
+  var rowCls=compact?'fd-row is-compact':'fd-row';
+  return '<div class="'+rowCls+'" style="animation-delay:'+(idx*35)+'ms">'+
     '<button type="button" class="'+checkCls+'" data-fd-toggle="'+fdEsc(it.ref)+'" title="Mark done">'+
       '✓</button>'+
     '<button type="button" class="fd-row__open" data-fd-open="'+fdEsc(it.ref)+'">'+

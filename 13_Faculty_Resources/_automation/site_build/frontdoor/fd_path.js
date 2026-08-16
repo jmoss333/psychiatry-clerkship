@@ -24,17 +24,15 @@
    Completion beats "current" when both would apply, matching the prototype's own
    allDone-first branch order: a finished current week gets is-done, not is-current.
 
+   Reuses rather than reimplements: fdEsc / fdItemsForWeek / fdFindWeek (fd_data.js, the join
+   layer both this file and fd_today.js depend on) and fdTodayProgress / fdRow (fd_today.js).
+   fd_today.js's fdRow takes an optional trailing `compact` flag for exactly this file's detail
+   rows (CLASS-INVENTORY's ".fd-row.is-compact") -- a straight duplicate of that function used
+   to live here and was hoisted out in Task 5 review to remove the drift risk of two copies of
+   an escaping-sensitive row template.
+
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. */
-
-/* Local week-metadata lookup (title/theme), distinct from fd_today.js's fdFindWeek so this
-   file stays self-contained rather than reaching into another snippet's internal helper that
-   is not part of this task's declared interface (fdEsc / fdItemsForWeek / fdTodayProgress). */
-function fdPathWeekMeta(index, n){
-  var weeks=(index&&index.weeks)||[];
-  for(var i=0;i<weeks.length;i++){ if(weeks[i].n===n) return weeks[i]; }
-  return null;
-}
 
 function fdPathDotCls(isDone, isNow){
   if(isDone) return 'fd-dot is-done';
@@ -68,31 +66,6 @@ function fdPathTimelineRow(index, w, state){
   '</button>';
 }
 
-/* Detail-card item row -- the compact variant of the Shared Components .fd-row (CLASS-
-   INVENTORY: ".fd-row.is-compact strips card bg/shadow/padding for the Path detail pane").
-   Same field set and same data-fd-toggle/data-fd-open attributes as fd_today.js's fdRow, kept
-   as a separate local function rather than a cross-file call: fd_today.js's fdRow has no
-   compact parameter, and this task's declared interface does not include it as a dependency. */
-function fdPathDetailRow(it, idx, doneMap){
-  var on=!!(doneMap||{})[it.ref];
-  var titleCls=on?'fd-row__title is-done':'fd-row__title';
-  var checkCls=on?'fd-check is-done':'fd-check';
-  var typeCls=(it.kind==='tool')?'fd-chip is-tool':'fd-chip';
-  var typeLabel=(it.kind==='tool')?'tool':'read';
-  var minLabel=(it.kind!=='tool'&&typeof it.minutes==='number')?(it.minutes+' min'):'';
-  return '<div class="fd-row is-compact" style="animation-delay:'+(idx*35)+'ms">'+
-    '<button type="button" class="'+checkCls+'" data-fd-toggle="'+fdEsc(it.ref)+'" title="Mark done">'+
-      '✓</button>'+
-    '<button type="button" class="fd-row__open" data-fd-open="'+fdEsc(it.ref)+'">'+
-      '<span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+
-      '<span class="fd-row__meta">'+
-        '<span class="'+typeCls+'">'+typeLabel+'</span>'+
-        '<span class="fd-row__min">'+fdEsc(minLabel)+'</span>'+
-      '</span>'+
-    '</button>'+
-  '</div>';
-}
-
 /* The detail card for whichever week state.viewWeek names. Falls back to the index's first
    week when viewWeek is not a number (an unset/uninitialised caller) so the card always has
    something to show -- Path is reachable with no rotation week set. */
@@ -101,7 +74,7 @@ function fdPathDetail(index, state){
   var weeks=idx.weeks||[];
   var fallbackN=weeks.length?weeks[0].n:1;
   var viewN=(typeof state.viewWeek==='number'&&!isNaN(state.viewWeek))?state.viewWeek:fallbackN;
-  var wk=fdPathWeekMeta(idx, viewN);
+  var wk=fdFindWeek(idx, viewN);
   var items=fdItemsForWeek(idx, viewN);
   var isCurrent=(typeof state.week==='number'&&!isNaN(state.week))&&state.week===viewN;
 
@@ -112,7 +85,7 @@ function fdPathDetail(index, state){
   out+='</div>';
   out+='<h2 class="fd-detail__h2">'+fdEsc(wk?wk.title:'')+'</h2>';
   out+='<div class="fd-detail__list">';
-  for(var i=0;i<items.length;i++){ out+=fdPathDetailRow(items[i], i, state.done); }
+  for(var i=0;i<items.length;i++){ out+=fdRow(items[i], i, state.done, true); }
   out+='</div>';
   if(!isCurrent){
     out+='<button type="button" class="fd-btn fd-btn--accent" data-fd-setweek="'+fdEsc(viewN)+'">'+

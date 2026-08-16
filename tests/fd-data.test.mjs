@@ -13,7 +13,7 @@ const src = readFileSync(new URL(`${BUILD}/frontdoor/fd_data.js`, import.meta.ur
 const make = new Function(`
   ${src}
   return { fdEsc: fdEsc, fdBuildIndex: fdBuildIndex, fdItemsForWeek: fdItemsForWeek,
-           fdLibraryOnlyReads: fdLibraryOnlyReads };
+           fdFindWeek: fdFindWeek, fdLibraryOnlyReads: fdLibraryOnlyReads };
 `);
 const F = make();
 
@@ -112,6 +112,24 @@ test('fdItemsForWeek returns that week only, and [] for an unknown week', () => 
   const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
   assert.equal(F.fdItemsForWeek(idx, 1).length, 1);
   assert.deepEqual(F.fdItemsForWeek(idx, 9), []);
+});
+
+// fdFindWeek: the week-metadata lookup shared by fd_today.js (the student's current week) and
+// fd_path.js (whichever week is being viewed) -- hoisted here in Task 5 review so there is one
+// lookup instead of two identical copies.
+test('fdFindWeek returns the matching week object, title and all', () => {
+  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
+  const w = F.fdFindWeek(idx, 1);
+  assert.equal(w.n, 1);
+  assert.equal(w.title, 'W1');
+  assert.equal(w.theme, 'T1');
+});
+
+test('fdFindWeek returns null for an unknown week, and for a missing/empty index', () => {
+  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.equal(F.fdFindWeek(idx, 9), null);
+  assert.equal(F.fdFindWeek(null, 1), null);
+  assert.equal(F.fdFindWeek({}, 1), null);
 });
 
 test('fdLibraryOnlyReads excludes week items and excludes tools', () => {
