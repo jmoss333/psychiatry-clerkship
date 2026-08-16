@@ -197,19 +197,20 @@ const refSlug = (e) => (typeof e === 'string' ? e : e.ref);
 const REAL_IDX = F.fdBuildIndex(forSite(REAL_CUR, 'ms3'), REAL_META, REAL_TOOLS, REAL_MAN);
 const RES_IDX = F.fdBuildIndex(forSite(REAL_CUR, 'resident'), REAL_META, REAL_TOOLS, REAL_MAN);
 
-// Two counts, not one. 81 is what the MS3 site renders; 90 is what the resident site renders, and
-// the nine-page gap IS the resident-only set that had no browse path at all before Task 6 (they
-// reached users only through the deleted sidebar's nav.json). Pinning both means losing either
-// site's placement fails here, and pinning the gap's membership means a resident page cannot be
-// quietly dropped back out by "fixing" a count.
+// Two counts, not one, and both are TOTALITY counts: 89 is every page MS3 ships, 97 is every page
+// resident ships, and curriculum.json's libraryExclude is empty, so these numbers are also the
+// claim that nothing is orphaned. The 8-page gap between them is the per-site set. Pinning both
+// means losing either site's placement fails here, and pinning each gap's membership means a page
+// cannot be quietly dropped back out by "fixing" a count.
 const RESIDENT_ONLY = [
   'adv_psychopharm.md', 'canon_200.md', 'cl_reference.md', 'rotation.md',
   'rp-agitation.html', 'rp-brief-psych.html', 'rp-canon-quiz.html',
   'supervision_teaching.md', 'systems_medlegal.md',
 ];
+const MS3_ONLY = ['orientation-video.html'];
 
-test('the count of rendered links equals 81 (ms3) and 90 (resident) against the real curriculum.json', () => {
-  for (const [site, idx, expected] of [['ms3', REAL_IDX, 81], ['resident', RES_IDX, 90]]) {
+test('the count of rendered links equals 89 (ms3) and 97 (resident) against the real curriculum.json', () => {
+  for (const [site, idx, expected] of [['ms3', REAL_IDX, 89], ['resident', RES_IDX, 97]]) {
     const placed = forSite(REAL_CUR, site).libraryColumns.reduce((n, c) => n + c.refs.length, 0);
     assert.equal(placed, expected, `curriculum.json is expected to place ${expected} pages on ${site}`);
     const links = F.fdLibrary(idx).match(/data-fd-open="/g) || [];
@@ -217,29 +218,46 @@ test('the count of rendered links equals 81 (ms3) and 90 (resident) against the 
   }
 });
 
-test('the resident Library is the MS3 Library plus exactly the nine resident-only pages', () => {
+test('the two Libraries differ by exactly the per-site pages, in both directions', () => {
   const slugs = (site) => new Set(forSite(REAL_CUR, site).libraryColumns
     .flatMap((c) => c.refs.map(refSlug)));
   const ms3 = slugs('ms3');
   const res = slugs('resident');
-  assert.deepEqual([...ms3].filter((s) => !res.has(s)), [],
-    'the resident site ships every shared page, so its Library cannot be missing one');
   assert.deepEqual([...res].filter((s) => !ms3.has(s)).sort(), RESIDENT_ONLY,
     'the resident-only pages must each be placed in a resident column — the sidebar that used '
-    + 'to reach them is gone, so an unplaced one is reachable only by search');
+    + 'to reach them is gone, so an unplaced one is reachable by nothing at all');
+  assert.deepEqual([...ms3].filter((s) => !res.has(s)).sort(), MS3_ONLY,
+    'orientation-video.html is the one page MS3 ships and resident does not (resident_section.py '
+    + 'strips it — its narration is clerkship-specific)');
 });
 
-test('every per-site ref carries its own title, so no resident row renders as a raw slug', () => {
+// The Library is the front door's ONLY browse surface, and fd_search walks index.byRef, which is
+// built from week items + column refs + kit refs. A page in none of those is not merely hard to
+// find, it is unreachable: no link, no search hit. So "every shipped page is placed" is the real
+// contract, and libraryExclude being empty is what asserts there are no exceptions.
+test('every page each site ships is placed — libraryExclude is empty and must stay meaningful', () => {
+  assert.deepEqual(REAL_CUR.libraryExclude, [],
+    'an entry here is a page reachable by nothing but a typed URL; if one is added, its reason '
+    + 'must name what actually reaches it');
+  for (const [site, idx, expected] of [['ms3', REAL_IDX, 89], ['resident', RES_IDX, 97]]) {
+    assert.equal(Object.keys(idx.byRef).length, expected,
+      `${site}: byRef must hold every shipped page — anything outside it cannot even be searched`);
+  }
+});
+
+test('every per-site ref carries its own title, so no per-site row renders as a raw slug', () => {
   // site_manifest.json registers only the shared pages, so curriculum.json is the ONLY title
   // source for these nine. Asserting on the rendered row (not on the JSON) is what catches
   // fd_data.js dropping the overlay.
-  const html = F.fdLibrary(RES_IDX);
   const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  for (const slug of RESIDENT_ONLY) {
-    const title = RES_IDX.byRef[slug].title;
-    assert.notEqual(title, slug, `${slug} fell back to its slug`);
-    assert.ok(html.includes(esc(title)), `${slug}'s title must render`);
+  for (const [idx, slugs] of [[RES_IDX, RESIDENT_ONLY], [REAL_IDX, MS3_ONLY]]) {
+    const html = F.fdLibrary(idx);
+    for (const slug of slugs) {
+      const title = idx.byRef[slug].title;
+      assert.notEqual(title, slug, `${slug} fell back to its slug`);
+      assert.ok(html.includes(esc(title)), `${slug}'s title must render`);
+    }
   }
 });
 
@@ -249,10 +267,10 @@ test('the real header count matches the real link count', () => {
   assert.match(html, new RegExp('<span class="fd-library__count">' + links.length + ' pages'));
 });
 
-test('the real five columns render in curriculum.json order with no duplicates and no empty column', () => {
+test('the real columns render in curriculum.json order with no duplicates and no empty column', () => {
   const html = F.fdLibrary(REAL_IDX);
   const names = forSite(REAL_CUR, 'ms3').libraryColumns.map((c) => c.name);
-  assert.equal(names.length, 5, 'expected five library columns');
+  assert.equal(names.length, 6, 'expected six library columns');
   let cursor = -1;
   for (const name of names) {
     const at = html.indexOf('<div class="fd-col__name">' + name.replace(/&/g, '&amp;') + '</div>');

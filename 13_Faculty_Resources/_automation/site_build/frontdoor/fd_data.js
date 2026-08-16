@@ -71,7 +71,15 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
      the per-site pages site_manifest.json does not register, so curriculum.json is their only
      title source and titleIndex would otherwise degrade them to the raw slug.
      Anything that is neither a string nor an object with a string ref is skipped rather than
-     thrown on -- one unguarded throw in this join blanks the whole surface. */
+     thrown on -- one unguarded throw in this join blanks the whole surface.
+
+     *** ORDER COUPLING, DO NOT REORDER: the title must land in titleIndex BEFORE ensure() runs
+     for that ref. *** ensure() memoises fdMakeItem()'s output, which reads titleIndex once, so a
+     ref already built by the weeks loop above would keep whatever title it was built with and
+     ignore the one written here. Today that is unreachable -- validate_curriculum.py requires a
+     week item to be a page EVERY site ships, and only the per-site pages carry a title here, so
+     no titled ref can appear in a week. If that rule is ever relaxed, this loop stops being
+     enough on its own: build the title map in a first pass over all columns, then ensure(). */
   var columns=[], cc=cur.libraryColumns||[];
   for(var c=0;c<cc.length;c++){
     var citems=[], refs=cc[c].refs||[];
@@ -79,7 +87,7 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
       var entry=refs[r], eref=entry, etitle=null;
       if(entry&&typeof entry==='object'){ eref=entry.ref; etitle=entry.title||null; }
       if(typeof eref!=='string'||!eref) continue;
-      if(etitle&&!titleIndex[eref]) titleIndex[eref]=etitle;
+      if(etitle&&!titleIndex[eref]) titleIndex[eref]=etitle;  /* must precede ensure() -- see above */
       citems.push(ensure(eref, null));
     }
     columns.push({ name: cc[c].name, accent: cc[c].accent, items: citems });

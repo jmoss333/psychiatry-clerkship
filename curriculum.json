@@ -1,5 +1,5 @@
 {
-  "_note": "Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. A library ref is a bare slug when both sites ship the page, or an object carrying \"sites\" when only one does \u2014 the build filters columns per site, so a one-site page is placed rather than globally excluded. Such an object also carries its own \"title\", because site_manifest.json registers only the shared pages and has no row to supply one. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.",
+  "_note": "Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. A library ref is a bare slug when both sites ship the page, or an object carrying \"sites\" when only one does \u2014 the build filters columns per site, so a one-site page is placed rather than globally excluded. Such an object also carries its own \"title\", because site_manifest.json registers only the shared pages and has no row to supply one. \"libraryExclude\" is empty on purpose: the front door's Library is the only browse surface, so every shipped page is placed in a column. An entry here means a page is deliberately unreachable by browsing, and its \"reason\" must state what DOES reach it \u2014 a reason that stops being true is a page nobody can find. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.",
   "weeks": [
     {
       "n": 1,
@@ -98,7 +98,9 @@
         "question-bank-practice.html",
         { "ref": "rp-agitation.html", "sites": ["resident"], "title": "Agitation Ladder — PRN Trainer" },
         { "ref": "rp-brief-psych.html", "sites": ["resident"], "title": "Five Good Minutes — Brief Psych Coach" },
-        { "ref": "rp-canon-quiz.html", "sites": ["resident"], "title": "Canon Quiz — 200-Paper Spine" }
+        { "ref": "rp-canon-quiz.html", "sites": ["resident"], "title": "Canon Quiz — 200-Paper Spine" },
+        { "ref": "orientation-video.html", "sites": ["ms3"], "title": "Orientation Video" },
+        "feedback.html"
       ]
     },
     {
@@ -150,18 +152,16 @@
         { "ref": "adv_psychopharm.md", "sites": ["resident"], "title": "Advanced Psychopharmacology" },
         { "ref": "canon_200.md", "sites": ["resident"], "title": "The Psychiatry Canon (200)" }
       ]
+    },
+    {
+      "name": "Week guides",
+      "accent": "topic",
+      "refs": [
+        "week1.md", "week2.md", "week3.md", "week4.md", "week5.md", "week6.md"
+      ]
     }
   ],
-  "libraryExclude": [
-    { "ref": "feedback.html", "reason": "a feedback form, not library content — reachable from the header" },
-    { "ref": "week1.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
-    { "ref": "week2.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
-    { "ref": "week3.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
-    { "ref": "week4.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
-    { "ref": "week5.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
-    { "ref": "week6.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
-    { "ref": "orientation-video.html", "sites": ["ms3"], "reason": "orientation media, surfaced from the Start-here flow rather than the Library" }
-  ],
+  "libraryExclude": [],
   "safetyKit": [
     { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan" },
     { "ref": "agitation.md", "sub": "Verbal first · PO before IM" },

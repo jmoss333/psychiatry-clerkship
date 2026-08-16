@@ -189,9 +189,10 @@ test('the real curriculum joins without throwing and routes every week item', ()
 });
 
 test('every real library column item resolves, on both sites', () => {
-  // 81 on MS3, 90 on resident. The nine-page gap is the resident-only set, which before Task 6
-  // was reachable only through the deleted sidebar's nav.json.
-  for (const [site, expected] of [['ms3', 81], ['resident', 90]]) {
+  // 89 on MS3, 97 on resident — every page each site ships. curriculum.json's libraryExclude is
+  // empty, so these are totality counts, not just placement counts: a page outside a column is
+  // outside index.byRef, which means no Library link AND no search hit.
+  for (const [site, expected] of [['ms3', 89], ['resident', 97]]) {
     const idx = F.fdBuildIndex(forSite(CUR, site), META, TOOLS, MAN);
     let placed = 0;
     for (const c of idx.columns) placed += c.items.length;

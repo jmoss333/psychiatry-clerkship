@@ -131,8 +131,8 @@ test('both builders emit governance inventories matching their final tools', () 
     };
     const ms3Refs = injectedRefs(ms3);
     const residentRefs = injectedRefs(resident);
-    assert.equal(ms3Refs.length, 81, 'ms3 Library places 81 pages');
-    assert.equal(residentRefs.length, 90, 'resident Library places 90 pages');
+    assert.equal(ms3Refs.length, 89, 'ms3 Library places 89 pages — every page that site ships');
+    assert.equal(residentRefs.length, 97, 'resident Library places 97 pages — every page it ships');
     assert.deepEqual(
       residentRefs.filter((r) => !ms3Refs.includes(r)).sort(),
       ['adv_psychopharm.md', 'canon_200.md', 'cl_reference.md', 'rotation.md',
@@ -140,7 +140,8 @@ test('both builders emit governance inventories matching their final tools', () 
        'supervision_teaching.md', 'systems_medlegal.md'],
       'the nine resident-only pages must be placed on resident and nowhere on ms3',
     );
-    assert.deepEqual(ms3Refs.filter((r) => !residentRefs.includes(r)), []);
+    assert.deepEqual(ms3Refs.filter((r) => !residentRefs.includes(r)), ['orientation-video.html'],
+      'orientation-video.html is the one page ms3 ships and resident strips');
     // Every ref the resident build ships must exist as a file in that build — the dead-link
     // check the old global libraryExclude entries were standing in for.
     for (const ref of residentRefs) {

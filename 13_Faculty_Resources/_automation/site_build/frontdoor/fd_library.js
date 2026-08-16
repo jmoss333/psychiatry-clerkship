@@ -1,7 +1,13 @@
-/* Library -- five columns, one link per shipped page. Once the redesign ships, the sidebar this
-   repo has always browsed by is gone: the Library is what is left, so a page missing from it is a
-   page a student cannot reach except by search. See CLASS-INVENTORY.md section 5 and the
+/* Library -- one link per shipped page, grouped into curriculum.json's columns (five in the
+   prototype; a sixth, "Week guides", was added in fix round 1 of Plan 3 Task 6 to give the six
+   week overview pages the route they lost with the sidebar). Once the redesign ships, the sidebar
+   this repo has always browsed by is gone: the Library is what is left, so a page missing from it
+   is a page a student cannot reach AT ALL -- not even by search, because the front-door search
+   walks index.byRef and a page in no column and no week never enters it. curriculum.json's
+   libraryExclude is empty for exactly that reason. See CLASS-INVENTORY.md section 5 and the
    prototype's Library section (Front-Door-Hi-Fi-v2.dc.html, search "Library", line 332).
+   .fd-library__grid is repeat(auto-fill,minmax(196px,1fr)), so the column count is not pinned by
+   the CSS -- adding a column reflows rather than overflowing.
 
    Injected via /*__FD_LIBRARY__*\/ -- registered in SNIPPET_MARKERS (common.py) and wired
    into the shell by Plan 3 Task 1. ES5 only: var/function,
@@ -21,10 +27,11 @@
    gated on the ITEM's type, with the column's accent only a fallback shade CLASS-INVENTORY never
    implemented (there is no .is-safety class in frontdoor.css). The sibling renderer fd_today.js
    keys the analogous .fd-chip.is-tool off it.kind for the same reason, and fd_data.js already
-   computes that field per item. In this repo's data item.kind and column accent happen to
-   coincide 100% today (the "Interactive tools" column is all .html tool refs; every other column
-   is all .md reads), but keying on kind is what stays correct the first time a .md page lands in
-   the Interactive tools column or a tool lands elsewhere.
+   computes that field per item. In this repo's data item.kind and column accent still
+   coincide 100% (the "Interactive tools" column is all .html tool refs -- including feedback.html
+   and orientation-video.html, placed there in fix round 1 precisely to keep that true; every other
+   column is all .md reads), but keying on kind is what stays correct the first time a .md page
+   lands in the Interactive tools column or a tool lands elsewhere.
 
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. Page slugs (e.g. shelf.md) are
