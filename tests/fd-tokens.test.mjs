@@ -109,19 +109,75 @@ test('the article body carries the spec typography, not browser defaults', () =>
   assert.match(body[1], /max-width:\s*62ch/, 'spec §5: 62ch measure');
 });
 
+// Comments stripped before rule-parsing, same reasoning as strip()/block() above: a comment
+// mentioning a selector by name must not be mistaken for the rule itself.
+const fdStripped = strip(fd);
+
+// Concatenated declaration bodies of every rule whose comma-separated selector list contains
+// `selector` as an EXACT entry -- not a prefix match. Fix round 2 of the Task 2 review found that
+// a prefix regex (`\.fd-article__body\s+table\b`) matches ANY rule sharing that prefix, including
+// an unrelated sibling rule added in the SAME commit (`.fd-article__body table:last-child`):
+// deleting the rule that actually carries the styling left the old assertion green, because the
+// decoy sibling still matched the prefix. Concatenating every exact-match rule's body (rather than
+// returning just the first) also closes the th/td case, where the real declarations are split
+// across a shared rule (`.fd-article__body th,.fd-article__body td{...}`) and a tag-specific one
+// -- either can be deleted independently of the other, so both must contribute to what gets
+// asserted on. Verified against the live file: table/th/td/li/blockquote all currently carry a
+// sibling or split-declaration rule that a naive prefix match cannot tell apart from the real one.
+function fdRuleBody(selector) {
+  const bodies = [];
+  const ruleRe = /([^{}]+)\{([^{}]*)\}/g;
+  let m;
+  while ((m = ruleRe.exec(fdStripped))) {
+    const selectors = m[1].split(',').map((s) => s.trim());
+    if (selectors.includes(selector)) bodies.push(m[2]);
+  }
+  return bodies.join(' ');
+}
+
 test('article body descendants are styled, not left to the browser', () => {
-  for (const sel of ['h2', 'h3', 'ul', 'ol', 'li', 'a', 'code', 'blockquote']) {
-    assert.match(fd, new RegExp(`\\.fd-article__body\\s+${sel}\\b`),
+  for (const sel of ['h2', 'h3', 'ul', 'ol', 'a', 'code']) {
+    assert.notEqual(fdRuleBody(`.fd-article__body ${sel}`), '',
       `.fd-article__body ${sel} needs a rule — marked() emits it`);
   }
+  // li and blockquote each have a `:last-child` sibling rule in this same section. Exact-selector
+  // matching (see fdRuleBody above) is what stops that sibling from standing in for the real rule;
+  // asserting on the declared property below is what stops the real rule's actual styling from
+  // being silently gutted while its selector — and so the exact match — still survives.
+  assert.match(fdRuleBody('.fd-article__body li'), /margin:/,
+    '.fd-article__body li needs list-item spacing');
+  assert.match(fdRuleBody('.fd-article__body blockquote'), /border-left:/,
+    '.fd-article__body blockquote needs its callout treatment');
 });
 
-// table (17/67 shipped pages, 25%) and hr (5/67) are measured, not hypothetical -- fix round 1
-// of the Task 2 review. th/td get their own assertions since a bare `table` rule alone would not
-// guarantee the cells inside it are styled.
-test('article body table and hr are styled, not left to the browser', () => {
-  for (const sel of ['table', 'th', 'td', 'hr']) {
-    assert.match(fd, new RegExp(`\\.fd-article__body\\s+${sel}\\b`),
-      `.fd-article__body ${sel} needs a rule — marked() emits it on ${sel === 'hr' ? '5' : '17'}/67 shipped pages`);
-  }
+// Fix round 2 of the Task 2 review. The round-1 version of this test matched a selector PREFIX
+// against the raw file text (`\.fd-article__body\s+table\b`), so it passed as long as ANY rule
+// started with that text — including the decoy `table:last-child` sibling added in the SAME
+// commit as the real rule, and independently of th/td's declarations being split across two
+// rules. Deleting the one line this fix round exists for (`display:block;overflow-x:auto`) left
+// the old test green. See task-2-report.md for the delete/fail/restore/pass transcript proving
+// the assertions below actually discriminate. Colours/tokens are unaffected — CSS unchanged.
+test('article body table scrolls instead of overflowing the viewport at any breakpoint', () => {
+  const table = fdRuleBody('.fd-article__body table');
+  assert.notEqual(table, '', '.fd-article__body table needs its own rule (not just table:last-child)');
+  assert.match(table, /display:\s*block/,
+    'a wide table must not push the 62ch-capped article past the viewport at any breakpoint');
+  assert.match(table, /overflow-x:\s*auto/,
+    'the overflow-safety measure this fix round exists for — 17/67 shipped pages carry a table');
+});
+
+test('article body table cells carry padding and a border, not left to the browser', () => {
+  const th = fdRuleBody('.fd-article__body th');
+  assert.match(th, /padding:/, '.fd-article__body th needs cell padding');
+  assert.match(th, /border-bottom:/, '.fd-article__body th needs a cell border');
+  assert.match(th, /font-weight:/, '.fd-article__body th needs header emphasis');
+  const td = fdRuleBody('.fd-article__body td');
+  assert.match(td, /padding:/, '.fd-article__body td needs cell padding');
+  assert.match(td, /border-bottom:/, '.fd-article__body td needs a cell border');
+  assert.match(td, /color:/, '.fd-article__body td needs its own text colour');
+});
+
+test('article body hr is styled, not a bare rule', () => {
+  assert.match(fdRuleBody('.fd-article__body hr'), /border-top:/,
+    '.fd-article__body hr needs the hairline rule treatment — 5/67 shipped pages carry one');
 });
