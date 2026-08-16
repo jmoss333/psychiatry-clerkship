@@ -3,11 +3,12 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(172 `fd-*` classes, 13 `is-*` state classes). Every class below has a rule in that file unless
-marked *(no rule)*.
+(174 `fd-*` classes, 13 `is-*` state classes — recounted 2026-08-16 against the file itself after
+Task 2 added `.fd-article__body`; see `tests/fd-tokens.test.mjs` for the enforcement this file
+doesn't). Every class below has a rule in that file unless marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-172. The remaining 133 are `__element` and `--modifier` names introduced while porting the
+174. The remaining 135 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -86,7 +87,7 @@ instead — see their surfaces.)
 | `.fd-row__title.is-done` | same element | Dim + strike-through. |
 | `.fd-row__title.is-done.is-just-done` | same element | **All three** classes needed to animate the strike. |
 | `.fd-row__meta` | `<span>` | Right-aligned group holding `.fd-chip` + `.fd-row__min`. |
-| `.fd-row__min` | `<span>` | "12 min". |
+| `.fd-row__min` | `<span>` | "12 min". Also borrowed, unmodified, by the sheet's item-preview meta line and "Source:" label — see §8. |
 
 ⚠ `.fd-step .fd-check` — a `.fd-check` **inside a `.fd-step`** shrinks 22px → 20px. That is the only
 size variant, and it is keyed on the ancestor, not a modifier class.
@@ -296,6 +297,7 @@ it; just don't expect it to paint anything.
         .fd-eyebrow / .fd-article__dot / .fd-article__meta / .fd-attested
       .fd-article__h1
       .fd-article__lead
+      .fd-article__body     (marked() output — omitted entirely, no empty wrapper, when there is none)
       .fd-keypoints
         .fd-keypoints__label
         .fd-keypoints__item ×N
@@ -327,6 +329,7 @@ it; just don't expect it to paint anything.
 | Class | Notes |
 |---|---|
 | `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
+| `.fd-article__body` | Holds `marked()` output. Own type scale (16.5px/1.72/62ch — same measure as `.fd-article__lead`, which the prototype's fixture data never exercised beyond a single paragraph) plus descendant rules for the tags real markdown emits: `h2 h3 ul ol li a code blockquote`, plus `p`. Not in the prototype (see handoff README, "What is NOT normative") — Task 2 derived the values from this stylesheet's own type scale rather than transcribing them; see the CSS comment immediately above the rule for the per-tag precedent each borrows. |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
 | `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch) — `.fd-actionbar` at the bottom of this tree is the mobile equivalent; the breakpoint hides this one and shows that one, never both. |
 | `.fd-tip` (Reader instance) | The `←`/`→`/`1`/`2`/`3` keyboard hint. Hidden below 1000px via the descendant selector `.fd-article .fd-tip` — **do not** hide the bare `.fd-tip` class, which would also blank the wizard's `.fd-tip--setup` line (§2). |
@@ -345,6 +348,12 @@ independent states on the child. A current *and* done item carries both.
 
 ⚠ `.fd-railnav` is `display:none` below 1000px and `display:block` at/above it — do not set
 `display:flex` on it; `.fd-railnav__list` is the flex container.
+
+⚠ **`.fd-article__body` styles exactly eight tags plus `p`** (`h2 h3 ul ol li a code blockquote`,
+the set `tests/fd-tokens.test.mjs` pins, plus `p` for the same paragraph-margin defect). `marked()`
+can also emit `h4`–`h6`, `pre`, `img`, `table`, and `hr`; none of those have a rule yet. Real
+markdown content that reaches for any of them will render at inherited size inside this card —
+the same defect this task exists to fix, just not yet closed for those tags.
 
 ---
 
@@ -399,9 +408,9 @@ independent states on the child. A current *and* done item carries both.
     .fd-sheet__attribution
     .fd-btn.fd-btn--ghost           ("Open the full page →")
     ── item-preview variant ──
-    .fd-chip / .fd-attested
+    .fd-chip / .fd-row__min (meta line — borrowed, see below) / .fd-attested
     .fd-sheet__lead
-    .fd-src
+    .fd-row__min (the "Source:" label — borrowed, see below) / .fd-src
     .fd-btn.fd-btn--primary
     .fd-sheet__note
 
@@ -417,6 +426,14 @@ independent states on the child. A current *and* done item carries both.
 | `.fd-sheet__body` | The scroll container (`flex:1; overflow-y:auto`). |
 | `.fd-doccallout` | Amber "Document:" callout. Border is derived via `color-mix` from the two olive tokens. |
 | `.fd-sheet__attribution` | "✓ From: … · faculty-attested". |
+
+⚠ **The item-preview variant borrows `.fd-row__min` for two labels this file left undocumented** —
+a gap Plan 2 left open because its CSS was frozen (`fd_sheet.js`'s header comment flagged it for
+this task to close): the meta line ("4 min · Week 1", next to the type chip) and the "Source:"
+label (before `.fd-src`). Neither gets a dedicated class; both reuse the Shared-Components
+`.fd-row__min` treatment (12px dim text, "12 min" elsewhere) as-is. The one difference is inline,
+not a class: `fd_sheet.js` sets `font-weight:600` directly on the Source instance only, because the
+freeze that produced this markup barred new classes and new colour, not weight.
 
 ⚠ `.fd-nudge` inverts by construction: it paints `--fd-text` as its background and `--fd-bg` as its
 text, so it stays a high-contrast slab in both themes. Do not override its colours.

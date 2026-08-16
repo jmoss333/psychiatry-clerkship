@@ -100,3 +100,18 @@ test('animations are disabled under prefers-reduced-motion', () => {
   assert.match(fd, /@media\s*\(prefers-reduced-motion:\s*reduce\)/,
     'the source prototype ships no reduced-motion handling; this repo requires it');
 });
+
+test('the article body carries the spec typography, not browser defaults', () => {
+  const body = fd.match(/\.fd-article__body\s*\{([^}]*)\}/);
+  assert.ok(body, '.fd-article__body must have a rule — marked() output lands there');
+  assert.match(body[1], /font-size:\s*16\.5px/, 'spec §5: 16.5px');
+  assert.match(body[1], /line-height:\s*1\.72/, 'spec §5: 1.72');
+  assert.match(body[1], /max-width:\s*62ch/, 'spec §5: 62ch measure');
+});
+
+test('article body descendants are styled, not left to the browser', () => {
+  for (const sel of ['h2', 'h3', 'ul', 'ol', 'li', 'a', 'code', 'blockquote']) {
+    assert.match(fd, new RegExp(`\\.fd-article__body\\s+${sel}\\b`),
+      `.fd-article__body ${sel} needs a rule — marked() emits it`);
+  }
+});

@@ -373,6 +373,41 @@
 .fd-article__meta{font-size:11.5px;font-weight:600;color:var(--fd-text-dim)}
 .fd-article__h1{margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:29px;line-height:1.22;letter-spacing:.2px;color:var(--fd-text)}
 .fd-article__lead{margin:0 0 18px;font-size:16.5px;line-height:1.72;color:var(--fd-text);max-width:62ch}
+
+/* .fd-article__body -- holds marked() output (real long-form page content), rendered right after
+ * .fd-article__lead. The prototype has no equivalent to transcribe: its only body copy is the
+ * one-paragraph .fd-article__lead fixture (handoff README, "What is NOT normative"), so unlike
+ * every other rule in this file, the values below are not lifted from a prototype inline style --
+ * there is nothing to lift. They are derived from this stylesheet's own established type scale so
+ * long-form prose reads as part of the same system, not a bolt-on:
+ *   - font-size/line-height/max-width continue .fd-article__lead's own measure (spec §5).
+ *   - h2 borrows .fd-detail__h2's 21px Georgia; h3 borrows .fd-sheet__title's 17.5px Georgia --
+ *     both are real in-file precedents for a secondary heading size, not new figures.
+ *   - code's monospace stack is .fd-src's -- the prototype's one monospace declaration, and it
+ *     lives in this very article section (the Source chip just below).
+ *   - blockquote reuses .fd-keypoints' "set this text apart" treatment (border-left + callout
+ *     background) with a neutral line-strong border instead of teal, so a quote doesn't read as
+ *     the Key Points callout.
+ *   - a's colour matches the global `.fd-shell a` rule; hover comes from that rule too (same
+ *     specificity, already scoped to every link under .fd-shell), so no hover is redeclared here.
+ * Flag for the reviewer: marked() can also emit h4-h6/pre/img/table/hr/strong/em. Only the eight
+ * tags tests/fd-tokens.test.mjs pins are covered, plus `p` (load-bearing for the same defect --
+ * an unstyled <p> keeps the browser's default paragraph margin instead of this system's rhythm).
+ */
+.fd-article__body{margin:0 0 18px;font-size:16.5px;line-height:1.72;color:var(--fd-text);max-width:62ch}
+.fd-article__body>:first-child{margin-top:0}
+.fd-article__body p{margin:0 0 16px}
+.fd-article__body p:last-child{margin-bottom:0}
+.fd-article__body h2{margin:32px 0 12px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:21px;line-height:1.3;color:var(--fd-text)}
+.fd-article__body h3{margin:24px 0 10px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:17.5px;line-height:1.35;color:var(--fd-text)}
+.fd-article__body ul,.fd-article__body ol{margin:0 0 16px;padding-left:24px}
+.fd-article__body li{margin:0 0 6px}
+.fd-article__body li:last-child{margin-bottom:0}
+.fd-article__body a{color:var(--fd-teal-deep)}
+.fd-article__body code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:.88em;background:var(--fd-chip);border-radius:4px;padding:2px 6px;color:var(--fd-text)}
+.fd-article__body blockquote{margin:0 0 16px;padding:12px 18px;border-left:3px solid var(--fd-line-strong);background:var(--fd-callout);color:var(--fd-text-mid);font-style:italic}
+.fd-article__body blockquote:last-child{margin-bottom:0}
+
 .fd-article__source{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--fd-text-dim);padding:10px 0;border-top:1px solid var(--fd-line)}
 .fd-article__actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
 
