@@ -104,6 +104,11 @@
 }
 .fd-weekgrid__browse:hover{border-color:var(--fd-line-hover);background:var(--fd-callout)}
 
+/* Step 1's closing "Tap once..." line (prototype line 55) sits further from the role list and
+ * a touch larger than the Reader's keyboard hint that .fd-tip alone is authored for (prototype
+ * line 166) -- this modifier corrects both without duplicating the shared color/token. */
+.fd-tip--setup{margin:22px 0 0;font-size:12.5px}
+
 /* ═══ Shell: header and tabs ═════════════════════════════════════════════════ */
 
 .fd-header{

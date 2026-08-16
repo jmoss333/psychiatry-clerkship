@@ -53,6 +53,31 @@ test('arrows move between items only while reading', () => {
   assert.equal(F.fdKeyAction('ArrowLeft', o()), null, 'arrows do nothing outside the reader');
 });
 
+// This is deliberate, not an oversight: '/' and cmd-k are checked BEFORE the overlay guard that
+// blocks arrows and 1/2/3, so they keep working even when a surface is already layered above the
+// page. Global search has to stay reachable from anywhere -- that's the point of a ⌘K shortcut --
+// and escape (tested above) is what unwinds search before the sheet. Pinned here so nobody
+// "fixes" the ordering into a bug later.
+test('search stays reachable over an open sheet', () => {
+  assert.deepEqual(F.fdKeyAction('/', o({ sheetOpen: true })), { type: 'search' });
+  assert.deepEqual(F.fdKeyAction('k', o({ sheetOpen: true, meta: true })), { type: 'search' });
+});
+
+test('search stays reachable when search is already open', () => {
+  assert.deepEqual(F.fdKeyAction('/', o({ searchOpen: true })), { type: 'search' });
+  assert.deepEqual(F.fdKeyAction('k', o({ searchOpen: true, meta: true })), { type: 'search' });
+});
+
+test('arrows and number keys stay suppressed by an open overlay even while reading', () => {
+  const overlays = [{ searchOpen: true }, { sheetOpen: true }];
+  for (const overlay of overlays) {
+    const opts = o(Object.assign({ reading: true }, overlay));
+    for (const k of ['ArrowLeft', 'ArrowRight', '1', '2', '3']) {
+      assert.equal(F.fdKeyAction(k, opts), null, `${k} fired over an open overlay while reading`);
+    }
+  }
+});
+
 test('no shortcut fires during first-run setup except nothing at all', () => {
   for (const k of ['/', '1', 'ArrowLeft']) {
     assert.equal(F.fdKeyAction(k, o({ screen: 'setup' })), null, `${k} fired during setup`);

@@ -66,7 +66,9 @@ function fdHeader(state){
    adjacent-sibling spacing). The name+desc pair needs a grouping element so it stacks inside
    the row's flex layout instead of sitting beside the hint as a third flex item -- no class in
    frontdoor.css covers that grouping span, so it carries the same bare structural (not colour)
-   inline style the prototype itself uses. */
+   inline style the prototype itself uses. The closing tip line reuses .fd-tip's colour/token but
+   needs its own margin/font-size (prototype line 55 vs. the Reader hint .fd-tip alone is authored
+   for at line 166), hence the `.fd-tip--setup` modifier rather than a bare `.fd-tip`. */
 function fdSetupRole(roles){
   var list=roles||[];
   var out='<div class="fd-setup"><div class="fd-setup__inner">';
@@ -86,7 +88,7 @@ function fdSetupRole(roles){
       '<span class="fd-role__hint">'+fdEsc(r.hint)+'</span>'+
       '</button>';
   }
-  out+='<p class="fd-tip">Tap once — the next question is the last one.</p>';
+  out+='<p class="fd-tip fd-tip--setup">Tap once — the next question is the last one.</p>';
   out+='</div></div>';
   return out;
 }
@@ -127,6 +129,13 @@ function fdKeyAction(key, opts){
   if(o.typing) return null;
   if(o.screen!=='app') return null;
   if(key==='Escape'){ return (o.searchOpen||o.sheetOpen)?{type:'close'}:null; }
+  /* Deliberately checked BEFORE the overlay guard below, not above it by accident: global search
+     must stay reachable from anywhere -- including over an already-open search panel or the
+     safety sheet -- which is the whole point of a ⌘K shortcut. This branch only ever OPENS
+     search, so re-firing it while a surface is already open is a harmless no-op the caller can
+     treat as "focus search"; escape (above) is what unwinds the layers, closing search before
+     the sheet. Do not move this below the overlay guard -- see fd-shell.test.mjs's
+     "search stays reachable over an open sheet" / "...when search is already open". */
   if(key==='/'||(key==='k'&&o.meta)) return {type:'search'};
   if(o.searchOpen||o.sheetOpen) return null;
   if(key==='ArrowLeft'||key==='ArrowRight'){

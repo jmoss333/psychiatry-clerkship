@@ -131,6 +131,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
     .fd-h1 / .fd-sub
     .fd-role   <button> ×N         (step 1)
       .fd-role__name / .fd-role__desc / .fd-role__hint
+    .fd-tip.fd-tip--setup <p>      (step 1 only — closing "Tap once…" line)
     .fd-weekgrid                   (step 2)
       .fd-weektile <button> ×6
         .fd-weektile__n / .fd-weektile__title
@@ -142,6 +143,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-setup__inner--week` | Modifier: widens 440px → 480px. **Apply alongside `.fd-setup__inner`**, not instead of it. |
 | `.fd-weektile.is-sel` | Terracotta border on the chosen week. |
 | `.fd-weekgrid__browse` | "Not on rotation — just browse". Dashed full-width button, **inside** `.fd-weekgrid`'s parent, after the grid. |
+| `.fd-tip--setup` | Modifier: `margin:22px 0 0; font-size:12.5px` — step 1's closing tip sits further off and a touch larger than the shared `.fd-tip` (11.5px, authored for the Reader's keyboard hint). **Apply alongside `.fd-tip`** (`class="fd-tip fd-tip--setup"`), not instead of it — colour/token stay on the base class. |
 
 ⚠ `.fd-setup__brand .fd-logo` — the logo inside a setup brand block grows 30px → 38px. Keyed on the
 ancestor; there is no modifier class for it.
