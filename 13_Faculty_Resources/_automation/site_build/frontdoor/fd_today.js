@@ -1,12 +1,26 @@
-/* Today -- greeting, Continue card + ring, this-week list, daily pick, and the desktop
-   quick-tools/safety rails (mobile: quick tools as pill chips, rails dropped).
+/* Today -- greeting, Continue card + ring, this-week list, daily pick, and the quick-tools /
+   safety-kit rail.
+
+   Both the desktop rail (.fd-rail) and the mobile pill-chip row (.fd-quicktools--pills) for
+   quick tools are ALWAYS emitted, unconditionally, from the same quickTools list -- this file
+   does not branch on a device/viewport flag. frontdoor.css already ships the breakpoint that
+   picks between them (display:none / display:flex swap at 1000px: frontdoor.css:270, 281-283,
+   548-552), so letting CSS decide instead of JS means a single render is correct at any
+   viewport and a live resize or tablet rotation needs no re-render to stay correct. An earlier
+   version of this file branched on state.desk; that was wrong for exactly this reason (caught in
+   review) and state.desk has been removed from the state shape below since nothing here reads it
+   anymore -- a parameter a renderer ignores is a trap for whoever passes it.
 
    Pure: no DOM, no browser storage, no reading the system clock directly. "Now" arrives as
    state.nowMs so the greeting and the exam countdown are testable without depending on when the
-   test happens to run -- see tests/fd-today.test.mjs. Injected via /*__FD_TODAY__*\/ once a
-   later plan registers the marker (see SNIPPET_MARKERS in common.py) -- this task does not
-   register it. ES5 only: var/function, no const/let/arrow functions/template literals --
-   matches the other frontdoor/ modules.
+   test happens to run -- see tests/fd-today.test.mjs. state.role and state.ringPct both arrive
+   pre-resolved by the caller: role is already the short display label the greeting interpolates
+   (this file never touches curriculum.json's role list to derive one from a full name, e.g.
+   "Core rotation"), and ringPct is already the current animated percentage (this file never
+   computes it from progress -- that is fdRingStep in fd_state.js). Injected via
+   /*__FD_TODAY__*\/ once a later plan registers the marker (see SNIPPET_MARKERS in common.py) --
+   this task does not register it. ES5 only: var/function, no const/let/arrow functions/template
+   literals -- matches the other frontdoor/ modules.
 
    Scope note for whoever reads this next to the design doc: the due row (SRS due counts) and
    capture triage (the ward-capture note list) are NOT rendered here even though the design
@@ -220,24 +234,22 @@ function fdToday(index, state){
 
   var quickTools=fdQuickTools(idx, wItems);
 
-  if(!st.desk){
-    out+='<div class="fd-quicktools--pills">';
-    for(var q=0;q<quickTools.length;q++){ out+=fdQuickToolBtn(quickTools[q]); }
-    out+='</div>';
-  }
+  /* Mobile pill row and desktop rail are both always emitted -- see the header comment. Same
+     quickTools list feeds both, per the design's "both come from the same data". */
+  out+='<div class="fd-quicktools--pills">';
+  for(var q=0;q<quickTools.length;q++){ out+=fdQuickToolBtn(quickTools[q]); }
+  out+='</div>';
 
   out+='</div>'; /* .fd-today__main */
 
-  if(st.desk){
-    out+='<aside class="fd-rail">';
-    out+='<div><h2 class="fd-sectionhead">Quick tools</h2>';
-    for(var q2=0;q2<quickTools.length;q2++){ out+=fdQuickToolBtn(quickTools[q2]); }
-    out+='</div>';
-    out+='<div><h2 class="fd-sectionhead">Safety kit</h2>';
-    for(var k=0;k<idx.kit.length;k++){ out+=fdKitCard(idx.kit[k]); }
-    out+='</div>';
-    out+='</aside>';
-  }
+  out+='<aside class="fd-rail">';
+  out+='<div><h2 class="fd-sectionhead">Quick tools</h2>';
+  for(var q2=0;q2<quickTools.length;q2++){ out+=fdQuickToolBtn(quickTools[q2]); }
+  out+='</div>';
+  out+='<div><h2 class="fd-sectionhead">Safety kit</h2>';
+  for(var k=0;k<idx.kit.length;k++){ out+=fdKitCard(idx.kit[k]); }
+  out+='</div>';
+  out+='</aside>';
 
   out+='</div></section>'; /* .fd-today__cols, .fd-today */
   return out;

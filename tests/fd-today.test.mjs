@@ -86,7 +86,7 @@ const FIX_MAN = {
 };
 const IDX = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
 
-const BASE_STATE = { week: 1, role: 'there', done: {}, streak: 0, desk: true, ringPct: 50,
+const BASE_STATE = { week: 1, role: 'there', done: {}, streak: 0, ringPct: 50,
   nowMs: new Date(2026, 7, 10, 9, 0, 0).getTime() }; // Monday, morning
 const s = (over) => Object.assign({}, BASE_STATE, over);
 
@@ -128,15 +128,17 @@ test('the daily pick is omitted once every library-only read is done', () => {
   assert.doesNotMatch(noPick, /fd-pick/);
 });
 
-test('quick tools render as a sticky rail on desktop and pill chips on mobile', () => {
-  const desk = F.fdToday(IDX, s({ desk: true }));
-  assert.match(desk, /fd-rail/);
-  assert.match(desk, /fd-kitcard/, 'the safety kit only renders in the desktop rail');
-  assert.doesNotMatch(desk, /fd-quicktools--pills/);
-  const mobile = F.fdToday(IDX, s({ desk: false }));
-  assert.match(mobile, /fd-quicktools--pills/);
-  assert.doesNotMatch(mobile, /fd-rail/);
-  assert.doesNotMatch(mobile, /fd-kitcard/, 'the rail-only safety kit must not leak onto mobile');
+// frontdoor.css already ships the display:none/flex breakpoint swap at 1000px
+// (frontdoor.css:270, 281-283, 548-552) -- this renderer emits both the desktop rail and the
+// mobile pill row unconditionally in every single call and lets CSS pick, rather than branching
+// on a device flag. That makes one render correct at any viewport and needs no resize-driven
+// re-render to stay correct, unlike an earlier version of this file that branched on
+// state.desk (caught in review).
+test('the rail and the pill row are both always present, for CSS to choose between', () => {
+  const html = F.fdToday(IDX, s({}));
+  assert.match(html, /fd-rail/);
+  assert.match(html, /fd-kitcard/);
+  assert.match(html, /fd-quicktools--pills/);
 });
 
 test('no week set renders the setup CTA instead of the continue card', () => {
@@ -169,9 +171,7 @@ test('every interpolated title is escaped', () => {
 });
 
 test('no rendered string carries an audience-specific token', () => {
-  const html = F.fdToday(IDX, s({}))
-    + F.fdToday(IDX, s({ week: null }))
-    + F.fdToday(IDX, s({ desk: false }));
+  const html = F.fdToday(IDX, s({})) + F.fdToday(IDX, s({ week: null }));
   assert.doesNotMatch(html, AUDIENCE_TOKEN_RE);
 });
 
@@ -188,6 +188,6 @@ test('fd_today.js touches no DOM, storage, or clock', () => {
 });
 
 test('no rendered output carries a due-row or capture-triage surface', () => {
-  const html = F.fdToday(IDX, s({})) + F.fdToday(IDX, s({ week: null })) + F.fdToday(IDX, s({ desk: false }));
+  const html = F.fdToday(IDX, s({})) + F.fdToday(IDX, s({ week: null }));
   assert.doesNotMatch(html, /fd-due|fd-capture|data-fd-due|data-fd-capture/i);
 });
