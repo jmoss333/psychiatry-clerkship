@@ -566,7 +566,12 @@ class TestSharedSnippets(unittest.TestCase):
         self.assertNotIn("/*__FD_STATE__*/", t)
 
     def test_every_frontdoor_snippet_expands(self):
-        """All eight frontdoor markers resolve through the frontdoor/ subdirectory."""
+        """All nine frontdoor markers resolve through the frontdoor/ subdirectory.
+
+        FD_STATE has its own test above (it predates the rest); this covers everything
+        else under frontdoor/, so a new module added to SNIPPET_MARKERS without a row
+        here is the gap to watch for.
+        """
         markers = [
             ("/*__FD_DATA__*/", "function fdEsc("),
             ("/*__FD_SHELL__*/", "function fdKeyAction("),
@@ -576,6 +581,7 @@ class TestSharedSnippets(unittest.TestCase):
             ("/*__FD_READER__*/", "function fdReaderNeighbours("),
             ("/*__FD_SEARCH__*/", "function fdExpandQuery("),
             ("/*__FD_SHEET__*/", "function fdSheet("),
+            ("/*__FD_WIRE__*/", "function fdResolveState("),
         ]
         for marker, needle in markers:
             p = self._page("<script>\n%s\n</script>" % marker)

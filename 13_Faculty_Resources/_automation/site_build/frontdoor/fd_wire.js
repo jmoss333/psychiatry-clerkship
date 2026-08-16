@@ -246,7 +246,13 @@ function fdKeyPatch(action, state){
     if(st.sheet) return {sheet:null, sheetFrom:null, stepsDone:{}};
     return null;
   }
-  if(a.type==='search') return {searchOpen:true, query:''};
+  /* Re-firing the shortcut over an ALREADY-OPEN panel must not wipe what has been typed into it.
+     fd_shell.js checks '/' and cmd-K before its overlay guard on purpose, so that search stays
+     reachable from anywhere -- and says the caller may treat the repeat as "focus search". Taking
+     it literally and resetting the query destroyed a half-typed search whenever focus happened to
+     be outside the input. The patch still carries searchOpen:true, which is what fdApply reads to
+     move focus into the box. */
+  if(a.type==='search') return st.searchOpen?{searchOpen:true}:{searchOpen:true, query:''};
   if(a.type==='tab'){
     return {tab:fdNormTab(a.tab)||'today', openId:'',
             sheet:null, sheetFrom:null, searchOpen:false};
@@ -266,6 +272,21 @@ function fdKeyPatch(action, state){
    the app, where fd_today.js's own "30-second setup" card offers the same question again. */
 var FD_TRANSIENT={ setup:'', searchOpen:false, query:'', sheet:null, sheetFrom:null,
                    stepsDone:{}, nudgeRef:'' };
+
+/* Restore EVERY transient field to its starting value -- the single place that knows what
+   "no overlays, no wizard" is. It exists because the first version of popstate reset a subset
+   inline and omitted `setup`: the wizard is full-viewport and its step is not routed, so opening
+   a page (pushState), tapping the header week pill (no push) and pressing Back moved the address
+   while the wizard sat on top of it, the same "back appears not to work" class as the fdApply
+   ordering defect. This is still a hand-written list, so tests/fd-wire.test.mjs asserts it covers
+   every key in FD_TRANSIENT -- add a field there without adding it here and that goes red.
+   stepsDone is rebuilt rather than shared, because callers mutate their own copy. */
+function fdResetTransient(){
+  FD_TRANSIENT.setup=''; FD_TRANSIENT.searchOpen=false; FD_TRANSIENT.query='';
+  FD_TRANSIENT.sheet=null; FD_TRANSIENT.sheetFrom=null; FD_TRANSIENT.stepsDone={};
+  FD_TRANSIENT.nudgeRef='';
+  FD_SHEET_INVOKER=null; FD_SEARCH_INVOKER=null;
+}
 
 /* The subset of FD_KEYS (fd_state.js) this file writes. scrollPos is deliberately absent: it is
    whitelisted for persistence but nothing restores a scroll position yet, so it is carried
@@ -289,6 +310,13 @@ var FD_SEL_READER_ACTIONS='.fd-article__actions,.fd-actionbar';
 var FD_SEL_SETUP='.fd-setup';
 
 var FD_NUDGE_MS=8000, FD_NUDGE_TIMER=null;
+
+/* Focus bookkeeping. Each is {el, key} -- the element AND a selector that finds its re-rendered
+   twin, because #content is rebuilt wholesale on every render and the element alone goes stale
+   within one click (see fdFocusKey). FD_LAST_INVOKER is the control the CURRENT action came
+   from: set by the click listener, cleared by the keyboard one, so a surface opened with cmd-K
+   has no invoker and correctly falls back to #content instead of jumping to a stale click. */
+var FD_LAST_INVOKER=null, FD_SHEET_INVOKER=null, FD_SEARCH_INVOKER=null;
 
 /* A deep link's extra params (&case=, &scenario=, &resume=1 -- communicationHref()/familyAction()
    ship all three). Kept only for the ref the link named: carrying them onto a DIFFERENT tool
@@ -471,6 +499,159 @@ function fdFocusSearch(){
   }catch(_){ }
 }
 
+/* ---- focus and announcement for the overlays -----------------------------------------------
+   fdMount replaces innerHTML wholesale, so every surface the student was standing in is
+   destroyed and rebuilt on each render and focus silently falls to <body>. announceRoute() only
+   runs on ROUTE changes, and opening a sheet is not one -- so before this, opening the safety
+   protocol moved no focus, said nothing, and returned nothing on close. For a student using a
+   screen reader that is silence on the surface where silence costs most.
+
+   *** SCOPE LINE, DELIBERATE. *** What is here is the EVENT half: move focus in, restore it on
+   close, announce the open. The MARKUP half -- role="dialog", aria-modal, aria-labelledby on
+   .fd-sheet -- lives in fd_sheet.js and is already named in the plan's Task 8 step 3, so it is
+   not taken here. Two consequences worth stating rather than discovering:
+     - There is no Tab TRAP. A trap belongs with aria-modal, not before it: trapping Tab inside a
+       region the a11y tree has not been told is modal leaves a user held somewhere they were
+       never told they were. Escape closes, and the close button is reachable, so nobody is stuck.
+     - fdFocusSheet sets tabindex="-1" at runtime because the panel needs to be focusable and its
+       markup does not say so. That line should MOVE INTO fd_sheet.js when Task 8 adds the dialog
+       role, not be duplicated there. */
+
+/* The live region the shell already owns. Deliberately NOT announceRoute(), which also moves
+   focus to #content -- calling it for a sheet would fight the focus move two lines later. */
+function fdSay(text){
+  try{
+    var rs=document.getElementById('routeStatus');
+    if(rs) rs.textContent=String(text||'');
+  }catch(_){ }
+}
+
+/* Focus the PANEL, not its first button. Landing on .fd-sheet__close would announce "Close --
+   you'll land exactly where you were" as the first thing a student hears from a protocol sheet;
+   landing on the container announces the panel and lets the reader run from the title down. */
+function fdFocusSheet(announce){
+  try{
+    var panel=document.querySelector(FD_SEL_SHEET);
+    if(!panel) return;
+    panel.setAttribute('tabindex', '-1');
+    panel.focus();
+    if(!announce) return;
+    var title=panel.querySelector('.fd-sheet__title');
+    if(title) fdSay(title.textContent+' opened');
+  }catch(_){ }
+}
+
+function fdFocusLost(){
+  var a=document.activeElement;
+  return !a||a===document.body||a===document.documentElement;
+}
+
+/* Restore to the control that opened the surface -- the house shape the deleted shell's
+   closeSheet() used and tests/spa-shell-a11y.test.mjs pinned: only when the surface being torn
+   down still OWNED focus (a student who has since clicked or tabbed into the page behind must
+   not be yanked back), and only to an invoker still connected and visible. `owned` is computed
+   BEFORE the re-render, because afterwards the surface is already gone.
+
+   Three attempts, narrowing to a place a keyboard can always continue from: the original element
+   if it somehow survived, its re-rendered twin (the usual case -- see fdFocusKey), then #content.
+   Never <body>, which is a dead end for keyboard and screen-reader users alike. */
+function fdRestoreFocus(inv, owned){
+  if(!owned) return;
+  var i=inv||{};
+  try{
+    if(i.el&&i.el.isConnected&&i.el.offsetParent!==null){ i.el.focus(); return; }
+    var twin=fdFindVisible(i.key);
+    if(twin){ twin.focus(); return; }
+    var content=document.getElementById('content');
+    if(content){ try{ content.focus({preventScroll:true}); }catch(_){ content.focus(); } }
+  }catch(_){ }
+}
+
+/* A selector that finds the re-rendered TWIN of a control -- because an element reference does
+   not survive here. fdMount replaces #content wholesale on every render, so the header button
+   that opened a sheet is a detached node by the time the sheet closes, and an invoker stored as
+   an element restores focus to nothing. Storing what identifies it instead means the twin is
+   found in whatever markup exists now.
+
+   The value is always written out, even when empty: `[data-fd-safety=""]` matches the header's
+   bare Safety button and NOT Today's kit cards, which carry a ref. A bare `[data-fd-safety]`
+   matches both, and which one wins would be document order -- accidental, and the accident would
+   silently send focus to the wrong control. */
+function fdFocusKey(el){
+  if(!el||!el.getAttribute||!el.hasAttribute) return '';
+  var names=['data-fd-toggle','data-fd-step','data-fd-safety','data-fd-open','data-fd-week',
+             'data-fd-setweek','data-fd-tab','data-fd-role','data-fd-search',
+             'data-fd-change-week','data-fd-home','data-fd-back'];
+  for(var i=0;i<names.length;i++){
+    if(el.hasAttribute(names[i])){
+      var v=el.getAttribute(names[i])||'';
+      if(/["\\]/.test(v)) return '';   /* not worth escaping; a ref never contains these */
+      return '['+names[i]+'="'+v+'"]';
+    }
+  }
+  return '';
+}
+
+/* First VISIBLE match, because several controls are rendered twice by design -- the reader emits
+   the same data-fd-toggle in the desktop pair and the mobile action bar, and frontdoor.css hides
+   one of them at every width. Focusing the hidden twin is indistinguishable from losing focus. */
+function fdFindVisible(key){
+  if(!key) return null;
+  try{
+    var all=document.querySelectorAll(key);
+    for(var i=0;i<all.length;i++){
+      if(all[i].offsetParent!==null) return all[i];
+    }
+  }catch(_){ }
+  return null;
+}
+
+/* Put focus back on the control the student just used. Without this, ticking a checkbox or a
+   protocol step drops focus to <body> every single time -- the same innerHTML-replacement cause
+   as the sheet case above, on a surface a keyboard user hits far more often. Skipped whenever
+   focus has already been placed somewhere real (a route change, an overlay opening), and the
+   FIRST VISIBLE match wins because the reader renders the same data-fd-toggle twice: the desktop
+   pair and the mobile action bar, one of which is always display:none. */
+function fdRestoreActivated(key){
+  if(!key||!fdFocusLost()) return;
+  var el=fdFindVisible(key);
+  if(el){ try{ el.focus(); }catch(_){ } }
+}
+
+/* One decision point for where focus goes after a render, so the branches cannot fight. Order is
+   the layering: the sheet is above search, which is above the page. */
+function fdFocusAfterRender(before, wasInSheet, wasInSearch, routed, key){
+  var sheetWas=before.sheet||'', sheetNow=FD_TRANSIENT.sheet||'';
+  var searchWas=!!before.searchOpen, searchNow=!!FD_TRANSIENT.searchOpen;
+
+  /* Covers kit -> protocol -> kit as well as opening: each is a full rebuild of the panel, so
+     the element that had focus no longer exists in any of them. */
+  if(sheetNow&&sheetNow!==sheetWas){
+    if(!sheetWas) FD_SHEET_INVOKER=FD_LAST_INVOKER;
+    fdFocusSheet(true);
+    return;
+  }
+  if(!sheetNow&&sheetWas){
+    var inv=FD_SHEET_INVOKER; FD_SHEET_INVOKER=null;
+    fdRestoreFocus(inv, wasInSheet);
+    return;
+  }
+  if(searchNow&&!searchWas) FD_SEARCH_INVOKER=FD_LAST_INVOKER;
+  if(searchNow){ fdFocusSearch(); return; }
+  if(!searchNow&&searchWas){
+    var sinv=FD_SEARCH_INVOKER; FD_SEARCH_INVOKER=null;
+    fdRestoreFocus(sinv, wasInSearch);
+    return;
+  }
+  if(routed) return;   /* announceRoute has already moved focus to #content */
+  fdRestoreActivated(key);
+  /* Last resort. A re-render inside a still-open sheet that left focus on <body> anyway -- the
+     activated control had no identifying attribute, or its replacement is gone -- puts the
+     student back on the panel rather than behind it. Silent: the sheet did not open again, so
+     re-announcing it would be a second claim about an unchanged surface. */
+  if(sheetNow&&wasInSheet&&fdFocusLost()) fdFocusSheet(false);
+}
+
 /* Results are redrawn WITHOUT rebuilding the panel: fdRender's fdMount would replace the whole
    overlay, destroying the input element and taking focus and caret with it mid-keystroke. The
    markup is still fd_search.js's -- the overlay is rendered into a detached element and only its
@@ -527,6 +708,12 @@ function fdApply(patch){
   if(!patch) return;
   var before=fdCurrentState(), p={}, k, i;
   for(k in patch){ if(fdOwns(patch, k)) p[k]=patch[k]; }
+  /* Read BEFORE anything renders: after fdRerender the surface that owned focus is already gone,
+     so "did it own focus?" can only be answered now. */
+  var active=document.activeElement;
+  var wasInSheet=fdIn(active, FD_SEL_SHEET);
+  var wasInSearch=fdIn(active, '.fd-search');
+  var focusKey=fdFocusKey(active);
 
   if(p.toggle!==undefined){
     var ref=p.toggle, fromReader=!!p.fromReader;
@@ -577,7 +764,7 @@ function fdApply(patch){
     fdAnnounce(next);
     try{ window.scrollTo(0, 0); }catch(_){ }
   }
-  if(p.searchOpen===true) fdFocusSearch();
+  fdFocusAfterRender(before, wasInSheet, wasInSearch, routed, focusKey);
   if(FD_TRANSIENT.nudgeRef) fdNudgeSchedule();
 }
 
@@ -598,11 +785,15 @@ function fdWire(){
   document.addEventListener('click', function(ev){
     var el=(ev.target&&ev.target.closest)?ev.target.closest(FD_CLICK_SELECTOR):null;
     if(!el) return;
+    FD_LAST_INVOKER={ el: el, key: fdFocusKey(el) };
     fdApply(fdDispatch(fdWireTarget(el), fdCurrentState()));
   });
 
   window.addEventListener('keydown', function(ev){
     var key=ev.key, typing=fdIsTyping(ev.target);
+    /* A surface opened from the keyboard has no invoking control, so closing it falls back to
+       #content rather than restoring focus to whatever was last clicked, possibly minutes ago. */
+    FD_LAST_INVOKER=null;
     /* Bail before composing state for the overwhelmingly common case: a keystroke inside an
        input that cannot mean anything. Escape and Enter survive because the search panel needs
        them even while the caret is in its box. */
@@ -651,8 +842,7 @@ function fdWire(){
     });
     blob.tab=st.tab; blob.openId=st.openId;
     fdSave(blob);
-    FD_TRANSIENT.sheet=null; FD_TRANSIENT.sheetFrom=null; FD_TRANSIENT.stepsDone={};
-    FD_TRANSIENT.searchOpen=false; FD_TRANSIENT.query=''; FD_TRANSIENT.nudgeRef='';
+    fdResetTransient();
     var now=fdCurrentState();
     currentItem=now.openId?fdRouteItem(now.openId):null;
     document.title=pageTitle(currentItem);

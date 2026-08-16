@@ -428,7 +428,161 @@ test('the storage keys fd_wire.js writes are cw_*-namespaced literals', () => {
   // against a ceiling pinned in qa-baseline.json -- so every key written here is a literal.
   const keys = [...wireSrc.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*(['"])([^'"]+)\1/g)]
     .map((m) => m[2]);
+  // Without this the loop below is vacuous the moment the writes move or are renamed: zero
+  // matches passes every assertion inside it.
+  assert.ok(keys.length >= 2,
+    `expected the rotation-week read/write to be found; matched ${keys.length}`);
   for (const k of keys) assert.ok(/^cw_/.test(k), `non-namespaced storage key: ${k}`);
   const computed = [...wireSrc.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*(?!['"])/g)];
   assert.equal(computed.length, 0, 'a computed key moves a soft ceiling pinned in qa-baseline.json');
+});
+
+// ---- the DOM half of the contract ------------------------------------------------------------
+// Everything above injects `inSheet` / `inReader` / `inSetup` directly, which is what makes the
+// decision logic testable -- and also what leaves the OTHER half of the mechanism unchecked. The
+// three FD_SEL_* literals are the join between fdDispatch and the markup, and a class rename in
+// an emitting module (CLASS-INVENTORY is still being edited by Tasks 5-7) would sever it in
+// exactly the way the plan warns about: no throw, no log, the "‹ kit" affordance simply stops
+// rendering. These scans are the cheapest thing that goes red for that.
+
+const emitters = [
+  ['FD_SEL_SHEET', '.fd-sheet', 'frontdoor/fd_sheet.js', 'class="fd-sheet"',
+    'kit rows inside the sheet must be distinguishable from Today\'s kit cards'],
+  ['FD_SEL_READER_ACTIONS', '.fd-article__actions', 'frontdoor/fd_reader.js', 'class="fd-article__actions"',
+    'the reader\'s primary button must be distinguishable from a list row check'],
+  ['FD_SEL_READER_ACTIONS', '.fd-actionbar', 'frontdoor/fd_reader.js', 'class="fd-actionbar"',
+    'the mobile action bar carries the same data-fd-toggle as the desktop pair'],
+  ['FD_SEL_SETUP', '.fd-setup', 'frontdoor/fd_shell.js', 'class="fd-setup"',
+    'a wizard week tile must be distinguishable from a Path timeline row'],
+];
+
+for (const [name, selector, module, markup, why] of emitters) {
+  test(`${selector} (${name}) is still emitted by ${module}`, () => {
+    assert.ok(wireSrc.includes(`'${selector}'`) || wireSrc.includes(`${selector},`)
+      || wireSrc.includes(`,${selector}`),
+      `${name} must still contain ${selector} -- fdWireTarget matches on it`);
+    assert.ok(read(module).includes(markup),
+      `${module} no longer emits ${markup}, so fdWireTarget's ${selector} test can never be true `
+      + `again: ${why}`);
+  });
+}
+
+test('the sheet panel fd_wire focuses is the same element it discriminates on', () => {
+  // fdFocusSheet() and the inSheet discrimination must not drift onto two different elements:
+  // focusing a container that is not the one kit rows live in would restore the a11y behaviour
+  // while silently breaking the kit origin, or the reverse.
+  const focus = wireSrc.match(/function fdFocusSheet\(announce\)\{[\s\S]*?\n\}/);
+  assert.ok(focus, 'fdFocusSheet must be findable');
+  assert.match(focus[0], /FD_SEL_SHEET/,
+    'fdFocusSheet must resolve the panel through FD_SEL_SHEET, not a second literal');
+});
+
+// ---- transient reset --------------------------------------------------------------------------
+
+test('fdResetTransient clears every key FD_TRANSIENT declares', () => {
+  // popstate's first version reset a hand-listed subset and omitted `setup`, so Back left the
+  // full-viewport wizard sitting over a page that had already changed underneath it. The reset is
+  // still hand-written, so this is what keeps a newly added field from falling out of it.
+  const decl = wireSrc.match(/var FD_TRANSIENT=\{([\s\S]*?)\};/);
+  assert.ok(decl, 'FD_TRANSIENT declaration must be findable');
+  const keys = [...decl[1].matchAll(/(\w+)\s*:/g)].map((m) => m[1]);
+  assert.ok(keys.length >= 7, `expected the transient fields; matched ${keys.length}`);
+  const reset = wireSrc.match(/function fdResetTransient\(\)\{[\s\S]*?\n\}/);
+  assert.ok(reset, 'fdResetTransient must be findable');
+  for (const k of keys) {
+    assert.ok(reset[0].includes(`FD_TRANSIENT.${k}=`),
+      `fdResetTransient does not reset ${k} -- a surface that outlives a Back press`);
+  }
+});
+
+test('popstate resets the transients through that one function', () => {
+  const pop = wireSrc.slice(wireSrc.indexOf("addEventListener('popstate'"));
+  assert.match(pop, /fdResetTransient\(\)/,
+    'popstate must not reset a hand-picked subset inline -- that is how `setup` was missed');
+});
+
+// ---- focus management -------------------------------------------------------------------------
+
+test('opening the sheet moves focus into it and announces it', () => {
+  const fn = wireSrc.match(/function fdFocusSheet\(announce\)\{[\s\S]*?\n\}/)[0];
+  assert.match(fn, /\.focus\(\)/, 'focus must actually move -- fdMount drops it to <body>');
+  assert.match(fn, /fdSay\(/, 'and the change must reach the live region');
+  assert.match(fn, /fd-sheet__title/,
+    'the announcement names the panel that opened, taken from what is on screen');
+});
+
+test('the announcement channel is the live region, not announceRoute', () => {
+  // announceRoute also moves focus to #content, so calling it for a sheet would fight the focus
+  // move. fdSay writes the same aria-live element without touching focus.
+  const fn = wireSrc.match(/function fdSay\(text\)\{[\s\S]*?\n\}/);
+  assert.ok(fn, 'fdSay must exist');
+  assert.match(fn[0], /routeStatus/, 'the shell already owns exactly one aria-live channel');
+  assert.doesNotMatch(fn[0], /focus\(/, 'announcing must not move focus');
+});
+
+test('closing restores focus only when the closing surface still owned it', () => {
+  // The house shape the deleted shell's closeSheet() used and spa-shell-a11y pinned: a student
+  // who has since clicked into the page behind must not be yanked back.
+  const fn = wireSrc.match(/function fdRestoreFocus\(inv, owned\)\{[\s\S]*?\n\}/);
+  assert.ok(fn, 'fdRestoreFocus must be findable');
+  assert.match(fn[0], /if\(!owned\) return;/, 'the ownership guard is the whole point');
+  assert.match(fn[0], /isConnected/, 'and the invoker must still be in the document');
+  assert.match(fn[0], /offsetParent!==null/, 'and visible -- the reader renders two of some controls');
+  assert.match(fn[0], /getElementById\('content'\)/,
+    'focus must land somewhere a keyboard can continue from, never on <body>');
+});
+
+test('focus ownership is read BEFORE the re-render, not after', () => {
+  // After fdRerender the surface is already gone, so asking then always answers "no" and the
+  // restore silently never fires.
+  const a = wireSrc.indexOf('function fdApply(');
+  const body = wireSrc.slice(a, wireSrc.indexOf('\n}', a));
+  const read0 = body.indexOf('wasInSheet=');
+  const render = body.indexOf('fdRerender()');
+  assert.ok(read0 !== -1 && read0 < render,
+    'wasInSheet has to be computed before the render that destroys the sheet');
+});
+
+test('a re-render puts focus back on the control that was just activated', () => {
+  // Ticking a checkbox or a protocol step rebuilds #content or the sheet wholesale, so without
+  // this a keyboard user loses their place on every single tick.
+  const fn = wireSrc.match(/function fdRestoreActivated\(key\)\{[\s\S]*?\n\}/);
+  assert.ok(fn, 'fdRestoreActivated must be findable');
+  assert.match(fn[0], /fdFocusLost\(\)/, 'it must not steal focus that has already landed somewhere');
+  assert.match(fn[0], /fdFindVisible\(/, 'and must resolve the twin, not the detached original');
+  assert.match(wireSrc.match(/function fdFindVisible\(key\)\{[\s\S]*?\n\}/)[0], /offsetParent!==null/,
+    'the reader emits the same data-fd-toggle twice; the hidden twin must not win');
+});
+
+test('an invoker is stored as a resolvable key, not just an element reference', () => {
+  // #content is replaced wholesale on every render, so the header button that opened a sheet is
+  // a detached node by the time the sheet closes. Storing the element alone restored focus to
+  // nothing and silently fell through to #content on every close -- which is what the browser
+  // walkthrough showed before this.
+  assert.match(wireSrc, /FD_LAST_INVOKER=\{ el: el, key: fdFocusKey\(el\) \}/,
+    'the click listener must record both halves');
+  const restore = wireSrc.match(/function fdRestoreFocus\(inv, owned\)\{[\s\S]*?\n\}/)[0];
+  assert.match(restore, /fdFindVisible\(i\.key\)/, 'and the restore must fall back to the twin');
+});
+
+test('a bare data-fd-safety key does not also match Today\'s kit cards', () => {
+  // The header Safety button carries the attribute bare; kit cards carry a ref. A key of
+  // `[data-fd-safety]` matches both and document order decides -- an accident that would send
+  // focus to a different control than the one the student pressed.
+  const fn = wireSrc.match(/function fdFocusKey\(el\)\{[\s\S]*?\n\}/)[0];
+  assert.match(fn, /'\['\+names\[i\]\+'="'\+v\+'"\]'/,
+    'the value is always written out, so an empty one is matched exactly');
+});
+
+test('a keyboard-opened surface has no invoker to restore to', () => {
+  const keydown = wireSrc.slice(wireSrc.indexOf("addEventListener('keydown'"));
+  assert.match(keydown.slice(0, 600), /FD_LAST_INVOKER=null/,
+    'otherwise closing a cmd-K search would jump focus to whatever was last clicked');
+});
+
+test('re-opening an already-open search does not wipe what has been typed', () => {
+  assert.deepEqual(F.fdKeyPatch({ type: 'search' }, { searchOpen: true }), { searchOpen: true },
+    'cmd-K with focus outside the box used to reset the query to empty');
+  assert.deepEqual(F.fdKeyPatch({ type: 'search' }, { searchOpen: false }),
+    { searchOpen: true, query: '' }, 'a fresh open still starts empty');
 });

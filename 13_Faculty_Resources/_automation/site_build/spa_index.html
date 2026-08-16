@@ -1310,10 +1310,11 @@
   /* ---- end front door render ---- */
 
   /* ---- front door boot ---- */
-  /* State assembly and first paint only. The delegated click handler, the keyboard map, and
-     popstate are Task 4's fd_wire.js and are deliberately absent — Task 3's output has no event
-     handling except the theme toggle below, which replaces rather than adds to a listener the
-     deleted sidebar already carried. */
+  /* State assembly, first paint, then wiring. The listeners themselves live in fd_wire.js (the
+     delegated click, the keyboard map, the search panel's input, popstate); this block composes
+     the state they read, captures the deep link's tool params, and calls fdWire() once at the
+     end. The cw_theme toggle below is the exception that stays here: it predates the wiring and
+     touches the document element rather than front-door state. */
 
   /* The reader's bodyHtml. marked is loaded in <head>; this is the only site that turns a shipped
      markdown page into HTML, and it is the same fetch-and-parse the deleted show() performed.
