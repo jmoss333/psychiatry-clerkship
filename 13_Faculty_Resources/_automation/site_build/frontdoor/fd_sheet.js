@@ -151,14 +151,26 @@ function fdSheetKitBody(index){
    invalid HTML (the prototype has the same shape). .fd-check's rule sets cursor/padding
    explicitly, so it needs no button element to look right, and the 20px size comes from the
    ancestor-keyed `.fd-step .fd-check` rule -- there is no size modifier class and none may be
-   invented. The ✓ glyph is always present and .fd-check's CSS colours it (transparent vs filled),
-   same idiom as fd_today.js's row check. is-just-done is not applied here: it is a transient
-   "the user just clicked this" flag with no field in this renderer's state shape. */
+   invented. is-just-done is not applied here: it is a transient "the user just clicked this" flag
+   with no field in this renderer's state shape.
+
+   ---- Why the glyph is aria-hidden and the state lives on the button --------------------------
+   The ✓ glyph is emitted in BOTH states and .fd-check's CSS colours it (transparent vs filled),
+   so a screenshot at any state still has the character to colour -- the same idiom fd_today.js's
+   row check uses. Visually that is right; announced literally it is a lie, because a screen
+   reader reads the character regardless of colour and an UNCHECKED step would be announced as
+   "✓ <step text>". On an ordinary list that is untidy; on a safety checklist it inverts the
+   meaning of the item, telling someone a step is complete when it is not. So the glyph carries
+   aria-hidden="true" (it is decoration -- the colour, not the character, is what conveys state)
+   and the real state moves to aria-pressed on the .fd-step button itself, which is the toggle.
+   Keeping the character in the DOM preserves the visual exactly; hiding it from the a11y tree
+   removes the false claim. */
 function fdSheetStep(text, i, stepsDone){
   var on=!!(stepsDone||{})[i];
   var checkCls=on?'fd-check is-done':'fd-check';
-  return '<button type="button" class="fd-step" data-fd-step="'+i+'">'+
-    '<span class="'+checkCls+'">✓</span>'+
+  return '<button type="button" class="fd-step" data-fd-step="'+i+'" '+
+    'aria-pressed="'+(on?'true':'false')+'">'+
+    '<span class="'+checkCls+'" aria-hidden="true">✓</span>'+
     '<span class="fd-step__text">'+fdEsc(text)+'</span>'+
   '</button>';
 }
@@ -184,11 +196,22 @@ function fdSheetProtocolBody(entry, topicMeta, stepsDone){
   if(meta.safetyDoc){
     out+='<div class="fd-doccallout"><b>Document:</b> '+fdEsc(meta.safetyDoc)+'</div>';
   }
-  /* See the header note on over-claiming: the teal ✓ line only where the review is recorded. */
-  if(item.attested){
-    out+='<div class="fd-sheet__attribution">✓ From: '+fdEsc(item.ref)+' · faculty-attested</div>';
-  } else {
-    out+='<p class="fd-sheet__note">From: '+fdEsc(item.ref)+'</p>';
+  /* Provenance attaches to CONTENT, so it is gated on there being some: with no steps and no doc
+     line, the attribution would be the entire body, and "✓ From: p.md · faculty-attested" above an
+     empty sheet reads as "attested — nothing to do" rather than "the content did not load". That
+     is a failure presenting as a success, on the surface where that costs most. Both shapes that
+     produce it are real: a reviewed kit page whose safetySteps array was emptied by an unrelated
+     edit, and topicMeta arriving undefined -- exactly what a Plan-3 injection failure looks like.
+     With no content there is nothing to attribute, so neither arm renders.
+
+     Within that gate, see the header note on over-claiming: the teal ✓ line only where the review
+     is actually recorded, and the neutral dim source line otherwise. */
+  if(steps.length||meta.safetyDoc){
+    if(item.attested){
+      out+='<div class="fd-sheet__attribution">✓ From: '+fdEsc(item.ref)+' · faculty-attested</div>';
+    } else {
+      out+='<p class="fd-sheet__note">From: '+fdEsc(item.ref)+'</p>';
+    }
   }
   out+='<button type="button" class="fd-btn fd-btn--ghost" style="margin-top:16px" '+
     'data-fd-open="'+fdEsc(item.ref)+'">Open the full page →</button>';
@@ -212,8 +235,10 @@ function fdSheetItemBody(item, index){
   if(item.attested) out+='<span class="fd-attested">✓ faculty-attested</span>';
   out+='</div>';
   out+='<p class="fd-sheet__lead">'+fdEsc(item.summary)+'</p>';
+  /* font-weight:600 on the label matches the prototype, which .fd-row__min does not carry. Inline
+     rather than a new class: the freeze bars inventing classes and emitting colour, not weight. */
   out+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">'+
-    '<span class="fd-row__min">Source:</span>'+
+    '<span class="fd-row__min" style="font-weight:600">Source:</span>'+
     '<span class="fd-src">'+fdEsc(item.ref)+'</span>'+
   '</div>';
   out+='<button type="button" class="fd-btn fd-btn--primary" data-fd-open="'+fdEsc(item.ref)+'">'+

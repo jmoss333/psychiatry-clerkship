@@ -134,11 +134,32 @@ test('the protocol title and the open-page button come from the page the ref nam
   assert.match(html, /class="fd-btn fd-btn--ghost"[^>]*data-fd-open="pg_suicide\.md"/);
 });
 
+// bare.md is faculty-REVIEWED but carries no safetySteps -- the shape an unrelated edit emptying
+// the array produces. Provenance is gated on there being content to attribute, so an empty body
+// must not be stamped "faculty-attested": that reads as "attested, nothing to do" rather than
+// "the content did not load", which is a failure presenting as a success on the 2am surface.
 test('a kit page with no safetySteps degrades to no steps and no callout, never a fabrication', () => {
   const html = F.fdSheet(FIX_INDEX, FIX_META, { sheet: 'bare.md' });
+  assert.equal(FIX_META['bare.md'].facultyReview.status, 'reviewed', 'fixture premise');
   assert.doesNotMatch(html, /class="fd-step"/);
   assert.doesNotMatch(html, /fd-doccallout/);
+  assert.doesNotMatch(html, /fd-sheet__attribution/, 'nothing rendered, so nothing to attribute');
+  assert.doesNotMatch(html, /faculty-attested/);
+  assert.doesNotMatch(html, /From: bare\.md/, 'the neutral provenance line is gated the same way');
   assert.match(html, /class="fd-sheet__body"/);
+  assert.match(html, /data-fd-open="bare\.md"/, 'the way out of an empty protocol is the full page');
+});
+
+// The shape of a Plan-3 injection failure: the index is fine, topicMeta never arrived.
+test('an undefined topicMeta renders no content AND no attestation claim', () => {
+  for (const ref of KIT_REFS) {
+    const html = F.fdSheet(REAL_INDEX, undefined, { sheet: ref });
+    assert.doesNotMatch(html, /class="fd-step"/, `${ref}`);
+    assert.doesNotMatch(html, /fd-doccallout/, `${ref}`);
+    assert.doesNotMatch(html, /faculty-attested/,
+      `${ref}: content that failed to load must never be stamped attested`);
+    assert.doesNotMatch(html, /fd-sheet__attribution/, `${ref}`);
+  }
 });
 
 test('a sheet ref that names no kit protocol renders nothing rather than an empty protocol', () => {
@@ -153,8 +174,24 @@ test('step checks reflect state.stepsDone by index', () => {
   assert.doesNotMatch(off, /fd-check is-done/);
   const on = F.fdSheet(REAL_INDEX, REAL_META, { sheet: ref, stepsDone: { 0: true, 2: true } });
   assert.equal(on.split('fd-check is-done').length - 1, 2);
-  assert.match(on, /<button type="button" class="fd-step" data-fd-step="0"><span class="fd-check is-done">/);
-  assert.match(on, /<button type="button" class="fd-step" data-fd-step="1"><span class="fd-check">/);
+  assert.match(on, /data-fd-step="0" aria-pressed="true"><span class="fd-check is-done"/);
+  assert.match(on, /data-fd-step="1" aria-pressed="false"><span class="fd-check"/);
+});
+
+// The ✓ glyph is emitted in BOTH states (frontdoor.css colours it transparent when unchecked), so
+// a screen reader would announce an UNCHECKED step as "✓ <step>" -- on a safety checklist that
+// inverts the item's meaning. The glyph must therefore be decorative and the state must live on
+// the button that actually toggles.
+test('the checkmark is hidden from assistive tech and the state is carried by aria-pressed', () => {
+  const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: KIT_REFS[0], stepsDone: { 0: true } });
+  assert.equal(html.split('aria-hidden="true">✓</span>').length - 1,
+    REAL_META[KIT_REFS[0]].safetySteps.length, 'every check glyph is decorative');
+  assert.doesNotMatch(html, /class="fd-check[^"]*"(?! aria-hidden)/,
+    'no check glyph may reach the a11y tree');
+  assert.match(html, /aria-pressed="true"/);
+  assert.match(html, /aria-pressed="false"/);
+  const off = F.fdSheet(REAL_INDEX, REAL_META, { sheet: KIT_REFS[0] });
+  assert.doesNotMatch(off, /aria-pressed="true"/, 'nothing checked means nothing announced pressed');
 });
 
 test('the check lives INSIDE .fd-step so the 20px ancestor-keyed size rule applies', () => {
@@ -357,7 +394,19 @@ test('only classes that exist in frontdoor.css are emitted', () => {
   for (const m of F.fdNudge(REAL_INDEX.byRef['delirium.md']).matchAll(/class="([^"]+)"/g)) {
     m[1].split(/\s+/).forEach((c) => seen.add(c));
   }
+  // Word-boundary match, not a substring one: `css.includes('.' + c)` would let an invented short
+  // name pass on the strength of a longer real class it happens to prefix (".fd-step" would
+  // "prove" ".fd-ste"). Class names may contain [A-Za-z0-9_-], so the selector must not continue
+  // into one of those.
   for (const c of seen) {
-    assert.ok(css.includes(`.${c}`), `class "${c}" has no rule in frontdoor.css -- an invented class gets no styling`);
+    const re = new RegExp(`\\.${c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9_-])`);
+    assert.match(css, re, `class "${c}" has no rule in frontdoor.css -- an invented class gets no styling`);
   }
+});
+
+test('the class check itself rejects a name that merely prefixes a real class', () => {
+  const css = read('frontdoor/frontdoor.css');
+  const re = (c) => new RegExp(`\\.${c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9_-])`);
+  assert.match(css, re('fd-step'), 'control: the real class still matches');
+  assert.doesNotMatch(css, re('fd-ste'), 'a substring check would have passed this');
 });
