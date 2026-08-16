@@ -99,8 +99,47 @@ test('the header renders the safety button and the week pill', () => {
   assert.match(html, /Week 4/);
 });
 
+// The attribution is the ONE rebranded string in fd_shell.js, so it is excluded from the
+// audience-neutrality scan rather than the scan being weakened. Everything else in the header
+// still has to pass — strip only the attribution's own element and re-scan the remainder, so a
+// leak anywhere else (including a second attribution-shaped span someone adds later) still fails.
+const stripAttrib = (html) => html.replace(/<span class="fd-attrib">[^<]*<\/span>/, '');
+
 test('the header says exam, never the site-specific word', () => {
-  assert.doesNotMatch(F.fdHeader({ week: 6 }), /MS3|clerkship|student|shelf|resident/i);
+  assert.doesNotMatch(stripAttrib(F.fdHeader({ week: 6 })), /MS3|clerkship|student|shelf|resident/i);
+});
+
+test('stripping the attribution does not hide a leak elsewhere in the header', () => {
+  // Guards the exclusion above: if stripAttrib ever over-matched (e.g. a greedy regex eating the
+  // rest of the bar), this scan would go quiet. Assert it removes exactly one element and leaves
+  // the surrounding markup intact.
+  const html = F.fdHeader({ week: 6 });
+  const stripped = stripAttrib(html);
+  assert.equal(html.length - stripped.length,
+    '<span class="fd-attrib">MS3 Clerkship · Joshua Moss, MD</span>'.length,
+    'stripAttrib must remove the attribution element and nothing else');
+  assert.match(stripped, /class="fd-brand__name"/);
+  assert.match(stripped, /data-fd-safety/);
+});
+
+test('the header carries the attribution the deleted sidebar used to', () => {
+  const html = F.fdHeader({ week: 4 });
+  assert.match(html, /<span class="fd-attrib">MS3 Clerkship · Joshua Moss, MD<\/span>/,
+    'the attribution restores the sidebar byline verbatim; resident_section.py rebrands it '
+    + 'through a needle anchored on class="fd-attrib", so a reword here must be mirrored there '
+    + 'or the resident build aborts');
+});
+
+test('the attribution is a sibling of the brand button, not inside it', () => {
+  // Two reasons, both load-bearing: text inside the <button> would be folded into the home
+  // button's accessible name, and a two-line brand would grow .fd-header past the height
+  // .fd-rail/.fd-railnav's top:106px sticky offset assumes.
+  const html = F.fdHeader({ week: 4 });
+  const brandEnd = html.indexOf('</button>');
+  const attribAt = html.indexOf('class="fd-attrib"');
+  assert.ok(brandEnd !== -1 && attribAt !== -1);
+  assert.ok(attribAt > brandEnd,
+    'the attribution must come after the brand button closes, never nested inside it');
 });
 
 // The theme toggle is the one header control with no prototype counterpart. It is here because

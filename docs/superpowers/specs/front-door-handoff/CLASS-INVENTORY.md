@@ -3,12 +3,12 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(176 `fd-*` classes, 13 `is-*` state classes — recounted 2026-08-16 against the file itself after
-Task 3 added `.fd-themebtn` and `.fd-fallback`; see `tests/fd-tokens.test.mjs` for the enforcement this file
+(177 `fd-*` classes, 13 `is-*` state classes — recounted 2026-08-16 against the file itself after
+Task 3 added `.fd-themebtn`, `.fd-fallback`, and `.fd-attrib`; see `tests/fd-tokens.test.mjs` for the enforcement this file
 doesn't). Every class below has a rule in that file unless marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-176. The remaining 137 are `__element` and `--modifier` names introduced while porting the
+177. The remaining 138 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -58,6 +58,7 @@ them and let the breakpoint decide:
 | Class | Hidden | Shown |
 |---|---|---|
 | `.fd-rail`, `.fd-railnav` | below 1000px | ≥ 1000px |
+| `.fd-attrib` (header attribution) | below 1000px | ≥ 1000px |
 | `.fd-actionbar`, `.fd-actionbar__spacer`, `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
 | `.fd-article__actions` | below 1000px | ≥ 1000px |
 | `.fd-article .fd-tip` (Reader's keyboard hint **only** — the wizard's `.fd-tip--setup` line is a different subtree and stays visible) | below 1000px | ≥ 1000px |
@@ -123,6 +124,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
     .fd-brand              <button>
       .fd-logo             <span>ψ</span>
       .fd-brand__name      <span>
+    .fd-attrib             <span>            (attribution — SIBLING of .fd-brand, ≥1000px only)
     .fd-searchbtn          <button>          (search affordance, not an input)
       <svg>
       .fd-searchbtn__label <span>
@@ -141,6 +143,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-header__bar` | The 1200px-capped flex row. `.fd-header` alone has no max-width. |
 | `.fd-header__actions` | `margin-left:auto` — this is what pushes the right group over. |
 | `.fd-themebtn` | 32px circular icon button, borrowed from `.fd-weekpill`'s surface/border/hover. Gets `min-width` **and** `min-height` 44px under 999px — it is the one square control here, so a height-only rule would leave it short on its narrow axis. |
+| `.fd-attrib` | 11px `--fd-text-dim` provenance line. Hidden below 1000px. **The only per-site string in `fd_shell.js`** — see the ⚠ below. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
 
 ⚠ `.fd-tabs` is a **sibling** of `.fd-header__bar` inside `.fd-header`, not a child of it.
@@ -153,6 +156,20 @@ in the sidebar the swap deleted; without it, dark-mode users have no way back. I
 `state.theme` (fd_shell.js touches neither DOM nor storage) and renders `aria-pressed` plus a label
 naming the mode it switches **to**. Placed first in `.fd-header__actions` so the prototype's
 weekpill + safety pair stays adjacent and the filled Safety button keeps the rightmost slot.
+
+⚠ **`.fd-attrib` is the one string in `fd_shell.js` that is NOT audience-neutral, and that is
+correct.** It restores the attribution the deleted sidebar carried (`MS3 Clerkship · Joshua Moss,
+MD`), and `resident_section.py` rewrites it to `Resident Rotation · Sanford BHU · Joshua Moss, MD`
+through a `RESIDENT_REBRAND` needle anchored on `class="fd-attrib"`. The token ban in
+`tests/shell-copy.test.mjs` governs copy that ships to both sites **unrebranded** — this string
+does not. **Do not add it to `extractShellCopy()`**: the suite would go red looking like a genuine
+audience leak, and the obvious fix (neutering the text) would silently delete the resident site's
+attribution. Rewording it here without mirroring the needle aborts the resident build.
+
+⚠ **`.fd-attrib` is a sibling of `.fd-brand`, never a second line inside it.** Two reasons, both
+load-bearing: `.fd-brand` is a `<button>`, so nested text would be folded into the home button's
+accessible name; and a two-line brand grows `.fd-header` past the height `.fd-rail` /
+`.fd-railnav`'s `top:106px` sticky offset assumes.
 
 ---
 

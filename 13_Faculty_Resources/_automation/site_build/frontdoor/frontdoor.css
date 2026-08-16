@@ -137,6 +137,13 @@
 }
 .fd-setup__brand .fd-logo{width:38px;height:38px;border-radius:10px;font-size:22px}
 .fd-brand__name{font-size:14px;font-weight:700;color:var(--fd-text);white-space:nowrap}
+/* Attribution line — the provenance the deleted sidebar carried under its wordmark. No prototype
+ * counterpart (the handoff's header has no attribution at all). Sized and coloured as secondary
+ * metadata, borrowing .fd-listhead__theme's 12px/--fd-text-dim treatment, one step down to 11px
+ * so it reads as a caption beside the 14px wordmark rather than competing with it. Deliberately
+ * NOT taller than the 30px .fd-logo that sets the bar's height: .fd-rail and .fd-railnav stick to
+ * top:106px, which assumes the header's current bar+tabs height (CLASS-INVENTORY §1 ⚠). */
+.fd-attrib{flex:0 0 auto;font-size:11px;color:var(--fd-text-dim);white-space:nowrap}
 
 .fd-searchbtn{
   flex:1;max-width:340px;display:flex;align-items:center;gap:8px;
@@ -636,6 +643,12 @@
 
 /* Mobile primary actions keep a 44px minimum hit target. */
 @media (max-width:999px){
+  /* The header bar does not wrap, and below 1000px it already carries brand + search + three
+     controls. The attribution is provenance, not an affordance, so it is the right thing to drop
+     first — and it is still MORE visible than before the swap, where the same line lived inside a
+     sidebar that collapsed to a drawer behind the menu button on every phone. Same
+     always-emit-and-let-the-breakpoint-decide rule as .fd-rail / .fd-quicktools--pills. */
+  .fd-attrib{display:none}
   .fd-btn--primary,.fd-safetybtn,.fd-weekpill,.fd-searchbtn,.fd-weekgrid__browse{min-height:44px}
   /* Both dimensions: .fd-themebtn is the one square control in the header, so a min-height alone
      would leave it 32px wide and short of the target on its narrow axis. */

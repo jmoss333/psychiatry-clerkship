@@ -7,7 +7,10 @@
 
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford (tests/fd-shell.test.mjs and, once wired,
-   tests/shell-copy.test.mjs). "Inpatient Psychiatry" is the audience-neutral brand string
+   tests/shell-copy.test.mjs) -- with EXACTLY ONE exception, .fd-attrib below, which is rebranded
+   per site by a RESIDENT_REBRAND needle and is therefore allowed to name its audience. See the
+   comment at its emission site before touching it. "Inpatient Psychiatry" is the audience-neutral
+   brand string
    spa_index.html already carries (rewritten to "MMC Psychiatry" for the resident build via
    RESIDENT_REBRAND in resident_section.py) -- reused here rather than inventing a second
    wordmark; per-site role copy instead comes from curriculum.json's roles lists (below), which
@@ -52,6 +55,24 @@ function fdHeader(state){
     '<span class="fd-logo">ψ</span>'+
     '<span class="fd-brand__name">Inpatient Psychiatry</span>'+
     '</button>';
+  /* *** THIS IS THE ONE STRING IN THIS FILE THAT IS NOT AUDIENCE-NEUTRAL, AND THAT IS CORRECT. ***
+     The attribution restores the line the deleted sidebar carried under its wordmark. It contains
+     "MS3" and "Clerkship", both on tests/shell-copy.test.mjs's banned-token list -- but that ban
+     governs copy shipping to BOTH sites UNREBRANDED, and this string is rebranded per site by a
+     RESIDENT_REBRAND needle in resident_section.py (anchored on `class="fd-attrib"`, exactly as the
+     old `<div class="by">` needle was anchored on its own class).
+
+     *** DO NOT ADD THIS STRING TO extractShellCopy() IN tests/shell-copy.test.mjs. *** That
+     extractor collects only the shared-and-unrebranded copy; adding this one would go red and read
+     like a genuine audience-leak, and the obvious "fix" -- neutering the text -- would silently
+     delete the resident site's attribution instead. If it must be covered, assert that the needle
+     exists in resident_section.py, not that the string is audience-neutral here.
+
+     Emitted as a SIBLING of .fd-brand, not a second line inside it, for two reasons: the brand is a
+     <button> and stacking text inside it would fold the attribution into that button's accessible
+     name, and a two-line brand would grow .fd-header past the height .fd-rail/.fd-railnav's
+     `top:106px` sticky offset assumes (CLASS-INVENTORY's ⚠ on the shell section). */
+  out+='<span class="fd-attrib">MS3 Clerkship · Joshua Moss, MD</span>';
   out+='<button type="button" class="fd-searchbtn" data-fd-search>'+
     '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" '+
     'stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle>'+

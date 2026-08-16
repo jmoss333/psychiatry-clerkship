@@ -135,19 +135,39 @@ open(OUT.rstrip("/\\")+".source-map.json","w",encoding="utf-8").write(json.dumps
 # MMC Psychiatry" on the resident site. Anchoring on the class also makes the two needles fail
 # INDEPENDENTLY, so a change to either surface is reported by name instead of one masking the other.
 #
-# *** THE RESIDENT ATTRIBUTION LINE HAS NO TARGET AND IS NOT REBRANDED HERE. ***
-# The needle used to be '<div class="by">MS3 Clerkship · Joshua Moss, MD</div>' → 'Resident
-# Rotation · Sanford BHU · Joshua Moss, MD'. That div lived in the sidebar the front-door swap
-# deleted, and the new design carries no attribution slot anywhere — so the line is now absent from
-# BOTH sites, not just this one. This is a design gap, not a rebrand gap: there is nothing to point
-# a needle at, and inventing a slot here would be inventing chrome the design does not have.
-# Removed rather than repointed, deliberately and on the record (Plan 3 Task 3, fix round 1), and
-# raised for a ruling. If an attribution line comes back, its needle belongs right here.
+# Attribution: restored to the front door's header as `<span class="fd-attrib">` (fd_shell.js),
+# carrying the same text the deleted sidebar's `<div class="by">` did. Anchored on its own class
+# for the same reason as the wordmark above.
+#
+# *** ORDER IS LOAD-BEARING IN THIS LIST, AND THE ORDERING CONSTRAINT IS NEW. ***
+# Every needle that CONTAINS the substring 'MS3 Clerkship' must appear BEFORE any bare
+# 'MS3 Clerkship' needle, because apply_verified_replacements replaces ALL occurrences at each
+# step — a bare needle placed first would eat the attribution's and the title's context, and the
+# anchored needles would then abort the build for "failing to match" text that had already been
+# rewritten. Rather than rely on ordering alone, the bare 'MS3 Clerkship' needle is GONE: all three
+# of its former sites (the <title>, pageTitle()'s no-item fallback, and now the attribution) are
+# rebranded explicitly below, each with different replacement text, which a single bare needle
+# could not have produced anyway.
 RESIDENT_REBRAND=[
  ('<span class="fd-brand__name">Inpatient Psychiatry</span>','<span class="fd-brand__name">MMC Psychiatry</span>'),
  ('<span class="fd-setup__brand-name">Inpatient Psychiatry</span>','<span class="fd-setup__brand-name">MMC Psychiatry</span>'),
+ ('<span class="fd-attrib">MS3 Clerkship · Joshua Moss, MD</span>',
+  '<span class="fd-attrib">Resident Rotation · Sanford BHU · Joshua Moss, MD</span>'),
+ # Browser-tab label. Aligned to the wordmark: it used to read "Inpatient Psychiatry — Resident
+ # Rotation" while the visible wordmark said "MMC Psychiatry", so the tab named a different site
+ # than the page did. Kept descriptive rather than reduced to the wordmark alone — a tab reading
+ # only "MMC Psychiatry" says who, not what.
+ ('<title>Inpatient Psychiatry — MS3 Clerkship</title>','<title>MMC Psychiatry — Resident Rotation</title>'),
+ # pageTitle()'s no-item fallback, the same label applied dynamically once Task 4 wires routing.
+ # Without this the tab would silently revert to the old wording on the first route change.
+ # NOTE the raw strings: in the shell SOURCE this em dash is the six-character escape \u2014
+ # inside a JS string literal, not the literal em dash the <title> element above carries. Matching
+ # it with a real em dash would never fire, and the needle would abort the build.
+ (r"'Inpatient Psychiatry \u2014 MS3 Clerkship'", r"'MMC Psychiatry \u2014 Resident Rotation'"),
+ # Left bare deliberately: it occurs exactly once, inside pageTitle()'s per-page branch, and
+ # "MS3 Psychiatry Clerkship" is not a phrase any shipped content page uses — so replace-all
+ # cannot reach content the way a bare "Inpatient Psychiatry" needle would (see above).
  ('MS3 Psychiatry Clerkship','MMC Psychiatry Residency'),
- ('MS3 Clerkship','Resident Rotation'),
  ('Private teaching site for the MS3 inpatient psychiatry rotation. Educational use; fictional composites only, no PHI. Some pages are pending faculty review.',
   'Private teaching site for the MMC general-psychiatry resident inpatient rotation at the Sanford Behavioral Health Unit. Educational use; fictional composites only, no PHI. Pending faculty attestation.'),
  ('A private learning hub for the third-year inpatient psychiatry clerkship.',
