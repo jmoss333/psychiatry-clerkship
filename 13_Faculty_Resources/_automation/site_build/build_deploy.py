@@ -255,6 +255,21 @@ _CRISIS_REQUIRED_MD={
     # bedside work & disposition — the peri-discharge transition is the highest-risk window
     "brief_psychotherapy.md","exp_family.md","family_playbook.md","collateral_workflow.md",
 }
+# The SHELL itself. spa_index.html was in neither set above because, before the front door, it was
+# chrome around content — a nav rail and an iframe. It now RENDERS a safety surface of its own: the
+# side sheet draws a kit protocol's steps straight out of topic_meta.safetySteps, which is a
+# learner assessing and planning disposition at the bedside, and two of the five kit protocols
+# (exp_consult.md, delirium.md) carry no crisis block on their own markdown page. Under the scope
+# rule that is right for those pages and wrong for the sheet.
+# Asserted in two places: the marker must be in the SOURCE (checked with the other two sets below,
+# so a deleted marker fails at the same moment and with the same message), and exactly one
+# occurrence must be REPLACED in the built index.html (the needle idiom used for the other
+# index.html rewrites further down). The resident site inherits the injected file wholesale
+# through resident_section.py's copytree.
+_CRISIS_REQUIRED_SHELL={"index.html"}
+_crisis_shell_done=set()
+if _crisis.HTML_MARKER in open(SPA,encoding="utf-8").read():
+    _crisis_shell_done.add("index.html")
 _crisis_tools_done=set()
 for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.join(OUT,"tools")) if _f.endswith(".html")]:
     _t=open(_tool_html,encoding="utf-8").read()
@@ -295,12 +310,14 @@ for src,dst,_ in md:
 
 # Fail the build if a required safety surface lost its crisis block (marker deleted, page
 # renamed, or dropped from the manifest). Silent loss of 988 is the failure this prevents.
-_crisis_gap=sorted((_CRISIS_REQUIRED_MD-_crisis_md_done)|(_CRISIS_REQUIRED_TOOLS-_crisis_tools_done))
+_crisis_gap=sorted((_CRISIS_REQUIRED_MD-_crisis_md_done)|(_CRISIS_REQUIRED_TOOLS-_crisis_tools_done)
+                   |(_CRISIS_REQUIRED_SHELL-_crisis_shell_done))
 if _crisis_gap:
     print("BUILD ABORTED — crisis-contact block missing from required safety surface(s):")
     for _g in _crisis_gap: print("   -",_g,"(expected the crisis-block marker in its source)")
     raise SystemExit(1)
-print("crisis block injected:",len(_crisis_md_done),"content page(s) +",len(_crisis_tools_done),"tool(s)")
+print("crisis block injected:",len(_crisis_md_done),"content page(s) +",len(_crisis_tools_done),
+      "tool(s) +",len(_crisis_shell_done),"shell")
 
 # ---- QA-gate source map: every source path this build knows about, written NEXT TO the
 # build dir (<OUT>.source-map.json), never inside it — nothing ships. check-static-site.mjs
@@ -361,6 +378,20 @@ _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wif
 _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
 _copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)  # front-door shell stylesheet (linked via common.apply_dark_mode, index.html only)
 _abort_missing(_missing_req)
+
+# ---- crisis-contact block: the shell ----
+# Renders crisis_resources.json into the #fdCrisisSource <template>, which fd_sheet.js draws inside
+# a protocol view. Done HERE, with the other index.html rewrites, rather than in the loop above:
+# index.html does not exist until _copy_required lands it one line up. The required-set gate above
+# already proved the marker is in the source, so a count of anything but 1 here means the copy or
+# an earlier rewrite ate it — fail rather than ship a protocol sheet with no escalation path.
+_spa_out=OUT+"/index.html"
+_spa_t=open(_spa_out,encoding="utf-8").read()
+if _spa_t.count(_crisis.HTML_MARKER)!=1:
+    print("BUILD ABORTED — crisis-block marker missing or duplicated in the built index.html")
+    raise SystemExit(1)
+_spa_t,_=_crisis.inject_html(_spa_t,_crisis_data)
+open(_spa_out,"w",encoding="utf-8").write(_spa_t)
 
 # ---- retired-bank-ids injection (shell calibration parity) ----
 # The shell counts confidently-wrong items straight from cw_qb_v1; the practice tool

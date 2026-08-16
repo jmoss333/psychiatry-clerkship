@@ -120,6 +120,8 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 ## 1. Shell — header and tabs
 
 ```
+.fd-govnotice                              (in #governanceNotice — OUTSIDE #content, above .fd-header)
+  .governance-notice                       (pre-front-door class, shared with the console — do not fork)
 .fd-header
   .fd-header__bar
     .fd-brand              <button>
@@ -140,6 +142,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 
 | Class | Notes |
 |---|---|
+| `.fd-govnotice` | Measure + gutters for the review-status notice, which `fdRender` mounts for **any** open page or tool — one call site for both, so the page path and the tool path cannot drift. It lives outside `#content` for two reasons: `#content` is rebuilt wholesale on every render, and the pending-HIGH variant is `role="alert"`, which fires on **insertion** — inside `#content` it would be re-announced every time the student ticks a checkbox. Only the wrapper is front-door CSS; `.governance-notice` inside keeps the shell's own pre-front-door treatment. |
 | `.fd-header` | `position:sticky; top:0; z-index:40`. |
 | `.fd-header__bar` | The 1200px-capped flex row. `.fd-header` alone has no max-width. |
 | `.fd-header__actions` | `margin-left:auto` — this is what pushes the right group over. |
@@ -389,6 +392,8 @@ it; just don't expect it to paint anything.
           .fd-keypoints__bullet
       .fd-trynow      <button>
         .fd-trynow__icon / .fd-trynow__title / .fd-trynow__sub
+      .fd-ctas                              (topic_meta `cta` — omitted entirely when there is none)
+        .fd-cta       <a href>  ×N
       .fd-article__source
         <span>Source:</span> .fd-src
       .fd-article__actions                (≥1000px)
@@ -419,6 +424,15 @@ it; just don't expect it to paint anything.
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
 | `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch) — `.fd-actionbar` at the bottom of this tree is the mobile equivalent; the breakpoint hides this one and shows that one, never both. |
 | `.fd-tip` (Reader instance) | The `←`/`→`/`1`/`2`/`3` keyboard hint. Hidden below 1000px via the descendant selector `.fd-article .fd-tip` — **do not** hide the bare `.fd-tip` class, which would also blank the wizard's `.fd-tip--setup` line (§2). |
+| `.fd-ctas` / `.fd-cta` | `topic_meta.json`'s authored `cta` list — 104 faculty-written links across 65 topics. Not in the prototype (its fixture data carried none); the chip shape borrows `.fd-btn--accent` and the colour pair borrows `.fd-trynow__title`, both stated in the CSS. Wraps, because a page can author four. |
+
+⚠ **`.fd-cta` is an `<a href>`, never a `data-fd-open` button.** 16 of the authored hrefs carry a
+`&case=` / `&scenario=` suffix, and `data-fd-open` transports a **ref only** — dispatching one
+would open the tool at its front page and drop the case *with no error*. The href therefore ships
+whole and unmodified (escaped, not re-derived). `fd_wire.js`'s link handler intercepts the plain
+left click and routes it client-side **carrying the suffix into `FD_TOOL_EXTRA`**; a modified click,
+a link with a `target`, or a ref this site does not ship is left to the browser. Both the label and
+the href are faculty-authored free text reaching `innerHTML` — escape both.
 
 ⚠ **`.fd-actionbar .fd-btn--primary` requires its label wrapped in a bare `<span>`**
 (`.fd-actionbar .fd-btn--primary span` supplies the ellipsis). A text-only child overflows on
@@ -526,7 +540,9 @@ wrong place, with no error.
       .fd-check                     (20px here — see Shared)
       .fd-step__text
     .fd-doccallout
-    .fd-sheet__attribution
+    .fd-sheet__attribution          (attested)
+    .fd-sheet__pending              (NOT attested — with .fd-sheet__note below it)
+    .fd-sheet__crisis               (build-injected crisis contacts — always, ungated)
     .fd-btn.fd-btn--ghost           ("Open the full page →")
     ── item-preview variant ──
     .fd-chip / .fd-row__min (meta line — borrowed, see below) / .fd-attested
@@ -547,6 +563,14 @@ wrong place, with no error.
 | `.fd-sheet__body` | The scroll container (`flex:1; overflow-y:auto`). |
 | `.fd-doccallout` | Amber "Document:" callout. Border is derived via `color-mix` from the two olive tokens. |
 | `.fd-sheet__attribution` | "✓ From: … · faculty-attested". |
+| `.fd-sheet__pending` | The affirmative counterpart: "Not yet faculty-reviewed — verify with faculty." Rendered **exactly when** `attested` is false *and* the protocol body is non-empty, i.e. under the same content gate as the attribution — the absence of a teal line is only legible to someone who has already seen one. Olive, not danger: this is provenance, not a hazard, and the danger register belongs to the pending-HIGH governance alert, which means something else. |
+| `.fd-sheet__crisis` | Host for the build-injected crisis-contact block. Supplies the `--cw-*` custom properties that markup was written against, mapped onto front-door tokens, so it stops falling back to its light-mode hexes inside a dark sheet. |
+
+⚠ **`.fd-sheet__crisis` is OUTSIDE the attestation content gate, on purpose.** The attribution and
+the pending line are gated on there being protocol content to describe; the crisis contacts are
+not. The state that empties the gate — `topic_meta` missing, `safetySteps` emptied by an unrelated
+edit — is the moment a learner standing on a protocol sheet most needs the escalation path, and a
+crisis block is never a false claim about content that did not load.
 
 ⚠ **The item-preview variant borrows `.fd-row__min` for two labels this file left undocumented** —
 a gap Plan 2 left open because its CSS was frozen (`fd_sheet.js`'s header comment flagged it for

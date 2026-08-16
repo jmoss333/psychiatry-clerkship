@@ -600,3 +600,125 @@ test('re-opening an already-open search does not wipe what has been typed', () =
   assert.deepEqual(F.fdKeyPatch({ type: 'search' }, { searchOpen: false }),
     { searchOpen: true, query: '' }, 'a fresh open still starts empty');
 });
+
+// ---- in-content links (Plan 3 Task 7) --------------------------------------------------------
+// fd_reader.js's authored .fd-cta list, and every ?page=/?tool= link marked() renders inside an
+// article body. The deleted shell intercepted these in its contentEl click handler; Task 3 deleted
+// that with the handler. fdLinkClick is the restoration, and the reason it is worth restoring
+// rather than letting the browser navigate is the QUERY SUFFIX: fdDispatch({open:ref}) carries a
+// ref and nothing else, so the tool would open at its front page with the case silently dropped.
+//
+// fdLinkClick is impure (it reads the index and calls fdApply), so it is exercised against stub
+// element/event objects with the shell's REAL toolExtraFromParams sliced in -- the suffix
+// extraction is the part under test and a stub of it would test nothing.
+
+const shellSrc = read('spa_index.html');
+const toolExtraFn = shellSrc.match(/function toolExtraFromParams\(sp\)\{.*\n/)[0];
+
+function makeLinkClick(byRef) {
+  const applied = [];
+  // eslint-disable-next-line no-new-func
+  const fn = new Function('URL', 'URLSearchParams', 'location', 'byRef', 'applied', `
+    ${read('frontdoor/fd_data.js')}
+    ${read('frontdoor/fd_sheet.js')}
+    ${wireSrc}
+    ${toolExtraFn}
+    function fdIndexSafe(){ return { byRef: byRef, weeks: [], columns: [], kit: [] }; }
+    function fdCurrentState(){ return { tab:'today', openId:'', fromTab:'today', done:{} }; }
+    function fdApply(p){ applied.push(p); }
+    return {
+      click: function(ev, a){ fdLinkClick(ev, a); },
+      toolExtra: function(){ return { ref: FD_TOOL_EXTRA_REF, extra: FD_TOOL_EXTRA }; },
+    };
+  `);
+  const api = fn(URL, URLSearchParams, { href: 'https://site.test/index.html' }, byRef, applied);
+  api.applied = applied;
+  return api;
+}
+
+const LINK_REFS = { 'b.md': {}, 'family-systems.html': {} };
+const anchor = (attrs) => ({ getAttribute: (n) => (n in attrs ? attrs[n] : null) });
+const clickEvent = (over) => Object.assign(
+  { defaultPrevented: false, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false,
+    button: 0, prevented: false, preventDefault() { this.prevented = true; } },
+  over,
+);
+
+test('a link to a shipped page is routed client-side rather than reloading the document', () => {
+  const api = makeLinkClick(LINK_REFS);
+  const ev = clickEvent();
+  api.click(ev, anchor({ href: '?page=b.md' }));
+  assert.equal(ev.prevented, true, 'the browser navigation must be cancelled');
+  assert.equal(api.applied.length, 1);
+  assert.equal(api.applied[0].openId, 'b.md');
+});
+
+test('THE POINT: a tool link\'s &scenario= is captured into FD_TOOL_EXTRA, keyed to that ref', () => {
+  const api = makeLinkClick(LINK_REFS);
+  api.click(clickEvent(), anchor({ href: '?tool=family-systems.html&scenario=collateral_baseline_safety_001' }));
+  assert.deepEqual(api.toolExtra(),
+    { ref: 'family-systems.html', extra: '&scenario=collateral_baseline_safety_001' });
+});
+
+test('a plain tool link CLEARS a suffix left over from an earlier one', () => {
+  // Otherwise the second visit replays the first link's case — a wrong-place open with no error,
+  // which is the same failure class as dropping the suffix.
+  const api = makeLinkClick(LINK_REFS);
+  api.click(clickEvent(), anchor({ href: '?tool=family-systems.html&scenario=abc_001' }));
+  api.click(clickEvent(), anchor({ href: '?tool=family-systems.html' }));
+  assert.deepEqual(api.toolExtra(), { ref: 'family-systems.html', extra: '' });
+});
+
+test('a modified click is left to the browser — that is how new-tab keeps working', () => {
+  for (const mod of ['metaKey', 'ctrlKey', 'shiftKey', 'altKey']) {
+    const api = makeLinkClick(LINK_REFS);
+    const ev = clickEvent({ [mod]: true });
+    api.click(ev, anchor({ href: '?page=b.md' }));
+    assert.equal(ev.prevented, false, mod);
+    assert.equal(api.applied.length, 0, mod);
+  }
+  const api = makeLinkClick(LINK_REFS);
+  const ev = clickEvent({ button: 1 });
+  api.click(ev, anchor({ href: '?page=b.md' }));
+  assert.equal(ev.prevented, false, 'a middle click is an open-in-new-tab too');
+});
+
+test('an already-handled click and a targeted link are both declined', () => {
+  const handled = makeLinkClick(LINK_REFS);
+  const ev1 = clickEvent({ defaultPrevented: true });
+  handled.click(ev1, anchor({ href: '?page=b.md' }));
+  assert.equal(handled.applied.length, 0, 'the faculty-preview lock must win');
+
+  const targeted = makeLinkClick(LINK_REFS);
+  const ev2 = clickEvent();
+  targeted.click(ev2, anchor({ href: '?page=b.md', target: '_blank' }));
+  assert.equal(ev2.prevented, false);
+  assert.equal(targeted.applied.length, 0);
+});
+
+test('a ref this site does not ship falls through to the browser', () => {
+  // topic_meta.json is shared by both sites; a markdown body can carry a cross-site link. A real
+  // navigation to a real 404 beats a click that silently does nothing.
+  const api = makeLinkClick(LINK_REFS);
+  const ev = clickEvent();
+  api.click(ev, anchor({ href: '?page=adv_psychopharm.md' }));
+  assert.equal(ev.prevented, false);
+  assert.equal(api.applied.length, 0);
+});
+
+test('a non-route link is ignored entirely', () => {
+  const api = makeLinkClick(LINK_REFS);
+  for (const href of ['https://example.org/x', '#anchor', 'mailto:a@b.c', '']) {
+    const ev = clickEvent();
+    api.click(ev, anchor({ href }));
+    assert.equal(ev.prevented, false, href);
+  }
+  assert.equal(api.applied.length, 0);
+});
+
+test('the link branch runs LAST, after every data-fd-* control has had its chance', () => {
+  const listener = wireSrc.slice(wireSrc.indexOf("addEventListener('click'"));
+  const body = listener.slice(0, listener.indexOf('});'));
+  assert.ok(body.indexOf('FD_CLICK_SELECTOR') < body.indexOf("closest('a[href]')"),
+    'a front-door control must never be shadowed by the link handler');
+});

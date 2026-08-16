@@ -410,3 +410,109 @@ test('the class check itself rejects a name that merely prefixes a real class', 
   assert.match(css, re('fd-step'), 'control: the real class still matches');
   assert.doesNotMatch(css, re('fd-ste'), 'a substring check would have passed this');
 });
+
+// ---- the affirmative "not yet faculty-reviewed" line -------------------------------------------
+// Until Plan 3 Task 7 the un-reviewed state was signalled ONLY by the absence of the teal
+// attribution line -- which is invisible to anyone who has never seen the attested version, i.e.
+// to every first-time reader of that protocol. Both directions are pinned, and so is the content
+// gate: the line is a claim about content, so it appears only where there IS content.
+
+test('an UNattested protocol says so affirmatively, above its provenance line', () => {
+  const html = F.fdSheet(FIX_INDEX, FIX_META, { sheet: 'evil.md' });
+  assert.match(html, /<p class="fd-sheet__pending">Not yet faculty-reviewed — verify with faculty\.<\/p>/);
+  assert.ok(html.indexOf('fd-sheet__pending') < html.indexOf('From: evil.md'),
+    'the state comes before the provenance it qualifies');
+});
+
+test('an attested protocol never shows the pending line', () => {
+  for (const ref of KIT_REFS) {
+    const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: ref });
+    assert.doesNotMatch(html, /fd-sheet__pending/, `${ref} is attested today`);
+  }
+});
+
+test('the pending line is gated on content, exactly like the attribution it replaces', () => {
+  // bare.md is reviewed-with-no-steps; evil.md is unreviewed-with-steps. Neither an attestation
+  // claim nor a "not reviewed" claim belongs above a body that rendered nothing.
+  const bare = F.fdSheet(FIX_INDEX, FIX_META, { sheet: 'bare.md' });
+  assert.doesNotMatch(bare, /fd-sheet__pending/);
+  const noMeta = F.fdSheet(REAL_INDEX, undefined, { sheet: KIT_REFS[0] });
+  assert.doesNotMatch(noMeta, /fd-sheet__pending/,
+    'topicMeta failing to load is not evidence about anybody\'s review');
+});
+
+test('the pending line renders exactly when attested is false AND the body is non-empty', () => {
+  // The contract as a truth table over the two inputs that decide it, rather than as two examples.
+  const cases = [
+    { steps: ['s1'], status: 'draft', expect: true },
+    { steps: ['s1'], status: 'reviewed', expect: false },
+    { steps: [], status: 'draft', expect: false },
+    { steps: [], status: 'reviewed', expect: false },
+  ];
+  for (const c of cases) {
+    const meta = { 'evil.md': { safetySteps: c.steps, facultyReview: { status: c.status } } };
+    const idx = F.fdBuildIndex(FIX_CUR, meta, { tools: [] }, FIX_MAN);
+    const html = F.fdSheet(idx, meta, { sheet: 'evil.md' });
+    assert.equal(/fd-sheet__pending/.test(html), c.expect,
+      `steps=${c.steps.length} status=${c.status}`);
+  }
+});
+
+test('the pending copy ships to both sites unrebranded', () => {
+  const html = F.fdSheet(FIX_INDEX, FIX_META, { sheet: 'evil.md' });
+  const line = html.match(/<p class="fd-sheet__pending">([^<]*)</)[1];
+  assert.doesNotMatch(line, AUDIENCE_TOKEN_RE);
+});
+
+// ---- the build-injected crisis-contact block ---------------------------------------------------
+// crisis_resources.json is the single source of truth for 988 and the rest; crisis_block.py
+// renders it at build time into spa_index.html's #fdCrisisSource template and the shell hands the
+// markup in as a parameter. Nothing here may be a literal -- the assertions use a sentinel.
+
+const CRISIS = '<section class="crisis-block">SENTINEL</section>';
+
+test('a protocol view carries the crisis block, verbatim', () => {
+  const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'pg_suicide.md' }, CRISIS);
+  assert.match(html, /<div class="fd-sheet__crisis"><section class="crisis-block">SENTINEL<\/section><\/div>/,
+    'unescaped, like fd_reader.js\'s bodyHtml — it is already-rendered build output');
+});
+
+test('every kit protocol carries it, including the two whose own page does not', () => {
+  // exp_consult.md and delirium.md are NOT in build_deploy.py's _CRISIS_REQUIRED_MD — correctly,
+  // under the scope rule — so the sheet is the only surface that ever shows them one.
+  for (const ref of KIT_REFS) {
+    assert.match(F.fdSheet(REAL_INDEX, REAL_META, { sheet: ref }, CRISIS), /SENTINEL/, ref);
+  }
+});
+
+test('the crisis block is NOT gated on protocol content', () => {
+  // The state that empties the gate is exactly the state in which a learner standing on a protocol
+  // sheet most needs the escalation path. A crisis block is never a false claim about content.
+  assert.match(F.fdSheet(FIX_INDEX, FIX_META, { sheet: 'bare.md' }, CRISIS), /SENTINEL/);
+  assert.match(F.fdSheet(REAL_INDEX, undefined, { sheet: KIT_REFS[0] }, CRISIS), /SENTINEL/);
+});
+
+test('it sits after the provenance and before the way out', () => {
+  const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'delirium.md' }, CRISIS);
+  assert.ok(html.indexOf('fd-sheet__attribution') < html.indexOf('fd-sheet__crisis'));
+  assert.ok(html.indexOf('fd-sheet__crisis') < html.indexOf('Open the full page'));
+});
+
+test('the kit list and the item preview carry no crisis block', () => {
+  assert.doesNotMatch(F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'kit' }, CRISIS), /SENTINEL/);
+  assert.doesNotMatch(F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'item:pg_suicide.md' }, CRISIS), /SENTINEL/);
+});
+
+test('a missing crisis parameter renders no empty wrapper', () => {
+  const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'pg_suicide.md' });
+  assert.doesNotMatch(html, /fd-sheet__crisis/,
+    'the build asserts the block exists; the renderer must not fabricate a container for it');
+});
+
+test('fd_sheet.js hand-maintains no crisis number of its own', () => {
+  // Same rule crisis-block.test.mjs enforces on every other safety surface: the numbers live in
+  // crisis_resources.json and arrive as a parameter. A literal here would be an unreviewed crisis
+  // contact on the 2am surface, which is the failure the single-source-of-truth design exists to
+  // make impossible.
+  assert.doesNotMatch(sheetSrc, /\b988\b|741741|568-1112|\b911\b/);
+});

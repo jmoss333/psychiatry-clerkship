@@ -189,6 +189,38 @@ function fdReaderTryNow(item, index){
   '</button>';
 }
 
+/* ---- authored calls-to-action ---------------------------------------------------------------
+   topic_meta.json's `cta` list, joined and site-filtered by fd_data.js's fdCtaList/fdBuildIndex.
+   This is faculty-AUTHORED navigation, not decoration: 104 links across 65 topics, and 16 of them
+   carry the `&case=` / `&scenario=` suffix that makes "practice this exact case" land on that case
+   instead of the tool's front page. So the href ships WHOLE -- the ref is never re-derived here
+   and re-serialised, because that is precisely how a suffix goes missing.
+
+   *** REAL <a href>, NOT a data-fd-open button, and that is deliberate. *** Three reasons, in
+   order of weight:
+     1. data-fd-open carries a REF and nothing else. fdDispatch would open the tool at its front
+        page and drop the case with no error -- the silent failure the tool surface's own comment
+        warns about at length.
+     2. fdWire() is wrapped in try/catch so a wiring failure leaves a readable page. A link still
+        navigates with no JS at all; a button is inert.
+     3. Copy-link-address, middle-click and cmd-click are what a student does with a link they
+        want to keep. fd_wire.js's link handler declines all of those on purpose.
+   fd_wire.js intercepts the plain left click and routes it client-side WITH the suffix; without
+   that interception the link still works, as a full page load.
+
+   Both label and href are faculty-authored free text reaching innerHTML, so both go through
+   fdEsc -- the href in particular, since a `"` in it would otherwise close the attribute. */
+function fdReaderCtas(item){
+  var list=(item&&item.cta)||[];
+  if(!list.length) return '';
+  var out='<div class="fd-ctas">';
+  for(var i=0;i<list.length;i++){
+    out+='<a class="fd-cta" href="'+fdEsc(list[i].href)+'">'+fdEsc(list[i].label)+' →</a>';
+  }
+  out+='</div>';
+  return out;
+}
+
 /* The whole prevnext+tip block is omitted together when neither neighbour exists (a library-only
    item opened outside any week) -- an empty footer with nothing to page through is not useful
    chrome, it is a bug. Each button is independently optional inside that: the first item in a
@@ -314,7 +346,7 @@ function fdReader(index, state, bodyHtml){
   var st=state||{};
   var item=(idx.byRef&&idx.byRef[st.ref])|| {
     ref: st.ref||'', kind:'read', title: st.ref||'', minutes:null, summary:'',
-    points:[], attested:false, toolRef:null, risk:null, href:'',
+    points:[], attested:false, toolRef:null, risk:null, cta:[], href:'',
   };
 
   var hasWeek=(typeof st.week==='number')&&!isNaN(st.week);
@@ -352,6 +384,9 @@ function fdReader(index, state, bodyHtml){
   if(bodyHtml) article+='<div class="fd-article__body">'+bodyHtml+'</div>';
   article+=fdReaderKeyPoints(item.points);
   article+=fdReaderTryNow(item, idx);
+  /* After Try-it-now and before the Source line: both are "where to go next" affordances, and the
+     single relatedTools[0] button reads as the headline one while the authored list is the rest. */
+  article+=fdReaderCtas(item);
   article+='<div class="fd-article__source"><span>Source:</span>'+
     '<span class="fd-src">'+fdEsc(item.ref)+'</span></div>';
   article+=fdReaderActions(item, doneLabel, backLabel, isDone);

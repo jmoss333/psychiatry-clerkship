@@ -44,6 +44,12 @@ const markedSources = new Map([
   ['02_Clinical_Skills/Communication_Practice/communication-practice.html', HTML],
   ['06_Family_and_Relational/family-systems-practice.html', HTML],
   ['08_Cases_and_Simulation/one-patient-six-weeks.html', HTML],
+  // The shell. It renders a safety surface of its own now: the side sheet draws a kit protocol's
+  // steps out of topic_meta.safetySteps, which is a learner assessing and planning disposition at
+  // the bedside. Two of the five kit protocols (exp_consult.md, delirium.md) carry no crisis block
+  // on their own markdown page — correctly, under the scope rule — so the sheet is the only place
+  // those two ever show one.
+  ['13_Faculty_Resources/_automation/site_build/spa_index.html', HTML],
 ]);
 
 // Verified 2026-07-27 against the official source recorded on each record.

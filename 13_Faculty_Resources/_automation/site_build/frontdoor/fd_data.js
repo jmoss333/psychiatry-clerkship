@@ -13,6 +13,47 @@ function fdEsc(s){
 
 function fdIsTool(ref){ return /\.html$/.test(ref); }
 
+/* ---- authored calls-to-action ---------------------------------------------------------------
+   topic_meta.json's `cta` is faculty-authored NAVIGATION -- "Practice caregiver
+   baseline/adaptations", "Open collateral workflow" -- carried on 65 of the 72 topics, 104 links
+   in all. Every href is already a `?page=<slug>` or `?tool=<slug>` form, and 16 of them carry a
+   `&case=` / `&scenario=` suffix. *** THE SUFFIX IS THE PART THAT LOOKS OPTIONAL AND IS NOT ***
+   (the same warning spa_index.html's tool surface carries): it is what makes "practice THIS case"
+   land on that case rather than on the tool's front page, so `href` is kept whole here and the
+   ref is derived ALONGSIDE it rather than replacing it.
+
+   The ref is derived for exactly one reason -- the membership filter at the bottom of
+   fdBuildIndex -- and the href is what actually ships to the browser. */
+var FD_CTA_HREF_RE=/^\?(page|tool)=([^&#]+)/;
+
+/* The slug a cta href names, or '' for a form this shell does not route (an absolute URL, a bare
+   fragment, a query that names neither page nor tool). '' means "not ours" and the entry is
+   dropped rather than rendered as a link the front door cannot honour. */
+function fdCtaRef(href){
+  var m=FD_CTA_HREF_RE.exec(String(href===null||href===undefined?'':href));
+  if(!m) return '';
+  try{ return decodeURIComponent(m[2]); }catch(_){ return m[2]; }
+}
+
+/* topic_meta authors write `cta` as either one {label, href} object or an array of them (43 and
+   22 topics respectively -- both shapes are live, so both are read). Anything without BOTH
+   strings is skipped: a half-authored entry would otherwise render an empty link. */
+function fdCtaList(cta){
+  if(!cta) return [];
+  var src=(Object.prototype.toString.call(cta)==='[object Array]')?cta:[cta];
+  var out=[];
+  for(var i=0;i<src.length;i++){
+    var e=src[i];
+    if(!e||typeof e!=='object') continue;
+    if(typeof e.label!=='string'||!e.label) continue;
+    if(typeof e.href!=='string'||!e.href) continue;
+    var ref=fdCtaRef(e.href);
+    if(!ref) continue;
+    out.push({ label:e.label, href:e.href, ref:ref });
+  }
+  return out;
+}
+
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */
@@ -35,6 +76,8 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex){
     attested: fr.status==='reviewed',
     toolRef: (m.relatedTools&&m.relatedTools.length)?m.relatedTools[0]:null,
     risk: (t&&t.riskLevel)||m.safetyLevel||null,
+    /* Filtered to what THIS site ships by fdBuildIndex's last pass -- see there. */
+    cta: fdCtaList(m.cta),
     href: (isTool?'?tool=':'?page=')+ref
   };
 }
@@ -95,6 +138,24 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
 
   var kit=[], ck=cur.safetyKit||[];
   for(var k=0;k<ck.length;k++){ kit.push({ item: ensure(ck[k].ref, null), sub: ck[k].sub }); }
+
+  /* *** LAST PASS, AND IT MUST BE LAST: drop any cta whose target this SITE does not ship. ***
+     topic_meta.json is shared by both sites; curriculum.json's per-site membership is not. One
+     authored link is already cross-site today -- cl_reference.md offers "?page=adv_psychopharm.md",
+     a resident-only page -- and on the other site that is a link to nothing. Rendering it would
+     undo the per-site scoping the Library was given for exactly this reason.
+
+     It runs here rather than inside fdMakeItem because membership is only knowable once every ref
+     has been ensure()d: an item built early cannot yet see a target built later. hasOwnProperty
+     rather than a truth test -- a cta pointing at "constructor" would otherwise pass. */
+  for(var ref in byRef){
+    if(!Object.prototype.hasOwnProperty.call(byRef, ref)) continue;
+    var item=byRef[ref], keep=[], cs=item.cta||[];
+    for(var q=0;q<cs.length;q++){
+      if(Object.prototype.hasOwnProperty.call(byRef, cs[q].ref)) keep.push(cs[q]);
+    }
+    item.cta=keep;
+  }
 
   return { byRef: byRef, weeks: weeks, columns: columns, kit: kit };
 }

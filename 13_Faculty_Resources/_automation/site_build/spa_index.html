@@ -467,9 +467,20 @@
        bar that used to duplicate it on small screens is gone with the sidebar, so this is now the
        single announcement channel at every width. -->
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
-  <!-- Governance notice mount. Empty until Task 7 rewires renderGovernanceNotice() onto the front
-       door; it lives OUTSIDE #content deliberately, because #content is fully overwritten on every
-       fdRender and a compliance notice must not be collateral damage of a tab switch. -->
+  <!-- Governance notice mount. fdRender writes the review-status notice here for the open page OR
+       tool — one call site for both, so the two renderings cannot drift the way the tool branch
+       and the md branch of the deleted show() did. (The renderer is NAMED rather than written out
+       here on purpose: tests/fd-shell-boot.test.mjs counts its call sites, and a comment
+       reproducing the call inflates the count and makes that assertion unfalsifiable — a trap this
+       plan has now sprung twice.)
+       It lives OUTSIDE #content deliberately, and there are two reasons rather than one:
+       (a) #content is fully overwritten on every fdRender, so a compliance notice inside it would
+           be collateral damage of a tab switch; and
+       (b) the pending-high variant is role="alert", which fires on INSERTION — inside #content it
+           would be re-inserted, and therefore re-shouted at a screen-reader user, every time the
+           student ticks a checkbox or flips the theme. fdMount only writes a mount whose markup
+           actually changed, so out here the alert fires once per route, which is what an alert
+           means. -->
   <div id="governanceNotice"></div>
   <!-- The content root. fdRender(state) owns everything inside it: the header (fdHeader + fdTabs)
        and <main class="fd-main">. Keeps id="content" because the skip link, announceRoute()'s
@@ -487,6 +498,14 @@
   <!-- Overlay mounts. The four portalled surfaces are position:fixed and are written separately
        from #content so an open sheet or search panel is not re-created (and its input focus lost)
        every time the page body behind it re-renders. -->
+  <!-- Crisis contacts for the protocol sheet, rendered at BUILD time from crisis_resources.json
+       (988 and the rest live in that file and nowhere else; crisis_block.py replaces the marker
+       below and build_deploy.py aborts the build if it ever goes missing). It sits in a <template>
+       so it is inert markup the parser keeps but never paints: fd_sheet.js draws the sheet, and a
+       statically-placed block would either sit unread behind the panel or duplicate itself inside
+       it. fdCrisisHtml() reads it once and hands it to fdSheet as a parameter, the same shape
+       fdReader already takes its article body in. -->
+  <template id="fdCrisisSource"><!-- crisis-block-html --></template>
   <div id="fdSheet"></div>
   <div id="fdSearch"></div>
   <div id="fdNudge"></div>
@@ -567,8 +586,14 @@
     var label=high?'Pending review · High risk':'Pending review';
     return '<span class="governance-badge'+(high?' high':'')+'" aria-label="'+label+'">'+label+'</span>';
   }
+  /* Queries the #governanceNotice mount, not contentEl: the notice moved out of #content when the
+     front door landed (see the mount's own comment in the body). Both readers of the rendered
+     notice — this one and refreshGovernanceNotice below — were retargeted together; leaving either
+     pointed at contentEl would make it silently find nothing and do nothing. */
+  function governanceNoticeHost(){ return document.getElementById('governanceNotice'); }
   function focusPendingHighNotice(){
-    var notice=contentEl.querySelector('.governance-notice.pending-high');
+    var host=governanceNoticeHost();
+    var notice=host&&host.querySelector('.governance-notice.pending-high');
     if(!notice)return false;
     try{ notice.focus(); }catch(_){ }
     return true;
@@ -576,7 +601,31 @@
   /* Focus a high-risk warning after a normal route change only. Never during faculty-preview
      initialization (the console iframe owns focus there) or browser-history restoration —
      except to complete a navigation whose focus-take was deferred because GOVERNANCE had not
-     resolved yet (see refreshGovernanceNotice's governanceFocusSlug check). */
+     resolved yet (see refreshGovernanceNotice's governanceFocusSlug check).
+
+     ---- The announceRoute race, and how it is settled -----------------------------------------
+     Task 5 left this function unwired because restoring the deleted call AT THE DELETED POSITION
+     would have lost a race it used to win. In the deleted shell, show() announced and then focused
+     in the same breath. In the front door the two are separated: fdApply renders, THEN announces
+     (announceRoute moves focus to #content), THEN decides focus in fdFocusAfterRender. Called from
+     the old position — inside the render — this would run BEFORE announceRoute and be silently
+     overwritten by it.
+
+     They are not in conflict; they are in ORDER, and the order is: announceRoute first, this
+     second. The single call site is fd_wire.js's fdFocusAfterRender, in the `routed` branch —
+     which is the one place the shell has already agreed decides post-render focus, so there is
+     still exactly one such decision point and no branch can fight another.
+
+     announceRoute WINS on two paths, deliberately:
+       - BOOT. announceRoute skips its own focus move on the first render, and this is not called
+         there either. It does not need to be: #governanceNotice precedes #content in the document,
+         so on a cold load the notice is already the first thing in reading order. Focusing it
+         would move focus to where the user is standing anyway.
+       - POPSTATE. It re-announces but never calls fdFocusAfterRender, which is the structural form
+         of this function's own fromHistory guard: a back press restores a page, it does not
+         re-raise its warning.
+     What is left is the case the focus move exists for — a route change the student just made,
+     where announceRoute has moved them INTO #content and PAST the notice. */
   function focusGovernanceNotice(opts){
     if(facultyPreviewRequest)return;
     if(opts&&opts.fromHistory)return;
@@ -592,7 +641,8 @@
      the focus-take is skipped there. */
   function refreshGovernanceNotice(){
     if(!currentItem||currentItem.k==='special')return;
-    var el=contentEl.querySelector('.governance-notice');
+    var host=governanceNoticeHost();
+    var el=host&&host.querySelector('.governance-notice');
     if(!el)return;
     var wrap=document.createElement('div'); wrap.innerHTML=renderGovernanceNotice(currentItem);
     if(!wrap.firstChild)return;
@@ -1175,6 +1225,26 @@
     }
   }
 
+  /* The crisis-contact block, rendered at build time from crisis_resources.json into the
+     #fdCrisisSource <template> (crisis_block.py; the build ABORTS if the marker is gone). Read
+     once and cached: it is static markup that cannot change at runtime, and fdSheet is called on
+     every render. '' when the template is absent — which cannot happen in a built site, because
+     the marker is asserted twice during the build, but a renderer must not throw over a missing
+     element either way.
+
+     A getter rather than a global initialised at parse time: this script runs in <body>, but so
+     does the template, and reading the DOM lazily removes any dependence on which of the two the
+     parser reached first. */
+  var FD_CRISIS_HTML=null;
+  function fdCrisisHtml(){
+    if(FD_CRISIS_HTML===null){
+      var host=null;
+      try{ host=document.getElementById('fdCrisisSource'); }catch(_){ }
+      FD_CRISIS_HTML=host?String(host.innerHTML||''):'';
+    }
+    return FD_CRISIS_HTML;
+  }
+
   /* fdBuildIndex joins curriculum -> topic_meta -> tool_registry -> site_manifest. Memoised
      because it is pure over build-injected data that cannot change at runtime, and it walks every
      shipped page — rebuilding it on each re-render would put that walk in the keystroke path. */
@@ -1482,7 +1552,6 @@
         body+=fdSurface('tool', function(){
           return '<div class="fd-toolpane">'+
             fdReaderBackButton(fdReaderBackLabel(st.fromTab))+
-            renderGovernanceNotice(openTool)+
           '</div>';
         });
       } else if(openRoute&&openRoute.k==='special'){
@@ -1506,6 +1575,30 @@
     }
     fdMount('content', body);
 
+    /* ---- the review-status notice, for BOTH the page path and the tool path ------------------
+       Task 5 rewired only the tool branch, which left the asymmetry this replaces: a tool showed
+       its review status and a markdown page showed none at all — including a page whose ledger
+       entry is `pending` at `high` risk, where showing nothing is the one outcome the whole
+       governance feature exists to prevent.
+
+       ONE call site, not two. The deleted show() rendered its own copy in each branch, and the
+       faculty-preview loader rendered a third; that is how three renderings of one compliance
+       statement drift. What decides whether a notice appears is the ROUTE, not the surface: any
+       open page or tool gets one, __progress__ (k:'special', a slug no ledger has ever heard of)
+       and the bare tabs get none, and the wizard suppresses it because a first-run role picker is
+       not a page under review.
+
+       Written to its own mount rather than into `body` — see the mount's comment for the two
+       reasons (survives a #content rebuild; role="alert" fires once per route, not once per
+       click). The wrapper class is what gives it the front door's own measure and gutters; the
+       .governance-notice element inside is the pre-existing one refreshGovernanceNotice swaps in
+       place when governance.json settles late. */
+    var govItem=(!wizard&&openRoute&&openRoute.k!=='special')?openRoute:null;
+    fdMount('governanceNotice', fdSurface('governance', function(){
+      if(!govItem) return '';
+      return '<div class="fd-govnotice">'+renderGovernanceNotice(govItem)+'</div>';
+    }));
+
     /* The tool frame, after #content so the back link and the notice above it already exist.
        Guarded like every other surface: a throw here (a broken index entry, a mount that is not
        in the document) must not take the header and tabs down with it. */
@@ -1514,7 +1607,9 @@
     /* The three portalled overlays go to their own mounts, never into #content: they are
        position:fixed, and rebuilding them whenever the page behind them re-renders would drop the
        search input's focus and caret. Each renderer returns '' when its surface is closed. */
-    fdMount('fdSheet', fdSurface('sheet', function(){ return fdSheet(idx, FD_TOPIC_META, st); }));
+    fdMount('fdSheet', fdSurface('sheet', function(){
+      return fdSheet(idx, FD_TOPIC_META, st, fdCrisisHtml());
+    }));
     fdMount('fdSearch', fdSurface('search', function(){
       if(!st.searchOpen) return '';
       return fdSearchOverlay(idx, st.query||'', (FD_CURRICULUM&&FD_CURRICULUM.synonyms)||{}, st);

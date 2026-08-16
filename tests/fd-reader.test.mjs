@@ -453,3 +453,89 @@ test('fd_reader.js touches no DOM, storage, or clock, and stays ES5', () => {
   assert.doesNotMatch(readerSrc, /\bconst\s|\blet\s|=>/,
     'fd_reader.js is a build-injected snippet, not a module -- ES5 only (var/function)');
 });
+
+// ---- authored calls-to-action ---------------------------------------------------------------
+// topic_meta.json's `cta`, joined by fd_data.js. Dead in the front door until Plan 3 Task 7.
+
+const CTA_META = Object.assign({}, FIX_META, {
+  'a.md': Object.assign({}, FIX_META['a.md'], {
+    cta: [
+      { label: 'Practice caregiver baseline/adaptations',
+        href: '?tool=tool.html&scenario=caregiver_baseline_adaptations_001' },
+      { label: 'Open collateral workflow', href: '?page=b.md' },
+    ],
+  }),
+});
+const CTA_IDX = F.fdBuildIndex(FIX_CUR, CTA_META, FIX_TOOLS, FIX_MAN);
+
+test('authored cta render as links, in authored order', () => {
+  const html = F.fdReader(CTA_IDX, s({}), '');
+  assert.match(html, /<div class="fd-ctas">/);
+  const first = html.indexOf('Practice caregiver baseline/adaptations');
+  const second = html.indexOf('Open collateral workflow');
+  assert.ok(first !== -1 && second !== -1, 'both authored labels must render');
+  assert.ok(first < second, 'faculty ordering is the ordering');
+});
+
+test('a cta is an <a href>, never a data-fd-open button', () => {
+  // data-fd-open transports a REF and nothing else, so dispatching one would open the tool at its
+  // front page and drop &scenario= with no error. It is also what keeps the link copyable, and
+  // what keeps it working if fdWire() throws.
+  const html = F.fdReader(CTA_IDX, s({}), '');
+  const block = html.slice(html.indexOf('<div class="fd-ctas">'), html.indexOf('</div><div class="fd-article__source"'));
+  assert.match(block, /<a class="fd-cta" href="\?tool=tool\.html&amp;scenario=caregiver_baseline_adaptations_001">/);
+  assert.doesNotMatch(block, /data-fd-open/, 'a cta must not be dispatched by ref');
+  assert.doesNotMatch(block, /<button/, 'a cta must remain a link');
+});
+
+test('the &scenario= / &case= suffix reaches the rendered href', () => {
+  const html = F.fdReader(CTA_IDX, s({}), '');
+  assert.match(html, /scenario=caregiver_baseline_adaptations_001/,
+    'this is the whole point: "practice THIS case" must land on that case');
+});
+
+test('no cta list renders no container at all', () => {
+  const html = F.fdReader(IDX, s({}), '');
+  assert.doesNotMatch(html, /fd-ctas/, 'an empty affordance row is chrome, not content');
+});
+
+test('a cta label and href are escaped — both are faculty-authored free text', () => {
+  // The hostile href still has to name a REAL ref, or the site filter drops the whole entry before
+  // escaping is ever exercised — the payload rides in a trailing param, which is exactly the shape
+  // a real suffix (&case=, &scenario=) has.
+  const hostile = Object.assign({}, FIX_META, {
+    'a.md': Object.assign({}, FIX_META['a.md'], {
+      cta: [{ label: '<img src=x onerror=alert(1)>', href: '?page=b.md&case="><script>x()</script>' }],
+    }),
+  });
+  const html = F.fdReader(F.fdBuildIndex(FIX_CUR, hostile, FIX_TOOLS, FIX_MAN), s({}), '');
+  assert.doesNotMatch(html, /<img src=x/);
+  assert.doesNotMatch(html, /<script>x\(\)/);
+  assert.match(html, /&lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.match(html, /&quot;&gt;&lt;script&gt;/, 'the href must not be able to close its attribute');
+});
+
+test('a cta href that does not resolve to a shipped ref never reaches the markup at all', () => {
+  // Defence in depth, and the reason the escaping test above needs a real ref: the site filter is
+  // a whitelist over index.byRef, so a href whose "slug" is a script payload is dropped upstream.
+  const hostile = Object.assign({}, FIX_META, {
+    'a.md': Object.assign({}, FIX_META['a.md'], {
+      cta: [{ label: 'Hostile', href: '?page=b.md"><script>x()</script>' }],
+    }),
+  });
+  const html = F.fdReader(F.fdBuildIndex(FIX_CUR, hostile, FIX_TOOLS, FIX_MAN), s({}), '');
+  assert.doesNotMatch(html, /fd-ctas/);
+  assert.doesNotMatch(html, /Hostile/);
+});
+
+test('the cta row sits between Try-it-now and the Source line', () => {
+  const html = F.fdReader(CTA_IDX, s({}), '');
+  assert.ok(html.indexOf('fd-trynow') < html.indexOf('fd-ctas'));
+  assert.ok(html.indexOf('fd-ctas') < html.indexOf('fd-article__source'));
+});
+
+test('cta labels ship to both sites unrebranded', () => {
+  const html = F.fdReader(CTA_IDX, s({}), '');
+  const block = html.slice(html.indexOf('<div class="fd-ctas">'), html.indexOf('fd-article__source'));
+  assert.doesNotMatch(block, AUDIENCE_TOKEN_RE);
+});

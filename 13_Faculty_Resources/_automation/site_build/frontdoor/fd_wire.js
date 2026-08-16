@@ -768,6 +768,14 @@ function fdRestoreActivated(key){
   if(el){ try{ el.focus(); }catch(_){ } }
 }
 
+/* The shell owns focusGovernanceNotice (it reads GOVERNANCE, facultyPreviewRequest and
+   currentItem, none of which this module has). Guarded by typeof so that the front door still
+   renders if the modules are ever evaluated without the shell around them -- which is exactly how
+   tests/fd-wire.test.mjs evaluates this file. */
+function fdFocusGovernance(){
+  try{ if(typeof focusGovernanceNotice==='function') focusGovernanceNotice(); }catch(_){ }
+}
+
 /* One decision point for where focus goes after a render, so the branches cannot fight. Order is
    the layering: the sheet is above search, which is above the page. */
 function fdFocusAfterRender(before, wasInSheet, wasInSearch, routed, key){
@@ -793,7 +801,14 @@ function fdFocusAfterRender(before, wasInSheet, wasInSearch, routed, key){
     fdRestoreFocus(sinv, wasInSearch);
     return;
   }
-  if(routed) return;   /* announceRoute has already moved focus to #content */
+  /* announceRoute has already moved focus to #content. The ONE thing allowed to take it from
+     there is a high-risk pending-review warning, which lives in #governanceNotice -- OUTSIDE and
+     BEFORE #content, so a student sent into #content has been sent past it. focusGovernanceNotice
+     is a no-op for every other ledger state, during a faculty preview, and while governance.json
+     is still in flight (it defers, and refreshGovernanceNotice completes the take when the fetch
+     settles). Its full rationale, including why this is the only correct call site, is in
+     spa_index.html above the function. */
+  if(routed){ fdFocusGovernance(); return; }
   fdRestoreActivated(key);
   /* Last resort. A re-render inside a still-open sheet that left focus on <body> anyway -- the
      activated control had no identifying attribute, or its replacement is gone -- puts the
@@ -918,6 +933,58 @@ function fdApply(patch){
   if(FD_TRANSIENT.nudgeRef) fdNudgeSchedule();
 }
 
+/* ---- in-content links -------------------------------------------------------------------------
+   An <a href="?page=…"> or <a href="?tool=…&case=…"> rendered INSIDE the page: fd_reader.js's
+   authored .fd-cta list, and every such link inside a markdown body that marked() turns into an
+   anchor. Restored from the deleted shell's own contentEl link handler (spa_index.html @098ad50,
+   the tail of the .pgfb-b/.markrev/.tyo listener), which Task 3 deleted with that listener.
+
+   Without it these links still WORK — they are real URLs and the boot path resolves them — but as
+   a full document reload, which throws away the front door and rebuilds it to move one page. With
+   it they route like every other navigation.
+
+   *** THE SUFFIX IS THE WHOLE REASON THIS TAKES THE TROUBLE. *** fdDispatch({open:ref}) carries a
+   ref and nothing else, so a naive intercept would open family-systems.html at its front page and
+   drop `&scenario=…` silently. FD_TOOL_EXTRA is what the tool mount reads, and the shell's comment
+   on it says it is captured "once at boot … the only point at which the original address is still
+   known". A clicked link is a SECOND such point — the address is right there in the href — so it
+   is captured here on the same terms, keyed to the ref the link named and no other. It is written
+   even when empty, so a plain link to a tool CLEARS a suffix left over from an earlier one rather
+   than replaying somebody else's case.
+
+   Four kinds of click are deliberately left to the browser:
+     - modified clicks and non-primary buttons — cmd/ctrl/shift/alt is "open it over there", and
+       preventDefault on those is how a site breaks new-tab.
+     - anything already handled (defaultPrevented). The faculty-preview lock is a CAPTURE-phase
+       listener that stops propagation, so it never reaches here at all; this is the belt.
+     - a target other than _self.
+     - a ref THIS SITE does not ship. topic_meta.json is shared by both sites, so a cross-site
+       authored link exists; fd_data.js filters those out of .fd-cta, but a markdown body can
+       still carry one, and a full navigation to a real 404 is a better answer than a click that
+       silently does nothing. */
+function fdLinkClick(ev, a){
+  if(ev.defaultPrevented) return;
+  if(ev.metaKey||ev.ctrlKey||ev.shiftKey||ev.altKey||ev.button) return;
+  var target=a.getAttribute('target')||'';
+  if(target&&target!=='_self') return;
+  var href=a.getAttribute('href')||'';
+  var m=/[?&](page|tool)=([^&#]+)/.exec(href);
+  if(!m) return;
+  var ref;
+  try{ ref=decodeURIComponent(m[2]); }catch(_){ ref=m[2]; }
+  if(!fdOwns(fdIndexSafe().byRef||{}, ref)) return;
+  if(m[1]==='tool'){
+    var extra='';
+    try{ extra=toolExtraFromParams(new URL(href, location.href).searchParams); }catch(_){ }
+    FD_TOOL_EXTRA_REF=ref; FD_TOOL_EXTRA=extra;
+  }
+  ev.preventDefault();
+  /* No invoker: the link is inside #content and #content is rebuilt by the navigation, so there
+     is nothing to restore focus to. announceRoute places focus instead. */
+  FD_LAST_INVOKER=null;
+  fdApply(fdDispatch({open:ref}, fdCurrentState()));
+}
+
 /* A ward-capture control. Ported from the deleted capTriageClick() (spa_index.html @098ad50),
    with navClick() replaced by the front door's own dispatch and the two in-place re-render calls
    replaced by fdRerender() -- specialRefresh() already defers to it, so this is the same path the
@@ -990,7 +1057,14 @@ function fdWire(){
     var act=reach.closest(FD_ACTION_SELECTOR);
     if(act){ FD_LAST_INVOKER=null; fdActionClick(act); return; }
     var el=reach.closest(FD_CLICK_SELECTOR);
-    if(!el) return;
+    if(!el){
+      /* Last, and only when nothing above matched: an authored .fd-cta or a link inside a
+         rendered markdown body. Every front-door control is a <button> carrying data-fd-*, so
+         this branch can never shadow one. */
+      var link=reach.closest('a[href]');
+      if(link) fdLinkClick(ev, link);
+      return;
+    }
     FD_LAST_INVOKER={ el: el, key: fdFocusKey(el) };
     fdApply(fdDispatch(fdWireTarget(el), fdCurrentState()));
   });

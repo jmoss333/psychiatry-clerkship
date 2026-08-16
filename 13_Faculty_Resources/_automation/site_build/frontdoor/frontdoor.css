@@ -211,6 +211,14 @@
 
 .fd-main{flex:1;width:100%;max-width:1200px;margin:0 auto;padding:26px 20px 64px}
 
+/* Measure and gutters for the review-status notice, which is mounted OUTSIDE #content (see
+ * spa_index.html's #governanceNotice comment) and would otherwise run the full window width while
+ * everything below it is centred at 1200px. Only the wrapper is front-door CSS: the
+ * .governance-notice element inside keeps the shell's own pre-front-door treatment, which is
+ * shared with the faculty console and must not fork. Its bottom margin supplies the gap, so this
+ * rule sets none. */
+.fd-govnotice{width:100%;max-width:1200px;margin:0 auto;padding:14px 20px 0}
+
 /* ═══ Today ══════════════════════════════════════════════════════════════════ */
 
 .fd-today{animation:fdFadeUp .24s cubic-bezier(.2,.8,.2,1)}
@@ -613,6 +621,29 @@
 .fd-trynow__title{display:block;font-size:13.5px;font-weight:700;color:var(--fd-teal-deep)}
 .fd-trynow__sub{display:block;font-size:12px;color:var(--fd-text-mid)}
 
+/* Authored calls-to-action (topic_meta.json's `cta`) -- 104 faculty-written links across 65
+ * topics. No prototype equivalent: its fixture data carried none, so the values below are derived
+ * from this stylesheet rather than transcribed. Each borrows a stated precedent so the row cannot
+ * drift into being a third button idiom:
+ *   chip shape / padding / radius   .fd-btn--accent (the small teal action above)
+ *   colour pair                     .fd-trynow__title on .fd-teal-wash -- the same accent pairing
+ *                                   the Try-it-now block directly above already uses, since these
+ *                                   are the same kind of "go and do this" affordance
+ *   hover                           the same color-mix toward --fd-teal .fd-trynow uses
+ * They wrap: a page can author four, and a phone is 320px wide. */
+.fd-ctas{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.fd-cta{
+  display:inline-block;padding:8px 14px;border-radius:9px;
+  background:var(--fd-teal-wash);border:1px solid var(--fd-teal);
+  color:var(--fd-teal-deep);font-size:13px;font-weight:600;line-height:1.35;
+}
+/* .fd-shell a{text-decoration:none} already applies; the hover rule there ADDS an underline, which
+ * on a chip reads as a broken control -- so both states are pinned here. */
+.fd-cta:hover{
+  background:color-mix(in srgb,var(--fd-teal-wash) 88%,var(--fd-teal));
+  color:var(--fd-teal-deep);text-decoration:none;
+}
+
 .fd-prevnext{display:flex;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--fd-line)}
 .fd-prevnext__btn{
   flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;
@@ -761,6 +792,26 @@
   border:1px solid color-mix(in srgb,var(--fd-olive) 34%,var(--fd-olive-wash));
   background:var(--fd-olive-wash);border-radius:10px;padding:12px 15px;
   font-size:13px;line-height:1.55;color:var(--fd-olive-deep);margin-bottom:14px;
+}
+
+/* The affirmative "this protocol has not been reviewed" line -- the counterpart of
+ * .fd-sheet__attribution, which is the teal "it has". Deliberately NOT the danger palette: an
+ * un-reviewed protocol is a provenance statement, not a hazard, and painting it red would put it
+ * in the same visual register as the pending-HIGH governance alert, which means something else. */
+.fd-sheet__pending{margin:12px 0 0;font-size:12.5px;font-weight:600;color:var(--fd-olive-deep)}
+
+/* Host for the build-injected crisis-contact block (crisis_block.py's render_html). That markup
+ * carries its own inline styles against --cw-* custom properties WITH light-mode hex fallbacks,
+ * which is right for a self-contained single-file tool and wrong inside a themed shell -- left
+ * alone it paints a light card inside a dark sheet. The block was written to be themed by those
+ * properties, so they are simply supplied here, mapped onto front-door tokens. Nothing about the
+ * injected markup changes; it just stops falling back. */
+.fd-sheet__crisis{
+  margin-top:16px;
+  --cw-border:var(--fd-line-strong);
+  --cw-accent:var(--fd-danger);
+  --cw-surface:var(--fd-surface-warm);
+  --cw-text:var(--fd-text);
 }
 
 .fd-nudge{

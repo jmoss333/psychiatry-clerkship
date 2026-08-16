@@ -208,3 +208,95 @@ test('all five real kit items are attested and carry safety steps', () => {
     assert.ok(META[k.item.ref].safetySteps.length >= 3, `${k.item.ref} needs safetySteps`);
   }
 });
+
+// ---- authored calls-to-action ------------------------------------------------------------
+// topic_meta.json's `cta` was dead in the front door until Plan 3 Task 7: fdMakeItem never read
+// it, so 104 faculty-written links across 65 topics rendered nowhere. These pin the two things
+// that make the carry-through correct rather than merely present -- the query suffix surviving
+// whole, and a link to a page THIS site does not ship being dropped.
+
+const CTA_CUR = JSON.parse(JSON.stringify(FIX_CUR));
+CTA_CUR.libraryColumns[0].refs.push('t.html');
+
+test('cta is carried into the item shape, in both authored container shapes', () => {
+  // 43 topics write one object, 22 write an array. Both are live in topic_meta.json today.
+  const one = { 'a.md': { cta: { label: 'Open T', href: '?tool=t.html' } } };
+  const many = { 'a.md': { cta: [{ label: 'Open T', href: '?tool=t.html' },
+                                 { label: 'Read B', href: '?page=b.md' }] } };
+  assert.deepEqual(F.fdBuildIndex(CTA_CUR, one, FIX_TOOLS, FIX_MAN).byRef['a.md'].cta,
+    [{ label: 'Open T', href: '?tool=t.html', ref: 't.html' }]);
+  assert.equal(F.fdBuildIndex(CTA_CUR, many, FIX_TOOLS, FIX_MAN).byRef['a.md'].cta.length, 2);
+});
+
+test('an item with no cta carries an empty list, never undefined', () => {
+  assert.deepEqual(F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN).byRef['b.md'].cta, []);
+});
+
+test('the &case= / &scenario= suffix survives the join UNTOUCHED', () => {
+  // The whole point. A ref-only carry-through would open the tool at its front page and drop the
+  // case with no error -- 16 of the 104 authored hrefs carry one of these suffixes.
+  const meta = { 'a.md': { cta: [
+    { label: 'Practice', href: '?tool=t.html&scenario=caregiver_baseline_adaptations_001' },
+    { label: 'Drill', href: '?tool=t.html&case=rupture_limit_setting_001&resume=1' },
+  ] } };
+  const cta = F.fdBuildIndex(CTA_CUR, meta, FIX_TOOLS, FIX_MAN).byRef['a.md'].cta;
+  assert.equal(cta[0].href, '?tool=t.html&scenario=caregiver_baseline_adaptations_001');
+  assert.equal(cta[1].href, '?tool=t.html&case=rupture_limit_setting_001&resume=1');
+  assert.equal(cta[0].ref, 't.html', 'the ref is derived ALONGSIDE the href, never instead of it');
+  assert.equal(cta[1].ref, 't.html');
+});
+
+test('a cta whose target this site does not ship is dropped', () => {
+  // topic_meta.json is shared by both sites; curriculum.json's per-site membership is not, so a
+  // link authored for one audience can name a page the other does not ship.
+  const meta = { 'a.md': { cta: [{ label: 'Elsewhere', href: '?page=not-shipped-here.md' },
+                                 { label: 'Read B', href: '?page=b.md' }] } };
+  const cta = F.fdBuildIndex(FIX_CUR, meta, FIX_TOOLS, FIX_MAN).byRef['a.md'].cta;
+  assert.deepEqual(cta.map((c) => c.ref), ['b.md']);
+});
+
+test('a cta href form the shell cannot route is dropped, not rendered as a dead link', () => {
+  const meta = { 'a.md': { cta: [
+    { label: 'External', href: 'https://example.org/x' },
+    { label: 'Fragment', href: '#somewhere' },
+    { label: 'Legacy', href: 'tools/t.html' },
+    { label: 'No label', href: '?page=b.md' },
+    { label: 'No href' },
+    { label: 'Prototype pollution', href: '?page=constructor' },
+    { label: 'Read B', href: '?page=b.md' },
+  ] } };
+  meta['a.md'].cta[3].label = '';
+  const cta = F.fdBuildIndex(FIX_CUR, meta, FIX_TOOLS, FIX_MAN).byRef['a.md'].cta;
+  assert.deepEqual(cta, [{ label: 'Read B', href: '?page=b.md', ref: 'b.md' }]);
+});
+
+test('every real authored cta resolves on the site that ships it', () => {
+  // Live data, not a fixture. This is the invariant the render depends on: after the join, no
+  // rendered cta can point at a page its own site does not ship.
+  let total = 0;
+  for (const site of ['ms3', 'resident']) {
+    const idx = F.fdBuildIndex(forSite(CUR, site), META, TOOLS, MAN);
+    for (const ref of Object.keys(idx.byRef)) {
+      for (const c of idx.byRef[ref].cta) {
+        assert.ok(idx.byRef[c.ref], `${site}: ${ref} cta "${c.label}" points at unshipped ${c.ref}`);
+        total += 1;
+      }
+    }
+  }
+  assert.ok(total > 150, `expected the authored cta corpus across both sites, got ${total}`);
+});
+
+test('the site filter drops nothing on TODAY\'s data, and the reason is stated', () => {
+  // Exactly one authored href names a page only one site ships: cl_reference.md offers
+  // "?page=adv_psychopharm.md", and adv_psychopharm.md is resident-only. It renders anyway,
+  // because cl_reference.md is ITSELF resident-only — the host page and its target travel
+  // together. So the filter above is defence, not a live fix, and this records that so a future
+  // reader does not mistake a passing filter for a working one.
+  const resident = F.fdBuildIndex(forSite(CUR, 'resident'), META, TOOLS, MAN);
+  const ms3 = F.fdBuildIndex(forSite(CUR, 'ms3'), META, TOOLS, MAN);
+  assert.ok(resident.byRef['cl_reference.md'], 'precondition: resident ships the host page');
+  assert.ok(resident.byRef['cl_reference.md'].cta.some((c) => c.ref === 'adv_psychopharm.md'),
+    'the resident site ships the target, so the link stands');
+  assert.equal(ms3.byRef['cl_reference.md'], undefined,
+    'precondition: MS3 ships neither the host page nor its target');
+});

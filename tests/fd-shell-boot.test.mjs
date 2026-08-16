@@ -236,6 +236,11 @@ function makeRender(sabotage) {
     // fdToolSync IS inside renderBlock and runs for real here — with document.getElementById
     // stubbed to null it is a no-op, which is the right shape for a render-only harness.
     var facultyPreviewRequest=null;
+    // The other first-script global fdRender reaches for: the review-status notice it mounts for
+    // any open page or tool. Stubbed rather than sliced in — the notice has its own suite
+    // (tests/surface-governance-ui.test.mjs), and without a stub every render carrying an openId
+    // would throw inside fdSurface and spend the console.warn the sabotage test counts.
+    function renderGovernanceNotice(){ return '<div class="governance-notice reviewed-receipt">stub</div>'; }
     ${renderBlock}
     if(sabotage==='today') fdToday=function(){ throw new Error('boom'); };
     if(sabotage==='path') fdPath=function(){ throw new Error('boom'); };
@@ -389,4 +394,91 @@ test('a broken index degrades every surface rather than throwing out of fdRender
   const html = fn(memStorage(), { getElementById: () => null })(BASE);
   assert.equal(typeof html, 'string');
   assert.match(html, /class="fd-header"/, 'the header does not depend on the index being usable');
+});
+
+// ---- the review-status notice on the front door (Plan 3 Task 7) -------------------------------
+// Task 5 rewired the TOOL path only, which left a markdown page — including one whose ledger entry
+// is `pending` at `high` risk — showing no review status at all. These pin the symmetry, the
+// mount, and the focus hand-off that Task 5 explicitly deferred here.
+
+test('the notice has ONE render call site, and it covers page and tool alike', () => {
+  const sites = source.match(/renderGovernanceNotice\(/g) || [];
+  assert.equal(sites.length, 3,
+    'expected the definition + fdRender\'s mount + refreshGovernanceNotice\'s late swap, no more: '
+    + 'a second render site is how the page path and the tool path drift apart again');
+  assert.match(source, /fdMount\('governanceNotice', fdSurface\('governance'/,
+    'fdRender must write the notice to its own mount');
+  assert.match(source, /renderGovernanceNotice\(govItem\)/);
+});
+
+test('the tool pane no longer renders a notice of its own', () => {
+  const pane = source.slice(source.indexOf("'<div class=\"fd-toolpane\">'"));
+  assert.doesNotMatch(pane.slice(0, 300), /renderGovernanceNotice/,
+    'two notices for one tool is exactly the duplication the single call site removes');
+});
+
+test('the notice is mounted OUTSIDE #content, and both DOM readers agree with that', () => {
+  assert.match(source, /<div id="governanceNotice"><\/div>/);
+  assert.match(source, /function governanceNoticeHost\(\)\{ return document\.getElementById\('governanceNotice'\); \}/);
+  const focus = slice('function focusPendingHighNotice()', 'function focusGovernanceNotice');
+  assert.match(focus, /governanceNoticeHost\(\)/);
+  assert.doesNotMatch(focus, /contentEl\./,
+    'a reader still pointed at contentEl finds nothing and silently does nothing');
+  const refresh = slice('function refreshGovernanceNotice()', 'function rerenderCurrent()');
+  assert.match(refresh, /governanceNoticeHost\(\)/);
+  assert.doesNotMatch(refresh, /contentEl\./);
+});
+
+test('__progress__ and the bare tabs get no notice — no ledger has ever heard of them', () => {
+  assert.match(source, /var govItem=\(!wizard&&openRoute&&openRoute\.k!=='special'\)\?openRoute:null;/,
+    'the ROUTE decides, not the surface; and the wizard suppresses it');
+});
+
+test('the notice is not part of #content, so a re-render cannot re-fire its role="alert"', () => {
+  // The behavioural half: fdRender's return value IS the #content markup, so the notice must not
+  // be in it. Inside #content the alert would be re-inserted — and re-shouted — on every tick of a
+  // checkbox, because fdMount replaces innerHTML whenever the markup changes.
+  const html = makeRender()({ ...BASE, openId: 'a.md' });
+  assert.doesNotMatch(html, /governance-notice/);
+  assert.match(html, /class="fd-article"/, 'precondition: this render really did open a page');
+});
+
+test('focusGovernanceNotice is called from exactly one place: the routed branch of fdFocusAfterRender', () => {
+  // Task 5 left it unwired because at the OLD position it ran before announceRoute and lost the
+  // focus it had just taken. The order is now announceRoute (focus -> #content) then this.
+  const wire = read('frontdoor/fd_wire.js');
+  const calls = (wire.match(/focusGovernanceNotice\(/g) || []).length;
+  assert.equal(calls, 1, 'one call, inside fdFocusGovernance');
+  assert.match(wire, /if\(routed\)\{ fdFocusGovernance\(\); return; \}/,
+    'it must run in the branch that fires AFTER fdAnnounce, not inside the render');
+  const apply = wire.slice(wire.indexOf('function fdApply('));
+  assert.ok(apply.indexOf('fdAnnounce(next)') < apply.indexOf('fdFocusAfterRender('),
+    'announceRoute moves focus first; the notice takes it second');
+});
+
+test('boot and popstate deliberately do NOT take focus for the notice', () => {
+  // Boot: #governanceNotice precedes #content in the document, so on a cold load the notice is
+  // already first in reading order — and announceRoute skips its own focus move there too.
+  // Popstate: a back press restores a page, it does not re-raise its warning. Neither path calls
+  // fdFocusAfterRender, which is the structural form of the function's own fromHistory guard.
+  const wire = read('frontdoor/fd_wire.js');
+  const popstate = wire.slice(wire.indexOf("addEventListener('popstate'"));
+  assert.doesNotMatch(popstate, /fdFocusAfterRender|fdFocusGovernance/);
+  const boot = source.slice(source.indexOf('/* ---- front door boot ---- */'));
+  assert.doesNotMatch(boot, /fdFocusAfterRender|fdFocusGovernance/);
+});
+
+// ---- the crisis-contact block the sheet draws --------------------------------------------------
+
+test('the shell carries the crisis marker in an inert template, and hands it to fdSheet', () => {
+  assert.match(source, /<template id="fdCrisisSource"><!-- crisis-block-html --><\/template>/,
+    'build_deploy.py replaces the marker; a <template> keeps it out of the painted page');
+  assert.match(source, /function fdCrisisHtml\(\)\{/);
+  assert.match(source, /fdSheet\(idx, FD_TOPIC_META, st, fdCrisisHtml\(\)\)/,
+    'the sheet takes it as a parameter, the same shape fdReader takes its body in');
+});
+
+test('the shell hand-maintains no crisis number of its own', () => {
+  assert.doesNotMatch(source, /741741|568-1112/,
+    'crisis_resources.json is the only source; the shell carries a marker, never a number');
 });

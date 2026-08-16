@@ -6,8 +6,10 @@
    the shell by Plan 3 Task 1. ES5 only: var/function, no
    arrow functions or template literals -- matches the other frontdoor/ modules.
 
-   Pure: fdSheet(index, topicMeta, state) -> string and fdNudge(item) -> string. No DOM, no browser
-   storage, no clock access. state = {sheet, sheetFrom, stepsDone, done}; `done` is accepted (the
+   Pure: fdSheet(index, topicMeta, state, crisisHtml) -> string and fdNudge(item) -> string. No
+   DOM, no browser storage, no clock access. crisisHtml is already-rendered markup the CALLER
+   supplies (spa_index.html reads it out of the build-injected #fdCrisisSource template) and it is
+   spliced in unescaped, exactly like fd_reader.js's bodyHtml -- see fdSheetProtocolBody. state = {sheet, sheetFrom, stepsDone, done}; `done` is accepted (the
    interface brief's shape) but never read here -- whether a protocol's page is unread is what
    decides if the CALLER raises fdNudge at all, not anything this renderer draws. This module is a
    pure renderer of already-resolved state: it draws whichever surface state.sheet names and does
@@ -36,6 +38,11 @@
    shows its provenance -- the same ref, in the neutral dim .fd-sheet__note -- because naming the
    source is a true statement, while the teal ✓ treatment reads as an endorsement and would be a
    false one. A pill asserting a review that did not happen is worse than no pill.
+
+   Above that provenance line the protocol view now says so AFFIRMATIVELY (.fd-sheet__pending).
+   The absence of a teal line is only legible to someone who has seen the teal line; on a safety
+   surface the un-reviewed state has to be a sentence, not a gap. The item preview keeps the
+   pill/no-pill treatment: a preview is a page summary, not a protocol being worked.
 
    ---- Attributes: reused conventions, one addition -------------------------------------------
      - data-fd-safety (bare)     -- open the kit. fd_shell.js's .fd-safetybtn already means exactly
@@ -106,7 +113,7 @@ function fdSheetWeekOf(index, ref){
 function fdSheetMissingItem(ref){
   return {
     ref: ref||'', kind:'read', title: ref||'', minutes:null, summary:'',
-    points:[], attested:false, toolRef:null, risk:null, href:'',
+    points:[], attested:false, toolRef:null, risk:null, cta:[], href:'',
   };
 }
 
@@ -181,7 +188,7 @@ function fdSheetStep(text, i, stepsDone){
    invented one is not. In this repo every safetyKit ref names a real page, so the "Open the full
    page →" button is unconditional (the prototype gated it on `page`, since two of its five
    protocols pointed at nothing). */
-function fdSheetProtocolBody(entry, topicMeta, stepsDone){
+function fdSheetProtocolBody(entry, topicMeta, stepsDone, crisisHtml){
   var item=entry.item;
   var meta=(topicMeta||{})[item.ref]||{};
   var steps=meta.safetySteps||[];
@@ -210,9 +217,35 @@ function fdSheetProtocolBody(entry, topicMeta, stepsDone){
     if(item.attested){
       out+='<div class="fd-sheet__attribution">✓ From: '+fdEsc(item.ref)+' · faculty-attested</div>';
     } else {
+      /* *** THE AFFIRMATIVE HALF OF THE ATTESTED AFFORDANCE. *** Until this line, a protocol that
+         had NOT been reviewed was signalled only by the ABSENCE of the teal attribution above --
+         which is invisible to anyone who has never seen the attested version, i.e. to every
+         first-time reader of that protocol. Absence of a claim is not a statement; this is. The
+         wording borrows the shell's own fail-safe register ("verify with faculty") rather than
+         inventing a new clinical instruction for a safety surface.
+         All five kit protocols are attested today, so this branch is currently unreached -- it
+         exists so that the day one is not, the sheet says so out loud. */
+      out+='<p class="fd-sheet__pending">Not yet faculty-reviewed — verify with faculty.</p>';
       out+='<p class="fd-sheet__note">From: '+fdEsc(item.ref)+'</p>';
     }
   }
+  /* *** crisisHtml IS INJECTED VERBATIM AND UNESCAPED *** -- the same contract, and the same
+     reason, as fd_reader.js's bodyHtml: it is already-rendered markup handed in by the caller,
+     built at BUILD time by crisis_block.py from crisis_resources.json. Not one crisis number is
+     ever a literal in this repo's source outside that file, so there is nothing here to escape
+     and escaping it would print tags.
+
+     *** Deliberately OUTSIDE the content gate above. *** The attribution is gated on there being
+     protocol content to attribute; the crisis contacts are not, because the failure mode the gate
+     protects against (topic_meta missing, safetySteps emptied) is exactly the moment a learner
+     standing on a protocol sheet most needs the escalation path. A crisis block is never a false
+     claim about content that did not load.
+
+     Two of the five kit protocols -- exp_consult.md and delirium.md -- carry no crisis block on
+     their own markdown pages (they are not in build_deploy.py's _CRISIS_REQUIRED_MD, and under the
+     scope rule they should not be: reading about capacity is not risk work). Rehearsing the
+     protocol at the bedside is. */
+  if(crisisHtml) out+='<div class="fd-sheet__crisis">'+crisisHtml+'</div>';
   out+='<button type="button" class="fd-btn fd-btn--ghost" style="margin-top:16px" '+
     'data-fd-open="'+fdEsc(item.ref)+'">Open the full page →</button>';
   return out;
@@ -251,7 +284,7 @@ function fdSheetItemBody(item, index){
    names no protocol -- renders the empty string, so a caller can concatenate the result
    unconditionally and a stale sheet key degrades to "no sheet" rather than to an empty protocol
    shell with a title and no content. */
-function fdSheet(index, topicMeta, state){
+function fdSheet(index, topicMeta, state, crisisHtml){
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
   var st=state||{};
   var sheet=st.sheet;
@@ -271,7 +304,9 @@ function fdSheet(index, topicMeta, state){
     if(!entry) return '';
     title=entry.item.title;
     hasBack=(st.sheetFrom==='kit');
-    body=fdSheetProtocolBody(entry, topicMeta, st.stepsDone);
+    /* The PROTOCOL variant only. The kit list carries no clinical content and the item preview is
+       a page summary; neither is the surface where a learner is working a risk moment. */
+    body=fdSheetProtocolBody(entry, topicMeta, st.stepsDone, crisisHtml);
   }
 
   /* Two elements, not one: .fd-sheetbackdrop is a separate sibling emitted BEFORE the panel and
