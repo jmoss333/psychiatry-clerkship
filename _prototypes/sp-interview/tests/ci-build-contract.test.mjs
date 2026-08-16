@@ -100,7 +100,7 @@ test('both builders emit governance inventories matching their final tools', () 
       timeout: 60_000,
     });
     assert.equal(built.status, 0, built.stdout + built.stderr);
-    assertInventory(ms3, 23); // +interaction-cards.html (2026-08-11, PR #315)
+    assertInventory(ms3, 22); // -learning-path.html (retired for the front door's Path tab)
     assert.match(
       fs.readFileSync(path.join(ms3, '_headers'), 'utf8'),
       /\/tool-governance\.json\n  Cache-Control: public, max-age=0, must-revalidate/,
@@ -111,7 +111,50 @@ test('both builders emit governance inventories matching their final tools', () 
       timeout: 60_000,
     });
     assert.equal(residentBuilt.status, 0, residentBuilt.stdout + residentBuilt.stderr);
-    assertInventory(resident, 25); // +interaction-cards.html (2026-08-11, PR #315)
+    assertInventory(resident, 24); // -learning-path.html (retired for the front door's Path tab)
+
+    // The Library is per-site: curriculum.json's column refs carry a "sites" list, and
+    // common.py's fd_curriculum_for_site() projects it at BUILD time so each index.html
+    // carries only its own refs. This is the only place both real builds exist at once, so
+    // it is the only place that can catch resident_section.py failing to swap FD_CURRICULUM
+    // — a failure whose symptom is silent: the resident site would inherit MS3's 81-page
+    // Library and lose its browse path to the nine resident-only pages, with every gate green.
+    const injectedRefs = (site) => {
+      const html = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
+      const at = html.indexOf('var FD_CURRICULUM=');
+      assert.notEqual(at, -1, `${site}: FD_CURRICULUM was never injected`);
+      const json = html.slice(at + 'var FD_CURRICULUM='.length, html.indexOf(';\n', at));
+      // fd_statement() escapes `</` as `<\/` so the payload cannot close the <script> early.
+      const curriculum = JSON.parse(json.replace(/<\\\//g, '</'));
+      return curriculum.libraryColumns.flatMap((c) => c.refs)
+        .map((r) => (typeof r === 'string' ? r : r.ref));
+    };
+    const ms3Refs = injectedRefs(ms3);
+    const residentRefs = injectedRefs(resident);
+    assert.equal(ms3Refs.length, 81, 'ms3 Library places 81 pages');
+    assert.equal(residentRefs.length, 90, 'resident Library places 90 pages');
+    assert.deepEqual(
+      residentRefs.filter((r) => !ms3Refs.includes(r)).sort(),
+      ['adv_psychopharm.md', 'canon_200.md', 'cl_reference.md', 'rotation.md',
+       'rp-agitation.html', 'rp-brief-psych.html', 'rp-canon-quiz.html',
+       'supervision_teaching.md', 'systems_medlegal.md'],
+      'the nine resident-only pages must be placed on resident and nowhere on ms3',
+    );
+    assert.deepEqual(ms3Refs.filter((r) => !residentRefs.includes(r)), []);
+    // Every ref the resident build ships must exist as a file in that build — the dead-link
+    // check the old global libraryExclude entries were standing in for.
+    for (const ref of residentRefs) {
+      const built = ref.endsWith('.html')
+        ? path.join(resident, 'tools', ref)
+        : path.join(resident, 'content', ref);
+      assert.equal(fs.existsSync(built), true, `resident Library links ${ref}, which it does not ship`);
+    }
+    for (const ref of ms3Refs) {
+      const built = ref.endsWith('.html')
+        ? path.join(ms3, 'tools', ref)
+        : path.join(ms3, 'content', ref);
+      assert.equal(fs.existsSync(built), true, `ms3 Library links ${ref}, which it does not ship`);
+    }
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
     fs.rmSync(`${ms3}.source-map.json`, { force: true });

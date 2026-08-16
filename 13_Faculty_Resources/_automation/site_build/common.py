@@ -25,6 +25,7 @@ the build script's source to assert the learner CSP, so it must remain a single
 statically-inspectable literal in that file.
 """
 
+import copy
 import glob
 import hashlib
 import json
@@ -164,10 +165,11 @@ def quiz_cache_bust(quizzes_path):
 # Tool search keywords — union of the two forked tables, per key.
 #
 # Neither side was a superset: MS3 was richer for 12 of the 15 keys that
-# differed, but `learning-path.html`, `review.html`, and `shelf-mode.html` each
-# had resident-only terms ("rotation", "board review") that MS3 lacked. Union
-# preserves both. Resident-only tools (rp-*) are included and are simply never
-# referenced by the MS3 nav, so they cost that build nothing.
+# differed, but `review.html` and `shelf-mode.html` each had resident-only terms
+# ("board review") that MS3 lacked. Union preserves both. Resident-only tools
+# (rp-*) are included and are simply never referenced by the MS3 nav, so they
+# cost that build nothing. (`learning-path.html` was a third such key until the
+# tool was retired — the front door's Path tab is a strict superset of it.)
 #
 # NOTE (follow-on, architecture review rec 1.2): this table's real home is a
 # `searchKeywords` field on `tool_registry.json`, which already exists and has a
@@ -193,7 +195,6 @@ _TOOLKW_MS3 = {
     "feedback.html": "feedback improve library suggest resource report broken link error confusing helpful rating comment survey suggestion box contact",
     "decision-aids.html": "algorithms decision aids visual trees flowchart rule out first move escalation ladder agitation restraint nms serotonin syndrome hyperthermia alcohol withdrawal timeline delirium tremens ciwa score bands catatonia psychosis differential dark mode",
     "bfcrs.html": "bush francis catatonia rating scale bfcrs bfcsi catatonia screening immobility stupor mutism posturing catalepsy waxy flexibility negativism mitgehen gegenhalten echopraxia lorazepam challenge severity score",
-    "learning-path.html": "learning path home dashboard six week progress streak daily review study plan start here",
     "question-bank-practice.html": "practice questions question bank comat shelf exam vignette single best answer sba two-tier confidence calibration trap feedback spaced repetition category filter mood psychosis anxiety substance neurocognitive pharmacology safety personality relational ethics",
 }
 
@@ -212,7 +213,6 @@ _TOOLKW_RES = {
     "bfcrs.html": "bush francis catatonia rating scale immobility mutism posturing waxy flexibility lorazepam challenge",
     "review.html": "daily review spaced repetition srs flashcards retention due cards streak board review test enhanced learning forgetting curve",
     "feedback.html": "feedback improve library suggest resource report broken link error confusing helpful comment suggestion box",
-    "learning-path.html": "learning path home dashboard rotation progress daily review",
     "rp-agitation.html": "agitation ladder prn trainer restraint de-escalation seclusion intramuscular haloperidol lorazepam olanzapine decision escalation",
     "rp-brief-psych.html": "five good minutes brief psychotherapy coach supportive bedside therapeutic conversation skills",
     "rp-canon-quiz.html": "canon quiz 200 paper spine landmark trials evidence self test board review recall",
@@ -488,6 +488,51 @@ def fd_statement(var_name, value):
     """
     payload = json.dumps(value, ensure_ascii=False).replace("</", "<\\/")
     return "var %s=%s;" % (var_name, payload)
+
+
+# Every site the one curriculum.json is read by — mirrors SITES in
+# _automation/validate_curriculum.py, which enforces the membership rules this
+# function then applies. Kept as a literal in both rather than imported across
+# the site_build/ boundary: this module is imported by the Netlify build, and
+# validate_curriculum.py is not.
+FD_SITES = ("ms3", "resident")
+
+
+def fd_curriculum_for_site(curriculum, site):
+    """A copy of `curriculum` whose libraryColumns hold only the refs `site` ships.
+
+    Per-site membership is resolved HERE, at build time, not in the browser: each
+    site's index.html then carries only its own refs, so a page the other site
+    ships can never render as a dead Library link. fd_data.js is left with no
+    notion of a site at all.
+
+    A ref is either a bare slug (every site) or an object with a "sites" list.
+    Surviving object entries are passed through UNCHANGED except for dropping
+    "sites" — in particular they keep "title", which is the only title source for
+    a page site_manifest.json does not list. fd_data.js accepts both shapes.
+
+    A column that ends up empty is dropped rather than rendered as a bare header.
+    """
+    if site not in FD_SITES:
+        raise ValueError("fd_curriculum_for_site: unknown site %r" % (site,))
+    out = copy.deepcopy(curriculum)
+    columns = []
+    for col in out.get("libraryColumns") or []:
+        refs = []
+        for entry in col.get("refs") or []:
+            if isinstance(entry, str):
+                refs.append(entry)
+                continue
+            sites = entry.get("sites")
+            if sites is not None and site not in sites:
+                continue
+            kept = {k: v for k, v in entry.items() if k != "sites"}
+            refs.append(kept)
+        if refs:
+            col["refs"] = refs
+            columns.append(col)
+    out["libraryColumns"] = columns
+    return out
 
 
 def apply_page_chrome(path, is_index=False):

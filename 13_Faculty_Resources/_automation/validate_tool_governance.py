@@ -39,17 +39,15 @@ SITE_MANIFEST_RELATIVE = Path("13_Faculty_Resources/_automation/site_build/site_
 REVIEWED_RELATIVE = Path("13_Faculty_Resources/reviewed.json")
 SITE_EXTRAS = {
     "ms3": (
-        ("01_Six_Week_Curriculum/learning-path.html", "learning-path.html"),
         ("_prototypes/orientation-video/orientation-video.html", "orientation-video.html"),
     ),
     "resident": (
-        ("01_Six_Week_Curriculum/learning-path.html", "learning-path.html"),
         ("_prototypes/agitation-trainer/rp-agitation.html", "rp-agitation.html"),
         ("_prototypes/brief-psych/rp-brief-psych.html", "rp-brief-psych.html"),
         ("_prototypes/canon-quiz/rp-canon-quiz.html", "rp-canon-quiz.html"),
     ),
 }
-EXPECTED_TOOL_COUNTS = {"ms3": 23, "resident": 25}
+EXPECTED_TOOL_COUNTS = {"ms3": 22, "resident": 24}
 ALLOWED_AUDIENCES = frozenset({"trainee", "ms3", "resident", "faculty"})
 
 

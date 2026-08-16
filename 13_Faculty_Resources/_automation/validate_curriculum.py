@@ -7,25 +7,47 @@ so this file must never duplicate those facts. What it must guarantee is that
 every ref it names is a page the build actually ships:
 
   - weeks are exactly 1..6, each present once
-  - every item ref resolves to a shipped slug
+  - every item ref resolves to a slug BOTH sites ship
   - item kind agrees with the slug's type (.html => tool, .md => read)
   - refs within a week are unique
-  - every shipped slug is placed in a library column or explicitly excluded
+  - every shipped slug is placed in a library column or explicitly excluded,
+    checked PER SITE
+
+PER-SITE MEMBERSHIP. The two sites do not ship the same page set, so neither
+does the Library. A libraryColumns ref (and a libraryExclude entry) is either a
+bare slug — meaning every site ships it — or an object carrying "sites", naming
+the site(s) it belongs to. Two rules make that honest:
+
+  - an entry may only name a site that actually ships the ref; and
+  - an entry that names no site must be shipped by EVERY site, because the
+    build renders bare refs on both. That is what stops a one-site page from
+    being placed globally and dead-linking on the other site.
+
+Before this, the only way to express "resident ships it, MS3 does not" was a
+libraryExclude entry, which excluded the page from BOTH Libraries — and the
+resident site's nine resident-only pages were reachable only through the
+sidebar's nav.json. The front door deletes that sidebar, so a globally excluded
+resident page would have become unreachable except by search.
+
+A per-site ref also carries its own "title": site_manifest.json registers only
+the shared pages, so for these there is no manifest row for fd_data.js's title
+index to read, and the row would otherwise degrade to its raw slug.
 
 WHAT "SHIPPED" COVERS — read this before trusting the totality guard.
 site_manifest.json is the registry of *shared* pages, but it is not the whole
-build. The guard therefore reasons about the union of three enumerable sets:
+build. The guard therefore reasons about three enumerable sets, kept per site:
 
   1. site_manifest.json — 21 tools + 67 markdown pages, shipped to both sites.
   2. SITE_EXTRAS in validate_tool_governance.py — the per-site tools the build
-     copies outside the manifest: learning-path.html (both sites),
-     orientation-video.html (ms3), rp-agitation.html / rp-brief-psych.html /
-     rp-canon-quiz.html (resident). Read from that module rather than restated
-     here, so the two can never disagree.
+     copies outside the manifest: orientation-video.html (ms3),
+     rp-agitation.html / rp-brief-psych.html / rp-canon-quiz.html (resident).
+     Read from that module rather than restated here, so the two can never
+     disagree — including which SITE each belongs to.
   3. The literal RES_EXTRA entries in site_build/resident_section.py — the
      resident-only markdown pages (rotation.md, adv_psychopharm.md,
      systems_medlegal.md, supervision_teaching.md, canon_200.md,
-     cl_reference.md). Also read from source, not restated.
+     cl_reference.md). Also read from source, not restated, and resident-only
+     by construction: resident_section.py is the only script that copies them.
 
 WHAT IT DOES NOT COVER — this is a DECISION, not an oversight; do not "fix" it.
 The case-of-the-week pages are outside the guard on purpose. resident_section.py
@@ -85,21 +107,31 @@ def _slugs_from_pairs(node):
     return out
 
 
-def extra_shipped_slugs():
-    """Slugs the build ships that site_manifest.json does not list.
+# Every site the one curriculum.json is read by. Ordered so messages are stable.
+SITES = ("ms3", "resident")
+
+
+def _pages_only(slugs):
+    return frozenset(s for s in slugs if s.endswith(".html") or s.endswith(".md"))
+
+
+def extra_shipped_slugs_by_site():
+    """{site: frozenset(slug)} — the slugs each site ships that site_manifest.json
+    does not list.
 
     Fails loudly rather than silently narrowing: a rename in either source file
-    must break this validator, not quietly shrink the set it guards.
+    must break this validator, not quietly shrink the set it guards. Keeping the
+    site key (rather than unioning, as this did before per-site membership
+    existed) is what lets the totality check tell "MS3 does not ship this" apart
+    from "nobody ships this".
     """
-    extras = set()
-
     site_extras = _top_level_assign(GOVERNANCE_PY, "SITE_EXTRAS")
     if site_extras is None:
         raise SystemExit(
             "validate_curriculum: SITE_EXTRAS not found in %s — the extra-tool source moved; "
             "fix this derivation rather than hardcoding a second list." % GOVERNANCE_PY)
-    for entries in ast.literal_eval(site_extras).values():
-        extras.update(slug for _source, slug in entries)
+    by_site = {site: set(slug for _source, slug in entries)
+               for site, entries in ast.literal_eval(site_extras).items()}
 
     res_extra = _top_level_assign(RESIDENT_PY, "RES_EXTRA")
     if res_extra is None:
@@ -108,12 +140,21 @@ def extra_shipped_slugs():
             "moved; fix this derivation rather than hardcoding a second list." % RESIDENT_PY)
     # Literal tuples only. The registry-driven case-of-the-week entries in the same
     # list are comprehensions with no constant slug, and are out of scope per the docstring.
-    extras.update(_slugs_from_pairs(res_extra))
+    # resident_section.py is the only script that copies these, so they are resident-only.
+    by_site.setdefault("resident", set()).update(_slugs_from_pairs(res_extra))
 
-    return frozenset(s for s in extras if s.endswith(".html") or s.endswith(".md"))
+    if set(by_site) != set(SITES):
+        raise SystemExit(
+            "validate_curriculum: SITE_EXTRAS names sites %s but this validator knows %s — "
+            "a site was added or renamed; update SITES here rather than dropping the check."
+            % (sorted(by_site), sorted(SITES)))
+    return {site: _pages_only(slugs) for site, slugs in by_site.items()}
 
 
-EXTRA_SHIPPED = extra_shipped_slugs()
+EXTRA_SHIPPED_BY_SITE = extra_shipped_slugs_by_site()
+# Union, kept for callers that only need "does the build ship this anywhere" —
+# test_validate_curriculum.py builds its fixture excludes from it.
+EXTRA_SHIPPED = frozenset().union(*EXTRA_SHIPPED_BY_SITE.values())
 
 # roles[].name / roles[].desc are DISPLAYED copy (unlike id, an identifier) and curriculum.json
 # ships to both site builds unrebranded, so the front-door analogue of tests/shell-copy.test.mjs's
@@ -133,11 +174,14 @@ def main(argv):
     cur = json.load(open(cur_path, encoding="utf-8"))
     man = json.load(open(man_path, encoding="utf-8"))
 
-    tool_slugs = {e[1] for e in man.get("tools", [])}
-    md_slugs = {e[1] for e in man.get("md", [])}
-    tool_slugs |= {s for s in EXTRA_SHIPPED if s.endswith(".html")}
-    md_slugs |= {s for s in EXTRA_SHIPPED if s.endswith(".md")}
-    shipped = tool_slugs | md_slugs
+    manifest_slugs = {e[1] for e in man.get("tools", [])} | {e[1] for e in man.get("md", [])}
+    # Per site, then unioned. `shipped` answers "does the build produce this page at all";
+    # shipped_by_site answers "does THIS site produce it", which is what per-site membership
+    # and the totality check below both turn on.
+    shipped_by_site = {site: manifest_slugs | EXTRA_SHIPPED_BY_SITE.get(site, frozenset())
+                       for site in SITES}
+    shipped = set().union(*shipped_by_site.values())
+    tool_slugs = {s for s in shipped if s.endswith(".html")}
 
     errs = []
 
@@ -189,20 +233,63 @@ def main(argv):
             if ref in seen_refs:
                 bad(label, "duplicate ref '%s' within the week" % ref)
             seen_refs.add(ref)
-            if ref not in shipped:
-                bad(label, "ref '%s' is not a shipped slug" % ref)
+            # Weeks carry no per-site field: the Path tab renders the same six weeks on both
+            # sites, so a week item must be a page EVERY site ships or the other site's Path
+            # tab dead-links. Named per site so the message says which one is missing it.
+            missing = [s for s in SITES if ref not in shipped_by_site[s]]
+            if missing:
+                if len(missing) == len(SITES):
+                    bad(label, "ref '%s' is not a shipped slug" % ref)
+                else:
+                    bad(label, "ref '%s' is not shipped by %s — a week item must be a page "
+                               "every site ships, since the Path tab is not site-scoped"
+                        % (ref, ", ".join(missing)))
                 continue
             expected = "tool" if ref in tool_slugs else "read"
             if kind != expected:
                 bad(label, "ref '%s' has kind '%s' but the build ships it as '%s'"
                     % (ref, kind, expected))
 
-    # ---- library totality: every shipped slug is placed or explicitly excluded ----
-    # The front-door analogue of the build's orphaned-source check. Once the sidebar is
-    # gone the Library is the only browse surface, so an unplaced page is an unreachable
-    # page. The exclude list keeps this a HARD failure instead of a rule that gets quietly
-    # weakened for the handful of pages that genuinely are not library content.
-    placed = set()
+    # ---- library totality: every shipped slug is placed or explicitly excluded, PER SITE ----
+    # The front-door analogue of the build's orphaned-source check. The sidebar is gone, so
+    # the Library is the only browse surface, and an unplaced page is an unreachable page.
+    # Checked per site because the two sites do not ship the same pages: a global check
+    # cannot tell "resident places it, MS3 does not ship it" (correct) apart from "nobody
+    # places it on MS3" (a page lost). The exclude list keeps this a HARD failure instead of
+    # a rule quietly weakened for the handful of pages that genuinely are not library content.
+
+    def entry_sites(entry_sites_value, where, ref):
+        """The sites an entry applies to, defaulting to every site.
+
+        Two failures are reported here, and both are the reason this field exists:
+          - naming a site that does not ship the ref (the entry can never apply); and
+          - naming NO site for a ref only one site ships, which is how a one-site page
+            used to get placed globally and dead-link on the other site.
+        """
+        ships = [s for s in SITES if ref in shipped_by_site[s]]
+        if entry_sites_value is None:
+            if len(ships) != len(SITES):
+                bad(where, "ref '%s' is shipped only by %s, so it needs an explicit \"sites\" "
+                           "list — without one the build renders it on every site, and the "
+                           "site that does not ship it gets a dead link"
+                    % (ref, ", ".join(ships) or "no site"))
+            return list(SITES)
+        if not isinstance(entry_sites_value, list) or not entry_sites_value:
+            bad(where, "ref '%s' has a 'sites' that is not a non-empty list (got %r)"
+                % (ref, entry_sites_value))
+            return []
+        out = []
+        for site in entry_sites_value:
+            if site not in SITES:
+                bad(where, "ref '%s' names unknown site %r" % (ref, site))
+            elif ref not in shipped_by_site[site]:
+                bad(where, "ref '%s' is listed for site '%s', which does not ship it"
+                    % (ref, site))
+            else:
+                out.append(site)
+        return out
+
+    placed = {site: set() for site in SITES}
     columns = cur.get("libraryColumns")
     if not isinstance(columns, list):
         bad("libraryColumns", "must be a list")
@@ -212,20 +299,41 @@ def main(argv):
             bad("libraryColumns", "each column must be an object")
             continue
         name = col.get("name") or "?"
+        where = "column %s" % name
         refs = col.get("refs")
         if not isinstance(refs, list):
-            bad("column %s" % name, "'refs' must be a list")
+            bad(where, "'refs' must be a list")
             continue
-        for ref in refs:
+        for entry in refs:
+            # A bare string is a page every site ships; the object form carries per-site
+            # membership and, for a ref site_manifest.json cannot name, its own title.
+            if isinstance(entry, str):
+                ref, sites_value, title = entry, None, None
+            elif isinstance(entry, dict):
+                ref, sites_value, title = entry.get("ref"), entry.get("sites"), entry.get("title")
+            else:
+                bad(where, "ref must be a string or an object (got %r)" % (entry,))
+                continue
             if not isinstance(ref, str):
-                bad("column %s" % name, "ref must be a string (got %r)" % (ref,))
+                bad(where, "ref must be a string (got %r)" % (ref,))
                 continue
             if ref not in shipped:
-                bad("column %s" % name, "ref '%s' is not a shipped slug" % ref)
-            else:
-                placed.add(ref)
+                bad(where, "ref '%s' is not a shipped slug" % ref)
+                continue
+            # Title: required exactly when site_manifest.json has no row to supply one,
+            # forbidden when it does — one source of truth per page, either way.
+            if ref in manifest_slugs:
+                if title is not None:
+                    bad(where, "ref '%s' carries a 'title', but site_manifest.json already "
+                               "names it — the manifest row is the single source of truth" % ref)
+            elif not isinstance(title, str) or not title.strip():
+                bad(where, "ref '%s' is not in site_manifest.json, so it needs a non-empty "
+                           "'title' here — nothing else can supply one and the Library row "
+                           "would render as the raw slug" % ref)
+            for site in entry_sites(sites_value, where, ref):
+                placed[site].add(ref)
 
-    excluded = set()
+    excluded = {site: set() for site in SITES}
     exclude = cur.get("libraryExclude")
     if not isinstance(exclude, list):
         bad("libraryExclude", "must be a list")
@@ -242,12 +350,17 @@ def main(argv):
             continue
         if ref not in shipped:
             bad("libraryExclude", "ref '%s' is not a shipped slug" % ref)
-        else:
-            excluded.add(ref)
+            continue
+        for site in entry_sites(ent.get("sites"), "libraryExclude", ref):
+            excluded[site].add(ref)
 
-    for ref in sorted(shipped - placed - excluded):
-        bad("library", "shipped slug '%s' appears in no column and no libraryExclude entry"
-            % ref)
+    for site in SITES:
+        for ref in sorted(shipped_by_site[site] - placed[site] - excluded[site]):
+            bad("library", "%s ships '%s' but places it in no column and excludes it in no "
+                           "libraryExclude entry — it would be reachable only by search"
+                % (site, ref))
+        for ref in sorted(placed[site] & excluded[site]):
+            bad("library", "%s both places and excludes '%s'" % (site, ref))
 
     # ---- safety kit refs resolve ----
     # Membership and order only. The steps themselves are attested content in
@@ -267,8 +380,16 @@ def main(argv):
         if not isinstance(ref, str):
             bad("safetyKit", "entry ref must be a string (got %r)" % (ref,))
             continue
-        if ref not in shipped:
-            bad("safetyKit", "ref '%s' is not a shipped slug" % ref)
+        # Same reasoning as week items: the kit is not site-scoped, so every site must
+        # ship the page or one site's safety kit dead-links — the worst surface for it.
+        missing = [s for s in SITES if ref not in shipped_by_site[s]]
+        if missing:
+            if len(missing) == len(SITES):
+                bad("safetyKit", "ref '%s' is not a shipped slug" % ref)
+            else:
+                bad("safetyKit", "ref '%s' is not shipped by %s — the safety kit is not "
+                                 "site-scoped, so every site must ship it"
+                    % (ref, ", ".join(missing)))
 
     # ---- roles: id/name/desc non-empty, and the displayed text is audience-neutral ----
     # curriculum.json is one document read by both site builds, so a role's displayed name/desc
@@ -304,8 +425,10 @@ def main(argv):
         return 1
 
     total = sum(len(w.get("items", [])) for w in weeks if isinstance(w, dict))
-    print("curriculum.json OK — 6 weeks, %d week items, %d pages placed, %d excluded."
-          % (total, len(placed), len(excluded)))
+    print("curriculum.json OK — 6 weeks, %d week items; %s."
+          % (total, "; ".join("%s: %d placed, %d excluded"
+                              % (site, len(placed[site]), len(excluded[site]))
+                              for site in SITES)))
     return 0
 
 

@@ -1053,12 +1053,17 @@ function fdWire(){
   /* ---- messages from an embedded tool -------------------------------------------------------
      Restored with the tool surface (Plan 3 Task 5). This listener was deleted in Task 3 along
      with the nav.json block that happened to host it, which took four shipped affordances with
-     it. Every type below has a real sender in this tree:
+     it. Senders in this tree, as of the learning-path.html retirement (Plan 3 Task 6):
 
        openPage    question-bank-practice.html (twice -- one of them f:'__home__'),
-                   learning-path.html, "Tool Launcher Badges.html"
-       openLibrary learning-path.html
-       search      learning-path.html
+                   "Tool Launcher Badges.html"
+       openLibrary NO tool sender left -- learning-path.html was the only one, and it was
+       search      retired with this swap. Both branches are kept anyway: they are part of the
+                   published host contract that HANDOFF_tool-launcher.md documents for tools
+                   built outside this repo, and the preview LOCK on them is still exercised
+                   (tests/smoke/faculty-console.spec.js posts openLibrary at a locked preview;
+                   tests/fd-tool.test.mjs pins the guard's source). Deleting them would drop a
+                   documented affordance and a security-relevant guard to save nine lines.
        theme       question-bank-practice.html, review.html
        faculty-preview-question-status
                    question-bank-practice.html. The faculty console's QUESTION preview cannot

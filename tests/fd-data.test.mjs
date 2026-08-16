@@ -141,6 +141,21 @@ test('fdLibraryOnlyReads excludes week items and excludes tools', () => {
 
 // ---- against the REAL repo data -----------------------------------------------------
 
+// curriculum.json's library refs are PER SITE: a bare slug is a page every site ships, an object
+// carries a "sites" list. site_build/common.py's fd_curriculum_for_site() is canonical and applies
+// this at build time; this mirrors it so the counts below are what a site actually renders rather
+// than a union no site renders.
+const forSite = (cur, site) => ({
+  ...cur,
+  libraryColumns: (cur.libraryColumns || [])
+    .map((c) => ({
+      ...c,
+      refs: (c.refs || []).filter((e) => typeof e === 'string' || !e.sites || e.sites.includes(site)),
+    }))
+    .filter((c) => c.refs.length),
+});
+
+
 test('titles resolve to the real page names, not to the slug', () => {
   const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
   // Asserting against known titles rather than truthiness: `title` falls back to `ref`, which is
@@ -149,11 +164,15 @@ test('titles resolve to the real page names, not to the slug', () => {
   assert.equal(idx.byRef['mse.html'].title, 'Mental Status Exam');
 });
 
-test('no real item falls back to its slug as a title', () => {
-  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
-  const fellBack = Object.keys(idx.byRef).filter((r) => idx.byRef[r].title === r);
-  assert.deepEqual(fellBack, [],
-    `every placed page is in site_manifest.json, so none should degrade to its slug: ${fellBack}`);
+test('no real item falls back to its slug as a title, on either site', () => {
+  // Two sources, one rule: shared pages get their title from site_manifest.json, and the per-site
+  // pages the manifest cannot register carry their own on the curriculum ref. Either way a row
+  // must never render as "canon_200.md".
+  for (const site of ['ms3', 'resident']) {
+    const idx = F.fdBuildIndex(forSite(CUR, site), META, TOOLS, MAN);
+    const fellBack = Object.keys(idx.byRef).filter((r) => idx.byRef[r].title === r);
+    assert.deepEqual(fellBack, [], `${site}: pages degraded to their slug: ${fellBack}`);
+  }
 });
 
 test('the real curriculum joins without throwing and routes every week item', () => {
@@ -169,11 +188,15 @@ test('the real curriculum joins without throwing and routes every week item', ()
   assert.equal(n, 40, 'expected the 40 week items curriculum.json ships');
 });
 
-test('every real library column item resolves', () => {
-  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
-  let placed = 0;
-  for (const c of idx.columns) placed += c.items.length;
-  assert.equal(placed, 81, 'expected the 81 pages curriculum.json places');
+test('every real library column item resolves, on both sites', () => {
+  // 81 on MS3, 90 on resident. The nine-page gap is the resident-only set, which before Task 6
+  // was reachable only through the deleted sidebar's nav.json.
+  for (const [site, expected] of [['ms3', 81], ['resident', 90]]) {
+    const idx = F.fdBuildIndex(forSite(CUR, site), META, TOOLS, MAN);
+    let placed = 0;
+    for (const c of idx.columns) placed += c.items.length;
+    assert.equal(placed, expected, `expected the ${expected} pages curriculum.json places on ${site}`);
+  }
 });
 
 test('all five real kit items are attested and carry safety steps', () => {

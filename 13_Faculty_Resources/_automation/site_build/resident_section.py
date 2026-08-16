@@ -176,37 +176,42 @@ RESIDENT_REBRAND=[
 ix=open(OUT+"/index.html",encoding="utf-8").read()
 ix=common.apply_verified_replacements(ix, RESIDENT_REBRAND, label="resident index rebrand")
 
-# ---- front-door roles: the one front-door data needle that differs by audience ----
-# FD_CURRICULUM/FD_TOPIC_META/FD_TOOL_REGISTRY/FD_SITE_MANIFEST are audience-neutral and
-# rode along unchanged via the copytree above (same reasoning as RETIRED_QB_IDS /
-# clinical-warm.css / frontdoor.css). FD_ROLES is per-site — curriculum.json's roles.ms3
-# vs roles.resident — so it gets its own verified swap here, same shape as
-# RESIDENT_REBRAND above: the needle is the exact statement build_deploy.py baked in for
-# ms3 (reconstructed via common.fd_statement so this script never has to read build_deploy.py's
-# output to know what it wrote), and a missing/duplicated needle aborts rather than silently
-# leaving the resident site showing ms3's role list ("Core rotation", "Sub-I", ...).
+# ---- front-door per-site data: the two needles that differ by audience ----
+# FD_TOPIC_META/FD_TOOL_REGISTRY/FD_SITE_MANIFEST are audience-neutral and rode along
+# unchanged via the copytree above (same reasoning as RETIRED_QB_IDS / clinical-warm.css /
+# frontdoor.css). Two are per-site and get their own verified swap here, same shape as
+# RESIDENT_REBRAND above: each needle is the exact statement build_deploy.py baked in for ms3
+# (reconstructed via common.fd_statement / common.fd_curriculum_for_site so this script never
+# has to read build_deploy.py's output to know what it wrote), and a missing/duplicated needle
+# aborts rather than shipping ms3's data under the resident site's name.
+#
+#   FD_ROLES      — curriculum.json's roles.ms3 vs roles.resident. Without the swap the
+#                   resident site shows ms3's role list ("Core rotation", "Sub-I", ...).
+#   FD_CURRICULUM — the Library columns are per-site. Without the swap the resident site
+#                   loses its browse path to the NINE resident-only pages (rp-agitation.html,
+#                   rp-brief-psych.html, rp-canon-quiz.html, rotation.md, adv_psychopharm.md,
+#                   systems_medlegal.md, supervision_teaching.md, canon_200.md,
+#                   cl_reference.md) — the sidebar that used to reach them via nav.json is
+#                   gone, so an unplaced page is reachable only by search.
 _curriculum=json.load(open(LIB+"/curriculum.json",encoding="utf-8"))
-_fd_roles_ms3_needle=common.fd_statement("FD_ROLES", _curriculum["roles"]["ms3"])
-_fd_roles_resident=common.fd_statement("FD_ROLES", _curriculum["roles"]["resident"])
-if ix.count(_fd_roles_ms3_needle)!=1:
-    print("BUILD ABORTED — FD_ROLES needle missing or duplicated in ms3-built index.html")
-    raise SystemExit(1)
-ix=ix.replace(_fd_roles_ms3_needle, _fd_roles_resident)
+_FD_PER_SITE=[
+ ("FD_ROLES", _curriculum["roles"]["ms3"], _curriculum["roles"]["resident"]),
+ ("FD_CURRICULUM",
+  common.fd_curriculum_for_site(_curriculum,"ms3"),
+  common.fd_curriculum_for_site(_curriculum,"resident")),
+]
+for _name,_ms3_value,_res_value in _FD_PER_SITE:
+    _needle=common.fd_statement(_name,_ms3_value)
+    if ix.count(_needle)!=1:
+        print("BUILD ABORTED — %s needle missing or duplicated in ms3-built index.html"%_name)
+        raise SystemExit(1)
+    ix=ix.replace(_needle, common.fd_statement(_name,_res_value))
 print("front-door roles: resident (%d role(s))"%len(_curriculum["roles"]["resident"]))
+print("front-door library: resident (%d page(s) placed across %d column(s))"%(
+    sum(len(c["refs"]) for c in common.fd_curriculum_for_site(_curriculum,"resident")["libraryColumns"]),
+    len(common.fd_curriculum_for_site(_curriculum,"resident")["libraryColumns"])))
 
 open(OUT+"/index.html","w",encoding="utf-8").write(ix)
-
-# ---- rebrand learning-path (Path-mode home) ----
-lp=OUT+"/tools/learning-path.html"
-if not os.path.exists(lp):
-    print("BUILD ABORTED — resident rebrand target missing:",lp)
-    raise SystemExit(1)
-s=open(lp,encoding="utf-8").read()
-s=common.apply_verified_replacements(s,[
- ("Inpatient Psychiatry — Learning Path","MMC Psychiatry — Learning Path"),
- ("MS3 Clerkship · Joshua Moss, MD","Resident Rotation · Joshua Moss, MD"),
-],label="resident learning-path rebrand")
-open(lp,"w",encoding="utf-8").write(s)
 
 # ---- resident-level reasoning cases: same tool, harder audience-specific payload ----
 _resident_reasoning=os.path.join(LIB,"reasoning_cases_resident.json")
@@ -251,8 +256,7 @@ nav=[
    {"t":"Welcome — Resident Rotation","f":"welcome.md","k":"md"},
    {"t":"4-Week Rotation Plan","f":"rotation.md","k":"md"},
    {"t":"Core Reading List","f":"core_readings.md","k":"md"},
-   {"t":"Supervision, EPAs & Teaching","f":"supervision_teaching.md","k":"md"},
-   {"t":"Learning Path","f":"learning-path.html","k":"tool","hidden":True}]},
+   {"t":"Supervision, EPAs & Teaching","f":"supervision_teaching.md","k":"md"}]},
  {"section":"Start the Encounter","items":[{"t":"Interview & MSE","f":"pg_interview.md","k":"md"},{"t":"Mental Status Exam","f":"mse.html","k":"tool"},{"t":"The Interview Circle","f":"interview-circle.html","k":"tool"},{"t":"The Interview Room — AI Standardized Patient","f":"sp-interview.html","k":"tool"},{"t":"Screeners: PHQ-9 & GAD-7","f":"screeners.html","k":"tool"}]},
  {"section":"Understand the Problem","items":[{"t":"Differential Dx Scaffolds","f":"ddx.md","k":"md"},{"t":"Diagnostic Reasoning Workbench","f":"diagnostic-reasoning.html","k":"tool"},{"t":"Formulation & DDx","f":"pg_formulation.md","k":"md"},{"t":"Case Formulation","f":"case_formulation.md","k":"md"},{"t":"Medical Workup & Mimics","f":"medical_workup.md","k":"md"},{"t":"Mood","f":"t_mood.md","k":"md"},{"t":"Psychosis","f":"t_psychosis.md","k":"md"},{"t":"Anxiety/Trauma/OCD","f":"t_anxiety.md","k":"md"},{"t":"Personality","f":"t_personality.md","k":"md"},{"t":"Substance Use","f":"t_sud.md","k":"md"},{"t":"Geriatric","f":"t_geri.md","k":"md"},{"t":"Perinatal","f":"t_perinatal.md","k":"md"},{"t":"Neurodevelopmental Disorders","f":"t_neurodev.md","k":"md"},{"t":"Eating Disorders","f":"t_eating.md","k":"md"}]},
  {"section":"Assess Safety and Acuity","pinned":True,"items":[{"t":"Suicide Risk & Safety","f":"pg_suicide.md","k":"md"},{"t":"Suicide Risk & Safety Planning","f":"suicide.md","k":"md"},{"t":"Columbia C-SSRS Screener","f":"cssrs.html","k":"tool"},{"t":"Violence Risk","f":"violence.md","k":"md"},{"t":"Violence Risk (FRST)","f":"violence.html","k":"tool"},{"t":"Agitation & Restraint","f":"agitation.md","k":"md"},{"t":"Agitation Ladder — PRN Trainer","f":"rp-agitation.html","k":"tool"},{"t":"Catatonia","f":"catatonia.md","k":"md"},{"t":"Bush-Francis Catatonia Scale (BFCRS)","f":"bfcrs.html","k":"tool"},{"t":"Hyperthermia & Toxidromes","f":"toxidromes.md","k":"md"},{"t":"Delirium","f":"delirium.md","k":"md"},{"t":"Withdrawal: CIWA-Ar/COWS","f":"withdrawal.html","k":"tool"},{"t":"Decisional Capacity","f":"capacity.html","k":"tool"},{"t":"Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","f":"exp_consult.md","k":"md"},{"t":"C-L: Emergencies, Tox & Capacity (Numbers)","f":"cl_reference.md","k":"md"},{"t":"Inpatient Systems & Med-Legal","f":"systems_medlegal.md","k":"md"}]},

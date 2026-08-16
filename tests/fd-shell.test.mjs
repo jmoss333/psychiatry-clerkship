@@ -157,9 +157,12 @@ test('every shell literal carrying "MS3 Clerkship" has a needle covering it', ()
   // three needles. A fourth literal added without a needle moves one number and not the other.
   const sites = (SPA_HTML.match(/MS3 Clerkship/g) || []).length
     + (SHELL_JS.match(/MS3 Clerkship/g) || []).length;
-  // Scoped to the RESIDENT_REBRAND list itself. resident_section.py carries a SECOND, unrelated
-  // rebrand list for tools/learning-path.html which has its own 'MS3 Clerkship · Joshua Moss, MD'
-  // needle — counting the whole file would credit the shell with a needle that never touches it.
+  // Scoped to the RESIDENT_REBRAND list itself, not to the whole file. Until Task 6 that was
+  // load-bearing: resident_section.py carried a SECOND rebrand list, for tools/learning-path.html,
+  // whose own 'MS3 Clerkship · Joshua Moss, MD' needle would have been miscounted as covering the
+  // shell. That tool is now retired and the second list is gone, so today the file-wide count
+  // happens to agree — but the slice stays, because it pins the RIGHT list rather than relying on
+  // there being only one. The next per-tool rebrand list would otherwise silently inflate this.
   const listStart = RESIDENT_PY.indexOf('RESIDENT_REBRAND=[');
   assert.ok(listStart !== -1, 'RESIDENT_REBRAND list not found');
   const list = RESIDENT_PY.slice(listStart, RESIDENT_PY.indexOf('\n]', listStart));

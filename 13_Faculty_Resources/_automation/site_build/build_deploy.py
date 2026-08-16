@@ -65,7 +65,6 @@ _required=[os.path.join(LIB,src) for src,_,_ in tools]+[
     os.path.join(LIB,src) for src,_ in tool_assets
 ]+[
     LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
-    LIB+"/01_Six_Week_Curriculum/learning-path.html",
     LIB+"/question_bank.json",
 ]+[os.path.join(LIB,"_prototypes","agitation-trainer","vendor",f) for f in ["react.min.js","react-dom.min.js"]]
 _abort_missing([p for p in _required if not os.path.exists(p)])
@@ -176,7 +175,6 @@ for _jn, _fallback in [
 # question_bank.json: served at site root so both qbank-attest.html and question-bank-practice.html can fetch ../question_bank.json
 _missing_req=[]
 _copy_required(LIB+"/question_bank.json", OUT+"/question_bank.json", _missing_req)
-_copy_required(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learning-path.html", _missing_req)
 _abort_missing(_missing_req)
 
 # ---- diagnostic pretest pool (adaptive engine v2): 1 attested, scoreable item per
@@ -318,7 +316,7 @@ def _tool(f,t=None,hidden=None):
     return dict({"t":t or _tool_titles.get(f,f),"f":f,"k":"tool"},**({"hidden":True} if (hidden if hidden is not None else f in HIDDEN_TOOLS) else {}))
 _week_items=[_md(t,f,True) for f,t in [("week%d.md"%i,["Week 1 — Foundations","Week 2 — Mood/Psychosis/Pharm","Week 3 — Psychotherapy/Personality","Week 4 — Family/Systems/EE","Week 5 — Acute/Emergency","Week 6 — Integration/Exam"][i-1]) for i in range(1,7)]]
 nav=[
- {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md"),_tool("learning-path.html","Learning Path",True),_tool("orientation-video.html","Orientation Video",True)]+_week_items},
+ {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md"),_tool("orientation-video.html","Orientation Video",True)]+_week_items},
  {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7")]},
  {"section":"Understand the Problem","items":[_md("Differential Dx Scaffolds","ddx.md"),_tool("diagnostic-reasoning.html","Diagnostic Reasoning Workbench"),_md("Formulation & DDx","pg_formulation.md"),_md("Case Formulation","case_formulation.md"),_md("Medical Workup & Mimics","medical_workup.md"),_md("Mood","t_mood.md"),_md("Psychosis","t_psychosis.md"),_md("Anxiety/Trauma/OCD","t_anxiety.md"),_md("Personality","t_personality.md"),_md("Substance Use","t_sud.md"),_md("Geriatric","t_geri.md"),_md("Perinatal","t_perinatal.md"),_md("Neurodevelopmental Disorders","t_neurodev.md"),_md("Eating Disorders","t_eating.md"),_md("Neurocognitive (Dementia)","t_neurocog.md"),_md("Somatic Symptom & Related","t_somatic.md"),_md("Sleep-Wake Disorders","t_sleep.md"),_md("Dissociative Disorders","t_dissociative.md"),_md("Sexual, Paraphilic & Gender","t_sexual.md"),_md("Impulse-Control & Conduct","t_impulse.md"),_md("Adjustment Disorders","t_adjustment.md"),_md("Culture, Disparities & Formulation","cultural_psychiatry.md")]},
  {"section":"Assess Safety and Acuity","pinned":True,"items":[_md("Suicide Risk & Safety","pg_suicide.md"),_md("Suicide Risk & Safety Planning","suicide.md"),_tool("cssrs.html","Columbia C-SSRS Screener"),_md("Violence Risk","violence.md"),_tool("violence.html","Violence Risk (FRST)"),_md("Agitation & Restraint","agitation.md"),_md("Catatonia","catatonia.md"),_tool("bfcrs.html","Bush-Francis Catatonia Scale (BFCRS)"),_md("Hyperthermia & Toxidromes","toxidromes.md"),_md("Delirium","delirium.md"),_tool("withdrawal.html","Withdrawal: CIWA-Ar/COWS"),_tool("capacity.html","Decisional Capacity"),_md("Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","exp_consult.md"),_md("Ethics & the Law: Confidentiality, Tarasoff, Reporting","ethics_legal.md")]},
@@ -385,17 +383,23 @@ print("retired-qb injection:",len(_retired_ids),"id(s)")
 # ---- front-door data injection (Plan 3 Task 1) ----
 # curriculum.json (structure), topic_meta.json (facts) and tool_registry.json (tool
 # identity/risk) are already written to OUT above; site_manifest.json is already loaded
-# as _manifest. FD_ROLES is the one needle that differs by audience (curriculum.json's
-# roles.ms3 vs roles.resident) — resident_section.py swaps it for roles.resident after
-# the copytree, same shape as the RESIDENT_REBRAND needles below it. The other four are
-# audience-neutral and ride along unchanged via that same copytree, exactly like
-# RETIRED_QB_IDS above. Verified replacement: a missing/duplicated needle means the
-# shell's front-door plumbing was edited away — fail the build, don't ship an empty page.
+# as _manifest. TWO needles differ by audience and are swapped by resident_section.py after
+# the copytree, same shape as the RESIDENT_REBRAND needles below it:
+#   FD_ROLES      — curriculum.json's roles.ms3 vs roles.resident.
+#   FD_CURRICULUM — the library columns are now per-site (curriculum.json's ref objects carry
+#                   a "sites" list), so what is injected here is the ms3 PROJECTION, not the
+#                   whole file. Injecting the raw document instead would put resident-only
+#                   pages (rp-agitation.html, canon_200.md, …) in the MS3 Library as dead
+#                   links — which is exactly what the old global libraryExclude entries were
+#                   working around before per-site membership existed.
+# The other three are audience-neutral and ride along unchanged via that same copytree,
+# exactly like RETIRED_QB_IDS above. Verified replacement: a missing/duplicated needle means
+# the shell's front-door plumbing was edited away — fail the build, don't ship an empty page.
 _curriculum=json.load(open(CURRICULUM,encoding="utf-8"))
 _fd_topic_meta=json.load(open(OUT+"/topic_meta.json",encoding="utf-8"))
 _fd_tool_registry=json.load(open(OUT+"/tool_registry.json",encoding="utf-8"))
 _FD_NEEDLES=[
-    ("var FD_CURRICULUM={};","FD_CURRICULUM",_curriculum),
+    ("var FD_CURRICULUM={};","FD_CURRICULUM",common.fd_curriculum_for_site(_curriculum,"ms3")),
     ("var FD_TOPIC_META={};","FD_TOPIC_META",_fd_topic_meta),
     ("var FD_TOOL_REGISTRY={};","FD_TOOL_REGISTRY",_fd_tool_registry),
     ("var FD_SITE_MANIFEST={};","FD_SITE_MANIFEST",_manifest),

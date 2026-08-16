@@ -178,15 +178,69 @@ const REAL_CUR = readJson('../curriculum.json');
 const REAL_META = readJson('../topic_meta.json');
 const REAL_TOOLS = readJson('../tool_registry.json');
 const REAL_MAN = readJson('../13_Faculty_Resources/_automation/site_build/site_manifest.json');
-const REAL_IDX = F.fdBuildIndex(REAL_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
 
-test('the count of rendered links equals 81 against the real curriculum.json', () => {
-  const expected = (REAL_CUR.libraryColumns || []).reduce((n, c) => n + c.refs.length, 0);
-  assert.equal(expected, 81, 'curriculum.json is expected to place 81 pages across the five columns');
-  const html = F.fdLibrary(REAL_IDX);
-  const links = html.match(/data-fd-open="/g) || [];
-  assert.equal(links.length, expected, 'every column-placed page must render exactly one Library link');
-  assert.equal(links.length, 81);
+// curriculum.json's library refs are PER SITE: a bare slug is a page every site ships, an object
+// carries a "sites" list. site_build/common.py's fd_curriculum_for_site() is canonical and resolves
+// this at build time; this mirrors it so these tests can assert what each site actually renders
+// rather than the union, which no site renders. (The projection is also pinned end-to-end against
+// the two real builds by _prototypes/sp-interview/tests/ci-build-contract.test.mjs.)
+const forSite = (cur, site) => ({
+  ...cur,
+  libraryColumns: (cur.libraryColumns || [])
+    .map((c) => ({
+      ...c,
+      refs: (c.refs || []).filter((e) => typeof e === 'string' || !e.sites || e.sites.includes(site)),
+    }))
+    .filter((c) => c.refs.length),
+});
+const refSlug = (e) => (typeof e === 'string' ? e : e.ref);
+const REAL_IDX = F.fdBuildIndex(forSite(REAL_CUR, 'ms3'), REAL_META, REAL_TOOLS, REAL_MAN);
+const RES_IDX = F.fdBuildIndex(forSite(REAL_CUR, 'resident'), REAL_META, REAL_TOOLS, REAL_MAN);
+
+// Two counts, not one. 81 is what the MS3 site renders; 90 is what the resident site renders, and
+// the nine-page gap IS the resident-only set that had no browse path at all before Task 6 (they
+// reached users only through the deleted sidebar's nav.json). Pinning both means losing either
+// site's placement fails here, and pinning the gap's membership means a resident page cannot be
+// quietly dropped back out by "fixing" a count.
+const RESIDENT_ONLY = [
+  'adv_psychopharm.md', 'canon_200.md', 'cl_reference.md', 'rotation.md',
+  'rp-agitation.html', 'rp-brief-psych.html', 'rp-canon-quiz.html',
+  'supervision_teaching.md', 'systems_medlegal.md',
+];
+
+test('the count of rendered links equals 81 (ms3) and 90 (resident) against the real curriculum.json', () => {
+  for (const [site, idx, expected] of [['ms3', REAL_IDX, 81], ['resident', RES_IDX, 90]]) {
+    const placed = forSite(REAL_CUR, site).libraryColumns.reduce((n, c) => n + c.refs.length, 0);
+    assert.equal(placed, expected, `curriculum.json is expected to place ${expected} pages on ${site}`);
+    const links = F.fdLibrary(idx).match(/data-fd-open="/g) || [];
+    assert.equal(links.length, expected, `${site}: every column-placed page renders exactly one link`);
+  }
+});
+
+test('the resident Library is the MS3 Library plus exactly the nine resident-only pages', () => {
+  const slugs = (site) => new Set(forSite(REAL_CUR, site).libraryColumns
+    .flatMap((c) => c.refs.map(refSlug)));
+  const ms3 = slugs('ms3');
+  const res = slugs('resident');
+  assert.deepEqual([...ms3].filter((s) => !res.has(s)), [],
+    'the resident site ships every shared page, so its Library cannot be missing one');
+  assert.deepEqual([...res].filter((s) => !ms3.has(s)).sort(), RESIDENT_ONLY,
+    'the resident-only pages must each be placed in a resident column — the sidebar that used '
+    + 'to reach them is gone, so an unplaced one is reachable only by search');
+});
+
+test('every per-site ref carries its own title, so no resident row renders as a raw slug', () => {
+  // site_manifest.json registers only the shared pages, so curriculum.json is the ONLY title
+  // source for these nine. Asserting on the rendered row (not on the JSON) is what catches
+  // fd_data.js dropping the overlay.
+  const html = F.fdLibrary(RES_IDX);
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  for (const slug of RESIDENT_ONLY) {
+    const title = RES_IDX.byRef[slug].title;
+    assert.notEqual(title, slug, `${slug} fell back to its slug`);
+    assert.ok(html.includes(esc(title)), `${slug}'s title must render`);
+  }
 });
 
 test('the real header count matches the real link count', () => {
@@ -197,7 +251,7 @@ test('the real header count matches the real link count', () => {
 
 test('the real five columns render in curriculum.json order with no duplicates and no empty column', () => {
   const html = F.fdLibrary(REAL_IDX);
-  const names = REAL_CUR.libraryColumns.map((c) => c.name);
+  const names = forSite(REAL_CUR, 'ms3').libraryColumns.map((c) => c.name);
   assert.equal(names.length, 5, 'expected five library columns');
   let cursor = -1;
   for (const name of names) {
@@ -205,7 +259,7 @@ test('the real five columns render in curriculum.json order with no duplicates a
     assert.ok(at > cursor, `column "${name}" missing or out of curriculum.json order`);
     cursor = at;
   }
-  for (const c of REAL_CUR.libraryColumns) {
+  for (const c of forSite(REAL_CUR, 'ms3').libraryColumns) {
     assert.ok(c.refs.length > 0, `column "${c.name}" must not be empty`);
   }
 });
@@ -218,11 +272,14 @@ test('the real five columns render in curriculum.json order with no duplicates a
 // review, 2026-08-16 -- the previous version of this test asserted against c.accent and could not
 // have caught that regression).
 test('real dots are keyed on the item\'s kind, and today that always agrees with its column\'s accent', () => {
-  const html = F.fdLibrary(REAL_IDX);
+  // Run over BOTH sites: the resident-only refs are the only per-site entries in the file, so a
+  // ms3-only sweep would never exercise the object ref form at all.
+  for (const [site, idx] of [['ms3', REAL_IDX], ['resident', RES_IDX]]) {
+  const html = F.fdLibrary(idx);
   let sawTool = false, sawRead = false;
-  for (const c of REAL_CUR.libraryColumns) {
-    for (const ref of c.refs) {
-      const kind = REAL_IDX.byRef[ref].kind;
+  for (const c of forSite(REAL_CUR, site).libraryColumns) {
+    for (const ref of c.refs.map(refSlug)) {
+      const kind = idx.byRef[ref].kind;
       const m = html.match(new RegExp(
         '<button type="button" class="fd-collink" data-fd-open="' + ref.replace(/\./g, '\\.') +
         '">\\s*<span class="([^"]*)">'));
@@ -236,5 +293,6 @@ test('real dots are keyed on the item\'s kind, and today that always agrees with
       if (kind === 'tool') sawTool = true; else sawRead = true;
     }
   }
-  assert.ok(sawTool && sawRead, 'fixture sanity: real data must exercise both dot states');
+  assert.ok(sawTool && sawRead, `${site}: real data must exercise both dot states`);
+  }
 });

@@ -1,5 +1,5 @@
 {
-  "_note": "Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.",
+  "_note": "Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. A library ref is a bare slug when both sites ship the page, or an object carrying \"sites\" when only one does \u2014 the build filters columns per site, so a one-site page is placed rather than globally excluded. Such an object also carries its own \"title\", because site_manifest.json registers only the shared pages and has no row to supply one. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.",
   "weeks": [
     {
       "n": 1,
@@ -95,7 +95,10 @@
         "oral.html", "violence.html", "cssrs.html", "screeners.html",
         "withdrawal.html", "decision-aids.html", "interaction-cards.html",
         "bfcrs.html", "reflection.html", "shelf-mode.html", "review.html",
-        "question-bank-practice.html"
+        "question-bank-practice.html",
+        { "ref": "rp-agitation.html", "sites": ["resident"], "title": "Agitation Ladder — PRN Trainer" },
+        { "ref": "rp-brief-psych.html", "sites": ["resident"], "title": "Five Good Minutes — Brief Psych Coach" },
+        { "ref": "rp-canon-quiz.html", "sites": ["resident"], "title": "Canon Quiz — 200-Paper Spine" }
       ]
     },
     {
@@ -104,7 +107,8 @@
       "refs": [
         "pg_suicide.md", "suicide.md", "agitation.md", "delirium.md",
         "catatonia.md", "violence.md", "exp_consult.md", "toxidromes.md",
-        "medical_workup.md", "protocol_library.md"
+        "medical_workup.md", "protocol_library.md",
+        { "ref": "cl_reference.md", "sites": ["resident"], "title": "C-L: Emergencies, Tox & Capacity (Numbers)" }
       ]
     },
     {
@@ -127,7 +131,10 @@
         "exp_tx.md", "exp_family.md", "family_modalities.md",
         "family_playbook.md", "psychotherapy.md", "brief_psychotherapy.md",
         "motivational_interviewing.md", "cultural_psychiatry.md",
-        "ethics_legal.md"
+        "ethics_legal.md",
+        { "ref": "rotation.md", "sites": ["resident"], "title": "4-Week Rotation Plan" },
+        { "ref": "supervision_teaching.md", "sites": ["resident"], "title": "Supervision, EPAs & Teaching" },
+        { "ref": "systems_medlegal.md", "sites": ["resident"], "title": "Inpatient Systems & Med-Legal" }
       ]
     },
     {
@@ -139,7 +146,9 @@
         "landmark_trials.md", "evidence_inpatient.md", "psychopharm_primer.md",
         "med_monitoring.md", "ect_neuromodulation.md", "nutrition_metabolic.md",
         "omm_resources.md", "book_library.md", "podcast_library.md",
-        "cotw_index.md"
+        "cotw_index.md",
+        { "ref": "adv_psychopharm.md", "sites": ["resident"], "title": "Advanced Psychopharmacology" },
+        { "ref": "canon_200.md", "sites": ["resident"], "title": "The Psychiatry Canon (200)" }
       ]
     }
   ],
@@ -151,17 +160,7 @@
     { "ref": "week4.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
     { "ref": "week5.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
     { "ref": "week6.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
-    { "ref": "learning-path.html", "reason": "the Path tab is the week browse surface — this tool is the same view" },
-    { "ref": "orientation-video.html", "reason": "orientation media, surfaced from the Start-here flow rather than the Library" },
-    { "ref": "rp-agitation.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
-    { "ref": "rp-brief-psych.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
-    { "ref": "rp-canon-quiz.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
-    { "ref": "rotation.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
-    { "ref": "adv_psychopharm.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
-    { "ref": "systems_medlegal.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
-    { "ref": "supervision_teaching.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
-    { "ref": "canon_200.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
-    { "ref": "cl_reference.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" }
+    { "ref": "orientation-video.html", "sites": ["ms3"], "reason": "orientation media, surfaced from the Start-here flow rather than the Library" }
   ],
   "safetyKit": [
     { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan" },

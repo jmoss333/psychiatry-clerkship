@@ -64,10 +64,24 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     weeks.push({ n: cw[w].n, title: cw[w].title, theme: cw[w].theme, items: items });
   }
 
+  /* A library ref is either a bare slug (a page every site ships) or an object carrying
+     per-site membership. The SITE FILTER already ran -- common.py's fd_curriculum_for_site()
+     resolves it at build time, so each site's index.html carries only its own refs and this
+     file needs no notion of a site. What survives here is the object's `title`: those refs are
+     the per-site pages site_manifest.json does not register, so curriculum.json is their only
+     title source and titleIndex would otherwise degrade them to the raw slug.
+     Anything that is neither a string nor an object with a string ref is skipped rather than
+     thrown on -- one unguarded throw in this join blanks the whole surface. */
   var columns=[], cc=cur.libraryColumns||[];
   for(var c=0;c<cc.length;c++){
     var citems=[], refs=cc[c].refs||[];
-    for(var r=0;r<refs.length;r++){ citems.push(ensure(refs[r], null)); }
+    for(var r=0;r<refs.length;r++){
+      var entry=refs[r], eref=entry, etitle=null;
+      if(entry&&typeof entry==='object'){ eref=entry.ref; etitle=entry.title||null; }
+      if(typeof eref!=='string'||!eref) continue;
+      if(etitle&&!titleIndex[eref]) titleIndex[eref]=etitle;
+      citems.push(ensure(eref, null));
+    }
     columns.push({ name: cc[c].name, accent: cc[c].accent, items: citems });
   }
 

@@ -41,7 +41,7 @@
         "properties": {
           "name": { "type": "string", "minLength": 1 },
           "accent": { "type": "string", "enum": ["tool", "safety", "topic"] },
-          "refs": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+          "refs": { "type": "array", "items": { "$ref": "#/definitions/columnRef" } }
         }
       }
     },
@@ -53,7 +53,8 @@
         "additionalProperties": false,
         "properties": {
           "ref": { "type": "string", "minLength": 1 },
-          "reason": { "type": "string", "minLength": 1 }
+          "reason": { "type": "string", "minLength": 1 },
+          "sites": { "$ref": "#/definitions/siteList" }
         }
       }
     },
@@ -81,6 +82,33 @@
     "synonyms": { "type": "object", "additionalProperties": { "type": "string" } }
   },
   "definitions": {
+    "siteList": {
+      "description": "Sites an entry applies to. Omit for a page BOTH sites ship. Name a site explicitly when only that site ships the page, so the other never renders a dead Library link. validate_curriculum.py rejects a site listed here that does not actually ship the ref, and rejects an omitted list on a ref only one site ships.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["ms3", "resident"] }
+    },
+    "columnRef": {
+      "description": "A page placed in a Library column. A bare string is a page both sites ship. The object form carries per-site membership, and a title for the per-site pages the shared site_manifest.json cannot list.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "required": ["ref"],
+          "additionalProperties": false,
+          "properties": {
+            "ref": { "type": "string", "minLength": 1 },
+            "sites": { "$ref": "#/definitions/siteList" },
+            "title": {
+              "description": "Display title. Required for a ref site_manifest.json does not list (nothing else can supply one); forbidden for a manifest-backed ref, whose manifest row is the single source of truth.",
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
     "roleList": {
       "type": "array",
       "items": {
