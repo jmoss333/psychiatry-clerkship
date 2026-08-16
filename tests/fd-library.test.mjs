@@ -29,15 +29,21 @@ const F = make();
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
 
 // ---- fixture: five columns, distinct accents, out of alphabetical order ----------------
-
+//
+// Two refs are deliberately misplaced relative to their column's accent -- 'mismatch-read.md'
+// sits in the tool-accent column, 'mismatch-tool.html' sits in a topic-accent column. kind is
+// derived per-item by fd_data.js from the ref's own extension (fdIsTool), independent of which
+// column holds it, so these two prove the dot follows the ITEM, not the column: if the renderer
+// ever regresses to keying off column accent, these are the two rows that would flip and a
+// same-accent-only fixture could not catch it (fix round 1 review, 2026-08-16).
 const FIX_CUR = {
   weeks: [{ n: 1, title: 'W1', theme: 'T1', items: [] }, { n: 2, title: 'W2', theme: 'T2', items: [] },
           { n: 3, title: 'W3', theme: 'T3', items: [] }, { n: 4, title: 'W4', theme: 'T4', items: [] },
           { n: 5, title: 'W5', theme: 'T5', items: [] }, { n: 6, title: 'W6', theme: 'T6', items: [] }],
   libraryColumns: [
-    { name: 'Zebra tools', accent: 'tool', refs: ['t1.html', 't2.html'] },
+    { name: 'Zebra tools', accent: 'tool', refs: ['t1.html', 't2.html', 'mismatch-read.md'] },
     { name: 'Acute stuff', accent: 'safety', refs: ['s1.md'] },
-    { name: 'Middle topics', accent: 'topic', refs: ['m1.md', 'm2.md', 'm3.md'] },
+    { name: 'Middle topics', accent: 'topic', refs: ['m1.md', 'm2.md', 'm3.md', 'mismatch-tool.html'] },
     { name: 'Another topic col', accent: 'topic', refs: ['n1.md'] },
     { name: 'Last col', accent: 'topic', refs: ['l1.md'] },
   ],
@@ -50,12 +56,15 @@ const FIX_META = {};
 const FIX_TOOLS = { tools: [
   { file: 't1.html', title: 'Tool One', category: 'acute-safety', riskLevel: 'low' },
   { file: 't2.html', title: 'Tool Two', category: 'acute-safety', riskLevel: 'low' },
+  { file: 'mismatch-tool.html', title: 'Misplaced Tool', category: 'acute-safety', riskLevel: 'low' },
 ] };
 const FIX_MAN = {
-  tools: [['src/t1.html', 't1.html', 'Tool One'], ['src/t2.html', 't2.html', 'Tool Two']],
+  tools: [['src/t1.html', 't1.html', 'Tool One'], ['src/t2.html', 't2.html', 'Tool Two'],
+          ['src/mismatch-tool.html', 'mismatch-tool.html', 'Misplaced Tool']],
   md: [['src/s1.md', 's1.md', 'Safety One'], ['src/m1.md', 'm1.md', 'Middle One'],
        ['src/m2.md', 'm2.md', 'Middle Two'], ['src/m3.md', 'm3.md', 'Middle Three'],
-       ['src/n1.md', 'n1.md', 'Another One'], ['src/l1.md', 'l1.md', 'Last One']],
+       ['src/n1.md', 'n1.md', 'Another One'], ['src/l1.md', 'l1.md', 'Last One'],
+       ['src/mismatch-read.md', 'mismatch-read.md', 'Misplaced Read']],
 };
 const IDX = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
 
@@ -75,24 +84,32 @@ test('all five columns render, in curriculum.json order', () => {
   assert.equal(cols.length, 5, '.fd-col is required per column even though it carries no rule of its own');
 });
 
-// ---- every row: data-fd-open + the column's accent class --------------------------------
+// ---- every row: data-fd-open + the ITEM's kind dot class (not the column's accent) ------
+//
+// Expectation is derived from IDX.byRef[ref].kind -- the field fd_data.js computes per item from
+// the ref's own extension -- never from FIX_CUR's column.accent, so this test cannot degenerate
+// into a restatement of "whatever fd_library.js currently reads" (fix round 1 review, 2026-08-16).
 
-test('every row carries data-fd-open="<ref>" and its column accent class', () => {
+test('every row carries data-fd-open="<ref>" and a dot class keyed on the item\'s kind', () => {
   const html = F.fdLibrary(IDX);
-  // tool column -> is-tool dot
-  assert.match(html,
-    /<button type="button" class="fd-collink" data-fd-open="t1\.html">\s*<span class="fd-collink__dot is-tool"><\/span>/);
-  assert.match(html,
-    /<button type="button" class="fd-collink" data-fd-open="t2\.html">\s*<span class="fd-collink__dot is-tool"><\/span>/);
-  // safety column -> bare dot (no is-tool), per CLASS-INVENTORY: only .is-tool is a defined
-  // modifier -- safety/topic accents both render the default (olive) dot.
-  assert.match(html,
-    /<button type="button" class="fd-collink" data-fd-open="s1\.md">\s*<span class="fd-collink__dot"><\/span>/);
-  // topic columns -> bare dot too
-  assert.match(html,
-    /<button type="button" class="fd-collink" data-fd-open="m1\.md">\s*<span class="fd-collink__dot"><\/span>/);
-  assert.match(html,
-    /<button type="button" class="fd-collink" data-fd-open="l1\.md">\s*<span class="fd-collink__dot"><\/span>/);
+  const dotClassFor = (ref) => {
+    const m = html.match(new RegExp(
+      '<button type="button" class="fd-collink" data-fd-open="' + ref.replace(/\./g, '\\.') +
+      '">\\s*<span class="([^"]*)">'));
+    assert.ok(m, `no rendered row for ${ref}`);
+    return m[1];
+  };
+  for (const ref of Object.keys(IDX.byRef)) {
+    const expected = IDX.byRef[ref].kind === 'tool' ? 'fd-collink__dot is-tool' : 'fd-collink__dot';
+    assert.equal(dotClassFor(ref), expected, `${ref} (kind=${IDX.byRef[ref].kind}) dot class`);
+  }
+  // The two deliberately misplaced refs are the ones that actually distinguish kind-keying from
+  // accent-keying -- assert them explicitly so a regression to accent-keying fails loudly here,
+  // not just in aggregate.
+  assert.equal(dotClassFor('mismatch-read.md'), 'fd-collink__dot',
+    'a .md read in the tool-accent column must NOT get is-tool');
+  assert.equal(dotClassFor('mismatch-tool.html'), 'fd-collink__dot is-tool',
+    'a .html tool in a topic-accent column must still get is-tool');
 });
 
 test('data-fd-open is the established open convention -- no second attribute name invented', () => {
@@ -106,7 +123,7 @@ test('data-fd-open is the established open convention -- no second attribute nam
 test('the header reads "Everything, one screen" with the page count', () => {
   const html = F.fdLibrary(IDX);
   assert.match(html, /<h1 class="fd-library__h1">Everything, one screen<\/h1>/);
-  assert.match(html, /<span class="fd-library__count">8 pages/, 'fixture places 8 pages total (2+1+3+1+1)');
+  assert.match(html, /<span class="fd-library__count">10 pages/, 'fixture places 10 pages total (3+1+4+1+1)');
 });
 
 // ---- titles escaped -------------------------------------------------------------------------
@@ -193,16 +210,31 @@ test('the real five columns render in curriculum.json order with no duplicates a
   }
 });
 
-test('real tool-column dots get is-tool; real non-tool columns do not', () => {
+// Expectation is derived from REAL_IDX.byRef[ref].kind -- fd_data.js's own per-item field,
+// computed from each ref's extension -- NOT from the column's accent. In today's data the two
+// coincide for every one of the 81 real refs (verified below), but the assertion is written
+// against the field that is actually supposed to be load-bearing, so it will still catch a
+// regression to accent-keying the day a column's contents stop being homogeneous (fix round 1
+// review, 2026-08-16 -- the previous version of this test asserted against c.accent and could not
+// have caught that regression).
+test('real dots are keyed on the item\'s kind, and today that always agrees with its column\'s accent', () => {
   const html = F.fdLibrary(REAL_IDX);
+  let sawTool = false, sawRead = false;
   for (const c of REAL_CUR.libraryColumns) {
     for (const ref of c.refs) {
+      const kind = REAL_IDX.byRef[ref].kind;
       const m = html.match(new RegExp(
         '<button type="button" class="fd-collink" data-fd-open="' + ref.replace(/\./g, '\\.') +
         '">\\s*<span class="([^"]*)">'));
       assert.ok(m, `no rendered row for ${ref}`);
-      if (c.accent === 'tool') assert.equal(m[1], 'fd-collink__dot is-tool', `${ref} in a tool column must get is-tool`);
-      else assert.equal(m[1], 'fd-collink__dot', `${ref} in a ${c.accent} column must NOT get is-tool`);
+      const expected = kind === 'tool' ? 'fd-collink__dot is-tool' : 'fd-collink__dot';
+      assert.equal(m[1], expected, `${ref} (kind=${kind}, column accent=${c.accent}) dot class`);
+      // Today's data invariant, checked so a future divergence between kind and accent is visible
+      // here rather than silently changing which field "happens" to agree with the other.
+      assert.equal(kind === 'tool', c.accent === 'tool',
+        `${ref}: kind=${kind} but column accent=${c.accent} -- kind and accent no longer agree`);
+      if (kind === 'tool') sawTool = true; else sawRead = true;
     }
   }
+  assert.ok(sawTool && sawRead, 'fixture sanity: real data must exercise both dot states');
 });

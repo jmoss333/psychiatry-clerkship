@@ -14,14 +14,17 @@
    Column order is curriculum.json's libraryColumns order, unmodified -- fdBuildIndex already
    preserves it (fd_data.js iterates cc in file order), so this file does not re-sort.
 
-   Dot colour is keyed on the COLUMN's accent, not the item's kind. CLASS-INVENTORY documents
-   exactly one modifier -- .fd-collink__dot.is-tool (teal); every other accent (safety, topic)
-   renders the plain default dot (olive) -- there is no .is-safety class in frontdoor.css, so
-   inventing one here would style nothing. In this repo's data the two happen to coincide (the
-   "Interactive tools" column is 100% .html tool refs and every other column is 100% .md reads),
-   but the design spec is explicit ("category dots by column accent") and the prototype's own
-   accent field lived on the column, not the item -- so accent is what this file reads, matching
-   the contract rather than a coincidence in today's data.
+   Dot colour is keyed on the ITEM's kind, not the column's accent (fix round 1 review, 2026-08-16
+   -- an earlier version of this file keyed off column accent; that was wrong). CLASS-INVENTORY
+   defines .fd-collink__dot.is-tool as "item is a tool, not a read" -- an item-level semantic --
+   and the prototype's own dot logic is `it.t === 'tool' ? teal : c.accent`: the teal branch is
+   gated on the ITEM's type, with the column's accent only a fallback shade CLASS-INVENTORY never
+   implemented (there is no .is-safety class in frontdoor.css). The sibling renderer fd_today.js
+   keys the analogous .fd-chip.is-tool off it.kind for the same reason, and fd_data.js already
+   computes that field per item. In this repo's data item.kind and column accent happen to
+   coincide 100% today (the "Interactive tools" column is all .html tool refs; every other column
+   is all .md reads), but keying on kind is what stays correct the first time a .md page lands in
+   the Interactive tools column or a tool lands elsewhere.
 
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. Page slugs (e.g. shelf.md) are
@@ -29,8 +32,8 @@
    filter" hint reuses .fd-kbd, the same class fd_shell.js already uses for the header's ⌘K hint
    (CLASS-INVENTORY section 1) -- one class, two call sites, rather than a second key-hint style. */
 
-function fdCollink(item, accent){
-  var dotCls=(accent==='tool')?'fd-collink__dot is-tool':'fd-collink__dot';
+function fdCollink(item){
+  var dotCls=(item.kind==='tool')?'fd-collink__dot is-tool':'fd-collink__dot';
   return '<button type="button" class="fd-collink" data-fd-open="'+fdEsc(item.ref)+'">'+
     '<span class="'+dotCls+'"></span>'+
     '<span class="fd-collink__label">'+fdEsc(item.title)+'</span>'+
@@ -44,7 +47,7 @@ function fdLibraryCol(col){
   var items=col.items||[];
   var out='<div class="fd-col">';
   out+='<div class="fd-col__name">'+fdEsc(col.name)+'</div>';
-  for(var i=0;i<items.length;i++){ out+=fdCollink(items[i], col.accent); }
+  for(var i=0;i<items.length;i++){ out+=fdCollink(items[i]); }
   out+='</div>';
   return out;
 }
