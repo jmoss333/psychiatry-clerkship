@@ -336,5 +336,87 @@ class SafetyKitTest(unittest.TestCase):
             self.assertIn("must be a string", r.stdout)
 
 
+class RolesTest(unittest.TestCase):
+    """roles.{ms3,resident}[] — non-empty id/name/desc, and audience-neutral displayed text.
+
+    curriculum.json is one document read by both site builds, so a role's displayed name/desc
+    (unlike its id, an identifier rather than copy) must not carry an audience-specific token —
+    the Python analogue of tests/shell-copy.test.mjs's shared-copy scan.
+    """
+
+    def _cur(self, ms3=None, resident=None):
+        c = _curriculum([])
+        c["roles"] = {
+            "ms3": ms3 if ms3 is not None else [],
+            "resident": resident if resident is not None else [],
+        }
+        return c
+
+    def test_accepts_well_formed_audience_neutral_roles(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(
+                ms3=[{"id": "student", "name": "Core rotation",
+                      "desc": "The six-week inpatient rotation", "hint": "most common"},
+                     {"id": "staff", "name": "Nursing · SW · family",
+                      "desc": "Unit staff and families", "hint": ""}],
+                resident=[{"id": "pgy1", "name": "PGY-1",
+                           "desc": "First year on inpatient psychiatry", "hint": "most common"}]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_rejects_a_role_missing_a_required_field(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(
+                ms3=[{"id": "student", "name": "", "desc": "The rotation", "hint": ""}]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("name", r.stdout)
+
+    def test_rejects_a_role_with_a_non_string_field_without_crashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(
+                ms3=[{"id": "student", "name": {"nested": "dict"}, "desc": "The rotation"}]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
+            self.assertIn("must be a non-empty string", r.stdout)
+
+    def test_rejects_a_role_that_is_not_an_object_without_crashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(ms3=["just a string"]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
+            self.assertIn("must be an object", r.stdout)
+
+    def test_rejects_a_role_name_carrying_an_audience_specific_token(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(
+                ms3=[{"id": "student", "name": "MS3 · clerkship student",
+                      "desc": "The rotation", "hint": ""}]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("audience-specific token", r.stdout)
+
+    def test_rejects_a_role_desc_carrying_an_audience_specific_token(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, self._cur(
+                resident=[{"id": "pgy1", "name": "PGY-1",
+                           "desc": "Resident on the unit", "hint": ""}]))
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("audience-specific token", r.stdout)
+
+    def test_rejects_roles_missing_a_site_key_without_crashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["roles"] = {"ms3": []}  # no "resident" key at all
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertNotIn("Traceback", r.stderr)
+            self.assertIn("roles.resident", r.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
