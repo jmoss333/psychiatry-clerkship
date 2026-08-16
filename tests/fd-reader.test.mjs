@@ -120,6 +120,31 @@ test('the "Try it now" launcher appears only when toolRef is set', () => {
   assert.doesNotMatch(F.fdReader(IDX, s({ ref: 'b.md' }), ''), /fd-trynow/);
 });
 
+// The branch contract fd_search.js's header states and fd_sheet.js's attribute table repeats:
+// data-fd-open="<ref>" NAVIGATES; the same attribute with a bare data-fd-sheet beside it opens a
+// preview side sheet instead. "Try it now" promises, in its own sub-copy, that the page stays put
+// -- so without the modifier the button navigated away from the page it had just promised not to
+// leave. Pinned as a pair (copy + attribute inside the SAME button) so the promise and the
+// mechanism that keeps it cannot drift apart again.
+test('"Try it now" carries data-fd-sheet, so the page it promises to keep really stays put', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md' }), '');
+  const start = html.indexOf('class="fd-trynow"');
+  assert.notEqual(start, -1, 'no .fd-trynow button found');
+  const btn = html.slice(start, html.indexOf('</button>', start));
+  assert.match(btn, /data-fd-open="tool\.html" data-fd-sheet>/,
+    'data-fd-open alone means navigate -- the bare data-fd-sheet modifier is what selects the sheet');
+  assert.match(btn, /this page stays put/,
+    'the sub-copy making the promise must live in the same button as the attribute keeping it');
+});
+
+test('ordinary navigating targets keep a BARE data-fd-open -- the modifier is not blanket-applied', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1 }), '');
+  assert.match(html, /class="fd-prevnext__btn is-next" data-fd-open="b\.md"><span/,
+    'prev/next really do navigate; adding data-fd-sheet here would be the opposite bug');
+  assert.doesNotMatch(html, /data-fd-open="b\.md" data-fd-sheet/);
+  assert.doesNotMatch(html, /class="fd-railnav__row[^"]*" data-fd-open="[^"]*" data-fd-sheet/);
+});
+
 test('the "Try it now" title falls back to the raw ref when toolRef resolves to nothing', () => {
   const cur = { weeks: [{ n: 1, title: 'W', theme: 'T', items: [{ ref: 'orphan.md', kind: 'read' }] }],
     libraryColumns: [], libraryExclude: [], safetyKit: [], roles: { ms3: [], resident: [] }, synonyms: {} };
@@ -157,7 +182,8 @@ test('the mobile action bar\'s primary label is wrapped in a bare <span>', () =>
   // text-only child overflows uncontained on narrow screens.
   const html = F.fdReader(IDX, s({ ref: 'a.md' }), '');
   const bar = html.slice(html.indexOf('class="fd-actionbar"'));
-  assert.match(bar, /fd-btn fd-btn--primary" data-fd-toggle="a\.md"><span>[^<]*<\/span><\/button>/);
+  assert.match(bar,
+    /fd-btn fd-btn--primary" data-fd-toggle="a\.md" aria-pressed="(?:true|false)"><span>[^<]*<\/span><\/button>/);
 });
 
 // ---- prev/next footer -----------------------------------------------------------------------
@@ -240,7 +266,41 @@ test('the rail\'s "X of Y done" header comes from fdTodayProgress -- the reader 
 
 test('a done rail row carries is-done on both the dot and the title', () => {
   const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: { 'b.md': true } }), '');
-  assert.match(html, /fd-railnav__dot is-done">✓<\/span><span class="fd-railnav__title is-done">Page B</);
+  assert.match(html,
+    /fd-railnav__dot is-done" aria-hidden="true">✓<\/span><span class="fd-railnav__title is-done">Page B</);
+});
+
+// The glyph is emitted in BOTH states and only its COLOUR differs, so a screen reader announced
+// "✓ Page B" for an unread row -- telling the user an item was finished when it was not. Same
+// defect, same fix as fd_sheet.js's step check: the character is decoration and says so.
+test('every rail ✓ is hidden from assistive tech, in both states', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: { 'b.md': true } }), '');
+  const dots = html.match(/class="fd-railnav__dot[^"]*"[^>]*>/g) || [];
+  assert.equal(dots.length, 3, 'one dot per week-1 item');
+  for (const dot of dots) {
+    assert.match(dot, /aria-hidden="true"/,
+      `an unread ✓ announced as read is a false claim: ${dot}`);
+  }
+  // The character itself must stay: .fd-railnav__dot conveys state by colouring the glyph, so
+  // deleting it would leave the circle with nothing to colour and change the render.
+  assert.equal((html.match(/aria-hidden="true">✓<\/span>/g) || []).length, 3);
+});
+
+// aria-pressed belongs on the reader's REAL toggle (data-fd-toggle), not on the rail row, which
+// is a navigation control -- announcing a navigating button as an unpressed toggle would swap one
+// false statement for another.
+test('the done toggles carry aria-pressed in both states, and the rail row carries none', () => {
+  const undone = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: {} }), '');
+  assert.equal((undone.match(/aria-pressed="false"/g) || []).length, 2,
+    'the desktop pair and the mobile bar render the same control -- both must agree');
+  assert.doesNotMatch(undone, /aria-pressed="true"/);
+
+  const done = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: { 'a.md': true } }), '');
+  assert.equal((done.match(/aria-pressed="true"/g) || []).length, 2);
+  assert.doesNotMatch(done, /aria-pressed="false"/);
+
+  assert.doesNotMatch(done, /class="fd-railnav__row[^"]*"[^>]*aria-pressed/,
+    'the rail row navigates; it is not a toggle');
 });
 
 test('the currently-open row carries is-current, and only that row', () => {
@@ -273,7 +333,7 @@ test('the source chip shows the item\'s ref', () => {
 
 test('doneLabel: not done, nothing left unread -> "Mark done"', () => {
   const html = F.fdReader(IDX, s({ ref: 'd.md', week: 2, done: {} }), '');
-  assert.match(html, /data-fd-toggle="d\.md">Mark done</);
+  assert.match(html, /data-fd-toggle="d\.md" aria-pressed="false">Mark done</);
 });
 
 test('doneLabel: done, nothing left unread -> "Back to " + the ORIGINATING tab, not always Today', () => {
@@ -283,25 +343,25 @@ test('doneLabel: done, nothing left unread -> "Back to " + the ORIGINATING tab, 
   // reading "Library" -- visibly contradictory. This asserts the two can never drift apart:
   // doneLabel's fallback text is the SAME backLabel the ghost button renders, for three origins.
   const today = F.fdReader(IDX, s({ ref: 'd.md', week: 2, fromTab: 'today', done: { 'd.md': true } }), '');
-  assert.match(today, /data-fd-toggle="d\.md">Back to Today</);
+  assert.match(today, /data-fd-toggle="d\.md" aria-pressed="true">Back to Today</);
 
   const library = F.fdReader(IDX, s({ ref: 'd.md', week: 2, fromTab: 'library', done: { 'd.md': true } }), '');
-  assert.match(library, /data-fd-toggle="d\.md">Back to Library</);
+  assert.match(library, /data-fd-toggle="d\.md" aria-pressed="true">Back to Library</);
   assert.match(library, /fd-btn fd-btn--ghost" data-fd-back>Library</,
     'the primary button\'s fallback label and the ghost button must name the SAME tab');
 
   const path = F.fdReader(IDX, s({ ref: 'd.md', week: 2, fromTab: 'path', done: { 'd.md': true } }), '');
-  assert.match(path, /data-fd-toggle="d\.md">Back to Path</);
+  assert.match(path, /data-fd-toggle="d\.md" aria-pressed="true">Back to Path</);
 });
 
 test('doneLabel: not done, something left unread -> "Mark done · Next: X ->"', () => {
   const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: {} }), '');
-  assert.match(html, /data-fd-toggle="a\.md">Mark done · Next: Page B →</);
+  assert.match(html, /data-fd-toggle="a\.md" aria-pressed="false">Mark done · Next: Page B →</);
 });
 
 test('doneLabel: done, something left unread -> "Next: X ->"', () => {
   const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: { 'a.md': true } }), '');
-  assert.match(html, /data-fd-toggle="a\.md">Next: Page B →</);
+  assert.match(html, /data-fd-toggle="a\.md" aria-pressed="true">Next: Page B →</);
 });
 
 // ---- bodyHtml: verbatim and unescaped, per contract --------------------------------------------

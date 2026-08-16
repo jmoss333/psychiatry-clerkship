@@ -142,6 +142,39 @@ test('the detail card shows "you are here" only when viewing the current week', 
   assert.doesNotMatch(elsewhere, /fd-detail__here/);
 });
 
+// ---- detail rows inherit fd_today.js's fdRow, a11y treatment included ------------------
+//
+// fd_path.js renders its detail list through fdRow(compact=true) rather than keeping a second
+// copy of the row markup, so the ✓-must-not-lie fix (aria-hidden glyph, state on the button via
+// aria-pressed) arrives here for free. Pinned on THIS surface too: a future edit that forks the
+// row again would otherwise reintroduce the defect on Path alone, silently.
+
+test('a detail row hides its ✓ from assistive tech and carries the state on the button', () => {
+  const html = F.fdPath(IDX, s({ week: 5, viewWeek: 5, done: { 'w5a.md': true } }));
+  assert.match(html, /class="fd-check is-done" data-fd-toggle="w5a\.md" title="Mark done" aria-pressed="true">/);
+  assert.match(html, /class="fd-check" data-fd-toggle="w5b\.html" title="Mark done" aria-pressed="false">/);
+
+  const glyphs = (html.match(/✓/g) || []).length;
+  assert.equal(glyphs, 2, 'one per detail row of the viewed week');
+  assert.equal((html.match(/<span aria-hidden="true">✓<\/span>/g) || []).length, glyphs,
+    'no bare ✓ may survive -- it announces an undone item as done');
+});
+
+test('aria-pressed tracks the done map in both directions on the detail card', () => {
+  const none = F.fdPath(IDX, s({ week: 5, viewWeek: 5, done: {} }));
+  assert.equal((none.match(/aria-pressed="false"/g) || []).length, 2);
+  assert.doesNotMatch(none, /aria-pressed="true"/);
+
+  const all = F.fdPath(IDX, s({ week: 5, viewWeek: 5, done: { 'w5a.md': true, 'w5b.html': true } }));
+  assert.equal((all.match(/aria-pressed="true"/g) || []).length, 2);
+  assert.doesNotMatch(all, /aria-pressed="false"/);
+});
+
+test('the rows really are the compact variant of the shared row, not a fork', () => {
+  const html = F.fdPath(IDX, s({ week: 5, viewWeek: 5, done: {} }));
+  assert.match(html, /class="fd-row is-compact"/);
+});
+
 // ---- "Set as my week" only when viewWeek !== week --------------------------------------
 
 test('"Set as my week" appears only when browsing away from the current week, and carries data-fd-setweek', () => {

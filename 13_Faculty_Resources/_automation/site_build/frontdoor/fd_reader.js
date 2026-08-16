@@ -145,13 +145,22 @@ function fdReaderKeyPoints(points){
   return out;
 }
 
-/* data-fd-open, not a new attribute: fd_today.js's quick-tools rail already treats "open a tool"
-   identically to "open a read" via data-fd-open (fd_today.js:fdQuickToolBtn) -- the prototype's
-   "opens as a side sheet" copy describes a PRESENTATION choice the wiring layer (Plan 3 / a later
-   Task 8/9) is free to make when it sees the click originated from this button, not a different
-   action needing its own attribute name. toolTitle falls back to the raw ref for a toolRef that
-   resolves to nothing in the index -- the same missing-entry degradation fd_data.js already uses
-   for titles, rather than throwing on a dangling reference. */
+/* data-fd-open="<ref>" plus the bare data-fd-sheet modifier -- the branch contract fd_search.js
+   (header note, "Sheet-vs-navigate signalling") states and fd_sheet.js's attribute table repeats:
+   data-fd-open alone NAVIGATES to the page; the same attribute with a bare data-fd-sheet beside it
+   means "open that ref as a preview side sheet instead". This button must carry the modifier,
+   because its own sub-copy one line below promises the page stays put, and because the prototype
+   opens Try-it-now as a sheet unconditionally while a list row's data-fd-open navigates.
+
+   An earlier version of this file left the modifier off and justified it by saying the wiring
+   layer could infer the sheet presentation from the click having come from .fd-trynow. That
+   rationale is deleted, not merely superseded: a second, undocumented mechanism for one decision
+   is exactly how this button came to promise one thing and encode another. The attribute is now
+   the only signal, and tests/fd-reader.test.mjs pins it.
+
+   toolTitle falls back to the raw ref for a toolRef that resolves to nothing in the index -- the
+   same missing-entry degradation fd_data.js already uses for titles, rather than throwing on a
+   dangling reference. */
 function fdReaderTryNow(item, index){
   if(!item.toolRef) return '';
   var idx=index||{byRef:{}};
@@ -161,7 +170,8 @@ function fdReaderTryNow(item, index){
      title cannot overflow the button -- the same structural, non-colour inline style fd_shell.js
      uses for the analogous .fd-role grouping span (fd_shell.js:84). No class in frontdoor.css
      covers this bare grouping, same as that precedent. */
-  return '<button type="button" class="fd-trynow" data-fd-open="'+fdEsc(item.toolRef)+'">'+
+  return '<button type="button" class="fd-trynow" data-fd-open="'+fdEsc(item.toolRef)+'" '+
+    'data-fd-sheet>'+
     '<span class="fd-trynow__icon">▶</span>'+
     '<span style="flex:1;min-width:0">'+
       '<span class="fd-trynow__title">Try it now · '+fdEsc(toolTitle)+'</span>'+
@@ -205,7 +215,21 @@ function fdReaderPrevNext(neighbours){
    a library-only item has nothing to navigate between, so a rail with one entry (or a rail for a
    week the item is not even part of) would misinform rather than orient. frontdoor.css hides
    .fd-railnav below 1000px unconditionally (CLASS-INVENTORY, backed rule) regardless of this
-   gate, so no second desk-branch is layered on top of the inWeek one. */
+   gate, so no second desk-branch is layered on top of the inWeek one.
+
+   The ✓ dot carries aria-hidden="true" for the reason fd_sheet.js:157-176 sets out at length: the
+   glyph is emitted in BOTH states and .fd-railnav__dot's CSS colours it (transparent vs filled),
+   so a screen reader announces "✓ Page B" for an UNREAD row -- a statement that is false. Hiding
+   the character from the a11y tree removes the false claim while keeping the render byte-identical
+   (the colour, not the character, is what conveys state visually).
+
+   The other half of fd_sheet.js's treatment -- aria-pressed on the button -- deliberately does NOT
+   apply here: this row is a NAVIGATION control (data-fd-open, "go to that page"), not a toggle, and
+   aria-pressed would announce it as a toggle button the click does not toggle. That would trade one
+   false statement for another. Known residue, flagged rather than papered over: a done rail row is
+   now distinguishable from an unread one by dot colour ALONE (frontdoor.css:427), so its state is
+   still not in the a11y tree. Fixing that properly needs a text affordance in the accessible name
+   (or a visually-hidden class), and frontdoor.css is frozen for this plan -- see the fix report. */
 function fdReaderRailRow(it, curRef, doneMap){
   var isCur=(it.ref===curRef);
   var isDone=!!(doneMap||{})[it.ref];
@@ -213,7 +237,7 @@ function fdReaderRailRow(it, curRef, doneMap){
   var dotCls=isDone?'fd-railnav__dot is-done':'fd-railnav__dot';
   var titleCls=isDone?'fd-railnav__title is-done':'fd-railnav__title';
   return '<button type="button" class="'+rowCls+'" data-fd-open="'+fdEsc(it.ref)+'">'+
-    '<span class="'+dotCls+'">✓</span>'+
+    '<span class="'+dotCls+'" aria-hidden="true">✓</span>'+
     '<span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+
   '</button>';
 }
@@ -235,10 +259,18 @@ function fdReaderRailNav(weekItems, state, weekN){
    the next unread item, or return to fromTab, after marking done) is wiring-layer logic that can
    key off the SAME attribute by noticing the click happened inside .fd-article__actions /
    .fd-actionbar rather than a list row -- this pure renderer does not need to encode that
-   distinction itself. The ghost button reuses data-fd-back, same as the top-of-page back link. */
-function fdReaderActions(item, doneLabel, backLabel){
+   distinction itself. The ghost button reuses data-fd-back, same as the top-of-page back link.
+
+   aria-pressed carries the done state, mirroring fd_sheet.js's step button: THIS is the reader's
+   genuine toggle (data-fd-toggle keyed by ref), so the attribute is a true statement here in a way
+   it would not be on the navigating rail row above. Its visible label already changes with state
+   ("Mark done" vs "Next: …"), but that is prose a caller could reword; the pressed state is the
+   machine-readable half, and the mobile bar's twin button below carries the same value so the two
+   renderings of one control can never disagree. */
+function fdReaderActions(item, doneLabel, backLabel, isDone){
   return '<div class="fd-article__actions">'+
-    '<button type="button" class="fd-btn fd-btn--primary" data-fd-toggle="'+fdEsc(item.ref)+'">'+
+    '<button type="button" class="fd-btn fd-btn--primary" data-fd-toggle="'+fdEsc(item.ref)+'" '+
+      'aria-pressed="'+(isDone?'true':'false')+'">'+
       fdEsc(doneLabel)+'</button>'+
     '<button type="button" class="fd-btn fd-btn--ghost" data-fd-back>'+fdEsc(backLabel)+'</button>'+
   '</div>';
@@ -248,10 +280,11 @@ function fdReaderActions(item, doneLabel, backLabel){
    assertion tests/fd-reader.test.mjs pins hardest). CLASS-INVENTORY's ⚠ trap: the primary
    button's label MUST be wrapped in a bare <span> (`.fd-actionbar .fd-btn--primary span` supplies
    the overflow ellipsis) -- a text-only child overflows uncontained on narrow screens. */
-function fdReaderActionBar(item, doneLabel){
+function fdReaderActionBar(item, doneLabel, isDone){
   return '<div class="fd-actionbar">'+
     '<button type="button" class="fd-btn fd-btn--ghost" data-fd-back>‹</button>'+
-    '<button type="button" class="fd-btn fd-btn--primary" data-fd-toggle="'+fdEsc(item.ref)+'">'+
+    '<button type="button" class="fd-btn fd-btn--primary" data-fd-toggle="'+fdEsc(item.ref)+'" '+
+      'aria-pressed="'+(isDone?'true':'false')+'">'+
       '<span>'+fdEsc(doneLabel)+'</span></button>'+
   '</div>';
 }
@@ -301,7 +334,7 @@ function fdReader(index, state, bodyHtml){
   article+=fdReaderTryNow(item, idx);
   article+='<div class="fd-article__source"><span>Source:</span>'+
     '<span class="fd-src">'+fdEsc(item.ref)+'</span></div>';
-  article+=fdReaderActions(item, doneLabel, backLabel);
+  article+=fdReaderActions(item, doneLabel, backLabel, isDone);
   article+=fdReaderPrevNext(neighbours);
   article+='</div>'; /* .fd-article */
 
@@ -313,6 +346,6 @@ function fdReader(index, state, bodyHtml){
   out+='</div>';
   out+='<div class="fd-actionbar__spacer"></div>';
   out+='</article>';
-  out+=fdReaderActionBar(item, doneLabel);
+  out+=fdReaderActionBar(item, doneLabel, isDone);
   return out;
 }

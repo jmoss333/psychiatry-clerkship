@@ -120,6 +120,36 @@ test('an undone item carries neither', () => {
   assert.match(html, /class="fd-row__title">Page A</);
 });
 
+// ---- the ✓ must not lie (WCAG 1.4.1 / 4.1.2), same treatment as fd_sheet.js -------------
+//
+// The glyph is emitted in BOTH states and only its COLOUR differs (frontdoor.css:231/233), so
+// before this fix the toggle's accessible name was "✓" whether the item was done or not, and
+// done-ness reached a screen-reader user not at all. The character stays (deleting it would
+// leave the circle with nothing to colour); it is marked decoration, and the state moves onto
+// the button, which is the actual toggle.
+
+test('the row ✓ is hidden from assistive tech and the state is carried by aria-pressed', () => {
+  const html = F.fdToday(IDX, s({ done: { 'a.md': true } }));
+  assert.match(html, /class="fd-check is-done" data-fd-toggle="a\.md" title="Mark done" aria-pressed="true">/);
+  assert.match(html, /class="fd-check" data-fd-toggle="t\.html" title="Mark done" aria-pressed="false">/);
+
+  // Every ✓ in the whole surface is inside an aria-hidden wrapper -- no bare glyph survives.
+  const glyphs = (html.match(/✓/g) || []).length;
+  assert.equal(glyphs, 2, 'one per week row');
+  assert.equal((html.match(/<span aria-hidden="true">✓<\/span>/g) || []).length, glyphs,
+    'an undone row announced as "✓ Page A" tells the user it is finished when it is not');
+});
+
+test('aria-pressed tracks the done map in both directions', () => {
+  const none = F.fdToday(IDX, s({ done: {} }));
+  assert.equal((none.match(/aria-pressed="false"/g) || []).length, 2);
+  assert.doesNotMatch(none, /aria-pressed="true"/);
+
+  const all = F.fdToday(IDX, s({ done: { 'a.md': true, 't.html': true } }));
+  assert.equal((all.match(/aria-pressed="true"/g) || []).length, 2);
+  assert.doesNotMatch(all, /aria-pressed="false"/);
+});
+
 test('the daily pick is omitted once every library-only read is done', () => {
   const withPick = F.fdToday(IDX, s({ done: {} }));
   assert.match(withPick, /fd-pick/);
@@ -152,6 +182,40 @@ test('the streak suffix appears at 2+ days and is omitted below that', () => {
   assert.doesNotMatch(F.fdToday(IDX, s({ streak: 1 })), /days in a row/);
   assert.doesNotMatch(F.fdToday(IDX, s({ streak: 0 })), /days in a row/);
   assert.match(F.fdToday(IDX, s({ streak: 2 })), /2 days in a row/);
+});
+
+// ---- the subhead, joined -- the front door's most-read line --------------------------
+//
+// fdExamCountdown returns a bare fragment ('· exam in ~5 days'): separator dot included, leading
+// space NOT -- the caller owns the join, exactly as it does for the streak clause. Concatenating
+// it directly printed "Sunday· exam in ~5 days" through weeks 5 and 6. tests/fd-state.test.mjs
+// pins the fragment; these pin the JOINED string, which is what a learner actually reads and
+// which no test covered before.
+
+function subOf(html) {
+  const m = html.match(/<p class="fd-today__sub">([^<]*)<\/p>/);
+  assert.ok(m, 'no .fd-today__sub found');
+  return m[1];
+}
+
+// 2026-08-16 is the Sunday of the week whose Monday (2026-08-10) anchors fd-state's countdown
+// fixture; at week 5 that is 5 days out from the week-6 Friday.
+const SUNDAY_W5 = new Date(2026, 7, 16, 9, 0, 0).getTime();
+
+test('the exam countdown joins onto the subhead with a separating space', () => {
+  assert.equal(subOf(F.fdToday(IDX, s({ week: 5, nowMs: SUNDAY_W5 }))),
+    'Week 5 · W5 · Sunday · exam in ~5 days');
+});
+
+test('the countdown follows the streak clause, still spaced', () => {
+  assert.equal(subOf(F.fdToday(IDX, s({ week: 5, streak: 3, nowMs: SUNDAY_W5 }))),
+    'Week 5 · W5 · Sunday · 3 days in a row · exam in ~5 days');
+});
+
+test('a week with no countdown leaves no trailing space behind', () => {
+  const sub = subOf(F.fdToday(IDX, s({})));
+  assert.equal(sub, 'Week 1 · Foundations · Monday');
+  assert.doesNotMatch(sub, / $/, 'an unconditional join would strand a space on weeks 1-4');
 });
 
 test('every interpolated title is escaped', () => {

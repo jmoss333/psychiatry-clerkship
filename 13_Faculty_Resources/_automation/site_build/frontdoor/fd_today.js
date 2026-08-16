@@ -54,7 +54,25 @@ function fdTodayProgress(items, doneMap){
 /* Shared week-item row -- CLASS-INVENTORY's Shared Components section (.fd-row, .fd-check,
    .fd-chip, ...). The checkmark glyph is ALWAYS emitted; .fd-check's CSS toggles its colour
    (transparent vs filled) rather than the markup toggling the glyph itself, so a screenshot at
-   any state still has the character to colour. is-just-done is never applied here -- it is a
+   any state still has the character to colour.
+
+   ---- Why the glyph is aria-hidden and the state lives on the button --------------------------
+   Same treatment, same reasoning as fd_sheet.js:157-176, which this row must not diverge from.
+   Emitting the character in both states is right visually and a lie when announced: a screen
+   reader reads it regardless of colour, so an UNDONE row announced as "✓ Page A" tells the user
+   an item is finished when it is not, and the only thing distinguishing the two states was
+   colour (frontdoor.css:231/233) -- WCAG 1.4.1 and 4.1.2 both. So the glyph is decoration
+   (aria-hidden="true") and the real state moves to aria-pressed on the button, which is the
+   toggle. The glyph gains a bare wrapper span purely to have something to hang aria-hidden on --
+   it carries no class, so no rule matches it; .fd-check is display:flex and the character was
+   already an anonymous flex item, which the span now simply names. The render is unchanged, and
+   the button keeps its accessible name from the title attribute it already had ("Mark done"),
+   which the ✓ text content used to override.
+
+   fd_path.js's detail card renders through this same function (compact=true), so Path inherits
+   the fix rather than needing its own; tests/fd-path.test.mjs pins that it did.
+
+   is-just-done is never applied here -- it is a
    transient "the user just clicked this" flag with no field in this renderer's state shape, and
    belongs to the DOM-side click handler, not this pure render. idx staggers the fade-in the
    design specifies (35ms per row); frontdoor.css's .fd-row animation has no built-in stagger, so
@@ -75,8 +93,9 @@ function fdRow(it, idx, doneMap, compact){
   var minLabel=(it.kind!=='tool'&&typeof it.minutes==='number')?(it.minutes+' min'):'';
   var rowCls=compact?'fd-row is-compact':'fd-row';
   return '<div class="'+rowCls+'" style="animation-delay:'+(idx*35)+'ms">'+
-    '<button type="button" class="'+checkCls+'" data-fd-toggle="'+fdEsc(it.ref)+'" title="Mark done">'+
-      '✓</button>'+
+    '<button type="button" class="'+checkCls+'" data-fd-toggle="'+fdEsc(it.ref)+'" '+
+      'title="Mark done" aria-pressed="'+(on?'true':'false')+'">'+
+      '<span aria-hidden="true">✓</span></button>'+
     '<button type="button" class="fd-row__open" data-fd-open="'+fdEsc(it.ref)+'">'+
       '<span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+
       '<span class="fd-row__meta">'+
@@ -213,7 +232,16 @@ function fdToday(index, state){
     ?('Week '+fdEsc(st.week)+' · '+fdEsc(wk.title)+' · '+dayName)
     :(dayName+' · browsing — no week set');
   if((st.streak||0)>=2) sub+=' · '+fdEsc(st.streak)+' days in a row';
-  sub+=fdExamCountdown(st.week, nowMs);
+  /* fdExamCountdown returns a bare fragment -- its separator dot included, its leading space NOT
+     ('· exam in ~5 days'), the same split the streak clause above uses when it supplies its own
+     ' · '. The caller owns the join, so it must supply that space: concatenating the fragment
+     directly printed "Sunday· exam in ~5 days" through weeks 5 and 6, on the single most-read line
+     of the front door. Guarded rather than unconditional because the empty return is the common
+     case (every week but 5 and 6, and after the exam), and ' '+'' would leave a trailing space on
+     the subhead for all of them. tests/fd-state.test.mjs pins the fragment's shape at one end and
+     tests/fd-today.test.mjs pins this joined output at the other. */
+  var countdown=fdExamCountdown(st.week, nowMs);
+  if(countdown) sub+=' '+countdown;
 
   var out='<section class="fd-today">';
   out+='<h1 class="fd-today__h1">'+greeting+'</h1>';
