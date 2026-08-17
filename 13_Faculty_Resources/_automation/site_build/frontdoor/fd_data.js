@@ -55,6 +55,18 @@ function fdCtaRef(href){
   return r?r.ref:'';
 }
 
+/* Does this href open the communication tool AT A CASE? The deleted shell's
+   isCommunicationCaseHref(), restored unchanged, and it is a CLASSIFIER over the destination --
+   not over which topic_meta field the href arrived in. That distinction is the whole point: the
+   same case href is authored in `communicationCases`, in `cta`, and in `clinicalWorkflow.actions`
+   across the corpus, and it is a spoken drill in all three. Bucketing by source list instead
+   silently shortened the drill group on 39 topics. Bare `?tool=communication-practice.html` with
+   no case is NOT a drill -- it opens the tool's own picker, which is an ordinary tool link. */
+function fdIsCommunicationCase(href){
+  var s=String(href===null||href===undefined?'':href);
+  return /[?&]tool=communication-practice\.html/.test(s)&&/[?&]case=/.test(s);
+}
+
 /* topic_meta authors write `cta` as either one {label, href} object or an array of them (43 and
    22 topics respectively -- both shapes are live, so both are read). Anything without BOTH
    strings is skipped: a half-authored entry would otherwise render an empty link. */
@@ -153,6 +165,11 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex, caseIndex){
    page->tool from topic_meta's relatedTools, and drill titles from communication_cases.json,
    build-injected as FD_COMMUNICATION_CASES. The deleted CASE_TITLES had drifted to 10 of the 12
    real cases, which is what a second copy always does eventually. */
+/* The deleted WF_FIELDS, in the deleted order -- which is the order of an encounter, not
+   alphabetical, and is the reason to transcribe rather than re-derive. ONE label changed:
+   `exam` read "Shelf/COMAT" and reads "Exam focus" here, because "shelf" is on
+   shell-copy.test.mjs's banned audience-token list and every string in this module ships to both
+   sites unrebranded. Same substitution the Progress page already makes. */
 function fdWorkflowFields(){
   return [['ask','What to ask'],['mse','MSE focus'],['safety','Safety'],['say','What to say'],
           ['collateral','Family/collateral'],['rounds','Rounds'],['exam','Exam focus']];

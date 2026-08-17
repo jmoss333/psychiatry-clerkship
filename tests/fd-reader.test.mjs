@@ -752,3 +752,111 @@ test('a quiz with no `why` renders no empty explanation', () => {
     FIX_TOOLS, FIX_MAN);
   assert.doesNotMatch(F.fdReader(idx, s({ quiz: { picked: 0 } }), ''), /fd-quiz__fb/);
 });
+
+// ---- drill classification: by HREF, never by source list --------------------------------------
+// A fixture that SHIPS communication-practice.html, since the site filter drops a cta whose target
+// this site does not carry — without it these would pass for the wrong reason.
+// Live registries — this suite was fixture-only until the drill classifier needed a corpus-wide
+// check. Same loaders tests/fd-data.test.mjs and tests/fd-sheet.test.mjs use.
+const readJson = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
+const LIVE_CUR = readJson('../curriculum.json');
+const LIVE_META = readJson('../topic_meta.json');
+const LIVE_TOOLS = readJson('../tool_registry.json');
+const LIVE_MAN = readJson(`${BUILD}/site_manifest.json`);
+const LIVE_CASES = readJson('../communication_cases.json');
+
+const DRILL_CUR = JSON.parse(JSON.stringify(FIX_CUR));
+DRILL_CUR.libraryColumns[0].refs.push('communication-practice.html');
+const DRILL_MAN = JSON.parse(JSON.stringify(FIX_MAN));
+DRILL_MAN.tools.push(['src/communication-practice.html', 'communication-practice.html', 'What Do You Say Next?']);
+
+// The collision the merge is proudest of handling was the one nothing tested. A first version
+// bucketed by which list a link arrived in, so an authored cta naming a communication case claimed
+// the href key first and rendered as a plain teal chip — silently shortening the drill group on 39
+// topics (51 such hrefs corpus-wide).
+
+test('a cta whose href is a communication case renders as a DRILL, not a plain chip', () => {
+  const meta = { 'a.md': { cta: [
+    { label: 'Practice de-escalation language', href: '?tool=communication-practice.html&case=rupture_001' },
+  ] } };
+  const html = F.fdReader(F.fdBuildIndex(DRILL_CUR, meta, FIX_TOOLS, DRILL_MAN, TPL_CASES), s({}), '');
+  assert.match(html, /class="fd-cta is-drill" href="\?tool=communication-practice\.html&amp;case=rupture_001"/);
+  assert.match(html, /<div class="fd-practice__label">Spoken drills<\/div>/);
+  assert.doesNotMatch(html, /Practice and tools/, 'there is no plain group — the only link is a drill');
+});
+
+test('a clinicalWorkflow action whose href is a communication case is a drill too', () => {
+  const meta = { 'a.md': { clinicalWorkflow: { actions: [
+    { label: 'Rehearse the opening', href: '?tool=communication-practice.html&case=opening_001' },
+  ] } } };
+  const html = F.fdReader(F.fdBuildIndex(DRILL_CUR, meta, FIX_TOOLS, DRILL_MAN, TPL_CASES), s({}), '');
+  assert.match(html, /class="fd-cta is-drill"[^>]*case=opening_001/);
+});
+
+test('THE REGRESSION: a cta duplicating a communicationCases href does not suppress the drill', () => {
+  // agitation.md's live shape. Before the fix this rendered 2 drills instead of 3.
+  const meta = { 'a.md': {
+    communicationCases: ['c1', 'c2'],
+    cta: [{ label: 'Practice de-escalation language',
+            href: '?tool=communication-practice.html&case=c1' },
+          { label: 'Open the Decision Aids', href: '?page=b.md' }],
+  } };
+  const cases = { cases: [{ id: 'c1', title: 'Repair After a Limit' }, { id: 'c2', title: 'Respond to Guardedness' }] };
+  const html = F.fdReader(F.fdBuildIndex(DRILL_CUR, meta, FIX_TOOLS, DRILL_MAN, cases), s({}), '');
+  const drills = html.match(/class="fd-cta is-drill"/g) || [];
+  assert.equal(drills.length, 2, 'both authored cases must appear as drills');
+  assert.match(html, /Repair After a Limit/, 'the PACK title wins over the page-local phrasing');
+  assert.doesNotMatch(html, /Practice de-escalation language/,
+    'the duplicate href is claimed by the case entry, processed first — as buildPracticeTools did');
+  assert.equal((html.match(/class="fd-cta"/g) || []).length, 1, 'the non-case cta stays a plain chip');
+});
+
+test('a BARE communication-practice href is a tool link, not a drill', () => {
+  const meta = { 'a.md': { cta: [{ label: 'Open the practice tool', href: '?tool=communication-practice.html' }] } };
+  const html = F.fdReader(F.fdBuildIndex(DRILL_CUR, meta, FIX_TOOLS, DRILL_MAN, TPL_CASES), s({}), '');
+  assert.doesNotMatch(html, /is-drill/, 'with no &case= it opens the tool\'s own picker');
+  assert.match(html, /<div class="fd-practice__label">Practice and tools<\/div>|<a class="fd-cta" href/);
+});
+
+test('the drills group carries the deleted panel\'s note, verbatim', () => {
+  const html = tpl();
+  assert.match(html, /<p class="fd-practice__note">Say your first line out loud, then compare it with concrete feedback\.<\/p>/);
+  assert.ok(html.indexOf('fd-practice__note') < html.indexOf('is-drill'), 'above the row it governs');
+});
+
+test('a page with no drills renders no drill note', () => {
+  const meta = { 'a.md': { cta: [{ label: 'Read B', href: '?page=b.md' }] } };
+  const html = F.fdReader(F.fdBuildIndex(DRILL_CUR, meta, FIX_TOOLS, DRILL_MAN, TPL_CASES), s({}), '');
+  assert.doesNotMatch(html, /fd-practice__note/);
+  assert.doesNotMatch(html, /Spoken drills/);
+});
+
+test('LIVE DATA: every topic renders exactly the drills its data implies', () => {
+  // Derived from the data FIRST, then compared — the miss last round was reading the rendered page
+  // and asking whether it looked right, with no expected count to compare against.
+  const titles = {};
+  for (const c of LIVE_CASES.cases) titles[c.id] = c.title;
+  const isCase = (h) => /[?&]tool=communication-practice\.html/.test(h) && /[?&]case=/.test(h);
+  const norm = (h) => (/^tools\/([^/?#]+\.html)$/.test(h) ? `?tool=${h.slice(6)}` : h);
+  const idx = F.fdBuildIndex(LIVE_CUR, LIVE_META, LIVE_TOOLS, LIVE_MAN, LIVE_CASES);
+
+  let checked = 0;
+  for (const ref of Object.keys(idx.byRef)) {
+    const m = LIVE_META[ref];
+    if (!m) continue;
+    const expected = new Set();
+    for (const id of m.communicationCases || []) if (titles[id]) expected.add(`?tool=communication-practice.html&case=${id}`);
+    const authored = [].concat(
+      Array.isArray(m.cta) ? m.cta : (m.cta ? [m.cta] : []),
+      ((m.clinicalWorkflow || {}).actions) || [],
+    );
+    for (const a of authored) if (a && typeof a.href === 'string' && isCase(norm(a.href))) expected.add(norm(a.href));
+
+    const html = F.fdReader(idx, { ref, week: null, fromTab: 'today', done: {} }, '');
+    const rendered = (html.match(/class="fd-cta is-drill" href="([^"]+)"/g) || [])
+      .map((x) => x.match(/href="([^"]+)"/)[1].replace(/&amp;/g, '&'));
+    assert.deepEqual(new Set(rendered), expected, `${ref}: drill set differs from what its data implies`);
+    if (expected.size) checked += 1;
+  }
+  assert.ok(checked >= 45, `expected the drill-bearing corpus, got ${checked}`);
+});

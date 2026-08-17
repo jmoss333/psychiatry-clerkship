@@ -521,7 +521,10 @@ test('fd_sheet.js hand-maintains no crisis number of its own', () => {
 // Copy is the repo owner's, verbatim. An empty protocol body used to render honestly but SILENTLY,
 // which reads as "nothing to do here" rather than "this did not load".
 
-const FAILED_COPY = 'Steps didn’t load. Reload, or open the full page.';
+// Straight apostrophe, matching the brief, CLASS-INVENTORY and frontdoor.css's rule comment. The
+// renderer escapes it for its own single quotes; a curly ’ here would pass while shipping copy
+// that does not match its own record.
+const FAILED_COPY = "Steps didn't load. Reload, or open the full page.";
 
 test('a protocol whose topicMeta never arrived says the steps did not load', () => {
   for (const ref of KIT_REFS) {

@@ -418,6 +418,7 @@ it; just don't expect it to paint anything.
         .fd-trynow__icon / .fd-trynow__title / .fd-trynow__sub
       .fd-practice                          (the one deduped action surface)
         .fd-practice__label ×1–2            ("Spoken drills" / "Practice and tools")
+        .fd-practice__note                  (drills group only — the deleted panel's note, verbatim)
         .fd-ctas ×1–2
           .fd-cta     <a href>  ×N          + .is-safety | .is-drill
       .fd-article__source
@@ -464,10 +465,34 @@ the same tool cannot both render. A **case-specific** href to that same tool is 
 different destination — and href-keyed dedupe gets that right by construction. Adding a fifth
 source of links means adding it to that merge, never rendering a second row.
 
+⚠ **`.is-drill` is decided by the HREF, never by which list the link arrived in.** `fd_data.js`'s
+`fdIsCommunicationCase()` — the deleted `isCommunicationCaseHref()`, restored — is the only
+classifier. The same case href is authored in `communicationCases`, in `cta` **and** in
+`clinicalWorkflow.actions` across the corpus (51 such hrefs), and it is a spoken drill in all
+three. A first version bucketed by source list instead; because `cta` is merged and processed in
+the same pass, an authored `cta` naming a case claimed the href key first and rendered as a plain
+teal chip, **silently shortening the drill group on 39 topics** (`agitation.md` showed 2 of 3,
+`suicide.md` 1 of 2, `t_psychosis.md` 2 of 3). Bare `?tool=communication-practice.html` with no
+`&case=` is *not* a drill — it opens the tool's own picker. `communicationCases` is processed
+first, so where an authored `cta` names the same case the **pack's canonical title wins**; that is
+the live shape on all 39 colliding topics, not a corner case.
+
 ⚠ **No `mode`.** The deleted panel ordered its tools and wrote a "Why today" line from the
 dashboard mode companion, which Task 3 deleted. Ordering is now **authored order**, which is a
 source of truth where the mode ordering was a derived one whose source is gone. Do not reintroduce
 a mode ordering without reintroducing its source.
+
+#### Three further deviations from the deleted panel, recorded so they are decisions and not gaps
+
+| deleted | now | why |
+|---|---|---|
+| `WF_FIELDS`' `exam` label read **"Shelf/COMAT"** | **"Exam focus"** | Forced: "shelf" is on `shell-copy.test.mjs`'s banned audience-token list, and this string ships to both sites unrebranded. Same substitution the Progress page already makes ("exam", never "shelf"). |
+| No-quiz fallback: *"No page-specific question yet. Use the question bank or daily review."* + two `is-review` links | **dropped** | The panel had four **fixed sections** that rendered on every topic page, so an empty one needed filler. The front door omits an unauthored block entirely, so this would be manufactured chrome on ~30 pages — and Practice Questions / Daily Review are already one tap away on Today's due row and in Progress's weak-area rows. If it is ever wanted back, its home is the reader footer **once**, not per-section. |
+| No-tools fallback: the same two `is-review` links when a page had no actions at all | **dropped** | Same reason, same replacement surfaces. |
+
+The drill note (*"Say your first line out loud, then compare it with concrete feedback."*) was in
+that same list of drops and is **restored** as `.fd-practice__note` — unlike the two above it is an
+instruction, not filler: it is what makes a drill a rehearsal rather than another link.
 
 ⚠ **`.fd-cta` is an `<a href>`, never a `data-fd-open` button.** 16 of the authored hrefs carry a
 `&case=` / `&scenario=` suffix, and `data-fd-open` transports a **ref only** — dispatching one

@@ -688,6 +688,9 @@
 .fd-practice{margin:0 0 18px}
 .fd-practice__label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-text-dim);margin:0 0 8px}
 .fd-practice .fd-ctas + .fd-practice__label{margin-top:14px}
+/* The deleted panel's drill note, verbatim. It is the instruction that makes a drill a drill
+ * rather than another link, so it sits above the row it governs. */
+.fd-practice__note{margin:-4px 0 8px;font-size:12.5px;line-height:1.5;color:var(--fd-text-mid)}
 
 /* Authored calls-to-action (topic_meta.json's `cta`) -- 104 faculty-written links across 65
  * topics. No prototype equivalent: its fixture data carried none, so the values below are derived

@@ -205,7 +205,12 @@ function fdSheetProtocolBody(entry, topicMeta, stepsDone, crisisHtml){
      where the steps would have been, so the eye lands on it in their place. The crisis block still
      renders underneath, because that is the one thing that stays true when nothing else loaded. */
   if(!steps.length&&!meta.safetyDoc){
-    out+='<p class="fd-sheet__failed">Steps didn’t load. Reload, or open the full page.</p>';
+    /* STRAIGHT apostrophe, escaped for the surrounding single quotes -- not the curly ’ every
+       other string in this file uses. The copy is recorded verbatim in the brief, in
+       CLASS-INVENTORY and in frontdoor.css's rule comment, all with the straight form, and a
+       string marked "use exactly" has to match its record byte for byte or the record stops being
+       one. */
+    out+='<p class="fd-sheet__failed">Steps didn\'t load. Reload, or open the full page.</p>';
   }
   if(steps.length){
     /* Wrapper carries only the 16px gap down to the callout (the prototype's own step container).

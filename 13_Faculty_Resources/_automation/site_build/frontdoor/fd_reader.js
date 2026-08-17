@@ -325,34 +325,47 @@ function fdReaderCtaClass(ref, index){
 }
 
 function fdReaderCtas(item, index){
-  var list=(item&&item.cta)||[], drills=(item&&item.cases)||[];
-  if(!list.length&&!drills.length) return '';
-  var seen={}, out='';
+  var list=(item&&item.cta)||[], cases=(item&&item.cases)||[];
+  if(!list.length&&!cases.length) return '';
+  var seen={}, out='', rows='', drillRows='';
   /* .fd-trynow renders `?tool=<toolRef>`; claim that href so the two surfaces cannot both show it.
      A case-specific href to the same tool is a different destination and is NOT claimed. */
   if(item.toolRef) seen['h:?tool='+item.toolRef]=1;
 
-  var rows='';
-  for(var i=0;i<list.length;i++){
-    var key='h:'+list[i].href;
-    if(Object.prototype.hasOwnProperty.call(seen, key)) continue;
+  function add(label, href, ref){
+    var key='h:'+href;
+    if(Object.prototype.hasOwnProperty.call(seen, key)) return;
     seen[key]=1;
-    rows+=fdReaderCtaLink(list[i].label, list[i].href, fdReaderCtaClass(list[i].ref, index));
+    /* *** BUCKET BY HREF, NEVER BY WHICH LIST IT ARRIVED IN. *** This is fdIsCommunicationCase's
+       whole job and it is the deleted isCommunicationCaseHref() restored. A first version bucketed
+       by source list -- cases were drills, cta were not -- and because cta is merged and processed
+       here too, an authored cta pointing at ?tool=communication-practice.html&case=X claimed the
+       href key FIRST and rendered as a plain teal chip, suppressing the olive drill entirely.
+       That silently shortened the drill group on 39 topics (51 such hrefs corpus-wide): agitation
+       showed 2 of 3, suicide 1 of 2, t_psychosis 2 of 3. A drill is a drill because of where it
+       GOES, not because of which field an author happened to write it in. */
+    if(fdIsCommunicationCase(href)){
+      drillRows+=fdReaderCtaLink(label, href, 'is-drill');
+    } else {
+      rows+=fdReaderCtaLink(label, href, fdReaderCtaClass(ref, index));
+    }
   }
 
-  var drillRows='';
-  for(var d=0;d<drills.length;d++){
-    var dkey='h:'+drills[d].href;
-    if(Object.prototype.hasOwnProperty.call(seen, dkey)) continue;
-    seen[dkey]=1;
-    drillRows+=fdReaderCtaLink(drills[d].title, drills[d].href, 'is-drill');
-  }
+  /* communicationCases FIRST, matching buildPracticeTools' own order, so that where an authored
+     cta names the same case the PACK's canonical title wins over the page-local phrasing. That is
+     the live shape on all 39 colliding topics, not a corner case. */
+  for(var d=0;d<cases.length;d++){ add(cases[d].title, cases[d].href, 'communication-practice.html'); }
+  for(var i=0;i<list.length;i++){ add(list[i].label, list[i].href, list[i].ref); }
 
   /* Two labelled groups rather than the deleted shell's per-link "Spoken drill" kicker: the
      kicker existed because the drills sat in the same undifferentiated row as everything else.
-     With a group heading it would say the same thing twice. */
+     With a group heading it would say the same thing twice. The note under the heading IS the
+     deleted panel's, verbatim -- it is the instruction that makes the drill a drill rather than a
+     link, and dropping it was an unrecorded loss. */
   if(drillRows){
     out+='<div class="fd-practice__label">Spoken drills</div>'+
+      '<p class="fd-practice__note">Say your first line out loud, then compare it with concrete '+
+      'feedback.</p>'+
       '<div class="fd-ctas">'+drillRows+'</div>';
   }
   if(rows){
@@ -366,11 +379,18 @@ function fdReaderCtas(item, index){
    The page's own question, from topic_meta.quiz. Restored from the deleted shell's `tyourself`
    markup and its `.tyo` click handler (spa_index.html @098ad50:1107).
 
-   *** THIS BLOCK CLOSES A LIVE BUG, it is not only a gap. *** topicHasQuiz() still seeds an SRS
-   card (`TOPIC#<slug>`) for every page carrying a quiz -- 42 of them -- and Daily Review grades
-   those cards by opening the page's question. With no question on the page the card came due and
-   could never be answered, so a student accrued permanently unanswerable due cards. Rendering the
-   question is what closes the loop; fd_wire.js's handler is the other half.
+   *** WHAT THIS BLOCK IS, STATED CAREFULLY. *** It restores the page's OWN retrieval-practice
+   affordance, dropped at the swap on the 42 topics carrying a quiz. It does NOT fix a bug, and an
+   earlier draft of this comment claimed it did -- that claim is withdrawn here rather than left to
+   be cited by someone who trusts it. Daily Review has always had a surface for these:
+   review.html builds a `TOPIC#<slug>` card straight from topic_meta.quiz, under a guard byte-
+   identical to topicHasQuiz()'s, so a seeded card was always answerable there. Nobody was
+   accruing unanswerable cards.
+
+   The real invariant, and the one worth protecting: fdQuiz()'s gate, topicHasQuiz()'s gate and
+   review.html's gate must all agree, page for page. A page that seeds an SRS card but renders no
+   question -- or renders one nobody seeds -- is a loop that does not close. tests/fd-data.test.mjs
+   asserts the first two against the LIVE data rather than a fixture, for exactly that reason.
 
    State is a PARAMETER, not something this file reads: `answered` is {picked:<index>} once the
    student has chosen, and null before. Whichever option is correct is revealed on ALL options at
