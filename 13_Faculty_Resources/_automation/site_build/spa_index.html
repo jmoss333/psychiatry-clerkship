@@ -555,6 +555,9 @@
      governed-content contracts, but never create a second navigation tree or controller. */
   var contentEl=document.getElementById('content');
   var currentItem=null; var GOVERNANCE={status:'loading',items:{}}; var governanceFocusSlug=''; var SCROLL={};
+  /* Fetch and capture callbacks live in this script; the Front Door controller is installed by
+     the following IIFE. Keep one shared dispatcher that is safe until that controller is ready. */
+  var specialRefresh=function(){};
   function skel(){return '<div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div>';}
   fetch('governance.json')
     .then(function(r){if(!r.ok)throw new Error('governance unavailable');return r.json();})
@@ -1546,8 +1549,14 @@
 
   function fdRenderCapture(state){
     if(!fdCaptureMount)return;
-    fdCaptureMount.innerHTML=state&&state.screen==='app'&&!facultyPreviewRequest?
-      '<button type="button" class="fd-capture-launch fd-capture-launch--global" data-capture-open aria-haspopup="dialog" aria-expanded="false">+ Capture a question</button>':'';
+    var show=state&&state.screen==='app'&&!facultyPreviewRequest;
+    var launchers=fdCaptureMount.querySelectorAll('.fd-capture-launch--global[data-capture-open]');
+    if(!show){ fdCaptureMount.innerHTML=''; return; }
+    if(launchers.length){
+      for(var i=1;i<launchers.length;i++)launchers[i].parentNode.removeChild(launchers[i]);
+      return;
+    }
+    fdCaptureMount.innerHTML='<button type="button" class="fd-capture-launch fd-capture-launch--global" data-capture-open aria-haspopup="dialog" aria-expanded="false">+ Capture a question</button>';
   }
 
   function fdProgressMarkup(state){
@@ -1690,13 +1699,6 @@
     });
   }
 
-  function specialRefresh(){
-    if(!fdController)return;
-    var state=fdController.getState();
-    if(state.openId==='__progress__'&&contentEl.querySelector('#pgRoot'))fdOpenProgress(state,{host:contentEl});
-    else if(!state.openId&&state.tab==='today')fdRender(state);
-  }
-
   function fdOpenRef(ref,search){
     if(!fdController||!ref)return;
     fdController.dispatch({'data-fd-open':ref},{search:search===undefined?location.search:search});
@@ -1802,6 +1804,12 @@
     facultyPreviewLock:showFacultyPreviewLockNotice,
     synonyms:FD_CURRICULUM.synonyms||{}
   });
+  specialRefresh=function(){
+    if(!fdController)return;
+    var state=fdController.getState();
+    if(state.openId==='__progress__'&&contentEl.querySelector('#pgRoot'))fdOpenProgress(state,{host:contentEl});
+    else if(!state.openId&&state.tab==='today')fdRender(state);
+  };
   fdApp.addEventListener('click',fdAuxClick);
   window.addEventListener('message',fdAuxMessage);
   if(fdInitial.openId==='__progress__')fdOpenProgress(fdInitial,{host:contentEl});

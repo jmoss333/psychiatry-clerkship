@@ -137,6 +137,92 @@ test('legacy aliases canonicalize on load, delegated actions, messages, and hist
   await expect(page.locator('.fd-today')).toBeVisible();
 });
 
+test('initial Home alias persists Today before an immediate canonical reload', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await page.goto('/');
+  await page.evaluate(() => {
+    const now = new Date();
+    now.setHours(12, 0, 0, 0);
+    now.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('cw_rotation_start', start);
+    localStorage.setItem('cw_frontdoor_v1', JSON.stringify({
+      role: 'staff', tab: 'library', openId: 'orientation.md', fromTab: 'library',
+      viewWeek: 1, autoAdvance: false,
+    }));
+    localStorage.setItem('cw_last', 'orientation.md');
+  });
+
+  await page.goto('/?page=__home__&case=alias-reload');
+  await expect(page).toHaveURL(/\/\?case=alias-reload$/);
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const persisted = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')));
+  expect.soft(persisted.tab).toBe('today');
+  expect.soft(persisted.openId).toBeUndefined();
+
+  await page.reload();
+  await expect(page).toHaveURL(/\/\?case=alias-reload$/);
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator('.fd-reader')).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('cw_last'))).toBe('orientation.md');
+});
+
+test('capture refreshes Today and search matches without replacing its live launcher', async ({ page }) => {
+  const runtimeErrors = [];
+  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
+  page.on('console', (message) => {
+    if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`);
+  });
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page);
+  await page.goto('/');
+  const launcher = page.locator(CAPTURE);
+  await expect(launcher).toHaveCount(1);
+  await page.evaluate((selector) => { window.__captureLauncher = document.querySelector(selector); }, CAPTURE);
+
+  await launcher.click();
+  await page.locator('#capText').fill('psychosis');
+  await page.locator('#capSave').click();
+  await expect(page.locator('.cap-list li')).toHaveCount(1);
+  await expect(page.locator('#capText')).toBeFocused();
+  const triage = page.locator('.fd-capture', { hasText: 'Questions from the unit' });
+  await expect(triage).toContainText('psychosis');
+  await expect(triage.locator('[data-cap-open]')).toHaveAttribute('data-cap-ref', 't_psychosis.md');
+  await expect(triage.locator('[data-cap-review]')).toHaveAttribute('data-cap-ref', 't_psychosis.md');
+  expect(await page.evaluate((selector) => {
+    const current = document.querySelector(selector);
+    return current === window.__captureLauncher && current.isConnected;
+  }, CAPTURE)).toBe(true);
+  await expect(launcher).toHaveCount(1);
+
+  await page.locator('#capCancel').click();
+  expect(await page.evaluate(() => document.activeElement === window.__captureLauncher)).toBe(true);
+  await page.evaluate(() => window.__captureLauncher.click());
+  await page.locator('#capText').fill('orientation packet');
+  await page.locator('#capSave').click();
+  await expect(page.locator('#capText')).toBeFocused();
+  await expect(triage).toContainText('orientation packet');
+  await page.keyboard.press('Escape');
+  expect(await page.evaluate(() => document.activeElement === window.__captureLauncher)).toBe(true);
+
+  await page.evaluate(() => window.__captureLauncher.click());
+  await page.locator('.cap-list li', { hasText: 'psychosis' }).locator('[data-cap-del]').click();
+  await expect(triage).not.toContainText('psychosis');
+  await expect(triage).toContainText('orientation packet');
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.locator('#capEraseAll').click();
+  await expect(triage).toHaveCount(0);
+  await expect(launcher).toHaveCount(1);
+  expect(await page.evaluate((selector) => (
+    document.querySelector(selector) === window.__captureLauncher
+      && window.__captureLauncher.isConnected
+  ), CAPTURE)).toBe(true);
+  await page.locator('#capCancel').click();
+  expect(await page.evaluate(() => document.activeElement === window.__captureLauncher)).toBe(true);
+  expect(await page.evaluate(() => localStorage.getItem('cw_capture_v1'))).toBeNull();
+  expect(runtimeErrors).toEqual([]);
+});
+
 test('legacy Start keeps incomplete role/week setup canonical across reload and history', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await page.goto('/?page=__start__&case=setup');

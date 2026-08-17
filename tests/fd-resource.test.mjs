@@ -212,7 +212,7 @@ test('initial faculty tool preview reaches governed preflight, iframe load, and 
   const previewStart = shell.indexOf('function loadFacultyPreviewTool(item,opts,bar)');
   const previewEnd = shell.indexOf('/* Shared PHI heuristic', previewStart);
   const liveStart = shell.indexOf('function fdOpenResourceLive(ref,opts)');
-  const liveEnd = shell.indexOf('function specialRefresh()', liveStart);
+  const liveEnd = shell.indexOf('function fdOpenRef(ref,search)', liveStart);
   assert.ok(previewStart > -1 && previewEnd > previewStart, 'faculty preview functions moved');
   assert.ok(liveStart > -1 && liveEnd > liveStart, 'live resource adapter moved');
   const previewCode = shell.slice(previewStart, previewEnd);

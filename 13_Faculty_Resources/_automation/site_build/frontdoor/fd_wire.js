@@ -958,7 +958,10 @@ function fdWire(root, initialState, opts){
     var initialLegacy=fdIsLegacyRouteAlias(initialLegacyRef)?fdLegacyRouteResult(
       initialLegacyRef,{search:win.location.search||''},state
     ):null;
-    if(initialLegacy) routeTo(initialLegacy.route,true);
+    if(initialLegacy){
+      fdSave(state);
+      routeTo(initialLegacy.route,true);
+    }
     else replaceHistorySnapshot();
   }
 

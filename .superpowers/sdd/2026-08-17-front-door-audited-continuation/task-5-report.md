@@ -281,3 +281,88 @@ palette-debt values remain unchanged. Task 6 safety/copy scope remains unopened.
 is the intentionally
 deferred full Task 7 browser-journey/Ubuntu visual-baseline refresh; this round ran a compact real
 browser action matrix on both built audiences but did not regenerate visual baselines.
+
+## Review-remediation Round 2 — 2026-08-17
+
+Status: COMPLETE
+
+This narrowly scoped second review started from the requested clean commit
+`6cd9bffe73fa19571abf7f452cc032c91957bb0d` and closed the only two adjudicated live findings.
+In plain language, saving or removing a captured question now updates Today immediately without
+breaking the Capture button or keyboard focus, and an old Home bookmark now stays on Today after
+the browser immediately reloads its cleaned-up URL.
+
+### Round 2 RED evidence
+
+- The new controller-state test produced the expected 48/49 RED: direct
+  `?page=__home__&case=reload` rendered Today and replaced the URL, but the saved Front Door state
+  remained `tab: library` with `openId: orientation.md`; resolving the canonical URL again reopened
+  that stale Reader.
+- The new real-Chromium matrix produced the expected 0/4 RED across MS3 and resident. The initial
+  Home case failed on both sites with the stale stored Reader after reload. Capture wrote its first
+  item, but the cross-script `specialRefresh` lookup threw before textarea focus or Today refresh;
+  search hydration also caught that same lookup failure and discarded its index.
+- The capture regression pins the actual browser outcomes rather than source text: a known indexed
+  `psychosis` capture gains both Open and Review actions without reload; save, delete, and erase
+  update Today in the same session; there is no page error or error console; textarea focus returns
+  after save; Cancel and Escape restore the exact still-connected launcher; and only one launcher
+  exists. The retained ward-capture matrix separately keeps faculty-preview hiding, route and
+  breakpoint persistence, PHI interstitial, Reader-to-Today null context, `cw_last`, and export
+  exclusion under test.
+
+### Implemented Round 2 remediation
+
+- `spa_index.html` now declares one outer no-op `specialRefresh` dispatcher before metadata,
+  search-index, and capture callers can run. After the single `fdWire` controller is ready, that
+  same dispatcher receives the controller-aware Today/Progress refresh implementation. No second
+  controller or listener path was added.
+- `fdRenderCapture` now reconciles its mount idempotently: hidden/setup/faculty states clear it;
+  learner app states keep the existing launcher node, remove only accidental duplicates, and create
+  a launcher only when none exists. Its `aria-expanded` state and `capInvoker` identity therefore
+  survive successful refreshes.
+- Initial legacy alias handling now saves the already-normalized controller state before replacing
+  the history route. Home therefore persists Today/no `openId`, unrelated query parameters remain,
+  and the last real `cw_last` bookmark is unchanged. Existing Path, Start, Progress, delegated,
+  message, popstate, Back/Forward, and reload contracts remain green.
+- The faculty-preview behavioral test's extraction boundary moved from the retired local refresh
+  declaration to the adjacent stable `fdOpenRef` declaration. Its governed preflight, iframe load,
+  ready receipt, exact query, and no-bookmark assertions are unchanged and green.
+
+### Round 2 GREEN evidence
+
+- Focused affected Node suites (`fd-wire`, `fd-resource`, ward capture, and shared shell copy):
+  69/69. The new alias persistence test is included in the full root count.
+- Focused new Chromium cases: 4/4 across `nav-ms3` and `nav-res`. The wider built-artifact runtime
+  and retained capture matrix passed 38/38: all nine runtime cases on both audiences plus the 20
+  MS3 route/breakpoint/PHI/context/export/faculty-preview capture cases.
+- Authorized full root suite: 1041/1041. The sandbox-only run reproduced the same eight known
+  loopback `listen EPERM 127.0.0.1` launcher failures; the authorized run passed them all.
+- Validators remain green: all seven registry schemas plus 21/21 schema tests; 72 topic metadata
+  entries; 88 manifest and 22 faculty-review consistency entries plus 27/27 tests; curriculum at
+  six weeks, 40 week items, 81 placed pages, 17 excluded plus 46/46 tests; tool governance at MS3
+  22/resident 24 plus 27/27 tests and the unchanged five-file legacy metadata warning.
+- `_prototypes/sp-interview/tests/run-all.sh` again ended `ALL SUITES PASSED`, including its 47/47
+  CI/build contracts.
+- Sequential publication gates passed after the production fix. MS3 remains 81 placed refs and 22
+  governed tools; resident remains 90 placed refs and 24 governed tools. Both have static QA hard
+  failures 0, search-quality 9/9, and 105 real LFS media files with no pointer stubs. Existing soft
+  findings remain seven for MS3 and ten for resident.
+
+### Round 2 files, boundaries, and residual risk
+
+Production changes are limited to `frontdoor/fd_wire.js` and `spa_index.html`. Tests are limited to
+`fd-wire.test.mjs`, the existing faculty-preview slice boundary in `fd-resource.test.mjs`, and two
+behavioral cases in `frontdoor-runtime.spec.js`; this report is the only ignored SDD artifact added.
+
+No crisis or clinical copy/data, faculty content or approval state, historical `reviewed.json`,
+palette/contrast contract, media/LFS objects, generated `_build`, credentials, PHI, Task 6 work, or
+the independently rejected Mark-as-read finding changed. There was no push, merge, deploy, or
+visual-baseline regeneration. Residual risk remains the already-deferred full Task 7 journey and
+Ubuntu visual-baseline refresh, not either Round 2 runtime contract.
+
+Concrete next option: proceed to Task 6 as a separate rollback-sized safety/accessibility change.
+
+Potential innovative follow-up: add a tiny development-only continuity observer that records the
+current controller generation, launcher node identity, and last refresh reason. It could turn a
+future cross-script callback or accidental node replacement into an immediate deterministic test
+receipt without exposing learner data.

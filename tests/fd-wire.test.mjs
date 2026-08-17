@@ -974,6 +974,40 @@ test('initial legacy aliases replace only the route portion and never call the r
   }
 });
 
+test('initial Home alias persists its normalized Today state before the canonical URL reloads', () => {
+  const stored = {
+    ...roleContext,
+    roles: [{ id: 'first-role' }],
+    rotationStart: '2026-08-17',
+    screen: 'app',
+    tab: 'library',
+    openId: 'orientation.md',
+    fromTab: 'library',
+  };
+  const ls = memStorage({
+    cw_frontdoor_v1: JSON.stringify(stored),
+    cw_last: 'orientation.md',
+  });
+  const LocalF = make(ls);
+  const location = {
+    href: 'https://example.test/?page=__home__&case=reload', pathname: '/',
+    search: '?page=__home__&case=reload',
+  };
+  const memory = memoryHistory(location);
+  const resolved = LocalF.fdResolveState(location.href, stored);
+
+  fakeHarness(resolved, { F: LocalF, location, history: memory.history });
+
+  assert.equal(location.search, '?case=reload');
+  const persisted = JSON.parse(ls.dump().cw_frontdoor_v1);
+  assert.equal(persisted.tab, 'today');
+  assert.equal(persisted.openId, undefined);
+  assert.equal(ls.dump().cw_last, 'orientation.md');
+  const reloaded = LocalF.fdResolveState(location.href, persisted);
+  assert.equal(reloaded.tab, 'today');
+  assert.equal(reloaded.openId, undefined);
+});
+
 test('delegated and popstate aliases normalize with replace history and no invalid resource open', () => {
   const ls = memStorage({ cw_last: 'real-page.md' });
   const LocalF = make(ls);
