@@ -281,8 +281,10 @@ function fdDispatch(attrs, context, state){
     return {patch:{searchOpen:true},route:null,effect:{type:'focus-search'}};
   }
   if(fdOwn(a,'data-fd-change-week')){
+    tab=fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
     return {
-      patch:{screen:'setup-week',openId:null,searchOpen:false,sheet:null},route:null,effect:null
+      patch:{screen:'setup-week',tab:tab,openId:null,searchOpen:false,sheet:null},
+      route:fdRouteForTab(tab,c.search),history:'replace',effect:null
     };
   }
   if(fdOwn(a,'data-fd-progress')){
@@ -378,9 +380,16 @@ function fdOpenResource(ref, opts){
   if(!state.fromTab) state.fromTab=state.tab||'today';
 
   function current(){ return !o.isCurrent||o.isCurrent(ref)!==false; }
+  function currentRenderState(){
+    var latest=typeof o.getState==='function'?o.getState():state;
+    var mounted=fdClone(latest||{});
+    mounted.ref=ref;
+    if(!mounted.fromTab) mounted.fromTab=state.fromTab||mounted.tab||'today';
+    return mounted;
+  }
   function mount(body){
     if(!current()) return false;
-    if(host) host.innerHTML=renderReader(index,state,bar+body);
+    if(host) host.innerHTML=renderReader(index,currentRenderState(),bar+body);
     return true;
   }
   function fail(){
@@ -572,11 +581,20 @@ function fdWire(root, initialState, opts){
     try{ return JSON.parse(localStorage.getItem('cw_progress_v1')||'{}')||{}; }
     catch(_){ return {}; }
   }
-  function routeTo(route){
+  function routeTo(route,replace){
     if(!route||sameRoute(route)) return false;
-    if(o.route){ o.route(route,historySnapshot()); return true; }
-    if(win&&win.history&&win.history.pushState){
-      try{ win.history.pushState(historySnapshot(),'',route); return true; }catch(_){}
+    if(o.route){ o.route(route,historySnapshot(),replace?'replace':'push'); return true; }
+    if(win&&win.history){
+      try{
+        if(replace&&win.history.replaceState){
+          win.history.replaceState(historySnapshot(),'',route);
+          return true;
+        }
+        if(win.history.pushState){
+          win.history.pushState(historySnapshot(),'',route);
+          return true;
+        }
+      }catch(_){}
     }
     return false;
   }
@@ -630,6 +648,7 @@ function fdWire(root, initialState, opts){
         progressOpener(effect.openRef,{
           index:index,state:state,search:(win&&win.location&&win.location.search)||'',
           fromHistory:!!fromHistory,host:freshResourceHost(),
+          getState:function(){ return state; },
           isCurrent:function(){
             return !destroyed&&generation===navGeneration&&state.openId===effect.openRef;
           }
@@ -653,6 +672,7 @@ function fdWire(root, initialState, opts){
       opener(effect.ref,{
         index:index,state:state,search:(win&&win.location&&win.location.search)||'',
         fromHistory:!!fromHistory,host:freshResourceHost(),
+        getState:function(){ return state; },
         isCurrent:function(){
           return !destroyed&&generation===navGeneration&&state.openId===effect.ref;
         }
@@ -686,7 +706,7 @@ function fdWire(root, initialState, opts){
     }
     fdSave(state);
     if(!fromHistory){
-      var pushed=routeTo(result.route);
+      var pushed=routeTo(result.route,result.history==='replace');
       if(!pushed&&beforeHistory!==historyValue()) replaceHistorySnapshot();
     }
     if(changedBase) render(state,detail);
@@ -791,7 +811,10 @@ function fdWire(root, initialState, opts){
       for(var routeIndex=0;routeIndex<routeKeys.length;routeIndex++){
         delete merged[routeKeys[routeIndex]];
       }
-      for(var key in snap){ if(fdOwn(snap,key)) merged[key]=snap[key]; }
+      for(var snapIndex=0;snapIndex<routeKeys.length;snapIndex++){
+        var routeKey=routeKeys[snapIndex];
+        if(fdOwn(snap,routeKey)) merged[routeKey]=snap[routeKey];
+      }
     } else {
       merged.roles=o.roles||merged.roles;
       merged.rotationStart=o.rotationStart||merged.rotationStart;
@@ -803,6 +826,16 @@ function fdWire(root, initialState, opts){
       }
     }
     state=merged;
+    /* Setup is canonical controller state, not history-owned state. If Back reaches an older
+       reader snapshot after Change week, retire that entry in place instead of combining a
+       page URL/openId with a setup surface. Route extras such as case/scenario still survive. */
+    if(state.screen!=='app'&&state.openId){
+      var setupTab=fdValidTab(state.fromTab)?state.fromTab:
+        (fdValidTab(state.tab)?state.tab:'today');
+      state.tab=setupTab;
+      state.openId=null;
+      routeTo(fdRouteForTab(setupTab,win.location.search||''),true);
+    }
     navGeneration++;
     var generation=navGeneration;
     render(state,{
@@ -817,7 +850,7 @@ function fdWire(root, initialState, opts){
       var opener=o.openResource||fdOpenResource;
       opener(state.openId,{
         index:index,state:state,search:win.location.search||'',fromHistory:true,
-        host:freshResourceHost(),
+        host:freshResourceHost(),getState:function(){ return state; },
         isCurrent:function(){ return !destroyed&&generation===navGeneration; }
       });
     }

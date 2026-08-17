@@ -376,3 +376,116 @@ atomic cutover with browser assertions for article/iframe identity and every com
 copy. An innovative follow-up is a randomized async lifecycle harness that shuffles success,
 failure, destroy, same-ref reopen, and history events and proves only the current generation may
 write the stable Reader host.
+
+---
+
+## Review remediation — Round 3 — 2026-08-17
+
+Status: COMPLETE
+
+### Plain outcome
+
+Delayed pages now use the controller's current completion state at the instant they mount, so a
+page that finishes loading after it was marked done shows both completion buttons, the rail count,
+and the Completed label correctly without reloading. Browser history accepts only its four
+route-local fields, and Change week removes the reader URL in place while keeping unrelated query
+parameters. Back and Forward cannot combine a setup screen with an old reader entry.
+
+### Starting state and genuine RED evidence
+
+- Verified clean starting HEAD `0751f9c16d7bb355e5cd818b84b82ddc6f106d1e`.
+- Added the three Round 3 regressions before changing production code. The focused run failed all
+  three for the intended behavior:
+
+```bash
+node --test tests/fd-wire.test.mjs \
+  --test-name-pattern='delayed markdown|popstate accepts only|change-week replaces'
+# RED: 38 passed, 3 failed
+```
+
+The exact failures were: delayed Reader HTML contained zero of two expected
+`aria-pressed="true"` controls; a legacy snapshot replaced the current role/week/screen/
+autoAdvance/rotation; and `https://example.test/?page=pending.md&case=c1` remained a reader route
+instead of becoming `?tab=path&case=c1`.
+
+Exact-diff review then strengthened the Change-week regression with an older reader entry behind
+the current one. Before the additional production guard, Back restored `earlier.md` while the
+canonical screen remained `setup-week` (focused RED: 40 passed, 1 failed). This pinned the intended
+history behavior mechanically: replace the current reader entry on Change week, and normalize any
+older reader entry reached during setup to its originating/current valid tab in place. `screen`
+remains canonical controller state and is not added to route snapshots.
+
+### Per-finding GREEN evidence
+
+1. **Delayed completion state:** every `fdWire` resource-open path supplies a current-state getter.
+   `fdOpenResource` checks request generation/currentness first, then clones current state
+   immediately before Reader rendering and adds the requested ref and originating-tab fallback.
+   The deferred-markdown test marks the item done with auto-advance disabled, resolves the fetch,
+   and verifies controller state, both pressed controls, `1 of 1 done`, the done rail dot, and the
+   Completed suffix. The opener remains called once.
+2. **Incoming history whitelist:** popstate clears and then copies only `tab`, `viewWeek`, `openId`,
+   and `fromTab`. A full legacy/malicious snapshot cannot replace current role, week, screen,
+   autoAdvance, or rotation start. The Progress fixture now uses a route-only snapshot rather than
+   masking this contract with canonical fields.
+3. **Change-week route consistency:** `data-fd-change-week` selects `fromTab`, then the current valid
+   tab, then Today; clears the reader; preserves `case` and other non-route query parameters; and
+   replaces rather than pushes the current history entry. Back/Forward tests include the exact
+   pending-page URL, a prior reader entry, reload route resolution, and the invariant that setup
+   never coexists with a reader URL/openId.
+
+All prior-round contracts remain green in the same suite: exact iframe identity and transient
+rendering, preview/theme governance, canonical and sparse history, destroy/base invalidation,
+search caret/Escape/nested focus, Progress routing, stale async suppression, and leading-H1
+handling.
+
+### Final GREEN gates
+
+```bash
+node --test tests/fd-wire.test.mjs tests/fd-resource.test.mjs \
+  tests/fd-action-contract.test.mjs tests/parallel-ceilings.test.mjs
+# 57 passed, 0 failed
+
+node --check 13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js
+# passed
+
+python3 13_Faculty_Resources/_automation/site_build/test_common.py
+# 53 passed, 0 failed
+
+node --test tests/*.test.mjs
+# sandbox: 1,025 passed; 8 launcher-only listen EPERM failures
+# approved loopback rerun: 1,033 passed, 0 failed
+```
+
+Sequential publication gates were rerun with loopback access after the sandbox-only build attempt
+reproduced the same eight launcher EPERM failures:
+
+```bash
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+```
+
+- MS3: PASS, hard failures 0, LFS preflight 105 media files/no pointer stubs.
+- Resident: PASS, hard failures 0, LFS preflight 105 media files/no pointer stubs.
+- Existing metadata, legacy-tool, and computed-key notices remain soft baseline advisories.
+
+### Exact Round 3 files and boundaries
+
+- `13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js`
+- `tests/fd-wire.test.mjs`
+- `.superpowers/sdd/2026-08-17-front-door-audited-continuation/task-4-report.md`
+
+No Task 5 shell/activation, marker/ceiling, palette, `_build` output, media, clinical/crisis content,
+or unrelated source changed. The legacy shell remains active; the controller remains dormant,
+ES5-style, audience-neutral, namespaced, and on the existing governed preview/resource paths.
+
+### Residual risk, next option, and innovative follow-up
+
+Residual risk remains the intentional dormant-controller boundary: Task 5 must pass the live
+`renderTransient` adapter and the new current-state getter through any wrapper it introduces. The
+concrete next best option is an independent Round 3 review, then Task 5's separate atomic cutover
+with a real-browser delayed-markdown/completion journey.
+
+An innovative follow-up would add a small history-fuzz model that generates page, tab, setup,
+Back, and Forward sequences while asserting two invariants after every event: canonical rotation
+fields never come from history, and a non-app screen never owns a reader route. That would turn
+the edge case found in this review into a reusable state-machine safety net.

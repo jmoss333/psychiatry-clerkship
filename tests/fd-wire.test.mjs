@@ -19,6 +19,7 @@ const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}
   fdIsTypingTarget: fdIsTypingTarget,
   fdTrapFocus: fdTrapFocus,
   fdOpenResource: fdOpenResource,
+  fdReader: fdReader,
   fdWire: fdWire,
 };`);
 
@@ -138,8 +139,10 @@ test('role, tab, back, home, search, change-week, progress, theme, and step are 
     '?tab=path');
   assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
   assert.deepEqual(F.fdDispatch({ 'data-fd-search': '' }, {}, roleContext).patch, { searchOpen: true });
-  assert.deepEqual(F.fdDispatch({ 'data-fd-change-week': '' }, {}, roleContext).patch,
-    { screen: 'setup-week', openId: null, searchOpen: false, sheet: null });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-change-week': '' }, {}, roleContext), {
+    patch: { screen: 'setup-week', tab: 'today', openId: null, searchOpen: false, sheet: null },
+    route: '/', history: 'replace', effect: null,
+  });
   assert.equal(F.fdDispatch({ 'data-fd-progress': '' }, {}, roleContext).effect.type, 'open-progress');
   assert.deepEqual(F.fdDispatch({ 'data-fd-theme': '' }, { theme: 'dark' }, roleContext).effect,
     { type: 'set-theme', theme: 'light' });
@@ -927,6 +930,136 @@ test('an older sparse route snapshot cannot inherit newer viewWeek or fromTab va
   assert.equal('fromTab' in restored, false);
 });
 
+test('popstate accepts only route-local snapshot keys and preserves canonical controller state', () => {
+  const location = {
+    href: 'https://example.test/?page=history.md&case=c1', pathname: '/',
+    search: '?page=history.md&case=c1',
+  };
+  const h = fakeHarness({
+    ...roleContext, role: 'new-role', week: 4, viewWeek: 4, screen: 'app',
+    tab: 'today', openId: null, autoAdvance: false, rotationStart: '2026-07-20',
+  }, {
+    F, location, openResource: () => Promise.resolve(true),
+  });
+  h.windowHandlers.popstate({ state: { fd: true, state: {
+    tab: 'library', viewWeek: 3, openId: 'history.md', fromTab: 'path',
+    role: 'old-role', week: 1, screen: 'setup-role', autoAdvance: true,
+    rotationStart: '1999-01-01',
+  } } });
+  const restored = h.controller.getState();
+  assert.deepEqual({
+    tab: restored.tab, viewWeek: restored.viewWeek,
+    openId: restored.openId, fromTab: restored.fromTab,
+  }, { tab: 'library', viewWeek: 3, openId: 'history.md', fromTab: 'path' });
+  assert.deepEqual({
+    role: restored.role, week: restored.week, screen: restored.screen,
+    autoAdvance: restored.autoAdvance, rotationStart: restored.rotationStart,
+  }, {
+    role: 'new-role', week: 4, screen: 'app', autoAdvance: false,
+    rotationStart: '2026-07-20',
+  });
+});
+
+test('change-week replaces a reader route with its originating tab and keeps Back/Forward reader-free', () => {
+  const location = {
+    href: 'https://example.test/?case=c1', pathname: '/', search: '?case=c1',
+  };
+  const memory = memoryHistory(location);
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'path', viewWeek: 2,
+    openId: null, fromTab: 'path',
+  }, {
+    F, location, history: memory.history,
+    openResource: () => Promise.resolve(true),
+  });
+  memory.bind(h.windowHandlers.popstate);
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-open': 'earlier.md' }), preventDefault() {},
+  });
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-open': 'pending.md' }), preventDefault() {},
+  });
+  assert.equal(location.href, 'https://example.test/?page=pending.md&case=c1');
+  assert.equal(memory.entries.length, 3);
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-change-week': '' }), preventDefault() {},
+  });
+  assert.equal(location.href, 'https://example.test/?tab=path&case=c1');
+  assert.equal(memory.entries.length, 3, 'the current reader entry is replaced, not retained behind setup');
+  assert.equal(h.controller.getState().screen, 'setup-week');
+  assert.equal(h.controller.getState().openId, null);
+  assert.equal(h.controller.getState().tab, 'path');
+
+  memory.go(-1);
+  assert.equal(h.controller.getState().screen, 'setup-week');
+  assert.equal(h.controller.getState().openId, null);
+  assert.equal(location.search, '?tab=path&case=c1',
+    'an older reader entry is normalized before it can coexist with setup');
+  memory.go(1);
+  assert.equal(h.controller.getState().screen, 'setup-week');
+  assert.equal(h.controller.getState().openId, null);
+  assert.equal(location.search, '?tab=path&case=c1');
+
+  const reloadRoute = F.fdResolveState(location.href, {
+    ...roleContext, tab: 'path', viewWeek: 2,
+  });
+  assert.equal(reloadRoute.tab, 'path');
+  assert.equal(reloadRoute.openId, undefined);
+});
+
+test('delayed markdown mounts completion chrome from live controller state without reopening', async () => {
+  const host = { innerHTML: '' };
+  const item = {
+    ref: 'delayed.md', kind: 'read', title: 'Delayed', minutes: 4,
+    summary: 'Wait for it.', points: [], attested: false, toolRef: null,
+  };
+  const index = {
+    byRef: { 'delayed.md': item },
+    weeks: [{ n: 2, items: [item] }],
+  };
+  let resolveMarkdown;
+  let pending;
+  let opens = 0;
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', openId: null,
+    fromTab: 'today', done: {}, autoAdvance: false,
+  }, {
+    F, index, querySelector: (selector) => selector === '#content' ? host : null,
+    openResource(ref, opts) {
+      opens += 1;
+      pending = F.fdOpenResource(ref, {
+        ...opts, index, state: opts.state, host,
+        fetcher: () => Promise.resolve({
+          ok: true,
+          text: () => new Promise((resolve) => { resolveMarkdown = resolve; }),
+        }),
+        parseMarkdown: (markdown) => `<p>${markdown}</p>`,
+        governanceNotice: () => '', renderReader: F.fdReader,
+        facultyPreviewMatches: () => true,
+      });
+    },
+  });
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-open': 'delayed.md' }), preventDefault() {},
+  });
+  await Promise.resolve();
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-toggle': 'delayed.md' }), preventDefault() {},
+  });
+  assert.equal(h.controller.getState().done['delayed.md'], true);
+  assert.equal(opens, 1);
+  resolveMarkdown('Body');
+  assert.equal(await pending, true);
+  assert.equal((host.innerHTML.match(/aria-pressed="true"/g) || []).length, 2,
+    'desktop and mobile completion buttons render pressed');
+  assert.equal((host.innerHTML.match(/aria-pressed="false"/g) || []).length, 0);
+  assert.match(host.innerHTML, /Week 2 · 1 of 1 done/);
+  assert.match(host.innerHTML, /fd-railnav__dot is-done/);
+  assert.match(host.innerHTML, /fd-visually-hidden">Completed/);
+  assert.equal(opens, 1, 'completion does not reload the resource');
+});
+
 test('destroy invalidates pending resource success and failure before either can reuse the host', async () => {
   const host = { innerHTML: '<p>reused host</p>' };
   let releaseSuccess;
@@ -1065,7 +1198,7 @@ test('popstate Progress uses the internal Progress path and never generic resour
     F, location, openResource: (ref) => opened.push(ref), openProgress: () => progress.push('open'),
   });
   h.windowHandlers.popstate({
-    state: { fd: true, state: { ...roleContext, screen: 'app', tab: 'today', openId: '__progress__' } },
+    state: { fd: true, state: { tab: 'today', openId: '__progress__' } },
   });
   assert.deepEqual(progress, ['open']);
   assert.deepEqual(opened, []);
