@@ -422,7 +422,6 @@ function fdOpenResource(ref, opts){
 
   var governance=o.governanceNotice||
     (typeof renderGovernanceNotice==='function'?renderGovernanceNotice:function(){return '';});
-  var bar=governance(legacy)||'';
   var renderReader=o.renderReader||
     (typeof fdReader==='function'?fdReader:function(_i,_s,body){return body;});
   state.ref=ref;
@@ -438,6 +437,7 @@ function fdOpenResource(ref, opts){
   }
   function mount(body){
     if(!current()) return false;
+    var bar=governance(legacy)||'';
     if(host) host.innerHTML=renderReader(index,currentRenderState(),bar+body);
     return true;
   }

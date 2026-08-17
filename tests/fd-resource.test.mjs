@@ -79,9 +79,68 @@ test('fdOpenResource fetches markdown, parses it, and renders the Reader', async
   assert.equal(result, true);
   assert.equal(host.innerHTML, '<article><div>reviewed</div><p>Body</p></article>');
   assert.deepEqual(calls, [
-    ['governance', 'page.md'], ['fetch', 'content/page.md'], ['parse', 'Body'],
+    ['fetch', 'content/page.md'], ['parse', 'Body'], ['governance', 'page.md'],
     ['reader', 'page.md', '<div>reviewed</div><p>Body</p>'],
   ]);
+});
+
+test('delayed markdown resolves fresh reviewed and pending notices immediately before Reader mount', async () => {
+  const freshNotices = [
+    '<div class="governance-notice reviewed-receipt">Reviewed by faculty · 2026-08-17</div>',
+    '<section class="governance-notice pending-high" role="alert">Pending faculty review</section>',
+    '<div class="governance-notice pending-compact" role="status">Pending faculty review</div>',
+  ];
+  for (const freshNotice of freshNotices) {
+    let resolveText;
+    let governanceState = 'loading';
+    const host = { innerHTML: '' };
+    const notices = [];
+    const pending = make().fdOpenResource('page.md', {
+      index: {
+        byRef: { 'page.md': { ref: 'page.md', kind: 'read', title: 'Page' } }, weeks: [],
+      },
+      state: { tab: 'library' }, host,
+      fetcher: async () => ({
+        ok: true,
+        text: () => new Promise((resolve) => { resolveText = resolve; }),
+      }),
+      parseMarkdown: text => `<p>${text}</p>`,
+      governanceNotice: () => {
+        const notice = governanceState === 'ready'
+          ? freshNotice
+          : '<div class="governance-notice unavailable">Review status unavailable</div>';
+        notices.push(notice);
+        return notice;
+      },
+      renderReader: (_index, _state, body) => `<article>${body}</article>`,
+      facultyPreviewMatches: () => true,
+    });
+
+    while (!resolveText) await Promise.resolve();
+    governanceState = 'ready';
+    resolveText('Body');
+    assert.equal(await pending, true);
+    assert.ok(host.innerHTML.includes(freshNotice));
+    assert.doesNotMatch(host.innerHTML, /governance-notice unavailable/);
+    assert.equal(notices.at(-1), freshNotice);
+  }
+});
+
+test('a truly unavailable governance notice remains visible when the Reader mounts', async () => {
+  const host = { innerHTML: '' };
+  await make().fdOpenResource('page.md', {
+    index: {
+      byRef: { 'page.md': { ref: 'page.md', kind: 'read', title: 'Page' } }, weeks: [],
+    },
+    state: { tab: 'library' }, host,
+    fetcher: async () => ({ ok: true, text: async () => 'Body' }),
+    parseMarkdown: text => `<p>${text}</p>`,
+    governanceNotice: () => '<div class="governance-notice unavailable">Review status unavailable</div>',
+    renderReader: (_index, _state, body) => `<article>${body}</article>`,
+    facultyPreviewMatches: () => true,
+  });
+  assert.match(host.innerHTML, /governance-notice unavailable/);
+  assert.match(host.innerHTML, /<p>Body<\/p>/);
 });
 
 test('fdOpenResource strips only the leading source H1 so Reader owns the single title path', async () => {
