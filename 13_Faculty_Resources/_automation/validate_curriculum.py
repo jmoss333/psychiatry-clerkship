@@ -86,21 +86,25 @@ def _slugs_from_pairs(node):
     return out
 
 
-def extra_shipped_slugs():
-    """Slugs the build ships that site_manifest.json does not list.
+def site_extra_shipped_slugs():
+    """Return the build extras, separated by the one site that ships each slug.
 
     Fails loudly rather than silently narrowing: a rename in either source file
     must break this validator, not quietly shrink the set it guards.
     """
-    extras = set()
-
     site_extras = _top_level_assign(GOVERNANCE_PY, "SITE_EXTRAS")
     if site_extras is None:
         raise SystemExit(
             "validate_curriculum: SITE_EXTRAS not found in %s — the extra-tool source moved; "
             "fix this derivation rather than hardcoding a second list." % GOVERNANCE_PY)
-    for entries in ast.literal_eval(site_extras).values():
-        extras.update(slug for _source, slug in entries)
+    declared_extras = ast.literal_eval(site_extras)
+    extras = {
+        site: {
+            slug for _source, slug in declared_extras.get(site, ())
+            if slug.endswith(".html") or slug.endswith(".md")
+        }
+        for site in ("ms3", "resident")
+    }
 
     res_extra = _top_level_assign(RESIDENT_PY, "RES_EXTRA")
     if res_extra is None:
@@ -109,12 +113,14 @@ def extra_shipped_slugs():
             "moved; fix this derivation rather than hardcoding a second list." % RESIDENT_PY)
     # Literal tuples only. The registry-driven case-of-the-week entries in the same
     # list are comprehensions with no constant slug, and are out of scope per the docstring.
-    extras.update(_slugs_from_pairs(res_extra))
+    extras["resident"].update(_slugs_from_pairs(res_extra))
 
-    return frozenset(s for s in extras if s.endswith(".html") or s.endswith(".md"))
+    return {site: frozenset(slugs) for site, slugs in extras.items()}
 
 
-EXTRA_SHIPPED = extra_shipped_slugs()
+SITE_EXTRA_SHIPPED = site_extra_shipped_slugs()
+EXTRA_SHIPPED = frozenset().union(*SITE_EXTRA_SHIPPED.values())
+
 
 # roles[].name / roles[].desc are DISPLAYED copy (unlike id, an identifier) and curriculum.json
 # ships to both site builds unrebranded, so the front-door analogue of tests/shell-copy.test.mjs's
@@ -145,8 +151,15 @@ def main(argv):
     topic_meta = json.load(open(topic_path, encoding="utf-8"))
     evidence_registry = json.load(open(evidence_path, encoding="utf-8"))
 
-    tool_slugs = {e[1] for e in man.get("tools", [])}
-    md_slugs = {e[1] for e in man.get("md", [])}
+    shared_tool_slugs = {e[1] for e in man.get("tools", [])}
+    shared_md_slugs = {e[1] for e in man.get("md", [])}
+    shared_shipped = shared_tool_slugs | shared_md_slugs
+    site_shipped = {
+        site: shared_shipped | SITE_EXTRA_SHIPPED[site]
+        for site in ("ms3", "resident")
+    }
+    tool_slugs = set(shared_tool_slugs)
+    md_slugs = set(shared_md_slugs)
     tool_slugs |= {s for s in EXTRA_SHIPPED if s.endswith(".html")}
     md_slugs |= {s for s in EXTRA_SHIPPED if s.endswith(".md")}
     shipped = tool_slugs | md_slugs
@@ -297,6 +310,9 @@ def main(argv):
                 if ref in added_refs:
                     bad("siteLibrary %s" % site, "duplicate addition ref '%s'" % ref)
                 added_refs.add(ref)
+                if ref not in site_shipped[site]:
+                    bad("siteLibrary %s" % site,
+                        "addition ref '%s' is not shipped on %s" % (ref, site))
         exclusions = overlay.get("exclusions")
         if not isinstance(exclusions, list):
             bad("siteLibrary %s" % site, "'exclusions' must be a list")
@@ -306,6 +322,9 @@ def main(argv):
         for ref in exclusions:
             if not isinstance(ref, str):
                 bad("siteLibrary %s" % site, "exclusion ref must be a string (got %r)" % ref)
+            elif ref not in site_shipped[site]:
+                bad("siteLibrary %s" % site,
+                    "exclusion ref '%s' is not shipped on %s" % (ref, site))
 
     # ---- safety kit: five reviewed, high-safety protocols with canonical evidence ----
     kit = cur.get("safetyKit")

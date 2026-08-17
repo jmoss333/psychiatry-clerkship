@@ -322,6 +322,67 @@ class SiteLibraryTest(unittest.TestCase):
             self.assertEqual(r.returncode, 1)
             self.assertIn("duplicate", r.stdout)
 
+    def test_rejects_a_site_addition_for_an_unknown_slug(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "refs": ["ghost.md"]}
+            ]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("ghost.md", r.stdout)
+            self.assertIn("not shipped on resident", r.stdout)
+
+    def test_rejects_a_site_exclusion_for_an_unknown_slug(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["resident"]["exclusions"] = ["ghost.md"]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("ghost.md", r.stdout)
+            self.assertIn("not shipped on resident", r.stdout)
+
+    def test_rejects_resident_addition_of_an_ms3_only_extra(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "refs": ["orientation-video.html"]}
+            ]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("orientation-video.html", r.stdout)
+            self.assertIn("not shipped on resident", r.stdout)
+
+    def test_rejects_ms3_addition_of_a_resident_only_extra(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["ms3"]["additions"] = [
+                {"column": "Tools", "refs": ["rp-agitation.html"]}
+            ]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("rp-agitation.html", r.stdout)
+            self.assertIn("not shipped on ms3", r.stdout)
+
+    def test_rejects_cross_site_exclusions(self):
+        cases = (
+            ("resident", "orientation-video.html"),
+            ("ms3", "rp-agitation.html"),
+        )
+        for site, ref in cases:
+            with self.subTest(site=site, ref=ref), tempfile.TemporaryDirectory() as tmp:
+                cur = _curriculum([])
+                cur["siteLibrary"][site]["exclusions"] = [ref]
+                c, m = _write(tmp, cur)
+                r = _run(c, m)
+                self.assertEqual(r.returncode, 1)
+                self.assertIn(ref, r.stdout)
+                self.assertIn("not shipped on " + site, r.stdout)
+
 
 class ShippedSetTest(unittest.TestCase):
     """The shipped set is manifest + build extras, not the manifest alone.

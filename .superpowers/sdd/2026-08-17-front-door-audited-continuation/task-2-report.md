@@ -51,3 +51,39 @@ Proceed with Task 3: finish Front Door reader typography and pre-wire accessibil
 ## Innovative follow-up
 
 Add a small build-time payload receipt (`frontdoor-payload.json`, generated and ignored from source) that records placed references, role IDs, and catalog hashes per site. A later visual/controller task could compare that receipt before activating the new shell, making site-crossing regressions immediately visible without inspecting the full HTML payload.
+
+## Round 1 remediation — audited continuation
+
+### Outcome
+
+The injected Front Door data is now safe to place inside an HTML script, resident projections no longer claim their nine placed items are excluded, and the curriculum validator rejects a site overlay that names a page unavailable on that site. The visible shell remains dormant and unchanged.
+
+### RED evidence
+
+- `python3 13_Faculty_Resources/_automation/site_build/test_frontdoor_catalog.py` failed three new controls before implementation: a hostile `</script><!--&` plus U+2028/U+2029 payload appeared raw, resident placed references overlapped `libraryExclude`, and the real-data assertion exposed the previous shared exclusion state.
+- `python3 13_Faculty_Resources/_automation/test_validate_curriculum.py` failed four new controls before implementation: unknown site addition, unknown site exclusion, resident use of MS3-only orientation media, and MS3 use of resident-only `rp-agitation.html` were all accepted.
+
+### GREEN evidence
+
+- `python3 13_Faculty_Resources/_automation/site_build/test_frontdoor_catalog.py` — 9 tests passed. The hostile-value regression proves no raw closing script, comment opener, ampersand, U+2028, or U+2029 remains; JSON round-trips to the original value and `node --check` parses the emitted JavaScript.
+- `python3 13_Faculty_Resources/_automation/test_validate_curriculum.py` — 46 tests passed, including unknown and cross-site additions/exclusions.
+- `python3 13_Faculty_Resources/_automation/site_build/test_common.py` — 53 tests passed; `node --test tests/fd-inject.test.mjs tests/parallel-ceilings.test.mjs` — 5 tests passed.
+- Schema and semantic gates passed: registry schemas plus 21 registry tests, topic metadata, attestation consistency, and curriculum validation.
+- Sequential `build_and_check.sh ms3` then `build_and_check.sh res` passed. Each build ran all 969 root Node tests; resident static QA reported 0 hard failures (11 pre-existing soft warnings), and the materialized-LFS gate reported 105 media files with no pointer stubs.
+- Artifact inspection parsed the emitted payloads and compiled inline scripts: MS3 has 81 placed / 18 excluded; resident has 90 placed / 9 excluded; both have disjoint placed and excluded reference sets.
+- `git diff --check` passed.
+
+### Changed files
+
+- `13_Faculty_Resources/_automation/site_build/frontdoor_catalog.py`: HTML-safe inline JSON serializer and per-site `libraryExclude` normalization.
+- `13_Faculty_Resources/_automation/site_build/test_frontdoor_catalog.py`: hostile-JSON, disjointness, and real-repository count/extra tests.
+- `13_Faculty_Resources/_automation/validate_curriculum.py`: per-site shipped-slug derivation and overlay semantic checks.
+- `13_Faculty_Resources/_automation/test_validate_curriculum.py`: unknown and cross-site overlay negative controls.
+
+### Self-review and plain-language outcome
+
+The serializer preserves values while preventing text inside data from closing the page's script block. The validation derives allowed extras from the existing build registries rather than a duplicate list. The resident catalog now presents its nine additional resources without also treating them as hidden. No generated files, media, clinical/crisis copy, or shell activation changed.
+
+### Concrete next option and innovative follow-up
+
+Next, Task 3 can add dormant reader accessibility and typography contracts against these already-verified payloads. A useful follow-up would be a tiny build receipt that records each site's placed/excluded set and fails when they overlap, so future catalog changes receive a one-line audit trail before visual activation.

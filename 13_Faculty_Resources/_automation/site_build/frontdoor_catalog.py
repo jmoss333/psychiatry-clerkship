@@ -12,6 +12,16 @@ DATA_DEFAULTS = {
 }
 
 
+def _inline_json(value):
+    """Serialize JSON safely for an inline HTML script without changing its value."""
+    return (json.dumps(value, ensure_ascii=False)
+            .replace("&", "\\u0026")
+            .replace("<", "\\u003c")
+            .replace(">", "\\u003e")
+            .replace("\u2028", "\\u2028")
+            .replace("\u2029", "\\u2029"))
+
+
 def _catalog_entries(catalog):
     """Flatten final nav metadata into a slug -> title/kind map."""
     if not isinstance(catalog, list):
@@ -100,6 +110,20 @@ def build_frontdoor_payload(site, curriculum, catalog):
             if ref not in catalog_entries:
                 raise ValueError("placed ref '%s' has no final catalog entry" % ref)
 
+    library_exclude = projected.get("libraryExclude")
+    if not isinstance(library_exclude, list):
+        raise ValueError("curriculum.libraryExclude must be a list")
+    projected["libraryExclude"] = [
+        entry for entry in library_exclude
+        if not isinstance(entry, dict) or entry.get("ref") not in placed
+    ]
+    excluded_refs = {
+        entry.get("ref") for entry in projected["libraryExclude"]
+        if isinstance(entry, dict) and isinstance(entry.get("ref"), str)
+    }
+    if not set(placed).isdisjoint(excluded_refs):
+        raise ValueError("projected libraryExclude overlaps placed refs")
+
     manifest = {"tools": [], "md": []}
     for ref in placed:
         title, kind = catalog_entries[ref]
@@ -134,7 +158,7 @@ def inject_frontdoor_payload(path, payload, topic_meta, tool_registry):
         value_end += value_start
         if value_end >= len(text) or text[value_end] != ";":
             raise ValueError("Front Door data needle lacks a terminating semicolon: %s" % name)
-        text = (text[:value_start] + json.dumps(values[name], ensure_ascii=False)
+        text = (text[:value_start] + _inline_json(values[name])
                 + text[value_end:])
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(text)
