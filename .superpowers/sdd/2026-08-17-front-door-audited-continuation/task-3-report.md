@@ -76,3 +76,11 @@ The same round strengthens the reader typography and portal-focus tests to requi
 token-based declarations, including outline and outline-offset. It also corrects the reader's
 stale comments: `.fd-article__body` is styled and documented, and done rail rows now announce a
 visually hidden `Completed` suffix without `aria-pressed`.
+
+## Round 2 remediation
+
+Review found that the token-test helper included the opening `{`, allowing `/\S/` to accept an
+otherwise empty CSS rule. A synthetic RED test proved the defect by observing `rule('.fixture{}',
+'.fixture') === '{'`. The helper now returns declarations only, and the same test proves an empty
+rule returns `''` and fails the non-empty predicate. This makes the descendant typography checks
+non-vacuous without changing front-door behavior or palette tokens.

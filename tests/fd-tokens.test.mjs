@@ -30,12 +30,18 @@ function block(css, selector) {
   assert.ok(i !== -1, `no ${selector} block in clinical-warm.css`);
   const open = text.indexOf('{', i);
   const close = text.indexOf('}', open);
-  return text.slice(open, close);
+  return text.slice(open + 1, close);
 }
 
 function rule(css, selector) {
   return block(css, selector);
 }
+
+test('rule exposes only declarations, so an empty selector cannot satisfy a non-empty assertion', () => {
+  const empty = rule('.fixture{}', '.fixture');
+  assert.equal(empty, '');
+  assert.doesNotMatch(empty, /\S/);
+});
 
 test('every front-door token is defined in the light palette', () => {
   const light = block(warm, ':root');
