@@ -16,14 +16,16 @@ const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
 const librarySrc = read('frontdoor/fd_library.js');
 
-// eslint-disable-next-line no-new-func
-const make = new Function(`
-  ${read('phase_policy.js')}
-  ${read('frontdoor/fd_state.js')}
-  ${read('frontdoor/fd_data.js')}
-  ${librarySrc}
-  return { fdLibrary: fdLibrary, fdBuildIndex: fdBuildIndex };
-`);
+function make(governanceBadge) {
+  // eslint-disable-next-line no-new-func
+  return new Function('governanceBadge', `
+    ${read('phase_policy.js')}
+    ${read('frontdoor/fd_state.js')}
+    ${read('frontdoor/fd_data.js')}
+    ${librarySrc}
+    return { fdLibrary: fdLibrary, fdBuildIndex: fdBuildIndex };
+  `)(governanceBadge || function () { return ''; });
+}
 const F = make();
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
@@ -116,6 +118,32 @@ test('data-fd-open is the established open convention -- no second attribute nam
   const html = F.fdLibrary(IDX);
   assert.doesNotMatch(html, /data-fd-item=/);
   assert.doesNotMatch(html, /data-fd-link=/);
+});
+
+test('library rows pass projected governance to the shared badge helper after each label', () => {
+  const calls = [];
+  const G = make((triplet) => {
+    calls.push(triplet);
+    if (!triplet || triplet.status === 'reviewed') return '';
+    return triplet.riskLevel === 'high'
+      ? '<span class="governance-badge high">Pending review · High risk</span>'
+      : '<span class="governance-badge">Pending review</span>';
+  });
+  const manifest = JSON.parse(JSON.stringify(FIX_MAN));
+  manifest.tools[0].push({ status: 'pending', riskKind: 'clinical', riskLevel: 'high' });
+  manifest.tools[1].push({ status: 'pending', riskKind: 'general', riskLevel: 'low' });
+  manifest.md.find((entry) => entry[1] === 'mismatch-read.md').push(
+    { status: 'reviewed', riskKind: 'general', riskLevel: 'low' });
+  const html = G.fdLibrary(G.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, manifest));
+
+  assert.deepEqual(calls.slice(0, 3), [
+    { status: 'pending', riskKind: 'clinical', riskLevel: 'high' },
+    { status: 'pending', riskKind: 'general', riskLevel: 'low' },
+    { status: 'reviewed', riskKind: 'general', riskLevel: 'low' },
+  ]);
+  assert.match(html, /fd-collink__label">Tool One<\/span><span class="governance-badge high">Pending review · High risk<\/span>/);
+  assert.match(html, /fd-collink__label">Tool Two<\/span><span class="governance-badge">Pending review<\/span>/);
+  assert.doesNotMatch(html, /fd-collink__label">Misplaced Read<\/span><span class="governance-badge/);
 });
 
 // ---- header: exact copy + page count ------------------------------------------------------

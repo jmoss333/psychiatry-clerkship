@@ -18,17 +18,20 @@ const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
 const searchSrc = read('frontdoor/fd_search.js');
 
-// eslint-disable-next-line no-new-func
-const make = new Function(`
-  ${read('phase_policy.js')}
-  ${read('frontdoor/fd_state.js')}
-  ${read('frontdoor/fd_data.js')}
-  ${searchSrc}
-  return {
-    fdExpandQuery: fdExpandQuery, fdSearchResults: fdSearchResults,
-    fdSearchOverlay: fdSearchOverlay, fdBuildIndex: fdBuildIndex,
-  };
-`);
+function make(governanceBadge) {
+  // eslint-disable-next-line no-new-func
+  return new Function('governanceBadge', `
+    ${read('phase_policy.js')}
+    ${read('frontdoor/fd_state.js')}
+    ${read('frontdoor/fd_data.js')}
+    ${searchSrc}
+    return {
+      fdExpandQuery: fdExpandQuery, fdSearchResults: fdSearchResults,
+      fdSearchOverlay: fdSearchOverlay, fdSearchResultRow: fdSearchResultRow,
+      fdBuildIndex: fdBuildIndex,
+    };
+  `)(governanceBadge || function () { return ''; });
+}
 const F = make();
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
@@ -154,6 +157,38 @@ test('a protocol result carries data-fd-safety, not data-fd-open', () => {
 test('an item result carries data-fd-open plus the data-fd-sheet modifier -- never a bare data-fd-open', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, 'mental status', SYN, {});
   assert.match(html, /<button type="button" class="fd-result" data-fd-open="mse\.html" data-fd-sheet>/);
+});
+
+test('search rows pass projected governance to the shared badge helper between title and meta', () => {
+  const calls = [];
+  const G = make((triplet) => {
+    calls.push(triplet);
+    if (!triplet || triplet.status === 'reviewed') return '';
+    return triplet.riskLevel === 'high'
+      ? '<span class="governance-badge high">Pending review · High risk</span>'
+      : '<span class="governance-badge">Pending review</span>';
+  });
+  const high = G.fdSearchResultRow({
+    item: { ref: 'high.html', kind: 'tool', title: 'High item', governance: { status: 'pending', riskKind: 'clinical', riskLevel: 'high' } },
+    kind: 'item', meta: 'tool',
+  });
+  const ordinary = G.fdSearchResultRow({
+    item: { ref: 'ordinary.md', kind: 'read', title: 'Ordinary item', governance: { status: 'pending', riskKind: 'general', riskLevel: 'low' } },
+    kind: 'item', meta: 'read',
+  });
+  const reviewed = G.fdSearchResultRow({
+    item: { ref: 'reviewed.md', kind: 'read', title: 'Reviewed item', governance: { status: 'reviewed', riskKind: 'general', riskLevel: 'low' } },
+    kind: 'item', meta: 'read',
+  });
+
+  assert.deepEqual(calls, [
+    { status: 'pending', riskKind: 'clinical', riskLevel: 'high' },
+    { status: 'pending', riskKind: 'general', riskLevel: 'low' },
+    { status: 'reviewed', riskKind: 'general', riskLevel: 'low' },
+  ]);
+  assert.match(high, /fd-result__title">High item<\/span><span class="governance-badge high">Pending review · High risk<\/span><span class="fd-result__meta">tool<\/span>/);
+  assert.match(ordinary, /fd-result__title">Ordinary item<\/span><span class="governance-badge">Pending review<\/span><span class="fd-result__meta">read<\/span>/);
+  assert.doesNotMatch(reviewed, /governance-badge/);
 });
 
 test('result dot classes: is-safety for protocols, is-tool for tool items, bare for reads', () => {

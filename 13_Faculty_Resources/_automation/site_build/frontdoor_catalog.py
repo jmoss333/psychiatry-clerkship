@@ -11,6 +11,13 @@ DATA_DEFAULTS = {
     "FD_ROLES": "[]",
 }
 
+GOVERNANCE_KEYS = {"status", "riskKind", "riskLevel"}
+GOVERNANCE_VALUES = {
+    "status": {"pending", "reviewed"},
+    "riskKind": {"general", "clinical", "legal", "formulary", "local-policy"},
+    "riskLevel": {"low", "moderate", "high"},
+}
+
 
 def _inline_json(value):
     """Serialize JSON safely for an inline HTML script without changing its value."""
@@ -23,7 +30,7 @@ def _inline_json(value):
 
 
 def _catalog_entries(catalog):
-    """Flatten final nav metadata into a slug -> title/kind map."""
+    """Flatten final nav metadata into a slug -> title/kind/governance map."""
     if not isinstance(catalog, list):
         raise ValueError("final catalog must be a navigation list")
     entries = {}
@@ -38,8 +45,15 @@ def _catalog_entries(catalog):
                 raise ValueError("final catalog item needs string f and t")
             if kind not in ("md", "tool"):
                 raise ValueError("final catalog item '%s' needs md or tool kind" % ref)
+            governance = item.get("governance")
+            if not isinstance(governance, dict) or set(governance) != GOVERNANCE_KEYS:
+                raise ValueError("final catalog item '%s' needs an exact governance triplet" % ref)
+            for field, allowed in GOVERNANCE_VALUES.items():
+                if governance.get(field) not in allowed:
+                    raise ValueError("final catalog item '%s' has malformed governance %s" %
+                                     (ref, field))
             prior = entries.get(ref)
-            current = (title, kind)
+            current = (title, kind, copy.deepcopy(governance))
             if prior is not None and prior != current:
                 raise ValueError("final catalog has conflicting metadata for '%s'" % ref)
             entries[ref] = current
@@ -126,8 +140,8 @@ def build_frontdoor_payload(site, curriculum, catalog):
 
     manifest = {"tools": [], "md": []}
     for ref in placed:
-        title, kind = catalog_entries[ref]
-        manifest["tools" if kind == "tool" else "md"].append(["", ref, title])
+        title, kind, governance = catalog_entries[ref]
+        manifest["tools" if kind == "tool" else "md"].append(["", ref, title, governance])
 
     roles = curriculum.get("roles", {}).get(site)
     if not isinstance(roles, list):

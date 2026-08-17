@@ -24,6 +24,12 @@ const wire = readFileSync(new URL(
 const dataModule = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js', import.meta.url,
 ), 'utf8');
+const libraryModule = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_library.js', import.meta.url,
+), 'utf8');
+const searchModule = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_search.js', import.meta.url,
+), 'utf8');
 
 function slice(startMarker, endMarker) {
   const a = source.indexOf(startMarker);
@@ -92,10 +98,12 @@ test('warning prose is never derived from topic_meta.facultyReview', () => {
   assert.doesNotMatch(noticeBlock, /TOPIC_META/);
 });
 
-test('Front Door index keeps each resource risk field and governed open routes', () => {
+test('Front Door index and both live browse renderers preserve the shared governance badge contract', () => {
   assert.match(source, /function governanceBadge\(triplet\)\{/);
   assert.match(source, /Pending review · High risk/);
   assert.match(dataModule, /risk: \(t&&t\.riskLevel\)\|\|m\.safetyLevel\|\|null/);
+  assert.match(libraryModule, /governanceBadge\(item\.governance\)/);
+  assert.match(searchModule, /governanceBadge\(it\.governance\)/);
   assert.match(source, /governanceNotice:renderGovernanceNotice/);
 });
 

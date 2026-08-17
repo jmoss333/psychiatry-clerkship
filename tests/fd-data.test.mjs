@@ -95,6 +95,25 @@ test('a tool item takes its title and risk from tool_registry', () => {
   assert.equal(i.kind, 'tool');
 });
 
+test('a projected four-field manifest entry supplies its exact governance triplet while canonical triples degrade to null', () => {
+  const projected = {
+    tools: [['src/t.html', 't.html', 'Tool T', { status: 'pending', riskKind: 'clinical', riskLevel: 'high' }]],
+    md: [['src/a.md', 'a.md', 'Page A', { status: 'pending', riskKind: 'general', riskLevel: 'low' }],
+         ['src/b.md', 'b.md', 'Page B']],
+  };
+  const curriculum = JSON.parse(JSON.stringify(FIX_CUR));
+  curriculum.libraryColumns[0].refs.push('t.html');
+  const idx = F.fdBuildIndex(curriculum, FIX_META, FIX_TOOLS, projected);
+
+  assert.deepEqual(idx.byRef['a.md'].governance,
+    { status: 'pending', riskKind: 'general', riskLevel: 'low' });
+  assert.deepEqual(idx.byRef['t.html'].governance,
+    { status: 'pending', riskKind: 'clinical', riskLevel: 'high' });
+  assert.equal(idx.byRef['b.md'].governance, null);
+  assert.equal(idx.byRef['a.md'].title, 'Page A');
+  assert.equal(idx.byRef['t.html'].kind, 'tool');
+});
+
 test('weeks carry resolved items in curriculum order', () => {
   const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
   assert.equal(idx.weeks.length, 6);

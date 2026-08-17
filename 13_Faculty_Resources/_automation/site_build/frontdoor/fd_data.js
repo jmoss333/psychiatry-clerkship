@@ -16,10 +16,11 @@ function fdIsTool(ref){ return /\.html$/.test(ref); }
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */
-function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex){
+function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex){
   var m=topicMeta[ref]||{};
   var t=toolIndex[ref]||null;
   var fr=m.facultyReview||{};
+  var manifest=manifestIndex[ref]||{};
   var isTool=(kind==='tool')||fdIsTool(ref);
   return {
     ref: ref,
@@ -28,13 +29,14 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex){
        title field on any entry -- it describes a page's content, not its identity -- so reading
        one there would silently degrade every .md row to its raw slug. Falling back to the ref is
        for a page the manifest does not list, which the curriculum validator already rejects. */
-    title: titleIndex[ref]||ref,
+    title: manifest.title||ref,
     minutes: (typeof m.read==='number')?m.read:null,
     summary: m.tldr||'',
     points: (m.points&&m.points.length)?m.points:[],
     attested: fr.status==='reviewed',
     toolRef: (m.relatedTools&&m.relatedTools.length)?m.relatedTools[0]:null,
     risk: (t&&t.riskLevel)||m.safetyLevel||null,
+    governance: manifest.governance||null,
     href: (isTool?'?tool=':'?page=')+ref
   };
 }
@@ -44,16 +46,20 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var toolIndex={}, list=(toolRegistry&&toolRegistry.tools)||[];
   for(var i=0;i<list.length;i++){ toolIndex[list[i].file]=list[i]; }
 
-  /* site_manifest entries are [sourcePath, slug, title] triples for both md and tools. */
-  var titleIndex={}, man=siteManifest||{};
+  /* Canonical site_manifest entries are [sourcePath, slug, title] triples. The private build
+     projection adds governance as element 3; direct callers with canonical triples get null. */
+  var manifestIndex={}, man=siteManifest||{};
   var groups=[man.tools||[], man.md||[]];
   for(var g=0;g<groups.length;g++){
-    for(var e=0;e<groups[g].length;e++){ titleIndex[groups[g][e][1]]=groups[g][e][2]; }
+    for(var e=0;e<groups[g].length;e++){
+      var entry=groups[g][e];
+      manifestIndex[entry[1]]={title:entry[2],governance:entry.length===4?entry[3]:null};
+    }
   }
 
   var byRef={};
   function ensure(ref, kind){
-    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, titleIndex);
+    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex);
     return byRef[ref];
   }
 

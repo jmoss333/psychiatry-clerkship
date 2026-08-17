@@ -28,11 +28,16 @@ RESIDENT_EXTRAS = [
 ]
 
 
-def _catalog(refs):
+DEFAULT_GOVERNANCE = {"status": "reviewed", "riskKind": "general", "riskLevel": "low"}
+
+
+def _catalog(refs, governance_by_ref=None):
     """Final-nav-shaped catalog fixture; titles/kinds live here, never in curriculum."""
+    governance_by_ref = governance_by_ref or {}
     return [{"section": "Library", "items": [
         {"f": ref, "t": "Title for " + ref,
-         "k": "tool" if ref.endswith(".html") else "md"}
+         "k": "tool" if ref.endswith(".html") else "md",
+         "governance": copy.deepcopy(governance_by_ref.get(ref, DEFAULT_GOVERNANCE))}
         for ref in refs
     ]}]
 
@@ -93,6 +98,49 @@ class FrontdoorCatalogTest(unittest.TestCase):
             self.assertEqual(resolved[ref], "Title for " + ref)
         self.assertEqual({entry[1] for entry in payload["manifest"]["tools"]},
                          {ref for ref in self.shared + RESIDENT_EXTRAS if ref.endswith(".html")})
+
+    def test_projected_manifest_preserves_each_site_governance_triplet_without_mutating_inputs(self):
+        shared_pending = {"status": "pending", "riskKind": "clinical", "riskLevel": "high"}
+        resident_pending = {"status": "pending", "riskKind": "legal", "riskLevel": "moderate"}
+        governance = {
+            self.shared[0]: shared_pending,
+            RESIDENT_EXTRAS[0]: resident_pending,
+        }
+        curriculum = copy.deepcopy(self.curriculum)
+        ms3_catalog = _catalog(self.shared, governance)
+        resident_catalog = _catalog(self.shared + RESIDENT_EXTRAS, governance)
+        original_ms3_catalog = copy.deepcopy(ms3_catalog)
+        original_resident_catalog = copy.deepcopy(resident_catalog)
+
+        ms3 = build_frontdoor_payload("ms3", curriculum, ms3_catalog)
+        resident = build_frontdoor_payload("resident", curriculum, resident_catalog)
+        ms3_entries = {entry[1]: entry for group in ms3["manifest"].values() for entry in group}
+        resident_entries = {entry[1]: entry for group in resident["manifest"].values() for entry in group}
+
+        self.assertEqual(ms3_entries[self.shared[0]][3], shared_pending)
+        self.assertEqual(resident_entries[self.shared[0]][3], shared_pending)
+        self.assertEqual(resident_entries[RESIDENT_EXTRAS[0]][3], resident_pending)
+        self.assertEqual(curriculum, self.curriculum)
+        self.assertEqual(ms3_catalog, original_ms3_catalog)
+        self.assertEqual(resident_catalog, original_resident_catalog)
+
+    def test_projection_fails_closed_for_missing_malformed_extra_or_conflicting_governance(self):
+        missing = _catalog(self.shared)
+        missing[0]["items"][0].pop("governance")
+        malformed = _catalog(self.shared)
+        malformed[0]["items"][0]["governance"]["riskLevel"] = "unreviewed"
+        extra = _catalog(self.shared)
+        extra[0]["items"][0]["governance"]["reason"] = "not a compact triplet"
+        conflicting = _catalog(self.shared)
+        duplicate = copy.deepcopy(conflicting[0]["items"][0])
+        duplicate["governance"] = {"status": "pending", "riskKind": "clinical", "riskLevel": "high"}
+        conflicting.append({"section": "Duplicate", "items": [duplicate]})
+
+        for name, catalog in (("missing", missing), ("malformed", malformed),
+                              ("extra", extra), ("conflicting", conflicting)):
+            with self.subTest(name=name):
+                with self.assertRaises(ValueError):
+                    build_frontdoor_payload("ms3", self.curriculum, catalog)
 
     def test_every_emitted_ref_resolves_and_input_is_not_mutated(self):
         original = copy.deepcopy(self.curriculum)

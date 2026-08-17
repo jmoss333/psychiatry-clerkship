@@ -199,6 +199,7 @@ function fdSearchResultRow(r){
   return '<button type="button" class="fd-result"'+openAttrs+'>'+
     '<span class="'+dotCls+'"></span>'+
     '<span class="fd-result__title">'+fdEsc(it.title)+'</span>'+
+    governanceBadge(it.governance)+
     '<span class="fd-result__meta">'+fdEsc(r.meta)+'</span>'+
   '</button>';
 }
